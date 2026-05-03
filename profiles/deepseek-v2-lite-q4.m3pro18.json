@@ -14,7 +14,8 @@
     "lm_head_schedule": "metal-argmax-token-only",
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 4
+    "deterministic_rank": 4,
+    "gemm_q4_k_schedule": "v2"
   },
   "evidence": {
     "profile": "m3-pro-18gb",
