@@ -411,6 +411,62 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// v0.3.2 — pair wrapper: allocates x once, encodes gate+up into ONE CommandBatch.
+    /// Two Q4_K_M simd GEMVs (w_a, w_b) sharing the same input (x) and output
+    /// dimensions coalesce into a single command-buffer commit instead of two.
+    pub fn dispatch_gemv_q4_k_m_simd_pair_batched(
+        ctx: &MetalContext,
+        w_a_bytes: &[u8],
+        w_b_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out_a: &mut [f32],
+        out_b: &mut [f32],
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out_a.len() != rows || out_b.len() != rows {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair shape: x={} cols={} out_a={} out_b={} rows={}",
+                x.len(), cols, out_a.len(), out_b.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_a_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair w_a bytes: got {} expected {}",
+                w_a_bytes.len(), expected_bytes
+            )));
+        }
+        if w_b_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair w_b bytes: got {} expected {}",
+                w_b_bytes.len(), expected_bytes
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let w_a_buf = ctx.new_buffer_with_bytes(w_a_bytes);
+        let w_b_buf = ctx.new_buffer_with_bytes(w_b_bytes);
+        let out_a_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let out_b_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_gemv_q4_k_m_simd(batch, &w_a_buf, rows, cols, &x_buf, &out_a_buf)?;
+            encode_gemv_q4_k_m_simd(batch, &w_b_buf, rows, cols, &x_buf, &out_b_buf)
+        })?;
+        let ptr_a = out_a_buf.contents() as *const f32;
+        let ptr_b = out_b_buf.contents() as *const f32;
+        let slice_a = unsafe { std::slice::from_raw_parts(ptr_a, rows) };
+        let slice_b = unsafe { std::slice::from_raw_parts(ptr_b, rows) };
+        out_a.copy_from_slice(slice_a);
+        out_b.copy_from_slice(slice_b);
+        Ok(())
+    }
+
     // ---- Phase 1 / Haul 1 — stubs the haul replaces with bodies ----
     //
     // Each function below is the seam the haul targets. The signature
