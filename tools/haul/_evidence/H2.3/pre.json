@@ -1,0 +1,37 @@
+{
+  "captured_at_utc": "2026-04-28T22:13:09Z",
+  "gate": "H2.3",
+  "attempt": 1,
+  "git_head": "none",
+  "memory": {
+    "captured_at_utc": "2026-04-28T22:13:10Z",
+    "state": "degraded",
+    "exit_code": 1,
+    "available_gb": 3.89,
+    "wired_gb": 4.19,
+    "compressed_gb": 6.87,
+    "total_gb": 18.0,
+    "pressure_level": "normal",
+    "page_bytes": 16384,
+    "parse_failed": false,
+    "pressure_query_ok": true,
+    "slm": {
+      "pid": "96816",
+      "alive": true,
+      "rss_gb": 0.04
+    },
+    "dismantle": {
+      "pid": "",
+      "rss_gb": 2
+    },
+    "joint": {
+      "gb": 2.04,
+      "threshold_pct": 80,
+      "over_threshold": false
+    },
+    "thresholds": {
+      "safe_gb": 4,
+      "degraded_gb": 2
+    }
+  }
+}

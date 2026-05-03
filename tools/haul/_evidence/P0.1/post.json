@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-30T02:17:36Z",
+  "gate": "P0.1",
+  "exit_code": 0,
+  "validator_kind": "evidence-archive",
+  "dry_run": false,
+  "timed_out": false,
+  "timeout_s": 2400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/P0.1/stdout.log",
+  "stdout_lines": 1,
+  "stdout_truncated": false
+}

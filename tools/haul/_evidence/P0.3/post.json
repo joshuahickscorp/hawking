@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-30T02:17:39Z",
+  "gate": "P0.3",
+  "exit_code": 0,
+  "validator_kind": "cargo-build",
+  "dry_run": false,
+  "timed_out": false,
+  "timeout_s": 2400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/P0.3/stdout.log",
+  "stdout_lines": 10,
+  "stdout_truncated": false
+}

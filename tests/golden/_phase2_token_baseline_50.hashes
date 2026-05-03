@@ -1,0 +1,54 @@
+# Phase 1 token-output baseline — captured by `dismantle batch-hash`
+# Format: <prompt-id> <max-new-tokens> <hash-hex> <prompt-text>
+# algo: blake3
+# Generation: temp=0 greedy, max_new_tokens=3, model=DeepSeek-V2-Lite-Chat-Q4_K_M
+p001 3 03bb4b957561ac07f81ae88a13c0bb8e352a60277ef4449acd2675990c446e63 Once upon a time
+p002 3 2cb7fb4ba3a5579ce3d8a54a9b0c7bc9f8b60636c542e90d16244c4f0f31de8d def quicksort(arr):
+p003 3 6367cebb7341dddbf9b0cc0f310101edac40e5e507d9e7c3c13a5fb25b89e809 The capital of France is
+p004 3 154a3b6a1bf2cb409b53e34cb93aaf78efb6c4026254fcb120f7c2a9a8758131 To be or not to be
+p005 3 81735cb94fec37c44f7de2a8f986d48151cefff10726f13e481acfc0bc00c95e import numpy as np
+p006 3 11321992e0f9d30405411eea17923b66cf5960c70895ae466da095b82ebf1521 The quick brown fox
+p007 3 946b6bbb92e5f21e8fd5c58f99409fc6d50b3704345dbbf8128ec683393471d4 SELECT * FROM users WHERE
+p008 3 fd0aba59622df6a42f931359564ad3a7779c70a75effe5d022ca335c2fd07c63 Roses are red, violets are
+p009 3 104335322efc4a27203fffcd133eaad24b84d6056d5a2eb7fd7b67c5e6cd8f0c fn main() {
+p010 3 c3e35882f0faa51337321e030a1758085ecee683c71178f0d07a72a4e1faebbb Translate to French: hello
+p011 3 5a7e631b5f92068f0df663c7b87efd0f72d4ed50bcc7c1e37f585241ae022f1f Q: What is 2+2? A:
+p012 3 aebf6dc04754c58c69b826a17f85f08596bcd5548be371b195e61235887f33e5 Markdown header
+p013 3 7a278ef432105db0dcc3f4db95746fd7f3bd9bf355a7ab472c0c851dcd83996b The largest planet in our solar system is
+p014 3 219786a4d961f54bdc8f213e3a175010644aed33e2f278c2745ba904a9eed0f4 The chemical formula for water is
+p015 3 77dd4ca7f35f15b6ad128af376ae41bc485abdcd2c42b87cbbfca2d01a588f31 Albert Einstein was born in the year
+p016 3 5b293f51c9ba29f81d39b778de27ed9b558db2d6bb4160215f08906f09a16032 The speed of light is approximately
+p017 3 49278c311ff3baa2b82faf41216febbf94d569dedbd2ea8d5793cdded94e2230 The deepest ocean on Earth is the
+p018 3 7779683b3ffb2b1ca64918679425f22e6c1631c5c6341763a7913bfb9d3eac7a Mount Everest is located on the border of
+p019 3 a5885c4483ceeb6ee9af9b8cddc5b648d3df11a84252c7fee968a2dbc3fd7236 The author of Hamlet was
+p020 3 39444976f6b3f464e1c5e177657ca9474505cabf56dab702709dca31d1e783ab DNA is short for
+p021 3 85fa228c4ac5c1ea472a96cd787c6dee777f8fc00db0143249bc5008bc266206 class LinkedList:
+p022 3 1855420938fdfe8915ed9f0629a8a768ea3b3efaf387132075329ef9ee57f264 function fibonacci(n) {
+p023 3 2a06b344d58a875b94db543dd9ebc717c85308020a293b8e5cc274e20c7361c8 try {
+p024 3 7fb989bbad2299f117bd7df6fa17da8a33f2e3b2c4c030ebe18193528b0e58d5 pub struct User {
+p025 3 b72c16d0b378a1b539ea47127e7406f646ccac0656071dfbe324b5655bffcda7 console.log("hello,
+p026 3 f5d5a69bc66d1a2e4394127d3916e5cbb0a3e8971dcb2b6f1ce03ccfac7f0782 # Python list comprehension:
+p027 3 4a07e4b9cd832ba9d3cab62367b2fabb1b7d9f38367647649f839231f95b4831 12 times 8 equals
+p028 3 4bd491fa30da43ab8576a619839a47311fd386efd2df2727d12f778ff27315cf The square root of 144 is
+p029 3 891a452c0f37cfe00327d2361dfa2741ac7953fe0025b3fbe5c7f777b371bc58 100 divided by 4 is
+p030 3 925fa693c128eb405692543b9929cd35ded2097db1d96a0a06e69297a9b18a2b 7db1d96a0a06e69297a9b18a2b 7 + 3 * 2 =
+p031 3 a8ac6156fd88b1b90138aa56b0e9fa18521d916dc5afa4deae6d084c925c35a5 Pi to five decimal places is
+p032 3 4bd491fa30da43ab8576a619839a47311fd386efd2df2727d12f778ff27315cf Solve x^2 + 5x + 6 = 0, x =
+p033 3 fc3eedc85ee64019e482f691bec77e43907dcd99ae5ab7158961243636f67b8d Log base 10 of 100 is
+p034 3 e7a3f2c111084a99792c10c96db1df55c75b9b20254b67c436168b254995d2f5 The derivative of x squared is
+p035 3 b17b47f5b7d23d130b61c17c60ea4c14f9586859d076b768e601c363b615983c 146e04e1f71378486858da9ee8eb9734ec0d2d0a90b1b7bafc3ccf19054 1 + 1 =
+p036 3 65a152f45639c713c28e041ca56ad8ed8933631141d8288c37f15918ae2e4612 In a galaxy far, far
+p037 3 949e89f8b9cdedb25fd396d35ac8b8bf246d59f9165268caa243254452f04132 It was the best of times,
+p038 3 5b765e280b8089cde980705aa0da7cf789921d12b7d17a9901bd7c5997aac56e The wind howled through the
+p039 3 5030ef4ae0e1a363849db83d0ed18cfc95fada89a0c61d61df281715793a452d She opened the letter and
+p040 3 416439a18711c3fa78e84455fccf0688bc6f9996e39239f410942dddbdb13d1d All happy families are
+p041 3 a7890ff87f77f7ec36bcd2cd42d6707718b569f1cee95b0bf05e397c1b91043b Call me Ishmael.
+p042 3 00da505d5d42b722b11ba6d35795beea7a2d7f9b98a6edb7798d27f9c7d3d87b If all roses are flowers and some flowers fade, then some roses
+p043 3 25e2cdf3a4f715345b6dd09d4344fdd901084f4f1f413d866aeeac3a53759f19 Three apples cost six dollars. One apple costs
+p044 3 ce3b7b9386ddbe793091984547274a023272965a5e64383ffc21f762102d5caf Today is Wednesday. Two days ago was
+p045 3 890f9b46b4755293b691912ac7ca7bc45fa18cdd11022f84423595f296a8b2c6 The opposite of north is
+p046 3 bd6a29e38cba0fea985ae06d85a657eb261dba2ecb1190833e75cb682570c4e7 A triangle with three equal sides is called
+p047 3 4b711a43fb51c38cebe3682d68e9f79102a4cb7c64e9da5f41960da433741d18 If A > B and B > C, then A is
+p048 3 ebcc6ac3e46b7ed256d61cf598d8b012f57cdd74357ebed0a0209677503e7896 The result of doubling 25 is
+p049 3 82554aa2a47219276e509fae162f029fb332c63f7d5d21b775adfeff9a85a0c2 Bob is taller than Alice. Alice is taller than Carol. So Bob is
+p050 3 05b0083a12016b80f22d632d362eb511d8729f1b92887c5b8a93d5ca6b5f1570 The negation of "all swans are white" is

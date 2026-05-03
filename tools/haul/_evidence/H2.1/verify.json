@@ -1,0 +1,6 @@
+{
+  "captured_at_utc": "2026-04-28T22:11:56Z",
+  "gate": "H2.1",
+  "attestation": true,
+  "reason": "dry_run_or_no_verify"
+}

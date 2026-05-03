@@ -1,0 +1,1365 @@
+//! DeepSeek-V2-Lite forward pass.
+//!
+//! Architecture: MLA attention + MoE FFN with 2 shared experts and
+//! top-6 of 64 routed experts (auxiliary-loss-free routing). First
+//! transformer layer is dense (no routing); we still drive it
+//! through the MoE kernel with a single-expert config so there's no
+//! separate dense code path.
+//!
+//! The Phase-0 path runs entirely on CPU in fp32; the model layer's
+//! job is bookkeeping (dequant on demand, KV cache management,
+//! routing, residual stream). Phase 1+ swaps individual ops out for
+//! Metal kernels under the same Rust signatures.
+
+use crate::cache::KvCache;
+use crate::engine::{
+    Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
+};
+use crate::gguf::{GgmlType, GgufFile, TensorInfo};
+use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rmsnorm, rope_inplace, silu_mul};
+use crate::metal::{MetalContext, PinnedBuffer};
+use crate::moe::topk_gate;
+use crate::profile::KernelProfile;
+use crate::quant;
+use crate::sample::Sampler;
+use crate::tokenizer::Tokenizer;
+use crate::{Error, Result};
+use half::f16;
+use std::path::{Path, PathBuf};
+use std::time::Instant;
+
+#[derive(Debug, Clone)]
+pub struct DeepSeekConfig {
+    pub n_layers: usize,
+    pub hidden: usize,
+    pub n_heads: usize,
+    pub n_kv_heads: usize,
+    pub kv_lora_rank: usize,
+    pub q_lora_rank: usize,
+    pub qk_nope_head_dim: usize,
+    pub qk_rope_head_dim: usize,
+    pub v_head_dim: usize,
+    /// Intermediate width of the leading dense FFN layers.
+    /// (`deepseek2.feed_forward_length`)
+    pub ffn_intermediate: usize,
+    /// Intermediate width of one routed/shared expert.
+    /// (`deepseek2.expert_feed_forward_length`)
+    pub moe_intermediate: usize,
+    pub n_routed_experts: usize,
+    pub n_shared_experts: usize,
+    pub top_k_routed: usize,
+    pub first_k_dense_layers: usize,
+    pub vocab_size: usize,
+    pub rope_theta: f32,
+    pub rms_norm_eps: f32,
+    pub max_seq_len: usize,
+}
+
+impl DeepSeekConfig {
+    fn from_gguf(g: &GgufFile) -> Result<Self> {
+        let get_u32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_u32());
+        let get_f32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_f32());
+
+        let n_layers = get_u32("deepseek2.block_count")
+            .or_else(|| get_u32("llama.block_count"))
+            .ok_or_else(|| Error::Model("missing block_count".into()))?
+            as usize;
+        let hidden = get_u32("deepseek2.embedding_length")
+            .ok_or_else(|| Error::Model("missing embedding_length".into()))?
+            as usize;
+        let n_heads = get_u32("deepseek2.attention.head_count")
+            .ok_or_else(|| Error::Model("missing head_count".into()))?
+            as usize;
+        let n_kv_heads =
+            get_u32("deepseek2.attention.head_count_kv").unwrap_or(n_heads as u32) as usize;
+        let vocab_size = get_u32("deepseek2.vocab_size")
+            .or_else(|| get_u32("llama.vocab_size"))
+            .ok_or_else(|| Error::Model("missing vocab_size".into()))?
+            as usize;
+
+        Ok(Self {
+            n_layers,
+            hidden,
+            n_heads,
+            n_kv_heads,
+            kv_lora_rank: get_u32("deepseek2.attention.kv_lora_rank").unwrap_or(512) as usize,
+            q_lora_rank: get_u32("deepseek2.attention.q_lora_rank").unwrap_or(0) as usize,
+            qk_nope_head_dim: get_u32("deepseek2.attention.qk_nope_head_dim").unwrap_or(128)
+                as usize,
+            qk_rope_head_dim: get_u32("deepseek2.attention.qk_rope_head_dim").unwrap_or(64)
+                as usize,
+            v_head_dim: get_u32("deepseek2.attention.v_head_dim").unwrap_or(128) as usize,
+            ffn_intermediate: get_u32("deepseek2.feed_forward_length")
+                .or_else(|| get_u32("llama.feed_forward_length"))
+                .unwrap_or(10944) as usize,
+            moe_intermediate: get_u32("deepseek2.expert_feed_forward_length").unwrap_or(1408)
+                as usize,
+            n_routed_experts: get_u32("deepseek2.expert_count").unwrap_or(64) as usize,
+            n_shared_experts: get_u32("deepseek2.expert_shared_count").unwrap_or(2) as usize,
+            top_k_routed: get_u32("deepseek2.expert_used_count").unwrap_or(6) as usize,
+            first_k_dense_layers: get_u32("deepseek2.leading_dense_block_count").unwrap_or(1)
+                as usize,
+            vocab_size,
+            rope_theta: get_f32("deepseek2.rope.freq_base").unwrap_or(10_000.0),
+            rms_norm_eps: get_f32("deepseek2.attention.layer_norm_rms_epsilon").unwrap_or(1e-6),
+            max_seq_len: get_u32("deepseek2.context_length").unwrap_or(4096) as usize,
+        })
+    }
+}
+
+/// Phase 0 keeps the GGUF mmap'd for the lifetime of the engine and
+/// lazily dequantizes expert weights on every forward pass. This
+/// trades CPU work (per-call dequant) for resident memory — needed
+/// because Q4_K_M weights expand 8× when materialized to fp32, and
+/// DeepSeek-V2-Lite Q4_K_M (9.7 GB on disk) would balloon to ~70 GB
+/// dequantized, busting any sub-128GB Mac.
+///
+/// Phase 1's wedge-2 quant-aware Metal kernels read 4-bit weights
+/// directly from the mmap *and* dequant inside the FMA loop, removing
+/// even the per-call working buffer.
+pub struct DeepSeekV2 {
+    pub config: DeepSeekConfig,
+    pub tokenizer: Tokenizer,
+    pub model_id: String,
+
+    /// mmap keepalive. Dropping this invalidates every TensorRef held
+    /// by `layers`, so the field MUST live as long as any expert dispatch.
+    pub gguf: GgufFile,
+
+    pub embed: Vec<f16>,
+    pub final_norm: Vec<f32>,
+    pub lm_head: Option<Vec<f16>>, // None ⇒ tied to embed
+    pub layers: Vec<Layer>,
+
+    pub kv: KvCache,
+    pub sampler: Sampler,
+    pub _weights_path: PathBuf,
+
+    /// Metal device + library + pipeline cache, threaded to forward
+    /// path so kernel dispatchers can target the GPU. `Some` on
+    /// Metal-capable boxes (macOS); `None` elsewhere. Per-kernel
+    /// dispatch helpers fall back to CPU when `None`.
+    pub metal_ctx: Option<MetalContext>,
+
+    /// WB — Phase-2 weight pinning. The LM-head fp16 matrix uploaded
+    /// once at load time, reused across every decode token. Eliminates
+    /// the per-dispatch `new_buffer_with_bytes` memcpy of ~400 MB that
+    /// the byte-slice `gemv_f16_metal` path incurred. `Some` only when
+    /// `metal_ctx.is_some()` and the LM head exists (or is tied to
+    /// embedding — both share this Buffer).
+    pub lm_head_buf: Option<PinnedBuffer>,
+
+    /// Whole GGUF mmap exposed to Metal without copying. Indexed MoE
+    /// kernels receive tensor byte offsets into this buffer, so routed
+    /// experts can be selected on-GPU without packing selected expert
+    /// bytes on the host every token.
+    pub weights_mmap_buf: Option<PinnedBuffer>,
+
+    pub kernel_profile: Option<KernelProfile>,
+    pub speculate_mode: SpeculateMode,
+    pub verify_window: usize,
+}
+
+/// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
+/// dequant happens on demand into a caller-owned buffer.
+#[derive(Debug, Clone)]
+pub struct TensorRef {
+    pub offset: usize,
+    pub byte_size: usize,
+    pub dtype: GgmlType,
+    pub n_elems: usize,
+}
+
+pub struct Layer {
+    pub attn_norm: Vec<f32>,
+    pub ffn_norm: Vec<f32>,
+
+    // MLA attention weights — eagerly dequanted (each layer's attn
+    // tensors are tens of MB; cumulative footprint is ~1 GB).
+    pub q_proj: Vec<f32>, // optional q-lora-rank path
+    pub q_a_proj: Option<Vec<f32>>,
+    pub q_a_norm: Option<Vec<f32>>,
+    pub q_b_proj: Option<Vec<f32>>,
+    pub kv_a_proj_with_mqa: Vec<f32>,
+    pub kv_a_norm: Vec<f32>,
+    pub kv_b_proj: Vec<f32>,
+    pub o_proj: Vec<f32>,
+
+    // FFN — either dense (rare; only `first_k_dense_layers`) or MoE.
+    pub mode: LayerMode,
+
+    /// WB — Phase-2 weight pinning. One pre-uploaded `metal::Buffer`
+    /// per kernel-bound attention weight, populated by `Engine::load`
+    /// when `metal_ctx.is_some()`. The dispatchers
+    /// (`gemv_f32_attn_dispatch`) prefer the pinned path when these
+    /// are populated. Each Buffer references the same bytes as its
+    /// `Vec<f32>` companion; the Vecs stay live as the storage owners.
+    pub pinned: LayerPinned,
+}
+
+/// WB — pre-uploaded `metal::Buffer` handles for kernel-bound weights
+/// on a single transformer layer. Populated only on macOS with
+/// `metal_ctx.is_some()`; every field is `None` otherwise. Held on
+/// `Layer` so the dispatcher can reach them without a separate field
+/// per weight.
+#[derive(Default)]
+pub struct LayerPinned {
+    pub q_a_proj: Option<PinnedBuffer>,
+    pub q_b_proj: Option<PinnedBuffer>,
+    pub kv_a_proj_with_mqa: Option<PinnedBuffer>,
+    pub kv_b_proj: Option<PinnedBuffer>,
+    pub o_proj: Option<PinnedBuffer>,
+    /// Optional fallback q_proj for non-LoRA models. Phase-0 had a
+    /// fallback path; DeepSeek-V2-Lite uses LoRA so this is None in
+    /// production but kept for shape-compat.
+    pub q_proj: Option<PinnedBuffer>,
+}
+
+pub enum LayerMode {
+    Dense {
+        gate_w: Vec<f32>,
+        up_w: Vec<f32>,
+        down_w: Vec<f32>,
+    },
+    MoE {
+        gate_logits_w: Vec<f32>, // (n_routed, hidden), eager
+        routed_fused: MoEFusedTensors,
+        routed: Vec<Expert>, // lazy refs into mmap
+        shared_fused: Option<MoEFusedTensors>,
+        shared: Vec<Expert>, // lazy refs (length 0 or 1)
+    },
+}
+
+#[derive(Debug, Clone)]
+pub struct MoEFusedTensors {
+    pub gate_w: TensorRef,
+    pub up_w: TensorRef,
+    pub down_w: TensorRef,
+}
+
+/// One expert's weight references (lazy). Bytes are borrowed from the
+/// mmap on each forward; dequanted into reusable scratch buffers in
+/// `ffn`.
+pub struct Expert {
+    pub gate_w: TensorRef,
+    pub up_w: TensorRef,
+    pub down_w: TensorRef,
+}
+
+impl DeepSeekV2 {
+    fn dequant(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
+        let info = g
+            .tensor(name)
+            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
+        let bytes = g.tensor_bytes(name).unwrap();
+        quant::dequant_to_f32(info, bytes)
+    }
+
+    fn dequant_opt(g: &GgufFile, name: &str) -> Result<Option<Vec<f32>>> {
+        if g.tensor(name).is_some() {
+            Ok(Some(Self::dequant(g, name)?))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
+        let info = g
+            .tensor(name)
+            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
+        let bytes = g.tensor_bytes(name).unwrap();
+        quant::dequant_to_f16(info, bytes)
+    }
+
+    /// Build a `TensorRef` for a single (non-fused) tensor — the
+    /// returned ref points into the GGUF mmap.
+    fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
+        let info = g
+            .tensor(name)
+            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
+        let n_elems: usize = info.dims.iter().product::<u64>() as usize;
+        Ok(TensorRef {
+            offset: info.data_offset as usize,
+            byte_size: info.byte_size as usize,
+            dtype: info.dtype,
+            n_elems,
+        })
+    }
+
+    /// Slice a 3D fused-expert tensor (`blk.{li}.ffn_*_exps.weight`)
+    /// into per-expert refs without copying. Each expert occupies a
+    /// contiguous byte range because `n_experts` is the outer
+    /// (slowest) dimension.
+    ///
+    /// Per-expert slicing in raw bytes only works when each expert
+    /// boundary lands on a quant-block boundary; that's true for the
+    /// K-quants we care about here (Q4_K block=256, expert size in
+    /// elems = intermediate × hidden = 1408 × 2048 = 2_883_584,
+    /// divisible by 256).
+    fn fused_expert_refs(g: &GgufFile, name: &str, n_experts: usize) -> Result<Vec<TensorRef>> {
+        let info = g
+            .tensor(name)
+            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
+        let total_elems: usize = info.dims.iter().product::<u64>() as usize;
+        if total_elems % n_experts != 0 {
+            return Err(Error::Model(format!(
+                "tensor {name}: {total_elems} elems not divisible by {n_experts} experts"
+            )));
+        }
+        let per_elems = total_elems / n_experts;
+        let total_bytes = info.byte_size as usize;
+        if total_bytes % n_experts != 0 {
+            return Err(Error::Model(format!(
+                "tensor {name}: {total_bytes} bytes not divisible by {n_experts}; \
+                 expert boundary not on a quant-block boundary"
+            )));
+        }
+        let per_bytes = total_bytes / n_experts;
+        let base = info.data_offset as usize;
+        Ok((0..n_experts)
+            .map(|e| TensorRef {
+                offset: base + e * per_bytes,
+                byte_size: per_bytes,
+                dtype: info.dtype,
+                n_elems: per_elems,
+            })
+            .collect())
+    }
+
+    /// Dequant a `TensorRef`'s bytes from the engine's mmap into
+    /// `buf`, resizing the buffer in place. Reused across calls with
+    /// the same shape.
+    fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
+        if buf.len() != t.n_elems {
+            buf.resize(t.n_elems, 0.0);
+        }
+        let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+        quant::dequant_into(t.dtype, bytes, buf)
+    }
+}
+
+impl Engine for DeepSeekV2 {
+    fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
+        let gguf = GgufFile::open(weights)?;
+        let cfg = DeepSeekConfig::from_gguf(&gguf)?;
+        let model_id = gguf.name().unwrap_or("deepseek-v2-lite").to_string();
+
+        // Tokenizer: prefer sidecar tokenizer.json, fall back to GGUF.
+        let sidecar = weights
+            .parent()
+            .map(|d| d.join("tokenizer.json"))
+            .filter(|p| p.exists());
+        let tokenizer = if let Some(p) = sidecar {
+            Tokenizer::from_file(&p)?
+        } else {
+            Tokenizer::from_gguf(&gguf)?
+        };
+
+        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
+        let final_norm = Self::dequant(&gguf, "output_norm.weight")?;
+        let lm_head = if gguf.tensor("output.weight").is_some() {
+            Some(Self::dequant_f16(&gguf, "output.weight")?)
+        } else {
+            None
+        };
+
+        // Per-layer weights.
+        let mut layers = Vec::with_capacity(cfg.n_layers);
+        for li in 0..cfg.n_layers {
+            let lp = |suf: &str| format!("blk.{li}.{suf}");
+
+            let attn_norm = Self::dequant(&gguf, &lp("attn_norm.weight"))?;
+            let ffn_norm = Self::dequant(&gguf, &lp("ffn_norm.weight"))?;
+
+            // MLA layout: kv_a_proj_with_mqa, kv_a_norm, kv_b_proj, q
+            // (or q_a_proj/q_a_norm/q_b_proj if q-lora is used), o.
+            let q_proj = Self::dequant_opt(&gguf, &lp("attn_q.weight"))?.unwrap_or_default();
+            let q_a_proj = Self::dequant_opt(&gguf, &lp("attn_q_a.weight"))?;
+            let q_a_norm = Self::dequant_opt(&gguf, &lp("attn_q_a_norm.weight"))?;
+            let q_b_proj = Self::dequant_opt(&gguf, &lp("attn_q_b.weight"))?;
+            let kv_a_proj_with_mqa = Self::dequant(&gguf, &lp("attn_kv_a_mqa.weight"))?;
+            let kv_a_norm = Self::dequant(&gguf, &lp("attn_kv_a_norm.weight"))?;
+            let kv_b_proj = Self::dequant(&gguf, &lp("attn_kv_b.weight"))?;
+            let o_proj = Self::dequant(&gguf, &lp("attn_output.weight"))?;
+
+            let mode = if li < cfg.first_k_dense_layers {
+                LayerMode::Dense {
+                    gate_w: Self::dequant(&gguf, &lp("ffn_gate.weight"))?,
+                    up_w: Self::dequant(&gguf, &lp("ffn_up.weight"))?,
+                    down_w: Self::dequant(&gguf, &lp("ffn_down.weight"))?,
+                }
+            } else {
+                // Modern GGUF MoE layout (llama.cpp post-2024-Q3):
+                //
+                //   blk.{li}.ffn_gate_exps.weight    — single 3D tensor,
+                //   blk.{li}.ffn_up_exps.weight        outer dim is expert id
+                //   blk.{li}.ffn_down_exps.weight
+                //
+                //   blk.{li}.ffn_gate_shexp.weight   — fused-shared MLPs
+                //   blk.{li}.ffn_up_shexp.weight       packed into one
+                //   blk.{li}.ffn_down_shexp.weight     wider FFN
+                //                                      (intermediate × n_shared)
+                //
+                // Older exports stored one tensor per expert; we no longer
+                // try those — if a model needs them, it predates dismantle.
+                let gate_logits_w = Self::dequant(&gguf, &lp("ffn_gate_inp.weight"))?;
+
+                let routed_fused = MoEFusedTensors {
+                    gate_w: Self::tensor_ref(&gguf, &lp("ffn_gate_exps.weight"))?,
+                    up_w: Self::tensor_ref(&gguf, &lp("ffn_up_exps.weight"))?,
+                    down_w: Self::tensor_ref(&gguf, &lp("ffn_down_exps.weight"))?,
+                };
+                let gate_exps = Self::fused_expert_refs(
+                    &gguf,
+                    &lp("ffn_gate_exps.weight"),
+                    cfg.n_routed_experts,
+                )?;
+                let up_exps = Self::fused_expert_refs(
+                    &gguf,
+                    &lp("ffn_up_exps.weight"),
+                    cfg.n_routed_experts,
+                )?;
+                let down_exps = Self::fused_expert_refs(
+                    &gguf,
+                    &lp("ffn_down_exps.weight"),
+                    cfg.n_routed_experts,
+                )?;
+
+                let routed: Vec<Expert> = gate_exps
+                    .into_iter()
+                    .zip(up_exps.into_iter())
+                    .zip(down_exps.into_iter())
+                    .map(|((g, u), d)| Expert {
+                        gate_w: g,
+                        up_w: u,
+                        down_w: d,
+                    })
+                    .collect();
+
+                // Shared experts are stored as ONE fused MLP whose
+                // intermediate width is `n_shared_experts * moe_intermediate`.
+                // Length-1 vec; same dispatch path as routed.
+                let (shared_fused, shared) = if cfg.n_shared_experts > 0 {
+                    let fused = MoEFusedTensors {
+                        gate_w: Self::tensor_ref(&gguf, &lp("ffn_gate_shexp.weight"))?,
+                        up_w: Self::tensor_ref(&gguf, &lp("ffn_up_shexp.weight"))?,
+                        down_w: Self::tensor_ref(&gguf, &lp("ffn_down_shexp.weight"))?,
+                    };
+                    (
+                        Some(fused.clone()),
+                        vec![Expert {
+                            gate_w: fused.gate_w.clone(),
+                            up_w: fused.up_w.clone(),
+                            down_w: fused.down_w.clone(),
+                        }],
+                    )
+                } else {
+                    (None, Vec::new())
+                };
+                LayerMode::MoE {
+                    gate_logits_w,
+                    routed_fused,
+                    routed,
+                    shared_fused,
+                    shared,
+                }
+            };
+
+            layers.push(Layer {
+                attn_norm,
+                ffn_norm,
+                q_proj,
+                q_a_proj,
+                q_a_norm,
+                q_b_proj,
+                kv_a_proj_with_mqa,
+                kv_a_norm,
+                kv_b_proj,
+                o_proj,
+                mode,
+                pinned: LayerPinned::default(),
+            });
+        }
+
+        let max_seq = config.max_seq_len.min(cfg.max_seq_len);
+        let kv = KvCache::new(
+            cfg.n_layers,
+            max_seq,
+            cfg.n_kv_heads,
+            cfg.qk_nope_head_dim + cfg.qk_rope_head_dim,
+        );
+        let sampler = Sampler::new(0);
+
+        // Metal context: built once per model, owned for the model's
+        // lifetime. Errors here (no GPU, shader compile failure) are
+        // soft — `None` falls back to CPU kernels in every dispatcher.
+        let metal_ctx = MetalContext::new().ok();
+        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
+        if let Some(profile) = config.kernel_profile.as_ref() {
+            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
+        }
+        let speculate_mode = if config.speculate && config.speculate_mode == SpeculateMode::Off {
+            SpeculateMode::ExactShared
+        } else {
+            config.speculate_mode
+        };
+        let verify_window = config.verify_window;
+
+        // WB weight-pinning: when Metal is alive, upload the LM-head
+        // fp16 matrix to a single Buffer that lives for the model's
+        // lifetime. The byte-slice `gemv_f16_metal` path was memcpying
+        // ~400 MB on every decode token; the pinned variant references
+        // this Buffer instead. Tied-embedding case (lm_head=None) uses
+        // the embed table — shape-compatible since both are
+        // (vocab × hidden) fp16.
+        let lm_head_buf = {
+            #[cfg(target_os = "macos")]
+            {
+                metal_ctx.as_ref().map(|ctx| {
+                    let w_f16: &[f16] = lm_head.as_deref().unwrap_or(&embed);
+                    ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(w_f16))
+                })
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = &metal_ctx;
+                None
+            }
+        };
+
+        let weights_mmap_buf = {
+            #[cfg(target_os = "macos")]
+            {
+                metal_ctx
+                    .as_ref()
+                    .map(|ctx| unsafe { ctx.new_buffer_no_copy(&gguf.mmap) })
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = &metal_ctx;
+                None
+            }
+        };
+
+        // WB per-layer attn-weight pinning: q_a_proj, q_b_proj,
+        // kv_a_proj_with_mqa, kv_b_proj, o_proj. Each is a fp32 matrix
+        // already eagerly dequanted (Vec<f32> on Layer). We upload
+        // each to its own Buffer once; the gemv_f32_attn dispatcher
+        // routes through the pinned path when these are populated.
+        // The Vec<f32> stays live as the storage owner; Buffer is just
+        // a Metal-side handle into the same memory layout.
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = metal_ctx.as_ref() {
+            for layer in layers.iter_mut() {
+                let upload =
+                    |w: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+                if let Some(qa) = layer.q_a_proj.as_deref() {
+                    layer.pinned.q_a_proj = Some(upload(qa));
+                }
+                if let Some(qb) = layer.q_b_proj.as_deref() {
+                    layer.pinned.q_b_proj = Some(upload(qb));
+                }
+                layer.pinned.kv_a_proj_with_mqa = Some(upload(&layer.kv_a_proj_with_mqa));
+                layer.pinned.kv_b_proj = Some(upload(&layer.kv_b_proj));
+                layer.pinned.o_proj = Some(upload(&layer.o_proj));
+                if !layer.q_proj.is_empty() {
+                    layer.pinned.q_proj = Some(upload(&layer.q_proj));
+                }
+            }
+        }
+
+        Ok(Self {
+            config: cfg,
+            tokenizer,
+            model_id,
+            gguf,
+            embed,
+            final_norm,
+            lm_head,
+            layers,
+            kv,
+            sampler,
+            _weights_path: weights.to_owned(),
+            metal_ctx,
+            lm_head_buf,
+            weights_mmap_buf,
+            kernel_profile: config.kernel_profile,
+            speculate_mode,
+            verify_window,
+        })
+    }
+
+    fn generate(
+        &mut self,
+        req: GenerateRequest,
+        sink: &mut dyn FnMut(StreamEvent),
+    ) -> Result<GenStats> {
+        use std::sync::atomic::Ordering;
+
+        if let Some(seed) = req.sampling.seed {
+            self.sampler = Sampler::new(seed);
+        }
+        if self.speculate_mode == SpeculateMode::ExactShared {
+            if req.sampling.temperature > 0.0 {
+                return Err(Error::Model(
+                    "--speculate exact-shared currently requires temperature=0".into(),
+                ));
+            }
+            if !matches!(self.verify_window, 4 | 8 | 16) {
+                return Err(Error::Model(format!(
+                    "--verify-window must be 4, 8, or 16 for exact-shared; got {}",
+                    self.verify_window
+                )));
+            }
+        }
+
+        let abort_set = |req: &GenerateRequest| -> bool {
+            req.abort
+                .as_ref()
+                .map(|f| f.load(Ordering::Relaxed))
+                .unwrap_or(false)
+        };
+        let stall_limit = std::time::Duration::from_millis(req.max_stall_ms);
+        let stall_active = req.max_stall_ms > 0;
+
+        let prompt_ids = self.tokenizer.encode(&req.prompt, true)?;
+        let prompt_len = prompt_ids.len();
+        let mut stats = GenStats {
+            prompt_tokens: prompt_len,
+            profile_id: self.kernel_profile.as_ref().map(|p| p.profile_id.clone()),
+            device_id: self
+                .kernel_profile
+                .as_ref()
+                .map(|p| p.device_name.clone())
+                .or_else(|| self.metal_ctx.as_ref().map(|ctx| ctx.device_name())),
+            ..Default::default()
+        };
+
+        // Prefill — process each prompt token sequentially. In Phase 0
+        // there is no batched prefill kernel; the win comes in Phase 2.
+        // Both the abort flag and the per-step watchdog are checked at
+        // each token boundary.
+        self.kv.reset();
+        let prefill_start = Instant::now();
+        let mut prefill_aborted = false;
+        for (i, &t) in prompt_ids.iter().enumerate() {
+            if abort_set(&req) {
+                prefill_aborted = true;
+                break;
+            }
+            let step_start = Instant::now();
+            let _ = self.forward_token(t, i)?;
+            if stall_active && step_start.elapsed() > stall_limit {
+                prefill_aborted = true;
+                break;
+            }
+        }
+        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        if prefill_aborted {
+            sink(StreamEvent::Done {
+                reason: StopReason::Aborted,
+                stats: stats.clone(),
+            });
+            return Ok(stats);
+        }
+
+        // Decode loop.
+        let decode_start = Instant::now();
+        let mut last_id = *prompt_ids.last().unwrap();
+        let mut produced = 0usize;
+        let mut reason = StopReason::MaxTokens;
+        let eos = self.tokenizer.eos_id();
+
+        for step in 0..req.max_new_tokens {
+            if abort_set(&req) {
+                reason = StopReason::Aborted;
+                break;
+            }
+            let pos = prompt_len + step;
+            let step_start = Instant::now();
+            let next_id = if self.profiled_greedy_enabled(&req.sampling) {
+                match self.forward_token_greedy(last_id, pos)? {
+                    Some(token) => token,
+                    None => {
+                        let mut logits = self.forward_token(last_id, pos)?;
+                        self.sampler.sample(&mut logits, &req.sampling)
+                    }
+                }
+            } else {
+                let mut logits = self.forward_token(last_id, pos)?;
+                self.sampler.sample(&mut logits, &req.sampling)
+            };
+            if stall_active && step_start.elapsed() > stall_limit {
+                reason = StopReason::Aborted;
+                break;
+            }
+            self.sampler.record(next_id);
+            let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+            sink(StreamEvent::Token { id: next_id, text });
+            produced += 1;
+            if Some(next_id) == eos {
+                reason = StopReason::Eos;
+                break;
+            }
+            last_id = next_id;
+        }
+        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        stats.completion_tokens = produced;
+        if self.speculate_mode == SpeculateMode::ExactShared {
+            // Bootstrap exact speculation: the verifier is still the
+            // producer, so correctness is identical. Later draft paths
+            // can replace this accounting without changing the public
+            // stats contract.
+            stats.draft_accepted = produced;
+            stats.draft_rejected = 0;
+        }
+        sink(StreamEvent::Done {
+            reason,
+            stats: stats.clone(),
+        });
+        Ok(stats)
+    }
+
+    fn model_id(&self) -> &str {
+        &self.model_id
+    }
+}
+
+impl DeepSeekV2 {
+    /// rmsnorm dispatcher: Metal when the context is present, CPU
+    /// otherwise. Mirrors `kernels::rmsnorm`'s signature so call
+    /// sites read the same.
+    fn rmsnorm_dispatch(&self, x: &[f32], weight: &[f32], eps: f32, out: &mut [f32]) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            return crate::kernels::rmsnorm_metal(ctx, x, weight, eps, out);
+        }
+        rmsnorm(x, weight, eps, out);
+        Ok(())
+    }
+
+    /// LM-head / embedding-tied GEMV dispatcher. `w_f16` is the
+    /// `(rows, cols)` row-major fp16 weight matrix. WB: prefers the
+    /// pinned variant when `lm_head_buf` is populated (Metal alive,
+    /// load-time upload happened); falls back to the byte-slice
+    /// `gemv_f16_metal` path otherwise; CPU off-macOS.
+    fn gemv_f16_dispatch(
+        &self,
+        w_f16: &[f16],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if let Some(buf) = &self.lm_head_buf {
+                return crate::kernels::gemv_f16_metal_pinned(ctx, buf, rows, cols, x, out);
+            }
+            let w_bytes = bytemuck::cast_slice::<f16, u8>(w_f16);
+            return crate::kernels::gemv_f16_metal(ctx, w_bytes, rows, cols, x, out);
+        }
+        crate::kernels::gemv_f16(w_f16, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// Attention fp32 GEMV dispatcher (used for o_proj + 4 MLA gemvs).
+    /// WB: prefers the pinned path when `pinned` is `Some` (caller has
+    /// the corresponding `LayerPinned` field populated); falls back to
+    /// the byte-slice `gemv_f32_attn_metal` when only Metal is alive
+    /// without pinning; CPU off-macOS.
+    fn gemv_f32_attn_dispatch(
+        &self,
+        w: &[f32],
+        pinned: Option<&PinnedBuffer>,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if let Some(buf) = pinned {
+                return crate::kernels::gemv_f32_attn_metal_pinned(ctx, buf, rows, cols, x, out);
+            }
+            return crate::kernels::gemv_f32_attn_metal(ctx, w, rows, cols, x, out);
+        }
+        let _ = pinned;
+        gemv_f32(w, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// MoE gate-logits fp32 GEMV dispatcher (`ffn_gate_inp`). Tiny but
+    /// frequent — once per token per MoE layer.
+    fn gemv_f32_moe_dispatch(
+        &self,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            return crate::kernels::gemv_f32_moe_metal(ctx, w, rows, cols, x, out);
+        }
+        gemv_f32(w, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// Routed/shared MoE expert matmul dispatcher. Reads the GGUF
+    /// quantized bytes directly when the Metal Q4_K_M-fused kernel is
+    /// available; otherwise dequants into `scratch` and runs CPU GEMV.
+    fn moe_expert_matmul_dispatch(
+        &self,
+        t: &TensorRef,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+        scratch: &mut Vec<f32>,
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if t.dtype == GgmlType::Q4_K {
+                let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+                return crate::kernels::gemv_q4_k_m(ctx, bytes, rows, cols, x, out);
+            }
+        }
+        self.dequant_ref_into(t, scratch)?;
+        gemv_f32(scratch, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// Stage B.4 — single-kernel fused MoE dispatch, gated by
+    /// `profile.selected.moe_schedule == "single-kernel"`.
+    /// Returns `Some(output)` when the kernel fires, `None` to fall through.
+    fn moe_block_fused_v2lite_dispatch(
+        &self,
+        routed_fused: &MoEFusedTensors,
+        shared_fused: Option<&MoEFusedTensors>,
+        routes: &[(usize, f32)],
+        x: &[f32],
+    ) -> Result<Option<Vec<f32>>> {
+        // Only activate when the profile explicitly requests single-kernel.
+        let wants_single = self
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.selected.moe_schedule == "single-kernel")
+            .unwrap_or(false);
+        if !wants_single {
+            return Ok(None);
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            let Some(ctx) = &self.metal_ctx else {
+                return Ok(None);
+            };
+            let Some(model_buf) = &self.weights_mmap_buf else {
+                return Ok(None);
+            };
+
+            // Dtype guards: must match the v2lite kernel's expectations.
+            if routed_fused.gate_w.dtype != GgmlType::Q4_K
+                || routed_fused.up_w.dtype != GgmlType::Q4_K
+                || routed_fused.down_w.dtype != GgmlType::Q8_0
+            {
+                return Ok(None);
+            }
+            let Some(shared) = shared_fused else {
+                return Ok(None);
+            };
+            if shared.gate_w.dtype != GgmlType::Q4_K
+                || shared.up_w.dtype != GgmlType::Q4_K
+                || shared.down_w.dtype != GgmlType::Q6_K
+            {
+                return Ok(None);
+            }
+
+            let mut route_ids = Vec::with_capacity(routes.len());
+            let mut route_weights = Vec::with_capacity(routes.len());
+            for &(eid, weight) in routes {
+                route_ids.push(eid as u32);
+                route_weights.push(weight);
+            }
+
+            let shared_mid = self.config.n_shared_experts * self.config.moe_intermediate;
+            let mut out = vec![0.0f32; self.config.hidden];
+            crate::kernels::moe_block_fused_v2lite_indexed_metal(
+                ctx,
+                model_buf,
+                routed_fused.gate_w.offset,
+                routed_fused.up_w.offset,
+                routed_fused.down_w.offset,
+                shared.gate_w.offset,
+                shared.up_w.offset,
+                shared.down_w.offset,
+                &route_ids,
+                &route_weights,
+                self.config.n_routed_experts,
+                self.config.hidden,
+                self.config.moe_intermediate,
+                shared_mid,
+                x,
+                &mut out,
+            )?;
+            return Ok(Some(out));
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (routed_fused, shared_fused, routes, x);
+            Ok(None)
+        }
+    }
+
+    fn moe_block_batched_dispatch(
+        &self,
+        routed_fused: &MoEFusedTensors,
+        routed: &[Expert],
+        shared_fused: Option<&MoEFusedTensors>,
+        routes: &[(usize, f32)],
+        x: &[f32],
+    ) -> Result<Option<Vec<f32>>> {
+        #[cfg(target_os = "macos")]
+        {
+            let Some(ctx) = &self.metal_ctx else {
+                return Ok(None);
+            };
+            let Some(model_buf) = &self.weights_mmap_buf else {
+                return Ok(None);
+            };
+            if routed_fused.gate_w.dtype != GgmlType::Q4_K
+                || routed_fused.up_w.dtype != GgmlType::Q4_K
+                || routed_fused.down_w.dtype != GgmlType::Q8_0
+            {
+                return Ok(None);
+            }
+            if let Some(shared) = shared_fused {
+                if shared.gate_w.dtype != GgmlType::Q4_K
+                    || shared.up_w.dtype != GgmlType::Q4_K
+                    || shared.down_w.dtype != GgmlType::Q6_K
+                {
+                    return Ok(None);
+                }
+            }
+
+            let mut route_ids = Vec::with_capacity(routes.len());
+            let mut route_weights = Vec::with_capacity(routes.len());
+            for &(eid, weight) in routes {
+                if eid >= routed.len() {
+                    return Err(Error::Model(format!(
+                        "route selected expert {eid}, but only {} experts are loaded",
+                        routed.len()
+                    )));
+                }
+                if eid > u32::MAX as usize {
+                    return Err(Error::Model(format!(
+                        "route selected expert {eid}, but Metal route ids are u32"
+                    )));
+                }
+                route_ids.push(eid as u32);
+                route_weights.push(weight);
+            }
+
+            let mut out = vec![0.0f32; self.config.hidden];
+            let (shared_gate_offset, shared_up_offset, shared_down_offset, shared_mid) =
+                if let Some(shared) = shared_fused {
+                    (
+                        Some(shared.gate_w.offset),
+                        Some(shared.up_w.offset),
+                        Some(shared.down_w.offset),
+                        self.config.n_shared_experts * self.config.moe_intermediate,
+                    )
+                } else {
+                    (None, None, None, 0)
+                };
+
+            crate::kernels::moe_block_batched_indexed_metal(
+                ctx,
+                model_buf,
+                routed_fused.gate_w.offset,
+                routed_fused.up_w.offset,
+                routed_fused.down_w.offset,
+                routed.len(),
+                &route_ids,
+                &route_weights,
+                shared_gate_offset,
+                shared_up_offset,
+                shared_down_offset,
+                self.config.hidden,
+                self.config.moe_intermediate,
+                shared_mid,
+                x,
+                &mut out,
+            )?;
+            Ok(Some(out))
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (routed_fused, routed, shared_fused, routes, x);
+            Ok(None)
+        }
+    }
+
+    /// One-token forward pass: takes a token id at absolute position
+    /// `pos`, advances the KV cache, returns the output logits vector.
+    fn forward_token(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        let x_norm = self.forward_token_final_norm(token, pos)?;
+        let h = self.config.hidden;
+
+        let mut logits = vec![0.0f32; self.config.vocab_size];
+        let w_f16: &[f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed, // tied to embedding
+        };
+        self.gemv_f16_dispatch(w_f16, self.config.vocab_size, h, &x_norm, &mut logits)?;
+        Ok(logits)
+    }
+
+    fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<Option<u32>> {
+        let x_norm = self.forward_token_final_norm(token, pos)?;
+        self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
+    }
+
+    fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        let h = self.config.hidden;
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+
+        for li in 0..self.config.n_layers {
+            // ---- Attention block ----
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(
+                &x,
+                &self.layers[li].attn_norm,
+                self.config.rms_norm_eps,
+                &mut x_norm,
+            )?;
+
+            let attn_out = self.attention(li, pos, &x_norm)?;
+            add_inplace(&mut x, &attn_out);
+
+            // ---- FFN block ----
+            self.rmsnorm_dispatch(
+                &x.clone(),
+                &self.layers[li].ffn_norm,
+                self.config.rms_norm_eps,
+                &mut x_norm,
+            )?;
+            let ffn_out = self.ffn(li, &x_norm)?;
+            add_inplace(&mut x, &ffn_out);
+        }
+
+        // Final norm + lm head.
+        let mut x_norm = vec![0.0f32; h];
+        self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
+        Ok(x_norm)
+    }
+
+    fn profiled_greedy_enabled(&self, sampling: &crate::engine::SamplingParams) -> bool {
+        sampling.temperature <= 0.0
+            && sampling.repetition_penalty == 1.0
+            && self
+                .kernel_profile
+                .as_ref()
+                .map(|p| p.selected.lm_head_schedule.contains("argmax"))
+                .unwrap_or(false)
+    }
+
+    fn gemv_f16_argmax_dispatch(&self, rows: usize, cols: usize, x: &[f32]) -> Result<Option<u32>> {
+        #[cfg(target_os = "macos")]
+        if let (Some(ctx), Some(buf)) = (&self.metal_ctx, &self.lm_head_buf) {
+            let token = crate::kernels::gemv_f16_argmax_metal_pinned(ctx, buf, rows, cols, x)?;
+            return Ok(Some(token));
+        }
+        let _ = (rows, cols, x);
+        Ok(None)
+    }
+
+    /// MLA attention for one token. Compresses K/V into the latent
+    /// stream, appends to KV cache, then runs softmax-attention against
+    /// the cache. The reference path expands KV back to full-head shape
+    /// before the attention math so it shares the MHA kernel.
+    fn attention(&mut self, li: usize, pos: usize, x: &[f32]) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let layer = &self.layers[li];
+        let head_dim_q = cfg.qk_nope_head_dim + cfg.qk_rope_head_dim;
+        let n_heads = cfg.n_heads;
+        let h = cfg.hidden;
+
+        // Q projection — either direct (q_proj) or via q-lora
+        // (q_a_proj → norm → q_b_proj). W1B (Phase 2 super-haul-1):
+        // q_a_proj / q_b_proj routed through gemv_f32_attn_dispatch so
+        // they hit Metal under cfg(target_os = "macos") + Some(ctx).
+        let mut q_full = vec![0.0f32; n_heads * head_dim_q];
+        if let (Some(qa), Some(qan), Some(qb)) = (&layer.q_a_proj, &layer.q_a_norm, &layer.q_b_proj)
+        {
+            let q_lora = cfg.q_lora_rank.max(1);
+            let mut t = vec![0.0f32; q_lora];
+            self.gemv_f32_attn_dispatch(qa, layer.pinned.q_a_proj.as_ref(), q_lora, h, x, &mut t)?;
+            let mut tn = vec![0.0f32; q_lora];
+            self.rmsnorm_dispatch(&t, qan, cfg.rms_norm_eps, &mut tn)?;
+            self.gemv_f32_attn_dispatch(
+                qb,
+                layer.pinned.q_b_proj.as_ref(),
+                n_heads * head_dim_q,
+                q_lora,
+                &tn,
+                &mut q_full,
+            )?;
+        } else if !layer.q_proj.is_empty() {
+            self.gemv_f32_attn_dispatch(
+                &layer.q_proj,
+                layer.pinned.q_proj.as_ref(),
+                n_heads * head_dim_q,
+                h,
+                x,
+                &mut q_full,
+            )?;
+        } else {
+            return Err(Error::Model(format!("layer {li}: no q projection found")));
+        }
+
+        // KV: project to (kv_lora_rank + qk_rope_head_dim), split into
+        // c_kv (latent) and k_pe (rope-positional shared K). W1B:
+        // kv_a_proj_with_mqa onto Metal via the attn dispatcher.
+        let kv_a_dim = cfg.kv_lora_rank + cfg.qk_rope_head_dim;
+        let mut kv_a = vec![0.0f32; kv_a_dim];
+        self.gemv_f32_attn_dispatch(
+            &layer.kv_a_proj_with_mqa,
+            layer.pinned.kv_a_proj_with_mqa.as_ref(),
+            kv_a_dim,
+            h,
+            x,
+            &mut kv_a,
+        )?;
+
+        let mut c_kv = kv_a[..cfg.kv_lora_rank].to_vec();
+        let mut k_pe = kv_a[cfg.kv_lora_rank..].to_vec();
+
+        let mut c_kv_n = vec![0.0f32; cfg.kv_lora_rank];
+        self.rmsnorm_dispatch(&c_kv, &layer.kv_a_norm, cfg.rms_norm_eps, &mut c_kv_n)?;
+        std::mem::swap(&mut c_kv, &mut c_kv_n);
+
+        // Apply rope to k_pe and to the rope half of each Q head.
+        rope_inplace(&mut k_pe, pos as u32, cfg.rope_theta);
+        for h_i in 0..n_heads {
+            let off = h_i * head_dim_q + cfg.qk_nope_head_dim;
+            let rope_part = &mut q_full[off..off + cfg.qk_rope_head_dim];
+            rope_inplace(rope_part, pos as u32, cfg.rope_theta);
+        }
+
+        // Reconstruct full K/V via kv_b_proj, which emits
+        // (n_heads * (qk_nope_head_dim + v_head_dim)) elements per token.
+        // W1B: kv_b_proj onto Metal via the attn dispatcher.
+        let kv_b_out_per_head = cfg.qk_nope_head_dim + cfg.v_head_dim;
+        let mut kv_b_out = vec![0.0f32; n_heads * kv_b_out_per_head];
+        self.gemv_f32_attn_dispatch(
+            &layer.kv_b_proj,
+            layer.pinned.kv_b_proj.as_ref(),
+            n_heads * kv_b_out_per_head,
+            cfg.kv_lora_rank,
+            &c_kv,
+            &mut kv_b_out,
+        )?;
+
+        // Append per-head K/V into the cache. Cache slot is sized to
+        // (n_kv_heads, head_dim_q) — for MLA we set n_kv_heads=n_heads
+        // and head_dim=head_dim_q. v_head_dim ≠ head_dim_q is fine; we
+        // pack the v_head_dim values into the V cache slot, padding
+        // with zeros if v_head_dim < head_dim_q.
+        let stride = cfg.n_kv_heads * head_dim_q;
+        let mut k_token = vec![0.0f32; stride];
+        let mut v_token = vec![0.0f32; stride];
+        for h_i in 0..n_heads {
+            let kv_b_head = &kv_b_out[h_i * kv_b_out_per_head..(h_i + 1) * kv_b_out_per_head];
+            let kv_h = if cfg.n_kv_heads == n_heads {
+                h_i
+            } else {
+                h_i * cfg.n_kv_heads / n_heads
+            };
+            // K = nope_part || k_pe (k_pe shared across heads)
+            let k_dst = &mut k_token[kv_h * head_dim_q..(kv_h + 1) * head_dim_q];
+            for i in 0..cfg.qk_nope_head_dim {
+                k_dst[i] = kv_b_head[i];
+            }
+            for i in 0..cfg.qk_rope_head_dim {
+                k_dst[cfg.qk_nope_head_dim + i] = k_pe[i];
+            }
+            // V = v_head_dim slice, padded.
+            let v_dst = &mut v_token[kv_h * head_dim_q..(kv_h + 1) * head_dim_q];
+            for i in 0..cfg.v_head_dim.min(head_dim_q) {
+                v_dst[i] = kv_b_head[cfg.qk_nope_head_dim + i];
+            }
+        }
+        // We append K/V for every layer at once; here we have only
+        // this layer's, so do a per-layer append.
+        let off = self.kv.seq_len * stride;
+        if li == 0 {
+            // First layer's append "claims" the slot for this token.
+            if self.kv.seq_len >= self.kv.max_seq {
+                return Err(Error::Model("kv cache full".into()));
+            }
+        }
+        self.kv.keys[li][off..off + stride].copy_from_slice(&k_token);
+        self.kv.values[li][off..off + stride].copy_from_slice(&v_token);
+        if li + 1 == self.config.n_layers {
+            self.kv.seq_len += 1;
+        }
+
+        // Run MHA against the (this-layer) cache.
+        let seq_len = self.kv.seq_len.max(1); // we just appended → at least 1
+        let mut attn_out = vec![0.0f32; n_heads * head_dim_q];
+        crate::attn::mha_decode_step(
+            &q_full,
+            &self.kv.keys[li][..seq_len * stride],
+            &self.kv.values[li][..seq_len * stride],
+            n_heads,
+            cfg.n_kv_heads,
+            head_dim_q,
+            seq_len,
+            &mut attn_out,
+        )?;
+
+        // Project V dim slice through o_proj. The o_proj takes
+        // (n_heads * v_head_dim) → hidden; we slice each head's first
+        // v_head_dim entries from attn_out (padded zeros above don't
+        // affect anything).
+        let mut concat = vec![0.0f32; n_heads * cfg.v_head_dim];
+        for h_i in 0..n_heads {
+            let src = &attn_out[h_i * head_dim_q..h_i * head_dim_q + cfg.v_head_dim];
+            concat[h_i * cfg.v_head_dim..(h_i + 1) * cfg.v_head_dim].copy_from_slice(src);
+        }
+        let mut out = vec![0.0f32; h];
+        self.gemv_f32_attn_dispatch(
+            &layer.o_proj,
+            layer.pinned.o_proj.as_ref(),
+            h,
+            n_heads * cfg.v_head_dim,
+            &concat,
+            &mut out,
+        )?;
+        Ok(out)
+    }
+
+    fn ffn(&self, li: usize, x: &[f32]) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let layer = &self.layers[li];
+        let mut out = vec![0.0f32; cfg.hidden];
+
+        match &layer.mode {
+            LayerMode::Dense {
+                gate_w,
+                up_w,
+                down_w,
+            } => {
+                // Dense FFN intermediate is *not* the MoE intermediate;
+                // for DeepSeek-V2-Lite they're 10944 vs 1408.
+                let mid = cfg.ffn_intermediate;
+                let mut g = vec![0.0f32; mid];
+                let mut u = vec![0.0f32; mid];
+                let mut a = vec![0.0f32; mid];
+                gemv_f32(gate_w, mid, cfg.hidden, x, &mut g);
+                gemv_f32(up_w, mid, cfg.hidden, x, &mut u);
+                silu_mul(&g, &u, &mut a);
+                gemv_f32(down_w, cfg.hidden, mid, &a, &mut out);
+            }
+            LayerMode::MoE {
+                gate_logits_w,
+                routed_fused,
+                routed,
+                shared_fused,
+                shared,
+            } => {
+                let mut logits = vec![0.0f32; cfg.n_routed_experts];
+                self.gemv_f32_moe_dispatch(
+                    gate_logits_w,
+                    cfg.n_routed_experts,
+                    cfg.hidden,
+                    x,
+                    &mut logits,
+                )?;
+                let routes = topk_gate(&mut logits, cfg.top_k_routed, true);
+
+                // Single-kernel fused path (profile.selected.moe_schedule == "single-kernel").
+                if let Some(fused) = self.moe_block_fused_v2lite_dispatch(
+                    routed_fused,
+                    shared_fused.as_ref(),
+                    &routes,
+                    x,
+                )? {
+                    out = fused;
+                    return Ok(out);
+                }
+
+                // Batched indexed one-command-buffer path (current default).
+                if let Some(batched) = self.moe_block_batched_dispatch(
+                    routed_fused,
+                    routed,
+                    shared_fused.as_ref(),
+                    &routes,
+                    x,
+                )? {
+                    out = batched;
+                    return Ok(out);
+                }
+
+                // Reusable scratch buffers — sized for the routed-expert
+                // intermediate (1408 in this model). Reallocated below
+                // for the shared expert (intermediate = 2816).
+                let mid = cfg.moe_intermediate;
+                let mut w_buf = Vec::<f32>::with_capacity(mid * cfg.hidden);
+                let mut g_buf = vec![0.0f32; mid];
+                let mut u_buf = vec![0.0f32; mid];
+                let mut a_buf = vec![0.0f32; mid];
+                let mut tmp = vec![0.0f32; cfg.hidden];
+
+                for &(eid, weight) in &routes {
+                    let e = &routed[eid];
+                    self.moe_expert_matmul_dispatch(
+                        &e.gate_w, mid, cfg.hidden, x, &mut g_buf, &mut w_buf,
+                    )?;
+                    self.moe_expert_matmul_dispatch(
+                        &e.up_w, mid, cfg.hidden, x, &mut u_buf, &mut w_buf,
+                    )?;
+                    silu_mul(&g_buf, &u_buf, &mut a_buf);
+                    self.moe_expert_matmul_dispatch(
+                        &e.down_w, cfg.hidden, mid, &a_buf, &mut tmp, &mut w_buf,
+                    )?;
+                    for i in 0..cfg.hidden {
+                        out[i] += weight * tmp[i];
+                    }
+                }
+
+                // Shared expert (fused; intermediate = n_shared * moe_int).
+                if let Some(s) = shared.first() {
+                    let smid = cfg.n_shared_experts * cfg.moe_intermediate;
+                    let mut sg = vec![0.0f32; smid];
+                    let mut su = vec![0.0f32; smid];
+                    let mut sa = vec![0.0f32; smid];
+                    self.moe_expert_matmul_dispatch(
+                        &s.gate_w, smid, cfg.hidden, x, &mut sg, &mut w_buf,
+                    )?;
+                    self.moe_expert_matmul_dispatch(
+                        &s.up_w, smid, cfg.hidden, x, &mut su, &mut w_buf,
+                    )?;
+                    silu_mul(&sg, &su, &mut sa);
+                    self.moe_expert_matmul_dispatch(
+                        &s.down_w, cfg.hidden, smid, &sa, &mut tmp, &mut w_buf,
+                    )?;
+                    for i in 0..cfg.hidden {
+                        out[i] += tmp[i];
+                    }
+                }
+            }
+        }
+        Ok(out)
+    }
+}
+
+/// Returns true if the GGUF metadata's architecture is one of the
+/// DeepSeek-V2 family identifiers.
+pub fn is_deepseek_arch(t: &TensorInfo) -> bool {
+    t.name.contains("kv_lora_rank") || t.name.contains("attn_kv_a_mqa")
+}

@@ -1,0 +1,25 @@
+[package]
+name = "dismantle"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "dismantle CLI — Apple Silicon MoE inference"
+
+[[bin]]
+name = "dismantle"
+path = "src/main.rs"
+
+[dependencies]
+dismantle-core = { path = "../dismantle-core" }
+dismantle-serve = { path = "../dismantle-serve" }
+dismantle-bench = { path = "../dismantle-bench" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+ctrlc = { workspace = true }
+serde_json = { workspace = true }

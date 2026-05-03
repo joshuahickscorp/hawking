@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "profile_id": "kp-b13af6eeb8dd71224601fc12",
+  "profile_name": "m3-pro-18gb",
+  "model_id": "DeepSeek-V2-Lite-Chat",
+  "model_arch": "deepseek2",
+  "tensor_layout_hash": "6540aaa223c931038ec4ddde",
+  "device_name": "Apple M3 Pro",
+  "shader_hash": "6004c38d8c99fa4ef3b52a69",
+  "selected": {
+    "id": "gpu-greedy-frontier",
+    "moe_schedule": "indexed-no-pack-one-cb",
+    "mla_schedule": "metal-mla-planned",
+    "lm_head_schedule": "metal-argmax-token-only",
+    "command_buffering": "layer-cb-planned",
+    "gpu_buffer_reuse": "decode-arena-planned",
+    "deterministic_rank": 20
+  },
+  "evidence": {
+    "profile": "m3-pro-18gb",
+    "max_hours": 8.0,
+    "prompt_count": 50,
+    "token_lengths": [
+      16,
+      64,
+      256
+    ],
+    "candidate_count": 5,
+    "measurements": [
+      {
+        "variant_id": "gpu-greedy-frontier",
+        "deterministic_rank": 20,
+        "score": 157,
+        "status": "planned"
+      },
+      {
+        "variant_id": "persistent-flashmoe-research",
+        "deterministic_rank": 10,
+        "score": 150,
+        "status": "planned"
+      },
+      {
+        "variant_id": "single-kernel-fused",
+        "deterministic_rank": 25,
+        "score": 105,
+        "status": "candidate"
+      },
+      {
+        "variant_id": "one-command-buffer-moe",
+        "deterministic_rank": 30,
+        "score": 103,
+        "status": "candidate"
+      },
+      {
+        "variant_id": "stable-baseline",
+        "deterministic_rank": 40,
+        "score": 60,
+        "status": "candidate"
+      }
+    ],
+    "target_tps": 60.0,
+    "notes": [
+      "deterministic lexicographic candidate order",
+      "temperature=0 greedy validation corpus",
+      "runtime ignores unsupported entries and falls back safely",
+      "shader_hash updated for Stage B.4 (moe_block_fused_v2lite + indexed variant)"
+    ]
+  }
+}

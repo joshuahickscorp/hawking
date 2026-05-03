@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-30T03:18:00Z",
+  "gate": "W3.2",
+  "exit_code": 124,
+  "validator_kind": "bench-decode",
+  "dry_run": false,
+  "timed_out": true,
+  "timeout_s": 2400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/W3.2/stdout.log",
+  "stdout_lines": 0,
+  "stdout_truncated": false
+}

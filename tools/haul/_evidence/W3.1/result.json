@@ -1,0 +1,16 @@
+{
+  "model_id": "deepseek-v2-lite-q4",
+  "suite": "decode",
+  "trials": 1,
+  "results": {
+    "backend": "dismantle",
+    "decode_tps": 0.48143901965655883,
+    "tokens_per_sec_max": 0.48143901965655883,
+    "tokens_per_sec_median": 0.48143901965655883,
+    "tokens_per_sec_min": 0.48143901965655883,
+    "trials": [
+      0.48143901965655883
+    ],
+    "version": null
+  }
+}

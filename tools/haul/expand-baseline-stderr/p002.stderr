@@ -1,0 +1,2 @@
+
+[stats] reason=max_tokens prompt=6 completion=3 prefill_ms=871187.4 decode_ms=377489.9 dec_tps=0.01
