@@ -184,6 +184,7 @@ mod imp {
             // dequant / gemm variants
             "dequant_q8_0" => "dequant_q8_0",
             "gemm_q4_k_m_fused" => "gemm_q4_k_m_fused",
+            "gemm_q4_k_m_fused_simd" => "gemm_q4_k_m_fused_simd",
             "gemv_f32_moe" => "gemv_f32_moe",
             "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
             // indexed moe batched gemm variants
