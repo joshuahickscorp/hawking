@@ -17,7 +17,7 @@ use crate::engine::{
 };
 use crate::gguf::{GgmlType, GgufFile, TensorInfo};
 use crate::kernels::{add_inplace, embed_lookup, gemv_f32, rmsnorm, rope_inplace, silu_mul};
-use crate::metal::{MetalContext, PinnedBuffer};
+use crate::metal::{DecodeArena, MetalContext, PinnedBuffer};
 use crate::moe::topk_gate;
 use crate::profile::KernelProfile;
 use crate::quant;
@@ -132,6 +132,11 @@ pub struct DeepSeekV2 {
     pub layers: Vec<Layer>,
 
     pub kv: KvCache,
+    /// Wedge 1 — compressed MLA KV cache. Only allocated when
+    /// `kernel_profile.selected.mla_schedule == "metal-mla"`. Shape:
+    /// mla_c_kv[li][t * kv_lora_rank .. (t+1) * kv_lora_rank].
+    pub mla_c_kv: Vec<Vec<f32>>,
+    pub mla_k_pe: Vec<Vec<f32>>,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
 
@@ -158,6 +163,12 @@ pub struct DeepSeekV2 {
     pub kernel_profile: Option<KernelProfile>,
     pub speculate_mode: SpeculateMode,
     pub verify_window: usize,
+
+    /// Wedge 4 — Decode-arena: pre-allocated Metal buffers for the MLA
+    /// attention hot path. Allocated once at load time; reused across all
+    /// decode steps. Eliminates per-dispatch `new_buffer` overhead.
+    /// `Some` only when Metal is available and `gpu_buffer_reuse == "decode-arena"`.
+    pub decode_arena: Option<DecodeArena>,
 }
 
 /// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
@@ -488,6 +499,24 @@ impl Engine for DeepSeekV2 {
             cfg.n_kv_heads,
             cfg.qk_nope_head_dim + cfg.qk_rope_head_dim,
         );
+
+        let mla_metal = config
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
+            .unwrap_or(false);
+        let (mla_c_kv, mla_k_pe) = if mla_metal {
+            let c_kv = (0..cfg.n_layers)
+                .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
+                .collect();
+            let k_pe = (0..cfg.n_layers)
+                .map(|_| vec![0.0f32; max_seq * cfg.qk_rope_head_dim])
+                .collect();
+            (c_kv, k_pe)
+        } else {
+            (Vec::new(), Vec::new())
+        };
+
         let sampler = Sampler::new(0);
 
         // Metal context: built once per model, owned for the model's
@@ -568,6 +597,35 @@ impl Engine for DeepSeekV2 {
             }
         }
 
+        // Wedge 4 — Decode-arena: allocate pre-warmed Metal buffers when
+        // the selected profile requests gpu_buffer_reuse == "decode-arena".
+        #[cfg(target_os = "macos")]
+        let decode_arena = {
+            let wants_arena = config
+                .kernel_profile
+                .as_ref()
+                .map(|p| p.selected.gpu_buffer_reuse == "decode-arena")
+                .unwrap_or(false);
+            if wants_arena {
+                metal_ctx.as_ref().map(|ctx| {
+                    DecodeArena::new(
+                        ctx,
+                        cfg.n_heads,
+                        cfg.qk_nope_head_dim,
+                        cfg.qk_rope_head_dim,
+                        cfg.v_head_dim,
+                        cfg.kv_lora_rank,
+                        cfg.hidden,
+                        cfg.max_seq_len,
+                    )
+                })
+            } else {
+                None
+            }
+        };
+        #[cfg(not(target_os = "macos"))]
+        let decode_arena: Option<DecodeArena> = None;
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -578,6 +636,8 @@ impl Engine for DeepSeekV2 {
             lm_head,
             layers,
             kv,
+            mla_c_kv,
+            mla_k_pe,
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
@@ -586,6 +646,7 @@ impl Engine for DeepSeekV2 {
             kernel_profile: config.kernel_profile,
             speculate_mode,
             verify_window,
+            decode_arena,
         })
     }
 
@@ -640,6 +701,12 @@ impl Engine for DeepSeekV2 {
         // Both the abort flag and the per-step watchdog are checked at
         // each token boundary.
         self.kv.reset();
+        for v in &mut self.mla_c_kv {
+            v.fill(0.0);
+        }
+        for v in &mut self.mla_k_pe {
+            v.fill(0.0);
+        }
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
         for (i, &t) in prompt_ids.iter().enumerate() {
@@ -833,6 +900,98 @@ impl DeepSeekV2 {
         self.dequant_ref_into(t, scratch)?;
         gemv_f32(scratch, rows, cols, x, out);
         Ok(())
+    }
+
+    /// Wedge 2 — two-stage fused MoE dispatch, gated by
+    /// `profile.selected.moe_schedule == "two-stage"`.
+    /// Returns `Some(output)` when the kernel fires, `None` to fall through.
+    fn moe_block_two_stage_dispatch(
+        &self,
+        routed_fused: &MoEFusedTensors,
+        shared_fused: Option<&MoEFusedTensors>,
+        routes: &[(usize, f32)],
+        x: &[f32],
+    ) -> Result<Option<Vec<f32>>> {
+        let wants_two_stage = self
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.selected.moe_schedule == "two-stage")
+            .unwrap_or(false);
+        if !wants_two_stage {
+            return Ok(None);
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            let Some(ctx) = &self.metal_ctx else {
+                return Ok(None);
+            };
+
+            // Dtype guards: same quant scheme as v2lite.
+            if routed_fused.gate_w.dtype != GgmlType::Q4_K
+                || routed_fused.up_w.dtype != GgmlType::Q4_K
+                || routed_fused.down_w.dtype != GgmlType::Q8_0
+            {
+                return Ok(None);
+            }
+            let Some(shared) = shared_fused else {
+                return Ok(None);
+            };
+            if shared.gate_w.dtype != GgmlType::Q4_K
+                || shared.up_w.dtype != GgmlType::Q4_K
+                || shared.down_w.dtype != GgmlType::Q6_K
+            {
+                return Ok(None);
+            }
+
+            let mmap = &self.gguf.mmap;
+            let routed_gate = &mmap[routed_fused.gate_w.offset
+                ..routed_fused.gate_w.offset + routed_fused.gate_w.byte_size];
+            let routed_up = &mmap
+                [routed_fused.up_w.offset..routed_fused.up_w.offset + routed_fused.up_w.byte_size];
+            let routed_down = &mmap[routed_fused.down_w.offset
+                ..routed_fused.down_w.offset + routed_fused.down_w.byte_size];
+            let shared_gate =
+                &mmap[shared.gate_w.offset..shared.gate_w.offset + shared.gate_w.byte_size];
+            let shared_up = &mmap[shared.up_w.offset..shared.up_w.offset + shared.up_w.byte_size];
+            let shared_down =
+                &mmap[shared.down_w.offset..shared.down_w.offset + shared.down_w.byte_size];
+
+            let mut route_ids = Vec::with_capacity(routes.len());
+            let mut route_weights = Vec::with_capacity(routes.len());
+            for &(eid, weight) in routes {
+                route_ids.push(eid as u32);
+                route_weights.push(weight);
+            }
+
+            let n_shared = self.config.n_shared_experts;
+            let shared_mid = n_shared * self.config.moe_intermediate;
+            let mut out = vec![0.0f32; self.config.hidden];
+            crate::kernels::moe_block_two_stage_metal(
+                ctx,
+                routed_gate,
+                routed_up,
+                routed_down,
+                shared_gate,
+                shared_up,
+                shared_down,
+                &route_ids,
+                &route_weights,
+                self.config.n_routed_experts,
+                n_shared,
+                self.config.hidden,
+                self.config.moe_intermediate,
+                shared_mid,
+                x,
+                &mut out,
+            )?;
+            return Ok(Some(out));
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (routed_fused, shared_fused, routes, x);
+            Ok(None)
+        }
     }
 
     /// Stage B.4 — single-kernel fused MoE dispatch, gated by
@@ -1154,6 +1313,136 @@ impl DeepSeekV2 {
             rope_inplace(rope_part, pos as u32, cfg.rope_theta);
         }
 
+        // Wedge 1 — Metal MLA decode path.
+        // When active, skip the kv_b_proj expand + mha_decode_step and
+        // instead append (c_kv, k_pe) to the compressed cache, then
+        // dispatch the mla_decode_kernel which operates on the compressed
+        // representation for the whole sequence.
+        if !self.mla_c_kv.is_empty() {
+            if li == 0 && self.kv.seq_len >= self.kv.max_seq {
+                return Err(Error::Model("kv cache full".into()));
+            }
+            let pos_c = self.kv.seq_len * cfg.kv_lora_rank;
+            self.mla_c_kv[li][pos_c..pos_c + cfg.kv_lora_rank].copy_from_slice(&c_kv);
+            let pos_k = self.kv.seq_len * cfg.qk_rope_head_dim;
+            self.mla_k_pe[li][pos_k..pos_k + cfg.qk_rope_head_dim].copy_from_slice(&k_pe);
+            if li + 1 == cfg.n_layers {
+                self.kv.seq_len += 1;
+            }
+
+            let seq_len = self.kv.seq_len.max(1);
+            let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+
+            #[cfg(target_os = "macos")]
+            if let Some(ctx) = self.metal_ctx.as_ref() {
+                let kv_b_buf = layer.pinned.kv_b_proj.as_ref().ok_or_else(|| {
+                    Error::Model(format!(
+                        "layer {li}: kv_b_proj not pinned for MLA Metal path"
+                    ))
+                })?;
+
+                let layer_cb = self
+                    .kernel_profile
+                    .as_ref()
+                    .map(|p| p.selected.command_buffering == "layer-cb")
+                    .unwrap_or(false);
+
+                // Wedge 4 — Decode-arena: when gpu_buffer_reuse == "decode-arena"
+                // AND layer_cb AND o_proj pinned, use pre-allocated arena buffers.
+                // Saves one allocation+free per attention layer per token.
+                if layer_cb {
+                    if let (Some(o_proj_buf), Some(arena)) =
+                        (layer.pinned.o_proj.as_ref(), self.decode_arena.as_ref())
+                    {
+                        arena.write_q(&q_full);
+                        MetalContext::write_buffer_bytes(
+                            &arena.c_kv,
+                            bytemuck::cast_slice(&self.mla_c_kv[li][..seq_len * cfg.kv_lora_rank]),
+                        );
+                        MetalContext::write_buffer_bytes(
+                            &arena.k_pe,
+                            bytemuck::cast_slice(
+                                &self.mla_k_pe[li][..seq_len * cfg.qk_rope_head_dim],
+                            ),
+                        );
+                        let mut out = vec![0.0f32; h];
+                        crate::kernels::mla_decode_and_o_proj_arena_metal(
+                            ctx,
+                            arena,
+                            kv_b_buf,
+                            o_proj_buf,
+                            n_heads,
+                            cfg.qk_nope_head_dim,
+                            cfg.qk_rope_head_dim,
+                            cfg.v_head_dim,
+                            cfg.kv_lora_rank,
+                            seq_len,
+                            scale,
+                            h,
+                            &mut out,
+                        )?;
+                        return Ok(out);
+                    }
+                }
+
+                // Wedge 3 — Layer-CB (no arena): batch mla_decode + o_proj into
+                // one command buffer, saving one commit+wait per attention layer.
+                if layer_cb {
+                    if let Some(o_proj_buf) = layer.pinned.o_proj.as_ref() {
+                        let mut out = vec![0.0f32; h];
+                        crate::kernels::mla_decode_and_o_proj_metal(
+                            ctx,
+                            &q_full,
+                            &self.mla_c_kv[li][..seq_len * cfg.kv_lora_rank],
+                            &self.mla_k_pe[li][..seq_len * cfg.qk_rope_head_dim],
+                            kv_b_buf,
+                            o_proj_buf,
+                            n_heads,
+                            cfg.qk_nope_head_dim,
+                            cfg.qk_rope_head_dim,
+                            cfg.v_head_dim,
+                            cfg.kv_lora_rank,
+                            seq_len,
+                            scale,
+                            h,
+                            &mut out,
+                        )?;
+                        return Ok(out);
+                    }
+                }
+
+                let mut attn_out = vec![0.0f32; n_heads * cfg.v_head_dim];
+                crate::kernels::mla_decode_metal(
+                    ctx,
+                    &q_full,
+                    &self.mla_c_kv[li][..seq_len * cfg.kv_lora_rank],
+                    &self.mla_k_pe[li][..seq_len * cfg.qk_rope_head_dim],
+                    kv_b_buf,
+                    n_heads,
+                    cfg.qk_nope_head_dim,
+                    cfg.qk_rope_head_dim,
+                    cfg.v_head_dim,
+                    cfg.kv_lora_rank,
+                    seq_len,
+                    scale,
+                    &mut attn_out,
+                )?;
+                let mut out = vec![0.0f32; h];
+                self.gemv_f32_attn_dispatch(
+                    &layer.o_proj,
+                    layer.pinned.o_proj.as_ref(),
+                    h,
+                    n_heads * cfg.v_head_dim,
+                    &attn_out,
+                    &mut out,
+                )?;
+                return Ok(out);
+            }
+            return Err(Error::Model(
+                "mla_decode: Metal context unavailable on this platform".into(),
+            ));
+        }
+
         // Reconstruct full K/V via kv_b_proj, which emits
         // (n_heads * (qk_nope_head_dim + v_head_dim)) elements per token.
         // W1B: kv_b_proj onto Metal via the attn dispatcher.
@@ -1285,6 +1574,17 @@ impl DeepSeekV2 {
                     &mut logits,
                 )?;
                 let routes = topk_gate(&mut logits, cfg.top_k_routed, true);
+
+                // Wedge 2: two-stage fused path (profile.selected.moe_schedule == "two-stage").
+                if let Some(two_stage) = self.moe_block_two_stage_dispatch(
+                    routed_fused,
+                    shared_fused.as_ref(),
+                    &routes,
+                    x,
+                )? {
+                    out = two_stage;
+                    return Ok(out);
+                }
 
                 // Single-kernel fused path (profile.selected.moe_schedule == "single-kernel").
                 if let Some(fused) = self.moe_block_fused_v2lite_dispatch(

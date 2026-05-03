@@ -222,6 +222,16 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena-planned".into(),
             deterministic_rank: 25,
         },
+        // v0.2.0 — all implemented wedges: two-stage MoE + Metal MLA + layer-CB + decode-arena.
+        KernelVariant {
+            id: "v0.2.0-metal-all".into(),
+            moe_schedule: "two-stage".into(),
+            mla_schedule: "metal-mla".into(),
+            lm_head_schedule: "metal-argmax-token-only".into(),
+            command_buffering: "layer-cb".into(),
+            gpu_buffer_reuse: "decode-arena".into(),
+            deterministic_rank: 5,
+        },
     ];
     variants.sort_by(|a, b| a.id.cmp(&b.id));
     variants
@@ -270,6 +280,8 @@ fn variant_score(v: &KernelVariant) -> u64 {
     let mut score = 100_u64.saturating_sub(v.deterministic_rank as u64);
     if v.moe_schedule == "single-kernel" {
         score += 30;
+    } else if v.moe_schedule == "two-stage" {
+        score += 28;
     } else if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
@@ -366,7 +378,8 @@ mod tests {
                 "one-command-buffer-moe",
                 "persistent-flashmoe-research",
                 "single-kernel-fused",
-                "stable-baseline"
+                "stable-baseline",
+                "v0.2.0-metal-all",
             ]
         );
     }
@@ -377,9 +390,10 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
+        // v0.2.0-metal-all has highest score: (100-5)+28+20+20+12 = 175
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "gpu-greedy-frontier"
+            "v0.2.0-metal-all"
         );
     }
 }

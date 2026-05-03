@@ -457,7 +457,7 @@ dependencies = [
 
 [[package]]
 name = "dismantle"
-version = "0.0.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "dismantle-bench"
-version = "0.0.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -486,7 +486,7 @@ dependencies = [
 
 [[package]]
 name = "dismantle-core"
-version = "0.0.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -511,7 +511,7 @@ dependencies = [
 
 [[package]]
 name = "dismantle-serve"
-version = "0.0.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",

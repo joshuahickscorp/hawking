@@ -145,6 +145,15 @@ mod imp {
             )
         }
 
+        /// Write `bytes` into an existing shared buffer. The buffer must
+        /// have been allocated with `new_buffer` and have capacity ≥ `bytes.len()`.
+        /// On unified-memory Apple Silicon this is a plain `memcpy` — no GPU
+        /// round-trip; the data is visible to subsequent GPU dispatches immediately.
+        pub fn write_buffer_bytes(buf: &Buffer, bytes: &[u8]) {
+            let ptr = buf.contents() as *mut u8;
+            unsafe { ptr.copy_from_nonoverlapping(bytes.as_ptr(), bytes.len()) };
+        }
+
         /// **Zero-copy** buffer view over a borrowed mmap region.
         ///
         /// SAFETY: caller guarantees `bytes` outlives any Metal command
@@ -260,3 +269,6 @@ pub use imp::{MetalContext, PinnedBuffer};
 
 #[cfg(target_os = "macos")]
 pub use imp::CommandBatch;
+
+pub mod decode_arena;
+pub use decode_arena::DecodeArena;
