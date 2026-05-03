@@ -1,0 +1,70 @@
+# Phase 1 — 50-prompt regression suite for B5.
+# Format: pNNN:<prompt text> — parsed by tools/haul/expand-baseline.sh.
+# Lines beginning with `#` and empty lines are skipped.
+#
+# IDs p001..p012 match _phase1_token_baseline_expanded.hashes verbatim
+# so this file is a strict superset of the existing 12-prompt baseline.
+# Five categories, ten each:
+#   factual recall, code, math, creative continuation, reasoning.
+
+# --- carry-over (p001..p012) ---
+p001:Once upon a time
+p002:def quicksort(arr):
+p003:The capital of France is
+p004:To be or not to be
+p005:import numpy as np
+p006:The quick brown fox
+p007:SELECT * FROM users WHERE
+p008:Roses are red, violets are
+p009:fn main() {
+p010:Translate to French: hello
+p011:Q: What is 2+2? A:
+p012:Markdown header
+
+# --- factual recall (p013..p020) ---
+p013:The largest planet in our solar system is
+p014:The chemical formula for water is
+p015:Albert Einstein was born in the year
+p016:The speed of light is approximately
+p017:The deepest ocean on Earth is the
+p018:Mount Everest is located on the border of
+p019:The author of Hamlet was
+p020:DNA is short for
+
+# --- code (p021..p026) ---
+p021:class LinkedList:
+p022:function fibonacci(n) {
+p023:try {
+p024:pub struct User {
+p025:console.log("hello,
+p026:# Python list comprehension:
+
+# --- math (p027..p035) ---
+p027:12 times 8 equals
+p028:The square root of 144 is
+p029:100 divided by 4 is
+p030:7 + 3 * 2 =
+p031:Pi to five decimal places is
+p032:Solve x^2 + 5x + 6 = 0, x =
+p033:Log base 10 of 100 is
+p034:The derivative of x squared is
+p035:1 + 1 =
+
+# --- creative continuation (p036..p041) ---
+p036:In a galaxy far, far
+p037:It was the best of times,
+p038:The wind howled through the
+p039:She opened the letter and
+p040:All happy families are
+p041:Call me Ishmael.
+
+# --- reasoning (p042..p050) ---
+p042:If all roses are flowers and some flowers fade, then some roses
+p043:Three apples cost six dollars. One apple costs
+p044:Today is Wednesday. Two days ago was
+p045:The opposite of north is
+p046:A triangle with three equal sides is called
+p047:If A > B and B > C, then A is
+p048:The result of doubling 25 is
+p049:Bob is taller than Alice. Alice is taller than Carol. So Bob is
+p050:The negation of "all swans are white" is

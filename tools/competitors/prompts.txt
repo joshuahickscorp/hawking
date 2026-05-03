@@ -1,0 +1,20 @@
+SHORT|Once upon a time
+SHORT|def quicksort(arr):
+SHORT|The capital of France is
+SHORT|2 + 2 =
+SHORT|fn main() {
+SHORT|SELECT * FROM users WHERE
+SHORT|To be or not
+SHORT|class Animal:
+MED|Write a short Python function that takes a list of integers and returns a tuple (min, max, mean). Include a docstring.
+MED|Explain how a Mixture of Experts router selects which experts to use for a given token, in three sentences.
+MED|Given the array [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5], walk through the steps of running a quicksort on it.
+MED|Compose a haiku about distributed systems and another about garbage collection.
+MED|What's the difference between latency and throughput, with one concrete example for each on Apple Silicon GPUs?
+MED|Translate the following English sentence to French: "The cat sat on the mat next to the window, watching the rain."
+MED|List five Rust crates that are commonly used for building HTTP servers and one-line what each one does.
+MED|Outline the high-level steps for implementing a Q4_K_M dequantization kernel in Metal Shading Language.
+LONG|You are a senior systems engineer at a company that operates a fleet of M3 Pro Mac minis as edge inference servers. You need to evaluate three options for serving a Mixture-of-Experts language model with sub-50ms time-to-first-token: (1) MLX with custom kernel additions, (2) llama.cpp with the Metal backend, (3) building a Rust+Metal engine in-house. Write a 200-word memo to your CTO recommending one option. Include the criteria you used to compare them, the tradeoff you're explicitly accepting by your choice, and one risk that would change your recommendation if it materialized within the next quarter.
+LONG|Read the following passage and then answer the question: "The DeepSeek-V2 architecture introduces Multi-head Latent Attention (MLA), which compresses the key-value cache into a low-rank latent representation. This compression reduces memory bandwidth pressure during decode but adds a decompression step on every read. The architecture also uses 64 routed experts with top-6 selection, plus 2 shared experts that run on every token. The model has 15.7B total parameters but only activates ~2.4B per token." Question: Why might MLA be more impactful than the MoE structure on a system that is bottlenecked by memory bandwidth rather than compute, and under what conditions would the opposite be true? Answer in 100 words.
+LONG|Generate a complete, working axum HTTP handler in Rust that accepts POST requests at /v1/chat/completions, validates that the JSON body has a "messages" array with at least one element, calls a placeholder function `engine.generate(req)` that returns a `Result<String, Error>`, and streams the result back as Server-Sent Events. Use the latest stable axum (0.8) idioms. Include error handling for malformed JSON and for the engine returning an error. Add comments explaining each non-obvious decision. The code should compile without modification given a reasonable set of imports.
+LONG|Imagine you are explaining to a senior data scientist with a strong PyTorch background but no Metal experience how Mixture-of-Experts inference differs on Apple Silicon vs an NVIDIA H100. Cover: (1) the architectural ceiling imposed by unified memory bandwidth on M3 Pro (150 GB/s) vs HBM3 (3 TB/s); (2) why a single-launch fused MoE kernel matters more on Metal than on CUDA; (3) what speculative decoding via shared experts looks like in practice; (4) one optimization that's easier on Metal than on CUDA; and (5) one optimization that's harder. Use specific numbers wherever possible. Aim for around 400 words.

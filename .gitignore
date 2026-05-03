@@ -1,0 +1,53 @@
+# Rust
+/target
+**/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock.bak
+
+# Cargo registry / git auth (never commit)
+.cargo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Claude Code project-local config (settings, plans, agents)
+.claude/
+
+# OS
+Thumbs.db
+
+# Local config / runs
+.dismantle/
+.env
+.env.local
+
+# Weights and large artifacts (never commit)
+weights/
+checkpoints/
+models/
+*.safetensors
+*.gguf
+*.bin
+
+# Competitor benchmark outputs / pinned versions / installs
+tools/competitors/results.json
+tools/competitors/versions.json
+tools/competitors/build/
+tools/competitors/.venv/
+
+# Bench outputs
+runs/
+bench_out/
+*.bench.json
+
+# Logs
+*.log
+
+# Generated metallib (we embed shaders via include_str! at runtime,
+# but local build experiments may emit these)
+*.metallib
+*.air

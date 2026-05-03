@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-30T03:18:32Z",
+  "gate": "W3.4",
+  "exit_code": 91,
+  "validator_kind": "perf-ratio-assert",
+  "dry_run": false,
+  "timed_out": false,
+  "timeout_s": 2400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/W3.4/stdout.log",
+  "stdout_lines": 1,
+  "stdout_truncated": false
+}

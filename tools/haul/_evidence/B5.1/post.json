@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-29T19:17:43Z",
+  "gate": "B5.1",
+  "exit_code": 0,
+  "validator_kind": "cargo-test-strict",
+  "dry_run": false,
+  "timed_out": false,
+  "timeout_s": 14400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/B5.1/stdout.log",
+  "stdout_lines": 44,
+  "stdout_truncated": false
+}

@@ -1,0 +1,34 @@
+[package]
+name = "dismantle-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Apple Silicon MoE inference engine — kernels, model, runtime"
+
+[dependencies]
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+memmap2 = { workspace = true }
+half = { workspace = true }
+bytemuck = { workspace = true }
+tokenizers = { workspace = true }
+rand = { workspace = true }
+rand_pcg = { workspace = true }
+sha2 = { workspace = true }
+parking_lot = { workspace = true }
+once_cell = { workspace = true }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+metal = { workspace = true }
+objc2 = { workspace = true }
+objc2-foundation = { workspace = true }
+objc2-metal = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

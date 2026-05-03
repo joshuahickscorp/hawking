@@ -1,0 +1,12 @@
+{
+  "captured_at_utc": "2026-04-28T22:18:18Z",
+  "gate": "S3",
+  "exit_code": 1,
+  "validator_kind": "patch-apply",
+  "dry_run": false,
+  "timed_out": false,
+  "timeout_s": 2400,
+  "stdout_log": "/Users/scammermike/Downloads/dismantle/tools/haul/_evidence/S3/stdout.log",
+  "stdout_lines": 1,
+  "stdout_truncated": false
+}
