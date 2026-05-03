@@ -1,5 +1,7 @@
-//! v0.3.0 — Numerical parity test: gemm_q4_k_m_fused_simd vs scalar reference.
+//! v0.3.0/v0.3.1 — Numerical parity test: gemm_q4_k_m_fused_simd vs scalar reference.
 //!
+//! Covers both the standalone path (gemv_q4_k_m_simd) and the batched path
+//! (dispatch_gemv_q4_k_m_simd_batched / encode_gemv_q4_k_m_simd via ctx.dispatch_batch).
 //! Shape: M=64, K=256 (1 Q4_K block per row), seed=42.
 //! Asserts max |scalar - simd| < 1e-3 (fp16 quant noise tolerance).
 
@@ -110,5 +112,64 @@ fn test_gemm_q4_k_simd_larger_shape() {
     assert!(
         diff < ATOL,
         "gemm_q4_k_m_fused_simd vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
+}
+
+// v0.3.1 batched-path parity tests: exercise dispatch_gemv_q4_k_m_simd_batched
+// (routes through ctx.dispatch_batch { encode_gemv_q4_k_m_simd }).
+
+#[test]
+fn test_gemm_q4_k_simd_batched_matches_scalar() {
+    let rows = 64;
+    let cols = 256;
+    let n_blocks = rows * (cols / 256);
+
+    let w_bytes = synthetic_q4_k_bytes(n_blocks, 42);
+    let x = fixed_input(cols, 0xDEAD_BEEF);
+
+    let mut w_f32 = vec![0.0_f32; rows * cols];
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed for synthetic bytes");
+    let mut scalar_out = vec![0.0_f32; rows];
+    kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
+
+    let ctx = ctx().clone();
+    let mut batched_out = vec![0.0_f32; rows];
+    kernels::dispatch_gemv_q4_k_m_simd_batched(&ctx, &w_bytes, rows, cols, &x, &mut batched_out)
+        .expect("dispatch_gemv_q4_k_m_simd_batched should succeed");
+
+    let diff = max_abs_diff(&scalar_out, &batched_out);
+    println!("[v0.3.1] gemm_q4_k_simd batched parity max abs diff = {diff:.6e}");
+    assert!(
+        diff < ATOL,
+        "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}"
+    );
+}
+
+#[test]
+fn test_gemm_q4_k_simd_batched_larger_shape() {
+    let rows = 128;
+    let cols = 512;
+    let n_blocks = rows * (cols / 256);
+
+    let w_bytes = synthetic_q4_k_bytes(n_blocks, 0xCAFE_BABE);
+    let x = fixed_input(cols, 0x1234_5678);
+
+    let mut w_f32 = vec![0.0_f32; rows * cols];
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
+        .expect("Q4_K dequant should succeed");
+    let mut scalar_out = vec![0.0_f32; rows];
+    kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
+
+    let ctx = ctx().clone();
+    let mut batched_out = vec![0.0_f32; rows];
+    kernels::dispatch_gemv_q4_k_m_simd_batched(&ctx, &w_bytes, rows, cols, &x, &mut batched_out)
+        .expect("dispatch_gemv_q4_k_m_simd_batched should succeed");
+
+    let diff = max_abs_diff(&scalar_out, &batched_out);
+    println!("[v0.3.1] gemm_q4_k_simd batched larger shape max abs diff = {diff:.6e}");
+    assert!(
+        diff < ATOL,
+        "dispatch_gemv_q4_k_m_simd_batched vs scalar diff {diff:.6e} >= atol {ATOL}"
     );
 }
