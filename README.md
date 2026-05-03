@@ -78,22 +78,17 @@ architecture is auto-detected from metadata.
 
 M3 Pro 18 GB, DeepSeek-V2-Lite Q4\_K\_M, greedy temp=0:
 
-| Version | Backend | dec\_tps | Notes |
+| Version | Path | dec\_tps | Notes |
 |---|---|---:|---|
-| v0.2.0 | dismantle | **TBD¹** | two-stage MoE + Metal MLA + layer-CB + decode-arena |
-| v0.1.0 | dismantle | **1.61** | 3 trials × 64 tokens, layered batched MoE |
+| **v0.2.0** | v0.2.0-metal-all | **0.57** | 3 trials × 64 tokens; regression vs v0.1.2 — see closeout |
+| v0.1.2 default | indexed-no-pack-one-cb | **1.59** | 3 trials × 64 tokens, CPU MLA |
 | — | llama.cpp b9000 | **59.6** | tg16, ngl 99, ggml 0.10.2 Metal |
 
-¹ Bench deferred — slm training was running concurrently during v0.2.0 finalization.
-Per-wedge smoke tests all passed (coherent output). Dedicated bench window
-queued; see [docs/v0.2.0\_closeout.md](docs/v0.2.0_closeout.md).
-
-v0.2.0 ships four performance wedges over v0.1.0: two-stage fused MoE
-(eliminates single-kernel decode-redundant intermediate compute), Metal MLA
-decode (replaces CPU path), layer-CB (batches mla_decode + o_proj into one
-command buffer), and decode-arena (pre-allocated Metal buffer pool).
-
-Full story in [docs/v0.2.0\_closeout.md](docs/v0.2.0_closeout.md).
+⚠️ v0.2.0-metal-all is **slower** than v0.1.2 default (0.36×). Metal MLA decode adds
+27 GPU roundtrips/token for attention that the CPU path avoided entirely. GPU kernel
+launch overhead dominates at short sequences. Investigation and fix queued for v0.2.1.
+The v0.1.2 default schedule (indexed-no-pack-one-cb) remains the recommended production
+path. See [docs/v0.2.0\_closeout.md](docs/v0.2.0_closeout.md) for root cause and fix plan.
 
 ## What's next
 
