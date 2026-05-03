@@ -76,12 +76,16 @@ architecture is auto-detected from metadata.
 
 ## Performance
 
-M3 Pro 18 GB, decode tok/s, 3 trials × 64 tokens, greedy temp=0:
+M3 Pro 18 GB, DeepSeek-V2-Lite Q4\_K\_M, greedy temp=0:
 
-| Model | dec\_tps | Notes |
+| Backend | dec\_tps | Notes |
 |---|---:|---|
-| DeepSeek-V2-Lite Q4\_K\_M | **1.61** | layered batched MoE default |
-| Qwen2.5-3B Q4\_K\_M | **1.28** | dense path |
+| dismantle v0.1.0 | **1.61** | 3 trials × 64 tokens, layered batched MoE |
+| llama.cpp b9000 | **59.6** | tg16, ngl 99, ggml 0.10.2 Metal |
+
+dismantle is early-stage: the Metal MoE dispatch code is new and single-token
+decode throughput is the primary v0.2 target. See
+[ROADMAP.md](ROADMAP.md) for the planned performance wedges.
 
 Full story — measured numbers, the single-kernel FlashMoE finding, and
 what's queued for v0.2 — in [docs/v0.1.0\_closeout.md](docs/v0.1.0_closeout.md).

@@ -31,4 +31,8 @@ impl Engine for QwenMoE {
     fn model_id(&self) -> &str {
         &self.model_id
     }
+
+    fn model_arch(&self) -> &str {
+        "qwen2"
+    }
 }

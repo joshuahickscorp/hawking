@@ -43,8 +43,10 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)
         .map_err(|e| anyhow::anyhow!("load engine: {e}"))?;
+    let model_arch = engine.model_arch().to_string();
     let state = http::AppState {
         engine: Arc::new(parking_lot::Mutex::new(engine)),
+        model_arch,
     };
     let app = http::router(state);
     tracing::info!(addr = %opts.addr, "dismantle-serve listening");

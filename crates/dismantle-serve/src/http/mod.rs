@@ -25,6 +25,7 @@ use tokio_stream::wrappers::ReceiverStream;
 #[derive(Clone)]
 pub struct AppState {
     pub engine: Arc<Mutex<Box<dyn Engine>>>,
+    pub model_arch: String,
 }
 
 pub fn router(state: AppState) -> Router {
@@ -117,7 +118,7 @@ async fn chat_completions(
     State(s): State<AppState>,
     Json(req): Json<ChatReq>,
 ) -> impl IntoResponse {
-    let prompt = render_chat(&req.messages);
+    let prompt = render_chat(&req.messages, &s.model_arch);
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
         top_k: 40,
@@ -170,9 +171,38 @@ async fn completions(
     }
 }
 
-fn render_chat(msgs: &[ChatMessage]) -> String {
-    // Minimal Llama-style template; full chat-template support is a
-    // v0.2 item.
+fn render_chat(msgs: &[ChatMessage], model_arch: &str) -> String {
+    match model_arch {
+        "deepseek2" => render_chat_deepseek(msgs),
+        a if a.starts_with("qwen2") => render_chat_qwen2(msgs),
+        _ => render_chat_generic(msgs),
+    }
+}
+
+fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
+    let mut s = String::new();
+    for m in msgs {
+        match m.role.as_str() {
+            "system" => s.push_str(&format!("{}\n\n", m.content)),
+            "user" => s.push_str(&format!("User: {}\n\n", m.content)),
+            "assistant" => s.push_str(&format!("Assistant: {}\n\n", m.content)),
+            _ => {}
+        }
+    }
+    s.push_str("Assistant:");
+    s
+}
+
+fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
+    let mut s = String::new();
+    for m in msgs {
+        s.push_str(&format!("<|im_start|>{}\n{}<|im_end|>\n", m.role, m.content));
+    }
+    s.push_str("<|im_start|>assistant\n");
+    s
+}
+
+fn render_chat_generic(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
         s.push_str(&format!("<|{}|>\n{}\n", m.role, m.content));

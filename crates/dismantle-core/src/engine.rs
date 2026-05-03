@@ -149,4 +149,8 @@ pub trait Engine: Send + Sync {
     ) -> Result<GenStats>;
 
     fn model_id(&self) -> &str;
+
+    fn model_arch(&self) -> &str {
+        "unknown"
+    }
 }

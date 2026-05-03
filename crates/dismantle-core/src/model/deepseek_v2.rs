@@ -723,6 +723,10 @@ impl Engine for DeepSeekV2 {
     fn model_id(&self) -> &str {
         &self.model_id
     }
+
+    fn model_arch(&self) -> &str {
+        "deepseek2"
+    }
 }
 
 impl DeepSeekV2 {
