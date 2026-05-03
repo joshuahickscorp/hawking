@@ -905,7 +905,9 @@ impl DeepSeekV2 {
                     .map(|p| p.selected.gemm_q4_k_schedule == "simdgroup")
                     .unwrap_or(false);
                 if use_simd {
-                    return crate::kernels::gemv_q4_k_m_simd(ctx, bytes, rows, cols, x, out);
+                    return crate::kernels::dispatch_gemv_q4_k_m_simd_batched(
+                        ctx, bytes, rows, cols, x, out,
+                    );
                 }
                 return crate::kernels::gemv_q4_k_m(ctx, bytes, rows, cols, x, out);
             }
