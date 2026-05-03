@@ -196,7 +196,10 @@ fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
 fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
     for m in msgs {
-        s.push_str(&format!("<|im_start|>{}\n{}<|im_end|>\n", m.role, m.content));
+        s.push_str(&format!(
+            "<|im_start|>{}\n{}<|im_end|>\n",
+            m.role, m.content
+        ));
     }
     s.push_str("<|im_start|>assistant\n");
     s

@@ -222,7 +222,7 @@ pub fn topk_softmax_batch(
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
-    use crate::metal::{CommandBatch, MetalContext, PinnedBuffer};
+    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer};
     use crate::{Error, Result};
     use half::f16;
 
@@ -1688,6 +1688,223 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Wedge 2 — two-stage fused MoE via a single command buffer.
+    ///
+    /// Stage 1 (`moe_block_two_stage_intermediate`): gate + up + silu_mul for
+    /// all top_k routed experts and all n_shared shared experts in parallel.
+    /// Stage 2 (`moe_block_two_stage_output`): down-project + weighted accumulate.
+    ///
+    /// Weight quantization: routed gate/up Q4_K, routed down Q8_0,
+    /// shared gate/up Q4_K, shared down Q6_K — same layout as v2lite_metal.
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_block_two_stage_metal(
+        ctx: &MetalContext,
+        routed_gate_q4: &[u8],
+        routed_up_q4: &[u8],
+        routed_down_q8: &[u8],
+        shared_gate_q4: &[u8],
+        shared_up_q4: &[u8],
+        shared_down_q6: &[u8],
+        expert_ids: &[u32],
+        route_weights: &[f32],
+        n_experts: usize,
+        n_shared: usize,
+        hidden: usize,
+        routed_mid: usize,
+        shared_mid: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        let top_k = expert_ids.len();
+        if top_k == 0 || top_k != route_weights.len() {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal: expert_ids.len={} route_weights.len={}",
+                top_k,
+                route_weights.len()
+            )));
+        }
+        if x.len() != hidden || out.len() != hidden {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal shape: x={} hidden={} out={}",
+                x.len(),
+                hidden,
+                out.len()
+            )));
+        }
+        if hidden % 256 != 0 || routed_mid % 32 != 0 || shared_mid % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal: hidden ({hidden}) must be 256-aligned, \
+                 routed_mid ({routed_mid}) must be 32-aligned (Q8_0 down), \
+                 shared_mid ({shared_mid}) must be 256-aligned (Q6_K down)"
+            )));
+        }
+        for &eid in expert_ids {
+            if (eid as usize) >= n_experts {
+                return Err(Error::Kernel(format!(
+                    "moe_block_two_stage_metal: expert id {eid} >= n_experts {n_experts}"
+                )));
+            }
+        }
+        let hidden_blocks = hidden / 256;
+        let expected_routed_gate_up = n_experts * routed_mid * hidden_blocks * 144;
+        let expected_routed_down = n_experts * hidden * (routed_mid / 32) * 34;
+        let expected_shared_gate_up = shared_mid * hidden_blocks * 144;
+        let expected_shared_down = hidden * (shared_mid / 256) * 210;
+        if routed_gate_q4.len() != expected_routed_gate_up
+            || routed_up_q4.len() != expected_routed_gate_up
+        {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal routed gate/up bytes: gate={} up={} expected={}",
+                routed_gate_q4.len(),
+                routed_up_q4.len(),
+                expected_routed_gate_up
+            )));
+        }
+        if routed_down_q8.len() != expected_routed_down {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal routed down bytes: got={} expected={}",
+                routed_down_q8.len(),
+                expected_routed_down
+            )));
+        }
+        if shared_gate_q4.len() != expected_shared_gate_up
+            || shared_up_q4.len() != expected_shared_gate_up
+        {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal shared gate/up bytes: gate={} up={} expected={}",
+                shared_gate_q4.len(),
+                shared_up_q4.len(),
+                expected_shared_gate_up
+            )));
+        }
+        if shared_down_q6.len() != expected_shared_down {
+            return Err(Error::Kernel(format!(
+                "moe_block_two_stage_metal shared down bytes: got={} expected={}",
+                shared_down_q6.len(),
+                expected_shared_down
+            )));
+        }
+
+        // Intermediate buffer: (top_k * routed_mid + n_shared * shared_mid) floats.
+        let intermed_len = top_k * routed_mid + n_shared * shared_mid;
+        let rg_buf = ctx.new_buffer_with_bytes(routed_gate_q4);
+        let ru_buf = ctx.new_buffer_with_bytes(routed_up_q4);
+        let rd_buf = ctx.new_buffer_with_bytes(routed_down_q8);
+        let sg_buf = ctx.new_buffer_with_bytes(shared_gate_q4);
+        let su_buf = ctx.new_buffer_with_bytes(shared_up_q4);
+        let sd_buf = ctx.new_buffer_with_bytes(shared_down_q6);
+        let ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(expert_ids));
+        let wts_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(route_weights));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let intermed_buf = ctx.new_buffer(intermed_len * std::mem::size_of::<f32>());
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+
+        let hidden_u32 = hidden as u32;
+        let routed_mid_u32 = routed_mid as u32;
+        let shared_mid_u32 = shared_mid as u32;
+        let top_k_u32 = top_k as u32;
+        let n_shared_u32 = n_shared as u32;
+        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
+
+        // Stage 1 grid: one workgroup per (expert_slot × mid_row) pair.
+        let stage1_wgs = (top_k * routed_mid + n_shared * shared_mid) as u32;
+        // Stage 2 grid: one workgroup per output row.
+        let stage2_wgs = hidden as u32;
+
+        ctx.dispatch_batch(|batch| {
+            // Stage 1 — intermediate: gate+up+silu_mul for all expert slots.
+            batch.dispatch_threads(
+                "moe_block_two_stage_intermediate",
+                (stage1_wgs * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&rg_buf), 0);
+                    enc.set_buffer(1, Some(&ru_buf), 0);
+                    enc.set_buffer(2, Some(&sg_buf), 0);
+                    enc.set_buffer(3, Some(&su_buf), 0);
+                    enc.set_buffer(4, Some(&ids_buf), 0);
+                    enc.set_buffer(5, Some(&x_buf), 0);
+                    enc.set_buffer(6, Some(&intermed_buf), 0);
+                    enc.set_bytes(
+                        7,
+                        std::mem::size_of::<u32>() as u64,
+                        &hidden_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        8,
+                        std::mem::size_of::<u32>() as u64,
+                        &routed_mid_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        9,
+                        std::mem::size_of::<u32>() as u64,
+                        &shared_mid_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        10,
+                        std::mem::size_of::<u32>() as u64,
+                        &top_k_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        11,
+                        std::mem::size_of::<u32>() as u64,
+                        &n_shared_u32 as *const u32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+
+            // Stage 2 — output: down-project + weighted accumulate.
+            batch.dispatch_threads(
+                "moe_block_two_stage_output",
+                (stage2_wgs * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&rd_buf), 0);
+                    enc.set_buffer(1, Some(&sd_buf), 0);
+                    enc.set_buffer(2, Some(&ids_buf), 0);
+                    enc.set_buffer(3, Some(&wts_buf), 0);
+                    enc.set_buffer(4, Some(&intermed_buf), 0);
+                    enc.set_buffer(5, Some(&out_buf), 0);
+                    enc.set_bytes(
+                        6,
+                        std::mem::size_of::<u32>() as u64,
+                        &hidden_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        7,
+                        std::mem::size_of::<u32>() as u64,
+                        &routed_mid_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        8,
+                        std::mem::size_of::<u32>() as u64,
+                        &shared_mid_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        9,
+                        std::mem::size_of::<u32>() as u64,
+                        &top_k_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        10,
+                        std::mem::size_of::<u32>() as u64,
+                        &n_shared_u32 as *const u32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+
+            Ok(())
+        })?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, hidden) };
+        out.copy_from_slice(out_slice);
+
+        Ok(())
+    }
+
     /// Phase 2 — no-pack batched DeepSeek MoE block. The weight buffer is
     /// the full GGUF mmap (or a test stand-in), and tensor byte offsets
     /// select the fused routed/shared expert tensors in-place. Route IDs
@@ -1947,6 +2164,450 @@ mod metal_dispatch {
         })?;
 
         copy_f32_buffer(&final_out, out);
+        Ok(())
+    }
+
+    /// Wedge 1 — Metal MLA decode kernel.
+    ///
+    /// Replaces the CPU `mla_decode_step` for DeepSeek-V2-family models.
+    /// Operates on the compressed KV cache (c_kv, k_pe) rather than the
+    /// expanded K/V matrices. kv_b_proj is pinned (loaded once at model
+    /// load time via `layer.pinned.kv_b_proj`).
+    ///
+    /// Buffer layout matches `mla_decode_kernel` in `shaders/attn.metal`.
+    /// Dispatch: one workgroup per attention head (grid = n_heads × TG_SIZE).
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        c_kv: &[f32],
+        k_pe: &[f32],
+        kv_b_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        if q.len() != n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal: q.len={} expected {}",
+                q.len(),
+                n_heads * q_head_dim
+            )));
+        }
+        if c_kv.len() != seq_len * kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal: c_kv.len={} expected {}",
+                c_kv.len(),
+                seq_len * kv_lora_rank
+            )));
+        }
+        if k_pe.len() != seq_len * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal: k_pe.len={} expected {}",
+                k_pe.len(),
+                seq_len * qk_rope_head_dim
+            )));
+        }
+        let expected_kv_b =
+            (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+                as u64;
+        if kv_b_proj.length() < expected_kv_b {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal: kv_b_proj buffer too small: got {} expected {}",
+                kv_b_proj.length(),
+                expected_kv_b
+            )));
+        }
+        if out.len() != n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal: out.len={} expected {}",
+                out.len(),
+                n_heads * v_head_dim
+            )));
+        }
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "mla_decode_metal: seq_len must be >= 1".into(),
+            ));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+
+        // Threadgroup slots:
+        //   0 — q_nope_proj: kv_lora_rank floats
+        //   1 — scores:      seq_len floats
+        //   2 — c_kv_wt:     kv_lora_rank floats
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_threads(
+            "mla_decode_kernel",
+            (n_heads_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_heads_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_nope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_rope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &v_head_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &kv_lora_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &seq_len_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<f32>() as u64,
+                    &scale as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Wedge 3 — Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
+    /// into one command buffer. Saves one commit+wait per attention layer
+    /// (27 fewer roundtrips per token on DeepSeek-V2-Lite).
+    ///
+    /// The intermediate `attn_out` buffer stays in GPU memory between the two
+    /// kernels; Metal guarantees sequential execution within a command buffer.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_and_o_proj_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        c_kv: &[f32],
+        k_pe: &[f32],
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        let attn_out_len = n_heads * v_head_dim;
+        let o_proj_cols = attn_out_len;
+        if q.len() != n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_and_o_proj_metal: q.len={} expected {}",
+                q.len(),
+                n_heads * q_head_dim
+            )));
+        }
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "mla_decode_and_o_proj_metal: seq_len must be >= 1".into(),
+            ));
+        }
+        if out.len() != hidden {
+            return Err(Error::Kernel(format!(
+                "mla_decode_and_o_proj_metal: out.len={} expected hidden={}",
+                out.len(),
+                hidden
+            )));
+        }
+        let expected_kv_b =
+            (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+                as u64;
+        if kv_b_proj.length() < expected_kv_b {
+            return Err(Error::Kernel(format!(
+                "mla_decode_and_o_proj_metal: kv_b_proj too small: {} < {}",
+                kv_b_proj.length(),
+                expected_kv_b
+            )));
+        }
+        let expected_o_proj = (hidden * o_proj_cols * std::mem::size_of::<f32>()) as u64;
+        if o_proj.length() < expected_o_proj {
+            return Err(Error::Kernel(format!(
+                "mla_decode_and_o_proj_metal: o_proj too small: {} < {}",
+                o_proj.length(),
+                expected_o_proj
+            )));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        // Intermediate attn_out stays in GPU memory — shared between mla_decode and o_proj.
+        let attn_out_buf = ctx.new_buffer(attn_out_len * std::mem::size_of::<f32>());
+        let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+        let hidden_u32 = hidden as u32;
+        let o_proj_cols_u32 = o_proj_cols as u32;
+
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_batch(|batch| {
+            // Kernel 1: mla_decode_kernel → writes attn_out_buf.
+            batch.dispatch_threads(
+                "mla_decode_kernel",
+                (n_heads_u32 * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&q_buf), 0);
+                    enc.set_buffer(1, Some(&c_kv_buf), 0);
+                    enc.set_buffer(2, Some(&k_pe_buf), 0);
+                    enc.set_buffer(3, Some(kv_b_proj), 0);
+                    enc.set_buffer(4, Some(&attn_out_buf), 0);
+                    enc.set_bytes(
+                        5,
+                        std::mem::size_of::<u32>() as u64,
+                        &n_heads_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        6,
+                        std::mem::size_of::<u32>() as u64,
+                        &qk_nope_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        7,
+                        std::mem::size_of::<u32>() as u64,
+                        &qk_rope_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        8,
+                        std::mem::size_of::<u32>() as u64,
+                        &v_head_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        9,
+                        std::mem::size_of::<u32>() as u64,
+                        &kv_lora_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        10,
+                        std::mem::size_of::<u32>() as u64,
+                        &seq_len_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        11,
+                        std::mem::size_of::<f32>() as u64,
+                        &scale as *const f32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                    enc.set_threadgroup_memory_length(1, scores_bytes);
+                    enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+                },
+            )?;
+
+            // Kernel 2: gemv_f32_attn (o_proj) — reads attn_out_buf, writes out_buf.
+            // Metal serializes these within the command buffer.
+            batch.dispatch_threads(
+                "gemv_f32_attn",
+                (hidden_u32 * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(o_proj), 0);
+                    enc.set_buffer(1, Some(&attn_out_buf), 0);
+                    enc.set_buffer(2, Some(&out_buf), 0);
+                    enc.set_bytes(
+                        3,
+                        std::mem::size_of::<u32>() as u64,
+                        &hidden_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<u32>() as u64,
+                        &o_proj_cols_u32 as *const u32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+
+            Ok(())
+        })?;
+
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// Wedge 4 — Decode-Arena variant of `mla_decode_and_o_proj_metal`.
+    /// Uses pre-allocated arena buffers for attn_out and final out, and
+    /// writes q/c_kv/k_pe into arena buffers via direct CPU memcpy.
+    /// Eliminates all 5 per-dispatch Metal buffer allocations.
+    ///
+    /// The arena must already hold c_kv/k_pe data up to `seq_len` entries
+    /// (written by the caller via `arena.append_c_kv` / `append_k_pe`),
+    /// and q written via `arena.write_q`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_and_o_proj_arena_metal(
+        ctx: &MetalContext,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "mla_decode_and_o_proj_arena_metal: seq_len must be >= 1".into(),
+            ));
+        }
+        if out.len() != hidden {
+            return Err(Error::Kernel(format!(
+                "mla_decode_and_o_proj_arena_metal: out.len={} != hidden={}",
+                out.len(),
+                hidden
+            )));
+        }
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+        let hidden_u32 = hidden as u32;
+        let o_proj_cols_u32 = (n_heads * v_head_dim) as u32;
+
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_batch(|batch| {
+            batch.dispatch_threads(
+                "mla_decode_kernel",
+                (n_heads_u32 * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&arena.q), 0);
+                    enc.set_buffer(1, Some(&arena.c_kv), 0);
+                    enc.set_buffer(2, Some(&arena.k_pe), 0);
+                    enc.set_buffer(3, Some(kv_b_proj), 0);
+                    enc.set_buffer(4, Some(&arena.attn_out), 0);
+                    enc.set_bytes(
+                        5,
+                        std::mem::size_of::<u32>() as u64,
+                        &n_heads_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        6,
+                        std::mem::size_of::<u32>() as u64,
+                        &qk_nope_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        7,
+                        std::mem::size_of::<u32>() as u64,
+                        &qk_rope_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        8,
+                        std::mem::size_of::<u32>() as u64,
+                        &v_head_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        9,
+                        std::mem::size_of::<u32>() as u64,
+                        &kv_lora_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        10,
+                        std::mem::size_of::<u32>() as u64,
+                        &seq_len_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        11,
+                        std::mem::size_of::<f32>() as u64,
+                        &scale as *const f32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                    enc.set_threadgroup_memory_length(1, scores_bytes);
+                    enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+                },
+            )?;
+
+            batch.dispatch_threads(
+                "gemv_f32_attn",
+                (hidden_u32 * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(o_proj), 0);
+                    enc.set_buffer(1, Some(&arena.attn_out), 0);
+                    enc.set_buffer(2, Some(&arena.out), 0);
+                    enc.set_bytes(
+                        3,
+                        std::mem::size_of::<u32>() as u64,
+                        &hidden_u32 as *const u32 as *const _,
+                    );
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<u32>() as u64,
+                        &o_proj_cols_u32 as *const u32 as *const _,
+                    );
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+
+            Ok(())
+        })?;
+
+        arena.read_out(out);
         Ok(())
     }
 

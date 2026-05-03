@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-b13af6eeb8dd71224601fc12",
+  "profile_id": "kp-7bafcee8358324b79e639735",
   "profile_name": "m3-pro-18gb",
   "model_id": "DeepSeek-V2-Lite-Chat",
   "model_arch": "deepseek2",
   "tensor_layout_hash": "6540aaa223c931038ec4ddde",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "6004c38d8c99fa4ef3b52a69",
+  "shader_hash": "775b2ba3a2e1becee332dda5",
   "selected": {
-    "id": "gpu-greedy-frontier",
-    "moe_schedule": "indexed-no-pack-one-cb",
-    "mla_schedule": "metal-mla-planned",
+    "id": "v0.2.0-metal-all",
+    "moe_schedule": "two-stage",
+    "mla_schedule": "metal-mla",
     "lm_head_schedule": "metal-argmax-token-only",
-    "command_buffering": "layer-cb-planned",
-    "gpu_buffer_reuse": "decode-arena-planned",
-    "deterministic_rank": 20
+    "command_buffering": "layer-cb",
+    "gpu_buffer_reuse": "decode-arena",
+    "deterministic_rank": 5
   },
   "evidence": {
     "profile": "m3-pro-18gb",
@@ -25,11 +25,23 @@
       64,
       256
     ],
-    "candidate_count": 5,
+    "candidate_count": 6,
     "measurements": [
+      {
+        "variant_id": "v0.2.0-metal-all",
+        "deterministic_rank": 5,
+        "score": 175,
+        "status": "candidate"
+      },
       {
         "variant_id": "gpu-greedy-frontier",
         "deterministic_rank": 20,
+        "score": 157,
+        "status": "planned"
+      },
+      {
+        "variant_id": "single-kernel-fused",
+        "deterministic_rank": 25,
         "score": 157,
         "status": "planned"
       },
@@ -38,12 +50,6 @@
         "deterministic_rank": 10,
         "score": 150,
         "status": "planned"
-      },
-      {
-        "variant_id": "single-kernel-fused",
-        "deterministic_rank": 25,
-        "score": 105,
-        "status": "candidate"
       },
       {
         "variant_id": "one-command-buffer-moe",
@@ -62,8 +68,7 @@
     "notes": [
       "deterministic lexicographic candidate order",
       "temperature=0 greedy validation corpus",
-      "runtime ignores unsupported entries and falls back safely",
-      "shader_hash updated for Stage B.4 (moe_block_fused_v2lite + indexed variant)"
+      "runtime ignores unsupported entries and falls back safely"
     ]
   }
 }

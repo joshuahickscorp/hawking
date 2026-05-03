@@ -1,16 +1,16 @@
 # dismantle
 
 Apple Silicon MoE inference engine in Rust + Metal. Runs DeepSeek-V2 and
-Qwen2.5 GGUF models with a custom Metal kernel stack — batched expert GEMV,
-no-pack indexed dispatch, one-command-buffer MoE block, and a single-kernel
-fused FlashMoE shipped opt-in. MIT.
+Qwen2.5 GGUF models with a custom Metal kernel stack — two-stage fused MoE,
+Metal MLA decode, layer command-buffer batching, and a decode-arena buffer
+pool. MIT.
 
 ## Install
 
 ### Pre-built binary (Apple Silicon Mac)
 
-Download `dismantle-v0.1.0-aarch64-apple-darwin.tar.gz` from the
-[v0.1.0 release](https://github.com/joshuahickscorp/dismantle/releases/tag/v0.1.0),
+Download `dismantle-v0.2.0-aarch64-apple-darwin.tar.gz` from the
+[v0.2.0 release](https://github.com/joshuahickscorp/dismantle/releases/tag/v0.2.0),
 extract, and put `dismantle` somewhere on your `$PATH`.
 
 ### From source
@@ -78,22 +78,27 @@ architecture is auto-detected from metadata.
 
 M3 Pro 18 GB, DeepSeek-V2-Lite Q4\_K\_M, greedy temp=0:
 
-| Backend | dec\_tps | Notes |
-|---|---:|---|
-| dismantle v0.1.0 | **1.61** | 3 trials × 64 tokens, layered batched MoE |
-| llama.cpp b9000 | **59.6** | tg16, ngl 99, ggml 0.10.2 Metal |
+| Version | Backend | dec\_tps | Notes |
+|---|---|---:|---|
+| v0.2.0 | dismantle | **TBD¹** | two-stage MoE + Metal MLA + layer-CB + decode-arena |
+| v0.1.0 | dismantle | **1.61** | 3 trials × 64 tokens, layered batched MoE |
+| — | llama.cpp b9000 | **59.6** | tg16, ngl 99, ggml 0.10.2 Metal |
 
-dismantle is early-stage: the Metal MoE dispatch code is new and single-token
-decode throughput is the primary v0.2 target. See
-[ROADMAP.md](ROADMAP.md) for the planned performance wedges.
+¹ Bench deferred — slm training was running concurrently during v0.2.0 finalization.
+Per-wedge smoke tests all passed (coherent output). Dedicated bench window
+queued; see [docs/v0.2.0\_closeout.md](docs/v0.2.0_closeout.md).
 
-Full story — measured numbers, the single-kernel FlashMoE finding, and
-what's queued for v0.2 — in [docs/v0.1.0\_closeout.md](docs/v0.1.0_closeout.md).
+v0.2.0 ships four performance wedges over v0.1.0: two-stage fused MoE
+(eliminates single-kernel decode-redundant intermediate compute), Metal MLA
+decode (replaces CPU path), layer-CB (batches mla_decode + o_proj into one
+command buffer), and decode-arena (pre-allocated Metal buffer pool).
+
+Full story in [docs/v0.2.0\_closeout.md](docs/v0.2.0_closeout.md).
 
 ## What's next
 
-v0.2 wedges: Metal MLA decode, two-stage fused MoE (eliminate single-kernel
-decode-redundant compute), layer-CB, decode arena. See [ROADMAP.md](ROADMAP.md).
+v0.3 targets: measured bench against llama.cpp Metal + MLX with the full
+harness, persistent FlashMoE research variant, prefill path. See [ROADMAP.md](ROADMAP.md).
 
 ## Contributing
 
