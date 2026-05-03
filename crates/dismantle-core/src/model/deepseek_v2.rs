@@ -961,12 +961,15 @@ impl DeepSeekV2 {
         if let Some(ctx) = &self.metal_ctx {
             if t.dtype == GgmlType::Q4_K {
                 let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
-                let use_simd = self
+                let schedule = self
                     .kernel_profile
                     .as_ref()
-                    .map(|p| p.selected.gemm_q4_k_schedule == "simdgroup")
-                    .unwrap_or(false);
-                if use_simd {
+                    .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+                    .unwrap_or("scalar");
+                if schedule == "v2" {
+                    return crate::kernels::gemv_q4_k_m_v2(ctx, bytes, rows, cols, x, out);
+                }
+                if schedule == "simdgroup" {
                     return crate::kernels::dispatch_gemv_q4_k_m_simd_batched(
                         ctx, bytes, rows, cols, x, out,
                     );
