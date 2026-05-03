@@ -28,6 +28,22 @@ BIN="./target/release/dismantle"
 ts()  { date -u +%FT%TZ; }
 log() { printf '%s %s\n' "$(ts)" "$*"; }
 
+# Portable timeout — macOS doesn't ship `timeout` (GNU coreutils).
+# Prefer `gtimeout` if user has `brew install coreutils`; else fall back
+# to a Perl alarm-based exec. Either way the wrapper kills after N seconds.
+run_with_timeout() {
+    local secs="$1"; shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$secs" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$secs" "$@"
+    else
+        # `alarm` sends SIGALRM after N seconds; default action is process death.
+        perl -e 'use strict; my $secs = shift; alarm $secs; exec { $ARGV[0] } @ARGV or die "exec: $!"' \
+            "$secs" "$@"
+    fi
+}
+
 # ─── GATE: slm ────────────────────────────────────────────────────────────────
 gate_slm() {
     log "gate/slm: checking..."
@@ -183,7 +199,7 @@ for entry in "${TRIAL_ORDER[@]}"; do
         fi
 
         set +e
-        DISMANTLE_TRACE_DISPATCH=1 timeout 600 \
+        DISMANTLE_TRACE_DISPATCH=1 run_with_timeout 600 \
             nice -n 19 taskpolicy -b "$BIN" bench \
             --backend dismantle --suite decode \
             --weights "$WEIGHTS" \
