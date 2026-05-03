@@ -467,6 +467,62 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// v0.3.3 — fused pair+silu: encode gate, up, and silu_mul in ONE CommandBatch.
+    /// `a` receives `silu(gate_out) * up_out`; intermediate gate/up buffers stay
+    /// on the GPU and are never read back.
+    pub fn dispatch_gemv_q4_k_m_simd_pair_silu_batched(
+        ctx: &MetalContext,
+        w_gate_bytes: &[u8],
+        w_up_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        a: &mut [f32],
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair+silu requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || a.len() != rows {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_simd pair+silu shape: x={} cols={} a={} rows={}",
+                x.len(), cols, a.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_gate_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "pair+silu w_gate bytes: got {} expected {}", w_gate_bytes.len(), expected_bytes
+            )));
+        }
+        if w_up_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "pair+silu w_up bytes: got {} expected {}", w_up_bytes.len(), expected_bytes
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let w_gate_buf = ctx.new_buffer_with_bytes(w_gate_bytes);
+        let w_up_buf = ctx.new_buffer_with_bytes(w_up_bytes);
+        // g_buf and u_buf are device-only intermediates; never read back.
+        let g_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let u_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let a_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        // Single CB: gate GEMV, up GEMV, then silu_mul. Metal serializes
+        // compute passes within one CB, so g_buf/u_buf are coherent when
+        // silu_mul reads them.
+        ctx.dispatch_batch(|batch| {
+            encode_gemv_q4_k_m_simd(batch, &w_gate_buf, rows, cols, &x_buf, &g_buf)?;
+            encode_gemv_q4_k_m_simd(batch, &w_up_buf,  rows, cols, &x_buf, &u_buf)?;
+            encode_silu_mul(batch, &g_buf, &u_buf, &a_buf, rows)
+        })?;
+        let ptr = a_buf.contents() as *const f32;
+        let slice = unsafe { std::slice::from_raw_parts(ptr, rows) };
+        a.copy_from_slice(slice);
+        Ok(())
+    }
+
     // ---- Phase 1 / Haul 1 — stubs the haul replaces with bodies ----
     //
     // Each function below is the seam the haul targets. The signature
