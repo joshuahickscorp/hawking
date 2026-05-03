@@ -1280,3 +1280,66 @@ kernel void gemv_f32_moe(
 
     if (tid == 0) y[gid] = shmem[0];
 }
+
+// ── moe_grouped_gemm_q4_v2 ───────────────────────────────────────────────────
+// Byte-identical body to gemm_q4_k_m_fused_v2 in quant.metal.
+// Kept in moe.metal per the dense/MoE module split.
+// Grid: (ceil(rows/8)*256, 1, 1)  threadgroup: (256, 1, 1)
+
+kernel void moe_grouped_gemm_q4_v2(
+    device const uchar* w_q4   [[buffer(0)]],   // (rows, cols) Q4_K_M
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            uint sub  = elem >> 5;
+            uchar s_byte, m_byte;
+            if (sub < 4u) {
+                s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+            } else {
+                uint j = sub - 4u;
+                s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                       | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                       | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+            }
+            uint pair  = sub >> 1;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = elem & 31u;
+            uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+            float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+            float xv    = x[(uint64_t)b * 256ul + (uint64_t)elem];
+            partial    += w_val * xv;
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
+}

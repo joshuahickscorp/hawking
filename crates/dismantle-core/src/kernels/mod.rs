@@ -322,6 +322,33 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// v0.4.0 — multi-row TG + simd_sum variant.  Dispatches
+    /// `gemm_q4_k_m_fused_v2`; selected via kernel-profile
+    /// `gemm_q4_k_schedule = "v2"`.
+    pub fn gemv_q4_k_m_v2(
+        ctx: &MetalContext,
+        w_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_gemv_v2(ctx, "gemm_q4_k_m_fused_v2", w_bytes, rows, cols, x, out)
+    }
+
+    /// v0.4.0 — v2 variant for the MoE per-expert GEMV path.  Dispatches
+    /// `moe_grouped_gemm_q4_v2`; selected via `gemm_q4_k_schedule = "v2"`.
+    pub fn moe_grouped_gemm_q4_v2_metal(
+        ctx: &MetalContext,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_gemv_v2(ctx, "moe_grouped_gemm_q4_v2", w_q4_bytes, rows, cols, x, out)
+    }
+
     /// v0.3.1 — low-level batched encoder for `gemm_q4_k_m_fused_simd`.
     /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch
     /// without allocation or readback. Use this to coalesce multiple independent
@@ -3339,6 +3366,79 @@ mod metal_dispatch {
                     &cols_u32 as *const u32 as *const _,
                 );
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+
+        Ok(())
+    }
+
+    // v0.4.0 — v2 dispatch: 256-thread TG, 8 rows per TG (8 simdgroups),
+    // simd_sum reduction.  No threadgroup memory needed.
+    fn dispatch_q4_k_m_gemv_v2(
+        ctx: &MetalContext,
+        kernel_name: &str,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} shape: x={} cols={} out={} rows={}",
+                x.len(),
+                cols,
+                out.len(),
+                rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_q4_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{kernel_name} weight bytes: got {} expected {}",
+                w_q4_bytes.len(),
+                expected_bytes
+            )));
+        }
+
+        let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V2_TG: u32 = 256;
+        let n_tg = (rows_u32 + 7) / 8;
+
+        ctx.dispatch_threads(
+            kernel_name,
+            (n_tg * V2_TG, 1, 1),
+            (V2_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                // NO set_threadgroup_memory_length — kernel uses none.
             },
         )?;
 
