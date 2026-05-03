@@ -135,6 +135,10 @@ pub struct GenStats {
     pub profile_id: Option<String>,
     pub device_id: Option<String>,
     pub trace_hash: Option<String>,
+    /// Per-dispatch timing samples drained from MetalContext after generation.
+    /// Non-empty only when `DISMANTLE_TRACE_DISPATCH=1` is set; always empty
+    /// on non-macOS or when Metal is unavailable.
+    pub dispatch_samples: Vec<crate::metal::DispatchSample>,
 }
 
 pub trait Engine: Send + Sync {

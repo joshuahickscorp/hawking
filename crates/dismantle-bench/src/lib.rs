@@ -97,8 +97,41 @@ pub fn run(opts: BenchOptions) -> Result<()> {
             .get("decode_tps")
             .and_then(|v| v.as_f64())
             .unwrap_or(0.0);
+
+        // Extract dispatch samples from the decode suite result (only present
+        // when DISMANTLE_TRACE_DISPATCH=1).
+        let raw_samples = report.results.get("dispatch_samples");
+        let dispatch_total_us = report
+            .results
+            .get("dispatch_total_us")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
+        let dispatch_total_decode_us = report
+            .results
+            .get("dispatch_total_decode_us")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(1);
+        let dispatch_pct = if dispatch_total_decode_us > 0 {
+            (dispatch_total_us as f64 / dispatch_total_decode_us as f64) * 100.0
+        } else {
+            0.0
+        };
+
+        let kernel_summary = if let Some(serde_json::Value::Array(samples)) = raw_samples {
+            build_kernel_summary(samples)
+        } else {
+            serde_json::Value::Array(vec![])
+        };
+        let layer_summary = if let Some(serde_json::Value::Array(samples)) = raw_samples {
+            build_layer_summary(samples)
+        } else {
+            serde_json::Value::Array(vec![])
+        };
+        // Only embed raw samples when present (gated by env var on the engine side).
+        let dispatch_samples_value = raw_samples.cloned().unwrap_or(serde_json::Value::Null);
+
         let trace = serde_json::json!({
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "dismantle-bench-trace",
             "metric": "decode_only_tps",
             "report_hash": report_hash,
@@ -108,6 +141,11 @@ pub fn run(opts: BenchOptions) -> Result<()> {
             "profile_path": opts.kernel_profile.as_ref().map(|p| p.display().to_string()),
             "speculate_mode": opts.speculate_mode,
             "verify_window": opts.verify_window,
+            "dispatch_wall_pct_of_decode": dispatch_pct,
+            "dispatch_total_us": dispatch_total_us,
+            "kernel_summary": kernel_summary,
+            "layer_summary": layer_summary,
+            "dispatch_samples": dispatch_samples_value,
             "report": report,
         });
         std::fs::write(trace_path, serde_json::to_string_pretty(&trace)?)?;
@@ -117,6 +155,75 @@ pub fn run(opts: BenchOptions) -> Result<()> {
         None => println!("{s}"),
     }
     Ok(())
+}
+
+/// Aggregate per-dispatch samples into per-kernel statistics.
+fn build_kernel_summary(samples: &[serde_json::Value]) -> serde_json::Value {
+    use std::collections::HashMap;
+    // kernel_name → Vec<wall_us>
+    let mut by_kernel: HashMap<&str, Vec<u64>> = HashMap::new();
+    for s in samples {
+        let name = s.get("kernel_name").and_then(|v| v.as_str()).unwrap_or("other");
+        let us = s.get("wall_us").and_then(|v| v.as_u64()).unwrap_or(0);
+        by_kernel.entry(name).or_default().push(us);
+    }
+    let mut rows: Vec<serde_json::Value> = by_kernel
+        .iter()
+        .map(|(name, times)| {
+            let count = times.len() as u64;
+            let total: u64 = times.iter().sum();
+            let mean = if count > 0 { total / count } else { 0 };
+            let mut sorted = times.clone();
+            sorted.sort_unstable();
+            let p50 = sorted[sorted.len() / 2];
+            let p99 = sorted[(sorted.len() * 99 / 100).min(sorted.len() - 1)];
+            serde_json::json!({
+                "kernel": name,
+                "count": count,
+                "total_us": total,
+                "mean_us": mean,
+                "p50_us": p50,
+                "p99_us": p99,
+            })
+        })
+        .collect();
+    // Sort descending by total_us.
+    rows.sort_by(|a, b| {
+        let ta = a.get("total_us").and_then(|v| v.as_u64()).unwrap_or(0);
+        let tb = b.get("total_us").and_then(|v| v.as_u64()).unwrap_or(0);
+        tb.cmp(&ta)
+    });
+    serde_json::Value::Array(rows)
+}
+
+/// Aggregate per-dispatch samples into per-layer statistics.
+fn build_layer_summary(samples: &[serde_json::Value]) -> serde_json::Value {
+    use std::collections::HashMap;
+    // layer → (total_us, HashMap<kernel, total_us>)
+    let mut by_layer: HashMap<u32, (u64, HashMap<String, u64>)> = HashMap::new();
+    for s in samples {
+        let layer = match s.get("layer_hint").and_then(|v| v.as_u64()) {
+            Some(l) => l as u32,
+            None => continue, // skip non-layer dispatches (final norm, LM head)
+        };
+        let name = s.get("kernel_name").and_then(|v| v.as_str()).unwrap_or("other");
+        let us = s.get("wall_us").and_then(|v| v.as_u64()).unwrap_or(0);
+        let entry = by_layer.entry(layer).or_default();
+        entry.0 += us;
+        *entry.1.entry(name.to_string()).or_default() += us;
+    }
+    let mut rows: Vec<serde_json::Value> = by_layer
+        .iter()
+        .map(|(layer, (total, kernels))| {
+            serde_json::json!({
+                "layer": layer,
+                "total_us": total,
+                "kernels": kernels,
+            })
+        })
+        .collect();
+    rows.sort_by_key(|r| r.get("layer").and_then(|v| v.as_u64()).unwrap_or(u64::MAX));
+    serde_json::Value::Array(rows)
 }
 
 fn short_hash(bytes: &[u8]) -> String {

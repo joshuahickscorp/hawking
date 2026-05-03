@@ -39,6 +39,49 @@ pub fn current_device_name() -> Option<String> {
     MetalContext::new().ok().map(|ctx| ctx.device_name())
 }
 
+// ── Per-dispatch trace types (public so bench can drain them) ──────────────
+
+/// One timed GPU dispatch. `kernel_name` is a `&'static str` to avoid
+/// per-dispatch allocation; `layer_hint` comes from the thread-local
+/// set by `forward_token_final_norm`.
+#[derive(Debug, Clone, Default, serde::Serialize)]
+pub struct DispatchSample {
+    pub kernel_name: &'static str,
+    pub wall_us: u64,
+    pub layer_hint: Option<u32>,
+}
+
+/// Thread-local current-layer index. Set/cleared by the forward pass
+/// around each transformer layer so dispatch timing can be attributed
+/// to a layer without touching the kernel API.
+///
+/// Exposed as free functions rather than on MetalContext because the
+/// caller (`deepseek_v2::forward_token_final_norm`) runs on whatever
+/// thread calls `generate` — not on the GPU thread.
+mod layer_hint {
+    use std::cell::Cell;
+    thread_local! {
+        static CURRENT_LAYER: Cell<Option<u32>> = Cell::new(None);
+    }
+    pub fn set(v: Option<u32>) {
+        CURRENT_LAYER.with(|c| c.set(v));
+    }
+    pub fn get() -> Option<u32> {
+        CURRENT_LAYER.with(|c| c.get())
+    }
+}
+
+/// Set the current transformer layer index for dispatch attribution.
+/// Call before each layer's kernels; call with `None` after the loop.
+pub fn set_current_layer(v: Option<u32>) {
+    layer_hint::set(v);
+}
+
+/// Read the current transformer layer index (used inside dispatch_threads).
+pub fn current_layer() -> Option<u32> {
+    layer_hint::get()
+}
+
 #[cfg(target_os = "macos")]
 mod imp {
     use super::*;
@@ -48,15 +91,48 @@ mod imp {
     };
     use parking_lot::Mutex;
     use std::collections::HashMap;
+    use std::time::Instant;
 
     // Re-export Metal's Buffer type so callers can hold pinned-weight
     // handles without depending on the upstream `metal` crate directly.
     pub use ::metal::Buffer as PinnedBuffer;
 
+    /// Accumulated per-dispatch timing samples. Gate-able via
+    /// `DISMANTLE_TRACE_DISPATCH` env var; when the var is absent the
+    /// samples vec is never populated and overhead is zero.
+    pub struct DispatchTrace {
+        pub samples: Mutex<Vec<super::DispatchSample>>,
+    }
+
+    impl DispatchTrace {
+        fn new() -> Self {
+            Self {
+                // Pre-allocate for a 64-token decode to avoid Vec growth
+                // perturbing measurements (≈60 dispatches/token × 64 tokens).
+                samples: Mutex::new(Vec::with_capacity(10_000)),
+            }
+        }
+
+        fn record(&self, kernel_name: &'static str, wall_us: u64, layer_hint: Option<u32>) {
+            self.samples.lock().push(super::DispatchSample {
+                kernel_name,
+                wall_us,
+                layer_hint,
+            });
+        }
+
+        /// Drain all collected samples (called by bench after a run).
+        pub fn drain(&self) -> Vec<super::DispatchSample> {
+            std::mem::take(&mut *self.samples.lock())
+        }
+    }
+
     /// The owned device handle. Cheap to clone via `Arc`.
     #[derive(Clone)]
     pub struct MetalContext {
         inner: Arc<Inner>,
+        /// Shared trace accumulator; `Arc` so `Clone` works without copying.
+        pub trace: Arc<DispatchTrace>,
     }
 
     /// One command buffer that can encode several compute kernels before
@@ -73,6 +149,33 @@ mod imp {
         queue: CommandQueue,
         library: Library,
         pipelines: Mutex<HashMap<String, ComputePipelineState>>,
+    }
+
+    /// Resolve a runtime kernel name to a `&'static str` for zero-alloc
+    /// trace recording. Covers all kernel names used by dismantle; anything
+    /// unknown falls through to `"other"`.
+    fn static_kernel_name(name: &str) -> &'static str {
+        match name {
+            "rmsnorm" => "rmsnorm",
+            "gemv_f16" => "gemv_f16",
+            "gemv_f32_attn" => "gemv_f32_attn",
+            "mla_decode_kernel" => "mla_decode_kernel",
+            "moe_topk_gate" => "moe_topk_gate",
+            "moe_gather_combine" => "moe_gather_combine",
+            "moe_batched_gemm_q4" => "moe_batched_gemm_q4",
+            "moe_batched_gemm_q6_k" => "moe_batched_gemm_q6_k",
+            "moe_batched_gemm_q8_0" => "moe_batched_gemm_q8_0",
+            "moe_batched_silu_mul" => "moe_batched_silu_mul",
+            "moe_block_fused_q4_one" => "moe_block_fused_q4_one",
+            "moe_block_fused_q4_topk" => "moe_block_fused_q4_topk",
+            "moe_block_fused_v2lite" => "moe_block_fused_v2lite",
+            "moe_block_fused_v2lite_indexed" => "moe_block_fused_v2lite_indexed",
+            "moe_block_two_stage_intermediate" => "moe_block_two_stage_intermediate",
+            "moe_block_two_stage_output" => "moe_block_two_stage_output",
+            "moe_route_accumulate" => "moe_route_accumulate",
+            "sample_argmax_f32" => "sample_argmax_f32",
+            _ => "other",
+        }
     }
 
     impl MetalContext {
@@ -92,6 +195,7 @@ mod imp {
                     library,
                     pipelines: Mutex::new(HashMap::new()),
                 }),
+                trace: Arc::new(DispatchTrace::new()),
             })
         }
 
@@ -177,6 +281,13 @@ mod imp {
             )
         }
 
+        /// Drain all trace samples accumulated since the last drain.
+        /// Returns an empty vec when `DISMANTLE_TRACE_DISPATCH` is unset
+        /// (no samples are ever pushed).
+        pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
+            self.trace.drain()
+        }
+
         pub fn dispatch_threads(
             &self,
             fn_name: &str,
@@ -184,6 +295,9 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            let trace_enabled = std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+
             let pipe = self.pipeline(fn_name)?;
             let cmd = self.inner.queue.new_command_buffer();
             let enc = cmd.new_compute_command_encoder();
@@ -196,6 +310,15 @@ mod imp {
             enc.end_encoding();
             cmd.commit();
             cmd.wait_until_completed();
+
+            if let Some(t0) = t0 {
+                let wall_us = t0.elapsed().as_micros() as u64;
+                self.trace.record(
+                    static_kernel_name(fn_name),
+                    wall_us,
+                    super::current_layer(),
+                );
+            }
             Ok(())
         }
 
@@ -203,12 +326,21 @@ mod imp {
             &self,
             encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
         ) -> Result<()> {
+            let trace_enabled = std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+
             let cmd = self.inner.queue.new_command_buffer();
             let mut batch = CommandBatch { ctx: self, cmd };
             encode(&mut batch)?;
             let CommandBatch { cmd, .. } = batch;
             cmd.commit();
             cmd.wait_until_completed();
+
+            if let Some(t0) = t0 {
+                let wall_us = t0.elapsed().as_micros() as u64;
+                // dispatch_batch is used for mla_decode_and_o_proj_metal
+                self.trace.record("dispatch_batch", wall_us, super::current_layer());
+            }
             Ok(())
         }
     }
@@ -253,6 +385,10 @@ mod imp {
 
         pub fn device_name(&self) -> String {
             "metal-unavailable".into()
+        }
+
+        pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
+            Vec::new()
         }
     }
 

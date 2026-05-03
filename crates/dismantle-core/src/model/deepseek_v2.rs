@@ -772,6 +772,11 @@ impl Engine for DeepSeekV2 {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        stats.dispatch_samples = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_trace())
+            .unwrap_or_default();
         if self.speculate_mode == SpeculateMode::ExactShared {
             // Bootstrap exact speculation: the verifier is still the
             // producer, so correctness is identical. Later draft paths
@@ -1191,6 +1196,8 @@ impl DeepSeekV2 {
         embed_lookup(&self.embed, h, token, &mut x);
 
         for li in 0..self.config.n_layers {
+            crate::metal::set_current_layer(Some(li as u32));
+
             // ---- Attention block ----
             let mut x_norm = vec![0.0f32; h];
             self.rmsnorm_dispatch(
@@ -1213,6 +1220,7 @@ impl DeepSeekV2 {
             let ffn_out = self.ffn(li, &x_norm)?;
             add_inplace(&mut x, &ffn_out);
         }
+        crate::metal::set_current_layer(None); // final norm + LM head dispatches
 
         // Final norm + lm head.
         let mut x_norm = vec![0.0f32; h];

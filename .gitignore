@@ -17,6 +17,11 @@ Cargo.lock.bak
 # Claude Code project-local config (settings, plans, agents)
 .claude/
 
+# Manager↔executor file-based bus (internal AI dev pipeline; results ship via
+# normal commits to crates/, docs/, README.md, etc — not these working files)
+/prompts/
+/reports/
+
 # OS
 Thumbs.db
 
