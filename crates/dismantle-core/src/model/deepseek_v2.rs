@@ -883,6 +883,41 @@ impl DeepSeekV2 {
         Ok(())
     }
 
+    /// v0.3.2 — pair dispatcher: coalesces gate+up GEMVs into ONE CommandBatch
+    /// when the simd schedule is active. Falls back to two sequential
+    /// `moe_expert_matmul_dispatch` calls otherwise (no behaviour change).
+    fn moe_expert_pair_matmul_dispatch(
+        &self,
+        t_a: &TensorRef,
+        t_b: &TensorRef,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out_a: &mut [f32],
+        out_b: &mut [f32],
+        scratch: &mut Vec<f32>,
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if t_a.dtype == GgmlType::Q4_K && t_b.dtype == GgmlType::Q4_K {
+                let use_simd = self
+                    .kernel_profile
+                    .as_ref()
+                    .map(|p| p.selected.gemm_q4_k_schedule == "simdgroup")
+                    .unwrap_or(false);
+                if use_simd {
+                    let bytes_a = &self.gguf.mmap[t_a.offset..t_a.offset + t_a.byte_size];
+                    let bytes_b = &self.gguf.mmap[t_b.offset..t_b.offset + t_b.byte_size];
+                    return crate::kernels::dispatch_gemv_q4_k_m_simd_pair_batched(
+                        ctx, bytes_a, bytes_b, rows, cols, x, out_a, out_b,
+                    );
+                }
+            }
+        }
+        self.moe_expert_matmul_dispatch(t_a, rows, cols, x, out_a, scratch)?;
+        self.moe_expert_matmul_dispatch(t_b, rows, cols, x, out_b, scratch)
+    }
+
     /// Routed/shared MoE expert matmul dispatcher. Reads the GGUF
     /// quantized bytes directly when the Metal Q4_K_M-fused kernel is
     /// available; otherwise dequants into `scratch` and runs CPU GEMV.
@@ -1639,11 +1674,9 @@ impl DeepSeekV2 {
 
                 for &(eid, weight) in &routes {
                     let e = &routed[eid];
-                    self.moe_expert_matmul_dispatch(
-                        &e.gate_w, mid, cfg.hidden, x, &mut g_buf, &mut w_buf,
-                    )?;
-                    self.moe_expert_matmul_dispatch(
-                        &e.up_w, mid, cfg.hidden, x, &mut u_buf, &mut w_buf,
+                    self.moe_expert_pair_matmul_dispatch(
+                        &e.gate_w, &e.up_w, mid, cfg.hidden, x,
+                        &mut g_buf, &mut u_buf, &mut w_buf,
                     )?;
                     silu_mul(&g_buf, &u_buf, &mut a_buf);
                     self.moe_expert_matmul_dispatch(
@@ -1660,11 +1693,9 @@ impl DeepSeekV2 {
                     let mut sg = vec![0.0f32; smid];
                     let mut su = vec![0.0f32; smid];
                     let mut sa = vec![0.0f32; smid];
-                    self.moe_expert_matmul_dispatch(
-                        &s.gate_w, smid, cfg.hidden, x, &mut sg, &mut w_buf,
-                    )?;
-                    self.moe_expert_matmul_dispatch(
-                        &s.up_w, smid, cfg.hidden, x, &mut su, &mut w_buf,
+                    self.moe_expert_pair_matmul_dispatch(
+                        &s.gate_w, &s.up_w, smid, cfg.hidden, x,
+                        &mut sg, &mut su, &mut w_buf,
                     )?;
                     silu_mul(&sg, &su, &mut sa);
                     self.moe_expert_matmul_dispatch(
