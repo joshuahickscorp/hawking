@@ -8,13 +8,13 @@
   "device_name": "Apple M3 Pro",
   "shader_hash": "775b2ba3a2e1becee332dda5",
   "selected": {
-    "id": "v0.2.0-metal-all",
-    "moe_schedule": "two-stage",
+    "id": "v0.2.2-metal-safe",
+    "moe_schedule": "indexed-no-pack-one-cb",
     "mla_schedule": "metal-mla",
     "lm_head_schedule": "metal-argmax-token-only",
-    "command_buffering": "layer-cb",
+    "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 5
+    "deterministic_rank": 4
   },
   "evidence": {
     "profile": "m3-pro-18gb",
@@ -25,24 +25,30 @@
       64,
       256
     ],
-    "candidate_count": 6,
+    "candidate_count": 7,
     "measurements": [
+      {
+        "variant_id": "v0.2.2-metal-safe",
+        "deterministic_rank": 4,
+        "score": 161,
+        "status": "candidate"
+      },
       {
         "variant_id": "v0.2.0-metal-all",
         "deterministic_rank": 5,
-        "score": 175,
-        "status": "candidate"
+        "score": 152,
+        "status": "research"
       },
       {
         "variant_id": "gpu-greedy-frontier",
         "deterministic_rank": 20,
-        "score": 157,
+        "score": 145,
         "status": "planned"
       },
       {
         "variant_id": "single-kernel-fused",
         "deterministic_rank": 25,
-        "score": 157,
+        "score": 145,
         "status": "planned"
       },
       {

@@ -223,6 +223,9 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             deterministic_rank: 25,
         },
         // v0.2.0 — all implemented wedges: two-stage MoE + Metal MLA + layer-CB + decode-arena.
+        // Research-only after v0.2.1 diagnostic: two-stage MoE causes −79% regression at
+        // batch=1 decode; layer-CB adds −18% on top. Retained in tree for prefill/batch
+        // research. Scored below v0.2.2-metal-safe.
         KernelVariant {
             id: "v0.2.0-metal-all".into(),
             moe_schedule: "two-stage".into(),
@@ -231,6 +234,18 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             command_buffering: "layer-cb".into(),
             gpu_buffer_reuse: "decode-arena".into(),
             deterministic_rank: 5,
+        },
+        // v0.2.2 — diagnostic-validated safe default: Metal MLA + decode-arena (perf-neutral)
+        // with indexed-no-pack-one-cb MoE and one-cb-per-block command buffering (no layer-CB).
+        // Two-stage MoE and layer-CB reverted from default per v0.2.1 bisect.
+        KernelVariant {
+            id: "v0.2.2-metal-safe".into(),
+            moe_schedule: "indexed-no-pack-one-cb".into(),
+            mla_schedule: "metal-mla".into(),
+            lm_head_schedule: "metal-argmax-token-only".into(),
+            command_buffering: "one-cb-per-block".into(),
+            gpu_buffer_reuse: "decode-arena".into(),
+            deterministic_rank: 4,
         },
     ];
     variants.sort_by(|a, b| a.id.cmp(&b.id));
@@ -281,7 +296,9 @@ fn variant_score(v: &KernelVariant) -> u64 {
     if v.moe_schedule == "single-kernel" {
         score += 30;
     } else if v.moe_schedule == "two-stage" {
-        score += 28;
+        // Reduced from 28 after v0.2.1 diagnostic: −79% regression at batch=1 decode.
+        // May recover for prefill/batch>1 contexts; kept in tree as research variant.
+        score += 5;
     } else if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
@@ -380,6 +397,7 @@ mod tests {
                 "single-kernel-fused",
                 "stable-baseline",
                 "v0.2.0-metal-all",
+                "v0.2.2-metal-safe",
             ]
         );
     }
@@ -390,10 +408,11 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
-        // v0.2.0-metal-all has highest score: (100-5)+28+20+20+12 = 175
+        // v0.2.2-metal-safe has highest score: (100-4)+25+20+20+0 = 161
+        // v0.2.0-metal-all scores lower after two-stage MoE bonus reduced: (100-5)+5+20+20+12 = 152
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "v0.2.0-metal-all"
+            "v0.2.2-metal-safe"
         );
     }
 }
