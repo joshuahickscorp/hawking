@@ -222,9 +222,13 @@ for entry in "${TRIAL_ORDER[@]}"; do
         fi
 
         # Extract trial fields from JSON
-        tps=$(jq -r '(.trial_stats[0].decode_tps // .decode_tps) // 0' "$json_out")
-        tokens=$(jq -r '(.trial_stats[0].completion_tokens // 0)' "$json_out")
-        ms=$(jq -r '(.trial_stats[0].decode_ms // .decode_ms // 0)' "$json_out")
+        # bench JSON wraps trial data in `.results.*` (the dismantle bench
+        # schema), not at the top level. v0.3.5 missed this and so the
+        # `completion_tokens < 50` discard rule fired on every trial because
+        # `.trial_stats` doesn't exist at top level — jq returns null → 0.
+        tps=$(jq -r '(.results.trial_stats[0].decode_tps // .results.decode_tps) // 0' "$json_out")
+        tokens=$(jq -r '(.results.trial_stats[0].completion_tokens // 0)' "$json_out")
+        ms=$(jq -r '(.results.trial_stats[0].decode_ms // .results.decode_ms // 0)' "$json_out")
 
         # Discard rules (corrected from v0.3.5):
         #   decode_ms > 590000  → timeout-truncation
