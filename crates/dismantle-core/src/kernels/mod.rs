@@ -363,6 +363,44 @@ mod metal_dispatch {
         )
     }
 
+    /// v0.3.4 — low-level batched encoder for `gemv_f32_attn`.
+    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch
+    /// without allocation or readback. Use this to coalesce two independent
+    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.
+    pub(crate) fn encode_gemv_f32_attn_pinned(
+        batch: &mut CommandBatch<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        batch.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// v0.3.1 — slice-in / slice-out wrapper: allocates Metal buffers, routes
     /// through `ctx.dispatch_batch { encode_gemv_q4_k_m_simd }`, reads back.
     /// Replaces the standalone `ctx.dispatch_threads` path in
@@ -849,6 +887,56 @@ mod metal_dispatch {
         out: &mut [f32],
     ) -> Result<()> {
         dispatch_gemv_f32_pinned(ctx, "gemv_f32_attn", w_buf, rows, cols, x, out)
+    }
+
+    /// v0.3.4 — shared-input pair wrapper: coalesces two independent fp32 GEMVs
+    /// (e.g. q_a_proj + kv_a_proj) that read the same `x` into ONE CommandBatch.
+    /// Saves one CB commit per attention layer per token vs two standalone calls.
+    pub fn dispatch_gemv_f32_attn_pinned_pair_batched(
+        ctx: &MetalContext,
+        w_a_buf: &PinnedBuffer,
+        rows_a: usize,
+        w_b_buf: &PinnedBuffer,
+        rows_b: usize,
+        cols: usize,
+        x: &[f32],
+        out_a: &mut [f32],
+        out_b: &mut [f32],
+    ) -> Result<()> {
+        if x.len() != cols || out_a.len() != rows_a || out_b.len() != rows_b {
+            return Err(Error::Kernel(format!(
+                "dispatch_gemv_f32_attn_pinned_pair shape: x={} cols={} out_a={} rows_a={} out_b={} rows_b={}",
+                x.len(), cols, out_a.len(), rows_a, out_b.len(), rows_b
+            )));
+        }
+        let expected_a = (rows_a * cols * std::mem::size_of::<f32>()) as u64;
+        if w_a_buf.length() < expected_a {
+            return Err(Error::Kernel(format!(
+                "dispatch_gemv_f32_attn_pinned_pair w_a too small: got {} expected {}",
+                w_a_buf.length(), expected_a
+            )));
+        }
+        let expected_b = (rows_b * cols * std::mem::size_of::<f32>()) as u64;
+        if w_b_buf.length() < expected_b {
+            return Err(Error::Kernel(format!(
+                "dispatch_gemv_f32_attn_pinned_pair w_b too small: got {} expected {}",
+                w_b_buf.length(), expected_b
+            )));
+        }
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_a_buf = ctx.new_buffer(rows_a * std::mem::size_of::<f32>());
+        let out_b_buf = ctx.new_buffer(rows_b * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_gemv_f32_attn_pinned(batch, w_a_buf, rows_a, cols, &x_buf, &out_a_buf)?;
+            encode_gemv_f32_attn_pinned(batch, w_b_buf, rows_b, cols, &x_buf, &out_b_buf)
+        })?;
+        let ptr_a = out_a_buf.contents() as *const f32;
+        let ptr_b = out_b_buf.contents() as *const f32;
+        let slice_a = unsafe { std::slice::from_raw_parts(ptr_a, rows_a) };
+        let slice_b = unsafe { std::slice::from_raw_parts(ptr_b, rows_b) };
+        out_a.copy_from_slice(slice_a);
+        out_b.copy_from_slice(slice_b);
+        Ok(())
     }
 
     /// G1.4 — fp32 GEMV for the MoE gate-logit projection

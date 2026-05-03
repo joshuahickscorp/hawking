@@ -865,6 +865,30 @@ impl DeepSeekV2 {
         Ok(())
     }
 
+    /// v0.3.4 — shared-input pair dispatcher: coalesces two independent fp32 GEMVs
+    /// (e.g. q_a_proj + kv_a_proj_with_mqa) that read the same `x` into one CB.
+    fn gemv_f32_attn_pair_dispatch(
+        &self,
+        w_a: &[f32], pinned_a: Option<&PinnedBuffer>, rows_a: usize,
+        w_b: &[f32], pinned_b: Option<&PinnedBuffer>, rows_b: usize,
+        cols: usize,
+        x: &[f32],
+        out_a: &mut [f32],
+        out_b: &mut [f32],
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if let (Some(buf_a), Some(buf_b)) = (pinned_a, pinned_b) {
+                return crate::kernels::dispatch_gemv_f32_attn_pinned_pair_batched(
+                    ctx, buf_a, rows_a, buf_b, rows_b, cols, x, out_a, out_b,
+                );
+            }
+        }
+        let _ = (pinned_a, pinned_b);
+        self.gemv_f32_attn_dispatch(w_a, None, rows_a, cols, x, out_a)?;
+        self.gemv_f32_attn_dispatch(w_b, None, rows_b, cols, x, out_b)
+    }
+
     /// MoE gate-logits fp32 GEMV dispatcher (`ffn_gate_inp`). Tiny but
     /// frequent — once per token per MoE layer.
     fn gemv_f32_moe_dispatch(
@@ -1307,6 +1331,12 @@ impl DeepSeekV2 {
         let n_heads = cfg.n_heads;
         let h = cfg.hidden;
 
+        // KV allocation hoisted so both q-lora and non-q-lora branches can
+        // coalesce their first GEMV (q_a_proj or q_proj) with kv_a_proj into
+        // a single dispatch_batch via gemv_f32_attn_pair_dispatch (v0.3.4).
+        let kv_a_dim = cfg.kv_lora_rank + cfg.qk_rope_head_dim;
+        let mut kv_a = vec![0.0f32; kv_a_dim];
+
         // Q projection — either direct (q_proj) or via q-lora
         // (q_a_proj → norm → q_b_proj). W1B (Phase 2 super-haul-1):
         // q_a_proj / q_b_proj routed through gemv_f32_attn_dispatch so
@@ -1316,7 +1346,14 @@ impl DeepSeekV2 {
         {
             let q_lora = cfg.q_lora_rank.max(1);
             let mut t = vec![0.0f32; q_lora];
-            self.gemv_f32_attn_dispatch(qa, layer.pinned.q_a_proj.as_ref(), q_lora, h, x, &mut t)?;
+            // q_a_proj and kv_a_proj share input x — coalesce into one CB.
+            self.gemv_f32_attn_pair_dispatch(
+                qa, layer.pinned.q_a_proj.as_ref(), q_lora,
+                &layer.kv_a_proj_with_mqa,
+                    layer.pinned.kv_a_proj_with_mqa.as_ref(),
+                    kv_a_dim,
+                h, x, &mut t, &mut kv_a,
+            )?;
             let mut tn = vec![0.0f32; q_lora];
             self.rmsnorm_dispatch(&t, qan, cfg.rms_norm_eps, &mut tn)?;
             self.gemv_f32_attn_dispatch(
@@ -1328,31 +1365,17 @@ impl DeepSeekV2 {
                 &mut q_full,
             )?;
         } else if !layer.q_proj.is_empty() {
-            self.gemv_f32_attn_dispatch(
-                &layer.q_proj,
-                layer.pinned.q_proj.as_ref(),
-                n_heads * head_dim_q,
-                h,
-                x,
-                &mut q_full,
+            // q_proj and kv_a_proj share input x — coalesce into one CB.
+            self.gemv_f32_attn_pair_dispatch(
+                &layer.q_proj, layer.pinned.q_proj.as_ref(), n_heads * head_dim_q,
+                &layer.kv_a_proj_with_mqa,
+                    layer.pinned.kv_a_proj_with_mqa.as_ref(),
+                    kv_a_dim,
+                h, x, &mut q_full, &mut kv_a,
             )?;
         } else {
             return Err(Error::Model(format!("layer {li}: no q projection found")));
         }
-
-        // KV: project to (kv_lora_rank + qk_rope_head_dim), split into
-        // c_kv (latent) and k_pe (rope-positional shared K). W1B:
-        // kv_a_proj_with_mqa onto Metal via the attn dispatcher.
-        let kv_a_dim = cfg.kv_lora_rank + cfg.qk_rope_head_dim;
-        let mut kv_a = vec![0.0f32; kv_a_dim];
-        self.gemv_f32_attn_dispatch(
-            &layer.kv_a_proj_with_mqa,
-            layer.pinned.kv_a_proj_with_mqa.as_ref(),
-            kv_a_dim,
-            h,
-            x,
-            &mut kv_a,
-        )?;
 
         let mut c_kv = kv_a[..cfg.kv_lora_rank].to_vec();
         let mut k_pe = kv_a[cfg.kv_lora_rank..].to_vec();
