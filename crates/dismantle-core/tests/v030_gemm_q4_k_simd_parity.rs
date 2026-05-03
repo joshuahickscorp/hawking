@@ -244,3 +244,77 @@ fn test_gemm_q4_k_simd_pair_larger_shape() {
     assert!(diff_a < ATOL, "pair larger output A diff {diff_a:.6e} >= atol {ATOL}");
     assert!(diff_b < ATOL, "pair larger output B diff {diff_b:.6e} >= atol {ATOL}");
 }
+
+// v0.3.3 pair+silu parity tests: exercise dispatch_gemv_q4_k_m_simd_pair_silu_batched
+// (gate GEMV + up GEMV + silu_mul all in one CommandBatch; returns silu(gate)*up directly).
+// ATOL_SILU is wider than ATOL: Q4_K GEMV error (~1e-3) is amplified by the silu output
+// magnitude (~3–6 for the synthetic weights used here, d≈0.015, K=256-512).
+const ATOL_SILU: f32 = 1e-2;
+
+#[test]
+fn test_gemm_q4_k_simd_pair_silu_matches_scalar() {
+    let rows = 64;
+    let cols = 256;
+    let n_blocks = rows * (cols / 256);
+
+    let w_gate_bytes = synthetic_q4_k_bytes(n_blocks, 42);
+    let w_up_bytes   = synthetic_q4_k_bytes(n_blocks, 0xDEAD_CAFE);
+    let x = fixed_input(cols, 0xDEAD_BEEF);
+
+    // Scalar reference: dequant both, GEMV both, CPU silu_mul.
+    let mut w_gate_f32 = vec![0.0_f32; rows * cols];
+    let mut w_up_f32   = vec![0.0_f32; rows * cols];
+    dequant_into(GgmlType::Q4_K, &w_gate_bytes, &mut w_gate_f32).expect("Q4_K dequant gate");
+    dequant_into(GgmlType::Q4_K, &w_up_bytes,   &mut w_up_f32).expect("Q4_K dequant up");
+    let mut g_ref = vec![0.0_f32; rows];
+    let mut u_ref = vec![0.0_f32; rows];
+    kernels::gemv_f32(&w_gate_f32, rows, cols, &x, &mut g_ref);
+    kernels::gemv_f32(&w_up_f32,   rows, cols, &x, &mut u_ref);
+    let mut ref_a = vec![0.0_f32; rows];
+    kernels::silu_mul(&g_ref, &u_ref, &mut ref_a);
+
+    // GPU fused path.
+    let ctx = ctx().clone();
+    let mut gpu_a = vec![0.0_f32; rows];
+    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(
+        &ctx, &w_gate_bytes, &w_up_bytes, rows, cols, &x, &mut gpu_a,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched should succeed");
+
+    let diff = max_abs_diff(&ref_a, &gpu_a);
+    println!("[v0.3.3] pair+silu parity diff={diff:.6e}");
+    assert!(diff < ATOL_SILU, "pair+silu diff {diff:.6e} >= atol_silu {ATOL_SILU}");
+}
+
+#[test]
+fn test_gemm_q4_k_simd_pair_silu_larger_shape() {
+    let rows = 128;
+    let cols = 512;
+    let n_blocks = rows * (cols / 256);
+
+    let w_gate_bytes = synthetic_q4_k_bytes(n_blocks, 0xCAFE_BABE);
+    let w_up_bytes   = synthetic_q4_k_bytes(n_blocks, 0xABCD_1234);
+    let x = fixed_input(cols, 0x1234_5678);
+
+    let mut w_gate_f32 = vec![0.0_f32; rows * cols];
+    let mut w_up_f32   = vec![0.0_f32; rows * cols];
+    dequant_into(GgmlType::Q4_K, &w_gate_bytes, &mut w_gate_f32).expect("Q4_K dequant gate");
+    dequant_into(GgmlType::Q4_K, &w_up_bytes,   &mut w_up_f32).expect("Q4_K dequant up");
+    let mut g_ref = vec![0.0_f32; rows];
+    let mut u_ref = vec![0.0_f32; rows];
+    kernels::gemv_f32(&w_gate_f32, rows, cols, &x, &mut g_ref);
+    kernels::gemv_f32(&w_up_f32,   rows, cols, &x, &mut u_ref);
+    let mut ref_a = vec![0.0_f32; rows];
+    kernels::silu_mul(&g_ref, &u_ref, &mut ref_a);
+
+    let ctx = ctx().clone();
+    let mut gpu_a = vec![0.0_f32; rows];
+    kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(
+        &ctx, &w_gate_bytes, &w_up_bytes, rows, cols, &x, &mut gpu_a,
+    )
+    .expect("dispatch_gemv_q4_k_m_simd_pair_silu_batched larger shape should succeed");
+
+    let diff = max_abs_diff(&ref_a, &gpu_a);
+    println!("[v0.3.3] pair+silu larger shape diff={diff:.6e}");
+    assert!(diff < ATOL_SILU, "pair+silu larger shape diff {diff:.6e} >= atol_silu {ATOL_SILU}");
+}
