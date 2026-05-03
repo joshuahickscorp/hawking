@@ -21,6 +21,7 @@ Cargo.lock.bak
 # normal commits to crates/, docs/, README.md, etc — not these working files)
 /prompts/
 /reports/
+/tools/bus/
 
 # OS
 Thumbs.db
