@@ -174,6 +174,31 @@ mod imp {
             "moe_block_two_stage_output" => "moe_block_two_stage_output",
             "moe_route_accumulate" => "moe_route_accumulate",
             "sample_argmax_f32" => "sample_argmax_f32",
+            // attn / rope / embed kernels
+            "attn_kv_append_stub" => "attn_kv_append_stub",
+            "attn_mha_qkv_stub" => "attn_mha_qkv_stub",
+            "attn_mla_compress_stub" => "attn_mla_compress_stub",
+            "attn_mla_decompress_stub" => "attn_mla_decompress_stub",
+            "rope_inplace" => "rope_inplace",
+            "embed_lookup" => "embed_lookup",
+            // dequant / gemm variants
+            "dequant_q8_0" => "dequant_q8_0",
+            "gemm_q4_k_m_fused" => "gemm_q4_k_m_fused",
+            "gemv_f32_moe" => "gemv_f32_moe",
+            "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
+            // indexed moe batched gemm variants
+            "moe_batched_gemm_q4_indexed" => "moe_batched_gemm_q4_indexed",
+            "moe_batched_gemm_q6_k_indexed" => "moe_batched_gemm_q6_k_indexed",
+            "moe_batched_gemm_q8_0_indexed" => "moe_batched_gemm_q8_0_indexed",
+            // fused block variants
+            "moe_block_fused_stub" => "moe_block_fused_stub",
+            // silu / activation
+            "silu_mul" => "silu_mul",
+            // sampling kernels
+            "sample_constraint" => "sample_constraint",
+            "sample_repetition" => "sample_repetition",
+            "sample_temperature" => "sample_temperature",
+            "sample_topk_topp_stub" => "sample_topk_topp_stub",
             _ => "other",
         }
     }
