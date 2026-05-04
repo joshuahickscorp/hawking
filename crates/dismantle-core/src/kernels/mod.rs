@@ -4434,7 +4434,128 @@ mod metal_dispatch {
         )
     }
 
-    // ── end v0.5.8 fused rmsnorm+gemv dispatchers ────────────────────────────
+    // ── v0.8.1 Phase 7 f16 bridge: rmsnorm_gemv_f16_attn_pinned ──────────────
+
+    /// v0.8.1 — f16-input bridge variant of rmsnorm_gemv_f32_attn_pinned.
+    ///
+    /// `x_buf` holds half-precision (f16) data; variance accumulation
+    /// and output stay f32. Everything else mirrors the f32 sibling.
+    pub fn rmsnorm_gemv_f16_attn_pinned_metal(
+        ctx: &MetalContext,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "rmsnorm_gemv_f16_attn_pinned",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── v0.8.2 Phase 7 f16 bridge: rmsnorm_gemv_q4k_pair_f16 ─────────────────
+
+    /// v0.8.2 — f16-input bridge variant of rmsnorm_gemv_q4k_pair_metal.
+    ///
+    /// `x_buf` holds half-precision (f16) data. Output stays f32.
+    /// `weight_f16` is the rmsnorm scale (cols × f16), same as f32 sibling.
+    pub fn rmsnorm_gemv_q4k_pair_f16_metal(
+        ctx: &MetalContext,
+        weight_f16: &[half::f16],
+        eps: f32,
+        w_gate_bytes: &[u8],
+        w_up_bytes: &[u8],
+        gate_out_buf: &PinnedBuffer,
+        up_out_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "rmsnorm_gemv_q4k_pair_f16 requires cols % 256 == 0; cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_gate_bytes.len() != expected_bytes || w_up_bytes.len() != expected_bytes {
+            return Err(crate::error::Error::Kernel(format!(
+                "rmsnorm_gemv_q4k_pair_f16 weight bytes mismatch: \
+                 gate={} up={} expected={expected_bytes}",
+                w_gate_bytes.len(),
+                w_up_bytes.len()
+            )));
+        }
+        let weight_bytes = bytemuck::cast_slice::<half::f16, u8>(weight_f16);
+        let weight_buf = ctx.new_buffer_with_bytes(weight_bytes);
+        let gate_buf   = ctx.new_buffer_with_bytes(w_gate_bytes);
+        let up_buf     = ctx.new_buffer_with_bytes(w_up_bytes);
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let grid_x = 2u32 * rows_u32 * TG_SIZE;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "rmsnorm_gemv_q4k_pair_f16",
+            (grid_x, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&weight_buf), 0);
+                enc.set_bytes(
+                    1,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(2, Some(&gate_buf), 0);
+                enc.set_buffer(3, Some(&up_buf), 0);
+                enc.set_buffer(4, Some(gate_out_buf), 0);
+                enc.set_buffer(5, Some(up_out_buf), 0);
+                enc.set_buffer(6, Some(x_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v0.8.1-v0.8.2 Phase 7 f16 bridge dispatchers ─────────────────────
 
     // ── v0.5.9 fp16 activation kernel dispatchers ─────────────────────────────
 
