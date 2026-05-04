@@ -55,6 +55,10 @@ enum Cmd {
         /// set to e.g. 30000 to bail on a stuck CPU step.
         #[arg(long, default_value_t = 0)]
         max_stall_ms: u64,
+        /// Enable Metal dispatch tracing and structural allocation/commit
+        /// counters. Equivalent to setting DISMANTLE_TRACE_DISPATCH=1.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
     },
     /// Run a benchmark suite.
     Bench {
@@ -86,6 +90,10 @@ enum Cmd {
         /// `"llamacpp"` and `"mlx"` shell out to competitor binaries.
         #[arg(long, default_value = "dismantle")]
         backend: String,
+        /// Enable Metal dispatch tracing and structural allocation/commit
+        /// counters. Equivalent to setting DISMANTLE_TRACE_DISPATCH=1.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
     },
     /// Deterministically select an experimental kernel/runtime profile.
     Autotune {
@@ -184,6 +192,7 @@ fn main() -> Result<()> {
             speculate,
             verify_window,
             max_stall_ms,
+            trace_dispatch,
         } => generate_main(
             weights,
             prompt,
@@ -196,6 +205,7 @@ fn main() -> Result<()> {
             speculate,
             verify_window,
             max_stall_ms,
+            trace_dispatch,
         ),
         Cmd::Bench {
             weights,
@@ -209,6 +219,7 @@ fn main() -> Result<()> {
             trials,
             max_new_tokens,
             backend,
+            trace_dispatch,
         } => dismantle_bench::run(dismantle_bench::BenchOptions {
             weights,
             model_id: model,
@@ -221,6 +232,7 @@ fn main() -> Result<()> {
             speculate_mode: speculate.unwrap_or_else(|| "off".into()),
             verify_window,
             backend,
+            trace_dispatch,
         }),
         Cmd::Autotune {
             weights,
@@ -477,6 +489,7 @@ fn generate_main(
     speculate: Option<String>,
     verify_window: usize,
     max_stall_ms: u64,
+    trace_dispatch: bool,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -521,6 +534,7 @@ fn generate_main(
         verify_window,
         prefill_cache_dir: None,
         kernel_profile: profile,
+        trace_dispatch,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -626,6 +640,7 @@ fn batch_hash_main(
         verify_window,
         prefill_cache_dir: None,
         kernel_profile: profile,
+        trace_dispatch: false,
     };
     let load_start = std::time::Instant::now();
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;

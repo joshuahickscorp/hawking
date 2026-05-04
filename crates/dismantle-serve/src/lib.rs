@@ -39,6 +39,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         verify_window: opts.verify_window,
         prefill_cache_dir: opts.prefill_cache_dir,
         kernel_profile,
+        trace_dispatch: false,
     };
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)

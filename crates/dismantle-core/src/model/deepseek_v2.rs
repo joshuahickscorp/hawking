@@ -522,7 +522,7 @@ impl Engine for DeepSeekV2 {
         // Metal context: built once per model, owned for the model's
         // lifetime. Errors here (no GPU, shader compile failure) are
         // soft — `None` falls back to CPU kernels in every dispatcher.
-        let metal_ctx = MetalContext::new().ok();
+        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -777,6 +777,14 @@ impl Engine for DeepSeekV2 {
             .as_ref()
             .map(|ctx| ctx.drain_trace())
             .unwrap_or_default();
+        let (buffers_created, bytes_allocated, commits) = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_stats())
+            .unwrap_or_default();
+        stats.metal_buffers_created = buffers_created;
+        stats.metal_bytes_allocated = bytes_allocated;
+        stats.metal_commits = commits;
         if self.speculate_mode == SpeculateMode::ExactShared {
             // Bootstrap exact speculation: the verifier is still the
             // producer, so correctness is identical. Later draft paths

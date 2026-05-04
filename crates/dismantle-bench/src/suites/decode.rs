@@ -89,6 +89,7 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         speculate_mode,
         speculate: speculate_mode != SpeculateMode::Off,
         verify_window: opts.verify_window,
+        trace_dispatch: opts.trace_dispatch,
         ..EngineConfig::default()
     };
     let mut engine = dismantle_core::model::load_engine(&opts.weights, cfg)
@@ -127,7 +128,7 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         let decode_tps = stats.completion_tokens as f64 / secs;
         tps.push(decode_tps);
         total_decode_ms += stats.decode_ms;
-        trial_stats.push(serde_json::json!({
+        let mut ts = serde_json::json!({
             "decode_tps": decode_tps,
             "produced_tokens": produced,
             "prompt_tokens": stats.prompt_tokens,
@@ -140,7 +141,22 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
             "device_id": stats.device_id,
             "trace_hash": stats.trace_hash,
             "dispatch_count": stats.dispatch_samples.len(),
-        }));
+        });
+        // Add structural counters when tracing was active (via --trace-dispatch
+        // flag or DISMANTLE_TRACE_DISPATCH env var — both set trace_dispatch on
+        // the MetalContext, so non-zero counts indicate tracing was on).
+        if stats.metal_buffers_created > 0 && stats.completion_tokens > 0 {
+            let ct = stats.completion_tokens as f64;
+            if let Some(obj) = ts.as_object_mut() {
+                obj.insert("metal_buffers_created_per_token".into(),
+                    serde_json::json!(stats.metal_buffers_created as f64 / ct));
+                obj.insert("cpu_alloc_bytes_per_token".into(),
+                    serde_json::json!(stats.metal_bytes_allocated as f64 / ct));
+                obj.insert("dispatch_commits_per_token".into(),
+                    serde_json::json!(stats.metal_commits as f64 / ct));
+            }
+        }
+        trial_stats.push(ts);
         all_dispatch_samples.extend(stats.dispatch_samples);
     }
     let profile_path = opts
