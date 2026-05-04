@@ -250,6 +250,9 @@ mod imp {
             // v0.5.8 fused rmsnorm+gemv kernels
             "rmsnorm_gemv_f32_attn_pinned" => "rmsnorm_gemv_f32_attn_pinned",
             "rmsnorm_gemv_q4k_pair" => "rmsnorm_gemv_q4k_pair",
+            // v0.8.1-v0.8.2 Phase 7 f16 bridge kernels
+            "rmsnorm_gemv_f16_attn_pinned" => "rmsnorm_gemv_f16_attn_pinned",
+            "rmsnorm_gemv_q4k_pair_f16" => "rmsnorm_gemv_q4k_pair_f16",
             // v0.5.9 fp16 activation kernels
             "gemv_f32_attn_f16" => "gemv_f32_attn_f16",
             "gemv_f32_moe_f16" => "gemv_f32_moe_f16",
