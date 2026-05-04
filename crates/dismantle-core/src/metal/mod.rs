@@ -247,6 +247,9 @@ mod imp {
             "sample_topk" => "sample_topk",
             "sample_topp" => "sample_topp",
             "sample_multinomial" => "sample_multinomial",
+            // v0.5.8 fused rmsnorm+gemv kernels
+            "rmsnorm_gemv_f32_attn_pinned" => "rmsnorm_gemv_f32_attn_pinned",
+            "rmsnorm_gemv_q4k_pair" => "rmsnorm_gemv_q4k_pair",
             _ => "other",
         }
     }

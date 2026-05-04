@@ -14,6 +14,15 @@
 //   attn_kv_append        — fused KV-cache append (no separate copy
 //                           pass).
 //                           [Phase 3]
+//   rmsnorm_gemv_f32_attn_pinned — fused rmsnorm + gemv_f32_attn.
+//                           Reads x once; computes variance in-register,
+//                           then runs GEMV with normalized x.
+//                           One threadgroup per output row, TG_SIZE=256.
+//                           [v0.5.8]
+//   rmsnorm_gemv_q4k_pair — fused rmsnorm + Q4_K_M GEMV pair (gate+up).
+//                           Reads x once; grid = 2×rows threadgroups.
+//                           gid < rows → gate; gid >= rows → up.
+//                           [v0.5.8]
 
 #include <metal_stdlib>
 using namespace metal;
@@ -216,4 +225,170 @@ kernel void gemv_f32_attn(
     }
 
     if (tid == 0) y[gid] = shmem[0];
+}
+
+// v0.5.8-A — fused RMSNorm + gemv_f32_attn.
+//
+// Eliminates the intermediate normalized-x buffer and halves DRAM reads
+// for x. Each threadgroup (one per output row) independently computes the
+// RMS norm variance (x is small → stays in L2 across threadgroups), then
+// runs the GEMV with the normalized activation.
+//
+// Binding scheme:
+//   0  w       (rows × cols) f32   pinned weight matrix
+//   1  x       (cols,)        f32   residual stream
+//   2  weight  (cols,)        f32   rmsnorm learnable scale
+//   3  eps     constant float
+//   4  out     (rows,)        f32
+//   5  rows    constant uint
+//   6  cols    constant uint
+//   threadgroup(0): shmem (TG_SIZE × f32) — reused for variance then dot-product
+//
+// Grid:  (rows, 1, 1) threadgroups; each of size TG_SIZE (256).
+kernel void rmsnorm_gemv_f32_attn_pinned(
+    device const float* w       [[buffer(0)]],
+    device const float* x       [[buffer(1)]],
+    device const float* weight  [[buffer(2)]],
+    constant     float& eps     [[buffer(3)]],
+    device       float* out     [[buffer(4)]],
+    constant     uint&  rows    [[buffer(5)]],
+    constant     uint&  cols    [[buffer(6)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                gid     [[threadgroup_position_in_grid]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+
+    // Phase 1: parallel variance reduction over x.
+    float partial_sq = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        float v = x[c];
+        partial_sq += v * v;
+    }
+    shmem[tid] = partial_sq;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_rms = rsqrt(shmem[0] / float(cols) + eps);
+
+    // Phase 2: GEMV with rmsnorm-scaled x.
+    device const float* row = w + (uint64_t)gid * (uint64_t)cols;
+    float partial_dot = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial_dot += row[c] * (x[c] * inv_rms * weight[c]);
+    }
+    shmem[tid] = partial_dot;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) out[gid] = shmem[0];
+}
+
+// v0.5.8-B — fused RMSNorm + Q4_K_M GEMV pair (gate and up projections).
+//
+// Reads x once, computes rmsnorm, then runs two Q4_K_M GEMVs in parallel
+// using a grid of 2×rows threadgroups: gid < rows → gate; gid >= rows → up.
+// The variance computation is redundant across the two halves of the grid,
+// but x is in L2 by the time the second half reads it.
+//
+// Binding scheme (matches manifest):
+//   0  weight   (cols,) f16   rmsnorm learnable scale
+//   1  eps      constant float
+//   2  w_gate   (rows, cols) Q4_K_M bytes — gate projection
+//   3  w_up     (rows, cols) Q4_K_M bytes — up projection
+//   4  gate_out (rows,) f32
+//   5  up_out   (rows,) f32
+//   6  x        (cols,) f32   residual stream
+//   7  rows     constant uint
+//   8  cols     constant uint
+//   threadgroup(0): shmem (TG_SIZE × f32) — variance then dot-product
+//
+// Grid:  (2 × rows, 1, 1); tg_size must be 256 (Q4_K_M super-block).
+// Precondition: cols % 256 == 0.
+kernel void rmsnorm_gemv_q4k_pair(
+    device const half*  weight   [[buffer(0)]],
+    constant     float& eps      [[buffer(1)]],
+    device const uchar* w_gate   [[buffer(2)]],
+    device const uchar* w_up     [[buffer(3)]],
+    device       float* gate_out [[buffer(4)]],
+    device       float* up_out   [[buffer(5)]],
+    device const float* x        [[buffer(6)]],
+    constant     uint&  rows     [[buffer(7)]],
+    constant     uint&  cols     [[buffer(8)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                gid      [[threadgroup_position_in_grid]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    bool is_up = gid >= rows;
+    uint row_idx = is_up ? (gid - rows) : gid;
+    if (row_idx >= rows) return;
+
+    device const uchar* w_q4 = is_up ? w_up : w_gate;
+    device float*       out_ptr = is_up ? up_out : gate_out;
+
+    // Phase 1: parallel variance reduction over x.
+    float partial_sq = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        float v = x[c];
+        partial_sq += v * v;
+    }
+    shmem[tid] = partial_sq;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_rms = rsqrt(shmem[0] / float(cols) + eps);
+
+    // Phase 2: Q4_K_M GEMV with normalized x.
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)row_idx * (uint64_t)blocks_per_row * 144ul;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uint sub = tid >> 5;
+        uchar s_byte, m_byte;
+        if (sub < 4u) {
+            s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+            m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+        } else {
+            uint j = sub - 4u;
+            s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                   | ((w_q4[bo + 4u + j]      >> 6) << 4);
+            m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                   | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+        }
+
+        uint pair = sub >> 1;
+        bool upper = (sub & 1u) != 0u;
+        uint i = tid & 31u;
+        uchar q = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+        uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+        float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+
+        uint global_col = b * 256u + tid;
+        float xv = x[global_col] * inv_rms * (float)weight[global_col];
+        partial += w_val * xv;
+    }
+
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0u) out_ptr[row_idx] = shmem[0];
 }
