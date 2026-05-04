@@ -250,6 +250,9 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         // v0.2.2 — diagnostic-validated safe default: Metal MLA + decode-arena (perf-neutral)
         // with indexed-no-pack-one-cb MoE and one-cb-per-block command buffering (no layer-CB).
         // Two-stage MoE and layer-CB reverted from default per v0.2.1 bisect.
+        // v0.4.0+v0.4.1 promoted gemm_q4_k_schedule="v2" (multi-row TG +
+        // simd_sum kernels). +3.5% e2e clean over scalar. v2 is correctness-
+        // equivalent to scalar (parity tests at atol=1e-3).
         KernelVariant {
             id: "v0.2.2-metal-safe".into(),
             moe_schedule: "indexed-no-pack-one-cb".into(),
@@ -258,12 +261,20 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             command_buffering: "one-cb-per-block".into(),
             gpu_buffer_reuse: "decode-arena".into(),
             deterministic_rank: 4,
-            gemm_q4_k_schedule: "scalar".into(),
+            gemm_q4_k_schedule: "v2".into(),
         },
-        // v0.5.0 — activates moe_block_fused_v2lite_indexed_metal as default MoE path.
-        // single-kernel runs gate+up+silu+down+shared+accumulate in one Metal kernel vs
-        // the 9-kernel batched-indexed path. command_buffering stays one-cb-per-block
-        // (layer-cb deferred: v0.2.1 diagnostic showed −18% at batch=1).
+        // v0.5.0 — single-kernel MoE attempt. Kernel passes parity (atol=1e-3)
+        // but at runtime falls through to a slow path on the v0.5.0 model
+        // (DeepSeek-V2-Lite Q4_K_M with mixed-quant down_proj — Q8_0 routed,
+        // Q6_K shared per v0.3.9 hot-path discovery). The fused kernel
+        // moe_block_fused_v2lite was designed for uniform Q4_K weights;
+        // moe_block_fused_v2lite_dispatch's dtype guards reject this model
+        // and the call falls through to per-expert CPU fallback (~190× slower).
+        // KEPT in candidates list for archeology and future revisit (e.g.,
+        // when down_proj fp16 path lands or when the kernel grows mixed-
+        // quant support). DEMOTED to deterministic_rank=50 so autotune
+        // never selects it as default. See reports/v0.5.0_phase0_fused_arena.md
+        // for the diagnostic. Selection stays at v0.2.2-metal-safe (rank 4).
         KernelVariant {
             id: "v0.5.0-fused-arena".into(),
             moe_schedule: "single-kernel".into(),
@@ -271,7 +282,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             lm_head_schedule: "metal-argmax-token-only".into(),
             command_buffering: "one-cb-per-block".into(),
             gpu_buffer_reuse: "decode-arena".into(),
-            deterministic_rank: 2,
+            deterministic_rank: 50,
             gemm_q4_k_schedule: "v2".into(),
         },
     ];
@@ -436,12 +447,14 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
-        // v0.5.0-fused-arena has highest score: (100-2)+30+20+20+0 = 168
-        // v0.2.2-metal-safe: (100-4)+25+20+20+0 = 161
-        // v0.2.0-metal-all scores lower after two-stage MoE bonus reduced: (100-5)+5+20+20+12 = 152
+        // v0.2.2-metal-safe is the production default: (100-4)+25+20+20+0 = 161.
+        // v0.5.0-fused-arena scores high in raw points but is demoted to
+        // deterministic_rank=50 because its single-kernel MoE path falls
+        // through to CPU fallback on this model's mixed-quant down_proj
+        // (Q8_0 routed, Q6_K shared). See reports/v0.5.0_phase0_fused_arena.md.
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "v0.5.0-fused-arena"
+            "v0.2.2-metal-safe"
         );
     }
 }

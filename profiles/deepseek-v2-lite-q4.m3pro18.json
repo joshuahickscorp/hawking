@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-ef50d2bdf8672c978473c8ac",
+  "profile_id": "kp-f867c2f0b5f1af5c8a4b357e",
   "profile_name": "m3-pro-18gb",
   "model_id": "DeepSeek-V2-Lite-Chat",
   "model_arch": "deepseek2",
@@ -8,13 +8,13 @@
   "device_name": "Apple M3 Pro",
   "shader_hash": "03d9f33708ac4d6b1a9441f4",
   "selected": {
-    "id": "v0.5.0-fused-arena",
-    "moe_schedule": "single-kernel",
+    "id": "v0.2.2-metal-safe",
+    "moe_schedule": "indexed-no-pack-one-cb",
     "mla_schedule": "metal-mla",
     "lm_head_schedule": "metal-argmax-token-only",
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 2,
+    "deterministic_rank": 4,
     "gemm_q4_k_schedule": "v2"
   },
   "evidence": {
@@ -28,12 +28,6 @@
     ],
     "candidate_count": 8,
     "measurements": [
-      {
-        "variant_id": "v0.5.0-fused-arena",
-        "deterministic_rank": 2,
-        "score": 168,
-        "status": "candidate"
-      },
       {
         "variant_id": "v0.2.2-metal-safe",
         "deterministic_rank": 4,
@@ -63,6 +57,12 @@
         "deterministic_rank": 10,
         "score": 150,
         "status": "planned"
+      },
+      {
+        "variant_id": "v0.5.0-fused-arena",
+        "deterministic_rank": 50,
+        "score": 120,
+        "status": "candidate"
       },
       {
         "variant_id": "one-command-buffer-moe",
