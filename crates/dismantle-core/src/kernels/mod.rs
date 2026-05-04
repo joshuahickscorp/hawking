@@ -3661,6 +3661,68 @@ mod metal_dispatch {
 
         Ok(())
     }
+
+    /// Phase 4 Wedge 4a — Metal element-wise residual add.
+    /// `a[i] += b[i]` for i in [0, n). Operates on raw Metal Buffers; the
+    /// caller manages buffer ownership. For the CPU equivalent, see
+    /// `add_inplace`.
+    ///
+    /// Only available with `cfg(target_os = "macos")`.
+    pub fn add_inplace_metal(
+        ctx: &MetalContext,
+        a_buf: &PinnedBuffer,
+        b_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        ctx.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Phase 4 Wedge 4b — Metal greedy argmax over logits.
+    /// Reads `vocab` floats from `logits_buf`, writes the argmax token id
+    /// to `out_token_buf` (single u32). Serial single-thread kernel
+    /// (sample_argmax_f32 in shaders/sample.metal only executes on thread 0);
+    /// eliminates the CPU 408 KB allocation for greedy decode.
+    ///
+    /// Only available with `cfg(target_os = "macos")`.
+    pub fn gpu_argmax_logits_metal(
+        ctx: &MetalContext,
+        logits_buf: &PinnedBuffer,
+        out_token_buf: &PinnedBuffer,
+        vocab: usize,
+    ) -> Result<()> {
+        let vocab_u32 = vocab as u32;
+        // sample_argmax_f32 is a serial kernel: only thread id==0 does the scan.
+        // Grid (1,1,1) / tg (1,1,1) is sufficient and avoids launching idle threads.
+        ctx.dispatch_threads(
+            "sample_argmax_f32",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(out_token_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &vocab_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
 }
 
 #[cfg(target_os = "macos")]

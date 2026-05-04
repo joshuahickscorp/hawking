@@ -13,6 +13,8 @@
 //   embed_lookup          — input-token embedding lookup with optional
 //                           tied LM head.
 //                           [Phase 0]
+//   add_inplace           — element-wise residual add: a[i] += b[i].
+//                           [Phase 4 Wedge 4a]
 
 #include <metal_stdlib>
 using namespace metal;
@@ -122,4 +124,17 @@ kernel void gemv_f16(
     }
 
     if (tid == 0) y[gid] = shmem[0];
+}
+
+// Phase 4 Wedge 4a — element-wise residual add.
+// Computes a[i] += b[i] for i in [0, n).
+// One thread per element; grid (n, 1, 1), threadgroup (TG_SIZE, 1, 1).
+kernel void add_inplace(
+    device       float* a    [[buffer(0)]],
+    device const float* b    [[buffer(1)]],
+    constant     uint&  n    [[buffer(2)]],
+    uint                gid  [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    a[gid] += b[gid];
 }
