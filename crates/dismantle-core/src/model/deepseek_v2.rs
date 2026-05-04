@@ -786,14 +786,7 @@ impl Engine for DeepSeekV2 {
         stats.metal_buffers_created = buffers_created;
         stats.metal_bytes_allocated = bytes_allocated;
         stats.metal_commits = commits;
-        if self.speculate_mode == SpeculateMode::ExactShared {
-            // Bootstrap exact speculation: the verifier is still the
-            // producer, so correctness is identical. Later draft paths
-            // can replace this accounting without changing the public
-            // stats contract.
-            stats.draft_accepted = produced;
-            stats.draft_rejected = 0;
-        }
+        // draft_accepted / draft_rejected populated by real spec-decode path (Phase 6).
         sink(StreamEvent::Done {
             reason,
             stats: stats.clone(),
