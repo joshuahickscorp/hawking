@@ -350,6 +350,7 @@ fn test_moe_block_indexed_no_pack_matches_packed_batched() {
         hidden,
         routed_mid,
         shared_mid,
+        "scalar",
         &x,
         &mut indexed,
     )
