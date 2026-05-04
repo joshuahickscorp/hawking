@@ -207,4 +207,22 @@ pub trait Engine: Send + Sync {
     ) -> Result<Vec<f32>> {
         Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
     }
+
+    /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
+    /// and N positions; processes each transformer layer for all N tokens
+    /// before advancing to the next layer. Returns N logit vectors.
+    /// A1: kernels still dispatch serially per token within each layer.
+    /// A2+ replace inner loops with batched kernel dispatches.
+    fn forward_tokens_batched_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        // Default: delegate to sequential path (correct but not layer-first).
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
+    /// Phase A parity helper — reset KV cache to empty so two forward passes
+    /// can be compared from the same starting state.
+    fn reset_kv_for_test(&mut self) {}
 }

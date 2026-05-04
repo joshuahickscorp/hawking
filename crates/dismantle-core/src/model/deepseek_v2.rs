@@ -821,6 +821,18 @@ impl Engine for DeepSeekV2 {
     ) -> Result<Vec<f32>> {
         self.forward_token_shared_only(token, pos)
     }
+
+    fn forward_tokens_batched_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_batched(tokens, positions)
+    }
+
+    fn reset_kv_for_test(&mut self) {
+        self.reset_kv_state();
+    }
 }
 
 impl DeepSeekV2 {
@@ -1307,6 +1319,50 @@ impl DeepSeekV2 {
             out.push(self.forward_token(token, positions[i])?);
         }
         Ok(out)
+    }
+
+    /// Phase A Wedge A1 — batched forward pass scaffold.
+    ///
+    /// Accepts N tokens and returns N logit vectors. A1 implementation is
+    /// token-first (same as `forward_tokens`) to maintain correct KV-cache
+    /// slot ordering. The `kv.seq_len` slot mechanism advances once per token
+    /// per full-forward, so layer-first ordering requires explicit slot
+    /// management that A2 will introduce alongside the batched attention kernel.
+    ///
+    /// A2 replaces this with a layer-first loop using `mla_decode_kernel_batched`
+    /// and explicit slot tracking (base_slot + m per token). A3 replaces the
+    /// inner FFN loop with batched MoE dispatch.
+    fn forward_tokens_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() != positions.len() {
+            return Err(Error::Model(format!(
+                "forward_tokens_batched: tokens={} positions={}",
+                tokens.len(),
+                positions.len()
+            )));
+        }
+        // A1: token-first loop (semantically identical to forward_tokens).
+        // KV slot ordering is preserved because kv.seq_len advances after each
+        // complete token forward, which is what self.attention() expects.
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token(token, positions[i])?);
+        }
+        Ok(out)
+    }
+
+    /// Reset MLA KV cache to empty state for test isolation.
+    fn reset_kv_state(&mut self) {
+        self.kv.reset();
+        for v in &mut self.mla_c_kv {
+            v.fill(0.0);
+        }
+        for v in &mut self.mla_k_pe {
+            v.fill(0.0);
+        }
     }
 
     /// Append a single (c_kv, k_pe) entry to the MLA cache for layer `li`
