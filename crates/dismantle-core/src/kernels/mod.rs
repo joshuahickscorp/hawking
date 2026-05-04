@@ -4309,6 +4309,132 @@ mod metal_dispatch {
     }
 
     // ── end v0.5.7 GPU sampling dispatchers ──────────────────────────────────
+
+    // ── v0.5.8 fused RMSNorm+GEMV dispatchers ────────────────────────────────
+
+    /// v0.5.8-A — fused rmsnorm + gemv_f32_attn using pre-existing pinned buffers.
+    ///
+    /// Replaces a separate `rmsnorm_metal` + `gemv_f32_attn_metal_pinned` pair.
+    /// x is read once; variance computed in-register via threadgroup reduction,
+    /// then the GEMV runs with the normalized activation. Grid = (rows, 1, 1),
+    /// TG = (256, 1, 1). One threadgroup memory slot of 256 × f32.
+    pub fn rmsnorm_gemv_f32_attn_pinned_metal(
+        ctx: &MetalContext,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "rmsnorm_gemv_f32_attn_pinned",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.8-B — fused rmsnorm + Q4_K_M GEMV pair (gate + up).
+    ///
+    /// Reads x once, computes rmsnorm, then dispatches `2 × rows` threadgroups:
+    /// gid < rows → gate_out[gid]; gid >= rows → up_out[gid - rows].
+    /// `weight_f16` is the rmsnorm learnable scale in f16 (cols elements).
+    /// Both Q4_K_M weight matrices must have the same (rows, cols) shape and
+    /// `cols % 256 == 0`.
+    pub fn rmsnorm_gemv_q4k_pair_metal(
+        ctx: &MetalContext,
+        weight_f16: &[half::f16],
+        eps: f32,
+        w_gate_bytes: &[u8],
+        w_up_bytes: &[u8],
+        gate_out_buf: &PinnedBuffer,
+        up_out_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "rmsnorm_gemv_q4k_pair requires cols % 256 == 0; cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_gate_bytes.len() != expected_bytes || w_up_bytes.len() != expected_bytes {
+            return Err(crate::error::Error::Kernel(format!(
+                "rmsnorm_gemv_q4k_pair weight bytes mismatch: \
+                 gate={} up={} expected={expected_bytes}",
+                w_gate_bytes.len(),
+                w_up_bytes.len()
+            )));
+        }
+        let weight_bytes = bytemuck::cast_slice::<half::f16, u8>(weight_f16);
+        let weight_buf = ctx.new_buffer_with_bytes(weight_bytes);
+        let gate_buf   = ctx.new_buffer_with_bytes(w_gate_bytes);
+        let up_buf     = ctx.new_buffer_with_bytes(w_up_bytes);
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let grid_x = 2u32 * rows_u32 * TG_SIZE;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "rmsnorm_gemv_q4k_pair",
+            (grid_x, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&weight_buf), 0);
+                enc.set_bytes(
+                    1,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(2, Some(&gate_buf), 0);
+                enc.set_buffer(3, Some(&up_buf), 0);
+                enc.set_buffer(4, Some(gate_out_buf), 0);
+                enc.set_buffer(5, Some(up_out_buf), 0);
+                enc.set_buffer(6, Some(x_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v0.5.8 fused rmsnorm+gemv dispatchers ────────────────────────────
 }
 
 #[cfg(target_os = "macos")]
