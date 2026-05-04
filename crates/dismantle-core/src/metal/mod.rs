@@ -233,6 +233,8 @@ mod imp {
             "moe_block_fused_stub" => "moe_block_fused_stub",
             // silu / activation
             "silu_mul" => "silu_mul",
+            // residual / element-wise kernels
+            "add_inplace" => "add_inplace",
             // sampling kernels
             "sample_constraint" => "sample_constraint",
             "sample_repetition" => "sample_repetition",
