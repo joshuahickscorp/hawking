@@ -193,3 +193,106 @@ kernel void silu_mul_f16(
     float silu_g = g / (1.0f + exp(-g));
     out[gid] = (half)(silu_g * u);
 }
+
+// v0.5.9-C — fp16 residual add: a[i] += b[i], both f16.
+kernel void add_inplace_f16(
+    device       half*  a   [[buffer(0)]],
+    device const half*  b   [[buffer(1)]],
+    constant     uint&  n   [[buffer(2)]],
+    uint                gid [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    a[gid] = (half)((float)a[gid] + (float)b[gid]);
+}
+
+// v0.5.9-E — standalone f16 softmax.
+// Single-threadgroup kernel: reads n f16 logits, writes n f16 probabilities.
+// Max and exp-sum computed in f32. Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void softmax_f16(
+    device const half*  x     [[buffer(0)]],
+    device       half*  out   [[buffer(1)]],
+    constant     uint&  n     [[buffer(2)]],
+    threadgroup  float* shmem [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    // Phase 1: parallel max reduction.
+    float local_max = -INFINITY;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = (float)x[i];
+        if (v > local_max) local_max = v;
+    }
+    shmem[tid] = local_max;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] = max(shmem[tid], shmem[tid + stride]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_val = shmem[0];
+
+    // Phase 2: parallel sum of exp(x - max).
+    float local_sum = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        local_sum += exp((float)x[i] - max_val);
+    }
+    shmem[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_sum = 1.0f / shmem[0];
+
+    // Phase 3: write normalized probabilities.
+    for (uint i = tid; i < n; i += tg_size) {
+        out[i] = (half)(exp((float)x[i] - max_val) * inv_sum);
+    }
+}
+
+// v0.5.9-F — f16 layer normalization (mean-centering + variance + bias).
+// Like rmsnorm_f16 but subtracts mean first and adds a bias term.
+// Single-threadgroup kernel. Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void layer_norm_f16(
+    device const half*  x       [[buffer(0)]],
+    device const half*  weight  [[buffer(1)]],
+    device const half*  bias    [[buffer(2)]],
+    constant     float& eps     [[buffer(3)]],
+    constant     uint&  n       [[buffer(4)]],
+    device       half*  out     [[buffer(5)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    // Phase 1: mean.
+    float local_sum = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        local_sum += (float)x[i];
+    }
+    shmem[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float mean = shmem[0] / float(n);
+
+    // Phase 2: variance.
+    float local_var = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = (float)x[i] - mean;
+        local_var += v * v;
+    }
+    shmem[tid] = local_var;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_std = rsqrt(shmem[0] / float(n) + eps);
+
+    // Phase 3: normalize, scale, bias.
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = ((float)x[i] - mean) * inv_std;
+        out[i] = (half)(v * (float)weight[i] + (float)bias[i]);
+    }
+}
