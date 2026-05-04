@@ -2735,6 +2735,139 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Phase A Wedge A2 — batched MLA decode (M tokens in one dispatch).
+    ///
+    /// Grid: (n_heads × TG_SIZE, M, 1). Token m attends to KV entries
+    /// 0..max(base_seq_len + m, 1) with causal masking across the batch.
+    ///
+    /// Caller must pre-append all M tokens' c_kv/k_pe to the cache before
+    /// calling (slots base_seq_len..base_seq_len+M-1). This function reads
+    /// the full c_kv/k_pe slices including those M new entries.
+    ///
+    /// Returns: `out_batch` — flattened [M, n_heads × v_head_dim].
+    /// Caller concatenates heads and applies o_proj per token.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_metal_batched(
+        ctx: &MetalContext,
+        q_batch: &[f32],      // [M, n_heads, head_dim_q]
+        c_kv: &[f32],         // [total_seq, kv_lora_rank]
+        k_pe: &[f32],         // [total_seq, qk_rope_head_dim]
+        kv_b_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        base_seq_len: usize,  // KV entries before this batch (causal mask base)
+        n_batch: usize,       // M: number of tokens in this batch
+        scale: f32,
+        out_batch: &mut [f32], // [M, n_heads × v_head_dim]
+    ) -> Result<()> {
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        let total_seq = base_seq_len + n_batch;
+
+        if q_batch.len() != n_batch * n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched: q_batch.len={} expected {}",
+                q_batch.len(), n_batch * n_heads * q_head_dim
+            )));
+        }
+        if c_kv.len() != total_seq * kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched: c_kv.len={} expected {}",
+                c_kv.len(), total_seq * kv_lora_rank
+            )));
+        }
+        if k_pe.len() != total_seq * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched: k_pe.len={} expected {}",
+                k_pe.len(), total_seq * qk_rope_head_dim
+            )));
+        }
+        if out_batch.len() != n_batch * n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched: out_batch.len={} expected {}",
+                out_batch.len(), n_batch * n_heads * v_head_dim
+            )));
+        }
+        if n_batch == 0 {
+            return Ok(());
+        }
+
+        let q_buf   = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q_batch));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let out_buf  = ctx.new_buffer(out_batch.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32     = n_heads as u32;
+        let qk_nope_u32     = qk_nope_head_dim as u32;
+        let qk_rope_u32     = qk_rope_head_dim as u32;
+        let v_head_u32      = v_head_dim as u32;
+        let kv_lora_u32     = kv_lora_rank as u32;
+        let base_seq_u32    = base_seq_len as u32;
+
+        // Threadgroup memory:
+        //   slot 0 — q_nope_proj: kv_lora_rank floats
+        //   slot 1 — scores:      max_seq floats (total_seq for worst-case token)
+        //   slot 2 — c_kv_wt:     kv_lora_rank floats
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes      = (total_seq as u64).max(1) * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_threads(
+            "mla_decode_kernel_batched",
+            (n_heads_u32 * TG_SIZE, n_batch as u32, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_heads_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_nope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_rope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &v_head_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &kv_lora_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &base_seq_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<f32>() as u64,
+                    &scale as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out_batch);
+        Ok(())
+    }
+
     /// Wedge 3 — Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
     /// into one command buffer. Saves one commit+wait per attention layer
     /// (27 fewer roundtrips per token on DeepSeek-V2-Lite).
