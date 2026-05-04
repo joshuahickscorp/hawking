@@ -1218,6 +1218,11 @@ impl DeepSeekV2 {
                     (None, None, None, 0)
                 };
 
+            let q4k_schedule = self
+                .kernel_profile
+                .as_ref()
+                .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+                .unwrap_or("scalar");
             crate::kernels::moe_block_batched_indexed_metal(
                 ctx,
                 model_buf,
@@ -1233,6 +1238,7 @@ impl DeepSeekV2 {
                 self.config.hidden,
                 self.config.moe_intermediate,
                 shared_mid,
+                q4k_schedule,
                 x,
                 &mut out,
             )?;

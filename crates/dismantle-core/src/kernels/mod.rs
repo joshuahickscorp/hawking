@@ -2323,6 +2323,7 @@ mod metal_dispatch {
         hidden: usize,
         routed_mid: usize,
         shared_mid: usize,
+        q4k_schedule: &str,
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
@@ -2451,10 +2452,15 @@ mod metal_dispatch {
         let shared_act = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
         let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
 
+        let q4k_indexed_kernel = match q4k_schedule {
+            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            _ => "moe_batched_gemm_q4_indexed",
+        };
+
         ctx.dispatch_batch(|batch| {
             encode_batched_gemv_indexed(
                 batch,
-                "moe_batched_gemm_q4_indexed",
+                q4k_indexed_kernel,
                 model_buf,
                 &route_ids_buf,
                 &x_buf,
@@ -2466,7 +2472,7 @@ mod metal_dispatch {
             )?;
             encode_batched_gemv_indexed(
                 batch,
-                "moe_batched_gemm_q4_indexed",
+                q4k_indexed_kernel,
                 model_buf,
                 &route_ids_buf,
                 &x_buf,
@@ -2501,7 +2507,7 @@ mod metal_dispatch {
             {
                 encode_batched_gemv_indexed(
                     batch,
-                    "moe_batched_gemm_q4_indexed",
+                    q4k_indexed_kernel,
                     model_buf,
                     &shared_route_ids_buf,
                     &x_buf,
@@ -2513,7 +2519,7 @@ mod metal_dispatch {
                 )?;
                 encode_batched_gemv_indexed(
                     batch,
-                    "moe_batched_gemm_q4_indexed",
+                    q4k_indexed_kernel,
                     model_buf,
                     &shared_route_ids_buf,
                     &x_buf,
@@ -3067,6 +3073,50 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Parity-test helper: dispatch `moe_batched_gemm_q4_indexed` (scalar)
+    /// or `moe_batched_gemm_q4_indexed_v2` directly against a byte slice
+    /// containing the full fused expert tensor.
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_batched_gemm_q4_indexed_raw(
+        ctx: &MetalContext,
+        use_v2: bool,
+        w_all_bytes: &[u8],
+        base_offset: usize,
+        route_ids: &[u32],
+        x: &[f32],
+        routes: usize,
+        rows: usize,
+        cols: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let kernel_name = if use_v2 {
+            "moe_batched_gemm_q4_indexed_v2"
+        } else {
+            "moe_batched_gemm_q4_indexed"
+        };
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
+        let route_ids_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_batched_gemv_indexed(
+                batch,
+                kernel_name,
+                &model_buf,
+                &route_ids_buf,
+                &x_buf,
+                &out_buf,
+                base_offset,
+                routes,
+                rows,
+                cols,
+            )
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn encode_batched_gemv_indexed(
         batch: &mut CommandBatch<'_>,
@@ -3084,12 +3134,19 @@ mod metal_dispatch {
         let routes_u32 = routes as u32;
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let tg_size = TG_SIZE as u32;
+        let is_v2 = kernel_name.ends_with("_v2");
+        let n_tg_x = if is_v2 { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2 {
+            0u64
+        } else {
+            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
+        };
 
         batch.dispatch_threads(
             kernel_name,
-            (rows_u32 * TG_SIZE, routes_u32, 1),
-            (TG_SIZE, 1, 1),
+            (n_tg_x * tg_size, routes_u32, 1),
+            (tg_size, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(model_buf), 0);
                 enc.set_buffer(1, Some(route_ids_buf), 0);
@@ -3115,7 +3172,9 @@ mod metal_dispatch {
                     std::mem::size_of::<u32>() as u64,
                     &cols_u32 as *const u32 as *const _,
                 );
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
+                if !is_v2 {
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                }
             },
         )
     }
