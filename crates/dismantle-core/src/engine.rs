@@ -166,4 +166,13 @@ pub trait Engine: Send + Sync {
     fn model_arch(&self) -> &str {
         "unknown"
     }
+
+    /// Phase 2 Wedge 2a — multi-token forward shim. Currently a loop;
+    /// later wedges widen internals. Exposed for parity testing and for
+    /// future generate() integration.
+    fn forward_tokens_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>>;
 }
