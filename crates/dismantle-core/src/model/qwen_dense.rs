@@ -388,6 +388,24 @@ impl Engine for QwenDense {
     fn model_id(&self) -> &str {
         &self.model_id
     }
+
+    fn forward_tokens_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() != positions.len() {
+            return Err(crate::Error::Model(format!(
+                "forward_tokens shape: tokens={} positions={}",
+                tokens.len(), positions.len()
+            )));
+        }
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token(token, positions[i])?);
+        }
+        Ok(out)
+    }
 }
 
 impl QwenDense {

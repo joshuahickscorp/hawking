@@ -807,6 +807,14 @@ impl Engine for DeepSeekV2 {
     fn model_arch(&self) -> &str {
         "deepseek2"
     }
+
+    fn forward_tokens_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens(tokens, positions)
+    }
 }
 
 impl DeepSeekV2 {
@@ -1274,6 +1282,63 @@ impl DeepSeekV2 {
         Ok(logits)
     }
 
+    /// Multi-token forward pass. Phase 2 Wedge 2a: initial impl is a loop
+    /// over `forward_token` — semantically identical to N sequential single-
+    /// token calls. Subsequent wedges (2c-2f) widen the internals.
+    fn forward_tokens(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() != positions.len() {
+            return Err(Error::Model(format!(
+                "forward_tokens shape: tokens={} positions={}",
+                tokens.len(), positions.len()
+            )));
+        }
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token(token, positions[i])?);
+        }
+        Ok(out)
+    }
+
+    /// Append a single (c_kv, k_pe) entry to the MLA cache for layer `li`
+    /// at sequence slot `seq_slot`. Pure refactor of the inlined writes;
+    /// N=1 semantics unchanged. Phase 2 Wedge 2b — wedge 2d will add a
+    /// _batch counterpart.
+    ///
+    /// Takes field references directly so callers holding `&self.config`
+    /// can call this without triggering a whole-self reborrow.
+    fn mla_kv_append(
+        mla_c_kv: &mut Vec<Vec<f32>>,
+        mla_k_pe: &mut Vec<Vec<f32>>,
+        li: usize,
+        seq_slot: usize,
+        kv_lora_rank: usize,
+        qk_rope_head_dim: usize,
+        c_kv: &[f32],
+        k_pe: &[f32],
+    ) -> Result<()> {
+        if c_kv.len() != kv_lora_rank {
+            return Err(Error::Model(format!(
+                "mla_kv_append c_kv len: got {} expected {}",
+                c_kv.len(), kv_lora_rank
+            )));
+        }
+        if k_pe.len() != qk_rope_head_dim {
+            return Err(Error::Model(format!(
+                "mla_kv_append k_pe len: got {} expected {}",
+                k_pe.len(), qk_rope_head_dim
+            )));
+        }
+        let pos_c = seq_slot * kv_lora_rank;
+        mla_c_kv[li][pos_c..pos_c + kv_lora_rank].copy_from_slice(c_kv);
+        let pos_k = seq_slot * qk_rope_head_dim;
+        mla_k_pe[li][pos_k..pos_k + qk_rope_head_dim].copy_from_slice(k_pe);
+        Ok(())
+    }
+
     fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<Option<u32>> {
         let x_norm = self.forward_token_final_norm(token, pos)?;
         self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
@@ -1418,11 +1483,19 @@ impl DeepSeekV2 {
             if li == 0 && self.kv.seq_len >= self.kv.max_seq {
                 return Err(Error::Model("kv cache full".into()));
             }
-            let pos_c = self.kv.seq_len * cfg.kv_lora_rank;
-            self.mla_c_kv[li][pos_c..pos_c + cfg.kv_lora_rank].copy_from_slice(&c_kv);
-            let pos_k = self.kv.seq_len * cfg.qk_rope_head_dim;
-            self.mla_k_pe[li][pos_k..pos_k + cfg.qk_rope_head_dim].copy_from_slice(&k_pe);
-            if li + 1 == cfg.n_layers {
+            let seq_slot = self.kv.seq_len;
+            let n_layers = self.config.n_layers;
+            Self::mla_kv_append(
+                &mut self.mla_c_kv,
+                &mut self.mla_k_pe,
+                li,
+                seq_slot,
+                cfg.kv_lora_rank,
+                cfg.qk_rope_head_dim,
+                &c_kv,
+                &k_pe,
+            )?;
+            if li + 1 == n_layers {
                 self.kv.seq_len += 1;
             }
 

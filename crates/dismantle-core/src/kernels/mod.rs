@@ -82,6 +82,27 @@ pub fn rope_inplace(x: &mut [f32], pos: u32, base: f32) {
     }
 }
 
+/// Phase 2 Wedge 2c — apply RoPE to N rotation vectors at N positions in
+/// one call. RoPE is element-wise per (vector, position); this helper
+/// makes the multi-token call site obvious without changing the math.
+///
+/// `xs` is N rotation vectors (each of length head_dim, even). `positions`
+/// is N positions (one per vector). `base` is the rope theta-base.
+///
+/// Equivalent to N sequential calls to `rope_inplace`. Bit-identical.
+pub fn rope_inplace_batch(xs: &mut [&mut [f32]], positions: &[u32], base: f32) {
+    debug_assert_eq!(
+        xs.len(),
+        positions.len(),
+        "rope_inplace_batch: xs.len()={} positions.len()={}",
+        xs.len(),
+        positions.len(),
+    );
+    for (x, &pos) in xs.iter_mut().zip(positions.iter()) {
+        rope_inplace(*x, pos, base);
+    }
+}
+
 /// Look up a token embedding row. `embed` is laid out (vocab, hidden).
 pub fn embed_lookup(embed: &[f16], hidden: usize, token_id: u32, out: &mut [f32]) {
     let row = token_id as usize * hidden;
