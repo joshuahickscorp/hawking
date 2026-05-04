@@ -1,4 +1,4 @@
-{"device":"Apple M3 Pro","event":"autotune-start","max_hours":0.001,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","shader_hash":"9e572049436d49dc330dddad","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
+{"device":"Apple M3 Pro","event":"autotune-start","max_hours":0.001,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","shader_hash":"7dbee349c999077b56b36cc3","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
 {"deterministic_rank":4,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":161,"status":"candidate","variant_id":"v0.2.2-metal-safe"}
 {"deterministic_rank":20,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":157,"status":"planned","variant_id":"gpu-greedy-frontier"}
 {"deterministic_rank":25,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":157,"status":"planned","variant_id":"single-kernel-fused"}
