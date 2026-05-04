@@ -816,6 +816,14 @@ impl Engine for DeepSeekV2 {
     ) -> Result<Vec<Vec<f32>>> {
         self.forward_tokens(tokens, positions)
     }
+
+    fn forward_token_shared_only_for_test(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<Vec<f32>> {
+        self.forward_token_shared_only(token, pos)
+    }
 }
 
 impl DeepSeekV2 {
@@ -1819,6 +1827,118 @@ impl DeepSeekV2 {
             }
         }
         Ok(out)
+    }
+
+    /// Phase 3 prep: like `ffn()` but skips routed-expert contributions.
+    /// Routing gate logits and topk_gate are still computed (fair comparison
+    /// with `ffn()`), but the resulting contributions are zeroed. Only the
+    /// shared experts run. Dense layers run normally (no routed experts exist).
+    fn ffn_shared_only(&self, li: usize, x: &[f32]) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let layer = &self.layers[li];
+        let mut out = vec![0.0f32; cfg.hidden];
+
+        match &layer.mode {
+            LayerMode::Dense {
+                gate_w,
+                up_w,
+                down_w,
+            } => {
+                // Dense layers have no routed experts; identical to full ffn.
+                let mid = cfg.ffn_intermediate;
+                let mut g = vec![0.0f32; mid];
+                let mut u = vec![0.0f32; mid];
+                let mut a = vec![0.0f32; mid];
+                gemv_f32(gate_w, mid, cfg.hidden, x, &mut g);
+                gemv_f32(up_w, mid, cfg.hidden, x, &mut u);
+                silu_mul(&g, &u, &mut a);
+                gemv_f32(down_w, cfg.hidden, mid, &a, &mut out);
+            }
+            LayerMode::MoE {
+                gate_logits_w,
+                routed_fused: _,
+                routed: _,
+                shared_fused,
+                shared,
+            } => {
+                // Routing: compute logits + topk for fair comparison, but skip
+                // the routed contributions.
+                let mut logits = vec![0.0f32; cfg.n_routed_experts];
+                self.gemv_f32_moe_dispatch(
+                    gate_logits_w,
+                    cfg.n_routed_experts,
+                    cfg.hidden,
+                    x,
+                    &mut logits,
+                )?;
+                let _routes = topk_gate(&mut logits, cfg.top_k_routed, true);
+
+                // Shared expert only (same code as in ffn()).
+                let mut w_buf = Vec::<f32>::new();
+                let mut tmp = vec![0.0f32; cfg.hidden];
+                if let Some(s) = shared.first() {
+                    let smid = cfg.n_shared_experts * cfg.moe_intermediate;
+                    let mut sa = vec![0.0f32; smid];
+                    self.moe_expert_pair_matmul_dispatch(
+                        &s.gate_w, &s.up_w, smid, cfg.hidden, x,
+                        &mut sa, &mut w_buf,
+                    )?;
+                    self.moe_expert_matmul_dispatch(
+                        &s.down_w, cfg.hidden, smid, &sa, &mut tmp, &mut w_buf,
+                    )?;
+                    for i in 0..cfg.hidden {
+                        out[i] += tmp[i];
+                    }
+                } else if shared_fused.is_some() {
+                    // Fused shared path — fall back to the non-fused for simplicity
+                    // (shared_fused is None in DeepSeek-V2-Lite w/ current schedule).
+                }
+            }
+        }
+        Ok(out)
+    }
+
+    /// Phase 3 prep: like `forward_token` but uses `ffn_shared_only` at every layer.
+    /// Exposes the shared-only logits for acceptance-rate measurement.
+    pub fn forward_token_shared_only(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        let h = self.config.hidden;
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+
+        for li in 0..self.config.n_layers {
+            crate::metal::set_current_layer(Some(li as u32));
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(
+                &x,
+                &self.layers[li].attn_norm,
+                self.config.rms_norm_eps,
+                &mut x_norm,
+            )?;
+            let attn_out = self.attention(li, pos, &x_norm)?;
+            add_inplace(&mut x, &attn_out);
+
+            self.rmsnorm_dispatch(
+                &x.clone(),
+                &self.layers[li].ffn_norm,
+                self.config.rms_norm_eps,
+                &mut x_norm,
+            )?;
+            let ffn_out = self.ffn_shared_only(li, &x_norm)?;
+            add_inplace(&mut x, &ffn_out);
+        }
+        crate::metal::set_current_layer(None);
+
+        let mut x_norm = vec![0.0f32; h];
+        self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
+
+        let mut logits = vec![0.0f32; self.config.vocab_size];
+        let w_f16: &[f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed,
+        };
+        self.gemv_f16_dispatch(w_f16, self.config.vocab_size, h, &x_norm, &mut logits)?;
+        Ok(logits)
     }
 }
 

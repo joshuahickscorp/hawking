@@ -175,4 +175,15 @@ pub trait Engine: Send + Sync {
         tokens: &[u32],
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>>;
+
+    /// Phase 3 prep — shared-only forward for spec acceptance measurement.
+    /// Returns logits from a forward pass that runs only shared experts
+    /// (routed contributions zeroed). Dense models return Err("unimplemented").
+    fn forward_token_shared_only_for_test(
+        &mut self,
+        _token: u32,
+        _pos: usize,
+    ) -> Result<Vec<f32>> {
+        Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
+    }
 }
