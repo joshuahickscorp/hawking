@@ -56,7 +56,7 @@ impl Default for EngineConfig {
             prefill_cache_dir: None,
             kernel_profile: None,
             trace_dispatch: false,
-            activation_dtype: ActivationDtype::F16,
+            activation_dtype: ActivationDtype::F32,
         }
     }
 }
