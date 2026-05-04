@@ -269,7 +269,7 @@ impl Engine for QwenDense {
         let max_seq = config.max_seq_len.min(cfg.max_seq_len);
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
-        let metal_ctx = MetalContext::new().ok();
+        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
 
         Ok(Self {
             config: cfg,
@@ -370,6 +370,14 @@ impl Engine for QwenDense {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        let (buffers_created, bytes_allocated, commits) = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_stats())
+            .unwrap_or_default();
+        stats.metal_buffers_created = buffers_created;
+        stats.metal_bytes_allocated = bytes_allocated;
+        stats.metal_commits = commits;
         sink(StreamEvent::Done {
             reason,
             stats: stats.clone(),

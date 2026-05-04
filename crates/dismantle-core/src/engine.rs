@@ -19,6 +19,10 @@ pub struct EngineConfig {
     pub verify_window: usize,
     pub prefill_cache_dir: Option<std::path::PathBuf>,
     pub kernel_profile: Option<KernelProfile>,
+    /// When true, the Metal context increments allocation/commit counters and
+    /// collects dispatch timing. Matches `DISMANTLE_TRACE_DISPATCH=1` (env var
+    /// remains a fallback when this is false).
+    pub trace_dispatch: bool,
 }
 
 impl Default for EngineConfig {
@@ -31,6 +35,7 @@ impl Default for EngineConfig {
             verify_window: 4,
             prefill_cache_dir: None,
             kernel_profile: None,
+            trace_dispatch: false,
         }
     }
 }
@@ -136,9 +141,13 @@ pub struct GenStats {
     pub device_id: Option<String>,
     pub trace_hash: Option<String>,
     /// Per-dispatch timing samples drained from MetalContext after generation.
-    /// Non-empty only when `DISMANTLE_TRACE_DISPATCH=1` is set; always empty
-    /// on non-macOS or when Metal is unavailable.
+    /// Non-empty only when `DISMANTLE_TRACE_DISPATCH=1` is set or
+    /// `EngineConfig::trace_dispatch` is true; always empty otherwise.
     pub dispatch_samples: Vec<crate::metal::DispatchSample>,
+    /// Structural counters — non-zero only when trace_dispatch is on.
+    pub metal_buffers_created: usize,
+    pub metal_bytes_allocated: usize,
+    pub metal_commits: usize,
 }
 
 pub trait Engine: Send + Sync {

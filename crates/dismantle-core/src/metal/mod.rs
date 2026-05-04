@@ -91,6 +91,7 @@ mod imp {
     };
     use parking_lot::Mutex;
     use std::collections::HashMap;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
 
     // Re-export Metal's Buffer type so callers can hold pinned-weight
@@ -127,12 +128,46 @@ mod imp {
         }
     }
 
+    /// Structural counters for buffer allocations and command-buffer commits.
+    /// Only incremented when `MetalContext::trace_dispatch` is true; zero-cost
+    /// when off (no atomic ops on the hot path).
+    pub struct MetalContextStats {
+        pub buffers_created: AtomicUsize,
+        pub bytes_allocated: AtomicUsize,
+        pub commits: AtomicUsize,
+    }
+
+    impl MetalContextStats {
+        fn new() -> Self {
+            Self {
+                buffers_created: AtomicUsize::new(0),
+                bytes_allocated: AtomicUsize::new(0),
+                commits: AtomicUsize::new(0),
+            }
+        }
+
+        /// Drain counters, returning (buffers_created, bytes_allocated, commits).
+        pub fn drain(&self) -> (usize, usize, usize) {
+            (
+                self.buffers_created.swap(0, Ordering::Relaxed),
+                self.bytes_allocated.swap(0, Ordering::Relaxed),
+                self.commits.swap(0, Ordering::Relaxed),
+            )
+        }
+    }
+
     /// The owned device handle. Cheap to clone via `Arc`.
     #[derive(Clone)]
     pub struct MetalContext {
         inner: Arc<Inner>,
         /// Shared trace accumulator; `Arc` so `Clone` works without copying.
         pub trace: Arc<DispatchTrace>,
+        /// Shared structural counters; `Arc` so `Clone` works without copying.
+        pub stats: Arc<MetalContextStats>,
+        /// Whether to collect dispatch trace and structural counters.
+        /// Mirrors `EngineConfig::trace_dispatch`; env var `DISMANTLE_TRACE_DISPATCH`
+        /// acts as a fallback when this is false.
+        pub trace_dispatch: bool,
     }
 
     /// One command buffer that can encode several compute kernels before
@@ -209,6 +244,10 @@ mod imp {
 
     impl MetalContext {
         pub fn new() -> Result<Self> {
+            Self::new_with_trace(false)
+        }
+
+        pub fn new_with_trace(trace_dispatch: bool) -> Result<Self> {
             let device = Device::system_default()
                 .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
             let queue = device.new_command_queue();
@@ -217,6 +256,8 @@ mod imp {
             let library = device
                 .new_library_with_source(&src, &opts)
                 .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
+            // Resolve at construction so hot-path checks are a single bool load.
+            let effective = trace_dispatch || std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
             Ok(Self {
                 inner: Arc::new(Inner {
                     device,
@@ -225,6 +266,8 @@ mod imp {
                     pipelines: Mutex::new(HashMap::new()),
                 }),
                 trace: Arc::new(DispatchTrace::new()),
+                stats: Arc::new(MetalContextStats::new()),
+                trace_dispatch: effective,
             })
         }
 
@@ -264,6 +307,10 @@ mod imp {
 
         /// Shared (CPU+GPU readable) buffer of the given byte size.
         pub fn new_buffer(&self, len: usize) -> Buffer {
+            if self.trace_dispatch {
+                self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                self.stats.bytes_allocated.fetch_add(len, Ordering::Relaxed);
+            }
             self.inner
                 .device
                 .new_buffer(len as u64, MTLResourceOptions::StorageModeShared)
@@ -271,6 +318,10 @@ mod imp {
 
         /// Buffer initialized from a CPU byte slice.
         pub fn new_buffer_with_bytes(&self, bytes: &[u8]) -> Buffer {
+            if self.trace_dispatch {
+                self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+            }
             self.inner.device.new_buffer_with_data(
                 bytes.as_ptr() as *const _,
                 bytes.len() as u64,
@@ -311,10 +362,15 @@ mod imp {
         }
 
         /// Drain all trace samples accumulated since the last drain.
-        /// Returns an empty vec when `DISMANTLE_TRACE_DISPATCH` is unset
-        /// (no samples are ever pushed).
+        /// Returns an empty vec when trace is disabled.
         pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
             self.trace.drain()
+        }
+
+        /// Drain structural counters, returning (buffers_created, bytes_allocated, commits).
+        /// Returns (0, 0, 0) when trace_dispatch is false.
+        pub fn drain_stats(&self) -> (usize, usize, usize) {
+            self.stats.drain()
         }
 
         pub fn dispatch_threads(
@@ -324,7 +380,7 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            let trace_enabled = std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let trace_enabled = self.trace_dispatch;
             let t0 = if trace_enabled { Some(Instant::now()) } else { None };
 
             let pipe = self.pipeline(fn_name)?;
@@ -338,6 +394,9 @@ mod imp {
             );
             enc.end_encoding();
             cmd.commit();
+            if trace_enabled {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
             cmd.wait_until_completed();
 
             if let Some(t0) = t0 {
@@ -355,7 +414,7 @@ mod imp {
             &self,
             encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
         ) -> Result<()> {
-            let trace_enabled = std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let trace_enabled = self.trace_dispatch;
             let t0 = if trace_enabled { Some(Instant::now()) } else { None };
 
             let cmd = self.inner.queue.new_command_buffer();
@@ -363,6 +422,9 @@ mod imp {
             encode(&mut batch)?;
             let CommandBatch { cmd, .. } = batch;
             cmd.commit();
+            if trace_enabled {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
             cmd.wait_until_completed();
 
             if let Some(t0) = t0 {
@@ -412,12 +474,20 @@ mod imp {
             Err(Error::Metal("metal unavailable on this platform".into()))
         }
 
+        pub fn new_with_trace(_trace_dispatch: bool) -> Result<Self> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
         pub fn device_name(&self) -> String {
             "metal-unavailable".into()
         }
 
         pub fn drain_trace(&self) -> Vec<super::DispatchSample> {
             Vec::new()
+        }
+
+        pub fn drain_stats(&self) -> (usize, usize, usize) {
+            (0, 0, 0)
         }
     }
 
