@@ -4663,6 +4663,160 @@ mod metal_dispatch {
     }
 
     // ── end v0.5.9 fp16 activation kernel dispatchers ─────────────────────────
+
+    // ── v0.5.10 fp16 Q-format kernel dispatchers ──────────────────────────────
+
+    /// Q4_K_M GEMV: f16 x → f16 y (weights stay Q4_K_M).
+    /// Identical dispatch to moe_grouped_gemm_q4_metal_buf except kernel name
+    /// and f16 x/y buffers.
+    pub fn gemm_q4_k_m_fused_f16_metal(
+        ctx: &MetalContext,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_f16 requires cols % 256 == 0; got {cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_q4_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "gemm_q4_k_m_fused_f16 weight bytes: got {} expected {expected_bytes}",
+                w_q4_bytes.len()
+            )));
+        }
+        let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemm_q4_k_m_fused_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// MoE-style Q4_K_M GEMV: f16 x → f16 y.
+    pub fn moe_grouped_gemm_q4_f16_metal(
+        ctx: &MetalContext,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "moe_grouped_gemm_q4_f16 requires cols % 256 == 0; got {cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_q4_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "moe_grouped_gemm_q4_f16 weight bytes: got {} expected {expected_bytes}",
+                w_q4_bytes.len()
+            )));
+        }
+        let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "moe_grouped_gemm_q4_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// Q8_0 → f16 dequant (alias: the existing dequant_q8_0 kernel already outputs f16).
+    /// nblock = bytes.len() / 34.
+    pub fn dequant_q8_0_f16_metal(
+        ctx: &MetalContext,
+        src_bytes: &[u8],
+        dst_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let nblock = (src_bytes.len() / 34) as u32;
+        let src_buf = ctx.new_buffer_with_bytes(src_bytes);
+        ctx.dispatch_threads(
+            "dequant_q8_0",
+            (nblock, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&src_buf), 0);
+                enc.set_buffer(1, Some(dst_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &nblock as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Q6_K → f16 standalone dequant.
+    /// Grid: (nblock, 1, 1), TG: (256, 1, 1). Each TG decodes one 256-element block.
+    pub fn dequant_q6_k_f16_metal(
+        ctx: &MetalContext,
+        src_bytes: &[u8],
+        dst_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let nblock = (src_bytes.len() / 210) as u32;
+        let src_buf = ctx.new_buffer_with_bytes(src_bytes);
+        ctx.dispatch_threads(
+            "dequant_q6_k_f16",
+            (nblock * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&src_buf), 0);
+                enc.set_buffer(1, Some(dst_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &nblock as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    // ── end v0.5.10 fp16 Q-format kernel dispatchers ──────────────────────────
 }
 
 #[cfg(target_os = "macos")]

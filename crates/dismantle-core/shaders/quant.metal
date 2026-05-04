@@ -302,3 +302,113 @@ kernel void gemm_q4_k_m_fused_v2(
         y[base_row] = partial;
     }
 }
+
+// v0.5.10-A — Q4_K_M GEMV with f16 x and f16 y. Internal MAC in f32.
+// Identical body to gemm_q4_k_m_fused; only x/y types differ.
+kernel void gemm_q4_k_m_fused_f16(
+    device const uchar* w_q4   [[buffer(0)]],   // (rows, cols) Q4_K_M
+    device const half*  x      [[buffer(1)]],   // (cols,) f16
+    device       half*  y      [[buffer(2)]],   // (rows,) f16
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    threadgroup  float* shmem  [[threadgroup(0)]],
+    uint                tid       [[thread_position_in_threadgroup]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                tg_size   [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)gid * (uint64_t)blocks_per_row * 144ul;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uint sub = tid >> 5;
+        uchar s_byte, m_byte;
+        if (sub < 4u) {
+            s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+            m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+        } else {
+            uint j = sub - 4u;
+            s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                   | ((w_q4[bo + 4u + j]      >> 6) << 4);
+            m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                   | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+        }
+
+        uint pair = sub >> 1;
+        bool upper = (sub & 1u) != 0u;
+        uint i = tid & 31u;
+        uchar q = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+        uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+        float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+
+        float xv = (float)x[(uint64_t)b * 256ul + (uint64_t)tid];
+        partial += w_val * xv;
+    }
+
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0u) y[gid] = (half)shmem[0];
+}
+
+// v0.5.10-D — standalone Q6_K → f16 dequant.
+// One threadgroup per 256-element block (210 bytes), one thread per element.
+// Q6_K block layout: ql[128], qh[64], scales[16], d[2] = 210 bytes.
+// Decoding logic mirrors q6_k_value() from moe.metal, inlined here to avoid
+// cross-file includes.
+// Grid: (nblock, 1, 1), TG: (256, 1, 1).
+kernel void dequant_q6_k_f16(
+    device const uchar* src    [[buffer(0)]],
+    device       half*  dst    [[buffer(1)]],
+    constant     uint&  nblock [[buffer(2)]],
+    uint                tid    [[thread_position_in_threadgroup]],
+    uint                gid    [[threadgroup_position_in_grid]])
+{
+    if (gid >= nblock) return;
+    uint64_t bo = (uint64_t)gid * 210ul;
+
+    // Decode Q6_K element for this thread (same logic as q6_k_value in moe.metal).
+    ushort d_bits = (ushort)src[bo + 208u] | ((ushort)src[bo + 209u] << 8);
+    float d = (float)as_type<half>(d_bits);
+    uint half_idx = tid >> 7;
+    uint local = tid & 127u;
+    uint l = local & 31u;
+    uint group = local >> 5;
+
+    uint64_t ql_base = bo + (uint64_t)half_idx * 64ul;
+    uint64_t qh_base = bo + 128ul + (uint64_t)half_idx * 32ul;
+    uchar qhi = src[qh_base + (uint64_t)l];
+    uint q;
+    if (group == 0u) {
+        q = ((uint)src[ql_base + (uint64_t)l] & 0x0Fu)
+          | (((uint)(qhi >> 0) & 0x03u) << 4);
+    } else if (group == 1u) {
+        q = ((uint)src[ql_base + 32ul + (uint64_t)l] & 0x0Fu)
+          | (((uint)(qhi >> 2) & 0x03u) << 4);
+    } else if (group == 2u) {
+        q = ((uint)(src[ql_base + (uint64_t)l] >> 4))
+          | (((uint)(qhi >> 4) & 0x03u) << 4);
+    } else {
+        q = ((uint)(src[ql_base + 32ul + (uint64_t)l] >> 4))
+          | (((uint)(qhi >> 6) & 0x03u) << 4);
+    }
+    int q_signed = (int)q - 32;
+
+    // scales: 16 bytes at offset 192, one signed byte per 16-element sub-block.
+    int scale = (int)(signed char)src[bo + 192ul + (uint64_t)half_idx * 8ul
+                                    + (uint64_t)(l >> 4) + (uint64_t)group * 2ul];
+    float val = d * (float)scale * (float)q_signed;
+    dst[(uint64_t)gid * 256ul + (uint64_t)tid] = (half)val;
+}
