@@ -191,6 +191,7 @@ mod imp {
             "moe_grouped_gemm_q4_v2" => "moe_grouped_gemm_q4_v2",
             // indexed moe batched gemm variants
             "moe_batched_gemm_q4_indexed" => "moe_batched_gemm_q4_indexed",
+            "moe_batched_gemm_q4_indexed_v2" => "moe_batched_gemm_q4_indexed_v2",
             "moe_batched_gemm_q6_k_indexed" => "moe_batched_gemm_q6_k_indexed",
             "moe_batched_gemm_q8_0_indexed" => "moe_batched_gemm_q8_0_indexed",
             // fused block variants

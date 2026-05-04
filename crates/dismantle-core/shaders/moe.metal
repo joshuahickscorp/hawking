@@ -345,6 +345,50 @@ kernel void moe_batched_gemm_q4_indexed(
     if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
 }
 
+// v2: multi-row TG + simd_sum, zero inner-loop barriers.
+// Grid: (ceil(rows/8), routes, 1), TG: (256, 1, 1), 8 simdgroups per TG.
+kernel void moe_batched_gemm_q4_indexed_v2(
+    device const uchar* w_all     [[buffer(0)]],
+    device const uint*  route_ids [[buffer(1)]],
+    device const float* x         [[buffer(2)]],
+    device       float* y         [[buffer(3)]],
+    constant     ulong& base_offset [[buffer(4)]],
+    constant     uint&  routes    [[buffer(5)]],
+    constant     uint&  rows      [[buffer(6)]],
+    constant     uint&  cols      [[buffer(7)]],
+    uint2               tid2      [[thread_position_in_threadgroup]],
+    uint2               tgp       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = tgp.x * 8u + simd_id;
+    uint route    = tgp.y;
+    if (route >= routes) return;
+    if (base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 256u;
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_byte_off = (uint64_t)base_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            partial += q4_k_value(w_all, bo, elem)
+                     * x[(uint64_t)b * 256ul + (uint64_t)elem];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = partial;
+    }
+}
+
 kernel void moe_batched_gemm_q8_0(
     device const uchar* w_q8   [[buffer(0)]],   // (routes, rows, cols) Q8_0
     device const float* x      [[buffer(1)]],   // (routes, cols)
