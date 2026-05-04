@@ -138,3 +138,41 @@ kernel void add_inplace(
     if (gid >= n) return;
     a[gid] += b[gid];
 }
+
+// Phase 7 Wedge 7b — fp16 rmsnorm.
+// Reads f16 input, computes variance in f32 (sensitive to overflow at
+// large activations), writes f16 output. Weight is f32.
+//
+// Threadgroup size 256 (parallel reduction; must be power of two ≤ 1024).
+kernel void rmsnorm_f16(
+    device const half*  x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    constant     float& eps     [[buffer(2)]],
+    constant     uint&  hidden  [[buffer(3)]],
+    device       half*  out     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = (float)x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float mean = shmem[0] / (float)hidden;
+    float scale = rsqrt(mean + eps);
+
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = (float)x[i];
+        out[i] = (half)(v * scale * weight[i]);
+    }
+}

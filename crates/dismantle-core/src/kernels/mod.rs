@@ -3692,6 +3692,44 @@ mod metal_dispatch {
         )
     }
 
+    /// Phase 7 Wedge 7b — fp16 rmsnorm. Reads f16, accumulates variance in
+    /// f32, writes f16. Weight stays f32. Internal accumulation MUST stay
+    /// f32 — DO NOT change to half — fp16 squared activations overflow at
+    /// magnitude > 256.
+    pub fn rmsnorm_f16_metal(
+        ctx: &MetalContext,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        const TG_SIZE: u32 = 256;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "rmsnorm_f16",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// Phase 4 Wedge 4b — Metal greedy argmax over logits.
     /// Reads `vocab` floats from `logits_buf`, writes the argmax token id
     /// to `out_token_buf` (single u32). Serial single-thread kernel
