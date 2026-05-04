@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-7bafcee8358324b79e639735",
+  "profile_id": "kp-ef50d2bdf8672c978473c8ac",
   "profile_name": "m3-pro-18gb",
   "model_id": "DeepSeek-V2-Lite-Chat",
   "model_arch": "deepseek2",
@@ -8,26 +8,32 @@
   "device_name": "Apple M3 Pro",
   "shader_hash": "03d9f33708ac4d6b1a9441f4",
   "selected": {
-    "id": "v0.2.2-metal-safe",
-    "moe_schedule": "indexed-no-pack-one-cb",
+    "id": "v0.5.0-fused-arena",
+    "moe_schedule": "single-kernel",
     "mla_schedule": "metal-mla",
     "lm_head_schedule": "metal-argmax-token-only",
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 4,
+    "deterministic_rank": 2,
     "gemm_q4_k_schedule": "v2"
   },
   "evidence": {
     "profile": "m3-pro-18gb",
-    "max_hours": 8.0,
+    "max_hours": 0.001,
     "prompt_count": 50,
     "token_lengths": [
       16,
       64,
       256
     ],
-    "candidate_count": 7,
+    "candidate_count": 8,
     "measurements": [
+      {
+        "variant_id": "v0.5.0-fused-arena",
+        "deterministic_rank": 2,
+        "score": 168,
+        "status": "candidate"
+      },
       {
         "variant_id": "v0.2.2-metal-safe",
         "deterministic_rank": 4,
@@ -35,22 +41,22 @@
         "status": "candidate"
       },
       {
-        "variant_id": "v0.2.0-metal-all",
-        "deterministic_rank": 5,
-        "score": 152,
-        "status": "research"
-      },
-      {
         "variant_id": "gpu-greedy-frontier",
         "deterministic_rank": 20,
-        "score": 145,
+        "score": 157,
         "status": "planned"
       },
       {
         "variant_id": "single-kernel-fused",
         "deterministic_rank": 25,
-        "score": 145,
+        "score": 157,
         "status": "planned"
+      },
+      {
+        "variant_id": "v0.2.0-metal-all",
+        "deterministic_rank": 5,
+        "score": 152,
+        "status": "candidate"
       },
       {
         "variant_id": "persistent-flashmoe-research",

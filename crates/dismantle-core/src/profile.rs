@@ -260,6 +260,20 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             deterministic_rank: 4,
             gemm_q4_k_schedule: "scalar".into(),
         },
+        // v0.5.0 — activates moe_block_fused_v2lite_indexed_metal as default MoE path.
+        // single-kernel runs gate+up+silu+down+shared+accumulate in one Metal kernel vs
+        // the 9-kernel batched-indexed path. command_buffering stays one-cb-per-block
+        // (layer-cb deferred: v0.2.1 diagnostic showed −18% at batch=1).
+        KernelVariant {
+            id: "v0.5.0-fused-arena".into(),
+            moe_schedule: "single-kernel".into(),
+            mla_schedule: "metal-mla".into(),
+            lm_head_schedule: "metal-argmax-token-only".into(),
+            command_buffering: "one-cb-per-block".into(),
+            gpu_buffer_reuse: "decode-arena".into(),
+            deterministic_rank: 2,
+            gemm_q4_k_schedule: "v2".into(),
+        },
     ];
     variants.sort_by(|a, b| a.id.cmp(&b.id));
     variants
@@ -411,6 +425,7 @@ mod tests {
                 "stable-baseline",
                 "v0.2.0-metal-all",
                 "v0.2.2-metal-safe",
+                "v0.5.0-fused-arena",
             ]
         );
     }
@@ -421,11 +436,12 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
-        // v0.2.2-metal-safe has highest score: (100-4)+25+20+20+0 = 161
+        // v0.5.0-fused-arena has highest score: (100-2)+30+20+20+0 = 168
+        // v0.2.2-metal-safe: (100-4)+25+20+20+0 = 161
         // v0.2.0-metal-all scores lower after two-stage MoE bonus reduced: (100-5)+5+20+20+12 = 152
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "v0.2.2-metal-safe"
+            "v0.5.0-fused-arena"
         );
     }
 }
