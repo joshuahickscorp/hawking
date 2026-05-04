@@ -34,6 +34,9 @@ pub struct BenchOptions {
     /// Only the decode and prefill suites honor this — the
     /// `competitive` suite explicitly runs all three.
     pub backend: String,
+    /// When true, enables Metal dispatch tracing and structural counters
+    /// (buffers/commits per token). Mirrors `--trace-dispatch` CLI flag.
+    pub trace_dispatch: bool,
 }
 
 #[derive(Debug, Serialize)]
