@@ -10,6 +10,23 @@ use std::path::Path;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
+/// Controls whether intermediate activations are kept in f32 or cast to f16
+/// before the fused rmsnorm+gemv bridge kernels. F16 is the Phase 7 goal;
+/// F32 is the legacy path preserved as a regression guard.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ActivationDtype {
+    F32,
+    F16,
+}
+
+impl Default for ActivationDtype {
+    fn default() -> Self {
+        // v0.8.3: default is F32 until v0.8.4 flips it.
+        Self::F32
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct EngineConfig {
     pub max_seq_len: usize,
@@ -23,6 +40,9 @@ pub struct EngineConfig {
     /// collects dispatch timing. Matches `DISMANTLE_TRACE_DISPATCH=1` (env var
     /// remains a fallback when this is false).
     pub trace_dispatch: bool,
+    /// Phase 7: activation dtype for fused bridge kernels. F32 = legacy;
+    /// F16 = read residual as half-precision (v0.8.4+ default).
+    pub activation_dtype: ActivationDtype,
 }
 
 impl Default for EngineConfig {
@@ -36,6 +56,7 @@ impl Default for EngineConfig {
             prefill_cache_dir: None,
             kernel_profile: None,
             trace_dispatch: false,
+            activation_dtype: ActivationDtype::F32,
         }
     }
 }

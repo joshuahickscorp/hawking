@@ -40,6 +40,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         prefill_cache_dir: opts.prefill_cache_dir,
         kernel_profile,
         trace_dispatch: false,
+        activation_dtype: Default::default(),
     };
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)

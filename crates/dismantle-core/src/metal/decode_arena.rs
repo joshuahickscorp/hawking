@@ -40,6 +40,9 @@ mod arena_imp {
         pub ffn_out_buf: PinnedBuffer,
         /// MoE gate logits scratch — n_routed_experts × f32.
         pub moe_logits_buf: PinnedBuffer,
+        /// Phase 7 bridge: f16 residual stream — hidden × f16. Written before
+        /// each rmsnorm step so f16 bridge kernels can read pre-norm activations.
+        pub x_f16_buf: PinnedBuffer,
         /// Cached sizes for bounds-checking at dispatch time.
         pub n_heads: usize,
         pub q_head_dim: usize,
@@ -74,6 +77,7 @@ mod arena_imp {
                 x_norm_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
+                x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
@@ -121,6 +125,16 @@ mod arena_imp {
             let ptr = self.x_buf.contents() as *const f32;
             let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
             dst.copy_from_slice(src);
+        }
+
+        /// Convert f32 residual to f16 and write into x_f16_buf.
+        /// Called before each rmsnorm step so f16 bridge kernels can read
+        /// the pre-norm residual as half-precision.
+        pub fn write_x_f16(&self, x: &[f32]) {
+            let ptr = self.x_f16_buf.contents() as *mut half::f16;
+            for (i, &v) in x.iter().enumerate() {
+                unsafe { ptr.add(i).write(half::f16::from_f32(v)) };
+            }
         }
 
         /// Write into x_norm_buf (rmsnorm output scratch).
