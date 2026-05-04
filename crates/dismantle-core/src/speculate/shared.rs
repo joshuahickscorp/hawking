@@ -25,24 +25,39 @@ pub struct DraftToken {
     pub draft_logits: Vec<f32>,
 }
 
+/// Result of verifying a window of draft tokens.
+#[derive(Debug, Clone, Default)]
+pub struct VerifyResult {
+    /// Number of draft tokens accepted (longest agreeing prefix).
+    pub accepted_count: usize,
+    /// The verifier's argmax at the first point of disagreement.
+    /// `None` if all draft tokens were accepted.
+    pub first_divergent_token: Option<u32>,
+}
+
 /// Verify a window of draft tokens against the verifier's logits.
-/// Returns the count of accepted tokens (longest agreeing prefix). On
-/// disagreement, the verifier's first non-matching argmax is the
-/// committed token.
-pub fn verify_window(drafts: &[DraftToken], verifier_logits: &[Vec<f32>]) -> Result<usize> {
+/// Returns a `VerifyResult` with the accepted prefix length and the
+/// verifier's correction token (if any). On full agreement,
+/// `first_divergent_token` is `None`.
+pub fn verify_window(drafts: &[DraftToken], verifier_logits: &[Vec<f32>]) -> Result<VerifyResult> {
     if drafts.len() != verifier_logits.len() {
         return Err(crate::Error::Model("verify window length mismatch".into()));
     }
-    let mut accepted = 0usize;
+    let mut accepted_count = 0usize;
+    let mut first_divergent_token = None;
     for (d, v) in drafts.iter().zip(verifier_logits.iter()) {
         let v_argmax = argmax(v);
         if v_argmax == d.id {
-            accepted += 1;
+            accepted_count += 1;
         } else {
+            first_divergent_token = Some(v_argmax);
             break;
         }
     }
-    Ok(accepted)
+    Ok(VerifyResult {
+        accepted_count,
+        first_divergent_token,
+    })
 }
 
 fn argmax(xs: &[f32]) -> u32 {

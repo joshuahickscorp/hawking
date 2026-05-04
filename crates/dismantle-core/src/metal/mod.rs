@@ -478,6 +478,75 @@ mod imp {
             Ok(())
         }
     }
+
+    // ── v0.5.12: TokenCommandBuffer ───────────────────────────────────────────
+
+    /// Owns one MTLCommandBuffer; multiple kernels can be dispatched into it
+    /// before a single `commit_and_wait`. If dropped without committing,
+    /// the Drop impl commits automatically so GPU work is never silently lost.
+    ///
+    /// Usage:
+    /// ```ignore
+    /// let mut tcb = TokenCommandBuffer::new(&ctx);
+    /// tcb.dispatch_threads("rmsnorm", ...)?;
+    /// tcb.dispatch_threads("add_inplace", ...)?;
+    /// tcb.commit_and_wait()?;
+    /// ```
+    pub struct TokenCommandBuffer<'ctx> {
+        ctx: &'ctx MetalContext,
+        /// `None` after `commit_and_wait` so the Drop impl knows not to re-commit.
+        cmd: Option<metal::CommandBuffer>,
+    }
+
+    impl<'ctx> TokenCommandBuffer<'ctx> {
+        pub fn new(ctx: &'ctx MetalContext) -> Self {
+            let cmd = ctx.inner.queue.new_command_buffer().to_owned();
+            Self { ctx, cmd: Some(cmd) }
+        }
+
+        /// Encode one kernel dispatch into the pending command buffer.
+        pub fn dispatch_threads(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let pipe = self.ctx.pipeline(fn_name)?;
+            let enc = cmd.new_compute_command_encoder();
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            Ok(())
+        }
+
+        /// Commit the command buffer and block until the GPU finishes.
+        /// Consumes self; subsequent dispatch calls would fail.
+        pub fn commit_and_wait(mut self) -> Result<()> {
+            if let Some(cmd) = self.cmd.take() {
+                cmd.commit();
+                cmd.wait_until_completed();
+            }
+            Ok(())
+        }
+    }
+
+    impl Drop for TokenCommandBuffer<'_> {
+        fn drop(&mut self) {
+            if let Some(cmd) = self.cmd.take() {
+                cmd.commit();
+                cmd.wait_until_completed();
+            }
+        }
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -520,9 +589,34 @@ mod imp {
     pub struct PinnedBuffer {
         _priv: Arc<()>,
     }
+
+    /// Non-macOS stub for TokenCommandBuffer. Never constructed off-macOS.
+    pub struct TokenCommandBuffer<'ctx> {
+        _ctx: std::marker::PhantomData<&'ctx ()>,
+    }
+
+    impl<'ctx> TokenCommandBuffer<'ctx> {
+        pub fn new(_ctx: &'ctx MetalContext) -> Self {
+            panic!("TokenCommandBuffer: Metal unavailable on this platform")
+        }
+
+        pub fn dispatch_threads(
+            &mut self,
+            _fn_name: &str,
+            _grid: (u32, u32, u32),
+            _tg: (u32, u32, u32),
+            _encode: impl FnOnce(()),
+        ) -> Result<()> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn commit_and_wait(self) -> Result<()> {
+            Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+    }
 }
 
-pub use imp::{MetalContext, PinnedBuffer};
+pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 
 #[cfg(target_os = "macos")]
 pub use imp::CommandBatch;
