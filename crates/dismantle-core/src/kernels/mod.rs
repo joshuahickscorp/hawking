@@ -3761,6 +3761,276 @@ mod metal_dispatch {
         )
     }
 
+    // ── v0.5.6 buffer-arg dispatcher siblings ─────────────────────────────
+    //
+    // Each function below is a "buf" sibling of an existing dispatcher.
+    // The difference: callers pass pre-existing Metal Buffers instead of
+    // having the dispatcher allocate per-call. Same kernel, same binding
+    // scheme — only the buffer-allocation boilerplate is removed.
+
+    /// v0.5.6 — buffer-arg sibling of `rmsnorm_metal`.
+    /// Takes pre-existing f16 Metal Buffers; skips the Vec→Buffer round-trip.
+    /// Same kernel `"rmsnorm"`, same binding scheme (buf0=x, buf1=weight,
+    /// buf2=out, bytes3=hidden, bytes4=eps, tg0=shmem).
+    pub fn rmsnorm_metal_buf(
+        ctx: &MetalContext,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads("rmsnorm", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(weight_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &hidden_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<f32>() as u64,
+                &eps as *const f32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// v0.5.6 — buffer-arg variant of the f16 silu_mul kernel.
+    /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
+    /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.
+    pub fn silu_mul_metal_buf(
+        ctx: &MetalContext,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        ctx.dispatch_threads(
+            "silu_mul",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), 0);
+                enc.set_buffer(1, Some(up_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    // add_inplace_metal_buf: SKIPPED — existing `add_inplace_metal` already
+    // takes PinnedBuffer args (it IS the buf variant). No wrapper needed.
+
+    /// v0.5.6 — buffer-arg sibling of `gemv_f32_attn_metal`.
+    /// `w` is still a host slice (allocates a temp buffer); `x_buf` and
+    /// `y_buf` are pre-existing Metal Buffers. Same kernel `"gemv_f32_attn"`.
+    pub fn gemv_f32_attn_metal_buf(
+        ctx: &MetalContext,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if w.len() != rows * cols {
+            return Err(Error::Kernel(format!(
+                "gemv_f32_attn_metal_buf weight len mismatch: got {} expected {}",
+                w.len(), rows * cols
+            )));
+        }
+        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.6 — buffer-arg sibling of `gemv_f32_attn_metal_pinned`.
+    /// All three matrix buffers are pre-existing; no allocation inside.
+    /// Same kernel `"gemv_f32_attn"`.
+    pub fn gemv_f32_attn_metal_pinned_buf(
+        ctx: &MetalContext,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.6 — buffer-arg sibling of `dispatch_gemv_f32_attn_pinned_pair_batched`.
+    /// All buffers are pre-existing; dispatches two `"gemv_f32_attn"` kernels
+    /// in a single CommandBatch, sharing the same x_buf.
+    pub fn gemv_f32_attn_pair_metal_buf(
+        ctx: &MetalContext,
+        w_a_buf: &PinnedBuffer,
+        rows_a: usize,
+        w_b_buf: &PinnedBuffer,
+        rows_b: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_a_buf: &PinnedBuffer,
+        out_b_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        ctx.dispatch_batch(|batch| {
+            encode_gemv_f32_attn_pinned(batch, w_a_buf, rows_a, cols, x_buf, out_a_buf)?;
+            encode_gemv_f32_attn_pinned(batch, w_b_buf, rows_b, cols, x_buf, out_b_buf)
+        })
+    }
+
+    /// v0.5.6 — buffer-arg sibling of `gemv_f32_moe_metal`.
+    /// `w` is still a host slice (allocates a temp buffer); `x_buf` and
+    /// `y_buf` are pre-existing Metal Buffers. Same kernel `"gemv_f32_moe"`.
+    pub fn gemv_f32_moe_metal_buf(
+        ctx: &MetalContext,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if w.len() != rows * cols {
+            return Err(Error::Kernel(format!(
+                "gemv_f32_moe_metal_buf weight len mismatch: got {} expected {}",
+                w.len(), rows * cols
+            )));
+        }
+        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemv_f32_moe",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.6 — buffer-arg sibling of `moe_grouped_gemm_q4_metal`.
+    /// `w_q4_bytes` is still a host slice (allocates a temp buffer);
+    /// `x_buf` and `y_buf` are pre-existing Metal Buffers.
+    /// Same kernel `"moe_grouped_gemm_q4"`.
+    pub fn moe_grouped_gemm_q4_metal_buf(
+        ctx: &MetalContext,
+        w_q4_bytes: &[u8],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "moe_grouped_gemm_q4_metal_buf requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_q4_bytes.len() != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "moe_grouped_gemm_q4_metal_buf weight bytes: got {} expected {}",
+                w_q4_bytes.len(), expected_bytes
+            )));
+        }
+        let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "moe_grouped_gemm_q4",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v0.5.6 buffer-arg dispatcher siblings ─────────────────────────
+
     /// Phase 4 Wedge 4b — Metal greedy argmax over logits.
     /// Reads `vocab` floats from `logits_buf`, writes the argmax token id
     /// to `out_token_buf` (single u32). Serial single-thread kernel
