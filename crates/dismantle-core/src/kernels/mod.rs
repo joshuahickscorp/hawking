@@ -4435,6 +4435,234 @@ mod metal_dispatch {
     }
 
     // ── end v0.5.8 fused rmsnorm+gemv dispatchers ────────────────────────────
+
+    // ── v0.5.9 fp16 activation kernel dispatchers ─────────────────────────────
+
+    /// v0.5.9-A — f16 x + f32 weight → f16 y GEMV (attention weight shape).
+    pub fn gemv_f32_attn_f16_metal(
+        ctx: &MetalContext,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemv_f32_attn_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.9-B — f16 x + f32 weight → f16 y GEMV (MoE gate weight shape).
+    pub fn gemv_f32_moe_f16_metal(
+        ctx: &MetalContext,
+        w: &[f32],
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "gemv_f32_moe_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.9-C — f16 element-wise residual add: a[i] += b[i].
+    pub fn add_inplace_f16_metal(
+        ctx: &MetalContext,
+        a_buf: &PinnedBuffer,
+        b_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        ctx.dispatch_threads(
+            "add_inplace_f16",
+            (n_u32, 1, 1),
+            (TG_SIZE.min(n_u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.9-D — f16 embedding lookup (alias of embed_lookup; already f16 in/out).
+    pub fn embed_lookup_f16_metal(
+        ctx: &MetalContext,
+        embed_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        hidden: usize,
+        token_id: u32,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        ctx.dispatch_threads(
+            "embed_lookup",
+            (hidden_u32, 1, 1),
+            (TG_SIZE.min(hidden_u32), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token_id as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.9-E — f16 softmax over a vector of n logits.
+    pub fn softmax_f16_metal(
+        ctx: &MetalContext,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "softmax_f16",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.9-F — f16 layer normalization (mean-centering + variance + bias).
+    pub fn layer_norm_f16_metal(
+        ctx: &MetalContext,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        bias_buf: &PinnedBuffer,
+        eps: f32,
+        n: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "layer_norm_f16",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(bias_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+                enc.set_buffer(5, Some(out_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.9-G — f16 rotary position embedding in-place (alias of rope_inplace;
+    /// the existing kernel already operates on f16 buffers).
+    pub fn rope_inplace_f16_metal(
+        ctx: &MetalContext,
+        x_buf: &PinnedBuffer,
+        head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        let half_dim = (head_dim / 2) as u32;
+        let head_dim_u32 = head_dim as u32;
+        ctx.dispatch_threads(
+            "rope_inplace",
+            (half_dim, 1, 1),
+            (TG_SIZE.min(half_dim), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_bytes(
+                    1,
+                    std::mem::size_of::<u32>() as u64,
+                    &head_dim_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &pos as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &base as *const f32 as *const _,
+                );
+            },
+        )
+    }
+
+    // ── end v0.5.9 fp16 activation kernel dispatchers ─────────────────────────
 }
 
 #[cfg(target_os = "macos")]
