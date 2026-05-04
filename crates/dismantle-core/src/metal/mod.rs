@@ -243,6 +243,10 @@ mod imp {
             "sample_repetition" => "sample_repetition",
             "sample_temperature" => "sample_temperature",
             "sample_topk_topp_stub" => "sample_topk_topp_stub",
+            // v0.5.7 sampling kernels
+            "sample_topk" => "sample_topk",
+            "sample_topp" => "sample_topp",
+            "sample_multinomial" => "sample_multinomial",
             _ => "other",
         }
     }
