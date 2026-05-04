@@ -888,7 +888,9 @@ mod metal_dispatch {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )?;
-            batch.dispatch_threads("sample_argmax_f32", (1, 1, 1), (1, 1, 1), |enc| {
+            // v0.5.7-A: parallel 256-thread argmax; needs threadgroup memory for
+            // shmem_v (256 floats) and shmem_i (256 uints).
+            batch.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
                 enc.set_buffer(0, Some(&logits_buf), 0);
                 enc.set_buffer(1, Some(&token_buf), 0);
                 enc.set_bytes(
@@ -896,6 +898,8 @@ mod metal_dispatch {
                     std::mem::size_of::<u32>() as u64,
                     &rows_u32 as *const u32 as *const _,
                 );
+                enc.set_threadgroup_memory_length(0, 256 * std::mem::size_of::<f32>() as u64);
+                enc.set_threadgroup_memory_length(1, 256 * std::mem::size_of::<u32>() as u64);
             })?;
             Ok(())
         })?;
@@ -4045,12 +4049,13 @@ mod metal_dispatch {
         vocab: usize,
     ) -> Result<()> {
         let vocab_u32 = vocab as u32;
-        // sample_argmax_f32 is a serial kernel: only thread id==0 does the scan.
-        // Grid (1,1,1) / tg (1,1,1) is sufficient and avoids launching idle threads.
+        // v0.5.7-A: parallel 256-thread argmax replaces the serial single-thread scan.
+        // Grid (256,1,1) / tg (256,1,1). Two threadgroup buffers:
+        //   slot 0 = shmem_v (256 × f32), slot 1 = shmem_i (256 × u32).
         ctx.dispatch_threads(
             "sample_argmax_f32",
-            (1, 1, 1),
-            (1, 1, 1),
+            (256, 1, 1),
+            (256, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(logits_buf), 0);
                 enc.set_buffer(1, Some(out_token_buf), 0);
@@ -4059,9 +4064,251 @@ mod metal_dispatch {
                     std::mem::size_of::<u32>() as u64,
                     &vocab_u32 as *const u32 as *const _,
                 );
+                enc.set_threadgroup_memory_length(0, 256 * std::mem::size_of::<f32>() as u64);
+                enc.set_threadgroup_memory_length(1, 256 * std::mem::size_of::<u32>() as u64);
             },
         )
     }
+
+    // ── v0.5.7 GPU sampling dispatchers ──────────────────────────────────────
+
+    /// v0.5.7-B — temperature scaling dispatcher.
+    /// Kernel `"sample_temperature"` in sample.metal: `logits[i] /= temp` in-place (f16).
+    /// Call before topk/topp/multinomial. `temp ≤ 0` is a no-op in the kernel.
+    pub fn sample_temperature_metal(
+        ctx: &MetalContext,
+        logits_buf: &PinnedBuffer,
+        temp: f32,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        ctx.dispatch_threads(
+            "sample_temperature",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_bytes(
+                    1,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<f32>() as u64,
+                    &temp as *const f32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.7-C — repetition penalty dispatcher.
+    /// Kernel `"sample_repetition"`: divides logits[recent[i]] by `penalty` for each
+    /// recent token. `logits_buf` is f16 in-place.
+    pub fn sample_repetition_metal(
+        ctx: &MetalContext,
+        logits_buf: &PinnedBuffer,
+        recent_buf: &PinnedBuffer,
+        n_recent: usize,
+        penalty: f32,
+    ) -> Result<()> {
+        let n_u32 = n_recent as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        ctx.dispatch_threads(
+            "sample_repetition",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(recent_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &penalty as *const f32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.7-D — parallel top-K selection dispatcher.
+    /// Kernel `"sample_topk"`: finds the K largest logits (f32) and writes
+    /// their values and indices to `topk_val_buf` and `topk_idx_buf`.
+    /// `logits_buf` is not modified. `k` must be ≤ 64.
+    pub fn sample_topk_metal(
+        ctx: &MetalContext,
+        logits_buf: &PinnedBuffer,
+        topk_idx_buf: &PinnedBuffer,
+        topk_val_buf: &PinnedBuffer,
+        n: usize,
+        k: usize,
+    ) -> Result<()> {
+        if k > 64 {
+            return Err(Error::Kernel(format!(
+                "sample_topk_metal: k={k} exceeds MAX_K=64"
+            )));
+        }
+        let n_u32 = n as u32;
+        let k_u32 = k as u32;
+        const TG: u32 = 256;
+        ctx.dispatch_threads(
+            "sample_topk",
+            (TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(topk_idx_buf), 0);
+                enc.set_buffer(2, Some(topk_val_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &k_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, (TG as u64) * std::mem::size_of::<f32>() as u64);
+                enc.set_threadgroup_memory_length(1, (TG as u64) * std::mem::size_of::<u32>() as u64);
+                enc.set_threadgroup_memory_length(2, 64 * std::mem::size_of::<u32>() as u64);
+            },
+        )
+    }
+
+    /// v0.5.7-E — nucleus top-P filtering dispatcher.
+    /// Kernel `"sample_topp"`: applies temperature, computes softmax over topk_val,
+    /// scans cumsum, writes surviving_count and surviving_sum.
+    pub fn sample_topp_metal(
+        ctx: &MetalContext,
+        topk_val_buf: &PinnedBuffer,
+        topk_idx_buf: &PinnedBuffer,
+        surviving_count_buf: &PinnedBuffer,
+        surviving_sum_buf: &PinnedBuffer,
+        k: usize,
+        top_p: f32,
+        temperature: f32,
+    ) -> Result<()> {
+        let k_u32 = k as u32;
+        ctx.dispatch_threads(
+            "sample_topp",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(topk_val_buf), 0);
+                enc.set_buffer(1, Some(topk_idx_buf), 0);
+                enc.set_buffer(2, Some(surviving_count_buf), 0);
+                enc.set_buffer(3, Some(surviving_sum_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &k_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<f32>() as u64,
+                    &top_p as *const f32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<f32>() as u64,
+                    &temperature as *const f32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.7-F — multinomial draw dispatcher.
+    /// Kernel `"sample_multinomial"`: walks renormalized cumulative distribution,
+    /// draws the token at position where cumsum ≥ uniform_variate.
+    pub fn sample_multinomial_metal(
+        ctx: &MetalContext,
+        topk_val_buf: &PinnedBuffer,
+        topk_idx_buf: &PinnedBuffer,
+        surviving_count_buf: &PinnedBuffer,
+        surviving_sum_buf: &PinnedBuffer,
+        uniform_variate: f32,
+        out_token_buf: &PinnedBuffer,
+        k: usize,
+        temperature: f32,
+    ) -> Result<()> {
+        let k_u32 = k as u32;
+        ctx.dispatch_threads(
+            "sample_multinomial",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(topk_val_buf), 0);
+                enc.set_buffer(1, Some(topk_idx_buf), 0);
+                enc.set_buffer(2, Some(surviving_count_buf), 0);
+                enc.set_buffer(3, Some(surviving_sum_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<f32>() as u64,
+                    &uniform_variate as *const f32 as *const _,
+                );
+                enc.set_buffer(5, Some(out_token_buf), 0);
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &k_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<f32>() as u64,
+                    &temperature as *const f32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// v0.5.7-G — full GPU sampling pipeline.
+    /// Chains: sample_topk → sample_topp → sample_multinomial.
+    /// Temperature scaling is handled inside sample_topp and sample_multinomial
+    /// (applied at the softmax stage, not in-place on logits).
+    ///
+    /// If `top_k == 0`, treats as `top_k = vocab` (effectively no top-K filter).
+    /// If `top_p >= 1.0`, uses all top-K candidates.
+    /// If `temperature <= 0`, falls back to `gpu_argmax_logits_metal` (greedy).
+    pub fn sample_full_pipeline_metal(
+        ctx: &MetalContext,
+        logits_buf: &PinnedBuffer,
+        out_token_buf: &PinnedBuffer,
+        vocab: usize,
+        temperature: f32,
+        top_k: usize,
+        top_p: f32,
+        uniform_variate: f32,
+    ) -> Result<()> {
+        if temperature <= 0.0 {
+            return gpu_argmax_logits_metal(ctx, logits_buf, out_token_buf, vocab);
+        }
+        let k = if top_k == 0 { 64 } else { top_k.min(64) };
+        let topk_idx_buf = ctx.new_buffer(k * std::mem::size_of::<u32>());
+        let topk_val_buf = ctx.new_buffer(k * std::mem::size_of::<f32>());
+        let surviving_count_buf = ctx.new_buffer(std::mem::size_of::<u32>());
+        let surviving_sum_buf   = ctx.new_buffer(std::mem::size_of::<f32>());
+
+        sample_topk_metal(ctx, logits_buf, &topk_idx_buf, &topk_val_buf, vocab, k)?;
+        let topp = if top_p <= 0.0 { 1.0f32 } else { top_p };
+        sample_topp_metal(
+            ctx, &topk_val_buf, &topk_idx_buf,
+            &surviving_count_buf, &surviving_sum_buf,
+            k, topp, temperature,
+        )?;
+        sample_multinomial_metal(
+            ctx, &topk_val_buf, &topk_idx_buf,
+            &surviving_count_buf, &surviving_sum_buf,
+            uniform_variate, out_token_buf, k, temperature,
+        )
+    }
+
+    // ── end v0.5.7 GPU sampling dispatchers ──────────────────────────────────
 }
 
 #[cfg(target_os = "macos")]
