@@ -617,6 +617,7 @@ impl Engine for DeepSeekV2 {
                         cfg.kv_lora_rank,
                         cfg.hidden,
                         cfg.max_seq_len,
+                        cfg.n_routed_experts,
                     )
                 })
             } else {

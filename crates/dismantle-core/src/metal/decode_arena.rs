@@ -32,6 +32,14 @@ mod arena_imp {
         pub attn_out: PinnedBuffer,
         /// Output of o_proj gemv (constant shape = hidden).
         pub out: PinnedBuffer,
+        /// Residual stream scratch — hidden × f32. Phase 4d buffer-arg path.
+        pub x_buf: PinnedBuffer,
+        /// RMSNorm output scratch — hidden × f32.
+        pub x_norm_buf: PinnedBuffer,
+        /// FFN output scratch — hidden × f32.
+        pub ffn_out_buf: PinnedBuffer,
+        /// MoE gate logits scratch — n_routed_experts × f32.
+        pub moe_logits_buf: PinnedBuffer,
         /// Cached sizes for bounds-checking at dispatch time.
         pub n_heads: usize,
         pub q_head_dim: usize,
@@ -40,6 +48,7 @@ mod arena_imp {
         pub qk_rope_head_dim: usize,
         pub hidden: usize,
         pub max_seq: usize,
+        pub n_routed_experts: usize,
     }
 
     impl DecodeArena {
@@ -52,6 +61,7 @@ mod arena_imp {
             kv_lora_rank: usize,
             hidden: usize,
             max_seq: usize,
+            n_routed_experts: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
             Self {
@@ -60,6 +70,10 @@ mod arena_imp {
                 k_pe: ctx.new_buffer(max_seq * qk_rope_head_dim * std::mem::size_of::<f32>()),
                 attn_out: ctx.new_buffer(n_heads * v_head_dim * std::mem::size_of::<f32>()),
                 out: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                x_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                x_norm_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
@@ -67,6 +81,7 @@ mod arena_imp {
                 qk_rope_head_dim,
                 hidden,
                 max_seq,
+                n_routed_experts,
             }
         }
 
@@ -93,6 +108,44 @@ mod arena_imp {
         pub fn read_out(&self, dst: &mut [f32]) {
             let ptr = self.out.contents() as *const f32;
             let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+
+        /// Write the residual stream into x_buf.
+        pub fn write_x(&self, x: &[f32]) {
+            MetalContext::write_buffer_bytes(&self.x_buf, bytemuck::cast_slice(x));
+        }
+
+        /// Read the residual stream back from x_buf to CPU.
+        pub fn read_x(&self, dst: &mut [f32]) {
+            let ptr = self.x_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+
+        /// Write into x_norm_buf (rmsnorm output scratch).
+        pub fn write_x_norm(&self, x: &[f32]) {
+            MetalContext::write_buffer_bytes(&self.x_norm_buf, bytemuck::cast_slice(x));
+        }
+
+        /// Read x_norm_buf back to CPU.
+        pub fn read_x_norm(&self, dst: &mut [f32]) {
+            let ptr = self.x_norm_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+
+        /// Read ffn_out_buf back to CPU.
+        pub fn read_ffn_out(&self, dst: &mut [f32]) {
+            let ptr = self.ffn_out_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+
+        /// Read moe_logits_buf back to CPU.
+        pub fn read_moe_logits(&self, dst: &mut [f32]) {
+            let ptr = self.moe_logits_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.n_routed_experts) };
             dst.copy_from_slice(src);
         }
     }
