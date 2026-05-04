@@ -250,6 +250,12 @@ mod imp {
             // v0.5.8 fused rmsnorm+gemv kernels
             "rmsnorm_gemv_f32_attn_pinned" => "rmsnorm_gemv_f32_attn_pinned",
             "rmsnorm_gemv_q4k_pair" => "rmsnorm_gemv_q4k_pair",
+            // v0.5.9 fp16 activation kernels
+            "gemv_f32_attn_f16" => "gemv_f32_attn_f16",
+            "gemv_f32_moe_f16" => "gemv_f32_moe_f16",
+            "add_inplace_f16" => "add_inplace_f16",
+            "softmax_f16" => "softmax_f16",
+            "layer_norm_f16" => "layer_norm_f16",
             _ => "other",
         }
     }

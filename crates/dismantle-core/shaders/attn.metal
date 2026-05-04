@@ -227,6 +227,37 @@ kernel void gemv_f32_attn(
     if (tid == 0) y[gid] = shmem[0];
 }
 
+// v0.5.9-A — fp16 activation variant: gemv_f32_attn with f16 x and f16 y.
+// Same threadgroup structure as gemv_f32_attn. Internal MAC in f32.
+kernel void gemv_f32_attn_f16(
+    device const float* w     [[buffer(0)]],   // (rows, cols) row-major fp32
+    device const half*  x     [[buffer(1)]],   // (cols,) fp16
+    device       half*  y     [[buffer(2)]],   // (rows,) fp16
+    constant     uint&  rows  [[buffer(3)]],
+    constant     uint&  cols  [[buffer(4)]],
+    threadgroup  float* shmem [[threadgroup(0)]],
+    uint                tid       [[thread_position_in_threadgroup]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                tg_size   [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+    device const float* row = w + (uint64_t)gid * (uint64_t)cols;
+
+    float partial = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial += row[c] * (float)x[c];
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (tid == 0) y[gid] = (half)shmem[0];
+}
+
 // v0.5.8-A — fused RMSNorm + gemv_f32_attn.
 //
 // Eliminates the intermediate normalized-x buffer and halves DRAM reads
