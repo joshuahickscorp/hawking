@@ -3730,6 +3730,37 @@ mod metal_dispatch {
         )
     }
 
+    /// Phase 7 Wedge 7d-prep — fp16 silu_mul. Reads f16 gate + up, writes f16.
+    /// Internal compute is f32 (silu's exp is numerically sensitive).
+    /// DO NOT change internal compute to half — silu(g) for large negative g
+    /// would underflow.
+    pub fn silu_mul_f16_metal(
+        ctx: &MetalContext,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        const TG_SIZE: u32 = 256;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        ctx.dispatch_threads(
+            "silu_mul_f16",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), 0);
+                enc.set_buffer(1, Some(up_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Phase 4 Wedge 4b — Metal greedy argmax over logits.
     /// Reads `vocab` floats from `logits_buf`, writes the argmax token id
     /// to `out_token_buf` (single u32). Serial single-thread kernel

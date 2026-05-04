@@ -176,3 +176,20 @@ kernel void rmsnorm_f16(
         out[i] = (half)(v * scale * weight[i]);
     }
 }
+
+// Phase 7 Wedge 7d-prep — fp16 silu_mul.
+// Computes out[i] = silu(gate[i]) * up[i] reading f16, writing f16.
+// Internal sigmoid + multiply in f32 (silu's exp is sensitive).
+kernel void silu_mul_f16(
+    device const half*  gate   [[buffer(0)]],
+    device const half*  up     [[buffer(1)]],
+    device       half*  out    [[buffer(2)]],
+    constant     uint&  n      [[buffer(3)]],
+    uint                gid    [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    float g = (float)gate[gid];
+    float u = (float)up[gid];
+    float silu_g = g / (1.0f + exp(-g));
+    out[gid] = (half)(silu_g * u);
+}
