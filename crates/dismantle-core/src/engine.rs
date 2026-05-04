@@ -22,8 +22,8 @@ pub enum ActivationDtype {
 
 impl Default for ActivationDtype {
     fn default() -> Self {
-        // v0.8.3: default is F32 until v0.8.4 flips it.
-        Self::F32
+        // v0.8.4: F16 is the active default. F32 still selectable via override.
+        Self::F16
     }
 }
 
@@ -56,7 +56,7 @@ impl Default for EngineConfig {
             prefill_cache_dir: None,
             kernel_profile: None,
             trace_dispatch: false,
-            activation_dtype: ActivationDtype::F32,
+            activation_dtype: ActivationDtype::F16,
         }
     }
 }
