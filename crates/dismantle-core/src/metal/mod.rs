@@ -235,6 +235,8 @@ mod imp {
             "silu_mul" => "silu_mul",
             // residual / element-wise kernels
             "add_inplace" => "add_inplace",
+            // Phase 7 fp16 kernels
+            "rmsnorm_f16" => "rmsnorm_f16",
             // sampling kernels
             "sample_constraint" => "sample_constraint",
             "sample_repetition" => "sample_repetition",
