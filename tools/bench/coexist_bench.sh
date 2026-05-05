@@ -133,15 +133,21 @@ printf 'median:       %s dec_tps\n' "$MEDIAN"
 printf 'min..max:     %s .. %s\n' "$MIN" "$MAX"
 printf 'spread:       %s%%\n' "$SPREAD"
 
-# Contamination ratio — coexist median should be ~1/3 of clean anchor.
+# Contamination ratio — coexist median typically lands 1.5-3x below clean anchor
+# depending on Claude's current GPU/CPU load. We compute the OBSERVED ratio and
+# back out the implied clean estimate from that, not from a hard-coded 3x.
 RATIO=$(awk -v c="$MEDIAN" -v a="$ANCHOR" 'BEGIN { if (c>0) printf "%.2f", a/c; else print "n/a" }')
-ESTIMATED_CLEAN=$(awk -v c="$MEDIAN" -v r=3.0 'BEGIN { printf "%.2f", c*r }')
+ESTIMATED_CLEAN_FROM_RATIO=$(awk -v c="$MEDIAN" -v r="$RATIO" 'BEGIN { printf "%.2f", c*r }')
+ESTIMATED_CLEAN_3X=$(awk -v c="$MEDIAN" 'BEGIN { printf "%.2f", c*3.0 }')
 
-printf '\n--- contamination analysis ---\n'
-printf 'clean anchor: %s dec_tps\n' "$ANCHOR"
-printf 'observed/clean ratio: 1/%s  (clean is %sx faster)\n' "$RATIO" "$RATIO"
-printf 'expected ratio at typical Claude load: 1/3 to 1/4\n'
-printf 'estimated clean dec_tps (median * 3): ~%s\n' "$ESTIMATED_CLEAN"
+printf '\n%s\n' "--- contamination analysis ---"
+printf '%s\n' "clean anchor:                       $ANCHOR dec_tps"
+printf '%s\n' "observed coexist median:            $MEDIAN dec_tps"
+printf '%s\n' "observed contamination factor:      ${RATIO}x  (anchor / observed)"
+printf '%s\n' "estimated clean (median × ratio):   ~$ESTIMATED_CLEAN_FROM_RATIO dec_tps  ← matches anchor by construction; gives sanity check on protocol"
+printf '%s\n' "worst-case estimated clean (× 3):   ~$ESTIMATED_CLEAN_3X dec_tps   ← assuming heavy Claude load"
+printf '%s\n' "(use the FROM_RATIO number when comparing successive coexist runs;"
+printf '%s\n' " use × 3 only when the anchor is stale / from a different commit)"
 
 # Structural metrics from trial 3 (load-independent).
 log ""
@@ -165,16 +171,17 @@ jq '.results.trial_stats[0] | {
     printf '**Authoritative:** No — use only for relative comparison.\n\n'
     printf '## Trials\n'
     for i in $(seq 1 "$TRIALS"); do
-        printf '- trial %d: %s\n' "$i" "${TRIALS_TPS[$((i-1))]}"
+        printf '%s\n' "- trial $i: ${TRIALS_TPS[$((i-1))]}"
     done
     printf '\n## Stats\n'
-    printf '- valid trials: %d / %d\n' "$COUNT" "$TRIALS"
-    printf '- median: **%s dec_tps**\n' "$MEDIAN"
-    printf '- spread: %s%%\n' "$SPREAD"
+    printf '%s\n' "- valid trials: $COUNT / $TRIALS"
+    printf '%s\n' "- median: **$MEDIAN dec_tps**"
+    printf '%s\n' "- spread: ${SPREAD}%"
     printf '\n## Contamination\n'
-    printf '- clean anchor: %s dec_tps\n' "$ANCHOR"
-    printf '- contamination factor: %sx\n' "$RATIO"
-    printf '- estimated clean: ~%s dec_tps\n' "$ESTIMATED_CLEAN"
+    printf '%s\n' "- clean anchor: $ANCHOR dec_tps"
+    printf '%s\n' "- contamination factor: ${RATIO}x"
+    printf '%s\n' "- estimated clean (× ratio): ~$ESTIMATED_CLEAN_FROM_RATIO dec_tps"
+    printf '%s\n' "- worst-case estimated clean (× 3): ~$ESTIMATED_CLEAN_3X dec_tps"
 } > "$OUT_DIR/summary.md"
 
 log ""
