@@ -5818,6 +5818,57 @@ mod metal_dispatch {
     }
 
     // ── end v1.0.0-E ─────────────────────────────────────────────────────────
+
+    // ── v1.0.0-G: rmsnorm-gemv fusion TCB dispatchers ────────────────────────
+
+    /// Fused rmsnorm + f32 GEMV for attention projections (q_a, kv_a).
+    /// Reads x_buf (f32 raw residual), applies attn rmsnorm with weight_buf,
+    /// writes out_buf (f32 rows). Grid = (rows * TG_SIZE, 1, 1).
+    /// Eliminates the standalone rmsnorm_metal_buf_tcb in mini-TCB α.
+    /// Zero counted dispatches.
+    pub fn rmsnorm_gemv_f32_attn_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_gemv_f32_attn_pinned",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v1.0.0-G ─────────────────────────────────────────────────────────
 }
 
 
