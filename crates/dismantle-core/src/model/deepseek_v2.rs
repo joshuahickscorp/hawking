@@ -1824,23 +1824,18 @@ impl DeepSeekV2 {
 
                 crate::metal::set_current_layer(None);
 
-                // Final: add last layer's deferred ffn_out, read residual back.
-                if n_layers > 0 {
-                    let ctx = self.metal_ctx.as_ref().unwrap();
-                    let arena = self.decode_arena.as_ref().unwrap();
-                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::add_inplace_metal_tcb(
-                        &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
-                    )?;
-                    tcb.commit_and_wait()?;
-                }
-
-                // Wedge D: final norm on GPU (x_buf → x_norm_buf), then read 8KB x_norm.
+                // Wedge M C-1: merged add_inplace + final-norm into one TCB (saves 1 commit/token).
+                // add_inplace writes x_buf; rmsnorm reads x_buf — separate encoders, Metal hazard-safe.
                 {
                     let ctx = self.metal_ctx.as_ref().unwrap();
                     let arena = self.decode_arena.as_ref().unwrap();
                     let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    if n_layers > 0 {
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                        )?;
+                    }
                     crate::kernels::rmsnorm_metal_buf_tcb(
                         &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
                     )?;
