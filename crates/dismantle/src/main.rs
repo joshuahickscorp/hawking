@@ -536,6 +536,7 @@ fn generate_main(
         kernel_profile: profile,
         trace_dispatch,
         activation_dtype: Default::default(),
+        ..Default::default()
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -643,6 +644,7 @@ fn batch_hash_main(
         kernel_profile: profile,
         trace_dispatch: false,
         activation_dtype: Default::default(),
+        ..Default::default()
     };
     let load_start = std::time::Instant::now();
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;

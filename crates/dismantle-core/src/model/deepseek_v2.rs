@@ -172,6 +172,8 @@ pub struct DeepSeekV2 {
 
     /// Phase 7: activation dtype for f16 bridge kernels.
     pub activation_dtype: crate::engine::ActivationDtype,
+    /// Phase E: residual stream dtype. F16 = x is Vec<f16> throughout.
+    pub residual_dtype: crate::engine::ResidualDtype,
 }
 
 /// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
@@ -652,6 +654,7 @@ impl Engine for DeepSeekV2 {
             verify_window,
             decode_arena,
             activation_dtype: config.activation_dtype,
+            residual_dtype: config.residual_dtype,
         })
     }
 
