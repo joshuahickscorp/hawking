@@ -1668,15 +1668,28 @@ impl DeepSeekV2 {
                         tcb.commit_and_wait()?;
                     }
 
-                    // Attention via TCB: reads x_norm_buf (f32), writes arena.out (f32).
-                    self.attention_tcb_inner(li, pos)?;
+                    // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
+                    let seq_len = self.attention_tcb_inner(li, pos)?;
 
-                    // Mini-TCB β: cast attn_out f32→f16 delta, add to x_f16, rmsnorm_f16_to_f32.
+                    // Wedge M F-2: Phase 3 + Mini-TCB β in one TCB (saves 1 commit/layer).
+                    // Phase 3: mla_decode+o_proj → arena.out; β: cast→f16, add, rmsnorm_f16.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
+                        let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("F2: l{li} kv_b_proj not pinned")))?;
+                        let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("F2: l{li} o_proj not pinned")))?;
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                        let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            self.config.n_heads, self.config.qk_nope_head_dim,
+                            self.config.qk_rope_head_dim, self.config.v_head_dim,
+                            self.config.kv_lora_rank, seq_len, scale, h,
+                        )?;
                         crate::kernels::cast_f32_to_f16_tcb(
                             &mut tcb, &arena.out, &arena.wedge_f_delta_f16, h,
                         )?;
@@ -1794,15 +1807,29 @@ impl DeepSeekV2 {
                         tcb.commit_and_wait()?;
                     }
 
-                    // Attention via TCB: x_norm_buf → arena.out (all uncounted).
-                    self.attention_tcb_inner(li, pos)?;
+                    // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
+                    let seq_len = self.attention_tcb_inner(li, pos)?;
 
-                    // Mini-TCB β: add_inplace(x_buf += arena.out) + rmsnorm_ffn → x_norm_buf.
+                    // Wedge M C-2: Phase 3 + Mini-TCB β in one TCB (saves 1 commit/layer).
+                    // Phase 3: mla_decode+o_proj → arena.out; β: add x_buf+=out, rmsnorm → x_norm_buf.
+                    // Metal safe: separate encoders, auto-barrier on arena.out and arena.x_buf.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
+                        let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("C2: l{li} kv_b_proj not pinned")))?;
+                        let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("C2: l{li} o_proj not pinned")))?;
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                        let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            self.config.n_heads, self.config.qk_nope_head_dim,
+                            self.config.qk_rope_head_dim, self.config.v_head_dim,
+                            self.config.kv_lora_rank, seq_len, scale, h,
+                        )?;
                         crate::kernels::add_inplace_metal_tcb(
                             &mut tcb, &arena.x_buf, &arena.out, h,
                         )?;
@@ -2042,12 +2069,12 @@ impl DeepSeekV2 {
 
     /// v1.0.0-C: MLA attention via TCB (zero counted dispatches).
     /// Reads arena.x_norm_buf, writes result to arena.out.
-    /// Three mini-TCB commits (all uncounted):
+    /// Two mini-TCB commits (all uncounted); Phase 3 folded into caller's β-TCB (Wedge M C-2):
     ///   1. q_a/kv_a GEMVs + q_a_norm + kv_a_norm
     ///   2. q_b_proj GEMV
-    ///   3. mla_decode + o_proj
+    /// Returns seq_len for use by caller's Phase 3 encode.
     #[cfg(target_os = "macos")]
-    fn attention_tcb_inner(&mut self, li: usize, pos: usize) -> Result<()> {
+    fn attention_tcb_inner(&mut self, li: usize, pos: usize) -> Result<usize> {
         let n_heads = self.config.n_heads;
         let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
         let kv_a_dim = self.config.kv_lora_rank + self.config.qk_rope_head_dim;
@@ -2173,25 +2200,8 @@ impl DeepSeekV2 {
         }
         self.decode_arena.as_ref().unwrap().write_q(&q_full);
 
-        // Phase 3 mini-TCB: mla_decode + o_proj (→ arena.out).
-        {
-            let ctx = self.metal_ctx.as_ref().unwrap();
-            let arena = self.decode_arena.as_ref().unwrap();
-            let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_b_proj not pinned")))?;
-            let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} o_proj not pinned")))?;
-            let scale = 1.0f32 / (head_dim_q as f32).sqrt();
-            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
-                n_heads, qk_nope_head_dim, qk_rope_head_dim, self.config.v_head_dim,
-                kv_lora_rank, seq_len, scale, h,
-            )?;
-            tcb.commit_and_wait()?;
-        }
-
-        Ok(())
+        // Phase 3 (mla_decode + o_proj) is now encoded by the caller into its β-TCB.
+        Ok(seq_len)
     }
 
     /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
