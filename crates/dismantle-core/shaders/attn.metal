@@ -232,8 +232,8 @@ kernel void mla_decode_kernel_batched(
     threadgroup  float* scores              [[threadgroup(1)]],
     threadgroup  float* c_kv_wt             [[threadgroup(2)]],
     uint2               gid     [[threadgroup_position_in_grid]],
-    uint                tid     [[thread_position_in_threadgroup]],
-    uint                tg_size [[threads_per_threadgroup]])
+    uint2               tid_v   [[thread_position_in_threadgroup]],
+    uint2               tg_size_v [[threads_per_threadgroup]])
 {
     const uint head = gid.x;
     const uint m    = gid.y;  // token index in batch
@@ -258,7 +258,7 @@ kernel void mla_decode_kernel_batched(
     device const float* w_uv = w_uk + (uint64_t)qk_nope_head_dim * kv_lora_rank;
 
     // Phase 0: q_nope_proj[r] = Σ_i w_uk[i,r] × q_nope[i]
-    for (uint r = tid; r < kv_lora_rank; r += tg_size) {
+    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
         float acc = 0.0f;
         for (uint i = 0; i < qk_nope_head_dim; i++) {
             acc += w_uk[i * kv_lora_rank + r] * q_nope[i];
@@ -268,7 +268,7 @@ kernel void mla_decode_kernel_batched(
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // Phase 1: scores[t] = (q_nope_proj · c_kv[t] + q_rope · k_pe[t]) × scale
-    for (uint t = tid; t < seq_len_m; t += tg_size) {
+    for (uint t = tid_v.x; t < seq_len_m; t += tg_size_v.x) {
         device const float* c_kv_t = c_kv + (uint64_t)t * kv_lora_rank;
         device const float* k_pe_t = k_pe + (uint64_t)t * qk_rope_head_dim;
 
@@ -280,7 +280,7 @@ kernel void mla_decode_kernel_batched(
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // Phase 2: softmax over attended entries (serial in thread 0).
-    if (tid == 0) {
+    if (tid_v.x == 0) {
         float mx = -INFINITY;
         for (uint t = 0; t < seq_len_m; t++) if (scores[t] > mx) mx = scores[t];
         float sum = 0.0f;
@@ -291,7 +291,7 @@ kernel void mla_decode_kernel_batched(
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // Phase 3: c_kv_wt[r] = Σ_t scores[t] × c_kv[t, r]
-    for (uint r = tid; r < kv_lora_rank; r += tg_size) {
+    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
         float acc = 0.0f;
         for (uint t = 0; t < seq_len_m; t++) acc += scores[t] * c_kv[(uint64_t)t * kv_lora_rank + r];
         c_kv_wt[r] = acc;
@@ -300,7 +300,7 @@ kernel void mla_decode_kernel_batched(
 
     // Phase 4: out_batch[m, head, vi] = w_uv[vi, :] · c_kv_wt
     device float* out_m = out_batch + ((uint64_t)m * n_heads + head) * v_head_dim;
-    for (uint vi = tid; vi < v_head_dim; vi += tg_size) {
+    for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) {
         device const float* w_uv_row = w_uv + (uint64_t)vi * kv_lora_rank;
         float acc = 0.0f;
         for (uint r = 0; r < kv_lora_rank; r++) acc += w_uv_row[r] * c_kv_wt[r];
