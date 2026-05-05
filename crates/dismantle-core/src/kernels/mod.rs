@@ -5639,6 +5639,121 @@ mod metal_dispatch {
         )
     }
 
+    // ── v1.0.0-F: f16 residual stream TCB dispatchers ────────────────────────
+
+    /// Embed lookup writing f16 to out_buf: reads f16 embed table at row `token`,
+    /// writes hidden f16 values. Uses the existing `embed_lookup` kernel.
+    /// Zero counted dispatches.
+    pub fn embed_lookup_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(
+            "embed_lookup",
+            (hidden_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Element-wise f16 add_inplace: a[i] += b[i], both f16. Uses existing
+    /// `add_inplace_f16` kernel. Zero counted dispatches.
+    pub fn add_inplace_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a: &PinnedBuffer,
+        b: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let tg = TG_SIZE.min(n_u32);
+        tcb.dispatch_threads("add_inplace_f16", (n_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(a), 0);
+            enc.set_buffer(1, Some(b), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &n_u32 as *const u32 as *const _,
+            );
+        })
+    }
+
+    /// RMSNorm reading f16 x, writing f32 norm (for GEMV compatibility).
+    /// Uses new `rmsnorm_f16_to_f32` kernel. Variance reduction in f32.
+    /// Zero counted dispatches.
+    pub fn rmsnorm_f16_to_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_f16: &PinnedBuffer,
+        weight: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_f32: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_f16_to_f32",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_f16), 0);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_f32), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// Trivial f32→f16 element-wise cast: dst[i] = (half)src[i].
+    /// Converts attention/FFN f32 output to f16 residual delta. Zero counted dispatches.
+    pub fn cast_f32_to_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_f32: &PinnedBuffer,
+        dst_f16: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let tg = TG_SIZE.min(n_u32);
+        tcb.dispatch_threads("cast_f32_to_f16", (n_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(src_f32), 0);
+            enc.set_buffer(1, Some(dst_f16), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &n_u32 as *const u32 as *const _,
+            );
+        })
+    }
+
+    // ── end v1.0.0-F ─────────────────────────────────────────────────────────
+
     // ── v1.0.0-E: GPU argmax sampling dispatchers ────────────────────────────
 
     /// LM-head GEMV via TCB: w_buf (rows×cols f16) × x_buf (cols f32) → y_buf (rows f32).
