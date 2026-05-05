@@ -43,6 +43,18 @@ mod arena_imp {
         /// Phase 7 bridge: f16 residual stream — hidden × f16. Written before
         /// each rmsnorm step so f16 bridge kernels can read pre-norm activations.
         pub x_f16_buf: PinnedBuffer,
+        /// v1.0.0-C: q-LoRA intermediate — q_lora_rank × f32.
+        /// Output of q_a_proj GEMV; input to q_a_norm.
+        pub q_lora_buf: PinnedBuffer,
+        /// v1.0.0-C: kv-A projection output — (kv_lora_rank + qk_rope_head_dim) × f32.
+        /// Output of kv_a_proj GEMV; split into c_kv_normed and k_pe_raw.
+        pub kv_a_out_buf: PinnedBuffer,
+        /// v1.0.0-C: normed q-LoRA — q_lora_rank × f32.
+        /// Output of q_a_norm rmsnorm; input to q_b_proj GEMV.
+        pub q_lora_normed_buf: PinnedBuffer,
+        /// v1.0.0-C: normed kv-A latent — kv_lora_rank × f32.
+        /// Output of kv_a_norm rmsnorm; read by CPU for mla_kv_append.
+        pub c_kv_normed_buf: PinnedBuffer,
         /// Cached sizes for bounds-checking at dispatch time.
         pub n_heads: usize,
         pub q_head_dim: usize,
@@ -52,6 +64,8 @@ mod arena_imp {
         pub hidden: usize,
         pub max_seq: usize,
         pub n_routed_experts: usize,
+        pub q_lora_rank: usize,
+        pub kv_a_dim: usize,
     }
 
     impl DecodeArena {
@@ -65,8 +79,11 @@ mod arena_imp {
             hidden: usize,
             max_seq: usize,
             n_routed_experts: usize,
+            q_lora_rank: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+            let kv_a_dim = kv_lora_rank + qk_rope_head_dim;
+            let q_lora_sz = q_lora_rank.max(1);
             Self {
                 q: ctx.new_buffer(n_heads * q_head_dim * std::mem::size_of::<f32>()),
                 c_kv: ctx.new_buffer(max_seq * kv_lora_rank * std::mem::size_of::<f32>()),
@@ -78,6 +95,10 @@ mod arena_imp {
                 ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
                 x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
+                q_lora_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
+                kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
+                q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
+                c_kv_normed_buf: ctx.new_buffer(kv_lora_rank * std::mem::size_of::<f32>()),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
@@ -86,6 +107,8 @@ mod arena_imp {
                 hidden,
                 max_seq,
                 n_routed_experts,
+                q_lora_rank,
+                kv_a_dim,
             }
         }
 
