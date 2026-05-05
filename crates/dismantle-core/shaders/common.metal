@@ -124,6 +124,19 @@ kernel void embed_lookup(
     out[id] = embed[token * hidden + id];
 }
 
+// v1.0.0-D — embed lookup writing f32 residual stream.
+// Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
+kernel void embed_lookup_f32(
+    device const half*  embed  [[buffer(0)]],
+    device       float* out    [[buffer(1)]],
+    constant     uint&  hidden [[buffer(2)]],
+    constant     uint&  token  [[buffer(3)]],
+    uint id                     [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    out[id] = (float)embed[token * hidden + id];
+}
+
 // G1.2 — fp16-weight × fp32-vec → fp32 GEMV (LM-head shape).
 //
 // One workgroup per output row, tg_size threads per group, threadgroup
