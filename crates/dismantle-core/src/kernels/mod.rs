@@ -5639,7 +5639,70 @@ mod metal_dispatch {
         )
     }
 
-    // ── end v1.0.0-C/D TCB dispatch variants ─────────────────────────────────
+    // ── v1.0.0-E: GPU argmax sampling dispatchers ────────────────────────────
+
+    /// LM-head GEMV via TCB: w_buf (rows×cols f16) × x_buf (cols f32) → y_buf (rows f32).
+    /// Zero counted dispatches. Used for the final LM-head projection in the greedy path.
+    pub fn gemv_f16_metal_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// GPU greedy argmax via TCB: logits_buf (vocab f32) → token_buf (u32).
+    /// Zero counted dispatches. Grid and threadgroup are both (256, 1, 1) to
+    /// match the sample_argmax_f32 kernel's two-phase 256-thread reduction.
+    pub fn sample_argmax_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        token_buf: &PinnedBuffer,
+        vocab: usize,
+    ) -> Result<()> {
+        let vocab_u32 = vocab as u32;
+        let shmem_f = 256 * std::mem::size_of::<f32>() as u64;
+        let shmem_u = 256 * std::mem::size_of::<u32>() as u64;
+        tcb.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
+            enc.set_buffer(0, Some(logits_buf), 0);
+            enc.set_buffer(1, Some(token_buf), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &vocab_u32 as *const u32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_f);
+            enc.set_threadgroup_memory_length(1, shmem_u);
+        })
+    }
+
+    // ── end v1.0.0-E ─────────────────────────────────────────────────────────
 }
 
 

@@ -181,6 +181,12 @@ pub struct DeepSeekV2 {
     /// v1.0.0-D: final output_norm weight as GPU buffer (f32, hidden).
     /// Used by rmsnorm_metal_buf_tcb in the Wedge C/D final norm step.
     pub final_norm_buf: Option<PinnedBuffer>,
+    /// v1.0.0-E: LM-head output buffer (vocab × f32). Persistent; reused each
+    /// decode step. Eliminates the ~408 KB per-token logits allocation.
+    pub logits_buf: Option<PinnedBuffer>,
+    /// v1.0.0-E: Greedy argmax output (1 × u32). GPU writes the winning token
+    /// index here; only 4 bytes cross the bus instead of 408 KB logits.
+    pub token_buf: Option<PinnedBuffer>,
 }
 
 /// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
@@ -674,6 +680,21 @@ impl Engine for DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let (embed_buf, final_norm_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
 
+        // v1.0.0-E: logits buffer (vocab × f32) and token buffer (1 × u32).
+        // Allocated once; reused every greedy decode step to avoid per-token heap churn.
+        #[cfg(target_os = "macos")]
+        let (logits_buf, token_buf) = {
+            if let Some(ctx) = metal_ctx.as_ref() {
+                let lb = ctx.new_buffer(cfg.vocab_size * std::mem::size_of::<f32>());
+                let tb = ctx.new_buffer(std::mem::size_of::<u32>());
+                (Some(lb), Some(tb))
+            } else {
+                (None, None)
+            }
+        };
+        #[cfg(not(target_os = "macos"))]
+        let (logits_buf, token_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -699,6 +720,8 @@ impl Engine for DeepSeekV2 {
             residual_dtype: config.residual_dtype,
             embed_buf,
             final_norm_buf,
+            logits_buf,
+            token_buf,
         })
     }
 
@@ -1462,6 +1485,57 @@ impl DeepSeekV2 {
 
     fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<Option<u32>> {
         let x_norm = self.forward_token_final_norm(token, pos)?;
+
+        // v1.0.0-E: GPU argmax via TCB (zero counted dispatches) when the full
+        // Wedge C stack ran. arena.x_norm_buf holds the final-normed residual
+        // written by the Wedge C final-norm mini-TCB — same data as x_norm but
+        // already on-GPU, so only 4 bytes cross the bus instead of 408 KB.
+        #[cfg(target_os = "macos")]
+        {
+            let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
+            let wedge_e_ok = !use_f16
+                && self.metal_ctx.is_some()
+                && self.decode_arena.is_some()
+                && !self.mla_c_kv.is_empty()
+                && self.weights_mmap_buf.is_some()
+                && self.embed_buf.is_some()
+                && self.final_norm_buf.is_some()
+                && self.lm_head_buf.is_some()
+                && self.logits_buf.is_some()
+                && self.token_buf.is_some()
+                && self.layers.iter().all(|l| {
+                    l.pinned.attn_norm.is_some()
+                        && l.pinned.ffn_norm.is_some()
+                        && l.pinned.q_a_proj.is_some()
+                        && l.pinned.q_b_proj.is_some()
+                        && l.pinned.kv_a_proj_with_mqa.is_some()
+                        && l.pinned.kv_b_proj.is_some()
+                        && l.pinned.o_proj.is_some()
+                        && l.pinned.q_a_norm.is_some()
+                        && l.pinned.kv_a_norm.is_some()
+                });
+            if wedge_e_ok {
+                let vocab = self.config.vocab_size;
+                let cols = self.config.hidden;
+                let result = {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
+                    let logits_buf = self.logits_buf.as_ref().unwrap();
+                    let tok_buf = self.token_buf.as_ref().unwrap();
+                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    crate::kernels::gemv_f16_metal_buf_tcb(
+                        &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
+                    )?;
+                    crate::kernels::sample_argmax_f32_tcb(&mut tcb, logits_buf, tok_buf, vocab)?;
+                    tcb.commit_and_wait()?;
+                    let tok_ptr = tok_buf.contents() as *const u32;
+                    unsafe { *tok_ptr }
+                };
+                return Ok(Some(result));
+            }
+        }
+
         self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
     }
 
