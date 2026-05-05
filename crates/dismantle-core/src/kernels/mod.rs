@@ -445,6 +445,51 @@ mod metal_dispatch {
         )
     }
 
+    /// Approach 1 Iter 1 — 256 threads, 8 rows/TG, 8 simdgroups.
+    /// Selected via `gemm_q4_k_schedule = "v3_8r"`.
+    pub fn gemv_q4_k_m_v3_8r_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_v3_8r_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
+    /// Approach 3 — 64 threads, 4 rows/simdgroup (N_R0=4), sumy trick.
+    /// Selected via `gemm_q4_k_schedule = "v3_llama"`.
+    pub fn gemv_q4_k_m_v3_llama_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_v3_llama_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
+    /// Approach 1 Iter 2 — 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
+    /// Selected via `gemm_q4_k_schedule = "v3_dual"`.
+    pub fn gemv_q4_k_m_v3_dual_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_v3_dual_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
     /// v0.4.0 — v2 variant for the MoE per-expert GEMV path.  Dispatches
     /// `moe_grouped_gemm_q4_v2`; selected via `gemm_q4_k_schedule = "v2"`.
     pub fn moe_grouped_gemm_q4_v2_metal(
@@ -4033,6 +4078,230 @@ mod metal_dispatch {
             KERNEL,
             (n_tg * SM_TG, 1, 1),
             (SM_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
+    // Wedge K Approach 1 Iter 1 — v3_8r: 256 threads per TG (8 simdgroups),
+    // 8 rows per TG, grid=(ceil(rows/8)*256, 1, 1).
+    fn dispatch_q4_k_m_v3_8r_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_8r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = (rows_u32 + V3_ROWS - 1) / V3_ROWS;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
+    // Wedge K Approach 1 Iter 2 — v3_dual: 128 threads per TG (4 simdgroups),
+    // 2 rows per simdgroup (N_R0=2), 8 rows per TG.
+    // grid=(ceil(rows/8)*128, 1, 1). Amortizes activation load over 2 rows.
+    fn dispatch_q4_k_m_v3_dual_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_dual";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const DUAL_TG: u32 = 128;
+        const DUAL_ROWS: u32 = 8;
+        let n_tg = (rows_u32 + DUAL_ROWS - 1) / DUAL_ROWS;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * DUAL_TG, 1, 1),
+            (DUAL_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
+    // Approach 3 — v3_llama: 64 threads per TG (2 simdgroups), 4 rows per
+    // simdgroup (N_R0=4), sumy trick for min correction.
+    // grid=(ceil(rows/8)*64, 1, 1). Faithful llama.cpp port.
+    fn dispatch_q4_k_m_v3_llama_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_llama";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const LLAMA_TG: u32 = 64;   // 2 simdgroups × 32 threads
+        const LLAMA_ROWS: u32 = 8;  // 2 simdgroups × 4 rows each
+        let n_tg = (rows_u32 + LLAMA_ROWS - 1) / LLAMA_ROWS;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * LLAMA_TG, 1, 1),
+            (LLAMA_TG, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);
