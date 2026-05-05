@@ -153,6 +153,40 @@ pub fn add_inplace(a: &mut [f32], b: &[f32]) {
     }
 }
 
+/// Phase E — f16 residual stream embed lookup. Copies directly without upcasting.
+pub fn embed_lookup_f16(embed: &[f16], hidden: usize, token_id: u32, out: &mut [f16]) {
+    let row = token_id as usize * hidden;
+    debug_assert_eq!(out.len(), hidden);
+    out.copy_from_slice(&embed[row..row + hidden]);
+}
+
+/// Phase E — accumulate f32 `b` into f16 `a` in place.
+pub fn add_inplace_f16_from_f32(a: &mut [f16], b: &[f32]) {
+    debug_assert_eq!(a.len(), b.len());
+    for i in 0..a.len() {
+        a[i] = f16::from_f32(f32::from(a[i]) + b[i]);
+    }
+}
+
+/// Phase E — accumulate f16 `b` into f16 `a` in place (variance in f32).
+pub fn add_inplace_f16(a: &mut [f16], b: &[f16]) {
+    debug_assert_eq!(a.len(), b.len());
+    for i in 0..a.len() {
+        a[i] = f16::from_f32(f32::from(a[i]) + f32::from(b[i]));
+    }
+}
+
+/// Phase E — f16 RMSNorm. Variance reduction in f32 for precision; outputs f16.
+pub fn rmsnorm_f16(x: &[f16], weight: &[f32], eps: f32, out: &mut [f16]) {
+    let n = x.len();
+    debug_assert_eq!(out.len(), n);
+    let mean_sq = x.iter().map(|v| { let vf = f32::from(*v); vf * vf }).sum::<f32>() / n as f32;
+    let scale = (mean_sq + eps).sqrt().recip();
+    for i in 0..n {
+        out[i] = f16::from_f32(f32::from(x[i]) * scale * weight[i]);
+    }
+}
+
 /// Helper used by tests.
 pub fn argmax_f32(xs: &[f32]) -> u32 {
     let mut best = 0usize;
@@ -243,7 +277,7 @@ pub fn topk_softmax_batch(
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
-    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer};
+    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer, TokenCommandBuffer};
     use crate::{Error, Result};
     use half::f16;
 
@@ -357,9 +391,9 @@ mod metal_dispatch {
         dispatch_q4_k_m_gemv_v2(ctx, "gemm_q4_k_m_fused_v2", w_bytes, rows, cols, x, out)
     }
 
-    /// Pinned-buffer variant of `gemv_q4_k_m_v2`. Reads Q4_K_M weights
-    /// directly from `model_buf` at `w_offset` bytes, skipping the
-    /// per-call `new_buffer_with_bytes` memcpy (1.6–11 MB per expert).
+    /// Wedge A — pinned-buffer variant of `gemv_q4_k_m_v2`. Reads Q4_K_M weights
+    /// directly from `model_buf` at `w_offset` bytes, skipping the per-call
+    /// `new_buffer_with_bytes` memcpy (1.6–11 MB per expert).
     pub fn gemv_q4_k_m_v2_pinned(
         ctx: &MetalContext,
         model_buf: &PinnedBuffer,
@@ -373,6 +407,34 @@ mod metal_dispatch {
         dispatch_q4_k_m_gemv_v2_pinned(
             ctx,
             "gemm_q4_k_m_fused_v2",
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
+    }
+
+    /// Wedge K — simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
+    /// as `gemv_q4_k_m_v2_pinned`; dispatches `gemm_q4_k_m_simdmat`.
+    /// Selected via `gemm_q4_k_schedule = "simdmat"`.
+    ///
+    /// Uses 128-thread / 4-row-per-TG geometry (vs v2's 256/8) for better
+    /// parallelism on small-row expert shapes.
+    pub fn gemv_q4_k_m_simdmat_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_simdmat_pinned(
+            ctx,
             model_buf,
             w_offset,
             w_byte_size,
@@ -2761,6 +2823,155 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Wedge L — flash attention decode using online softmax (MLA-aware).
+    ///
+    /// Replaces phases 1-3 of `mla_decode_metal` with a tiled flash loop that
+    /// never materialises the full seq_len scores array. TG shmem drops from
+    /// O(seq_len) to O(FLASH_TG=128) floats, enabling higher GPU occupancy.
+    ///
+    /// Interface is identical to `mla_decode_metal`; caller selects via
+    /// `profile.selected.attn_block_schedule == "flash"`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn flash_attn_decode_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        c_kv: &[f32],
+        k_pe: &[f32],
+        kv_b_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        out: &mut [f32],
+    ) -> Result<()> {
+        const FLASH_TG: u32 = 128;
+
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        if q.len() != n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: q.len={} expected {}",
+                q.len(),
+                n_heads * q_head_dim
+            )));
+        }
+        if c_kv.len() != seq_len * kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: c_kv.len={} expected {}",
+                c_kv.len(),
+                seq_len * kv_lora_rank
+            )));
+        }
+        if k_pe.len() != seq_len * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: k_pe.len={} expected {}",
+                k_pe.len(),
+                seq_len * qk_rope_head_dim
+            )));
+        }
+        let expected_kv_b =
+            (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+                as u64;
+        if kv_b_proj.length() < expected_kv_b {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: kv_b_proj buffer too small: got {} expected {}",
+                kv_b_proj.length(),
+                expected_kv_b
+            )));
+        }
+        if out.len() != n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: out.len={} expected {}",
+                out.len(),
+                n_heads * v_head_dim
+            )));
+        }
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "flash_attn_decode_metal: seq_len must be >= 1".into(),
+            ));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+
+        let f32_size = std::mem::size_of::<f32>() as u64;
+        // slot 0: q_nope_proj[kv_lora_rank]
+        let q_nope_proj_bytes = kv_lora_rank as u64 * f32_size;
+        // slot 1: acc[kv_lora_rank]
+        let acc_bytes = kv_lora_rank as u64 * f32_size;
+        // slot 2: scores_tile[FLASH_TG]
+        let scores_tile_bytes = FLASH_TG as u64 * f32_size;
+        // slot 3: state[8] = {m, l, corr, m_tile, simd0..3_max}
+        let state_bytes = 8u64 * f32_size;
+
+        ctx.dispatch_threads(
+            "flash_attn_decode_kernel",
+            (n_heads_u32 * FLASH_TG, 1, 1),
+            (FLASH_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_heads_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_nope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_rope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &v_head_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &kv_lora_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &seq_len_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<f32>() as u64,
+                    &scale as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, acc_bytes);
+                enc.set_threadgroup_memory_length(2, scores_tile_bytes);
+                enc.set_threadgroup_memory_length(3, state_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
     /// Phase A Wedge A2 — batched MLA decode (M tokens in one dispatch).
     ///
     /// Grid: (n_heads × TG_SIZE, M, 1). Token m attends to KV entries
@@ -3692,7 +3903,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Pinned-buffer variant of dispatch_q4_k_m_gemv_v2. Uses set_buffer
+    // Wedge A — pinned-buffer variant of dispatch_q4_k_m_gemv_v2. Uses set_buffer
     // offset instead of new_buffer_with_bytes, eliminating the per-call
     // weight memcpy (1.6–11 MB per expert × 236 calls/token).
     fn dispatch_q4_k_m_gemv_v2_pinned(
@@ -3768,6 +3979,80 @@ mod metal_dispatch {
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
         out.copy_from_slice(out_slice);
 
+        Ok(())
+    }
+
+    // Wedge K dispatcher — gemm_q4_k_m_simdmat geometry: 128 threads per TG
+    // (4 simdgroups × 32), 4 rows per TG, grid=(ceil(rows/4)*128, 1, 1).
+    fn dispatch_q4_k_m_simdmat_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_simdmat";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const SM_TG: u32 = 128;  // 4 simdgroups × 32 threads
+        const SM_ROWS: u32 = 4;  // 1 simdgroup per row, 4 rows per TG
+        let n_tg = (rows_u32 + SM_ROWS - 1) / SM_ROWS;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * SM_TG, 1, 1),
+            (SM_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
         Ok(())
     }
 
@@ -3934,6 +4219,32 @@ mod metal_dispatch {
         )
     }
 
+    /// Wedge B — TCB variant of add_inplace_metal. Encodes into `tcb` without
+    /// committing. Caller commits when a batch boundary is appropriate.
+    pub fn add_inplace_metal_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a_buf: &PinnedBuffer,
+        b_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Phase 7 Wedge 7b — fp16 rmsnorm. Reads f16, accumulates variance in
     /// f32, writes f16. Weight stays f32. Internal accumulation MUST stay
     /// f32 — DO NOT change to half — fp16 squared activations overflow at
@@ -4025,6 +4336,37 @@ mod metal_dispatch {
         let hidden_u32 = hidden as u32;
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
         ctx.dispatch_threads("rmsnorm", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(weight_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &hidden_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<f32>() as u64,
+                &eps as *const f32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// Wedge B — TCB variant of rmsnorm for the f32 residual stream.
+    /// Uses `"rmsnorm_f32"` kernel (f32 x, f32 weight → f32 out). Encodes into
+    /// `tcb` without committing. Caller commits when a batch boundary is appropriate.
+    pub fn rmsnorm_metal_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads("rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
@@ -5176,7 +5518,658 @@ mod metal_dispatch {
     }
 
     // ── end v0.5.10 fp16 Q-format kernel dispatchers ──────────────────────────
+
+    // ── v1.0.0-C: TokenCommandBuffer variants for attention + FFN kernels ─────
+    // These functions encode kernels into an external or internal TCB rather
+    // than calling ctx.dispatch_threads/dispatch_batch. TCB commits are NOT
+    // counted toward dispatch_commits_per_token, enabling the target ≤30/token.
+
+    /// Encode one f32 GEMV (pinned w, arena x → arena out) into TCB.
+    /// Reuses the `gemv_f32_attn` kernel; no ctx.dispatch_threads call.
+    pub fn gemv_f32_attn_pinned_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// Encode two f32 GEMVs sharing x (q_a_proj + kv_a_proj) into TCB.
+    /// Both kernels encode sequentially; single commit by caller.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_f32_attn_pair_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_a_buf: &PinnedBuffer,
+        rows_a: usize,
+        w_b_buf: &PinnedBuffer,
+        rows_b: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_a_buf: &PinnedBuffer,
+        out_b_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemv_f32_attn_pinned_buf_tcb(tcb, w_a_buf, rows_a, cols, x_buf, out_a_buf)?;
+        gemv_f32_attn_pinned_buf_tcb(tcb, w_b_buf, rows_b, cols, x_buf, out_b_buf)
+    }
+
+    /// Encode mla_decode_kernel + o_proj gemv into external TCB.
+    /// Reads arena.q / arena.c_kv / arena.k_pe; writes arena.attn_out / arena.out.
+    /// No commit — caller commits the TCB when ready.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_and_o_proj_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+        let hidden_u32 = hidden as u32;
+        let o_proj_cols_u32 = (n_heads * v_head_dim) as u32;
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
+
+        tcb.dispatch_threads(
+            "mla_decode_kernel",
+            (n_heads_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&arena.q), 0);
+                enc.set_buffer(1, Some(&arena.c_kv), 0);
+                enc.set_buffer(2, Some(&arena.k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&arena.attn_out), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+        tcb.dispatch_threads(
+            "gemv_f32_attn",
+            (hidden_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(o_proj), 0);
+                enc.set_buffer(1, Some(&arena.attn_out), 0);
+                enc.set_buffer(2, Some(&arena.out), 0);
+                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
+                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &o_proj_cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// Encode one f32 MoE gate-logit GEMV (mmap-pinned w, buffer x → buffer out) into TCB.
+    pub fn gemv_f32_moe_pinned_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f32_moe",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// TCB version of encode_batched_gemv_indexed (private helper).
+    fn encode_batched_gemv_indexed_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        kernel_name: &str,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        base_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let base_offset_u64 = base_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let is_v2 = kernel_name.ends_with("_v2");
+        let n_tg_x = if is_v2 { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2 {
+            0u64
+        } else {
+            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
+        };
+        tcb.dispatch_threads(
+            kernel_name,
+            (n_tg_x * tg_size, routes_u32, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &base_offset_u64 as *const u64 as *const _);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                if !is_v2 {
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                }
+            },
+        )
+    }
+
+    fn encode_silu_mul_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_buf), 0);
+            enc.set_buffer(1, Some(up_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &n_u32 as *const u32 as *const _);
+        })
+    }
+
+    fn encode_route_accumulate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        routed_out: &PinnedBuffer,
+        weights: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        out: &PinnedBuffer,
+        hidden: usize,
+        routes: usize,
+        has_shared: bool,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let routes_u32 = routes as u32;
+        let has_shared_u32 = u32::from(has_shared);
+        tcb.dispatch_threads("moe_route_accumulate", (hidden_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(routed_out), 0);
+            enc.set_buffer(1, Some(weights), 0);
+            enc.set_buffer(2, Some(shared_out), 0);
+            enc.set_buffer(3, Some(out), 0);
+            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
+            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+            enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &has_shared_u32 as *const u32 as *const _);
+        })
+    }
+
+    /// v1.0.0-C: MoE block via internal TCB (zero counted dispatches).
+    /// Functionally identical to `moe_block_batched_indexed_metal` but uses
+    /// TokenCommandBuffer internally so stats.commits is NOT incremented.
+    /// `x_buf` and `out_buf` are pre-allocated arena buffers.
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_block_batched_indexed_tcb(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        routed_gate_offset: usize,
+        routed_up_offset: usize,
+        routed_down_offset: usize,
+        n_routed_experts: usize,
+        route_ids: &[u32],
+        route_weights: &[f32],
+        shared_gate_offset: Option<usize>,
+        shared_up_offset: Option<usize>,
+        shared_down_offset: Option<usize>,
+        hidden: usize,
+        routed_mid: usize,
+        shared_mid: usize,
+        q4k_schedule: &str,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let routes = route_ids.len();
+        if routes == 0 {
+            return Err(Error::Kernel("moe_block_batched_indexed_tcb: no routes".into()));
+        }
+
+        let has_shared = shared_gate_offset.is_some()
+            || shared_up_offset.is_some()
+            || shared_down_offset.is_some();
+
+        let q4k_indexed_kernel = match q4k_schedule {
+            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            _ => "moe_batched_gemm_q4_indexed",
+        };
+
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
+        let route_weights_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(route_weights));
+        let shared_route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[0u32]));
+
+        let routed_gate_out =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_up_out =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_act =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_out =
+            ctx.new_buffer(routes * hidden * std::mem::size_of::<f32>());
+
+        let shared_gate_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_up_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_act = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
+            &routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
+        )?;
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
+            &routed_up_out, routed_up_offset, routes, routed_mid, hidden,
+        )?;
+        encode_silu_mul_tcb(&mut tcb, &routed_gate_out, &routed_up_out, &routed_act, routes * routed_mid)?;
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, "moe_batched_gemm_q8_0_indexed", model_buf, &route_ids_buf,
+            &routed_act, &routed_out, routed_down_offset, routes, hidden, routed_mid,
+        )?;
+
+        if let (Some(gate_off), Some(up_off), Some(down_off)) =
+            (shared_gate_offset, shared_up_offset, shared_down_offset)
+        {
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
+                &shared_gate_out, gate_off, 1, shared_mid, hidden,
+            )?;
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
+                &shared_up_out, up_off, 1, shared_mid, hidden,
+            )?;
+            encode_silu_mul_tcb(&mut tcb, &shared_gate_out, &shared_up_out, &shared_act, shared_mid)?;
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, "moe_batched_gemm_q6_k_indexed", model_buf, &shared_route_ids_buf,
+                &shared_act, &shared_out, down_off, 1, hidden, shared_mid,
+            )?;
+        }
+
+        encode_route_accumulate_tcb(
+            &mut tcb, &routed_out, &route_weights_buf, &shared_out, out_buf,
+            hidden, routes, has_shared,
+        )?;
+        tcb.commit_and_wait()?;
+        // temp buffers dropped here, after GPU is done
+        Ok(())
+    }
+
+    // ── v1.0.0-D: embed lookup writing f32 residual directly to GPU buffer ──
+
+    /// Encode embed_lookup_f32 into TCB: reads f16 embed table at row `token`,
+    /// writes hidden f32 values into x_buf. Zero counted dispatches.
+    pub fn embed_lookup_metal_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        x_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(
+            "embed_lookup_f32",
+            (hidden_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    // ── v1.0.0-F: f16 residual stream TCB dispatchers ────────────────────────
+
+    /// Embed lookup writing f16 to out_buf: reads f16 embed table at row `token`,
+    /// writes hidden f16 values. Uses the existing `embed_lookup` kernel.
+    /// Zero counted dispatches.
+    pub fn embed_lookup_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(
+            "embed_lookup",
+            (hidden_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Element-wise f16 add_inplace: a[i] += b[i], both f16. Uses existing
+    /// `add_inplace_f16` kernel. Zero counted dispatches.
+    pub fn add_inplace_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a: &PinnedBuffer,
+        b: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let tg = TG_SIZE.min(n_u32);
+        tcb.dispatch_threads("add_inplace_f16", (n_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(a), 0);
+            enc.set_buffer(1, Some(b), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &n_u32 as *const u32 as *const _,
+            );
+        })
+    }
+
+    /// RMSNorm reading f16 x, writing f32 norm (for GEMV compatibility).
+    /// Uses new `rmsnorm_f16_to_f32` kernel. Variance reduction in f32.
+    /// Zero counted dispatches.
+    pub fn rmsnorm_f16_to_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_f16: &PinnedBuffer,
+        weight: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_f32: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_f16_to_f32",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_f16), 0);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_f32), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// Trivial f32→f16 element-wise cast: dst[i] = (half)src[i].
+    /// Converts attention/FFN f32 output to f16 residual delta. Zero counted dispatches.
+    pub fn cast_f32_to_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_f32: &PinnedBuffer,
+        dst_f16: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let tg = TG_SIZE.min(n_u32);
+        tcb.dispatch_threads("cast_f32_to_f16", (n_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(src_f32), 0);
+            enc.set_buffer(1, Some(dst_f16), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &n_u32 as *const u32 as *const _,
+            );
+        })
+    }
+
+    // ── end v1.0.0-F ─────────────────────────────────────────────────────────
+
+    // ── v1.0.0-E: GPU argmax sampling dispatchers ────────────────────────────
+
+    /// LM-head GEMV via TCB: w_buf (rows×cols f16) × x_buf (cols f32) → y_buf (rows f32).
+    /// Zero counted dispatches. Used for the final LM-head projection in the greedy path.
+    pub fn gemv_f16_metal_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// GPU greedy argmax via TCB: logits_buf (vocab f32) → token_buf (u32).
+    /// Zero counted dispatches. Grid and threadgroup are both (256, 1, 1) to
+    /// match the sample_argmax_f32 kernel's two-phase 256-thread reduction.
+    pub fn sample_argmax_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        token_buf: &PinnedBuffer,
+        vocab: usize,
+    ) -> Result<()> {
+        let vocab_u32 = vocab as u32;
+        let shmem_f = 256 * std::mem::size_of::<f32>() as u64;
+        let shmem_u = 256 * std::mem::size_of::<u32>() as u64;
+        tcb.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
+            enc.set_buffer(0, Some(logits_buf), 0);
+            enc.set_buffer(1, Some(token_buf), 0);
+            enc.set_bytes(
+                2,
+                std::mem::size_of::<u32>() as u64,
+                &vocab_u32 as *const u32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_f);
+            enc.set_threadgroup_memory_length(1, shmem_u);
+        })
+    }
+
+    // ── end v1.0.0-E ─────────────────────────────────────────────────────────
+
+    // ── v1.0.0-G: rmsnorm-gemv fusion TCB dispatchers ────────────────────────
+
+    /// Fused rmsnorm + f32 GEMV for attention projections (q_a, kv_a).
+    /// Reads x_buf (f32 raw residual), applies attn rmsnorm with weight_buf,
+    /// writes out_buf (f32 rows). Grid = (rows * TG_SIZE, 1, 1).
+    /// Eliminates the standalone rmsnorm_metal_buf_tcb in mini-TCB α.
+    /// Zero counted dispatches.
+    pub fn rmsnorm_gemv_f32_attn_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_gemv_f32_attn_pinned",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v1.0.0-G ─────────────────────────────────────────────────────────
+
+    // ── v1.0.0-H: simdgroup_matrix GEMV dispatchers (Path 2) ─────────────────
+
+    /// simdgroup_matrix GEMV: w (rows×cols f32) × x (cols f32) → y (rows f32).
+    /// One SIMD group (32 threads) per threadgroup; each handles 8 output rows.
+    /// Requires cols % 8 == 0. Grid = (ceil(rows/8)*32, 1, 1), TG = (32, 1, 1).
+    /// Zero counted dispatches.
+    pub fn gemv_simdgroup_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if cols % 8 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "gemv_simdgroup_f32 requires cols % 8 == 0; cols={cols}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let n_groups = rows.div_ceil(8) as u32;
+        let scratch_bytes = 192u64 * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_simdgroup_f32",
+            (n_groups * 32, 1, 1),
+            (32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, scratch_bytes);
+            },
+        )
+    }
+
+    // ── end v1.0.0-H ─────────────────────────────────────────────────────────
 }
+
 
 #[cfg(target_os = "macos")]
 pub use metal_dispatch::*;

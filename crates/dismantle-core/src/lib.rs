@@ -28,6 +28,6 @@ pub use error::{Error, Result};
 
 mod engine;
 pub use engine::{
-    ActivationDtype, Engine, EngineConfig, GenStats, GenerateRequest, SamplingParams,
-    SpeculateMode, StopReason, StreamEvent,
+    ActivationDtype, Engine, EngineConfig, GenStats, GenerateRequest, ResidualDtype,
+    SamplingParams, SpeculateMode, StopReason, StreamEvent,
 };
