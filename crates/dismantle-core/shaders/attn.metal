@@ -696,3 +696,151 @@ kernel void rmsnorm_gemv_q4k_pair_f16(
     }
     if (tid == 0u) out_ptr[row_idx] = shmem[0];
 }
+
+
+// ── flash_attn_decode_kernel ──────────────────────────────────────────────────
+// Wedge L — Flash attention decode for DeepSeek MLA compressed KV cache.
+//
+// Fuses Phases 1-3 of mla_decode_kernel into a tiled online-softmax pass.
+// Eliminates the materialized scores[seq_len] threadgroup buffer — 4× smaller
+// TG memory footprint → more concurrent TGs per shader core → better GPU
+// utilization on long-sequence decode.
+//
+// Algorithm (Flash Attention v2 online softmax for single-token decode):
+//   Phase 0: q_nope_proj = w_uk^T × q_nope  (same as mla_decode_kernel)
+//   Flash loop (tiles of FLASH_TG tokens each):
+//     - Each thread computes 1 attention score
+//     - Online max: simd_max → thread-0 tree reduce → m_new
+//     - Online softmax correction: acc *= exp(m_old - m_new)
+//     - Weighted accumulation: acc += exp(s - m_new) * c_kv (each thread r-slice)
+//     - Update l_running (thread 0 serial, O(FLASH_TG) per tile)
+//   Normalize: acc /= l_running
+//   Phase 4: out = w_uv × acc  (same as mla_decode_kernel)
+//
+// Shmem layout (host sets sizes at dispatch):
+//   slot 0 — q_nope_proj:  kv_lora_rank floats
+//   slot 1 — acc:          kv_lora_rank floats
+//   slot 2 — scores_tile:  FLASH_TG floats  (current tile scores)
+//   slot 3 — state[8]:     {m_run, l_run, correction, m_tile, simd[0..3]_max}
+//
+// Grid: (n_heads * FLASH_TG, 1, 1)   TG: (FLASH_TG, 1, 1)
+// FLASH_TG = 128 (4 simdgroups × 32 threads).
+// Buffer layout: identical to mla_decode_kernel (buffers 0..11).
+
+#define FLASH_TG   128u
+#define FLASH_NSG  4u
+
+kernel void flash_attn_decode_kernel(
+    device const float* q          [[buffer(0)]],
+    device const float* c_kv       [[buffer(1)]],
+    device const float* k_pe       [[buffer(2)]],
+    device const float* kv_b_proj  [[buffer(3)]],
+    device       float* out        [[buffer(4)]],
+    constant     uint&  n_heads             [[buffer(5)]],
+    constant     uint&  qk_nope_head_dim    [[buffer(6)]],
+    constant     uint&  qk_rope_head_dim    [[buffer(7)]],
+    constant     uint&  v_head_dim          [[buffer(8)]],
+    constant     uint&  kv_lora_rank        [[buffer(9)]],
+    constant     uint&  seq_len             [[buffer(10)]],
+    constant     float& scale               [[buffer(11)]],
+    threadgroup  float* q_nope_proj [[threadgroup(0)]],
+    threadgroup  float* acc         [[threadgroup(1)]],
+    threadgroup  float* scores_tile [[threadgroup(2)]],
+    threadgroup  float* state       [[threadgroup(3)]],
+    uint                tid         [[thread_position_in_threadgroup]],
+    uint                gid         [[threadgroup_position_in_grid]],
+    uint                simd_lane   [[thread_index_in_simdgroup]],
+    uint                simd_id     [[simdgroup_index_in_threadgroup]])
+{
+    if (gid >= n_heads) return;
+
+    const uint head       = gid;
+    const uint q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+
+    device const float* q_nope = q + head * q_head_dim;
+    device const float* q_rope = q_nope + qk_nope_head_dim;
+
+    const uint kv_b_per_head = (qk_nope_head_dim + v_head_dim) * kv_lora_rank;
+    device const float* w_uk = kv_b_proj + (uint64_t)head * kv_b_per_head;
+    device const float* w_uv = w_uk + (uint64_t)qk_nope_head_dim * kv_lora_rank;
+
+    // Phase 0: q_nope_proj[r] = w_uk^T x q_nope
+    for (uint r = tid; r < kv_lora_rank; r += FLASH_TG) {
+        float dot = 0.0f;
+        for (uint i = 0; i < qk_nope_head_dim; i++)
+            dot += w_uk[i * kv_lora_rank + r] * q_nope[i];
+        q_nope_proj[r] = dot;
+    }
+    for (uint r = tid; r < kv_lora_rank; r += FLASH_TG) acc[r] = 0.0f;
+    if (tid == 0u) { state[0] = -INFINITY; state[1] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Flash loop
+    const uint n_tiles = (seq_len + FLASH_TG - 1u) / FLASH_TG;
+
+    for (uint tile = 0u; tile < n_tiles; ++tile) {
+        const uint t_base = tile * FLASH_TG;
+        const uint t_len  = min(FLASH_TG, seq_len - t_base);
+        const uint t      = t_base + tid;
+
+        // 1. Score
+        float s_local = -INFINITY;
+        if (tid < t_len) {
+            float s = 0.0f;
+            device const float* c_kv_t = c_kv + (uint64_t)t * kv_lora_rank;
+            device const float* k_pe_t = k_pe + (uint64_t)t * qk_rope_head_dim;
+            for (uint r = 0u; r < kv_lora_rank; r++) s += q_nope_proj[r] * c_kv_t[r];
+            for (uint r = 0u; r < qk_rope_head_dim; r++) s += q_rope[r] * k_pe_t[r];
+            s_local = s * scale;
+        }
+        scores_tile[tid] = s_local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 2. Parallel max
+        float simd_mx = simd_max(s_local);
+        if (simd_lane == 0u) state[4u + simd_id] = simd_mx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 3. Thread 0: online softmax state update
+        if (tid == 0u) {
+            float tile_max = max(max(state[4], state[5]), max(state[6], state[7]));
+            float m_old    = state[0];
+            float m_new    = max(m_old, tile_max);
+            float corr     = exp(m_old - m_new);
+            float tile_sum = 0.0f;
+            for (uint ti = 0u; ti < t_len; ++ti)
+                tile_sum += exp(scores_tile[ti] - m_new);
+            state[0] = m_new;
+            state[1] = state[1] * corr + tile_sum;
+            state[2] = corr;
+            state[3] = m_new;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 4. Scale acc and accumulate weighted c_kv
+        const float corr_bc = state[2];
+        const float m_bc    = state[3];
+        for (uint r = tid; r < kv_lora_rank; r += FLASH_TG) {
+            float a = acc[r] * corr_bc;
+            for (uint ti = 0u; ti < t_len; ++ti) {
+                float w = exp(scores_tile[ti] - m_bc);
+                a += w * c_kv[(uint64_t)(t_base + ti) * kv_lora_rank + r];
+            }
+            acc[r] = a;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // Normalize
+    float inv_l = 1.0f / state[1];
+    for (uint r = tid; r < kv_lora_rank; r += FLASH_TG) acc[r] *= inv_l;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 4: out = w_uv x acc
+    for (uint vi = tid; vi < v_head_dim; vi += FLASH_TG) {
+        device const float* w_uv_row = w_uv + (uint64_t)vi * kv_lora_rank;
+        float dot = 0.0f;
+        for (uint r = 0u; r < kv_lora_rank; r++) dot += w_uv_row[r] * acc[r];
+        out[head * v_head_dim + vi] = dot;
+    }
+}
