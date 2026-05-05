@@ -21,6 +21,7 @@ pub const SHADER_QUANT: &str = include_str!("../../shaders/quant.metal");
 pub const SHADER_MOE: &str = include_str!("../../shaders/moe.metal");
 pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
+pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
@@ -31,6 +32,7 @@ pub fn all_shader_sources() -> String {
         SHADER_MOE,
         SHADER_ATTN,
         SHADER_SAMPLE,
+        SHADER_MATMUL,
     ]
     .join("\n\n")
 }
