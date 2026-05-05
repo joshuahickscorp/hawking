@@ -5869,6 +5869,54 @@ mod metal_dispatch {
     }
 
     // ── end v1.0.0-G ─────────────────────────────────────────────────────────
+
+    // ── v1.0.0-H: simdgroup_matrix GEMV dispatchers (Path 2) ─────────────────
+
+    /// simdgroup_matrix GEMV: w (rows×cols f32) × x (cols f32) → y (rows f32).
+    /// One SIMD group (32 threads) per threadgroup; each handles 8 output rows.
+    /// Requires cols % 8 == 0. Grid = (ceil(rows/8)*32, 1, 1), TG = (32, 1, 1).
+    /// Zero counted dispatches.
+    pub fn gemv_simdgroup_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if cols % 8 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "gemv_simdgroup_f32 requires cols % 8 == 0; cols={cols}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let n_groups = rows.div_ceil(8) as u32;
+        let scratch_bytes = 192u64 * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_simdgroup_f32",
+            (n_groups * 32, 1, 1),
+            (32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, scratch_bytes);
+            },
+        )
+    }
+
+    // ── end v1.0.0-H ─────────────────────────────────────────────────────────
 }
 
 

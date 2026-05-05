@@ -2086,16 +2086,25 @@ impl DeepSeekV2 {
         }
 
         // Phase 2 mini-TCB: q_b_proj GEMV (q_lora_normed_buf → arena.q).
+        // Wedge H: use simdgroup_matrix kernel when shapes are 8-aligned; fallback otherwise.
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
             let q_b_proj_buf = self.layers[li].pinned.q_b_proj.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_b_proj not pinned")))?;
             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::gemv_f32_attn_pinned_buf_tcb(
-                &mut tcb, q_b_proj_buf, n_heads * head_dim_q, q_lora,
-                &arena.q_lora_normed_buf, &arena.q,
-            )?;
+            let q_out_rows = n_heads * head_dim_q;
+            if q_lora % 8 == 0 && q_out_rows % 8 == 0 {
+                crate::kernels::gemv_simdgroup_f32_tcb(
+                    &mut tcb, q_b_proj_buf, &arena.q_lora_normed_buf, &arena.q,
+                    q_out_rows, q_lora,
+                )?;
+            } else {
+                crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+                    &mut tcb, q_b_proj_buf, q_out_rows, q_lora,
+                    &arena.q_lora_normed_buf, &arena.q,
+                )?;
+            }
             tcb.commit_and_wait()?;
         }
 
