@@ -1545,6 +1545,139 @@ impl DeepSeekV2 {
         embed_lookup(&self.embed, h, token, &mut x);
 
         let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
+        let residual_f16 = self.residual_dtype == crate::engine::ResidualDtype::F16;
+
+        // ---- Wedge F: f16 residual stream path.
+        // When residual_dtype=F16: wedge_f_x_f16 (f16) holds the running residual.
+        // x_norm_buf (f32) is populated by rmsnorm_f16_to_f32_tcb and fed to all
+        // GEMV kernels unchanged. Bandwidth savings come from f16 add_inplace and
+        // embed_lookup on the 2KB residual instead of 4KB.
+        // Same Wedge C conditions required (attention_tcb_inner / ffn_tcb_inner
+        // read x_norm_buf f32 — no changes needed there).
+        #[cfg(target_os = "macos")]
+        if residual_f16 && !use_f16 {
+            let tcb_base = self.metal_ctx.is_some()
+                && self.decode_arena.is_some()
+                && self.layers.iter().all(|l| {
+                    l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
+                });
+            let wedge_f_active = tcb_base
+                && !self.mla_c_kv.is_empty()
+                && self.weights_mmap_buf.is_some()
+                && self.embed_buf.is_some()
+                && self.final_norm_buf.is_some()
+                && self.layers.iter().all(|l| {
+                    l.pinned.q_a_proj.is_some()
+                        && l.pinned.q_b_proj.is_some()
+                        && l.pinned.kv_a_proj_with_mqa.is_some()
+                        && l.pinned.kv_b_proj.is_some()
+                        && l.pinned.o_proj.is_some()
+                        && l.pinned.q_a_norm.is_some()
+                        && l.pinned.kv_a_norm.is_some()
+                });
+
+            if wedge_f_active {
+                let eps = self.config.rms_norm_eps;
+                let n_layers = self.config.n_layers;
+
+                // Embed lookup → wedge_f_x_f16 (f16, no CPU round-trip).
+                {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let embed_buf = self.embed_buf.as_ref().unwrap();
+                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    crate::kernels::embed_lookup_f16_tcb(
+                        &mut tcb, embed_buf, token, h, &arena.wedge_f_x_f16,
+                    )?;
+                    tcb.commit_and_wait()?;
+                }
+
+                for li in 0..n_layers {
+                    crate::metal::set_current_layer(Some(li as u32));
+
+                    // Mini-TCB α: (add_inplace_f16 if li>0) + rmsnorm_f16_to_f32 → x_norm_buf.
+                    {
+                        let ctx = self.metal_ctx.as_ref().unwrap();
+                        let arena = self.decode_arena.as_ref().unwrap();
+                        let attn_norm_buf = self.layers[li].pinned.attn_norm.as_ref().unwrap();
+                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        if li > 0 {
+                            crate::kernels::add_inplace_f16_tcb(
+                                &mut tcb, &arena.wedge_f_x_f16, &arena.wedge_f_delta_f16, h,
+                            )?;
+                        }
+                        crate::kernels::rmsnorm_f16_to_f32_tcb(
+                            &mut tcb, &arena.wedge_f_x_f16, attn_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
+                        tcb.commit_and_wait()?;
+                    }
+
+                    // Attention via TCB: reads x_norm_buf (f32), writes arena.out (f32).
+                    self.attention_tcb_inner(li, pos)?;
+
+                    // Mini-TCB β: cast attn_out f32→f16 delta, add to x_f16, rmsnorm_f16_to_f32.
+                    {
+                        let ctx = self.metal_ctx.as_ref().unwrap();
+                        let arena = self.decode_arena.as_ref().unwrap();
+                        let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::cast_f32_to_f16_tcb(
+                            &mut tcb, &arena.out, &arena.wedge_f_delta_f16, h,
+                        )?;
+                        crate::kernels::add_inplace_f16_tcb(
+                            &mut tcb, &arena.wedge_f_x_f16, &arena.wedge_f_delta_f16, h,
+                        )?;
+                        crate::kernels::rmsnorm_f16_to_f32_tcb(
+                            &mut tcb, &arena.wedge_f_x_f16, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
+                        tcb.commit_and_wait()?;
+                    }
+
+                    // FFN via TCB (MoE) or CPU fallback (Dense): → arena.ffn_out_buf (f32).
+                    let ffn_handled = self.ffn_tcb_inner(li)?;
+                    if !ffn_handled {
+                        let mut x_norm = vec![0.0f32; h];
+                        self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
+                        let ffn_out = self.ffn(li, &x_norm)?;
+                        self.decode_arena.as_ref().unwrap().write_ffn_out(&ffn_out);
+                    }
+
+                    // Cast FFN output f32→f16 delta.
+                    {
+                        let ctx = self.metal_ctx.as_ref().unwrap();
+                        let arena = self.decode_arena.as_ref().unwrap();
+                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::cast_f32_to_f16_tcb(
+                            &mut tcb, &arena.ffn_out_buf, &arena.wedge_f_delta_f16, h,
+                        )?;
+                        tcb.commit_and_wait()?;
+                    }
+                }
+
+                crate::metal::set_current_layer(None);
+
+                // Final: add last layer's FFN delta + final norm.
+                {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    if n_layers > 0 {
+                        crate::kernels::add_inplace_f16_tcb(
+                            &mut tcb, &arena.wedge_f_x_f16, &arena.wedge_f_delta_f16, h,
+                        )?;
+                    }
+                    crate::kernels::rmsnorm_f16_to_f32_tcb(
+                        &mut tcb, &arena.wedge_f_x_f16, final_norm_buf, eps, h, &arena.x_norm_buf,
+                    )?;
+                    tcb.commit_and_wait()?;
+                    let mut x_norm = vec![0.0f32; h];
+                    arena.read_x_norm(&mut x_norm);
+                    return Ok(x_norm);
+                }
+            }
+        }
+        // ---- End Wedge F ----
 
         // ---- Wedge C: all attention + FFN kernels on TCB (zero counted dispatches).
         // Extends Wedge B by replacing attention()/ffn() CPU-round-trips with

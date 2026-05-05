@@ -55,6 +55,13 @@ mod arena_imp {
         /// v1.0.0-C: normed kv-A latent — kv_lora_rank × f32.
         /// Output of kv_a_norm rmsnorm; read by CPU for mla_kv_append.
         pub c_kv_normed_buf: PinnedBuffer,
+        /// v1.0.0-F: f16 residual stream for `residual_dtype=F16` path.
+        /// hidden × f16. Replaces x_buf (f32) as the running residual accumulator.
+        pub wedge_f_x_f16: PinnedBuffer,
+        /// v1.0.0-F: scratch delta buffer — hidden × f16. Reused each layer for
+        /// both the attention output delta and the FFN output delta before
+        /// add_inplace_f16 accumulates them into wedge_f_x_f16.
+        pub wedge_f_delta_f16: PinnedBuffer,
         /// Cached sizes for bounds-checking at dispatch time.
         pub n_heads: usize,
         pub q_head_dim: usize,
@@ -95,6 +102,8 @@ mod arena_imp {
                 ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
                 x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
+                wedge_f_x_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
+                wedge_f_delta_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 q_lora_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
                 kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
                 q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
