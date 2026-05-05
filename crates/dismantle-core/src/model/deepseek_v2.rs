@@ -2488,6 +2488,40 @@ impl DeepSeekV2 {
                     }
                 }
 
+                let attn_schedule = self
+                    .kernel_profile
+                    .as_ref()
+                    .map(|p| p.selected.attn_block_schedule.as_str())
+                    .unwrap_or("mla");
+                if attn_schedule == "flash" {
+                    let mut attn_out = vec![0.0f32; n_heads * cfg.v_head_dim];
+                    crate::kernels::flash_attn_decode_metal(
+                        ctx,
+                        &q_full,
+                        &self.mla_c_kv[li][..seq_len * cfg.kv_lora_rank],
+                        &self.mla_k_pe[li][..seq_len * cfg.qk_rope_head_dim],
+                        kv_b_buf,
+                        n_heads,
+                        cfg.qk_nope_head_dim,
+                        cfg.qk_rope_head_dim,
+                        cfg.v_head_dim,
+                        cfg.kv_lora_rank,
+                        seq_len,
+                        scale,
+                        &mut attn_out,
+                    )?;
+                    let mut out = vec![0.0f32; h];
+                    self.gemv_f32_attn_dispatch(
+                        &layer.o_proj,
+                        layer.pinned.o_proj.as_ref(),
+                        h,
+                        n_heads * cfg.v_head_dim,
+                        &attn_out,
+                        &mut out,
+                    )?;
+                    return Ok(out);
+                }
+
                 let mut attn_out = vec![0.0f32; n_heads * cfg.v_head_dim];
                 crate::kernels::mla_decode_metal(
                     ctx,
