@@ -41,6 +41,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         kernel_profile,
         trace_dispatch: false,
         activation_dtype: Default::default(),
+        ..Default::default()
     };
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)
