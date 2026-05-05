@@ -399,6 +399,282 @@ kernel void gemm_q4_k_m_simdmat(
     }
 }
 
+// ── gemm_q4_k_m_v3_8r ────────────────────────────────────────────────────────
+// Phase B Approach 1 Iter 1: same improvements as simdmat (scale+activation
+// preloading, paired nibble reads) but using v2's 8-rows/TG geometry (256 threads,
+// 8 simdgroups). Fewer TGs → potentially less scheduling overhead on small shapes.
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+
+kernel void gemm_q4_k_m_v3_8r(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub]      & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub]      & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * xl[k0];
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * xl[k1];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
+// ── gemm_q4_k_m_v3_dual ──────────────────────────────────────────────────────
+// Phase B Approach 1 Iter 2: 2 rows per simdgroup (N_R0=2), 4 simdgroups per TG
+// (128 threads) — matches llama.cpp's N_R0_Q4_K=2, FC_mul_mv_nsg=4 geometry.
+// Each simdgroup loads activations xl[8] ONCE and computes two output rows,
+// halving the activation load bandwidth per row.
+//
+// Grid: (ceil(rows/8)*128, 1, 1)   threadgroup: (128, 1, 1)
+// 4 simdgroups × 2 rows each = 8 rows per TG.
+
+kernel void gemm_q4_k_m_v3_dual(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row0 = gid * 8u + simd_id * 2u;
+    uint base_row1 = base_row0 + 1u;
+    bool row1_valid = base_row1 < rows;
+    if (base_row0 >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off0 = (uint64_t)base_row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_byte_off1 = (uint64_t)base_row1 * (uint64_t)blocks_per_row * 144ul;
+    float partial0 = 0.0f, partial1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = row_byte_off0 + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo0]     | ((ushort)w_q4[bo0 + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo0 + 2] | ((ushort)w_q4[bo0 + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo0 + 4u + sub]      & 0x3Fu;
+            mb[sub] = w_q4[bo0 + 8u + sub]      & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo0 + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo0 + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo0 + 12u + j]  >> 4u)
+                       | ((w_q4[bo0 + 8u + j]   >> 6u) << 4u);
+        }
+
+        // Row 1 scales (different row, same block offset pattern)
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        if (row1_valid) {
+            uint64_t bo1 = row_byte_off1 + (uint64_t)b * 144ul;
+            ushort d1_bits    = (ushort)w_q4[bo1]     | ((ushort)w_q4[bo1 + 1] << 8);
+            ushort dmin1_bits = (ushort)w_q4[bo1 + 2] | ((ushort)w_q4[bo1 + 3] << 8);
+            float d1    = (float)as_type<half>(d1_bits);
+            float dmin1 = (float)as_type<half>(dmin1_bits);
+            uchar sb1[8], mb1[8];
+            for (uint sub = 0; sub < 4u; ++sub) {
+                sb1[sub] = w_q4[bo1 + 4u + sub]      & 0x3Fu;
+                mb1[sub] = w_q4[bo1 + 8u + sub]      & 0x3Fu;
+            }
+            for (uint j = 0; j < 4u; ++j) {
+                sb1[4u + j] = (w_q4[bo1 + 12u + j] & 0x0Fu)
+                            | ((w_q4[bo1 + 4u + j]  >> 6u) << 4u);
+                mb1[4u + j] = (w_q4[bo1 + 12u + j]  >> 4u)
+                            | ((w_q4[bo1 + 8u + j]   >> 6u) << 4u);
+            }
+            for (uint sub = 0; sub < 8u; ++sub) {
+                ds1[sub] = d1    * (float)sb1[sub];
+                dm1[sub] = dmin1 * (float)mb1[sub];
+            }
+        }
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds0[sub] = d    * (float)sb[sub];
+            dm0[sub] = dmin * (float)mb[sub];
+        }
+
+        // Shared activation load — one load amortized over 2 rows
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qb0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial0 += (ds0[k0] * (float)(qb0 & 0x0Fu) - dm0[k0]) * xl[k0];
+            partial0 += (ds0[k1] * (float)(qb0 >> 4u)   - dm0[k1]) * xl[k1];
+            if (row1_valid) {
+                uint64_t bo1 = row_byte_off1 + (uint64_t)b * 144ul;
+                uchar qb1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+                partial1 += (ds1[k0] * (float)(qb1 & 0x0Fu) - dm1[k0]) * xl[k0];
+                partial1 += (ds1[k1] * (float)(qb1 >> 4u)   - dm1[k1]) * xl[k1];
+            }
+        }
+    }
+
+    partial0 = simd_sum(partial0);
+    if (simd_lane == 0u) y[base_row0] = partial0;
+    if (row1_valid) {
+        partial1 = simd_sum(partial1);
+        if (simd_lane == 0u) y[base_row1] = partial1;
+    }
+}
+
+// ── gemm_q4_k_m_v3_llama ─────────────────────────────────────────────────────
+// Phase B Approach 3: faithful port of llama.cpp mul_mv_q4_K_f32 key optimizations.
+//
+// Key differences from v3_dual:
+//   N_R0=4 (4 rows/simdgroup vs 2) — 2× less activation bandwidth per row
+//   Sumy trick: precompute sumy[k]=simd_sum(xl[k]) per sub-block, compute min
+//   correction as sum_k(dm[k]*sumy[k]) outside inner loop — eliminates 32
+//   dm*xl MADs per sub-block, replacing with 1 multiply per sub-block per row.
+//
+// Grid: (ceil(rows/8)*64, 1, 1)   threadgroup: (64, 1, 1)
+// 2 simdgroups × 4 rows each = 8 rows per TG.
+
+kernel void gemm_q4_k_m_v3_llama(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // Each simdgroup handles 4 consecutive output rows
+    uint base_row = gid * 8u + simd_id * 4u;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    float p[4]           = {0.0f, 0.0f, 0.0f, 0.0f};
+    // total_corr accumulates the min correction across all blocks.
+    // sumy[k]=simd_sum(xl[k]) is the SAME value for all 32 threads, so
+    // total_corr must be subtracted AFTER simd_sum(p[r]) to avoid 32× error.
+    float total_corr[4]  = {0.0f, 0.0f, 0.0f, 0.0f};
+    bool  row_valid[4];
+    for (uint r = 0; r < 4u; ++r)
+        row_valid[r] = (base_row + r) < rows;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        // ── Load scales and mins for all 4 rows ──────────────────────────────
+        float ds[4][8], dm[4][8];
+        for (uint r = 0; r < 4u; ++r) {
+            if (!row_valid[r]) continue;
+            uint64_t bo = (uint64_t)(base_row + r) * (uint64_t)blocks_per_row * 144ul
+                        + (uint64_t)b * 144ul;
+            ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+            ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+            float  d    = (float)as_type<half>(d_bits);
+            float  dmin = (float)as_type<half>(dmin_bits);
+            uchar sb[8], mb[8];
+            for (uint sub = 0; sub < 4u; ++sub) {
+                sb[sub] = w_q4[bo + 4u + sub]  & 0x3Fu;
+                mb[sub] = w_q4[bo + 8u + sub]  & 0x3Fu;
+            }
+            for (uint j = 0; j < 4u; ++j) {
+                sb[4u+j] = (w_q4[bo + 12u + j] & 0x0Fu) | ((w_q4[bo + 4u + j] >> 6u) << 4u);
+                mb[4u+j] = (w_q4[bo + 12u + j] >> 4u)   | ((w_q4[bo + 8u + j] >> 6u) << 4u);
+            }
+            for (uint sub = 0; sub < 8u; ++sub) {
+                ds[r][sub] = d    * (float)sb[sub];
+                dm[r][sub] = dmin * (float)mb[sub];
+            }
+        }
+
+        // ── Shared activation load (once for 4 rows) ─────────────────────────
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        // ── Sumy: sub-block sums of activations (same value for all threads) ─
+        // sumy[k] = sum over 32 lanes of xl[k] = sum of x in sub-block k.
+        float sumy[8];
+        for (uint k = 0; k < 8u; ++k)
+            sumy[k] = simd_sum(xl[k]);
+
+        // ── Accumulate min correction BEFORE simd_sum(p) ─────────────────────
+        // total_corr[r] is the same across all threads (sumy is thread-uniform).
+        // It will be subtracted after simd_sum to avoid the 32× replication.
+        for (uint r = 0; r < 4u; ++r) {
+            if (!row_valid[r]) continue;
+            for (uint k = 0; k < 8u; ++k)
+                total_corr[r] += dm[r][k] * sumy[k];
+        }
+
+        // ── Main dot product: scale × nibble × activation (no min term) ──────
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            for (uint r = 0; r < 4u; ++r) {
+                if (!row_valid[r]) continue;
+                uint64_t bo = (uint64_t)(base_row + r) * (uint64_t)blocks_per_row * 144ul
+                            + (uint64_t)b * 144ul;
+                uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+                p[r] += ds[r][k0] * (float)(qb & 0x0Fu) * xl[k0];
+                p[r] += ds[r][k1] * (float)(qb >> 4u)   * xl[k1];
+            }
+        }
+    }
+
+    // ── Reduce and write: simd_sum(p[r]) then subtract total_corr ────────────
+    // total_corr is the same for all 32 threads, so subtract ONCE after reduce.
+    for (uint r = 0; r < 4u; ++r) {
+        if (!row_valid[r]) continue;
+        float val = simd_sum(p[r]) - total_corr[r];
+        if (simd_lane == 0u) y[base_row + r] = val;
+    }
+}
+
 // v0.5.10-A — Q4_K_M GEMV with f16 x and f16 y. Internal MAC in f32.
 // Identical body to gemm_q4_k_m_fused; only x/y types differ.
 kernel void gemm_q4_k_m_fused_f16(
