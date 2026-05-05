@@ -5605,7 +5605,41 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // ── end v1.0.0-C TCB dispatch variants ───────────────────────────────────
+    // ── v1.0.0-D: embed lookup writing f32 residual directly to GPU buffer ──
+
+    /// Encode embed_lookup_f32 into TCB: reads f16 embed table at row `token`,
+    /// writes hidden f32 values into x_buf. Zero counted dispatches.
+    pub fn embed_lookup_metal_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        x_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(
+            "embed_lookup_f32",
+            (hidden_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    // ── end v1.0.0-C/D TCB dispatch variants ─────────────────────────────────
 }
 
 

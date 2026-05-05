@@ -174,6 +174,13 @@ pub struct DeepSeekV2 {
     pub activation_dtype: crate::engine::ActivationDtype,
     /// Phase E: residual stream dtype. F16 = x is Vec<f16> throughout.
     pub residual_dtype: crate::engine::ResidualDtype,
+
+    /// v1.0.0-D: embed table as GPU buffer (f16, hidden × vocab). Enables
+    /// embed_lookup_metal_f32_tcb to write x_buf directly without CPU round-trip.
+    pub embed_buf: Option<PinnedBuffer>,
+    /// v1.0.0-D: final output_norm weight as GPU buffer (f32, hidden).
+    /// Used by rmsnorm_metal_buf_tcb in the Wedge C/D final norm step.
+    pub final_norm_buf: Option<PinnedBuffer>,
 }
 
 /// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
@@ -653,6 +660,20 @@ impl Engine for DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let decode_arena: Option<DecodeArena> = None;
 
+        // v1.0.0-D: upload embed table + final norm weight to GPU once.
+        #[cfg(target_os = "macos")]
+        let (embed_buf, final_norm_buf) = {
+            if let Some(ctx) = metal_ctx.as_ref() {
+                let eb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<half::f16, u8>(&embed));
+                let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
+                (Some(eb), Some(fnb))
+            } else {
+                (None, None)
+            }
+        };
+        #[cfg(not(target_os = "macos"))]
+        let (embed_buf, final_norm_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -676,6 +697,8 @@ impl Engine for DeepSeekV2 {
             decode_arena,
             activation_dtype: config.activation_dtype,
             residual_dtype: config.residual_dtype,
+            embed_buf,
+            final_norm_buf,
         })
     }
 
@@ -1464,6 +1487,8 @@ impl DeepSeekV2 {
             let wedge_c_active = tcb_base
                 && !self.mla_c_kv.is_empty()
                 && self.weights_mmap_buf.is_some()
+                && self.embed_buf.is_some()
+                && self.final_norm_buf.is_some()
                 && self.layers.iter().all(|l| {
                     l.pinned.q_a_proj.is_some()
                         && l.pinned.q_b_proj.is_some()
@@ -1478,7 +1503,17 @@ impl DeepSeekV2 {
                 let eps = self.config.rms_norm_eps;
                 let n_layers = self.config.n_layers;
 
-                self.decode_arena.as_ref().unwrap().write_x(&x);
+                // Wedge D: embed lookup on GPU — writes x_buf directly, no CPU Vec round-trip.
+                {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let embed_buf = self.embed_buf.as_ref().unwrap();
+                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    crate::kernels::embed_lookup_metal_f32_tcb(
+                        &mut tcb, embed_buf, token, h, &arena.x_buf,
+                    )?;
+                    tcb.commit_and_wait()?;
+                }
 
                 for li in 0..n_layers {
                     crate::metal::set_current_layer(Some(li as u32));
@@ -1539,12 +1574,22 @@ impl DeepSeekV2 {
                         &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
                     )?;
                     tcb.commit_and_wait()?;
-                    arena.read_x(&mut x);
                 }
 
-                let mut x_norm = vec![0.0f32; h];
-                self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-                return Ok(x_norm);
+                // Wedge D: final norm on GPU (x_buf → x_norm_buf), then read 8KB x_norm.
+                {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    crate::kernels::rmsnorm_metal_buf_tcb(
+                        &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                    )?;
+                    tcb.commit_and_wait()?;
+                    let mut x_norm = vec![0.0f32; h];
+                    arena.read_x_norm(&mut x_norm);
+                    return Ok(x_norm);
+                }
             }
         }
         // ---- End Wedge C ----
