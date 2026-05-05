@@ -526,6 +526,10 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+    let residual_dtype = match std::env::var("DISMANTLE_RESIDUAL_DTYPE").as_deref() {
+        Ok("f16") | Ok("F16") => dismantle_core::ResidualDtype::F16,
+        _ => dismantle_core::ResidualDtype::F32,
+    };
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -536,6 +540,7 @@ fn generate_main(
         kernel_profile: profile,
         trace_dispatch,
         activation_dtype: Default::default(),
+        residual_dtype,
         ..Default::default()
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
@@ -634,6 +639,10 @@ fn batch_hash_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+    let residual_dtype = match std::env::var("DISMANTLE_RESIDUAL_DTYPE").as_deref() {
+        Ok("f16") | Ok("F16") => dismantle_core::ResidualDtype::F16,
+        _ => dismantle_core::ResidualDtype::F32,
+    };
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -644,6 +653,7 @@ fn batch_hash_main(
         kernel_profile: profile,
         trace_dispatch: false,
         activation_dtype: Default::default(),
+        residual_dtype,
         ..Default::default()
     };
     let load_start = std::time::Instant::now();
