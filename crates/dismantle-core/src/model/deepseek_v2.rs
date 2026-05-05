@@ -1725,19 +1725,15 @@ impl DeepSeekV2 {
                 for li in 0..n_layers {
                     crate::metal::set_current_layer(Some(li as u32));
 
-                    // Mini-TCB α: (add_inplace ffn_out_buf if li>0) + rmsnorm_attn → x_norm_buf.
-                    {
+                    // Mini-TCB α: add_inplace(x_buf += ffn_out_buf) when li > 0.
+                    // Wedge G: rmsnorm_attn is now fused into attention_tcb_inner Phase 1,
+                    // so no separate rmsnorm dispatch here. li==0 skips TCB entirely.
+                    if li > 0 {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
-                        let attn_norm_buf = self.layers[li].pinned.attn_norm.as_ref().unwrap();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        if li > 0 {
-                            crate::kernels::add_inplace_metal_tcb(
-                                &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
-                            )?;
-                        }
-                        crate::kernels::rmsnorm_metal_buf_tcb(
-                            &mut tcb, &arena.x_buf, attn_norm_buf, eps, h, &arena.x_norm_buf,
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
                         )?;
                         tcb.commit_and_wait()?;
                     }
@@ -2013,8 +2009,9 @@ impl DeepSeekV2 {
         let h = self.config.hidden;
         let n_layers = self.config.n_layers;
 
-        // Phase 1 mini-TCB: q_a_proj + kv_a_proj GEMVs, then q_a_norm + kv_a_norm.
-        // Sequential kernels within one TCB: each reads output of the prior.
+        // Phase 1 mini-TCB: fused rmsnorm+gemv for q_a_proj + kv_a_proj, then q_a_norm + kv_a_norm.
+        // Wedge G: reads arena.x_buf (raw residual) via fused rmsnorm_gemv kernel — caller's
+        // mini-TCB α no longer writes x_norm_buf before attention, saving 2 dispatches/layer.
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
@@ -2022,17 +2019,20 @@ impl DeepSeekV2 {
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_proj not pinned")))?;
             let kv_a_proj_buf = self.layers[li].pinned.kv_a_proj_with_mqa.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_proj not pinned")))?;
+            let attn_norm_buf = self.layers[li].pinned.attn_norm.as_ref()
+                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} attn_norm not pinned")))?;
             let q_a_norm_buf = self.layers[li].pinned.q_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_norm not pinned")))?;
             let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_norm not pinned")))?;
             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::gemv_f32_attn_pair_arena_tcb(
-                &mut tcb,
-                q_a_proj_buf, q_lora,
-                kv_a_proj_buf, kv_a_dim,
-                h, &arena.x_norm_buf,
-                &arena.q_lora_buf, &arena.kv_a_out_buf,
+            crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
+                &mut tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
+                &arena.q_lora_buf, q_lora, h,
+            )?;
+            crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
+                &mut tcb, kv_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
+                &arena.kv_a_out_buf, kv_a_dim, h,
             )?;
             crate::kernels::rmsnorm_metal_buf_tcb(
                 &mut tcb, &arena.q_lora_buf, q_a_norm_buf, eps, q_lora, &arena.q_lora_normed_buf,
