@@ -2823,6 +2823,155 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Wedge L — flash attention decode using online softmax (MLA-aware).
+    ///
+    /// Replaces phases 1-3 of `mla_decode_metal` with a tiled flash loop that
+    /// never materialises the full seq_len scores array. TG shmem drops from
+    /// O(seq_len) to O(FLASH_TG=128) floats, enabling higher GPU occupancy.
+    ///
+    /// Interface is identical to `mla_decode_metal`; caller selects via
+    /// `profile.selected.attn_block_schedule == "flash"`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn flash_attn_decode_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        c_kv: &[f32],
+        k_pe: &[f32],
+        kv_b_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        out: &mut [f32],
+    ) -> Result<()> {
+        const FLASH_TG: u32 = 128;
+
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        if q.len() != n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: q.len={} expected {}",
+                q.len(),
+                n_heads * q_head_dim
+            )));
+        }
+        if c_kv.len() != seq_len * kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: c_kv.len={} expected {}",
+                c_kv.len(),
+                seq_len * kv_lora_rank
+            )));
+        }
+        if k_pe.len() != seq_len * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: k_pe.len={} expected {}",
+                k_pe.len(),
+                seq_len * qk_rope_head_dim
+            )));
+        }
+        let expected_kv_b =
+            (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+                as u64;
+        if kv_b_proj.length() < expected_kv_b {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: kv_b_proj buffer too small: got {} expected {}",
+                kv_b_proj.length(),
+                expected_kv_b
+            )));
+        }
+        if out.len() != n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "flash_attn_decode_metal: out.len={} expected {}",
+                out.len(),
+                n_heads * v_head_dim
+            )));
+        }
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "flash_attn_decode_metal: seq_len must be >= 1".into(),
+            ));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+
+        let f32_size = std::mem::size_of::<f32>() as u64;
+        // slot 0: q_nope_proj[kv_lora_rank]
+        let q_nope_proj_bytes = kv_lora_rank as u64 * f32_size;
+        // slot 1: acc[kv_lora_rank]
+        let acc_bytes = kv_lora_rank as u64 * f32_size;
+        // slot 2: scores_tile[FLASH_TG]
+        let scores_tile_bytes = FLASH_TG as u64 * f32_size;
+        // slot 3: state[8] = {m, l, corr, m_tile, simd0..3_max}
+        let state_bytes = 8u64 * f32_size;
+
+        ctx.dispatch_threads(
+            "flash_attn_decode_kernel",
+            (n_heads_u32 * FLASH_TG, 1, 1),
+            (FLASH_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_heads_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_nope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_rope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &v_head_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &kv_lora_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &seq_len_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<f32>() as u64,
+                    &scale as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, acc_bytes);
+                enc.set_threadgroup_memory_length(2, scores_tile_bytes);
+                enc.set_threadgroup_memory_length(3, state_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
     /// Phase A Wedge A2 — batched MLA decode (M tokens in one dispatch).
     ///
     /// Grid: (n_heads × TG_SIZE, M, 1). Token m attends to KV entries
