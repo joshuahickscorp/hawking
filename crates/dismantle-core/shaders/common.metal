@@ -4,6 +4,9 @@
 // Kernels:
 //   rmsnorm               — RMS normalization. fp32 reduction, fp16 mul.
 //                           [Phase 0]
+//   rmsnorm_f32           — RMS normalization, full fp32 I/O. Used by the
+//                           Wedge B TCB path (f32 residual stream).
+//                           [v1.0.0-B]
 //   silu_mul              — SwiGLU activation (silu(a) * b) for the
 //                           gate-up projection.
 //                           [Phase 0]
@@ -45,6 +48,37 @@ kernel void rmsnorm(
     float inv = 1.0f / rms;
     for (uint i = tid; i < hidden; i += tg_size) {
         out[i] = half((float)x[i] * inv * (float)weight[i]);
+    }
+}
+
+// v1.0.0-B Wedge B — full fp32 rmsnorm for the f32 residual stream TCB path.
+// Same math as rmsnorm above; operates on f32 x, f32 weight, f32 out.
+// Threadgroup reduction accumulates variance in f32 (no precision loss).
+kernel void rmsnorm_f32(
+    device const float* x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    device       float* out     [[buffer(2)]],
+    constant     uint&  hidden  [[buffer(3)]],
+    constant     float& eps     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)hidden + eps);
+    float inv = 1.0f / rms;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        out[i] = x[i] * inv * weight[i];
     }
 }
 

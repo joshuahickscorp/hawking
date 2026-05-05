@@ -149,6 +149,11 @@ mod arena_imp {
             dst.copy_from_slice(src);
         }
 
+        /// Write into ffn_out_buf (also used as a delta buffer for add_inplace in Wedge B).
+        pub fn write_ffn_out(&self, x: &[f32]) {
+            MetalContext::write_buffer_bytes(&self.ffn_out_buf, bytemuck::cast_slice(x));
+        }
+
         /// Read ffn_out_buf back to CPU.
         pub fn read_ffn_out(&self, dst: &mut [f32]) {
             let ptr = self.ffn_out_buf.contents() as *const f32;
