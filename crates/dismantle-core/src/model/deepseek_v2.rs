@@ -1099,6 +1099,48 @@ impl DeepSeekV2 {
                         );
                     }
                 }
+                if schedule == "v3_8r" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v3_8r_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
+                }
+                if schedule == "v3_dual" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v3_dual_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
+                }
+                if schedule == "v3_llama" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v3_llama_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
+                }
                 if schedule == "simdgroup" {
                     return crate::kernels::dispatch_gemv_q4_k_m_simd_batched(
                         ctx, bytes, rows, cols, x, out,
