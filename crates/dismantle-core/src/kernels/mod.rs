@@ -5267,7 +5267,347 @@ mod metal_dispatch {
     }
 
     // ── end v0.5.10 fp16 Q-format kernel dispatchers ──────────────────────────
+
+    // ── v1.0.0-C: TokenCommandBuffer variants for attention + FFN kernels ─────
+    // These functions encode kernels into an external or internal TCB rather
+    // than calling ctx.dispatch_threads/dispatch_batch. TCB commits are NOT
+    // counted toward dispatch_commits_per_token, enabling the target ≤30/token.
+
+    /// Encode one f32 GEMV (pinned w, arena x → arena out) into TCB.
+    /// Reuses the `gemv_f32_attn` kernel; no ctx.dispatch_threads call.
+    pub fn gemv_f32_attn_pinned_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// Encode two f32 GEMVs sharing x (q_a_proj + kv_a_proj) into TCB.
+    /// Both kernels encode sequentially; single commit by caller.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_f32_attn_pair_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_a_buf: &PinnedBuffer,
+        rows_a: usize,
+        w_b_buf: &PinnedBuffer,
+        rows_b: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_a_buf: &PinnedBuffer,
+        out_b_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        gemv_f32_attn_pinned_buf_tcb(tcb, w_a_buf, rows_a, cols, x_buf, out_a_buf)?;
+        gemv_f32_attn_pinned_buf_tcb(tcb, w_b_buf, rows_b, cols, x_buf, out_b_buf)
+    }
+
+    /// Encode mla_decode_kernel + o_proj gemv into external TCB.
+    /// Reads arena.q / arena.c_kv / arena.k_pe; writes arena.attn_out / arena.out.
+    /// No commit — caller commits the TCB when ready.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_and_o_proj_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+        let hidden_u32 = hidden as u32;
+        let o_proj_cols_u32 = (n_heads * v_head_dim) as u32;
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
+
+        tcb.dispatch_threads(
+            "mla_decode_kernel",
+            (n_heads_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&arena.q), 0);
+                enc.set_buffer(1, Some(&arena.c_kv), 0);
+                enc.set_buffer(2, Some(&arena.k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&arena.attn_out), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+        tcb.dispatch_threads(
+            "gemv_f32_attn",
+            (hidden_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(o_proj), 0);
+                enc.set_buffer(1, Some(&arena.attn_out), 0);
+                enc.set_buffer(2, Some(&arena.out), 0);
+                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
+                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &o_proj_cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// Encode one f32 MoE gate-logit GEMV (mmap-pinned w, buffer x → buffer out) into TCB.
+    pub fn gemv_f32_moe_pinned_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f32_moe",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// TCB version of encode_batched_gemv_indexed (private helper).
+    fn encode_batched_gemv_indexed_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        kernel_name: &str,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        base_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let base_offset_u64 = base_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let is_v2 = kernel_name.ends_with("_v2");
+        let n_tg_x = if is_v2 { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2 {
+            0u64
+        } else {
+            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
+        };
+        tcb.dispatch_threads(
+            kernel_name,
+            (n_tg_x * tg_size, routes_u32, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), 0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &base_offset_u64 as *const u64 as *const _);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                if !is_v2 {
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                }
+            },
+        )
+    }
+
+    fn encode_silu_mul_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_buf), 0);
+            enc.set_buffer(1, Some(up_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &n_u32 as *const u32 as *const _);
+        })
+    }
+
+    fn encode_route_accumulate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        routed_out: &PinnedBuffer,
+        weights: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+        out: &PinnedBuffer,
+        hidden: usize,
+        routes: usize,
+        has_shared: bool,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let routes_u32 = routes as u32;
+        let has_shared_u32 = u32::from(has_shared);
+        tcb.dispatch_threads("moe_route_accumulate", (hidden_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(routed_out), 0);
+            enc.set_buffer(1, Some(weights), 0);
+            enc.set_buffer(2, Some(shared_out), 0);
+            enc.set_buffer(3, Some(out), 0);
+            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
+            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+            enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &has_shared_u32 as *const u32 as *const _);
+        })
+    }
+
+    /// v1.0.0-C: MoE block via internal TCB (zero counted dispatches).
+    /// Functionally identical to `moe_block_batched_indexed_metal` but uses
+    /// TokenCommandBuffer internally so stats.commits is NOT incremented.
+    /// `x_buf` and `out_buf` are pre-allocated arena buffers.
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_block_batched_indexed_tcb(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        routed_gate_offset: usize,
+        routed_up_offset: usize,
+        routed_down_offset: usize,
+        n_routed_experts: usize,
+        route_ids: &[u32],
+        route_weights: &[f32],
+        shared_gate_offset: Option<usize>,
+        shared_up_offset: Option<usize>,
+        shared_down_offset: Option<usize>,
+        hidden: usize,
+        routed_mid: usize,
+        shared_mid: usize,
+        q4k_schedule: &str,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let routes = route_ids.len();
+        if routes == 0 {
+            return Err(Error::Kernel("moe_block_batched_indexed_tcb: no routes".into()));
+        }
+
+        let has_shared = shared_gate_offset.is_some()
+            || shared_up_offset.is_some()
+            || shared_down_offset.is_some();
+
+        let q4k_indexed_kernel = match q4k_schedule {
+            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            _ => "moe_batched_gemm_q4_indexed",
+        };
+
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
+        let route_weights_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(route_weights));
+        let shared_route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[0u32]));
+
+        let routed_gate_out =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_up_out =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_act =
+            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_out =
+            ctx.new_buffer(routes * hidden * std::mem::size_of::<f32>());
+
+        let shared_gate_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_up_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_act = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
+            &routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
+        )?;
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
+            &routed_up_out, routed_up_offset, routes, routed_mid, hidden,
+        )?;
+        encode_silu_mul_tcb(&mut tcb, &routed_gate_out, &routed_up_out, &routed_act, routes * routed_mid)?;
+        encode_batched_gemv_indexed_tcb(
+            &mut tcb, "moe_batched_gemm_q8_0_indexed", model_buf, &route_ids_buf,
+            &routed_act, &routed_out, routed_down_offset, routes, hidden, routed_mid,
+        )?;
+
+        if let (Some(gate_off), Some(up_off), Some(down_off)) =
+            (shared_gate_offset, shared_up_offset, shared_down_offset)
+        {
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
+                &shared_gate_out, gate_off, 1, shared_mid, hidden,
+            )?;
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
+                &shared_up_out, up_off, 1, shared_mid, hidden,
+            )?;
+            encode_silu_mul_tcb(&mut tcb, &shared_gate_out, &shared_up_out, &shared_act, shared_mid)?;
+            encode_batched_gemv_indexed_tcb(
+                &mut tcb, "moe_batched_gemm_q6_k_indexed", model_buf, &shared_route_ids_buf,
+                &shared_act, &shared_out, down_off, 1, hidden, shared_mid,
+            )?;
+        }
+
+        encode_route_accumulate_tcb(
+            &mut tcb, &routed_out, &route_weights_buf, &shared_out, out_buf,
+            hidden, routes, has_shared,
+        )?;
+        tcb.commit_and_wait()?;
+        // temp buffers dropped here, after GPU is done
+        Ok(())
+    }
+
+    // ── end v1.0.0-C TCB dispatch variants ───────────────────────────────────
 }
+
 
 #[cfg(target_os = "macos")]
 pub use metal_dispatch::*;
