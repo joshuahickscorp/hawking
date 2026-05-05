@@ -1004,6 +1004,18 @@ impl DeepSeekV2 {
                     .map(|p| p.selected.gemm_q4_k_schedule.as_str())
                     .unwrap_or("scalar");
                 if schedule == "v2" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v2_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
                     return crate::kernels::gemv_q4_k_m_v2(ctx, bytes, rows, cols, x, out);
                 }
                 if schedule == "simdgroup" {
