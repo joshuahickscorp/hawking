@@ -1,4 +1,4 @@
-//! B1 parity: gemv_q4_k_m_v2_pinned matches gemv_q4_k_m_v2 at atol=1e-5.
+//! Wedge A parity: gemv_q4_k_m_v2_pinned matches gemv_q4_k_m_v2 at atol=1e-5.
 //! Both paths dispatch the same `gemm_q4_k_m_fused_v2` kernel; the only
 //! difference is whether weights are memcpy'd into a fresh buffer or read
 //! from a pre-pinned buffer via byte offset. Outputs should be bit-identical.
@@ -47,8 +47,6 @@ fn synthetic_q4_k_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     bytes
 }
 
-/// Helper: wrap bytes into a PinnedBuffer so we can call the pinned variant
-/// with offset=0 (simulating reading from the full model mmap).
 fn pinned_from_bytes(ctx: &MetalContext, bytes: &[u8]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytes)
 }
@@ -73,7 +71,7 @@ fn pinned_q4kgemv_small() {
         .expect("pinned path should succeed");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
-    println!("[B1] pinned vs copy small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!("[WedgeA] pinned vs copy small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
     assert!(
         diff < 1e-5,
         "pinned vs copy diff {diff:.2e} >= 1e-5 (should be bit-identical)"
@@ -100,7 +98,7 @@ fn pinned_q4kgemv_realistic() {
         .expect("pinned path should succeed");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
-    println!("[B1] pinned vs copy realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!("[WedgeA] pinned vs copy realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
     assert!(
         diff < 1e-5,
         "pinned vs copy diff {diff:.2e} >= 1e-5 (should be bit-identical)"
@@ -109,15 +107,12 @@ fn pinned_q4kgemv_realistic() {
 
 #[test]
 fn pinned_q4kgemv_nonzero_offset() {
-    // Simulate reading weights from a model buffer where the weights start
-    // at a non-zero offset (as they would in the real mmap'd GGUF file).
     let rows = 128;
     let cols = 512;
     let n_blocks = rows * (cols / 256);
     let w_bytes = synthetic_q4_k_bytes(n_blocks, 0xBEEF_CAFE);
     let x = fixed_input(cols, 0xABCD_1234);
 
-    // Pad with 1024 bytes of garbage before the real weights
     let pad = 1024usize;
     let mut padded = vec![0xFFu8; pad];
     padded.extend_from_slice(&w_bytes);
@@ -134,7 +129,7 @@ fn pinned_q4kgemv_nonzero_offset() {
         .expect("pinned path with offset");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
-    println!("[B1] pinned vs copy nonzero-offset (pad={pad}) max abs diff = {diff:.2e}");
+    println!("[WedgeA] pinned vs copy nonzero-offset (pad={pad}) max abs diff = {diff:.2e}");
     assert!(
         diff < 1e-5,
         "offset pinned vs copy diff {diff:.2e} >= 1e-5"

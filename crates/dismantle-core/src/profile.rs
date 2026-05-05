@@ -38,10 +38,16 @@ pub struct KernelVariant {
     pub deterministic_rank: u32,
     #[serde(default = "default_gemm_q4_k_schedule")]
     pub gemm_q4_k_schedule: String,
+    #[serde(default = "default_attn_block_schedule")]
+    pub attn_block_schedule: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
     "scalar".to_string()
+}
+
+fn default_attn_block_schedule() -> String {
+    "mla".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -192,6 +198,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "partial".into(),
             deterministic_rank: 40,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         KernelVariant {
             id: "one-command-buffer-moe".into(),
@@ -202,6 +209,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "moe-and-lm-head".into(),
             deterministic_rank: 30,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         KernelVariant {
             id: "gpu-greedy-frontier".into(),
@@ -212,6 +220,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena-planned".into(),
             deterministic_rank: 20,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         KernelVariant {
             id: "persistent-flashmoe-research".into(),
@@ -222,6 +231,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "full-gpu-resident-planned".into(),
             deterministic_rank: 10,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         KernelVariant {
             id: "single-kernel-fused".into(),
@@ -232,6 +242,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena-planned".into(),
             deterministic_rank: 25,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         // v0.2.0 — all implemented wedges: two-stage MoE + Metal MLA + layer-CB + decode-arena.
         // Research-only after v0.2.1 diagnostic: two-stage MoE causes −79% regression at
@@ -246,6 +257,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena".into(),
             deterministic_rank: 5,
             gemm_q4_k_schedule: "scalar".into(),
+            attn_block_schedule: "mla".into(),
         },
         // v0.2.2 — diagnostic-validated safe default: Metal MLA + decode-arena (perf-neutral)
         // with indexed-no-pack-one-cb MoE and one-cb-per-block command buffering (no layer-CB).
@@ -262,6 +274,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena".into(),
             deterministic_rank: 4,
             gemm_q4_k_schedule: "v2".into(),
+            attn_block_schedule: "mla".into(),
         },
         // v0.5.0 — single-kernel MoE attempt. Kernel passes parity (atol=1e-3)
         // but at runtime falls through to a slow path on the v0.5.0 model
@@ -284,6 +297,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
             gpu_buffer_reuse: "decode-arena".into(),
             deterministic_rank: 50,
             gemm_q4_k_schedule: "v2".into(),
+            attn_block_schedule: "mla".into(),
         },
     ];
     variants.sort_by(|a, b| a.id.cmp(&b.id));
