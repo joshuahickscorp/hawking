@@ -303,6 +303,102 @@ kernel void gemm_q4_k_m_fused_v2(
     }
 }
 
+// ── gemm_q4_k_m_simdmat ──────────────────────────────────────────────────────
+// Wedge K — improved Q4_K_M GEMV. Three improvements over gemm_q4_k_m_fused_v2:
+//
+//   1. Scale pre-load: s_byte[8] and m_byte[8] extracted once per block,
+//      before the nibble loop. Compiler can schedule freely.
+//   2. Activation pre-load: xl[8] loaded into registers before the nibble
+//      loop. Eliminates repeated device-memory reads in the hot path.
+//   3. Paired nibble reads: elements k and k+1 share the same qs byte
+//      (lower/upper nibbles). One byte read covers two k-iterations → 4
+//      byte reads per thread per block instead of 8.
+//
+// Geometry: 4 simdgroups (128 threads) per TG, 1 row per simdgroup, 4 rows
+// per TG. Doubles TG count vs v2 (8 rows/TG); improves GPU parallelism on
+// small-row shapes (e.g. rows=1408 expert gate/up).
+//
+// Buffer layout identical to gemm_q4_k_m_fused_v2. No shmem.
+// Grid: (ceil(rows/4)*128, 1, 1)   threadgroup: (128, 1, 1)
+
+kernel void gemm_q4_k_m_simdmat(
+    device const uchar* w_q4   [[buffer(0)]],   // (rows, cols) Q4_K_M
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 4u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        // Global scale factors (2 × f16 → f32)
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        // ── Step 1: Pre-load sub-block scale and min bytes ────────────────
+        // 12 scale bytes at bo+4..bo+15 cover all 8 sub-blocks.
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub]      & 0x3Fu;
+            mb[sub] = w_q4[bo + 4u + 4u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        // Pre-compute d*s and dmin*m per sub-block
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        // ── Step 2: Pre-load activations into registers ───────────────────
+        // elem = k*32 + simd_lane for k = 0..7
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k) {
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+        }
+
+        // ── Step 3: Paired nibble reads — 4 byte reads instead of 8 ─────
+        // For sub-block pair (2*pi, 2*pi+1):
+        //   k_lo = 2*pi: sub=k_lo, pair=pi, upper=false → low  nibble of qs byte
+        //   k_hi = 2*pi+1: sub=k_hi, pair=pi, upper=true → high nibble of qs byte
+        // Both k_lo and k_hi access the SAME qs byte at bo+16 + pi*32 + simd_lane.
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u;
+            uint k1 = k0 + 1u;
+            float nib0 = (float)(qb & 0x0Fu);
+            float nib1 = (float)(qb >> 4u);
+            partial += (ds[k0] * nib0 - dm[k0]) * xl[k0];
+            partial += (ds[k1] * nib1 - dm[k1]) * xl[k1];
+        }
+    }
+
+    // 32-thread simdgroup reduction. Zero barriers.
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
+}
+
 // v0.5.10-A — Q4_K_M GEMV with f16 x and f16 y. Internal MAC in f32.
 // Identical body to gemm_q4_k_m_fused; only x/y types differ.
 kernel void gemm_q4_k_m_fused_f16(

@@ -417,6 +417,34 @@ mod metal_dispatch {
         )
     }
 
+    /// Wedge K — simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
+    /// as `gemv_q4_k_m_v2_pinned`; dispatches `gemm_q4_k_m_simdmat`.
+    /// Selected via `gemm_q4_k_schedule = "simdmat"`.
+    ///
+    /// Uses 128-thread / 4-row-per-TG geometry (vs v2's 256/8) for better
+    /// parallelism on small-row expert shapes.
+    pub fn gemv_q4_k_m_simdmat_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_simdmat_pinned(
+            ctx,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            rows,
+            cols,
+            x,
+            out,
+        )
+    }
+
     /// v0.4.0 — v2 variant for the MoE per-expert GEMV path.  Dispatches
     /// `moe_grouped_gemm_q4_v2`; selected via `gemm_q4_k_schedule = "v2"`.
     pub fn moe_grouped_gemm_q4_v2_metal(
@@ -3802,6 +3830,80 @@ mod metal_dispatch {
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
         out.copy_from_slice(out_slice);
 
+        Ok(())
+    }
+
+    // Wedge K dispatcher — gemm_q4_k_m_simdmat geometry: 128 threads per TG
+    // (4 simdgroups × 32), 4 rows per TG, grid=(ceil(rows/4)*128, 1, 1).
+    fn dispatch_q4_k_m_simdmat_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_simdmat";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const SM_TG: u32 = 128;  // 4 simdgroups × 32 threads
+        const SM_ROWS: u32 = 4;  // 1 simdgroup per row, 4 rows per TG
+        let n_tg = (rows_u32 + SM_ROWS - 1) / SM_ROWS;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * SM_TG, 1, 1),
+            (SM_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
         Ok(())
     }
 
