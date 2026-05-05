@@ -277,7 +277,7 @@ pub fn topk_softmax_batch(
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
-    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer};
+    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer, TokenCommandBuffer};
     use crate::{Error, Result};
     use half::f16;
 
@@ -3968,6 +3968,32 @@ mod metal_dispatch {
         )
     }
 
+    /// Wedge B — TCB variant of add_inplace_metal. Encodes into `tcb` without
+    /// committing. Caller commits when a batch boundary is appropriate.
+    pub fn add_inplace_metal_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a_buf: &PinnedBuffer,
+        b_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Phase 7 Wedge 7b — fp16 rmsnorm. Reads f16, accumulates variance in
     /// f32, writes f16. Weight stays f32. Internal accumulation MUST stay
     /// f32 — DO NOT change to half — fp16 squared activations overflow at
@@ -4059,6 +4085,37 @@ mod metal_dispatch {
         let hidden_u32 = hidden as u32;
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
         ctx.dispatch_threads("rmsnorm", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(weight_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &hidden_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<f32>() as u64,
+                &eps as *const f32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// Wedge B — TCB variant of rmsnorm for the f32 residual stream.
+    /// Uses `"rmsnorm_f32"` kernel (f32 x, f32 weight → f32 out). Encodes into
+    /// `tcb` without committing. Caller commits when a batch boundary is appropriate.
+    pub fn rmsnorm_metal_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads("rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
