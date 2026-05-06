@@ -1302,7 +1302,9 @@ mod metal_dispatch {
         let token_buf = ctx.new_buffer(std::mem::size_of::<u32>());
         let n_u32 = logits.len() as u32;
 
-        ctx.dispatch_threads("sample_argmax_f32", (1, 1, 1), (1, 1, 1), |enc| {
+        let shmem_f = 256 * std::mem::size_of::<f32>() as u64;
+        let shmem_u = 256 * std::mem::size_of::<u32>() as u64;
+        ctx.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
             enc.set_buffer(0, Some(&logits_buf), 0);
             enc.set_buffer(1, Some(&token_buf), 0);
             enc.set_bytes(
@@ -1310,6 +1312,8 @@ mod metal_dispatch {
                 std::mem::size_of::<u32>() as u64,
                 &n_u32 as *const u32 as *const _,
             );
+            enc.set_threadgroup_memory_length(0, shmem_f);
+            enc.set_threadgroup_memory_length(1, shmem_u);
         })?;
 
         let token_ptr = token_buf.contents() as *const u32;
