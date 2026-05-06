@@ -283,6 +283,20 @@ pub struct Expert {
     pub down_w: TensorRef,
 }
 
+/// Wedge M C-3: pre-validated MoE gate setup passed between ffn helpers.
+/// Avoids re-checking conditions between gate-encode and moe-dispatch.
+#[cfg(target_os = "macos")]
+struct FfnMoeSetup {
+    routed_gate_off: usize,
+    routed_up_off: usize,
+    routed_down_off: usize,
+    routed_len: usize,
+    shared_gate_off: Option<usize>,
+    shared_up_off: Option<usize>,
+    shared_down_off: Option<usize>,
+    shared_mid: usize,
+}
+
 impl DeepSeekV2 {
     fn dequant(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
@@ -1810,9 +1824,12 @@ impl DeepSeekV2 {
                     // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
                     let seq_len = self.attention_tcb_inner(li, pos)?;
 
-                    // Wedge M C-2: Phase 3 + Mini-TCB β in one TCB (saves 1 commit/layer).
-                    // Phase 3: mla_decode+o_proj → arena.out; β: add x_buf+=out, rmsnorm → x_norm_buf.
-                    // Metal safe: separate encoders, auto-barrier on arena.out and arena.x_buf.
+                    // Wedge M C-3: gate GEMV pre-check — validates MoE conditions before TCB block.
+                    let moe_setup = self.ffn_moe_check(li)?;
+
+                    // Wedge M C-2+C-3: Phase 3 + Mini-TCB β + gate GEMV (if MoE) in one TCB.
+                    // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv.
+                    // gate_gemv reads x_norm_buf written by rmsnorm; Metal auto-barriers between encoders.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
@@ -1836,11 +1853,23 @@ impl DeepSeekV2 {
                         crate::kernels::rmsnorm_metal_buf_tcb(
                             &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
                         )?;
+                        if moe_setup.is_some() {
+                            let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                                &mut tcb, gate_buf,
+                                self.config.n_routed_experts, self.config.hidden,
+                                &arena.x_norm_buf, &arena.moe_logits_buf,
+                            )?;
+                        }
                         tcb.commit_and_wait()?;
                     }
 
-                    // FFN via TCB (MoE) or CPU fallback (Dense): → arena.ffn_out_buf.
-                    let ffn_handled = self.ffn_tcb_inner(li)?;
+                    // FFN: MoE dispatch (logits already in moe_logits_buf) or CPU Dense fallback.
+                    let ffn_handled = if let Some(ref setup) = moe_setup {
+                        self.ffn_moe_after_gate(li, setup)?
+                    } else {
+                        false
+                    };
                     if !ffn_handled {
                         let mut x_norm = vec![0.0f32; h];
                         self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
@@ -2204,28 +2233,16 @@ impl DeepSeekV2 {
         Ok(seq_len)
     }
 
-    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
-    /// Reads arena.x_norm_buf, writes result to arena.ffn_out_buf.
-    /// Returns true if handled, false to signal Dense-layer fallback.
+    /// Wedge M C-3: validate MoE TCB conditions and compute weight offsets.
+    /// Returns None for Dense layers or when any required weight is absent/wrong-dtype.
+    /// Caller must have metal_ctx and decode_arena available (Wedge C precondition).
     #[cfg(target_os = "macos")]
-    fn ffn_tcb_inner(&self, li: usize) -> Result<bool> {
+    fn ffn_moe_check(&self, li: usize) -> Result<Option<FfnMoeSetup>> {
         use crate::gguf::GgmlType;
-
-        let ctx = match self.metal_ctx.as_ref() {
-            Some(c) => c,
-            None => return Ok(false),
-        };
-        let arena = match self.decode_arena.as_ref() {
-            Some(a) => a,
-            None => return Ok(false),
-        };
-        let model_buf = match self.weights_mmap_buf.as_ref() {
-            Some(b) => b,
-            None => return Ok(false),
-        };
-
-        let (routed_gate_off, routed_up_off, routed_down_off, routed_len,
-             shared_gate_off, shared_up_off, shared_down_off, shared_mid) = {
+        if self.metal_ctx.is_none() || self.decode_arena.is_none() || self.weights_mmap_buf.is_none() {
+            return Ok(None);
+        }
+        let setup = {
             let layer = &self.layers[li];
             match &layer.mode {
                 LayerMode::MoE { routed_fused, routed, shared_fused, .. } => {
@@ -2233,70 +2250,92 @@ impl DeepSeekV2 {
                         || routed_fused.up_w.dtype != GgmlType::Q4_K
                         || routed_fused.down_w.dtype != GgmlType::Q8_0
                     {
-                        return Ok(false);
+                        return Ok(None);
                     }
                     let (sg, su, sd, smid) = if let Some(sf) = shared_fused {
                         if sf.gate_w.dtype != GgmlType::Q4_K
                             || sf.up_w.dtype != GgmlType::Q4_K
                             || sf.down_w.dtype != GgmlType::Q6_K
                         {
-                            return Ok(false);
+                            return Ok(None);
                         }
                         let smid = self.config.n_shared_experts * self.config.moe_intermediate;
                         (Some(sf.gate_w.offset), Some(sf.up_w.offset), Some(sf.down_w.offset), smid)
                     } else {
                         (None, None, None, 0usize)
                     };
-                    (
-                        routed_fused.gate_w.offset, routed_fused.up_w.offset, routed_fused.down_w.offset,
-                        routed.len(), sg, su, sd, smid,
-                    )
+                    if self.layers[li].pinned.gate_logits_w.is_none() {
+                        return Ok(None);
+                    }
+                    FfnMoeSetup {
+                        routed_gate_off: routed_fused.gate_w.offset,
+                        routed_up_off: routed_fused.up_w.offset,
+                        routed_down_off: routed_fused.down_w.offset,
+                        routed_len: routed.len(),
+                        shared_gate_off: sg,
+                        shared_up_off: su,
+                        shared_down_off: sd,
+                        shared_mid: smid,
+                    }
                 }
-                LayerMode::Dense { .. } => return Ok(false),
+                LayerMode::Dense { .. } => return Ok(None),
             }
         };
+        Ok(Some(setup))
+    }
 
-        // Gate logit GEMV in mini-TCB (uncounted): x_norm_buf → moe_logits_buf.
-        {
-            let gate_buf = match self.layers[li].pinned.gate_logits_w.as_ref() {
-                Some(b) => b,
-                None => return Ok(false),
-            };
-            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
-                &mut tcb, gate_buf,
-                self.config.n_routed_experts, self.config.hidden,
-                &arena.x_norm_buf, &arena.moe_logits_buf,
-            )?;
-            tcb.commit_and_wait()?;
-        }
+    /// Wedge M C-3: after gate GEMV committed, read logits, top-k, MoE dispatch.
+    /// Returns true if MoE ran (ffn_out_buf written), false if routes empty (CPU fallback needed).
+    #[cfg(target_os = "macos")]
+    fn ffn_moe_after_gate(&self, li: usize, setup: &FfnMoeSetup) -> Result<bool> {
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let model_buf = self.weights_mmap_buf.as_ref().unwrap();
 
-        // CPU: read logits, topk_gate.
         let mut logits = vec![0.0f32; self.config.n_routed_experts];
         arena.read_moe_logits(&mut logits);
         let routes = topk_gate(&mut logits, self.config.top_k_routed, true);
-
         if routes.is_empty() {
             return Ok(false);
         }
-
         let route_ids: Vec<u32> = routes.iter().map(|&(eid, _)| eid as u32).collect();
         let route_weights: Vec<f32> = routes.iter().map(|&(_, w)| w).collect();
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
-
         crate::kernels::moe_block_batched_indexed_tcb(
             ctx, model_buf,
-            routed_gate_off, routed_up_off, routed_down_off,
-            routed_len, &route_ids, &route_weights,
-            shared_gate_off, shared_up_off, shared_down_off,
-            self.config.hidden, self.config.moe_intermediate, shared_mid,
+            setup.routed_gate_off, setup.routed_up_off, setup.routed_down_off,
+            setup.routed_len, &route_ids, &route_weights,
+            setup.shared_gate_off, setup.shared_up_off, setup.shared_down_off,
+            self.config.hidden, self.config.moe_intermediate, setup.shared_mid,
             q4k_schedule,
             &arena.x_norm_buf, &arena.ffn_out_buf,
         )?;
-
         Ok(true)
+    }
+
+    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
+    /// Reads arena.x_norm_buf, writes result to arena.ffn_out_buf.
+    /// Returns true if handled, false to signal Dense-layer fallback.
+    /// Used by Wedge B fallback path; Wedge C uses ffn_moe_check + ffn_moe_after_gate directly.
+    #[cfg(target_os = "macos")]
+    fn ffn_tcb_inner(&self, li: usize) -> Result<bool> {
+        let setup = match self.ffn_moe_check(li)? {
+            Some(s) => s,
+            None => return Ok(false),
+        };
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+            &mut tcb, gate_buf,
+            self.config.n_routed_experts, self.config.hidden,
+            &arena.x_norm_buf, &arena.moe_logits_buf,
+        )?;
+        tcb.commit_and_wait()?;
+        self.ffn_moe_after_gate(li, &setup)
     }
 
     /// MLA attention for one token. Compresses K/V into the latent
