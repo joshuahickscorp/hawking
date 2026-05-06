@@ -1,10 +1,10 @@
-{"device":"Apple M3 Pro","event":"autotune-start","max_hours":0.001,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","shader_hash": "ea1a89b2a178071b6795d842","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
-{"deterministic_rank":4,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":161,"status":"candidate","variant_id":"v0.2.2-metal-safe"}
-{"deterministic_rank":20,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":157,"status":"planned","variant_id":"gpu-greedy-frontier"}
-{"deterministic_rank":25,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":157,"status":"planned","variant_id":"single-kernel-fused"}
-{"deterministic_rank":5,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":152,"status":"candidate","variant_id":"v0.2.0-metal-all"}
-{"deterministic_rank":10,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":150,"status":"planned","variant_id":"persistent-flashmoe-research"}
-{"deterministic_rank":50,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":120,"status":"candidate","variant_id":"v0.5.0-fused-arena"}
-{"deterministic_rank":30,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":103,"status":"candidate","variant_id":"one-command-buffer-moe"}
-{"deterministic_rank":40,"event":"candidate","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","score":60,"status":"candidate","variant_id":"stable-baseline"}
-{"event":"selected","profile_id":"kp-f867c2f0b5f1af5c8a4b357e","target_tps":60.0,"variant_id":"v0.2.2-metal-safe"}
+{"device":"Apple M3 Pro","event":"autotune-start","max_hours":0.001,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-8f5494127b6af590ab9ed65a","shader_hash":"2213b72e9b5d66c73446888f","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
+{"deterministic_rank":4,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":161,"status":"candidate","variant_id":"v0.2.2-metal-safe"}
+{"deterministic_rank":20,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":157,"status":"planned","variant_id":"gpu-greedy-frontier"}
+{"deterministic_rank":25,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":157,"status":"planned","variant_id":"single-kernel-fused"}
+{"deterministic_rank":5,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":152,"status":"candidate","variant_id":"v0.2.0-metal-all"}
+{"deterministic_rank":10,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":150,"status":"planned","variant_id":"persistent-flashmoe-research"}
+{"deterministic_rank":50,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":120,"status":"candidate","variant_id":"v0.5.0-fused-arena"}
+{"deterministic_rank":30,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":103,"status":"candidate","variant_id":"one-command-buffer-moe"}
+{"deterministic_rank":40,"event":"candidate","profile_id":"kp-8f5494127b6af590ab9ed65a","score":60,"status":"candidate","variant_id":"stable-baseline"}
+{"event":"selected","profile_id":"kp-8f5494127b6af590ab9ed65a","target_tps":60.0,"variant_id":"v0.2.2-metal-safe"}
