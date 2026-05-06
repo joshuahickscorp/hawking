@@ -1683,7 +1683,8 @@ impl DeepSeekV2 {
                     }
 
                     // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
-                    let seq_len = self.attention_tcb_inner(li, pos)?;
+                    // Wedge F has its own embed/add_inplace above; pass None to skip C-4 pre-phase.
+                    let seq_len = self.attention_tcb_inner(li, pos, None)?;
 
                     // Wedge M F-2: Phase 3 + Mini-TCB β in one TCB (saves 1 commit/layer).
                     // Phase 3: mla_decode+o_proj → arena.out; β: cast→f16, add, rmsnorm_f16.
@@ -1793,36 +1794,16 @@ impl DeepSeekV2 {
                 let eps = self.config.rms_norm_eps;
                 let n_layers = self.config.n_layers;
 
-                // Wedge D: embed lookup on GPU — writes x_buf directly, no CPU Vec round-trip.
-                {
-                    let ctx = self.metal_ctx.as_ref().unwrap();
-                    let arena = self.decode_arena.as_ref().unwrap();
-                    let embed_buf = self.embed_buf.as_ref().unwrap();
-                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::embed_lookup_metal_f32_tcb(
-                        &mut tcb, embed_buf, token, h, &arena.x_buf,
-                    )?;
-                    tcb.commit_and_wait()?;
-                }
+                // Wedge M C-4: embed (li=0) and add_inplace (li>0) folded into Phase 1 TCB.
+                // The separate pre-loop embed TCB and per-layer add_inplace TCBs are eliminated;
+                // attention_tcb_inner now encodes them as the first encoder in the Phase 1 TCB.
 
                 for li in 0..n_layers {
                     crate::metal::set_current_layer(Some(li as u32));
 
-                    // Mini-TCB α: add_inplace(x_buf += ffn_out_buf) when li > 0.
-                    // Wedge G: rmsnorm_attn is now fused into attention_tcb_inner Phase 1,
-                    // so no separate rmsnorm dispatch here. li==0 skips TCB entirely.
-                    if li > 0 {
-                        let ctx = self.metal_ctx.as_ref().unwrap();
-                        let arena = self.decode_arena.as_ref().unwrap();
-                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        crate::kernels::add_inplace_metal_tcb(
-                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
-                        )?;
-                        tcb.commit_and_wait()?;
-                    }
-
-                    // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
-                    let seq_len = self.attention_tcb_inner(li, pos)?;
+                    // Attention Phases 1-2 + CPU ops. Pre-phase (embed/add_inplace) folded into P1.
+                    // Returns seq_len for Phase 3.
+                    let seq_len = self.attention_tcb_inner(li, pos, Some(token))?;
 
                     // Wedge M C-3: gate GEMV pre-check — validates MoE conditions before TCB block.
                     let moe_setup = self.ffn_moe_check(li)?;
@@ -2103,7 +2084,7 @@ impl DeepSeekV2 {
     ///   2. q_b_proj GEMV
     /// Returns seq_len for use by caller's Phase 3 encode.
     #[cfg(target_os = "macos")]
-    fn attention_tcb_inner(&mut self, li: usize, pos: usize) -> Result<usize> {
+    fn attention_tcb_inner(&mut self, li: usize, pos: usize, pre_phase_token: Option<u32>) -> Result<usize> {
         let n_heads = self.config.n_heads;
         let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
         let kv_a_dim = self.config.kv_lora_rank + self.config.qk_rope_head_dim;
@@ -2116,9 +2097,9 @@ impl DeepSeekV2 {
         let h = self.config.hidden;
         let n_layers = self.config.n_layers;
 
-        // Phase 1 mini-TCB: fused rmsnorm+gemv for q_a_proj + kv_a_proj, then q_a_norm + kv_a_norm.
-        // Wedge G: reads arena.x_buf (raw residual) via fused rmsnorm_gemv kernel — caller's
-        // mini-TCB α no longer writes x_norm_buf before attention, saving 2 dispatches/layer.
+        // Phase 1 mini-TCB: [pre-phase] + fused rmsnorm+gemv for q_a_proj + kv_a_proj + norms.
+        // Wedge M C-4: embed (li=0) or add_inplace (li>0) folded in as first encoders;
+        // they write x_buf, and the rmsnorm_gemv kernels read x_buf — Metal auto-barriers.
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
@@ -2133,6 +2114,14 @@ impl DeepSeekV2 {
             let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_norm not pinned")))?;
             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+            if let Some(tok) = pre_phase_token {
+                if li == 0 {
+                    let embed_buf = self.embed_buf.as_ref().unwrap();
+                    crate::kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, tok, h, &arena.x_buf)?;
+                } else {
+                    crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
+                }
+            }
             crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
                 &mut tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
                 &arena.q_lora_buf, q_lora, h,
