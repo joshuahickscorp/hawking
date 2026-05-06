@@ -283,6 +283,20 @@ pub struct Expert {
     pub down_w: TensorRef,
 }
 
+/// Wedge M C-3: pre-validated MoE gate setup passed between ffn helpers.
+/// Avoids re-checking conditions between gate-encode and moe-dispatch.
+#[cfg(target_os = "macos")]
+struct FfnMoeSetup {
+    routed_gate_off: usize,
+    routed_up_off: usize,
+    routed_down_off: usize,
+    routed_len: usize,
+    shared_gate_off: Option<usize>,
+    shared_up_off: Option<usize>,
+    shared_down_off: Option<usize>,
+    shared_mid: usize,
+}
+
 impl DeepSeekV2 {
     fn dequant(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
@@ -1668,15 +1682,29 @@ impl DeepSeekV2 {
                         tcb.commit_and_wait()?;
                     }
 
-                    // Attention via TCB: reads x_norm_buf (f32), writes arena.out (f32).
-                    self.attention_tcb_inner(li, pos)?;
+                    // Attention Phases 1-2 + CPU ops. Returns seq_len for Phase 3.
+                    // Wedge F has its own embed/add_inplace above; pass None to skip C-4 pre-phase.
+                    let seq_len = self.attention_tcb_inner(li, pos, None)?;
 
-                    // Mini-TCB β: cast attn_out f32→f16 delta, add to x_f16, rmsnorm_f16_to_f32.
+                    // Wedge M F-2: Phase 3 + Mini-TCB β in one TCB (saves 1 commit/layer).
+                    // Phase 3: mla_decode+o_proj → arena.out; β: cast→f16, add, rmsnorm_f16.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
+                        let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("F2: l{li} kv_b_proj not pinned")))?;
+                        let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("F2: l{li} o_proj not pinned")))?;
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                        let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            self.config.n_heads, self.config.qk_nope_head_dim,
+                            self.config.qk_rope_head_dim, self.config.v_head_dim,
+                            self.config.kv_lora_rank, seq_len, scale, h,
+                        )?;
                         crate::kernels::cast_f32_to_f16_tcb(
                             &mut tcb, &arena.out, &arena.wedge_f_delta_f16, h,
                         )?;
@@ -1766,54 +1794,63 @@ impl DeepSeekV2 {
                 let eps = self.config.rms_norm_eps;
                 let n_layers = self.config.n_layers;
 
-                // Wedge D: embed lookup on GPU — writes x_buf directly, no CPU Vec round-trip.
-                {
-                    let ctx = self.metal_ctx.as_ref().unwrap();
-                    let arena = self.decode_arena.as_ref().unwrap();
-                    let embed_buf = self.embed_buf.as_ref().unwrap();
-                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::embed_lookup_metal_f32_tcb(
-                        &mut tcb, embed_buf, token, h, &arena.x_buf,
-                    )?;
-                    tcb.commit_and_wait()?;
-                }
+                // Wedge M C-4: embed (li=0) and add_inplace (li>0) folded into Phase 1 TCB.
+                // The separate pre-loop embed TCB and per-layer add_inplace TCBs are eliminated;
+                // attention_tcb_inner now encodes them as the first encoder in the Phase 1 TCB.
 
                 for li in 0..n_layers {
                     crate::metal::set_current_layer(Some(li as u32));
 
-                    // Mini-TCB α: add_inplace(x_buf += ffn_out_buf) when li > 0.
-                    // Wedge G: rmsnorm_attn is now fused into attention_tcb_inner Phase 1,
-                    // so no separate rmsnorm dispatch here. li==0 skips TCB entirely.
-                    if li > 0 {
-                        let ctx = self.metal_ctx.as_ref().unwrap();
-                        let arena = self.decode_arena.as_ref().unwrap();
-                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        crate::kernels::add_inplace_metal_tcb(
-                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
-                        )?;
-                        tcb.commit_and_wait()?;
-                    }
+                    // Attention Phases 1-2 + CPU ops. Pre-phase (embed/add_inplace) folded into P1.
+                    // Returns seq_len for Phase 3.
+                    let seq_len = self.attention_tcb_inner(li, pos, Some(token))?;
 
-                    // Attention via TCB: x_norm_buf → arena.out (all uncounted).
-                    self.attention_tcb_inner(li, pos)?;
+                    // Wedge M C-3: gate GEMV pre-check — validates MoE conditions before TCB block.
+                    let moe_setup = self.ffn_moe_check(li)?;
 
-                    // Mini-TCB β: add_inplace(x_buf += arena.out) + rmsnorm_ffn → x_norm_buf.
+                    // Wedge M C-2+C-3: Phase 3 + Mini-TCB β + gate GEMV (if MoE) in one TCB.
+                    // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv.
+                    // gate_gemv reads x_norm_buf written by rmsnorm; Metal auto-barriers between encoders.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
+                        let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("C2: l{li} kv_b_proj not pinned")))?;
+                        let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                            .ok_or_else(|| crate::Error::Model(format!("C2: l{li} o_proj not pinned")))?;
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                        let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            self.config.n_heads, self.config.qk_nope_head_dim,
+                            self.config.qk_rope_head_dim, self.config.v_head_dim,
+                            self.config.kv_lora_rank, seq_len, scale, h,
+                        )?;
                         crate::kernels::add_inplace_metal_tcb(
                             &mut tcb, &arena.x_buf, &arena.out, h,
                         )?;
                         crate::kernels::rmsnorm_metal_buf_tcb(
                             &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
                         )?;
+                        if moe_setup.is_some() {
+                            let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                                &mut tcb, gate_buf,
+                                self.config.n_routed_experts, self.config.hidden,
+                                &arena.x_norm_buf, &arena.moe_logits_buf,
+                            )?;
+                        }
                         tcb.commit_and_wait()?;
                     }
 
-                    // FFN via TCB (MoE) or CPU fallback (Dense): → arena.ffn_out_buf.
-                    let ffn_handled = self.ffn_tcb_inner(li)?;
+                    // FFN: MoE dispatch (logits already in moe_logits_buf) or CPU Dense fallback.
+                    let ffn_handled = if let Some(ref setup) = moe_setup {
+                        self.ffn_moe_after_gate(li, setup)?
+                    } else {
+                        false
+                    };
                     if !ffn_handled {
                         let mut x_norm = vec![0.0f32; h];
                         self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
@@ -1824,23 +1861,18 @@ impl DeepSeekV2 {
 
                 crate::metal::set_current_layer(None);
 
-                // Final: add last layer's deferred ffn_out, read residual back.
-                if n_layers > 0 {
-                    let ctx = self.metal_ctx.as_ref().unwrap();
-                    let arena = self.decode_arena.as_ref().unwrap();
-                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::add_inplace_metal_tcb(
-                        &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
-                    )?;
-                    tcb.commit_and_wait()?;
-                }
-
-                // Wedge D: final norm on GPU (x_buf → x_norm_buf), then read 8KB x_norm.
+                // Wedge M C-1: merged add_inplace + final-norm into one TCB (saves 1 commit/token).
+                // add_inplace writes x_buf; rmsnorm reads x_buf — separate encoders, Metal hazard-safe.
                 {
                     let ctx = self.metal_ctx.as_ref().unwrap();
                     let arena = self.decode_arena.as_ref().unwrap();
                     let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    if n_layers > 0 {
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                        )?;
+                    }
                     crate::kernels::rmsnorm_metal_buf_tcb(
                         &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
                     )?;
@@ -2047,12 +2079,12 @@ impl DeepSeekV2 {
 
     /// v1.0.0-C: MLA attention via TCB (zero counted dispatches).
     /// Reads arena.x_norm_buf, writes result to arena.out.
-    /// Three mini-TCB commits (all uncounted):
+    /// Two mini-TCB commits (all uncounted); Phase 3 folded into caller's β-TCB (Wedge M C-2):
     ///   1. q_a/kv_a GEMVs + q_a_norm + kv_a_norm
     ///   2. q_b_proj GEMV
-    ///   3. mla_decode + o_proj
+    /// Returns seq_len for use by caller's Phase 3 encode.
     #[cfg(target_os = "macos")]
-    fn attention_tcb_inner(&mut self, li: usize, pos: usize) -> Result<()> {
+    fn attention_tcb_inner(&mut self, li: usize, pos: usize, pre_phase_token: Option<u32>) -> Result<usize> {
         let n_heads = self.config.n_heads;
         let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
         let kv_a_dim = self.config.kv_lora_rank + self.config.qk_rope_head_dim;
@@ -2065,9 +2097,9 @@ impl DeepSeekV2 {
         let h = self.config.hidden;
         let n_layers = self.config.n_layers;
 
-        // Phase 1 mini-TCB: fused rmsnorm+gemv for q_a_proj + kv_a_proj, then q_a_norm + kv_a_norm.
-        // Wedge G: reads arena.x_buf (raw residual) via fused rmsnorm_gemv kernel — caller's
-        // mini-TCB α no longer writes x_norm_buf before attention, saving 2 dispatches/layer.
+        // Phase 1 mini-TCB: [pre-phase] + fused rmsnorm+gemv for q_a_proj + kv_a_proj + norms.
+        // Wedge M C-4: embed (li=0) or add_inplace (li>0) folded in as first encoders;
+        // they write x_buf, and the rmsnorm_gemv kernels read x_buf — Metal auto-barriers.
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
@@ -2082,6 +2114,14 @@ impl DeepSeekV2 {
             let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_norm not pinned")))?;
             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+            if let Some(tok) = pre_phase_token {
+                if li == 0 {
+                    let embed_buf = self.embed_buf.as_ref().unwrap();
+                    crate::kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, tok, h, &arena.x_buf)?;
+                } else {
+                    crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
+                }
+            }
             crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
                 &mut tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
                 &arena.q_lora_buf, q_lora, h,
@@ -2178,49 +2218,20 @@ impl DeepSeekV2 {
         }
         self.decode_arena.as_ref().unwrap().write_q(&q_full);
 
-        // Phase 3 mini-TCB: mla_decode + o_proj (→ arena.out).
-        {
-            let ctx = self.metal_ctx.as_ref().unwrap();
-            let arena = self.decode_arena.as_ref().unwrap();
-            let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_b_proj not pinned")))?;
-            let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} o_proj not pinned")))?;
-            let scale = 1.0f32 / (head_dim_q as f32).sqrt();
-            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
-                n_heads, qk_nope_head_dim, qk_rope_head_dim, self.config.v_head_dim,
-                kv_lora_rank, seq_len, scale, h,
-            )?;
-            tcb.commit_and_wait()?;
-        }
-
-        Ok(())
+        // Phase 3 (mla_decode + o_proj) is now encoded by the caller into its β-TCB.
+        Ok(seq_len)
     }
 
-    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
-    /// Reads arena.x_norm_buf, writes result to arena.ffn_out_buf.
-    /// Returns true if handled, false to signal Dense-layer fallback.
+    /// Wedge M C-3: validate MoE TCB conditions and compute weight offsets.
+    /// Returns None for Dense layers or when any required weight is absent/wrong-dtype.
+    /// Caller must have metal_ctx and decode_arena available (Wedge C precondition).
     #[cfg(target_os = "macos")]
-    fn ffn_tcb_inner(&self, li: usize) -> Result<bool> {
+    fn ffn_moe_check(&self, li: usize) -> Result<Option<FfnMoeSetup>> {
         use crate::gguf::GgmlType;
-
-        let ctx = match self.metal_ctx.as_ref() {
-            Some(c) => c,
-            None => return Ok(false),
-        };
-        let arena = match self.decode_arena.as_ref() {
-            Some(a) => a,
-            None => return Ok(false),
-        };
-        let model_buf = match self.weights_mmap_buf.as_ref() {
-            Some(b) => b,
-            None => return Ok(false),
-        };
-
-        let (routed_gate_off, routed_up_off, routed_down_off, routed_len,
-             shared_gate_off, shared_up_off, shared_down_off, shared_mid) = {
+        if self.metal_ctx.is_none() || self.decode_arena.is_none() || self.weights_mmap_buf.is_none() {
+            return Ok(None);
+        }
+        let setup = {
             let layer = &self.layers[li];
             match &layer.mode {
                 LayerMode::MoE { routed_fused, routed, shared_fused, .. } => {
@@ -2228,70 +2239,92 @@ impl DeepSeekV2 {
                         || routed_fused.up_w.dtype != GgmlType::Q4_K
                         || routed_fused.down_w.dtype != GgmlType::Q8_0
                     {
-                        return Ok(false);
+                        return Ok(None);
                     }
                     let (sg, su, sd, smid) = if let Some(sf) = shared_fused {
                         if sf.gate_w.dtype != GgmlType::Q4_K
                             || sf.up_w.dtype != GgmlType::Q4_K
                             || sf.down_w.dtype != GgmlType::Q6_K
                         {
-                            return Ok(false);
+                            return Ok(None);
                         }
                         let smid = self.config.n_shared_experts * self.config.moe_intermediate;
                         (Some(sf.gate_w.offset), Some(sf.up_w.offset), Some(sf.down_w.offset), smid)
                     } else {
                         (None, None, None, 0usize)
                     };
-                    (
-                        routed_fused.gate_w.offset, routed_fused.up_w.offset, routed_fused.down_w.offset,
-                        routed.len(), sg, su, sd, smid,
-                    )
+                    if self.layers[li].pinned.gate_logits_w.is_none() {
+                        return Ok(None);
+                    }
+                    FfnMoeSetup {
+                        routed_gate_off: routed_fused.gate_w.offset,
+                        routed_up_off: routed_fused.up_w.offset,
+                        routed_down_off: routed_fused.down_w.offset,
+                        routed_len: routed.len(),
+                        shared_gate_off: sg,
+                        shared_up_off: su,
+                        shared_down_off: sd,
+                        shared_mid: smid,
+                    }
                 }
-                LayerMode::Dense { .. } => return Ok(false),
+                LayerMode::Dense { .. } => return Ok(None),
             }
         };
+        Ok(Some(setup))
+    }
 
-        // Gate logit GEMV in mini-TCB (uncounted): x_norm_buf → moe_logits_buf.
-        {
-            let gate_buf = match self.layers[li].pinned.gate_logits_w.as_ref() {
-                Some(b) => b,
-                None => return Ok(false),
-            };
-            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
-                &mut tcb, gate_buf,
-                self.config.n_routed_experts, self.config.hidden,
-                &arena.x_norm_buf, &arena.moe_logits_buf,
-            )?;
-            tcb.commit_and_wait()?;
-        }
+    /// Wedge M C-3: after gate GEMV committed, read logits, top-k, MoE dispatch.
+    /// Returns true if MoE ran (ffn_out_buf written), false if routes empty (CPU fallback needed).
+    #[cfg(target_os = "macos")]
+    fn ffn_moe_after_gate(&self, li: usize, setup: &FfnMoeSetup) -> Result<bool> {
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let model_buf = self.weights_mmap_buf.as_ref().unwrap();
 
-        // CPU: read logits, topk_gate.
         let mut logits = vec![0.0f32; self.config.n_routed_experts];
         arena.read_moe_logits(&mut logits);
         let routes = topk_gate(&mut logits, self.config.top_k_routed, true);
-
         if routes.is_empty() {
             return Ok(false);
         }
-
         let route_ids: Vec<u32> = routes.iter().map(|&(eid, _)| eid as u32).collect();
         let route_weights: Vec<f32> = routes.iter().map(|&(_, w)| w).collect();
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
-
         crate::kernels::moe_block_batched_indexed_tcb(
             ctx, model_buf,
-            routed_gate_off, routed_up_off, routed_down_off,
-            routed_len, &route_ids, &route_weights,
-            shared_gate_off, shared_up_off, shared_down_off,
-            self.config.hidden, self.config.moe_intermediate, shared_mid,
+            setup.routed_gate_off, setup.routed_up_off, setup.routed_down_off,
+            setup.routed_len, &route_ids, &route_weights,
+            setup.shared_gate_off, setup.shared_up_off, setup.shared_down_off,
+            self.config.hidden, self.config.moe_intermediate, setup.shared_mid,
             q4k_schedule,
             &arena.x_norm_buf, &arena.ffn_out_buf,
         )?;
-
         Ok(true)
+    }
+
+    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
+    /// Reads arena.x_norm_buf, writes result to arena.ffn_out_buf.
+    /// Returns true if handled, false to signal Dense-layer fallback.
+    /// Used by Wedge B fallback path; Wedge C uses ffn_moe_check + ffn_moe_after_gate directly.
+    #[cfg(target_os = "macos")]
+    fn ffn_tcb_inner(&self, li: usize) -> Result<bool> {
+        let setup = match self.ffn_moe_check(li)? {
+            Some(s) => s,
+            None => return Ok(false),
+        };
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+            &mut tcb, gate_buf,
+            self.config.n_routed_experts, self.config.hidden,
+            &arena.x_norm_buf, &arena.moe_logits_buf,
+        )?;
+        tcb.commit_and_wait()?;
+        self.ffn_moe_after_gate(li, &setup)
     }
 
     /// MLA attention for one token. Compresses K/V into the latent
