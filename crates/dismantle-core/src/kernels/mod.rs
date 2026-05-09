@@ -5851,6 +5851,56 @@ mod metal_dispatch {
         gemv_f32_attn_pinned_buf_tcb(tcb, w_b_buf, rows_b, cols, x_buf, out_b_buf)
     }
 
+    /// Apply f32 RoPE in-place to the rope slice of every Q head.
+    pub fn rope_q_f32_inplace_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        n_heads: usize,
+        q_head_dim: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let q_head_u32 = q_head_dim as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
+        let tg = TG_SIZE.min(total_pairs.max(1));
+        tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(q_buf), 0);
+            enc.set_bytes(1, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+            enc.set_bytes(2, std::mem::size_of::<u32>() as u64, &q_head_u32 as *const u32 as *const _);
+            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &pos as *const u32 as *const _);
+            enc.set_bytes(6, std::mem::size_of::<f32>() as u64, &base as *const f32 as *const _);
+        })
+    }
+
+    /// Apply f32 RoPE in-place to a contiguous slice inside a larger f32 buffer.
+    pub fn rope_slice_f32_inplace_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        buf: &PinnedBuffer,
+        offset_f32: usize,
+        head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        let offset_u32 = offset_f32 as u32;
+        let head_dim_u32 = head_dim as u32;
+        let half_dim = head_dim_u32 / 2;
+        let tg = TG_SIZE.min(half_dim.max(1));
+        tcb.dispatch_threads("rope_slice_f32_inplace", (half_dim, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(buf), 0);
+            enc.set_bytes(1, std::mem::size_of::<u32>() as u64, &offset_u32 as *const u32 as *const _);
+            enc.set_bytes(2, std::mem::size_of::<u32>() as u64, &head_dim_u32 as *const u32 as *const _);
+            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &pos as *const u32 as *const _);
+            enc.set_bytes(4, std::mem::size_of::<f32>() as u64, &base as *const f32 as *const _);
+        })
+    }
+
     /// Encode mla_decode_kernel + o_proj gemv into external TCB.
     /// Reads arena.q / arena.c_kv / arena.k_pe; writes arena.attn_out / arena.out.
     /// No commit — caller commits the TCB when ready.
@@ -5990,7 +6040,7 @@ mod metal_dispatch {
         )
     }
 
-    fn encode_silu_mul_tcb(
+    pub fn silu_mul_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         gate_buf: &PinnedBuffer,
         up_buf: &PinnedBuffer,
@@ -6030,20 +6080,49 @@ mod metal_dispatch {
         })
     }
 
-    /// v1.0.0-C: MoE block via internal TCB (zero counted dispatches).
-    /// Functionally identical to `moe_block_batched_indexed_metal` but uses
-    /// TokenCommandBuffer internally so stats.commits is NOT incremented.
-    /// `x_buf` and `out_buf` are pre-allocated arena buffers.
+    pub fn moe_topk_gate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        n_experts: usize,
+        top_k: usize,
+    ) -> Result<()> {
+        if top_k == 0 {
+            return Err(Error::Kernel("moe_topk_gate_tcb: top_k must be > 0".into()));
+        }
+        let n_experts_u32 = n_experts as u32;
+        let top_k_u32 = top_k as u32;
+        let shmem_bytes = (n_experts as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads("moe_topk_gate", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(logits_buf), 0);
+            enc.set_buffer(1, Some(route_ids_buf), 0);
+            enc.set_buffer(2, Some(route_weights_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &n_experts_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<u32>() as u64,
+                &top_k_u32 as *const u32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
     #[allow(clippy::too_many_arguments)]
-    pub fn moe_block_batched_indexed_tcb(
-        ctx: &MetalContext,
+    pub fn encode_moe_block_batched_indexed_tcb_with_scratch(
+        tcb: &mut TokenCommandBuffer<'_>,
         model_buf: &PinnedBuffer,
         routed_gate_offset: usize,
         routed_up_offset: usize,
         routed_down_offset: usize,
-        n_routed_experts: usize,
-        route_ids: &[u32],
-        route_weights: &[f32],
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        routes: usize,
+        shared_route_ids_buf: &PinnedBuffer,
         shared_gate_offset: Option<usize>,
         shared_up_offset: Option<usize>,
         shared_down_offset: Option<usize>,
@@ -6051,12 +6130,21 @@ mod metal_dispatch {
         routed_mid: usize,
         shared_mid: usize,
         q4k_schedule: &str,
+        routed_down_kernel: &str,
+        shared_down_kernel: &str,
         x_buf: &PinnedBuffer,
         out_buf: &PinnedBuffer,
+        routed_gate_out: &PinnedBuffer,
+        routed_up_out: &PinnedBuffer,
+        routed_act: &PinnedBuffer,
+        routed_out: &PinnedBuffer,
+        shared_gate_out: &PinnedBuffer,
+        shared_up_out: &PinnedBuffer,
+        shared_act: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
     ) -> Result<()> {
-        let routes = route_ids.len();
         if routes == 0 {
-            return Err(Error::Kernel("moe_block_batched_indexed_tcb: no routes".into()));
+            return Err(Error::Kernel("encode_moe_block_batched_indexed_tcb_with_scratch: no routes".into()));
         }
 
         let has_shared = shared_gate_offset.is_some()
@@ -6068,61 +6156,144 @@ mod metal_dispatch {
             _ => "moe_batched_gemm_q4_indexed",
         };
 
-        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
-        let route_weights_buf =
-            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(route_weights));
-        let shared_route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[0u32]));
-
-        let routed_gate_out =
-            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
-        let routed_up_out =
-            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
-        let routed_act =
-            ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
-        let routed_out =
-            ctx.new_buffer(routes * hidden * std::mem::size_of::<f32>());
-
-        let shared_gate_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
-        let shared_up_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
-        let shared_act = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
-        let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
-
-        let mut tcb = TokenCommandBuffer::new(ctx);
         encode_batched_gemv_indexed_tcb(
-            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
-            &routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
+            tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
+            routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
         )?;
         encode_batched_gemv_indexed_tcb(
-            &mut tcb, q4k_indexed_kernel, model_buf, &route_ids_buf, x_buf,
-            &routed_up_out, routed_up_offset, routes, routed_mid, hidden,
+            tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
+            routed_up_out, routed_up_offset, routes, routed_mid, hidden,
         )?;
-        encode_silu_mul_tcb(&mut tcb, &routed_gate_out, &routed_up_out, &routed_act, routes * routed_mid)?;
+        silu_mul_tcb(tcb, routed_gate_out, routed_up_out, routed_act, routes * routed_mid)?;
         encode_batched_gemv_indexed_tcb(
-            &mut tcb, "moe_batched_gemm_q8_0_indexed", model_buf, &route_ids_buf,
-            &routed_act, &routed_out, routed_down_offset, routes, hidden, routed_mid,
+            tcb, routed_down_kernel, model_buf, route_ids_buf,
+            routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
         )?;
 
         if let (Some(gate_off), Some(up_off), Some(down_off)) =
             (shared_gate_offset, shared_up_offset, shared_down_offset)
         {
             encode_batched_gemv_indexed_tcb(
-                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
-                &shared_gate_out, gate_off, 1, shared_mid, hidden,
+                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                shared_gate_out, gate_off, 1, shared_mid, hidden,
             )?;
             encode_batched_gemv_indexed_tcb(
-                &mut tcb, q4k_indexed_kernel, model_buf, &shared_route_ids_buf, x_buf,
-                &shared_up_out, up_off, 1, shared_mid, hidden,
+                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                shared_up_out, up_off, 1, shared_mid, hidden,
             )?;
-            encode_silu_mul_tcb(&mut tcb, &shared_gate_out, &shared_up_out, &shared_act, shared_mid)?;
+            silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
             encode_batched_gemv_indexed_tcb(
-                &mut tcb, "moe_batched_gemm_q6_k_indexed", model_buf, &shared_route_ids_buf,
-                &shared_act, &shared_out, down_off, 1, hidden, shared_mid,
+                tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
+                shared_act, shared_out, down_off, 1, hidden, shared_mid,
             )?;
         }
 
         encode_route_accumulate_tcb(
-            &mut tcb, &routed_out, &route_weights_buf, &shared_out, out_buf,
+            tcb, routed_out, route_weights_buf, shared_out, out_buf,
             hidden, routes, has_shared,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn encode_moe_block_batched_indexed_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        routed_gate_offset: usize,
+        routed_up_offset: usize,
+        routed_down_offset: usize,
+        route_ids_buf: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        routes: usize,
+        shared_route_ids_buf: &PinnedBuffer,
+        shared_gate_offset: Option<usize>,
+        shared_up_offset: Option<usize>,
+        shared_down_offset: Option<usize>,
+        hidden: usize,
+        routed_mid: usize,
+        shared_mid: usize,
+        q4k_schedule: &str,
+        routed_down_kernel: &str,
+        shared_down_kernel: &str,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<Vec<PinnedBuffer>> {
+        let routed_gate_out = ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_up_out = ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_act = ctx.new_buffer(routes * routed_mid * std::mem::size_of::<f32>());
+        let routed_out = ctx.new_buffer(routes * hidden * std::mem::size_of::<f32>());
+        let shared_gate_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_up_out = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_act = ctx.new_buffer(shared_mid.max(1) * std::mem::size_of::<f32>());
+        let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
+
+        encode_moe_block_batched_indexed_tcb_with_scratch(
+            tcb, model_buf,
+            routed_gate_offset, routed_up_offset, routed_down_offset,
+            route_ids_buf, route_weights_buf, routes, shared_route_ids_buf,
+            shared_gate_offset, shared_up_offset, shared_down_offset,
+            hidden, routed_mid, shared_mid, q4k_schedule,
+            routed_down_kernel, shared_down_kernel, x_buf, out_buf,
+            &routed_gate_out, &routed_up_out, &routed_act, &routed_out,
+            &shared_gate_out, &shared_up_out, &shared_act, &shared_out,
+        )?;
+
+        Ok(vec![
+            routed_gate_out,
+            routed_up_out,
+            routed_act,
+            routed_out,
+            shared_gate_out,
+            shared_up_out,
+            shared_act,
+            shared_out,
+        ])
+    }
+
+    /// v1.0.0-C: MoE block via internal TCB (zero counted dispatches).
+    /// Functionally identical to `moe_block_batched_indexed_metal` but uses
+    /// TokenCommandBuffer internally so stats.commits is NOT incremented.
+    /// `x_buf` and `out_buf` are pre-allocated arena buffers.
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_block_batched_indexed_tcb(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        routed_gate_offset: usize,
+        routed_up_offset: usize,
+        routed_down_offset: usize,
+        _n_routed_experts: usize,
+        route_ids: &[u32],
+        route_weights: &[f32],
+        shared_gate_offset: Option<usize>,
+        shared_up_offset: Option<usize>,
+        shared_down_offset: Option<usize>,
+        hidden: usize,
+        routed_mid: usize,
+        shared_mid: usize,
+        q4k_schedule: &str,
+        routed_down_kernel: &str,
+        shared_down_kernel: &str,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let routes = route_ids.len();
+        if routes == 0 {
+            return Err(Error::Kernel("moe_block_batched_indexed_tcb: no routes".into()));
+        }
+
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
+        let route_weights_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(route_weights));
+        let shared_route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&[0u32]));
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        let _temp_buffers = encode_moe_block_batched_indexed_tcb(
+            &mut tcb, ctx, model_buf,
+            routed_gate_offset, routed_up_offset, routed_down_offset,
+            &route_ids_buf, &route_weights_buf, routes, &shared_route_ids_buf,
+            shared_gate_offset, shared_up_offset, shared_down_offset,
+            hidden, routed_mid, shared_mid, q4k_schedule,
+            routed_down_kernel, shared_down_kernel, x_buf, out_buf,
         )?;
         tcb.commit_and_wait()?;
         // temp buffers dropped here, after GPU is done

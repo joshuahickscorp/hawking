@@ -68,6 +68,23 @@ static inline float q8_0_value(device const uchar* w_q8, uint64_t row_byte_off, 
     return d * (float)q;
 }
 
+static inline float q5_0_value(device const uchar* w_q5, uint64_t row_byte_off, uint c)
+{
+    uint block = c >> 5;
+    uint i = c & 31u;
+    uint64_t bo = row_byte_off + (uint64_t)block * 22ul;
+    float d = fp16_at(w_q5, bo);
+    uint qh = ((uint)w_q5[bo + 2ul])
+            | ((uint)w_q5[bo + 3ul] << 8)
+            | ((uint)w_q5[bo + 4ul] << 16)
+            | ((uint)w_q5[bo + 5ul] << 24);
+    uchar packed = w_q5[bo + 6ul + (uint64_t)(i & 15u)];
+    uint low = i < 16u ? ((uint)packed & 0x0Fu) : (((uint)packed >> 4) & 0x0Fu);
+    uint high = (qh >> i) & 0x01u;
+    int q = (int)(low | (high << 4)) - 16;
+    return d * (float)q;
+}
+
 static inline float q6_k_value(device const uchar* w_q6, uint64_t bo, uint tid)
 {
     float d = fp16_at(w_q6, bo + 208ul);
@@ -458,6 +475,49 @@ kernel void moe_batched_gemm_q8_0_indexed(
     float partial = 0.0f;
     for (uint c = tid; c < cols; c += tg_size) {
         partial += q8_0_value(w_all, row_byte_off, c)
+                 * x[(uint64_t)route * cols + c];
+    }
+
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
+}
+
+kernel void moe_batched_gemm_q5_0_indexed(
+    device const uchar* w_all     [[buffer(0)]],
+    device const uint*  route_ids [[buffer(1)]],
+    device const float* x         [[buffer(2)]],
+    device       float* y         [[buffer(3)]],
+    constant     ulong& base_offset [[buffer(4)]],
+    constant     uint&  routes    [[buffer(5)]],
+    constant     uint&  rows      [[buffer(6)]],
+    constant     uint&  cols      [[buffer(7)]],
+    threadgroup  float* shmem     [[threadgroup(0)]],
+    uint2               tid2      [[thread_position_in_threadgroup]],
+    uint2               tgp       [[threadgroup_position_in_grid]],
+    uint2               tg_size2  [[threads_per_threadgroup]])
+{
+    uint tid = tid2.x;
+    uint tg_size = tg_size2.x;
+    uint row = tgp.x;
+    uint route = tgp.y;
+    if (row >= rows || route >= routes) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 32u;
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 22ul;
+    uint64_t row_byte_off = (uint64_t)base_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)row * (uint64_t)blocks_per_row * 22ul;
+
+    float partial = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial += q5_0_value(w_all, row_byte_off, c)
                  * x[(uint64_t)route * cols + c];
     }
 
