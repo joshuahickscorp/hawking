@@ -250,6 +250,10 @@ pub struct LayerPinned {
     pub kv_a_norm: Option<PinnedBuffer>,
     /// v1.0.0-C: pre-uploaded MoE gate logit weight for uncounted gate dispatch.
     pub gate_logits_w: Option<PinnedBuffer>,
+    /// Dense FFN weights for the leading dense block TCB path.
+    pub dense_gate_w: Option<PinnedBuffer>,
+    pub dense_up_w: Option<PinnedBuffer>,
+    pub dense_down_w: Option<PinnedBuffer>,
 }
 
 pub enum LayerMode {
@@ -290,11 +294,41 @@ struct FfnMoeSetup {
     routed_gate_off: usize,
     routed_up_off: usize,
     routed_down_off: usize,
+    routed_down_dtype: GgmlType,
     routed_len: usize,
     shared_gate_off: Option<usize>,
     shared_up_off: Option<usize>,
     shared_down_off: Option<usize>,
+    shared_down_dtype: Option<GgmlType>,
     shared_mid: usize,
+}
+
+#[cfg(target_os = "macos")]
+impl FfnMoeSetup {
+    fn q4k_indexed_kernel(q4k_schedule: &str) -> &'static str {
+        match q4k_schedule {
+            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            _ => "moe_batched_gemm_q4_indexed",
+        }
+    }
+
+    fn routed_down_kernel(&self, q4k_schedule: &str) -> &'static str {
+        match self.routed_down_dtype {
+            GgmlType::Q8_0 => "moe_batched_gemm_q8_0_indexed",
+            GgmlType::Q5_0 => "moe_batched_gemm_q5_0_indexed",
+            GgmlType::Q4_K => Self::q4k_indexed_kernel(q4k_schedule),
+            _ => unreachable!("ffn_moe_check guards routed down dtype"),
+        }
+    }
+
+    fn shared_down_kernel(&self, q4k_schedule: &str) -> &'static str {
+        match self.shared_down_dtype {
+            Some(GgmlType::Q6_K) => "moe_batched_gemm_q6_k_indexed",
+            Some(GgmlType::Q4_K) => Self::q4k_indexed_kernel(q4k_schedule),
+            None => "moe_batched_gemm_q6_k_indexed",
+            _ => unreachable!("ffn_moe_check guards shared down dtype"),
+        }
+    }
 }
 
 impl DeepSeekV2 {
@@ -646,6 +680,11 @@ impl Engine for DeepSeekV2 {
                 if let LayerMode::MoE { gate_logits_w, .. } = &layer.mode {
                     layer.pinned.gate_logits_w = Some(upload(gate_logits_w));
                 }
+                if let LayerMode::Dense { gate_w, up_w, down_w } = &layer.mode {
+                    layer.pinned.dense_gate_w = Some(upload(gate_w));
+                    layer.pinned.dense_up_w = Some(upload(up_w));
+                    layer.pinned.dense_down_w = Some(upload(down_w));
+                }
             }
         }
 
@@ -668,8 +707,12 @@ impl Engine for DeepSeekV2 {
                         cfg.v_head_dim,
                         cfg.kv_lora_rank,
                         cfg.hidden,
-                        cfg.max_seq_len,
+                        max_seq,
                         cfg.n_routed_experts,
+                        cfg.top_k_routed,
+                        cfg.moe_intermediate,
+                        cfg.n_shared_experts,
+                        cfg.ffn_intermediate,
                         cfg.q_lora_rank,
                     )
                 })
@@ -920,6 +963,36 @@ impl Engine for DeepSeekV2 {
 }
 
 impl DeepSeekV2 {
+    fn layer_has_tcb_attention(layer: &Layer) -> bool {
+        let q_lora_ready = layer.pinned.q_a_proj.is_some()
+            && layer.pinned.q_b_proj.is_some()
+            && layer.pinned.q_a_norm.is_some();
+        let direct_q_ready = layer.pinned.q_proj.is_some();
+        layer.pinned.attn_norm.is_some()
+            && layer.pinned.ffn_norm.is_some()
+            && layer.pinned.kv_a_proj_with_mqa.is_some()
+            && layer.pinned.kv_b_proj.is_some()
+            && layer.pinned.o_proj.is_some()
+            && layer.pinned.kv_a_norm.is_some()
+            && (q_lora_ready || direct_q_ready)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn greedy_gpu_argmax_available(&self) -> bool {
+        let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
+        !use_f16
+            && self.metal_ctx.is_some()
+            && self.decode_arena.is_some()
+            && !self.mla_c_kv.is_empty()
+            && self.weights_mmap_buf.is_some()
+            && self.embed_buf.is_some()
+            && self.final_norm_buf.is_some()
+            && self.lm_head_buf.is_some()
+            && self.logits_buf.is_some()
+            && self.token_buf.is_some()
+            && self.layers.iter().all(Self::layer_has_tcb_attention)
+    }
+
     /// rmsnorm dispatcher: Metal when the context is present, CPU
     /// otherwise. Mirrors `kernels::rmsnorm`'s signature so call
     /// sites read the same.
@@ -1554,36 +1627,19 @@ impl DeepSeekV2 {
     }
 
     fn forward_token_greedy(&mut self, token: u32, pos: usize) -> Result<Option<u32>> {
-        let x_norm = self.forward_token_final_norm(token, pos)?;
+        #[cfg(target_os = "macos")]
+        let wedge_e_ok = self.greedy_gpu_argmax_available();
+        #[cfg(not(target_os = "macos"))]
+        let wedge_e_ok = false;
+
+        let x_norm = self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
 
         // v1.0.0-E: GPU argmax via TCB (zero counted dispatches) when the full
         // Wedge C stack ran. arena.x_norm_buf holds the final-normed residual
-        // written by the Wedge C final-norm mini-TCB — same data as x_norm but
+        // written by the Wedge C final-norm mini-TCB — same data as x_norm, but
         // already on-GPU, so only 4 bytes cross the bus instead of 408 KB.
         #[cfg(target_os = "macos")]
         {
-            let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
-            let wedge_e_ok = !use_f16
-                && self.metal_ctx.is_some()
-                && self.decode_arena.is_some()
-                && !self.mla_c_kv.is_empty()
-                && self.weights_mmap_buf.is_some()
-                && self.embed_buf.is_some()
-                && self.final_norm_buf.is_some()
-                && self.lm_head_buf.is_some()
-                && self.logits_buf.is_some()
-                && self.token_buf.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.attn_norm.is_some()
-                        && l.pinned.ffn_norm.is_some()
-                        && l.pinned.q_a_proj.is_some()
-                        && l.pinned.q_b_proj.is_some()
-                        && l.pinned.kv_a_proj_with_mqa.is_some()
-                        && l.pinned.kv_b_proj.is_some()
-                        && l.pinned.o_proj.is_some()
-                        && l.pinned.q_a_norm.is_some()
-                        && l.pinned.kv_a_norm.is_some()
-                });
             if wedge_e_ok {
                 let vocab = self.config.vocab_size;
                 let cols = self.config.hidden;
@@ -1606,13 +1662,24 @@ impl DeepSeekV2 {
             }
         }
 
+        let x_norm = x_norm.ok_or_else(|| {
+            Error::Model("forward_token_greedy: missing CPU final norm for fallback argmax".into())
+        })?;
         self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
     }
 
     fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        self.forward_token_final_norm_maybe_read(token, pos, true)?
+            .ok_or_else(|| Error::Model("forward_token_final_norm: final norm not read back".into()))
+    }
+
+    fn forward_token_final_norm_maybe_read(
+        &mut self,
+        token: u32,
+        pos: usize,
+        read_back: bool,
+    ) -> Result<Option<Vec<f32>>> {
         let h = self.config.hidden;
-        let mut x = vec![0.0f32; h];
-        embed_lookup(&self.embed, h, token, &mut x);
 
         let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
         let residual_f16 = self.residual_dtype == crate::engine::ResidualDtype::F16;
@@ -1636,15 +1703,7 @@ impl DeepSeekV2 {
                 && self.weights_mmap_buf.is_some()
                 && self.embed_buf.is_some()
                 && self.final_norm_buf.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.q_a_proj.is_some()
-                        && l.pinned.q_b_proj.is_some()
-                        && l.pinned.kv_a_proj_with_mqa.is_some()
-                        && l.pinned.kv_b_proj.is_some()
-                        && l.pinned.o_proj.is_some()
-                        && l.pinned.q_a_norm.is_some()
-                        && l.pinned.kv_a_norm.is_some()
-                });
+                && self.layers.iter().all(Self::layer_has_tcb_attention);
 
             if wedge_f_active {
                 let eps = self.config.rms_norm_eps;
@@ -1700,7 +1759,10 @@ impl DeepSeekV2 {
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                         crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            &mut tcb,
+                            arena,
+                            kv_b_proj_buf,
+                            o_proj_buf,
                             self.config.n_heads, self.config.qk_nope_head_dim,
                             self.config.qk_rope_head_dim, self.config.v_head_dim,
                             self.config.kv_lora_rank, seq_len, scale, h,
@@ -1751,16 +1813,19 @@ impl DeepSeekV2 {
                             &mut tcb, &arena.wedge_f_x_f16, &arena.wedge_f_delta_f16, h,
                         )?;
                     }
-                    crate::kernels::rmsnorm_f16_to_f32_tcb(
-                        &mut tcb, &arena.wedge_f_x_f16, final_norm_buf, eps, h, &arena.x_norm_buf,
-                    )?;
-                    tcb.commit_and_wait()?;
-                    let mut x_norm = vec![0.0f32; h];
-                    arena.read_x_norm(&mut x_norm);
-                    return Ok(x_norm);
-                }
-            }
-        }
+	                    crate::kernels::rmsnorm_f16_to_f32_tcb(
+	                        &mut tcb, &arena.wedge_f_x_f16, final_norm_buf, eps, h, &arena.x_norm_buf,
+	                    )?;
+	                    tcb.commit_and_wait()?;
+	                    if !read_back {
+	                        return Ok(None);
+	                    }
+	                    let mut x_norm = vec![0.0f32; h];
+	                    arena.read_x_norm(&mut x_norm);
+	                    return Ok(Some(x_norm));
+	                }
+	            }
+	        }
         // ---- End Wedge F ----
 
         // ---- Wedge C: all attention + FFN kernels on TCB (zero counted dispatches).
@@ -1780,15 +1845,7 @@ impl DeepSeekV2 {
                 && self.weights_mmap_buf.is_some()
                 && self.embed_buf.is_some()
                 && self.final_norm_buf.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.q_a_proj.is_some()
-                        && l.pinned.q_b_proj.is_some()
-                        && l.pinned.kv_a_proj_with_mqa.is_some()
-                        && l.pinned.kv_b_proj.is_some()
-                        && l.pinned.o_proj.is_some()
-                        && l.pinned.q_a_norm.is_some()
-                        && l.pinned.kv_a_norm.is_some()
-                });
+                && self.layers.iter().all(Self::layer_has_tcb_attention);
 
             if wedge_c_active {
                 let eps = self.config.rms_norm_eps;
@@ -1807,13 +1864,15 @@ impl DeepSeekV2 {
 
                     // Wedge M C-3: gate GEMV pre-check — validates MoE conditions before TCB block.
                     let moe_setup = self.ffn_moe_check(li)?;
+                    let mut dense_handled = false;
 
-                    // Wedge M C-2+C-3: Phase 3 + Mini-TCB β + gate GEMV (if MoE) in one TCB.
-                    // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv.
-                    // gate_gemv reads x_norm_buf written by rmsnorm; Metal auto-barriers between encoders.
+                    // Wedge N: Phase 3 + Mini-TCB β + gate GEMV + GPU top-k + MoE in one TCB.
+                    // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv → topk → MoE.
+                    // Later encoders read buffers written by earlier encoders; Metal auto-barriers.
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
+                        let model_buf = self.weights_mmap_buf.as_ref().unwrap();
                         let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
                             .ok_or_else(|| crate::Error::Model(format!("C2: l{li} kv_b_proj not pinned")))?;
                         let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
@@ -1823,7 +1882,10 @@ impl DeepSeekV2 {
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                         crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
+                            &mut tcb,
+                            arena,
+                            kv_b_proj_buf,
+                            o_proj_buf,
                             self.config.n_heads, self.config.qk_nope_head_dim,
                             self.config.qk_rope_head_dim, self.config.v_head_dim,
                             self.config.kv_lora_rank, seq_len, scale, h,
@@ -1834,23 +1896,62 @@ impl DeepSeekV2 {
                         crate::kernels::rmsnorm_metal_buf_tcb(
                             &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
                         )?;
-                        if moe_setup.is_some() {
+                        if let Some(ref setup) = moe_setup {
                             let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
                             crate::kernels::gemv_f32_moe_pinned_buf_tcb(
                                 &mut tcb, gate_buf,
                                 self.config.n_routed_experts, self.config.hidden,
                                 &arena.x_norm_buf, &arena.moe_logits_buf,
                             )?;
+                            crate::kernels::moe_topk_gate_tcb(
+                                &mut tcb,
+                                &arena.moe_logits_buf,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                self.config.n_routed_experts,
+                                self.config.top_k_routed,
+                            )?;
+                            let q4k_schedule = self.kernel_profile.as_ref()
+                                .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+                                .unwrap_or("scalar");
+                            crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                                &mut tcb,
+                                model_buf,
+                                setup.routed_gate_off,
+                                setup.routed_up_off,
+                                setup.routed_down_off,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                self.config.top_k_routed,
+                                &arena.shared_route_ids_buf,
+                                setup.shared_gate_off,
+                                setup.shared_up_off,
+                                setup.shared_down_off,
+                                self.config.hidden,
+                                self.config.moe_intermediate,
+                                setup.shared_mid,
+                                q4k_schedule,
+                                setup.routed_down_kernel(q4k_schedule),
+                                setup.shared_down_kernel(q4k_schedule),
+                                &arena.x_norm_buf,
+                                &arena.ffn_out_buf,
+                                &arena.moe_routed_gate_out_buf,
+                                &arena.moe_routed_up_out_buf,
+                                &arena.moe_routed_act_buf,
+                                &arena.moe_routed_out_buf,
+                                &arena.moe_shared_gate_out_buf,
+                                &arena.moe_shared_up_out_buf,
+                                &arena.moe_shared_act_buf,
+                                &arena.moe_shared_out_buf,
+                            )?;
+                        } else {
+                            dense_handled = self.encode_dense_ffn_tcb(&mut tcb, li, arena)?;
                         }
                         tcb.commit_and_wait()?;
                     }
 
-                    // FFN: MoE dispatch (logits already in moe_logits_buf) or CPU Dense fallback.
-                    let ffn_handled = if let Some(ref setup) = moe_setup {
-                        self.ffn_moe_after_gate(li, setup)?
-                    } else {
-                        false
-                    };
+                    // FFN: MoE and the leading dense block are fused into the β TCB above.
+                    let ffn_handled = moe_setup.is_some() || dense_handled;
                     if !ffn_handled {
                         let mut x_norm = vec![0.0f32; h];
                         self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
@@ -1873,17 +1974,23 @@ impl DeepSeekV2 {
                             &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
                         )?;
                     }
-                    crate::kernels::rmsnorm_metal_buf_tcb(
-                        &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
-                    )?;
-                    tcb.commit_and_wait()?;
-                    let mut x_norm = vec![0.0f32; h];
-                    arena.read_x_norm(&mut x_norm);
-                    return Ok(x_norm);
-                }
-            }
-        }
+	                    crate::kernels::rmsnorm_metal_buf_tcb(
+	                        &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+	                    )?;
+	                    tcb.commit_and_wait()?;
+	                    if !read_back {
+	                        return Ok(None);
+	                    }
+	                    let mut x_norm = vec![0.0f32; h];
+	                    arena.read_x_norm(&mut x_norm);
+	                    return Ok(Some(x_norm));
+	                }
+	            }
+	        }
         // ---- End Wedge C ----
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
 
         // ---- Wedge B: TCB-batched rmsnorm + GPU add_inplace via arena buffers.
         // Active when Metal + arena are present and all layer norm weights are
@@ -1997,12 +2104,12 @@ impl DeepSeekV2 {
                     arena.read_x(&mut x);
                 }
 
-                // Final norm (CPU dispatch path for now).
-                let mut x_norm = vec![0.0f32; h];
-                self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-                return Ok(x_norm);
-            }
-        }
+	                // Final norm (CPU dispatch path for now).
+	                let mut x_norm = vec![0.0f32; h];
+	                self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
+	                return Ok(Some(x_norm));
+	            }
+	        }
         // ---- End Wedge B ----
 
         // Original path (CPU or GPU without TCB batching).
@@ -2054,7 +2161,7 @@ impl DeepSeekV2 {
         // Final norm + lm head.
         let mut x_norm = vec![0.0f32; h];
         self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-        Ok(x_norm)
+        Ok(Some(x_norm))
     }
 
     fn profiled_greedy_enabled(&self, sampling: &crate::engine::SamplingParams) -> bool {
@@ -2097,20 +2204,20 @@ impl DeepSeekV2 {
         let h = self.config.hidden;
         let n_layers = self.config.n_layers;
 
-        // Phase 1 mini-TCB: [pre-phase] + fused rmsnorm+gemv for q_a_proj + kv_a_proj + norms.
+        let q_lora_path = self.layers[li].pinned.q_a_proj.is_some()
+            && self.layers[li].pinned.q_b_proj.is_some()
+            && self.layers[li].pinned.q_a_norm.is_some();
+
+        // Phase 1 mini-TCB: [pre-phase] + fused rmsnorm+gemv for Q + kv_a + norms.
         // Wedge M C-4: embed (li=0) or add_inplace (li>0) folded in as first encoders;
         // they write x_buf, and the rmsnorm_gemv kernels read x_buf — Metal auto-barriers.
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
-            let q_a_proj_buf = self.layers[li].pinned.q_a_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_proj not pinned")))?;
             let kv_a_proj_buf = self.layers[li].pinned.kv_a_proj_with_mqa.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_proj not pinned")))?;
             let attn_norm_buf = self.layers[li].pinned.attn_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} attn_norm not pinned")))?;
-            let q_a_norm_buf = self.layers[li].pinned.q_a_norm.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_norm not pinned")))?;
             let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} kv_a_norm not pinned")))?;
             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
@@ -2122,37 +2229,69 @@ impl DeepSeekV2 {
                     crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
                 }
             }
-            crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
-                &mut tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
-                &arena.q_lora_buf, q_lora, h,
-            )?;
+            if q_lora_path {
+                let q_a_proj_buf = self.layers[li].pinned.q_a_proj.as_ref()
+                    .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_proj not pinned")))?;
+                let q_a_norm_buf = self.layers[li].pinned.q_a_norm.as_ref()
+                    .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_a_norm not pinned")))?;
+                crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
+                    &mut tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
+                    &arena.q_lora_buf, q_lora, h,
+                )?;
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    &mut tcb, &arena.q_lora_buf, q_a_norm_buf, eps, q_lora, &arena.q_lora_normed_buf,
+                )?;
+            } else {
+                let q_proj_buf = self.layers[li].pinned.q_proj.as_ref()
+                    .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_proj not pinned")))?;
+                crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
+                    &mut tcb, q_proj_buf, &arena.x_buf, attn_norm_buf, eps,
+                    &arena.q, n_heads * head_dim_q, h,
+                )?;
+            }
             crate::kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
                 &mut tcb, kv_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
                 &arena.kv_a_out_buf, kv_a_dim, h,
-            )?;
-            crate::kernels::rmsnorm_metal_buf_tcb(
-                &mut tcb, &arena.q_lora_buf, q_a_norm_buf, eps, q_lora, &arena.q_lora_normed_buf,
             )?;
             // kv_a_norm: normalize first kv_lora_rank elements of kv_a_out_buf.
             crate::kernels::rmsnorm_metal_buf_tcb(
                 &mut tcb, &arena.kv_a_out_buf, kv_a_norm_buf, eps, kv_lora_rank, &arena.c_kv_normed_buf,
             )?;
+            crate::kernels::rope_slice_f32_inplace_tcb(
+                &mut tcb,
+                &arena.kv_a_out_buf,
+                kv_lora_rank,
+                qk_rope_head_dim,
+                pos as u32,
+                rope_theta,
+            )?;
+            if !q_lora_path {
+                crate::kernels::rope_q_f32_inplace_tcb(
+                    &mut tcb,
+                    &arena.q,
+                    n_heads,
+                    head_dim_q,
+                    qk_nope_head_dim,
+                    qk_rope_head_dim,
+                    pos as u32,
+                    rope_theta,
+                )?;
+            }
             tcb.commit_and_wait()?;
         }
 
-        // CPU: rope k_pe from kv_a_out_buf[kv_lora_rank..], mla_kv_append.
+        // CPU: read already-rotated k_pe from kv_a_out_buf[kv_lora_rank..], mla_kv_append.
         let c_kv_normed: Vec<f32> = {
             let arena = self.decode_arena.as_ref().unwrap();
             let ptr = arena.c_kv_normed_buf.contents() as *const f32;
             unsafe { std::slice::from_raw_parts(ptr, kv_lora_rank) }.to_vec()
         };
-        let mut k_pe: Vec<f32> = {
+        let k_pe: Vec<f32> = {
             let arena = self.decode_arena.as_ref().unwrap();
             let ptr = arena.kv_a_out_buf.contents() as *const f32;
             let slice = unsafe { std::slice::from_raw_parts(ptr, kv_a_dim) };
             slice[kv_lora_rank..].to_vec()
         };
-        rope_inplace(&mut k_pe, pos as u32, rope_theta);
 
         if li == 0 && self.kv.seq_len >= self.kv.max_seq {
             return Err(Error::Model("kv cache full".into()));
@@ -2168,22 +2307,24 @@ impl DeepSeekV2 {
         }
         let seq_len = self.kv.seq_len.max(1);
 
-        // Update arena c_kv and k_pe with the full-sequence slices.
+        // Copy this layer's live KV prefix into the arena buffers used by
+        // mla_decode_kernel.
         {
             let arena = self.decode_arena.as_ref().unwrap();
-            crate::metal::MetalContext::write_buffer_bytes(
+            MetalContext::write_buffer_bytes(
                 &arena.c_kv,
                 bytemuck::cast_slice(&self.mla_c_kv[li][..seq_len * kv_lora_rank]),
             );
-            crate::metal::MetalContext::write_buffer_bytes(
+            MetalContext::write_buffer_bytes(
                 &arena.k_pe,
                 bytemuck::cast_slice(&self.mla_k_pe[li][..seq_len * qk_rope_head_dim]),
             );
         }
 
         // Phase 2 mini-TCB: q_b_proj GEMV (q_lora_normed_buf → arena.q).
+        // Direct-q layers wrote arena.q in Phase 1 and skip this commit.
         // Wedge H: use simdgroup_matrix kernel when shapes are 8-aligned; fallback otherwise.
-        {
+        if q_lora_path {
             let ctx = self.metal_ctx.as_ref().unwrap();
             let arena = self.decode_arena.as_ref().unwrap();
             let q_b_proj_buf = self.layers[li].pinned.q_b_proj.as_ref()
@@ -2201,25 +2342,78 @@ impl DeepSeekV2 {
                     &arena.q_lora_normed_buf, &arena.q,
                 )?;
             }
+            crate::kernels::rope_q_f32_inplace_tcb(
+                &mut tcb,
+                &arena.q,
+                n_heads,
+                head_dim_q,
+                qk_nope_head_dim,
+                qk_rope_head_dim,
+                pos as u32,
+                rope_theta,
+            )?;
             tcb.commit_and_wait()?;
         }
 
-        // CPU: rope Q heads in-place, write back to arena.q.
-        let mut q_full = vec![0.0f32; n_heads * head_dim_q];
-        {
-            let arena = self.decode_arena.as_ref().unwrap();
-            let ptr = arena.q.contents() as *const f32;
-            let src = unsafe { std::slice::from_raw_parts(ptr, n_heads * head_dim_q) };
-            q_full.copy_from_slice(src);
-        }
-        for h_i in 0..n_heads {
-            let off = h_i * head_dim_q + qk_nope_head_dim;
-            rope_inplace(&mut q_full[off..off + qk_rope_head_dim], pos as u32, rope_theta);
-        }
-        self.decode_arena.as_ref().unwrap().write_q(&q_full);
-
         // Phase 3 (mla_decode + o_proj) is now encoded by the caller into its β-TCB.
         Ok(seq_len)
+    }
+
+    /// Encode the leading dense FFN block into an existing TCB.
+    /// Returns false for MoE layers or when the dense weights were not pinned.
+    #[cfg(target_os = "macos")]
+    fn encode_dense_ffn_tcb(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        li: usize,
+        arena: &DecodeArena,
+    ) -> Result<bool> {
+        if !matches!(&self.layers[li].mode, LayerMode::Dense { .. }) {
+            return Ok(false);
+        }
+        let Some(gate_buf) = self.layers[li].pinned.dense_gate_w.as_ref() else {
+            return Ok(false);
+        };
+        let Some(up_buf) = self.layers[li].pinned.dense_up_w.as_ref() else {
+            return Ok(false);
+        };
+        let Some(down_buf) = self.layers[li].pinned.dense_down_w.as_ref() else {
+            return Ok(false);
+        };
+        let h = self.config.hidden;
+        let mid = self.config.ffn_intermediate;
+        crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+            tcb,
+            gate_buf,
+            mid,
+            h,
+            &arena.x_norm_buf,
+            &arena.dense_gate_out_buf,
+        )?;
+        crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+            tcb,
+            up_buf,
+            mid,
+            h,
+            &arena.x_norm_buf,
+            &arena.dense_up_out_buf,
+        )?;
+        crate::kernels::silu_mul_tcb(
+            tcb,
+            &arena.dense_gate_out_buf,
+            &arena.dense_up_out_buf,
+            &arena.dense_act_buf,
+            mid,
+        )?;
+        crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+            tcb,
+            down_buf,
+            h,
+            mid,
+            &arena.dense_act_buf,
+            &arena.ffn_out_buf,
+        )?;
+        Ok(true)
     }
 
     /// Wedge M C-3: validate MoE TCB conditions and compute weight offsets.
@@ -2237,21 +2431,30 @@ impl DeepSeekV2 {
                 LayerMode::MoE { routed_fused, routed, shared_fused, .. } => {
                     if routed_fused.gate_w.dtype != GgmlType::Q4_K
                         || routed_fused.up_w.dtype != GgmlType::Q4_K
-                        || routed_fused.down_w.dtype != GgmlType::Q8_0
+                        || !matches!(
+                            routed_fused.down_w.dtype,
+                            GgmlType::Q8_0 | GgmlType::Q5_0 | GgmlType::Q4_K
+                        )
                     {
                         return Ok(None);
                     }
-                    let (sg, su, sd, smid) = if let Some(sf) = shared_fused {
+                    let (sg, su, sd, sdty, smid) = if let Some(sf) = shared_fused {
                         if sf.gate_w.dtype != GgmlType::Q4_K
                             || sf.up_w.dtype != GgmlType::Q4_K
-                            || sf.down_w.dtype != GgmlType::Q6_K
+                            || !matches!(sf.down_w.dtype, GgmlType::Q6_K | GgmlType::Q4_K)
                         {
                             return Ok(None);
                         }
                         let smid = self.config.n_shared_experts * self.config.moe_intermediate;
-                        (Some(sf.gate_w.offset), Some(sf.up_w.offset), Some(sf.down_w.offset), smid)
+                        (
+                            Some(sf.gate_w.offset),
+                            Some(sf.up_w.offset),
+                            Some(sf.down_w.offset),
+                            Some(sf.down_w.dtype),
+                            smid,
+                        )
                     } else {
-                        (None, None, None, 0usize)
+                        (None, None, None, None, 0usize)
                     };
                     if self.layers[li].pinned.gate_logits_w.is_none() {
                         return Ok(None);
@@ -2260,10 +2463,12 @@ impl DeepSeekV2 {
                         routed_gate_off: routed_fused.gate_w.offset,
                         routed_up_off: routed_fused.up_w.offset,
                         routed_down_off: routed_fused.down_w.offset,
+                        routed_down_dtype: routed_fused.down_w.dtype,
                         routed_len: routed.len(),
                         shared_gate_off: sg,
                         shared_up_off: su,
                         shared_down_off: sd,
+                        shared_down_dtype: sdty,
                         shared_mid: smid,
                     }
                 }
@@ -2276,7 +2481,7 @@ impl DeepSeekV2 {
     /// Wedge M C-3: after gate GEMV committed, read logits, top-k, MoE dispatch.
     /// Returns true if MoE ran (ffn_out_buf written), false if routes empty (CPU fallback needed).
     #[cfg(target_os = "macos")]
-    fn ffn_moe_after_gate(&self, li: usize, setup: &FfnMoeSetup) -> Result<bool> {
+    fn ffn_moe_after_gate(&self, _li: usize, setup: &FfnMoeSetup) -> Result<bool> {
         let ctx = self.metal_ctx.as_ref().unwrap();
         let arena = self.decode_arena.as_ref().unwrap();
         let model_buf = self.weights_mmap_buf.as_ref().unwrap();
@@ -2292,32 +2497,38 @@ impl DeepSeekV2 {
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
+        let routed_down_kernel = setup.routed_down_kernel(q4k_schedule);
+        let shared_down_kernel = setup.shared_down_kernel(q4k_schedule);
         crate::kernels::moe_block_batched_indexed_tcb(
             ctx, model_buf,
             setup.routed_gate_off, setup.routed_up_off, setup.routed_down_off,
             setup.routed_len, &route_ids, &route_weights,
             setup.shared_gate_off, setup.shared_up_off, setup.shared_down_off,
             self.config.hidden, self.config.moe_intermediate, setup.shared_mid,
-            q4k_schedule,
+            q4k_schedule, routed_down_kernel, shared_down_kernel,
             &arena.x_norm_buf, &arena.ffn_out_buf,
         )?;
         Ok(true)
     }
 
-    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for MoE layers.
+    /// v1.0.0-C: FFN via TCB (zero counted dispatches) for GPU-capable layers.
     /// Reads arena.x_norm_buf, writes result to arena.ffn_out_buf.
-    /// Returns true if handled, false to signal Dense-layer fallback.
+    /// Returns true if handled, false to signal CPU fallback.
     /// Used by Wedge B fallback path; Wedge C uses ffn_moe_check + ffn_moe_after_gate directly.
     #[cfg(target_os = "macos")]
     fn ffn_tcb_inner(&self, li: usize) -> Result<bool> {
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        if self.encode_dense_ffn_tcb(&mut tcb, li, arena)? {
+            tcb.commit_and_wait()?;
+            return Ok(true);
+        }
         let setup = match self.ffn_moe_check(li)? {
             Some(s) => s,
             None => return Ok(false),
         };
-        let ctx = self.metal_ctx.as_ref().unwrap();
-        let arena = self.decode_arena.as_ref().unwrap();
         let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
-        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
         crate::kernels::gemv_f32_moe_pinned_buf_tcb(
             &mut tcb, gate_buf,
             self.config.n_routed_experts, self.config.hidden,

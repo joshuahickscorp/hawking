@@ -113,6 +113,54 @@ kernel void rope_inplace(
     x[2 * id + 1] = half(x0 * s + x1 * c);
 }
 
+kernel void rope_q_f32_inplace(
+    device       float* q              [[buffer(0)]],
+    constant     uint&  n_heads        [[buffer(1)]],
+    constant     uint&  q_head_dim     [[buffer(2)]],
+    constant     uint&  qk_nope_dim    [[buffer(3)]],
+    constant     uint&  qk_rope_dim    [[buffer(4)]],
+    constant     uint&  pos            [[buffer(5)]],
+    constant     float& base           [[buffer(6)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    uint pairs_per_head = qk_rope_dim / 2u;
+    uint total_pairs = n_heads * pairs_per_head;
+    if (id >= total_pairs) return;
+
+    uint head = id / pairs_per_head;
+    uint pair = id - head * pairs_per_head;
+    uint off = head * q_head_dim + qk_nope_dim + 2u * pair;
+
+    float theta = (float)pos / pow(base, 2.0f * float(pair) / float(qk_rope_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = q[off];
+    float x1 = q[off + 1u];
+    q[off]      = x0 * c - x1 * s;
+    q[off + 1u] = x0 * s + x1 * c;
+}
+
+kernel void rope_slice_f32_inplace(
+    device       float* x        [[buffer(0)]],
+    constant     uint&  offset   [[buffer(1)]],
+    constant     uint&  head_dim [[buffer(2)]],
+    constant     uint&  pos      [[buffer(3)]],
+    constant     float& base     [[buffer(4)]],
+    uint id                      [[thread_position_in_grid]])
+{
+    uint half_dim = head_dim / 2u;
+    if (id >= half_dim) return;
+    uint off = offset + 2u * id;
+
+    float theta = (float)pos / pow(base, 2.0f * float(id) / float(head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = x[off];
+    float x1 = x[off + 1u];
+    x[off]      = x0 * c - x1 * s;
+    x[off + 1u] = x0 * s + x1 * c;
+}
+
 kernel void embed_lookup(
     device const half* embed  [[buffer(0)]],
     device       half* out    [[buffer(1)]],
