@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-8f5494127b6af590ab9ed65a",
+  "profile_id": "kp-4043aec1126427e9e0dd3a62",
   "profile_name": "m3-pro-18gb",
   "model_id": "DeepSeek-V2-Lite-Chat",
   "model_arch": "deepseek2",
@@ -8,73 +8,31 @@
   "device_name": "Apple M3 Pro",
   "shader_hash": "045689b69dfeb00c31c31810",
   "selected": {
-    "id": "v0.2.2-metal-safe",
+    "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
     "mla_schedule": "metal-mla",
     "lm_head_schedule": "metal-argmax-token-only",
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 4,
+    "deterministic_rank": 1,
     "gemm_q4_k_schedule": "v2",
     "attn_block_schedule": "mla"
   },
   "evidence": {
     "profile": "m3-pro-18gb",
-    "max_hours": 0.001,
+    "max_hours": 8.0,
     "prompt_count": 50,
     "token_lengths": [
       16,
       64,
       256
     ],
-    "candidate_count": 8,
+    "candidate_count": 1,
     "measurements": [
       {
-        "variant_id": "v0.2.2-metal-safe",
-        "deterministic_rank": 4,
-        "score": 161,
-        "status": "candidate"
-      },
-      {
-        "variant_id": "gpu-greedy-frontier",
-        "deterministic_rank": 20,
-        "score": 157,
-        "status": "planned"
-      },
-      {
-        "variant_id": "single-kernel-fused",
-        "deterministic_rank": 25,
-        "score": 157,
-        "status": "planned"
-      },
-      {
-        "variant_id": "v0.2.0-metal-all",
-        "deterministic_rank": 5,
-        "score": 152,
-        "status": "candidate"
-      },
-      {
-        "variant_id": "persistent-flashmoe-research",
-        "deterministic_rank": 10,
-        "score": 150,
-        "status": "planned"
-      },
-      {
-        "variant_id": "v0.5.0-fused-arena",
-        "deterministic_rank": 50,
-        "score": 120,
-        "status": "candidate"
-      },
-      {
-        "variant_id": "one-command-buffer-moe",
-        "deterministic_rank": 30,
-        "score": 103,
-        "status": "candidate"
-      },
-      {
-        "variant_id": "stable-baseline",
-        "deterministic_rank": 40,
-        "score": 60,
+        "variant_id": "metal-default",
+        "deterministic_rank": 1,
+        "score": 164,
         "status": "candidate"
       }
     ],

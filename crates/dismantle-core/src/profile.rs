@@ -188,120 +188,21 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
 }
 
 pub fn deterministic_candidates() -> Vec<KernelVariant> {
-    let mut variants = vec![
-        KernelVariant {
-            id: "stable-baseline".into(),
-            moe_schedule: "current-no-pack".into(),
-            mla_schedule: "cpu-reference".into(),
-            lm_head_schedule: "pinned-metal-copy-logits".into(),
-            command_buffering: "per-dispatch".into(),
-            gpu_buffer_reuse: "partial".into(),
-            deterministic_rank: 40,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        KernelVariant {
-            id: "one-command-buffer-moe".into(),
-            moe_schedule: "indexed-no-pack-one-cb".into(),
-            mla_schedule: "cpu-reference".into(),
-            lm_head_schedule: "pinned-metal-copy-logits".into(),
-            command_buffering: "moe-block".into(),
-            gpu_buffer_reuse: "moe-and-lm-head".into(),
-            deterministic_rank: 30,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        KernelVariant {
-            id: "gpu-greedy-frontier".into(),
-            moe_schedule: "indexed-no-pack-one-cb".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "layer-cb-planned".into(),
-            gpu_buffer_reuse: "decode-arena-planned".into(),
-            deterministic_rank: 20,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        KernelVariant {
-            id: "persistent-flashmoe-research".into(),
-            moe_schedule: "persistent-fused-planned".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "token-cb-planned".into(),
-            gpu_buffer_reuse: "full-gpu-resident-planned".into(),
-            deterministic_rank: 10,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        KernelVariant {
-            id: "single-kernel-fused".into(),
-            moe_schedule: "single-kernel".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "layer-cb-planned".into(),
-            gpu_buffer_reuse: "decode-arena-planned".into(),
-            deterministic_rank: 25,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        // v0.2.0 — all implemented wedges: two-stage MoE + Metal MLA + layer-CB + decode-arena.
-        // Research-only after v0.2.1 diagnostic: two-stage MoE causes −79% regression at
-        // batch=1 decode; layer-CB adds −18% on top. Retained in tree for prefill/batch
-        // research. Scored below v0.2.2-metal-safe.
-        KernelVariant {
-            id: "v0.2.0-metal-all".into(),
-            moe_schedule: "two-stage".into(),
-            mla_schedule: "metal-mla".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "layer-cb".into(),
-            gpu_buffer_reuse: "decode-arena".into(),
-            deterministic_rank: 5,
-            gemm_q4_k_schedule: "scalar".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        // v0.2.2 — diagnostic-validated safe default: Metal MLA + decode-arena (perf-neutral)
-        // with indexed-no-pack-one-cb MoE and one-cb-per-block command buffering (no layer-CB).
-        // Two-stage MoE and layer-CB reverted from default per v0.2.1 bisect.
-        // v0.4.0+v0.4.1 promoted gemm_q4_k_schedule="v2" (multi-row TG +
-        // simd_sum kernels). +3.5% e2e clean over scalar. v2 is correctness-
-        // equivalent to scalar (parity tests at atol=1e-3).
-        KernelVariant {
-            id: "v0.2.2-metal-safe".into(),
-            moe_schedule: "indexed-no-pack-one-cb".into(),
-            mla_schedule: "metal-mla".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "one-cb-per-block".into(),
-            gpu_buffer_reuse: "decode-arena".into(),
-            deterministic_rank: 4,
-            gemm_q4_k_schedule: "v2".into(),
-            attn_block_schedule: "mla".into(),
-        },
-        // v0.5.0 — single-kernel MoE attempt. Kernel passes parity (atol=1e-3)
-        // but at runtime falls through to a slow path on the v0.5.0 model
-        // (DeepSeek-V2-Lite Q4_K_M with mixed-quant down_proj — Q8_0 routed,
-        // Q6_K shared per v0.3.9 hot-path discovery). The fused kernel
-        // moe_block_fused_v2lite was designed for uniform Q4_K weights;
-        // moe_block_fused_v2lite_dispatch's dtype guards reject this model
-        // and the call falls through to per-expert CPU fallback (~190× slower).
-        // KEPT in candidates list for archeology and future revisit (e.g.,
-        // when down_proj fp16 path lands or when the kernel grows mixed-
-        // quant support). DEMOTED to deterministic_rank=50 so autotune
-        // never selects it as default. See reports/v0.5.0_phase0_fused_arena.md
-        // for the diagnostic. Selection stays at v0.2.2-metal-safe (rank 4).
-        KernelVariant {
-            id: "v0.5.0-fused-arena".into(),
-            moe_schedule: "single-kernel".into(),
-            mla_schedule: "metal-mla".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "one-cb-per-block".into(),
-            gpu_buffer_reuse: "decode-arena".into(),
-            deterministic_rank: 50,
-            gemm_q4_k_schedule: "v2".into(),
-            attn_block_schedule: "mla".into(),
-        },
-    ];
-    variants.sort_by(|a, b| a.id.cmp(&b.id));
-    variants
+    // Single shipping default: Metal MLA + decode-arena + indexed-no-pack-one-cb MoE
+    // + one-cb-per-block command buffering + Q4_K_M v2 GEMV. Validated end-to-end
+    // (45 parity tests across 10 suites). Other variants explored during development
+    // were either superseded or regressed; archeology lives in git history.
+    vec![KernelVariant {
+        id: "metal-default".into(),
+        moe_schedule: "indexed-no-pack-one-cb".into(),
+        mla_schedule: "metal-mla".into(),
+        lm_head_schedule: "metal-argmax-token-only".into(),
+        command_buffering: "one-cb-per-block".into(),
+        gpu_buffer_reuse: "decode-arena".into(),
+        deterministic_rank: 1,
+        gemm_q4_k_schedule: "v2".into(),
+        attn_block_schedule: "mla".into(),
+    }]
 }
 
 fn score_candidates(candidates: &[KernelVariant]) -> Vec<AutotuneMeasurement> {
@@ -440,19 +341,7 @@ mod tests {
             .into_iter()
             .map(|v| v.id)
             .collect();
-        assert_eq!(
-            ids,
-            vec![
-                "gpu-greedy-frontier",
-                "one-command-buffer-moe",
-                "persistent-flashmoe-research",
-                "single-kernel-fused",
-                "stable-baseline",
-                "v0.2.0-metal-all",
-                "v0.2.2-metal-safe",
-                "v0.5.0-fused-arena",
-            ]
-        );
+        assert_eq!(ids, vec!["metal-default"]);
     }
 
     #[test]
@@ -461,14 +350,9 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
-        // v0.2.2-metal-safe is the production default: (100-4)+25+20+20+0 = 161.
-        // v0.5.0-fused-arena scores high in raw points but is demoted to
-        // deterministic_rank=50 because its single-kernel MoE path falls
-        // through to CPU fallback on this model's mixed-quant down_proj
-        // (Q8_0 routed, Q6_K shared). See reports/v0.5.0_phase0_fused_arena.md.
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "v0.2.2-metal-safe"
+            "metal-default"
         );
     }
 }
