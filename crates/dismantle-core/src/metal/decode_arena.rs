@@ -40,6 +40,34 @@ mod arena_imp {
         pub ffn_out_buf: PinnedBuffer,
         /// MoE gate logits scratch — n_routed_experts × f32.
         pub moe_logits_buf: PinnedBuffer,
+        /// MoE top-k route IDs scratch — top_k_routed × u32.
+        pub moe_route_ids_buf: PinnedBuffer,
+        /// MoE top-k route weights scratch — top_k_routed × f32.
+        pub moe_route_weights_buf: PinnedBuffer,
+        /// Shared expert route ID scratch — always [0].
+        pub shared_route_ids_buf: PinnedBuffer,
+        /// MoE routed gate GEMV output scratch — top_k_routed × moe_intermediate.
+        pub moe_routed_gate_out_buf: PinnedBuffer,
+        /// MoE routed up GEMV output scratch — top_k_routed × moe_intermediate.
+        pub moe_routed_up_out_buf: PinnedBuffer,
+        /// MoE routed activation scratch — top_k_routed × moe_intermediate.
+        pub moe_routed_act_buf: PinnedBuffer,
+        /// MoE routed down GEMV output scratch — top_k_routed × hidden.
+        pub moe_routed_out_buf: PinnedBuffer,
+        /// MoE shared gate GEMV output scratch — n_shared_experts × moe_intermediate.
+        pub moe_shared_gate_out_buf: PinnedBuffer,
+        /// MoE shared up GEMV output scratch — n_shared_experts × moe_intermediate.
+        pub moe_shared_up_out_buf: PinnedBuffer,
+        /// MoE shared activation scratch — n_shared_experts × moe_intermediate.
+        pub moe_shared_act_buf: PinnedBuffer,
+        /// MoE shared down GEMV output scratch — hidden.
+        pub moe_shared_out_buf: PinnedBuffer,
+        /// Dense FFN gate GEMV output scratch — ffn_intermediate.
+        pub dense_gate_out_buf: PinnedBuffer,
+        /// Dense FFN up GEMV output scratch — ffn_intermediate.
+        pub dense_up_out_buf: PinnedBuffer,
+        /// Dense FFN activation scratch — ffn_intermediate.
+        pub dense_act_buf: PinnedBuffer,
         /// Phase 7 bridge: f16 residual stream — hidden × f16. Written before
         /// each rmsnorm step so f16 bridge kernels can read pre-norm activations.
         pub x_f16_buf: PinnedBuffer,
@@ -71,6 +99,9 @@ mod arena_imp {
         pub hidden: usize,
         pub max_seq: usize,
         pub n_routed_experts: usize,
+        pub top_k_routed: usize,
+        pub moe_intermediate: usize,
+        pub shared_mid: usize,
         pub q_lora_rank: usize,
         pub kv_a_dim: usize,
     }
@@ -86,11 +117,17 @@ mod arena_imp {
             hidden: usize,
             max_seq: usize,
             n_routed_experts: usize,
+            top_k_routed: usize,
+            moe_intermediate: usize,
+            n_shared_experts: usize,
+            ffn_intermediate: usize,
             q_lora_rank: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
             let kv_a_dim = kv_lora_rank + qk_rope_head_dim;
             let q_lora_sz = q_lora_rank.max(1);
+            let top_k_sz = top_k_routed.max(1);
+            let shared_mid = (n_shared_experts * moe_intermediate).max(1);
             Self {
                 q: ctx.new_buffer(n_heads * q_head_dim * std::mem::size_of::<f32>()),
                 c_kv: ctx.new_buffer(max_seq * kv_lora_rank * std::mem::size_of::<f32>()),
@@ -101,6 +138,24 @@ mod arena_imp {
                 x_norm_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
+                moe_route_ids_buf: ctx.new_buffer(top_k_sz * std::mem::size_of::<u32>()),
+                moe_route_weights_buf: ctx.new_buffer(top_k_sz * std::mem::size_of::<f32>()),
+                shared_route_ids_buf: {
+                    let buf = ctx.new_buffer(std::mem::size_of::<u32>());
+                    MetalContext::write_buffer_bytes(&buf, bytemuck::cast_slice(&[0u32]));
+                    buf
+                },
+                moe_routed_gate_out_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_up_out_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_act_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_out_buf: ctx.new_buffer(top_k_sz * hidden * std::mem::size_of::<f32>()),
+                moe_shared_gate_out_buf: ctx.new_buffer(shared_mid * std::mem::size_of::<f32>()),
+                moe_shared_up_out_buf: ctx.new_buffer(shared_mid * std::mem::size_of::<f32>()),
+                moe_shared_act_buf: ctx.new_buffer(shared_mid * std::mem::size_of::<f32>()),
+                moe_shared_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                dense_gate_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
+                dense_up_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
+                dense_act_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
                 x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 wedge_f_x_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 wedge_f_delta_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
@@ -116,6 +171,9 @@ mod arena_imp {
                 hidden,
                 max_seq,
                 n_routed_experts,
+                top_k_routed,
+                moe_intermediate,
+                shared_mid,
                 q_lora_rank,
                 kv_a_dim,
             }
