@@ -263,6 +263,9 @@ mod imp {
             "add_inplace_f16" => "add_inplace_f16",
             "softmax_f16" => "softmax_f16",
             "layer_norm_f16" => "layer_norm_f16",
+            // v1.1.0-X simdgroup LM-head
+            "gemv_f16_simdmat" => "gemv_f16_simdmat",
+            "gemv_simdgroup_f32" => "gemv_simdgroup_f32",
             // v0.5.10 fp16 Q-format kernels
             "gemm_q4_k_m_fused_f16" => "gemm_q4_k_m_fused_f16",
             "moe_grouped_gemm_q4_f16" => "moe_grouped_gemm_q4_f16",

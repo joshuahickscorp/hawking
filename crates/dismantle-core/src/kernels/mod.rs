@@ -6612,6 +6612,55 @@ mod metal_dispatch {
     }
 
     // ── end v1.0.0-H ─────────────────────────────────────────────────────────
+
+    // ── v1.1.0-X: simdgroup_matrix LM-head GEMV (f16 weights) ────────────────
+
+    /// LM-head GEMV via simdgroup_matrix: w (rows×cols f16) × x (cols f32) → y (rows f32).
+    /// Mixed-precision: half A × half B + float C → float D.
+    /// One SIMD group (32 threads) per threadgroup; each handles 8 output rows.
+    /// Requires cols % 8 == 0. Grid = (ceil(rows/8)*32, 1, 1), TG = (32, 1, 1).
+    pub fn gemv_f16_simdmat_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if cols % 8 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "gemv_f16_simdmat requires cols % 8 == 0; cols={cols}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let n_groups = rows.div_ceil(8) as u32;
+        // 3 × 64 floats: W tile + X tile + result tile
+        let shmem_bytes: u64 = 192 * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f16_simdmat",
+            (n_groups * 32, 1, 1),
+            (32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end v1.1.0-X ─────────────────────────────────────────────────────────
 }
 
 

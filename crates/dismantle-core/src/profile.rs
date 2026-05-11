@@ -255,7 +255,7 @@ fn variant_score(v: &KernelVariant) -> u64 {
     } else if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
-    if v.lm_head_schedule.contains("argmax") {
+    if v.lm_head_schedule.contains("argmax") || v.lm_head_schedule.contains("simdgroup-matrix") {
         score += 20;
     }
     if v.mla_schedule.contains("metal") {

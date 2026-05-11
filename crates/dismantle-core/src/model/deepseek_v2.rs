@@ -1650,9 +1650,20 @@ impl DeepSeekV2 {
                     let logits_buf = self.logits_buf.as_ref().unwrap();
                     let tok_buf = self.token_buf.as_ref().unwrap();
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::gemv_f16_metal_buf_tcb(
-                        &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
-                    )?;
+                    let use_simdmat = self
+                        .kernel_profile
+                        .as_ref()
+                        .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
+                        .unwrap_or(false);
+                    if use_simdmat {
+                        crate::kernels::gemv_f16_simdmat_tcb(
+                            &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
+                        )?;
+                    } else {
+                        crate::kernels::gemv_f16_metal_buf_tcb(
+                            &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
+                        )?;
+                    }
                     crate::kernels::sample_argmax_f32_tcb(&mut tcb, logits_buf, tok_buf, vocab)?;
                     tcb.commit_and_wait()?;
                     let tok_ptr = tok_buf.contents() as *const u32;
@@ -2170,7 +2181,10 @@ impl DeepSeekV2 {
             && self
                 .kernel_profile
                 .as_ref()
-                .map(|p| p.selected.lm_head_schedule.contains("argmax"))
+                .map(|p| {
+                    let s = &p.selected.lm_head_schedule;
+                    s.contains("argmax") || s.contains("simdgroup-matrix")
+                })
                 .unwrap_or(false)
     }
 
