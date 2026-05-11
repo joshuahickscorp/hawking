@@ -308,6 +308,8 @@ impl FfnMoeSetup {
     fn q4k_indexed_kernel(q4k_schedule: &str) -> &'static str {
         match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2s" => "moe_batched_gemm_q4_indexed_v2s",
+            "v2t" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -1861,6 +1863,8 @@ impl DeepSeekV2 {
             if wedge_c_active {
                 let eps = self.config.rms_norm_eps;
                 let n_layers = self.config.n_layers;
+                let decode_timing = std::env::var("DISMANTLE_DECODE_TIMING").is_ok();
+                let (mut attn_us, mut moe_us) = (0u64, 0u64);
 
                 // Wedge M C-4: embed (li=0) and add_inplace (li>0) folded into Phase 1 TCB.
                 // The separate pre-loop embed TCB and per-layer add_inplace TCBs are eliminated;
@@ -1871,7 +1875,9 @@ impl DeepSeekV2 {
 
                     // Attention Phases 1-2 + CPU ops. Pre-phase (embed/add_inplace) folded into P1.
                     // Returns seq_len for Phase 3.
+                    let t_attn = std::time::Instant::now();
                     let seq_len = self.attention_tcb_inner(li, pos, Some(token))?;
+                    attn_us += t_attn.elapsed().as_micros() as u64;
 
                     // Wedge M C-3: gate GEMV pre-check — validates MoE conditions before TCB block.
                     let moe_setup = self.ffn_moe_check(li)?;
@@ -1880,6 +1886,7 @@ impl DeepSeekV2 {
                     // Wedge N: Phase 3 + Mini-TCB β + gate GEMV + GPU top-k + MoE in one TCB.
                     // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv → topk → MoE.
                     // Later encoders read buffers written by earlier encoders; Metal auto-barriers.
+                    let t_moe = std::time::Instant::now();
                     {
                         let ctx = self.metal_ctx.as_ref().unwrap();
                         let arena = self.decode_arena.as_ref().unwrap();
@@ -1960,6 +1967,7 @@ impl DeepSeekV2 {
                         }
                         tcb.commit_and_wait()?;
                     }
+                    moe_us += t_moe.elapsed().as_micros() as u64;
 
                     // FFN: MoE and the leading dense block are fused into the β TCB above.
                     let ffn_handled = moe_setup.is_some() || dense_handled;
@@ -1972,6 +1980,13 @@ impl DeepSeekV2 {
                 }
 
                 crate::metal::set_current_layer(None);
+
+                if decode_timing {
+                    eprintln!("[timing/wedge-c] attn={:.1}ms moe={:.1}ms total={:.1}ms",
+                        attn_us as f64 / 1000.0,
+                        moe_us as f64 / 1000.0,
+                        (attn_us + moe_us) as f64 / 1000.0);
+                }
 
                 // Wedge M C-1: merged add_inplace + final-norm into one TCB (saves 1 commit/token).
                 // add_inplace writes x_buf; rmsnorm reads x_buf — separate encoders, Metal hazard-safe.
