@@ -3521,6 +3521,74 @@ mod metal_dispatch {
     /// or `moe_batched_gemm_q4_indexed_v2` directly against a byte slice
     /// containing the full fused expert tensor.
     #[allow(clippy::too_many_arguments)]
+    pub fn moe_batched_gemm_q4_indexed_v2t_raw(
+        ctx: &MetalContext,
+        w_all_bytes: &[u8],
+        base_offset: usize,
+        route_ids: &[u32],
+        x: &[f32],
+        routes: usize,
+        rows: usize,
+        cols: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
+        let route_ids_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_batched_gemv_indexed(
+                batch,
+                "moe_batched_gemm_q4_indexed_v2t",
+                &model_buf,
+                &route_ids_buf,
+                &x_buf,
+                &out_buf,
+                base_offset,
+                routes,
+                rows,
+                cols,
+            )
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    pub fn moe_batched_gemm_q4_indexed_v2s_raw(
+        ctx: &MetalContext,
+        w_all_bytes: &[u8],
+        base_offset: usize,
+        route_ids: &[u32],
+        x: &[f32],
+        routes: usize,
+        rows: usize,
+        cols: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
+        let route_ids_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_batched_gemv_indexed(
+                batch,
+                "moe_batched_gemm_q4_indexed_v2s",
+                &model_buf,
+                &route_ids_buf,
+                &x_buf,
+                &out_buf,
+                base_offset,
+                routes,
+                rows,
+                cols,
+            )
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
     pub fn moe_batched_gemm_q4_indexed_raw(
         ctx: &MetalContext,
         use_v2: bool,
@@ -3579,9 +3647,12 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let tg_size = TG_SIZE as u32;
-        let is_v2 = kernel_name.ends_with("_v2");
-        let n_tg_x = if is_v2 { (rows_u32 + 7) / 8 } else { rows_u32 };
-        let shmem_bytes = if is_v2 {
+        let is_v2t = kernel_name.ends_with("_v2t");
+        let is_v2_family = kernel_name.ends_with("_v2") || kernel_name.ends_with("_v2s") || is_v2t;
+        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2t {
+            (cols as u64) * std::mem::size_of::<f32>() as u64
+        } else if is_v2_family {
             0u64
         } else {
             (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
@@ -3616,7 +3687,7 @@ mod metal_dispatch {
                     std::mem::size_of::<u32>() as u64,
                     &cols_u32 as *const u32 as *const _,
                 );
-                if !is_v2 {
+                if !is_v2_family || is_v2t {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 }
             },
@@ -6013,9 +6084,13 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let tg_size = TG_SIZE as u32;
-        let is_v2 = kernel_name.ends_with("_v2");
-        let n_tg_x = if is_v2 { (rows_u32 + 7) / 8 } else { rows_u32 };
-        let shmem_bytes = if is_v2 {
+        let is_v2t = kernel_name.ends_with("_v2t");
+        let is_v2_family = kernel_name.ends_with("_v2") || kernel_name.ends_with("_v2s") || is_v2t;
+        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2t {
+            // x_cache: cols floats in threadgroup SRAM
+            (cols as u64) * std::mem::size_of::<f32>() as u64
+        } else if is_v2_family {
             0u64
         } else {
             (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
@@ -6033,7 +6108,7 @@ mod metal_dispatch {
                 enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
                 enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
                 enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
-                if !is_v2 {
+                if !is_v2_family || is_v2t {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 }
             },
@@ -6153,6 +6228,8 @@ mod metal_dispatch {
 
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2s" => "moe_batched_gemm_q4_indexed_v2s",
+            "v2t" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
 
