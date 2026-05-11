@@ -433,6 +433,85 @@ kernel void rmsnorm_gemv_f32_attn_pinned(
     if (tid == 0) out[gid] = shmem[0];
 }
 
+// f16-weight variant of rmsnorm_gemv_f32_attn_pinned.
+// Identical binding scheme and logic; only the weight buffer dtype changes.
+// Halves weight DRAM bandwidth for q_a_proj and kv_a_proj_with_mqa vs f32.
+//   0  w       (rows × cols) f16   pinned weight matrix
+//   1  x       (cols,)        f32   residual stream
+//   2  weight  (cols,)        f32   rmsnorm learnable scale
+//   3  eps     constant float
+//   4  out     (rows,)        f32
+//   5  rows    constant uint
+//   6  cols    constant uint
+kernel void rmsnorm_gemv_f16w_attn_pinned(
+    device const half*  w       [[buffer(0)]],
+    device const float* x       [[buffer(1)]],
+    device const float* weight  [[buffer(2)]],
+    constant     float& eps     [[buffer(3)]],
+    device       float* out     [[buffer(4)]],
+    constant     uint&  rows    [[buffer(5)]],
+    constant     uint&  cols    [[buffer(6)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                gid     [[threadgroup_position_in_grid]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+    float partial_sq = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        float v = x[c]; partial_sq += v * v;
+    }
+    shmem[tid] = partial_sq;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_rms = rsqrt(shmem[0] / float(cols) + eps);
+    device const half* row = w + (uint64_t)gid * (uint64_t)cols;
+    float partial_dot = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial_dot += (float)row[c] * (x[c] * inv_rms * weight[c]);
+    }
+    shmem[tid] = partial_dot;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) out[gid] = shmem[0];
+}
+
+// Append one KV entry to the persistent GPU KV cache.
+// Used by the merged Phase-1+Wedge-N TCB to avoid a CPU round-trip for kv_append.
+// Writes c_kv_normed (kv_lora_rank f32) and k_pe (qk_rope_head_dim f32) at seq_slot.
+//   0  src_c_kv_normed  (kv_lora_rank,)         f32  — c_kv_normed_buf
+//   1  src_kv_a_out     (kv_a_dim,)              f32  — kv_a_out_buf (k_pe at [kv_lora_rank..])
+//   2  dst_c_kv         (max_seq × kv_lora_rank) f32  — persistent GPU KV latent
+//   3  dst_k_pe         (max_seq × rope_dim)     f32  — persistent GPU RoPE K
+//   4  seq_slot         constant uint             — position index (= kv.seq_len before append)
+//   5  kv_lora_rank     constant uint
+//   6  qk_rope_head_dim constant uint
+kernel void kv_append_f32(
+    device const float* src_c_kv_normed  [[buffer(0)]],
+    device const float* src_kv_a_out     [[buffer(1)]],
+    device       float* dst_c_kv         [[buffer(2)]],
+    device       float* dst_k_pe         [[buffer(3)]],
+    constant     uint&  seq_slot         [[buffer(4)]],
+    constant     uint&  kv_lora_rank     [[buffer(5)]],
+    constant     uint&  qk_rope_head_dim [[buffer(6)]],
+    uint tid [[thread_position_in_grid]])
+{
+    uint64_t c_base  = (uint64_t)seq_slot * (uint64_t)kv_lora_rank;
+    uint64_t pe_base = (uint64_t)seq_slot * (uint64_t)qk_rope_head_dim;
+    if (tid < kv_lora_rank) {
+        dst_c_kv[c_base + tid] = src_c_kv_normed[tid];
+    }
+    if (tid < qk_rope_head_dim) {
+        dst_k_pe[pe_base + tid] = src_kv_a_out[(uint64_t)kv_lora_rank + tid];
+    }
+}
+
 // v0.5.8-B — fused RMSNorm + Q4_K_M GEMV pair (gate and up projections).
 //
 // Reads x once, computes rmsnorm, then runs two Q4_K_M GEMVs in parallel

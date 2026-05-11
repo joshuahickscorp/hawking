@@ -6055,8 +6055,46 @@ mod metal_dispatch {
         })
     }
 
+    /// Append one KV entry to persistent GPU KV buffers (GPU-resident KV cache).
+    /// Encodes kv_append_f32 kernel into the provided TCB (no commit).
+    /// src_c_kv_normed: c_kv_normed_buf (kv_lora_rank f32).
+    /// src_kv_a_out: kv_a_out_buf (kv_a_dim f32; k_pe is at [kv_lora_rank..]).
+    /// dst_c_kv / dst_k_pe: persistent per-layer GPU buffers (max_seq capacity).
+    #[allow(clippy::too_many_arguments)]
+    pub fn kv_append_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_c_kv_normed: &PinnedBuffer,
+        src_kv_a_out: &PinnedBuffer,
+        dst_c_kv: &PinnedBuffer,
+        dst_k_pe: &PinnedBuffer,
+        seq_slot: usize,
+        kv_lora_rank: usize,
+        qk_rope_head_dim: usize,
+    ) -> Result<()> {
+        let seq_slot_u32 = seq_slot as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let rope_u32 = qk_rope_head_dim as u32;
+        let n_threads = kv_lora_rank.max(qk_rope_head_dim) as u32;
+        tcb.dispatch_threads(
+            "kv_append_f32",
+            (n_threads, 1, 1),
+            (64u32.min(n_threads), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src_c_kv_normed), 0);
+                enc.set_buffer(1, Some(src_kv_a_out), 0);
+                enc.set_buffer(2, Some(dst_c_kv), 0);
+                enc.set_buffer(3, Some(dst_k_pe), 0);
+                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &seq_slot_u32 as *const u32 as *const _);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rope_u32 as *const u32 as *const _);
+            },
+        )
+    }
+
     /// Encode mla_decode_kernel + o_proj gemv into external TCB.
-    /// Reads arena.q / arena.c_kv / arena.k_pe; writes arena.attn_out / arena.out.
+    /// Reads arena.q / c_kv / k_pe; writes arena.attn_out / arena.out.
+    /// c_kv and k_pe are passed explicitly so callers can use persistent GPU
+    /// KV buffers (GPU-resident KV cache) or arena scratch buffers.
     /// No commit — caller commits the TCB when ready.
     #[allow(clippy::too_many_arguments)]
     pub fn mla_decode_and_o_proj_arena_tcb(
@@ -6064,6 +6102,8 @@ mod metal_dispatch {
         arena: &DecodeArena,
         kv_b_proj: &PinnedBuffer,
         o_proj: &PinnedBuffer,
+        c_kv: &PinnedBuffer,
+        k_pe: &PinnedBuffer,
         n_heads: usize,
         qk_nope_head_dim: usize,
         qk_rope_head_dim: usize,
@@ -6079,11 +6119,8 @@ mod metal_dispatch {
         let v_head_u32 = v_head_dim as u32;
         let kv_lora_u32 = kv_lora_rank as u32;
         let seq_len_u32 = seq_len as u32;
-        let hidden_u32 = hidden as u32;
-        let o_proj_cols_u32 = (n_heads * v_head_dim) as u32;
         let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
         let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
-        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;
 
         tcb.dispatch_threads(
             "mla_decode_kernel",
@@ -6091,8 +6128,8 @@ mod metal_dispatch {
             (TG_SIZE, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(&arena.q), 0);
-                enc.set_buffer(1, Some(&arena.c_kv), 0);
-                enc.set_buffer(2, Some(&arena.k_pe), 0);
+                enc.set_buffer(1, Some(c_kv), 0);
+                enc.set_buffer(2, Some(k_pe), 0);
                 enc.set_buffer(3, Some(kv_b_proj), 0);
                 enc.set_buffer(4, Some(&arena.attn_out), 0);
                 enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
@@ -6107,18 +6144,10 @@ mod metal_dispatch {
                 enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
             },
         )?;
-        tcb.dispatch_threads(
-            "gemv_f32_attn",
-            (hidden_u32 * TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(o_proj), 0);
-                enc.set_buffer(1, Some(&arena.attn_out), 0);
-                enc.set_buffer(2, Some(&arena.out), 0);
-                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
-                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &o_proj_cols_u32 as *const u32 as *const _);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
+        // o_proj pinned as f16; use gemv_f16_simdmat (half w × float x → float y).
+        // Cols = n_heads × v_head_dim = 2048 and rows = hidden = 2048 (both % 8 == 0).
+        gemv_f16_simdmat_tcb(
+            tcb, o_proj, hidden, n_heads * v_head_dim, &arena.attn_out, &arena.out,
         )
     }
 
@@ -6773,6 +6802,38 @@ mod metal_dispatch {
                     std::mem::size_of::<u32>() as u64,
                     &cols_u32 as *const u32 as *const _,
                 );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// f16-weight variant: same binding layout as rmsnorm_gemv_f32_attn_pinned_tcb
+    /// but w_buf holds f16 bytes. Halves weight bandwidth for q_a and kv_a projections.
+    pub fn rmsnorm_gemv_f16w_attn_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_gemv_f16w_attn_pinned",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(3, std::mem::size_of::<f32>() as u64, &eps as *const f32 as *const _);
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
