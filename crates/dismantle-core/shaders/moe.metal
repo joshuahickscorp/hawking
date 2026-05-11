@@ -731,6 +731,61 @@ kernel void moe_batched_gemm_q8_0_indexed(
     if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
 }
 
+// v2t variant of moe_batched_gemm_q8_0_indexed.
+// Grid: (ceil(rows/8)*256, routes, 1), TG (256,1,1), shmem = cols*4 bytes.
+// 8 simdgroups per TG share one x_cache preload; each simdgroup owns one row.
+// Q8_0 block = 34 bytes: 2B fp16 scale + 32B signed int8. Exactly 32 elements
+// per block matches simdgroup width — no inner loop, one simd_sum per block.
+// Eliminates ~1.4 GB/token of redundant x DRAM reads vs the scalar kernel.
+kernel void moe_batched_gemm_q8_0_indexed_v2t(
+    device const uchar* w_all       [[buffer(0)]],
+    device const uint*  route_ids   [[buffer(1)]],
+    device const float* x           [[buffer(2)]],
+    device       float* y           [[buffer(3)]],
+    constant     ulong& base_offset [[buffer(4)]],
+    constant     uint&  routes      [[buffer(5)]],
+    constant     uint&  rows        [[buffer(6)]],
+    constant     uint&  cols        [[buffer(7)]],
+    threadgroup  float* x_cache     [[threadgroup(0)]],  // cols floats
+    uint2               tid2        [[thread_position_in_threadgroup]],
+    uint2               tgp         [[threadgroup_position_in_grid]],
+    uint                simd_lane   [[thread_index_in_simdgroup]],
+    uint                simd_id     [[simdgroup_index_in_threadgroup]])
+{
+    uint tid   = tid2.x;
+    uint route = tgp.y;
+    // x is route-major: x[route*cols .. route*cols+cols] is this route's activation.
+    // Cooperative preload into threadgroup SRAM (stride-256 for cols=1408, 6 passes).
+    for (uint i = tid; i < cols; i += 256u) {
+        x_cache[i] = x[(uint64_t)route * cols + i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint base_row = tgp.x * 8u + simd_id;
+    if (route >= routes || base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 32u;                               // e.g. 1408/32 = 44
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 34ul;
+    uint64_t row_byte_off = (uint64_t)base_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 34ul;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 34ul;
+        float d  = fp16_at(w_all, bo);
+        int   qi = signed_u8(w_all[bo + 2ul + (uint64_t)simd_lane]);
+        float xi = x_cache[b * 32u + simd_lane];
+        partial += d * (float)qi * xi;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = partial;
+    }
+}
+
 kernel void moe_batched_gemm_q5_0_indexed(
     device const uchar* w_all     [[buffer(0)]],
     device const uint*  route_ids [[buffer(1)]],

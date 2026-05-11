@@ -3678,6 +3678,41 @@ mod metal_dispatch {
     }
 
     #[allow(clippy::too_many_arguments)]
+    pub fn moe_batched_gemm_q8_0_indexed_v2t_raw(
+        ctx: &MetalContext,
+        w_all_bytes: &[u8],
+        base_offset: usize,
+        route_ids: &[u32],
+        x: &[f32],
+        routes: usize,
+        rows: usize,
+        cols: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
+        let route_ids_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        ctx.dispatch_batch(|batch| {
+            encode_batched_gemv_indexed(
+                batch,
+                "moe_batched_gemm_q8_0_indexed_v2t",
+                &model_buf,
+                &route_ids_buf,
+                &x_buf,
+                &out_buf,
+                base_offset,
+                routes,
+                rows,
+                cols,
+            )
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
     fn encode_batched_gemv_indexed(
         batch: &mut CommandBatch<'_>,
         kernel_name: &str,

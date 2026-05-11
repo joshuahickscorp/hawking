@@ -147,3 +147,85 @@ fn test_v2t_gu_realistic() { run_gu_parity(4, 256, 2048, 0xFACE_0002); }
 
 #[test]
 fn test_v2t_gu_partial_tg() { run_gu_parity(2, 70, 256, 0xFACE_0003); }
+
+// ── Q8_0 v2t parity ──────────────────────────────────────────────────────────
+// Reference: CPU dequant of Q8_0 weights × route-major x.
+// Kernel under test: moe_batched_gemm_q8_0_indexed_v2t.
+
+const ATOL_Q8: f32 = 1e-4;
+
+fn synthetic_q8_0_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
+    let mut rng = Pcg64Mcg::new(seed as u128);
+    let mut bytes = vec![0u8; n_blocks * 34];
+    for b in 0..n_blocks {
+        let off = b * 34;
+        let d = 0.001 + rng.gen::<f32>() * 0.001;
+        bytes[off..off + 2].copy_from_slice(&f16::from_f32(d).to_bits().to_le_bytes());
+        for i in 2..34 {
+            bytes[off + i] = rng.gen::<u8>();
+        }
+    }
+    bytes
+}
+
+fn cpu_q8_0_matvec(
+    w_bytes: &[u8], base_offset: usize,
+    route_ids: &[u32], x: &[f32],
+    rows: usize, cols: usize,
+    out: &mut [f32],
+) {
+    let blocks_per_row = cols / 32;
+    let per_matrix_bytes = rows * blocks_per_row * 34;
+    for (ri, &expert) in route_ids.iter().enumerate() {
+        for row in 0..rows {
+            let row_off = base_offset + expert as usize * per_matrix_bytes
+                        + row * blocks_per_row * 34;
+            let mut acc = 0.0f32;
+            for b in 0..blocks_per_row {
+                let bo = row_off + b * 34;
+                let d_bits = u16::from_le_bytes([w_bytes[bo], w_bytes[bo + 1]]);
+                let d = f16::from_bits(d_bits).to_f32();
+                for i in 0..32usize {
+                    let qi = (w_bytes[bo + 2 + i] as i8) as f32;
+                    let xi = x[ri * cols + b * 32 + i];
+                    acc += d * qi * xi;
+                }
+            }
+            out[ri * rows + row] = acc;
+        }
+    }
+}
+
+fn run_q8_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
+    let n_experts = routes + 3;
+    let blocks_per_row = cols / 32;
+    let blocks_per_expert = rows * blocks_per_row;
+    let w_bytes = synthetic_q8_0_bytes(n_experts * blocks_per_expert, seed_base);
+    let mut model_bytes = vec![0xA5u8; 64];
+    let base_offset = model_bytes.len();
+    model_bytes.extend_from_slice(&w_bytes);
+    let route_ids: Vec<u32> = (0..routes).map(|i| ((i * 2 + 1) % n_experts) as u32).collect();
+    // x is route-major: each route has its own cols-element slice
+    let x = fixed_input(routes * cols, seed_base ^ 0xDEAD_BEEF);
+
+    let mut ref_out = vec![0.0_f32; routes * rows];
+    cpu_q8_0_matvec(&model_bytes, base_offset, &route_ids, &x, rows, cols, &mut ref_out);
+
+    let mut gpu_out = vec![0.0_f32; routes * rows];
+    kernels::moe_batched_gemm_q8_0_indexed_v2t_raw(
+        ctx(), &model_bytes, base_offset, &route_ids, &x, routes, rows, cols, &mut gpu_out,
+    ).expect("q8_0 v2t dispatch");
+
+    let diff = max_abs_diff(&ref_out, &gpu_out);
+    println!("[q8_0 v2t parity] routes={routes} rows={rows} cols={cols} diff={diff:.6e}");
+    assert!(diff < ATOL_Q8, "q8_0 v2t diff {diff:.6e} >= atol {ATOL_Q8}");
+}
+
+#[test]
+fn test_q8_0_v2t_small() { run_q8_parity(2, 64, 64, 0xB00B_0001); }
+
+#[test]
+fn test_q8_0_v2t_realistic() { run_q8_parity(6, 2048, 1408, 0xB00B_0002); }
+
+#[test]
+fn test_q8_0_v2t_partial_tg() { run_q8_parity(2, 70, 64, 0xB00B_0003); }
