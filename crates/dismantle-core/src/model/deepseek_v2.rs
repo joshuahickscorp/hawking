@@ -913,39 +913,166 @@ impl Engine for DeepSeekV2 {
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
 
-        for step in 0..req.max_new_tokens {
-            if abort_set(&req) {
-                reason = StopReason::Aborted;
-                break;
-            }
-            let pos = prompt_len + step;
-            let step_start = Instant::now();
-            let next_id = if self.profiled_greedy_enabled(&req.sampling) {
-                match self.forward_token_greedy(last_id, pos)? {
-                    Some(token) => token,
-                    None => {
-                        let mut logits = self.forward_token(last_id, pos)?;
-                        self.sampler.sample(&mut logits, &req.sampling)
+        if self.speculate_mode == crate::SpeculateMode::ExactShared {
+            // Speculative decode: draft with shared-only model, verify with full model.
+            // Temperature must be 0 (greedy) — validated above.
+            let spec_k = self.verify_window;
+            let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
+            let mut pos = prompt_len;
+
+            'spec_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+                let draft_start_seq = self.kv.seq_len;
+                let remaining = req.max_new_tokens - produced;
+
+                // Clamp draft window: always draft ≥ 1 if budget allows.
+                let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
+
+                if actual_k == 0 {
+                    // Too close to budget — single greedy step.
+                    let mut logits = self.forward_token(last_id, pos)?;
+                    let next_id = self.sampler.sample(&mut logits, &req.sampling);
+                    self.sampler.record(next_id);
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos { reason = StopReason::Eos; }
+                    break 'spec_loop;
+                }
+
+                // --- DRAFT: actual_k tokens via shared-only model ---
+                let mut draft_ids: Vec<u32> = Vec::with_capacity(actual_k);
+                let mut tmp_last = last_id;
+                let draft_t0 = Instant::now();
+                for k in 0..actual_k {
+                    let mut draft_logits = self.forward_token_shared_only(tmp_last, pos + k)?;
+                    let draft_id = self.sampler.sample(&mut draft_logits, &req.sampling);
+                    draft_ids.push(draft_id);
+                    tmp_last = draft_id;
+                }
+                let draft_ms = draft_t0.elapsed().as_secs_f64() * 1000.0;
+
+                // Rollback KV: draft only touched CPU KV, GPU KV is unchanged.
+                self.kv.seq_len = draft_start_seq;
+
+                // --- VERIFY: actual_k + 1 full model forward passes ---
+                let verify_t0 = Instant::now();
+                let mut verify_logits: Vec<Vec<f32>> = Vec::with_capacity(actual_k + 1);
+                tmp_last = last_id;
+                for k in 0..=actual_k {
+                    let logits = self.forward_token(tmp_last, pos + k)?;
+                    verify_logits.push(logits);
+                    if k < actual_k {
+                        tmp_last = draft_ids[k]; // feed draft tokens through verify context
                     }
                 }
-            } else {
-                let mut logits = self.forward_token(last_id, pos)?;
-                self.sampler.sample(&mut logits, &req.sampling)
-            };
-            if stall_active && step_start.elapsed() > stall_limit {
-                reason = StopReason::Aborted;
-                break;
+                let verify_ms = verify_t0.elapsed().as_secs_f64() * 1000.0;
+
+                // --- ACCEPT / REJECT (greedy) ---
+                let argmax_f = |v: &[f32]| -> u32 {
+                    v.iter().enumerate()
+                        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Less))
+                        .map(|(i, _)| i as u32)
+                        .unwrap_or(0)
+                };
+                let mut first_reject = actual_k; // all accepted by default
+                for k in 0..actual_k {
+                    if argmax_f(&verify_logits[k]) != draft_ids[k] {
+                        first_reject = k;
+                        break;
+                    }
+                }
+
+                // Rollback KV to the correct accepted length.
+                // verify ran K+1 forward passes → kv.seq_len = draft_start_seq + actual_k + 1
+                // but we only accept first_reject + 1 tokens.
+                self.kv.seq_len = draft_start_seq + first_reject + 1;
+
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += actual_k - first_reject;
+
+                // --- EMIT accepted drafts ---
+                for k in 0..first_reject {
+                    let id = draft_ids[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        break 'spec_loop;
+                    }
+                    if produced >= req.max_new_tokens { break 'spec_loop; }
+                }
+
+                // --- EMIT correction / bonus token ---
+                let bonus_id = argmax_f(&verify_logits[first_reject]);
+                let text = self.tokenizer.decode_one(bonus_id).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus_id, text });
+                self.sampler.record(bonus_id);
+                produced += 1;
+                last_id = bonus_id;
+                pos += first_reject + 1;
+
+                if spec_log {
+                    let step_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                    eprintln!(
+                        "[spec] accept={}/{} draft={:.1}ms verify={:.1}ms step={:.1}ms emit={} tps={:.1}",
+                        first_reject, actual_k, draft_ms, verify_ms, step_ms,
+                        first_reject + 1,
+                        (first_reject + 1) as f64 / (step_ms / 1000.0)
+                    );
+                }
+
+                if Some(bonus_id) == eos {
+                    reason = StopReason::Eos;
+                    break;
+                }
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break;
+                }
             }
-            self.sampler.record(next_id);
-            let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
-            sink(StreamEvent::Token { id: next_id, text });
-            produced += 1;
-            if Some(next_id) == eos {
-                reason = StopReason::Eos;
-                break;
+        } else {
+            for step in 0..req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let pos = prompt_len + step;
+                let step_start = Instant::now();
+                let next_id = if self.profiled_greedy_enabled(&req.sampling) {
+                    match self.forward_token_greedy(last_id, pos)? {
+                        Some(token) => token,
+                        None => {
+                            let mut logits = self.forward_token(last_id, pos)?;
+                            self.sampler.sample(&mut logits, &req.sampling)
+                        }
+                    }
+                } else {
+                    let mut logits = self.forward_token(last_id, pos)?;
+                    self.sampler.sample(&mut logits, &req.sampling)
+                };
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                self.sampler.record(next_id);
+                let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                sink(StreamEvent::Token { id: next_id, text });
+                produced += 1;
+                if Some(next_id) == eos {
+                    reason = StopReason::Eos;
+                    break;
+                }
+                last_id = next_id;
             }
-            last_id = next_id;
         }
+
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
         stats.dispatch_samples = self
@@ -961,7 +1088,6 @@ impl Engine for DeepSeekV2 {
         stats.metal_buffers_created = buffers_created;
         stats.metal_bytes_allocated = bytes_allocated;
         stats.metal_commits = commits;
-        // draft_accepted / draft_rejected populated by real spec-decode path (Phase 6).
         sink(StreamEvent::Done {
             reason,
             stats: stats.clone(),
@@ -2029,6 +2155,22 @@ impl DeepSeekV2 {
                         tcb.commit_and_wait()?;
                     }
                     total_us += t0.elapsed().as_micros() as u64;
+
+                    // Keep CPU KV in sync so forward_token_shared_only (draft path) sees
+                    // correct KV. The new entry was written to GPU KV at seq_slot by
+                    // kv_append_f32; copy it back to the CPU mirrors now.
+                    if self.speculate_mode == crate::SpeculateMode::ExactShared {
+                        let off_c = seq_slot * kv_lora_rank;
+                        let off_pe = seq_slot * qk_rope_head_dim;
+                        unsafe {
+                            let ptr_c = (self.mla_c_kv_gpu[li].contents() as *const f32).add(off_c);
+                            let ptr_pe = (self.mla_k_pe_gpu[li].contents() as *const f32).add(off_pe);
+                            self.mla_c_kv[li][off_c..off_c + kv_lora_rank]
+                                .copy_from_slice(std::slice::from_raw_parts(ptr_c, kv_lora_rank));
+                            self.mla_k_pe[li][off_pe..off_pe + qk_rope_head_dim]
+                                .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
+                        }
+                    }
 
                     let ffn_handled = moe_setup.is_some() || dense_handled;
                     if !ffn_handled {
