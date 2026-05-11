@@ -309,7 +309,8 @@ impl FfnMoeSetup {
         match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" => "moe_batched_gemm_q4_indexed_v2t",
+            // v2t_gu fuses gate+up into one kernel; single-matrix GEMVs (down) use v2t
+            "v2t" | "v2t_gu" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -1883,8 +1884,9 @@ impl DeepSeekV2 {
                     let moe_setup = self.ffn_moe_check(li)?;
                     let mut dense_handled = false;
 
-                    // Wedge N: Phase 3 + Mini-TCB β + gate GEMV + GPU top-k + MoE in one TCB.
-                    // Ordering: Phase3 → add_inplace → rmsnorm → gate_gemv → topk → MoE.
+                    // Wedge N: Phase 2 + Phase 3 + Mini-TCB β + gate GEMV + GPU top-k + MoE in one TCB.
+                    // Phase 2 (q_b_proj + rope_q) merged here — 27 fewer GPU commits per token.
+                    // Ordering: Phase2 → Phase3 → add_inplace → rmsnorm → gate_gemv → topk → MoE.
                     // Later encoders read buffers written by earlier encoders; Metal auto-barriers.
                     let t_moe = std::time::Instant::now();
                     {
@@ -1899,6 +1901,7 @@ impl DeepSeekV2 {
                         let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
                         let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                        self.encode_attention_phase2_tcb(&mut tcb, li, pos)?;
                         crate::kernels::mla_decode_and_o_proj_arena_tcb(
                             &mut tcb,
                             arena,
@@ -2350,42 +2353,58 @@ impl DeepSeekV2 {
             );
         }
 
-        // Phase 2 mini-TCB: q_b_proj GEMV (q_lora_normed_buf → arena.q).
-        // Direct-q layers wrote arena.q in Phase 1 and skip this commit.
-        // Wedge H: use simdgroup_matrix kernel when shapes are 8-aligned; fallback otherwise.
-        if q_lora_path {
-            let ctx = self.metal_ctx.as_ref().unwrap();
-            let arena = self.decode_arena.as_ref().unwrap();
-            let q_b_proj_buf = self.layers[li].pinned.q_b_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("attention_tcb: l{li} q_b_proj not pinned")))?;
-            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-            let q_out_rows = n_heads * head_dim_q;
-            if q_lora % 8 == 0 && q_out_rows % 8 == 0 {
-                crate::kernels::gemv_simdgroup_f32_tcb(
-                    &mut tcb, q_b_proj_buf, &arena.q_lora_normed_buf, &arena.q,
-                    q_out_rows, q_lora,
-                )?;
-            } else {
-                crate::kernels::gemv_f32_attn_pinned_buf_tcb(
-                    &mut tcb, q_b_proj_buf, q_out_rows, q_lora,
-                    &arena.q_lora_normed_buf, &arena.q,
-                )?;
-            }
-            crate::kernels::rope_q_f32_inplace_tcb(
-                &mut tcb,
-                &arena.q,
-                n_heads,
-                head_dim_q,
-                qk_nope_head_dim,
-                qk_rope_head_dim,
-                pos as u32,
-                rope_theta,
-            )?;
-            tcb.commit_and_wait()?;
-        }
-
-        // Phase 3 (mla_decode + o_proj) is now encoded by the caller into its β-TCB.
+        // Phase 2 is now encoded into the caller's β-TCB via encode_attention_phase2_tcb.
+        // This eliminates 27 GPU commit round-trips per token (one per layer).
         Ok(seq_len)
+    }
+
+    /// Encode Phase 2 attention kernels (q_b_proj GEMV + rope_q) into an existing TCB.
+    /// Must be called at the START of the β-TCB, before Phase 3 (mla_decode_and_o_proj).
+    /// Direct-q layers skip Phase 2 (arena.q already written in Phase 1).
+    #[cfg(target_os = "macos")]
+    fn encode_attention_phase2_tcb(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        li: usize,
+        pos: usize,
+    ) -> Result<()> {
+        let q_lora_path = self.layers[li].pinned.q_a_proj.is_some()
+            && self.layers[li].pinned.q_b_proj.is_some()
+            && self.layers[li].pinned.q_a_norm.is_some();
+        if !q_lora_path {
+            return Ok(());
+        }
+        let arena = self.decode_arena.as_ref().unwrap();
+        let n_heads = self.config.n_heads;
+        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+        let q_lora = self.config.q_lora_rank.max(1);
+        let qk_nope_head_dim = self.config.qk_nope_head_dim;
+        let qk_rope_head_dim = self.config.qk_rope_head_dim;
+        let rope_theta = self.config.rope_theta;
+        let q_b_proj_buf = self.layers[li].pinned.q_b_proj.as_ref()
+            .ok_or_else(|| Error::Model(format!("phase2_tcb: l{li} q_b_proj not pinned")))?;
+        let q_out_rows = n_heads * head_dim_q;
+        if q_lora % 8 == 0 && q_out_rows % 8 == 0 {
+            crate::kernels::gemv_simdgroup_f32_tcb(
+                tcb, q_b_proj_buf, &arena.q_lora_normed_buf, &arena.q,
+                q_out_rows, q_lora,
+            )?;
+        } else {
+            crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+                tcb, q_b_proj_buf, q_out_rows, q_lora,
+                &arena.q_lora_normed_buf, &arena.q,
+            )?;
+        }
+        crate::kernels::rope_q_f32_inplace_tcb(
+            tcb,
+            &arena.q,
+            n_heads,
+            head_dim_q,
+            qk_nope_head_dim,
+            qk_rope_head_dim,
+            pos as u32,
+            rope_theta,
+        )
     }
 
     /// Encode the leading dense FFN block into an existing TCB.
