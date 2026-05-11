@@ -3555,6 +3555,54 @@ mod metal_dispatch {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn moe_batched_gemm_q4_indexed_v2t_gu_raw(
+        ctx: &MetalContext,
+        w_all_bytes: &[u8],
+        gate_offset: usize,
+        up_offset: usize,
+        route_ids: &[u32],
+        x: &[f32],
+        routes: usize,
+        rows: usize,
+        cols: usize,
+        out: &mut [f32],
+    ) -> Result<()> {
+        let model_buf    = ctx.new_buffer_with_bytes(w_all_bytes);
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let x_buf        = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf      = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64   = up_offset   as u64;
+        let routes_u32  = routes as u32;
+        let rows_u32    = rows   as u32;
+        let cols_u32    = cols   as u32;
+        let tg_size     = TG_SIZE as u32;
+        let n_tg_x      = (rows_u32 + 7) / 8;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_batch(|batch| {
+            batch.dispatch_threads(
+                "moe_batched_gemm_q4_indexed_v2t_gu",
+                (n_tg_x * tg_size, routes_u32, 1),
+                (tg_size, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&model_buf),    0);
+                    enc.set_buffer(1, Some(&route_ids_buf), 0);
+                    enc.set_buffer(2, Some(&x_buf),         0);
+                    enc.set_buffer(3, Some(&out_buf),       0);
+                    enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
+                    enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                    enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+                    enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
+                    enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )
+        })?;
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
     pub fn moe_batched_gemm_q4_indexed_v2s_raw(
         ctx: &MetalContext,
         w_all_bytes: &[u8],
@@ -6131,6 +6179,46 @@ mod metal_dispatch {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_fused_gu_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64   = up_offset   as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32   = rows   as u32;
+        let cols_u32   = cols   as u32;
+        let tg_size    = TG_SIZE as u32;
+        let n_tg_x     = (rows_u32 + 7) / 8;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q4_indexed_v2t_gu",
+            (n_tg_x * tg_size, routes_u32, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf),    0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf),         0);
+                enc.set_buffer(3, Some(act_buf),       0);
+                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
+                enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     fn encode_route_accumulate_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         routed_out: &PinnedBuffer,
@@ -6232,16 +6320,24 @@ mod metal_dispatch {
             "v2t" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
+        let use_fused_gu = q4k_schedule == "v2t_gu";
 
-        encode_batched_gemv_indexed_tcb(
-            tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
-            routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
-        )?;
-        encode_batched_gemv_indexed_tcb(
-            tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
-            routed_up_out, routed_up_offset, routes, routed_mid, hidden,
-        )?;
-        silu_mul_tcb(tcb, routed_gate_out, routed_up_out, routed_act, routes * routed_mid)?;
+        if use_fused_gu {
+            encode_batched_gemv_fused_gu_tcb(
+                tcb, model_buf, route_ids_buf, x_buf, routed_act,
+                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+            )?;
+        } else {
+            encode_batched_gemv_indexed_tcb(
+                tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
+                routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
+            )?;
+            encode_batched_gemv_indexed_tcb(
+                tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
+                routed_up_out, routed_up_offset, routes, routed_mid, hidden,
+            )?;
+            silu_mul_tcb(tcb, routed_gate_out, routed_up_out, routed_act, routes * routed_mid)?;
+        }
         encode_batched_gemv_indexed_tcb(
             tcb, routed_down_kernel, model_buf, route_ids_buf,
             routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
@@ -6250,15 +6346,22 @@ mod metal_dispatch {
         if let (Some(gate_off), Some(up_off), Some(down_off)) =
             (shared_gate_offset, shared_up_offset, shared_down_offset)
         {
-            encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                shared_gate_out, gate_off, 1, shared_mid, hidden,
-            )?;
-            encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                shared_up_out, up_off, 1, shared_mid, hidden,
-            )?;
-            silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
+            if use_fused_gu {
+                encode_batched_gemv_fused_gu_tcb(
+                    tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
+                    gate_off, up_off, 1, shared_mid, hidden,
+                )?;
+            } else {
+                encode_batched_gemv_indexed_tcb(
+                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                    shared_gate_out, gate_off, 1, shared_mid, hidden,
+                )?;
+                encode_batched_gemv_indexed_tcb(
+                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                    shared_up_out, up_off, 1, shared_mid, hidden,
+                )?;
+                silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
+            }
             encode_batched_gemv_indexed_tcb(
                 tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
                 shared_act, shared_out, down_off, 1, hidden, shared_mid,

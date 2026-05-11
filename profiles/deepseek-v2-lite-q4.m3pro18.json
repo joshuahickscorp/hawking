@@ -6,7 +6,7 @@
   "model_arch": "deepseek2",
   "tensor_layout_hash": "6540aaa223c931038ec4ddde",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "3b6c47cb96c172484d201f4d",
+  "shader_hash": "8ee7e5a99fa73e191fe03e36",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
@@ -15,7 +15,7 @@
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
     "deterministic_rank": 1,
-    "gemm_q4_k_schedule": "v2t",
+    "gemm_q4_k_schedule": "v2t_gu",
     "attn_block_schedule": "mla"
   },
   "evidence": {
