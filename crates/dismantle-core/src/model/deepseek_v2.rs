@@ -317,7 +317,10 @@ impl FfnMoeSetup {
 
     fn routed_down_kernel(&self, q4k_schedule: &str) -> &'static str {
         match self.routed_down_dtype {
-            GgmlType::Q8_0 => "moe_batched_gemm_q8_0_indexed",
+            GgmlType::Q8_0 => match q4k_schedule {
+                "v2t" | "v2t_gu" => "moe_batched_gemm_q8_0_indexed_v2t",
+                _ => "moe_batched_gemm_q8_0_indexed",
+            },
             GgmlType::Q5_0 => "moe_batched_gemm_q5_0_indexed",
             GgmlType::Q4_K => Self::q4k_indexed_kernel(q4k_schedule),
             _ => unreachable!("ffn_moe_check guards routed down dtype"),
