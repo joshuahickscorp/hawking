@@ -554,6 +554,101 @@ kernel void moe_batched_gemm_q4_indexed_v2t(
     }
 }
 
+// v2t_gu: fused gate+up Q4_K GEMV with threadgroup x-preload and inline silu_mul.
+// Replaces 3 dispatches (gate-v2t, up-v2t, silu_mul) with 1.
+// Each simdgroup (1 row) computes gate[row] and up[row] in one pass over x_cache,
+// applies silu(gate)*up inline, and writes the activation directly.
+// Saves one full x_cache preload (cols floats, 8KB for cols=2048) and one kernel.
+// Grid: (ceil(rows/8)*256, routes, 1), TG (256,1,1), shmem = cols*4 bytes.
+kernel void moe_batched_gemm_q4_indexed_v2t_gu(
+    device const uchar* w_all         [[buffer(0)]],
+    device const uint*  route_ids     [[buffer(1)]],
+    device const float* x             [[buffer(2)]],
+    device       float* y_act         [[buffer(3)]],  // output: silu(gate) * up
+    constant     ulong& gate_offset   [[buffer(4)]],
+    constant     ulong& up_offset     [[buffer(5)]],
+    constant     uint&  routes        [[buffer(6)]],
+    constant     uint&  rows          [[buffer(7)]],
+    constant     uint&  cols          [[buffer(8)]],
+    threadgroup  float* x_cache       [[threadgroup(0)]],
+    uint2               tid2          [[thread_position_in_threadgroup]],
+    uint2               tgp           [[threadgroup_position_in_grid]],
+    uint                simd_lane     [[thread_index_in_simdgroup]],
+    uint                simd_id       [[simdgroup_index_in_threadgroup]])
+{
+    uint tid = tid2.x;
+    for (uint i = tid; i < cols; i += 256u) {
+        x_cache[i] = x[(uint64_t)i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint base_row = tgp.x * 8u + simd_id;
+    uint route    = tgp.y;
+    if (route >= routes || base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 256u;
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 144ul;
+
+    uint64_t gate_row_off = gate_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t up_row_off   = up_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+
+    float gate_partial = 0.0f, gate_corr = 0.0f;
+    float up_partial   = 0.0f, up_corr   = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo_g = gate_row_off + (uint64_t)b * 144ul;
+        uint64_t bo_u = up_row_off   + (uint64_t)b * 144ul;
+
+        float dg    = fp16_at(w_all, bo_g);
+        float dming = fp16_at(w_all, bo_g + 2ul);
+        float du    = fp16_at(w_all, bo_u);
+        float dminu = fp16_at(w_all, bo_u + 2ul);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uchar sg, mg, su, mu;
+            if (k < 4u) {
+                sg = w_all[bo_g + 4u + k]      & 0x3F;
+                mg = w_all[bo_g + 4u + 4u + k] & 0x3F;
+                su = w_all[bo_u + 4u + k]      & 0x3F;
+                mu = w_all[bo_u + 4u + 4u + k] & 0x3F;
+            } else {
+                uint j = k - 4u;
+                sg = (w_all[bo_g + 4u + 8u + j] & 0x0F) | ((w_all[bo_g + 4u + j] >> 6) << 4);
+                mg = (w_all[bo_g + 4u + 8u + j] >> 4)   | ((w_all[bo_g + 4u + 4u + j] >> 6) << 4);
+                su = (w_all[bo_u + 4u + 8u + j] & 0x0F) | ((w_all[bo_u + 4u + j] >> 6) << 4);
+                mu = (w_all[bo_u + 4u + 8u + j] >> 4)   | ((w_all[bo_u + 4u + 4u + j] >> 6) << 4);
+            }
+
+            uint elem = k * 32u + simd_lane;
+            uint pair = k >> 1u;
+            uchar qg = w_all[bo_g + 16ul + (uint64_t)pair * 32ul + (uint64_t)simd_lane];
+            uchar qu = w_all[bo_u + 16ul + (uint64_t)pair * 32ul + (uint64_t)simd_lane];
+            uint nibg = (k & 1u) ? ((uint)(qg >> 4) & 0x0Fu) : ((uint)qg & 0x0Fu);
+            uint nibu = (k & 1u) ? ((uint)(qu >> 4) & 0x0Fu) : ((uint)qu & 0x0Fu);
+
+            float xi = x_cache[(uint64_t)b * 256ul + (uint64_t)elem];
+
+            gate_partial += dg    * (float)sg * (float)nibg * xi;
+            gate_corr    += dming * (float)mg * xi;
+            up_partial   += du    * (float)su * (float)nibu * xi;
+            up_corr      += dminu * (float)mu * xi;
+        }
+    }
+
+    float gate_val = simd_sum(gate_partial) - simd_sum(gate_corr);
+    float up_val   = simd_sum(up_partial)   - simd_sum(up_corr);
+
+    if (simd_lane == 0u) {
+        float silu = gate_val / (1.0f + exp(-gate_val));
+        y_act[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = silu * up_val;
+    }
+}
+
 kernel void moe_batched_gemm_q8_0(
     device const uchar* w_q8   [[buffer(0)]],   // (routes, rows, cols) Q8_0
     device const float* x      [[buffer(1)]],   // (routes, cols)
