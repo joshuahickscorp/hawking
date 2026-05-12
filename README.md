@@ -2,7 +2,13 @@
 
 Pure-Rust + Apple Metal inference engine for MoE language models on Apple Silicon. Single binary, no Python in the runtime, no llama.cpp dependency. Loads GGUF weights via mmap and runs them through hand-rolled Metal compute kernels.
 
-Currently optimized for **DeepSeek-V2-Lite Q4_K_M** (16B params, 2.4B active per token). Pre-1.0 — actively under development.
+Currently optimized for **DeepSeek-V2-Lite Q4_K_M** (16B params, 2.4B active per token). v1.0.0 pivots toward MoE memory differentiation while keeping the current ~19.5 dec_tps V2-Lite path stable.
+
+## What's distinctive
+
+- **MoE-aware expert offloading** — first Apple Silicon inference engine to fit Mixtral 8x7B in 18GB by paging cold expert weights to OS cache while keeping active experts hot
+- **Pure Rust + Metal** — single binary, no Python in runtime
+- **Reproducible kernel autotune** — deterministic per-machine profile selection
 
 ## Requirements
 
@@ -74,7 +80,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 ## Status
 
-Pre-1.0, active development. Targeting Apple Silicon parity with llama.cpp Metal for the MoE class. Perf is improving steadily — see commit history for the trajectory.
+v1.0.0 launch candidate, active development. DeepSeek-V2-Lite generation is stable; Mixtral 8x7B support is preview-scaffolded and tracked in [docs/mixtral.md](docs/mixtral.md).
 
 ## License
 

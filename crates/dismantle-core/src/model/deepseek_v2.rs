@@ -439,6 +439,11 @@ impl DeepSeekV2 {
 
 impl Engine for DeepSeekV2 {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
+        if config.residual_dtype == crate::engine::ResidualDtype::F16 {
+            return Err(Error::Model(
+                "residual_dtype=f16 is not supported in this build; F32 only".into(),
+            ));
+        }
         let gguf = GgufFile::open(weights)?;
         let cfg = DeepSeekConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("deepseek-v2-lite").to_string();
