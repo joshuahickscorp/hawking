@@ -842,6 +842,11 @@ impl Engine for DeepSeekV2 {
                     "--speculate exact-shared currently requires temperature=0".into(),
                 ));
             }
+            if req.sampling.repetition_penalty != 1.0 {
+                return Err(Error::Model(
+                    "--speculate exact-shared currently requires repetition_penalty=1.0".into(),
+                ));
+            }
             if !matches!(self.verify_window, 4 | 8 | 16) {
                 return Err(Error::Model(format!(
                     "--verify-window must be 4, 8, or 16 for exact-shared; got {}",
@@ -950,47 +955,35 @@ impl Engine for DeepSeekV2 {
                 let mut tmp_last = last_id;
                 let draft_t0 = Instant::now();
                 for k in 0..actual_k {
-                    let mut draft_logits = self.forward_token_shared_only(tmp_last, pos + k)?;
-                    let draft_id = self.sampler.sample(&mut draft_logits, &req.sampling);
+                    let draft_id = self.forward_token_shared_only_argmax(tmp_last, pos + k)?;
                     draft_ids.push(draft_id);
                     tmp_last = draft_id;
                 }
                 let draft_ms = draft_t0.elapsed().as_secs_f64() * 1000.0;
 
-                // Rollback KV: draft only touched CPU KV, GPU KV is unchanged.
+                // Rollback KV: draft used future slots as scratch; verifier overwrites them.
                 self.kv.seq_len = draft_start_seq;
 
-                // --- VERIFY: actual_k + 1 full model forward passes ---
+                // --- VERIFY: stop at the first mismatch ---
                 let verify_t0 = Instant::now();
-                let mut verify_logits: Vec<Vec<f32>> = Vec::with_capacity(actual_k + 1);
                 tmp_last = last_id;
-                for k in 0..=actual_k {
-                    let logits = self.forward_token(tmp_last, pos + k)?;
-                    verify_logits.push(logits);
-                    if k < actual_k {
-                        tmp_last = draft_ids[k]; // feed draft tokens through verify context
-                    }
-                }
+                let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
+                let verify_result =
+                    crate::speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
+                        let id = self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
+                        if id == draft_ids[k] {
+                            tmp_last = draft_ids[k]; // feed draft tokens through verify context
+                        }
+                        Ok(id)
+                    })?;
+                let first_reject = verify_result.accepted_count;
+                let bonus_id = match verify_result.first_divergent_token {
+                    Some(id) => id,
+                    None => self.forward_token_argmax(tmp_last, pos + actual_k, use_profiled_greedy)?,
+                };
                 let verify_ms = verify_t0.elapsed().as_secs_f64() * 1000.0;
 
-                // --- ACCEPT / REJECT (greedy) ---
-                let argmax_f = |v: &[f32]| -> u32 {
-                    v.iter().enumerate()
-                        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Less))
-                        .map(|(i, _)| i as u32)
-                        .unwrap_or(0)
-                };
-                let mut first_reject = actual_k; // all accepted by default
-                for k in 0..actual_k {
-                    if argmax_f(&verify_logits[k]) != draft_ids[k] {
-                        first_reject = k;
-                        break;
-                    }
-                }
-
                 // Rollback KV to the correct accepted length.
-                // verify ran K+1 forward passes → kv.seq_len = draft_start_seq + actual_k + 1
-                // but we only accept first_reject + 1 tokens.
                 self.kv.seq_len = draft_start_seq + first_reject + 1;
 
                 stats.draft_accepted += first_reject;
@@ -1007,11 +1000,12 @@ impl Engine for DeepSeekV2 {
                         reason = StopReason::Eos;
                         break 'spec_loop;
                     }
-                    if produced >= req.max_new_tokens { break 'spec_loop; }
+                    if produced >= req.max_new_tokens {
+                        break 'spec_loop;
+                    }
                 }
 
                 // --- EMIT correction / bonus token ---
-                let bonus_id = argmax_f(&verify_logits[first_reject]);
                 let text = self.tokenizer.decode_one(bonus_id).unwrap_or_default();
                 sink(StreamEvent::Token { id: bonus_id, text });
                 self.sampler.record(bonus_id);
@@ -1073,7 +1067,6 @@ impl Engine for DeepSeekV2 {
                 last_id = next_id;
             }
         }
-
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
         stats.dispatch_samples = self
@@ -1104,6 +1097,26 @@ impl Engine for DeepSeekV2 {
         "deepseek2"
     }
 
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
+    }
+
+    fn forward_tokens_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        DeepSeekV2::forward_tokens_batched(self, tokens, positions)
+    }
+
     fn forward_tokens_for_test(
         &mut self,
         tokens: &[u32],
@@ -1125,7 +1138,7 @@ impl Engine for DeepSeekV2 {
         tokens: &[u32],
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
-        self.forward_tokens_batched(tokens, positions)
+        DeepSeekV2::forward_tokens_batched(self, tokens, positions)
     }
 
     fn reset_kv_for_test(&mut self) {
@@ -1162,6 +1175,195 @@ impl DeepSeekV2 {
             && self.logits_buf.is_some()
             && self.token_buf.is_some()
             && self.layers.iter().all(Self::layer_has_tcb_attention)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn shared_only_gpu_argmax_available(&self) -> bool {
+        self.greedy_gpu_argmax_available()
+            && !self.mla_c_kv_gpu.is_empty()
+            && !self.mla_k_pe_gpu.is_empty()
+            && self.layers.iter().all(|layer| match &layer.mode {
+                LayerMode::Dense { .. } => {
+                    layer.pinned.dense_gate_w.is_some()
+                        && layer.pinned.dense_up_w.is_some()
+                        && layer.pinned.dense_down_w.is_some()
+                }
+                LayerMode::MoE { shared_fused, .. } => shared_fused
+                    .as_ref()
+                    .map(|s| {
+                        s.gate_w.dtype == GgmlType::Q4_K
+                            && s.up_w.dtype == GgmlType::Q4_K
+                            && matches!(s.down_w.dtype, GgmlType::Q6_K | GgmlType::Q4_K)
+                    })
+                    .unwrap_or(false),
+            })
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_shared_only_ffn_tcb(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        li: usize,
+        arena: &DecodeArena,
+        model_buf: &PinnedBuffer,
+        q4k_schedule: &str,
+    ) -> Result<bool> {
+        if self.encode_dense_ffn_tcb(tcb, li, arena)? {
+            return Ok(true);
+        }
+
+        let LayerMode::MoE { shared_fused, .. } = &self.layers[li].mode else {
+            return Ok(false);
+        };
+        let Some(shared) = shared_fused else {
+            return Ok(false);
+        };
+        if shared.gate_w.dtype != GgmlType::Q4_K
+            || shared.up_w.dtype != GgmlType::Q4_K
+            || !matches!(shared.down_w.dtype, GgmlType::Q6_K | GgmlType::Q4_K)
+        {
+            return Ok(false);
+        }
+
+        let shared_mid = self.config.n_shared_experts * self.config.moe_intermediate;
+        let shared_down_kernel = match shared.down_w.dtype {
+            GgmlType::Q6_K => "moe_batched_gemm_q6_k_indexed",
+            GgmlType::Q4_K => FfnMoeSetup::q4k_indexed_kernel(q4k_schedule),
+            _ => unreachable!("dtype checked above"),
+        };
+
+        crate::kernels::encode_moe_shared_only_indexed_tcb_with_scratch(
+            tcb,
+            model_buf,
+            &arena.shared_route_ids_buf,
+            shared.gate_w.offset,
+            shared.up_w.offset,
+            shared.down_w.offset,
+            self.config.hidden,
+            shared_mid,
+            q4k_schedule,
+            shared_down_kernel,
+            &arena.x_norm_buf,
+            &arena.ffn_out_buf,
+            &arena.moe_shared_gate_out_buf,
+            &arena.moe_shared_up_out_buf,
+            &arena.moe_shared_act_buf,
+        )?;
+        Ok(true)
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_shared_only_gpu_argmax(&mut self, token: u32, pos: usize) -> Result<u32> {
+        let h = self.config.hidden;
+        let eps = self.config.rms_norm_eps;
+        let n_layers = self.config.n_layers;
+        let kv_lora_rank = self.config.kv_lora_rank;
+        let qk_rope_head_dim = self.config.qk_rope_head_dim;
+
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model("kv cache full".into()));
+        }
+
+        if !self.mla_kv_gpu_synced && self.kv.seq_len > 0 {
+            for li in 0..n_layers {
+                MetalContext::write_buffer_bytes(
+                    &self.mla_c_kv_gpu[li],
+                    bytemuck::cast_slice(&self.mla_c_kv[li][..self.kv.seq_len * kv_lora_rank]),
+                );
+                MetalContext::write_buffer_bytes(
+                    &self.mla_k_pe_gpu[li],
+                    bytemuck::cast_slice(&self.mla_k_pe[li][..self.kv.seq_len * qk_rope_head_dim]),
+                );
+            }
+            self.mla_kv_gpu_synced = true;
+        }
+
+        let seq_slot = self.kv.seq_len;
+        let seq_len = seq_slot + 1;
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let arena = self.decode_arena.as_ref().unwrap();
+        let model_buf = self.weights_mmap_buf.as_ref().unwrap();
+        let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+        let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
+        let logits_buf = self.logits_buf.as_ref().unwrap();
+        let tok_buf = self.token_buf.as_ref().unwrap();
+        let q4k_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+            .unwrap_or("scalar");
+        let use_simdmat = self
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
+            .unwrap_or(false);
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+
+        for li in 0..n_layers {
+            crate::metal::set_current_layer(Some(li as u32));
+            let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                .ok_or_else(|| Error::Model(format!("shared-only: l{li} kv_b_proj not pinned")))?;
+            let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                .ok_or_else(|| Error::Model(format!("shared-only: l{li} o_proj not pinned")))?;
+            let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+            let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+            let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+
+            self.encode_attention_phase1_into_tcb(&mut tcb, li, pos, Some(token), seq_slot)?;
+            self.encode_attention_phase2_tcb(&mut tcb, li, pos)?;
+            crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                &mut tcb,
+                arena,
+                kv_b_proj_buf,
+                o_proj_buf,
+                &self.mla_c_kv_gpu[li],
+                &self.mla_k_pe_gpu[li],
+                self.config.n_heads,
+                self.config.qk_nope_head_dim,
+                self.config.qk_rope_head_dim,
+                self.config.v_head_dim,
+                self.config.kv_lora_rank,
+                seq_len,
+                scale,
+                h,
+            )?;
+            crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.out, h)?;
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+            )?;
+            if !self.encode_shared_only_ffn_tcb(
+                &mut tcb, li, arena, model_buf, q4k_schedule,
+            )? {
+                return Err(Error::Model(format!(
+                    "shared-only GPU path could not encode layer {li}"
+                )));
+            }
+        }
+
+        crate::metal::set_current_layer(None);
+        if n_layers > 0 {
+            crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
+        }
+        crate::kernels::rmsnorm_metal_buf_tcb(
+            &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+        )?;
+        if use_simdmat {
+            crate::kernels::gemv_f16_simdmat_tcb(
+                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
+            )?;
+        } else {
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
+            )?;
+        }
+        crate::kernels::sample_argmax_f32_tcb(
+            &mut tcb, logits_buf, tok_buf, self.config.vocab_size,
+        )?;
+        tcb.commit_and_wait()?;
+
+        self.kv.seq_len += 1;
+        self.mla_kv_gpu_synced = true;
+
+        let tok_ptr = tok_buf.contents() as *const u32;
+        Ok(unsafe { *tok_ptr })
     }
 
     /// rmsnorm dispatcher: Metal when the context is present, CPU
@@ -1859,6 +2061,31 @@ impl DeepSeekV2 {
         self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
     }
 
+    fn forward_token_argmax(
+        &mut self,
+        token: u32,
+        pos: usize,
+        use_profiled_greedy: bool,
+    ) -> Result<u32> {
+        if use_profiled_greedy {
+            if let Some(next) = self.forward_token_greedy(token, pos)? {
+                return Ok(next);
+            }
+        }
+        let logits = self.forward_token(token, pos)?;
+        Ok(crate::kernels::argmax_f32(&logits))
+    }
+
+    fn forward_token_shared_only_argmax(&mut self, token: u32, pos: usize) -> Result<u32> {
+        #[cfg(target_os = "macos")]
+        if self.shared_only_gpu_argmax_available() {
+            return self.forward_token_shared_only_gpu_argmax(token, pos);
+        }
+
+        let logits = self.forward_token_shared_only(token, pos)?;
+        Ok(crate::kernels::argmax_f32(&logits))
+    }
+
     fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
         self.forward_token_final_norm_maybe_read(token, pos, true)?
             .ok_or_else(|| Error::Model("forward_token_final_norm: final norm not read back".into()))
@@ -2071,9 +2298,13 @@ impl DeepSeekV2 {
                 // Metal guarantees sequential encoder execution within one command buffer —
                 // writes in encoder N are visible to encoder N+1 without explicit barriers.
                 // This eliminates 26 commit+wait round-trips (saves ~4ms/token at 162μs/commit).
-                // ExactShared spec-decode needs per-layer GPU KV readback, so we skip the
-                // optimisation for that mode and fall back to per-layer TCBs.
-                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared;
+                // ExactShared originally needed CPU KV mirrors for CPU draft; with
+                // GPU shared-only draft, verifier can use the single-TCB fast path.
+                let use_gpu_shared_draft =
+                    self.speculate_mode == crate::SpeculateMode::ExactShared
+                        && self.shared_only_gpu_argmax_available();
+                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
+                    || use_gpu_shared_draft;
 
                 let t0 = std::time::Instant::now();
                 {

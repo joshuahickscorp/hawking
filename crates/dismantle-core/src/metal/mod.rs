@@ -198,6 +198,7 @@ mod imp {
             "gemv_f32_attn" => "gemv_f32_attn",
             "mla_decode_kernel" => "mla_decode_kernel",
             "mla_decode_kernel_batched" => "mla_decode_kernel_batched",
+            "mla_decode_kernel_batched_slots" => "mla_decode_kernel_batched_slots",
             "moe_topk_gate" => "moe_topk_gate",
             "moe_gather_combine" => "moe_gather_combine",
             "moe_batched_gemm_q4" => "moe_batched_gemm_q4",

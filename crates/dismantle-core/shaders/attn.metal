@@ -308,6 +308,98 @@ kernel void mla_decode_kernel_batched(
     }
 }
 
+kernel void mla_decode_kernel_batched_slots(
+    device const float* q_batch     [[buffer(0)]],
+    device const float* c_kv        [[buffer(1)]],
+    device const float* k_pe        [[buffer(2)]],
+    device const float* kv_b_proj   [[buffer(3)]],
+    device       float* out_batch   [[buffer(4)]],
+    device const uint*  slot_offsets        [[buffer(5)]],
+    device const uint*  seq_lens            [[buffer(6)]],
+    constant     uint&  n_heads             [[buffer(7)]],
+    constant     uint&  qk_nope_head_dim    [[buffer(8)]],
+    constant     uint&  qk_rope_head_dim    [[buffer(9)]],
+    constant     uint&  v_head_dim          [[buffer(10)]],
+    constant     uint&  kv_lora_rank        [[buffer(11)]],
+    constant     float& scale               [[buffer(12)]],
+    threadgroup  float* q_nope_proj         [[threadgroup(0)]],
+    threadgroup  float* scores              [[threadgroup(1)]],
+    threadgroup  float* c_kv_wt             [[threadgroup(2)]],
+    uint2               gid     [[threadgroup_position_in_grid]],
+    uint2               tid_v   [[thread_position_in_threadgroup]],
+    uint2               tg_size_v [[threads_per_threadgroup]])
+{
+    const uint head = gid.x;
+    const uint m    = gid.y;
+
+    if (head >= n_heads) return;
+
+    const uint seq_len_m = seq_lens[m];
+    device float* out_m = out_batch + ((uint64_t)m * n_heads + head) * v_head_dim;
+    if (seq_len_m == 0u) {
+        for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) out_m[vi] = 0.0f;
+        return;
+    }
+
+    const uint slot_base = slot_offsets[m];
+    const uint q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+
+    device const float* q_base = q_batch + (uint64_t)m * n_heads * q_head_dim;
+    device const float* q_nope = q_base + (uint64_t)head * q_head_dim;
+    device const float* q_rope = q_nope + qk_nope_head_dim;
+
+    const uint kv_b_per_head = (qk_nope_head_dim + v_head_dim) * kv_lora_rank;
+    device const float* w_uk = kv_b_proj + (uint64_t)head * kv_b_per_head;
+    device const float* w_uv = w_uk + (uint64_t)qk_nope_head_dim * kv_lora_rank;
+
+    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
+        float acc = 0.0f;
+        for (uint i = 0; i < qk_nope_head_dim; i++) {
+            acc += w_uk[i * kv_lora_rank + r] * q_nope[i];
+        }
+        q_nope_proj[r] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint t = tid_v.x; t < seq_len_m; t += tg_size_v.x) {
+        const uint kv_index = slot_base + t;
+        device const float* c_kv_t = c_kv + (uint64_t)kv_index * kv_lora_rank;
+        device const float* k_pe_t = k_pe + (uint64_t)kv_index * qk_rope_head_dim;
+
+        float s = 0.0f;
+        for (uint r = 0; r < kv_lora_rank; r++)      s += q_nope_proj[r] * c_kv_t[r];
+        for (uint r = 0; r < qk_rope_head_dim; r++)  s += q_rope[r] * k_pe_t[r];
+        scores[t] = s * scale;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (tid_v.x == 0) {
+        float mx = -INFINITY;
+        for (uint t = 0; t < seq_len_m; t++) if (scores[t] > mx) mx = scores[t];
+        float sum = 0.0f;
+        for (uint t = 0; t < seq_len_m; t++) { scores[t] = exp(scores[t] - mx); sum += scores[t]; }
+        float inv = 1.0f / sum;
+        for (uint t = 0; t < seq_len_m; t++) scores[t] *= inv;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
+        float acc = 0.0f;
+        for (uint t = 0; t < seq_len_m; t++) {
+            acc += scores[t] * c_kv[(uint64_t)(slot_base + t) * kv_lora_rank + r];
+        }
+        c_kv_wt[r] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) {
+        device const float* w_uv_row = w_uv + (uint64_t)vi * kv_lora_rank;
+        float acc = 0.0f;
+        for (uint r = 0; r < kv_lora_rank; r++) acc += w_uv_row[r] * c_kv_wt[r];
+        out_m[vi] = acc;
+    }
+}
+
 // G1.3 — fp32 GEMV for attention's o_proj.
 // One workgroup per output row; threadgroup reduction; same shape as
 // gemv_f16 but with f32 weights (lazy-dequant scratch from the host).

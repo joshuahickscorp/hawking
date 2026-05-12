@@ -303,6 +303,11 @@ fn arena_buffers_have_correct_sizes() {
         hidden,
         512,  // max_seq
         n_routed_experts,
+        6,     // top_k_routed
+        1408,  // moe_intermediate
+        2,     // n_shared_experts
+        10944, // ffn_intermediate
+        1536,  // q_lora_rank
     );
 
     let f32_bytes = std::mem::size_of::<f32>();
@@ -335,7 +340,7 @@ fn arena_write_x_read_x_roundtrip() {
     let hidden = 2048;
 
     let arena = DecodeArena::new(
-        &ctx, 16, 128, 64, 128, 512, hidden, 512, 64,
+        &ctx, 16, 128, 64, 128, 512, hidden, 512, 64, 6, 1408, 2, 10944, 1536,
     );
 
     let data: Vec<f32> = linspace(hidden, -3.0, 3.0);
