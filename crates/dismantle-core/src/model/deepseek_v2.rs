@@ -316,8 +316,9 @@ impl FfnMoeSetup {
         match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            // v2t_gu fuses gate+up into one kernel; single-matrix GEMVs (down) use v2t
-            "v2t" | "v2t_gu" => "moe_batched_gemm_q4_indexed_v2t",
+            // v2t_gu / v2t_gu_serial fuse gate+up into one kernel; single-matrix
+            // GEMVs (down) use v2t
+            "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -325,7 +326,7 @@ impl FfnMoeSetup {
     fn routed_down_kernel(&self, q4k_schedule: &str) -> &'static str {
         match self.routed_down_dtype {
             GgmlType::Q8_0 => match q4k_schedule {
-                "v2t" | "v2t_gu" => "moe_batched_gemm_q8_0_indexed_v2t",
+                "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q8_0_indexed_v2t",
                 _ => "moe_batched_gemm_q8_0_indexed",
             },
             GgmlType::Q5_0 => "moe_batched_gemm_q5_0_indexed",
@@ -2066,17 +2067,36 @@ impl DeepSeekV2 {
                 let seq_slot = self.kv.seq_len;
                 let seq_len = seq_slot + 1;
 
-                for li in 0..n_layers {
-                    crate::metal::set_current_layer(Some(li as u32));
+                // Pillar 2: encode ALL 27 layers into a SINGLE command buffer.
+                // Metal guarantees sequential encoder execution within one command buffer —
+                // writes in encoder N are visible to encoder N+1 without explicit barriers.
+                // This eliminates 26 commit+wait round-trips (saves ~4ms/token at 162μs/commit).
+                // ExactShared spec-decode needs per-layer GPU KV readback, so we skip the
+                // optimisation for that mode and fall back to per-layer TCBs.
+                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared;
 
-                    let moe_setup = self.ffn_moe_check(li)?;
-                    let mut dense_handled = false;
+                let t0 = std::time::Instant::now();
+                {
+                    let ctx = self.metal_ctx.as_ref().unwrap();
+                    let arena = self.decode_arena.as_ref().unwrap();
+                    let model_buf = self.weights_mmap_buf.as_ref().unwrap();
+                    let q4k_schedule = self.kernel_profile.as_ref()
+                        .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+                        .unwrap_or("scalar");
 
-                    let t0 = std::time::Instant::now();
-                    {
-                        let ctx = self.metal_ctx.as_ref().unwrap();
-                        let arena = self.decode_arena.as_ref().unwrap();
-                        let model_buf = self.weights_mmap_buf.as_ref().unwrap();
+                    // Create the command buffer before the loop when using single-TCB.
+                    let mut global_tcb = if use_single_tcb {
+                        Some(crate::metal::TokenCommandBuffer::new(ctx))
+                    } else {
+                        None
+                    };
+
+                    for li in 0..n_layers {
+                        crate::metal::set_current_layer(Some(li as u32));
+
+                        let moe_setup = self.ffn_moe_check(li)?;
+
+                        // Borrow the single global TCB or create a per-layer one.
                         let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
                             .ok_or_else(|| crate::Error::Model(format!("merged: l{li} kv_b_proj not pinned")))?;
                         let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
@@ -2084,102 +2104,125 @@ impl DeepSeekV2 {
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
                         let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
-                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        // Phase 1 + kv_append_f32 (writes GPU KV at seq_slot)
-                        self.encode_attention_phase1_into_tcb(&mut tcb, li, pos, Some(token), seq_slot)?;
-                        // Phase 2: q_b_proj + rope_q
-                        self.encode_attention_phase2_tcb(&mut tcb, li, pos)?;
-                        // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
-                        crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                            &mut tcb, arena, kv_b_proj_buf, o_proj_buf,
-                            &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
-                            self.config.n_heads, self.config.qk_nope_head_dim,
-                            self.config.qk_rope_head_dim, self.config.v_head_dim,
-                            self.config.kv_lora_rank, seq_len, scale, h,
-                        )?;
-                        crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.out, h)?;
-                        crate::kernels::rmsnorm_metal_buf_tcb(
-                            &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
-                        )?;
-                        if let Some(ref setup) = moe_setup {
-                            let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
-                            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
-                                &mut tcb, gate_buf,
-                                self.config.n_routed_experts, self.config.hidden,
-                                &arena.x_norm_buf, &arena.moe_logits_buf,
+
+                        // Encode all kernels for this layer into the active TCB.
+                        let encode_layer = |tcb: &mut crate::metal::TokenCommandBuffer<'_>| -> Result<bool> {
+                            // Phase 1 + kv_append_f32 (writes GPU KV at seq_slot)
+                            self.encode_attention_phase1_into_tcb(tcb, li, pos, Some(token), seq_slot)?;
+                            // Phase 2: q_b_proj + rope_q
+                            self.encode_attention_phase2_tcb(tcb, li, pos)?;
+                            // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
+                            crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                                tcb, arena, kv_b_proj_buf, o_proj_buf,
+                                &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
+                                self.config.n_heads, self.config.qk_nope_head_dim,
+                                self.config.qk_rope_head_dim, self.config.v_head_dim,
+                                self.config.kv_lora_rank, seq_len, scale, h,
                             )?;
-                            crate::kernels::moe_topk_gate_tcb(
-                                &mut tcb,
-                                &arena.moe_logits_buf,
-                                &arena.moe_route_ids_buf,
-                                &arena.moe_route_weights_buf,
-                                self.config.n_routed_experts,
-                                self.config.top_k_routed,
+                            crate::kernels::add_inplace_metal_tcb(tcb, &arena.x_buf, &arena.out, h)?;
+                            crate::kernels::rmsnorm_metal_buf_tcb(
+                                tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
                             )?;
-                            let q4k_schedule = self.kernel_profile.as_ref()
-                                .map(|p| p.selected.gemm_q4_k_schedule.as_str())
-                                .unwrap_or("scalar");
-                            crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
-                                &mut tcb,
-                                model_buf,
-                                setup.routed_gate_off,
-                                setup.routed_up_off,
-                                setup.routed_down_off,
-                                &arena.moe_route_ids_buf,
-                                &arena.moe_route_weights_buf,
-                                self.config.top_k_routed,
-                                &arena.shared_route_ids_buf,
-                                setup.shared_gate_off,
-                                setup.shared_up_off,
-                                setup.shared_down_off,
-                                self.config.hidden,
-                                self.config.moe_intermediate,
-                                setup.shared_mid,
-                                q4k_schedule,
-                                setup.routed_down_kernel(q4k_schedule),
-                                setup.shared_down_kernel(q4k_schedule),
-                                &arena.x_norm_buf,
-                                &arena.ffn_out_buf,
-                                &arena.moe_routed_gate_out_buf,
-                                &arena.moe_routed_up_out_buf,
-                                &arena.moe_routed_act_buf,
-                                &arena.moe_routed_out_buf,
-                                &arena.moe_shared_gate_out_buf,
-                                &arena.moe_shared_up_out_buf,
-                                &arena.moe_shared_act_buf,
-                                &arena.moe_shared_out_buf,
-                            )?;
+                            if let Some(ref setup) = moe_setup {
+                                let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                                crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                                    tcb, gate_buf,
+                                    self.config.n_routed_experts, self.config.hidden,
+                                    &arena.x_norm_buf, &arena.moe_logits_buf,
+                                )?;
+                                crate::kernels::moe_topk_gate_tcb(
+                                    tcb,
+                                    &arena.moe_logits_buf,
+                                    &arena.moe_route_ids_buf,
+                                    &arena.moe_route_weights_buf,
+                                    self.config.n_routed_experts,
+                                    self.config.top_k_routed,
+                                )?;
+                                crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                                    tcb,
+                                    model_buf,
+                                    setup.routed_gate_off,
+                                    setup.routed_up_off,
+                                    setup.routed_down_off,
+                                    &arena.moe_route_ids_buf,
+                                    &arena.moe_route_weights_buf,
+                                    self.config.top_k_routed,
+                                    &arena.shared_route_ids_buf,
+                                    setup.shared_gate_off,
+                                    setup.shared_up_off,
+                                    setup.shared_down_off,
+                                    self.config.hidden,
+                                    self.config.moe_intermediate,
+                                    setup.shared_mid,
+                                    q4k_schedule,
+                                    setup.routed_down_kernel(q4k_schedule),
+                                    setup.shared_down_kernel(q4k_schedule),
+                                    &arena.x_norm_buf,
+                                    &arena.ffn_out_buf,
+                                    &arena.moe_routed_gate_out_buf,
+                                    &arena.moe_routed_up_out_buf,
+                                    &arena.moe_routed_act_buf,
+                                    &arena.moe_routed_out_buf,
+                                    &arena.moe_shared_gate_out_buf,
+                                    &arena.moe_shared_up_out_buf,
+                                    &arena.moe_shared_act_buf,
+                                    &arena.moe_shared_out_buf,
+                                )?;
+                                Ok(true)
+                            } else {
+                                let handled = self.encode_dense_ffn_tcb(tcb, li, arena)?;
+                                Ok(handled)
+                            }
+                        };
+
+                        let dense_handled: bool;
+                        if use_single_tcb {
+                            dense_handled = encode_layer(global_tcb.as_mut().unwrap())?;
                         } else {
-                            dense_handled = self.encode_dense_ffn_tcb(&mut tcb, li, arena)?;
+                            // Per-layer fallback (ExactShared spec-decode path).
+                            let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                            dense_handled = encode_layer(&mut tcb)?;
+                            tcb.commit_and_wait()?;
+
+                            // Keep CPU KV mirrors in sync after each layer commit.
+                            let off_c = seq_slot * kv_lora_rank;
+                            let off_pe = seq_slot * qk_rope_head_dim;
+                            unsafe {
+                                let ptr_c = (self.mla_c_kv_gpu[li].contents() as *const f32).add(off_c);
+                                let ptr_pe = (self.mla_k_pe_gpu[li].contents() as *const f32).add(off_pe);
+                                self.mla_c_kv[li][off_c..off_c + kv_lora_rank]
+                                    .copy_from_slice(std::slice::from_raw_parts(ptr_c, kv_lora_rank));
+                                self.mla_k_pe[li][off_pe..off_pe + qk_rope_head_dim]
+                                    .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
+                            }
                         }
+
+                        let ffn_handled = moe_setup.is_some() || dense_handled;
+                        if !ffn_handled {
+                            // CPU fallback FFN: only reachable when dense weights are not
+                            // yet pinned. Commit current state to GPU, handle on CPU, then
+                            // continue encoding (creates a fresh TCB for remaining layers).
+                            if use_single_tcb {
+                                if let Some(tcb) = global_tcb.take() {
+                                    tcb.commit_and_wait()?;
+                                }
+                            }
+                            let mut x_norm = vec![0.0f32; h];
+                            arena.read_x_norm(&mut x_norm);
+                            let ffn_out = self.ffn(li, &x_norm)?;
+                            arena.write_ffn_out(&ffn_out);
+                            if use_single_tcb {
+                                global_tcb = Some(crate::metal::TokenCommandBuffer::new(ctx));
+                            }
+                        }
+                    }
+
+                    // Commit the single command buffer covering all 27 layers.
+                    if let Some(tcb) = global_tcb.take() {
                         tcb.commit_and_wait()?;
                     }
-                    total_us += t0.elapsed().as_micros() as u64;
-
-                    // Keep CPU KV in sync so forward_token_shared_only (draft path) sees
-                    // correct KV. The new entry was written to GPU KV at seq_slot by
-                    // kv_append_f32; copy it back to the CPU mirrors now.
-                    if self.speculate_mode == crate::SpeculateMode::ExactShared {
-                        let off_c = seq_slot * kv_lora_rank;
-                        let off_pe = seq_slot * qk_rope_head_dim;
-                        unsafe {
-                            let ptr_c = (self.mla_c_kv_gpu[li].contents() as *const f32).add(off_c);
-                            let ptr_pe = (self.mla_k_pe_gpu[li].contents() as *const f32).add(off_pe);
-                            self.mla_c_kv[li][off_c..off_c + kv_lora_rank]
-                                .copy_from_slice(std::slice::from_raw_parts(ptr_c, kv_lora_rank));
-                            self.mla_k_pe[li][off_pe..off_pe + qk_rope_head_dim]
-                                .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
-                        }
-                    }
-
-                    let ffn_handled = moe_setup.is_some() || dense_handled;
-                    if !ffn_handled {
-                        let mut x_norm = vec![0.0f32; h];
-                        self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
-                        let ffn_out = self.ffn(li, &x_norm)?;
-                        self.decode_arena.as_ref().unwrap().write_ffn_out(&ffn_out);
-                    }
                 }
+                total_us += t0.elapsed().as_micros() as u64;
 
                 self.kv.seq_len += 1;
                 self.mla_kv_gpu_synced = true;
