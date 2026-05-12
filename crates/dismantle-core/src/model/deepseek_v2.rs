@@ -171,6 +171,11 @@ pub struct DeepSeekV2 {
     pub speculate_mode: SpeculateMode,
     pub verify_window: usize,
 
+    /// v1.2.0-9: Per-layer expert access stats + POSIX madvise offloading.
+    /// `Some` when `--max-routed-expert-ram-mb` is set. `None` on V2-Lite default
+    /// (all experts fit in RAM, no eviction needed).
+    pub expert_cache: Option<crate::model::expert_cache::ExpertCache>,
+
     /// Wedge 4 — Decode-arena: pre-allocated Metal buffers for the MLA
     /// attention hot path. Allocated once at load time; reused across all
     /// decode steps. Eliminates per-dispatch `new_buffer` overhead.
@@ -316,9 +321,9 @@ impl FfnMoeSetup {
         match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            // v2t_gu / v2t_gu_serial fuse gate+up into one kernel; single-matrix
-            // GEMVs (down) use v2t
-            "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q4_indexed_v2t",
+            // v2t_gu / v2t_gu_serial / v2t_gu_v2 fuse gate+up into one kernel;
+            // single-matrix GEMVs (down) use v2t
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         }
     }
@@ -326,7 +331,7 @@ impl FfnMoeSetup {
     fn routed_down_kernel(&self, q4k_schedule: &str) -> &'static str {
         match self.routed_down_dtype {
             GgmlType::Q8_0 => match q4k_schedule {
-                "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q8_0_indexed_v2t",
+                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q8_0_indexed_v2t",
                 _ => "moe_batched_gemm_q8_0_indexed",
             },
             GgmlType::Q5_0 => "moe_batched_gemm_q5_0_indexed",
@@ -740,6 +745,7 @@ impl Engine for DeepSeekV2 {
                         cfg.n_shared_experts,
                         cfg.ffn_intermediate,
                         cfg.q_lora_rank,
+                        cfg.n_layers.saturating_sub(cfg.first_k_dense_layers),
                     )
                 })
             } else {
@@ -798,6 +804,10 @@ impl Engine for DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let (logits_buf, token_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
 
+        // v1.2.0-9: save dimensions before cfg is moved into the struct literal.
+        let cfg_n_layers = cfg.n_layers;
+        let cfg_n_routed_experts = cfg.n_routed_experts;
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -828,6 +838,16 @@ impl Engine for DeepSeekV2 {
             final_norm_buf,
             logits_buf,
             token_buf,
+            // v1.2.0-9: allocate ExpertCache when --max-routed-expert-ram-mb is set.
+            // ExpertCache is always Some when the flag is present; madvise calls are
+            // no-ops until model_base_addr is attached (Mixtral only for v1.2.0).
+            expert_cache: config.max_routed_expert_ram_mb.map(|_| {
+                crate::model::expert_cache::ExpertCache::new(
+                    cfg_n_layers,
+                    cfg_n_routed_experts,
+                    256, // rolling window: 256 tokens
+                )
+            }),
         })
     }
 
@@ -1148,6 +1168,38 @@ impl Engine for DeepSeekV2 {
 
     fn reset_kv_for_test(&mut self) {
         self.reset_kv_state();
+    }
+
+    fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
+        let cache = self.expert_cache.as_ref()?;
+        let n_layers = self.config.n_layers;
+        let n_experts = self.config.n_routed_experts;
+        let first_dense = self.config.first_k_dense_layers;
+        let mut result: Vec<Vec<u64>> = (0..n_layers)
+            .map(|li| {
+                if li < first_dense {
+                    // Dense layers have no routed experts.
+                    vec![]
+                } else {
+                    let layer_stats = match cache.stats.get(li) {
+                        Some(s) => s,
+                        None => return vec![0u64; n_experts],
+                    };
+                    layer_stats
+                        .experts
+                        .iter()
+                        .map(|e| e.active_count())
+                        .collect()
+                }
+            })
+            .collect();
+        // Ensure all MoE layers have exactly n_experts entries.
+        for li in first_dense..n_layers {
+            if result[li].len() != n_experts {
+                result[li].resize(n_experts, 0);
+            }
+        }
+        Some(result)
     }
 }
 
@@ -2374,6 +2426,22 @@ impl DeepSeekV2 {
                                     self.config.n_routed_experts,
                                     self.config.top_k_routed,
                                 )?;
+                                // v1.2.0-9: snapshot route IDs into per-layer history
+                                // so expert access stats can be updated after the CB
+                                // completes. Without this, only the last layer's routes
+                                // are visible (the arena buffer is reused each layer).
+                                if self.expert_cache.is_some() {
+                                    let moe_li = li.saturating_sub(self.config.first_k_dense_layers);
+                                    let dst_off = (moe_li * self.config.top_k_routed
+                                        * std::mem::size_of::<u32>()) as u64;
+                                    let sz = (self.config.top_k_routed
+                                        * std::mem::size_of::<u32>()) as u64;
+                                    tcb.copy_buffer_bytes(
+                                        &arena.moe_route_ids_buf, 0,
+                                        &arena.route_history_buf, dst_off,
+                                        sz,
+                                    )?;
+                                }
                                 crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
                                     tcb,
                                     model_buf,
@@ -2456,6 +2524,32 @@ impl DeepSeekV2 {
                     // Commit the single command buffer covering all 27 layers.
                     if let Some(tcb) = global_tcb.take() {
                         tcb.commit_and_wait()?;
+                    }
+
+                    // v1.2.0-9: update expert access stats from route_history_buf.
+                    // Per-layer route IDs were blit-copied into route_history_buf
+                    // inside encode_layer (once per MoE layer). The CB has committed
+                    // by this point so the data is CPU-readable via shared memory.
+                    if let Some(cache) = self.expert_cache.as_ref() {
+                        let top_k = self.config.top_k_routed;
+                        let n_moe_li = arena.n_moe_layers;
+                        if top_k > 0 && n_moe_li > 0 {
+                            let ptr = arena.route_history_buf.contents() as *const u32;
+                            let history = unsafe {
+                                std::slice::from_raw_parts(ptr, n_moe_li * top_k)
+                            };
+                            let first_dense = self.config.first_k_dense_layers;
+                            for moe_li in 0..n_moe_li {
+                                for slot in 0..top_k {
+                                    let expert_id = history[moe_li * top_k + slot];
+                                    cache.note_access(
+                                        first_dense + moe_li,
+                                        expert_id,
+                                        pos as u64,
+                                    );
+                                }
+                            }
+                        }
                     }
                 }
                 total_us += t0.elapsed().as_micros() as u64;

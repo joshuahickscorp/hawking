@@ -541,6 +541,32 @@ mod imp {
             Ok(())
         }
 
+        /// Encode a GPU-side buffer copy into the pending command buffer.
+        ///
+        /// Uses a `MTLBlitCommandEncoder` — very cheap (~100 ns; a plain GPU
+        /// memcpy). Call once per MoE layer to snapshot route_ids into the
+        /// per-token route history buffer without breaking the single-CB design.
+        pub fn copy_buffer_bytes(
+            &mut self,
+            src: &metal::Buffer,
+            src_offset: u64,
+            dst: &metal::Buffer,
+            dst_offset: u64,
+            size: u64,
+        ) -> Result<()> {
+            if size == 0 {
+                return Ok(());
+            }
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let blit = cmd.new_blit_command_encoder();
+            blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
+            blit.end_encoding();
+            Ok(())
+        }
+
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
         pub fn commit_and_wait(mut self) -> Result<()> {
