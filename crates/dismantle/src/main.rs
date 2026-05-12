@@ -516,14 +516,29 @@ fn stats_main(
     println!("layers: {layers}");
     println!("routed_experts_per_layer: {experts}");
     println!("top_k_routed: {top_k}");
-    println!(
-        "expert_access_tracking: partial-tier no-op; V2-Lite route IDs remain inside the Metal arena"
-    );
-    if experts > 0 && layers > 0 {
-        println!("layer\texperts\ttop_k\tactive_count\tlast_active_pos");
-        for layer in 0..layers {
-            println!("{layer}\t{experts}\t{top_k}\tn/a\tn/a");
+
+    // Print per-layer per-expert access counts if the cache is active.
+    if let Some(counts) = engine.expert_access_counts() {
+        let total_accesses: u64 = counts.iter().flat_map(|l| l.iter()).sum();
+        println!("expert_tracking: active  total_accesses={total_accesses}");
+        println!("layer\texpert\taccess_count\t%_of_total");
+        for (li, layer) in counts.iter().enumerate() {
+            if layer.is_empty() {
+                continue;
+            }
+            for (eid, &count) in layer.iter().enumerate() {
+                let pct = if total_accesses > 0 {
+                    count as f64 / total_accesses as f64 * 100.0
+                } else {
+                    0.0
+                };
+                println!("{li}\t{eid}\t{count}\t{pct:.2}");
+            }
         }
+    } else {
+        println!(
+            "expert_tracking: disabled (pass --max-routed-expert-ram-mb to enable)"
+        );
     }
     Ok(())
 }

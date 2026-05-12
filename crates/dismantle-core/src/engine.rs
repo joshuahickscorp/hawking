@@ -276,4 +276,15 @@ pub trait Engine: Send + Sync {
     /// Phase A parity helper — reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}
+
+    /// v1.2.0-9: return per-layer per-expert access counts for the stats
+    /// subcommand. Returns `None` if the engine has no expert cache (dense
+    /// models, or when `--max-routed-expert-ram-mb` was not set).
+    ///
+    /// Layout: `result[layer_idx][expert_id] = access_count`.
+    /// `layer_idx` is the absolute layer index (0-based). Dense/non-MoE
+    /// layers are included as empty vecs.
+    fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
+        None
+    }
 }
