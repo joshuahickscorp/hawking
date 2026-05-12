@@ -389,6 +389,26 @@ impl Engine for QwenDense {
         &self.model_id
     }
 
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
+    }
+
+    fn forward_tokens_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
     fn forward_tokens_for_test(
         &mut self,
         tokens: &[u32],

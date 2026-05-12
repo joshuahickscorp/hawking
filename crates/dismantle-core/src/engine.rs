@@ -206,6 +206,35 @@ pub trait Engine: Send + Sync {
         "unknown"
     }
 
+    /// Continuous-batching helper: tokenize a request prompt without starting
+    /// generation. Engines that do not support server-side batching can keep
+    /// the default error and the server will fall back to `generate`.
+    fn encode_prompt_for_batch(&self, _prompt: &str) -> Result<Vec<u32>> {
+        Err(crate::Error::Unimplemented("encode_prompt_for_batch"))
+    }
+
+    /// Continuous-batching helper: decode one generated token for streaming.
+    fn decode_token_for_batch(&self, _token: u32) -> Result<String> {
+        Err(crate::Error::Unimplemented("decode_token_for_batch"))
+    }
+
+    /// Continuous-batching helper: model EOS token, if known.
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        None
+    }
+
+    /// Production batch-forward seam for one decode step across N active slots.
+    /// Current engines may implement this as a correctness-preserving loop;
+    /// the GPU-resident continuous-batch kernel replaces the internals later
+    /// without changing the server scheduler.
+    fn forward_tokens_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
     /// Phase 2 Wedge 2a — multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.
@@ -236,8 +265,7 @@ pub trait Engine: Send + Sync {
         tokens: &[u32],
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
-        // Default: delegate to sequential path (correct but not layer-first).
-        self.forward_tokens_for_test(tokens, positions)
+        self.forward_tokens_batched(tokens, positions)
     }
 
     /// Phase A parity helper — reset KV cache to empty so two forward passes
