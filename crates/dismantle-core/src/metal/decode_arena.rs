@@ -90,6 +90,13 @@ mod arena_imp {
         /// both the attention output delta and the FFN output delta before
         /// add_inplace_f16 accumulates them into wedge_f_x_f16.
         pub wedge_f_delta_f16: PinnedBuffer,
+        /// v1.2.0-9: Route ID history for expert access stats.
+        /// Layout: `route_history_buf[layer * top_k_routed + i]` = i-th routed expert id
+        /// for the given layer in the most recent token.  Written per-token by a
+        /// blit copy inside the TokenCommandBuffer; read by the CPU after commit.
+        /// Size: n_moe_layers × top_k_routed × sizeof(u32).
+        pub route_history_buf: PinnedBuffer,
+
         /// Cached sizes for bounds-checking at dispatch time.
         pub n_heads: usize,
         pub q_head_dim: usize,
@@ -104,6 +111,7 @@ mod arena_imp {
         pub shared_mid: usize,
         pub q_lora_rank: usize,
         pub kv_a_dim: usize,
+        pub n_moe_layers: usize,
     }
 
     impl DecodeArena {
@@ -122,6 +130,7 @@ mod arena_imp {
             n_shared_experts: usize,
             ffn_intermediate: usize,
             q_lora_rank: usize,
+            n_moe_layers: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
             let kv_a_dim = kv_lora_rank + qk_rope_head_dim;
@@ -163,6 +172,9 @@ mod arena_imp {
                 kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
                 q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
                 c_kv_normed_buf: ctx.new_buffer(kv_lora_rank * std::mem::size_of::<f32>()),
+                route_history_buf: ctx.new_buffer(
+                    n_moe_layers.max(1) * top_k_sz * std::mem::size_of::<u32>()
+                ),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
@@ -176,6 +188,7 @@ mod arena_imp {
                 shared_mid,
                 q_lora_rank,
                 kv_a_dim,
+                n_moe_layers,
             }
         }
 
