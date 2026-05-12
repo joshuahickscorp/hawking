@@ -14,6 +14,9 @@ use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
 
+const WEIGHT_CHUNK_STRIDE: usize = 128 * 1024 * 1024;
+const WEIGHT_CHUNK_OVERLAP: usize = 64 * 1024 * 1024;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MixtralConfig {
     pub n_layers: usize,
@@ -111,6 +114,8 @@ pub struct TensorRef {
     pub n_elems: usize,
     pub rows: usize,
     pub cols: usize,
+    pub chunk_index: usize,
+    pub chunk_offset: usize,
 }
 
 pub struct MixtralLayer {
@@ -144,7 +149,7 @@ pub struct MixtralEngine {
     pub layers: Vec<MixtralLayer>,
     pub _weights_path: PathBuf,
     pub metal_ctx: Option<MetalContext>,
-    pub weights_mmap_buf: Option<PinnedBuffer>,
+    pub weights_mmap_buf: Option<Vec<PinnedBuffer>>,
     pub embed_buf: Option<PinnedBuffer>,
     pub final_norm_buf: Option<PinnedBuffer>,
     pub lm_head_buf: Option<PinnedBuffer>,
@@ -270,14 +275,44 @@ impl MixtralEngine {
                 dtype, info.dtype, info.dims
             )));
         }
+        let offset = info.data_offset as usize;
+        let byte_size = info.byte_size as usize;
+        let chunk_offset = offset % WEIGHT_CHUNK_STRIDE;
+        if chunk_offset + byte_size > WEIGHT_CHUNK_STRIDE + WEIGHT_CHUNK_OVERLAP {
+            return Err(Error::Model(format!(
+                "tensor `{name}` crosses Mixtral weight chunk coverage: chunk_offset={chunk_offset} byte_size={byte_size}"
+            )));
+        }
         Ok(TensorRef {
-            offset: info.data_offset as usize,
-            byte_size: info.byte_size as usize,
+            offset,
+            byte_size,
             dtype: info.dtype,
             n_elems,
             rows,
             cols,
+            chunk_index: offset / WEIGHT_CHUNK_STRIDE,
+            chunk_offset,
         })
+    }
+
+    #[cfg(target_os = "macos")]
+    fn pin_weight_chunks(ctx: &MetalContext, gguf: &GgufFile) -> Result<Vec<PinnedBuffer>> {
+        let mut chunks = Vec::new();
+        let mut start = 0usize;
+        while start < gguf.mmap.len() {
+            let end = (start + WEIGHT_CHUNK_STRIDE + WEIGHT_CHUNK_OVERLAP).min(gguf.mmap.len());
+            let requested = end - start;
+            let buf = unsafe { ctx.new_buffer_no_copy(&gguf.mmap[start..end]) };
+            if buf.length() < requested as u64 {
+                return Err(Error::Metal(format!(
+                    "Mixtral weight chunk no-copy failed at bytes [{start}, {end}) requested={requested} actual={}",
+                    buf.length()
+                )));
+            }
+            chunks.push(buf);
+            start += WEIGHT_CHUNK_STRIDE;
+        }
+        Ok(chunks)
     }
 }
 
@@ -382,11 +417,13 @@ impl Engine for MixtralEngine {
         }
 
         #[cfg(target_os = "macos")]
-        let weights_mmap_buf = metal_ctx
-            .as_ref()
-            .map(|ctx| unsafe { ctx.new_buffer_no_copy(&gguf.mmap) });
+        let weights_mmap_buf = if let Some(ctx) = metal_ctx.as_ref() {
+            Some(Self::pin_weight_chunks(ctx, &gguf)?)
+        } else {
+            None
+        };
         #[cfg(not(target_os = "macos"))]
-        let weights_mmap_buf: Option<PinnedBuffer> = None;
+        let weights_mmap_buf: Option<Vec<PinnedBuffer>> = None;
 
         #[cfg(target_os = "macos")]
         let (embed_buf, final_norm_buf, lm_head_buf, decode_arena) =
