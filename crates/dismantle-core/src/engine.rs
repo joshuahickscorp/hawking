@@ -64,6 +64,11 @@ pub struct EngineConfig {
     /// is accepted as a no-op; Mixtral/offload engines attach real ExpertCache
     /// ranges to enforce it.
     pub max_routed_expert_ram_mb: Option<usize>,
+    /// v1.2.0-12: total memory budget for model weights + KV cache, in MiB.
+    /// When `Some(N)`, `load_engine` aborts before allocating anything if the
+    /// estimated working set (model file + KV cache) exceeds N MiB. `Some(0)`
+    /// triggers auto-detection (80% of system RAM). `None` = unlimited.
+    pub memory_limit_mb: Option<usize>,
 }
 
 impl Default for EngineConfig {
@@ -80,6 +85,7 @@ impl Default for EngineConfig {
             activation_dtype: ActivationDtype::F32,
             residual_dtype: ResidualDtype::F32,
             max_routed_expert_ram_mb: None,
+            memory_limit_mb: None,
         }
     }
 }

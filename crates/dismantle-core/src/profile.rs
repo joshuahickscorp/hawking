@@ -13,6 +13,31 @@ use std::path::Path;
 
 pub const PROFILE_SCHEMA_VERSION: u32 = 1;
 
+/// Per-device resource limits embedded in a kernel profile.
+///
+/// When present, the engine enforces these at load time and will return an
+/// error rather than silently trying to run a model that doesn't fit. All
+/// fields are optional; absent fields are not enforced.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct DeviceLimits {
+    /// Total memory budget for weights + KV cache, in MiB. The engine
+    /// checks `model_file_bytes / 1024^2 + kv_cache_estimate_mb` against
+    /// this value before allocating the KV cache.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memory_limit_mb: Option<usize>,
+    /// Maximum supported context length for this device.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_seq_len: Option<usize>,
+    /// Maximum KV-cache budget in MiB. Caps `EngineConfig::max_seq_len`
+    /// if the implied KV cache would exceed this.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_kv_cache_mb: Option<usize>,
+    /// Routed expert RAM budget in MiB (passed through to
+    /// `EngineConfig::max_routed_expert_ram_mb` when not already set by CLI).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_routed_expert_ram_mb: Option<usize>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct KernelProfile {
     pub schema_version: u32,
@@ -25,6 +50,10 @@ pub struct KernelProfile {
     pub shader_hash: String,
     pub selected: KernelVariant,
     pub evidence: AutotuneEvidence,
+    /// Optional per-device resource limits. Absent in profiles created before
+    /// v1.2.0-12; the runtime treats absent as "no enforcement".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device_limits: Option<DeviceLimits>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -170,6 +199,7 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
         device_name,
         shader_hash,
         selected,
+        device_limits: None,
         evidence: AutotuneEvidence {
             profile: opts.profile.clone(),
             max_hours: opts.max_hours,

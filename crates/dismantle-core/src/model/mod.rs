@@ -16,7 +16,39 @@ use std::path::Path;
 /// Open the GGUF, peek at `general.architecture`, and return the
 /// matching engine boxed behind the trait. Used by `dismantle generate`
 /// and `dismantle serve` so callers don't pick architectures by hand.
-pub fn load_engine(weights: &Path, config: EngineConfig) -> Result<Box<dyn Engine>> {
+pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn Engine>> {
+    // v1.2.0-12: merge profile device_limits into config before opening GGUF.
+    // CLI flags override profile values; absent CLI values inherit profile defaults.
+    if let Some(limits) = config.kernel_profile.as_ref().and_then(|p| p.device_limits.as_ref()) {
+        if config.memory_limit_mb.is_none() {
+            config.memory_limit_mb = limits.memory_limit_mb;
+        }
+        if config.max_routed_expert_ram_mb.is_none() {
+            config.max_routed_expert_ram_mb = limits.max_routed_expert_ram_mb;
+        }
+    }
+
+    // v1.2.0-12: enforce memory budget before mmap allocation.
+    if let Some(limit_mb) = config.memory_limit_mb {
+        let effective_limit_mb = if limit_mb == 0 {
+            // Auto: 80% of system RAM.
+            system_ram_mb() * 4 / 5
+        } else {
+            limit_mb
+        };
+        if effective_limit_mb > 0 {
+            let file_mb = std::fs::metadata(weights)
+                .map(|m| m.len() / (1024 * 1024))
+                .unwrap_or(0) as usize;
+            if file_mb > effective_limit_mb {
+                return Err(Error::Model(format!(
+                    "memory budget exceeded: model file {file_mb} MiB > limit {effective_limit_mb} MiB \
+                     (pass --memory-limit-mb 0 for auto-detect, or increase the budget)"
+                )));
+            }
+        }
+    }
+
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
     let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
@@ -41,5 +73,29 @@ pub fn load_engine(weights: &Path, config: EngineConfig) -> Result<Box<dyn Engin
         other => Err(Error::Model(format!(
             "unknown architecture {other:?}; v0.1 supports deepseek2 + qwen2 + qwen-moe"
         ))),
+    }
+}
+
+/// Return system total RAM in MiB. Returns 0 on failure.
+fn system_ram_mb() -> usize {
+    #[cfg(target_os = "macos")]
+    {
+        // sysctl hw.memsize returns total RAM as u64.
+        let out = std::process::Command::new("sysctl")
+            .args(["-n", "hw.memsize"])
+            .output()
+            .ok();
+        if let Some(out) = out {
+            if let Ok(s) = std::str::from_utf8(&out.stdout) {
+                if let Ok(bytes) = s.trim().parse::<u64>() {
+                    return (bytes / (1024 * 1024)) as usize;
+                }
+            }
+        }
+        0
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        0
     }
 }

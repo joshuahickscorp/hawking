@@ -29,6 +29,11 @@ enum Cmd {
         prefill_cache_dir: Option<PathBuf>,
         #[arg(long)]
         max_routed_expert_ram_mb: Option<usize>,
+        /// Total memory budget for weights + KV cache in MiB. Engine errors at
+        /// load time if the model file exceeds this limit. Pass 0 for auto-
+        /// detection (80% of system RAM). Default: unlimited.
+        #[arg(long)]
+        memory_limit_mb: Option<usize>,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -63,6 +68,11 @@ enum Cmd {
         trace_dispatch: bool,
         #[arg(long)]
         max_routed_expert_ram_mb: Option<usize>,
+        /// Total memory budget for weights + KV cache in MiB. Engine errors at
+        /// load time if the model file exceeds this limit. Pass 0 for auto-
+        /// detection (80% of system RAM). Default: unlimited.
+        #[arg(long)]
+        memory_limit_mb: Option<usize>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -186,6 +196,7 @@ fn main() -> Result<()> {
             kernel_profile,
             prefill_cache_dir,
             max_routed_expert_ram_mb,
+            memory_limit_mb,
         } => {
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(dismantle_serve::run(dismantle_serve::ServeOptions {
@@ -197,6 +208,7 @@ fn main() -> Result<()> {
                 kernel_profile,
                 prefill_cache_dir,
                 max_routed_expert_ram_mb,
+                memory_limit_mb,
             }))
         }
         Cmd::Generate {
@@ -213,6 +225,7 @@ fn main() -> Result<()> {
             max_stall_ms,
             trace_dispatch,
             max_routed_expert_ram_mb,
+            memory_limit_mb,
         } => generate_main(
             weights,
             prompt,
@@ -227,6 +240,7 @@ fn main() -> Result<()> {
             max_stall_ms,
             trace_dispatch,
             max_routed_expert_ram_mb,
+            memory_limit_mb,
         ),
         Cmd::Bench {
             weights,
@@ -666,6 +680,7 @@ fn generate_main(
     max_stall_ms: u64,
     trace_dispatch: bool,
     max_routed_expert_ram_mb: Option<usize>,
+    memory_limit_mb: Option<usize>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -715,6 +730,7 @@ fn generate_main(
         activation_dtype: Default::default(),
         residual_dtype,
         max_routed_expert_ram_mb,
+        memory_limit_mb,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
