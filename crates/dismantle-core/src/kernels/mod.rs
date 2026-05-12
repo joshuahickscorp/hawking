@@ -6227,6 +6227,68 @@ mod metal_dispatch {
         )
     }
 
+    // Serial variant of encode_batched_gemv_indexed_tcb. Dispatches one route per
+    // kernel submission so each expert's weight slab is read as a single stream,
+    // improving L2 hit rate vs. the 6-stream parallel baseline.
+    // x_buf is route-major (x[route*cols..+cols]); out_buf is route-major
+    // (out[route*rows..+rows]). Buffer offsets route both to slot 0 in each dispatch.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_indexed_serial_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        kernel_name: &str,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        base_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let base_offset_u64 = base_offset as u64;
+        let routes_one      = 1u32;
+        let rows_u32        = rows as u32;
+        let cols_u32        = cols as u32;
+        let tg_size         = TG_SIZE as u32;
+        let is_v2t      = kernel_name.ends_with("_v2t");
+        let is_v2_family = kernel_name.ends_with("_v2")
+            || kernel_name.ends_with("_v2s")
+            || is_v2t;
+        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let shmem_bytes = if is_v2t {
+            (cols as u64) * std::mem::size_of::<f32>() as u64
+        } else if is_v2_family {
+            0u64
+        } else {
+            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
+        };
+        for route_i in 0..routes {
+            let ids_off = (route_i * std::mem::size_of::<u32>()) as u64;
+            // x is route-major: offset x_buf so x[0*cols..] = original x[route_i*cols..].
+            let x_off   = (route_i * cols * std::mem::size_of::<f32>()) as u64;
+            let out_off = (route_i * rows * std::mem::size_of::<f32>()) as u64;
+            tcb.dispatch_threads(
+                kernel_name,
+                (n_tg_x * tg_size, 1, 1),
+                (tg_size, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(model_buf),     0);
+                    enc.set_buffer(1, Some(route_ids_buf), ids_off);
+                    enc.set_buffer(2, Some(x_buf),         x_off);
+                    enc.set_buffer(3, Some(out_buf),       out_off);
+                    enc.set_bytes(4, 8, &base_offset_u64 as *const u64 as *const _);
+                    enc.set_bytes(5, 4, &routes_one as *const u32 as *const _);
+                    enc.set_bytes(6, 4, &rows_u32   as *const u32 as *const _);
+                    enc.set_bytes(7, 4, &cols_u32   as *const u32 as *const _);
+                    if !is_v2_family || is_v2t {
+                        enc.set_threadgroup_memory_length(0, shmem_bytes);
+                    }
+                },
+            )?;
+        }
+        Ok(())
+    }
+
     pub fn silu_mul_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         gate_buf: &PinnedBuffer,
@@ -6281,6 +6343,58 @@ mod metal_dispatch {
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
+    }
+
+    // Serial variant: dispatches one route at a time so each expert's weights
+    // (gate+up = ~3MB) are read as a single sequential stream that fits in L2,
+    // avoiding the cache-thrashing caused by 6 simultaneous scattered expert streams.
+    // Requires a single command buffer (Pillar 2) to amortise per-dispatch overhead.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_fused_gu_serial_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64   = up_offset   as u64;
+        let routes_one      = 1u32;
+        let rows_u32        = rows as u32;
+        let cols_u32        = cols as u32;
+        let tg_size         = TG_SIZE as u32;
+        let n_tg_x          = (rows_u32 + 7) / 8;
+        let shmem_bytes     = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        for route_i in 0..routes {
+            // Offset route_ids so route_ids[0] = expert for this route.
+            let ids_off = (route_i * std::mem::size_of::<u32>()) as u64;
+            // Offset act_buf so this route writes to act[route_i * rows .. +rows].
+            let act_off = (route_i * rows * std::mem::size_of::<f32>()) as u64;
+            // x (hidden state) is the same for all routes — no offset needed.
+            tcb.dispatch_threads(
+                "moe_batched_gemm_q4_indexed_v2t_gu",
+                (n_tg_x * tg_size, 1, 1),
+                (tg_size, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(model_buf),     0);
+                    enc.set_buffer(1, Some(route_ids_buf), ids_off);
+                    enc.set_buffer(2, Some(x_buf),         0);
+                    enc.set_buffer(3, Some(act_buf),       act_off);
+                    enc.set_bytes(4, 8, &gate_offset_u64 as *const u64 as *const _);
+                    enc.set_bytes(5, 8, &up_offset_u64   as *const u64 as *const _);
+                    enc.set_bytes(6, 4, &routes_one as *const u32 as *const _);
+                    enc.set_bytes(7, 4, &rows_u32   as *const u32 as *const _);
+                    enc.set_bytes(8, 4, &cols_u32   as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+        }
+        Ok(())
     }
 
     fn encode_route_accumulate_tcb(
@@ -6381,12 +6495,21 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
-        let use_fused_gu = q4k_schedule == "v2t_gu";
+        let use_fused_gu     = q4k_schedule == "v2t_gu";
+        // Serial: dispatch one expert at a time so each expert's weight slab (~3 MB
+        // gate+up) is a single sequential stream. Eliminates 6-stream L2 thrashing.
+        // Effective only when combined with a single command buffer (Pillar 2).
+        let use_serial_gu    = q4k_schedule == "v2t_gu_serial";
 
-        if use_fused_gu {
+        if use_serial_gu {
+            encode_batched_gemv_fused_gu_serial_tcb(
+                tcb, model_buf, route_ids_buf, x_buf, routed_act,
+                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+            )?;
+        } else if use_fused_gu {
             encode_batched_gemv_fused_gu_tcb(
                 tcb, model_buf, route_ids_buf, x_buf, routed_act,
                 routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
@@ -6402,15 +6525,27 @@ mod metal_dispatch {
             )?;
             silu_mul_tcb(tcb, routed_gate_out, routed_up_out, routed_act, routes * routed_mid)?;
         }
-        encode_batched_gemv_indexed_tcb(
-            tcb, routed_down_kernel, model_buf, route_ids_buf,
-            routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
-        )?;
+
+        // Down projection: also serial when using v2t_gu_serial to fix the same
+        // L2 thrashing on the down-projection weight slabs.
+        if use_serial_gu {
+            encode_batched_gemv_indexed_serial_tcb(
+                tcb, routed_down_kernel, model_buf, route_ids_buf,
+                routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
+            )?;
+        } else {
+            encode_batched_gemv_indexed_tcb(
+                tcb, routed_down_kernel, model_buf, route_ids_buf,
+                routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
+            )?;
+        }
 
         if let (Some(gate_off), Some(up_off), Some(down_off)) =
             (shared_gate_offset, shared_up_offset, shared_down_offset)
         {
-            if use_fused_gu {
+            // Shared expert always routes=1, so serial == parallel. Use fused_gu
+            // path unconditionally when either serial or parallel gu is selected.
+            if use_fused_gu || use_serial_gu {
                 encode_batched_gemv_fused_gu_tcb(
                     tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
                     gate_off, up_off, 1, shared_mid, hidden,
