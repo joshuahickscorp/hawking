@@ -60,6 +60,10 @@ pub struct EngineConfig {
     /// Phase E: dtype of the residual stream x. F32 = legacy; F16 = x is Vec<f16>
     /// throughout (eliminates Phase 7 bridge conversion overhead).
     pub residual_dtype: ResidualDtype,
+    /// Optional routed-expert RAM budget. In v1.0.0 partial-tier V2-Lite this
+    /// is accepted as a no-op; Mixtral/offload engines attach real ExpertCache
+    /// ranges to enforce it.
+    pub max_routed_expert_ram_mb: Option<usize>,
 }
 
 impl Default for EngineConfig {
@@ -75,6 +79,7 @@ impl Default for EngineConfig {
             trace_dispatch: false,
             activation_dtype: ActivationDtype::F32,
             residual_dtype: ResidualDtype::F32,
+            max_routed_expert_ram_mb: None,
         }
     }
 }

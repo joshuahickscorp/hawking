@@ -4,6 +4,7 @@
 //! Phase 0 ships DeepSeek-V2-Lite; Phase 3 adds Qwen3-MoE.
 
 pub mod deepseek_v2;
+pub mod expert_cache;
 pub mod qwen_dense;
 pub mod qwen_moe;
 
