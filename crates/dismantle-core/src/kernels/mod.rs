@@ -3154,6 +3154,139 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// Continuous batching MLA decode: M tokens, each with an independent KV
+    /// slot range inside a shared packed KV buffer.
+    ///
+    /// `slot_offsets[m]` is measured in KV entries, not floats. Token `m`
+    /// attends to `[slot_offsets[m], slot_offsets[m] + seq_lens[m])`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_metal_batched_slots(
+        ctx: &MetalContext,
+        q_batch: &[f32],          // [M, n_heads, head_dim_q]
+        c_kv: &[f32],             // [packed_entries, kv_lora_rank]
+        k_pe: &[f32],             // [packed_entries, qk_rope_head_dim]
+        kv_b_proj: &PinnedBuffer,
+        slot_offsets: &[u32],     // [M], in KV entries
+        seq_lens: &[u32],         // [M]
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        n_batch: usize,
+        scale: f32,
+        out_batch: &mut [f32],    // [M, n_heads × v_head_dim]
+    ) -> Result<()> {
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        if q_batch.len() != n_batch * n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched_slots: q_batch.len={} expected {}",
+                q_batch.len(), n_batch * n_heads * q_head_dim
+            )));
+        }
+        if slot_offsets.len() != n_batch || seq_lens.len() != n_batch {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched_slots: offsets={} seq_lens={} n_batch={}",
+                slot_offsets.len(), seq_lens.len(), n_batch
+            )));
+        }
+        if out_batch.len() != n_batch * n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched_slots: out_batch.len={} expected {}",
+                out_batch.len(), n_batch * n_heads * v_head_dim
+            )));
+        }
+        if n_batch == 0 {
+            return Ok(());
+        }
+
+        let required_entries = slot_offsets
+            .iter()
+            .zip(seq_lens.iter())
+            .map(|(&off, &len)| off as usize + len as usize)
+            .max()
+            .unwrap_or(0);
+        if c_kv.len() < required_entries * kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched_slots: c_kv.len={} expected at least {}",
+                c_kv.len(), required_entries * kv_lora_rank
+            )));
+        }
+        if k_pe.len() < required_entries * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_metal_batched_slots: k_pe.len={} expected at least {}",
+                k_pe.len(), required_entries * qk_rope_head_dim
+            )));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q_batch));
+        let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let offsets_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(slot_offsets));
+        let seq_lens_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(seq_lens));
+        let out_buf = ctx.new_buffer(out_batch.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let max_seq_len = seq_lens.iter().copied().max().unwrap_or(1).max(1) as u64;
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = max_seq_len * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_threads(
+            "mla_decode_kernel_batched_slots",
+            (n_heads_u32 * TG_SIZE, n_batch as u32, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_buffer(5, Some(&offsets_buf), 0);
+                enc.set_buffer(6, Some(&seq_lens_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_heads_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_nope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &qk_rope_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &v_head_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<u32>() as u64,
+                    &kv_lora_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    12,
+                    std::mem::size_of::<f32>() as u64,
+                    &scale as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out_batch);
+        Ok(())
+    }
+
     /// Wedge 3 — Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
     /// into one command buffer. Saves one commit+wait per attention layer
     /// (27 fewer roundtrips per token on DeepSeek-V2-Lite).
@@ -6451,6 +6584,54 @@ mod metal_dispatch {
             );
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn encode_moe_shared_only_indexed_tcb_with_scratch(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        shared_route_ids_buf: &PinnedBuffer,
+        shared_gate_offset: usize,
+        shared_up_offset: usize,
+        shared_down_offset: usize,
+        hidden: usize,
+        shared_mid: usize,
+        q4k_schedule: &str,
+        shared_down_kernel: &str,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        shared_gate_out: &PinnedBuffer,
+        shared_up_out: &PinnedBuffer,
+        shared_act: &PinnedBuffer,
+    ) -> Result<()> {
+        let q4k_indexed_kernel = match q4k_schedule {
+            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2s" => "moe_batched_gemm_q4_indexed_v2s",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" => "moe_batched_gemm_q4_indexed_v2t",
+            _ => "moe_batched_gemm_q4_indexed",
+        };
+
+        if q4k_schedule == "v2t_gu" || q4k_schedule == "v2t_gu_serial" {
+            encode_batched_gemv_fused_gu_tcb(
+                tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
+                shared_gate_offset, shared_up_offset, 1, shared_mid, hidden,
+            )?;
+        } else {
+            encode_batched_gemv_indexed_tcb(
+                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                shared_gate_out, shared_gate_offset, 1, shared_mid, hidden,
+            )?;
+            encode_batched_gemv_indexed_tcb(
+                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                shared_up_out, shared_up_offset, 1, shared_mid, hidden,
+            )?;
+            silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
+        }
+
+        encode_batched_gemv_indexed_tcb(
+            tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
+            shared_act, out_buf, shared_down_offset, 1, hidden, shared_mid,
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
