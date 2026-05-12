@@ -13,6 +13,31 @@ use std::path::Path;
 
 pub const PROFILE_SCHEMA_VERSION: u32 = 1;
 
+/// Per-device resource limits embedded in a kernel profile.
+///
+/// When present, the engine enforces these at load time and will return an
+/// error rather than silently trying to run a model that doesn't fit. All
+/// fields are optional; absent fields are not enforced.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct DeviceLimits {
+    /// Total memory budget for weights + KV cache, in MiB. The engine
+    /// checks `model_file_bytes / 1024^2 + kv_cache_estimate_mb` against
+    /// this value before allocating the KV cache.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memory_limit_mb: Option<usize>,
+    /// Maximum supported context length for this device.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_seq_len: Option<usize>,
+    /// Maximum KV-cache budget in MiB. Caps `EngineConfig::max_seq_len`
+    /// if the implied KV cache would exceed this.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_kv_cache_mb: Option<usize>,
+    /// Routed expert RAM budget in MiB (passed through to
+    /// `EngineConfig::max_routed_expert_ram_mb` when not already set by CLI).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_routed_expert_ram_mb: Option<usize>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct KernelProfile {
     pub schema_version: u32,
@@ -25,6 +50,10 @@ pub struct KernelProfile {
     pub shader_hash: String,
     pub selected: KernelVariant,
     pub evidence: AutotuneEvidence,
+    /// Optional per-device resource limits. Absent in profiles created before
+    /// v1.2.0-12; the runtime treats absent as "no enforcement".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device_limits: Option<DeviceLimits>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -36,6 +65,18 @@ pub struct KernelVariant {
     pub command_buffering: String,
     pub gpu_buffer_reuse: String,
     pub deterministic_rank: u32,
+    #[serde(default = "default_gemm_q4_k_schedule")]
+    pub gemm_q4_k_schedule: String,
+    #[serde(default = "default_attn_block_schedule")]
+    pub attn_block_schedule: String,
+}
+
+fn default_gemm_q4_k_schedule() -> String {
+    "scalar".to_string()
+}
+
+fn default_attn_block_schedule() -> String {
+    "mla".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -158,6 +199,7 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
         device_name,
         shader_hash,
         selected,
+        device_limits: None,
         evidence: AutotuneEvidence {
             profile: opts.profile.clone(),
             max_hours: opts.max_hours,
@@ -176,55 +218,21 @@ pub fn build_deterministic_profile(gguf: &GgufFile, opts: &AutotuneOptions) -> K
 }
 
 pub fn deterministic_candidates() -> Vec<KernelVariant> {
-    let mut variants = vec![
-        KernelVariant {
-            id: "stable-baseline".into(),
-            moe_schedule: "current-no-pack".into(),
-            mla_schedule: "cpu-reference".into(),
-            lm_head_schedule: "pinned-metal-copy-logits".into(),
-            command_buffering: "per-dispatch".into(),
-            gpu_buffer_reuse: "partial".into(),
-            deterministic_rank: 40,
-        },
-        KernelVariant {
-            id: "one-command-buffer-moe".into(),
-            moe_schedule: "indexed-no-pack-one-cb".into(),
-            mla_schedule: "cpu-reference".into(),
-            lm_head_schedule: "pinned-metal-copy-logits".into(),
-            command_buffering: "moe-block".into(),
-            gpu_buffer_reuse: "moe-and-lm-head".into(),
-            deterministic_rank: 30,
-        },
-        KernelVariant {
-            id: "gpu-greedy-frontier".into(),
-            moe_schedule: "indexed-no-pack-one-cb".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "layer-cb-planned".into(),
-            gpu_buffer_reuse: "decode-arena-planned".into(),
-            deterministic_rank: 20,
-        },
-        KernelVariant {
-            id: "persistent-flashmoe-research".into(),
-            moe_schedule: "persistent-fused-planned".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "token-cb-planned".into(),
-            gpu_buffer_reuse: "full-gpu-resident-planned".into(),
-            deterministic_rank: 10,
-        },
-        KernelVariant {
-            id: "single-kernel-fused".into(),
-            moe_schedule: "single-kernel".into(),
-            mla_schedule: "metal-mla-planned".into(),
-            lm_head_schedule: "metal-argmax-token-only".into(),
-            command_buffering: "layer-cb-planned".into(),
-            gpu_buffer_reuse: "decode-arena-planned".into(),
-            deterministic_rank: 25,
-        },
-    ];
-    variants.sort_by(|a, b| a.id.cmp(&b.id));
-    variants
+    // Single shipping default: Metal MLA + decode-arena + indexed-no-pack-one-cb MoE
+    // + one-cb-per-block command buffering + Q4_K_M v2 GEMV. Validated end-to-end
+    // (45 parity tests across 10 suites). Other variants explored during development
+    // were either superseded or regressed; archeology lives in git history.
+    vec![KernelVariant {
+        id: "metal-default".into(),
+        moe_schedule: "indexed-no-pack-one-cb".into(),
+        mla_schedule: "metal-mla".into(),
+        lm_head_schedule: "metal-argmax-token-only".into(),
+        command_buffering: "one-cb-per-block".into(),
+        gpu_buffer_reuse: "decode-arena".into(),
+        deterministic_rank: 1,
+        gemm_q4_k_schedule: "v2".into(),
+        attn_block_schedule: "mla".into(),
+    }]
 }
 
 fn score_candidates(candidates: &[KernelVariant]) -> Vec<AutotuneMeasurement> {
@@ -270,10 +278,14 @@ fn variant_score(v: &KernelVariant) -> u64 {
     let mut score = 100_u64.saturating_sub(v.deterministic_rank as u64);
     if v.moe_schedule == "single-kernel" {
         score += 30;
+    } else if v.moe_schedule == "two-stage" {
+        // Reduced from 28 after v0.2.1 diagnostic: −79% regression at batch=1 decode.
+        // May recover for prefill/batch>1 contexts; kept in tree as research variant.
+        score += 5;
     } else if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
-    if v.lm_head_schedule.contains("argmax") {
+    if v.lm_head_schedule.contains("argmax") || v.lm_head_schedule.contains("simdgroup-matrix") {
         score += 20;
     }
     if v.mla_schedule.contains("metal") {
@@ -359,16 +371,7 @@ mod tests {
             .into_iter()
             .map(|v| v.id)
             .collect();
-        assert_eq!(
-            ids,
-            vec![
-                "gpu-greedy-frontier",
-                "one-command-buffer-moe",
-                "persistent-flashmoe-research",
-                "single-kernel-fused",
-                "stable-baseline"
-            ]
-        );
+        assert_eq!(ids, vec!["metal-default"]);
     }
 
     #[test]
@@ -379,7 +382,7 @@ mod tests {
         assert_eq!(a, b);
         assert_eq!(
             select_variant(&candidates, &a).unwrap().id,
-            "gpu-greedy-frontier"
+            "metal-default"
         );
     }
 }

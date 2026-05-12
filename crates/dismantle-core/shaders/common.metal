@@ -4,6 +4,9 @@
 // Kernels:
 //   rmsnorm               — RMS normalization. fp32 reduction, fp16 mul.
 //                           [Phase 0]
+//   rmsnorm_f32           — RMS normalization, full fp32 I/O. Used by the
+//                           Wedge B TCB path (f32 residual stream).
+//                           [v1.0.0-B]
 //   silu_mul              — SwiGLU activation (silu(a) * b) for the
 //                           gate-up projection.
 //                           [Phase 0]
@@ -13,6 +16,8 @@
 //   embed_lookup          — input-token embedding lookup with optional
 //                           tied LM head.
 //                           [Phase 0]
+//   add_inplace           — element-wise residual add: a[i] += b[i].
+//                           [Phase 4 Wedge 4a]
 
 #include <metal_stdlib>
 using namespace metal;
@@ -43,6 +48,37 @@ kernel void rmsnorm(
     float inv = 1.0f / rms;
     for (uint i = tid; i < hidden; i += tg_size) {
         out[i] = half((float)x[i] * inv * (float)weight[i]);
+    }
+}
+
+// v1.0.0-B Wedge B — full fp32 rmsnorm for the f32 residual stream TCB path.
+// Same math as rmsnorm above; operates on f32 x, f32 weight, f32 out.
+// Threadgroup reduction accumulates variance in f32 (no precision loss).
+kernel void rmsnorm_f32(
+    device const float* x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    device       float* out     [[buffer(2)]],
+    constant     uint&  hidden  [[buffer(3)]],
+    constant     float& eps     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)hidden + eps);
+    float inv = 1.0f / rms;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        out[i] = x[i] * inv * weight[i];
     }
 }
 
@@ -77,6 +113,54 @@ kernel void rope_inplace(
     x[2 * id + 1] = half(x0 * s + x1 * c);
 }
 
+kernel void rope_q_f32_inplace(
+    device       float* q              [[buffer(0)]],
+    constant     uint&  n_heads        [[buffer(1)]],
+    constant     uint&  q_head_dim     [[buffer(2)]],
+    constant     uint&  qk_nope_dim    [[buffer(3)]],
+    constant     uint&  qk_rope_dim    [[buffer(4)]],
+    constant     uint&  pos            [[buffer(5)]],
+    constant     float& base           [[buffer(6)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    uint pairs_per_head = qk_rope_dim / 2u;
+    uint total_pairs = n_heads * pairs_per_head;
+    if (id >= total_pairs) return;
+
+    uint head = id / pairs_per_head;
+    uint pair = id - head * pairs_per_head;
+    uint off = head * q_head_dim + qk_nope_dim + 2u * pair;
+
+    float theta = (float)pos / pow(base, 2.0f * float(pair) / float(qk_rope_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = q[off];
+    float x1 = q[off + 1u];
+    q[off]      = x0 * c - x1 * s;
+    q[off + 1u] = x0 * s + x1 * c;
+}
+
+kernel void rope_slice_f32_inplace(
+    device       float* x        [[buffer(0)]],
+    constant     uint&  offset   [[buffer(1)]],
+    constant     uint&  head_dim [[buffer(2)]],
+    constant     uint&  pos      [[buffer(3)]],
+    constant     float& base     [[buffer(4)]],
+    uint id                      [[thread_position_in_grid]])
+{
+    uint half_dim = head_dim / 2u;
+    if (id >= half_dim) return;
+    uint off = offset + 2u * id;
+
+    float theta = (float)pos / pow(base, 2.0f * float(id) / float(head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = x[off];
+    float x1 = x[off + 1u];
+    x[off]      = x0 * c - x1 * s;
+    x[off + 1u] = x0 * s + x1 * c;
+}
+
 kernel void embed_lookup(
     device const half* embed  [[buffer(0)]],
     device       half* out    [[buffer(1)]],
@@ -86,6 +170,19 @@ kernel void embed_lookup(
 {
     if (id >= hidden) return;
     out[id] = embed[token * hidden + id];
+}
+
+// v1.0.0-D — embed lookup writing f32 residual stream.
+// Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
+kernel void embed_lookup_f32(
+    device const half*  embed  [[buffer(0)]],
+    device       float* out    [[buffer(1)]],
+    constant     uint&  hidden [[buffer(2)]],
+    constant     uint&  token  [[buffer(3)]],
+    uint id                     [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    out[id] = (float)embed[token * hidden + id];
 }
 
 // G1.2 — fp16-weight × fp32-vec → fp32 GEMV (LM-head shape).
@@ -122,4 +219,221 @@ kernel void gemv_f16(
     }
 
     if (tid == 0) y[gid] = shmem[0];
+}
+
+// Phase 4 Wedge 4a — element-wise residual add.
+// Computes a[i] += b[i] for i in [0, n).
+// One thread per element; grid (n, 1, 1), threadgroup (TG_SIZE, 1, 1).
+kernel void add_inplace(
+    device       float* a    [[buffer(0)]],
+    device const float* b    [[buffer(1)]],
+    constant     uint&  n    [[buffer(2)]],
+    uint                gid  [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    a[gid] += b[gid];
+}
+
+// Phase 7 Wedge 7b — fp16 rmsnorm.
+// Reads f16 input, computes variance in f32 (sensitive to overflow at
+// large activations), writes f16 output. Weight is f32.
+//
+// Threadgroup size 256 (parallel reduction; must be power of two ≤ 1024).
+kernel void rmsnorm_f16(
+    device const half*  x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    constant     float& eps     [[buffer(2)]],
+    constant     uint&  hidden  [[buffer(3)]],
+    device       half*  out     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = (float)x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float mean = shmem[0] / (float)hidden;
+    float scale = rsqrt(mean + eps);
+
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = (float)x[i];
+        out[i] = (half)(v * scale * weight[i]);
+    }
+}
+
+// Phase 7 Wedge 7d-prep — fp16 silu_mul.
+// Computes out[i] = silu(gate[i]) * up[i] reading f16, writing f16.
+// Internal sigmoid + multiply in f32 (silu's exp is sensitive).
+kernel void silu_mul_f16(
+    device const half*  gate   [[buffer(0)]],
+    device const half*  up     [[buffer(1)]],
+    device       half*  out    [[buffer(2)]],
+    constant     uint&  n      [[buffer(3)]],
+    uint                gid    [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    float g = (float)gate[gid];
+    float u = (float)up[gid];
+    float silu_g = g / (1.0f + exp(-g));
+    out[gid] = (half)(silu_g * u);
+}
+
+// v1.0.0-F — f16 residual stream: rmsnorm reading f16, writing f32 norm.
+// Variance reduction in f32 (non-negotiable for numeric stability).
+// Same binding layout as rmsnorm_f16 but buffer(4) is float* not half*.
+// Grid: (TG_SIZE, 1, 1), threadgroup: (TG_SIZE, 1, 1).
+kernel void rmsnorm_f16_to_f32(
+    device const half*  x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    constant     float& eps     [[buffer(2)]],
+    constant     uint&  hidden  [[buffer(3)]],
+    device       float* out     [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < hidden; i += tg_size) {
+        float v = (float)x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float mean = shmem[0] / (float)hidden;
+    float scale = rsqrt(mean + eps);
+    for (uint i = tid; i < hidden; i += tg_size) {
+        out[i] = (float)x[i] * scale * weight[i];
+    }
+}
+
+// v1.0.0-F — trivial f32→f16 cast: out[i] = (half)src[i].
+// Used to convert f32 attention/FFN outputs to f16 residual deltas.
+// Grid: (n, 1, 1), threadgroup (TG_SIZE, 1, 1).
+kernel void cast_f32_to_f16(
+    device const float* src [[buffer(0)]],
+    device       half*  dst [[buffer(1)]],
+    constant     uint&  n   [[buffer(2)]],
+    uint                gid [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    dst[gid] = (half)src[gid];
+}
+
+// v0.5.9-C — fp16 residual add: a[i] += b[i], both f16.
+kernel void add_inplace_f16(
+    device       half*  a   [[buffer(0)]],
+    device const half*  b   [[buffer(1)]],
+    constant     uint&  n   [[buffer(2)]],
+    uint                gid [[thread_position_in_grid]])
+{
+    if (gid >= n) return;
+    a[gid] = (half)((float)a[gid] + (float)b[gid]);
+}
+
+// v0.5.9-E — standalone f16 softmax.
+// Single-threadgroup kernel: reads n f16 logits, writes n f16 probabilities.
+// Max and exp-sum computed in f32. Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void softmax_f16(
+    device const half*  x     [[buffer(0)]],
+    device       half*  out   [[buffer(1)]],
+    constant     uint&  n     [[buffer(2)]],
+    threadgroup  float* shmem [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    // Phase 1: parallel max reduction.
+    float local_max = -INFINITY;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = (float)x[i];
+        if (v > local_max) local_max = v;
+    }
+    shmem[tid] = local_max;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] = max(shmem[tid], shmem[tid + stride]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_val = shmem[0];
+
+    // Phase 2: parallel sum of exp(x - max).
+    float local_sum = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        local_sum += exp((float)x[i] - max_val);
+    }
+    shmem[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_sum = 1.0f / shmem[0];
+
+    // Phase 3: write normalized probabilities.
+    for (uint i = tid; i < n; i += tg_size) {
+        out[i] = (half)(exp((float)x[i] - max_val) * inv_sum);
+    }
+}
+
+// v0.5.9-F — f16 layer normalization (mean-centering + variance + bias).
+// Like rmsnorm_f16 but subtracts mean first and adds a bias term.
+// Single-threadgroup kernel. Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void layer_norm_f16(
+    device const half*  x       [[buffer(0)]],
+    device const half*  weight  [[buffer(1)]],
+    device const half*  bias    [[buffer(2)]],
+    constant     float& eps     [[buffer(3)]],
+    constant     uint&  n       [[buffer(4)]],
+    device       half*  out     [[buffer(5)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    // Phase 1: mean.
+    float local_sum = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        local_sum += (float)x[i];
+    }
+    shmem[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float mean = shmem[0] / float(n);
+
+    // Phase 2: variance.
+    float local_var = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = (float)x[i] - mean;
+        local_var += v * v;
+    }
+    shmem[tid] = local_var;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_std = rsqrt(shmem[0] / float(n) + eps);
+
+    // Phase 3: normalize, scale, bias.
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = ((float)x[i] - mean) * inv_std;
+        out[i] = (half)(v * (float)weight[i] + (float)bias[i]);
+    }
 }

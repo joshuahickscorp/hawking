@@ -12,6 +12,7 @@ use crate::engine::SamplingParams;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
+#[derive(Debug, Clone)]
 pub struct Sampler {
     rng: Pcg64Mcg,
     /// rolling history of recently emitted tokens for repetition penalty

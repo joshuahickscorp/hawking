@@ -27,6 +27,13 @@ enum Cmd {
         kernel_profile: Option<PathBuf>,
         #[arg(long)]
         prefill_cache_dir: Option<PathBuf>,
+        #[arg(long)]
+        max_routed_expert_ram_mb: Option<usize>,
+        /// Total memory budget for weights + KV cache in MiB. Engine errors at
+        /// load time if the model file exceeds this limit. Pass 0 for auto-
+        /// detection (80% of system RAM). Default: unlimited.
+        #[arg(long)]
+        memory_limit_mb: Option<usize>,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -55,6 +62,17 @@ enum Cmd {
         /// set to e.g. 30000 to bail on a stuck CPU step.
         #[arg(long, default_value_t = 0)]
         max_stall_ms: u64,
+        /// Enable Metal dispatch tracing and structural allocation/commit
+        /// counters. Equivalent to setting DISMANTLE_TRACE_DISPATCH=1.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
+        #[arg(long)]
+        max_routed_expert_ram_mb: Option<usize>,
+        /// Total memory budget for weights + KV cache in MiB. Engine errors at
+        /// load time if the model file exceeds this limit. Pass 0 for auto-
+        /// detection (80% of system RAM). Default: unlimited.
+        #[arg(long)]
+        memory_limit_mb: Option<usize>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -86,6 +104,10 @@ enum Cmd {
         /// `"llamacpp"` and `"mlx"` shell out to competitor binaries.
         #[arg(long, default_value = "dismantle")]
         backend: String,
+        /// Enable Metal dispatch tracing and structural allocation/commit
+        /// counters. Equivalent to setting DISMANTLE_TRACE_DISPATCH=1.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
     },
     /// Deterministically select an experimental kernel/runtime profile.
     Autotune {
@@ -106,6 +128,19 @@ enum Cmd {
         weights: PathBuf,
         #[arg(long, default_value_t = 4096)]
         max_seq_len: usize,
+    },
+    /// Run a short diagnostic generation and print routed-expert access status.
+    Stats {
+        #[arg(long)]
+        weights: PathBuf,
+        #[arg(long, default_value = "Once upon a time")]
+        prompt: String,
+        #[arg(long, default_value_t = 32)]
+        max_new_tokens: usize,
+        #[arg(long)]
+        kernel_profile: Option<PathBuf>,
+        #[arg(long)]
+        max_routed_expert_ram_mb: Option<usize>,
     },
     /// Print version and the model id, if a weights path is given.
     Version {
@@ -160,6 +195,8 @@ fn main() -> Result<()> {
             verify_window,
             kernel_profile,
             prefill_cache_dir,
+            max_routed_expert_ram_mb,
+            memory_limit_mb,
         } => {
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(dismantle_serve::run(dismantle_serve::ServeOptions {
@@ -170,6 +207,8 @@ fn main() -> Result<()> {
                 verify_window,
                 kernel_profile,
                 prefill_cache_dir,
+                max_routed_expert_ram_mb,
+                memory_limit_mb,
             }))
         }
         Cmd::Generate {
@@ -184,6 +223,9 @@ fn main() -> Result<()> {
             speculate,
             verify_window,
             max_stall_ms,
+            trace_dispatch,
+            max_routed_expert_ram_mb,
+            memory_limit_mb,
         } => generate_main(
             weights,
             prompt,
@@ -196,6 +238,9 @@ fn main() -> Result<()> {
             speculate,
             verify_window,
             max_stall_ms,
+            trace_dispatch,
+            max_routed_expert_ram_mb,
+            memory_limit_mb,
         ),
         Cmd::Bench {
             weights,
@@ -209,6 +254,7 @@ fn main() -> Result<()> {
             trials,
             max_new_tokens,
             backend,
+            trace_dispatch,
         } => dismantle_bench::run(dismantle_bench::BenchOptions {
             weights,
             model_id: model,
@@ -221,6 +267,7 @@ fn main() -> Result<()> {
             speculate_mode: speculate.unwrap_or_else(|| "off".into()),
             verify_window,
             backend,
+            trace_dispatch,
         }),
         Cmd::Autotune {
             weights,
@@ -233,6 +280,19 @@ fn main() -> Result<()> {
             weights,
             max_seq_len,
         } => doctor_main(weights, max_seq_len),
+        Cmd::Stats {
+            weights,
+            prompt,
+            max_new_tokens,
+            kernel_profile,
+            max_routed_expert_ram_mb,
+        } => stats_main(
+            weights,
+            prompt,
+            max_new_tokens,
+            kernel_profile,
+            max_routed_expert_ram_mb,
+        ),
         Cmd::Version { weights } => version_main(weights),
         Cmd::BatchHash {
             weights,
@@ -372,6 +432,131 @@ fn doctor_main(weights: PathBuf, max_seq_len: usize) -> Result<()> {
     Ok(())
 }
 
+fn stats_main(
+    weights: PathBuf,
+    prompt: String,
+    max_new_tokens: usize,
+    kernel_profile: Option<PathBuf>,
+    max_routed_expert_ram_mb: Option<usize>,
+) -> Result<()> {
+    use anyhow::Context;
+    use dismantle_core::{
+        gguf::GgufFile, profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams,
+        StreamEvent,
+    };
+
+    let gguf = GgufFile::open(&weights)?;
+    let arch = gguf.architecture().unwrap_or("unknown");
+    let name = gguf.name().unwrap_or("unknown");
+    let get_u32 = |keys: &[&str]| {
+        keys.iter()
+            .find_map(|k| gguf.metadata.get(*k).and_then(|v| v.as_u32()))
+            .map(|v| v as usize)
+    };
+    let block_key = format!("{arch}.block_count");
+    let expert_key = format!("{arch}.expert_count");
+    let expert_used_key = format!("{arch}.expert_used_count");
+    let layers = get_u32(&[
+        block_key.as_str(),
+        "deepseek2.block_count",
+        "llama.block_count",
+        "qwen2moe.block_count",
+    ])
+    .unwrap_or(0);
+    let experts = get_u32(&[
+        expert_key.as_str(),
+        "deepseek2.expert_count",
+        "llama.expert_count",
+        "qwen2moe.expert_count",
+    ])
+    .unwrap_or(0);
+    let top_k = get_u32(&[
+        expert_used_key.as_str(),
+        "deepseek2.expert_used_count",
+        "llama.expert_used_count",
+        "qwen2moe.expert_used_count",
+    ])
+    .unwrap_or(0);
+
+    let profile = match kernel_profile.as_ref() {
+        Some(path) => Some(KernelProfile::load(path)?),
+        None => None,
+    };
+    let cfg = EngineConfig {
+        kernel_profile: profile,
+        max_routed_expert_ram_mb,
+        ..Default::default()
+    };
+    let mut engine = dismantle_core::model::load_engine(&weights, cfg)
+        .with_context(|| format!("load engine from {}", weights.display()))?;
+    let req = GenerateRequest {
+        prompt: prompt.clone(),
+        max_new_tokens,
+        sampling: SamplingParams {
+            temperature: 0.0,
+            top_k: 0,
+            top_p: 1.0,
+            repetition_penalty: 1.0,
+            seed: Some(42),
+        },
+        stop: Vec::new(),
+        abort: None,
+        max_stall_ms: 60_000,
+    };
+    let mut decoded = String::new();
+    let mut final_done = None;
+    engine.generate(req, &mut |ev| match ev {
+        StreamEvent::Token { text, .. } => decoded.push_str(&text),
+        StreamEvent::Done { stats, reason } => final_done = Some((stats, reason)),
+    })?;
+    let (stats, reason) = final_done.context("generation completed without Done event")?;
+
+    println!("dismantle stats");
+    println!("model: {name}");
+    println!("architecture: {arch}");
+    println!("weights: {}", weights.display());
+    println!("prompt: {prompt:?}");
+    println!("decoded: {:?}", decoded.trim());
+    println!("finish_reason: {:?}", reason);
+    println!("prompt_tokens: {}", stats.prompt_tokens);
+    println!("completion_tokens: {}", stats.completion_tokens);
+    println!("decode_ms: {:.1}", stats.decode_ms);
+    println!(
+        "offload_budget_mb: {}",
+        max_routed_expert_ram_mb
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "unlimited".into())
+    );
+    println!("layers: {layers}");
+    println!("routed_experts_per_layer: {experts}");
+    println!("top_k_routed: {top_k}");
+
+    // Print per-layer per-expert access counts if the cache is active.
+    if let Some(counts) = engine.expert_access_counts() {
+        let total_accesses: u64 = counts.iter().flat_map(|l| l.iter()).sum();
+        println!("expert_tracking: active  total_accesses={total_accesses}");
+        println!("layer\texpert\taccess_count\t%_of_total");
+        for (li, layer) in counts.iter().enumerate() {
+            if layer.is_empty() {
+                continue;
+            }
+            for (eid, &count) in layer.iter().enumerate() {
+                let pct = if total_accesses > 0 {
+                    count as f64 / total_accesses as f64 * 100.0
+                } else {
+                    0.0
+                };
+                println!("{li}\t{eid}\t{count}\t{pct:.2}");
+            }
+        }
+    } else {
+        println!(
+            "expert_tracking: disabled (pass --max-routed-expert-ram-mb to enable)"
+        );
+    }
+    Ok(())
+}
+
 fn gib(bytes: u64) -> f64 {
     bytes as f64 / 1024.0 / 1024.0 / 1024.0
 }
@@ -388,6 +573,22 @@ fn current_rss_mb() -> Option<f64> {
         .parse::<f64>()
         .ok()?;
     Some(kb / 1024.0)
+}
+
+fn residual_dtype_from_env() -> Result<dismantle_core::ResidualDtype> {
+    match std::env::var("DISMANTLE_RESIDUAL_DTYPE") {
+        Ok(v) if v.eq_ignore_ascii_case("f16") => {
+            anyhow::bail!(
+                "DISMANTLE_RESIDUAL_DTYPE=f16 is not supported in this build; F32 only"
+            )
+        }
+        Ok(v) if v.eq_ignore_ascii_case("f32") => Ok(dismantle_core::ResidualDtype::F32),
+        Ok(v) => anyhow::bail!(
+            "unsupported DISMANTLE_RESIDUAL_DTYPE={v:?}; expected f32 (f16 is disabled)"
+        ),
+        Err(std::env::VarError::NotPresent) => Ok(dismantle_core::ResidualDtype::F32),
+        Err(e) => anyhow::bail!("read DISMANTLE_RESIDUAL_DTYPE: {e}"),
+    }
 }
 
 fn autotune_main(
@@ -477,6 +678,9 @@ fn generate_main(
     speculate: Option<String>,
     verify_window: usize,
     max_stall_ms: u64,
+    trace_dispatch: bool,
+    max_routed_expert_ram_mb: Option<usize>,
+    memory_limit_mb: Option<usize>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -513,6 +717,7 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -521,6 +726,11 @@ fn generate_main(
         verify_window,
         prefill_cache_dir: None,
         kernel_profile: profile,
+        trace_dispatch,
+        activation_dtype: Default::default(),
+        residual_dtype,
+        max_routed_expert_ram_mb,
+        memory_limit_mb,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -618,6 +828,7 @@ fn batch_hash_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -626,6 +837,10 @@ fn batch_hash_main(
         verify_window,
         prefill_cache_dir: None,
         kernel_profile: profile,
+        trace_dispatch: false,
+        activation_dtype: Default::default(),
+        residual_dtype,
+        ..Default::default()
     };
     let load_start = std::time::Instant::now();
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;

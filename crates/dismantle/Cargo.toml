@@ -12,6 +12,10 @@ description = "dismantle CLI — Apple Silicon MoE inference"
 name = "dismantle"
 path = "src/main.rs"
 
+[[bin]]
+name = "dismantle-spec-acceptance-measure"
+path = "src/spec_acceptance_measure.rs"
+
 [dependencies]
 dismantle-core = { path = "../dismantle-core" }
 dismantle-serve = { path = "../dismantle-serve" }

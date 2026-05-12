@@ -31,4 +31,16 @@ impl Engine for QwenMoE {
     fn model_id(&self) -> &str {
         &self.model_id
     }
+
+    fn model_arch(&self) -> &str {
+        "qwen2"
+    }
+
+    fn forward_tokens_for_test(
+        &mut self,
+        _tokens: &[u32],
+        _positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        Err(Error::Unimplemented("qwen-moe forward_tokens"))
+    }
 }

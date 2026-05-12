@@ -269,7 +269,7 @@ impl Engine for QwenDense {
         let max_seq = config.max_seq_len.min(cfg.max_seq_len);
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
-        let metal_ctx = MetalContext::new().ok();
+        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
 
         Ok(Self {
             config: cfg,
@@ -370,6 +370,14 @@ impl Engine for QwenDense {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        let (buffers_created, bytes_allocated, commits) = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_stats())
+            .unwrap_or_default();
+        stats.metal_buffers_created = buffers_created;
+        stats.metal_bytes_allocated = bytes_allocated;
+        stats.metal_commits = commits;
         sink(StreamEvent::Done {
             reason,
             stats: stats.clone(),
@@ -379,6 +387,44 @@ impl Engine for QwenDense {
 
     fn model_id(&self) -> &str {
         &self.model_id
+    }
+
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
+    }
+
+    fn forward_tokens_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
+    fn forward_tokens_for_test(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() != positions.len() {
+            return Err(crate::Error::Model(format!(
+                "forward_tokens shape: tokens={} positions={}",
+                tokens.len(), positions.len()
+            )));
+        }
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token(token, positions[i])?);
+        }
+        Ok(out)
     }
 }
 

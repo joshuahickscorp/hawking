@@ -20,6 +20,8 @@ pub struct ServeOptions {
     pub verify_window: usize,
     pub kernel_profile: Option<PathBuf>,
     pub prefill_cache_dir: Option<PathBuf>,
+    pub max_routed_expert_ram_mb: Option<usize>,
+    pub memory_limit_mb: Option<usize>,
 }
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
@@ -39,12 +41,19 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         verify_window: opts.verify_window,
         prefill_cache_dir: opts.prefill_cache_dir,
         kernel_profile,
+        trace_dispatch: false,
+        activation_dtype: Default::default(),
+        max_routed_expert_ram_mb: opts.max_routed_expert_ram_mb,
+        memory_limit_mb: opts.memory_limit_mb,
+        ..Default::default()
     };
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)
         .map_err(|e| anyhow::anyhow!("load engine: {e}"))?;
+    let model_arch = engine.model_arch().to_string();
     let state = http::AppState {
         engine: Arc::new(parking_lot::Mutex::new(engine)),
+        model_arch,
     };
     let app = http::router(state);
     tracing::info!(addr = %opts.addr, "dismantle-serve listening");

@@ -89,6 +89,7 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         speculate_mode,
         speculate: speculate_mode != SpeculateMode::Off,
         verify_window: opts.verify_window,
+        trace_dispatch: opts.trace_dispatch,
         ..EngineConfig::default()
     };
     let mut engine = dismantle_core::model::load_engine(&opts.weights, cfg)
@@ -96,6 +97,11 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
 
     let mut tps = Vec::with_capacity(opts.trials);
     let mut trial_stats = Vec::with_capacity(opts.trials);
+    // Accumulate dispatch samples across all trials; per-token timing is
+    // meaningful in aggregate. We serialize them in the returned value so
+    // lib.rs can compute summaries for --trace-json.
+    let mut all_dispatch_samples: Vec<dismantle_core::metal::DispatchSample> = Vec::new();
+    let mut total_decode_ms: f64 = 0.0;
     for _ in 0..opts.trials {
         let req = GenerateRequest {
             prompt: PROMPT.into(),
@@ -121,7 +127,8 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         let secs = (stats.decode_ms / 1000.0).max(1e-6);
         let decode_tps = stats.completion_tokens as f64 / secs;
         tps.push(decode_tps);
-        trial_stats.push(serde_json::json!({
+        total_decode_ms += stats.decode_ms;
+        let mut ts = serde_json::json!({
             "decode_tps": decode_tps,
             "produced_tokens": produced,
             "prompt_tokens": stats.prompt_tokens,
@@ -133,13 +140,30 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
             "profile_id": stats.profile_id,
             "device_id": stats.device_id,
             "trace_hash": stats.trace_hash,
-        }));
+            "dispatch_count": stats.dispatch_samples.len(),
+        });
+        // Add structural counters when tracing was active (via --trace-dispatch
+        // flag or DISMANTLE_TRACE_DISPATCH env var — both set trace_dispatch on
+        // the MetalContext, so non-zero counts indicate tracing was on).
+        if stats.metal_buffers_created > 0 && stats.completion_tokens > 0 {
+            let ct = stats.completion_tokens as f64;
+            if let Some(obj) = ts.as_object_mut() {
+                obj.insert("metal_buffers_created_per_token".into(),
+                    serde_json::json!(stats.metal_buffers_created as f64 / ct));
+                obj.insert("cpu_alloc_bytes_per_token".into(),
+                    serde_json::json!(stats.metal_bytes_allocated as f64 / ct));
+                obj.insert("dispatch_commits_per_token".into(),
+                    serde_json::json!(stats.metal_commits as f64 / ct));
+            }
+        }
+        trial_stats.push(ts);
+        all_dispatch_samples.extend(stats.dispatch_samples);
     }
     let profile_path = opts
         .kernel_profile
         .as_ref()
         .map(|p| p.to_string_lossy().to_string());
-    Ok(finalize(
+    let mut result = finalize(
         tps,
         "dismantle",
         None,
@@ -148,7 +172,29 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         profile_path.as_deref(),
         speculate_mode.as_str(),
         opts.verify_window,
-    ))
+    );
+    // Attach dispatch samples to the result so lib.rs can build summaries.
+    // Raw samples are only present when DISMANTLE_TRACE_DISPATCH=1 (otherwise
+    // all_dispatch_samples is empty and we omit both fields).
+    if !all_dispatch_samples.is_empty() {
+        let total_dispatch_us: u64 = all_dispatch_samples.iter().map(|s| s.wall_us).sum();
+        let total_decode_us = (total_decode_ms * 1000.0) as u64;
+        if let Some(obj) = result.as_object_mut() {
+            obj.insert(
+                "dispatch_samples".to_string(),
+                serde_json::to_value(&all_dispatch_samples).unwrap_or_default(),
+            );
+            obj.insert(
+                "dispatch_total_us".to_string(),
+                serde_json::Value::Number(total_dispatch_us.into()),
+            );
+            obj.insert(
+                "dispatch_total_decode_us".to_string(),
+                serde_json::Value::Number(total_decode_us.into()),
+            );
+        }
+    }
+    Ok(result)
 }
 
 fn run_competitor(opts: &BenchOptions, backend: &mut dyn Competitor) -> Result<serde_json::Value> {
