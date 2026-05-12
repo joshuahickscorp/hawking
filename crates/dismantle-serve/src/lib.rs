@@ -21,6 +21,7 @@ pub struct ServeOptions {
     pub kernel_profile: Option<PathBuf>,
     pub prefill_cache_dir: Option<PathBuf>,
     pub max_routed_expert_ram_mb: Option<usize>,
+    pub memory_limit_mb: Option<usize>,
 }
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
@@ -43,6 +44,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         trace_dispatch: false,
         activation_dtype: Default::default(),
         max_routed_expert_ram_mb: opts.max_routed_expert_ram_mb,
+        memory_limit_mb: opts.memory_limit_mb,
         ..Default::default()
     };
 

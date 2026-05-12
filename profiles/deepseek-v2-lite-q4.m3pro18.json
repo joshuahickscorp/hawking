@@ -18,6 +18,12 @@
     "gemm_q4_k_schedule": "v2t_gu",
     "attn_block_schedule": "mla"
   },
+  "device_limits": {
+    "memory_limit_mb": 14400,
+    "max_seq_len": 4096,
+    "max_kv_cache_mb": 1800,
+    "max_routed_expert_ram_mb": 8000
+  },
   "evidence": {
     "profile": "m3-pro-18gb",
     "max_hours": 8.0,
