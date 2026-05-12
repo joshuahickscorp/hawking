@@ -174,7 +174,7 @@ fn main() -> Result<()> {
         println!("prompt {pi:2}: steps={prompt_steps:3}  agreed={prompt_agreed:3}  acceptance={rate:.4}  [{prompt}]");
 
         total_steps += prompt_steps;
-        total_agreed += total_agreed + prompt_agreed;
+        total_agreed += prompt_agreed;
     }
 
     let aggregate = if total_steps > 0 {
