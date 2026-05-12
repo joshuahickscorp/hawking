@@ -546,6 +546,22 @@ fn current_rss_mb() -> Option<f64> {
     Some(kb / 1024.0)
 }
 
+fn residual_dtype_from_env() -> Result<dismantle_core::ResidualDtype> {
+    match std::env::var("DISMANTLE_RESIDUAL_DTYPE") {
+        Ok(v) if v.eq_ignore_ascii_case("f16") => {
+            anyhow::bail!(
+                "DISMANTLE_RESIDUAL_DTYPE=f16 is not supported in this build; F32 only"
+            )
+        }
+        Ok(v) if v.eq_ignore_ascii_case("f32") => Ok(dismantle_core::ResidualDtype::F32),
+        Ok(v) => anyhow::bail!(
+            "unsupported DISMANTLE_RESIDUAL_DTYPE={v:?}; expected f32 (f16 is disabled)"
+        ),
+        Err(std::env::VarError::NotPresent) => Ok(dismantle_core::ResidualDtype::F32),
+        Err(e) => anyhow::bail!("read DISMANTLE_RESIDUAL_DTYPE: {e}"),
+    }
+}
+
 fn autotune_main(
     weights: PathBuf,
     profile: String,
@@ -671,10 +687,7 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = match std::env::var("DISMANTLE_RESIDUAL_DTYPE").as_deref() {
-        Ok("f16") | Ok("F16") => dismantle_core::ResidualDtype::F16,
-        _ => dismantle_core::ResidualDtype::F32,
-    };
+    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -687,7 +700,6 @@ fn generate_main(
         activation_dtype: Default::default(),
         residual_dtype,
         max_routed_expert_ram_mb,
-        ..Default::default()
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -785,10 +797,7 @@ fn batch_hash_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = match std::env::var("DISMANTLE_RESIDUAL_DTYPE").as_deref() {
-        Ok("f16") | Ok("F16") => dismantle_core::ResidualDtype::F16,
-        _ => dismantle_core::ResidualDtype::F32,
-    };
+    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,

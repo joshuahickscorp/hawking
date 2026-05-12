@@ -64,7 +64,7 @@ impl Slot {
         let seed = req
             .sampling
             .seed
-            .unwrap_or_else(|| 0xD15A_0000_0000_0000u64 ^ self.id as u64);
+            .unwrap_or(0xD15A_0000_0000_0000u64 ^ self.id as u64);
         self.sampler = Some(Sampler::new(seed));
         self.max_new_tokens = req.max_new_tokens;
         self.last_token = prompt_ids.last().copied();
