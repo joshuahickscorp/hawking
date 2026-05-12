@@ -5,14 +5,19 @@
 //! `blk.N.ffn_down.E.weight`. This module intentionally does not look for the
 //! fused `*_exps.weight` layout used by the DeepSeek path.
 
-use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StreamEvent};
+use crate::attn::mha_decode_step;
+use crate::cache::KvCache;
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::metal::{MetalContext, PinnedBuffer};
+use crate::moe::topk_gate;
 use crate::quant;
+use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 const WEIGHT_CHUNK_STRIDE: usize = 128 * 1024 * 1024;
 const WEIGHT_CHUNK_OVERLAP: usize = 64 * 1024 * 1024;
@@ -147,6 +152,8 @@ pub struct MixtralEngine {
     pub final_norm: Vec<f32>,
     pub lm_head: Option<Vec<f16>>,
     pub layers: Vec<MixtralLayer>,
+    pub kv: KvCache,
+    pub sampler: Sampler,
     pub _weights_path: PathBuf,
     pub metal_ctx: Option<MetalContext>,
     pub weights_mmap_buf: Option<Vec<PinnedBuffer>>,
@@ -335,6 +342,9 @@ impl Engine for MixtralEngine {
             None
         };
 
+        let max_seq = config.max_seq_len.min(cfg.max_seq_len);
+        let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
+        let sampler = Sampler::new(0);
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
         let kv_hidden = cfg.n_kv_heads * cfg.head_dim;
         let mut layers = Vec::with_capacity(cfg.n_layers);
@@ -457,6 +467,8 @@ impl Engine for MixtralEngine {
             final_norm,
             lm_head,
             layers,
+            kv,
+            sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
             weights_mmap_buf,
@@ -477,12 +489,100 @@ impl Engine for MixtralEngine {
 
     fn generate(
         &mut self,
-        _req: GenerateRequest,
-        _sink: &mut dyn FnMut(StreamEvent),
+        req: GenerateRequest,
+        sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
-        Err(Error::Unimplemented(
-            "MixtralEngine::forward_token is not implemented yet (v1.0.3 Step 2)",
-        ))
+        use std::sync::atomic::Ordering;
+
+        if let Some(seed) = req.sampling.seed {
+            self.sampler = Sampler::new(seed);
+        }
+
+        let abort_set = |req: &GenerateRequest| -> bool {
+            req.abort
+                .as_ref()
+                .map(|f| f.load(Ordering::Relaxed))
+                .unwrap_or(false)
+        };
+        let stall_limit = std::time::Duration::from_millis(req.max_stall_ms);
+        let stall_active = req.max_stall_ms > 0;
+
+        let prompt_ids = self.tokenizer.encode(&req.prompt, true)?;
+        let prompt_len = prompt_ids.len();
+        let mut stats = GenStats {
+            prompt_tokens: prompt_len,
+            ..Default::default()
+        };
+
+        self.kv.reset();
+        let prefill_start = Instant::now();
+        let mut prefill_aborted = false;
+        for (i, &t) in prompt_ids.iter().enumerate() {
+            if abort_set(&req) {
+                prefill_aborted = true;
+                break;
+            }
+            let step_start = Instant::now();
+            let _ = self.forward_token(t, i)?;
+            if stall_active && step_start.elapsed() > stall_limit {
+                prefill_aborted = true;
+                break;
+            }
+        }
+        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+        if prefill_aborted {
+            sink(StreamEvent::Done {
+                reason: StopReason::Aborted,
+                stats: stats.clone(),
+            });
+            return Ok(stats);
+        }
+
+        let decode_start = Instant::now();
+        let mut last_id = *prompt_ids
+            .last()
+            .ok_or_else(|| Error::Model("empty prompt after tokenization".into()))?;
+        let mut produced = 0usize;
+        let mut reason = StopReason::MaxTokens;
+        let eos = self.tokenizer.eos_id();
+        for step in 0..req.max_new_tokens {
+            if abort_set(&req) {
+                reason = StopReason::Aborted;
+                break;
+            }
+            let pos = prompt_len + step;
+            let step_start = Instant::now();
+            let mut logits = self.forward_token(last_id, pos)?;
+            if stall_active && step_start.elapsed() > stall_limit {
+                reason = StopReason::Aborted;
+                break;
+            }
+            let next_id = self.sampler.sample(&mut logits, &req.sampling);
+            self.sampler.record(next_id);
+            let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+            sink(StreamEvent::Token { id: next_id, text });
+            produced += 1;
+            if Some(next_id) == eos {
+                reason = StopReason::Eos;
+                break;
+            }
+            last_id = next_id;
+        }
+        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        stats.completion_tokens = produced;
+        let (buffers_created, bytes_allocated, commits) = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_stats())
+            .unwrap_or_default();
+        stats.metal_buffers_created = buffers_created;
+        stats.metal_bytes_allocated = bytes_allocated;
+        stats.metal_commits = commits;
+        sink(StreamEvent::Done {
+            reason,
+            stats: stats.clone(),
+        });
+        Ok(stats)
     }
 
     fn model_id(&self) -> &str {
@@ -493,14 +593,378 @@ impl Engine for MixtralEngine {
         "mixtral"
     }
 
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
+    }
+
     fn forward_tokens_for_test(
         &mut self,
-        _tokens: &[u32],
-        _positions: &[usize],
+        tokens: &[u32],
+        positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
-        Err(Error::Unimplemented(
-            "MixtralEngine::forward_tokens_for_test",
-        ))
+        if tokens.len() != positions.len() {
+            return Err(Error::Model(format!(
+                "forward_tokens shape: tokens={} positions={}",
+                tokens.len(),
+                positions.len()
+            )));
+        }
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token(token, positions[i])?);
+        }
+        Ok(out)
+    }
+
+    fn reset_kv_for_test(&mut self) {
+        self.kv.reset();
+    }
+}
+
+impl MixtralEngine {
+    fn forward_token(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        #[cfg(target_os = "macos")]
+        {
+            self.forward_token_tcb(token, pos)
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (token, pos);
+            Err(Error::Unimplemented(
+                "MixtralEngine::forward_token requires the Metal TCB path",
+            ))
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    fn read_f32_buffer(buf: &PinnedBuffer, out: &mut [f32]) -> Result<()> {
+        let bytes = out.len() * std::mem::size_of::<f32>();
+        if buf.length() < bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "read_f32_buffer: buffer too small: got {} expected {bytes}",
+                buf.length()
+            )));
+        }
+        let ptr = buf.contents() as *const f32;
+        let src = unsafe { std::slice::from_raw_parts(ptr, out.len()) };
+        out.copy_from_slice(src);
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn write_f32_buffer(buf: &PinnedBuffer, xs: &[f32]) -> Result<()> {
+        let bytes = xs.len() * std::mem::size_of::<f32>();
+        if buf.length() < bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "write_f32_buffer: buffer too small: got {} expected {bytes}",
+                buf.length()
+            )));
+        }
+        MetalContext::write_buffer_bytes(buf, bytemuck::cast_slice::<f32, u8>(xs));
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    fn encode_q4_tcb(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        t: &TensorRef,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let chunks = self
+            .weights_mmap_buf
+            .as_ref()
+            .ok_or_else(|| Error::Model("Mixtral Q4 path missing weight chunks".into()))?;
+        let chunk = chunks.get(t.chunk_index).ok_or_else(|| {
+            Error::Model(format!(
+                "Mixtral tensor chunk {} missing for offset {}",
+                t.chunk_index, t.offset
+            ))
+        })?;
+        crate::kernels::gemv_q4_k_m_v2_pinned_tcb(
+            tcb,
+            chunk,
+            t.chunk_offset,
+            t.byte_size,
+            t.rows,
+            t.cols,
+            x_buf,
+            out_buf,
+        )
+    }
+
+    #[cfg(target_os = "macos")]
+    fn missing_buf(name: &str) -> Error {
+        Error::Model(format!("Mixtral GPU path missing {name}"))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn forward_token_tcb(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let kv_hidden = n_kv_heads * head_dim;
+        let stride = kv_hidden;
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model(format!("kv cache full at {}", self.kv.max_seq)));
+        }
+        let kv_off = self.kv.seq_len * stride;
+        let mha_seq_len = self.kv.seq_len + 1;
+
+        let ctx = self
+            .metal_ctx
+            .as_ref()
+            .ok_or_else(|| Self::missing_buf("metal_ctx"))?;
+        let arena = self
+            .decode_arena
+            .as_ref()
+            .ok_or_else(|| Self::missing_buf("decode_arena"))?;
+        let embed_buf = self
+            .embed_buf
+            .as_ref()
+            .ok_or_else(|| Self::missing_buf("embed_buf"))?;
+        let final_norm_buf = self
+            .final_norm_buf
+            .as_ref()
+            .ok_or_else(|| Self::missing_buf("final_norm_buf"))?;
+        let lm_head_buf = self
+            .lm_head_buf
+            .as_ref()
+            .ok_or_else(|| Self::missing_buf("lm_head_buf"))?;
+
+        for li in 0..cfg.n_layers {
+            {
+                let layer = &self.layers[li];
+                let attn_norm = layer
+                    .pinned
+                    .attn_norm
+                    .as_ref()
+                    .ok_or_else(|| Self::missing_buf("layer.attn_norm"))?;
+                let attn_k = layer
+                    .pinned
+                    .attn_k
+                    .as_ref()
+                    .ok_or_else(|| Self::missing_buf("layer.attn_k"))?;
+                let attn_v = layer
+                    .pinned
+                    .attn_v
+                    .as_ref()
+                    .ok_or_else(|| Self::missing_buf("layer.attn_v"))?;
+
+                let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                if li == 0 {
+                    crate::kernels::embed_lookup_metal_f32_tcb(
+                        &mut tcb,
+                        embed_buf,
+                        token,
+                        h,
+                        &arena.x_buf,
+                    )?;
+                }
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    &mut tcb,
+                    &arena.x_buf,
+                    attn_norm,
+                    cfg.rms_norm_eps,
+                    h,
+                    &arena.x_norm_buf,
+                )?;
+                self.encode_q4_tcb(&mut tcb, &layer.attn_q, &arena.x_norm_buf, &arena.q_buf)?;
+                crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+                    &mut tcb,
+                    attn_k,
+                    kv_hidden,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.k_buf,
+                )?;
+                crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+                    &mut tcb,
+                    attn_v,
+                    kv_hidden,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.v_buf,
+                )?;
+                crate::kernels::rope_q_f32_inplace_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    n_heads,
+                    head_dim,
+                    0,
+                    head_dim,
+                    pos as u32,
+                    cfg.rope_theta,
+                )?;
+                crate::kernels::rope_q_f32_inplace_tcb(
+                    &mut tcb,
+                    &arena.k_buf,
+                    n_kv_heads,
+                    head_dim,
+                    0,
+                    head_dim,
+                    pos as u32,
+                    cfg.rope_theta,
+                )?;
+                tcb.commit_and_wait()?;
+            }
+
+            let mut q_full = vec![0.0f32; h];
+            let mut k_token = vec![0.0f32; kv_hidden];
+            let mut v_token = vec![0.0f32; kv_hidden];
+            Self::read_f32_buffer(&arena.q_buf, &mut q_full)?;
+            Self::read_f32_buffer(&arena.k_buf, &mut k_token)?;
+            Self::read_f32_buffer(&arena.v_buf, &mut v_token)?;
+            self.kv.keys[li][kv_off..kv_off + stride].copy_from_slice(&k_token);
+            self.kv.values[li][kv_off..kv_off + stride].copy_from_slice(&v_token);
+
+            let kv_size = mha_seq_len * stride;
+            let keys = &self.kv.keys[li][..kv_size];
+            let values = &self.kv.values[li][..kv_size];
+            let mut attn_out = vec![0.0f32; h];
+            mha_decode_step(
+                &q_full,
+                keys,
+                values,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                mha_seq_len,
+                &mut attn_out,
+            )?;
+            Self::write_f32_buffer(&arena.attn_out_buf, &attn_out)?;
+
+            let mut gate_logits = vec![0.0f32; cfg.n_experts];
+            {
+                let layer = &self.layers[li];
+                let ffn_norm = layer
+                    .pinned
+                    .ffn_norm
+                    .as_ref()
+                    .ok_or_else(|| Self::missing_buf("layer.ffn_norm"))?;
+                let gate_inp = layer
+                    .pinned
+                    .gate_inp
+                    .as_ref()
+                    .ok_or_else(|| Self::missing_buf("layer.gate_inp"))?;
+                let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                self.encode_q4_tcb(
+                    &mut tcb,
+                    &layer.attn_output,
+                    &arena.attn_out_buf,
+                    &arena.proj_out_buf,
+                )?;
+                crate::kernels::add_inplace_metal_tcb(
+                    &mut tcb,
+                    &arena.x_buf,
+                    &arena.proj_out_buf,
+                    h,
+                )?;
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    &mut tcb,
+                    &arena.x_buf,
+                    ffn_norm,
+                    cfg.rms_norm_eps,
+                    h,
+                    &arena.x_norm_buf,
+                )?;
+                crate::kernels::gemv_f32_attn_pinned_buf_tcb(
+                    &mut tcb,
+                    gate_inp,
+                    cfg.n_experts,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.gate_logits_buf,
+                )?;
+                tcb.commit_and_wait()?;
+            }
+            Self::read_f32_buffer(&arena.gate_logits_buf, &mut gate_logits)?;
+            let routes = topk_gate(&mut gate_logits, cfg.top_k, true);
+
+            {
+                let layer = &self.layers[li];
+                let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                for (route_i, (eid, _weight)) in routes.iter().enumerate() {
+                    self.encode_q4_tcb(
+                        &mut tcb,
+                        &layer.ffn_gate[*eid],
+                        &arena.x_norm_buf,
+                        &arena.expert_gate_bufs[route_i],
+                    )?;
+                    self.encode_q4_tcb(
+                        &mut tcb,
+                        &layer.ffn_up[*eid],
+                        &arena.x_norm_buf,
+                        &arena.expert_up_bufs[route_i],
+                    )?;
+                    crate::kernels::silu_mul_tcb(
+                        &mut tcb,
+                        &arena.expert_gate_bufs[route_i],
+                        &arena.expert_up_bufs[route_i],
+                        &arena.expert_act_bufs[route_i],
+                        cfg.intermediate,
+                    )?;
+                    self.encode_q4_tcb(
+                        &mut tcb,
+                        &layer.ffn_down[*eid],
+                        &arena.expert_act_bufs[route_i],
+                        &arena.expert_out_bufs[route_i],
+                    )?;
+                }
+                tcb.commit_and_wait()?;
+            }
+
+            let mut ffn_out = vec![0.0f32; h];
+            let mut expert_out = vec![0.0f32; h];
+            for (route_i, (_eid, weight)) in routes.iter().enumerate() {
+                Self::read_f32_buffer(&arena.expert_out_bufs[route_i], &mut expert_out)?;
+                for i in 0..h {
+                    ffn_out[i] += *weight * expert_out[i];
+                }
+            }
+            let mut x_cpu = vec![0.0f32; h];
+            Self::read_f32_buffer(&arena.x_buf, &mut x_cpu)?;
+            for i in 0..h {
+                x_cpu[i] += ffn_out[i];
+            }
+            Self::write_f32_buffer(&arena.x_buf, &x_cpu)?;
+        }
+
+        self.kv.seq_len += 1;
+
+        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+        crate::kernels::rmsnorm_metal_buf_tcb(
+            &mut tcb,
+            &arena.x_buf,
+            final_norm_buf,
+            cfg.rms_norm_eps,
+            h,
+            &arena.x_norm_buf,
+        )?;
+        crate::kernels::gemv_f16_metal_buf_tcb(
+            &mut tcb,
+            lm_head_buf,
+            cfg.vocab_size,
+            h,
+            &arena.x_norm_buf,
+            &arena.logits_buf,
+        )?;
+        tcb.commit_and_wait()?;
+
+        let mut logits = vec![0.0f32; cfg.vocab_size];
+        Self::read_f32_buffer(&arena.logits_buf, &mut logits)?;
+        Ok(logits)
     }
 }
 
