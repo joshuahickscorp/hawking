@@ -5,6 +5,7 @@
 
 pub mod deepseek_v2;
 pub mod expert_cache;
+pub mod mixtral;
 pub mod qwen_dense;
 pub mod qwen_moe;
 
@@ -18,8 +19,13 @@ use std::path::Path;
 pub fn load_engine(weights: &Path, config: EngineConfig) -> Result<Box<dyn Engine>> {
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
+    let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
     drop(gguf); // model loaders re-open via mmap
     match arch.as_str() {
+        "llama" if is_mixtral => {
+            let e = mixtral::MixtralEngine::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         "deepseek2" | "deepseek-v2" | "deepseek2-lite" => {
             let e = deepseek_v2::DeepSeekV2::load(weights, config)?;
             Ok(Box::new(e))
