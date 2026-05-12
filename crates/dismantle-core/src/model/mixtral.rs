@@ -321,11 +321,29 @@ impl MixtralEngine {
         }
         Ok(chunks)
     }
+
+    fn madvise_willneed_mmap(gguf: &GgufFile) {
+        platform_madvise_willneed(gguf.mmap.as_ptr() as usize, gguf.mmap.len());
+    }
 }
+
+#[cfg(unix)]
+fn platform_madvise_willneed(addr: usize, len: usize) {
+    use core::ffi::{c_int, c_void};
+    const POSIX_MADV_WILLNEED: c_int = 3;
+    unsafe extern "C" {
+        fn posix_madvise(addr: *mut c_void, len: usize, advice: c_int) -> c_int;
+    }
+    let _ = unsafe { posix_madvise(addr as *mut c_void, len, POSIX_MADV_WILLNEED) };
+}
+
+#[cfg(not(unix))]
+fn platform_madvise_willneed(_addr: usize, _len: usize) {}
 
 impl Engine for MixtralEngine {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
         let gguf = GgufFile::open(weights)?;
+        Self::madvise_willneed_mmap(&gguf);
         if !is_mixtral_gguf(&gguf) {
             return Err(Error::Model(
                 "not a Mixtral split-expert MoE GGUF".into(),
