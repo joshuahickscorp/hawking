@@ -417,6 +417,81 @@ mod metal_dispatch {
         )
     }
 
+    /// TCB variant of `gemv_q4_k_m_v2_pinned`.
+    /// Encodes `gemm_q4_k_m_fused_v2` against existing buffers without
+    /// committing; the caller owns the command-buffer boundary.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v2_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_fused_v2";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = cols * std::mem::size_of::<f32>();
+        let out_bytes = rows * std::mem::size_of::<f32>();
+        if x_buf.length() < x_bytes as u64 || out_buf.length() < out_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb buffer sizes: x={} expected>={x_bytes} out={} expected>={out_bytes}",
+                x_buf.length(),
+                out_buf.length()
+            )));
+        }
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V2_TG: u32 = 256;
+        let n_tg = (rows_u32 + 7) / 8;
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V2_TG, 1, 1),
+            (V2_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Wedge K — simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
     /// as `gemv_q4_k_m_v2_pinned`; dispatches `gemm_q4_k_m_simdmat`.
     /// Selected via `gemm_q4_k_schedule = "simdmat"`.
