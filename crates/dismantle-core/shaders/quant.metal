@@ -284,8 +284,7 @@ kernel void gemm_q4_k_m_fused_v2(
     device const uchar* w_q4   [[buffer(0)]],   // (rows, cols) Q4_K_M
     device const float* x      [[buffer(1)]],   // (cols,)
     device       float* y      [[buffer(2)]],   // (rows,)
-    constant     uint&  rows   [[buffer(3)]],
-    constant     uint&  cols   [[buffer(4)]],
+    constant ArgbufRowsCols& args [[buffer(3)]],
     uint                tid          [[thread_position_in_threadgroup]],
     uint                gid          [[threadgroup_position_in_grid]],
     uint                simd_lane    [[thread_index_in_simdgroup]],
@@ -293,9 +292,9 @@ kernel void gemm_q4_k_m_fused_v2(
 {
     // ROWS_PER_TG=8 (one simdgroup per row), TG_SIZE=256 (8 simdgroups).
     uint base_row = gid * 8u + simd_id;
-    if (base_row >= rows) return;     // tail simdgroups do nothing
+    if (base_row >= args.rows) return;     // tail simdgroups do nothing
 
-    uint  blocks_per_row = cols / 256u;
+    uint  blocks_per_row = args.cols / 256u;
     uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
     float partial = 0.0f;
 
@@ -351,17 +350,16 @@ kernel void gemm_q3_k_fused_v2(
     device const uchar* w_q3   [[buffer(0)]],   // (rows, cols) Q3_K
     device const float* x      [[buffer(1)]],   // (cols,)
     device       float* y      [[buffer(2)]],   // (rows,)
-    constant     uint&  rows   [[buffer(3)]],
-    constant     uint&  cols   [[buffer(4)]],
+    constant ArgbufRowsCols& args [[buffer(3)]],
     uint                tid          [[thread_position_in_threadgroup]],
     uint                gid          [[threadgroup_position_in_grid]],
     uint                simd_lane    [[thread_index_in_simdgroup]],
     uint                simd_id      [[simdgroup_index_in_threadgroup]])
 {
     uint base_row = gid * 8u + simd_id;
-    if (base_row >= rows) return;
+    if (base_row >= args.rows) return;
 
-    uint blocks_per_row = cols / 256u;
+    uint blocks_per_row = args.cols / 256u;
     uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 110ul;
     float partial = 0.0f;
 
