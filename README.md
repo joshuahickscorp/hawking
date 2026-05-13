@@ -80,7 +80,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 ## Status
 
-v1.0.0 launch candidate, active development. DeepSeek-V2-Lite generation is stable; Mixtral 8x7B support is preview-scaffolded and tracked in [docs/mixtral.md](docs/mixtral.md).
+v1.0.4 launch candidate, active development. DeepSeek-V2-Lite generation is stable at ~20 dec_tps; Mixtral 8x7B is functional (loads on 18 GB Macs, produces coherent English) but unoptimized at ~0.12 dec_tps — v1.0.5 targets the perf push. Tracked in [docs/mixtral.md](docs/mixtral.md).
 
 ## License
 
