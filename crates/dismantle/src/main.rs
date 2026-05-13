@@ -1,3 +1,6 @@
+mod bench_kernel;
+mod bench_server;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
@@ -185,6 +188,50 @@ enum Cmd {
     /// Print the SHA-256 prefix of all compiled Metal shader sources.
     /// Used to update kernel-profile JSON after shader changes.
     ShaderHash,
+    /// Load a model once and serve repeated inference requests over stdin/stdout
+    /// (JSON-line protocol). Eliminates the 5-15s model-load cost for each
+    /// smoke iteration during development. Use bench_server_driver.sh for
+    /// automated multi-request runs.
+    BenchServer {
+        #[arg(long)]
+        weights: PathBuf,
+        #[arg(long)]
+        kernel_profile: Option<PathBuf>,
+        #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
+        speculate: Option<String>,
+        #[arg(long, default_value_t = 4)]
+        verify_window: usize,
+        /// Enable Metal dispatch tracing for per-request structural metrics.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
+        /// Read requests from stdin (JSON-line). Currently the only supported
+        /// transport; HTTP bind will be added in a future sub-phase.
+        #[arg(long, default_value_t = true)]
+        stdin: bool,
+    },
+    /// Micro-benchmark an individual Metal GEMV kernel at a production tensor
+    /// shape without loading a model. Allocates synthetic buffers, dispatches
+    /// the kernel N times, and reports mean/p50/p99/min/max latency in μs.
+    /// Use --all to bench every supported kernel at a given shape.
+    BenchKernel {
+        /// Kernel name, e.g. gemv_q4_k_m_v2_pinned_tcb. Use --all to bench
+        /// all kernels that support the given shape.
+        #[arg(long, conflicts_with = "all")]
+        kernel: Option<String>,
+        /// Bench all kernels that support the given shape.
+        #[arg(long, default_value_t = false)]
+        all: bool,
+        /// Matrix shape as ROWSxCOLS, e.g. 1408x2048 (rows=output, cols=input).
+        /// Kernel constraints (e.g. cols%256==0) are checked at runtime.
+        #[arg(long)]
+        shape: String,
+        /// Number of dispatches to time. Default 1000.
+        #[arg(long, default_value_t = 1000)]
+        iterations: usize,
+        /// Suppress appending to bench_results/kernel_perf_history.jsonl.
+        #[arg(long, default_value_t = false)]
+        no_history: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -327,6 +374,33 @@ fn main() -> Result<()> {
             println!("{}", dismantle_core::profile::shader_source_hash());
             Ok(())
         }
+        Cmd::BenchServer {
+            weights,
+            kernel_profile,
+            speculate,
+            verify_window,
+            trace_dispatch,
+            stdin: _,
+        } => bench_server::run(bench_server::BenchServerOptions {
+            weights,
+            kernel_profile,
+            speculate,
+            verify_window,
+            trace_dispatch,
+        }),
+        Cmd::BenchKernel {
+            kernel,
+            all,
+            shape,
+            iterations,
+            no_history,
+        } => bench_kernel::run(bench_kernel::BenchKernelOptions {
+            kernel,
+            all,
+            shape,
+            iterations,
+            no_history,
+        }),
     }
 }
 
