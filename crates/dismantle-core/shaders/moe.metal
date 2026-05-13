@@ -132,41 +132,40 @@ kernel void moe_topk_gate(
     device const float* logits    [[buffer(0)]],   // (n_tokens, n_experts) row-major fp32
     device       uint*  expert_ids[[buffer(1)]],   // (n_tokens, top_k)
     device       float* weights   [[buffer(2)]],   // (n_tokens, top_k) raw softmax probs
-    constant     uint&  n_experts [[buffer(3)]],
-    constant     uint&  top_k     [[buffer(4)]],
+    constant ArgbufTopkGate& args [[buffer(3)]],
     threadgroup  float* shmem     [[threadgroup(0)]],   // n_experts floats
     uint                tid       [[thread_position_in_threadgroup]],
     uint                gid       [[threadgroup_position_in_grid]],   // token index
     uint                tg_size   [[threads_per_threadgroup]])
 {
     // Cooperative load — pure fp32 copy.
-    for (uint i = tid; i < n_experts; i += tg_size) {
-        shmem[i] = logits[(uint64_t)gid * n_experts + i];
+    for (uint i = tid; i < args.n_experts; i += tg_size) {
+        shmem[i] = logits[(uint64_t)gid * args.n_experts + i];
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     if (tid == 0) {
         // Stable softmax: subtract max before exp.
         float m = -INFINITY;
-        for (uint i = 0; i < n_experts; ++i) if (shmem[i] > m) m = shmem[i];
+        for (uint i = 0; i < args.n_experts; ++i) if (shmem[i] > m) m = shmem[i];
 
         float sum = 0.0f;
-        for (uint i = 0; i < n_experts; ++i) {
+        for (uint i = 0; i < args.n_experts; ++i) {
             shmem[i] = exp(shmem[i] - m);
             sum += shmem[i];
         }
         float inv = 1.0f / sum;
-        for (uint i = 0; i < n_experts; ++i) shmem[i] *= inv;
+        for (uint i = 0; i < args.n_experts; ++i) shmem[i] *= inv;
 
         // Top-K via masked selection (k passes; n_experts small).
-        for (uint k = 0; k < top_k; ++k) {
+        for (uint k = 0; k < args.top_k; ++k) {
             uint best_idx = 0;
             float best_val = -INFINITY;
-            for (uint i = 0; i < n_experts; ++i) {
+            for (uint i = 0; i < args.n_experts; ++i) {
                 if (shmem[i] > best_val) { best_val = shmem[i]; best_idx = i; }
             }
-            expert_ids[(uint64_t)gid * top_k + k] = best_idx;
-            weights[(uint64_t)gid * top_k + k]    = best_val;
+            expert_ids[(uint64_t)gid * args.top_k + k] = best_idx;
+            weights[(uint64_t)gid * args.top_k + k]    = best_val;
             shmem[best_idx] = -INFINITY;   // mask for next pass
         }
     }
@@ -1050,10 +1049,10 @@ kernel void moe_batched_silu_mul(
     device const float* gate [[buffer(0)]],
     device const float* up   [[buffer(1)]],
     device       float* out  [[buffer(2)]],
-    constant     uint& n     [[buffer(3)]],
+    constant ArgbufN& args   [[buffer(3)]],
     uint id                  [[thread_position_in_grid]])
 {
-    if (id >= n) return;
+    if (id >= args.n) return;
     float g = gate[id];
     out[id] = (g / (1.0f + exp(-g))) * up[id];
 }
