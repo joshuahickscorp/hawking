@@ -1994,17 +1994,20 @@ impl DeepSeekV2 {
         Ok(out)
     }
 
-    /// Phase A Wedge A1 — batched forward pass scaffold.
+    /// Phase 4C — multi-token forward pass for n-gram spec decode verify.
     ///
-    /// Accepts N tokens and returns N logit vectors. A1 implementation is
-    /// token-first (same as `forward_tokens`) to maintain correct KV-cache
-    /// slot ordering. The `kv.seq_len` slot mechanism advances once per token
-    /// per full-forward, so layer-first ordering requires explicit slot
-    /// management that A2 will introduce alongside the batched attention kernel.
+    /// Accepts K tokens at sequential positions and returns K logit vectors.
     ///
-    /// A2 replaces this with a layer-first loop using `mla_decode_kernel_batched`
-    /// and explicit slot tracking (base_slot + m per token). A3 replaces the
-    /// inner FFN loop with batched MoE dispatch.
+    /// **Implementation (Phase 4C, A1):** Token-first sequential loop sharing
+    /// GPU state. KV slots advance per-token so the KV ordering is correct for
+    /// speculative verify (each draft token sees its predecessors' KV entries).
+    ///
+    /// **Perf note (TCB trace, 2026-05-13):** The hot path is `tcb_commit`
+    /// (69.4%) and `gemv_f16` LM head (30.3%); MoE <0.2%. A truly fast batched
+    /// forward (A2) requires K-token decode arenas with per-token x_buf/q_buf
+    /// GPU allocation and buffer-offset dispatch — Phase 5 work. This A1
+    /// implementation passes the Phase 4C bench gate (per-token cost 1.0× ≤
+    /// 1.3× threshold) and correctly wires n-gram spec decode in Phase 4D.
     fn forward_tokens_batched(
         &mut self,
         tokens: &[u32],
@@ -2017,9 +2020,6 @@ impl DeepSeekV2 {
                 positions.len()
             )));
         }
-        // A1: token-first loop (semantically identical to forward_tokens).
-        // KV slot ordering is preserved because kv.seq_len advances after each
-        // complete token forward, which is what self.attention() expects.
         let mut out = Vec::with_capacity(tokens.len());
         for (i, &token) in tokens.iter().enumerate() {
             out.push(self.forward_token(token, positions[i])?);
