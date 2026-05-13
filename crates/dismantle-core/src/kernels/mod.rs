@@ -3470,6 +3470,66 @@ mod metal_dispatch {
         Ok(())
     }
 
+    /// TCB variant of `mla_decode_metal_batched_slots`.
+    ///
+    /// Encodes `mla_decode_kernel_batched_slots` into an existing TCB using
+    /// pre-allocated PinnedBuffers. Caller commits the TCB.
+    ///
+    /// `max_seq_len` is `max(seq_lens)` — used to size the threadgroup
+    /// score scratch memory. Must be ≥ 1.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_metal_batched_slots_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_batch: &PinnedBuffer,
+        c_kv: &PinnedBuffer,
+        k_pe: &PinnedBuffer,
+        kv_b_proj: &PinnedBuffer,
+        slot_offsets: &PinnedBuffer,
+        seq_lens: &PinnedBuffer,
+        out_batch: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        n_batch: usize,
+        max_seq_len: usize,
+        scale: f32,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let max_seq_u64 = max_seq_len.max(1) as u64;
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = max_seq_u64 * std::mem::size_of::<f32>() as u64;
+
+        tcb.dispatch_threads(
+            "mla_decode_kernel_batched_slots",
+            (n_heads_u32 * TG_SIZE, n_batch as u32, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_batch), 0);
+                enc.set_buffer(1, Some(c_kv), 0);
+                enc.set_buffer(2, Some(k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(out_batch), 0);
+                enc.set_buffer(5, Some(slot_offsets), 0);
+                enc.set_buffer(6, Some(seq_lens), 0);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+                enc.set_bytes(11, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(12, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )
+    }
+
     /// Wedge 3 — Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
     /// into one command buffer. Saves one commit+wait per attention layer
     /// (27 fewer roundtrips per token on DeepSeek-V2-Lite).
