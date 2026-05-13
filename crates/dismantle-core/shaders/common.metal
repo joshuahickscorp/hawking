@@ -22,6 +22,42 @@
 #include <metal_stdlib>
 using namespace metal;
 
+// ── Phase 3 argbuf structs ────────────────────────────────────────────────────
+// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the
+// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index
+// that previously held the first `set_bytes` arg.
+
+/// (rows: u32, cols: u32) — used by GEMV kernels with weight+activation buffers.
+struct ArgbufRowsCols { uint rows; uint cols; };
+
+/// (hidden: u32, eps: f32) — used by rmsnorm_f32 TCB path.
+struct ArgbufRmsnorm { uint hidden; float eps; };
+
+/// (n_experts: u32, top_k: u32) — used by moe_topk_gate.
+struct ArgbufTopkGate { uint n_experts; uint top_k; };
+
+/// (n: u32) — used by silu_mul / moe_batched_silu_mul.
+struct ArgbufN { uint n; };
+
+/// (seq_slot: u32, kv_lora_rank: u32, qk_rope_head_dim: u32) — used by kv_append_f32.
+struct ArgbufKvAppend { uint seq_slot; uint kv_lora_rank; uint qk_rope_head_dim; };
+
+/// (hidden: u32, routes: u32, has_shared: u32) — used by moe_route_accumulate.
+struct ArgbufRouteAcc { uint hidden; uint routes; uint has_shared; };
+
+/// (n_heads: u32, q_head_dim: u32, qk_nope_dim: u32, qk_rope_dim: u32, pos: u32, base: float)
+/// — used by rope_q_f32_inplace.
+struct ArgbufRopeQ {
+    uint n_heads;
+    uint q_head_dim;
+    uint qk_nope_dim;
+    uint qk_rope_dim;
+    uint pos;
+    float base;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // One workgroup normalizes one (hidden,) row.
 kernel void rmsnorm(
     device const half*  x        [[buffer(0)]],
