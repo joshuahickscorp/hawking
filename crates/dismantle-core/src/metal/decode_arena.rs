@@ -96,8 +96,14 @@ mod arena_imp {
         /// blit copy inside the TokenCommandBuffer; read by the CPU after commit.
         /// Size: n_moe_layers × top_k_routed × sizeof(u32).
         pub route_history_buf: PinnedBuffer,
+        /// Phase 5A: per-slot final-norm output buffers used by `forward_tokens_batched_tcb`.
+        /// After each token's final rmsnorm, x_norm_buf is blitted into slot[ki] so all
+        /// K final norms survive until the single global TCB commits and LM heads are run.
+        /// Size: max_batch_size × hidden × sizeof(f32).
+        pub batch_x_norm_buf: Vec<PinnedBuffer>,
 
         /// Cached sizes for bounds-checking at dispatch time.
+        pub max_batch_size: usize,
         pub n_heads: usize,
         pub q_head_dim: usize,
         pub v_head_dim: usize,
@@ -131,6 +137,7 @@ mod arena_imp {
             ffn_intermediate: usize,
             q_lora_rank: usize,
             n_moe_layers: usize,
+            max_batch_size: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
             let kv_a_dim = kv_lora_rank + qk_rope_head_dim;
@@ -175,6 +182,10 @@ mod arena_imp {
                 route_history_buf: ctx.new_buffer(
                     n_moe_layers.max(1) * top_k_sz * std::mem::size_of::<u32>()
                 ),
+                batch_x_norm_buf: (0..max_batch_size.max(1))
+                    .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
+                    .collect(),
+                max_batch_size: max_batch_size.max(1),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
