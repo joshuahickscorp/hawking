@@ -18,6 +18,7 @@
 pub mod attn;
 pub mod cache;
 pub mod gguf;
+pub mod kernel_bench;
 pub mod kernels;
 pub mod metal;
 pub mod model;
