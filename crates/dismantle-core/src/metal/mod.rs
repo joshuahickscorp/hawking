@@ -506,7 +506,7 @@ mod imp {
     /// tcb.commit_and_wait()?;
     /// ```
     pub struct TokenCommandBuffer<'ctx> {
-        ctx: &'ctx MetalContext,
+        pub ctx: &'ctx MetalContext,
         /// `None` after `commit_and_wait` so the Drop impl knows not to re-commit.
         cmd: Option<metal::CommandBuffer>,
     }
