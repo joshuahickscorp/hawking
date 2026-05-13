@@ -1790,18 +1790,17 @@ kernel void gemv_f32_moe(
     device const float* w     [[buffer(0)]],   // (rows, cols) row-major fp32
     device const float* x     [[buffer(1)]],   // (cols,)
     device       float* y     [[buffer(2)]],   // (rows,)
-    constant     uint&  rows  [[buffer(3)]],
-    constant     uint&  cols  [[buffer(4)]],
+    constant ArgbufRowsCols& args  [[buffer(3)]],
     threadgroup  float* shmem [[threadgroup(0)]],
     uint                tid       [[thread_position_in_threadgroup]],
     uint                gid       [[threadgroup_position_in_grid]],
     uint                tg_size   [[threads_per_threadgroup]])
 {
-    if (gid >= rows) return;
-    device const float* row = w + (uint64_t)gid * (uint64_t)cols;
+    if (gid >= args.rows) return;
+    device const float* row = w + (uint64_t)gid * (uint64_t)args.cols;
 
     float partial = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
+    for (uint c = tid; c < args.cols; c += tg_size) {
         partial += row[c] * x[c];
     }
     shmem[tid] = partial;
