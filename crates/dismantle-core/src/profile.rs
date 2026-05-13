@@ -72,6 +72,11 @@ pub struct KernelVariant {
     pub gemm_q4_k_schedule_per_shape: BTreeMap<String, String>,
     #[serde(default = "default_attn_block_schedule")]
     pub attn_block_schedule: String,
+    /// Phase 5C.1: "f32" (default) or "f16" — selects KV cache storage dtype.
+    /// When set to "f16", KV cache stores as half instead of float, halving
+    /// attention memory bandwidth. Internal accumulators remain f32.
+    #[serde(default = "default_kv_cache_dtype")]
+    pub kv_cache_dtype: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -80,6 +85,10 @@ fn default_gemm_q4_k_schedule() -> String {
 
 fn default_attn_block_schedule() -> String {
     "mla".to_string()
+}
+
+fn default_kv_cache_dtype() -> String {
+    "f32".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -236,6 +245,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         gemm_q4_k_schedule: "v2".into(),
         gemm_q4_k_schedule_per_shape: BTreeMap::new(),
         attn_block_schedule: "mla".into(),
+        kv_cache_dtype: "f32".into(),
     }]
 }
 
