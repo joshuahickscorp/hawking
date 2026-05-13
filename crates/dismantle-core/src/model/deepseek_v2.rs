@@ -321,6 +321,7 @@ impl FfnMoeSetup {
         match q4k_schedule {
             "v2" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
+            "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             // v2t_gu / v2t_gu_serial / v2t_gu_v2 fuse gate+up into one kernel;
             // single-matrix GEMVs (down) use v2t
             "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
@@ -351,6 +352,19 @@ impl FfnMoeSetup {
 }
 
 impl DeepSeekV2 {
+    fn q4k_schedule_for_shape(&self, rows: usize, cols: usize) -> &str {
+        let Some(profile) = self.kernel_profile.as_ref() else {
+            return "scalar";
+        };
+        if profile.selected.gemm_q4_k_schedule == "per_shape" {
+            let key = format!("{rows}x{cols}");
+            if let Some(schedule) = profile.selected.gemm_q4_k_schedule_per_shape.get(&key) {
+                return schedule.as_str();
+            }
+        }
+        profile.selected.gemm_q4_k_schedule.as_str()
+    }
+
     fn dequant(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
             .tensor(name)
@@ -1590,11 +1604,7 @@ impl DeepSeekV2 {
         if let Some(ctx) = &self.metal_ctx {
             if t.dtype == GgmlType::Q4_K {
                 let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
-                let schedule = self
-                    .kernel_profile
-                    .as_ref()
-                    .map(|p| p.selected.gemm_q4_k_schedule.as_str())
-                    .unwrap_or("scalar");
+                let schedule = self.q4k_schedule_for_shape(rows, cols);
                 if schedule == "v2" {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
@@ -1652,9 +1662,9 @@ impl DeepSeekV2 {
                         );
                     }
                 }
-                if schedule == "v3_llama" {
+                if schedule == "v3_llama" || schedule == "llama_port" {
                     if let Some(model_buf) = &self.weights_mmap_buf {
-                        return crate::kernels::gemv_q4_k_m_v3_llama_pinned(
+                        return crate::kernels::gemv_q4_k_m_llama_port_pinned(
                             ctx,
                             model_buf,
                             t.offset,

@@ -649,6 +649,21 @@ mod metal_dispatch {
         dispatch_q4_k_m_v3_llama_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
+    /// v1.1.0 opt-in schedule name for the faithful llama.cpp-style Q4_K port.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_llama_port_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        gemv_q4_k_m_v3_llama_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
     /// Approach 1 Iter 2 — 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
     /// Selected via `gemm_q4_k_schedule = "v3_dual"`.
     pub fn gemv_q4_k_m_v3_dual_pinned(
@@ -2789,7 +2804,7 @@ mod metal_dispatch {
         let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
 
         let q4k_indexed_kernel = match q4k_schedule {
-            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             _ => "moe_batched_gemm_q4_indexed",
         };
 
@@ -6946,7 +6961,7 @@ mod metal_dispatch {
         shared_act: &PinnedBuffer,
     ) -> Result<()> {
         let q4k_indexed_kernel = match q4k_schedule {
-            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
             "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
@@ -7020,7 +7035,7 @@ mod metal_dispatch {
             || shared_down_offset.is_some();
 
         let q4k_indexed_kernel = match q4k_schedule {
-            "v2" => "moe_batched_gemm_q4_indexed_v2",
+            "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
             "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
