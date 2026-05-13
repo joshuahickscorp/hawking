@@ -760,6 +760,7 @@ impl Engine for DeepSeekV2 {
                         cfg.ffn_intermediate,
                         cfg.q_lora_rank,
                         cfg.n_layers.saturating_sub(cfg.first_k_dense_layers),
+                        8, // max_batch_size for Phase 5A K-token batched verify
                     )
                 })
             } else {
@@ -1082,7 +1083,8 @@ impl Engine for DeepSeekV2 {
             }
             let spec_k = self.verify_window;
             let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
-            let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
+            // Phase 5A: batched verify replaces profiled greedy; retained for near-budget single steps.
+            let _use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
 
             // Seed n-gram history with prompt tokens.
             let mut ngram = crate::speculate::ngram::NGramDraft::new(3);
@@ -1151,23 +1153,32 @@ impl Engine for DeepSeekV2 {
                 // Save KV state before verify so we can rollback.
                 let draft_start_seq = self.kv.seq_len;
 
-                // --- VERIFY: serial full-model forward, stop at first mismatch ---
-                let mut tmp_last = last_id;
-                let verify_result =
-                    crate::speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
-                        let id = self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
-                        if id == draft_ids[k] {
-                            tmp_last = draft_ids[k];
-                        }
-                        Ok(id)
-                    })?;
-                let first_reject = verify_result.accepted_count;
+                // --- VERIFY (Phase 5A): batched forward — [last_id, draft_ids...] in one TCB.
+                // Batch: [last_id, d0, d1, ..., dK-1] at positions [pos, pos+1, ..., pos+K].
+                // logits_batch[k] = model output after processing batch[k] at pos+k.
+                // Acceptance: argmax(logits_batch[k]) should match draft_ids[k].
+                // Bonus: argmax(logits_batch[K]) if all accepted; else argmax(logits_batch[first_reject]).
+                let batch_tokens: Vec<u32> = std::iter::once(last_id)
+                    .chain(draft_ids.iter().copied())
+                    .collect();
+                let batch_positions: Vec<usize> = (0..=draft_actual_k)
+                    .map(|ki| pos + ki)
+                    .collect();
+                let logits_batch = self.forward_tokens_batched(&batch_tokens, &batch_positions)?;
 
-                // Bonus/correction token at pos + first_reject.
-                let bonus_id = match verify_result.first_divergent_token {
-                    Some(id) => id,
-                    None => self.forward_token_argmax(tmp_last, pos + draft_actual_k, use_profiled_greedy)?,
-                };
+                let mut first_reject = 0usize;
+                let mut correction_id: Option<u32> = None;
+                for k in 0..draft_actual_k {
+                    let pred = crate::kernels::argmax_f32(&logits_batch[k]);
+                    if pred != draft_ids[k] {
+                        correction_id = Some(pred);
+                        break;
+                    }
+                    first_reject += 1;
+                }
+                let bonus_id = correction_id.unwrap_or_else(|| {
+                    crate::kernels::argmax_f32(&logits_batch[draft_actual_k])
+                });
 
                 // Rollback KV to the correct accepted prefix length.
                 self.kv.seq_len = draft_start_seq + first_reject + 1;
@@ -2134,20 +2145,19 @@ impl DeepSeekV2 {
         Ok(out)
     }
 
-    /// Phase 4C — multi-token forward pass for n-gram spec decode verify.
+    /// Phase 4C/5A — multi-token forward pass for n-gram spec decode verify.
     ///
     /// Accepts K tokens at sequential positions and returns K logit vectors.
     ///
-    /// **Implementation (Phase 4C, A1):** Token-first sequential loop sharing
-    /// GPU state. KV slots advance per-token so the KV ordering is correct for
-    /// speculative verify (each draft token sees its predecessors' KV entries).
+    /// **Phase 5A fast path:** When Wedge C conditions are met (Metal + arena +
+    /// all weights pinned + GPU KV active), runs all K tokens in a SINGLE
+    /// command buffer commit, eliminating K-1 commit+wait round-trips.
+    /// Each token processes sequentially within the CB; a GPU blit saves each
+    /// token's final x_norm into `arena.batch_x_norm_buf[ki]` before the next
+    /// token overwrites the shared arena buffers.
     ///
-    /// **Perf note (TCB trace, 2026-05-13):** The hot path is `tcb_commit`
-    /// (69.4%) and `gemv_f16` LM head (30.3%); MoE <0.2%. A truly fast batched
-    /// forward (A2) requires K-token decode arenas with per-token x_buf/q_buf
-    /// GPU allocation and buffer-offset dispatch — Phase 5 work. This A1
-    /// implementation passes the Phase 4C bench gate (per-token cost 1.0× ≤
-    /// 1.3× threshold) and correctly wires n-gram spec decode in Phase 4D.
+    /// **Phase 4C fallback:** sequential loop over `forward_token` when fast
+    /// path conditions are not met.
     fn forward_tokens_batched(
         &mut self,
         tokens: &[u32],
@@ -2160,11 +2170,237 @@ impl DeepSeekV2 {
                 positions.len()
             )));
         }
+        if tokens.is_empty() {
+            return Ok(vec![]);
+        }
+
+        // Phase 5A: single-TCB fast path — same conditions as Wedge C.
+        #[cfg(target_os = "macos")]
+        {
+            let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
+            let residual_f16 = self.residual_dtype == crate::engine::ResidualDtype::F16;
+            if !use_f16 && !residual_f16 {
+                let tcb_base = self.metal_ctx.is_some()
+                    && self.decode_arena.is_some()
+                    && self.layers.iter().all(|l| {
+                        l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
+                    });
+                let wedge_c_ready = tcb_base
+                    && !self.mla_c_kv.is_empty()
+                    && self.weights_mmap_buf.is_some()
+                    && self.embed_buf.is_some()
+                    && self.final_norm_buf.is_some()
+                    && self.layers.iter().all(Self::layer_has_tcb_attention);
+                let k = tokens.len();
+                let max_bs = self.decode_arena.as_ref().map(|a| a.max_batch_size).unwrap_or(0);
+                if wedge_c_ready && !self.mla_c_kv_gpu.is_empty() && k <= max_bs {
+                    return self.forward_tokens_batched_tcb(tokens, positions);
+                }
+            }
+        }
+
+        // Phase 4C fallback: sequential per-token loop.
         let mut out = Vec::with_capacity(tokens.len());
         for (i, &token) in tokens.iter().enumerate() {
             out.push(self.forward_token(token, positions[i])?);
         }
         Ok(out)
+    }
+
+    /// Phase 5A — single-TCB K-token batched forward.
+    ///
+    /// Processes K tokens sequentially within one Metal command buffer.
+    /// Each token reuses the shared arena scratch buffers (x_buf, x_norm_buf,
+    /// q, attn_out, etc.) which Metal executes in strict encoder order.
+    /// After each token's final rmsnorm, x_norm_buf is blitted into
+    /// `arena.batch_x_norm_buf[ki]` to survive until the CB commits.
+    ///
+    /// Key invariant: Metal's sequential encoder guarantee means token k's
+    /// kv_append writes to GPU KV BEFORE token k+1's mla_decode reads it.
+    /// KV rollback (kv.seq_len reset) is handled by the caller.
+    #[cfg(target_os = "macos")]
+    fn forward_tokens_batched_tcb(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        let k = tokens.len();
+        let h = self.config.hidden;
+        let n_layers = self.config.n_layers;
+        let eps = self.config.rms_norm_eps;
+        let kv_lora_rank = self.config.kv_lora_rank;
+        let qk_rope_head_dim = self.config.qk_rope_head_dim;
+
+        // One-time KV sync: mirror CPU KV into GPU-resident buffers (matches Wedge C).
+        if !self.mla_kv_gpu_synced && self.kv.seq_len > 0 {
+            let sl = self.kv.seq_len;
+            for li in 0..n_layers {
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &self.mla_c_kv_gpu[li],
+                    bytemuck::cast_slice(&self.mla_c_kv[li][..sl * kv_lora_rank]),
+                );
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &self.mla_k_pe_gpu[li],
+                    bytemuck::cast_slice(&self.mla_k_pe[li][..sl * qk_rope_head_dim]),
+                );
+            }
+        }
+
+        let seq_slot_base = self.kv.seq_len;
+        let q4k_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+            .unwrap_or("scalar");
+
+        {
+            let ctx = self.metal_ctx.as_ref().unwrap();
+            let arena = self.decode_arena.as_ref().unwrap();
+            let model_buf = self.weights_mmap_buf.as_ref().unwrap();
+            let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+
+            let mut global_tcb = crate::metal::TokenCommandBuffer::new(ctx);
+
+            for (ki, &token) in tokens.iter().enumerate() {
+                let seq_slot = seq_slot_base + ki;
+                let seq_len = seq_slot + 1;
+                let pos = positions[ki];
+
+                for li in 0..n_layers {
+                    crate::metal::set_current_layer(Some(li as u32));
+
+                    let moe_setup = self.ffn_moe_check(li)?;
+                    let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                        .ok_or_else(|| crate::Error::Model(format!("batched5A: l{li} kv_b_proj not pinned")))?;
+                    let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                        .ok_or_else(|| crate::Error::Model(format!("batched5A: l{li} o_proj not pinned")))?;
+                    let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                    let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                    let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+
+                    // Phase 1: embed lookup (li=0) or add_inplace residual (li>0),
+                    //           then q/kv projections + kv_append into GPU KV at seq_slot.
+                    self.encode_attention_phase1_into_tcb(
+                        &mut global_tcb, li, pos, Some(token), seq_slot,
+                    )?;
+                    // Phase 2: q_b_proj + rope_q.
+                    self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
+                    // Phase 3: mla_decode (reads seq_len GPU KV entries) + o_proj.
+                    crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                        &mut global_tcb, arena, kv_b_proj_buf, o_proj_buf,
+                        &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
+                        self.config.n_heads, self.config.qk_nope_head_dim,
+                        self.config.qk_rope_head_dim, self.config.v_head_dim,
+                        self.config.kv_lora_rank, seq_len, scale, h,
+                    )?;
+                    // Residual: x_buf += attn_out (arena.out).
+                    crate::kernels::add_inplace_metal_tcb(
+                        &mut global_tcb, &arena.x_buf, &arena.out, h,
+                    )?;
+                    // FFN norm: x_buf → x_norm_buf.
+                    crate::kernels::rmsnorm_metal_buf_tcb(
+                        &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                    )?;
+
+                    // FFN: MoE or dense.
+                    if let Some(ref setup) = moe_setup {
+                        let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                        crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                            &mut global_tcb, gate_buf,
+                            self.config.n_routed_experts, self.config.hidden,
+                            &arena.x_norm_buf, &arena.moe_logits_buf,
+                        )?;
+                        crate::kernels::moe_topk_gate_tcb(
+                            &mut global_tcb,
+                            &arena.moe_logits_buf,
+                            &arena.moe_route_ids_buf,
+                            &arena.moe_route_weights_buf,
+                            self.config.n_routed_experts,
+                            self.config.top_k_routed,
+                        )?;
+                        crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                            &mut global_tcb,
+                            model_buf,
+                            setup.routed_gate_off,
+                            setup.routed_up_off,
+                            setup.routed_down_off,
+                            &arena.moe_route_ids_buf,
+                            &arena.moe_route_weights_buf,
+                            self.config.top_k_routed,
+                            &arena.shared_route_ids_buf,
+                            setup.shared_gate_off,
+                            setup.shared_up_off,
+                            setup.shared_down_off,
+                            self.config.hidden,
+                            self.config.moe_intermediate,
+                            setup.shared_mid,
+                            q4k_schedule,
+                            setup.routed_down_kernel(q4k_schedule),
+                            setup.shared_down_kernel(q4k_schedule),
+                            &arena.x_norm_buf,
+                            &arena.ffn_out_buf,
+                            &arena.moe_routed_gate_out_buf,
+                            &arena.moe_routed_up_out_buf,
+                            &arena.moe_routed_act_buf,
+                            &arena.moe_routed_out_buf,
+                            &arena.moe_shared_gate_out_buf,
+                            &arena.moe_shared_up_out_buf,
+                            &arena.moe_shared_act_buf,
+                            &arena.moe_shared_out_buf,
+                        )?;
+                    } else {
+                        let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
+                        if !dense_ok {
+                            // Dense weights not pinned — not supported in batched fast path.
+                            // Caller should not reach here (wedge_c_ready requires all weights).
+                            return Err(Error::Model(format!(
+                                "forward_tokens_batched_tcb: l{li} dense weights not pinned"
+                            )));
+                        }
+                    }
+                }
+
+                // Final residual accumulation + final norm for token ki.
+                crate::kernels::add_inplace_metal_tcb(
+                    &mut global_tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                )?;
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    &mut global_tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                )?;
+                // Blit x_norm_buf → batch_x_norm_buf[ki] so it survives the next token
+                // overwriting x_norm_buf.
+                let sz = (h * std::mem::size_of::<f32>()) as u64;
+                global_tcb.copy_buffer_bytes(
+                    &arena.x_norm_buf, 0, &arena.batch_x_norm_buf[ki], 0, sz,
+                )?;
+            }
+
+            // Single commit covering all K tokens' GPU work.
+            global_tcb.commit_and_wait()?;
+        }
+
+        self.kv.seq_len += k;
+        self.mla_kv_gpu_synced = true;
+        crate::metal::set_current_layer(None);
+
+        // Post-commit: run LM head for each token's saved x_norm.
+        let w_f16: &[half::f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed,
+        };
+        let mut results = Vec::with_capacity(k);
+        for ki in 0..k {
+            let arena = self.decode_arena.as_ref().unwrap();
+            let mut x_norm = vec![0.0f32; h];
+            {
+                let ptr = arena.batch_x_norm_buf[ki].contents() as *const f32;
+                let src = unsafe { std::slice::from_raw_parts(ptr, h) };
+                x_norm.copy_from_slice(src);
+            }
+            let mut logits = vec![0.0f32; self.config.vocab_size];
+            self.gemv_f16_dispatch(w_f16, self.config.vocab_size, h, &x_norm, &mut logits)?;
+            results.push(logits);
+        }
+
+        Ok(results)
     }
 
     /// Reset MLA KV cache to empty state for test isolation.
