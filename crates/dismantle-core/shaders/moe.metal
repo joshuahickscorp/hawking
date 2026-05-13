@@ -1062,15 +1062,13 @@ kernel void moe_route_accumulate(
     device const float* weights     [[buffer(1)]],   // (routes)
     device const float* shared_out  [[buffer(2)]],   // (hidden) when has_shared=1
     device       float* out         [[buffer(3)]],   // (hidden)
-    constant     uint&  hidden      [[buffer(4)]],
-    constant     uint&  routes      [[buffer(5)]],
-    constant     uint&  has_shared  [[buffer(6)]],
+    constant ArgbufRouteAcc& args   [[buffer(4)]],
     uint id [[thread_position_in_grid]])
 {
-    if (id >= hidden) return;
-    float acc = has_shared != 0u ? shared_out[id] : 0.0f;
-    for (uint r = 0; r < routes; ++r) {
-        acc += weights[r] * routed_out[(uint64_t)r * hidden + id];
+    if (id >= args.hidden) return;
+    float acc = args.has_shared != 0u ? shared_out[id] : 0.0f;
+    for (uint r = 0; r < args.routes; ++r) {
+        acc += weights[r] * routed_out[(uint64_t)r * args.hidden + id];
     }
     out[id] = acc;
 }

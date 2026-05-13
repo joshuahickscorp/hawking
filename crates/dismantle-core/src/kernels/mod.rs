@@ -6450,14 +6450,19 @@ mod metal_dispatch {
         let qk_rope_u32 = qk_rope_head_dim as u32;
         let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
         let tg = TG_SIZE.min(total_pairs.max(1));
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[
+            ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+            ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+        ])?;
+        ab.set_u32(0, n_heads_u32);
+        ab.set_u32(1, q_head_u32);
+        ab.set_u32(2, qk_nope_u32);
+        ab.set_u32(3, qk_rope_u32);
+        ab.set_u32(4, pos);
+        ab.set_f32(5, base);
         tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(q_buf), 0);
-            enc.set_bytes(1, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
-            enc.set_bytes(2, std::mem::size_of::<u32>() as u64, &q_head_u32 as *const u32 as *const _);
-            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
-            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
-            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &pos as *const u32 as *const _);
-            enc.set_bytes(6, std::mem::size_of::<f32>() as u64, &base as *const f32 as *const _);
+            enc.set_buffer(1, Some(ab.handle()), 0);
         })
     }
 
@@ -6503,6 +6508,10 @@ mod metal_dispatch {
         let kv_lora_u32 = kv_lora_rank as u32;
         let rope_u32 = qk_rope_head_dim as u32;
         let n_threads = kv_lora_rank.max(qk_rope_head_dim) as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, seq_slot_u32);
+        ab.set_u32(1, kv_lora_u32);
+        ab.set_u32(2, rope_u32);
         tcb.dispatch_threads(
             "kv_append_f32",
             (n_threads, 1, 1),
@@ -6512,9 +6521,7 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(src_kv_a_out), 0);
                 enc.set_buffer(2, Some(dst_c_kv), 0);
                 enc.set_buffer(3, Some(dst_k_pe), 0);
-                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &seq_slot_u32 as *const u32 as *const _);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rope_u32 as *const u32 as *const _);
+                enc.set_buffer(4, Some(ab.handle()), 0);
             },
         )
     }
@@ -6885,14 +6892,16 @@ mod metal_dispatch {
         let hidden_u32 = hidden as u32;
         let routes_u32 = routes as u32;
         let has_shared_u32 = u32::from(has_shared);
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_u32(1, routes_u32);
+        ab.set_u32(2, has_shared_u32);
         tcb.dispatch_threads("moe_route_accumulate", (hidden_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(routed_out), 0);
             enc.set_buffer(1, Some(weights), 0);
             enc.set_buffer(2, Some(shared_out), 0);
             enc.set_buffer(3, Some(out), 0);
-            enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &hidden_u32 as *const u32 as *const _);
-            enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-            enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &has_shared_u32 as *const u32 as *const _);
+            enc.set_buffer(4, Some(ab.handle()), 0);
         })
     }
 

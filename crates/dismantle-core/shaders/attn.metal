@@ -588,18 +588,16 @@ kernel void kv_append_f32(
     device const float* src_kv_a_out     [[buffer(1)]],
     device       float* dst_c_kv         [[buffer(2)]],
     device       float* dst_k_pe         [[buffer(3)]],
-    constant     uint&  seq_slot         [[buffer(4)]],
-    constant     uint&  kv_lora_rank     [[buffer(5)]],
-    constant     uint&  qk_rope_head_dim [[buffer(6)]],
+    constant ArgbufKvAppend& args        [[buffer(4)]],
     uint tid [[thread_position_in_grid]])
 {
-    uint64_t c_base  = (uint64_t)seq_slot * (uint64_t)kv_lora_rank;
-    uint64_t pe_base = (uint64_t)seq_slot * (uint64_t)qk_rope_head_dim;
-    if (tid < kv_lora_rank) {
+    uint64_t c_base  = (uint64_t)args.seq_slot * (uint64_t)args.kv_lora_rank;
+    uint64_t pe_base = (uint64_t)args.seq_slot * (uint64_t)args.qk_rope_head_dim;
+    if (tid < args.kv_lora_rank) {
         dst_c_kv[c_base + tid] = src_c_kv_normed[tid];
     }
-    if (tid < qk_rope_head_dim) {
-        dst_k_pe[pe_base + tid] = src_kv_a_out[(uint64_t)kv_lora_rank + tid];
+    if (tid < args.qk_rope_head_dim) {
+        dst_k_pe[pe_base + tid] = src_kv_a_out[(uint64_t)args.kv_lora_rank + tid];
     }
 }
 
