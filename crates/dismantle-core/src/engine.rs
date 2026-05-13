@@ -95,6 +95,8 @@ impl Default for EngineConfig {
 pub enum SpeculateMode {
     Off,
     ExactShared,
+    /// N-gram lookup draft: zero compute cost, serial verify with full model.
+    NGram,
 }
 
 impl Default for SpeculateMode {
@@ -110,8 +112,9 @@ impl SpeculateMode {
             None => Ok(Self::Off),
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
+            Some("ngram" | "n-gram" | "ngram-spec") => Ok(Self::NGram),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared or off"
+                "unknown speculate mode `{other}`; expected exact-shared, ngram, or off"
             ))),
         }
     }
@@ -120,6 +123,7 @@ impl SpeculateMode {
         match self {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
+            Self::NGram => "ngram",
         }
     }
 }

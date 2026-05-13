@@ -1071,6 +1071,146 @@ impl Engine for DeepSeekV2 {
                     break;
                 }
             }
+        } else if self.speculate_mode == crate::SpeculateMode::NGram {
+            // N-gram speculative decoding: zero-cost draft from token history,
+            // serial verification with full model.
+            // Requires greedy (temperature=0) for exact parity.
+            if req.sampling.temperature > 0.0 {
+                return Err(Error::Model(
+                    "--speculate ngram currently requires temperature=0".into(),
+                ));
+            }
+            let spec_k = self.verify_window;
+            let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
+            let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
+
+            // Seed n-gram history with prompt tokens.
+            let mut ngram = crate::speculate::ngram::NGramDraft::new(3);
+            for &t in &prompt_ids {
+                ngram.note_token(t);
+            }
+
+            let mut pos = prompt_len;
+            'ngram_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+                let remaining = req.max_new_tokens - produced;
+
+                // Clamp draft window.
+                let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
+
+                if actual_k == 0 {
+                    // Near budget — single greedy step.
+                    let next_id = match self.forward_token_greedy(last_id, pos)? {
+                        Some(t) => t,
+                        None => {
+                            let mut logits = self.forward_token(last_id, pos)?;
+                            self.sampler.sample(&mut logits, &req.sampling)
+                        }
+                    };
+                    self.sampler.record(next_id);
+                    ngram.note_token(next_id);
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos { reason = StopReason::Eos; }
+                    break 'ngram_loop;
+                }
+
+                // --- DRAFT: n-gram lookup (zero compute) ---
+                let draft_ids = ngram.propose(actual_k);
+
+                if draft_ids.is_empty() {
+                    // No draft available — single greedy step.
+                    let next_id = match self.forward_token_greedy(last_id, pos)? {
+                        Some(t) => t,
+                        None => {
+                            let mut logits = self.forward_token(last_id, pos)?;
+                            self.sampler.sample(&mut logits, &req.sampling)
+                        }
+                    };
+                    self.sampler.record(next_id);
+                    ngram.note_token(next_id);
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos { reason = StopReason::Eos; break 'ngram_loop; }
+                    if stall_active && step_start.elapsed() > stall_limit {
+                        reason = StopReason::Aborted; break 'ngram_loop;
+                    }
+                    last_id = next_id;
+                    pos += 1;
+                    continue;
+                }
+
+                let draft_actual_k = draft_ids.len();
+
+                // Save KV state before verify so we can rollback.
+                let draft_start_seq = self.kv.seq_len;
+
+                // --- VERIFY: serial full-model forward, stop at first mismatch ---
+                let mut tmp_last = last_id;
+                let verify_result =
+                    crate::speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
+                        let id = self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
+                        if id == draft_ids[k] {
+                            tmp_last = draft_ids[k];
+                        }
+                        Ok(id)
+                    })?;
+                let first_reject = verify_result.accepted_count;
+
+                // Bonus/correction token at pos + first_reject.
+                let bonus_id = match verify_result.first_divergent_token {
+                    Some(id) => id,
+                    None => self.forward_token_argmax(tmp_last, pos + draft_actual_k, use_profiled_greedy)?,
+                };
+
+                // Rollback KV to the correct accepted prefix length.
+                self.kv.seq_len = draft_start_seq + first_reject + 1;
+
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_actual_k - first_reject;
+
+                // --- EMIT accepted draft tokens ---
+                for k in 0..first_reject {
+                    let id = draft_ids[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    ngram.note_token(id);
+                    produced += 1;
+                    if Some(id) == eos { reason = StopReason::Eos; break 'ngram_loop; }
+                    if produced >= req.max_new_tokens { break 'ngram_loop; }
+                }
+
+                // --- EMIT bonus/correction ---
+                let text = self.tokenizer.decode_one(bonus_id).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus_id, text });
+                self.sampler.record(bonus_id);
+                ngram.note_token(bonus_id);
+                produced += 1;
+                last_id = bonus_id;
+                pos += first_reject + 1;
+
+                if spec_log {
+                    let step_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                    eprintln!(
+                        "[ngram-spec] accept={}/{} step={:.1}ms emit={} tps={:.1}",
+                        first_reject, draft_actual_k, step_ms,
+                        first_reject + 1,
+                        (first_reject + 1) as f64 / (step_ms / 1000.0)
+                    );
+                }
+
+                if Some(bonus_id) == eos { reason = StopReason::Eos; break; }
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted; break;
+                }
+            }
         } else {
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
