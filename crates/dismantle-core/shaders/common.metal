@@ -467,3 +467,70 @@ kernel void layer_norm_f16(
         out[i] = (half)(v * (float)weight[i] + (float)bias[i]);
     }
 }
+
+// v1.1.0-phase5B2 — parallel top-K extraction from full logits buffer.
+// Reads n f32 logits, extracts top-K (index, value) pairs via parallel
+// reduction in threadgroup memory. Uses K rounds of masked argmax.
+// Output: compact interleaved [idx0, val0, idx1, val1, ..., idx_{K-1}, val_{K-1}]
+// stored as f32 pairs (index cast to f32, then value).
+// Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1). Requires K ≤ 256.
+kernel void topk_extract_f32(
+    device const float* logits     [[buffer(0)]],   // (n,) full logits
+    device       float* topk_out   [[buffer(1)]],   // (2*k,) interleaved [idx, val] pairs as f32
+    constant     uint&  n          [[buffer(2)]],   // vocab size
+    constant     uint&  k          [[buffer(3)]],   // top-K count
+    threadgroup  float* shmem_v    [[threadgroup(0)]],  // threadgroup scratch for values
+    threadgroup  uint*  shmem_i    [[threadgroup(1)]],  // threadgroup scratch for indices
+    threadgroup  uint*  selected   [[threadgroup(2)]],  // threadgroup scratch for selected indices (marks exclusions)
+    uint                tid        [[thread_position_in_threadgroup]],
+    uint                tg_size    [[threads_per_threadgroup]])
+{
+    uint kk = min(k, 256u);  // Safety bound: prevent runaway loop.
+
+    for (uint round = 0; round < kk; round++) {
+        // Phase 1: local argmax over unselected logits.
+        float local_v = -INFINITY;
+        uint  local_i = 0;
+        for (uint j = tid; j < n; j += tg_size) {
+            bool skip = false;
+            // Check if j was selected in previous rounds.
+            for (uint s = 0; s < round; s++) {
+                if (selected[s] == j) { skip = true; break; }
+            }
+            if (!skip) {
+                float v = logits[j];
+                if (v > local_v) { local_v = v; local_i = j; }
+            }
+        }
+
+        // Phase 2: parallel reduction to global argmax.
+        shmem_v[tid] = local_v;
+        shmem_i[tid] = local_i;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+            if (tid < stride) {
+                float vb = shmem_v[tid + stride];
+                uint  ib = shmem_i[tid + stride];
+                float va = shmem_v[tid];
+                uint  ia = shmem_i[tid];
+                // Keep the max; tiebreak by smallest index.
+                if (vb > va || (vb == va && ib < ia)) {
+                    shmem_v[tid] = vb;
+                    shmem_i[tid] = ib;
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+
+        // Phase 3: thread 0 writes the round result and marks it as selected.
+        if (tid == 0) {
+            uint idx = shmem_i[0];
+            float val = shmem_v[0];
+            topk_out[2 * round + 0] = (float)idx;      // index as f32
+            topk_out[2 * round + 1] = val;              // value as f32
+            selected[round] = idx;                      // mark for exclusion in next round
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+}

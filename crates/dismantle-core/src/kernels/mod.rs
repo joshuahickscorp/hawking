@@ -7674,6 +7674,132 @@ mod metal_dispatch {
     }
 
     // ── end v1.1.0-X ─────────────────────────────────────────────────────────
+
+    // ── v1.1.0-phase5B.2: LM head top-K filter ───────────────────────────────
+
+    /// Phase 5B.2: TCB-aware top-K LM head extraction.
+    /// Encodes full GEMV + top-K extraction into the TCB without committing.
+    /// Two-kernel approach: `gemv_f16` writes full logits, then `topk_extract_f32`
+    /// finds top-K and writes compact interleaved (idx, logit) pairs.
+    ///
+    /// # Arguments
+    /// - `tcb`: TokenCommandBuffer to encode into
+    /// - `w_buf`: LM head weights (rows × cols f16)
+    /// - `rows`: vocabulary size (typically 102400)
+    /// - `cols`: hidden dimension (typically 2048)
+    /// - `top_k`: number of top logits to extract
+    /// - `x_buf`: input vector (cols f32)
+    /// - `logits_buf`: scratch buffer for full logits (rows f32)
+    /// - `topk_buf`: output buffer for top-K pairs (top_k * 2 f32 values)
+    ///
+    /// # Output format
+    /// `topk_buf` contains interleaved pairs: [idx0, val0, idx1, val1, ..., idx_{K-1}, val_{K-1}]
+    /// where indices are cast to f32 and values are logits.
+    #[cfg(target_os = "macos")]
+    pub fn gemv_f16_metal_pinned_topk_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        top_k: usize,
+        x_buf: &PinnedBuffer,
+        logits_buf: &PinnedBuffer,
+        topk_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        // Validate shapes
+        let x_bytes = cols * std::mem::size_of::<f32>();
+        let logits_bytes = rows * std::mem::size_of::<f32>();
+        let topk_bytes = top_k * 2 * std::mem::size_of::<f32>();
+
+        if x_buf.length() < x_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "gemv_f16_metal_pinned_topk_tcb: x_buf too small: {} < {}",
+                x_buf.length(),
+                x_bytes
+            )));
+        }
+        if logits_buf.length() < logits_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "gemv_f16_metal_pinned_topk_tcb: logits_buf too small: {} < {}",
+                logits_buf.length(),
+                logits_bytes
+            )));
+        }
+        if topk_buf.length() < topk_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "gemv_f16_metal_pinned_topk_tcb: topk_buf too small: {} < {}",
+                topk_buf.length(),
+                topk_bytes
+            )));
+        }
+        if top_k > 256 {
+            return Err(Error::Kernel(format!(
+                "gemv_f16_metal_pinned_topk_tcb: top_k > 256 not supported: {}",
+                top_k
+            )));
+        }
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let top_k_u32 = top_k as u32;
+
+        // Dispatch kernel 1: gemv_f16 (full GEMV into logits_buf)
+        const TG_SIZE: u32 = 256;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+
+        tcb.dispatch_threads(
+            "gemv_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(logits_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        // Dispatch kernel 2: topk_extract_f32 (parallel top-K extraction)
+        // Single workgroup: 256 threads, 3 threadgroup scratch arrays.
+        let shmem_v = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;  // float[256]
+        let shmem_i = TG_SIZE as u64 * std::mem::size_of::<u32>() as u64;  // uint[256]
+        let shmem_sel = top_k as u64 * std::mem::size_of::<u32>() as u64;  // uint[top_k]
+
+        tcb.dispatch_threads(
+            "topk_extract_f32",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(topk_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &top_k_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_v);
+                enc.set_threadgroup_memory_length(1, shmem_i);
+                enc.set_threadgroup_memory_length(2, shmem_sel);
+            },
+        )
+    }
+
+    // ── end v1.1.0-phase5B.2 ──────────────────────────────────────────────────
 }
 
 
