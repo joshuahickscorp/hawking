@@ -505,19 +505,35 @@ mod imp {
     /// tcb.dispatch_threads("add_inplace", ...)?;
     /// tcb.commit_and_wait()?;
     /// ```
+    ///
+    /// Set `DISMANTLE_TCB_TRACE=1` to enable per-kernel CPU encoding timing.
+    /// At commit time all per-call samples (kernel name + encoding wall_us) are
+    /// flushed into the shared `ctx.trace` accumulator alongside a `tcb_commit`
+    /// record carrying the total CB wall time (submit → GPU done).  These appear
+    /// in the existing `--trace-json` output, closing the audit gap (can't see
+    /// which kernel dominates inside the TCB).
     pub struct TokenCommandBuffer<'ctx> {
         pub ctx: &'ctx MetalContext,
         /// `None` after `commit_and_wait` so the Drop impl knows not to re-commit.
         cmd: Option<metal::CommandBuffer>,
+        /// Whether TCB-internal per-kernel timing is active (DISMANTLE_TCB_TRACE=1).
+        trace_tcb: bool,
+        /// Accumulated per-dispatch samples; only populated when `trace_tcb`.
+        tcb_samples: Vec<super::DispatchSample>,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
-            Self { ctx, cmd: Some(cmd) }
+            let trace_tcb = std::env::var_os("DISMANTLE_TCB_TRACE").is_some();
+            Self { ctx, cmd: Some(cmd), trace_tcb, tcb_samples: Vec::new() }
         }
 
         /// Encode one kernel dispatch into the pending command buffer.
+        ///
+        /// When `DISMANTLE_TCB_TRACE=1` the CPU-side encoding time (pipeline
+        /// lookup + command encoding, not GPU execution time) is recorded per
+        /// call and flushed to `ctx.trace` at `commit_and_wait`.
         pub fn dispatch_threads(
             &mut self,
             fn_name: &str,
@@ -525,6 +541,7 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            let t0 = if self.trace_tcb { Some(Instant::now()) } else { None };
             let cmd = self
                 .cmd
                 .as_ref()
@@ -538,6 +555,13 @@ mod imp {
                 MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
             );
             enc.end_encoding();
+            if let Some(t0) = t0 {
+                self.tcb_samples.push(super::DispatchSample {
+                    kernel_name: static_kernel_name(fn_name),
+                    wall_us: t0.elapsed().as_micros() as u64,
+                    layer_hint: super::current_layer(),
+                });
+            }
             Ok(())
         }
 
@@ -571,18 +595,32 @@ mod imp {
         /// Consumes self; subsequent dispatch calls would fail.
         pub fn commit_and_wait(mut self) -> Result<()> {
             if let Some(cmd) = self.cmd.take() {
-                cmd.commit();
-                cmd.wait_until_completed();
+                self.flush_and_commit(cmd);
             }
             Ok(())
+        }
+
+        /// Internal: commit `cmd`, wait for GPU completion, then flush TCB trace
+        /// samples to `ctx.trace` (no-op when `trace_tcb` is false).
+        fn flush_and_commit(&mut self, cmd: metal::CommandBuffer) {
+            let t0 = if self.trace_tcb { Some(Instant::now()) } else { None };
+            cmd.commit();
+            cmd.wait_until_completed();
+            if let Some(t0) = t0 {
+                let layer = super::current_layer();
+                let total_us = t0.elapsed().as_micros() as u64;
+                for s in self.tcb_samples.drain(..) {
+                    self.ctx.trace.record(s.kernel_name, s.wall_us, s.layer_hint);
+                }
+                self.ctx.trace.record("tcb_commit", total_us, layer);
+            }
         }
     }
 
     impl Drop for TokenCommandBuffer<'_> {
         fn drop(&mut self) {
             if let Some(cmd) = self.cmd.take() {
-                cmd.commit();
-                cmd.wait_until_completed();
+                self.flush_and_commit(cmd);
             }
         }
     }
