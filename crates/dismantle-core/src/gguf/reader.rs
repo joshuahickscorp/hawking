@@ -188,6 +188,12 @@ impl MetaValue {
             _ => None,
         }
     }
+    pub fn as_f32_array(&self) -> Option<Vec<f32>> {
+        match self {
+            Self::Array(a) => a.iter().map(|v| v.as_f32()).collect(),
+            _ => None,
+        }
+    }
 }
 
 /// The mmap-backed GGUF file. Cheap to clone the `Arc`-wrapped inner.
