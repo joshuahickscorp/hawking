@@ -101,6 +101,14 @@ mod arena_imp {
         /// K final norms survive until the single global TCB commits and LM heads are run.
         /// Size: max_batch_size × hidden × sizeof(f32).
         pub batch_x_norm_buf: Vec<PinnedBuffer>,
+        /// Phase 5C.2: f16 normed activation buffer — hidden × f16.
+        /// Written by rmsnorm_f32_to_f16 when x_norm_dtype="f16" is set in the kernel
+        /// profile. Used as the activation input to the LM head GEMV (gemv_f16_f16in),
+        /// halving the hidden-size read bandwidth for the final vocab projection.
+        /// The residual stream (x_buf) remains f32; this buffer does NOT cross layer
+        /// boundaries. When x_norm_dtype="f32" (default) this buffer is allocated but
+        /// never written; the code path routes through x_norm_buf instead.
+        pub x_norm_f16_buf: PinnedBuffer,
 
         /// Cached sizes for bounds-checking at dispatch time.
         pub max_batch_size: usize,
@@ -185,6 +193,7 @@ mod arena_imp {
                 batch_x_norm_buf: (0..max_batch_size.max(1))
                     .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
                     .collect(),
+                x_norm_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 max_batch_size: max_batch_size.max(1),
                 n_heads,
                 q_head_dim,

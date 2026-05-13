@@ -1399,6 +1399,18 @@ impl DeepSeekV2 {
             && self.layers.iter().all(Self::layer_has_tcb_attention)
     }
 
+    /// Phase 5C.2: returns true when the kernel profile selects f16 x_norm output.
+    /// When true, the final rmsnorm writes to arena.x_norm_f16_buf (f16) and the
+    /// LM head GEMV reads f16 activations instead of f32, halving that bandwidth.
+    /// Residual stream stays f32 between layers; no accumulation error.
+    #[cfg(target_os = "macos")]
+    fn use_x_norm_f16(&self) -> bool {
+        self.kernel_profile
+            .as_ref()
+            .map(|p| p.selected.x_norm_dtype == "f16")
+            .unwrap_or(false)
+    }
+
     #[cfg(target_os = "macos")]
     fn shared_only_gpu_argmax_available(&self) -> bool {
         self.greedy_gpu_argmax_available()
@@ -1564,14 +1576,26 @@ impl DeepSeekV2 {
         if n_layers > 0 {
             crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.ffn_out_buf, h)?;
         }
-        crate::kernels::rmsnorm_metal_buf_tcb(
-            &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
-        )?;
-        if use_simdmat {
+        // Phase 5C.2: opt-in f16 final norm + LM head.
+        let x_norm_f16 = self.use_x_norm_f16();
+        if x_norm_f16 {
+            crate::kernels::rmsnorm_f32_to_f16_tcb(
+                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_f16_buf,
+            )?;
+            crate::kernels::gemv_f16_f16in_tcb(
+                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_f16_buf, logits_buf,
+            )?;
+        } else if use_simdmat {
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+            )?;
             crate::kernels::gemv_f16_simdmat_tcb(
                 &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
             )?;
         } else {
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+            )?;
             crate::kernels::gemv_f16_metal_buf_tcb(
                 &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
             )?;
@@ -2484,6 +2508,10 @@ impl DeepSeekV2 {
                     let logits_buf = self.logits_buf.as_ref().unwrap();
                     let tok_buf = self.token_buf.as_ref().unwrap();
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
+                    // Phase 5C.2: if x_norm_f16 path ran in forward_token_final_norm_maybe_read,
+                    // the final norm was already written to x_norm_f16_buf — but that path is
+                    // lm_head_foldable and returns early, so we never reach here in the f16 path.
+                    // This fallback handles the non-fold (ExactShared) case which stays f32.
                     let use_simdmat = self
                         .kernel_profile
                         .as_ref()
@@ -2942,25 +2970,40 @@ impl DeepSeekV2 {
                                 tcb, &arena.x_buf, &arena.ffn_out_buf, h,
                             )?;
                         }
-                        crate::kernels::rmsnorm_metal_buf_tcb(
-                            tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
-                        )?;
+                        // Phase 5C.2: final norm writes f16 when x_norm_dtype="f16".
+                        let x_norm_f16 = self.use_x_norm_f16();
+                        if x_norm_f16 {
+                            crate::kernels::rmsnorm_f32_to_f16_tcb(
+                                tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_f16_buf,
+                            )?;
+                        } else {
+                            crate::kernels::rmsnorm_metal_buf_tcb(
+                                tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                            )?;
+                        }
                         if lm_head_foldable {
                             let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
                             let logits_buf  = self.logits_buf.as_ref().unwrap();
                             let tok_buf     = self.token_buf.as_ref().unwrap();
                             let vocab = self.config.vocab_size;
-                            let use_simdmat = self.kernel_profile.as_ref()
-                                .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
-                                .unwrap_or(false);
-                            if use_simdmat {
-                                crate::kernels::gemv_f16_simdmat_tcb(
-                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                            if x_norm_f16 {
+                                // f16 x_norm path: always use scalar f16in kernel (not simdmat).
+                                crate::kernels::gemv_f16_f16in_tcb(
+                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_f16_buf, logits_buf,
                                 )?;
                             } else {
-                                crate::kernels::gemv_f16_metal_buf_tcb(
-                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
-                                )?;
+                                let use_simdmat = self.kernel_profile.as_ref()
+                                    .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
+                                    .unwrap_or(false);
+                                if use_simdmat {
+                                    crate::kernels::gemv_f16_simdmat_tcb(
+                                        tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                    )?;
+                                } else {
+                                    crate::kernels::gemv_f16_metal_buf_tcb(
+                                        tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                    )?;
+                                }
                             }
                             crate::kernels::sample_argmax_f32_tcb(
                                 tcb, logits_buf, tok_buf, vocab,

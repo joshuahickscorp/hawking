@@ -77,6 +77,14 @@ pub struct KernelVariant {
     /// attention memory bandwidth. Internal accumulators remain f32.
     #[serde(default = "default_kv_cache_dtype")]
     pub kv_cache_dtype: String,
+    /// Phase 5C.2: "f32" (default) or "f16" — selects final-norm activation dtype.
+    /// When "f16", the final rmsnorm output (x_norm_f16_buf) is stored as half
+    /// and the LM head GEMV reads f16 activations, halving that read bandwidth.
+    /// Residual stream between layers remains f32 (no accumulation error).
+    /// Per-layer FFN-norm paths stay f32 in this release; only the final-layer
+    /// norm → LM head path uses f16 when this flag is set.
+    #[serde(default = "default_x_norm_dtype")]
+    pub x_norm_dtype: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -88,6 +96,10 @@ fn default_attn_block_schedule() -> String {
 }
 
 fn default_kv_cache_dtype() -> String {
+    "f32".to_string()
+}
+
+fn default_x_norm_dtype() -> String {
     "f32".to_string()
 }
 
@@ -246,6 +258,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         gemm_q4_k_schedule_per_shape: BTreeMap::new(),
         attn_block_schedule: "mla".into(),
         kv_cache_dtype: "f32".into(),
+        x_norm_dtype: "f32".into(),
     }]
 }
 
