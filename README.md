@@ -2,7 +2,7 @@
 
 Pure-Rust + Apple Metal inference engine for MoE language models on Apple Silicon. Single binary, no Python in the runtime, no llama.cpp dependency. Loads GGUF weights via mmap and runs them through hand-rolled Metal compute kernels.
 
-Currently optimized for **DeepSeek-V2-Lite Q4_K_M** (16B params, 2.4B active per token). v1.0.0 pivots toward MoE memory differentiation while keeping the current ~19.5 dec_tps V2-Lite path stable.
+Currently optimized for **DeepSeek-V2-Lite Q4_K_M** (16B params, 2.4B active per token), with experimental support for **Mixtral 8x7B Q3_K_M** (~16 GB) on 18 GB Macs via MoE-aware expert offloading.
 
 ## What's distinctive
 
@@ -80,7 +80,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 ## Status
 
-v1.0.4 launch candidate, active development. DeepSeek-V2-Lite generation is stable at ~20 dec_tps; Mixtral 8x7B is functional (loads on 18 GB Macs, produces coherent English) but unoptimized at ~0.12 dec_tps — v1.0.5 targets the perf push. Tracked in [docs/mixtral.md](docs/mixtral.md).
+Pre-v2.0, active development. DeepSeek-V2-Lite produces stable, coherent generation (~17 dec_tps default; opt-in features can compose higher on supported workloads). Mixtral 8x7B Q3_K_M loads and generates on 18 GB Macs but is currently SSD-bandwidth-limited. Roadmap toward 50+ dec_tps via Apple Neural Engine + AMX + lookahead speculative decoding is tracked in `prompts/v2.0.0_*.md`.
 
 ## License
 
