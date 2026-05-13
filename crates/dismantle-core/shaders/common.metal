@@ -94,14 +94,13 @@ kernel void rmsnorm_f32(
     device const float* x       [[buffer(0)]],
     device const float* weight  [[buffer(1)]],
     device       float* out     [[buffer(2)]],
-    constant     uint&  hidden  [[buffer(3)]],
-    constant     float& eps     [[buffer(4)]],
+    constant ArgbufRmsnorm& args [[buffer(3)]],
     threadgroup  float* shmem   [[threadgroup(0)]],
     uint                tid     [[thread_position_in_threadgroup]],
     uint                tg_size [[threads_per_threadgroup]])
 {
     float partial = 0.0f;
-    for (uint i = tid; i < hidden; i += tg_size) {
+    for (uint i = tid; i < args.hidden; i += tg_size) {
         float v = x[i];
         partial += v * v;
     }
@@ -111,9 +110,9 @@ kernel void rmsnorm_f32(
         if (tid < stride) shmem[tid] += shmem[tid + stride];
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
-    float rms = sqrt(shmem[0] / (float)hidden + eps);
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
     float inv = 1.0f / rms;
-    for (uint i = tid; i < hidden; i += tg_size) {
+    for (uint i = tid; i < args.hidden; i += tg_size) {
         out[i] = x[i] * inv * weight[i];
     }
 }
