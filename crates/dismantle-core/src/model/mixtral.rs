@@ -258,14 +258,24 @@ impl MixtralEngine {
         Ok(out)
     }
 
-    fn tensor_ref_q4(g: &GgufFile, name: &str, rows: usize, cols: usize) -> Result<TensorRef> {
-        Self::tensor_ref_expected(g, name, GgmlType::Q4_K, rows, cols)
+    fn tensor_ref_k_quant(g: &GgufFile, name: &str, rows: usize, cols: usize) -> Result<TensorRef> {
+        Self::tensor_ref_expected_any(g, name, &[GgmlType::Q3_K, GgmlType::Q4_K], rows, cols)
     }
 
     fn tensor_ref_expected(
         g: &GgufFile,
         name: &str,
         dtype: GgmlType,
+        rows: usize,
+        cols: usize,
+    ) -> Result<TensorRef> {
+        Self::tensor_ref_expected_any(g, name, &[dtype], rows, cols)
+    }
+
+    fn tensor_ref_expected_any(
+        g: &GgufFile,
+        name: &str,
+        dtypes: &[GgmlType],
         rows: usize,
         cols: usize,
     ) -> Result<TensorRef> {
@@ -276,10 +286,10 @@ impl MixtralEngine {
         let expected = rows
             .checked_mul(cols)
             .ok_or_else(|| Error::Model(format!("tensor `{name}` shape overflow")))?;
-        if info.dtype != dtype || n_elems != expected {
+        if !dtypes.contains(&info.dtype) || n_elems != expected {
             return Err(Error::Model(format!(
-                "tensor `{name}` expected {:?} {rows}x{cols} ({expected} elems), got {:?} dims {:?}",
-                dtype, info.dtype, info.dims
+                "tensor `{name}` expected one of {:?} {rows}x{cols} ({expected} elems), got {:?} dims {:?}",
+                dtypes, info.dtype, info.dims
             )));
         }
         let offset = info.data_offset as usize;
@@ -370,27 +380,28 @@ impl Engine for MixtralEngine {
             let lp = |suf: &str| format!("blk.{li}.{suf}");
             let attn_norm = Self::dequant_f32(&gguf, &lp("attn_norm.weight"))?;
             let ffn_norm = Self::dequant_f32(&gguf, &lp("ffn_norm.weight"))?;
-            let attn_q = Self::tensor_ref_q4(&gguf, &lp("attn_q.weight"), cfg.hidden, cfg.hidden)?;
+            let attn_q =
+                Self::tensor_ref_k_quant(&gguf, &lp("attn_q.weight"), cfg.hidden, cfg.hidden)?;
             let attn_output =
-                Self::tensor_ref_q4(&gguf, &lp("attn_output.weight"), cfg.hidden, cfg.hidden)?;
+                Self::tensor_ref_k_quant(&gguf, &lp("attn_output.weight"), cfg.hidden, cfg.hidden)?;
 
             let mut ffn_gate = Vec::with_capacity(cfg.n_experts);
             let mut ffn_up = Vec::with_capacity(cfg.n_experts);
             let mut ffn_down = Vec::with_capacity(cfg.n_experts);
             for eid in 0..cfg.n_experts {
-                ffn_gate.push(Self::tensor_ref_q4(
+                ffn_gate.push(Self::tensor_ref_k_quant(
                     &gguf,
                     &lp(&format!("ffn_gate.{eid}.weight")),
                     cfg.intermediate,
                     cfg.hidden,
                 )?);
-                ffn_up.push(Self::tensor_ref_q4(
+                ffn_up.push(Self::tensor_ref_k_quant(
                     &gguf,
                     &lp(&format!("ffn_up.{eid}.weight")),
                     cfg.intermediate,
                     cfg.hidden,
                 )?);
-                ffn_down.push(Self::tensor_ref_q4(
+                ffn_down.push(Self::tensor_ref_k_quant(
                     &gguf,
                     &lp(&format!("ffn_down.{eid}.weight")),
                     cfg.hidden,
@@ -740,7 +751,7 @@ impl MixtralEngine {
     }
 
     #[cfg(target_os = "macos")]
-    fn encode_q4_tcb(
+    fn encode_k_quant_tcb(
         &self,
         tcb: &mut crate::metal::TokenCommandBuffer<'_>,
         t: &TensorRef,
@@ -750,23 +761,39 @@ impl MixtralEngine {
         let chunks = self
             .weights_mmap_buf
             .as_ref()
-            .ok_or_else(|| Error::Model("Mixtral Q4 path missing weight chunks".into()))?;
+            .ok_or_else(|| Error::Model("Mixtral quant path missing weight chunks".into()))?;
         let chunk = chunks.get(t.chunk_index).ok_or_else(|| {
             Error::Model(format!(
                 "Mixtral tensor chunk {} missing for offset {}",
                 t.chunk_index, t.offset
             ))
         })?;
-        crate::kernels::gemv_q4_k_m_v2_pinned_tcb(
-            tcb,
-            chunk,
-            t.chunk_offset,
-            t.byte_size,
-            t.rows,
-            t.cols,
-            x_buf,
-            out_buf,
-        )
+        match t.dtype {
+            GgmlType::Q3_K => crate::kernels::gemv_q3_k_pinned_tcb(
+                tcb,
+                chunk,
+                t.chunk_offset,
+                t.byte_size,
+                t.rows,
+                t.cols,
+                x_buf,
+                out_buf,
+            ),
+            GgmlType::Q4_K => crate::kernels::gemv_q4_k_m_v2_pinned_tcb(
+                tcb,
+                chunk,
+                t.chunk_offset,
+                t.byte_size,
+                t.rows,
+                t.cols,
+                x_buf,
+                out_buf,
+            ),
+            other => Err(Error::Model(format!(
+                "Mixtral GPU path unsupported quant dtype {:?}",
+                other
+            ))),
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -855,7 +882,7 @@ impl MixtralEngine {
                     h,
                     &arena.x_norm_buf,
                 )?;
-                self.encode_q4_tcb(&mut tcb, &layer.attn_q, &arena.x_norm_buf, &arena.q_buf)?;
+                self.encode_k_quant_tcb(&mut tcb, &layer.attn_q, &arena.x_norm_buf, &arena.q_buf)?;
                 crate::kernels::gemv_f32_attn_pinned_buf_tcb(
                     &mut tcb,
                     attn_k,
@@ -970,7 +997,7 @@ impl MixtralEngine {
                     .as_ref()
                     .ok_or_else(|| Self::missing_buf("layer.gate_inp"))?;
                 let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                self.encode_q4_tcb(
+                self.encode_k_quant_tcb(
                     &mut tcb,
                     &layer.attn_output,
                     &arena.attn_out_buf,
@@ -1013,13 +1040,13 @@ impl MixtralEngine {
                 let layer = &self.layers[li];
                 let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                 for (route_i, (eid, _weight)) in routes.iter().enumerate() {
-                    self.encode_q4_tcb(
+                    self.encode_k_quant_tcb(
                         &mut tcb,
                         &layer.ffn_gate[*eid],
                         &arena.x_norm_buf,
                         &arena.expert_gate_bufs[route_i],
                     )?;
-                    self.encode_q4_tcb(
+                    self.encode_k_quant_tcb(
                         &mut tcb,
                         &layer.ffn_up[*eid],
                         &arena.x_norm_buf,
@@ -1032,7 +1059,7 @@ impl MixtralEngine {
                         &arena.expert_act_bufs[route_i],
                         cfg.intermediate,
                     )?;
-                    self.encode_q4_tcb(
+                    self.encode_k_quant_tcb(
                         &mut tcb,
                         &layer.ffn_down[*eid],
                         &arena.expert_act_bufs[route_i],
