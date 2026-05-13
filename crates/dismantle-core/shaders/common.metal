@@ -150,23 +150,18 @@ kernel void rope_inplace(
 
 kernel void rope_q_f32_inplace(
     device       float* q              [[buffer(0)]],
-    constant     uint&  n_heads        [[buffer(1)]],
-    constant     uint&  q_head_dim     [[buffer(2)]],
-    constant     uint&  qk_nope_dim    [[buffer(3)]],
-    constant     uint&  qk_rope_dim    [[buffer(4)]],
-    constant     uint&  pos            [[buffer(5)]],
-    constant     float& base           [[buffer(6)]],
+    constant ArgbufRopeQ& args         [[buffer(1)]],
     uint id                            [[thread_position_in_grid]])
 {
-    uint pairs_per_head = qk_rope_dim / 2u;
-    uint total_pairs = n_heads * pairs_per_head;
+    uint pairs_per_head = args.qk_rope_dim / 2u;
+    uint total_pairs = args.n_heads * pairs_per_head;
     if (id >= total_pairs) return;
 
     uint head = id / pairs_per_head;
     uint pair = id - head * pairs_per_head;
-    uint off = head * q_head_dim + qk_nope_dim + 2u * pair;
+    uint off = head * args.q_head_dim + args.qk_nope_dim + 2u * pair;
 
-    float theta = (float)pos / pow(base, 2.0f * float(pair) / float(qk_rope_dim));
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.qk_rope_dim));
     float c = cos(theta);
     float s = sin(theta);
     float x0 = q[off];
