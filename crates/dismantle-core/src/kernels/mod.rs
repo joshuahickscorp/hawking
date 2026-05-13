@@ -7942,6 +7942,75 @@ mod metal_dispatch {
     }
 
     // ── end v1.1.0-phase5B.2 ──────────────────────────────────────────────────
+
+    // ── Phase 5C.2: f32→f16 norm output + f16-activation LM head ─────────────
+
+    /// f32 residual → f16 normed activation (Phase 5C.2).
+    /// Dispatches `rmsnorm_f32_to_f16`: reads f32 x, f32 weight → writes half* out.
+    /// Variance accumulator stays f32. Used when kernel profile x_norm_dtype="f16".
+    /// Same ArgbufRmsnorm pattern as rmsnorm_metal_buf_tcb. out_buf must be
+    /// pre-allocated as hidden × sizeof(f16) bytes (arena.x_norm_f16_buf).
+    pub fn rmsnorm_f32_to_f16_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads("rmsnorm_f32_to_f16", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(weight_buf), 0);
+            enc.set_buffer(2, Some(ab.handle()), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// f16-weight × f16-activation GEMV → f32 output (Phase 5C.2).
+    /// Dispatches `gemv_f16_f16in`: same binding layout as gemv_f16_metal_buf_tcb
+    /// except x_buf holds f16 values (arena.x_norm_f16_buf). Output y_buf is f32.
+    /// MAC accumulates in f32. Used for the LM head GEMV when x_norm_dtype="f16".
+    pub fn gemv_f16_f16in_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        y_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f16_f16in",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(y_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    // ── end Phase 5C.2 ────────────────────────────────────────────────────────
 }
 
 

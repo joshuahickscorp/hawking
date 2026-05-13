@@ -534,3 +534,72 @@ kernel void topk_extract_f32(
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 }
+
+// Phase 5C.2 — f32 residual → f16 normed activation.
+// Keeps the canonical residual stream as f32 between layers. Only the
+// per-layer normed activation buffer is f16, halving downstream GEMV
+// activation read bandwidth (e.g. LM head reads hidden×2 bytes vs hidden×4).
+//
+// Variance accumulator stays f32 (non-negotiable for stability).
+// Binding layout matches rmsnorm_f32 so the Rust dispatcher can share the
+// ArgbufRmsnorm struct. Buffer(3) is half* out instead of float* out.
+// Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void rmsnorm_f32_to_f16(
+    device const float* x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    constant ArgbufRmsnorm& args [[buffer(2)]],
+    device       half*  out     [[buffer(3)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        out[i] = (half)(x[i] * inv * weight[i]);
+    }
+}
+
+// Phase 5C.2 — f16-weight × f16-activation GEMV → f32 output.
+// Used when x_norm_dtype="f16": LM head reads f16 activation (x_norm_f16_buf)
+// instead of f32, halving the activation read bandwidth for the vocab GEMV.
+// Weight is still f16 (same as gemv_f16). Output is f32 (logits need f32 range).
+// MAC accumulates in f32. Binding layout identical to gemv_f16 except
+// buffer(1) is half* instead of float*.
+// Grid: (rows * TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void gemv_f16_f16in(
+    device const half*  w      [[buffer(0)]],   // (rows, cols) row-major f16
+    device const half*  x      [[buffer(1)]],   // (cols,) f16 activation
+    device       float* y      [[buffer(2)]],   // (rows,) f32 output
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    threadgroup  float* shmem  [[threadgroup(0)]],
+    uint                tid        [[thread_position_in_threadgroup]],
+    uint                gid        [[threadgroup_position_in_grid]],
+    uint                tg_size    [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+    device const half* row = w + (uint64_t)gid * (uint64_t)cols;
+    float partial = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial += (float)row[c] * (float)x[c];
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) y[gid] = shmem[0];
+}
