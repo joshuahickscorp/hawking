@@ -9,6 +9,7 @@ use crate::gguf::GgufFile;
 use crate::{metal, Error, Result};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 pub const PROFILE_SCHEMA_VERSION: u32 = 1;
@@ -67,6 +68,8 @@ pub struct KernelVariant {
     pub deterministic_rank: u32,
     #[serde(default = "default_gemm_q4_k_schedule")]
     pub gemm_q4_k_schedule: String,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub gemm_q4_k_schedule_per_shape: BTreeMap<String, String>,
     #[serde(default = "default_attn_block_schedule")]
     pub attn_block_schedule: String,
 }
@@ -231,6 +234,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         gpu_buffer_reuse: "decode-arena".into(),
         deterministic_rank: 1,
         gemm_q4_k_schedule: "v2".into(),
+        gemm_q4_k_schedule_per_shape: BTreeMap::new(),
         attn_block_schedule: "mla".into(),
     }]
 }
