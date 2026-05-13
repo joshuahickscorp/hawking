@@ -1,3 +1,3 @@
-{"device":"Apple M3 Pro","event":"autotune-start","max_hours":8.0,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-c1bde3eed1ca68c874221041","shader_hash":"b3dc10686636729c983f1967","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
+{"device":"Apple M3 Pro","event":"autotune-start","max_hours":8.0,"model_id":"DeepSeek-V2-Lite-Chat","profile":"m3-pro-18gb","profile_id":"kp-c1bde3eed1ca68c874221041","shader_hash":"3ef9c2c7bafa2fb97185cbcf","tensor_layout_hash":"6540aaa223c931038ec4ddde"}
 {"deterministic_rank":1,"event":"candidate","profile_id":"kp-c1bde3eed1ca68c874221041","score":164,"status":"candidate","variant_id":"metal-default"}
 {"event":"selected","profile_id":"kp-c1bde3eed1ca68c874221041","target_tps":60.0,"variant_id":"metal-default"}

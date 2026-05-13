@@ -17,6 +17,45 @@
 #include <metal_stdlib>
 using namespace metal;
 
+static inline float q3_k_fp16_at(device const uchar* p, uint64_t off)
+{
+    ushort bits = (ushort)p[off] | ((ushort)p[off + 1] << 8);
+    return (float)as_type<half>(bits);
+}
+
+static inline int q3_k_scale(device const uchar* w_q3, uint64_t bo, uint scale_idx)
+{
+    uint low;
+    if (scale_idx < 8u) {
+        low = (uint)w_q3[bo + 96ul + (uint64_t)scale_idx] & 0x0Fu;
+    } else {
+        low = ((uint)w_q3[bo + 96ul + (uint64_t)(scale_idx - 8u)] >> 4) & 0x0Fu;
+    }
+    uint high = ((uint)w_q3[bo + 104ul + (uint64_t)(scale_idx & 3u)]
+              >> (2u * (scale_idx >> 2))) & 0x03u;
+    return (int)(low | (high << 4)) - 32;
+}
+
+static inline float q3_k_value(device const uchar* w_q3, uint64_t bo, uint c)
+{
+    float d = q3_k_fp16_at(w_q3, bo + 108ul);
+    uint half_idx = c >> 7;
+    uint local = c & 127u;
+    uint group16 = local >> 4;
+    uint j = group16 >> 1;
+    uint second = group16 & 1u;
+    uint lane = local & 15u;
+
+    uint q_idx = half_idx * 32u + second * 16u + lane;
+    uint h_idx = second * 16u + lane;
+    uint shift = j * 2u;
+    uint high_mask = 1u << (half_idx * 4u + j);
+    int q = (int)(((uint)w_q3[bo + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+          - (((uint)w_q3[bo + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+    int scale = q3_k_scale(w_q3, bo, half_idx * 8u + group16);
+    return d * (float)scale * (float)q;
+}
+
 // One thread = one Q8_0 block (32 elems). Cheap; called per-tensor at
 // most once when materializing reference fp16 weights.
 kernel void dequant_q8_0(
@@ -297,6 +336,45 @@ kernel void gemm_q4_k_m_fused_v2(
     }
 
     // 32-thread simdgroup reduction. Zero barriers.
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
+}
+
+// ── gemm_q3_k_fused_v2 ──────────────────────────────────────────────────────
+// Q3_K GEMV using the same 256-thread / 8-row-per-TG geometry as the Q4_K
+// v2 kernel. One simdgroup owns one row; each lane covers eight elements of
+// the 256-element Q3_K super-block.
+
+kernel void gemm_q3_k_fused_v2(
+    device const uchar* w_q3   [[buffer(0)]],   // (rows, cols) Q3_K
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 110ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 110ul;
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            float w_val = q3_k_value(w_q3, bo, elem);
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+            partial += w_val * xv;
+        }
+    }
+
     partial = simd_sum(partial);
     if (simd_lane == 0u) {
         y[base_row] = partial;
