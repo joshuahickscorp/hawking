@@ -2457,12 +2457,21 @@ impl DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let wedge_e_ok = false;
 
-        let x_norm = self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
+        let (x_norm, maybe_greedy) = self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
 
-        // v1.0.0-E: GPU argmax via TCB (zero counted dispatches) when the full
-        // Wedge C stack ran. arena.x_norm_buf holds the final-normed residual
-        // written by the Wedge C final-norm mini-TCB — same data as x_norm, but
-        // already on-GPU, so only 4 bytes cross the bus instead of 408 KB.
+        // Phase 5B.1: LM head + argmax were folded into the global TCB — token ready.
+        // This is the fast path: one TCB commit covers all 27 layers + final-norm + LM head.
+        #[cfg(target_os = "macos")]
+        if let Some(tok) = maybe_greedy {
+            return Ok(Some(tok));
+        }
+
+        // Fallback: LM head not yet folded (e.g. ExactShared without gpu_shared_draft).
+        // arena.x_norm_buf was written by the Wedge M C-1 mini-TCB; run LM head + argmax
+        // in a separate mini-TCB. This path is kept for correctness but is not the hot path.
+        // v1.0.0-E: GPU argmax via TCB (zero counted dispatches) when the full Wedge C
+        // stack ran. arena.x_norm_buf holds the final-normed residual on-GPU, so only 4
+        // bytes cross the bus instead of 408 KB.
         #[cfg(target_os = "macos")]
         {
             if wedge_e_ok {
@@ -2530,16 +2539,22 @@ impl DeepSeekV2 {
     }
 
     fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
-        self.forward_token_final_norm_maybe_read(token, pos, true)?
-            .ok_or_else(|| Error::Model("forward_token_final_norm: final norm not read back".into()))
+        let (x_norm, _) = self.forward_token_final_norm_maybe_read(token, pos, true)?;
+        x_norm.ok_or_else(|| Error::Model("forward_token_final_norm: final norm not read back".into()))
     }
 
+    /// Returns `(Option<x_norm>, Option<greedy_token>)`.
+    ///
+    /// - `read_back=true`  → `(Some(x_norm), None)`.
+    /// - `read_back=false` (non-fold) → `(None, None)`, x_norm_buf on GPU.
+    /// - `read_back=false` + Phase 5B.1 LM-head fold → `(None, Some(tok))`,
+    ///   LM head + argmax were encoded into the global TCB; single commit.
     fn forward_token_final_norm_maybe_read(
         &mut self,
         token: u32,
         pos: usize,
         read_back: bool,
-    ) -> Result<Option<Vec<f32>>> {
+    ) -> Result<(Option<Vec<f32>>, Option<u32>)> {
         let h = self.config.hidden;
 
         let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
@@ -2681,11 +2696,11 @@ impl DeepSeekV2 {
 	                    )?;
 	                    tcb.commit_and_wait()?;
 	                    if !read_back {
-	                        return Ok(None);
+	                        return Ok((None, None));
 	                    }
 	                    let mut x_norm = vec![0.0f32; h];
 	                    arena.read_x_norm(&mut x_norm);
-	                    return Ok(Some(x_norm));
+	                    return Ok((Some(x_norm), None));
 	                }
 	            }
 	        }
@@ -2748,6 +2763,17 @@ impl DeepSeekV2 {
                         && self.shared_only_gpu_argmax_available();
                 let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
                     || use_gpu_shared_draft;
+
+                // Phase 5B.1: fold final-norm + LM head + argmax into the global TCB when the
+                // greedy-GPU path is available. Eliminates Wedge M C-1 mini-TCB and the separate
+                // LM head mini-TCB in forward_token_greedy (saves 2 TCB commits per token).
+                let lm_head_foldable = use_single_tcb
+                    && !read_back
+                    && self.lm_head_buf.is_some()
+                    && self.logits_buf.is_some()
+                    && self.token_buf.is_some();
+                let mut lm_head_folded = false;
+                let mut folded_greedy_token: Option<u32> = None;
 
                 let t0 = std::time::Instant::now();
                 {
@@ -2907,9 +2933,52 @@ impl DeepSeekV2 {
                         }
                     }
 
-                    // Commit the single command buffer covering all 27 layers.
+                    // Phase 5B.1: encode final add_inplace + rmsnorm + (opt) LM head + argmax
+                    // into global_tcb so the single commit covers the full forward pass.
+                    if let Some(ref mut tcb) = global_tcb {
+                        let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+                        if n_layers > 0 {
+                            crate::kernels::add_inplace_metal_tcb(
+                                tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                            )?;
+                        }
+                        crate::kernels::rmsnorm_metal_buf_tcb(
+                            tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
+                        if lm_head_foldable {
+                            let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
+                            let logits_buf  = self.logits_buf.as_ref().unwrap();
+                            let tok_buf     = self.token_buf.as_ref().unwrap();
+                            let vocab = self.config.vocab_size;
+                            let use_simdmat = self.kernel_profile.as_ref()
+                                .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
+                                .unwrap_or(false);
+                            if use_simdmat {
+                                crate::kernels::gemv_f16_simdmat_tcb(
+                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                )?;
+                            } else {
+                                crate::kernels::gemv_f16_metal_buf_tcb(
+                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                )?;
+                            }
+                            crate::kernels::sample_argmax_f32_tcb(
+                                tcb, logits_buf, tok_buf, vocab,
+                            )?;
+                            lm_head_folded = true;
+                        }
+                    }
+
+                    // Single commit: all 27 layers + final-norm + (opt) LM head + argmax.
                     if let Some(tcb) = global_tcb.take() {
                         tcb.commit_and_wait()?;
+                    }
+
+                    // Post-commit: read greedy token if LM head was folded in.
+                    if lm_head_folded {
+                        let tok_buf = self.token_buf.as_ref().unwrap();
+                        let tok_ptr = tok_buf.contents() as *const u32;
+                        folded_greedy_token = Some(unsafe { *tok_ptr });
                     }
 
                     // v1.2.0-9: update expert access stats from route_history_buf.
@@ -2950,7 +3019,14 @@ impl DeepSeekV2 {
                         1_000_000.0 / total_us as f64);
                 }
 
+                // Phase 5B.1: LM head (and final-norm) already folded into global TCB.
+                if lm_head_folded {
+                    return Ok((None, folded_greedy_token));
+                }
+
                 // Wedge M C-1: merged add_inplace + final-norm into one TCB.
+                // (Fallback: only reached when lm_head_foldable was false, e.g. ExactShared
+                // without gpu_shared_draft, or when read_back=true needing x_norm readback.)
                 {
                     let ctx = self.metal_ctx.as_ref().unwrap();
                     let arena = self.decode_arena.as_ref().unwrap();
@@ -2966,11 +3042,11 @@ impl DeepSeekV2 {
                     )?;
                     tcb.commit_and_wait()?;
                     if !read_back {
-                        return Ok(None);
+                        return Ok((None, None));
                     }
                     let mut x_norm = vec![0.0f32; h];
                     arena.read_x_norm(&mut x_norm);
-                    return Ok(Some(x_norm));
+                    return Ok((Some(x_norm), None));
                 }
             }
         }
@@ -3094,7 +3170,7 @@ impl DeepSeekV2 {
 	                // Final norm (CPU dispatch path for now).
 	                let mut x_norm = vec![0.0f32; h];
 	                self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-	                return Ok(Some(x_norm));
+	                return Ok((Some(x_norm), None));
 	            }
 	        }
         // ---- End Wedge B ----
@@ -3148,7 +3224,7 @@ impl DeepSeekV2 {
         // Final norm + lm head.
         let mut x_norm = vec![0.0f32; h];
         self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-        Ok(Some(x_norm))
+        Ok((Some(x_norm), None))
     }
 
     fn profiled_greedy_enabled(&self, sampling: &crate::engine::SamplingParams) -> bool {
