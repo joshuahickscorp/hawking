@@ -1,11 +1,23 @@
-# Mixtral 8x7B Preview
+# Mixtral 8x7B
 
-Status: preview, not yet functional in v1.0.0.
+Status: **functional but unoptimized** as of v1.0.4. The model loads on 18 GB
+Macs with `--max-routed-expert-ram-mb 8000`, the GPU path activates, the
+SentencePiece tokenizer produces correct token IDs matching llama.cpp, and
+generation produces coherent English. Current decode speed is ~0.12 dec_tps;
+v1.0.5+ targets the perf push toward ≥3 dec_tps.
 
-Phase 2 lands Mixtral architecture detection and tokenizer scaffolding, plus
-the Phase 1 expert-cache surface that the full engine will use for cold expert
-eviction. The standard-MHA forward path, 8-expert top-2 MoE execution, and real
-18 GB smoke demo are intentionally deferred to v1.0.1.
+Example output for `"Once upon a time"`:
+```
+Once upon a time, there was a young girl who was ...
+```
+
+## Architecture support
+- 32 layers, hidden=4096, intermediate=14336
+- Standard MHA + GQA (32 Q heads, 8 KV heads, head_dim=128)
+- RoPE θ = 1,000,000
+- 8 routed experts, top-2, no shared expert
+- Uniform Q4_K_M weights (attn projections + experts); Q5_K LM head; Q8_0 K/V
+- SentencePiece tokenizer (llama.cpp greedy score-merge port, byte-fallback)
 
 ## Model Source
 
