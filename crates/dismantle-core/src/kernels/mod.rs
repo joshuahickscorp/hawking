@@ -277,7 +277,7 @@ pub fn topk_softmax_batch(
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
-    use crate::metal::{CommandBatch, DecodeArena, MetalContext, PinnedBuffer, TokenCommandBuffer};
+    use crate::metal::{ArgLayout, CommandBatch, DecodeArena, KernelArgBuffer, MetalContext, PinnedBuffer, TokenCommandBuffer};
     use crate::{Error, Result};
     use half::f16;
 
@@ -470,6 +470,9 @@ mod metal_dispatch {
         let cols_u32 = cols as u32;
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
         tcb.dispatch_threads(
             KERNEL,
             (n_tg * V2_TG, 1, 1),
@@ -478,16 +481,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_buffer(3, Some(ab.handle()), 0);
             },
         )
     }
@@ -5239,20 +5233,14 @@ mod metal_dispatch {
     ) -> Result<()> {
         let hidden_u32 = hidden as u32;
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
         tcb.dispatch_threads("rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_bytes(
-                3,
-                std::mem::size_of::<u32>() as u64,
-                &hidden_u32 as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                4,
-                std::mem::size_of::<f32>() as u64,
-                &eps as *const f32 as *const _,
-            );
+            enc.set_buffer(3, Some(ab.handle()), 0);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
     }
@@ -6609,6 +6597,9 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
         tcb.dispatch_threads(
             "gemv_f32_moe",
             (rows_u32 * TG_SIZE, 1, 1),
@@ -6617,8 +6608,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_buffer(3, Some(ab.handle()), 0);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -6743,11 +6733,13 @@ mod metal_dispatch {
         n: usize,
     ) -> Result<()> {
         let n_u32 = n as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32])?;
+        ab.set_u32(0, n_u32);
         tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(gate_buf), 0);
             enc.set_buffer(1, Some(up_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &n_u32 as *const u32 as *const _);
+            enc.set_buffer(3, Some(ab.handle()), 0);
         })
     }
 
@@ -6924,20 +6916,14 @@ mod metal_dispatch {
         let n_experts_u32 = n_experts as u32;
         let top_k_u32 = top_k as u32;
         let shmem_bytes = (n_experts as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n_experts_u32);
+        ab.set_u32(1, top_k_u32);
         tcb.dispatch_threads("moe_topk_gate", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(logits_buf), 0);
             enc.set_buffer(1, Some(route_ids_buf), 0);
             enc.set_buffer(2, Some(route_weights_buf), 0);
-            enc.set_bytes(
-                3,
-                std::mem::size_of::<u32>() as u64,
-                &n_experts_u32 as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                4,
-                std::mem::size_of::<u32>() as u64,
-                &top_k_u32 as *const u32 as *const _,
-            );
+            enc.set_buffer(3, Some(ab.handle()), 0);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
     }
