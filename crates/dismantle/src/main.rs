@@ -1,6 +1,8 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
+use std::time::Instant;
 
 #[derive(Parser, Debug)]
 #[command(name = "dismantle", about = "Apple Silicon MoE inference", version)]
@@ -121,6 +123,13 @@ enum Cmd {
         out: PathBuf,
         #[arg(long)]
         log: Option<PathBuf>,
+    },
+    /// Benchmark Q4_K GEMV kernels at production shapes and emit JSON.
+    BenchQ4kShapes {
+        #[arg(long, default_value_t = 100)]
+        iters: usize,
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
     /// Inspect model size, KV-cache budget, current RSS, and M3-Pro fit.
     Doctor {
@@ -276,6 +285,7 @@ fn main() -> Result<()> {
             out,
             log,
         } => autotune_main(weights, profile, max_hours, out, log),
+        Cmd::BenchQ4kShapes { iters, out } => bench_q4k_shapes_main(iters, out),
         Cmd::Doctor {
             weights,
             max_seq_len,
@@ -591,6 +601,180 @@ fn residual_dtype_from_env() -> Result<dismantle_core::ResidualDtype> {
     }
 }
 
+struct Q4ShapeBenchSummary {
+    json: serde_json::Value,
+    winners: BTreeMap<String, String>,
+}
+
+fn bench_q4k_shapes_main(iters: usize, out: Option<PathBuf>) -> Result<()> {
+    let summary = bench_q4k_shapes(iters)?;
+    let text = serde_json::to_string_pretty(&summary.json)?;
+    if let Some(path) = out {
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&path, &text)?;
+        println!("wrote Q4_K shape bench: {}", path.display());
+    } else {
+        println!("{text}");
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn bench_q4k_shapes(iters: usize) -> Result<Q4ShapeBenchSummary> {
+    use dismantle_core::metal::MetalContext;
+
+    if iters == 0 {
+        anyhow::bail!("--iters must be positive");
+    }
+
+    let ctx = MetalContext::new()?;
+    let shapes = [
+        ("gate_up_1024x4096", 1024usize, 4096usize),
+        ("down_4096x1024", 4096usize, 1024usize),
+        ("dense_4096x4096", 4096usize, 4096usize),
+    ];
+    let kernels = ["v2", "simdmat", "v3_dual", "llama_port"];
+    let mut shape_json = Vec::with_capacity(shapes.len());
+    let mut winners = BTreeMap::new();
+
+    for (label, rows, cols) in shapes {
+        let w_bytes = synthetic_q4_k_bytes(rows * (cols / 256));
+        let model_buf = ctx.new_buffer_with_bytes(&w_bytes);
+        let x = synthetic_input(cols);
+        let mut results = serde_json::Map::new();
+        let mut best_name = "";
+        let mut best_us = f64::INFINITY;
+
+        for kernel in kernels {
+            let mut out = vec![0.0f32; rows];
+            for _ in 0..5 {
+                run_q4k_shape_kernel(&ctx, &model_buf, &w_bytes, rows, cols, &x, &mut out, kernel)?;
+            }
+            let start = Instant::now();
+            for _ in 0..iters {
+                run_q4k_shape_kernel(&ctx, &model_buf, &w_bytes, rows, cols, &x, &mut out, kernel)?;
+            }
+            let mean_us = start.elapsed().as_secs_f64() * 1_000_000.0 / iters as f64;
+            if mean_us < best_us {
+                best_us = mean_us;
+                best_name = kernel;
+            }
+            results.insert(
+                kernel.to_string(),
+                serde_json::json!({
+                    "mean_us": mean_us,
+                }),
+            );
+        }
+
+        let key = format!("{rows}x{cols}");
+        winners.insert(key.clone(), best_name.to_string());
+        shape_json.push(serde_json::json!({
+            "label": label,
+            "key": key,
+            "rows": rows,
+            "cols": cols,
+            "winner": best_name,
+            "kernels": results,
+        }));
+    }
+
+    Ok(Q4ShapeBenchSummary {
+        winners,
+        json: serde_json::json!({
+            "iters": iters,
+            "shapes": shape_json,
+        }),
+    })
+}
+
+#[cfg(not(target_os = "macos"))]
+fn bench_q4k_shapes(_iters: usize) -> Result<Q4ShapeBenchSummary> {
+    anyhow::bail!("bench-q4k-shapes requires macOS Metal")
+}
+
+#[cfg(target_os = "macos")]
+fn run_q4k_shape_kernel(
+    ctx: &dismantle_core::metal::MetalContext,
+    model_buf: &dismantle_core::metal::PinnedBuffer,
+    w_bytes: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+    kernel: &str,
+) -> Result<()> {
+    match kernel {
+        "v2" => dismantle_core::kernels::gemv_q4_k_m_v2_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "simdmat" => dismantle_core::kernels::gemv_q4_k_m_simdmat_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "v3_dual" => dismantle_core::kernels::gemv_q4_k_m_v3_dual_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "llama_port" => dismantle_core::kernels::gemv_q4_k_m_llama_port_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        other => anyhow::bail!("unknown Q4_K shape kernel {other:?}"),
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn synthetic_q4_k_bytes(n_blocks: usize) -> Vec<u8> {
+    let mut bytes = vec![0u8; n_blocks * 144];
+    for b in 0..n_blocks {
+        let off = b * 144;
+        bytes[off] = 0x00;
+        bytes[off + 1] = 0x3c; // f16 1.0
+        bytes[off + 2] = 0x00;
+        bytes[off + 3] = 0x00; // f16 0.0 dmin
+        for i in 4..144 {
+            bytes[off + i] = ((b * 13 + i * 37) & 0xff) as u8;
+        }
+    }
+    bytes
+}
+
+#[cfg(target_os = "macos")]
+fn synthetic_input(cols: usize) -> Vec<f32> {
+    (0..cols)
+        .map(|i| ((i % 97) as f32 - 48.0) / 97.0)
+        .collect()
+}
+
 fn autotune_main(
     weights: PathBuf,
     profile: String,
@@ -610,7 +794,12 @@ fn autotune_main(
         max_hours,
         target_tps: 60.0,
     };
-    let selected = build_deterministic_profile(&gguf, &opts);
+    let mut selected = build_deterministic_profile(&gguf, &opts);
+    let q4_shape_bench = bench_q4k_shapes(100).ok();
+    if let Some(summary) = q4_shape_bench.as_ref() {
+        selected.selected.gemm_q4_k_schedule = "per_shape".into();
+        selected.selected.gemm_q4_k_schedule_per_shape = summary.winners.clone();
+    }
     if let Some(parent) = out.parent().filter(|p| !p.as_os_str().is_empty()) {
         std::fs::create_dir_all(parent)?;
     }
@@ -641,6 +830,16 @@ fn autotune_main(
                 "deterministic_rank": m.deterministic_rank,
                 "score": m.score,
                 "status": m.status,
+            })
+            .to_string(),
+        );
+    }
+    if let Some(summary) = q4_shape_bench.as_ref() {
+        log_lines.push(
+            serde_json::json!({
+                "event": "bench-q4k-shapes",
+                "profile_id": selected.profile_id,
+                "summary": summary.json,
             })
             .to_string(),
         );
