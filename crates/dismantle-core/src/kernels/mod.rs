@@ -6398,6 +6398,9 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
         tcb.dispatch_threads(
             "gemv_f32_attn",
             (rows_u32 * TG_SIZE, 1, 1),
@@ -6406,16 +6409,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_buffer(3, Some(ab.handle()), 0);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
