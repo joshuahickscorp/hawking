@@ -660,5 +660,8 @@ pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 #[cfg(target_os = "macos")]
 pub use imp::CommandBatch;
 
+pub mod argbuf;
+pub use argbuf::{ArgLayout, KernelArgBuffer};
+
 pub mod decode_arena;
 pub use decode_arena::DecodeArena;
