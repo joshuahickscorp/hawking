@@ -15,7 +15,7 @@
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
     "deterministic_rank": 1,
-    "gemm_q4_k_schedule": "per_shape",
+    "gemm_q4_k_schedule": "v2t_gu_v2",
     "gemm_q4_k_schedule_per_shape": {
       "1024x4096": "v2",
       "4096x1024": "v3_dual",
