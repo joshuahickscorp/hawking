@@ -1303,18 +1303,6 @@ kernel void moe_gather_combine(
     token_out[(uint64_t)t * hidden + h] = acc;
 }
 
-// Wedge 1: single-launch MoE block. Workgroups pull (expert, tile)
-// work items off a queue built by the gate. Stub for Phase 2.
-kernel void moe_block_fused_stub(
-    device const uchar* weights    [[buffer(0)]],
-    device const half*  x          [[buffer(1)]],
-    device       half*  y          [[buffer(2)]],
-    device       uint*  work_queue [[buffer(3)]],
-    uint id [[thread_position_in_grid]])
-{
-    (void)id;
-}
-
 // ---------------------------------------------------------------------
 // Stage 1b — strict single-launch fused MoE block, TOP-K variant.
 //
