@@ -983,7 +983,6 @@ fn generate_main(
         prefill_cache_dir: None,
         kernel_profile: profile,
         trace_dispatch,
-        activation_dtype: Default::default(),
         max_routed_expert_ram_mb,
         memory_limit_mb,
     };
@@ -1092,7 +1091,6 @@ fn batch_hash_main(
         prefill_cache_dir: None,
         kernel_profile: profile,
         trace_dispatch: false,
-        activation_dtype: Default::default(),
         ..Default::default()
     };
     let load_start = std::time::Instant::now();

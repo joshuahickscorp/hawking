@@ -68,9 +68,6 @@ mod arena_imp {
         pub dense_up_out_buf: PinnedBuffer,
         /// Dense FFN activation scratch — ffn_intermediate.
         pub dense_act_buf: PinnedBuffer,
-        /// Phase 7 bridge: f16 residual stream — hidden × f16. Written before
-        /// each rmsnorm step so f16 bridge kernels can read pre-norm activations.
-        pub x_f16_buf: PinnedBuffer,
         /// v1.0.0-C: q-LoRA intermediate — q_lora_rank × f32.
         /// Output of q_a_proj GEMV; input to q_a_norm.
         pub q_lora_buf: PinnedBuffer,
@@ -173,7 +170,6 @@ mod arena_imp {
                 dense_gate_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
                 dense_up_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
                 dense_act_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
-                x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 q_lora_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
                 kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
                 q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
@@ -239,16 +235,6 @@ mod arena_imp {
             let ptr = self.x_buf.contents() as *const f32;
             let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
             dst.copy_from_slice(src);
-        }
-
-        /// Convert f32 residual to f16 and write into x_f16_buf.
-        /// Called before each rmsnorm step so f16 bridge kernels can read
-        /// the pre-norm residual as half-precision.
-        pub fn write_x_f16(&self, x: &[f32]) {
-            let ptr = self.x_f16_buf.contents() as *mut half::f16;
-            for (i, &v) in x.iter().enumerate() {
-                unsafe { ptr.add(i).write(half::f16::from_f32(v)) };
-            }
         }
 
         /// Write into x_norm_buf (rmsnorm output scratch).
