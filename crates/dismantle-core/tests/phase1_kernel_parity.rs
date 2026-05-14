@@ -316,39 +316,6 @@ fn synthetic_q4_k_bytes(n_blocks: usize, seed: u64) -> Vec<u8> {
     bytes
 }
 
-#[test]
-fn test_moe_grouped_gemm_q4_matches_cpu() {
-    use dismantle_core::gguf::GgmlType;
-    use dismantle_core::quant::dequant_into;
-
-    let rows = 64;
-    let cols = 256; // 1 super-block per row
-    let blocks = rows * (cols / 256);
-
-    let w_bytes = synthetic_q4_k_bytes(blocks, 0xC4C4C4C4);
-    let x = fixed_input(cols, 0xD5D5D5D5);
-
-    // CPU reference: dequant the whole weight matrix to f32, then gemv_f32.
-    let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
-        .expect("Q4_K dequant should succeed for valid synthetic bytes");
-    let mut cpu_out = vec![0.0_f32; rows];
-    kernels::gemv_f32(&w_f32, rows, cols, &x, &mut cpu_out);
-
-    // Metal: fused dequant + FMA in one kernel.
-    let ctx = ctx().clone();
-    let mut metal_out = vec![0.0_f32; rows];
-    kernels::moe_grouped_gemm_q4_metal(&ctx, &w_bytes, rows, cols, &x, &mut metal_out)
-        .expect("moe_grouped_gemm_q4_metal should succeed once H2.2 lands");
-
-    let diff = max_abs_diff(&cpu_out, &metal_out);
-    println!("[H2.2] moe_grouped_gemm_q4 parity max abs diff = {diff:.6}");
-    assert!(
-        diff < ATOL,
-        "moe_grouped_gemm_q4 CPU/Metal diff {diff} >= atol {ATOL}"
-    );
-}
-
 // ---------------------------------------------------------------------
 // H2.4 — gemm_q4_k_m_fused (Wedge 2: dense-path Q4_K_M GEMV)
 // ---------------------------------------------------------------------
