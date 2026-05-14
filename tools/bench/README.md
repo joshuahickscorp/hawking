@@ -1,4 +1,4 @@
-# dismantle bench tools — v1.1.0 methodology
+# dismantle bench tools
 
 ## Which tool to use when
 
@@ -14,7 +14,7 @@
 **Never** use authoritative ship bench while Claude.app is running — use
 `clean_bench.sh` from a fresh terminal (Cmd+Q Claude first).
 
-## Standardized parameters (v1.1.0 roadmap — do not change per session)
+## Standardized parameters (do not change per session)
 
 ```
 dev iteration bench:    TRIALS=4 TOKENS=24  (~3-5 min)
