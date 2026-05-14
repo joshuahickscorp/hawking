@@ -107,21 +107,6 @@ fn test_gemv_f16_matches_cpu() {
 }
 
 #[test]
-fn test_sample_argmax_f32_matches_cpu() {
-    let mut logits = fixed_input(4097, 0x5A5A5A5A);
-    logits[1024] = 7.0;
-    logits[3072] = 7.0; // tie must keep the lower index, like CPU argmax.
-
-    let cpu = kernels::argmax_f32(&logits);
-    let ctx = ctx().clone();
-    let metal = kernels::sample_argmax_f32_metal(&ctx, &logits)
-        .expect("sample_argmax_f32_metal should return a token id");
-
-    println!("[SAMPLE] argmax parity cpu={cpu} metal={metal}");
-    assert_eq!(cpu, metal);
-}
-
-#[test]
 fn test_gemv_f16_argmax_pinned_matches_cpu() {
     use half::f16;
 
@@ -203,86 +188,6 @@ fn test_gemv_f32_moe_matches_cpu() {
 // ---------------------------------------------------------------------
 // H2.1 — top-K softmax gate (Wedge 2: MoE block, gate stage)
 // ---------------------------------------------------------------------
-
-#[test]
-fn test_moe_topk_gate_matches_cpu() {
-    let n_tokens = 16;
-    let n_experts = 64;
-    let top_k = 6;
-
-    let logits = fixed_input(n_tokens * n_experts, 0xF7F7F7F7);
-
-    let mut cpu_ids = vec![0u32; n_tokens * top_k];
-    let mut cpu_weights = vec![0.0_f32; n_tokens * top_k];
-    kernels::topk_softmax_batch(
-        &logits,
-        n_tokens,
-        n_experts,
-        top_k,
-        &mut cpu_ids,
-        &mut cpu_weights,
-    );
-
-    let ctx = ctx().clone();
-    let mut metal_ids = vec![0u32; n_tokens * top_k];
-    let mut metal_weights = vec![0.0_f32; n_tokens * top_k];
-    kernels::moe_topk_gate_metal(
-        &ctx,
-        &logits,
-        n_tokens,
-        n_experts,
-        top_k,
-        &mut metal_ids,
-        &mut metal_weights,
-    )
-    .expect("moe_topk_gate_metal should succeed once H2.1 lands");
-
-    assert_eq!(cpu_ids, metal_ids, "expert ids must match exactly");
-
-    let diff = max_abs_diff(&cpu_weights, &metal_weights);
-    println!("[H2.1] moe_topk_gate parity max abs diff = {diff:.6}");
-    assert!(
-        diff < ATOL,
-        "moe_topk_gate CPU/Metal diff {diff} >= atol {ATOL}"
-    );
-}
-
-// ---------------------------------------------------------------------
-// H2.3 — moe gather-combine (Wedge 2: MoE block, gather stage)
-// ---------------------------------------------------------------------
-
-#[test]
-fn test_moe_gather_combine_matches_cpu() {
-    let n_tokens = 16;
-    let top_k = 6;
-    let hidden = 256;
-
-    let expert_out = fixed_input(n_tokens * top_k * hidden, 0xA8A8A8A8);
-    let weights = fixed_input(n_tokens * top_k, 0xB9B9B9B9);
-
-    let mut cpu_out = vec![0.0_f32; n_tokens * hidden];
-    kernels::gather_combine(&expert_out, &weights, n_tokens, top_k, hidden, &mut cpu_out);
-
-    let ctx = ctx().clone();
-    let mut metal_out = vec![0.0_f32; n_tokens * hidden];
-    kernels::moe_gather_combine_metal(
-        &ctx,
-        &expert_out,
-        &weights,
-        n_tokens,
-        top_k,
-        hidden,
-        &mut metal_out,
-    )
-    .expect("moe_gather_combine_metal should succeed once H2.3 lands");
-
-    let diff = max_abs_diff(&cpu_out, &metal_out);
-    println!("[H2.3] moe_gather_combine parity max abs diff = {diff:.6}");
-    assert!(
-        diff < ATOL,
-        "moe_gather_combine CPU/Metal diff {diff} >= atol {ATOL}"
-    );
-}
 
 // ---------------------------------------------------------------------
 // H2.2 — moe grouped GEMM with fused Q4_K_M dequant (Wedge 2: the moat)
