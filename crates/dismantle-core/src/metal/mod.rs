@@ -127,6 +127,164 @@ mod imp {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
 
+    /// v2.2.0-L7: lookup the `timestamp` common counter set on the device,
+    /// returning `Some(CounterSet)` if available. Apple silicon (M1/M2/M3)
+    /// always supports the timestamp counter set; intel macs may not.
+    ///
+    /// Counter-set names are reported as NSString. We compare against the
+    /// well-known constant `MTLCommonCounterSetTimestamp` (which is itself
+    /// an NSString with value "timestamp"); the simplest match is by name.
+    fn find_timestamp_counter_set(device: &Device) -> Option<::metal::CounterSet> {
+        let sets = device.counter_sets();
+        sets.into_iter().find(|s| s.name() == "timestamp")
+    }
+
+    /// v2.2.0-L7: counter-sample tracer used by `ProdCbGpu` mode.
+    ///
+    /// One sample buffer per `TokenCommandBuffer`; `sample_count` is sized
+    /// for 2 samples per dispatch × MAX_DISPATCHES. Each dispatch occupies
+    /// indices `[2*n, 2*n+1]`. After CB completes, the sample buffer holds
+    /// raw GPU timestamps (ns); `gpu_us = (ts[2n+1] - ts[2n]) / 1000`.
+    struct ProdCbTracer {
+        sample_buf: ::metal::CounterSampleBuffer,
+        /// Index of the next pair (so the start of the next dispatch's
+        /// samples is `2 * next_pair`). One pair per dispatch.
+        next_pair: AtomicUsize,
+        capacity_pairs: usize,
+        /// Pending samples, populated in dispatch order with the pair index
+        /// they were stamped at; resolved into `tcb_samples` post-wait.
+        pending: Mutex<Vec<ProdCbPending>>,
+    }
+
+    struct ProdCbPending {
+        kernel_name: &'static str,
+        cpu_us: u64,
+        pair_index: usize,
+        layer_hint: Option<u32>,
+    }
+
+    impl ProdCbTracer {
+        /// Sample slot capacity per TCB. Apple caps the sample buffer at
+        /// 32 KiB (= 4096 u64 samples = 2048 pairs). One TCB = one token =
+        /// ~270 dispatches for V2-Lite (27 layers × ~10 kernels + LM head),
+        /// so 1024 pairs (= 16 KiB) is comfortably above the worst-case
+        /// per-token dispatch count.
+        const CAPACITY_PAIRS: usize = 1024;
+
+        fn try_new(device: &Device) -> Option<Self> {
+            let cset = find_timestamp_counter_set(device)?;
+            let desc = ::metal::CounterSampleBufferDescriptor::new();
+            desc.set_counter_set(&cset);
+            desc.set_sample_count((Self::CAPACITY_PAIRS * 2) as u64);
+            // Shared storage so we can read raw via resolveCounterRange:
+            // without a separate blit-encoder resolve pass.
+            desc.set_storage_mode(::metal::MTLStorageMode::Shared);
+            let sample_buf = device.new_counter_sample_buffer_with_descriptor(&desc).ok()?;
+            Some(Self {
+                sample_buf,
+                next_pair: AtomicUsize::new(0),
+                capacity_pairs: Self::CAPACITY_PAIRS,
+                pending: Mutex::new(Vec::with_capacity(Self::CAPACITY_PAIRS)),
+            })
+        }
+
+        /// Reserve a pair index for the next dispatch. Returns `None` if
+        /// capacity is exhausted (in which case the caller falls back to
+        /// recording the sample without `gpu_us`).
+        fn reserve_pair(&self) -> Option<usize> {
+            let i = self.next_pair.fetch_add(1, Ordering::Relaxed);
+            if i < self.capacity_pairs {
+                Some(i)
+            } else {
+                None
+            }
+        }
+
+        /// Record one dispatch's metadata; gpu_us is populated post-wait.
+        fn record_pending(
+            &self,
+            kernel_name: &'static str,
+            cpu_us: u64,
+            pair_index: usize,
+            layer_hint: Option<u32>,
+        ) {
+            self.pending.lock().push(ProdCbPending {
+                kernel_name,
+                cpu_us,
+                pair_index,
+                layer_hint,
+            });
+        }
+
+        /// After commit+wait, walk pending and emit one `DispatchSample`
+        /// per recorded dispatch, with `gpu_us` filled from the resolved
+        /// counter sample buffer.
+        ///
+        /// `resolveCounterRange:` returns NSData of `2 * sample_count`
+        /// `u64` words; we read pairs and subtract. The values are in
+        /// nanoseconds for the timestamp counter set (per Apple docs).
+        fn drain(&self) -> Vec<super::DispatchSample> {
+            let pending = std::mem::take(&mut *self.pending.lock());
+            let pair_count = self.next_pair.load(Ordering::Relaxed).min(self.capacity_pairs);
+            if pair_count == 0 {
+                return pending
+                    .into_iter()
+                    .map(|p| super::DispatchSample {
+                        kernel_name: p.kernel_name,
+                        wall_us: p.cpu_us,
+                        layer_hint: p.layer_hint,
+                        gpu_us: None,
+                    })
+                    .collect();
+            }
+            // Resolve the [0, 2*pair_count) sample range. Returns NSData.
+            // SAFETY: CB has committed + waited before this is called;
+            // resolveCounterRange: is a synchronous read on shared storage.
+            let timestamps = unsafe {
+                let ns_range = ::metal::NSRange {
+                    location: 0,
+                    length: (pair_count * 2) as u64,
+                };
+                let nsdata: *mut metal::objc::runtime::Object =
+                    msg_send![&*self.sample_buf, resolveCounterRange: ns_range];
+                if nsdata.is_null() {
+                    Vec::new()
+                } else {
+                    let bytes: *const u8 = msg_send![nsdata, bytes];
+                    let len: usize = msg_send![nsdata, length];
+                    let n_u64 = len / 8;
+                    let slice = std::slice::from_raw_parts(bytes as *const u64, n_u64);
+                    slice.to_vec()
+                }
+            };
+            // Per Apple, an "absent" sample is encoded as MTLCounterErrorValue
+            // (0xFFFFFFFFFFFFFFFF). If we see one we leave gpu_us=None.
+            const ERR: u64 = u64::MAX;
+            pending
+                .into_iter()
+                .map(|p| {
+                    let i0 = p.pair_index * 2;
+                    let i1 = i0 + 1;
+                    let gpu_us = if i1 < timestamps.len()
+                        && timestamps[i0] != ERR
+                        && timestamps[i1] != ERR
+                        && timestamps[i1] >= timestamps[i0]
+                    {
+                        Some((timestamps[i1] - timestamps[i0]) / 1000)
+                    } else {
+                        None
+                    };
+                    super::DispatchSample {
+                        kernel_name: p.kernel_name,
+                        wall_us: p.cpu_us,
+                        layer_hint: p.layer_hint,
+                        gpu_us,
+                    }
+                })
+                .collect()
+        }
+    }
+
     // Re-export Metal's Buffer type so callers can hold pinned-weight
     // handles without depending on the upstream `metal` crate directly.
     pub use ::metal::Buffer as PinnedBuffer;
@@ -538,26 +696,26 @@ mod imp {
     /// TCB-internal trace mode (parsed once from `DISMANTLE_TCB_TRACE` at
     /// construction so the hot path is a single enum compare).
     ///
-    /// - **Off** (env var unset or `=0`): zero-overhead default; no per-kernel
-    ///   samples, no tcb_commit record.
-    /// - **CpuEncode** (env var `=1` or `=cpu` or any non-recognized value):
-    ///   the historical behavior — records CPU-side encoding wall time per
-    ///   dispatch + a `tcb_commit` total. Tells you nothing about GPU compute
-    ///   distribution inside the TCB; only useful for dispatch-overhead audits.
-    /// - **SplitCbGpu** (env var `=gpu`): each dispatch lands in its OWN
-    ///   command buffer that is committed + waited immediately, so
-    ///   `MTLCommandBuffer::gpu_start_time`/`gpu_end_time` can be read
-    ///   directly. Populates `DispatchSample::gpu_us` with the per-kernel
-    ///   GPU compute time. **Diagnostic mode**: kills the TCB amortization
-    ///   benefit (each dispatch pays a full commit/sync), so dec_tps drops
-    ///   substantially. Use only to attribute where decode time goes.
-    ///   Numerical output is bit-identical to Off mode (same kernels, same
-    ///   args, same order — only commit granularity differs).
+    /// - **Off** (env var unset or `=0`): zero-overhead default.
+    /// - **CpuEncode** (`=1` or `=cpu`): per-dispatch CPU encoding wall time.
+    /// - **SplitCbGpu** (`=gpu`): per-dispatch GPU time via dedicated CBs —
+    ///   `MTLCommandBuffer::gpuStartTime`/`gpuEndTime` after wait. Inflates
+    ///   absolute percentages because each dispatch pays a commit/wait sync.
+    /// - **ProdCbGpu** (`=gpu_prod`, v2.2.0-L7): per-dispatch GPU time via
+    ///   `MTLCounterSampleBuffer` inside the SAME command buffer. No split,
+    ///   so the production TCB pipelining is preserved. Inserts two
+    ///   `sampleCountersInBuffer:atSampleIndex:withBarrier:true` calls per
+    ///   dispatch (one before, one after); after `commit_and_wait` we read
+    ///   the sample buffer and populate `DispatchSample::gpu_us` with the
+    ///   real production GPU duration of each kernel. Use this whenever
+    ///   tier-2/3 perf decisions need accurate per-kernel attribution
+    ///   without the split-CB skew.
     #[derive(Copy, Clone, PartialEq, Eq)]
     pub enum TcbTraceMode {
         Off,
         CpuEncode,
         SplitCbGpu,
+        ProdCbGpu,
     }
 
     impl TcbTraceMode {
@@ -566,11 +724,10 @@ mod imp {
             let mode = match raw.as_deref() {
                 Err(_) => Self::Off,
                 Ok("") | Ok("0") => Self::Off,
+                Ok(s) if s.eq_ignore_ascii_case("gpu_prod") => Self::ProdCbGpu,
                 Ok(s) if s.eq_ignore_ascii_case("gpu") => Self::SplitCbGpu,
                 Ok(_) => Self::CpuEncode,
             };
-            // One-shot diagnostic on the first TCB construction, gated so the
-            // hot path stays clean. Removed after T1.1 validation lands.
             static ONCE: std::sync::Once = std::sync::Once::new();
             ONCE.call_once(|| {
                 eprintln!(
@@ -580,6 +737,7 @@ mod imp {
                         Self::Off => "Off",
                         Self::CpuEncode => "CpuEncode",
                         Self::SplitCbGpu => "SplitCbGpu",
+                        Self::ProdCbGpu => "ProdCbGpu",
                     }
                 );
             });
@@ -603,13 +761,27 @@ mod imp {
         mode: TcbTraceMode,
         /// Accumulated per-dispatch samples; only populated when `mode` is on.
         tcb_samples: Vec<super::DispatchSample>,
+        /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
+        /// when the device doesn't support the timestamp counter set.
+        prod_cb_tracer: Option<ProdCbTracer>,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
             let mode = TcbTraceMode::from_env();
-            Self { ctx, cmd: Some(cmd), mode, tcb_samples: Vec::new() }
+            let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
+                ProdCbTracer::try_new(&ctx.inner.device)
+            } else {
+                None
+            };
+            Self {
+                ctx,
+                cmd: Some(cmd),
+                mode,
+                tcb_samples: Vec::new(),
+                prod_cb_tracer,
+            }
         }
 
         /// Encode one kernel dispatch.
@@ -634,6 +806,9 @@ mod imp {
             if self.mode == TcbTraceMode::SplitCbGpu {
                 return self.dispatch_threads_split_cb(fn_name, grid, tg, encode);
             }
+            if self.mode == TcbTraceMode::ProdCbGpu && self.prod_cb_tracer.is_some() {
+                return self.dispatch_threads_prod_cb(fn_name, grid, tg, encode);
+            }
             let t0 = if self.mode == TcbTraceMode::CpuEncode {
                 Some(Instant::now())
             } else {
@@ -656,6 +831,77 @@ mod imp {
                 self.tcb_samples.push(super::DispatchSample {
                     kernel_name: static_kernel_name(fn_name),
                     wall_us: t0.elapsed().as_micros() as u64,
+                    layer_hint: super::current_layer(),
+                    gpu_us: None,
+                });
+            }
+            Ok(())
+        }
+
+        /// v2.2.0-L7: ProdCbGpu path — same TCB pipelining as Off mode,
+        /// but each per-dispatch compute encoder is created via
+        /// `MTLComputePassDescriptor` with a sample-buffer attachment
+        /// that records GPU timestamps at the encoder's start and end
+        /// boundary. After CB wait, those timestamps give the real
+        /// production GPU duration per kernel without splitting the
+        /// command buffer.
+        ///
+        /// We use BOUNDARY sampling rather than mid-pass
+        /// `sampleCountersInBuffer:atSampleIndex:withBarrier:` because
+        /// the M-series GPU family (AGXG15X on M3 Pro) does NOT support
+        /// mid-pass compute counter sampling. Boundary-mode IS supported
+        /// — see Apple's
+        /// `MTLCommandEncoder::startOfEncoderSampleIndex`/`endOfEncoderSampleIndex`.
+        fn dispatch_threads_prod_cb(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let t0_cpu = Instant::now();
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let tracer = self
+                .prod_cb_tracer
+                .as_ref()
+                .expect("ProdCbGpu path requires a tracer; constructor ensures this");
+            let pipe = self.ctx.pipeline(fn_name)?;
+            let pair_index = tracer.reserve_pair();
+
+            // Build a per-encoder ComputePassDescriptor with one sample
+            // buffer attachment at slot 0, pointing at our shared sample
+            // buffer with start/end indices = (2p, 2p+1).
+            let enc = if let Some(p) = pair_index {
+                let pass = ::metal::ComputePassDescriptor::new();
+                let attachments = pass.sample_buffer_attachments();
+                let att = ::metal::ComputePassSampleBufferAttachmentDescriptor::new();
+                att.set_sample_buffer(&tracer.sample_buf);
+                att.set_start_of_encoder_sample_index((p * 2) as u64);
+                att.set_end_of_encoder_sample_index((p * 2 + 1) as u64);
+                attachments.set_object_at(0, Some(&att));
+                cmd.compute_command_encoder_with_descriptor(pass)
+            } else {
+                cmd.new_compute_command_encoder()
+            };
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            let cpu_us = t0_cpu.elapsed().as_micros() as u64;
+            let kn = static_kernel_name(fn_name);
+            if let Some(p) = pair_index {
+                tracer.record_pending(kn, cpu_us, p, super::current_layer());
+            } else {
+                // Out of capacity — emit the sample now with gpu_us=None.
+                self.tcb_samples.push(super::DispatchSample {
+                    kernel_name: kn,
+                    wall_us: cpu_us,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
                 });
@@ -777,6 +1023,22 @@ mod imp {
                     // Flush per-dispatch GPU-timed samples directly. There is
                     // no aggregate `tcb_commit` in split mode — the GPU times
                     // already sum to the decoded total.
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx.trace.samples.lock().push(s);
+                    }
+                }
+                TcbTraceMode::ProdCbGpu => {
+                    // v2.2.0-L7: resolve the counter sample buffer now that
+                    // the CB has completed. `drain()` reads the raw
+                    // timestamps and pairs them with the recorded
+                    // dispatch metadata to populate `gpu_us`.
+                    if let Some(tracer) = self.prod_cb_tracer.as_ref() {
+                        for s in tracer.drain() {
+                            self.ctx.trace.samples.lock().push(s);
+                        }
+                    }
+                    // Any out-of-capacity dispatches were pushed straight
+                    // to `tcb_samples` with gpu_us=None.
                     for s in self.tcb_samples.drain(..) {
                         self.ctx.trace.samples.lock().push(s);
                     }
