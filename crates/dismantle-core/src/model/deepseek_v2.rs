@@ -1856,6 +1856,23 @@ impl DeepSeekV2 {
                         ctx, bytes, rows, cols, x, out,
                     );
                 }
+                // v2.1 T2.1: when the top-level schedule is one of the v2t_gu_*
+                // family (selected for the MoE TCB path), the standalone Q4_K
+                // dispatch (used for non-TCB attention projections / fallback)
+                // doesn't have a matching kernel name. Map all v2t_* schedules
+                // to the v2 standalone kernel so we never silently regress to
+                // the slow scalar `gemv_q4_k_m` here.
+                if matches!(
+                    schedule,
+                    "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_serial"
+                ) {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v2_pinned(
+                            ctx, model_buf, t.offset, t.byte_size, rows, cols, x, out,
+                        );
+                    }
+                    return crate::kernels::gemv_q4_k_m_v2(ctx, bytes, rows, cols, x, out);
+                }
                 return crate::kernels::gemv_q4_k_m(ctx, bytes, rows, cols, x, out);
             }
         }
