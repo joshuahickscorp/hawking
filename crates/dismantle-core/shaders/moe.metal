@@ -271,49 +271,6 @@ kernel void moe_grouped_gemm_q4(
     if (tid == 0u) y[gid] = shmem[0];
 }
 
-// Phase 2 — batched expert GEMV. The host packs only the selected
-// route matrices contiguously, so route `r` owns one full row-major
-// matrix at `r * per_matrix_bytes`.
-kernel void moe_batched_gemm_q4(
-    device const uchar* w_q4   [[buffer(0)]],   // (routes, rows, cols) Q4_K
-    device const float* x      [[buffer(1)]],   // (cols,) shared across routes
-    device       float* y      [[buffer(2)]],   // (routes, rows)
-    constant     uint&  routes [[buffer(3)]],
-    constant     uint&  rows   [[buffer(4)]],
-    constant     uint&  cols   [[buffer(5)]],
-    threadgroup  float* shmem  [[threadgroup(0)]],
-    uint2               tid2      [[thread_position_in_threadgroup]],
-    uint2               tgp       [[threadgroup_position_in_grid]],
-    uint2               tg_size2  [[threads_per_threadgroup]])
-{
-    uint tid = tid2.x;
-    uint tg_size = tg_size2.x;
-    uint row = tgp.x;
-    uint route = tgp.y;
-    if (row >= rows || route >= routes) return;
-
-    uint blocks_per_row = cols / 256u;
-    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 144ul;
-    uint64_t row_byte_off = (uint64_t)route * per_matrix_bytes
-                          + (uint64_t)row * (uint64_t)blocks_per_row * 144ul;
-
-    float partial = 0.0f;
-    for (uint b = 0; b < blocks_per_row; ++b) {
-        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
-        partial += q4_k_value(w_q4, bo, tid)
-                 * x[(uint64_t)b * 256ul + (uint64_t)tid];
-    }
-
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-
-    if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
-}
-
 // No-pack variant: routed experts are selected by route_ids from the
 // full fused GGUF tensor. w_all is the whole GGUF mmap, and base_offset
 // points at the first byte of the fused tensor inside that file.
@@ -781,45 +738,6 @@ kernel void moe_batched_gemm_q4_indexed_v2t_gu_v2(
     }
 }
 
-kernel void moe_batched_gemm_q8_0(
-    device const uchar* w_q8   [[buffer(0)]],   // (routes, rows, cols) Q8_0
-    device const float* x      [[buffer(1)]],   // (routes, cols)
-    device       float* y      [[buffer(2)]],   // (routes, rows)
-    constant     uint&  routes [[buffer(3)]],
-    constant     uint&  rows   [[buffer(4)]],
-    constant     uint&  cols   [[buffer(5)]],
-    threadgroup  float* shmem  [[threadgroup(0)]],
-    uint2               tid2      [[thread_position_in_threadgroup]],
-    uint2               tgp       [[threadgroup_position_in_grid]],
-    uint2               tg_size2  [[threads_per_threadgroup]])
-{
-    uint tid = tid2.x;
-    uint tg_size = tg_size2.x;
-    uint row = tgp.x;
-    uint route = tgp.y;
-    if (row >= rows || route >= routes) return;
-
-    uint blocks_per_row = cols / 32u;
-    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 34ul;
-    uint64_t row_byte_off = (uint64_t)route * per_matrix_bytes
-                          + (uint64_t)row * (uint64_t)blocks_per_row * 34ul;
-
-    float partial = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
-        partial += q8_0_value(w_q8, row_byte_off, c)
-                 * x[(uint64_t)route * cols + c];
-    }
-
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-
-    if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
-}
-
 kernel void moe_batched_gemm_q8_0_indexed(
     device const uchar* w_all     [[buffer(0)]],
     device const uint*  route_ids [[buffer(1)]],
@@ -1048,46 +966,6 @@ kernel void moe_batched_gemm_q5_0_indexed_v2t(
     if (simd_lane == 0u) {
         y[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = partial;
     }
-}
-
-kernel void moe_batched_gemm_q6_k(
-    device const uchar* w_q6   [[buffer(0)]],   // (routes, rows, cols) Q6_K
-    device const float* x      [[buffer(1)]],   // (routes, cols)
-    device       float* y      [[buffer(2)]],   // (routes, rows)
-    constant     uint&  routes [[buffer(3)]],
-    constant     uint&  rows   [[buffer(4)]],
-    constant     uint&  cols   [[buffer(5)]],
-    threadgroup  float* shmem  [[threadgroup(0)]],
-    uint2               tid2      [[thread_position_in_threadgroup]],
-    uint2               tgp       [[threadgroup_position_in_grid]],
-    uint2               tg_size2  [[threads_per_threadgroup]])
-{
-    uint tid = tid2.x;
-    uint tg_size = tg_size2.x;
-    uint row = tgp.x;
-    uint route = tgp.y;
-    if (row >= rows || route >= routes) return;
-
-    uint blocks_per_row = cols / 256u;
-    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 210ul;
-    uint64_t row_byte_off = (uint64_t)route * per_matrix_bytes
-                          + (uint64_t)row * (uint64_t)blocks_per_row * 210ul;
-
-    float partial = 0.0f;
-    for (uint b = 0; b < blocks_per_row; ++b) {
-        uint64_t bo = row_byte_off + (uint64_t)b * 210ul;
-        partial += q6_k_value(w_q6, bo, tid)
-                 * x[(uint64_t)route * cols + (uint64_t)b * 256ul + (uint64_t)tid];
-    }
-
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-
-    if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
 }
 
 kernel void moe_batched_gemm_q6_k_indexed(
