@@ -246,10 +246,6 @@ mod imp {
             "moe_route_accumulate" => "moe_route_accumulate",
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels
-            "attn_kv_append_stub" => "attn_kv_append_stub",
-            "attn_mha_qkv_stub" => "attn_mha_qkv_stub",
-            "attn_mla_compress_stub" => "attn_mla_compress_stub",
-            "attn_mla_decompress_stub" => "attn_mla_decompress_stub",
             "rope_inplace" => "rope_inplace",
             "embed_lookup" => "embed_lookup",
             // dequant / gemm variants
@@ -278,10 +274,8 @@ mod imp {
             "rmsnorm_f16" => "rmsnorm_f16",
             "silu_mul_f16" => "silu_mul_f16",
             // sampling kernels
-            "sample_constraint" => "sample_constraint",
             "sample_repetition" => "sample_repetition",
             "sample_temperature" => "sample_temperature",
-            "sample_topk_topp_stub" => "sample_topk_topp_stub",
             // v0.5.7 sampling kernels
             "sample_topk" => "sample_topk",
             "sample_topp" => "sample_topp",
