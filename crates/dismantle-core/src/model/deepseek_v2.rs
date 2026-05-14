@@ -1931,98 +1931,6 @@ impl DeepSeekV2 {
         Ok(())
     }
 
-    /// Wedge 2 — two-stage fused MoE dispatch, gated by
-    /// `profile.selected.moe_schedule == "two-stage"`.
-    /// Returns `Some(output)` when the kernel fires, `None` to fall through.
-    fn moe_block_two_stage_dispatch(
-        &self,
-        routed_fused: &MoEFusedTensors,
-        shared_fused: Option<&MoEFusedTensors>,
-        routes: &[(usize, f32)],
-        x: &[f32],
-    ) -> Result<Option<Vec<f32>>> {
-        let wants_two_stage = self
-            .kernel_profile
-            .as_ref()
-            .map(|p| p.selected.moe_schedule == "two-stage")
-            .unwrap_or(false);
-        if !wants_two_stage {
-            return Ok(None);
-        }
-
-        #[cfg(target_os = "macos")]
-        {
-            let Some(ctx) = &self.metal_ctx else {
-                return Ok(None);
-            };
-
-            // Dtype guards: same quant scheme as v2lite.
-            if routed_fused.gate_w.dtype != GgmlType::Q4_K
-                || routed_fused.up_w.dtype != GgmlType::Q4_K
-                || routed_fused.down_w.dtype != GgmlType::Q8_0
-            {
-                return Ok(None);
-            }
-            let Some(shared) = shared_fused else {
-                return Ok(None);
-            };
-            if shared.gate_w.dtype != GgmlType::Q4_K
-                || shared.up_w.dtype != GgmlType::Q4_K
-                || shared.down_w.dtype != GgmlType::Q6_K
-            {
-                return Ok(None);
-            }
-
-            let mmap = &self.gguf.mmap;
-            let routed_gate = &mmap[routed_fused.gate_w.offset
-                ..routed_fused.gate_w.offset + routed_fused.gate_w.byte_size];
-            let routed_up = &mmap
-                [routed_fused.up_w.offset..routed_fused.up_w.offset + routed_fused.up_w.byte_size];
-            let routed_down = &mmap[routed_fused.down_w.offset
-                ..routed_fused.down_w.offset + routed_fused.down_w.byte_size];
-            let shared_gate =
-                &mmap[shared.gate_w.offset..shared.gate_w.offset + shared.gate_w.byte_size];
-            let shared_up = &mmap[shared.up_w.offset..shared.up_w.offset + shared.up_w.byte_size];
-            let shared_down =
-                &mmap[shared.down_w.offset..shared.down_w.offset + shared.down_w.byte_size];
-
-            let mut route_ids = Vec::with_capacity(routes.len());
-            let mut route_weights = Vec::with_capacity(routes.len());
-            for &(eid, weight) in routes {
-                route_ids.push(eid as u32);
-                route_weights.push(weight);
-            }
-
-            let n_shared = self.config.n_shared_experts;
-            let shared_mid = n_shared * self.config.moe_intermediate;
-            let mut out = vec![0.0f32; self.config.hidden];
-            crate::kernels::moe_block_two_stage_metal(
-                ctx,
-                routed_gate,
-                routed_up,
-                routed_down,
-                shared_gate,
-                shared_up,
-                shared_down,
-                &route_ids,
-                &route_weights,
-                self.config.n_routed_experts,
-                n_shared,
-                self.config.hidden,
-                self.config.moe_intermediate,
-                shared_mid,
-                x,
-                &mut out,
-            )?;
-            return Ok(Some(out));
-        }
-        #[cfg(not(target_os = "macos"))]
-        {
-            let _ = (routed_fused, shared_fused, routes, x);
-            Ok(None)
-        }
-    }
-
     /// Stage B.4 — single-kernel fused MoE dispatch, gated by
     /// `profile.selected.moe_schedule == "single-kernel"`.
     /// Returns `Some(output)` when the kernel fires, `None` to fall through.
@@ -4288,17 +4196,6 @@ impl DeepSeekV2 {
                     &mut logits,
                 )?;
                 let routes = topk_gate(&mut logits, cfg.top_k_routed, true);
-
-                // Wedge 2: two-stage fused path (profile.selected.moe_schedule == "two-stage").
-                if let Some(two_stage) = self.moe_block_two_stage_dispatch(
-                    routed_fused,
-                    shared_fused.as_ref(),
-                    &routes,
-                    x,
-                )? {
-                    out = two_stage;
-                    return Ok(out);
-                }
 
                 // Single-kernel fused path (profile.selected.moe_schedule == "single-kernel").
                 if let Some(fused) = self.moe_block_fused_v2lite_dispatch(
