@@ -236,7 +236,6 @@ mod imp {
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels
             "rope_inplace" => "rope_inplace",
-            "embed_lookup" => "embed_lookup",
             // dequant / gemm variants
             "dequant_q8_0" => "dequant_q8_0",
             "gemm_q4_k_m_fused" => "gemm_q4_k_m_fused",
@@ -275,7 +274,6 @@ mod imp {
             // v0.5.9 fp16 activation kernels
             "gemv_f32_attn_f16" => "gemv_f32_attn_f16",
             "gemv_f32_moe_f16" => "gemv_f32_moe_f16",
-            "add_inplace_f16" => "add_inplace_f16",
             "softmax_f16" => "softmax_f16",
             "layer_norm_f16" => "layer_norm_f16",
             // v1.1.0-X simdgroup LM-head
@@ -300,13 +298,11 @@ mod imp {
             "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
             "gemv_f16_f16in" => "gemv_f16_f16in",
             "kv_append_f32" => "kv_append_f32",
-            "rmsnorm_f16_to_f32" => "rmsnorm_f16_to_f32",
             "rmsnorm_f32" => "rmsnorm_f32",
             "rmsnorm_f32_to_f16" => "rmsnorm_f32_to_f16",
             "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
             "rope_q_f32_inplace" => "rope_q_f32_inplace",
             "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
-            "cast_f32_to_f16" => "cast_f32_to_f16",
             "embed_lookup_f32" => "embed_lookup_f32",
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
             _ => "other",
