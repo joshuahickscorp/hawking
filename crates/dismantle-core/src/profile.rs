@@ -96,6 +96,15 @@ pub struct KernelVariant {
     /// Only affects models where shared_down_dtype == Q6_K.
     #[serde(default = "default_shared_down_schedule")]
     pub shared_down_schedule: String,
+    /// v2.2.0-T2.14: "basic" (default) or "v2t" — selects the kernel
+    /// for the fused rmsnorm + attention GEMV (`q_proj`, `q_a_proj`,
+    /// `kv_a_proj_with_mqa`). The basic kernel launches one TG per
+    /// row; v2t launches one TG per 8 rows with a threadgroup
+    /// `xw_cache` so the rmsnorm-scaled activation is computed once
+    /// per 8 output rows. Requires rows % 8 == 0 and cols % 32 == 0.
+    /// Opt-in until a clean bench validates the +5% e2e gate.
+    #[serde(default = "default_rmsnorm_attn_schedule")]
+    pub rmsnorm_attn_schedule: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -115,6 +124,10 @@ fn default_routed_down_schedule() -> String {
 }
 
 fn default_shared_down_schedule() -> String {
+    "basic".to_string()
+}
+
+fn default_rmsnorm_attn_schedule() -> String {
     "basic".to_string()
 }
 
@@ -275,6 +288,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         x_norm_dtype: "f32".into(),
         routed_down_schedule: "basic".into(),
         shared_down_schedule: "basic".into(),
+        rmsnorm_attn_schedule: "basic".into(),
     }]
 }
 
