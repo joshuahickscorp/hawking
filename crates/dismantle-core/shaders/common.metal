@@ -191,17 +191,6 @@ kernel void rope_slice_f32_inplace(
     x[off + 1u] = x0 * s + x1 * c;
 }
 
-kernel void embed_lookup(
-    device const half* embed  [[buffer(0)]],
-    device       half* out    [[buffer(1)]],
-    constant     uint& hidden [[buffer(2)]],
-    constant     uint& token  [[buffer(3)]],
-    uint id                    [[thread_position_in_grid]])
-{
-    if (id >= hidden) return;
-    out[id] = embed[token * hidden + id];
-}
-
 // v1.0.0-D — embed lookup writing f32 residual stream.
 // Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
 kernel void embed_lookup_f32(
@@ -317,63 +306,6 @@ kernel void silu_mul_f16(
     float u = (float)up[gid];
     float silu_g = g / (1.0f + exp(-g));
     out[gid] = (half)(silu_g * u);
-}
-
-// v1.0.0-F — f16 residual stream: rmsnorm reading f16, writing f32 norm.
-// Variance reduction in f32 (non-negotiable for numeric stability).
-// Same binding layout as rmsnorm_f16 but buffer(4) is float* not half*.
-// Grid: (TG_SIZE, 1, 1), threadgroup: (TG_SIZE, 1, 1).
-kernel void rmsnorm_f16_to_f32(
-    device const half*  x       [[buffer(0)]],
-    device const float* weight  [[buffer(1)]],
-    constant     float& eps     [[buffer(2)]],
-    constant     uint&  hidden  [[buffer(3)]],
-    device       float* out     [[buffer(4)]],
-    threadgroup  float* shmem   [[threadgroup(0)]],
-    uint                tid     [[thread_position_in_threadgroup]],
-    uint                tg_size [[threads_per_threadgroup]])
-{
-    float partial = 0.0f;
-    for (uint i = tid; i < hidden; i += tg_size) {
-        float v = (float)x[i];
-        partial += v * v;
-    }
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    float mean = shmem[0] / (float)hidden;
-    float scale = rsqrt(mean + eps);
-    for (uint i = tid; i < hidden; i += tg_size) {
-        out[i] = (float)x[i] * scale * weight[i];
-    }
-}
-
-// v1.0.0-F — trivial f32→f16 cast: out[i] = (half)src[i].
-// Used to convert f32 attention/FFN outputs to f16 residual deltas.
-// Grid: (n, 1, 1), threadgroup (TG_SIZE, 1, 1).
-kernel void cast_f32_to_f16(
-    device const float* src [[buffer(0)]],
-    device       half*  dst [[buffer(1)]],
-    constant     uint&  n   [[buffer(2)]],
-    uint                gid [[thread_position_in_grid]])
-{
-    if (gid >= n) return;
-    dst[gid] = (half)src[gid];
-}
-
-// v0.5.9-C — fp16 residual add: a[i] += b[i], both f16.
-kernel void add_inplace_f16(
-    device       half*  a   [[buffer(0)]],
-    device const half*  b   [[buffer(1)]],
-    constant     uint&  n   [[buffer(2)]],
-    uint                gid [[thread_position_in_grid]])
-{
-    if (gid >= n) return;
-    a[gid] = (half)((float)a[gid] + (float)b[gid]);
 }
 
 // v0.5.9-E — standalone f16 softmax.

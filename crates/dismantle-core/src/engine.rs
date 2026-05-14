@@ -23,22 +23,8 @@ pub enum ActivationDtype {
 impl Default for ActivationDtype {
     fn default() -> Self {
         // v0.8.6: reverted to F32 (bridge approach regressed -6.7%).
-        // Phase E (residual_dtype) is the replacement path.
         Self::F32
     }
-}
-
-/// Phase E: controls the dtype of the residual stream `x` itself.
-///
-/// F32 = legacy path (x is Vec<f32> throughout).
-/// F16 = Phase E "doing it right": x is Vec<f16> throughout, eliminating
-///        the f32→f16 conversion overhead that caused Phase 7 to regress.
-///        Bridge kernels in attention/ffn read from x_f16_buf (no conversion).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum ResidualDtype {
-    F32,
-    F16,
 }
 
 #[derive(Debug, Clone)]
@@ -57,9 +43,6 @@ pub struct EngineConfig {
     /// Phase 7: activation dtype for fused bridge kernels. F32 = legacy;
     /// F16 = read residual as half-precision (v0.8.4+ default, reverted v0.8.6).
     pub activation_dtype: ActivationDtype,
-    /// Phase E: dtype of the residual stream x. F32 = legacy; F16 = x is Vec<f16>
-    /// throughout (eliminates Phase 7 bridge conversion overhead).
-    pub residual_dtype: ResidualDtype,
     /// Optional routed-expert RAM budget. In v1.0.0 partial-tier V2-Lite this
     /// is accepted as a no-op; Mixtral/offload engines attach real ExpertCache
     /// ranges to enforce it.
@@ -83,7 +66,6 @@ impl Default for EngineConfig {
             kernel_profile: None,
             trace_dispatch: false,
             activation_dtype: ActivationDtype::F32,
-            residual_dtype: ResidualDtype::F32,
             max_routed_expert_ram_mb: None,
             memory_limit_mb: None,
         }
