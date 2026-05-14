@@ -961,6 +961,95 @@ kernel void moe_batched_gemm_q5_0_indexed(
     if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
 }
 
+// v2.1.0-T2.11 — v2t-pattern port for Q5_0 routed-down kernel.
+//
+// Mirrors moe_batched_gemm_q8_0_indexed_v2t exactly except for:
+//   - block stride (22 bytes for Q5_0 vs 34 for Q8_0)
+//   - inline 5-bit decode for the per-lane qi instead of signed_u8 read
+//
+// Each simdgroup (32 lanes) processes ONE row of ONE block at a time;
+// 8 rows per threadgroup (simd_id 0..7 within the TG), 32 simd_lanes
+// each handling one of the 32 values in the block. Threadgroup x_cache
+// preloads the route's activation vector once and reuses it across the
+// inner block-loop (avoiding cols × routes repeated global reads).
+//
+// Q5_0 block layout (22 bytes per block, 32 values):
+//   [0..2)   fp16 scale d
+//   [2..6)   qh — 4 bytes = 32 bits, one per value (5th/high bit)
+//   [6..22)  qlo — 16 bytes = 32 nibbles (low 4 bits per value, packed
+//            so byte[i] holds value i's nibble in low4 and value (i+16)'s
+//            nibble in high4)
+//
+// Per-lane decode for lane `simd_lane` in block `b`:
+//   packed_byte = w_all[bo + 6 + (simd_lane & 15)]
+//   low4 = (simd_lane < 16) ? (packed & 0xF) : ((packed >> 4) & 0xF)
+//   high_bit = (qh32 >> simd_lane) & 1
+//   q = (low4 | (high_bit << 4)) - 16
+//   value = d * q
+//
+// Parity validated by tests/v2_1_q5_0_v2t_parity.rs.
+kernel void moe_batched_gemm_q5_0_indexed_v2t(
+    device const uchar* w_all       [[buffer(0)]],
+    device const uint*  route_ids   [[buffer(1)]],
+    device const float* x           [[buffer(2)]],
+    device       float* y           [[buffer(3)]],
+    constant     ulong& base_offset [[buffer(4)]],
+    constant     uint&  routes      [[buffer(5)]],
+    constant     uint&  rows        [[buffer(6)]],
+    constant     uint&  cols        [[buffer(7)]],
+    threadgroup  float* x_cache     [[threadgroup(0)]],  // cols floats
+    uint2               tid2        [[thread_position_in_threadgroup]],
+    uint2               tgp         [[threadgroup_position_in_grid]],
+    uint                simd_lane   [[thread_index_in_simdgroup]],
+    uint                simd_id     [[simdgroup_index_in_threadgroup]])
+{
+    uint tid   = tid2.x;
+    uint route = tgp.y;
+    // Cooperative preload of this route's activation slice into TG SRAM.
+    // Same stride-256 / 6-pass pattern as the Q8_0_v2t kernel for cols=1408.
+    for (uint i = tid; i < cols; i += 256u) {
+        x_cache[i] = x[(uint64_t)route * cols + i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint base_row = tgp.x * 8u + simd_id;
+    if (route >= routes || base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 32u;                               // 1408/32 = 44
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 22ul;
+    uint64_t row_byte_off = (uint64_t)base_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 22ul;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 22ul;
+        float d = fp16_at(w_all, bo);
+        // qh: 4 bytes = 32 bits, one bit per value's 5th/high bit.
+        uint qh = ((uint)w_all[bo + 2ul])
+                | ((uint)w_all[bo + 3ul] << 8)
+                | ((uint)w_all[bo + 4ul] << 16)
+                | ((uint)w_all[bo + 5ul] << 24);
+        // Each simd_lane handles value index `simd_lane` (0..31).
+        // Packed byte for value i is at offset 6 + (i & 15); low nibble
+        // for i<16, high nibble for i>=16.
+        uchar packed = w_all[bo + 6ul + (uint64_t)(simd_lane & 15u)];
+        uint low  = (simd_lane < 16u)
+                  ? ((uint)packed & 0x0Fu)
+                  : (((uint)packed >> 4) & 0x0Fu);
+        uint high = (qh >> simd_lane) & 0x01u;
+        int qi    = (int)(low | (high << 4)) - 16;
+        float xi  = x_cache[b * 32u + simd_lane];
+        partial += d * (float)qi * xi;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = partial;
+    }
+}
+
 kernel void moe_batched_gemm_q6_k(
     device const uchar* w_q6   [[buffer(0)]],   // (routes, rows, cols) Q6_K
     device const float* x      [[buffer(1)]],   // (routes, cols)
