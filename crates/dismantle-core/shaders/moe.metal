@@ -1134,6 +1134,120 @@ kernel void moe_batched_gemm_q6_k_indexed(
     if (tid == 0u) y[(uint64_t)route * rows + row] = shmem[0];
 }
 
+// v2.1.0-T2.12 — v2t-pattern port for Q6_K shared-down kernel.
+//
+// Mirrors the moe_batched_gemm_q5_0_indexed_v2t structure but adapted
+// to Q6_K's 256-value-per-block layout (vs Q5_0's 32). Each simdgroup
+// (32 lanes) processes one row of one block at a time; each lane
+// handles 8 contiguous values in that block. 8 simdgroups per
+// threadgroup → 8 rows per TG. The route's activation slice is
+// pre-cached in threadgroup memory once per TG and reused across
+// blocks_per_row iterations.
+//
+// Q6_K superblock layout (210 bytes / 256 values):
+//   [0..128)    ql      — 128 bytes, low 4 bits per value
+//   [128..192)  qh      — 64 bytes, high 2 bits per value
+//   [192..208)  scales  — 16 signed int8 per-16-value sub-block scales
+//   [208..210)  d       — fp16 superblock scale
+//
+// Lane → value-index mapping: lane L processes block-local tids
+// L*8..L*8+7 (8 contiguous values). These all share the same
+// (half_idx, group) so each lane reads exactly ONE scale byte per
+// block. half_idx = L>>4 (0 or 1); group = (L>>2)&3 (0..3);
+// l_base = (L&3)*8 (0, 8, 16, or 24).
+//
+// Per-value decode (matches q6_k_value()):
+//   l        = l_base + k                    (k in 0..7)
+//   ql_off   = (group & 1) ? 32 : 0          (which 32-byte ql half-row)
+//   qlb      = ql[half_idx*64 + ql_off + l]
+//   qlow     = (group < 2) ? qlb & 0xF       (low nibble for groups 0,1)
+//                          : qlb >> 4        (high nibble for groups 2,3)
+//   qhb      = qh[128 + half_idx*32 + l]
+//   qhigh    = (qhb >> (group*2)) & 0x03
+//   q        = (qlow | (qhigh << 4)) - 32    (signed 6-bit)
+//   value    = d * scale * q
+//
+// Numerical parity vs basic: each value's math is identical, but
+// summation order is simdsum-then-block-loop (v2t) vs all-tids-of-
+// block-then-tree-reduce (basic). fp32 add is non-associative so
+// ULP-level drift can shift greedy argmax; same caveat as Q5_0 v2t.
+kernel void moe_batched_gemm_q6_k_indexed_v2t(
+    device const uchar* w_all       [[buffer(0)]],
+    device const uint*  route_ids   [[buffer(1)]],
+    device const float* x           [[buffer(2)]],
+    device       float* y           [[buffer(3)]],
+    constant     ulong& base_offset [[buffer(4)]],
+    constant     uint&  routes      [[buffer(5)]],
+    constant     uint&  rows        [[buffer(6)]],
+    constant     uint&  cols        [[buffer(7)]],
+    threadgroup  float* x_cache     [[threadgroup(0)]],  // cols floats
+    uint2               tid2        [[thread_position_in_threadgroup]],
+    uint2               tgp         [[threadgroup_position_in_grid]],
+    uint                simd_lane   [[thread_index_in_simdgroup]],
+    uint                simd_id     [[simdgroup_index_in_threadgroup]])
+{
+    uint tid   = tid2.x;
+    uint route = tgp.y;
+    // Cooperative preload of this route's activation slice (cols floats)
+    // into TG SRAM; 256 threads / cols=2816 → ~11 reads per thread.
+    for (uint i = tid; i < cols; i += 256u) {
+        x_cache[i] = x[(uint64_t)route * cols + i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint base_row = tgp.x * 8u + simd_id;
+    if (route >= routes || base_row >= rows) return;
+
+    uint expert = route_ids[route];
+    uint blocks_per_row = cols / 256u;
+    uint64_t per_matrix_bytes = (uint64_t)rows * (uint64_t)blocks_per_row * 210ul;
+    uint64_t row_byte_off = (uint64_t)base_offset
+                          + (uint64_t)expert * per_matrix_bytes
+                          + (uint64_t)base_row * (uint64_t)blocks_per_row * 210ul;
+
+    // Per-lane constants (independent of block index).
+    uint half_idx       = simd_lane >> 4u;          // 0 or 1
+    uint group          = (simd_lane >> 2u) & 3u;   // 0..3
+    uint l_base         = (simd_lane & 3u) * 8u;    // 0, 8, 16, or 24
+    uint scale_l_off    = l_base >> 4u;             // (l>>4) — same for all 8 of lane's values
+    uint scale_byte_off = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off   = (group & 1u) * 32u;       // 0 if group∈{0,2}, 32 if group∈{1,3}
+    bool group_high_nibble = (group >= 2u);
+    uint qh_shift       = group * 2u;
+    uint tid_base       = half_idx * 128u + group * 32u + l_base;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 210ul;
+        float d = fp16_at(w_all, bo + 208ul);
+        int scale = signed_u8(w_all[bo + (uint64_t)scale_byte_off]);
+        float dscale = d * (float)scale;
+
+        uint64_t ql_base = bo + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base = bo + 128ul + (uint64_t)half_idx * 32ul;
+
+        float lane_acc = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l = l_base + k;
+            uchar qlb = w_all[ql_base + (uint64_t)l];
+            uint qlow = group_high_nibble
+                      ? (((uint)qlb >> 4) & 0x0Fu)
+                      : ((uint)qlb & 0x0Fu);
+            uchar qhb = w_all[qh_base + (uint64_t)l];
+            uint qhigh = ((uint)qhb >> qh_shift) & 0x03u;
+            int qi = (int)(qlow | (qhigh << 4)) - 32;
+            float xi = x_cache[b * 256u + tid_base + k];
+            lane_acc += (float)qi * xi;
+        }
+        partial += dscale * lane_acc;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[(uint64_t)route * (uint64_t)rows + (uint64_t)base_row] = partial;
+    }
+}
+
 kernel void moe_batched_silu_mul(
     device const float* gate [[buffer(0)]],
     device const float* up   [[buffer(1)]],

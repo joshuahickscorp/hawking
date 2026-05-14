@@ -6,7 +6,7 @@
   "model_arch": "deepseek2",
   "tensor_layout_hash": "6540aaa223c931038ec4ddde",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "cfbd66c11b4e2b20bbe66bea",
+  "shader_hash": "e9252c5c474d8b1ddbf4122e",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
@@ -24,7 +24,8 @@
     "attn_block_schedule": "mla",
     "kv_cache_dtype": "f32",
     "x_norm_dtype": "f32",
-    "routed_down_schedule": "v2t"
+    "routed_down_schedule": "v2t",
+    "shared_down_schedule": "v2t"
   },
   "evidence": {
     "profile": "m3-pro-18gb",

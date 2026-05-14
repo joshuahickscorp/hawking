@@ -93,6 +93,14 @@ pub struct KernelVariant {
     /// Only affects models where routed_down_dtype == Q5_0 (DeepSeek-V2-Lite).
     #[serde(default = "default_routed_down_schedule")]
     pub routed_down_schedule: String,
+    /// v2.1.0-T2.12: "basic" (default) or "v2t" — selects the kernel for
+    /// MoE shared-expert-down GEMV on Q6_K tensors. Same pattern as
+    /// `routed_down_schedule` but for the shared-expert path; v2t is
+    /// the new 8-rows-per-TG threadgroup-x_cache simdsum kernel
+    /// `moe_batched_gemm_q6_k_indexed_v2t`. Opt-in until bench gate.
+    /// Only affects models where shared_down_dtype == Q6_K.
+    #[serde(default = "default_shared_down_schedule")]
+    pub shared_down_schedule: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -112,6 +120,10 @@ fn default_x_norm_dtype() -> String {
 }
 
 fn default_routed_down_schedule() -> String {
+    "basic".to_string()
+}
+
+fn default_shared_down_schedule() -> String {
     "basic".to_string()
 }
 
@@ -272,6 +284,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         kv_cache_dtype: "f32".into(),
         x_norm_dtype: "f32".into(),
         routed_down_schedule: "basic".into(),
+        shared_down_schedule: "basic".into(),
     }]
 }
 

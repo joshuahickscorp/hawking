@@ -359,11 +359,28 @@ impl FfnMoeSetup {
         }
     }
 
-    fn shared_down_kernel(&self, q4k_schedule: &str) -> &'static str {
+    /// v2.1.0-T2.12: schedule-aware shared-down kernel selection.
+    ///
+    /// `shared_down_schedule` selects the dispatch variant for Q6_K:
+    ///   "basic" (default): 1-row-per-TG tree-reduce kernel
+    ///   "v2t":             8-rows-per-TG threadgroup-x_cache simdsum
+    ///                      kernel (`moe_batched_gemm_q6_k_indexed_v2t`).
+    /// Q4_K shared-down still routes through `q4k_schedule`.
+    fn shared_down_kernel_with_schedule(
+        &self,
+        q4k_schedule: &str,
+        shared_down_schedule: &str,
+    ) -> &'static str {
         match self.shared_down_dtype {
-            Some(GgmlType::Q6_K) => "moe_batched_gemm_q6_k_indexed",
+            Some(GgmlType::Q6_K) => match shared_down_schedule {
+                "v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
+                _ => "moe_batched_gemm_q6_k_indexed",
+            },
             Some(GgmlType::Q4_K) => Self::q4k_indexed_kernel(q4k_schedule),
-            None => "moe_batched_gemm_q6_k_indexed",
+            None => match shared_down_schedule {
+                "v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
+                _ => "moe_batched_gemm_q6_k_indexed",
+            },
             _ => unreachable!("ffn_moe_check guards shared down dtype"),
         }
     }
@@ -1459,6 +1476,7 @@ impl DeepSeekV2 {
         arena: &DecodeArena,
         model_buf: &PinnedBuffer,
         q4k_schedule: &str,
+        shared_down_schedule: &str,
     ) -> Result<bool> {
         if self.encode_dense_ffn_tcb(tcb, li, arena)? {
             return Ok(true);
@@ -1479,7 +1497,10 @@ impl DeepSeekV2 {
 
         let shared_mid = self.config.n_shared_experts * self.config.moe_intermediate;
         let shared_down_kernel = match shared.down_w.dtype {
-            GgmlType::Q6_K => "moe_batched_gemm_q6_k_indexed",
+            GgmlType::Q6_K => match shared_down_schedule {
+                "v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
+                _ => "moe_batched_gemm_q6_k_indexed",
+            },
             GgmlType::Q4_K => FfnMoeSetup::q4k_indexed_kernel(q4k_schedule),
             _ => unreachable!("dtype checked above"),
         };
@@ -1542,6 +1563,9 @@ impl DeepSeekV2 {
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
+        let shared_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.shared_down_schedule.as_str())
+            .unwrap_or("basic");
         let use_simdmat = self
             .kernel_profile
             .as_ref()
@@ -1582,7 +1606,7 @@ impl DeepSeekV2 {
                 &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
             )?;
             if !self.encode_shared_only_ffn_tcb(
-                &mut tcb, li, arena, model_buf, q4k_schedule,
+                &mut tcb, li, arena, model_buf, q4k_schedule, shared_down_schedule,
             )? {
                 return Err(Error::Model(format!(
                     "shared-only GPU path could not encode layer {li}"
@@ -2315,6 +2339,10 @@ impl DeepSeekV2 {
         let routed_down_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.routed_down_schedule.as_str())
             .unwrap_or("basic");
+        // v2.1.0-T2.12: Q6_K shared-down kernel selector (parallel pattern).
+        let shared_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.shared_down_schedule.as_str())
+            .unwrap_or("basic");
 
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
@@ -2399,7 +2427,7 @@ impl DeepSeekV2 {
                             setup.shared_mid,
                             q4k_schedule,
                             setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
-                            setup.shared_down_kernel(q4k_schedule),
+                            setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
                             &arena.x_norm_buf,
                             &arena.ffn_out_buf,
                             &arena.moe_routed_gate_out_buf,
@@ -2856,6 +2884,10 @@ impl DeepSeekV2 {
                     let routed_down_schedule = self.kernel_profile.as_ref()
                         .map(|p| p.selected.routed_down_schedule.as_str())
                         .unwrap_or("basic");
+                    // v2.1.0-T2.12: Q6_K shared-down schedule.
+                    let shared_down_schedule = self.kernel_profile.as_ref()
+                        .map(|p| p.selected.shared_down_schedule.as_str())
+                        .unwrap_or("basic");
 
                     // Create the command buffer before the loop when using single-TCB.
                     let mut global_tcb = if use_single_tcb {
@@ -2945,7 +2977,7 @@ impl DeepSeekV2 {
                                     setup.shared_mid,
                                     q4k_schedule,
                                     setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
-                                    setup.shared_down_kernel(q4k_schedule),
+                                    setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
                                     &arena.x_norm_buf,
                                     &arena.ffn_out_buf,
                                     &arena.moe_routed_gate_out_buf,
@@ -3770,8 +3802,11 @@ impl DeepSeekV2 {
         let routed_down_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.routed_down_schedule.as_str())
             .unwrap_or("basic");
+        let shared_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.shared_down_schedule.as_str())
+            .unwrap_or("basic");
         let routed_down_kernel = setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule);
-        let shared_down_kernel = setup.shared_down_kernel(q4k_schedule);
+        let shared_down_kernel = setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule);
         crate::kernels::moe_block_batched_indexed_tcb(
             ctx, model_buf,
             setup.routed_gate_off, setup.routed_up_off, setup.routed_down_off,
