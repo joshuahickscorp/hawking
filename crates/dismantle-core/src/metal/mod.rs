@@ -46,11 +46,20 @@ pub fn current_device_name() -> Option<String> {
 /// One timed GPU dispatch. `kernel_name` is a `&'static str` to avoid
 /// per-dispatch allocation; `layer_hint` comes from the thread-local
 /// set by `forward_token_final_norm`.
+///
+/// `wall_us` is CPU encoding wall time (pipeline lookup + command
+/// encoding, not GPU execution). `gpu_us` is populated only by
+/// `DISMANTLE_TCB_TRACE=gpu` mode where each dispatch lands in its own
+/// command buffer so `MTLCommandBuffer::gpuStartTime/gpuEndTime` can be
+/// read directly. In the default and `DISMANTLE_TCB_TRACE=cpu` modes
+/// `gpu_us` is `None`.
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct DispatchSample {
     pub kernel_name: &'static str,
     pub wall_us: u64,
     pub layer_hint: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_us: Option<u64>,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -91,6 +100,28 @@ mod imp {
         Buffer, CommandBufferRef, CommandQueue, ComputePipelineState, Device, Library,
         MTLResourceOptions, MTLSize,
     };
+    use metal::objc::{msg_send, sel, sel_impl};
+
+    /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
+    /// objc msg_send. The `metal` 0.29 crate doesn't wrap these selectors,
+    /// so we go direct. Returns the GPU compute duration in microseconds,
+    /// clamped to 0 if the times come back inverted or zero (driver
+    /// quirks; callers shouldn't have to defend).
+    ///
+    /// SAFETY: caller must guarantee the command buffer has finished
+    /// (`wait_until_completed`) before reading; otherwise the values are
+    /// undefined.
+    unsafe fn cb_gpu_duration_us(cb: &metal::CommandBufferRef) -> u64 {
+        // CFTimeInterval is `double` (f64) — seconds since absolute reference.
+        let start: f64 = msg_send![cb, GPUStartTime];
+        let end: f64 = msg_send![cb, GPUEndTime];
+        let dt = end - start;
+        if dt > 0.0 {
+            (dt * 1_000_000.0) as u64
+        } else {
+            0
+        }
+    }
     use parking_lot::Mutex;
     use std::collections::HashMap;
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -121,6 +152,7 @@ mod imp {
                 kernel_name,
                 wall_us,
                 layer_hint,
+                gpu_us: None,
             });
         }
 
@@ -506,34 +538,95 @@ mod imp {
     /// tcb.commit_and_wait()?;
     /// ```
     ///
-    /// Set `DISMANTLE_TCB_TRACE=1` to enable per-kernel CPU encoding timing.
-    /// At commit time all per-call samples (kernel name + encoding wall_us) are
-    /// flushed into the shared `ctx.trace` accumulator alongside a `tcb_commit`
-    /// record carrying the total CB wall time (submit → GPU done).  These appear
-    /// in the existing `--trace-json` output, closing the audit gap (can't see
-    /// which kernel dominates inside the TCB).
+    /// TCB-internal trace mode (parsed once from `DISMANTLE_TCB_TRACE` at
+    /// construction so the hot path is a single enum compare).
+    ///
+    /// - **Off** (env var unset or `=0`): zero-overhead default; no per-kernel
+    ///   samples, no tcb_commit record.
+    /// - **CpuEncode** (env var `=1` or `=cpu` or any non-recognized value):
+    ///   the historical behavior — records CPU-side encoding wall time per
+    ///   dispatch + a `tcb_commit` total. Tells you nothing about GPU compute
+    ///   distribution inside the TCB; only useful for dispatch-overhead audits.
+    /// - **SplitCbGpu** (env var `=gpu`): each dispatch lands in its OWN
+    ///   command buffer that is committed + waited immediately, so
+    ///   `MTLCommandBuffer::gpu_start_time`/`gpu_end_time` can be read
+    ///   directly. Populates `DispatchSample::gpu_us` with the per-kernel
+    ///   GPU compute time. **Diagnostic mode**: kills the TCB amortization
+    ///   benefit (each dispatch pays a full commit/sync), so dec_tps drops
+    ///   substantially. Use only to attribute where decode time goes.
+    ///   Numerical output is bit-identical to Off mode (same kernels, same
+    ///   args, same order — only commit granularity differs).
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    pub enum TcbTraceMode {
+        Off,
+        CpuEncode,
+        SplitCbGpu,
+    }
+
+    impl TcbTraceMode {
+        fn from_env() -> Self {
+            let raw = std::env::var("DISMANTLE_TCB_TRACE");
+            let mode = match raw.as_deref() {
+                Err(_) => Self::Off,
+                Ok("") | Ok("0") => Self::Off,
+                Ok(s) if s.eq_ignore_ascii_case("gpu") => Self::SplitCbGpu,
+                Ok(_) => Self::CpuEncode,
+            };
+            // One-shot diagnostic on the first TCB construction, gated so the
+            // hot path stays clean. Removed after T1.1 validation lands.
+            static ONCE: std::sync::Once = std::sync::Once::new();
+            ONCE.call_once(|| {
+                eprintln!(
+                    "[dismantle] DISMANTLE_TCB_TRACE={:?} → mode={}",
+                    raw.as_deref().unwrap_or("(unset)"),
+                    match mode {
+                        Self::Off => "Off",
+                        Self::CpuEncode => "CpuEncode",
+                        Self::SplitCbGpu => "SplitCbGpu",
+                    }
+                );
+            });
+            mode
+        }
+    }
+
+    /// Set `DISMANTLE_TCB_TRACE=cpu` for per-kernel CPU encoding timing
+    /// (records pipeline-lookup + encode wall time per call, plus a
+    /// `tcb_commit` total for the whole CB).
+    ///
+    /// Set `DISMANTLE_TCB_TRACE=gpu` for per-kernel GPU-side timing
+    /// (each dispatch in its own CB so `gpu_start_time/gpu_end_time` can
+    /// be read directly). Populates `DispatchSample::gpu_us`. Slower —
+    /// diagnostic mode only. See `TcbTraceMode` for details.
     pub struct TokenCommandBuffer<'ctx> {
         pub ctx: &'ctx MetalContext,
         /// `None` after `commit_and_wait` so the Drop impl knows not to re-commit.
         cmd: Option<metal::CommandBuffer>,
-        /// Whether TCB-internal per-kernel timing is active (DISMANTLE_TCB_TRACE=1).
-        trace_tcb: bool,
-        /// Accumulated per-dispatch samples; only populated when `trace_tcb`.
+        /// TCB-internal trace mode; resolved once at construction.
+        mode: TcbTraceMode,
+        /// Accumulated per-dispatch samples; only populated when `mode` is on.
         tcb_samples: Vec<super::DispatchSample>,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
-            let trace_tcb = std::env::var_os("DISMANTLE_TCB_TRACE").is_some();
-            Self { ctx, cmd: Some(cmd), trace_tcb, tcb_samples: Vec::new() }
+            let mode = TcbTraceMode::from_env();
+            Self { ctx, cmd: Some(cmd), mode, tcb_samples: Vec::new() }
         }
 
-        /// Encode one kernel dispatch into the pending command buffer.
+        /// Encode one kernel dispatch.
         ///
-        /// When `DISMANTLE_TCB_TRACE=1` the CPU-side encoding time (pipeline
-        /// lookup + command encoding, not GPU execution time) is recorded per
-        /// call and flushed to `ctx.trace` at `commit_and_wait`.
+        /// In **Off** and **CpuEncode** modes the dispatch is appended to the
+        /// pending TCB and committed in bulk at `commit_and_wait`. CpuEncode
+        /// additionally records pipeline-lookup + encoding wall time.
+        ///
+        /// In **SplitCbGpu** mode the dispatch is encoded into a fresh
+        /// dedicated command buffer that is committed and waited
+        /// synchronously. The CB's `gpu_start_time/gpu_end_time` are read
+        /// and recorded as `DispatchSample::gpu_us`. The pending TCB is
+        /// left empty (`commit_and_wait` will commit an empty CB, which is
+        /// a fast no-op on Apple Silicon).
         pub fn dispatch_threads(
             &mut self,
             fn_name: &str,
@@ -541,7 +634,14 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            let t0 = if self.trace_tcb { Some(Instant::now()) } else { None };
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                return self.dispatch_threads_split_cb(fn_name, grid, tg, encode);
+            }
+            let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                Some(Instant::now())
+            } else {
+                None
+            };
             let cmd = self
                 .cmd
                 .as_ref()
@@ -560,8 +660,46 @@ mod imp {
                     kernel_name: static_kernel_name(fn_name),
                     wall_us: t0.elapsed().as_micros() as u64,
                     layer_hint: super::current_layer(),
+                    gpu_us: None,
                 });
             }
+            Ok(())
+        }
+
+        /// SplitCbGpu path: each dispatch in its own CB, gpu times read
+        /// directly from `gpu_start_time/gpu_end_time` after wait.
+        fn dispatch_threads_split_cb(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let t0_cpu = Instant::now();
+            let dedicated = self.ctx.inner.queue.new_command_buffer();
+            let pipe = self.ctx.pipeline(fn_name)?;
+            let enc = dedicated.new_compute_command_encoder();
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            let cpu_us = t0_cpu.elapsed().as_micros() as u64;
+            dedicated.commit();
+            dedicated.wait_until_completed();
+            // GPUStartTime / GPUEndTime are not wrapped by metal 0.29 — go
+            // direct via objc msg_send. Both return CFTimeInterval (f64
+            // seconds since an absolute reference); their difference is the
+            // GPU compute duration. Safe because we just waited.
+            let gpu_us = unsafe { cb_gpu_duration_us(&dedicated) };
+            self.tcb_samples.push(super::DispatchSample {
+                kernel_name: static_kernel_name(fn_name),
+                wall_us: cpu_us,
+                layer_hint: super::current_layer(),
+                gpu_us: Some(gpu_us),
+            });
             Ok(())
         }
 
@@ -570,6 +708,10 @@ mod imp {
         /// Uses a `MTLBlitCommandEncoder` — very cheap (~100 ns; a plain GPU
         /// memcpy). Call once per MoE layer to snapshot route_ids into the
         /// per-token route history buffer without breaking the single-CB design.
+        ///
+        /// In `SplitCbGpu` mode the blit is committed in its own CB so the
+        /// next compute dispatch starts cleanly; no GPU time is recorded for
+        /// blits (they're not the audit target).
         pub fn copy_buffer_bytes(
             &mut self,
             src: &metal::Buffer,
@@ -579,6 +721,15 @@ mod imp {
             size: u64,
         ) -> Result<()> {
             if size == 0 {
+                return Ok(());
+            }
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                let dedicated = self.ctx.inner.queue.new_command_buffer();
+                let blit = dedicated.new_blit_command_encoder();
+                blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
+                blit.end_encoding();
+                dedicated.commit();
+                dedicated.wait_until_completed();
                 return Ok(());
             }
             let cmd = self
@@ -601,18 +752,38 @@ mod imp {
         }
 
         /// Internal: commit `cmd`, wait for GPU completion, then flush TCB trace
-        /// samples to `ctx.trace` (no-op when `trace_tcb` is false).
+        /// samples to `ctx.trace`. In SplitCbGpu mode `cmd` is the trailing
+        /// empty CB (each dispatch already self-committed); we still commit
+        /// it for symmetry and flush the per-dispatch samples without adding
+        /// a tcb_commit record (it would be meaningless in split mode).
         fn flush_and_commit(&mut self, cmd: metal::CommandBuffer) {
-            let t0 = if self.trace_tcb { Some(Instant::now()) } else { None };
+            let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                Some(Instant::now())
+            } else {
+                None
+            };
             cmd.commit();
             cmd.wait_until_completed();
-            if let Some(t0) = t0 {
-                let layer = super::current_layer();
-                let total_us = t0.elapsed().as_micros() as u64;
-                for s in self.tcb_samples.drain(..) {
-                    self.ctx.trace.record(s.kernel_name, s.wall_us, s.layer_hint);
+            match self.mode {
+                TcbTraceMode::Off => {}
+                TcbTraceMode::CpuEncode => {
+                    let layer = super::current_layer();
+                    let total_us = t0.unwrap().elapsed().as_micros() as u64;
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx
+                            .trace
+                            .record(s.kernel_name, s.wall_us, s.layer_hint);
+                    }
+                    self.ctx.trace.record("tcb_commit", total_us, layer);
                 }
-                self.ctx.trace.record("tcb_commit", total_us, layer);
+                TcbTraceMode::SplitCbGpu => {
+                    // Flush per-dispatch GPU-timed samples directly. There is
+                    // no aggregate `tcb_commit` in split mode — the GPU times
+                    // already sum to the decoded total.
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx.trace.samples.lock().push(s);
+                    }
+                }
             }
         }
     }
