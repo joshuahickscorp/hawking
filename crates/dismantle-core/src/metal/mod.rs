@@ -264,8 +264,6 @@ mod imp {
             "moe_batched_gemm_q5_0_indexed" => "moe_batched_gemm_q5_0_indexed",
             "moe_batched_gemm_q6_k_indexed" => "moe_batched_gemm_q6_k_indexed",
             "moe_batched_gemm_q8_0_indexed" => "moe_batched_gemm_q8_0_indexed",
-            // fused block variants
-            "moe_block_fused_stub" => "moe_block_fused_stub",
             // silu / activation
             "silu_mul" => "silu_mul",
             // residual / element-wise kernels
