@@ -320,6 +320,87 @@ kernel void rmsnorm_gemv_f16w_attn_pinned(
     if (tid == 0) out[gid] = shmem[0];
 }
 
+// v2.2.0-T2.14 — v2t-pattern port of rmsnorm_gemv_f16w_attn_pinned.
+//
+// Mirrors the MoE v2t structure: 8 rows per threadgroup (one row per
+// simdgroup, 8 simdgroups per TG), 32 lanes per simdgroup splitting
+// the cols dot product, and a threadgroup `xw_cache` that holds the
+// rmsnorm-scaled activation precomputed once per TG and shared across
+// the 8 rows.
+//
+// Why this is faster than the 1-row-per-TG variant under the
+// production single-CB pipeline (ProdCbGpu trace puts this kernel at
+// ~13% of decode GPU time post-T2.13):
+//   - variance reduction runs once per 8 rows (8× less redundant x
+//     reads vs the basic kernel where every TG computes variance)
+//   - rmsnorm scaling (x * inv_rms * weight) is materialised once per
+//     TG into xw_cache; the basic kernel recomputes it per row
+//   - 8× fewer threadgroups dispatched → lower dispatch overhead
+//
+// Bindings: identical scalar/buffer set to the basic kernel; adds a
+// second threadgroup buffer for xw_cache (cols × f32).
+//   0  w        (rows × cols) f16
+//   1  x        (cols,)        f32
+//   2  weight   (cols,)        f32
+//   3  eps      constant float
+//   4  out      (rows,)        f32
+//   5  rows     constant uint
+//   6  cols     constant uint
+//   threadgroup(0): shmem (16 floats — 8 simd partials + inv_rms slot)
+//   threadgroup(1): xw_cache (cols floats)
+//
+// Constraints: rows % 8 == 0, cols % 32 == 0, TG = 256.
+// Grid: (rows / 8, 1, 1) TGs of (256, 1, 1) threads.
+kernel void rmsnorm_gemv_f16w_attn_pinned_v2t(
+    device const half*  w        [[buffer(0)]],
+    device const float* x        [[buffer(1)]],
+    device const float* weight   [[buffer(2)]],
+    constant     float& eps      [[buffer(3)]],
+    device       float* out      [[buffer(4)]],
+    constant     uint&  rows     [[buffer(5)]],
+    constant     uint&  cols     [[buffer(6)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    threadgroup  float* xw_cache [[threadgroup(1)]],
+    uint                tid       [[thread_position_in_threadgroup]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // ── Phase 1: cooperative variance reduction over x ──
+    float partial_sq = 0.0f;
+    for (uint c = tid; c < cols; c += 256u) {
+        float v = x[c];
+        partial_sq += v * v;
+    }
+    partial_sq = simd_sum(partial_sq);
+    if (simd_lane == 0u) shmem[simd_id] = partial_sq;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float t = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) t += shmem[i];
+        shmem[8] = rsqrt(t / float(cols) + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float inv_rms = shmem[8];
+
+    // ── Phase 2: precompute xw_cache[c] = x[c] * inv_rms * weight[c] ──
+    for (uint c = tid; c < cols; c += 256u) {
+        xw_cache[c] = x[c] * inv_rms * weight[c];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // ── Phase 3: per-row GEMV; one simdgroup per row ──
+    uint row = gid * 8u + simd_id;
+    if (row >= rows) return;
+    device const half* row_w = w + (uint64_t)row * (uint64_t)cols;
+    float partial_dot = 0.0f;
+    for (uint c = simd_lane; c < cols; c += 32u) {
+        partial_dot += (float)row_w[c] * xw_cache[c];
+    }
+    partial_dot = simd_sum(partial_dot);
+    if (simd_lane == 0u) out[row] = partial_dot;
+}
+
 // Append one KV entry to the persistent GPU KV cache.
 // Used by the merged Phase-1+Wedge-N TCB to avoid a CPU round-trip for kv_append.
 // Writes c_kv_normed (kv_lora_rank f32) and k_pe (qk_rope_head_dim f32) at seq_slot.

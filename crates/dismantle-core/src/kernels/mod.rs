@@ -4641,6 +4641,47 @@ mod metal_dispatch {
         )
     }
 
+    /// v2.2.0-T2.14 — v2t-pattern dispatch: 8 rows per threadgroup, one simdgroup
+    /// per row, threadgroup `xw_cache` for once-per-TG rmsnorm-scaled activation.
+    /// Requires rows % 8 == 0 and cols % 32 == 0.
+    pub fn rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        out_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        if rows % 8 != 0 || cols % 32 != 0 {
+            return Err(crate::error::Error::Kernel(format!(
+                "rmsnorm_gemv_f16w_attn_pinned_v2t requires rows%8==0 and cols%32==0; rows={rows} cols={cols}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let n_tgs = (rows / 8) as u32;
+        let shmem_bytes = 16u64 * std::mem::size_of::<f32>() as u64;
+        let xw_cache_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "rmsnorm_gemv_f16w_attn_pinned_v2t",
+            (n_tgs * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_bytes(3, std::mem::size_of::<f32>() as u64, &eps as *const f32 as *const _);
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+                enc.set_threadgroup_memory_length(1, xw_cache_bytes);
+            },
+        )
+    }
+
     // ── end v1.0.0-G ─────────────────────────────────────────────────────────
 
     // ── v1.0.0-H: simdgroup_matrix GEMV dispatchers (Path 2) ─────────────────

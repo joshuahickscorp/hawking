@@ -2946,6 +2946,14 @@ impl DeepSeekV2 {
             && self.layers[li].pinned.q_b_proj.is_some()
             && self.layers[li].pinned.q_a_norm.is_some();
 
+        // v2.2.0-T2.14: opt-in v2t-pattern dispatcher for the fused
+        // rmsnorm+attn GEMV. Falls back to the basic kernel when the
+        // schedule is not "v2t" or when row/col constraints don't hold.
+        let rmsnorm_attn_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.rmsnorm_attn_schedule.as_str())
+            .unwrap_or("basic");
+        let use_v2t_rmsnorm_attn = rmsnorm_attn_schedule == "v2t";
+
         let arena = self.decode_arena.as_ref().unwrap();
         let kv_a_proj_buf = self.layers[li].pinned.kv_a_proj_with_mqa.as_ref()
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} kv_a_proj not pinned")))?;
@@ -2953,6 +2961,24 @@ impl DeepSeekV2 {
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} attn_norm not pinned")))?;
         let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} kv_a_norm not pinned")))?;
+
+        let dispatch_rmsnorm_attn = |tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+                                     w: &crate::metal::PinnedBuffer,
+                                     x: &crate::metal::PinnedBuffer,
+                                     out: &crate::metal::PinnedBuffer,
+                                     rows: usize,
+                                     cols: usize|
+         -> Result<()> {
+            if use_v2t_rmsnorm_attn && rows % 8 == 0 && cols % 32 == 0 {
+                crate::kernels::rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
+                    tcb, w, x, attn_norm_buf, eps, out, rows, cols,
+                )
+            } else {
+                crate::kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
+                    tcb, w, x, attn_norm_buf, eps, out, rows, cols,
+                )
+            }
+        };
 
         if let Some(tok) = pre_phase_token {
             if li == 0 {
@@ -2967,9 +2993,8 @@ impl DeepSeekV2 {
                 .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_a_proj not pinned")))?;
             let q_a_norm_buf = self.layers[li].pinned.q_a_norm.as_ref()
                 .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_a_norm not pinned")))?;
-            crate::kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
-                tcb, q_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
-                &arena.q_lora_buf, q_lora, h,
+            dispatch_rmsnorm_attn(
+                tcb, q_a_proj_buf, &arena.x_buf, &arena.q_lora_buf, q_lora, h,
             )?;
             crate::kernels::rmsnorm_metal_buf_tcb(
                 tcb, &arena.q_lora_buf, q_a_norm_buf, eps, q_lora, &arena.q_lora_normed_buf,
@@ -2978,14 +3003,12 @@ impl DeepSeekV2 {
             let q_proj_buf = self.layers[li].pinned.q_proj.as_ref()
                 .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_proj not pinned")))?;
             // v2.1.0-T2.13: q_proj pinned as f16; use f16w rmsnorm kernel.
-            crate::kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
-                tcb, q_proj_buf, &arena.x_buf, attn_norm_buf, eps,
-                &arena.q, n_heads * head_dim_q, h,
+            dispatch_rmsnorm_attn(
+                tcb, q_proj_buf, &arena.x_buf, &arena.q, n_heads * head_dim_q, h,
             )?;
         }
-        crate::kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
-            tcb, kv_a_proj_buf, &arena.x_buf, attn_norm_buf, eps,
-            &arena.kv_a_out_buf, kv_a_dim, h,
+        dispatch_rmsnorm_attn(
+            tcb, kv_a_proj_buf, &arena.x_buf, &arena.kv_a_out_buf, kv_a_dim, h,
         )?;
         crate::kernels::rmsnorm_metal_buf_tcb(
             tcb, &arena.kv_a_out_buf, kv_a_norm_buf, eps, kv_lora_rank, &arena.c_kv_normed_buf,
