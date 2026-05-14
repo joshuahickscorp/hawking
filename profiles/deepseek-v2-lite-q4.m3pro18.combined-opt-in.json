@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "profile_id": "kp-c1bde3eed1ca68c874221041",
+  "profile_name": "m3-pro-18gb",
+  "model_id": "DeepSeek-V2-Lite-Chat",
+  "model_arch": "deepseek2",
+  "tensor_layout_hash": "6540aaa223c931038ec4ddde",
+  "device_name": "Apple M3 Pro",
+  "shader_hash": "408de8652fa511c24cd70c04",
+  "selected": {
+    "id": "metal-default",
+    "moe_schedule": "indexed-no-pack-one-cb",
+    "mla_schedule": "metal-mla",
+    "lm_head_schedule": "metal-argmax-token-only",
+    "command_buffering": "one-cb-per-block",
+    "gpu_buffer_reuse": "decode-arena",
+    "deterministic_rank": 1,
+    "gemm_q4_k_schedule": "v2",
+    "attn_block_schedule": "mla",
+    "kv_cache_dtype": "f16",
+    "x_norm_dtype": "f16"
+  },
+  "evidence": {
+    "profile": "m3-pro-18gb",
+    "max_hours": 8.0,
+    "prompt_count": 50,
+    "token_lengths": [
+      16,
+      64,
+      256
+    ],
+    "candidate_count": 1,
+    "measurements": [
+      {
+        "variant_id": "metal-default",
+        "deterministic_rank": 1,
+        "score": 164,
+        "status": "candidate"
+      }
+    ],
+    "target_tps": 60.0,
+    "notes": [
+      "deterministic lexicographic candidate order",
+      "temperature=0 greedy validation corpus",
+      "runtime ignores unsupported entries and falls back safely"
+    ]
+  }
+}
