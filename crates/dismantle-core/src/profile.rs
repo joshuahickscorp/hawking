@@ -329,9 +329,7 @@ fn select_variant<'a>(
 
 fn variant_score(v: &KernelVariant) -> u64 {
     let mut score = 100_u64.saturating_sub(v.deterministic_rank as u64);
-    if v.moe_schedule == "single-kernel" {
-        score += 30;
-    } else if v.moe_schedule.contains("indexed-no-pack") {
+    if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
     if v.lm_head_schedule.contains("argmax") || v.lm_head_schedule.contains("simdgroup-matrix") {
