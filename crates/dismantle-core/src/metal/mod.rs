@@ -237,8 +237,6 @@ mod imp {
             "moe_batched_gemm_q6_k" => "moe_batched_gemm_q6_k",
             "moe_batched_gemm_q8_0" => "moe_batched_gemm_q8_0",
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
-            "moe_block_fused_q4_one" => "moe_block_fused_q4_one",
-            "moe_block_fused_q4_topk" => "moe_block_fused_q4_topk",
             "moe_block_fused_v2lite" => "moe_block_fused_v2lite",
             "moe_block_fused_v2lite_indexed" => "moe_block_fused_v2lite_indexed",
             "moe_block_two_stage_intermediate" => "moe_block_two_stage_intermediate",
