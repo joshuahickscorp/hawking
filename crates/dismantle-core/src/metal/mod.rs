@@ -305,6 +305,31 @@ mod imp {
             "gemm_q4_k_m_fused_f16" => "gemm_q4_k_m_fused_f16",
             "moe_grouped_gemm_q4_f16" => "moe_grouped_gemm_q4_f16",
             "dequant_q6_k_f16" => "dequant_q6_k_f16",
+            // v1.1.1 / v2.1.0 — T1.1 audit closed 22 names previously
+            // bucketed as "other" (incl. the post-T2.1 default MoE Q4_K
+            // v2t_gu_v2 kernel itself — biggest attribution miss).
+            "moe_batched_gemm_q4_indexed_v2t_gu" => "moe_batched_gemm_q4_indexed_v2t_gu",
+            "moe_batched_gemm_q4_indexed_v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t_gu_v2",
+            "moe_batched_gemm_q8_0_indexed_v2t" => "moe_batched_gemm_q8_0_indexed_v2t",
+            "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
+            "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
+            "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
+            "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
+            "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
+            "gemv_f16_f16in" => "gemv_f16_f16in",
+            "kv_append_f16" => "kv_append_f16",
+            "kv_append_f32" => "kv_append_f32",
+            "mla_decode_kernel_batched_slots_f16" => "mla_decode_kernel_batched_slots_f16",
+            "mla_decode_kernel_f16" => "mla_decode_kernel_f16",
+            "rmsnorm_f16_to_f32" => "rmsnorm_f16_to_f32",
+            "rmsnorm_f32" => "rmsnorm_f32",
+            "rmsnorm_f32_to_f16" => "rmsnorm_f32_to_f16",
+            "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
+            "rope_q_f32_inplace" => "rope_q_f32_inplace",
+            "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
+            "cast_f32_to_f16" => "cast_f32_to_f16",
+            "embed_lookup_f32" => "embed_lookup_f32",
+            "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
             _ => "other",
         }
     }
