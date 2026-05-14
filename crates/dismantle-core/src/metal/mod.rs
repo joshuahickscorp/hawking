@@ -312,6 +312,7 @@ mod imp {
             "moe_batched_gemm_q4_indexed_v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t_gu_v2",
             "moe_batched_gemm_q8_0_indexed_v2t" => "moe_batched_gemm_q8_0_indexed_v2t",
             "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
+            "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
             "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
             "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
