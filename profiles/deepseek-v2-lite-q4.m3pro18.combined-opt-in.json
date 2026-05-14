@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-c1bde3eed1ca68c874221041",
+  "profile_id": "kp-140aa1de8df9d7acb897e7c8",
   "profile_name": "m3-pro-18gb",
   "model_id": "DeepSeek-V2-Lite-Chat",
   "model_arch": "deepseek2",
   "tensor_layout_hash": "6540aaa223c931038ec4ddde",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "408de8652fa511c24cd70c04",
+  "shader_hash": "8e0a2351e0be00ef97599182",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
@@ -15,7 +15,12 @@
     "command_buffering": "one-cb-per-block",
     "gpu_buffer_reuse": "decode-arena",
     "deterministic_rank": 1,
-    "gemm_q4_k_schedule": "v2",
+    "gemm_q4_k_schedule": "per_shape",
+    "gemm_q4_k_schedule_per_shape": {
+      "1024x4096": "v2",
+      "4096x1024": "v3_dual",
+      "4096x4096": "v2"
+    },
     "attn_block_schedule": "mla",
     "kv_cache_dtype": "f16",
     "x_norm_dtype": "f16"
