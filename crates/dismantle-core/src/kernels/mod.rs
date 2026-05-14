@@ -673,19 +673,6 @@ mod metal_dispatch {
         dispatch_q4_k_m_v3_dual_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
-    /// v0.4.0 — v2 variant for the MoE per-expert GEMV path.  Dispatches
-    /// `moe_grouped_gemm_q4_v2`; selected via `gemm_q4_k_schedule = "v2"`.
-    pub fn moe_grouped_gemm_q4_v2_metal(
-        ctx: &MetalContext,
-        w_q4_bytes: &[u8],
-        rows: usize,
-        cols: usize,
-        x: &[f32],
-        out: &mut [f32],
-    ) -> Result<()> {
-        dispatch_q4_k_m_gemv_v2(ctx, "moe_grouped_gemm_q4_v2", w_q4_bytes, rows, cols, x, out)
-    }
-
     /// v0.3.1 — low-level batched encoder for `gemm_q4_k_m_fused_simd`.
     /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch
     /// without allocation or readback. Use this to coalesce multiple independent
@@ -1501,21 +1488,6 @@ mod metal_dispatch {
 
         let token_ptr = token_buf.contents() as *const u32;
         Ok(unsafe { *token_ptr })
-    }
-
-    /// H2.2 — fp32 GEMV with Q4_K_M weights, dequant fused inside the
-    /// FMA loop. Maps to `moe_grouped_gemm_q4` in `shaders/moe.metal`.
-    /// One workgroup per output row, tg_size=256 (matches the Q4_K_M
-    /// super-block size). cols must be a multiple of 256.
-    pub fn moe_grouped_gemm_q4_metal(
-        ctx: &MetalContext,
-        w_q4_bytes: &[u8],
-        rows: usize,
-        cols: usize,
-        x: &[f32],
-        out: &mut [f32],
-    ) -> Result<()> {
-        dispatch_q4_k_m_gemv(ctx, "moe_grouped_gemm_q4", w_q4_bytes, rows, cols, x, out)
     }
 
     /// Phase 2 — batched Q4_K GEMV for selected routed/shared experts.
