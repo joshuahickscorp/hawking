@@ -2836,161 +2836,20 @@ impl DeepSeekV2 {
         }
         // ---- End Wedge C ----
 
-        let mut x = vec![0.0f32; h];
-        embed_lookup(&self.embed, h, token, &mut x);
-
-        // ---- Wedge B: TCB-batched rmsnorm + GPU add_inplace via arena buffers.
-        // Active when Metal + arena are present and all layer norm weights are
-        // pre-uploaded.
-        #[cfg(target_os = "macos")]
-        {
-            let tcb_active = self.metal_ctx.is_some()
-                && self.decode_arena.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
-                });
-
-            if tcb_active {
-                let eps = self.config.rms_norm_eps;
-                let n_layers = self.config.n_layers;
-
-                // Upload initial residual x to the arena GPU buffer.
-                self.decode_arena.as_ref().unwrap().write_x(&x);
-
-                for li in 0..n_layers {
-                    crate::metal::set_current_layer(Some(li as u32));
-
-                    // ---- Mini-TCB α: [add_inplace_ffn_prev?] + rmsnorm_attn ----
-                    // For li > 0, ffn_out from the previous layer sits in ffn_out_buf.
-                    // Batch: x_buf += ffn_out_buf (if li > 0), then rmsnorm(x_buf → x_norm_buf).
-                    // All shared borrows released before attention().
-                    {
-                        let ctx = self.metal_ctx.as_ref().unwrap();
-                        let arena = self.decode_arena.as_ref().unwrap();
-                        let attn_norm_buf =
-                            self.layers[li].pinned.attn_norm.as_ref().unwrap();
-                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        if li > 0 {
-                            crate::kernels::add_inplace_metal_tcb(
-                                &mut tcb,
-                                &arena.x_buf,
-                                &arena.ffn_out_buf,
-                                h,
-                            )?;
-                        }
-                        crate::kernels::rmsnorm_metal_buf_tcb(
-                            &mut tcb,
-                            &arena.x_buf,
-                            attn_norm_buf,
-                            eps,
-                            h,
-                            &arena.x_norm_buf,
-                        )?;
-                        tcb.commit_and_wait()?;
-                    } // ctx, arena, attn_norm_buf borrows released here
-
-                    // Read x_norm for attention.
-                    let mut x_norm = vec![0.0f32; h];
-                    self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
-
-                    let attn_out = self.attention(li, pos, &x_norm)?;
-
-                    // Write attn_out into ffn_out_buf (delta role for add_inplace_attn).
-                    self.decode_arena.as_ref().unwrap().write_ffn_out(&attn_out);
-
-                    // ---- Mini-TCB β: add_inplace_attn + rmsnorm_ffn ----
-                    // x_buf += attn_out (from ffn_out_buf), then rmsnorm(x_buf → x_norm_buf).
-                    {
-                        let ctx = self.metal_ctx.as_ref().unwrap();
-                        let arena = self.decode_arena.as_ref().unwrap();
-                        let ffn_norm_buf =
-                            self.layers[li].pinned.ffn_norm.as_ref().unwrap();
-                        let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                        crate::kernels::add_inplace_metal_tcb(
-                            &mut tcb,
-                            &arena.x_buf,
-                            &arena.ffn_out_buf,
-                            h,
-                        )?;
-                        crate::kernels::rmsnorm_metal_buf_tcb(
-                            &mut tcb,
-                            &arena.x_buf,
-                            ffn_norm_buf,
-                            eps,
-                            h,
-                            &arena.x_norm_buf,
-                        )?;
-                        tcb.commit_and_wait()?;
-                    } // borrows released
-
-                    // Read x_norm for FFN.
-                    let mut x_norm = vec![0.0f32; h];
-                    self.decode_arena.as_ref().unwrap().read_x_norm(&mut x_norm);
-
-                    let ffn_out = self.ffn(li, &x_norm)?;
-
-                    // Write ffn_out into ffn_out_buf; add_inplace is deferred to
-                    // the next iteration's mini-TCB α (or the post-loop commit).
-                    self.decode_arena.as_ref().unwrap().write_ffn_out(&ffn_out);
-                }
-
-                crate::metal::set_current_layer(None);
-
-                // Final: add_inplace for the last layer's deferred ffn_out.
-                if n_layers > 0 {
-                    let ctx = self.metal_ctx.as_ref().unwrap();
-                    let arena = self.decode_arena.as_ref().unwrap();
-                    let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
-                    crate::kernels::add_inplace_metal_tcb(
-                        &mut tcb,
-                        &arena.x_buf,
-                        &arena.ffn_out_buf,
-                        h,
-                    )?;
-                    tcb.commit_and_wait()?;
-                    arena.read_x(&mut x);
-                }
-
-	                // Final norm (CPU dispatch path for now).
-	                let mut x_norm = vec![0.0f32; h];
-	                self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-	                return Ok((Some(x_norm), None));
-	            }
-	        }
-        // ---- End Wedge B ----
-
-        // Original path (CPU or GPU without TCB batching).
-        for li in 0..self.config.n_layers {
-            crate::metal::set_current_layer(Some(li as u32));
-
-            // ---- Attention block ----
-            let mut x_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(
-                &x,
-                &self.layers[li].attn_norm,
-                self.config.rms_norm_eps,
-                &mut x_norm,
-            )?;
-
-            let attn_out = self.attention(li, pos, &x_norm)?;
-            add_inplace(&mut x, &attn_out);
-
-            // ---- FFN block ----
-            self.rmsnorm_dispatch(
-                &x.clone(),
-                &self.layers[li].ffn_norm,
-                self.config.rms_norm_eps,
-                &mut x_norm,
-            )?;
-            let ffn_out = self.ffn(li, &x_norm)?;
-            add_inplace(&mut x, &ffn_out);
-        }
-        crate::metal::set_current_layer(None); // final norm + LM head dispatches
-
-        // Final norm + lm head.
-        let mut x_norm = vec![0.0f32; h];
-        self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
-        Ok((Some(x_norm), None))
+        // Wedge C is the only supported decode path for V2-Lite. If its
+        // preconditions don't hold (Metal context + decode arena + pinned
+        // norms + MLA cache + GPU-resident KV mirrors + TCB-attention-ready
+        // layers), surface a clear error rather than silently routing through
+        // a CPU/Wedge-B fallback. The legacy fallbacks were retired in
+        // v2.2.0-cleanup-16 after a runtime-panic audit proved them dead
+        // under the shipped production profile.
+        let _ = token;
+        let _ = pos;
+        let _ = read_back;
+        Err(Error::Model(
+            "forward_token: Wedge C preconditions not met; legacy fallback retired"
+                .into(),
+        ))
     }
 
     fn profiled_greedy_enabled(&self, sampling: &crate::engine::SamplingParams) -> bool {
