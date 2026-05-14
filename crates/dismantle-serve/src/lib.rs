@@ -42,7 +42,6 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         prefill_cache_dir: opts.prefill_cache_dir,
         kernel_profile,
         trace_dispatch: false,
-        activation_dtype: Default::default(),
         max_routed_expert_ram_mb: opts.max_routed_expert_ram_mb,
         memory_limit_mb: opts.memory_limit_mb,
         ..Default::default()

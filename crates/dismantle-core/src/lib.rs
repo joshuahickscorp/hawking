@@ -34,6 +34,6 @@ pub use error::{Error, Result};
 
 mod engine;
 pub use engine::{
-    ActivationDtype, Engine, EngineConfig, GenStats, GenerateRequest,
+    Engine, EngineConfig, GenStats, GenerateRequest,
     SamplingParams, SpeculateMode, StopReason, StreamEvent,
 };
