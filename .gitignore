@@ -57,3 +57,7 @@ bench_out/
 # but local build experiments may emit these)
 *.metallib
 *.air
+
+# Per-run bench output dirs (history is kept in bench_history.jsonl)
+bench_results/coexist_*/
+bench_results/v0.3.*/
