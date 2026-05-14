@@ -22,7 +22,6 @@
       "4096x4096": "v2"
     },
     "attn_block_schedule": "mla",
-    "kv_cache_dtype": "f32",
     "x_norm_dtype": "f32",
     "routed_down_schedule": "v2t",
     "shared_down_schedule": "v2t"
