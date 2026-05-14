@@ -239,8 +239,6 @@ mod imp {
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
             "moe_block_fused_v2lite" => "moe_block_fused_v2lite",
             "moe_block_fused_v2lite_indexed" => "moe_block_fused_v2lite_indexed",
-            "moe_block_two_stage_intermediate" => "moe_block_two_stage_intermediate",
-            "moe_block_two_stage_output" => "moe_block_two_stage_output",
             "moe_route_accumulate" => "moe_route_accumulate",
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels

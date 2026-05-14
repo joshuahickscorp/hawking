@@ -331,10 +331,6 @@ fn variant_score(v: &KernelVariant) -> u64 {
     let mut score = 100_u64.saturating_sub(v.deterministic_rank as u64);
     if v.moe_schedule == "single-kernel" {
         score += 30;
-    } else if v.moe_schedule == "two-stage" {
-        // Reduced from 28 after v0.2.1 diagnostic: −79% regression at batch=1 decode.
-        // May recover for prefill/batch>1 contexts; kept in tree as research variant.
-        score += 5;
     } else if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
