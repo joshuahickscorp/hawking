@@ -237,8 +237,6 @@ mod imp {
             "moe_batched_gemm_q6_k" => "moe_batched_gemm_q6_k",
             "moe_batched_gemm_q8_0" => "moe_batched_gemm_q8_0",
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
-            "moe_block_fused_v2lite" => "moe_block_fused_v2lite",
-            "moe_block_fused_v2lite_indexed" => "moe_block_fused_v2lite_indexed",
             "moe_route_accumulate" => "moe_route_accumulate",
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels

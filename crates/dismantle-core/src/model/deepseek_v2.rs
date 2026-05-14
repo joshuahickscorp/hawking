@@ -1931,88 +1931,6 @@ impl DeepSeekV2 {
         Ok(())
     }
 
-    /// Stage B.4 — single-kernel fused MoE dispatch, gated by
-    /// `profile.selected.moe_schedule == "single-kernel"`.
-    /// Returns `Some(output)` when the kernel fires, `None` to fall through.
-    fn moe_block_fused_v2lite_dispatch(
-        &self,
-        routed_fused: &MoEFusedTensors,
-        shared_fused: Option<&MoEFusedTensors>,
-        routes: &[(usize, f32)],
-        x: &[f32],
-    ) -> Result<Option<Vec<f32>>> {
-        // Only activate when the profile explicitly requests single-kernel.
-        let wants_single = self
-            .kernel_profile
-            .as_ref()
-            .map(|p| p.selected.moe_schedule == "single-kernel")
-            .unwrap_or(false);
-        if !wants_single {
-            return Ok(None);
-        }
-
-        #[cfg(target_os = "macos")]
-        {
-            let Some(ctx) = &self.metal_ctx else {
-                return Ok(None);
-            };
-            let Some(model_buf) = &self.weights_mmap_buf else {
-                return Ok(None);
-            };
-
-            // Dtype guards: must match the v2lite kernel's expectations.
-            if routed_fused.gate_w.dtype != GgmlType::Q4_K
-                || routed_fused.up_w.dtype != GgmlType::Q4_K
-                || routed_fused.down_w.dtype != GgmlType::Q8_0
-            {
-                return Ok(None);
-            }
-            let Some(shared) = shared_fused else {
-                return Ok(None);
-            };
-            if shared.gate_w.dtype != GgmlType::Q4_K
-                || shared.up_w.dtype != GgmlType::Q4_K
-                || shared.down_w.dtype != GgmlType::Q6_K
-            {
-                return Ok(None);
-            }
-
-            let mut route_ids = Vec::with_capacity(routes.len());
-            let mut route_weights = Vec::with_capacity(routes.len());
-            for &(eid, weight) in routes {
-                route_ids.push(eid as u32);
-                route_weights.push(weight);
-            }
-
-            let shared_mid = self.config.n_shared_experts * self.config.moe_intermediate;
-            let mut out = vec![0.0f32; self.config.hidden];
-            crate::kernels::moe_block_fused_v2lite_indexed_metal(
-                ctx,
-                model_buf,
-                routed_fused.gate_w.offset,
-                routed_fused.up_w.offset,
-                routed_fused.down_w.offset,
-                shared.gate_w.offset,
-                shared.up_w.offset,
-                shared.down_w.offset,
-                &route_ids,
-                &route_weights,
-                self.config.n_routed_experts,
-                self.config.hidden,
-                self.config.moe_intermediate,
-                shared_mid,
-                x,
-                &mut out,
-            )?;
-            return Ok(Some(out));
-        }
-        #[cfg(not(target_os = "macos"))]
-        {
-            let _ = (routed_fused, shared_fused, routes, x);
-            Ok(None)
-        }
-    }
-
     fn moe_block_batched_dispatch(
         &self,
         routed_fused: &MoEFusedTensors,
@@ -4196,17 +4114,6 @@ impl DeepSeekV2 {
                     &mut logits,
                 )?;
                 let routes = topk_gate(&mut logits, cfg.top_k_routed, true);
-
-                // Single-kernel fused path (profile.selected.moe_schedule == "single-kernel").
-                if let Some(fused) = self.moe_block_fused_v2lite_dispatch(
-                    routed_fused,
-                    shared_fused.as_ref(),
-                    &routes,
-                    x,
-                )? {
-                    out = fused;
-                    return Ok(out);
-                }
 
                 // Batched indexed one-command-buffer path (current default).
                 if let Some(batched) = self.moe_block_batched_dispatch(
