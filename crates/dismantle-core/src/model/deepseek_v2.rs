@@ -329,13 +329,31 @@ impl FfnMoeSetup {
         }
     }
 
-    fn routed_down_kernel(&self, q4k_schedule: &str) -> &'static str {
+    /// v2.1.0-T2.11: schedule-aware routed-down kernel selection.
+    ///
+    /// `routed_down_schedule` selects the dispatch variant for Q5_0:
+    ///   "basic" (default): the historical 1-row-per-TG tree-reduce kernel
+    ///   "v2t":             the new 8-rows-per-TG threadgroup-x_cache simdsum
+    ///                      kernel mirroring the Q8_0_v2t pattern.
+    ///
+    /// Q8_0 and Q4_K paths are unchanged; their schedule is still driven by
+    /// `q4k_schedule` (existing `gemm_q4_k_schedule` profile field). This
+    /// gives Q5_0 its own opt-in lever so the bench-first gate validates
+    /// just the Q5_0 change in isolation.
+    fn routed_down_kernel_with_schedule(
+        &self,
+        q4k_schedule: &str,
+        routed_down_schedule: &str,
+    ) -> &'static str {
         match self.routed_down_dtype {
             GgmlType::Q8_0 => match q4k_schedule {
                 "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q8_0_indexed_v2t",
                 _ => "moe_batched_gemm_q8_0_indexed",
             },
-            GgmlType::Q5_0 => "moe_batched_gemm_q5_0_indexed",
+            GgmlType::Q5_0 => match routed_down_schedule {
+                "v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
+                _ => "moe_batched_gemm_q5_0_indexed",
+            },
             GgmlType::Q4_K => Self::q4k_indexed_kernel(q4k_schedule),
             _ => unreachable!("ffn_moe_check guards routed down dtype"),
         }
@@ -2291,6 +2309,12 @@ impl DeepSeekV2 {
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
+        // v2.1.0-T2.11: Q5_0 routed-down kernel selector. "basic" routes to
+        // the historical kernel; "v2t" opts into the new 8-rows-per-TG
+        // simdsum kernel. Default is "basic" — flip via profile JSON.
+        let routed_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.routed_down_schedule.as_str())
+            .unwrap_or("basic");
 
         {
             let ctx = self.metal_ctx.as_ref().unwrap();
@@ -2374,7 +2398,7 @@ impl DeepSeekV2 {
                             self.config.moe_intermediate,
                             setup.shared_mid,
                             q4k_schedule,
-                            setup.routed_down_kernel(q4k_schedule),
+                            setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
                             setup.shared_down_kernel(q4k_schedule),
                             &arena.x_norm_buf,
                             &arena.ffn_out_buf,
@@ -2828,6 +2852,10 @@ impl DeepSeekV2 {
                     let q4k_schedule = self.kernel_profile.as_ref()
                         .map(|p| p.selected.gemm_q4_k_schedule.as_str())
                         .unwrap_or("scalar");
+                    // v2.1.0-T2.11: Q5_0 routed-down schedule (see above).
+                    let routed_down_schedule = self.kernel_profile.as_ref()
+                        .map(|p| p.selected.routed_down_schedule.as_str())
+                        .unwrap_or("basic");
 
                     // Create the command buffer before the loop when using single-TCB.
                     let mut global_tcb = if use_single_tcb {
@@ -2916,7 +2944,7 @@ impl DeepSeekV2 {
                                     self.config.moe_intermediate,
                                     setup.shared_mid,
                                     q4k_schedule,
-                                    setup.routed_down_kernel(q4k_schedule),
+                                    setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
                                     setup.shared_down_kernel(q4k_schedule),
                                     &arena.x_norm_buf,
                                     &arena.ffn_out_buf,
@@ -3739,7 +3767,10 @@ impl DeepSeekV2 {
         let q4k_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
-        let routed_down_kernel = setup.routed_down_kernel(q4k_schedule);
+        let routed_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.routed_down_schedule.as_str())
+            .unwrap_or("basic");
+        let routed_down_kernel = setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule);
         let shared_down_kernel = setup.shared_down_kernel(q4k_schedule);
         crate::kernels::moe_block_batched_indexed_tcb(
             ctx, model_buf,

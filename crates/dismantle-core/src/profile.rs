@@ -85,6 +85,14 @@ pub struct KernelVariant {
     /// norm → LM head path uses f16 when this flag is set.
     #[serde(default = "default_x_norm_dtype")]
     pub x_norm_dtype: String,
+    /// v2.1.0-T2.11: "basic" (default) or "v2t" — selects the kernel for
+    /// MoE routed-down GEMV on Q5_0 tensors. The basic kernel is the
+    /// original 1-row-per-TG tree-reduce path; v2t mirrors the Q8_0_v2t
+    /// pattern (8 rows/TG, threadgroup x_cache, simdsum). Opt-in until
+    /// a clean bench validates the +5% e2e gate.
+    /// Only affects models where routed_down_dtype == Q5_0 (DeepSeek-V2-Lite).
+    #[serde(default = "default_routed_down_schedule")]
+    pub routed_down_schedule: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -101,6 +109,10 @@ fn default_kv_cache_dtype() -> String {
 
 fn default_x_norm_dtype() -> String {
     "f32".to_string()
+}
+
+fn default_routed_down_schedule() -> String {
+    "basic".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -259,6 +271,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         attn_block_schedule: "mla".into(),
         kv_cache_dtype: "f32".into(),
         x_norm_dtype: "f32".into(),
+        routed_down_schedule: "basic".into(),
     }]
 }
 
