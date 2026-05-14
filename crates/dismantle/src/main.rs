@@ -659,22 +659,6 @@ fn current_rss_mb() -> Option<f64> {
     Some(kb / 1024.0)
 }
 
-fn residual_dtype_from_env() -> Result<dismantle_core::ResidualDtype> {
-    match std::env::var("DISMANTLE_RESIDUAL_DTYPE") {
-        Ok(v) if v.eq_ignore_ascii_case("f16") => {
-            anyhow::bail!(
-                "DISMANTLE_RESIDUAL_DTYPE=f16 is not supported in this build; F32 only"
-            )
-        }
-        Ok(v) if v.eq_ignore_ascii_case("f32") => Ok(dismantle_core::ResidualDtype::F32),
-        Ok(v) => anyhow::bail!(
-            "unsupported DISMANTLE_RESIDUAL_DTYPE={v:?}; expected f32 (f16 is disabled)"
-        ),
-        Err(std::env::VarError::NotPresent) => Ok(dismantle_core::ResidualDtype::F32),
-        Err(e) => anyhow::bail!("read DISMANTLE_RESIDUAL_DTYPE: {e}"),
-    }
-}
-
 struct Q4ShapeBenchSummary {
     json: serde_json::Value,
     winners: BTreeMap<String, String>,
@@ -990,7 +974,6 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -1001,7 +984,6 @@ fn generate_main(
         kernel_profile: profile,
         trace_dispatch,
         activation_dtype: Default::default(),
-        residual_dtype,
         max_routed_expert_ram_mb,
         memory_limit_mb,
     };
@@ -1101,7 +1083,6 @@ fn batch_hash_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -1112,7 +1093,6 @@ fn batch_hash_main(
         kernel_profile: profile,
         trace_dispatch: false,
         activation_dtype: Default::default(),
-        residual_dtype,
         ..Default::default()
     };
     let load_start = std::time::Instant::now();
