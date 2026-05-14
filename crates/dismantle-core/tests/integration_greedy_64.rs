@@ -1,11 +1,5 @@
 // Master integration test: pins the greedy 64-token output of the
 // production profile so any architectural change proves it didn't drift.
-//
-// v0.8.4: two tests —
-//   greedy_64_matches_pinned_hash  — uses F16 default; pins to
-//       tests/golden/_phase7_f16_token_baseline_64.hashes (write-on-first-run)
-//   greedy_64_f32_regression       — forces F32; checks the original
-//       tests/golden/_phase0_token_baseline_64.hashes pin (c30b9e036d578ae2)
 
 #![cfg(target_os = "macos")]
 
@@ -75,34 +69,6 @@ fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
     }
 }
 
-// ── F16 default test (active dtype since v0.8.4) ────────────────────────────
-
-#[test]
-fn greedy_64_matches_pinned_hash() {
-    let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");
-    if !weights.exists() {
-        eprintln!("skipping greedy_64: no weights at {:?}", weights);
-        return;
-    }
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
-    let profile = dismantle_core::profile::KernelProfile::load(&profile_path)
-        .expect("load profile");
-
-    // Default config — activation_dtype is F16 since v0.8.4.
-    let cfg = dismantle_core::EngineConfig {
-        kernel_profile: Some(profile),
-        ..Default::default()
-    };
-    let ids = run_greedy_64(&weights, cfg);
-    let hash = hash16(&ids);
-
-    check_or_pin(
-        &PathBuf::from("../../tests/golden/_phase7_f16_token_baseline_64.hashes"),
-        "v0.8.4-f16",
-        &hash,
-    );
-}
-
 // ── F32 regression guard (original c30b9e036d578ae2 must hold) ──────────────
 
 #[test]
@@ -116,10 +82,8 @@ fn greedy_64_f32_regression() {
     let profile = dismantle_core::profile::KernelProfile::load(&profile_path)
         .expect("load profile");
 
-    // Explicitly force F32 path — must still match the phase0 pin.
     let cfg = dismantle_core::EngineConfig {
         kernel_profile: Some(profile),
-        activation_dtype: dismantle_core::ActivationDtype::F32,
         ..Default::default()
     };
     let ids = run_greedy_64(&weights, cfg);

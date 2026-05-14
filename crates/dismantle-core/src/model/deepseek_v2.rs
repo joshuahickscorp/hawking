@@ -182,9 +182,6 @@ pub struct DeepSeekV2 {
     /// `Some` only when Metal is available and `gpu_buffer_reuse == "decode-arena"`.
     pub decode_arena: Option<DecodeArena>,
 
-    /// Phase 7: activation dtype for f16 bridge kernels.
-    pub activation_dtype: crate::engine::ActivationDtype,
-
     /// v1.0.0-D: embed table as GPU buffer (f16, hidden × vocab). Enables
     /// embed_lookup_metal_f32_tcb to write x_buf directly without CPU round-trip.
     pub embed_buf: Option<PinnedBuffer>,
@@ -882,7 +879,6 @@ impl Engine for DeepSeekV2 {
             speculate_mode,
             verify_window,
             decode_arena,
-            activation_dtype: config.activation_dtype,
             embed_buf,
             final_norm_buf,
             logits_buf,
@@ -1419,9 +1415,7 @@ impl DeepSeekV2 {
 
     #[cfg(target_os = "macos")]
     fn greedy_gpu_argmax_available(&self) -> bool {
-        let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
-        !use_f16
-            && self.metal_ctx.is_some()
+        self.metal_ctx.is_some()
             && self.decode_arena.is_some()
             && !self.mla_c_kv.is_empty()
             && self.weights_mmap_buf.is_some()
@@ -2085,24 +2079,21 @@ impl DeepSeekV2 {
         // Phase 5A: single-TCB fast path — same conditions as Wedge C.
         #[cfg(target_os = "macos")]
         {
-            let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
-            if !use_f16 {
-                let tcb_base = self.metal_ctx.is_some()
-                    && self.decode_arena.is_some()
-                    && self.layers.iter().all(|l| {
-                        l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
-                    });
-                let wedge_c_ready = tcb_base
-                    && !self.mla_c_kv.is_empty()
-                    && self.weights_mmap_buf.is_some()
-                    && self.embed_buf.is_some()
-                    && self.final_norm_buf.is_some()
-                    && self.layers.iter().all(Self::layer_has_tcb_attention);
-                let k = tokens.len();
-                let max_bs = self.decode_arena.as_ref().map(|a| a.max_batch_size).unwrap_or(0);
-                if wedge_c_ready && !self.mla_c_kv_gpu.is_empty() && k <= max_bs {
-                    return self.forward_tokens_batched_tcb(tokens, positions);
-                }
+            let tcb_base = self.metal_ctx.is_some()
+                && self.decode_arena.is_some()
+                && self.layers.iter().all(|l| {
+                    l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
+                });
+            let wedge_c_ready = tcb_base
+                && !self.mla_c_kv.is_empty()
+                && self.weights_mmap_buf.is_some()
+                && self.embed_buf.is_some()
+                && self.final_norm_buf.is_some()
+                && self.layers.iter().all(Self::layer_has_tcb_attention);
+            let k = tokens.len();
+            let max_bs = self.decode_arena.as_ref().map(|a| a.max_batch_size).unwrap_or(0);
+            if wedge_c_ready && !self.mla_c_kv_gpu.is_empty() && k <= max_bs {
+                return self.forward_tokens_batched_tcb(tokens, positions);
             }
         }
 
@@ -2478,15 +2469,11 @@ impl DeepSeekV2 {
     ) -> Result<(Option<Vec<f32>>, Option<u32>)> {
         let h = self.config.hidden;
 
-        let use_f16 = self.activation_dtype == crate::engine::ActivationDtype::F16;
-
         // ---- Wedge C: all attention + FFN kernels on TCB (zero counted dispatches).
-        // Extends Wedge B by replacing attention()/ffn() CPU-round-trips with
-        // attention_tcb_inner() / ffn_tcb_inner() that operate on arena buffers.
         // Active when: Metal + arena present, all norm weights pre-uploaded,
         // MLA path active, model_buf present, and all layers have q_a/kv_a pinned.
         #[cfg(target_os = "macos")]
-        if !use_f16 {
+        {
             let tcb_base = self.metal_ctx.is_some()
                 && self.decode_arena.is_some()
                 && self.layers.iter().all(|l| {
@@ -2854,9 +2841,9 @@ impl DeepSeekV2 {
 
         // ---- Wedge B: TCB-batched rmsnorm + GPU add_inplace via arena buffers.
         // Active when Metal + arena are present and all layer norm weights are
-        // pre-uploaded. Skipped in f16-activation mode (bridge path unchanged).
+        // pre-uploaded.
         #[cfg(target_os = "macos")]
-        if !use_f16 {
+        {
             let tcb_active = self.metal_ctx.is_some()
                 && self.decode_arena.is_some()
                 && self.layers.iter().all(|l| {
@@ -2977,15 +2964,6 @@ impl DeepSeekV2 {
             crate::metal::set_current_layer(Some(li as u32));
 
             // ---- Attention block ----
-            // Phase 7: when F16 + arena active, write pre-norm residual as
-            // f16 so bridge kernels can read it inside attention().
-            #[cfg(target_os = "macos")]
-            if use_f16 {
-                if let Some(arena) = self.decode_arena.as_ref() {
-                    arena.write_x_f16(&x);
-                }
-            }
-
             let mut x_norm = vec![0.0f32; h];
             self.rmsnorm_dispatch(
                 &x,
@@ -2998,15 +2976,6 @@ impl DeepSeekV2 {
             add_inplace(&mut x, &attn_out);
 
             // ---- FFN block ----
-            // Phase 7: write updated residual (after attn add) as f16 for
-            // the FFN bridge kernels inside ffn().
-            #[cfg(target_os = "macos")]
-            if use_f16 {
-                if let Some(arena) = self.decode_arena.as_ref() {
-                    arena.write_x_f16(&x);
-                }
-            }
-
             self.rmsnorm_dispatch(
                 &x.clone(),
                 &self.layers[li].ffn_norm,
@@ -3339,70 +3308,19 @@ impl DeepSeekV2 {
             let q_lora = cfg.q_lora_rank.max(1);
             let mut t = vec![0.0f32; q_lora];
 
-            // Phase 7 F16 bridge: when activation_dtype=F16 + arena active +
-            // q_a_proj pinned, use rmsnorm_gemv_f16_attn_pinned to fuse
-            // attn_norm + q_a_proj GEMV reading from the f16 residual.
-            #[cfg(target_os = "macos")]
-            let f16_bridged = {
-                if self.activation_dtype == crate::engine::ActivationDtype::F16 {
-                    if let (Some(ctx), Some(arena), Some(pinned_qa)) = (
-                        self.metal_ctx.as_ref(),
-                        self.decode_arena.as_ref(),
-                        layer.pinned.q_a_proj.as_ref(),
-                    ) {
-                        let attn_norm_bytes =
-                            bytemuck::cast_slice::<f32, u8>(&layer.attn_norm);
-                        let attn_norm_buf = ctx.new_buffer_with_bytes(attn_norm_bytes);
-                        let out_buf = ctx.new_buffer(q_lora * std::mem::size_of::<f32>());
-                        crate::kernels::rmsnorm_gemv_f16_attn_pinned_metal(
-                            ctx,
-                            pinned_qa,
-                            &arena.x_f16_buf,
-                            &attn_norm_buf,
-                            cfg.rms_norm_eps,
-                            &out_buf,
-                            q_lora,
-                            h,
-                        )?;
-                        let ptr = out_buf.contents() as *const f32;
-                        t.copy_from_slice(unsafe {
-                            std::slice::from_raw_parts(ptr, q_lora)
-                        });
-                        // kv_a_proj uses the already-normed f32 x.
-                        self.gemv_f32_attn_dispatch(
-                            &layer.kv_a_proj_with_mqa,
-                            layer.pinned.kv_a_proj_with_mqa.as_ref(),
-                            kv_a_dim,
-                            h,
-                            x,
-                            &mut kv_a,
-                        )?;
-                        true
-                    } else {
-                        false
-                    }
-                } else {
-                    false
-                }
-            };
-            #[cfg(not(target_os = "macos"))]
-            let f16_bridged = false;
-
-            if !f16_bridged {
-                // Existing f32 path: q_a_proj and kv_a_proj share input x.
-                self.gemv_f32_attn_pair_dispatch(
-                    qa,
-                    layer.pinned.q_a_proj.as_ref(),
-                    q_lora,
-                    &layer.kv_a_proj_with_mqa,
-                    layer.pinned.kv_a_proj_with_mqa.as_ref(),
-                    kv_a_dim,
-                    h,
-                    x,
-                    &mut t,
-                    &mut kv_a,
-                )?;
-            }
+            // q_a_proj and kv_a_proj share input x.
+            self.gemv_f32_attn_pair_dispatch(
+                qa,
+                layer.pinned.q_a_proj.as_ref(),
+                q_lora,
+                &layer.kv_a_proj_with_mqa,
+                layer.pinned.kv_a_proj_with_mqa.as_ref(),
+                kv_a_dim,
+                h,
+                x,
+                &mut t,
+                &mut kv_a,
+            )?;
 
             let mut tn = vec![0.0f32; q_lora];
             self.rmsnorm_dispatch(&t, qan, cfg.rms_norm_eps, &mut tn)?;
@@ -3785,68 +3703,10 @@ impl DeepSeekV2 {
                     let smid = cfg.n_shared_experts * cfg.moe_intermediate;
                     let mut sa = vec![0.0f32; smid];
 
-                    // Phase 7 F16 bridge: when activation_dtype=F16 + arena +
-                    // Q4K shared expert, use rmsnorm_gemv_q4k_pair_f16 to
-                    // fuse ffn_norm + gate+up GEMVs reading the f16 residual.
-                    #[cfg(target_os = "macos")]
-                    let f16_shared_bridged = if self.activation_dtype
-                        == crate::engine::ActivationDtype::F16
-                        && s.gate_w.dtype == crate::gguf::GgmlType::Q4_K
-                        && s.up_w.dtype == crate::gguf::GgmlType::Q4_K
-                    {
-                        if let (Some(ctx), Some(arena)) =
-                            (self.metal_ctx.as_ref(), self.decode_arena.as_ref())
-                        {
-                            let ffn_norm_f16: Vec<half::f16> = self.layers[li]
-                                .ffn_norm
-                                .iter()
-                                .map(|&v| half::f16::from_f32(v))
-                                .collect();
-                            let gate_bytes = &self.gguf.mmap
-                                [s.gate_w.offset..s.gate_w.offset + s.gate_w.byte_size];
-                            let up_bytes = &self.gguf.mmap
-                                [s.up_w.offset..s.up_w.offset + s.up_w.byte_size];
-                            let gate_out_buf =
-                                ctx.new_buffer(smid * std::mem::size_of::<f32>());
-                            let up_out_buf =
-                                ctx.new_buffer(smid * std::mem::size_of::<f32>());
-                            crate::kernels::rmsnorm_gemv_q4k_pair_f16_metal(
-                                ctx,
-                                &ffn_norm_f16,
-                                cfg.rms_norm_eps,
-                                gate_bytes,
-                                up_bytes,
-                                &gate_out_buf,
-                                &up_out_buf,
-                                &arena.x_f16_buf,
-                                smid,
-                                cfg.hidden,
-                            )?;
-                            let g: Vec<f32> = {
-                                let ptr = gate_out_buf.contents() as *const f32;
-                                unsafe { std::slice::from_raw_parts(ptr, smid) }.to_vec()
-                            };
-                            let u: Vec<f32> = {
-                                let ptr = up_out_buf.contents() as *const f32;
-                                unsafe { std::slice::from_raw_parts(ptr, smid) }.to_vec()
-                            };
-                            crate::kernels::silu_mul(&g, &u, &mut sa);
-                            true
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    };
-                    #[cfg(not(target_os = "macos"))]
-                    let f16_shared_bridged = false;
-
-                    if !f16_shared_bridged {
-                        self.moe_expert_pair_matmul_dispatch(
-                            &s.gate_w, &s.up_w, smid, cfg.hidden, x,
-                            &mut sa, &mut w_buf,
-                        )?;
-                    }
+                    self.moe_expert_pair_matmul_dispatch(
+                        &s.gate_w, &s.up_w, smid, cfg.hidden, x,
+                        &mut sa, &mut w_buf,
+                    )?;
 
                     self.moe_expert_matmul_dispatch(
                         &s.down_w, cfg.hidden, smid, &sa, &mut tmp, &mut w_buf,
