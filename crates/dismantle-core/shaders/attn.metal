@@ -150,6 +150,101 @@ kernel void mla_decode_kernel(
 // (`mla_decode_and_o_proj_arena_tcb` + `mla_decode_kernel`). The
 // pre-arena batched wrappers had only test-suite callers.
 
+// ── v2.3.0 A4: function-constant-specialized mla_decode_kernel ────────────
+// Identical math/body to `mla_decode_kernel` above, but the six per-model
+// shape constants (n_heads, qk_nope_head_dim, qk_rope_head_dim, v_head_dim,
+// kv_lora_rank, scale) are baked into the pipeline at compile time via
+// MTLFunctionConstantValues instead of being passed as buffer args at
+// dispatch time. The compiler then knows the bounds of every inner loop
+// and can fold all `kFcQkNope * kFcKvLora`-style arithmetic. Only seq_len
+// remains a runtime arg.
+//
+// On DeepSeek-V2-Lite the constants are:
+//   kFcN_heads=16, kFcQkNope=128, kFcQkRope=64, kFcVHead=128,
+//   kFcKvLora=512, kFcScale=1/sqrt(192)≈0.07217.
+constant uint kFcN_heads        [[function_constant(0)]];
+constant uint kFcQkNopeHeadDim  [[function_constant(1)]];
+constant uint kFcQkRopeHeadDim  [[function_constant(2)]];
+constant uint kFcVHeadDim       [[function_constant(3)]];
+constant uint kFcKvLoraRank     [[function_constant(4)]];
+constant float kFcAttnScale     [[function_constant(5)]];
+
+kernel void mla_decode_kernel_fc(
+    device const float* q          [[buffer(0)]],
+    device const float* c_kv       [[buffer(1)]],
+    device const float* k_pe       [[buffer(2)]],
+    device const float* kv_b_proj  [[buffer(3)]],
+    device       float* out        [[buffer(4)]],
+    constant     uint&  seq_len    [[buffer(5)]],
+    threadgroup  float* q_nope_proj  [[threadgroup(0)]],
+    threadgroup  float* scores       [[threadgroup(1)]],
+    threadgroup  float* c_kv_wt      [[threadgroup(2)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                gid     [[threadgroup_position_in_grid]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    if (gid >= kFcN_heads) return;
+
+    const uint head        = gid;
+    const uint q_head_dim  = kFcQkNopeHeadDim + kFcQkRopeHeadDim;
+
+    device const float* q_nope = q + head * q_head_dim;
+    device const float* q_rope = q_nope + kFcQkNopeHeadDim;
+
+    const uint kv_b_per_head = (kFcQkNopeHeadDim + kFcVHeadDim) * kFcKvLoraRank;
+    device const float* w_uk = kv_b_proj + (uint64_t)head * kv_b_per_head;
+    device const float* w_uv = w_uk + (uint64_t)kFcQkNopeHeadDim * kFcKvLoraRank;
+
+    // Phase 0
+    for (uint r = tid; r < kFcKvLoraRank; r += tg_size) {
+        float acc = 0.0f;
+        for (uint i = 0; i < kFcQkNopeHeadDim; i++) {
+            acc += w_uk[i * kFcKvLoraRank + r] * q_nope[i];
+        }
+        q_nope_proj[r] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 1
+    for (uint t = tid; t < seq_len; t += tg_size) {
+        device const float* c_kv_t = c_kv + (uint64_t)t * kFcKvLoraRank;
+        device const float* k_pe_t = k_pe + (uint64_t)t * kFcQkRopeHeadDim;
+
+        float s = 0.0f;
+        for (uint r = 0; r < kFcKvLoraRank;    r++) s += q_nope_proj[r] * c_kv_t[r];
+        for (uint r = 0; r < kFcQkRopeHeadDim; r++) s += q_rope[r] * k_pe_t[r];
+        scores[t] = s * kFcAttnScale;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 2
+    if (tid == 0) {
+        float mx = -INFINITY;
+        for (uint t = 0; t < seq_len; t++) if (scores[t] > mx) mx = scores[t];
+        float sum = 0.0f;
+        for (uint t = 0; t < seq_len; t++) { scores[t] = exp(scores[t] - mx); sum += scores[t]; }
+        float inv = 1.0f / sum;
+        for (uint t = 0; t < seq_len; t++) scores[t] *= inv;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 3
+    for (uint r = tid; r < kFcKvLoraRank; r += tg_size) {
+        float acc = 0.0f;
+        for (uint t = 0; t < seq_len; t++) acc += scores[t] * c_kv[(uint64_t)t * kFcKvLoraRank + r];
+        c_kv_wt[r] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 4
+    for (uint vi = tid; vi < kFcVHeadDim; vi += tg_size) {
+        device const float* w_uv_row = w_uv + (uint64_t)vi * kFcKvLoraRank;
+        float acc = 0.0f;
+        for (uint r = 0; r < kFcKvLoraRank; r++) acc += w_uv_row[r] * c_kv_wt[r];
+        out[head * kFcVHeadDim + vi] = acc;
+    }
+}
+
 kernel void gemv_f32_attn(
     device const float* w     [[buffer(0)]],   // (rows, cols) row-major fp32
     device const float* x     [[buffer(1)]],   // (cols,)

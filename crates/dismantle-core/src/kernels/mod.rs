@@ -3772,6 +3772,63 @@ mod metal_dispatch {
     /// KV buffers (GPU-resident KV cache) or arena scratch buffers.
     /// No commit — caller commits the TCB when ready.
     #[allow(clippy::too_many_arguments)]
+    /// v2.3.0 A4: function-constant-specialized variant of
+    /// `mla_decode_and_o_proj_arena_tcb`. Identical math + identical
+    /// threadgroup geometry; the model-constant shape (n_heads,
+    /// qk_nope_head_dim, qk_rope_head_dim, v_head_dim, kv_lora_rank,
+    /// scale) is baked into the compiled pipeline via
+    /// `MTLFunctionConstantValues` rather than passed as buffer args
+    /// per dispatch. Only `seq_len` (which varies with prefill+decode
+    /// position) is passed at runtime.
+    ///
+    /// Requires the caller to have invoked
+    /// `MetalContext::register_specialized_pipeline("mla_decode_kernel_fc", build_fcv)`
+    /// once at engine load, with the same constants the bench
+    /// dispatcher passes here.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_and_o_proj_arena_fc_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        c_kv: &PinnedBuffer,
+        k_pe: &PinnedBuffer,
+        n_heads: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        hidden: usize,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let seq_len_u32 = seq_len as u32;
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+
+        tcb.dispatch_threads(
+            "mla_decode_kernel_fc",
+            (n_heads_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&arena.q), 0);
+                enc.set_buffer(1, Some(c_kv), 0);
+                enc.set_buffer(2, Some(k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&arena.attn_out), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &seq_len_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+        gemv_f16_simdmat_tcb(
+            tcb, o_proj, hidden, n_heads * v_head_dim, &arena.attn_out, &arena.out,
+        )
+    }
+
     pub fn mla_decode_and_o_proj_arena_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         arena: &DecodeArena,

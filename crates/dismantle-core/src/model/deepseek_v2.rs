@@ -144,6 +144,12 @@ pub struct DeepSeekV2 {
     pub mla_k_pe_gpu: Vec<PinnedBuffer>,
     /// Set to true after the first Wedge C layer to indicate GPU KV is live.
     pub mla_kv_gpu_synced: bool,
+    /// v2.3.0 A4: when true, attention block routes to the function-constant-
+    /// specialized `mla_decode_kernel_fc` instead of `mla_decode_kernel`.
+    /// Enabled by setting `mla_schedule = "metal-mla-fc"` in the kernel
+    /// profile. The specialized pipeline is compiled once at engine load
+    /// with the model's shape constants baked in.
+    pub mla_use_fc: bool,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
 
@@ -636,11 +642,13 @@ impl Engine for DeepSeekV2 {
             cfg.qk_nope_head_dim + cfg.qk_rope_head_dim,
         );
 
-        let mla_metal = config
+        let mla_schedule_str: &str = config
             .kernel_profile
             .as_ref()
-            .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
-            .unwrap_or(false);
+            .map(|p| p.selected.mla_schedule.as_str())
+            .unwrap_or("");
+        let mla_metal = matches!(mla_schedule_str, "metal-mla" | "metal-mla-fc");
+        let mla_use_fc = mla_schedule_str == "metal-mla-fc";
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -662,6 +670,53 @@ impl Engine for DeepSeekV2 {
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
+        }
+
+        // v2.3.0 A4: compile the function-constant-specialized
+        // mla_decode_kernel_fc pipeline once with the model's shape
+        // constants baked in. After this call, regular
+        // `ctx.pipeline("mla_decode_kernel_fc")` returns the specialized
+        // pipeline directly — the TCB dispatcher needs no special path.
+        #[cfg(target_os = "macos")]
+        if mla_use_fc {
+            if let Some(ref ctx) = metal_ctx {
+                let n_heads = cfg.n_heads as u32;
+                let qk_nope = cfg.qk_nope_head_dim as u32;
+                let qk_rope = cfg.qk_rope_head_dim as u32;
+                let v_head = cfg.v_head_dim as u32;
+                let kv_lora = cfg.kv_lora_rank as u32;
+                let head_total = cfg.qk_nope_head_dim + cfg.qk_rope_head_dim;
+                let scale: f32 = 1.0 / (head_total as f32).sqrt();
+                ctx.register_specialized_pipeline("mla_decode_kernel_fc", || {
+                    use metal::{FunctionConstantValues, MTLDataType};
+                    let fcv = FunctionConstantValues::new();
+                    fcv.set_constant_value_at_index(
+                        &n_heads as *const u32 as *const _,
+                        MTLDataType::UInt, 0,
+                    );
+                    fcv.set_constant_value_at_index(
+                        &qk_nope as *const u32 as *const _,
+                        MTLDataType::UInt, 1,
+                    );
+                    fcv.set_constant_value_at_index(
+                        &qk_rope as *const u32 as *const _,
+                        MTLDataType::UInt, 2,
+                    );
+                    fcv.set_constant_value_at_index(
+                        &v_head as *const u32 as *const _,
+                        MTLDataType::UInt, 3,
+                    );
+                    fcv.set_constant_value_at_index(
+                        &kv_lora as *const u32 as *const _,
+                        MTLDataType::UInt, 4,
+                    );
+                    fcv.set_constant_value_at_index(
+                        &scale as *const f32 as *const _,
+                        MTLDataType::Float, 5,
+                    );
+                    fcv
+                })?;
+            }
         }
         let speculate_mode = if config.speculate && config.speculate_mode == SpeculateMode::Off {
             SpeculateMode::ExactShared
@@ -870,6 +925,7 @@ impl Engine for DeepSeekV2 {
             mla_c_kv_gpu,
             mla_k_pe_gpu,
             mla_kv_gpu_synced: false,
+            mla_use_fc,
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
@@ -1399,6 +1455,49 @@ impl Engine for DeepSeekV2 {
 }
 
 impl DeepSeekV2 {
+    /// v2.3.0 A4: route attention phase-3 to either the function-constant-
+    /// specialized `mla_decode_kernel_fc` or the runtime-args
+    /// `mla_decode_kernel`, based on the engine flag set from the
+    /// `mla_schedule` profile field. Centralizes the routing so the 3
+    /// per-token call sites stay legible.
+    #[cfg(target_os = "macos")]
+    #[inline]
+    fn dispatch_mla_decode_and_o_proj(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj_buf: &PinnedBuffer,
+        o_proj_buf: &PinnedBuffer,
+        li: usize,
+        seq_len: usize,
+        scale: f32,
+        h: usize,
+    ) -> Result<()> {
+        if self.mla_use_fc {
+            crate::kernels::mla_decode_and_o_proj_arena_fc_tcb(
+                tcb, arena, kv_b_proj_buf, o_proj_buf,
+                &self.mla_c_kv_gpu[li],
+                &self.mla_k_pe_gpu[li],
+                self.config.n_heads,
+                self.config.v_head_dim,
+                self.config.kv_lora_rank,
+                seq_len, h,
+            )
+        } else {
+            crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                tcb, arena, kv_b_proj_buf, o_proj_buf,
+                &self.mla_c_kv_gpu[li],
+                &self.mla_k_pe_gpu[li],
+                self.config.n_heads,
+                self.config.qk_nope_head_dim,
+                self.config.qk_rope_head_dim,
+                self.config.v_head_dim,
+                self.config.kv_lora_rank,
+                seq_len, scale, h,
+            )
+        }
+    }
+
     fn layer_has_tcb_attention(layer: &Layer) -> bool {
         let q_lora_ready = layer.pinned.q_a_proj.is_some()
             && layer.pinned.q_b_proj.is_some()
@@ -1578,21 +1677,8 @@ impl DeepSeekV2 {
 
             self.encode_attention_phase1_into_tcb(&mut tcb, li, pos, Some(token), seq_slot)?;
             self.encode_attention_phase2_tcb(&mut tcb, li, pos)?;
-            crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                &mut tcb,
-                arena,
-                kv_b_proj_buf,
-                o_proj_buf,
-                &self.mla_c_kv_gpu[li],
-                &self.mla_k_pe_gpu[li],
-                self.config.n_heads,
-                self.config.qk_nope_head_dim,
-                self.config.qk_rope_head_dim,
-                self.config.v_head_dim,
-                self.config.kv_lora_rank,
-                seq_len,
-                scale,
-                h,
+            self.dispatch_mla_decode_and_o_proj(
+                &mut tcb, arena, kv_b_proj_buf, o_proj_buf, li, seq_len, scale, h,
             )?;
             crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.out, h)?;
             crate::kernels::rmsnorm_metal_buf_tcb(
@@ -2192,12 +2278,9 @@ impl DeepSeekV2 {
                     // Phase 2: q_b_proj + rope_q.
                     self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
                     // Phase 3: mla_decode (reads seq_len GPU KV entries) + o_proj.
-                    crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                    self.dispatch_mla_decode_and_o_proj(
                         &mut global_tcb, arena, kv_b_proj_buf, o_proj_buf,
-                        &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
-                        self.config.n_heads, self.config.qk_nope_head_dim,
-                        self.config.qk_rope_head_dim, self.config.v_head_dim,
-                        self.config.kv_lora_rank, seq_len, scale, h,
+                        li, seq_len, scale, h,
                     )?;
                     // Residual: x_buf += attn_out (arena.out).
                     crate::kernels::add_inplace_metal_tcb(
@@ -2581,12 +2664,8 @@ impl DeepSeekV2 {
                             // Phase 2: q_b_proj + rope_q
                             self.encode_attention_phase2_tcb(tcb, li, pos)?;
                             // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
-                            crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                                tcb, arena, kv_b_proj_buf, o_proj_buf,
-                                &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
-                                self.config.n_heads, self.config.qk_nope_head_dim,
-                                self.config.qk_rope_head_dim, self.config.v_head_dim,
-                                self.config.kv_lora_rank, seq_len, scale, h,
+                            self.dispatch_mla_decode_and_o_proj(
+                                tcb, arena, kv_b_proj_buf, o_proj_buf, li, seq_len, scale, h,
                             )?;
                             crate::kernels::add_inplace_metal_tcb(tcb, &arena.x_buf, &arena.out, h)?;
                             crate::kernels::rmsnorm_metal_buf_tcb(

@@ -97,8 +97,8 @@ pub fn current_layer() -> Option<u32> {
 mod imp {
     use super::*;
     use metal::{
-        Buffer, CommandBufferRef, CommandQueue, ComputePipelineState, Device, Library,
-        MTLResourceOptions, MTLSize,
+        Buffer, CommandBufferRef, CommandQueue, ComputePipelineState, Device, FunctionConstantValues,
+        Library, MTLResourceOptions, MTLSize,
     };
     use metal::objc::{msg_send, sel, sel_impl};
 
@@ -493,6 +493,8 @@ mod imp {
             "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
             "embed_lookup_f32" => "embed_lookup_f32",
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
+            // v2.3.0 A4 — function-constant-specialized MLA decoder
+            "mla_decode_kernel_fc" => "mla_decode_kernel_fc",
             _ => "other",
         }
     }
@@ -624,6 +626,48 @@ mod imp {
                 .map_err(|e| Error::Metal(format!("pipeline `{fn_name}`: {e}")))?;
             pipes.insert(fn_name.to_string(), p.clone());
             Ok(p)
+        }
+
+        /// v2.3.0 A4: compile a kernel function specialized with
+        /// `MTLFunctionConstantValues` and inject it into the regular
+        /// pipeline cache under `fn_name`. Subsequent `pipeline(fn_name)`
+        /// calls return the specialized pipeline directly — no special
+        /// dispatch path needed.
+        ///
+        /// Must be called once at engine load BEFORE any dispatch of
+        /// `fn_name` (otherwise `pipeline(fn_name)` would call
+        /// `library.get_function(fn_name, None)` first, which fails for
+        /// kernels with unbound function constants). `register_specialized_pipeline`
+        /// is idempotent — a second call with the same `fn_name` replaces
+        /// the cached entry.
+        ///
+        /// Burning model-constant shape into the pipeline at compile time
+        /// lets the MSL compiler unroll bounded loops, fold arithmetic on
+        /// constant shapes, and skip per-dispatch buffer args (the kernel
+        /// declares `[[function_constant(n)]]` instead of
+        /// `constant T& [[buffer(n)]]`).
+        pub fn register_specialized_pipeline(
+            &self,
+            fn_name: &str,
+            build_fcv: impl FnOnce() -> FunctionConstantValues,
+        ) -> Result<()> {
+            let fcv = build_fcv();
+            let f = self
+                .inner
+                .library
+                .get_function(fn_name, Some(fcv))
+                .map_err(|e| Error::Metal(format!(
+                    "specialized kernel `{fn_name}`: {e}"
+                )))?;
+            let p = self
+                .inner
+                .device
+                .new_compute_pipeline_state_with_function(&f)
+                .map_err(|e| Error::Metal(format!(
+                    "specialized pipeline `{fn_name}`: {e}"
+                )))?;
+            self.inner.pipelines.lock().insert(fn_name.to_string(), p);
+            Ok(())
         }
 
         /// Shared (CPU+GPU readable) buffer of the given byte size.
