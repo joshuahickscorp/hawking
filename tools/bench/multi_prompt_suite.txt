@@ -1,0 +1,21 @@
+# multi_prompt_bench.sh suite — span short / medium / long context lengths.
+# One prompt per line. Lines starting with `#` are skipped.
+# Auto-numbered p001, p002, ... in order.
+#
+# Calibration: at temperature=0 greedy, dismantle on M3 Pro generates
+# 64-96 tokens for most natural prompts before EOS. Effective seq_len
+# during decode = prompt_tokens + decode_step (0..max_new_tokens).
+
+# --- TIER 1: short ( prompt < 20 tokens ). Baseline workload. ---
+Once upon a time
+Hello, how are you?
+def quicksort(arr):
+
+# --- TIER 2: medium ( ~50-150 prompt tokens ). Chat-realistic. ---
+You are a helpful assistant. The user is asking a Python question. They want to sort a list of integers in descending order. Provide a concise example using the built-in sorted function with the reverse parameter.
+Write a short technical email to a colleague named Sarah explaining that the deployment scheduled for Thursday will be pushed to Friday because the staging environment is still being patched. Be polite and brief.
+
+# --- TIER 3: long ( ~200-500 prompt tokens ). Realistic context, exercises seq_len >= 256 during decode. ---
+You are reading a Python codebase. Here is the relevant function:  def parse_config(path): with open(path) as f: data = json.load(f) if 'version' not in data: raise ValueError('missing version field') if data['version'] != '1.0': raise ValueError(f"unsupported version {data['version']}") return data['settings']  The function is called by a CLI tool that loads a configuration file at startup. Recent issue reports indicate that users with a config.json containing trailing commas hit a JSONDecodeError that is not caught gracefully. Suggest a small, focused change to parse_config that catches the JSONDecodeError, logs a helpful message including the file path, and re-raises a more specific custom exception class. Keep the change minimal and idiomatic.
+
+You are a senior engineer reviewing a pull request. The PR adds a function to compute the moving average of a list of numbers. The submitter wrote:  def moving_average(values, window): if not values: return [] result = [] for i in range(len(values)): start = max(0, i - window + 1) end = i + 1 chunk = values[start:end] result.append(sum(chunk) / len(chunk))  return result  Review this implementation. Comment on correctness, edge cases (empty input, window larger than input, window of 1, single-element input), readability, and runtime complexity. Suggest improvements where appropriate. Keep your response under 150 words.
