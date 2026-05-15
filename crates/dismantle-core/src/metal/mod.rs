@@ -376,6 +376,38 @@ mod imp {
         queue: CommandQueue,
         library: Library,
         pipelines: Mutex<HashMap<String, ComputePipelineState>>,
+        /// v2.3.0 A5: persistent bump-arena MTLBuffer carved per dispatch by
+        /// `KernelArgBuffer`. Single allocation up-front avoids the
+        /// ~50 µs `new_buffer` per dispatch hot path identified in the
+        /// path-to-90 Stage 0 attribution (CPU ~25 ms/tok vs GPU ~22 ms).
+        /// Cursor reset at every `TokenCommandBuffer::commit_and_wait`.
+        argbuf_arena: Mutex<ArgbufArena>,
+    }
+
+    /// Bump-arena state for `KernelArgBuffer`.
+    pub(crate) struct ArgbufArena {
+        /// Single persistent shared-storage MTLBuffer. `None` until first
+        /// alloc; created lazily so unit tests that don't hit a kernel
+        /// don't pay the alloc cost.
+        buf: Option<Buffer>,
+        /// Bytes currently allocated from `buf`.
+        capacity: usize,
+        /// Next free offset within `buf`.
+        cursor: usize,
+        /// Peak `cursor` observed before any reset; used by tests and
+        /// metrics to verify the initial capacity is right-sized.
+        high_water: usize,
+    }
+
+    impl ArgbufArena {
+        fn new() -> Self {
+            Self {
+                buf: None,
+                capacity: 0,
+                cursor: 0,
+                high_water: 0,
+            }
+        }
     }
 
     /// Resolve a runtime kernel name to a `&'static str` for zero-alloc
@@ -487,6 +519,7 @@ mod imp {
                     queue,
                     library,
                     pipelines: Mutex::new(HashMap::new()),
+                    argbuf_arena: Mutex::new(ArgbufArena::new()),
                 }),
                 trace: Arc::new(DispatchTrace::new()),
                 stats: Arc::new(MetalContextStats::new()),
@@ -499,6 +532,71 @@ mod imp {
         }
         pub fn queue(&self) -> &CommandQueue {
             &self.inner.queue
+        }
+
+        /// v2.3.0 A5: carve `size` bytes from the persistent argbuf arena at
+        /// the requested alignment. Returns the shared `Buffer` (clone is
+        /// cheap — `Arc` internally) and the base offset within it. The
+        /// caller binds via `enc.set_buffer(slot, Some(&buf), offset)`.
+        ///
+        /// Lazily grows the arena MTLBuffer at the start of a token when
+        /// the current capacity wouldn't fit the request — never grows
+        /// mid-token (would orphan dispatches that have already bound the
+        /// old buffer). Initial allocation is `INITIAL_CAPACITY`; growth
+        /// doubles to next power of two.
+        ///
+        /// This path replaces the previous per-dispatch `new_buffer` call
+        /// that was costing ~50 µs each at ~80 calls/token (≈ 4 ms/tok).
+        pub(crate) fn argbuf_alloc(&self, size: usize, align: usize) -> (Buffer, usize) {
+            const INITIAL_CAPACITY: usize = 64 * 1024;
+            let mut arena = self.inner.argbuf_arena.lock();
+            // Align cursor to field boundary.
+            if arena.cursor % align != 0 {
+                arena.cursor += align - (arena.cursor % align);
+            }
+            let needed_end = arena.cursor + size;
+            if arena.buf.is_none() || needed_end > arena.capacity {
+                // The arena MTLBuffer's lifetime is tied to the previous
+                // token's GPU work; we only resize at cursor==0 (i.e.
+                // right after a reset). If we'd grow mid-token the old
+                // buf is still referenced by encoded dispatches. Guard
+                // against that case by panicking — surface immediately
+                // rather than corrupting state.
+                if arena.cursor != 0 {
+                    panic!(
+                        "argbuf_arena: mid-token growth requested (cursor={}, need={}, cap={}). \
+                         Increase INITIAL_CAPACITY ({}) or reset between tokens.",
+                        arena.cursor, size, arena.capacity, INITIAL_CAPACITY,
+                    );
+                }
+                let new_cap = needed_end.next_power_of_two().max(INITIAL_CAPACITY);
+                let new_buf = self
+                    .inner
+                    .device
+                    .new_buffer(new_cap as u64, MTLResourceOptions::StorageModeShared);
+                arena.buf = Some(new_buf);
+                arena.capacity = new_cap;
+            }
+            let off = arena.cursor;
+            arena.cursor += size;
+            if arena.cursor > arena.high_water {
+                arena.high_water = arena.cursor;
+            }
+            let buf = arena.buf.as_ref().unwrap().clone();
+            (buf, off)
+        }
+
+        /// v2.3.0 A5: reset the bump cursor to 0. Called by
+        /// `TokenCommandBuffer::commit_and_wait` after the GPU has finished
+        /// the token's work, so the next token can reuse the same MTLBuffer.
+        pub(crate) fn argbuf_reset(&self) {
+            self.inner.argbuf_arena.lock().cursor = 0;
+        }
+
+        /// v2.3.0 A5: peak observed bytes-used. Used by tests and metrics
+        /// to verify the arena is right-sized.
+        pub fn argbuf_high_water(&self) -> usize {
+            self.inner.argbuf_arena.lock().high_water
         }
         pub fn library(&self) -> &Library {
             &self.inner.library
@@ -988,10 +1086,16 @@ mod imp {
 
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
+        ///
+        /// v2.3.0 A5: after the GPU has finished, reset the argbuf bump
+        /// arena so the next token starts at cursor=0 and reuses the
+        /// same MTLBuffer. Safe here because the wait above guarantees
+        /// no in-flight dispatch still references the arena.
         pub fn commit_and_wait(mut self) -> Result<()> {
             if let Some(cmd) = self.cmd.take() {
                 self.flush_and_commit(cmd);
             }
+            self.ctx.argbuf_reset();
             Ok(())
         }
 
@@ -1052,6 +1156,10 @@ mod imp {
         fn drop(&mut self) {
             if let Some(cmd) = self.cmd.take() {
                 self.flush_and_commit(cmd);
+                // v2.3.0 A5: same invariant as commit_and_wait — reset
+                // the arena once the GPU has finished so a later TCB
+                // doesn't see stale cursor state.
+                self.ctx.argbuf_reset();
             }
         }
     }

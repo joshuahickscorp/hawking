@@ -447,7 +447,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
+                ab.bind(enc, 3);
             },
         )
     }
@@ -3370,7 +3370,7 @@ mod metal_dispatch {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_buffer(3, Some(ab.handle()), 0);
+            ab.bind(enc, 3);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
     }
@@ -3649,7 +3649,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
+                ab.bind(enc, 3);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -3702,7 +3702,7 @@ mod metal_dispatch {
         ab.set_f32(5, base);
         tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(q_buf), 0);
-            enc.set_buffer(1, Some(ab.handle()), 0);
+            ab.bind(enc, 1);
         })
     }
 
@@ -3761,7 +3761,7 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(src_kv_a_out), 0);
                 enc.set_buffer(2, Some(dst_c_kv), 0);
                 enc.set_buffer(3, Some(dst_k_pe), 0);
-                enc.set_buffer(4, Some(ab.handle()), 0);
+                ab.bind(enc, 4);
             },
         )
     }
@@ -3849,7 +3849,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
+                ab.bind(enc, 3);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -3980,7 +3980,7 @@ mod metal_dispatch {
             enc.set_buffer(0, Some(gate_buf), 0);
             enc.set_buffer(1, Some(up_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_buffer(3, Some(ab.handle()), 0);
+            ab.bind(enc, 3);
         })
     }
 
@@ -4141,7 +4141,7 @@ mod metal_dispatch {
             enc.set_buffer(1, Some(weights), 0);
             enc.set_buffer(2, Some(shared_out), 0);
             enc.set_buffer(3, Some(out), 0);
-            enc.set_buffer(4, Some(ab.handle()), 0);
+            ab.bind(enc, 4);
         })
     }
 
@@ -4166,7 +4166,7 @@ mod metal_dispatch {
             enc.set_buffer(0, Some(logits_buf), 0);
             enc.set_buffer(1, Some(route_ids_buf), 0);
             enc.set_buffer(2, Some(route_weights_buf), 0);
-            enc.set_buffer(3, Some(ab.handle()), 0);
+            ab.bind(enc, 3);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
     }
@@ -4805,7 +4805,7 @@ mod metal_dispatch {
         tcb.dispatch_threads("rmsnorm_f32_to_f16", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
-            enc.set_buffer(2, Some(ab.handle()), 0);
+            ab.bind(enc, 2);
             enc.set_buffer(3, Some(out_buf), 0);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
