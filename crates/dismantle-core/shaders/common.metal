@@ -117,6 +117,57 @@ kernel void rmsnorm_f32(
     }
 }
 
+// v2.3.0 A3 — fused residual-add + rmsnorm.
+//
+// Replaces the pair:
+//    add_inplace(x, addend)     // x[i] += addend[i]
+//    rmsnorm_f32(x → out)        // out = rmsnorm(x) * weight
+// with a single dispatch. Phase 0 updates `x` in-place with the addend
+// (thread-disjoint writes: each thread t handles i = t, t+tg_size, ...),
+// followed by a threadgroup_barrier; Phase 1 reads the updated x for
+// variance computation; Phase 2 writes the normalized output.
+//
+// Single-TG kernel (grid = (TG_SIZE, 1, 1), tg = (TG_SIZE, 1, 1)) — same
+// shape as rmsnorm_f32, so the add-in-place is race-free across threads
+// in the one TG. The barrier between phase 0 and phase 1 ensures the
+// post-add x is visible to the variance reduction.
+kernel void add_rmsnorm_f32(
+    device       float* x        [[buffer(0)]],   // residual stream, READ + WRITE
+    device const float* addend   [[buffer(1)]],   // residual addend (attn_out or ffn_out)
+    device const float* weight   [[buffer(2)]],   // norm scale
+    device       float* out      [[buffer(3)]],   // normalized output
+    constant ArgbufRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    // Phase 0: x += addend, thread-disjoint.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x[i] = x[i] + addend[i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 1: variance reduction over the new x.
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: write normalized output.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        out[i] = x[i] * inv * weight[i];
+    }
+}
+
 kernel void silu_mul(
     device const half* gate [[buffer(0)]],
     device const half* up   [[buffer(1)]],

@@ -158,6 +158,10 @@ pub struct DeepSeekV2 {
     /// buffer layout as `mla_decode_kernel`. Enabled by setting
     /// `mla_schedule = "metal-mla-flash"` in the kernel profile.
     pub mla_use_flash: bool,
+    /// v2.3.0 A3: when true, the engine routes `add_inplace + rmsnorm_f32`
+    /// pairs to the fused `add_rmsnorm_f32` kernel. Enabled by setting
+    /// `residual_fusion = "f32"` in the kernel profile.
+    pub residual_fusion_f32: bool,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
 
@@ -661,6 +665,11 @@ impl Engine for DeepSeekV2 {
         );
         let mla_use_fc = mla_schedule_str == "metal-mla-fc";
         let mla_use_flash = mla_schedule_str == "metal-mla-flash";
+        let residual_fusion_f32 = config
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.selected.residual_fusion.as_str() == "f32")
+            .unwrap_or(false);
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -970,6 +979,7 @@ impl Engine for DeepSeekV2 {
             mla_kv_gpu_synced: false,
             mla_use_fc,
             mla_use_flash,
+            residual_fusion_f32,
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
@@ -1499,6 +1509,34 @@ impl Engine for DeepSeekV2 {
 }
 
 impl DeepSeekV2 {
+    /// v2.3.0 A3: encode the per-layer `add_inplace(x, addend) + rmsnorm_f32(x → out)`
+    /// pair, fused into a single `add_rmsnorm_f32` dispatch when
+    /// `residual_fusion = "f32"`, else as the original two-dispatch sequence.
+    /// Semantically equivalent in either path.
+    #[cfg(target_os = "macos")]
+    #[inline]
+    fn encode_add_and_rmsnorm_tcb(
+        &self,
+        tcb: &mut crate::metal::TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        addend_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if self.residual_fusion_f32 {
+            crate::kernels::add_rmsnorm_metal_buf_tcb(
+                tcb, x_buf, addend_buf, weight_buf, eps, hidden, out_buf,
+            )
+        } else {
+            crate::kernels::add_inplace_metal_tcb(tcb, x_buf, addend_buf, hidden)?;
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                tcb, x_buf, weight_buf, eps, hidden, out_buf,
+            )
+        }
+    }
+
     /// v2.3.0 A4: route attention phase-3 to either the function-constant-
     /// specialized `mla_decode_kernel_fc` or the runtime-args
     /// `mla_decode_kernel`, based on the engine flag set from the
@@ -1736,9 +1774,8 @@ impl DeepSeekV2 {
             self.dispatch_mla_decode_and_o_proj(
                 &mut tcb, arena, kv_b_proj_buf, o_proj_buf, li, seq_len, scale, h,
             )?;
-            crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.out, h)?;
-            crate::kernels::rmsnorm_metal_buf_tcb(
-                &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+            self.encode_add_and_rmsnorm_tcb(
+                &mut tcb, &arena.x_buf, &arena.out, ffn_norm_buf, eps, h, &arena.x_norm_buf,
             )?;
             if !self.encode_shared_only_ffn_tcb(
                 &mut tcb, li, arena, model_buf, q4k_schedule, shared_down_schedule,
@@ -2723,9 +2760,8 @@ impl DeepSeekV2 {
                             self.dispatch_mla_decode_and_o_proj(
                                 tcb, arena, kv_b_proj_buf, o_proj_buf, li, seq_len, scale, h,
                             )?;
-                            crate::kernels::add_inplace_metal_tcb(tcb, &arena.x_buf, &arena.out, h)?;
-                            crate::kernels::rmsnorm_metal_buf_tcb(
-                                tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                            self.encode_add_and_rmsnorm_tcb(
+                                tcb, &arena.x_buf, &arena.out, ffn_norm_buf, eps, h, &arena.x_norm_buf,
                             )?;
                             if let Some(ref setup) = moe_setup {
                                 let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();

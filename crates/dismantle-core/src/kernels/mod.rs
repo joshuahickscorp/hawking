@@ -3375,6 +3375,41 @@ mod metal_dispatch {
         })
     }
 
+    /// v2.3.0 A3: fused residual-add + rmsnorm. Replaces the pair
+    /// `add_inplace_metal_tcb(x, addend) + rmsnorm_metal_buf_tcb(x → out)`
+    /// with one `add_rmsnorm_f32` dispatch. Single-TG kernel; the
+    /// add-in-place is race-free across threads in the one TG, and the
+    /// threadgroup_barrier between phase 0 (write) and phase 1 (read)
+    /// makes the post-add value visible to the variance reduction.
+    ///
+    /// Semantic equivalence:
+    ///   x[i]   = x[i] + addend[i]
+    ///   out[i] = (x[i] * inv_rms) * weight[i]
+    /// in exactly the same order as the unfused pair.
+    pub fn add_rmsnorm_metal_buf_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        addend_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads("add_rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(addend_buf), 0);
+            enc.set_buffer(2, Some(weight_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            ab.bind(enc, 4);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
     /// v0.5.6 — buffer-arg variant of the f16 silu_mul kernel.
     /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
     /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.

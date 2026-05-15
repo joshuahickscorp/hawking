@@ -105,6 +105,12 @@ pub struct KernelVariant {
     /// Opt-in until a clean bench validates the +5% e2e gate.
     #[serde(default = "default_rmsnorm_attn_schedule")]
     pub rmsnorm_attn_schedule: String,
+    /// v2.3.0 A3 — fuse the `add_inplace(x, addend) + rmsnorm_f32(x → out)`
+    /// pair into a single `add_rmsnorm_f32` kernel. Cuts ~2 dispatches per
+    /// layer × 27 layers ≈ 54 dispatches/token. Default "off"; set to
+    /// "f32" to enable.
+    #[serde(default = "default_residual_fusion")]
+    pub residual_fusion: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -129,6 +135,10 @@ fn default_shared_down_schedule() -> String {
 
 fn default_rmsnorm_attn_schedule() -> String {
     "basic".to_string()
+}
+
+fn default_residual_fusion() -> String {
+    "off".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -289,6 +299,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         routed_down_schedule: "basic".into(),
         shared_down_schedule: "basic".into(),
         rmsnorm_attn_schedule: "basic".into(),
+        residual_fusion: "off".into(),
     }]
 }
 

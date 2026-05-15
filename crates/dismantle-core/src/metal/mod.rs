@@ -498,6 +498,8 @@ mod imp {
             // v2.3.0 A4.2 — fc-specialized routed MoE gate+up GEMV
             "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc"
                 => "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc",
+            // v2.3.0 A3 — fused residual-add + rmsnorm
+            "add_rmsnorm_f32" => "add_rmsnorm_f32",
             _ => "other",
         }
     }
