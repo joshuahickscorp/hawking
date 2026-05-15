@@ -3772,6 +3772,74 @@ mod metal_dispatch {
     /// KV buffers (GPU-resident KV cache) or arena scratch buffers.
     /// No commit — caller commits the TCB when ready.
     #[allow(clippy::too_many_arguments)]
+    /// v2.3.0 A1: TCB variant of `flash_attn_decode_metal` fused with
+    /// the o_proj GEMV. Same buffer signature as
+    /// `mla_decode_and_o_proj_arena_tcb`, but routes attention to the
+    /// `flash_attn_decode_kernel` (Flash v2 online softmax in tiles of
+    /// FLASH_TG=128 tokens). Avoids the materialized seq_len×4-byte
+    /// `scores` threadgroup buffer at the cost of extra arithmetic per
+    /// tile boundary; wins on long-context decode where the smaller TG
+    /// memory footprint lets more concurrent threadgroups land per shader
+    /// core.
+    #[allow(clippy::too_many_arguments)]
+    pub fn flash_attn_decode_and_o_proj_arena_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        arena: &DecodeArena,
+        kv_b_proj: &PinnedBuffer,
+        o_proj: &PinnedBuffer,
+        c_kv: &PinnedBuffer,
+        k_pe: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        const FLASH_TG: u32 = 128;
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+
+        let f32_size = std::mem::size_of::<f32>() as u64;
+        let q_nope_proj_bytes = kv_lora_rank as u64 * f32_size;
+        let acc_bytes = kv_lora_rank as u64 * f32_size;
+        let scores_tile_bytes = FLASH_TG as u64 * f32_size;
+        let state_bytes = 8u64 * f32_size;
+
+        tcb.dispatch_threads(
+            "flash_attn_decode_kernel",
+            (n_heads_u32 * FLASH_TG, 1, 1),
+            (FLASH_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&arena.q), 0);
+                enc.set_buffer(1, Some(c_kv), 0);
+                enc.set_buffer(2, Some(k_pe), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&arena.attn_out), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, acc_bytes);
+                enc.set_threadgroup_memory_length(2, scores_tile_bytes);
+                enc.set_threadgroup_memory_length(3, state_bytes);
+            },
+        )?;
+        gemv_f16_simdmat_tcb(
+            tcb, o_proj, hidden, n_heads * v_head_dim, &arena.attn_out, &arena.out,
+        )
+    }
+
     /// v2.3.0 A4: function-constant-specialized variant of
     /// `mla_decode_and_o_proj_arena_tcb`. Identical math + identical
     /// threadgroup geometry; the model-constant shape (n_heads,

@@ -1,0 +1,73 @@
+{
+  "model_id": "deepseek-v2-lite-q4",
+  "suite": "decode",
+  "trials": 3,
+  "max_new_tokens": 64,
+  "kernel_profile": "/tmp/profile_a1_flash.json",
+  "speculate_mode": "off",
+  "verify_window": 4,
+  "results": {
+    "backend": "dismantle",
+    "decode_tps": 20.581096261347422,
+    "kernel_profile": "/tmp/profile_a1_flash.json",
+    "max_new_tokens": 64,
+    "metric": "decode_only_tps",
+    "prompt": "Once upon a time",
+    "speculate_mode": "off",
+    "temperature": 0.0,
+    "tokens_per_sec_max": 20.652375184960857,
+    "tokens_per_sec_median": 20.581096261347422,
+    "tokens_per_sec_min": 17.41881629842693,
+    "trial_stats": [
+      {
+        "completion_tokens": 64,
+        "decode_ms": 3674.187666,
+        "decode_tps": 17.41881629842693,
+        "device_id": "Apple M3 Pro",
+        "dispatch_count": 0,
+        "draft_accepted": 0,
+        "draft_rejected": 0,
+        "prefill_ms": 3664.95225,
+        "produced_tokens": 64,
+        "profile_id": "kp-140aa1de8df9d7acb897e7c8",
+        "prompt_tokens": 4,
+        "trace_hash": null
+      },
+      {
+        "completion_tokens": 64,
+        "decode_ms": 3098.917167,
+        "decode_tps": 20.652375184960857,
+        "device_id": "Apple M3 Pro",
+        "dispatch_count": 0,
+        "draft_accepted": 0,
+        "draft_rejected": 0,
+        "prefill_ms": 200.58862499999998,
+        "produced_tokens": 64,
+        "profile_id": "kp-140aa1de8df9d7acb897e7c8",
+        "prompt_tokens": 4,
+        "trace_hash": null
+      },
+      {
+        "completion_tokens": 64,
+        "decode_ms": 3109.6497090000003,
+        "decode_tps": 20.581096261347422,
+        "device_id": "Apple M3 Pro",
+        "dispatch_count": 0,
+        "draft_accepted": 0,
+        "draft_rejected": 0,
+        "prefill_ms": 186.53625,
+        "produced_tokens": 64,
+        "profile_id": "kp-140aa1de8df9d7acb897e7c8",
+        "prompt_tokens": 4,
+        "trace_hash": null
+      }
+    ],
+    "trials": [
+      17.41881629842693,
+      20.581096261347422,
+      20.652375184960857
+    ],
+    "verify_window": 4,
+    "version": null
+  }
+}

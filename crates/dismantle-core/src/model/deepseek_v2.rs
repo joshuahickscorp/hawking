@@ -150,6 +150,14 @@ pub struct DeepSeekV2 {
     /// profile. The specialized pipeline is compiled once at engine load
     /// with the model's shape constants baked in.
     pub mla_use_fc: bool,
+    /// v2.3.0 A1: when true, attention block routes to
+    /// `flash_attn_decode_kernel` (Flash v2 online softmax in tiles of
+    /// FLASH_TG=128 tokens). Mutually exclusive with `mla_use_fc`; this
+    /// path uses the non-fc kernel signature with all shape args as
+    /// runtime buffer args, since the flash kernel reads from the same
+    /// buffer layout as `mla_decode_kernel`. Enabled by setting
+    /// `mla_schedule = "metal-mla-flash"` in the kernel profile.
+    pub mla_use_flash: bool,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
 
@@ -647,8 +655,12 @@ impl Engine for DeepSeekV2 {
             .as_ref()
             .map(|p| p.selected.mla_schedule.as_str())
             .unwrap_or("");
-        let mla_metal = matches!(mla_schedule_str, "metal-mla" | "metal-mla-fc");
+        let mla_metal = matches!(
+            mla_schedule_str,
+            "metal-mla" | "metal-mla-fc" | "metal-mla-flash"
+        );
         let mla_use_fc = mla_schedule_str == "metal-mla-fc";
+        let mla_use_flash = mla_schedule_str == "metal-mla-flash";
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -926,6 +938,7 @@ impl Engine for DeepSeekV2 {
             mla_k_pe_gpu,
             mla_kv_gpu_synced: false,
             mla_use_fc,
+            mla_use_flash,
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
@@ -1473,7 +1486,19 @@ impl DeepSeekV2 {
         scale: f32,
         h: usize,
     ) -> Result<()> {
-        if self.mla_use_fc {
+        if self.mla_use_flash {
+            crate::kernels::flash_attn_decode_and_o_proj_arena_tcb(
+                tcb, arena, kv_b_proj_buf, o_proj_buf,
+                &self.mla_c_kv_gpu[li],
+                &self.mla_k_pe_gpu[li],
+                self.config.n_heads,
+                self.config.qk_nope_head_dim,
+                self.config.qk_rope_head_dim,
+                self.config.v_head_dim,
+                self.config.kv_lora_rank,
+                seq_len, scale, h,
+            )
+        } else if self.mla_use_fc {
             crate::kernels::mla_decode_and_o_proj_arena_fc_tcb(
                 tcb, arena, kv_b_proj_buf, o_proj_buf,
                 &self.mla_c_kv_gpu[li],
