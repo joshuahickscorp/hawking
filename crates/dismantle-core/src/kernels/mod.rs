@@ -4149,6 +4149,52 @@ mod metal_dispatch {
         )
     }
 
+    // v2.3.0 A4.2: function-constant-specialized v2t_gu_v2. Same body /
+    // grid / threadgroup as encode_batched_gemv_fused_gu_v2_tcb but
+    // dispatches `moe_batched_gemm_q4_indexed_v2t_gu_v2_fc` which has
+    // `rows` and `cols` baked in via MTLFunctionConstantValues. The
+    // dispatcher passes only `gate_offset, up_offset, routes` at runtime.
+    //
+    // Caller must have invoked
+    //   ctx.register_specialized_pipeline("moe_batched_gemm_q4_indexed_v2t_gu_v2_fc", build_fcv)
+    // at engine load with the same (rows, cols) constants we encode here.
+    #[allow(clippy::too_many_arguments)]
+    fn encode_batched_gemv_fused_gu_v2_fc_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        route_ids_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        act_buf: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        routes: usize,
+        rows: usize,
+        cols: usize,
+    ) -> Result<()> {
+        let gate_offset_u64 = gate_offset as u64;
+        let up_offset_u64   = up_offset   as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32   = rows   as u32;
+        let tg_size    = TG_SIZE as u32;
+        let n_tg_x     = (rows_u32 + 7) / 8;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc",
+            (n_tg_x * tg_size, routes_u32, 1),
+            (tg_size, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf),     0);
+                enc.set_buffer(1, Some(route_ids_buf), 0);
+                enc.set_buffer(2, Some(x_buf),         0);
+                enc.set_buffer(3, Some(act_buf),       0);
+                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
+                enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     // v2t_gu_v2: same signature as encode_batched_gemv_fused_gu_tcb but dispatches
     // moe_batched_gemm_q4_indexed_v2t_gu_v2 (sumy trick + scale preload +
     // paired nibble reads — Phase 2 optimisation).
@@ -4321,7 +4367,13 @@ mod metal_dispatch {
             _ => "moe_batched_gemm_q4_indexed",
         };
 
-        if q4k_schedule == "v2t_gu_v2" {
+        // v2.3.0 A4.2: the shared-expert path uses rows = shared_mid =
+        // n_shared_experts * moe_intermediate (e.g., 2816 for V2-Lite),
+        // not moe_intermediate (1408). The fc-specialized kernel hardcodes
+        // kFcMoeRows = moe_intermediate, so it cannot serve the shared
+        // path — fall back to the non-fc kernel here even when
+        // q4k_schedule is "v2t_gu_v2_fc".
+        if q4k_schedule == "v2t_gu_v2" || q4k_schedule == "v2t_gu_v2_fc" {
             encode_batched_gemv_fused_gu_v2_tcb(
                 tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
                 shared_gate_offset, shared_up_offset, 1, shared_mid, hidden,
@@ -4391,9 +4443,10 @@ mod metal_dispatch {
         let q4k_indexed_kernel = match q4k_schedule {
             "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
             "v2s" => "moe_batched_gemm_q4_indexed_v2s",
-            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v2_fc" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
+        let use_fused_gu_v2_fc = q4k_schedule == "v2t_gu_v2_fc";
         let use_fused_gu_v2  = q4k_schedule == "v2t_gu_v2";
         let use_fused_gu     = q4k_schedule == "v2t_gu";
         // Serial: dispatch one expert at a time so each expert's weight slab (~3 MB
@@ -4403,6 +4456,11 @@ mod metal_dispatch {
 
         if use_serial_gu {
             encode_batched_gemv_fused_gu_serial_tcb(
+                tcb, model_buf, route_ids_buf, x_buf, routed_act,
+                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+            )?;
+        } else if use_fused_gu_v2_fc {
+            encode_batched_gemv_fused_gu_v2_fc_tcb(
                 tcb, model_buf, route_ids_buf, x_buf, routed_act,
                 routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
             )?;
@@ -4447,7 +4505,11 @@ mod metal_dispatch {
         {
             // Shared expert always routes=1, so serial == parallel. Use the
             // appropriate fused_gu variant when any gu schedule is selected.
-            if use_fused_gu_v2 {
+            // v2.3.0 A4.2: shared path's rows = shared_mid (n_shared_experts
+            // × moe_intermediate, e.g., 2816 for V2-Lite) — does NOT match
+            // the fc kernel's kFcMoeRows = moe_intermediate. Fall back to
+            // the non-fc kernel even under v2t_gu_v2_fc.
+            if use_fused_gu_v2 || use_fused_gu_v2_fc {
                 encode_batched_gemv_fused_gu_v2_tcb(
                     tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
                     gate_off, up_off, 1, shared_mid, hidden,

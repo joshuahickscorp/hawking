@@ -730,6 +730,37 @@ impl Engine for DeepSeekV2 {
                 })?;
             }
         }
+
+        // v2.3.0 A4.2: register fc-specialized MoE Q4 routed gate+up kernel
+        // when the kernel profile asks for it. Constants:
+        //   kFcMoeRows = moe_intermediate (1408 for V2-Lite)
+        //   kFcMoeCols = hidden            (2048 for V2-Lite)
+        #[cfg(target_os = "macos")]
+        if config.kernel_profile.as_ref()
+            .map(|p| p.selected.gemm_q4_k_schedule.as_str() == "v2t_gu_v2_fc")
+            .unwrap_or(false)
+        {
+            if let Some(ref ctx) = metal_ctx {
+                let moe_rows = cfg.moe_intermediate as u32;
+                let moe_cols = cfg.hidden as u32;
+                ctx.register_specialized_pipeline(
+                    "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc",
+                    || {
+                        use metal::{FunctionConstantValues, MTLDataType};
+                        let fcv = FunctionConstantValues::new();
+                        fcv.set_constant_value_at_index(
+                            &moe_rows as *const u32 as *const _,
+                            MTLDataType::UInt, 10,
+                        );
+                        fcv.set_constant_value_at_index(
+                            &moe_cols as *const u32 as *const _,
+                            MTLDataType::UInt, 11,
+                        );
+                        fcv
+                    },
+                )?;
+            }
+        }
         let speculate_mode = if config.speculate && config.speculate_mode == SpeculateMode::Off {
             SpeculateMode::ExactShared
         } else {

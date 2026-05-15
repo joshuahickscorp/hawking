@@ -495,6 +495,9 @@ mod imp {
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
             // v2.3.0 A4 — function-constant-specialized MLA decoder
             "mla_decode_kernel_fc" => "mla_decode_kernel_fc",
+            // v2.3.0 A4.2 — fc-specialized routed MoE gate+up GEMV
+            "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc"
+                => "moe_batched_gemm_q4_indexed_v2t_gu_v2_fc",
             _ => "other",
         }
     }
