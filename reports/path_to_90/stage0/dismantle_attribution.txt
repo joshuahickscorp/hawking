@@ -1,0 +1,40 @@
+--- Trace: reports/path_to_90/stage0/dismantle_trace.json ---
+samples:                  13648
+samples with gpu_us:      13648/13648
+tokens decoded:           64
+decode_tps (this run):    21.10
+total GPU time:           1405.45 ms
+per-token GPU time:       21.96 ms
+
+kernel                                            n   gpu_us_total    us/call   us/token    % GPU
+----------------------------------------------------------------------------------------------------
+moe_batched_gemm_q4_indexed_v2t_gu_v2          1456         405827      278.7       6341    28.88%
+mla_decode_kernel                               756         162187      214.5       2534    11.54%
+rmsnorm_gemv_f16w_attn_pinned_v2t              1512         149461       98.8       2335    10.63%
+moe_batched_gemm_q5_0_indexed_v2t               392         145771      371.9       2278    10.37%
+gemv_f16_simdmat                                756         130057      172.0       2032     9.25%
+moe_batched_gemm_q8_0_indexed_v2t               336          89995      267.8       1406     6.40%
+gemv_f16                                         36          85760     2382.2       1340     6.10%
+gemv_f32_attn                                    84          66174      787.8       1034     4.71%
+moe_batched_gemm_q4_indexed_v2t                 392          50812      129.6        794     3.62%
+moe_topk_gate                                   728          35000       48.1        547     2.49%
+moe_batched_gemm_q6_k_indexed_v2t               336          28650       85.3        448     2.04%
+rmsnorm_f32                                    1544          12121        7.9        189     0.86%
+gemv_f32_moe                                    728           9273       12.7        145     0.66%
+moe_route_accumulate                            728           8925       12.3        139     0.64%
+add_inplace                                    1516           8531        5.6        133     0.61%
+rope_slice_f32_inplace                          756           4117        5.4         64     0.29%
+rope_q_f32_inplace                              756           4048        5.4         63     0.29%
+sample_argmax_f32                                24           3764      156.8         59     0.27%
+kv_append_f32                                   756           3410        4.5         53     0.24%
+embed_lookup_f32                                 28           1471       52.5         23     0.10%
+moe_batched_silu_mul                             28             96        3.4          2     0.01%
+
+--- Bandwidth ---
+per-token GPU time:       21.96 ms
+per-token model reads:    1.82 GiB (V2-Lite Q4_K_M)
+effective GPU bandwidth:  82.9 GiB/s
+M3 Pro vendor peak:       150 GiB/s (55% util)
+M3 Pro sustained anchor:  130 GiB/s (64% util)
+NOTE: split-CB mode adds per-dispatch sync overhead; production
+      single-CB-per-block bandwidth will be HIGHER than this.
