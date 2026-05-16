@@ -74,8 +74,9 @@ Output:
 | Loss | CE(logits, next_token) | Standard distillation w/ frozen lm_head |
 | Auxiliary loss | 0.1 × MSE(draft_hidden, target_hidden) | EAGLE paper §3.3 — drives hidden-geometry alignment for multi-step stability |
 | Mixed precision | bf16 trainable / fp16 frozen | M3 Pro supports bf16; matches typical EAGLE-3 setup |
-| Wall time @ 5K samples | ~5-10 hr on M3 Pro (vs ~1-2 hr on H100) | M3 GPU is ~5-10× slower than H100 for fp16 GEMM at this scale; conservative estimate |
-| Wall time @ 50K samples | ~50-100 hr on M3 Pro | Wouldn't fit a long weekend — train on the 5K first to validate the stack, decide whether to commit to 50K locally or pivot to H100 for the production run |
+| Wall time @ 5K samples | **~10-15 min on M3 Pro** (1 epoch) | **MEASURED 2026-05-16 morning**: 198 ms/step at B=16 S=16 = ~1294 records/s warm under MLX. 486K records / 1294 ≈ 6 min synthetic; expect 10-15 min with parquet I/O |
+| Wall time @ 55K samples (3 epochs) | **~10 hr on M3 Pro** | Linear extrapolation: ~5M records × 3 epochs / 1294 records/s ≈ 3.2 hr compute + ~2-3× overhead for I/O + optimizer = ~10 hr realistic |
+| Wall time on H100 (if ever pivoted) | ~1-2 hr at 5K, ~10-20 hr at 50K (paper) | No longer the bottleneck; local M3 Pro fits 55K × 3 epochs within the long weekend |
 
 ## Data scale tradeoffs
 

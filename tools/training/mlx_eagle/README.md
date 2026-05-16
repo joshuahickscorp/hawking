@@ -5,21 +5,27 @@ using Apple's MLX framework. Owns the full training stack rather than
 renting an H100 — slower but free and reusable, and the M3's unified memory
 fits the workload cleanly.
 
-## Status (as of commit `<this-commit>`)
+## Status
 
 | File | Status | Tested? |
 |---|---|---|
-| `extract_lm_head.py` | DONE | ✅ verified — produces `v2lite_frozen.npz` (800 MB), logits sanity-checked against a captured hidden vector |
-| `model.py` | DONE — architecture + loss + factory | ⚠️  shapes correct on inspection; not yet executed end-to-end on MLX |
-| `data.py` | TODO (see "morning work" below) | — |
-| `train.py` | TODO | — |
+| `extract_lm_head.py` | DONE | ✅ produces `v2lite_frozen.npz` (800 MB), logits sanity-checked against a captured hidden vector |
+| `model.py` | DONE | ✅ load + forward + loss + grad smoke-tested under MLX runtime; 59.77M trainable params confirmed |
+| `data.py` | DONE | ✅ smoke-tested against live partial shard (486K records, 1900 batches/epoch at B=16 S=16); position mask zeros early-pos band correctly |
+| `train.py` | DONE — full AdamW loop + cosine LR + position-weighted CE + MSE auxiliary + checkpointing | ⚠️  loop end-to-end untested (smoke runs forward+backward fine; full multi-step + ckpt save not exercised yet) |
 | `eval_acceptance.py` | TODO | — |
 | `convert_to_dismantle_head.py` | TODO | — |
 
-The two highest-risk pieces (GGUF dequant + frozen-weight handoff to MLX,
-EAGLE-3 head architecture) are landed. The remaining work is bounded:
-write a parquet → MLX dataloader, write an Adam training loop, then a
-checkpoint→dismantle converter.
+**Measured perf (2026-05-16 morning, MLX runtime smoke):**
+
+- 198 ms/step warm at B=16 S=16 = ~1,294 records/sec on M3 Pro
+- 5K-shard 1 epoch (486K records): ~6 min synthetic, expect ~10-15 min with I/O
+- 55K-shard 3 epochs (~15M records est.): **~10 hr total** (vs the brief's
+  conservative 30-100 hr estimate — MLX on Apple Silicon is faster than
+  projected for this workload)
+
+Implication: once the 55K capture completes Monday morning, training fits
+inside Monday and C3 wire-up can start Tuesday with a fresh trained head.
 
 ## Morning work — implementation order
 
@@ -83,7 +89,7 @@ print("logits shape", logits.shape)  # expect (4, 16, 102400)
 - Concat-then-Linear (`mx.concatenate` + `nn.Linear`) is standard; if
   shape errors, print intermediate shapes.
 
-### 4. Write `data.py` — parquet → MLX batch (~1-2 hr)
+### 4. ~~Write `data.py`~~ — DONE (see Status table)
 
 Read `training_data/c2_hidden/eagle3_v0/shard_*.parquet` (after running
 `tools/training/capture_hidden.py to-parquet`). Each row has:

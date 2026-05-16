@@ -1770,6 +1770,11 @@ fn capture_hidden_main(
     let total_records = existing_records + new_records;
 
     // Sidecar metadata. If resuming, merge with existing meta so sample_ids list grows.
+    // Fix (2026-05-16): on a resume where the prior run died before writing
+    // meta.json, the .bin still has the prior sample_ids (parsed into
+    // `already_done` during the resume scan). Seed from `already_done` so
+    // the meta records the FULL set of sample_ids in the .bin, not just
+    // the current run's. Sort for determinism so cross-run diffs are clean.
     let mut all_sample_ids: Vec<String> = if resume && meta_path.exists() {
         let prev: Value = serde_json::from_str(&std::fs::read_to_string(&meta_path)?)
             .map_err(|e| anyhow::anyhow!("resume: bad meta sidecar: {e}"))?;
@@ -1781,10 +1786,25 @@ fn capture_hidden_main(
                     .collect()
             })
             .unwrap_or_default()
+    } else if resume {
+        // No prior meta but .bin contained samples — seed from already_done.
+        let mut v: Vec<String> = already_done.iter().cloned().collect();
+        v.sort();
+        v
     } else {
         Vec::new()
     };
-    all_sample_ids.extend(consumed_ids);
+    // Dedupe in case prior meta already contained some ids that also appear in consumed_ids
+    // (defensive; shouldn't happen because `pending` already filtered them, but cheap).
+    {
+        use std::collections::HashSet;
+        let seen: HashSet<&String> = all_sample_ids.iter().collect();
+        let drop_dupes: Vec<String> = consumed_ids
+            .into_iter()
+            .filter(|id| !seen.contains(id))
+            .collect();
+        all_sample_ids.extend(drop_dupes);
+    }
 
     let meta = json!({
         "format": "DCAP",
