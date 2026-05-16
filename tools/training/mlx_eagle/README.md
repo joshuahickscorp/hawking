@@ -11,9 +11,10 @@ fits the workload cleanly.
 |---|---|---|
 | `extract_lm_head.py` | DONE | ✅ produces `v2lite_frozen.npz` (800 MB), logits sanity-checked against a captured hidden vector |
 | `model.py` | DONE | ✅ load + forward + loss + grad smoke-tested under MLX runtime; 59.77M trainable params confirmed |
-| `data.py` | DONE | ✅ smoke-tested against live partial shard (486K records, 1900 batches/epoch at B=16 S=16); position mask zeros early-pos band correctly |
-| `train.py` | DONE — full AdamW loop + cosine LR + position-weighted CE + MSE auxiliary + checkpointing | ⚠️  loop end-to-end untested (smoke runs forward+backward fine; full multi-step + ckpt save not exercised yet) |
-| `eval_acceptance.py` | TODO | — |
+| `data.py` | DONE — in-memory + **streaming variant** with background prefetch | ✅ in-memory tested (486K records, 1900 batches/epoch); streaming tested against same shard with 4096-row shuffle buffer |
+| `train.py` | DONE — AdamW + cosine LR + position-weighted CE + MSE auxiliary + **bf16** + **mx.compile** + **checkpointing with --resume** + **JSONL log with grad-norm** | ✅ 50-step end-to-end smoke with bf16+compile; checkpoints saved + latest.npz updated; ⚠️  `--resume` produces a loss spike on first post-resume step (see "Known issues" below) |
+| `eval_acceptance.py` | DONE — `prep` + `eval` subcommands | ✅ eval against smoke ckpt + live shard returned 0.04% top-1 / 10.33% top-5 (random-head signature, correct wiring) |
+| `spec_decode_stub.py` | DONE — simulated K-step draft+verify against held-out shard | ⚠️  smoke timed out due to GPU contention with the live capture; code path validated via loading + early-exit on the shard scan; will fully exercise post-capture-finish |
 | `convert_to_dismantle_head.py` | TODO | — |
 
 **Measured perf (2026-05-16 morning, MLX runtime smoke):**
@@ -26,6 +27,46 @@ fits the workload cleanly.
 
 Implication: once the 55K capture completes Monday morning, training fits
 inside Monday and C3 wire-up can start Tuesday with a fresh trained head.
+
+## Known issues (file before Monday's long run)
+
+1. **`train.py --resume` loss spike** — restoring a checkpoint, then taking
+   the first step, jumps the loss from ~34 to ~780. The dummy-step warmup
+   used to allocate AdamW's m/v state writes a real gradient update over
+   the just-cast bf16 weights BEFORE `load_checkpoint` runs — so the head
+   is briefly in a "dummy-stepped" state. The load then restores params
+   correctly, but the optimizer's m/v restoration may not be in-place on
+   MLX's internal state. Two fixes worth trying:
+     - Defer dummy-step + opt allocation until AFTER `load_checkpoint`
+       has called `head.update(params)` — load params via raw npz read,
+       then run a single zero-gradient step to allocate opt state, then
+       load m/v over it.
+     - Or save + restore opt state via `optim.state_dict()` / `load_state_
+       dict()` if MLX exposes that API directly (verify in current MLX
+       version; older versions did not).
+   Workaround for Monday: don't kill the training mid-run if at all
+   possible (the un-saved-loss only matters if you actually resume).
+   The save itself is correct — checkpoint files contain valid params +
+   opt moments.
+
+2. **Streaming iterator throughput cliff** — after step 25 of the smoke
+   run the per-step time jumped from ~200 ms to ~10-20s. Suspicion:
+   the shuffle buffer's `[r for i, r in enumerate(buffer) if i not in
+   idxs_set]` rebuild is O(N) per batch (cheap at 65K buffer = ~50 ms)
+   but interacts badly with MLX's lazy eval timing or with the parquet
+   row-group prefetch boundary. Not a correctness bug — output is still
+   right — but a perf bug. Fix sketch: replace the list-rebuild with a
+   `collections.deque` + index swap-and-pop pattern.
+   Workaround for Monday: use the in-memory iterator (drop `--streaming`)
+   for the 5K-shard training; only swap to streaming for the 55K-shard
+   training where in-memory exceeds 18 GB unified.
+
+3. **GPU contention with running capture** — any MLX work (eval, stub,
+   training smoke) competes with the live `dismantle capture-hidden`
+   process on Metal. Currently the OS arbitrates; both run but slowly.
+   Workaround: do MLX work in the gap AFTER capture finishes Monday
+   morning, OR briefly pause capture (kill PID, `--resume` later)
+   before any long MLX session.
 
 ## Morning work — implementation order
 

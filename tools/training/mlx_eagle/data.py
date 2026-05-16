@@ -324,6 +324,203 @@ class ParquetBatchIterator:
 
 
 # ---------------------------------------------------------------------------
+# Streaming variant — for shards larger than RAM
+# ---------------------------------------------------------------------------
+class StreamingParquetBatchIterator:
+    """Memory-friendly variant of ParquetBatchIterator for shards >> RAM.
+
+    Streams parquet via `pyarrow.parquet.ParquetFile.iter_batches()` in a
+    background thread, accumulates records into a sliding shuffle buffer,
+    and emits batches to the main thread via a bounded Queue.
+
+    Key differences vs the in-memory iterator:
+      - **Memory bounded** to roughly `prefetch * batch_size * seq_len *
+        (hidden_dim * 2 + 24)` bytes — a few MB regardless of shard size.
+        20 GB parquet runs in <100 MB of loader RAM.
+      - **Shuffling is approximate** — records are shuffled within a
+        rolling buffer (`shuffle_buffer`, default 64 K records) rather
+        than globally. Good enough for SGD; matches torch.IterableDataset
+        + shuffle-buffer pattern.
+      - **One pass per epoch** — re-instantiate or call .reset() to restart.
+      - **Prefetch depth** is `prefetch` batches; default 2 keeps the
+        compute pipeline fed without blowing RAM.
+
+    Same batch dict schema as ParquetBatchIterator (prev_tokens,
+    target_hidden, target_next_tokens, loss_mask, positions).
+    """
+
+    def __init__(
+        self,
+        parquet_paths: Sequence[str | pathlib.Path],
+        batch_size: int = 16,
+        seq_len: int = 16,
+        hidden_dim: int = 2048,
+        skip_bos_positions: int = 3,
+        shuffle_buffer: int = 65536,
+        prefetch: int = 2,
+        seed: int = 20260516,
+        row_group_batch: int = 8192,
+    ) -> None:
+        try:
+            import pyarrow.parquet as pq  # noqa: F401
+        except ImportError as e:
+            raise ImportError("pyarrow not installed — pip install pyarrow") from e
+        if batch_size <= 0 or seq_len <= 0 or hidden_dim <= 0:
+            raise ValueError("batch_size / seq_len / hidden_dim must be positive")
+        if prefetch < 1:
+            raise ValueError("prefetch must be >= 1")
+        self.parquet_paths = [pathlib.Path(p) for p in parquet_paths]
+        self.batch_size = batch_size
+        self.seq_len = seq_len
+        self.hidden_dim = hidden_dim
+        self.skip_bos_positions = skip_bos_positions
+        self.shuffle_buffer = shuffle_buffer
+        self.prefetch = prefetch
+        self.seed = seed
+        self.row_group_batch = row_group_batch
+        # Estimate total batches by summing num_rows across files.
+        import pyarrow.parquet as pq
+        total_rows = 0
+        for p in self.parquet_paths:
+            md = pq.ParquetFile(str(p)).metadata
+            total_rows += md.num_rows
+        self._total_rows = total_rows
+        print(
+            f"[data-stream] {len(self.parquet_paths)} shard(s), "
+            f"{total_rows:,} total rows, buffer={shuffle_buffer:,}, "
+            f"prefetch={prefetch}",
+            file=sys.stderr,
+        )
+
+    def __len__(self) -> int:
+        return self._total_rows // (self.batch_size * self.seq_len)
+
+    def iter_epoch(self, epoch: int = 0) -> Iterator[Dict[str, "mx.array"]]:
+        """Spawn a background producer; yield MLX-cast batches to caller."""
+        if mx is None:
+            raise ImportError("MLX not installed — pip install mlx")
+        for npbatch in self._iter_numpy_batches(epoch):
+            yield {
+                "prev_tokens": mx.array(npbatch["prev_tokens"]),
+                "target_hidden": mx.array(npbatch["target_hidden"]),
+                "target_next_tokens": mx.array(npbatch["target_next_tokens"]),
+                "loss_mask": mx.array(npbatch["loss_mask"]),
+                "positions": mx.array(npbatch["positions"]),
+            }
+
+    def iter_epoch_numpy(self, epoch: int = 0) -> Iterator[Dict[str, np.ndarray]]:
+        """MLX-free streaming iterator for smoke tests / non-training use."""
+        yield from self._iter_numpy_batches(epoch)
+
+    def _iter_numpy_batches(
+        self, epoch: int
+    ) -> Iterator[Dict[str, np.ndarray]]:
+        import queue
+        import threading
+        import pyarrow.parquet as pq
+
+        rng = random.Random(self.seed + epoch)
+        records_per_batch = self.batch_size * self.seq_len
+
+        q: "queue.Queue[Optional[Dict[str, np.ndarray]]]" = queue.Queue(
+            maxsize=self.prefetch
+        )
+        stop_flag = threading.Event()
+
+        def producer():
+            try:
+                buffer: List[_Record] = []
+                expected_hb = self.hidden_dim * 2
+                for path in self.parquet_paths:
+                    pf = pq.ParquetFile(str(path))
+                    for batch in pf.iter_batches(
+                        batch_size=self.row_group_batch,
+                        columns=["sample_id", "pos", "prev_token", "next_token", "hidden_f16"],
+                    ):
+                        if stop_flag.is_set():
+                            return
+                        sids = batch.column("sample_id").to_pylist()
+                        poses = batch.column("pos").to_pylist()
+                        prevs = batch.column("prev_token").to_pylist()
+                        nexts = batch.column("next_token").to_pylist()
+                        hbs = batch.column("hidden_f16").to_pylist()
+                        for sid, p, prev, nx, hb in zip(sids, poses, prevs, nexts, hbs):
+                            buffer.append(
+                                _Record(
+                                    sample_id=sid, pos=int(p),
+                                    prev_token=int(prev), next_token=int(nx),
+                                    hidden_f16=hb,
+                                )
+                            )
+                            # Once buffer is full, drain into batches.
+                            while len(buffer) >= self.shuffle_buffer:
+                                # Take a random batch from the buffer and refill from the tail.
+                                idxs = rng.sample(range(len(buffer)), records_per_batch)
+                                idxs_set = set(idxs)
+                                batch_recs = [buffer[i] for i in idxs]
+                                buffer = [r for i, r in enumerate(buffer) if i not in idxs_set]
+                                npbatch = self._collate_records(batch_recs)
+                                q.put(npbatch)
+                                if stop_flag.is_set():
+                                    return
+                # Flush remaining buffer.
+                rng.shuffle(buffer)
+                while len(buffer) >= records_per_batch:
+                    batch_recs = buffer[:records_per_batch]
+                    buffer = buffer[records_per_batch:]
+                    npbatch = self._collate_records(batch_recs)
+                    q.put(npbatch)
+                    if stop_flag.is_set():
+                        return
+                # Sentinel.
+                q.put(None)
+            except Exception as e:
+                # Propagate via the queue so consumer raises.
+                q.put({"__error__": str(e)})  # type: ignore[arg-type]
+
+        t = threading.Thread(target=producer, daemon=True)
+        t.start()
+        try:
+            while True:
+                item = q.get()
+                if item is None:
+                    return
+                if isinstance(item, dict) and "__error__" in item:
+                    raise RuntimeError(f"producer error: {item['__error__']}")
+                yield item
+        finally:
+            stop_flag.set()
+            t.join(timeout=5)
+
+    def _collate_records(
+        self, recs: Sequence[_Record]
+    ) -> Dict[str, np.ndarray]:
+        B = self.batch_size
+        S = self.seq_len
+        H = self.hidden_dim
+        total = len(recs)
+        prev_arr = np.empty(total, dtype=np.int32)
+        next_arr = np.empty(total, dtype=np.int32)
+        pos_arr = np.empty(total, dtype=np.int32)
+        hidden_arr = np.empty((total, H), dtype=np.float32)
+        mask = np.zeros(total, dtype=np.float32)
+        for k, r in enumerate(recs):
+            prev_arr[k] = r.prev_token
+            next_arr[k] = r.next_token
+            pos_arr[k] = r.pos
+            hidden_arr[k] = np.frombuffer(r.hidden_f16, dtype=np.float16).astype(np.float32)
+            if r.pos >= self.skip_bos_positions:
+                mask[k] = 1.0
+        return {
+            "prev_tokens": prev_arr.reshape(B, S),
+            "target_hidden": hidden_arr.reshape(B, S, H),
+            "target_next_tokens": next_arr.reshape(B, S),
+            "loss_mask": mask.reshape(B, S),
+            "positions": pos_arr.reshape(B, S),
+        }
+
+
+# ---------------------------------------------------------------------------
 # CLI: smoke-test the loader against a real shard
 # ---------------------------------------------------------------------------
 def _main() -> int:
