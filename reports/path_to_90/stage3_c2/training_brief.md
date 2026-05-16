@@ -1,8 +1,9 @@
-# Path-to-90 C2 — Off-machine training session brief (EAGLE-3 head for V2-Lite)
+# Path-to-90 C2 — Training session brief (EAGLE-3 head for V2-Lite)
 
-**Audience:** the next session that boots an H100 to train the draft head.
+**Audience:** the next session that trains the draft head.
 **Prereq satisfied by:** this commit ships the data pipeline + a 5K-sample capture run; this brief tells the trainer what to do with it.
 **Architecture decision:** [stage3_c1/architecture.md](../stage3_c1/architecture.md) (EAGLE-3, default).
+**Compute decision (added 2026-05-16):** local MLX training on M3 Pro, NOT H100 rental. Implementation stack lives at [tools/training/mlx_eagle/](../../../tools/training/mlx_eagle/). See [tools/training/mlx_eagle/README.md](../../../tools/training/mlx_eagle/README.md) for the sequenced step-by-step.
 
 ## TL;DR
 
@@ -58,21 +59,23 @@ Output:
 
 **Frozen:** target's lm_head + tokenizer embeddings.
 
-## Training hyperparameters
+## Training hyperparameters (MLX on M3 Pro)
 
 | Param | Value | Justification |
 |---|---|---|
+| Framework | MLX (Apple Silicon native) | Local-stack decision; see README.md for rationale |
 | Optimizer | AdamW | Standard for transformer training |
 | LR | 3e-4 | EAGLE-3 paper, Vicuna-class targets |
 | LR schedule | cosine, 5% warmup | "" |
-| Batch size (sequences) | 16 | Fits H100 80GB at hidden=2048 + grad activation. Adjust per memory. |
-| Gradient accumulation | 4 | Effective batch 64 |
-| Max seq length per step | 128 (matches capture cap) | If capture extends to 256, raise here too |
-| Epochs | 3 | EAGLE-3 paper. With 5K samples × 3 epochs = ~15K steps at batch 64. |
-| Loss | Cross-entropy on lm_head logits vs next_token | Standard distillation w/ shared lm_head |
-| Auxiliary loss (optional) | MSE between draft_hidden and target_hidden | EAGLE paper §3.3 — small weight (0.1) |
-| Mixed precision | bf16 (training), fp16 (saved weights) | Standard H100 |
-| Wall time @ 5K samples | ~1-2 H100-hr | Linear scaling: 50K → 10-20 H100-hr. Per EAGLE-3 paper Table 5. |
+| Batch B (sequences) | 16 | Fits 18 GB unified at hidden=2048; halve if OOM during first run |
+| Seq length S per batch | 16 (effective 256 positions/step) | EAGLE-3 head sees each (prev, hidden) independently; (B,S) is just a vector-batching convenience. Larger S spends more memory for the same training signal |
+| Gradient accumulation | 1 (M3 memory permitting; raise to 2-4 if OOM) | Effective batch 16-64 |
+| Epochs | 3 | EAGLE-3 paper. ~600K records / 256 per step = ~2.3K steps/epoch, ~7K total |
+| Loss | CE(logits, next_token) | Standard distillation w/ frozen lm_head |
+| Auxiliary loss | 0.1 × MSE(draft_hidden, target_hidden) | EAGLE paper §3.3 — drives hidden-geometry alignment for multi-step stability |
+| Mixed precision | bf16 trainable / fp16 frozen | M3 Pro supports bf16; matches typical EAGLE-3 setup |
+| Wall time @ 5K samples | ~5-10 hr on M3 Pro (vs ~1-2 hr on H100) | M3 GPU is ~5-10× slower than H100 for fp16 GEMM at this scale; conservative estimate |
+| Wall time @ 50K samples | ~50-100 hr on M3 Pro | Wouldn't fit a long weekend — train on the 5K first to validate the stack, decide whether to commit to 50K locally or pivot to H100 for the production run |
 
 ## Data scale tradeoffs
 
