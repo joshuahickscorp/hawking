@@ -231,6 +231,21 @@ pub trait Engine: Send + Sync {
         Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
     }
 
+    /// Path-to-90 C2 — capture (final-norm hidden, greedy next token) for
+    /// distillation-style draft-head training (EAGLE-3 / MTP / ReDrafter).
+    /// Returns the post-final-rmsnorm hidden vector (length = model hidden
+    /// dim) AND the argmax of `lm_head(hidden)` — the same `(x_norm, token)`
+    /// pair that `forward_token` would have produced internally.
+    /// KV cache advances exactly as in `forward_token`. Engines without a
+    /// hidden-state seam return Err("unimplemented").
+    fn forward_token_with_hidden_for_test(
+        &mut self,
+        _token: u32,
+        _pos: usize,
+    ) -> Result<(Vec<f32>, u32)> {
+        Err(crate::Error::Unimplemented("forward_token_with_hidden_for_test"))
+    }
+
     /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
     /// and N positions; processes each transformer layer for all N tokens
     /// before advancing to the next layer. Returns N logit vectors.

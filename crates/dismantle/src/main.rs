@@ -238,6 +238,40 @@ enum Cmd {
         #[arg(long)]
         kernel_profile: Option<PathBuf>,
     },
+    /// Path-to-90 C2: capture per-position (final-norm hidden state, ground-
+    /// truth next token) tuples from teacher-forced text samples, for off-
+    /// machine training of an EAGLE-3 / MTP-style draft head. Loads the model
+    /// once, iterates samples sequentially, runs `forward_token_with_hidden_
+    /// for_test` token-by-token (resetting KV between samples), and writes a
+    /// custom binary file (`<out>.bin`) plus a sidecar JSON (`<out>.meta.
+    /// json`) describing record layout, model id, hidden dim, and sample
+    /// provenance. The binary file is converted to Parquet by the python
+    /// orchestrator under `tools/training/`.
+    CaptureHidden {
+        #[arg(long)]
+        weights: PathBuf,
+        /// JSON-lines samples file. Each line: `{"id": "..", "text": ".."}`.
+        /// Same format as `ppl-eval`. `#`-comment and blank lines skipped.
+        #[arg(long)]
+        samples: PathBuf,
+        /// Output prefix. Writes `<out>.bin` (records) and `<out>.meta.json`
+        /// (sidecar). Parent directory must exist.
+        #[arg(long)]
+        out: PathBuf,
+        /// Truncate each sample to at most this many tokens (including BOS).
+        /// Each scored position emits one record. Default 128.
+        #[arg(long, default_value_t = 128)]
+        max_tokens: usize,
+        /// Cap on total samples processed (for smoke runs). Default 0 = no cap.
+        #[arg(long, default_value_t = 0)]
+        max_samples: usize,
+        /// Resume — skip sample IDs already present in `<out>.bin` (parses the
+        /// existing file's header + per-record sample-id strings). Default off.
+        #[arg(long, default_value_t = false)]
+        resume: bool,
+        #[arg(long)]
+        kernel_profile: Option<PathBuf>,
+    },
     /// Micro-benchmark an individual Metal GEMV kernel at a production tensor
     /// shape without loading a model. Allocates synthetic buffers, dispatches
     /// the kernel N times, and reports mean/p50/p99/min/max latency in μs.
@@ -437,6 +471,23 @@ fn main() -> Result<()> {
             iterations,
             no_history,
         }),
+        Cmd::CaptureHidden {
+            weights,
+            samples,
+            out,
+            max_tokens,
+            max_samples,
+            resume,
+            kernel_profile,
+        } => capture_hidden_main(
+            weights,
+            samples,
+            out,
+            max_tokens,
+            max_samples,
+            resume,
+            kernel_profile,
+        ),
     }
 }
 
@@ -1416,6 +1467,340 @@ fn ppl_eval_main(
     eprintln!(
         "[ppl-eval] done: {} samples, {} scored tokens, avg NLL={:.4}, PPL={:.4} ({:.1}s)",
         total, total_scored, avg_nll, ppl, elapsed_s
+    );
+    Ok(())
+}
+
+/// Path-to-90 C2 — capture (hidden, next_token) tuples for draft-head training.
+///
+/// Binary file format (little-endian throughout):
+///
+///   Header (16 bytes):
+///     magic        : 4 bytes  = b"DCAP"
+///     version      : u32      = 1
+///     hidden_dim   : u32      = model hidden width (2048 for V2-Lite)
+///     reserved     : u32      = 0
+///
+///   Records (concatenated, append-only):
+///     sample_id_len: u16
+///     sample_id    : utf8 bytes (sample_id_len)
+///     pos          : u32   (position within sample, 0-indexed)
+///     prev_token   : u32   (input token at this position)
+///     next_token   : u32   (ground-truth token at pos+1, == teacher signal)
+///     hidden       : f16 × hidden_dim  (post-final-rmsnorm hidden state)
+///
+/// Sidecar `<out>.meta.json` records hidden_dim, model_id, profile_id,
+/// total samples processed, total records written, wall time, and the
+/// list of sample_ids consumed (for resume + provenance).
+fn capture_hidden_main(
+    weights: PathBuf,
+    samples_path: PathBuf,
+    out: PathBuf,
+    max_tokens: usize,
+    max_samples: usize,
+    resume: bool,
+    kernel_profile: Option<PathBuf>,
+) -> Result<()> {
+    use dismantle_core::{profile::KernelProfile, EngineConfig};
+    use serde_json::{json, Value};
+    use std::collections::HashSet;
+    use std::io::{Read, Seek, SeekFrom, Write};
+
+    if max_tokens < 2 {
+        anyhow::bail!("--max-tokens must be >= 2 (need at least one prediction)");
+    }
+
+    const MAGIC: &[u8; 4] = b"DCAP";
+    const VERSION: u32 = 1;
+
+    let bin_path = match out.extension() {
+        Some(e) if e == "bin" => out.clone(),
+        _ => {
+            let mut s = out.as_os_str().to_owned();
+            s.push(".bin");
+            std::path::PathBuf::from(s)
+        }
+    };
+    let meta_path = {
+        let stem = bin_path.file_stem().unwrap().to_owned();
+        let parent = bin_path.parent().unwrap_or_else(|| std::path::Path::new("."));
+        let mut p = parent.to_path_buf();
+        p.push(format!("{}.meta.json", stem.to_string_lossy()));
+        p
+    };
+
+    // Load samples.
+    let samples_text = std::fs::read_to_string(&samples_path)?;
+    let mut samples: Vec<(String, String)> = Vec::new();
+    for (lineno, line) in samples_text.lines().enumerate() {
+        let trim = line.trim();
+        if trim.is_empty() || trim.starts_with('#') {
+            continue;
+        }
+        let v: Value = serde_json::from_str(trim)
+            .map_err(|e| anyhow::anyhow!("samples line {}: {e}", lineno + 1))?;
+        let id = match v.get("id") {
+            Some(Value::String(s)) => s.clone(),
+            Some(other) => other.to_string(),
+            None => format!("{}", lineno),
+        };
+        let text = v
+            .get("text")
+            .and_then(|t| t.as_str())
+            .ok_or_else(|| anyhow::anyhow!("samples line {}: missing string `text`", lineno + 1))?
+            .to_string();
+        samples.push((id, text));
+    }
+    if samples.is_empty() {
+        anyhow::bail!("no samples parsed from {}", samples_path.display());
+    }
+    if max_samples > 0 && samples.len() > max_samples {
+        samples.truncate(max_samples);
+    }
+    eprintln!(
+        "[capture-hidden] loaded {} sample(s) from {} (max_tokens={})",
+        samples.len(),
+        samples_path.display(),
+        max_tokens
+    );
+
+    // Resume — scan existing .bin for sample_ids already present.
+    let mut already_done: HashSet<String> = HashSet::new();
+    let mut resume_hidden_dim: Option<u32> = None;
+    let mut existing_records: u64 = 0;
+    if resume && bin_path.exists() {
+        let mut f = std::fs::File::open(&bin_path)?;
+        let mut header = [0u8; 16];
+        f.read_exact(&mut header)?;
+        if &header[0..4] != MAGIC {
+            anyhow::bail!("resume: {} has bad magic", bin_path.display());
+        }
+        let ver = u32::from_le_bytes(header[4..8].try_into().unwrap());
+        if ver != VERSION {
+            anyhow::bail!("resume: {} has unknown version {ver}", bin_path.display());
+        }
+        let hd = u32::from_le_bytes(header[8..12].try_into().unwrap());
+        resume_hidden_dim = Some(hd);
+        let hidden_bytes = (hd as u64) * 2;
+        loop {
+            let mut len_buf = [0u8; 2];
+            match f.read_exact(&mut len_buf) {
+                Ok(()) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
+                Err(e) => return Err(e.into()),
+            }
+            let id_len = u16::from_le_bytes(len_buf) as usize;
+            let mut id_buf = vec![0u8; id_len];
+            f.read_exact(&mut id_buf)?;
+            let id = String::from_utf8(id_buf)
+                .map_err(|e| anyhow::anyhow!("resume: bad utf8 sample_id at offset: {e}"))?;
+            already_done.insert(id);
+            // skip pos (u32) + prev (u32) + next (u32) + hidden bytes
+            f.seek(SeekFrom::Current(12 + hidden_bytes as i64))?;
+            existing_records += 1;
+        }
+        eprintln!(
+            "[capture-hidden] resume: {} record(s) already in {} ({} unique sample_ids)",
+            existing_records,
+            bin_path.display(),
+            already_done.len()
+        );
+    }
+
+    let pending: Vec<&(String, String)> = samples
+        .iter()
+        .filter(|(id, _)| !already_done.contains(id))
+        .collect();
+    if pending.is_empty() {
+        eprintln!("[capture-hidden] nothing to do (all samples already captured)");
+        return Ok(());
+    }
+    eprintln!(
+        "[capture-hidden] pending: {} sample(s) (skipping {} done)",
+        pending.len(),
+        samples.len() - pending.len()
+    );
+
+    // Load engine.
+    let profile = match kernel_profile.as_ref() {
+        Some(path) => Some(KernelProfile::load(path)?),
+        None => None,
+    };
+    let profile_id = profile.as_ref().map(|p| p.selected.id.clone());
+    let cfg = EngineConfig {
+        max_seq_len: max_tokens.max(4096),
+        kernel_profile: profile,
+        ..Default::default()
+    };
+    let load_start = Instant::now();
+    let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
+    eprintln!(
+        "[capture-hidden] engine loaded in {:.1}s (model={}, arch={})",
+        load_start.elapsed().as_secs_f64(),
+        engine.model_id(),
+        engine.model_arch(),
+    );
+    let model_id = engine.model_id().to_string();
+
+    // Open/create binary output. Write header iff fresh.
+    let mut bin_f = if resume && bin_path.exists() {
+        std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&bin_path)?
+    } else {
+        let mut f = std::fs::File::create(&bin_path)?;
+        f.write_all(MAGIC)?;
+        f.write_all(&VERSION.to_le_bytes())?;
+        // hidden_dim — fill in after one forward to learn it from the engine.
+        // For DeepSeek-V2-Lite this is 2048 (model.config.hidden), but the trait
+        // doesn't expose that, so we infer from the first hidden vector and
+        // back-patch the header.
+        f.write_all(&0u32.to_le_bytes())?;
+        f.write_all(&0u32.to_le_bytes())?;
+        f
+    };
+    if resume {
+        bin_f.seek(SeekFrom::End(0))?;
+    }
+
+    let mut hidden_dim_resolved: Option<u32> = resume_hidden_dim;
+    let mut new_records: u64 = 0;
+    let mut new_samples_done: u64 = 0;
+    let total_pending = pending.len();
+    let eval_start = Instant::now();
+    let mut consumed_ids: Vec<String> = Vec::new();
+
+    for (i, (id, text)) in pending.iter().enumerate() {
+        let t_sample = Instant::now();
+        engine.reset_kv_for_test();
+
+        let mut tokens = engine.encode_prompt_for_batch(text)?;
+        if tokens.len() > max_tokens {
+            tokens.truncate(max_tokens);
+        }
+        if tokens.len() < 2 {
+            eprintln!(
+                "[capture-hidden] skip id={} too_short (L={})",
+                id,
+                tokens.len()
+            );
+            continue;
+        }
+
+        let l = tokens.len();
+        let id_bytes = id.as_bytes();
+        if id_bytes.len() > u16::MAX as usize {
+            anyhow::bail!("sample id `{id}` too long for u16 length prefix");
+        }
+        // Forward t[0..L-1] sequentially; for each pos i, capture (hidden, _greedy)
+        // and emit a record with prev_tok=t[i], next_tok=t[i+1] (teacher).
+        for i_pos in 0..l - 1 {
+            let token = tokens[i_pos];
+            let pos = i_pos;
+            let (hidden, _greedy) = engine.forward_token_with_hidden_for_test(token, pos)?;
+            let hd = hidden.len() as u32;
+            match hidden_dim_resolved {
+                None => {
+                    hidden_dim_resolved = Some(hd);
+                    let cur = bin_f.stream_position()?;
+                    bin_f.seek(SeekFrom::Start(8))?;
+                    bin_f.write_all(&hd.to_le_bytes())?;
+                    bin_f.seek(SeekFrom::Start(cur))?;
+                }
+                Some(prev) if prev != hd => {
+                    anyhow::bail!(
+                        "hidden dim changed mid-run: was {prev}, got {hd} (sample id={id} pos={pos})"
+                    );
+                }
+                Some(_) => {}
+            }
+            // Pack hidden as f16 LE bytes.
+            let mut hbuf = Vec::with_capacity((hd as usize) * 2);
+            for &x in &hidden {
+                let h = half::f16::from_f32(x);
+                hbuf.extend_from_slice(&h.to_le_bytes());
+            }
+            // Write record: [u16 id_len][utf8 id][u32 pos][u32 prev][u32 next][hidden f16…]
+            bin_f.write_all(&(id_bytes.len() as u16).to_le_bytes())?;
+            bin_f.write_all(id_bytes)?;
+            bin_f.write_all(&(pos as u32).to_le_bytes())?;
+            bin_f.write_all(&(token).to_le_bytes())?;
+            bin_f.write_all(&(tokens[i_pos + 1]).to_le_bytes())?;
+            bin_f.write_all(&hbuf)?;
+            new_records += 1;
+        }
+        consumed_ids.push(id.clone());
+        new_samples_done += 1;
+
+        let dt = t_sample.elapsed().as_secs_f64();
+        let elapsed = eval_start.elapsed().as_secs_f64();
+        let per_done = elapsed / ((i + 1) as f64);
+        let eta = per_done * (total_pending - i - 1) as f64;
+        if (i + 1) % 5 == 0 || i + 1 == total_pending {
+            eprintln!(
+                "[capture-hidden] {}/{} id={} L={} records+={} ({:.1}s, ETA {:.0}s)",
+                i + 1,
+                total_pending,
+                id,
+                l,
+                l - 1,
+                dt,
+                eta
+            );
+        }
+        bin_f.flush()?;
+    }
+
+    let elapsed_s = eval_start.elapsed().as_secs_f64();
+    let total_records = existing_records + new_records;
+
+    // Sidecar metadata. If resuming, merge with existing meta so sample_ids list grows.
+    let mut all_sample_ids: Vec<String> = if resume && meta_path.exists() {
+        let prev: Value = serde_json::from_str(&std::fs::read_to_string(&meta_path)?)
+            .map_err(|e| anyhow::anyhow!("resume: bad meta sidecar: {e}"))?;
+        prev.get("sample_ids")
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    all_sample_ids.extend(consumed_ids);
+
+    let meta = json!({
+        "format": "DCAP",
+        "version": VERSION,
+        "hidden_dim": hidden_dim_resolved.unwrap_or(0),
+        "hidden_dtype": "float16",
+        "model_id": model_id,
+        "profile_id": profile_id,
+        "max_tokens_per_sample": max_tokens,
+        "samples_processed": all_sample_ids.len(),
+        "records": total_records,
+        "elapsed_s_last_run": elapsed_s,
+        "samples_added_last_run": new_samples_done,
+        "records_added_last_run": new_records,
+        "sample_ids": all_sample_ids,
+    });
+    std::fs::write(&meta_path, serde_json::to_string_pretty(&meta)?)?;
+
+    eprintln!(
+        "[capture-hidden] done: +{} samples, +{} records (total {} records, hidden_dim={}) in {:.1}s",
+        new_samples_done,
+        new_records,
+        total_records,
+        hidden_dim_resolved.unwrap_or(0),
+        elapsed_s
+    );
+    eprintln!(
+        "[capture-hidden] wrote {} + {}",
+        bin_path.display(),
+        meta_path.display()
     );
     Ok(())
 }

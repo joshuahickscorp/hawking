@@ -1463,6 +1463,26 @@ impl Engine for DeepSeekV2 {
         self.forward_token_shared_only(token, pos)
     }
 
+    /// Path-to-90 C2 — return `(final_norm_hidden, greedy_next_token)`.
+    /// Equivalent to `forward_token` but exposes the pre-lm_head hidden
+    /// state used by EAGLE-3 / MTP-style draft heads. KV cache advances.
+    fn forward_token_with_hidden_for_test(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<(Vec<f32>, u32)> {
+        let x_norm = self.forward_token_final_norm(token, pos)?;
+        let h = self.config.hidden;
+        let mut logits = vec![0.0f32; self.config.vocab_size];
+        let w_f16: &[f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed,
+        };
+        self.gemv_f16_dispatch(w_f16, self.config.vocab_size, h, &x_norm, &mut logits)?;
+        let argmax = crate::kernels::argmax_f32(&logits);
+        Ok((x_norm, argmax))
+    }
+
     fn forward_tokens_batched_for_test(
         &mut self,
         tokens: &[u32],

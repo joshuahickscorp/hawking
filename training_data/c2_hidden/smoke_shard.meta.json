@@ -1,0 +1,31 @@
+{
+  "elapsed_s_last_run": 20.349310958,
+  "format": "DCAP",
+  "hidden_dim": 2048,
+  "hidden_dtype": "float16",
+  "max_tokens_per_sample": 128,
+  "model_id": "DeepSeek-V2-Lite-Chat",
+  "profile_id": "metal-default",
+  "records": 1505,
+  "records_added_last_run": 351,
+  "sample_ids": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14"
+  ],
+  "samples_added_last_run": 5,
+  "samples_processed": 15,
+  "version": 1
+}

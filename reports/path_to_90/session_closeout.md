@@ -152,3 +152,44 @@ tests/data/wikitext2_256_samples.jsonl                           (new)
 reports/path_to_90/stage1_b1/{baseline_fp16kv.jsonl,baseline_fp16kv.log,close.md}  (new, force-add)
 reports/path_to_90/session_closeout.md                           (this section)
 ```
+
+---
+
+## Continuation 2026-05-15 (dreamy-golick) — C1 + C2: drafter architecture + data pipeline
+
+**Branch:** `claude/dreamy-golick-d54ff8` (continues `claude/modest-williamson-57d50f`)
+**Scope:** Stage 3 §C1 (architecture decision) + §C2 (training-data pipeline) from the prioritized queue. Pure tooling + an opt-in test seam, no perf change.
+
+### What shipped
+
+- **Architecture decision** — `reports/path_to_90/stage3_c1/architecture.md`. EAGLE-3 default. Comparison vs MTP and ReDrafter, weighted against the binding constraint that verify-cost ≈ K × single-forward at K=4 makes higher-acceptance heads mostly wasted until Path B (parallel-K verify kernels) lands.
+- **Engine seam** — `forward_token_with_hidden_for_test` on the `Engine` trait (default `Unimplemented`) plus a 20-line impl on `DeepSeekV2`. Returns `(final_norm_hidden, greedy_next_token)` while advancing KV identically to `forward_token`. Mirror of the existing `forward_token_shared_only_for_test` pattern.
+- **Capture pipeline** — new `dismantle capture-hidden` subcommand writes a custom binary file (DCAP v1) of `(sample_id, pos, prev_token, next_token, hidden_f16[H])` records, plus a JSON sidecar with model_id / profile_id / hidden_dim. Resume-capable. Python orchestrator at `tools/training/capture_hidden.py` handles HF-datasets prep, sharded invocation, parquet conversion, and inspection (decode-back-to-text sanity check).
+
+### Smoke run
+
+15 wikitext-2 paragraphs captured to `training_data/c2_hidden/smoke_shard.bin`: 1505 records, hidden_dim=2048, ~6.1 MB binary / ~5.7 MB parquet (zstd). Validation:
+- HF datasets opens the parquet cleanly; schema metadata round-trips.
+- 10 random rows: hidden vector shape `(2048,)`, all finite, magnitude distribution consistent with post-rmsnorm norms (mean ≈ 0, std ≈ 0.4).
+- Tokenizer round-trip on 3 random samples: decoded text matches source paragraph (no off-by-one in prev/next pairing, no sample_id corruption).
+- Resume: rerun on same JSONL exits before model load; rerun with 5 new samples appended adds exactly 351 new records (1154 → 1505) and leaves the original 10 untouched.
+- `cargo test --workspace --lib --release`: 5 + 25 + 9 = 39 tests pass (same as B1).
+
+### Close report
+
+[reports/path_to_90/stage3_c2/close.md](stage3_c2/close.md) covers smoke numbers, validation table, followups, and explicitly records what this session did NOT do (no training, no `DraftSpecDecoder`, no perf bench, no full data run).
+
+### Followups (priority-ordered, all off-session)
+
+1. Full data capture run — same pipeline, ~500K samples, ~15 hr wall on M3 Pro 18 GB. Resume across windows.
+2. Off-machine training session brief (~500 words) — drop into `reports/path_to_90/stage3_c2/` before the H100 rental fires.
+3. C3 engine wire-up (`DraftSpecDecoder`) — multi-week. The trait seam is in place; C3 only needs the inverse direction (consume draft head → propose K → verify via existing `forward_tokens_batched_for_test`).
+4. Path B kernel rewrite (parallel-K MLA / lm_head / MoE-gate) — multi-week, runs in parallel with C3. Without it, even a perfect EAGLE head delivers only ~1.25× e2e at K=4.
+5. Batched-capture optimization for `capture-hidden` — only if the full data run shows wall-clock as a blocker. Defer.
+
+### What this session did NOT do
+
+- No engine perf changes; default decode path unchanged.
+- No CI integration; capture-hidden runs ad-hoc from the orchestrator.
+- No training; no `DraftSpecDecoder`.
+- No multi-prompt bench / clean_bench rerun; the change has zero impact on those (default code path is byte-identical to ae65aa5).
