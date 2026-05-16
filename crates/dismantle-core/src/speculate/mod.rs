@@ -8,5 +8,6 @@
 //! Lands in Phase 4.5. Gated on ≥0.7 acceptance rate; if empirically
 //! lower we ship as `--speculate` opt-in and don't headline it.
 
+pub mod draft_head;
 pub mod ngram;
 pub mod shared;

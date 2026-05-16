@@ -193,3 +193,15 @@ reports/path_to_90/session_closeout.md                           (this section)
 - No CI integration; capture-hidden runs ad-hoc from the orchestrator.
 - No training; no `DraftSpecDecoder`.
 - No multi-prompt bench / clean_bench rerun; the change has zero impact on those (default code path is byte-identical to ae65aa5).
+
+### Second-pass extension (same session, post-recommendation)
+
+User asked to optimize for max session ROI. Same branch, same scope-discipline (no perf changes); landed:
+
+- **`--no-lm-head` capture flag** — engine seam `forward_token_hidden_only_for_test` (1-line delegate to existing `forward_token_final_norm`) + CLI flag. A/B benchmark on 10-sample smoke: 63.7s → 50.7s (−20% wall, −14% per sample), 1154/1154 records bit-identical hidden vectors.
+- **5K-sample UltraChat capture in background** — `tests/data/ultrachat_5k.jsonl` (HF streaming, deterministic), then `dismantle capture-hidden ... --no-lm-head` running into `training_data/c2_hidden/eagle3_v0/shard_000.bin`. ETA ~6 hr; will finish overnight. First real (non-smoke) C2 dataset shard.
+- **Off-machine training brief** — `reports/path_to_90/stage3_c2/training_brief.md`. ~500 words. Data format + paths, EAGLE-3 head architecture for V2-Lite shapes, hyperparameters, data-scale tradeoff (5K → ~52% accept, 50K → ~71% per paper Table 6), capture-extension protocol, future eval_acceptance.py stub.
+- **`DraftSpecDecoder` skeleton** — `crates/dismantle-core/src/speculate/draft_head.rs`. Defines `DraftHead` trait + `NoopDraftHead` (proposes nothing → verify path bit-identical to greedy by construction) + `DraftSpecDecoder<H>` orchestrator skeleton with a unit-tested `verify_prefix` helper. 6 new unit tests (dismantle-core: 25 → 31; total 39 → 45).
+- Updated [stage3_c2/close.md](stage3_c2/close.md) "Second-pass deliverables" section + revised followups list.
+
+What the second pass did NOT change: any kernel, any dispatch, any default decode path. The new `forward_token_hidden_only_for_test` is opt-in via the new CLI flag. The `DraftSpecDecoder` skeleton is wired to nothing (`SpeculateMode` enum + decode path unchanged). All artifacts are gated, regression-safe, and additive.

@@ -1483,6 +1483,17 @@ impl Engine for DeepSeekV2 {
         Ok((x_norm, argmax))
     }
 
+    /// Path-to-90 C2 — hidden-only fast path. Skips lm_head + argmax.
+    /// KV cache advances identically. Use when `next_token` comes from
+    /// the source corpus (teacher forcing) rather than from model greedy.
+    fn forward_token_hidden_only_for_test(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<Vec<f32>> {
+        self.forward_token_final_norm(token, pos)
+    }
+
     fn forward_tokens_batched_for_test(
         &mut self,
         tokens: &[u32],

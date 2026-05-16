@@ -269,6 +269,12 @@ enum Cmd {
         /// existing file's header + per-record sample-id strings). Default off.
         #[arg(long, default_value_t = false)]
         resume: bool,
+        /// Skip the lm_head GEMV + argmax during capture. Use when training
+        /// signal is teacher-forced (next_token comes from the corpus, not
+        /// from the model). Saves ~10-15% per token. Default off (computes
+        /// greedy + stores it as a sanity-check field).
+        #[arg(long, default_value_t = false)]
+        no_lm_head: bool,
         #[arg(long)]
         kernel_profile: Option<PathBuf>,
     },
@@ -478,6 +484,7 @@ fn main() -> Result<()> {
             max_tokens,
             max_samples,
             resume,
+            no_lm_head,
             kernel_profile,
         } => capture_hidden_main(
             weights,
@@ -486,6 +493,7 @@ fn main() -> Result<()> {
             max_tokens,
             max_samples,
             resume,
+            no_lm_head,
             kernel_profile,
         ),
     }
@@ -1499,6 +1507,7 @@ fn capture_hidden_main(
     max_tokens: usize,
     max_samples: usize,
     resume: bool,
+    no_lm_head: bool,
     kernel_profile: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{profile::KernelProfile, EngineConfig};
@@ -1698,7 +1707,12 @@ fn capture_hidden_main(
         for i_pos in 0..l - 1 {
             let token = tokens[i_pos];
             let pos = i_pos;
-            let (hidden, _greedy) = engine.forward_token_with_hidden_for_test(token, pos)?;
+            let hidden = if no_lm_head {
+                engine.forward_token_hidden_only_for_test(token, pos)?
+            } else {
+                let (h_vec, _greedy) = engine.forward_token_with_hidden_for_test(token, pos)?;
+                h_vec
+            };
             let hd = hidden.len() as u32;
             match hidden_dim_resolved {
                 None => {

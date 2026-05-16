@@ -246,6 +246,20 @@ pub trait Engine: Send + Sync {
         Err(crate::Error::Unimplemented("forward_token_with_hidden_for_test"))
     }
 
+    /// Path-to-90 C2 — same as `forward_token_with_hidden_for_test` but
+    /// SKIPS the lm_head GEMV + argmax. Returns `(final_norm_hidden, 0u32)`.
+    /// Used when capturing teacher-forced records where `next_token` comes
+    /// from the source corpus, not from the model. Saves ~10-15% per token
+    /// (the lm_head is a 102400×2048 fp16 GEMV — non-trivial fraction of
+    /// per-token decode time on V2-Lite). KV cache advances identically.
+    fn forward_token_hidden_only_for_test(
+        &mut self,
+        _token: u32,
+        _pos: usize,
+    ) -> Result<Vec<f32>> {
+        Err(crate::Error::Unimplemented("forward_token_hidden_only_for_test"))
+    }
+
     /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
     /// and N positions; processes each transformer layer for all N tokens
     /// before advancing to the next layer. Returns N logit vectors.

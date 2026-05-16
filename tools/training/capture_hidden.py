@@ -192,6 +192,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         cmd += ["--max-samples", str(args.max_samples)]
     if args.resume:
         cmd += ["--resume"]
+    if args.no_lm_head:
+        cmd += ["--no-lm-head"]
     if args.kernel_profile:
         cmd += ["--kernel-profile", str(args.kernel_profile)]
 
@@ -485,6 +487,10 @@ def main() -> int:
     pr.add_argument("--max-tokens", type=int, default=128)
     pr.add_argument("--max-samples", type=int, default=0)
     pr.add_argument("--resume", action="store_true")
+    pr.add_argument("--no-lm-head", action="store_true",
+                    help="Skip lm_head + argmax (~10-15% faster). "
+                         "Use with teacher-forced training data where "
+                         "next_token comes from the source corpus.")
     pr.add_argument("--kernel-profile", default=None)
     pr.set_defaults(func=cmd_run)
 
