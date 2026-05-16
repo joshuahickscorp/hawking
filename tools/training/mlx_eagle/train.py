@@ -110,6 +110,7 @@ def position_weighted_loss(
     loss_mask,  # (B, S)  — 0 where to skip
     draft_hidden=None,  # (B, S, H) or None
     aux_weight: float = 0.0,
+    aux_target_kind: str = "current",
 ):
     """Position-weighted CE + optional MSE auxiliary.
 
@@ -138,11 +139,26 @@ def position_weighted_loss(
 
     if aux_weight > 0.0 and draft_hidden is not None:
         # MSE elementwise, then average over hidden_dim, then mask-avg over positions.
-        per_pos_mse = mx.mean(
-            (draft_hidden - target_hidden) ** 2, axis=-1
-        ).reshape(-1)
-        mse_masked_sum = mx.sum(per_pos_mse * flat_mask)
-        mse = mse_masked_sum / denom
+        if aux_target_kind == "next":
+            # Predict the NEXT hidden — shift target_hidden by 1 along S.
+            # Drop the last position from both pred + tgt + mask (no successor).
+            if target_hidden.shape[1] < 2:
+                mse = mx.zeros(())
+            else:
+                pred = draft_hidden[:, :-1, :]
+                tgt = target_hidden[:, 1:, :]
+                mse_per_pos = mx.mean((pred - tgt) ** 2, axis=-1).reshape(-1)
+                # Mask: positions 0..S-2 of the original mask.
+                m_shift = loss_mask[:, :-1].reshape(-1)
+                mse_sum = mx.sum(mse_per_pos * m_shift)
+                m_denom = mx.maximum(mx.sum(m_shift), mx.array(1.0))
+                mse = mse_sum / m_denom
+        else:
+            per_pos_mse = mx.mean(
+                (draft_hidden - target_hidden) ** 2, axis=-1
+            ).reshape(-1)
+            mse_masked_sum = mx.sum(per_pos_mse * flat_mask)
+            mse = mse_masked_sum / denom
         return ce + aux_weight * mse, ce, mse
 
     return ce, ce, mx.zeros(())
@@ -322,39 +338,44 @@ def train(args: argparse.Namespace) -> int:
 
     # Build data iterator.
     paths = args.parquet if isinstance(args.parquet, list) else [args.parquet]
+
+    # Optional per-channel hidden normalization.
+    hidden_mean = hidden_std = None
+    if args.hidden_stats:
+        sp = pathlib.Path(args.hidden_stats)
+        if not sp.exists():
+            print(f"ERROR: --hidden-stats {sp} not found", file=sys.stderr)
+            return 2
+        stats = np.load(sp)
+        hidden_mean = stats["mean"].astype(np.float32)
+        hidden_std = stats["std"].astype(np.float32)
+        print(
+            f"[train] hidden normalization loaded from {sp} "
+            f"(mean L2={float(np.linalg.norm(hidden_mean)):.3f} "
+            f"std mean={float(hidden_std.mean()):.3f})",
+            file=sys.stderr,
+        )
+
+    common_kwargs = dict(
+        parquet_paths=paths,
+        batch_size=args.batch_size, seq_len=args.seq_len,
+        hidden_dim=cfg.hidden_dim,
+        skip_bos_positions=args.skip_bos_positions,
+        seed=args.seed,
+    )
+    if hidden_mean is not None:
+        common_kwargs["hidden_mean"] = hidden_mean
+        common_kwargs["hidden_std"] = hidden_std
     if args.streaming:
-        # data.py exports a streaming alternative; falls back to in-memory
-        # iterator if pyarrow doesn't expose iter_batches (always present
-        # in modern pyarrow; this is a defensive branch).
         try:
             from tools.training.mlx_eagle.data import StreamingParquetBatchIterator
-            it = StreamingParquetBatchIterator(
-                parquet_paths=paths,
-                batch_size=args.batch_size,
-                seq_len=args.seq_len,
-                hidden_dim=cfg.hidden_dim,
-                skip_bos_positions=args.skip_bos_positions,
-                prefetch=args.prefetch,
-                seed=args.seed,
-            )
+            it = StreamingParquetBatchIterator(prefetch=args.prefetch, **common_kwargs)
         except ImportError:
             print("[train] streaming iterator not available; falling back to in-memory",
                   file=sys.stderr)
-            it = ParquetBatchIterator(
-                parquet_paths=paths,
-                batch_size=args.batch_size, seq_len=args.seq_len,
-                hidden_dim=cfg.hidden_dim,
-                skip_bos_positions=args.skip_bos_positions,
-                shuffle=True, seed=args.seed,
-            )
+            it = ParquetBatchIterator(shuffle=True, **common_kwargs)
     else:
-        it = ParquetBatchIterator(
-            parquet_paths=paths,
-            batch_size=args.batch_size, seq_len=args.seq_len,
-            hidden_dim=cfg.hidden_dim,
-            skip_bos_positions=args.skip_bos_positions,
-            shuffle=True, seed=args.seed,
-        )
+        it = ParquetBatchIterator(shuffle=True, **common_kwargs)
     batches_per_epoch = len(it)
     total_steps = (
         args.max_steps if args.max_steps > 0 else batches_per_epoch * args.epochs
@@ -366,7 +387,22 @@ def train(args: argparse.Namespace) -> int:
     )
 
     # Optimizer (state stays fp32 by default — master-weights pattern).
-    opt = optim.AdamW(learning_rate=args.lr, weight_decay=args.weight_decay)
+    opt_class = {
+        "adamw": optim.AdamW,
+        "lion": optim.Lion,
+        "muon": optim.Muon,
+    }[args.optimizer]
+    opt_kwargs = {"learning_rate": args.lr}
+    # AdamW + Lion accept weight_decay; Muon's API may differ. Pass when supported.
+    import inspect as _inspect
+    sig = _inspect.signature(opt_class)
+    if "weight_decay" in sig.parameters:
+        opt_kwargs["weight_decay"] = args.weight_decay
+    opt = opt_class(**opt_kwargs)
+    print(
+        f"[train] optimizer={args.optimizer} lr={args.lr} weight_decay={args.weight_decay}",
+        file=sys.stderr,
+    )
 
     # Resume.
     start_step = 0
@@ -408,6 +444,7 @@ def train(args: argparse.Namespace) -> int:
             batch["loss_mask"],
             draft_hidden=draft_hidden if args.aux_weight > 0 else None,
             aux_weight=args.aux_weight,
+            aux_target_kind=args.aux_target_kind,
         )
         return total, (ce, aux)
 
@@ -569,12 +606,29 @@ def main() -> int:
                         "Per 5k_capture_results.md, pos 0-9 have ~17% lower hidden "
                         "L2 norm; N=3 is conservative.")
     # Optim
-    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--optimizer", default="adamw",
+                   choices=["adamw", "lion", "muon"],
+                   help="adamw: AdamW (default, stable). "
+                        "lion: 2x less optim state than AdamW, often converges in fewer steps. "
+                        "muon: Keller Jordan's Muon (best on attention/MLP matrices).")
+    p.add_argument("--lr", type=float, default=3e-4,
+                   help="If --optimizer lion or muon, consider 1e-4 (paper-recommended scale).")
     p.add_argument("--weight-decay", type=float, default=0.01)
     p.add_argument("--warmup-pct", type=float, default=0.05)
     p.add_argument("--aux-weight", type=float, default=0.1,
                    help="Coefficient for MSE auxiliary on draft hidden vs target hidden. "
                         "0 disables. EAGLE paper §3.3 uses 0.1.")
+    p.add_argument("--aux-target-kind", default="next", choices=["current", "next"],
+                   help="current: MSE(draft_hidden, target_hidden[t]) — echoes current state. "
+                        "next: MSE(draft_hidden[t], target_hidden[t+1]) — predicts the next "
+                        "state, which is what the verifier actually scores. Recommended for "
+                        "spec-decode acceptance — directly trains the right geometric "
+                        "alignment. Default 'next'.")
+    p.add_argument("--hidden-stats", default=None,
+                   help="Path to .npz containing 'mean' and 'std' (each shape (hidden_dim,)) "
+                        "to normalize captured hidden states per-channel at load time. "
+                        "Generated by tools/training/mlx_eagle/compute_hidden_stats.py. "
+                        "Makes Adam's per-param adaptation work better.")
     # Schedule
     p.add_argument("--epochs", type=int, default=3)
     p.add_argument("--max-steps", type=int, default=0,

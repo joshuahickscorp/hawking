@@ -118,6 +118,11 @@ class ParquetBatchIterator:
         shuffle: bool = True,
         seed: int = 20260516,
         drop_last: bool = True,
+        # Optional pre-computed hidden normalization (mean, std) — applied
+        # at batch-time: (h - mean) / std. Pass None to disable.
+        # Compute via `tools/training/mlx_eagle/compute_hidden_stats.py`.
+        hidden_mean: "np.ndarray | None" = None,
+        hidden_std: "np.ndarray | None" = None,
     ) -> None:
         try:
             import pyarrow.parquet as pq  # noqa: F401
@@ -139,6 +144,20 @@ class ParquetBatchIterator:
         self.shuffle = shuffle
         self.drop_last = drop_last
         self.seed = seed
+        # Per-channel normalization (broadcast against (B*S, H) at collate).
+        self.hidden_mean = (
+            hidden_mean.astype(np.float32) if hidden_mean is not None else None
+        )
+        self.hidden_std = (
+            hidden_std.astype(np.float32) if hidden_std is not None else None
+        )
+        if (self.hidden_mean is None) != (self.hidden_std is None):
+            raise ValueError("hidden_mean and hidden_std must both be set or both None")
+        if self.hidden_mean is not None:
+            if self.hidden_mean.shape != (hidden_dim,):
+                raise ValueError(f"hidden_mean shape {self.hidden_mean.shape} != ({hidden_dim},)")
+            print(f"[data] hidden normalization active (per-channel mean/std)",
+                  file=sys.stderr)
 
         print(
             f"[data] loading {len(self.parquet_paths)} parquet shard(s)…",
@@ -264,6 +283,10 @@ class ParquetBatchIterator:
             if r.pos >= self.skip_bos_positions:
                 mask[k] = 1.0
 
+        # Per-channel normalization (if configured).
+        if self.hidden_mean is not None:
+            hidden_arr = (hidden_arr - self.hidden_mean) / self.hidden_std
+
         # Reshape (B*S, ...) -> (B, S, ...)
         return {
             "prev_tokens": mx.array(prev_arr.reshape(B, S)),
@@ -360,6 +383,8 @@ class StreamingParquetBatchIterator:
         prefetch: int = 2,
         seed: int = 20260516,
         row_group_batch: int = 8192,
+        hidden_mean: "np.ndarray | None" = None,
+        hidden_std: "np.ndarray | None" = None,
     ) -> None:
         try:
             import pyarrow.parquet as pq  # noqa: F401
@@ -378,6 +403,12 @@ class StreamingParquetBatchIterator:
         self.prefetch = prefetch
         self.seed = seed
         self.row_group_batch = row_group_batch
+        self.hidden_mean = (
+            hidden_mean.astype(np.float32) if hidden_mean is not None else None
+        )
+        self.hidden_std = (
+            hidden_std.astype(np.float32) if hidden_std is not None else None
+        )
         # Estimate total batches by summing num_rows across files.
         import pyarrow.parquet as pq
         total_rows = 0
@@ -511,6 +542,8 @@ class StreamingParquetBatchIterator:
             hidden_arr[k] = np.frombuffer(r.hidden_f16, dtype=np.float16).astype(np.float32)
             if r.pos >= self.skip_bos_positions:
                 mask[k] = 1.0
+        if self.hidden_mean is not None:
+            hidden_arr = (hidden_arr - self.hidden_mean) / self.hidden_std
         return {
             "prev_tokens": prev_arr.reshape(B, S),
             "target_hidden": hidden_arr.reshape(B, S, H),
