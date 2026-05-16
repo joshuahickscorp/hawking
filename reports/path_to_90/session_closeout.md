@@ -112,3 +112,43 @@ Profile changes vs v2.2.0:
 - `mla_schedule`: `metal-mla` → `metal-mla-fc`
 - `shader_hash`: updated to reflect added kernels (mla_decode_kernel_fc, moe_..._v2t_gu_v2_fc, add_rmsnorm_f32, flash_attn_decode_kernel was already present)
 - Added optional opt-in field `residual_fusion` (default `"off"`)
+
+---
+
+## Continuation 2026-05-15 (modest-williamson) — B1: PPL eval harness
+
+**Branch:** `claude/modest-williamson-57d50f` (fast-forwarded from `strange-proskuriakova-b5d48e`)
+**Scope:** Option 1 from the prioritized queue. Pure tooling, no perf risk.
+
+### What shipped
+
+- `dismantle ppl-eval` subcommand — per-sample NLL via `forward_tokens_batched_for_test` + log_softmax; KV reset between samples.
+- `tools/bench/ppl_eval.py` orchestrator — `prep` / `run` / `diff` modes; ±0.5% ΔPPL gate built in.
+- `tests/data/wikitext2_256_samples.jsonl` — deterministic 256-paragraph WikiText-2 slice (seed 20260515).
+- Reference baseline `reports/path_to_90/stage1_b1/baseline_fp16kv.jsonl` — current `metal-default` profile, 26,849 scored tokens, **PPL=34.2393**, avg NLL=3.5334, wall 24.2 min.
+
+### Reproducibility validation
+
+- Self-diff (rerun same JSONL → diff against itself): ΔPPL = 0.000% / 0 mismatches.
+- 16-sample re-run vs first 16 of full baseline: **16/16 bit-identical NLL**.
+- `cargo test --workspace --lib --release`: 5 + 25 + 9 tests pass.
+
+### Why this unblocks Stage 2
+
+A2 (Q8 latent KV) and B2 (WHT 3-bit KV) both need an oracle finer than bit-identical 3-token greedy. Until this session, that oracle didn't exist — any future quant work had no quality gate. `tools/bench/ppl_eval.py run --diff-baseline reports/path_to_90/stage1_b1/baseline_fp16kv.jsonl` now fills that hole.
+
+### What this session did NOT do
+
+- No engine perf changes (no A1.2 hoist, no C2 drafter prep). Single-option session by design.
+- No CI integration. The harness is invoked by the implementer of a variant; ~25 min wall is too long for daily CI without more work.
+- The absolute baseline PPL (34.24) is a high number because samples are 128-token paragraphs reset between (BOS-adjacent positions have inherently high NLL) and the Chat SFT variant raises raw-text PPL. **The figure of merit is ΔPPL vs this same baseline; absolute numbers don't compare to published wikitext PPL.**
+
+### File list
+
+```
+crates/dismantle/src/main.rs                                     (modified — +PplEval subcommand)
+tools/bench/ppl_eval.py                                          (new)
+tests/data/wikitext2_256_samples.jsonl                           (new)
+reports/path_to_90/stage1_b1/{baseline_fp16kv.jsonl,baseline_fp16kv.log,close.md}  (new, force-add)
+reports/path_to_90/session_closeout.md                           (this section)
+```

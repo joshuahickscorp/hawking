@@ -209,6 +209,35 @@ enum Cmd {
         #[arg(long, default_value_t = true)]
         stdin: bool,
     },
+    /// Path-to-90 B1: compute per-sample negative log-likelihood (NLL) and
+    /// corpus perplexity (PPL) on a JSON-lines text corpus. Used as the
+    /// quality oracle for KV-cache / expert-quant variants (Stage 1 A2,
+    /// Stage 2 B2/B3). Each input line is `{"id":..,"text":..}`. Tokenizes
+    /// with the model's tokenizer (BOS-prepended), runs a single forward
+    /// pass per sample via `forward_tokens_for_test`, computes log_softmax
+    /// NLL of the next-token target at each position, and writes per-sample
+    /// + summary JSON lines.
+    PplEval {
+        #[arg(long)]
+        weights: PathBuf,
+        /// JSON-lines samples file. Each line: `{"id": "..", "text": ".."}`.
+        /// `id` may be int or string. Lines starting with `#` and blank
+        /// lines are skipped.
+        #[arg(long)]
+        samples: PathBuf,
+        /// Truncate each sample to at most this many tokens (including
+        /// BOS). Pre-tokenization length cap. Default 128 — short enough
+        /// to keep a 256-sample run under ~25 min on M3 Pro, long enough
+        /// for stable NLL averaging.
+        #[arg(long, default_value_t = 128)]
+        max_tokens: usize,
+        /// Output JSON-lines file. If absent, prints to stdout. One line
+        /// per sample plus a final `{"summary": {...}}` line.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        #[arg(long)]
+        kernel_profile: Option<PathBuf>,
+    },
     /// Micro-benchmark an individual Metal GEMV kernel at a production tensor
     /// shape without loading a model. Allocates synthetic buffers, dispatches
     /// the kernel N times, and reports mean/p50/p99/min/max latency in μs.
@@ -388,6 +417,13 @@ fn main() -> Result<()> {
             verify_window,
             trace_dispatch,
         }),
+        Cmd::PplEval {
+            weights,
+            samples,
+            max_tokens,
+            out,
+            kernel_profile,
+        } => ppl_eval_main(weights, samples, max_tokens, out, kernel_profile),
         Cmd::BenchKernel {
             kernel,
             all,
@@ -1180,6 +1216,207 @@ fn batch_hash_main(
         Some(p) => std::fs::write(&p, &blob)?,
         None => print!("{blob}"),
     }
+    Ok(())
+}
+
+fn ppl_eval_main(
+    weights: PathBuf,
+    samples_path: PathBuf,
+    max_tokens: usize,
+    out_path: Option<PathBuf>,
+    kernel_profile: Option<PathBuf>,
+) -> Result<()> {
+    use dismantle_core::{profile::KernelProfile, EngineConfig};
+    use serde_json::{json, Value};
+    use std::io::Write;
+
+    if max_tokens < 2 {
+        anyhow::bail!("--max-tokens must be >= 2 (need at least one prediction)");
+    }
+
+    let samples_text = std::fs::read_to_string(&samples_path)?;
+    let mut samples: Vec<(Value, String)> = Vec::new();
+    for (lineno, line) in samples_text.lines().enumerate() {
+        let trim = line.trim();
+        if trim.is_empty() || trim.starts_with('#') {
+            continue;
+        }
+        let v: Value = serde_json::from_str(trim)
+            .map_err(|e| anyhow::anyhow!("samples line {}: {e}", lineno + 1))?;
+        let id = v.get("id").cloned().unwrap_or(Value::from(lineno as u64));
+        let text = v
+            .get("text")
+            .and_then(|t| t.as_str())
+            .ok_or_else(|| anyhow::anyhow!("samples line {}: missing string `text`", lineno + 1))?
+            .to_string();
+        samples.push((id, text));
+    }
+    if samples.is_empty() {
+        anyhow::bail!("no samples parsed from {}", samples_path.display());
+    }
+    eprintln!(
+        "[ppl-eval] loaded {} sample(s) from {} (max_tokens={})",
+        samples.len(),
+        samples_path.display(),
+        max_tokens
+    );
+
+    let profile = match kernel_profile.as_ref() {
+        Some(path) => Some(KernelProfile::load(path)?),
+        None => None,
+    };
+    let profile_id = profile.as_ref().map(|p| p.selected.id.clone());
+
+    // Size max_batch_size = max_tokens so the per-sample forward can take
+    // the Phase 5A single-TCB fast path inside `forward_tokens_batched`
+    // (eliminates K-1 commit+wait round-trips per sample). Falls back to
+    // sequential loop if arena conditions aren't met.
+    let cfg = EngineConfig {
+        max_seq_len: max_tokens.max(4096),
+        max_batch_size: max_tokens.max(1),
+        kernel_profile: profile,
+        ..Default::default()
+    };
+    let load_start = Instant::now();
+    let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
+    eprintln!(
+        "[ppl-eval] engine loaded in {:.1}s (model={}, arch={})",
+        load_start.elapsed().as_secs_f64(),
+        engine.model_id(),
+        engine.model_arch(),
+    );
+    let model_id = engine.model_id().to_string();
+
+    // Open output sink as JSON-lines (no header).
+    let mut sink: Box<dyn Write> = match &out_path {
+        Some(p) => Box::new(std::fs::File::create(p)?),
+        None => Box::new(std::io::stdout().lock()),
+    };
+
+    let total = samples.len();
+    let eval_start = Instant::now();
+    let mut total_scored: usize = 0;
+    let mut total_nll: f64 = 0.0;
+    for (i, (id, text)) in samples.iter().enumerate() {
+        let t_sample = Instant::now();
+        // Reset KV before each sample — independent contexts.
+        engine.reset_kv_for_test();
+
+        // Tokenize with BOS so position 0 is a real model input.
+        let mut tokens = engine.encode_prompt_for_batch(text)?;
+        if tokens.len() > max_tokens {
+            tokens.truncate(max_tokens);
+        }
+        if tokens.len() < 2 {
+            // Need at least 2 tokens for one next-token prediction.
+            writeln!(
+                sink,
+                "{}",
+                json!({
+                    "id": id,
+                    "tokens_seen": tokens.len(),
+                    "tokens_scored": 0,
+                    "nll_sum": 0.0,
+                    "skipped": "too_short",
+                })
+            )?;
+            continue;
+        }
+
+        // Forward t[0..L-1] at positions [0..L-1]; logits[i] predicts t[i+1].
+        let l = tokens.len();
+        let context: Vec<u32> = tokens[..l - 1].to_vec();
+        let positions: Vec<usize> = (0..l - 1).collect();
+        let logits = engine.forward_tokens_batched_for_test(&context, &positions)?;
+        if logits.len() != l - 1 {
+            anyhow::bail!(
+                "forward_tokens_for_test returned {} logit vecs, expected {}",
+                logits.len(),
+                l - 1
+            );
+        }
+
+        // log_softmax NLL of target t[i+1] at position i.
+        let mut sample_nll: f64 = 0.0;
+        for (i_pos, row) in logits.iter().enumerate() {
+            let target = tokens[i_pos + 1] as usize;
+            if target >= row.len() {
+                anyhow::bail!(
+                    "target token id {} out of vocab range {}",
+                    target,
+                    row.len()
+                );
+            }
+            // logsumexp for numerical stability.
+            let max_l = row.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+            let mut sum_exp: f64 = 0.0;
+            for &x in row.iter() {
+                sum_exp += ((x - max_l) as f64).exp();
+            }
+            let lse = (max_l as f64) + sum_exp.ln();
+            let nll = lse - (row[target] as f64);
+            sample_nll += nll;
+        }
+        let scored = l - 1;
+        total_scored += scored;
+        total_nll += sample_nll;
+
+        writeln!(
+            sink,
+            "{}",
+            json!({
+                "id": id,
+                "tokens_seen": l,
+                "tokens_scored": scored,
+                "nll_sum": sample_nll,
+            })
+        )?;
+        sink.flush()?;
+
+        let dt = t_sample.elapsed().as_secs_f64();
+        let elapsed = eval_start.elapsed().as_secs_f64();
+        let per_done = elapsed / ((i + 1) as f64);
+        let eta = per_done * (total - i - 1) as f64;
+        if (i + 1) % 10 == 0 || i + 1 == total {
+            eprintln!(
+                "[ppl-eval] {}/{} id={} L={} NLL/tok={:.4} ({:.1}s, ETA {:.0}s)",
+                i + 1,
+                total,
+                id,
+                l,
+                sample_nll / (scored as f64),
+                dt,
+                eta
+            );
+        }
+    }
+
+    let elapsed_s = eval_start.elapsed().as_secs_f64();
+    let avg_nll = if total_scored > 0 {
+        total_nll / (total_scored as f64)
+    } else {
+        0.0
+    };
+    let ppl = avg_nll.exp();
+    let summary = json!({
+        "summary": {
+            "samples": total,
+            "tokens_scored": total_scored,
+            "nll_sum": total_nll,
+            "avg_nll": avg_nll,
+            "ppl": ppl,
+            "model_id": model_id,
+            "profile_id": profile_id,
+            "max_tokens": max_tokens,
+            "elapsed_s": elapsed_s,
+        }
+    });
+    writeln!(sink, "{summary}")?;
+    sink.flush()?;
+    eprintln!(
+        "[ppl-eval] done: {} samples, {} scored tokens, avg NLL={:.4}, PPL={:.4} ({:.1}s)",
+        total, total_scored, avg_nll, ppl, elapsed_s
+    );
     Ok(())
 }
 
