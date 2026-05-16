@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.user.dismantle.pipeline</string>
+  <!-- Runs every 60s while laptop is awake; system pauses launchd jobs during sleep. -->
+  <key>StartInterval</key><integer>60</integer>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>REPLACE_WITH_PROJECT_ROOT/tools/training/advance_pipeline.sh</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>REPLACE_WITH_PROJECT_ROOT</string>
+  <key>StandardOutPath</key>
+  <string>REPLACE_WITH_PROJECT_ROOT/training_data/c2_hidden/eagle3_v0/pipeline/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>REPLACE_WITH_PROJECT_ROOT/training_data/c2_hidden/eagle3_v0/pipeline/launchd.err.log</string>
+  <key>RunAtLoad</key><true/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Library/Frameworks/Python.framework/Versions/3.12/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>
