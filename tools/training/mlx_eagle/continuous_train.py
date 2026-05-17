@@ -111,6 +111,10 @@ def run_training(
         "--optimizer", args.optimizer,
         "--aux-target-kind", args.aux_target_kind,
         "--device", args.device,
+        # CRITICAL: --streaming so train.py uses StreamingParquetBatchIterator
+        # (~100 MB peak) instead of in-memory ParquetBatchIterator which
+        # loads ALL records (4+ GB for the 1.87M-record shard, OOM'd capture).
+        "--streaming",
     ]
     if args.hidden_stats:
         cmd += ["--hidden-stats", str(args.hidden_stats)]
