@@ -109,7 +109,7 @@ def run_training(
         "--log", str(log_path),
         "--dtype", args.dtype,
         "--optimizer", args.optimizer,
-        "--aux-target-kind", "next",
+        "--aux-target-kind", args.aux_target_kind,
         "--device", args.device,
     ]
     if args.hidden_stats:
@@ -224,6 +224,7 @@ def main() -> int:
     p.add_argument("--device", default="cpu", choices=["cpu", "gpu"])
     p.add_argument("--dtype", default="bf16")
     p.add_argument("--optimizer", default="lion", choices=["adamw", "lion", "muon"])
+    p.add_argument("--aux-target-kind", default="next", choices=["next", "current"])
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--seq-len", type=int, default=16)
     args = p.parse_args()
