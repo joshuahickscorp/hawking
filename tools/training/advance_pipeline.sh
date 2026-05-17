@@ -32,8 +32,15 @@
 #       └→ eval_acceptance.py eval → write S7_DONE marker (with acceptance %)
 #   S8  EVAL_DONE             S7_DONE marker exists
 #       └→ spec_decode_stub.py → write S8_DONE marker (with speedup estimate)
-#   S9  ALL_DONE              S8_DONE marker exists
-#       └→ exit clean, nothing more to do
+#   S9  TIER1_DONE            S8_DONE marker exists
+#       └→ auto-kick-off 500K capture extension in background → write S9_DONE
+#   S10 500K_CAPTURE_DONE     shard hits 500000 unique samples
+#       └→ re-run S1-S3 against the bigger shard (parquet, shuffle, stats)
+#          then write S10_DONE
+#   S11 500K_TRAIN_DONE       trains 500K head with --resume from tier1 ckpt
+#   S12 500K_EVAL_DONE        eval against held-out (reuse same held-out set)
+#   S13 500K_STUB_DONE        spec_decode_stub against 500K head
+#   S14 ALL_DONE_TIER2        everything across both tiers
 #
 # Halt: touch ${PIPELINE_DIR}/HALT to skip all further steps and exit.
 
@@ -53,15 +60,22 @@ SHARD_SHUFFLED="${SHARD_SHUFFLED:-training_data/c2_hidden/eagle3_v0/shard_000.sh
 HIDDEN_STATS="${HIDDEN_STATS:-tools/training/mlx_eagle/hidden_stats.npz}"
 FROZEN_NPZ="${FROZEN_NPZ:-tools/training/mlx_eagle/v2lite_frozen.npz}"
 SMOKE_CKPT_DIR="${SMOKE_CKPT_DIR:-tools/training/mlx_eagle/ckpt_smoke}"
-FULL_CKPT_DIR="${FULL_CKPT_DIR:-tools/training/mlx_eagle/ckpt}"
+FULL_CKPT_DIR="${FULL_CKPT_DIR:-tools/training/mlx_eagle/ckpt_55k}"
 HELDOUT_JSONL="${HELDOUT_JSONL:-tests/data/held_out_500.jsonl}"
 HELDOUT_SHARD="${HELDOUT_SHARD:-training_data/c2_hidden/held_out_500.bin}"
-EVAL_RESULT="${EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_latest.json}"
-STUB_RESULT="${STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_latest.json}"
+EVAL_RESULT="${EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_55k.json}"
+STUB_RESULT="${STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_55k.json}"
 TARGET_SAMPLES="${TARGET_SAMPLES:-55000}"
 HIDDEN_DIM="${HIDDEN_DIM:-2048}"
 EPOCHS="${EPOCHS:-3}"
 LR="${LR:-3e-4}"
+
+# ---- Tier 2 (500K) config ----
+TIER2_TARGET="${TIER2_TARGET:-500000}"
+TIER2_SAMPLES_JSONL="${TIER2_SAMPLES_JSONL:-tests/data/ultrachat_500k_union.jsonl}"
+TIER2_CKPT_DIR="${TIER2_CKPT_DIR:-tools/training/mlx_eagle/ckpt_500k}"
+TIER2_EVAL_RESULT="${TIER2_EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_500k.json}"
+TIER2_STUB_RESULT="${TIER2_STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_500k.json}"
 
 PY="${PY:-/Library/Frameworks/Python.framework/Versions/3.12/bin/python3}"
 DISMANTLE="${DISMANTLE:-./target/release/dismantle}"
@@ -77,6 +91,11 @@ M_S5="$PIPELINE_DIR/S5_TRAIN_DONE"
 M_S6="$PIPELINE_DIR/S6_HELDOUT_DONE"
 M_S7="$PIPELINE_DIR/S7_EVAL_DONE"
 M_S8="$PIPELINE_DIR/S8_STUB_DONE"
+M_S9="$PIPELINE_DIR/S9_TIER1_DONE"
+M_S10="$PIPELINE_DIR/S10_500K_CAPTURE_DONE"
+M_S11="$PIPELINE_DIR/S11_500K_TRAIN_DONE"
+M_S12="$PIPELINE_DIR/S12_500K_EVAL_DONE"
+M_S13="$PIPELINE_DIR/S13_500K_STUB_DONE"
 M_ALL="$PIPELINE_DIR/ALL_DONE"
 M_HALT="$PIPELINE_DIR/HALT"
 
@@ -279,9 +298,164 @@ if [ ! -f "$M_S8" ]; then
     log "S8: FAILED — see $PIPELINE_LOG"
     exit 2
   fi
-  # Mark all done.
+  # Don't touch ALL_DONE yet — tier 2 follows.
+  exit 0
+fi
+
+# ---- S9: tier1 done, kick off 500K capture extension in background ----
+# This does NOT wait. The capture writes into the same .bin via --resume,
+# so S10 just monitors for the sample count to cross TIER2_TARGET.
+if [ ! -f "$M_S9" ]; then
+  log "S9: tier1 done. Prepping 500K samples + launching capture extension…"
+  # Prep 500K-union JSONL if absent.
+  if [ ! -f "$TIER2_SAMPLES_JSONL" ]; then
+    log "S9: prepping $TIER2_SAMPLES_JSONL (500K UltraChat union)"
+    $PY tools/training/capture_hidden.py prep \
+        --out tests/data/ultrachat_500k.jsonl \
+        --dataset HuggingFaceH4/ultrachat_200k --split train_sft --streaming \
+        --n 500000 --min-chars 200 --max-chars 2000 --id-prefix ultrachat --force \
+        >> "$PIPELINE_LOG" 2>&1 || {
+        log "S9: 500K prep FAILED"; exit 2;
+    }
+    # Union with the 55K already done so --resume skips them efficiently.
+    $PY -c "
+import json
+seen = set()
+with open('$TIER2_SAMPLES_JSONL', 'w') as out:
+    for src in ('tests/data/ultrachat_55k_union.jsonl', 'tests/data/ultrachat_500k.jsonl'):
+        for line in open(src):
+            r = json.loads(line)
+            if r['id'] in seen: continue
+            seen.add(r['id'])
+            out.write(json.dumps(r, ensure_ascii=False) + '\n')
+" 2>>"$PIPELINE_LOG" || { log "S9: union JSONL FAILED"; exit 2; }
+  fi
+  # Launch capture in background — long-running, ~3 weeks at ~25 records/s.
+  if ! pgrep -f "dismantle capture-hidden.*$SHARD_BIN" > /dev/null; then
+    log "S9: launching 500K capture (nohup, detached)…"
+    nohup nice -n 19 taskpolicy -b "$DISMANTLE" capture-hidden \
+        --weights "$WEIGHTS" \
+        --samples "$TIER2_SAMPLES_JSONL" \
+        --out "$SHARD_BIN" \
+        --max-tokens 128 --no-lm-head --resume \
+        --kernel-profile "$KERNEL_PROFILE" \
+        >> training_data/c2_hidden/eagle3_v0/shard_000.log 2>&1 < /dev/null &
+    disown
+  else
+    log "S9: capture already running — leaving alone"
+  fi
+  echo "samples_target=$TIER2_TARGET launched_at=$(ts)" > "$M_S9"
+  log "S9: DONE — 500K capture launched"
+  echo "PIPELINE_S9_DONE target=$TIER2_TARGET"
+  exit 0
+fi
+
+# ---- S10: wait for 500K capture to finish ----
+if [ ! -f "$M_S10" ]; then
+  SAMPLES=$(count_unique_samples)
+  if [ -z "$SAMPLES" ] || [ "$SAMPLES" -lt "$TIER2_TARGET" ]; then
+    # Still capturing. Heartbeat once an hour to the log.
+    LAST_HB_FILE="$PIPELINE_DIR/.s10_last_hb"
+    NOW=$(date +%s)
+    LAST=$(cat "$LAST_HB_FILE" 2>/dev/null || echo 0)
+    if [ $((NOW - LAST)) -gt 3600 ]; then
+      log "S10: 500K capture progress: $SAMPLES / $TIER2_TARGET"
+      echo "$NOW" > "$LAST_HB_FILE"
+    fi
+    exit 0
+  fi
+  log "S10: 500K capture done ($SAMPLES samples). Re-running parquet + shuffle + stats…"
+  # Re-do parquet (overwrites — bigger shard now).
+  if ! $PY tools/training/capture_hidden.py to-parquet \
+      --src "$SHARD_BIN" --dst "$SHARD_PARQUET" --compression zstd \
+      >> "$PIPELINE_LOG" 2>&1; then
+    log "S10: re-parquet FAILED"; exit 2;
+  fi
+  # Re-shuffle.
+  if ! $PY tools/training/mlx_eagle/pre_shuffle.py \
+      --src "$SHARD_BIN" --dst "$SHARD_SHUFFLED" --hidden-dim "$HIDDEN_DIM" \
+      >> "$PIPELINE_LOG" 2>&1; then
+    log "S10: re-shuffle FAILED"; exit 2;
+  fi
+  # Re-compute stats.
+  if ! $PY tools/training/mlx_eagle/compute_hidden_stats.py \
+      --shard "$SHARD_BIN" --hidden-dim "$HIDDEN_DIM" --out "$HIDDEN_STATS" \
+      >> "$PIPELINE_LOG" 2>&1; then
+    log "S10: re-stats FAILED"; exit 2;
+  fi
+  echo "samples=$SAMPLES parquet=$SHARD_PARQUET stats=$HIDDEN_STATS" > "$M_S10"
+  log "S10: DONE — re-prepped for 500K training"
+  echo "PIPELINE_S10_DONE samples=$SAMPLES"
+  exit 0
+fi
+
+# ---- S11: train 500K head (warm-start from tier1 ckpt) ----
+if [ ! -f "$M_S11" ]; then
+  log "S11: full train 500K ($EPOCHS epochs, warm-start from tier1)…"
+  RESUME_FLAG=""
+  if [ -f "$FULL_CKPT_DIR/latest.npz" ]; then
+    RESUME_FLAG="--resume $FULL_CKPT_DIR/latest.npz"
+    log "S11: warm-starting from $FULL_CKPT_DIR/latest.npz"
+  fi
+  if $PY tools/training/mlx_eagle/train.py \
+      --parquet "$SHARD_PARQUET" \
+      --frozen "$FROZEN_NPZ" \
+      --epochs "$EPOCHS" --batch-size 16 --seq-len 16 \
+      --lr "$LR" \
+      --log-every 50 --save-every 500 \
+      --ckpt-dir "$TIER2_CKPT_DIR" \
+      --log "$PIPELINE_DIR/full_train_500k.log" \
+      --dtype bf16 --optimizer lion --aux-target-kind next \
+      --hidden-stats "$HIDDEN_STATS" \
+      $RESUME_FLAG \
+      >> "$PIPELINE_LOG" 2>&1; then
+    LAST_LOSS=$(grep '"step":' "$PIPELINE_DIR/full_train_500k.log" 2>/dev/null | tail -1 | $PY -c "import json,sys; print(json.loads(sys.stdin.read())['loss'])" 2>/dev/null || echo "?")
+    echo "final_loss=$LAST_LOSS ckpt=$TIER2_CKPT_DIR/latest.npz" > "$M_S11"
+    log "S11: DONE — final_loss=$LAST_LOSS"
+    echo "PIPELINE_S11_DONE final_loss=$LAST_LOSS"
+  else
+    log "S11: FAILED — see $PIPELINE_LOG"; exit 2
+  fi
+  exit 0
+fi
+
+# ---- S12: eval 500K head against held-out ----
+if [ ! -f "$M_S12" ]; then
+  log "S12: eval 500K against held-out…"
+  if $PY tools/training/mlx_eagle/eval_acceptance.py eval \
+      --ckpt "$TIER2_CKPT_DIR/latest.npz" --shard "$HELDOUT_SHARD" \
+      --frozen "$FROZEN_NPZ" \
+      --out "$TIER2_EVAL_RESULT" \
+      --batch-size 128 --max-records 50000 \
+      >> "$PIPELINE_LOG" 2>&1; then
+    ACCEPT_TOP1=$($PY -c "import json; print(json.load(open('$TIER2_EVAL_RESULT'))['accept_top1'])" 2>/dev/null || echo "?")
+    echo "accept_top1=$ACCEPT_TOP1 result=$TIER2_EVAL_RESULT" > "$M_S12"
+    log "S12: DONE — 500K accept_top1=$ACCEPT_TOP1"
+    echo "PIPELINE_S12_DONE accept_top1=$ACCEPT_TOP1"
+  else
+    log "S12: FAILED — see $PIPELINE_LOG"; exit 2
+  fi
+  exit 0
+fi
+
+# ---- S13: spec_decode_stub against 500K head ----
+if [ ! -f "$M_S13" ]; then
+  log "S13: spec_decode_stub 500K (K=4)…"
+  if $PY tools/training/mlx_eagle/spec_decode_stub.py \
+      --ckpt "$TIER2_CKPT_DIR/latest.npz" --shard "$HELDOUT_SHARD" \
+      --frozen "$FROZEN_NPZ" \
+      --k 4 --max-samples 200 \
+      --out "$TIER2_STUB_RESULT" \
+      >> "$PIPELINE_LOG" 2>&1; then
+    SPEEDUP=$($PY -c "import json; r=json.load(open('$TIER2_STUB_RESULT')); print(r['headline_metrics']['speedup_vs_no_spec_K_verify'])" 2>/dev/null || echo "?")
+    echo "speedup_k=$SPEEDUP result=$TIER2_STUB_RESULT" > "$M_S13"
+    log "S13: DONE — speedup=$SPEEDUP"
+    echo "PIPELINE_S13_DONE speedup=$SPEEDUP"
+  else
+    log "S13: FAILED — see $PIPELINE_LOG"; exit 2
+  fi
   touch "$M_ALL"
-  log "PIPELINE COMPLETE — all 8 stages done"
-  echo "PIPELINE_ALL_DONE"
+  log "PIPELINE COMPLETE — tier1 + tier2 done"
+  echo "PIPELINE_ALL_DONE_TIER2"
   exit 0
 fi

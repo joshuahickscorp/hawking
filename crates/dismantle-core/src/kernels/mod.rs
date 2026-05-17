@@ -13,6 +13,10 @@
 
 use half::f16;
 
+// Path B parallel-K verify kernels (skeleton; bodies are Unimplemented).
+// See reports/path_to_90/path_b/design.md.
+pub mod parallel_k;
+
 // -------- common.metal -------------------------------------------------
 
 /// RMS-normalize a row in-place.

@@ -295,6 +295,105 @@ class EagleHead(nn.Module):
             params.pop(key, None)
         return params
 
+    def propose_tree(
+        self,
+        prev_token: int,
+        target_hidden,  # mx.array of shape (hidden_dim,) — the committed position's hidden
+        topology,  # list[int] e.g. [3, 2, 1, 1] = branching per depth (top-3, then top-2, …)
+    ):
+        """Tree-decoding tree proposer (Option A: naive — one head forward per node).
+
+        See reports/path_to_90/tree_decode/design.md for the math.
+
+        Returns a dict with:
+          node_tokens   : list[int]                    — N predicted tokens
+          node_parents  : list[int]                    — parent index per node (-1 for root)
+          node_depths   : list[int]                    — depth in the tree (root depth = 0)
+          node_paths    : list[list[int]]              — full token path from root
+          node_hidden   : list[mx.array]               — head's draft hidden per node (for downstream)
+
+        N = sum_d prod(topology[:d+1])  e.g. [3,2,1,1] → 3 + 6 + 6 + 6 = 21 nodes.
+
+        Limitations called out in the design doc:
+          - One head forward per node — at large N (> ~16) becomes
+            non-trivial fraction of the target forward cost
+          - Uses target_hidden as the seed for the root; subsequent nodes
+            use the head's own predicted hidden as the seed (this is the
+            standard EAGLE-3 trick, but acceptance compounds with depth)
+        """
+        if mx is None:
+            raise ImportError("MLX not installed — pip install mlx")
+        if not topology:
+            return {
+                "node_tokens": [], "node_parents": [], "node_depths": [],
+                "node_paths": [], "node_hidden": [],
+            }
+
+        H = self.cfg.hidden_dim
+        # Root: run head on (prev_token, target_hidden) → top-B0 candidates.
+        prev_tok_arr = mx.array([[prev_token]], dtype=mx.int32)
+        hid_arr = target_hidden.reshape(1, 1, H)
+        logits, draft_hid = self(prev_tok_arr, hid_arr, return_hidden=True)
+        mx.eval(logits, draft_hid)
+        import numpy as np
+
+        node_tokens: list = []
+        node_parents: list = []
+        node_depths: list = []
+        node_paths: list = []
+        node_hidden: list = []
+        # Queue of (parent_idx, parent_hidden, parent_path, depth_of_next).
+        # depth_of_next is 0 for the root expansion (we're producing depth-1 children).
+        queue = []
+        root_topk = int(topology[0])
+        # Extract top-K candidate tokens at root level.
+        root_logits = np.array(logits).reshape(self.cfg.vocab_size)
+        top_idx = np.argpartition(-root_logits, kth=root_topk - 1)[:root_topk]
+        top_idx = top_idx[np.argsort(-root_logits[top_idx])]
+        for i, tok in enumerate(top_idx):
+            node_tokens.append(int(tok))
+            node_parents.append(-1)
+            node_depths.append(1)
+            node_paths.append([int(tok)])
+            node_hidden.append(draft_hid.reshape(H))  # children of root reuse root's hidden
+            queue.append((len(node_tokens) - 1, draft_hid.reshape(H), [int(tok)], 1))
+
+        # BFS-expand by depth.
+        for d in range(1, len(topology)):
+            branching = int(topology[d])
+            next_queue = []
+            for parent_idx, parent_hid, parent_path, parent_depth in queue:
+                # Run head on (parent_token, parent_hidden).
+                pt_arr = mx.array([[parent_path[-1]]], dtype=mx.int32)
+                ph_arr = parent_hid.reshape(1, 1, H)
+                logits_d, draft_hid_d = self(pt_arr, ph_arr, return_hidden=True)
+                mx.eval(logits_d, draft_hid_d)
+                row = np.array(logits_d).reshape(self.cfg.vocab_size)
+                if branching == 1:
+                    top_idx_d = np.array([int(np.argmax(row))])
+                else:
+                    top_idx_d = np.argpartition(-row, kth=branching - 1)[:branching]
+                    top_idx_d = top_idx_d[np.argsort(-row[top_idx_d])]
+                child_hidden = draft_hid_d.reshape(H)
+                for tok in top_idx_d:
+                    node_tokens.append(int(tok))
+                    node_parents.append(parent_idx)
+                    node_depths.append(parent_depth + 1)
+                    node_paths.append(parent_path + [int(tok)])
+                    node_hidden.append(child_hidden)
+                    next_queue.append(
+                        (len(node_tokens) - 1, child_hidden,
+                         parent_path + [int(tok)], parent_depth + 1)
+                    )
+            queue = next_queue
+        return {
+            "node_tokens": node_tokens,
+            "node_parents": node_parents,
+            "node_depths": node_depths,
+            "node_paths": node_paths,
+            "node_hidden": node_hidden,
+        }
+
     def __call__(
         self,
         prev_tokens,
