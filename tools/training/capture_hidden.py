@@ -304,21 +304,15 @@ def cmd_to_parquet(args: argparse.Namespace) -> int:
         hidden_dim = _read_header(f)
     print(f"[to-parquet] {src.name} hidden_dim={hidden_dim}", file=sys.stderr)
 
-    sids: List[str] = []
-    poses: List[int] = []
-    prevs: List[int] = []
-    nexts: List[int] = []
-    hiddens: List[bytes] = []
-    n = 0
-    for sid, pos, p, nx, hb in _iter_records(src):
-        sids.append(sid)
-        poses.append(pos)
-        prevs.append(p)
-        nexts.append(nx)
-        hiddens.append(hb)
-        n += 1
+    # STREAMING write — bounded memory regardless of shard size.
+    # Prior implementation held the FULL record set (all hiddens) in Python
+    # memory before writing → ~7.5 GB for our current shard, OOM'd when 4
+    # concurrent conversions ran in parallel (~30 GB total need vs 18 GB).
+    # Now: accumulate ROW_GROUP_SIZE records into a small list, flush to
+    # ParquetWriter as a record batch, repeat. Peak Python memory: ~120 MB
+    # per conversion (row-group size 32K × 4KB hidden).
+    ROW_GROUP_SIZE = 32_000
 
-    print(f"[to-parquet] {n} record(s) read", file=sys.stderr)
     schema = pa.schema(
         [
             pa.field("sample_id", pa.string()),
@@ -335,23 +329,64 @@ def cmd_to_parquet(args: argparse.Namespace) -> int:
             b"dcap_version": str(VERSION).encode(),
         },
     )
-    table = pa.table(
-        {
-            "sample_id": pa.array(sids, type=pa.string()),
-            "pos": pa.array(poses, type=pa.int32()),
-            "prev_token": pa.array(prevs, type=pa.int32()),
-            "next_token": pa.array(nexts, type=pa.int32()),
-            "hidden_f16": pa.array(hiddens, type=pa.binary()),
-        },
-        schema=schema,
-    )
+
     dst = pathlib.Path(args.dst)
     dst.parent.mkdir(parents=True, exist_ok=True)
-    pq.write_table(
-        table,
-        dst,
-        compression=args.compression,
-    )
+    # Write to a tmp path then atomically rename — concurrent readers
+    # (training loaders, other tools) see either the old file or the new,
+    # never a partial.
+    tmp_dst = dst.with_suffix(dst.suffix + ".tmp")
+
+    writer = pq.ParquetWriter(str(tmp_dst), schema, compression=args.compression)
+
+    buf_sids: List[str] = []
+    buf_pos: List[int] = []
+    buf_prev: List[int] = []
+    buf_next: List[int] = []
+    buf_hidden: List[bytes] = []
+    n = 0
+
+    def _flush():
+        nonlocal buf_sids, buf_pos, buf_prev, buf_next, buf_hidden
+        if not buf_sids:
+            return
+        batch = pa.record_batch(
+            {
+                "sample_id": pa.array(buf_sids, type=pa.string()),
+                "pos": pa.array(buf_pos, type=pa.int32()),
+                "prev_token": pa.array(buf_prev, type=pa.int32()),
+                "next_token": pa.array(buf_next, type=pa.int32()),
+                "hidden_f16": pa.array(buf_hidden, type=pa.binary()),
+            },
+            schema=schema,
+        )
+        writer.write_batch(batch)
+        # Drop refs so Python frees the underlying bytes objects.
+        buf_sids = []
+        buf_pos = []
+        buf_prev = []
+        buf_next = []
+        buf_hidden = []
+
+    try:
+        for sid, pos, p, nx, hb in _iter_records(src):
+            buf_sids.append(sid)
+            buf_pos.append(pos)
+            buf_prev.append(p)
+            buf_next.append(nx)
+            buf_hidden.append(hb)
+            n += 1
+            if len(buf_sids) >= ROW_GROUP_SIZE:
+                _flush()
+        _flush()
+    finally:
+        writer.close()
+
+    # Atomic rename: tmp → dst.
+    import os as _os
+    _os.replace(tmp_dst, dst)
+    print(f"[to-parquet] {n} record(s) written via streaming write "
+          f"(row-group {ROW_GROUP_SIZE})", file=sys.stderr)
     sz = dst.stat().st_size
     print(
         f"[to-parquet] wrote {dst} ({sz:,} bytes, compression={args.compression})",
