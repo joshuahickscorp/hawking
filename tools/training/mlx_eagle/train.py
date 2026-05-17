@@ -401,7 +401,15 @@ def train(args: argparse.Namespace) -> int:
         "lion": optim.Lion,
         "muon": optim.Muon,
     }[args.optimizer]
-    opt_kwargs = {"learning_rate": args.lr}
+    # Per-optimizer LR scaling. The Lion paper recommends LR ~10x lower than
+    # AdamW (because Lion's update has unit per-param magnitude vs Adam's
+    # adaptive normalization). Empirically confirmed Run A 5K milestone:
+    # using AdamW's 3e-4 with Lion diverged (loss 33.8 -> 40.4 over 100
+    # steps). Auto-scale here so callers can pass a single --lr and have
+    # it work for any optimizer.
+    LR_SCALE = {"adamw": 1.0, "lion": 0.1, "muon": 1.0}[args.optimizer]
+    effective_lr = args.lr * LR_SCALE
+    opt_kwargs = {"learning_rate": effective_lr}
     # AdamW + Lion accept weight_decay; Muon's API may differ. Pass when supported.
     import inspect as _inspect
     sig = _inspect.signature(opt_class)
@@ -409,7 +417,9 @@ def train(args: argparse.Namespace) -> int:
         opt_kwargs["weight_decay"] = args.weight_decay
     opt = opt_class(**opt_kwargs)
     print(
-        f"[train] optimizer={args.optimizer} lr={args.lr} weight_decay={args.weight_decay}",
+        f"[train] optimizer={args.optimizer} requested_lr={args.lr} "
+        f"effective_lr={effective_lr} (scale={LR_SCALE}) "
+        f"weight_decay={args.weight_decay}",
         file=sys.stderr,
     )
 
@@ -500,6 +510,16 @@ def train(args: argparse.Namespace) -> int:
     t_start = time.time()
     last_log_t = t_start
     losses_window = []
+    # Bind loss/ce/aux/grads with default values BEFORE the loop so the
+    # final summary's float(total) doesn't crash when the loop body never
+    # executes (e.g. --resume restores step=max_steps so `while step <
+    # total_steps` is immediately false). Previous behavior:
+    # `UnboundLocalError: cannot access local variable 'total'`.
+    # NaN sentinel: signals "no steps actually trained this run".
+    total = mx.array(float("nan"))
+    ce = mx.array(float("nan"))
+    aux = mx.array(float("nan"))
+    grads = {}
 
     def _log_row(row: dict):
         if log_f:
@@ -515,7 +535,7 @@ def train(args: argparse.Namespace) -> int:
             if step >= total_steps:
                 break
             opt.learning_rate = cosine_with_warmup(
-                step, total_steps, args.lr, warmup_pct=args.warmup_pct
+                step, total_steps, effective_lr, warmup_pct=args.warmup_pct
             )
             total, ce, aux, grads = step_fn(
                 batch["prev_tokens"],
@@ -577,17 +597,27 @@ def train(args: argparse.Namespace) -> int:
 
         epoch += 1
 
-    if ckpt_dir is not None:
+    # If the loop ran zero iterations (resume case where step==total_steps
+    # already), `total` is the NaN sentinel from above. Don't bother
+    # saving an emergency final ckpt — the existing latest.npz is already
+    # the right thing.
+    actually_trained = step > start_step
+    if ckpt_dir is not None and actually_trained:
         path = save_checkpoint(head, opt, step, epoch, ckpt_dir)
         print(f"[ckpt] final {path.name}")
+    elif not actually_trained:
+        print(f"[train] no-op: start_step={start_step} == total_steps={total_steps} "
+              f"(resume after already-complete milestone)", file=sys.stderr)
 
     total_wall = time.time() - t_start
+    final_loss_val = float(total) if actually_trained else float("nan")
     summary = {
         "total_steps": step,
         "epochs": epoch,
         "wall_sec": total_wall,
         "steps_per_sec_overall": step / total_wall if total_wall > 0 else 0,
-        "final_loss": float(total),
+        "final_loss": final_loss_val,
+        "actually_trained": actually_trained,
     }
     print(f"[train] done: {json.dumps(summary)}")
     _log_row({"event": "done", "summary": summary})
