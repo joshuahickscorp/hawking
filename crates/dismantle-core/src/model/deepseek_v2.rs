@@ -117,6 +117,32 @@ impl DeepSeekConfig {
 /// Phase 1's wedge-2 quant-aware Metal kernels read 4-bit weights
 /// directly from the mmap *and* dequant inside the FMA loop, removing
 /// even the per-call working buffer.
+/// Path-to-90 step 10 follow-up — collected GPU-side capture data
+/// from the production Wedge C forward when `eagle4_capture_active`
+/// is set. Three per-layer hiddens (residual-stream snapshots at
+/// the end of layers 2, 13, 25 — i.e. `x_buf + ffn_out_buf` after
+/// each layer's commit) plus the pre-MLP post-attn-rmsnorm hidden
+/// at layer 26 (consumed by `cpu_shared_expert_forward` to produce
+/// `h_shared`). All vectors are length `config.hidden`.
+#[derive(Debug, Clone)]
+pub struct Eagle4CaptureBuf {
+    pub h_low: Vec<f32>,
+    pub h_mid: Vec<f32>,
+    pub h_high: Vec<f32>,
+    pub x_norm_26: Vec<f32>,
+}
+
+impl Eagle4CaptureBuf {
+    pub fn zeros(hidden: usize) -> Self {
+        Self {
+            h_low: vec![0.0; hidden],
+            h_mid: vec![0.0; hidden],
+            h_high: vec![0.0; hidden],
+            x_norm_26: vec![0.0; hidden],
+        }
+    }
+}
+
 pub struct DeepSeekV2 {
     pub config: DeepSeekConfig,
     pub tokenizer: Tokenizer,
@@ -198,6 +224,19 @@ pub struct DeepSeekV2 {
     /// and the verifier's argmax is emitted directly (currently logged
     /// as accept/reject only — see step 8 commit).
     pub eagle4_calib_threshold: f32,
+    /// Path-to-90 step 10 follow-up (GPU-side eagle4 capture).
+    /// When `true`, `forward_token_final_norm_maybe_read` forces the
+    /// per-layer-commit branch (instead of single-TCB fold) and
+    /// populates `eagle4_capture` with x_buf + ffn_out_buf reads at
+    /// layers {2, 13, 25} plus x_norm_buf at layer 26's pre-MoE
+    /// boundary. Toggled around forward_token() calls inside the
+    /// Eagle4 decode loop. `false` everywhere else.
+    pub eagle4_capture_active: bool,
+    /// Path-to-90 step 10 follow-up — destination for GPU-side capture.
+    /// Populated by `forward_token_final_norm_maybe_read` when
+    /// `eagle4_capture_active` is true; consumed by the Eagle4 decode
+    /// loop. `None` otherwise.
+    pub eagle4_capture: Option<crate::model::deepseek_v2::Eagle4CaptureBuf>,
 
     /// v1.2.0-9: Per-layer expert access stats + POSIX madvise offloading.
     /// `Some` when `--max-routed-expert-ram-mb` is set. `None` on V2-Lite default
@@ -1026,6 +1065,8 @@ impl Engine for DeepSeekV2 {
             verify_window,
             eagle4_head,
             eagle4_calib_threshold,
+            eagle4_capture_active: false,
+            eagle4_capture: None,
             decode_arena,
             embed_buf,
             final_norm_buf,
@@ -1451,30 +1492,42 @@ impl Engine for DeepSeekV2 {
                 let pos = prompt_len + step;
                 let step_start = Instant::now();
 
-                // 1. GPU verifier forward — canonical, bit-identical to Off.
-                //    Advances GPU KV; advances seq_len from X → X+1.
-                let v2_argmax =
-                    self.forward_token_argmax(last_id, pos, use_profiled_greedy)?;
+                // Single GPU forward with capture flag — bit-identical to Off
+                // (Wedge C path) AND populates self.eagle4_capture at layers
+                // {2, 13, 25} + x_norm_buf at layer 26. The flag forces the
+                // per-layer-commit branch in forward_token_final_norm_maybe_read
+                // (use_single_tcb = false when eagle4_capture_active), which
+                // adds ~26 commit+wait overheads (~4 ms total at ~150 µs each)
+                // vs the single-TCB fast path. Net Eagle4 mode cost: ~41 ms /
+                // token vs Off's ~37 ms.
+                self.eagle4_capture_active = true;
+                let argmax_result = self.forward_token_argmax(last_id, pos, use_profiled_greedy);
+                self.eagle4_capture_active = false;
+                let v2_argmax = argmax_result?;
 
-                // 2. CPU walk for eagle4 capture. Would advance seq_len
-                //    X+1 → X+2; rewind to X first so the CPU walk's
-                //    attention writes to CPU mla_c_kv slot X and bumps
-                //    seq_len back to X+1.
-                let post_gpu_seq_len = self.kv.seq_len;
-                self.kv.seq_len = post_gpu_seq_len.saturating_sub(1);
-                let (eagle4_inputs, _cpu_argmax) =
-                    self.forward_token_eagle4_capture_with_argmax(last_id, pos)?;
-                debug_assert_eq!(self.kv.seq_len, post_gpu_seq_len);
+                let capture = self.eagle4_capture.take().ok_or_else(|| {
+                    Error::Model(
+                        "--speculate eagle4: GPU capture buffer absent after forward_token; \
+                         Wedge C path may not have executed"
+                            .into(),
+                    )
+                })?;
+
+                // h_shared = ffn_shared_only(layer 26, x_norm_26) — CPU
+                // dequant + 3 gemv_f32 calls. ~10 ms on M3 Pro at smid=2816;
+                // small fraction of the per-token budget compared to the
+                // 27-layer CPU walk this replaces (~3.7 s).
+                let h_shared = self.cpu_shared_expert_forward(26, &capture.x_norm_26)?;
 
                 use crate::speculate::draft_head::{DraftHead, DraftInputs};
                 let hidden_refs: [&[f32]; 4] = [
-                    &eagle4_inputs.h_low,
-                    &eagle4_inputs.h_mid,
-                    &eagle4_inputs.h_high,
-                    &eagle4_inputs.h_shared,
+                    &capture.h_low,
+                    &capture.h_mid,
+                    &capture.h_high,
+                    &h_shared,
                 ];
                 let inputs = DraftInputs {
-                    prev_token: eagle4_inputs.prev_token,
+                    prev_token: last_id,
                     hiddens: &hidden_refs,
                 };
                 let draft = head.propose(&inputs, 1)?;
@@ -2848,6 +2901,23 @@ impl DeepSeekV2 {
     ) -> Result<(Option<Vec<f32>>, Option<u32>)> {
         let h = self.config.hidden;
 
+        // Path-to-90 step 10 follow-up — Eagle4 GPU capture.
+        // Take the capture buffer OUT of self at the top so the per-
+        // layer commit branch below can write into it without
+        // conflicting with the `arena = &self.decode_arena` borrow
+        // held across the layer loop. Restored to self before each
+        // return path.
+        let mut local_eagle4_capture: Option<Eagle4CaptureBuf> = if self.eagle4_capture_active {
+            Some(
+                self.eagle4_capture
+                    .take()
+                    .unwrap_or_else(|| Eagle4CaptureBuf::zeros(h)),
+            )
+        } else {
+            self.eagle4_capture.take();
+            None
+        };
+
         // ---- Wedge C: all attention + FFN kernels on TCB (zero counted dispatches).
         // Active when: Metal + arena present, all norm weights pre-uploaded,
         // MLA path active, model_buf present, and all layers have q_a/kv_a pinned.
@@ -2901,8 +2971,12 @@ impl DeepSeekV2 {
                 let use_gpu_shared_draft =
                     self.speculate_mode == crate::SpeculateMode::ExactShared
                         && self.shared_only_gpu_argmax_available();
-                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
-                    || use_gpu_shared_draft;
+                // Path-to-90 step 10 follow-up — Eagle4 GPU capture forces
+                // per-layer commits so capture reads at layers 2/13/25 can
+                // pick up arena.x_buf + arena.ffn_out_buf mid-flight.
+                let use_single_tcb = (self.speculate_mode != crate::SpeculateMode::ExactShared
+                    || use_gpu_shared_draft)
+                    && !self.eagle4_capture_active;
 
                 // Phase 5B.1: fold final-norm + LM head + argmax into the global TCB when the
                 // greedy-GPU path is available. Eliminates Wedge M C-1 mini-TCB and the separate
@@ -3038,7 +3112,8 @@ impl DeepSeekV2 {
                         if use_single_tcb {
                             dense_handled = encode_layer(global_tcb.as_mut().unwrap())?;
                         } else {
-                            // Per-layer fallback (ExactShared spec-decode path).
+                            // Per-layer fallback (ExactShared spec-decode path,
+                            // OR Eagle4 GPU capture path — see step 10 follow-up).
                             let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                             dense_handled = encode_layer(&mut tcb)?;
                             tcb.commit_and_wait()?;
@@ -3053,6 +3128,38 @@ impl DeepSeekV2 {
                                     .copy_from_slice(std::slice::from_raw_parts(ptr_c, kv_lora_rank));
                                 self.mla_k_pe[li][off_pe..off_pe + qk_rope_head_dim]
                                     .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
+                            }
+
+                            // Eagle4 GPU capture — read x_buf + ffn_out_buf at
+                            // capture layers (h = x_buf + ffn_out_buf, the full
+                            // post-layer-L residual) and read x_norm_buf at
+                            // layer 26 (the pre-MoE input that h_shared is
+                            // computed against). Cheap CPU reads from Metal
+                            // shared buffers; the per-layer commit above
+                            // ensures the writes are visible. The capture
+                            // buffer lives in `local_eagle4_capture` (taken
+                            // out of self at function entry to avoid a borrow
+                            // conflict with `arena = &self.decode_arena`);
+                            // restored to self.eagle4_capture before return.
+                            if let Some(buf) = local_eagle4_capture.as_mut() {
+                                if li == 2 || li == 13 || li == 25 {
+                                    let mut x_cpu = vec![0.0f32; h];
+                                    let mut ffn_cpu = vec![0.0f32; h];
+                                    arena.read_x(&mut x_cpu);
+                                    arena.read_ffn_out(&mut ffn_cpu);
+                                    let target: &mut Vec<f32> = match li {
+                                        2 => &mut buf.h_low,
+                                        13 => &mut buf.h_mid,
+                                        25 => &mut buf.h_high,
+                                        _ => unreachable!(),
+                                    };
+                                    for i in 0..h {
+                                        target[i] = x_cpu[i] + ffn_cpu[i];
+                                    }
+                                }
+                                if li == 26 {
+                                    arena.read_x_norm(&mut buf.x_norm_26);
+                                }
                             }
                         }
 
@@ -3179,6 +3286,7 @@ impl DeepSeekV2 {
 
                 // Phase 5B.1: LM head (and final-norm) already folded into global TCB.
                 if lm_head_folded {
+                    self.eagle4_capture = local_eagle4_capture.take();
                     return Ok((None, folded_greedy_token));
                 }
 
@@ -3200,10 +3308,12 @@ impl DeepSeekV2 {
                     )?;
                     tcb.commit_and_wait()?;
                     if !read_back {
+                        self.eagle4_capture = local_eagle4_capture.take();
                         return Ok((None, None));
                     }
                     let mut x_norm = vec![0.0f32; h];
                     arena.read_x_norm(&mut x_norm);
+                    self.eagle4_capture = local_eagle4_capture.take();
                     return Ok((Some(x_norm), None));
                 }
             }
