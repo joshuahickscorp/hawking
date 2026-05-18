@@ -91,20 +91,66 @@ def cmd_prep(args: argparse.Namespace) -> int:
         ds = load_dataset(args.dataset, split=args.split)
 
     # Shape of each row depends on dataset:
-    #   - UltraChat: row["data"] = list[str], dialogue turns
+    #   - UltraChat-200K modern: row["messages"] = list[{"role","content"}]
+    #   - UltraChat older: row["data"] = list[str] alternating user/assistant
     #   - ShareGPT: row["conversations"] = list[{"from","value"}]
     #   - Alpaca-style: row["instruction"] / row["input"] / row["output"]
-    # We extract a single text field per row by trying common keys.
+    #
+    # CHANGED 2026-05-17: extract the FULL dialogue (user prompts + assistant
+    # responses) rather than just user prompts. Spec-decode drafts on behalf
+    # of the assistant; training data must include assistant text so the
+    # head learns the target's response distribution. Prior behavior (just
+    # data[0] = user prompt) trained the head on the wrong distribution.
+    #
+    # Format: turns are joined with the model's chat-template-equivalent
+    # separators. We use a generic "User:" / "Assistant:" separator that
+    # works without model-specific template overhead.
     def extract(row) -> Optional[str]:
-        # UltraChat-200K
-        if "data" in row and isinstance(row["data"], list) and row["data"]:
-            return row["data"][0].strip()
-        # ShareGPT-style
+        # UltraChat-200K modern (messages format)
+        if "messages" in row and isinstance(row["messages"], list) and row["messages"]:
+            parts = []
+            for m in row["messages"]:
+                if not isinstance(m, dict):
+                    continue
+                role = m.get("role", "")
+                content = m.get("content", "")
+                if not content:
+                    continue
+                if role == "user":
+                    parts.append(f"User: {content.strip()}")
+                elif role == "assistant":
+                    parts.append(f"Assistant: {content.strip()}")
+                else:
+                    parts.append(content.strip())
+            return "\n\n".join(parts) if parts else None
+        # UltraChat older (data = alternating list of strings)
+        if "data" in row and isinstance(row["data"], list) and len(row["data"]) >= 2:
+            # Alternating: user, assistant, user, assistant, ...
+            parts = []
+            for i, turn in enumerate(row["data"]):
+                if not isinstance(turn, str) or not turn.strip():
+                    continue
+                role = "User" if i % 2 == 0 else "Assistant"
+                parts.append(f"{role}: {turn.strip()}")
+            return "\n\n".join(parts) if parts else None
+        # ShareGPT-style (conversations with role + value)
         if "conversations" in row and isinstance(row["conversations"], list):
+            parts = []
             for turn in row["conversations"]:
-                if isinstance(turn, dict) and "value" in turn:
-                    return str(turn["value"]).strip()
-        # generic text
+                if not isinstance(turn, dict):
+                    continue
+                role = turn.get("from", "")
+                value = turn.get("value", "")
+                if not value:
+                    continue
+                if role in ("human", "user"):
+                    parts.append(f"User: {value.strip()}")
+                elif role in ("gpt", "assistant", "chatgpt"):
+                    parts.append(f"Assistant: {value.strip()}")
+                else:
+                    parts.append(value.strip())
+            return "\n\n".join(parts) if parts else None
+        # generic text — last-resort single-field datasets
         for k in ("text", "instruction", "prompt", "input"):
             if k in row and isinstance(row[k], str) and row[k].strip():
                 return row[k].strip()

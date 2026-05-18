@@ -23,8 +23,10 @@ on 2026-05-16):
      5k_capture_results.md showed pos<10 has ~17% lower hidden L2 — the
      model legitimately has less to predict from. Default N=3.
 
-  4. **Auxiliary MSE loss** (EAGLE paper §3.3)
-     0.1 * MSE(draft_hidden, target_hidden). --aux-weight 0 disables.
+  4. **Auxiliary MSE loss** — DISABLED BY DEFAULT per EAGLE-3 paper §3.2.
+     EAGLE-3 explicitly removed the feature regression loss because it
+     limits draft-model expressiveness and breaks the data scaling curve.
+     Set --aux-weight > 0 to enable (legacy EAGLE-1 mode).
 
   5. **Checkpointing + --resume**
      `--save-every N` saves a (params + opt-state + meta) bundle each N
@@ -654,7 +656,7 @@ def main() -> int:
                    help="If --optimizer lion or muon, consider 1e-4 (paper-recommended scale).")
     p.add_argument("--weight-decay", type=float, default=0.01)
     p.add_argument("--warmup-pct", type=float, default=0.05)
-    p.add_argument("--aux-weight", type=float, default=0.1,
+    p.add_argument("--aux-weight", type=float, default=0.0,
                    help="Coefficient for MSE auxiliary on draft hidden vs target hidden. "
                         "0 disables. EAGLE paper §3.3 uses 0.1.")
     p.add_argument("--aux-target-kind", default="next", choices=["current", "next"],

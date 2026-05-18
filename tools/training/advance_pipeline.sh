@@ -65,10 +65,12 @@ HELDOUT_JSONL="${HELDOUT_JSONL:-tests/data/held_out_500.jsonl}"
 HELDOUT_SHARD="${HELDOUT_SHARD:-training_data/c2_hidden/held_out_500.bin}"
 EVAL_RESULT="${EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_55k.json}"
 STUB_RESULT="${STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_55k.json}"
-TARGET_SAMPLES="${TARGET_SAMPLES:-55000}"
+TARGET_SAMPLES="${TARGET_SAMPLES:-100000}"
 HIDDEN_DIM="${HIDDEN_DIM:-2048}"
 EPOCHS="${EPOCHS:-3}"
 LR="${LR:-3e-4}"
+# Tier1 training also defaults to --aux-weight 0 per EAGLE-3 §3.2 (no
+# feature loss). This is the train.py default since the related commit.
 
 # ---- Tier 2 config — capped at 100K per ROI analysis ----
 # EAGLE-3 paper Table 6: 100K → ~74% accept, 500K → ~78%. Marginal 4%
@@ -301,6 +303,17 @@ if [ ! -f "$M_S8" ]; then
   else
     log "S8: FAILED — see $PIPELINE_LOG"
     exit 2
+  fi
+  # 2026-05-17 plan revision: TIER2_TARGET (100K) == TARGET_SAMPLES (100K)
+  # after switching to full-dialogue capture from scratch. The tier1 head
+  # is already trained on the full 100K shard, so tier2 extension stages
+  # (S9-S13) would just retrain on the same data. Short-circuit to ALL_DONE
+  # unless TIER2_TARGET strictly exceeds TARGET_SAMPLES.
+  if [ "$TIER2_TARGET" -le "$TARGET_SAMPLES" ]; then
+    log "S8 done; tier1+tier2 targets equal -> ALL_DONE (no tier2 extension)"
+    touch "$M_ALL"
+    echo "PIPELINE_ALL_DONE_SINGLE_TIER"
+    exit 0
   fi
   # Don't touch ALL_DONE yet — tier 2 follows.
   exit 0
