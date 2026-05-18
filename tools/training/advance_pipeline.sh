@@ -70,12 +70,16 @@ HIDDEN_DIM="${HIDDEN_DIM:-2048}"
 EPOCHS="${EPOCHS:-3}"
 LR="${LR:-3e-4}"
 
-# ---- Tier 2 (500K) config ----
-TIER2_TARGET="${TIER2_TARGET:-500000}"
-TIER2_SAMPLES_JSONL="${TIER2_SAMPLES_JSONL:-tests/data/ultrachat_500k_union.jsonl}"
-TIER2_CKPT_DIR="${TIER2_CKPT_DIR:-tools/training/mlx_eagle/ckpt_500k}"
-TIER2_EVAL_RESULT="${TIER2_EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_500k.json}"
-TIER2_STUB_RESULT="${TIER2_STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_500k.json}"
+# ---- Tier 2 config — capped at 100K per ROI analysis ----
+# EAGLE-3 paper Table 6: 100K → ~74% accept, 500K → ~78%. Marginal 4%
+# acceptance for 3 weeks more capture wall = bad trade. Cap at 100K
+# (~3 days incremental capture after 55K) and spend the saved weeks on
+# Path B kernel engineering (the real path-to-90 lever).
+TIER2_TARGET="${TIER2_TARGET:-100000}"
+TIER2_SAMPLES_JSONL="${TIER2_SAMPLES_JSONL:-tests/data/ultrachat_100k_union.jsonl}"
+TIER2_CKPT_DIR="${TIER2_CKPT_DIR:-tools/training/mlx_eagle/ckpt_100k}"
+TIER2_EVAL_RESULT="${TIER2_EVAL_RESULT:-reports/path_to_90/stage3_c2/eval_100k.json}"
+TIER2_STUB_RESULT="${TIER2_STUB_RESULT:-reports/path_to_90/stage3_c2/spec_stub_100k.json}"
 
 PY="${PY:-/Library/Frameworks/Python.framework/Versions/3.12/bin/python3}"
 DISMANTLE="${DISMANTLE:-./target/release/dismantle}"
@@ -306,23 +310,25 @@ fi
 # This does NOT wait. The capture writes into the same .bin via --resume,
 # so S10 just monitors for the sample count to cross TIER2_TARGET.
 if [ ! -f "$M_S9" ]; then
-  log "S9: tier1 done. Prepping 500K samples + launching capture extension…"
-  # Prep 500K-union JSONL if absent.
+  log "S9: tier1 done. Prepping 100K samples + launching capture extension…"
+  # Prep 100K-union JSONL if absent. Cap at 100K (not 500K) per ROI
+  # analysis: +4% acceptance vs 500K isn't worth +3 weeks of capture
+  # wall time; Path B kernel work delivers the real compounding wins.
   if [ ! -f "$TIER2_SAMPLES_JSONL" ]; then
-    log "S9: prepping $TIER2_SAMPLES_JSONL (500K UltraChat union)"
+    log "S9: prepping $TIER2_SAMPLES_JSONL (100K UltraChat union)"
     $PY tools/training/capture_hidden.py prep \
-        --out tests/data/ultrachat_500k.jsonl \
+        --out tests/data/ultrachat_100k.jsonl \
         --dataset HuggingFaceH4/ultrachat_200k --split train_sft --streaming \
-        --n 500000 --min-chars 200 --max-chars 2000 --id-prefix ultrachat --force \
+        --n 100000 --min-chars 200 --max-chars 2000 --id-prefix ultrachat --force \
         >> "$PIPELINE_LOG" 2>&1 || {
-        log "S9: 500K prep FAILED"; exit 2;
+        log "S9: 100K prep FAILED"; exit 2;
     }
     # Union with the 55K already done so --resume skips them efficiently.
     $PY -c "
 import json
 seen = set()
 with open('$TIER2_SAMPLES_JSONL', 'w') as out:
-    for src in ('tests/data/ultrachat_55k_union.jsonl', 'tests/data/ultrachat_500k.jsonl'):
+    for src in ('tests/data/ultrachat_55k_union.jsonl', 'tests/data/ultrachat_100k.jsonl'):
         for line in open(src):
             r = json.loads(line)
             if r['id'] in seen: continue
@@ -330,7 +336,8 @@ with open('$TIER2_SAMPLES_JSONL', 'w') as out:
             out.write(json.dumps(r, ensure_ascii=False) + '\n')
 " 2>>"$PIPELINE_LOG" || { log "S9: union JSONL FAILED"; exit 2; }
   fi
-  # Launch capture in background — long-running, ~3 weeks at ~25 records/s.
+  # Launch capture in background — ~3 more days at ~25 records/s for the
+  # delta from 55K to 100K (~45K new samples).
   if ! pgrep -f "dismantle capture-hidden.*$SHARD_BIN" > /dev/null; then
     log "S9: launching 500K capture (nohup, detached)…"
     nohup nice -n 19 taskpolicy -b "$DISMANTLE" capture-hidden \
