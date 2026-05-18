@@ -28,6 +28,7 @@ pub mod quant;
 pub mod sample;
 pub mod speculate;
 pub mod tokenizer;
+pub mod util;
 
 mod error;
 pub use error::{Error, Result};

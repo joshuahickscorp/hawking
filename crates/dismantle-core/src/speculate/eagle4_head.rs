@@ -15,25 +15,26 @@
 //! → frozen V2-Lite LM head → token logits, plus two small heads for
 //! 26×64 routing-mask logits and a P(accept) calibration scalar.
 //!
-//! ## This commit
+//! ## Current state
 //!
-//! Skeleton only:
-//!
-//! - `Eagle4Config` constants and `Eagle4Weights` struct describe the
-//!   parameter layout the NPZ loader will populate.
-//! - `Eagle4Head::new_uninitialized()` produces a struct with all weights
-//!   zero-initialized and `residual_gate = 0.0` — at this state the head
-//!   would produce all-equal logits, useful as a structural placeholder.
-//! - `Eagle4Head::from_npz(path)` returns `Err(Unimplemented)`; the NPZ
-//!   loader lands in the next session.
-//! - `DraftHead::propose` returns `Err(Unimplemented)`; the forward pass
-//!   lands once the loader is real.
+//! - `Eagle4Config` constants + `Eagle4Weights` struct describe the
+//!   parameter layout the NPZ loader populates.
+//! - `Eagle4Head::new_uninitialized()` produces an all-zero structural
+//!   placeholder; `propose()` still errors via Unimplemented on it.
+//! - `Eagle4Head::from_npz(path)` reads an `eagle4.py`-produced
+//!   checkpoint and validates every required tensor's shape against
+//!   the V2-Lite-specific constants. Forward pass still unimplemented.
+//! - `DraftHead::propose` returns `Err(Unimplemented)`; the forward
+//!   pass lands separately (see convergence doc § "Required dismantle
+//!   changes" #4).
 //!
 //! See `reports/path_to_90/eagle4_convergence.md` for the integration
 //! contract and order-of-work.
 
 use crate::speculate::draft_head::{DraftHead, DraftInputs, DraftOutputs};
+use crate::util::npz::{read_npz, NpyArray};
 use crate::{Error, Result};
+use std::collections::HashMap;
 use std::path::Path;
 
 /// V2-Lite-specific constants the head depends on. Mirrors
@@ -165,14 +166,72 @@ impl Eagle4Head {
         }
     }
 
-    /// Load from an NPZ file produced by `eagle4.py train`. Not
-    /// implemented yet — see `reports/path_to_90/eagle4_convergence.md §
-    /// "Required dismantle changes" #2`.
-    pub fn from_npz<P: AsRef<Path>>(_path: P) -> Result<Self> {
-        Err(Error::Unimplemented(
-            "Eagle4Head::from_npz — npz loader not yet implemented; \
-             see reports/path_to_90/eagle4_convergence.md",
-        ))
+    /// Load from an NPZ file produced by `eagle4.py train`
+    /// (`eagle4/eagle4.py:136 → np.savez(path, **flat)`).
+    ///
+    /// Key naming follows `eagle4.py::_flat_params`; see
+    /// `Eagle4Weights`'s docstring. All weights are fp32 little-endian
+    /// (uncompressed ZIP). `__step__` is parsed when present and folded
+    /// into `checkpoint_id` so debugging across multiple checkpoints
+    /// stays unambiguous.
+    ///
+    /// Returns `Error::Model` on shape/dtype/key mismatch; the head is
+    /// only constructed when every required tensor is present at the
+    /// expected shape.
+    pub fn from_npz<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let path_ref = path.as_ref();
+        let mut entries = read_npz(path_ref)?;
+
+        let h = cfg::HIDDEN_DIM;
+        let inter = cfg::INTERMEDIATE;
+        let mhid = cfg::MASK_HIDDEN;
+        let mask_out = cfg::N_MOE_LAYERS * cfg::N_ROUTED;
+
+        let weights = Eagle4Weights {
+            in_proj: take_f32(&mut entries, "in_proj.weight", &[h, 5 * h])?,
+            block_attn_norm: take_f32(&mut entries, "block.attn_norm", &[h])?,
+            block_attn_q: take_f32(&mut entries, "block.attn.query_proj.weight", &[h, h])?,
+            block_attn_k: take_f32(&mut entries, "block.attn.key_proj.weight", &[h, h])?,
+            block_attn_v: take_f32(&mut entries, "block.attn.value_proj.weight", &[h, h])?,
+            block_attn_o: take_f32(&mut entries, "block.attn.out_proj.weight", &[h, h])?,
+            block_mlp_norm: take_f32(&mut entries, "block.mlp_norm", &[h])?,
+            block_mlp_gate: take_f32(&mut entries, "block.mlp.gate.weight", &[inter, h])?,
+            block_mlp_up: take_f32(&mut entries, "block.mlp.up.weight", &[inter, h])?,
+            block_mlp_down: take_f32(&mut entries, "block.mlp.down.weight", &[h, inter])?,
+            residual_gate: take_f32_scalar(&mut entries, "residual_gate")?,
+            mask_proj_in: take_f32(&mut entries, "mask_proj_in.weight", &[mhid, h])?,
+            mask_proj_out: take_f32(&mut entries, "mask_proj_out.weight", &[mask_out, mhid])?,
+            calib_proj_w: take_f32(&mut entries, "calib_proj.weight", &[1, h])?,
+            calib_proj_b: take_f32_scalar(&mut entries, "calib_proj.bias")?,
+        };
+
+        // `__step__` is informational; absent on older checkpoints, so
+        // missing-key is not an error.
+        let step = entries
+            .remove("__step__")
+            .and_then(|a| a.as_i32_scalar().ok());
+
+        // eagle4.py's _flat_params walker only emits the 14 trainable
+        // tensors plus the scalar gate plus optional __step__; anything
+        // else means the checkpoint format diverged.
+        if !entries.is_empty() {
+            let mut leftover: Vec<_> = entries.keys().cloned().collect();
+            leftover.sort();
+            return Err(Error::Model(format!(
+                "Eagle4Head::from_npz: unexpected extra keys in {}: {:?}",
+                path_ref.display(),
+                leftover
+            )));
+        }
+
+        let checkpoint_id = match step {
+            Some(s) => format!("eagle4:{} (step={})", path_ref.display(), s),
+            None => format!("eagle4:{}", path_ref.display()),
+        };
+        Ok(Self {
+            weights,
+            checkpoint_id,
+        })
     }
 
     /// Read-only access to the loaded weights (useful for parity tests
@@ -180,6 +239,30 @@ impl Eagle4Head {
     pub fn weights(&self) -> &Eagle4Weights {
         &self.weights
     }
+}
+
+fn take_f32(
+    entries: &mut HashMap<String, NpyArray>,
+    key: &str,
+    expected_shape: &[usize],
+) -> Result<Vec<f32>> {
+    let arr = entries
+        .remove(key)
+        .ok_or_else(|| Error::Model(format!("Eagle4Head::from_npz: missing key '{}'", key)))?;
+    if arr.shape != expected_shape {
+        return Err(Error::Model(format!(
+            "Eagle4Head::from_npz: '{}' shape {:?}, expected {:?}",
+            key, arr.shape, expected_shape
+        )));
+    }
+    arr.as_f32()
+}
+
+fn take_f32_scalar(entries: &mut HashMap<String, NpyArray>, key: &str) -> Result<f32> {
+    let arr = entries
+        .remove(key)
+        .ok_or_else(|| Error::Model(format!("Eagle4Head::from_npz: missing key '{}'", key)))?;
+    arr.as_f32_scalar()
 }
 
 impl DraftHead for Eagle4Head {
@@ -245,9 +328,11 @@ mod tests {
     }
 
     #[test]
-    fn from_npz_returns_unimplemented() {
+    fn from_npz_missing_file_returns_io_error() {
+        // Real impl: nonexistent path surfaces through std::io, not
+        // Unimplemented (which was the skeleton's stub return).
         let result = Eagle4Head::from_npz("nonexistent.npz");
-        assert!(matches!(result, Err(Error::Unimplemented(_))));
+        assert!(matches!(result, Err(Error::Io(_))));
     }
 
     #[test]
