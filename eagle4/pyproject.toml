@@ -1,0 +1,35 @@
+[project]
+name = "eagle4"
+version = "0.1.0"
+description = "Routing-aware speculative-decoding head for MoE targets on Apple Silicon"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+readme = "README.md"
+dependencies = [
+    "mlx>=0.18",
+    "mlx-lm>=0.18",
+    "datasets>=3.0",
+    "pyarrow>=17",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+eagle4 = "eagle4:main"
+eagle4-capture = "capture:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["eagle4", "capture"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

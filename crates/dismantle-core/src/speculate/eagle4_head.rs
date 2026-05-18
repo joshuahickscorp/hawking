@@ -1,7 +1,7 @@
 //! Path-to-90 — `Eagle4Head` skeleton for the trained EAGLE-4 draft head.
 //!
 //! EAGLE-4 is the routing-aware speculative-decoding head trained in
-//! `~/Downloads/eagle4`. Per its `bench_results.md` it ships two
+//! `eagle4`. Per its `bench_results.md` it ships two
 //! checkpoints from one training run:
 //!
 //! - `best.npz` (v2-spec): **87.48% target-argmax acceptance** on V2-Lite

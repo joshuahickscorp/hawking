@@ -1,11 +1,12 @@
 # EAGLE-4 convergence — dismantle integration plan
 
-**Status:** prep work. EAGLE-4 has shipped trained heads + offline metrics in
-the standalone repo (`~/Downloads/eagle4`). Its README explicitly names
-dismantle as the inference runtime: *"The runtime that turns offline
-acceptance into wall-clock tps lives separately in dismantle — this repo
-is the head architecture and training pipeline."* This doc captures the
-integration contract.
+**Status:** prep work. EAGLE-4 has shipped trained heads + offline metrics
+under `eagle4/` (in-tree as of the eagle4 drop commit; formerly a
+standalone private repo at `~/Downloads/eagle4`). Its README explicitly
+names dismantle as the inference runtime: *"The runtime that turns
+offline acceptance into wall-clock tps lives separately in dismantle —
+this repo is the head architecture and training pipeline."* This doc
+captures the integration contract.
 
 ## What EAGLE-4 actually is (post-training, current state)
 
@@ -169,7 +170,7 @@ New flag on `dismantle generate`:
 ```
 dismantle generate \
   --speculate eagle4 \
-  --draft-head ~/Downloads/eagle4/checkpoints/best.npz \
+  --draft-head eagle4/checkpoints/best.npz \
   --calib-threshold 0.5    # optional; below this, fall back to autoregressive
   ...
 ```
@@ -274,7 +275,7 @@ eagle4-core's masked-verify intent.
 
 ## Beyond eagle4 (parking lot)
 
-EAGLE-4 v3/v4 specs in `~/Downloads/eagle4/V3.md` and `V4.md` exist but the
+EAGLE-4 v3/v4 specs in `eagle4/V3.md` and `V4.md` exist but the
 current trained head is at "v2-spec." When v3/v4 land, dismantle's
 masked-verify kernel framework should absorb them additively:
 

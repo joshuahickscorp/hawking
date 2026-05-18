@@ -5,7 +5,7 @@ or a collaborator. Each section is a self-contained prompt that bootstraps the
 next phase of work from current state.
 
 > **UPDATE 2026-05-18 — EAGLE-4 integration supersedes parts of this brief.**
-> EAGLE-4 (`~/Downloads/eagle4`) has shipped a trained head with **87.48%
+> EAGLE-4 (`eagle4`) has shipped a trained head with **87.48%
 > target-argmax acceptance** vs EAGLE-3's 75.84% (+11.64 pp). Its README
 > names dismantle as its inference runtime. Read
 > `reports/path_to_90/eagle4_convergence.md` BEFORE acting on Phase 2 or

@@ -20,7 +20,7 @@ pseudocode, masked-verify kernel signature, and order-of-work.
 
 ## What this handoff is about
 
-The user is dropping the standalone `~/Downloads/eagle4` repo into
+The user is dropping the standalone `eagle4` repo into
 dismantle as a top-level `eagle4/` subdirectory. Reason: public-repo
 optics. The whole stack (head training + inference runtime) should be
 visible in one place.
@@ -28,7 +28,7 @@ visible in one place.
 After the drop you need to:
 
 1. Refresh path references in dismantle's docs/code so they point at
-   in-tree paths instead of the old `~/Downloads/eagle4/...`.
+   in-tree paths instead of the old `eagle4/...`.
 2. Gitignore the large artifacts (checkpoints, training data, frozen
    weights, mlx caches) without losing the source code or the small
    results files (bench/tau JSON).
@@ -138,23 +138,23 @@ path. The find/replace list (pre-grepped at handoff time):
 | `crates/dismantle-core/src/speculate/eagle4_head.rs` | 4, 40, 56, 69, 168 |
 | `crates/dismantle-core/src/speculate/draft_head.rs` | 20 |
 
-Most are simple `s,~/Downloads/eagle4,eagle4,g` (the convergence doc
-references `~/Downloads/eagle4/checkpoints/best.npz` → `eagle4/checkpoints/best.npz`).
+Most are simple `s,eagle4,eagle4,g` (the convergence doc
+references `eagle4/checkpoints/best.npz` → `eagle4/checkpoints/best.npz`).
 
 Recommended approach:
 
 ```bash
 # Dry-run: see what would change
-grep -rln "~/Downloads/eagle4\|Downloads/eagle4" reports/ crates/
+grep -rln "eagle4\|eagle4" reports/ crates/
 
 # Apply
 find reports/ crates/ -type f \( -name "*.md" -o -name "*.rs" \) \
-  -exec sed -i '' 's|~/Downloads/eagle4|eagle4|g' {} \;
+  -exec sed -i '' 's|eagle4|eagle4|g' {} \;
 find reports/ crates/ -type f \( -name "*.md" -o -name "*.rs" \) \
-  -exec sed -i '' 's|Downloads/eagle4|eagle4|g' {} \;
+  -exec sed -i '' 's|eagle4|eagle4|g' {} \;
 
 # Verify
-grep -rn "Downloads/eagle4" reports/ crates/  # should print nothing
+grep -rn "eagle4" reports/ crates/  # should print nothing
 ```
 
 There are also a few references that don't have the `~/Downloads/`
@@ -202,7 +202,7 @@ EAGLE4_PARITY_TEST=1 cargo test -p dismantle-core --test eagle4_parity -- --igno
 git -c user.name='Joshua Hicks' -c user.email='joshuahicksboba@gmail.com' commit -m "
 path-to-90 eagle4 drop: source code in-tree + path refresh + parity wiring
 
-EAGLE-4 (formerly in ~/Downloads/eagle4) is now in-tree at eagle4/ for
+EAGLE-4 (formerly in eagle4) is now in-tree at eagle4/ for
 public-repo optics. Source code + small results files committed; large
 artifacts (checkpoints, training data, frozen weights) gitignored —
 regeneratable via eagle4/eagle4.py frozen + eagle4/capture.py.
@@ -212,7 +212,7 @@ regeneratable via eagle4/eagle4.py frozen + eagle4/capture.py.
     bench_results.json, tau_results.json, tests/, LICENSE}
   - Gitignore: eagle4 large artifacts (49 GB checkpoints, 22 GB data,
     800 MB frozen)
-  - Path refresh: ~/Downloads/eagle4 → eagle4 in convergence doc, brief,
+  - Path refresh: eagle4 → eagle4 in convergence doc, brief,
     Eagle4Head module comments
   - Parity test: crates/dismantle-core/tests/eagle4_parity.rs (gated on
     EAGLE4_PARITY_TEST=1)
