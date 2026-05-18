@@ -293,3 +293,190 @@ on same hardware: ~70-80 dec_tps. Margin: **~1.5-2× ahead of llama.cpp.**
 Engineering effort to get there from today: ~2-3 months elapsed, mostly
 background compute (capture + train) + ~150 hours of focused engineering
 across Path B + tree decoding + C3 wire-up.
+
+---
+
+# DySpec dynamic tree decode (path-to-90 step 20)
+
+**Status:** design only. Supersedes the fixed-topology Sequoia
+approach above for the EAGLE-4 + MoE regime.
+**Why dynamic, not fixed:** the Qwen3.6-A3B llama.cpp benchmark
+(April 2026) showed zero spec-decode configurations achieve net
+speedup on Qwen3-MoE despite 100 % draft acceptance — because fixed-
+topology trees activate too many experts per verify pass. The expert-
+union grows roughly linearly with tree size, eating the bandwidth
+that spec decode was supposed to save. EAGLE-4's `calib_logit` gives
+us a per-position confidence signal that fixed trees ignore.
+
+DySpec (arXiv 2403.12428, NeurIPS 2024) replaces the static tree
+shape with a per-token confidence-driven shape function. On a high-
+confidence position, branch wider (high acceptance probability — more
+candidates pay off). On a low-confidence position, narrow or skip
+spec decode entirely (low acceptance — extra candidates are wasted
+bandwidth). For V2-Lite MoE this is the difference between a working
+spec-decode regime and a regression.
+
+## (a) Tree-shape function f(calib) → (depth, width)
+
+`calib` here is `eagle4_head.propose(...).calib`, post-sigmoid. The
+shape function:
+
+```rust
+fn tree_shape(calib: f32) -> TreeShape {
+    if calib >= 0.85 {
+        TreeShape { depth: 5, width: [1, 4, 4, 2, 2] }   // wide, deep
+    } else if calib >= 0.65 {
+        TreeShape { depth: 4, width: [1, 3, 3, 2] }      // moderate
+    } else if calib >= 0.50 {
+        TreeShape { depth: 3, width: [1, 2, 2] }         // narrow
+    } else {
+        TreeShape { depth: 1, width: [1] }               // skip spec
+    }                                                     // (autoregressive)
+}
+```
+
+Total node counts: 35 nodes (wide), 19 (moderate), 7 (narrow), 1
+(off). Expert-union growth (V2-Lite, 6 routed per token):
+- 35-node tree: ~28 unique experts/layer (worst case, of 64)
+- 19-node tree: ~22 experts/layer
+- 7-node tree:  ~12 experts/layer
+- 1-node:        6 experts/layer (baseline routed top-6)
+
+Thresholds 0.85 / 0.65 / 0.50 are starting points; the right values
+land empirically from a sweep against Spec-Bench MT-Bench. Until
+then, default to MODERATE (`calib ≥ 0.65 → 19-node`) and treat the
+shape function as a profile parameter (not hard-coded in the kernel).
+
+## (b) Tree attention mask construction
+
+A tree with N total nodes generates an N×N attention mask where
+`mask[i,j] = 0` iff j is an ancestor of i in the tree (or i == j),
+else `-1e9`. Each row corresponds to one verify-position; the
+softmax-masked attention only attends to its ancestors + self.
+
+Concrete for the 7-node narrow tree:
+
+```
+positions:  [root, c1, c2, c1a, c1b, c2a, c2b]
+ancestors:
+    root: ∅          → mask row: [0, -, -, -, -, -, -]
+    c1:   root       → mask row: [0, 0, -, -, -, -, -]
+    c2:   root       → mask row: [0, -, 0, -, -, -, -]
+    c1a:  root, c1   → mask row: [0, 0, -, 0, -, -, -]
+    c1b:  root, c1   → mask row: [0, 0, -, -, 0, -, -]
+    c2a:  root, c2   → mask row: [0, -, 0, -, -, 0, -]
+    c2b:  root, c2   → mask row: [0, -, 0, -, -, -, 0]
+```
+
+`-` here = `-1e9`. Encoded as a packed `(N, N)` f32 buffer passed
+into `forward_tokens_batched_tree(tokens, positions, mask)`. The
+existing Wedge C path's MLA decode needs a tree-mask variant; this
+is exactly what Path B's `mla_decode_kernel_fc_kbatch` becomes when
+extended with an attention mask buffer (one extra input). The
+masked-verify kernel from step 12 (the MoE variant) gets a similar
+extension for the FFN side — though MoE's per-position routing is
+already independent across positions, so the tree-mask only matters
+for attention.
+
+## (c) Verify-side accept / reject across tree branches
+
+Linear K-spec accept rule: longest matching greedy prefix. Tree
+version: longest matching ROOT-TO-LEAF path under V2-Lite's argmax
+at each position. Implementation:
+
+```rust
+fn accept_tree(tree: &Tree, v2_argmaxes: &[u32]) -> Vec<u32> {
+    let mut accepted = vec![tree.root.token];
+    let mut node = &tree.root;
+    while let Some(children) = node.children() {
+        let v2_token = v2_argmaxes[node.position];
+        match children.iter().find(|c| c.token == v2_token) {
+            Some(matched_child) => {
+                accepted.push(matched_child.token);
+                node = matched_child;
+            }
+            None => break,  // V2-Lite disagrees with all children →
+                            // emit v2_token as correction and stop.
+        }
+    }
+    accepted
+}
+```
+
+Bit-identicality preserved: every emitted token is either a tree
+node V2 accepted, or V2's own correction at the first divergence.
+The longest-matching-path is a generalization of the longest-
+matching-prefix rule; same correctness argument applies (per Sequoia
+§3.1).
+
+KV rollback after accept: KV slots for the accepted path stay; KV
+slots for non-accepted siblings get truncated. With the tree mask
+approach, all N positions in the tree get their KV computed in the
+single verify forward, but only the longest accepted path's KV is
+retained.
+
+## Integration with EAGLE-4 + Path B kernels
+
+EAGLE-4's `propose()` currently returns a flat K-best list at one
+position. For trees we need `propose_tree(inputs, shape) -> TreeNodes`
+returning a tree structure: at each tree level, propose
+`width[level]` candidates per parent. That requires K iterations of
+the head's autoregressive draft loop (eagle4 head fed its own
+`draft_hidden` as the next position's `h_high` — see eagle4.py's
+training-side multi-step-K dance).
+
+Implementation order, INSIDE step 21 once Path B kernels are in
+place:
+
+1. Extend `Eagle4Head` with `propose_tree(inputs, shape) -> TreeNodes`.
+   Reuses `forward_full`'s plumbing K-times with shape-driven branching.
+2. Extend `forward_tokens_batched_for_test` to accept an attention
+   mask buffer. Mask-aware Path B kernels do the actual work.
+3. Decode loop in `model/deepseek_v2.rs::generate`:
+   `SpeculateMode::Eagle4` branch routes to tree decode when
+   `calib ≥ 0.50` and a positive shape comes back; else falls back
+   to K=1 verify-by-comparison (step 8's current path).
+4. Bit-identical regression: same as step 9 but with tree shape
+   variations — sequences across shapes must all match Off greedy.
+
+## What's the expected MoE multiplier?
+
+Per deep-research (`eagle4_deep_research.md` § "MoE spec-decode is a
+documented minefield"):
+
+- Dense Vicuna trees: 1.4–1.8× over chain spec decode.
+- MoE V2-Lite trees: 1.2–1.5× expected (less than dense because
+  expert-union still grows with tree size; mitigated but not
+  eliminated by DySpec's narrow-tree behavior on low-calib).
+
+Stage 4 measurement target (step 22): 70–95 tok/s. Computed from
+Stage 3's 55–75 tok/s × 1.2–1.5 MoE tree multiplier with DySpec
+mitigating the worst-case expert-union explosion.
+
+## Dependencies + ordering against the foundation halt
+
+Tree decode (steps 20–22) is gated on:
+
+- CPU `attention()` divergence fix (foundation halt; chip queued
+  2026-05-18). Tree-mask MLA decode is meaningless if the mask-less
+  MLA decode is already wrong.
+- Path B kernel substrate (steps 12–17). The tree-mask kernels are
+  Path B kernels with one extra buffer; design them together for
+  shared body / shared parity tests.
+- Routing recall fine-tune (step 11). DySpec's narrow-tree fallback
+  uses calib to decide width; calib accuracy depends on the recall
+  fine-tune that also rebalances the head's loss weighting.
+
+If all three land cleanly, tree decode is ~1 week of focused
+implementation (per step 21's estimate). If any are blocked, defer
+tree decode and pursue parallelizable Stage 5 hardware-path work
+instead.
+
+## Concrete file deltas (step 20 design only, no code in this commit)
+
+- `reports/path_to_90/tree_decode/design.md` — extended with this
+  DySpec section.
+- No new code files. Implementation lands in step 21 as
+  `crates/dismantle-core/src/speculate/tree.rs` + the tree-mask
+  extensions to Path B kernels in `parallel_k_attn.metal` /
+  `parallel_k_moe_masked.metal`.
