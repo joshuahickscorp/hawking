@@ -4,20 +4,27 @@
 or a collaborator. Each section is a self-contained prompt that bootstraps the
 next phase of work from current state.
 
-**Current state snapshot** (as of commit `b121d9b`, 2026-05-17 ~21:30 EDT):
+**Current state snapshot** (post-recovery, 2026-05-17 ~22:30 EDT — see
+`reports/path_to_90/recovery_2026-05-17.md` for what changed and why):
 
 - Branch: `claude/dreamy-golick-d54ff8` on `joshuahickscorp/dismantle`
-- Capture: PID 99052 running Phase 1 data (full UltraChat dialogues, single
-  hidden, DCAP v1). ETA Sunday May 24. Writes to
-  `training_data/c2_hidden/eagle3_v0/shard_000.bin`.
-- Pipeline loop: PID 99053 polling every 60s; will auto-fire S1-S8 (tier1
-  training + eval + stub) when capture completes.
-- TIER2 short-circuited to ALL_DONE since TARGET=TIER2_TARGET=100K.
-- Monitors: `bz8je83i5` (20-min pings), `bqsycr8ww` (stage notifications + 6h
-  heartbeats).
-- Two preserved legacy shards: `shard_v1_legacy_43k.bin` (user-prompts only,
-  43K samples, EAGLE-1 recipe) and `shard_v2_partial_dcap1.bin` (full dialogue,
-  ~30 samples, DCAP v1) — for ablation comparison if needed.
+- Worktree: `.claude/worktrees/dreamy-golick-d54ff8/` (recreated; previous
+  one was deleted with its untracked training data in flight)
+- Capture entrypoint: run `tools/training/launch_main_capture.sh` from
+  the worktree root. It calls the committed binary against
+  `tests/data/ultrachat_100k_union.jsonl` with `--max-samples 100000 --resume`,
+  then launches `pipeline_loop.sh`. Both detach.
+- TIER2 target: 100K samples via `--max-samples`. The union file itself
+  contains 155K samples (55K + 100K disjoint sets); the cap is what
+  bounds wall time to the brief's ROI plan.
+- Legacy shards (`shard_v1_legacy_43k.bin`, `shard_v2_partial_dcap1.bin`):
+  **gone** — they were untracked files in the deleted worktree and are
+  not recoverable. Phase 3 ablation paths that referenced them are
+  unreachable and have been removed below.
+- Historical artifacts that survived in git: `shard_000.meta.json` and
+  `shard_000.log` describe a prior 50K run that captured to ~14K samples;
+  the .bin was never committed (gitignored, too large). Treat the meta
+  as history, not a resumable state.
 
 **Documents to read first** (in priority order):
 
@@ -71,16 +78,29 @@ Phase 1+2 combined; Phase 1's partial progress is preserved.
 >    Set via `set_capture_layers(&mut self, layers: Vec<usize>)` (calls
 >    arena.init_multi_layer_capture and stores indices).
 >
-> 4. Modify the layer loop in `forward_token_final_norm_maybe_read` (the
->    Wedge C path, around line 2770-2905). Right after `encode_layer(li,
->    tcb)` returns, if `li` is in `capture_layer_indices`:
+> 4. Modify the layer loop in `forward_token_final_norm_maybe_read`
+>    (`crates/dismantle-core/src/model/deepseek_v2.rs:2770`). Important:
+>    `encode_layer` is a **closure** declared inside the for-loop at
+>    line 2785 — `let encode_layer = |tcb: &mut TokenCommandBuffer<'_>|
+>    -> Result<bool> { ... }`. It captures `li` from the enclosing scope
+>    and returns whether the layer was a real layer (vs skipped). It is
+>    invoked from two sites:
+>      - **single-TCB branch** at line 2867: `encode_layer(global_tcb.as_mut().unwrap())?`
+>      - **per-layer-fallback branch** at line 2871: `encode_layer(&mut tcb)?`
+>
+>    Insert the capture blit AFTER the `encode_layer(...)?` call in both
+>    branches (or scope the Phase 2 work to single-TCB only and skip the
+>    fallback — the fallback path is rarely-used; cleanest is to patch
+>    only single-TCB first, validate, then patch fallback if needed).
+>    The blit itself:
 >    ```rust
->    let slot = self.capture_layer_indices.iter().position(|&x| x == li);
->    if let Some(slot) = slot {
->        let dst = &arena.multi_layer_capture_buf[slot];
->        let sz = (h * std::mem::size_of::<f32>()) as u64;
->        tcb.copy_buffer_bytes(&arena.x_buf, 0, dst, 0, sz)?;
->        crate::kernels::add_inplace_metal_tcb(tcb, dst, &arena.ffn_out_buf, h)?;
+>    if let Some(ref capture_idx) = self.capture_layer_indices {
+>        if let Some(slot) = capture_idx.iter().position(|&x| x == li) {
+>            let dst = &arena.multi_layer_capture_buf[slot];
+>            let sz = (h * std::mem::size_of::<f32>()) as u64;
+>            tcb.copy_buffer_bytes(&arena.x_buf, 0, dst, 0, sz)?;
+>            crate::kernels::add_inplace_metal_tcb(tcb, dst, &arena.ffn_out_buf, h)?;
+>        }
 >    }
 >    ```
 >    This does NOT modify x_buf (next layer's phase1 add_inplace continues
@@ -170,17 +190,24 @@ Phase 1+2 combined; Phase 1's partial progress is preserved.
 >       10-sample wikitext smoke
 >     - Verify DCAP v2 file structure (magic, version=2, n_hiddens=3,
 >       record size = 14 + id_len + 3*4096 bytes)
->     - Verify hidden values: layer 24's output should be ≈ pre-final-norm
->       state, comparable to existing forward_token_with_hidden_for_test
+>     - Verify hidden values: layer 24's capture is PRE-final-norm — the
+>       blit lands `x_buf + ffn_out_buf` before the final RMSNorm runs.
+>       `forward_token_with_hidden_for_test` returns POST-final-norm
+>       `x_norm`, so a direct equality check will always fail. Two options:
+>       (a) apply `final_norm` to the captured tensor before comparing,
+>       or (b) add a `forward_token_with_pre_norm_for_test` trait method
+>       that returns the pre-norm value and compare against that.
 >     - Verify no NaN/Inf at layers 2, 14, 24
 >     - Train a 100-step smoke on the 10-sample shard; verify loss is
 >       finite and TTT + HASS components combine cleanly
 >
-> 15. Restart capture with `--capture-layers 2,14,24` against the existing
->     `tests/data/ultrachat_100k_v2_dialogue.jsonl`. Use a new shard path:
->     `training_data/c2_hidden/eagle3_v0/shard_v3_multilayer.bin`. Estimated
->     wall: ~7 days (same as Phase 1 since per-token forward dominates;
->     the multi-layer blit is sub-millisecond per token).
+> 15. Restart capture with `--capture-layers 2,14,24` against
+>     `tests/data/ultrachat_100k_union.jsonl` (the committed-pipeline
+>     input; the previously-referenced `ultrachat_100k_v2_dialogue.jsonl`
+>     was an off-script file from a prior session and is gone). Use a new
+>     shard path: `training_data/c2_hidden/eagle3_v0/shard_v3_multilayer.bin`.
+>     Estimated wall: ~7 days (same as Phase 1 since per-token forward
+>     dominates; the multi-layer blit is sub-millisecond per token).
 >
 > 16. Update `tools/training/advance_pipeline.sh` defaults to point at the
 >     new shard + add `--multi-hidden` / `--ttt` / `--hass-topk` to the
@@ -228,8 +255,10 @@ automatically. Monitor `bqsycr8ww` will emit the notification.
 > 4. Commit + push. If accept_top1 < 40%, debug:
 >    - Check the train log for loss divergence
 >    - Check the eval harness for off-by-one in next-token alignment
->    - Compare to legacy shard's results (run eval on the legacy
->      ckpts at `continuous_a_lion_next/at_005000/`)
+>    - Compare to the historical 5K-shard baseline metrics noted in
+>      `reports/path_to_90/session_closeout.md` (legacy ablation
+>      checkpoints referenced in prior brief versions no longer exist;
+>      see `recovery_2026-05-17.md`)
 
 ---
 
@@ -397,7 +426,10 @@ post-Phase 2 capture+train).
 >    - Accept longest matching greedy prefix
 >    - Roll back KV on rejection
 >
-> 5. CLI: `dismantle generate --speculate eagle --draft-head models/eagle3-v0.gguf`
+> 5. CLI (NEW flags — design intent, not present in main.rs today):
+>    `dismantle generate --speculate eagle --draft-head models/eagle3-v0.gguf`.
+>    The `--draft-head` flag and the `eagle` value for `--speculate` are
+>    both new and must be added during C3 wire-up.
 >
 > 6. Bit-identical greedy regression: with `SpeculateMode::Eagle` on
 >    against any prompt, output must match `SpeculateMode::Off` greedy
@@ -437,16 +469,31 @@ reproducible code, novel technique. Strong portfolio piece.
 
 ## How to resume capture if it dies
 
+Use the committed launcher (recreated post-recovery):
+
 ```bash
-nohup ./target/release/dismantle capture-hidden \
+./tools/training/launch_main_capture.sh
+```
+
+It sanity-checks the build + weights + union file, then launches the
+capture and pipeline_loop detached. Equivalent to:
+
+```bash
+nohup nice -n 19 taskpolicy -b ./target/release/dismantle capture-hidden \
   --weights models/deepseek-v2-lite-q4.gguf \
-  --samples tests/data/ultrachat_100k_v2_dialogue.jsonl \
-  --out training_data/c2_hidden/eagle3_v0/shard_000.bin \
-  --max-tokens 128 --no-lm-head --resume \
+  --samples tests/data/ultrachat_100k_union.jsonl \
+  --out training_data/c2_hidden/eagle3_v0/shard_000 \
+  --max-tokens 128 --max-samples 100000 --no-lm-head --resume \
   --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
   >> training_data/c2_hidden/eagle3_v0/shard_000.log 2>&1 < /dev/null &
 disown
 ```
+
+Note `--out` takes a prefix (no `.bin`); the binary writes `<prefix>.bin`
+and `<prefix>.meta.json`. The union file is `ultrachat_100k_union.jsonl`
+(155K samples; `--max-samples 100000` caps to the ROI plan); the prior
+brief's `ultrachat_100k_v2_dialogue.jsonl` was an off-script file from
+a session whose worktree was deleted — gone, do not look for it.
 
 ## How to restart pipeline_loop
 

@@ -332,7 +332,7 @@ if [ ! -f "$M_S9" ]; then
     $PY tools/training/capture_hidden.py prep \
         --out tests/data/ultrachat_100k.jsonl \
         --dataset HuggingFaceH4/ultrachat_200k --split train_sft --streaming \
-        --n 100000 --min-chars 200 --max-chars 2000 --id-prefix ultrachat --force \
+        --n 100000 --min-chars 200 --max-chars 20000 --id-prefix ultrachat --force \
         >> "$PIPELINE_LOG" 2>&1 || {
         log "S9: 100K prep FAILED"; exit 2;
     }

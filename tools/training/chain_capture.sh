@@ -138,7 +138,7 @@ if [ ! -f "$SAMPLES_50K" ]; then
     --split train_sft \
     --streaming \
     --n 50000 \
-    --min-chars 200 --max-chars 2000 \
+    --min-chars 200 --max-chars 20000 \
     --id-prefix ultrachat \
     --force >> "$CHAIN_LOG" 2>&1 \
     || { log "prep FAILED"; exit 3; }
