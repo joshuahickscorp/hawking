@@ -334,12 +334,37 @@ def train(
 # ---------------------------------------------------------------------------
 # Eval
 # ---------------------------------------------------------------------------
-def evaluate(ckpt: Path, frozen: Path, parquet_paths: list[Path], max_records: int = 5000, mask_top_k: int = 8) -> dict:
+def evaluate(
+    ckpt: Path,
+    frozen: Path,
+    parquet_paths: list[Path],
+    max_records: int = 5000,
+    mask_top_k: int = 8,
+    dump_logits: Path | None = None,
+) -> dict:
     head = build_head(frozen)
     load_ckpt(head, ckpt)
 
     n = n_top1_target = n_top1_corpus = 0
     per_layer_topk = np.zeros(N_MOE_LAYERS, dtype=np.int64)
+
+    # When dump_logits is set, accumulate per-record arrays across all
+    # shards (truncated to max_records) and save as a single NPZ at the
+    # end. Shapes (after concat):
+    #   token_logits  (N, VOCAB)        float32
+    #   mask_logits   (N, N_MOE, N_ROUTED) float32
+    #   calib_logit   (N,)              float32
+    #   draft_hidden  (N, HIDDEN_DIM)   float32
+    #   prev_token    (N,)              int32
+    #   next_token    (N,)              int32
+    # Consumed by `crates/dismantle-core/tests/eagle4_parity.rs` for the
+    # cross-language Rust-vs-Python parity diff (path-to-90 steps 5-6).
+    dump_token_logits: list[np.ndarray] = []
+    dump_mask_logits: list[np.ndarray] = []
+    dump_calib_logit: list[np.ndarray] = []
+    dump_draft_hidden: list[np.ndarray] = []
+    dump_prev_token: list[np.ndarray] = []
+    dump_next_token: list[np.ndarray] = []
 
     for shard in parquet_paths:
         t = pq.read_table(shard)
@@ -365,10 +390,10 @@ def evaluate(ckpt: Path, frozen: Path, parquet_paths: list[Path], max_records: i
         hi_a = mx.array(hi).astype(mx.float32).reshape(1, take, HIDDEN_DIM)
         sh_a = mx.array(sh).astype(mx.float32).reshape(1, take, HIDDEN_DIM)
 
-        tok, mask_logits, _, calib_logit = head(ph, lo_a, md_a, hi_a, sh_a)
+        tok, mask_logits, draft_hidden, calib_logit = head(ph, lo_a, md_a, hi_a, sh_a)
         baseline = mx.fast.rms_norm(hi_a.reshape(take, HIDDEN_DIM), head._output_norm, RMS_EPS)
         target_logits = baseline @ head._lm_head.astype(mx.float32)
-        mx.eval(tok, mask_logits, target_logits, calib_logit)
+        mx.eval(tok, mask_logits, draft_hidden, target_logits, calib_logit)
 
         head_arg = np.argmax(np.array(tok).reshape(take, -1), axis=-1)
         target_arg = np.array(mx.argmax(target_logits, axis=-1))
@@ -381,9 +406,34 @@ def evaluate(ckpt: Path, frozen: Path, parquet_paths: list[Path], max_records: i
             for ti in range(take):
                 if np.intersect1d(top[ti], np.where(true_mask[ti, L] > 0)[0]).size >= 6:
                     per_layer_topk[L] += 1
+
+        if dump_logits is not None:
+            # Reshape: drop the leading batch=1 dim so first axis = record.
+            tok_np = np.array(tok).reshape(take, -1).astype(np.float32, copy=False)
+            calib_np = np.array(calib_logit).reshape(take).astype(np.float32, copy=False)
+            dh_np = np.array(draft_hidden).reshape(take, HIDDEN_DIM).astype(np.float32, copy=False)
+            dump_token_logits.append(tok_np)
+            dump_mask_logits.append(mask_np.astype(np.float32, copy=False))
+            dump_calib_logit.append(calib_np)
+            dump_draft_hidden.append(dh_np)
+            dump_prev_token.append(prev)
+            dump_next_token.append(nxt)
+
         n += take
         if n >= max_records:
             break
+
+    if dump_logits is not None:
+        dump_logits.parent.mkdir(parents=True, exist_ok=True)
+        np.savez(
+            dump_logits,
+            token_logits=np.concatenate(dump_token_logits, axis=0),
+            mask_logits=np.concatenate(dump_mask_logits, axis=0),
+            calib_logit=np.concatenate(dump_calib_logit, axis=0),
+            draft_hidden=np.concatenate(dump_draft_hidden, axis=0),
+            prev_token=np.concatenate(dump_prev_token, axis=0),
+            next_token=np.concatenate(dump_next_token, axis=0),
+        )
 
     n = max(n, 1)
     return {
@@ -393,6 +443,7 @@ def evaluate(ckpt: Path, frozen: Path, parquet_paths: list[Path], max_records: i
         "mask_top_k": mask_top_k,
         "mask_topk_per_layer_recall": (per_layer_topk / n).tolist(),
         "mask_topk_mean_recall": float((per_layer_topk / n).mean()),
+        "dump_logits": str(dump_logits) if dump_logits is not None else None,
     }
 
 
@@ -500,6 +551,14 @@ def main() -> int:
     ep.add_argument("--parquet", nargs="+", type=Path, required=True)
     ep.add_argument("--max-records", type=int, default=5000)
     ep.add_argument("--mask-top-k", type=int, default=8)
+    ep.add_argument(
+        "--dump-logits",
+        type=Path,
+        default=None,
+        help="If set, write per-record (token_logits, mask_logits, "
+        "calib_logit, draft_hidden, prev_token, next_token) as an NPZ "
+        "at this path. Consumed by dismantle's eagle4 parity test.",
+    )
 
     qp = sub.add_parser("quantize", help="Q4_K_M-like 4-bit head")
     qp.add_argument("--in", dest="ckpt_in", type=Path, required=True)
@@ -518,7 +577,14 @@ def main() -> int:
             target_argmax_warmup_steps=args.target_warmup_steps,
         )
     elif args.cmd == "eval":
-        r = evaluate(args.ckpt, args.frozen, args.parquet, args.max_records, args.mask_top_k)
+        r = evaluate(
+            args.ckpt,
+            args.frozen,
+            args.parquet,
+            args.max_records,
+            args.mask_top_k,
+            dump_logits=args.dump_logits,
+        )
         print(json.dumps({k: v for k, v in r.items() if k != "mask_topk_per_layer_recall"}, indent=2))
         for i, v in enumerate(r["mask_topk_per_layer_recall"]):
             print(f"  layer {i+1:>2}: {v*100:5.1f}%")
