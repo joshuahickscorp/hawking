@@ -1,0 +1,110 @@
+[17:38:31] === stage1_eagle4_measurement starting ===
+[17:38:31] Worktree: /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8
+[17:38:31] Branch:   claude/dreamy-golick-d54ff8
+[17:38:31] Commit:   5d0947ea98a54217bd663206d2772faf34dafef6
+[17:38:31] ✓ Claude.app: not running
+[17:38:31] ✓ slm: not running
+[17:38:31] Building --release (incremental) ...
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:116:26
+    |
+116 |         let start: f64 = msg_send![cb, GPUStartTime];
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:117:24
+    |
+117 |         let end: f64 = msg_send![cb, GPUEndTime];
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:249:21
+    |
+249 |                     msg_send![&*self.sample_buf, resolveCounterRange: ns_range];
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:253:44
+    |
+253 |                     let bytes: *const u8 = msg_send![nsdata, bytes];
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:254:38
+    |
+254 |                     let len: usize = msg_send![nsdata, length];
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: `dismantle-core` (lib) generated 5 warnings
+    Finished `release` profile [optimized] target(s) in 0.23s
+[17:38:31] ✓ build OK
+[17:38:31] ✓ all artifacts present
+[17:38:31] 
+[17:38:31] ── Off-mode greedy baseline (16 tokens each) ──
+[17:38:31]   prompt 0: The quick brown fox...
+[17:38:38]     wall=6.591s  tps≈2.428
+[17:38:38]   prompt 1: Once upon a time...
+[17:38:41]     wall=3.461s  tps≈4.623
+[17:38:41]   prompt 2: def fibonacci(n):...
+[17:38:45]     wall=3.964s  tps≈4.036
+[17:38:45] 
+[17:38:45] ── Eagle4 spec decode (16 tokens each; CPU-walk capture, slow) ──
+[17:38:45]   prompt 0: The quick brown fox... (this will take several minutes)
+[17:39:32]     wall=47.180s  tps≈0.339  draft=0a/16r
+[17:39:32]   prompt 1: Once upon a time... (this will take several minutes)
+[17:40:16]     wall=43.713s  tps≈0.366  draft=0a/16r
+[17:40:16]   prompt 2: def fibonacci(n):... (this will take several minutes)
+[17:40:48]     wall=32.273s  tps≈0.496  draft=1a/15r
+[17:40:49] 
+[17:40:49] ── Summary ──
+[17:40:49] Off    median tps: 2.428
+[17:40:49] Eagle4 median tps: 0.339
+[17:40:49] 
+[17:40:49] Block-ship gate (≥ 18 tok/s for Stage 1): HALT
+[17:40:49] 
+[17:40:49] Stage 1 HALT triggered — Eagle4 dec_tps below 18 tok/s lower bound.
+[17:40:49] This is expected per architecture_closeout.md: CPU-walk capture is
+[17:40:49] the bottleneck. Next architectural unlock: GPU-side eagle4 capture.
+[17:40:49] Per execution_plan.md § Stage 1: < 15 tok/s → reinject Stage 0.5 OR
+[17:40:49] land GPU-side capture first.
+[17:40:49] 
+[17:40:49] === stage1_eagle4_measurement DONE ===
+[17:40:49] 
+[17:40:49] Next: relaunch Claude Code in the worktree and tell it:
+[17:40:49]   'step 10 done — read reports/path_to_90/_stage1_capture/'

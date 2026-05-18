@@ -1,0 +1,23 @@
+[dismantle] DISMANTLE_TCB_TRACE="(unset)" → mode=Off
+[spec/eagle4] step=0 pos=6 draft=22707 v2=188 calib=0.926 thresh=0.500 REJECT
+[spec/eagle4] step=1 pos=7 draft=11 v2=185 calib=0.937 thresh=0.500 REJECT
+
+[spec/eagle4] step=2 pos=8 draft=5976 v2=188 calib=0.787 thresh=0.500 REJECT
+[spec/eagle4] step=3 pos=9 draft=11 v2=185 calib=0.946 thresh=0.500 REJECT
+
+[spec/eagle4] step=4 pos=10 draft=15873 v2=300 calib=0.879 thresh=0.500 REJECT
+   [spec/eagle4] step=5 pos=11 draft=17 v2=565 calib=0.820 thresh=0.500 REJECT
+ if[spec/eagle4] step=6 pos=12 draft=207 v2=291 calib=0.737 thresh=0.500 REJECT
+ n[spec/eagle4] step=7 pos=13 draft=1172 v2=10551 calib=0.922 thresh=0.500 REJECT
+ <=[spec/eagle4] step=8 pos=14 draft=790 v2=207 calib=0.921 thresh=0.500 REJECT
+ [spec/eagle4] step=9 pos=15 draft=35641 v2=15 calib=0.665 thresh=0.500 REJECT
+0[spec/eagle4] step=10 pos=16 draft=185 v2=25 calib=0.894 thresh=0.500 REJECT
+:[spec/eagle4] step=11 pos=17 draft=85324 v2=188 calib=0.387 thresh=0.500 REJECT
+[spec/eagle4] step=12 pos=18 draft=11 v2=185 calib=0.952 thresh=0.500 REJECT
+
+[spec/eagle4] step=13 pos=19 draft=11 v2=391 calib=0.900 thresh=0.500 REJECT
+       [spec/eagle4] step=14 pos=20 draft=45 v2=972 calib=0.400 thresh=0.500 REJECT
+ return[spec/eagle4] step=15 pos=21 draft=207 v2=207 calib=0.954 thresh=0.500 ACCEPT
+ 
+
+[stats] reason=max_tokens prompt=6 completion=16 prefill_ms=5972.8 decode_ms=16601.6 dec_tps=0.96 draft_accepted=1 draft_rejected=15 profile=kp-140aa1de8df9d7acb897e7c8
