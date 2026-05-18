@@ -258,3 +258,203 @@ match), measured wall-clock per spec step should be **≤ 1.8× single-token
 decode wall-clock**, NOT 4×. If we hit ≤ 1.5×, we're on track for the
 full Path B target. If > 2.5×, something is wrong with the K-batch
 dispatch and we re-check.
+
+---
+
+# Masked verify integration (path-to-90 step 12)
+
+This section extends the Path B design to cover the **routing-aware
+masked-verify variant** of `moe_block_batched_indexed_kbatch`. The
+extension is load-bearing for Stage 3 (mask-driven async expert
+prefetch, +5–10% tok/s in the expected regime) and converges the
+Path B kernel design with EAGLE-4's `mask_logits` output.
+
+## Why this lives in the SAME kernel as Path B
+
+EAGLE-4's `propose()` returns a `26×64` predicted routing mask
+(`DraftOutputs::routing_mask` — see
+`crates/dismantle-core/src/speculate/draft_head.rs` and
+`eagle4_head.rs::DraftOutputs`). Production decode needs to:
+
+1. Read the predicted-active expert set for layers 1..26 from the
+   mask.
+2. Prefetch those experts' Q4 weight tiles into Apple Silicon's GPU
+   L2 / TG residency hint **before** the verify dispatch needs them.
+3. Run the K-batched MoE verify kernel with the prefetched-vs-on-
+   demand split visible to its dispatch order.
+
+Implementing prefetch + masked dispatch as a separate kernel from the
+plain `moe_block_batched_indexed_kbatch` would mean two kernels with
+~95% shared body, two parity tests, two threadgroup-memory budgets to
+audit. Designing them as ONE kernel with the mask consumed as an
+extra input buffer (zeros = "no prediction, on-demand load all")
+keeps the substrate single and lets the mask be empty when EAGLE-4
+isn't loaded.
+
+## Kernel signature
+
+```metal
+// crates/dismantle-core/shaders/parallel_k_moe_masked.metal
+kernel void moe_block_batched_indexed_kbatch_masked(
+    device const float*   x_kbatch                [[buffer(0)]],  // (K, hidden)
+    device const uint*    routed_indices_kbatch   [[buffer(1)]],  // (K, TOP_K_ROUTED=6)
+    device const float*   routed_weights_kbatch   [[buffer(2)]],  // (K, TOP_K_ROUTED=6)
+    device const uchar*   predicted_mask          [[buffer(3)]],  // (N_ROUTED=64)
+                                                                  //   0 = not predicted, on-demand
+                                                                  //   1 = predicted, prefetched
+    // Layer-resident weight tiles (pinned from prior dispatch OR
+    // just-prefetched via predicted_mask hint).
+    device const uchar*   routed_gate_blocks      [[buffer(4)]],
+    device const uchar*   routed_up_blocks        [[buffer(5)]],
+    device const uchar*   routed_down_blocks      [[buffer(6)]],
+    // Shared-expert path identical to plain k-batch — fused at dispatch
+    // level since shared is always evaluated.
+    device const uchar*   shared_gate_blocks      [[buffer(7)]],
+    device const uchar*   shared_up_blocks        [[buffer(8)]],
+    device const uchar*   shared_down_blocks      [[buffer(9)]],
+    // Output: (K, hidden) — accumulated routed + shared contribution.
+    device float*         out_kbatch              [[buffer(10)]],
+    // Sizes via function constants (compiler unrolls).
+    constant uint&        K                       [[function_constant(0)]],
+    constant uint&        hidden                  [[function_constant(1)]],
+    constant uint&        moe_intermediate        [[function_constant(2)]],
+    constant uint&        n_shared_experts        [[function_constant(3)]],
+    uint3 gid [[threadgroup_position_in_grid]],
+    uint3 tid [[thread_position_in_threadgroup]]
+);
+```
+
+Rust-side dispatcher (mirrors existing `parallel_k.rs` shape):
+
+```rust
+// crates/dismantle-core/src/kernels/parallel_k.rs
+pub fn moe_block_batched_indexed_kbatch_masked(
+    ctx: &MetalContext,
+    cb: &CommandBuffer,
+    x_kbatch: &Buffer,                  // (K, hidden) device
+    routed_indices_kbatch: &Buffer,     // (K, TOP_K_ROUTED) uint
+    routed_weights_kbatch: &Buffer,     // (K, TOP_K_ROUTED) f32
+    predicted_mask: Option<&Buffer>,    // (N_ROUTED) u8; None ⇒ all-on-demand
+    routed_gate_blocks: &Buffer,
+    routed_up_blocks: &Buffer,
+    routed_down_blocks: &Buffer,
+    shared_gate_blocks: &Buffer,
+    shared_up_blocks: &Buffer,
+    shared_down_blocks: &Buffer,
+    out_kbatch: &mut Buffer,            // (K, hidden) device
+    k: usize,
+    hidden: usize,
+    moe_intermediate: usize,
+    n_shared_experts: usize,
+) -> Result<()>;
+```
+
+When `predicted_mask == None`, the kernel runs identically to the
+plain `moe_block_batched_indexed_kbatch` — single code path, no
+runtime branch on a Bool function constant.
+
+## Prefetch dispatch flow
+
+```
+Step N (decode):
+  ┌──────────────────────────────────────────────────────────┐
+  │ 1. CPU walk: capture (h_low, h_mid, h_high, h_shared)    │
+  │ 2. eagle4 head.propose → (top_K_tokens, routing_mask,    │
+  │                            calib)                        │
+  │                                                          │
+  │ Per MoE verify layer (1..26):                            │
+  │ 3a. predicted_mask for THIS layer = routing_mask[layer]  │
+  │ 3b. ASYNC: MTLResidencySet.add(expert_tiles where        │
+  │       predicted_mask bit == 1)                           │
+  │ 3c. ENCODE: moe_block_batched_indexed_kbatch_masked      │
+  │       with predicted_mask buffer ← layer's mask row      │
+  │                                                          │
+  │ 4. Commit + wait.                                        │
+  └──────────────────────────────────────────────────────────┘
+```
+
+The residency-set add at 3b is the Apple-Silicon-native prefetch
+primitive (`MTLResidencySet.addAllocation` via `metal-rs`'s
+`MTLResidencySet` binding). It hints the GPU memory controller to
+keep those buffer regions in residency / cache; on UMA M-series this
+is largely an L2-promotion hint rather than a copy. Cost is ~µs,
+amortized across the verify kernel's runtime.
+
+## Threadgroup memory budget (with mask buffer)
+
+The plain `moe_block_batched_indexed_kbatch` design already accounts
+for ~22 KB / 32 KB threadgroup memory (Path B § "Threadgroup memory
+audit"). The masked variant adds:
+
+- `predicted_mask` is read into a shared `threadgroup uchar[64]` once
+  per dispatch (1 byte per routed expert × 64 = 64 B). Negligible.
+- A routed-indices fast-path branch (skip expert evaluation when
+  the mask says "predicted-inactive AND not in top-K") adds two
+  comparison instructions per inner-loop iteration. Compute cost
+  ≈ 0; no extra threadgroup memory.
+
+Net budget for masked variant: ~22 KB + 64 B ≈ 22.1 KB. Fits the
+32 KB / core budget with margin.
+
+## Acceptance / parity test
+
+`crates/dismantle-core/tests/path_b_eagle4_parity.rs` (new — to be
+landed alongside step 15):
+
+1. K=4 masked-verify vs K=4 plain (unmasked) on the SAME inputs —
+   must be bit-identical at atol=1e-3 fp16. The masked path differs
+   only in dispatch ORDER (prefetched experts dispatched first); the
+   mathematical output is identical.
+2. K=4 masked-verify vs K=1 sequential single-token MoE — must be
+   bit-identical at atol=1e-3 fp16.
+3. With `best_recall.npz` (eagle4 v2-routing checkpoint, 26 %
+   recall): wall-clock should be **≥ 5 % faster** than unmasked
+   thanks to prefetch hits.
+
+## Dependencies + ordering against Stage 0.5
+
+Path B kernel work (this step + 13–16) is gated on:
+
+- **CPU `attention()` divergence fix** (chip spawned 2026-05-18) —
+  the bit-identical regression at step 9 needs to land before any
+  Path B parity test can validate.
+- **Routing recall fine-tune** (step 11, target ≥ 60 % recall) —
+  masked verify's ≥ 5 % speedup hypothesis assumes a meaningful
+  fraction of predicted experts are actually fired. At eagle4 v3's
+  17.78 % top-8 recall, masked prefetch is wasted bandwidth more
+  often than it hits. Land step 11 OR ship masked verify behind a
+  recall-gated env var until step 11 closes.
+
+## File deltas after step 12 (this commit) lands
+
+- `reports/path_to_90/path_b/design.md` — extended with this section.
+- No code changes; design-only commit. Kernel implementation lands in
+  steps 13–15 of the execution plan, in that order (easiest first to
+  validate the dispatch graph: `gemv_q6_k_v3_kbatch` → `mla_decode_fc`
+  → masked-MoE).
+
+## Effort estimate (revised post-localization-halt)
+
+The original plan estimates 5–7 days per kernel × 3 kernels = 15–21
+days for Stage 2. Recommend deferring kernel implementation until
+after the CPU `attention()` fix lands and step 9's bit-identical
+regression passes — otherwise we'd be building K-batched verify on
+top of a numerically wrong V2-Lite forward and have no way to
+validate parity at K>1.
+
+Realistic landing sequence (gated on attention() fix):
+
+```
+[attended] fix CPU attention()         — chip queued 2026-05-18
+[compute]  step 9 regression passes    — clean window
+[attended] step 11 routing-recall fine-tune (1 day, Python-side)
+[arch]     step 13: gemv_q6_k_v3_kbatch
+[compute]  step 13 parity test passes
+[arch]     step 14: mla_decode_kernel_fc_kbatch
+[compute]  step 14 parity test passes
+[arch]     step 15: moe_block_batched_indexed_kbatch_masked
+[compute]  step 15 parity test (3-way: masked vs unmasked vs K=1)
+[arch]     step 16: forward_tokens_batched_parallel_k wire-up
+[compute]  step 17: Stage 2 measurement (38–50 tok/s target)
+```
+
