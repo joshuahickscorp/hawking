@@ -31,6 +31,24 @@ next phase of work from current state.
 > converge with eagle4's masked-verify need — see convergence doc for the
 > combined kernel signature.
 
+> **UPDATE 2026-05-18 (later) — execution plan now authoritative.**
+> A deep-research pass refined the stage-5 ceiling from the V4 spec
+> doc's 140–165 down to **95–125 sustained, peak 135**, surfaced the
+> 17.78% routing mask recall as the biggest risk (vs MoE-SpeQ's 90%
+> achieved on Mixtral), and validated that naive MoE spec-decode is
+> documented as net-negative without K-batched + masked verify. The
+> sequenced 28-step plan that incorporates all of this lives at:
+>
+> - `reports/path_to_90/execution_plan.md` — the 28-step batched
+>   sequence. **Authoritative for ordering and block-ship gates.**
+> - `reports/path_to_90/eagle4_deep_research.md` — the synthesis +
+>   citations the plan derives from.
+>
+> Phase 2 / Phase 3 / Path B / C3 sections below remain in this doc
+> as historical context for what the plan absorbs and supersedes; do
+> NOT execute them directly. The plan re-orders, re-scopes, and adds
+> measurement gates that the originals lack.
+
 **Current state snapshot** (post-recovery, 2026-05-17 ~22:30 EDT — see
 `reports/path_to_90/recovery_2026-05-17.md` for what changed and why):
 
