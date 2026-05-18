@@ -1494,6 +1494,21 @@ impl Engine for DeepSeekV2 {
         self.forward_token_final_norm(token, pos)
     }
 
+    /// Path-to-90 step 3 — capture EAGLE-4's 5-input bundle from a
+    /// single decode step. Delegates to the inherent
+    /// [`Self::forward_token_eagle4_capture`] (a CPU-walk that mirrors
+    /// the existing [`Self::forward_token_shared_only`] choreography).
+    /// Advances the CPU-side KV cache the same way `forward_token_shared_only`
+    /// does — callers stringing multiple `_eagle4_for_test` calls in
+    /// sequence get a consistent autoregressive walk.
+    fn forward_token_eagle4_for_test(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<crate::engine::Eagle4Inputs> {
+        self.forward_token_eagle4_capture(token, pos)
+    }
+
     fn forward_tokens_batched_for_test(
         &mut self,
         tokens: &[u32],
@@ -3871,6 +3886,171 @@ impl DeepSeekV2 {
             }
         }
         Ok(out)
+    }
+
+    /// Path-to-90 step 3 — CPU-walk that captures EAGLE-4's 5-input
+    /// bundle in one decode step. Same layer choreography as
+    /// [`Self::forward_token_shared_only`] (full attention via
+    /// `attention()` which advances the CPU-side MLA KV mirror; full
+    /// `ffn()` so x_buf state at the capture layers is correct), with
+    /// hooks for the EAGLE-4 capture points:
+    ///
+    /// - After layers 2 / 13 / 25 are fully applied (attn-add + ffn-add):
+    ///   capture x as h_low / h_mid / h_high.
+    /// - At layer 26 (the last MoE layer), before its MoE runs: capture
+    ///   the post-attn-rmsnorm input and feed it through
+    ///   `ffn_shared_only(26, _)` to produce h_shared.
+    ///
+    /// Layer indices are hard-coded to V2-Lite's {2, 13, 25, 26} per
+    /// `reports/path_to_90/eagle4_convergence.md`. The CPU-walk is slow
+    /// vs the GPU Wedge C path but is correct and self-contained;
+    /// production wiring (Eagle4Head::propose calling this from inside
+    /// the decode loop) lands in step 5+ once the CPU path is parity-
+    /// validated against the Python reference (step 6).
+    pub fn forward_token_eagle4_capture(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<crate::engine::Eagle4Inputs> {
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let n_layers = cfg.n_layers;
+        let eps = cfg.rms_norm_eps;
+
+        // V2-Lite layer indices the EAGLE-4 head is trained against.
+        // See `reports/path_to_90/eagle4_convergence.md § EAGLE-4
+        // forward`. Hard-coded for now; if non-V2-Lite engines later
+        // implement this, they'll override with their own indices.
+        const LAYER_LOW: usize = 2;
+        const LAYER_MID: usize = 13;
+        const LAYER_HIGH: usize = 25;
+        const LAYER_SHARED: usize = 26;
+
+        if n_layers <= LAYER_SHARED {
+            return Err(Error::Model(format!(
+                "forward_token_eagle4_capture: needs n_layers > {LAYER_SHARED}, got {n_layers}"
+            )));
+        }
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+
+        let mut h_low = vec![0.0f32; h];
+        let mut h_mid = vec![0.0f32; h];
+        let mut h_high = vec![0.0f32; h];
+        let mut x_norm_pre_mlp_shared = vec![0.0f32; h];
+
+        for li in 0..n_layers {
+            crate::metal::set_current_layer(Some(li as u32));
+
+            // Attention block: pre-norm → attention → residual add.
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(
+                &x,
+                &self.layers[li].attn_norm,
+                eps,
+                &mut x_norm,
+            )?;
+            let attn_out = self.attention(li, pos, &x_norm)?;
+            add_inplace(&mut x, &attn_out);
+
+            // FFN block: pre-norm → ffn → residual add.
+            self.rmsnorm_dispatch(
+                &x.clone(),
+                &self.layers[li].ffn_norm,
+                eps,
+                &mut x_norm,
+            )?;
+
+            // Capture layer 26's pre-MLP input BEFORE its MoE runs.
+            // h_shared is computed after the loop via a CPU dequant path
+            // (the existing `ffn_shared_only` helper goes through a GPU
+            // dispatch that returns silently-zero output on V2-Lite Q4_K_M
+            // for the shared-expert (2816×2048) shape — see followup in
+            // commit message). The CPU path is slow but correctness-
+            // first, which is the right tradeoff for `_for_test`.
+            if li == LAYER_SHARED {
+                x_norm_pre_mlp_shared.copy_from_slice(&x_norm);
+            }
+
+            let ffn_out = self.ffn(li, &x_norm)?;
+            add_inplace(&mut x, &ffn_out);
+
+            // Capture full layer output (post-attn + post-ffn residual).
+            if li == LAYER_LOW {
+                h_low.copy_from_slice(&x);
+            } else if li == LAYER_MID {
+                h_mid.copy_from_slice(&x);
+            } else if li == LAYER_HIGH {
+                h_high.copy_from_slice(&x);
+            }
+        }
+        crate::metal::set_current_layer(None);
+
+        // h_shared = shared-expert forward at layer 26 against the
+        // captured pre-MLP hidden. Direct CPU dequant + gemv_f32 path
+        // to dodge the latent zero-output bug in ffn_shared_only's GPU
+        // dispatch (see method docstring).
+        let h_shared = self.cpu_shared_expert_forward(LAYER_SHARED, &x_norm_pre_mlp_shared)?;
+
+        Ok(crate::engine::Eagle4Inputs {
+            prev_token: token,
+            h_low,
+            h_mid,
+            h_high,
+            h_shared,
+        })
+    }
+
+    /// EAGLE-4 capture helper — CPU-only shared-expert forward at the
+    /// given MoE layer. Used by [`Self::forward_token_eagle4_capture`]
+    /// to produce `h_shared` deterministically.
+    ///
+    /// Reason for the bypass: `ffn_shared_only` (and the unfused-MoE
+    /// fallback in `ffn`) dispatches the shared-expert GEMVs through
+    /// `moe_expert_pair_matmul_dispatch` → Q4_K Metal kernels, which
+    /// at the shared-expert shape `(smid=2816, hidden=2048)` on
+    /// V2-Lite returns silently-zero output. Production decode avoids
+    /// this path entirely because `ffn` short-circuits via the fused
+    /// `moe_block_batched_dispatch` first, so the bug went unnoticed.
+    /// Bypass below dequantizes the three shared-expert tensors with
+    /// the same `dequant_ref_into` helper used elsewhere on this
+    /// engine and runs three CPU `gemv_f32` calls + `silu_mul`. Slow
+    /// (~10–20 ms per call at smid=2816) but correctness-first.
+    fn cpu_shared_expert_forward(&self, li: usize, x: &[f32]) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let layer = &self.layers[li];
+        match &layer.mode {
+            LayerMode::MoE { shared, .. } => {
+                let s = shared.first().ok_or_else(|| {
+                    Error::Model(format!(
+                        "cpu_shared_expert_forward: layer {li} has no shared expert"
+                    ))
+                })?;
+                let smid = cfg.n_shared_experts * cfg.moe_intermediate;
+                let h = cfg.hidden;
+
+                let mut gate_w = vec![0.0f32; smid * h];
+                let mut up_w   = vec![0.0f32; smid * h];
+                let mut down_w = vec![0.0f32; h * smid];
+                self.dequant_ref_into(&s.gate_w, &mut gate_w)?;
+                self.dequant_ref_into(&s.up_w,   &mut up_w)?;
+                self.dequant_ref_into(&s.down_w, &mut down_w)?;
+
+                let mut g = vec![0.0f32; smid];
+                let mut u = vec![0.0f32; smid];
+                let mut a = vec![0.0f32; smid];
+                let mut out = vec![0.0f32; h];
+                gemv_f32(&gate_w, smid, h, x, &mut g);
+                gemv_f32(&up_w,   smid, h, x, &mut u);
+                silu_mul(&g, &u, &mut a);
+                gemv_f32(&down_w, h, smid, &a, &mut out);
+                Ok(out)
+            }
+            LayerMode::Dense { .. } => Err(Error::Model(format!(
+                "cpu_shared_expert_forward: layer {li} is dense, no shared expert"
+            ))),
+        }
     }
 
     /// Phase 3 prep: like `forward_token` but uses `ffn_shared_only` at every layer.

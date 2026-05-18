@@ -165,6 +165,35 @@ pub struct GenStats {
     pub metal_commits: usize,
 }
 
+/// Path-to-90 step 3 — the 5-input bundle EAGLE-4 fuses on the draft
+/// pass. Produced by [`Engine::forward_token_eagle4_for_test`] per V2-
+/// Lite decode step; consumed by the eagle4 head's `propose` (see
+/// `crates/dismantle-core/src/speculate/eagle4_head.rs`).
+///
+/// All four hidden vectors are length `config.hidden` (= 2048 on
+/// V2-Lite). `prev_token` is the same token id passed into the
+/// forward call — echoed back so callers don't have to thread it
+/// separately. See `reports/path_to_90/eagle4_convergence.md` for the
+/// integration contract.
+#[derive(Debug, Clone)]
+pub struct Eagle4Inputs {
+    /// The token whose successor we're predicting (= the token fed
+    /// into this decode step).
+    pub prev_token: u32,
+    /// Decoder layer 2 output (residual after both attn-add and
+    /// ffn-add at layer 2).
+    pub h_low: Vec<f32>,
+    /// Decoder layer 13 output.
+    pub h_mid: Vec<f32>,
+    /// Decoder layer 25 output. EAGLE-4's residual gate base path:
+    /// `draft_hidden = post_norm(h_high) + α · fused_block_out`.
+    pub h_high: Vec<f32>,
+    /// `ffn_shared_only` applied to layer 26's pre-MLP input — i.e.
+    /// the shared-expert contribution at the last MoE layer evaluated
+    /// against the layer-26 post-attn-rmsnorm hidden state.
+    pub h_shared: Vec<f32>,
+}
+
 pub trait Engine: Send + Sync {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self>
     where
@@ -258,6 +287,33 @@ pub trait Engine: Send + Sync {
         _pos: usize,
     ) -> Result<Vec<f32>> {
         Err(crate::Error::Unimplemented("forward_token_hidden_only_for_test"))
+    }
+
+    /// Path-to-90 step 3 — capture EAGLE-4's 5-input bundle from a
+    /// single decode-step forward pass.
+    ///
+    /// Returns the four hidden states EAGLE-4 fuses (per
+    /// `reports/path_to_90/eagle4_convergence.md § Required dismantle
+    /// changes #3`):
+    ///
+    /// - `h_low`    — output of decoder layer 2
+    /// - `h_mid`    — output of decoder layer 13
+    /// - `h_high`   — output of decoder layer 25
+    /// - `h_shared` — `ffn_shared_only` applied to layer 26's pre-MLP input
+    ///
+    /// "Layer L output" means the residual stream state at the end of
+    /// layer L (after both the attention and FFN residual adds have
+    /// landed). Layer indices are 0-based; V2-Lite has 27 decoder
+    /// layers (0..26). Layer 0 is dense; layers 1..26 are MoE.
+    ///
+    /// Engines without a layer-by-layer capture seam return
+    /// `Err(Unimplemented)`.
+    fn forward_token_eagle4_for_test(
+        &mut self,
+        _token: u32,
+        _pos: usize,
+    ) -> Result<Eagle4Inputs> {
+        Err(crate::Error::Unimplemented("forward_token_eagle4_for_test"))
     }
 
     /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
