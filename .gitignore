@@ -61,3 +61,22 @@ bench_out/
 # Per-run bench output dirs (history is kept in bench_history.jsonl)
 bench_results/coexist_*/
 bench_results/v0.3.*/
+
+# Python project conventions (used by eagle4/ and any future Python sub-projects)
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Numpy archive artifacts — checkpoints, frozen weights, training shards
+*.npz
+
+# eagle4/ runtime artifacts (regeneratable via eagle4/eagle4.py frozen + capture.py)
+# Listed explicitly even though /eagle4/checkpoints/, /eagle4/models/ are already
+# caught by the generic checkpoints/ + models/ rules above — kept here as a
+# self-documenting anchor so a future cleanup pass can find them.
+/eagle4/data/
+/eagle4/v2lite_frozen.npz
