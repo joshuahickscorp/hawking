@@ -78,6 +78,21 @@ enum Cmd {
         /// detection (80% of system RAM). Default: unlimited.
         #[arg(long)]
         memory_limit_mb: Option<usize>,
+        /// Path-to-90 step 8 — EAGLE-4 trained draft head NPZ checkpoint.
+        /// Required when `--speculate eagle4`. Ignored otherwise.
+        #[arg(long)]
+        draft_head: Option<PathBuf>,
+        /// Path-to-90 step 8 — frozen V2-Lite tensors NPZ
+        /// (`eagle4/v2lite_frozen.npz`). Required when `--speculate eagle4`.
+        /// A future commit will let this default to the loaded GGUF tensors.
+        #[arg(long)]
+        eagle4_frozen: Option<PathBuf>,
+        /// Path-to-90 step 8 — calibration-sigmoid threshold for the
+        /// EAGLE-4 draft. Currently logged but doesn't gate emission;
+        /// future commits will use it to short-circuit on low-confidence
+        /// positions once K>1 verify is wired.
+        #[arg(long, default_value_t = 0.5)]
+        eagle4_calib_threshold: f32,
     },
     /// Run a benchmark suite.
     Bench {
@@ -351,6 +366,9 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            draft_head,
+            eagle4_frozen,
+            eagle4_calib_threshold,
         } => generate_main(
             weights,
             prompt,
@@ -366,6 +384,9 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            draft_head,
+            eagle4_frozen,
+            eagle4_calib_threshold,
         ),
         Cmd::Bench {
             weights,
@@ -1033,6 +1054,9 @@ fn generate_main(
     trace_dispatch: bool,
     max_routed_expert_ram_mb: Option<usize>,
     memory_limit_mb: Option<usize>,
+    draft_head: Option<PathBuf>,
+    eagle4_frozen: Option<PathBuf>,
+    eagle4_calib_threshold: f32,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -1080,6 +1104,9 @@ fn generate_main(
         trace_dispatch,
         max_routed_expert_ram_mb,
         memory_limit_mb,
+        eagle4_head_path: draft_head,
+        eagle4_frozen_path: eagle4_frozen,
+        eagle4_calib_threshold,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {

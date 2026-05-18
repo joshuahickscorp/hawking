@@ -32,6 +32,23 @@ pub struct EngineConfig {
     /// estimated working set (model file + KV cache) exceeds N MiB. `Some(0)`
     /// triggers auto-detection (80% of system RAM). `None` = unlimited.
     pub memory_limit_mb: Option<usize>,
+    /// Path-to-90 step 8 — when `speculate_mode == SpeculateMode::Eagle4`,
+    /// path to the trained EAGLE-4 head NPZ checkpoint
+    /// (`eagle4/checkpoints/eagle4_v3/best.npz` or similar). Ignored
+    /// for other speculate modes.
+    pub eagle4_head_path: Option<std::path::PathBuf>,
+    /// Path-to-90 step 8 — path to the frozen V2-Lite tensors NPZ
+    /// (`eagle4/v2lite_frozen.npz`). Required when
+    /// `speculate_mode == SpeculateMode::Eagle4`. A future commit
+    /// will let this default to dismantle's loaded GGUF tensors.
+    pub eagle4_frozen_path: Option<std::path::PathBuf>,
+    /// Path-to-90 step 8 — calibration threshold for the EAGLE-4
+    /// head's `calib_logit` (post-sigmoid). Below this the draft is
+    /// considered low-confidence and the verifier's argmax is emitted
+    /// directly. Currently logged as accept/reject statistics but
+    /// always emits the verifier's argmax — see step 8 commit notes.
+    /// Default 0.5.
+    pub eagle4_calib_threshold: f32,
 }
 
 impl Default for EngineConfig {
@@ -47,6 +64,9 @@ impl Default for EngineConfig {
             trace_dispatch: false,
             max_routed_expert_ram_mb: None,
             memory_limit_mb: None,
+            eagle4_head_path: None,
+            eagle4_frozen_path: None,
+            eagle4_calib_threshold: 0.5,
         }
     }
 }
@@ -58,6 +78,14 @@ pub enum SpeculateMode {
     ExactShared,
     /// N-gram lookup draft: zero compute cost, serial verify with full model.
     NGram,
+    /// Path-to-90 step 8 — trained EAGLE-4 routing-aware draft head.
+    /// Paths and threshold live in `EngineConfig::eagle4_head_path` /
+    /// `eagle4_frozen_path` / `eagle4_calib_threshold`. Step 8 ships a
+    /// K=1 verify-by-comparison flow (always emits the V2-Lite greedy
+    /// argmax; the draft's match/mismatch is tracked in stats). K>1
+    /// chain spec decode is Stage 2 territory (Path B kernels, steps
+    /// 12-17 of the execution plan).
+    Eagle4,
 }
 
 impl Default for SpeculateMode {
@@ -74,8 +102,9 @@ impl SpeculateMode {
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
             Some("ngram" | "n-gram" | "ngram-spec") => Ok(Self::NGram),
+            Some("eagle4") => Ok(Self::Eagle4),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared, ngram, or off"
+                "unknown speculate mode `{other}`; expected exact-shared, ngram, eagle4, or off"
             ))),
         }
     }
@@ -85,6 +114,7 @@ impl SpeculateMode {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
             Self::NGram => "ngram",
+            Self::Eagle4 => "eagle4",
         }
     }
 }

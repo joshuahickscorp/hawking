@@ -189,6 +189,16 @@ pub struct DeepSeekV2 {
     pub speculate_mode: SpeculateMode,
     pub verify_window: usize,
 
+    /// Path-to-90 step 8 — trained EAGLE-4 draft head, lazy-loaded at
+    /// engine construction when `speculate_mode == SpeculateMode::Eagle4`.
+    /// `None` for every other speculate mode.
+    pub eagle4_head: Option<crate::speculate::eagle4_head::Eagle4Head>,
+    /// Path-to-90 step 8 — calibration-sigmoid threshold for the
+    /// EAGLE-4 draft. Below this the draft is considered low-confidence
+    /// and the verifier's argmax is emitted directly (currently logged
+    /// as accept/reject only — see step 8 commit).
+    pub eagle4_calib_threshold: f32,
+
     /// v1.2.0-9: Per-layer expert access stats + POSIX madvise offloading.
     /// `Some` when `--max-routed-expert-ram-mb` is set. `None` on V2-Lite default
     /// (all experts fit in RAM, no eviction needed).
@@ -777,6 +787,32 @@ impl Engine for DeepSeekV2 {
         };
         let verify_window = config.verify_window;
 
+        // Path-to-90 step 8 — load the EAGLE-4 draft head when mode demands it.
+        // Both the head NPZ and the frozen V2-Lite NPZ are required; a future
+        // commit will let frozen weights come from the already-loaded GGUF
+        // tensors (token_embd, output_norm, lm_head) and skip the NPZ read.
+        let eagle4_head = if speculate_mode == SpeculateMode::Eagle4 {
+            use crate::speculate::eagle4_head::{Eagle4FrozenWeights, Eagle4Head};
+            let head_path = config.eagle4_head_path.as_ref().ok_or_else(|| {
+                Error::Model(
+                    "--speculate eagle4 requires --draft-head <path to eagle4 .npz>".into(),
+                )
+            })?;
+            let frozen_path = config.eagle4_frozen_path.as_ref().ok_or_else(|| {
+                Error::Model(
+                    "--speculate eagle4 requires --eagle4-frozen <path to v2lite_frozen.npz>"
+                        .into(),
+                )
+            })?;
+            let mut head = Eagle4Head::from_npz(head_path)?;
+            let frozen = Eagle4FrozenWeights::from_npz(frozen_path)?;
+            head.set_frozen(frozen);
+            Some(head)
+        } else {
+            None
+        };
+        let eagle4_calib_threshold = config.eagle4_calib_threshold;
+
         // WB weight-pinning: when Metal is alive, upload the LM-head
         // fp16 matrix to a single Buffer that lives for the model's
         // lifetime. The byte-slice `gemv_f16_metal` path was memcpying
@@ -988,6 +1024,8 @@ impl Engine for DeepSeekV2 {
             kernel_profile: config.kernel_profile,
             speculate_mode,
             verify_window,
+            eagle4_head,
+            eagle4_calib_threshold,
             decode_arena,
             embed_buf,
             final_norm_buf,
@@ -1362,6 +1400,108 @@ impl Engine for DeepSeekV2 {
                     reason = StopReason::Aborted; break;
                 }
             }
+        } else if self.speculate_mode == crate::SpeculateMode::Eagle4 {
+            // Path-to-90 step 8 — EAGLE-4 spec decode, K=1 (single-position
+            // verify-by-comparison). Per output token:
+            //
+            //   1. Single CPU walk: capture 5-input bundle + advance CPU KV
+            //      + compute V2-Lite's greedy argmax at this position.
+            //   2. head.propose(eagle4_inputs, K=1) → DraftOutputs with the
+            //      top-1 candidate from token_logits + calib scalar.
+            //   3. Emit the V2-Lite argmax. Track whether the draft matched
+            //      it (= "accepted" — eagle4's prediction was correct).
+            //
+            // K-batched verify (`forward_tokens_batched_for_test` on K
+            // candidates with longest-matching-prefix acceptance) is
+            // intentionally deferred to Stage 2 (Path B kernels, steps
+            // 12-17). At K=1 spec decode degenerates to "always emit the
+            // verifier's argmax" → bit-identical to SpeculateMode::Off by
+            // construction (the step 9 regression test exercises this).
+            // calib threshold is currently informational; future commits
+            // will use it to short-circuit the draft on low-confidence
+            // positions once K>1 is wired.
+            //
+            // Greedy only — sampling temp > 0 disabled until verify is
+            // generalized.
+            if req.sampling.temperature > 0.0 {
+                return Err(Error::Model(
+                    "--speculate eagle4 currently requires temperature=0".into(),
+                ));
+            }
+
+            let calib_threshold = self.eagle4_calib_threshold;
+            let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
+            // Take the head out of self for the duration of the loop
+            // (forward_token_eagle4_capture_with_argmax needs &mut self).
+            let mut head = self
+                .eagle4_head
+                .take()
+                .ok_or_else(|| Error::Model("--speculate eagle4 requires --draft-head".into()))?;
+
+            for step in 0..req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let pos = prompt_len + step;
+                let step_start = Instant::now();
+
+                let (eagle4_inputs, v2_argmax) =
+                    self.forward_token_eagle4_capture_with_argmax(last_id, pos)?;
+
+                use crate::speculate::draft_head::{DraftHead, DraftInputs};
+                let hidden_refs: [&[f32]; 4] = [
+                    &eagle4_inputs.h_low,
+                    &eagle4_inputs.h_mid,
+                    &eagle4_inputs.h_high,
+                    &eagle4_inputs.h_shared,
+                ];
+                let inputs = DraftInputs {
+                    prev_token: eagle4_inputs.prev_token,
+                    hiddens: &hidden_refs,
+                };
+                let draft = head.propose(&inputs, 1)?;
+                let draft_id = draft.tokens.first().copied().unwrap_or(v2_argmax);
+                let calib_sigmoid = draft
+                    .calib
+                    .map(|c| 1.0 / (1.0 + (-c).exp()))
+                    .unwrap_or(0.0);
+
+                if draft_id == v2_argmax {
+                    stats.draft_accepted += 1;
+                } else {
+                    stats.draft_rejected += 1;
+                }
+
+                if spec_log {
+                    eprintln!(
+                        "[spec/eagle4] step={} pos={} draft={} v2={} calib={:.3} thresh={:.3} {}",
+                        step,
+                        pos,
+                        draft_id,
+                        v2_argmax,
+                        calib_sigmoid,
+                        calib_threshold,
+                        if draft_id == v2_argmax { "ACCEPT" } else { "REJECT" }
+                    );
+                }
+
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                self.sampler.record(v2_argmax);
+                let text = self.tokenizer.decode_one(v2_argmax).unwrap_or_default();
+                sink(StreamEvent::Token { id: v2_argmax, text });
+                produced += 1;
+                if Some(v2_argmax) == eos {
+                    reason = StopReason::Eos;
+                    break;
+                }
+                last_id = v2_argmax;
+            }
+
+            self.eagle4_head = Some(head);
         } else {
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
@@ -4000,6 +4140,109 @@ impl DeepSeekV2 {
             h_high,
             h_shared,
         })
+    }
+
+    /// Path-to-90 step 8 — CPU-walk forward that returns BOTH the
+    /// EAGLE-4 5-input bundle AND V2-Lite's own greedy argmax at this
+    /// position. Used by the Eagle4 spec-decode branch to (a) feed the
+    /// trained head's `propose`, and (b) compute the verifier's
+    /// canonical answer that the draft is judged against.
+    ///
+    /// Single forward = one CPU walk through all 27 layers + final norm
+    /// + LM head + argmax. KV cache (CPU mirror) advances by one slot.
+    pub fn forward_token_eagle4_capture_with_argmax(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<(crate::engine::Eagle4Inputs, u32)> {
+        // Reuse the existing capture for the eagle4 5-input bundle. It
+        // walks all 27 layers and advances CPU KV. After it returns,
+        // x_buf in arena (and the CPU side) reflect the post-layer-26
+        // residual. We then re-run a minimal residual-stream walk to
+        // get the final_norm + LM head argmax — but the capture already
+        // discards `x` post-loop, so we instead compute the verifier
+        // argmax via a separate forward_token call into the production
+        // CPU path.
+        //
+        // forward_token_shared_only would be wrong here (it skips
+        // routed experts). The right reference is V2-Lite's full
+        // forward. But that would advance KV AGAIN (double-advance,
+        // wrong). So instead we reproduce the CPU walk INLINE and
+        // capture both the eagle4 hiddens and the final argmax in one
+        // pass.
+
+        use crate::engine::Eagle4Inputs;
+        let h = self.config.hidden;
+        let n_layers = self.config.n_layers;
+        let eps = self.config.rms_norm_eps;
+        let vocab_size = self.config.vocab_size;
+
+        const LAYER_LOW: usize = 2;
+        const LAYER_MID: usize = 13;
+        const LAYER_HIGH: usize = 25;
+        const LAYER_SHARED: usize = 26;
+
+        if n_layers <= LAYER_SHARED {
+            return Err(Error::Model(format!(
+                "forward_token_eagle4_capture_with_argmax: needs n_layers > {LAYER_SHARED}, got {n_layers}"
+            )));
+        }
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+
+        let mut h_low = vec![0.0f32; h];
+        let mut h_mid = vec![0.0f32; h];
+        let mut h_high = vec![0.0f32; h];
+        let mut x_norm_pre_mlp_shared = vec![0.0f32; h];
+
+        for li in 0..n_layers {
+            crate::metal::set_current_layer(Some(li as u32));
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &self.layers[li].attn_norm, eps, &mut x_norm)?;
+            let attn_out = self.attention(li, pos, &x_norm)?;
+            add_inplace(&mut x, &attn_out);
+
+            self.rmsnorm_dispatch(&x.clone(), &self.layers[li].ffn_norm, eps, &mut x_norm)?;
+            if li == LAYER_SHARED {
+                x_norm_pre_mlp_shared.copy_from_slice(&x_norm);
+            }
+            let ffn_out = self.ffn(li, &x_norm)?;
+            add_inplace(&mut x, &ffn_out);
+
+            if li == LAYER_LOW {
+                h_low.copy_from_slice(&x);
+            } else if li == LAYER_MID {
+                h_mid.copy_from_slice(&x);
+            } else if li == LAYER_HIGH {
+                h_high.copy_from_slice(&x);
+            }
+        }
+        crate::metal::set_current_layer(None);
+
+        let h_shared = self.cpu_shared_expert_forward(LAYER_SHARED, &x_norm_pre_mlp_shared)?;
+
+        // V2-Lite verifier path: final_norm + lm_head + argmax.
+        let mut x_final_norm = vec![0.0f32; h];
+        self.rmsnorm_dispatch(&x, &self.final_norm, eps, &mut x_final_norm)?;
+        let mut logits = vec![0.0f32; vocab_size];
+        let w_f16: &[f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed,
+        };
+        self.gemv_f16_dispatch(w_f16, vocab_size, h, &x_final_norm, &mut logits)?;
+        let v2_argmax = crate::kernels::argmax_f32(&logits);
+
+        Ok((
+            Eagle4Inputs {
+                prev_token: token,
+                h_low,
+                h_mid,
+                h_high,
+                h_shared,
+            },
+            v2_argmax,
+        ))
     }
 
     /// EAGLE-4 capture helper — CPU-only shared-expert forward at the
