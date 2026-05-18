@@ -15,22 +15,28 @@
 //! → frozen V2-Lite LM head → token logits, plus two small heads for
 //! 26×64 routing-mask logits and a P(accept) calibration scalar.
 //!
-//! ## Current state
+//! ## Current state (path-to-90 step 5)
 //!
-//! - `Eagle4Config` constants + `Eagle4Weights` struct describe the
-//!   parameter layout the NPZ loader populates.
-//! - `Eagle4Head::new_uninitialized()` produces an all-zero structural
-//!   placeholder; `propose()` still errors via Unimplemented on it.
-//! - `Eagle4Head::from_npz(path)` reads an `eagle4.py`-produced
-//!   checkpoint and validates every required tensor's shape against
-//!   the V2-Lite-specific constants. Forward pass still unimplemented.
-//! - `DraftHead::propose` returns `Err(Unimplemented)`; the forward
-//!   pass lands separately (see convergence doc § "Required dismantle
-//!   changes" #4).
+//! - `Eagle4Weights` holds the head's trainable parameters; loader at
+//!   `Eagle4Head::from_npz` validates every required tensor's shape.
+//! - `Eagle4FrozenWeights` holds V2-Lite's token_embd / lm_head /
+//!   output_norm; loader at `Eagle4FrozenWeights::from_npz` reads
+//!   `eagle4/eagle4.py frozen` output and transposes lm_head/embed
+//!   from `(HIDDEN, VOCAB)` storage to `(VOCAB, HIDDEN)` row-major.
+//! - `Eagle4Head::forward_full` runs the CPU fp32 forward pass and
+//!   returns `Eagle4ForwardOutput { token_logits, mask_logits,
+//!   draft_hidden, calib_logit }`.
+//! - `DraftHead::propose` calls `forward_full` and packs the result
+//!   into the trait's generic `DraftOutputs` (top-K tokens + 26×64
+//!   routing mask + calibration scalar).
+//!
+//! Metal acceleration of the forward is step 7. Production CLI wire-up
+//! (`--speculate eagle4`) lives in step 8.
 //!
 //! See `reports/path_to_90/eagle4_convergence.md` for the integration
-//! contract and order-of-work.
+//! contract.
 
+use crate::kernels::{gemv_f32, rmsnorm, silu_mul};
 use crate::speculate::draft_head::{DraftHead, DraftInputs, DraftOutputs};
 use crate::util::npz::{read_npz, NpyArray};
 use crate::{Error, Result};
@@ -149,19 +155,95 @@ pub struct Eagle4FrozenRefs<'a> {
     pub output_norm: &'a [f32], // (HIDDEN,)
 }
 
+/// Owned copy of the three frozen V2-Lite tensors EAGLE-4 reads:
+/// the token embedding table, the LM head, and the final RMSNorm
+/// weights. All stored as row-major fp32, transposed against the
+/// `v2lite_frozen.npz` storage layout so dismantle's `gemv_f32` and
+/// embedding-lookup conventions apply directly:
+///
+/// - `token_embd` — (VOCAB, HIDDEN). NPZ stores (HIDDEN, VOCAB)
+///   per `extract_frozen`; this loader transposes on read.
+///   Embedding lookup is `&token_embd[t*HIDDEN..(t+1)*HIDDEN]`.
+/// - `lm_head` — (VOCAB, HIDDEN). NPZ stores (HIDDEN, VOCAB);
+///   transposed on read so `gemv_f32(lm_head, VOCAB, HIDDEN,
+///   draft_hidden, logits)` computes `draft_hidden @ lm_head`.
+/// - `output_norm` — (HIDDEN,). Used as RMSNorm weight on `h_high`.
+///
+/// Production wire-up (step 8) populates these from dismantle's
+/// already-loaded V2-Lite GGUF tensors and skips the NPZ read.
+pub struct Eagle4FrozenWeights {
+    pub token_embd: Vec<f32>,  // (VOCAB, HIDDEN) row-major
+    pub lm_head: Vec<f32>,     // (VOCAB, HIDDEN) row-major
+    pub output_norm: Vec<f32>, // (HIDDEN,)
+}
+
+impl Eagle4FrozenWeights {
+    /// Load the three frozen tensors from an NPZ written by
+    /// `eagle4/eagle4.py frozen` (see `extract_frozen` in that file).
+    /// NPZ stores `token_embd` and `lm_head` as fp16 with shape
+    /// `(HIDDEN, VOCAB)`; this reader converts to fp32 and transposes
+    /// to `(VOCAB, HIDDEN)` for dismantle-side use. `output_norm` is
+    /// stored as fp32 `(HIDDEN,)` and read directly.
+    pub fn from_npz<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let path_ref = path.as_ref();
+        let mut entries = read_npz(path_ref)?;
+        let h = cfg::HIDDEN_DIM;
+        let v = cfg::VOCAB;
+
+        let token_embd_raw = take_f32(&mut entries, "token_embd", &[h, v])?;
+        let lm_head_raw = take_f32(&mut entries, "lm_head", &[h, v])?;
+        let output_norm = take_f32(&mut entries, "output_norm", &[h])?;
+
+        // Transpose both (HIDDEN, VOCAB) → (VOCAB, HIDDEN). Cheap once,
+        // saves a transpose inside every forward.
+        let mut token_embd = vec![0.0f32; v * h];
+        let mut lm_head = vec![0.0f32; v * h];
+        for row in 0..h {
+            for col in 0..v {
+                token_embd[col * h + row] = token_embd_raw[row * v + col];
+                lm_head[col * h + row] = lm_head_raw[row * v + col];
+            }
+        }
+        Ok(Self {
+            token_embd,
+            lm_head,
+            output_norm,
+        })
+    }
+}
+
+/// Result of [`Eagle4Head::forward_full`] — the four outputs the
+/// trained head produces per token. `token_logits` and `mask_logits`
+/// are unnormalized (caller picks argmax / softmax as needed); the
+/// raw `calib_logit` scalar is the pre-sigmoid value.
+#[derive(Debug, Clone)]
+pub struct Eagle4ForwardOutput {
+    /// (VOCAB,) — `draft_hidden @ lm_head`.
+    pub token_logits: Vec<f32>,
+    /// (N_MOE_LAYERS * N_ROUTED,) — `mask_proj_out(silu(mask_proj_in(draft_hidden)))`.
+    /// Layout matches eagle4.py's `.reshape(B, S, N_MOE_LAYERS, N_ROUTED)`
+    /// row-major: index `(L, e) = L * N_ROUTED + e`.
+    pub mask_logits: Vec<f32>,
+    /// (HIDDEN,) — `post_norm(h_high) + residual_gate · block_out`.
+    pub draft_hidden: Vec<f32>,
+    /// Pre-sigmoid P(accept) calibration scalar.
+    pub calib_logit: f32,
+}
+
 /// EAGLE-4 trained draft head.
 pub struct Eagle4Head {
     weights: Eagle4Weights,
+    frozen: Option<Eagle4FrozenWeights>,
     checkpoint_id: String,
 }
 
 impl Eagle4Head {
     /// Structural placeholder with all-zero weights. `propose()` will
-    /// still return `Err(Unimplemented)` because the forward pass itself
-    /// is not implemented yet.
+    /// error on the missing-frozen-weights check.
     pub fn new_uninitialized() -> Self {
         Self {
             weights: Eagle4Weights::zeros(),
+            frozen: None,
             checkpoint_id: "eagle4-uninitialized".to_string(),
         }
     }
@@ -177,7 +259,8 @@ impl Eagle4Head {
     ///
     /// Returns `Error::Model` on shape/dtype/key mismatch; the head is
     /// only constructed when every required tensor is present at the
-    /// expected shape.
+    /// expected shape. Frozen weights are NOT loaded here — call
+    /// [`Self::set_frozen`] separately before any forward pass.
     pub fn from_npz<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path_ref = path.as_ref();
         let mut entries = read_npz(path_ref)?;
@@ -230,6 +313,7 @@ impl Eagle4Head {
         };
         Ok(Self {
             weights,
+            frozen: None,
             checkpoint_id,
         })
     }
@@ -239,6 +323,222 @@ impl Eagle4Head {
     pub fn weights(&self) -> &Eagle4Weights {
         &self.weights
     }
+
+    /// Attach the frozen V2-Lite tensors the forward pass reads.
+    /// Required before [`Self::forward_full`] or [`DraftHead::propose`]
+    /// can run — both error with `Error::Model` otherwise.
+    pub fn set_frozen(&mut self, frozen: Eagle4FrozenWeights) {
+        self.frozen = Some(frozen);
+    }
+
+    /// Whether [`Self::set_frozen`] has been called.
+    pub fn has_frozen(&self) -> bool {
+        self.frozen.is_some()
+    }
+
+    /// Path-to-90 step 5 — CPU fp32 forward of the full EAGLE-4 head.
+    ///
+    /// Implements the architecture documented in
+    /// `reports/path_to_90/eagle4_convergence.md § EAGLE-4 forward`:
+    ///
+    /// ```text
+    /// prev_embed   = token_embd[prev_token]                  (HIDDEN,)
+    /// x            = concat(prev_embed, h_low, h_mid, h_high, h_shared)  (5*HIDDEN,)
+    /// x            = in_proj @ x                              (HIDDEN,)
+    /// x            = TransformerBlock(x)                      single position, diagonal-mask
+    /// baseline     = rmsnorm(h_high, output_norm)             (HIDDEN,)
+    /// draft_hidden = baseline + residual_gate · x             (HIDDEN,)
+    /// token_logits = draft_hidden @ lm_head                   (VOCAB,)
+    /// mask_logits  = mask_proj_out(silu(mask_proj_in(draft_hidden)))   (N_MOE*N_ROUTED,)
+    /// calib_logit  = calib_proj_w @ draft_hidden + calib_proj_b        scalar
+    /// ```
+    ///
+    /// Per-call sequence length is 1, so the transformer block's self-
+    /// attention reduces to `o_proj(v_proj(x_normed))`: q·k^T is a
+    /// single scalar per head, softmax of a single value is 1.0, and
+    /// the diagonal mask is identically zero at S=1. Q and K are still
+    /// computed for clarity and to match eagle4.py's eval-mode flow
+    /// (where the batched (1, take, HIDDEN) call runs with a diagonal
+    /// mask that makes each record independent).
+    ///
+    /// Errors if [`Self::set_frozen`] hasn't been called, if
+    /// `prev_token >= VOCAB`, or if any hidden vector is mis-sized.
+    pub fn forward_full(
+        &self,
+        prev_token: u32,
+        h_low: &[f32],
+        h_mid: &[f32],
+        h_high: &[f32],
+        h_shared: &[f32],
+    ) -> Result<Eagle4ForwardOutput> {
+        let frozen = self.frozen.as_ref().ok_or_else(|| {
+            Error::Model(
+                "Eagle4Head::forward_full: frozen weights not loaded — \
+                 call set_frozen() with Eagle4FrozenWeights first"
+                    .into(),
+            )
+        })?;
+        let h = cfg::HIDDEN_DIM;
+        let inter = cfg::INTERMEDIATE;
+        let mhid = cfg::MASK_HIDDEN;
+        let mask_out = cfg::N_MOE_LAYERS * cfg::N_ROUTED;
+        let vocab = cfg::VOCAB;
+        let eps = cfg::RMS_EPS;
+
+        if (prev_token as usize) >= vocab {
+            return Err(Error::Model(format!(
+                "Eagle4Head::forward_full: prev_token={} >= VOCAB={}",
+                prev_token, vocab
+            )));
+        }
+        for (name, vsl) in [
+            ("h_low", h_low),
+            ("h_mid", h_mid),
+            ("h_high", h_high),
+            ("h_shared", h_shared),
+        ] {
+            if vsl.len() != h {
+                return Err(Error::Model(format!(
+                    "Eagle4Head::forward_full: {name}.len()={} expected {h}",
+                    vsl.len()
+                )));
+            }
+        }
+
+        let w = &self.weights;
+
+        // 1. Embedding lookup. token_embd loaded as (VOCAB, HIDDEN) row-major.
+        let pe_off = (prev_token as usize) * h;
+        let prev_embed = &frozen.token_embd[pe_off..pe_off + h];
+
+        // 2. Concatenate the five HIDDEN-dim vectors into 5*HIDDEN.
+        let mut x5 = Vec::with_capacity(5 * h);
+        x5.extend_from_slice(prev_embed);
+        x5.extend_from_slice(h_low);
+        x5.extend_from_slice(h_mid);
+        x5.extend_from_slice(h_high);
+        x5.extend_from_slice(h_shared);
+
+        // 3. in_proj: (HIDDEN, 5*HIDDEN) @ (5*HIDDEN,) → (HIDDEN,).
+        //    gemv_f32: out[r] = sum_c W[r*cols+c] * x[c].
+        //    Equivalent to Python nn.Linear(5H→H) at batch=1.
+        let mut x = vec![0.0f32; h];
+        gemv_f32(&w.in_proj, h, 5 * h, &x5, &mut x);
+
+        // 4. Transformer block — RMSNorm → MHA → residual → RMSNorm → SwiGLU → residual.
+
+        // 4a. Pre-attn RMSNorm.
+        let mut x_normed = vec![0.0f32; h];
+        rmsnorm(&x, &w.block_attn_norm, eps, &mut x_normed);
+
+        // 4b. Q, K, V projections (all HIDDEN×HIDDEN).
+        let mut q = vec![0.0f32; h];
+        let mut k = vec![0.0f32; h];
+        let mut v = vec![0.0f32; h];
+        gemv_f32(&w.block_attn_q, h, h, &x_normed, &mut q);
+        gemv_f32(&w.block_attn_k, h, h, &x_normed, &mut k);
+        gemv_f32(&w.block_attn_v, h, h, &x_normed, &mut v);
+
+        // 4c. Self-attention at S=1, per-head.
+        //     scores_h = (q_h · k_h^T) / sqrt(head_dim)  — single scalar.
+        //     softmax([s]) = [1.0].
+        //     attn_h    = 1.0 · v_h  =  v_h.
+        // So the MHA-internal output equals `v` element-for-element. Q and K
+        // are computed above for fidelity but contribute nothing at S=1.
+        // This is identical to Python eval's per-record behavior with the
+        // (mx.eye(S)-1)*1e9 diagonal mask: off-diagonal scores get -1e9,
+        // softmax collapses to a one-hot on the diagonal, attention = v[i].
+        let _ = (q, k);
+
+        // 4d. Output projection.
+        let mut attn_out = vec![0.0f32; h];
+        gemv_f32(&w.block_attn_o, h, h, &v, &mut attn_out);
+
+        // 4e. Attention residual.
+        for i in 0..h {
+            x[i] += attn_out[i];
+        }
+
+        // 4f. Pre-MLP RMSNorm.
+        rmsnorm(&x, &w.block_mlp_norm, eps, &mut x_normed);
+
+        // 4g. SwiGLU.
+        let mut gate_out = vec![0.0f32; inter];
+        let mut up_out = vec![0.0f32; inter];
+        let mut act = vec![0.0f32; inter];
+        gemv_f32(&w.block_mlp_gate, inter, h, &x_normed, &mut gate_out);
+        gemv_f32(&w.block_mlp_up, inter, h, &x_normed, &mut up_out);
+        silu_mul(&gate_out, &up_out, &mut act);
+        let mut mlp_out = vec![0.0f32; h];
+        gemv_f32(&w.block_mlp_down, h, inter, &act, &mut mlp_out);
+
+        // 4h. MLP residual.
+        for i in 0..h {
+            x[i] += mlp_out[i];
+        }
+
+        // 5. Baseline = rmsnorm(h_high, output_norm).
+        let mut baseline = vec![0.0f32; h];
+        rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
+
+        // 6. Residual-gate fusion. draft_hidden = baseline + α · x.
+        let alpha = w.residual_gate;
+        let mut draft_hidden = vec![0.0f32; h];
+        for i in 0..h {
+            draft_hidden[i] = baseline[i] + alpha * x[i];
+        }
+
+        // 7. token_logits = draft_hidden @ lm_head; lm_head is (VOCAB, HIDDEN).
+        let mut token_logits = vec![0.0f32; vocab];
+        gemv_f32(&frozen.lm_head, vocab, h, &draft_hidden, &mut token_logits);
+
+        // 8. mask_logits = mask_proj_out(silu(mask_proj_in(draft_hidden))).
+        let mut mp_in = vec![0.0f32; mhid];
+        gemv_f32(&w.mask_proj_in, mhid, h, &draft_hidden, &mut mp_in);
+        let mut mp_silu = vec![0.0f32; mhid];
+        for i in 0..mhid {
+            let s = mp_in[i];
+            mp_silu[i] = s / (1.0 + (-s).exp()); // SiLU(s) = s · sigmoid(s)
+        }
+        let mut mask_logits = vec![0.0f32; mask_out];
+        gemv_f32(&w.mask_proj_out, mask_out, mhid, &mp_silu, &mut mask_logits);
+
+        // 9. calib_logit = calib_proj_w · draft_hidden + calib_proj_b.
+        let mut calib_buf = [0.0f32; 1];
+        gemv_f32(&w.calib_proj_w, 1, h, &draft_hidden, &mut calib_buf);
+        let calib_logit = calib_buf[0] + w.calib_proj_b;
+
+        Ok(Eagle4ForwardOutput {
+            token_logits,
+            mask_logits,
+            draft_hidden,
+            calib_logit,
+        })
+    }
+}
+
+/// Return the indices of the top-`k` values in `logits` (highest first).
+/// Ties broken by index ascending. Truncates to `logits.len()` if k > len.
+fn top_k_indices(logits: &[f32], k: usize) -> Vec<usize> {
+    let want = k.min(logits.len());
+    if want == 0 {
+        return Vec::new();
+    }
+    let mut idx: Vec<usize> = (0..logits.len()).collect();
+    // Partial sort: pull the top `want` to the front by value descending.
+    idx.select_nth_unstable_by(want - 1, |&a, &b| {
+        logits[b]
+            .partial_cmp(&logits[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    let mut top: Vec<usize> = idx.into_iter().take(want).collect();
+    top.sort_by(|&a, &b| {
+        logits[b]
+            .partial_cmp(&logits[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(a.cmp(&b))
+    });
+    top
 }
 
 fn take_f32(
@@ -266,9 +566,7 @@ fn take_f32_scalar(entries: &mut HashMap<String, NpyArray>, key: &str) -> Result
 }
 
 impl DraftHead for Eagle4Head {
-    fn propose(&mut self, inputs: &DraftInputs<'_>, _k: usize) -> Result<DraftOutputs> {
-        // Shape validation that WILL happen in the real impl. Useful here
-        // to anchor the contract.
+    fn propose(&mut self, inputs: &DraftInputs<'_>, k: usize) -> Result<DraftOutputs> {
         if inputs.hiddens.len() != cfg::N_HIDDENS {
             return Err(Error::Model(format!(
                 "Eagle4Head expects {} hiddens (h_low, h_mid, h_high, h_shared), got {}",
@@ -286,11 +584,35 @@ impl DraftHead for Eagle4Head {
                 )));
             }
         }
-        Err(Error::Unimplemented(
-            "Eagle4Head::propose — forward pass not implemented yet; \
-             see reports/path_to_90/eagle4_convergence.md § \
-             'Required dismantle changes' #4",
-        ))
+        // hiddens order is fixed by the contract: [h_low, h_mid, h_high, h_shared].
+        let h_low = inputs.hiddens[0];
+        let h_mid = inputs.hiddens[1];
+        let h_high = inputs.hiddens[2];
+        let h_shared = inputs.hiddens[3];
+
+        let out = self.forward_full(inputs.prev_token, h_low, h_mid, h_high, h_shared)?;
+
+        // Top-K tokens from token_logits. K=0 → 1 (caller always wants
+        // at least the argmax — returning empty would silently break the
+        // verify path).
+        let want = k.max(1);
+        let topk = top_k_indices(&out.token_logits, want);
+
+        // Predicted routing mask: per-MoE-layer top-`TOP_K_ROUTED` from
+        // `mask_logits`. Each layer's row is `mask_logits[L*N_ROUTED..(L+1)*N_ROUTED]`.
+        let mut routing_mask = vec![0u8; cfg::N_MOE_LAYERS * cfg::N_ROUTED];
+        for layer in 0..cfg::N_MOE_LAYERS {
+            let row = &out.mask_logits[layer * cfg::N_ROUTED..(layer + 1) * cfg::N_ROUTED];
+            for idx in top_k_indices(row, cfg::TOP_K_ROUTED) {
+                routing_mask[layer * cfg::N_ROUTED + idx] = 1;
+            }
+        }
+
+        Ok(DraftOutputs {
+            tokens: topk.into_iter().map(|i| i as u32).collect(),
+            routing_mask: Some(routing_mask),
+            calib: Some(out.calib_logit),
+        })
     }
 
     fn hidden_dim(&self) -> usize {
@@ -316,6 +638,7 @@ mod tests {
         assert_eq!(head.hidden_dim(), cfg::HIDDEN_DIM);
         assert_eq!(head.n_hiddens(), 4);
         assert_eq!(head.id(), "eagle4-uninitialized");
+        assert!(!head.has_frozen());
         let w = head.weights();
         assert_eq!(w.in_proj.len(), cfg::HIDDEN_DIM * 5 * cfg::HIDDEN_DIM);
         assert_eq!(w.block_attn_q.len(), cfg::HIDDEN_DIM * cfg::HIDDEN_DIM);
@@ -329,8 +652,6 @@ mod tests {
 
     #[test]
     fn from_npz_missing_file_returns_io_error() {
-        // Real impl: nonexistent path surfaces through std::io, not
-        // Unimplemented (which was the skeleton's stub return).
         let result = Eagle4Head::from_npz("nonexistent.npz");
         assert!(matches!(result, Err(Error::Io(_))));
     }
@@ -362,9 +683,10 @@ mod tests {
     }
 
     #[test]
-    fn propose_with_valid_shapes_returns_unimplemented() {
-        // Once shapes pass validation, the real forward kicks in. Until
-        // it's implemented, that returns Unimplemented (not Model).
+    fn propose_without_frozen_errors() {
+        // Frozen weights are required before any forward — the old
+        // "Unimplemented" stub return is now replaced by a clear
+        // Error::Model from forward_full.
         let mut head = Eagle4Head::new_uninitialized();
         let h = vec![0.0f32; cfg::HIDDEN_DIM];
         let four: [&[f32]; 4] = [&h, &h, &h, &h];
@@ -373,7 +695,48 @@ mod tests {
             hiddens: &four,
         };
         let result = head.propose(&inputs, 4);
-        assert!(matches!(result, Err(Error::Unimplemented(_))));
+        match result {
+            Err(Error::Model(msg)) => assert!(
+                msg.contains("frozen weights not loaded"),
+                "expected frozen-weights error, got: {msg}"
+            ),
+            other => panic!("expected Err(Model), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn propose_with_frozen_runs_forward() {
+        // All-zero weights + all-zero hiddens → token_logits all zero
+        // (every weight is 0). top_k still returns indices, calib=0,
+        // routing_mask all zeros.
+        let mut head = Eagle4Head::new_uninitialized();
+        let frozen = Eagle4FrozenWeights {
+            token_embd: vec![0.0; cfg::VOCAB * cfg::HIDDEN_DIM],
+            lm_head: vec![0.0; cfg::VOCAB * cfg::HIDDEN_DIM],
+            output_norm: vec![1.0; cfg::HIDDEN_DIM], // identity-ish RMSNorm scale
+        };
+        head.set_frozen(frozen);
+        assert!(head.has_frozen());
+        let hh = vec![0.0f32; cfg::HIDDEN_DIM];
+        let four: [&[f32]; 4] = [&hh, &hh, &hh, &hh];
+        let inputs = DraftInputs {
+            prev_token: 0,
+            hiddens: &four,
+        };
+        let out = head.propose(&inputs, 4).expect("propose with zero weights");
+        assert_eq!(out.tokens.len(), 4);
+        assert_eq!(
+            out.routing_mask.as_ref().unwrap().len(),
+            cfg::N_MOE_LAYERS * cfg::N_ROUTED
+        );
+        assert_eq!(out.calib, Some(0.0));
+    }
+
+    #[test]
+    fn top_k_indices_orders_by_value_desc() {
+        let v = vec![0.1, 0.5, 0.3, 0.7, 0.2];
+        let top3 = top_k_indices(&v, 3);
+        assert_eq!(top3, vec![3, 1, 2]); // 0.7, 0.5, 0.3
     }
 
     #[test]

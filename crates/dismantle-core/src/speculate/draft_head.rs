@@ -41,6 +41,7 @@ pub struct DraftInputs<'a> {
 }
 
 /// Bundle of per-token outputs the head returns.
+#[derive(Debug, Clone)]
 pub struct DraftOutputs {
     /// Up to K candidate next-token ids, greedy-ordered. May be shorter
     /// than K if the head ran out of confident proposals or returned an
