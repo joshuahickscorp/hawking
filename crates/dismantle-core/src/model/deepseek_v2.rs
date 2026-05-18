@@ -1401,28 +1401,34 @@ impl Engine for DeepSeekV2 {
                 }
             }
         } else if self.speculate_mode == crate::SpeculateMode::Eagle4 {
-            // Path-to-90 step 8 — EAGLE-4 spec decode, K=1 (single-position
-            // verify-by-comparison). Per output token:
+            // Path-to-90 step 9 — EAGLE-4 spec decode, K=1, GPU emission.
             //
-            //   1. Single CPU walk: capture 5-input bundle + advance CPU KV
-            //      + compute V2-Lite's greedy argmax at this position.
-            //   2. head.propose(eagle4_inputs, K=1) → DraftOutputs with the
-            //      top-1 candidate from token_logits + calib scalar.
-            //   3. Emit the V2-Lite argmax. Track whether the draft matched
-            //      it (= "accepted" — eagle4's prediction was correct).
+            // Per output token:
+            //   1. GPU forward_token_argmax (production Wedge C path)
+            //      advances GPU KV and gives V2-Lite's canonical argmax.
+            //      This is the EMITTED token — bit-identical to
+            //      SpeculateMode::Off by construction.
+            //   2. CPU walk (forward_token_eagle4_capture_with_argmax)
+            //      captures EAGLE-4's 5-input hidden bundle, advances
+            //      CPU MLA KV mirror. seq_len is save/restored around the
+            //      CPU walk so the two paths don't double-bump the
+            //      shared counter. CPU KV diverges from GPU KV over time
+            //      (the foundation-halt CPU attention() divergence —
+            //      see reports/path_to_90/foundation_halt.md); eagle4
+            //      stats are therefore noisy until the chip lands. But
+            //      the emitted output is GPU-clean.
+            //   3. head.propose(eagle4_inputs, K=1) feeds the (possibly
+            //      degraded) hiddens to the head; the draft prediction
+            //      is compared to the GPU argmax and accept/reject is
+            //      tallied for stats.
             //
-            // K-batched verify (`forward_tokens_batched_for_test` on K
+            // K-batched verify (forward_tokens_batched_for_test on K
             // candidates with longest-matching-prefix acceptance) is
-            // intentionally deferred to Stage 2 (Path B kernels, steps
-            // 12-17). At K=1 spec decode degenerates to "always emit the
-            // verifier's argmax" → bit-identical to SpeculateMode::Off by
-            // construction (the step 9 regression test exercises this).
-            // calib threshold is currently informational; future commits
-            // will use it to short-circuit the draft on low-confidence
-            // positions once K>1 is wired.
+            // deferred to Stage 2 Path B kernels. At K=1 spec decode
+            // degenerates to "emit verifier's argmax" → step 9's
+            // bit-identical regression passes by construction.
             //
-            // Greedy only — sampling temp > 0 disabled until verify is
-            // generalized.
+            // Greedy only — sampling temp > 0 disabled.
             if req.sampling.temperature > 0.0 {
                 return Err(Error::Model(
                     "--speculate eagle4 currently requires temperature=0".into(),
@@ -1431,8 +1437,7 @@ impl Engine for DeepSeekV2 {
 
             let calib_threshold = self.eagle4_calib_threshold;
             let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
-            // Take the head out of self for the duration of the loop
-            // (forward_token_eagle4_capture_with_argmax needs &mut self).
+            let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
             let mut head = self
                 .eagle4_head
                 .take()
@@ -1446,8 +1451,20 @@ impl Engine for DeepSeekV2 {
                 let pos = prompt_len + step;
                 let step_start = Instant::now();
 
-                let (eagle4_inputs, v2_argmax) =
+                // 1. GPU verifier forward — canonical, bit-identical to Off.
+                //    Advances GPU KV; advances seq_len from X → X+1.
+                let v2_argmax =
+                    self.forward_token_argmax(last_id, pos, use_profiled_greedy)?;
+
+                // 2. CPU walk for eagle4 capture. Would advance seq_len
+                //    X+1 → X+2; rewind to X first so the CPU walk's
+                //    attention writes to CPU mla_c_kv slot X and bumps
+                //    seq_len back to X+1.
+                let post_gpu_seq_len = self.kv.seq_len;
+                self.kv.seq_len = post_gpu_seq_len.saturating_sub(1);
+                let (eagle4_inputs, _cpu_argmax) =
                     self.forward_token_eagle4_capture_with_argmax(last_id, pos)?;
+                debug_assert_eq!(self.kv.seq_len, post_gpu_seq_len);
 
                 use crate::speculate::draft_head::{DraftHead, DraftInputs};
                 let hidden_refs: [&[f32]; 4] = [

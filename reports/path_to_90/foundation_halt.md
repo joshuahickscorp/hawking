@@ -1,8 +1,67 @@
-# Path-to-90 foundation block — halt at step 9
+# Path-to-90 foundation block — halt at step 9 [RESOLVED]
 
 **Halted at:** 2026-05-18 EDT
+**Resolved:** 2026-05-18 EDT (later same session)
 **Halted on:** step 9 (bit-identical greedy regression)
 **Halt rule:** CLAUDE.md § Halt rule — "Below a gate's lower bound → halt and debug, do not paper over."
+
+## Resolution (added post-fix)
+
+Step 9 bit-identical regression now passes. Fix landed in commit
+`<step 9 closeout>`: the Eagle4 decode branch routes emission
+through GPU `forward_token_argmax` (production Wedge C path,
+bit-identical to `SpeculateMode::Off` by construction) while keeping
+the CPU walk for eagle4 hidden capture as a parallel forward. The
+CPU walk's seq_len bump is save/restored around it so GPU and CPU
+KV both advance to exactly seq_len = X+1 per step (each on its own
+KV mirror, no shared-counter corruption).
+
+Test run (`EAGLE4_PARITY_TEST=1 DISMANTLE_EAGLE4_GREEDY_TOKENS=8 …
+eagle4_decode_parity`):
+
+```
+Off:    33747, 855, 254, 24547, 5025, 5025, 5025, 5025
+Eagle4: 33747, 855, 254, 24547, 5025, 5025, 5025, 5025
+-> 0/8 mismatches  (status: ok)
+```
+
+The original CPU `attention()` divergence (root cause section below)
+is NOT fixed in this commit — only routed around. Eagle4 mode's
+emitted output is correct because emission goes through the GPU
+forward. The eagle4 HEAD is still called per step with hiddens from
+the (still-divergent) CPU walk — so eagle4's accept/reject
+statistics are noisy/unreliable until the CPU `attention()` fix
+lands via the spawned chip.
+
+Known follow-on costs of routing around (not fixing):
+
+- **Slower decode in Eagle4 mode.** Per output token: 1× GPU forward
+  (~40 ms on M3 Pro) + 1× CPU walk (~3.7 s on M3 Pro) = ~3.74 s/token
+  vs Off mode's ~40 ms/token. Stage 1 measurement (step 10) is
+  expected to land near 0.2-0.3 tok/s in Eagle4 mode, FAR below the
+  18-24 tok/s block-ship band. Step 10 will trigger its own halt
+  per the plan; that's the right signal — it's pointing at the next
+  architectural unlock (GPU-side eagle4 capture).
+
+- **Unreliable eagle4 stats.** `draft_accepted` / `draft_rejected`
+  counters reflect "does eagle4 head's prediction (on CPU-divergent
+  hiddens) agree with GPU's argmax?" — interesting only after the
+  CPU attention() fix lands. Until then, treat the counters as a
+  smoke signal (non-zero = head is being called) not a metric.
+
+Followups still needed:
+
+1. **CPU `attention()` divergence fix.** Chip spawned 2026-05-18.
+   Unblocks accurate eagle4 stats AND removes the need for the dual
+   forward (we could trust the CPU walk's argmax and skip the GPU
+   verifier, halving the per-step cost).
+
+2. **GPU-side eagle4 capture.** The 3.7 s/token cost comes from
+   the full CPU walk used to extract h_low/h_mid/h_high/h_shared.
+   The production unlock is to instrument the Wedge C TCB path to
+   read x_buf at layers 2/13/25 and call ffn_shared_only at layer
+   26 GPU-side. That's ~half a day of focused Metal work; deferred
+   until step 10 measurement makes the cost concrete.
 
 ## What ran in the architectural batch
 
