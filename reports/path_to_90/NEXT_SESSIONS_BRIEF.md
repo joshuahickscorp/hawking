@@ -4,6 +4,33 @@
 or a collaborator. Each section is a self-contained prompt that bootstraps the
 next phase of work from current state.
 
+> **UPDATE 2026-05-18 — EAGLE-4 integration supersedes parts of this brief.**
+> EAGLE-4 (`~/Downloads/eagle4`) has shipped a trained head with **87.48%
+> target-argmax acceptance** vs EAGLE-3's 75.84% (+11.64 pp). Its README
+> names dismantle as its inference runtime. Read
+> `reports/path_to_90/eagle4_convergence.md` BEFORE acting on Phase 2 or
+> C3 below — that doc is now authoritative for the integration contract.
+> Three changes to call out:
+>
+> 1. **Layer indices for multi-hidden capture are {2, 13, 25}**, not
+>    {2, 14, 24} as Phase 2 §4 below originally said. Constants in
+>    `crates/dismantle-core/src/speculate/eagle4_head.rs::cfg` are the
+>    source of truth.
+> 2. **Phase 2's dismantle-side capture extension is retired.** EAGLE-4
+>    has its own MLX-native capture (`eagle4/capture.py`, 745 records/sec)
+>    that produces the 4-hidden + routing parquets it trains on.
+>    Dismantle owns *inference*; eagle4 owns *training*. The brief's
+>    capture-hidden modification is no longer needed.
+> 3. **C3 work changes shape.** Instead of building an EAGLE-3-style
+>    `EagleDraftHead`, dismantle implements `Eagle4Head` (skeleton landed
+>    this commit at `crates/dismantle-core/src/speculate/eagle4_head.rs`).
+>    Forward pass = 5-input fusion → 1 transformer block → residual gate
+>    → frozen LM head + mask + calib. Loads from eagle4's NPZ checkpoint.
+>
+> Path B (parallel-K verify kernels) and tree decoding remain valid and
+> converge with eagle4's masked-verify need — see convergence doc for the
+> combined kernel signature.
+
 **Current state snapshot** (post-recovery, 2026-05-17 ~22:30 EDT — see
 `reports/path_to_90/recovery_2026-05-17.md` for what changed and why):
 

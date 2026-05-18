@@ -1,52 +1,97 @@
 //! Path-to-90 C2/C3 — `DraftSpecDecoder` skeleton for trained draft heads.
 //!
-//! The trained draft head (EAGLE-3 style per [stage3_c1/architecture.md])
-//! consumes the target's post-final-rmsnorm hidden state plus the previous
-//! token embedding, and emits K candidate next tokens. The verifier then
-//! runs the target on those K tokens via the existing batched-forward path
-//! and accepts the longest matching greedy prefix.
+//! Supports two head families with one trait:
 //!
-//! This module ships in this commit as a SKELETON ONLY:
+//! - **EAGLE-3 style** — single post-final-rmsnorm hidden state input.
+//!   `inputs.hiddens.len() == 1`, no `routing_mask` or `calib` output.
+//! - **EAGLE-4 style** — four hidden states (low/mid/high/shared) input,
+//!   plus a 26×64 per-MoE-layer routing-mask prediction and a P(accept)
+//!   calibration scalar in the output. `inputs.hiddens.len() == 4`.
 //!
-//! - The trait `DraftHead` exists with the interface a trained head will
-//!   implement.
-//! - `NoopDraftHead` is the only impl provided — it returns zero candidates,
-//!   so the verify path acts identically to single-token greedy. Bit-
-//!   identical to today's default decode, by construction.
-//! - `DraftSpecDecoder::draft_then_verify` is wired but, with `NoopDraftHead`
-//!   plugged in, it never proposes anything → never invokes verify.
+//! The verify path consumes only `DraftOutputs::tokens` for the bit-
+//! identical-greedy regression — `routing_mask` and `calib` are advisory
+//! signals consumed by the masked-verify kernel + cascade utility guard
+//! (Path B work).
 //!
-//! C3 will replace `NoopDraftHead` with a real consumer of the trained
-//! head GGUF. The wire-up site in `deepseek_v2.rs` is unchanged in this
-//! commit (no engine path uses the skeleton); the module is here so C3
-//! has a concrete landing site rather than a green-field start.
+//! Concrete impls:
 //!
-//! The trait + struct compile and pass `cargo test`. There are no
-//! perf claims and no behavior change to any shipped decode path.
+//! - `NoopDraftHead` — proposes nothing. e2e identical to single-token
+//!   greedy. Used as the regression baseline.
+//! - `Eagle4Head` — loads an NPZ checkpoint produced by `eagle4.py train`,
+//!   runs the 5-input fusion + 1-transformer-block forward, returns
+//!   tokens + mask + calib. **Skeleton in this commit** — `propose()`
+//!   returns `Err(Unimplemented)`. See `eagle4_head.rs` and
+//!   `reports/path_to_90/eagle4_convergence.md`.
+//!
+//! No engine path consumes this module yet; the wire-up site in
+//! `model/deepseek_v2.rs` next to `SpeculateMode::ExactShared` /
+//! `SpeculateMode::NGram` lands in C3.
 
 use crate::Result;
 
-/// Trained draft head — consumes target hidden state + previous token,
-/// returns K candidate next-token ids in greedy order.
+/// Bundle of per-token inputs the head sees. The head decides how many
+/// hidden vectors it expects via `n_hiddens()` — implementations are
+/// responsible for validating `inputs.hiddens.len() == self.n_hiddens()`.
+pub struct DraftInputs<'a> {
+    /// The most recently committed target token.
+    pub prev_token: u32,
+    /// One or more hidden vectors, in head-specific order. For EAGLE-4:
+    /// `[h_low, h_mid, h_high, h_shared]`. For EAGLE-3: `[post_norm_hidden]`.
+    pub hiddens: &'a [&'a [f32]],
+}
+
+/// Bundle of per-token outputs the head returns.
+pub struct DraftOutputs {
+    /// Up to K candidate next-token ids, greedy-ordered. May be shorter
+    /// than K if the head ran out of confident proposals or returned an
+    /// empty set (e.g. `NoopDraftHead`).
+    pub tokens: Vec<u32>,
+    /// EAGLE-4 only: predicted top-8 routed-expert mask per MoE layer,
+    /// packed as `[N_MOE_LAYERS * N_ROUTED]` bytes (1 = predicted-active,
+    /// 0 = predicted-inactive). `None` for EAGLE-3.
+    pub routing_mask: Option<Vec<u8>>,
+    /// EAGLE-4 only: predicted probability that the verifier will accept
+    /// the head's argmax for the next position. Used by the cascade
+    /// utility guard to fall back to autoregressive when low. `None` for
+    /// EAGLE-3.
+    pub calib: Option<f32>,
+}
+
+impl DraftOutputs {
+    /// Empty output convenience constructor — used by `NoopDraftHead`
+    /// and as the "no proposals" return when calib < threshold.
+    pub fn empty() -> Self {
+        Self {
+            tokens: Vec::new(),
+            routing_mask: None,
+            calib: None,
+        }
+    }
+}
+
+/// Trained draft head — consumes target hidden state(s) + previous token,
+/// returns up to K candidate next-token ids plus (optionally) a routing
+/// mask + calibration scalar.
 ///
 /// Implementations are expected to be `~1 transformer block` of compute
-/// per call (EAGLE-3 spec). Returning fewer than K candidates is allowed;
-/// the verify path will only check what was returned.
-///
-/// `prev_token` is the most recently committed target token. `hidden`
-/// is the post-final-rmsnorm hidden state at that token's position
-/// (i.e. what `Engine::forward_token_with_hidden_for_test` returned).
+/// per call (EAGLE-3 / EAGLE-4 spec). Returning fewer than `k` candidates
+/// is allowed; the verify path will only check what was returned.
 pub trait DraftHead: Send + Sync {
     /// Propose up to `k` candidate next tokens.
-    fn propose(&mut self, prev_token: u32, hidden: &[f32], k: usize) -> Result<Vec<u32>>;
+    fn propose(&mut self, inputs: &DraftInputs<'_>, k: usize) -> Result<DraftOutputs>;
 
     /// Reset any per-sequence state (e.g. the head's own KV cache, if it
     /// keeps one). Called on each new generation request.
     fn reset(&mut self) {}
 
     /// Hidden dimension the head expects. Used for shape-matching against
-    /// the target's `Engine::forward_token_with_hidden_for_test`.
+    /// the target's `Engine::forward_token_with_hidden_for_test` /
+    /// `forward_token_eagle4_for_test`.
     fn hidden_dim(&self) -> usize;
+
+    /// Number of hidden vectors the head expects in `inputs.hiddens`.
+    /// 1 for EAGLE-3-style heads, 4 for EAGLE-4.
+    fn n_hiddens(&self) -> usize;
 
     /// Human-readable id for logging / GenStats provenance.
     fn id(&self) -> &str;
@@ -71,12 +116,16 @@ impl NoopDraftHead {
 }
 
 impl DraftHead for NoopDraftHead {
-    fn propose(&mut self, _prev_token: u32, _hidden: &[f32], _k: usize) -> Result<Vec<u32>> {
-        Ok(Vec::new())
+    fn propose(&mut self, _inputs: &DraftInputs<'_>, _k: usize) -> Result<DraftOutputs> {
+        Ok(DraftOutputs::empty())
     }
 
     fn hidden_dim(&self) -> usize {
         self.hidden_dim
+    }
+
+    fn n_hiddens(&self) -> usize {
+        1
     }
 
     fn id(&self) -> &str {
@@ -155,9 +204,17 @@ mod tests {
     fn noop_head_proposes_nothing() {
         let mut head = NoopDraftHead::new(2048);
         let hidden = vec![0.0f32; 2048];
-        let proposals = head.propose(42, &hidden, 4).unwrap();
-        assert!(proposals.is_empty());
+        let hiddens: [&[f32]; 1] = [&hidden];
+        let inputs = DraftInputs {
+            prev_token: 42,
+            hiddens: &hiddens,
+        };
+        let out = head.propose(&inputs, 4).unwrap();
+        assert!(out.tokens.is_empty());
+        assert!(out.routing_mask.is_none());
+        assert!(out.calib.is_none());
         assert_eq!(head.hidden_dim(), 2048);
+        assert_eq!(head.n_hiddens(), 1);
         assert_eq!(head.id(), "noop");
     }
 

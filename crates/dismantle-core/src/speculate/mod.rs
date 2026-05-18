@@ -9,5 +9,6 @@
 //! lower we ship as `--speculate` opt-in and don't headline it.
 
 pub mod draft_head;
+pub mod eagle4_head;
 pub mod ngram;
 pub mod shared;
