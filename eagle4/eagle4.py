@@ -351,20 +351,31 @@ def evaluate(
     # When dump_logits is set, accumulate per-record arrays across all
     # shards (truncated to max_records) and save as a single NPZ at the
     # end. Shapes (after concat):
-    #   token_logits  (N, VOCAB)        float32
-    #   mask_logits   (N, N_MOE, N_ROUTED) float32
-    #   calib_logit   (N,)              float32
-    #   draft_hidden  (N, HIDDEN_DIM)   float32
-    #   prev_token    (N,)              int32
-    #   next_token    (N,)              int32
+    #   token_logits  (N, VOCAB)         float32   head output
+    #   mask_logits   (N, N_MOE, N_ROUTED) float32 head output
+    #   calib_logit   (N,)               float32   head output
+    #   draft_hidden  (N, HIDDEN_DIM)    float32   head output
+    #   prev_token    (N,)               int32     head input
+    #   next_token    (N,)               int32     ground truth
+    #   h_low         (N, HIDDEN_DIM)    float32   head input
+    #   h_mid         (N, HIDDEN_DIM)    float32   head input
+    #   h_high        (N, HIDDEN_DIM)    float32   head input
+    #   h_shared     (N, HIDDEN_DIM)     float32   head input
     # Consumed by `crates/dismantle-core/tests/eagle4_parity.rs` for the
     # cross-language Rust-vs-Python parity diff (path-to-90 steps 5-6).
+    # The inputs (h_low/mid/high/shared) are dumped so Rust can feed
+    # identical inputs to its Eagle4Head::forward_full without needing
+    # a parquet reader.
     dump_token_logits: list[np.ndarray] = []
     dump_mask_logits: list[np.ndarray] = []
     dump_calib_logit: list[np.ndarray] = []
     dump_draft_hidden: list[np.ndarray] = []
     dump_prev_token: list[np.ndarray] = []
     dump_next_token: list[np.ndarray] = []
+    dump_h_low: list[np.ndarray] = []
+    dump_h_mid: list[np.ndarray] = []
+    dump_h_high: list[np.ndarray] = []
+    dump_h_shared: list[np.ndarray] = []
 
     for shard in parquet_paths:
         t = pq.read_table(shard)
@@ -418,6 +429,12 @@ def evaluate(
             dump_draft_hidden.append(dh_np)
             dump_prev_token.append(prev)
             dump_next_token.append(nxt)
+            # Input hiddens — parquet stores fp16; we promote to fp32
+            # here so Rust gets a single dtype to read.
+            dump_h_low.append(low.astype(np.float32, copy=False))
+            dump_h_mid.append(mid.astype(np.float32, copy=False))
+            dump_h_high.append(hi.astype(np.float32, copy=False))
+            dump_h_shared.append(sh.astype(np.float32, copy=False))
 
         n += take
         if n >= max_records:
@@ -433,6 +450,10 @@ def evaluate(
             draft_hidden=np.concatenate(dump_draft_hidden, axis=0),
             prev_token=np.concatenate(dump_prev_token, axis=0),
             next_token=np.concatenate(dump_next_token, axis=0),
+            h_low=np.concatenate(dump_h_low, axis=0),
+            h_mid=np.concatenate(dump_h_mid, axis=0),
+            h_high=np.concatenate(dump_h_high, axis=0),
+            h_shared=np.concatenate(dump_h_shared, axis=0),
         )
 
     n = max(n, 1)

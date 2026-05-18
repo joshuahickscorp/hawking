@@ -9,7 +9,9 @@
 //!
 //! - **ZIP STORED only.** `np.savez_compressed` (DEFLATE) is rejected.
 //! - **No ZIP64.** Files > 4 GB are rejected. EAGLE-4 best.npz is ~300 MB.
-//! - **C order only.** `fortran_order=True` is rejected.
+//! - `fortran_order=True` is transposed on read for 1D/2D arrays (path-to-90
+//!   step 6 — MLX writes `mx.transpose(...).save(...)` with this flag set
+//!   on the resulting v2lite_frozen.npz / eagle4 checkpoint downstream).
 //! - **Limited dtypes**: `<f4` (f32), `<f2` (f16), `<i4` (i32), `<i8` (i64).
 //!
 //! The loader reads the whole file into memory. EAGLE-4 checkpoints are a
@@ -324,12 +326,6 @@ fn parse_npy(buf: &[u8]) -> Result<NpyArray> {
     let shape = extract_shape(header)
         .ok_or_else(|| Error::Model(format!("npz: header missing 'shape': {:?}", header)))?;
 
-    if fortran_order {
-        return Err(Error::Model(
-            "npz: fortran_order=True arrays not supported".into(),
-        ));
-    }
-
     let dtype = NpyDtype::from_descr(&descr)?;
     let numel: usize = if shape.is_empty() { 1 } else { shape.iter().product() };
     let nbytes = numel * dtype.item_size();
@@ -342,10 +338,41 @@ fn parse_npy(buf: &[u8]) -> Result<NpyArray> {
             buf.len() - data_start
         )));
     }
+    let raw = &buf[data_start..data_end];
+
+    // fortran_order=True: data is stored column-major. To present a
+    // uniform C-order view to callers, transpose on read. Supported for
+    // 0-d, 1-d (no-op), and 2-d arrays — covers all the eagle4 / MLX
+    // shapes we currently see (mx.transpose(...).save() lands here).
+    let data = if fortran_order && shape.len() >= 2 {
+        if shape.len() != 2 {
+            return Err(Error::Model(format!(
+                "npz: fortran_order with ndim={} not yet supported",
+                shape.len()
+            )));
+        }
+        let r = shape[0];
+        let c = shape[1];
+        let isz = dtype.item_size();
+        let mut out = vec![0u8; r * c * isz];
+        for i in 0..r {
+            for j in 0..c {
+                // Fortran source byte offset: (i + j * r) * isz
+                // C destination offset:        (i * c + j) * isz
+                let src = (i + j * r) * isz;
+                let dst = (i * c + j) * isz;
+                out[dst..dst + isz].copy_from_slice(&raw[src..src + isz]);
+            }
+        }
+        out
+    } else {
+        raw.to_vec()
+    };
+
     Ok(NpyArray {
         dtype,
         shape,
-        data: buf[data_start..data_end].to_vec(),
+        data,
     })
 }
 
