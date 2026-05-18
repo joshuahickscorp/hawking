@@ -1,0 +1,24 @@
+{
+  "captured_at": "2026-05-18T11:55:43-04:00",
+  "git_sha": "e6882f3b4eec4bf9d4a2cadc34e88c70557c8377",
+  "branch": "claude/dreamy-golick-d54ff8",
+  "host": {
+    "model": "M3 Pro 18 GB",
+    "theoretical_bandwidth_gbps": 150
+  },
+  "bench_clean": {
+    "tokens_per_trial": 64,
+    "trials_decode_tps": [26.934533407080647,26.92807563969212,26.890910247332823],
+    "trials_prefill_tps": [0,0,0],
+    "median_decode_tps": 26.92807563969212
+  },
+  "bench_under_mst": {
+    "decode_tps": 25.59924695207226,
+    "json": "reports/path_to_90/_stage0_capture/bench_under_mst.json"
+  },
+  "trace": {
+    "bundle": "reports/path_to_90/_stage0_capture/mst.trace",
+    "toc": "reports/path_to_90/_stage0_capture/toc.xml",
+    "schemas_dir": "reports/path_to_90/_stage0_capture"
+  }
+}
