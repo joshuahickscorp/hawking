@@ -18,7 +18,43 @@
 | 8 — `--speculate eagle4` CLI + decode-path wire-up | ✅ ships output | `f3ae7fd` |
 | **9 — bit-identical greedy regression** | **❌ halt** | this commit (test landed, currently fails) |
 
-## Root cause
+## Root cause — LOCALIZED to CPU `attention()` (update)
+
+**Halt update 2026-05-18 EDT (post-checkpoint):** A focused A/B diagnostic
+test (`crates/dismantle-core/tests/eagle4_cpu_gpu_ab.rs`, gated behind
+`EAGLE4_PARITY_TEST=1`) reduces the suspect surface to dismantle's CPU
+`attention()` helper. The test runs three forwards on the SAME token at
+pos=0 with reset KV (no prior context):
+
+```
+GPU Wedge C       | argmax=   185  post-final-norm hidden L2=18.34
+CPU walk (full)   | h_high L2=54.18   (3× too large)
+CPU shared_only   | argmax= 13699  logits L2=1778
+```
+
+`CPU shared_only` uses CPU `attention()` per layer but neutralizes
+`ffn()` via the (separately-buggy) `ffn_shared_only` zero-output path.
+Since `attention()` is essentially the ONLY non-zero contribution to the
+residual stream in `shared_only`, and `shared_only`'s argmax (13699)
+disagrees with GPU's (185), **the divergence sits in CPU `attention()`
+itself**, not in `ffn()` or the MoE dispatch.
+
+Implication: `forward_token_shared_only` has been silently producing
+numerically wrong output vs the GPU forward forever. The
+`v0511_forward_shared_only_smoke.rs` test only asserts "logits are
+finite" — it never compared CPU vs GPU argmax, so the divergence went
+unnoticed. Any path-to-90 prep work that used `forward_token_shared_only`
+for acceptance-rate measurement (Phase 3 prep) needs re-validation
+against GPU after this is fixed.
+
+Magnitude pattern: CPU walk's per-layer residual is ~1.04× too large.
+Compounded over 27 layers, 1.04^27 ≈ 2.88×, which matches the observed
+~3× h_high L2 inflation. Suggests a small but systematic over-
+contribution per attention layer rather than a wholesale mis-shape.
+
+---
+
+### Original observation (pre-localization)
 
 `forward_token_eagle4_capture_with_argmax` (the CPU walk added in step 8)
 diverges from `forward_token` (production GPU Wedge C) at *argmax* level
@@ -89,35 +125,53 @@ The most likely structural causes (in priority order):
 
 ## What attended work unblocks
 
-In order of likely payoff:
+Updated investigation order (post-localization):
 
-1. **Compare `forward_token` and `forward_token_eagle4_capture_with_argmax`
-   on the same input at pos=0 (no prior KV), no prefill.** Dump x at
-   each layer boundary for both paths. The first layer where they
-   diverge identifies the kernel(s) responsible. Concrete: add a
-   `DISMANTLE_LAYER_TRACE=1` env-var path that prints L2 norms per
-   layer for both methods on the same input; diff the traces.
+1. **Audit dismantle's CPU `attention()` (line ~3546 of
+   `crates/dismantle-core/src/model/deepseek_v2.rs`) vs the GPU Wedge
+   C MLA attention path** (`encode_attention_phase1_into_tcb` +
+   `encode_attention_phase2_tcb` + `dispatch_mla_decode_and_o_proj`).
+   The CPU `attention()` is the ONE thing `shared_only` exercises
+   besides effectively-zero `ffn_shared_only`, and `shared_only`'s
+   argmax diverges from GPU's. Per-layer the over-contribution
+   appears to be ~4 % (1.04^27 ≈ 2.88 matches the observed 3× h_high
+   inflation). Likely suspects:
+   - RoPE application: position math, theta, dim split
+   - Softmax scale factor (1/√d): pre/post softmax
+   - MLA q-shape conventions (head-major vs interleaved)
+   - Residual already included in `attention()`'s return value (one
+     possible "off by a residual add" bug — would explain the ~2×
+     inflation if attention returns `x + attn_out` rather than just
+     `attn_out`)
+   - `mla_decode_and_o_proj_metal` (used by CPU path) vs
+     `dispatch_mla_decode_and_o_proj` (used by Wedge C) producing
+     numerically different results at the same input.
 
-2. **Audit CPU `attention()` vs Wedge C attention.** Specifically
-   `dispatch_mla_decode_and_o_proj` vs `mla_decode_and_o_proj_metal`
-   — these are different kernels (one TCB-batched, one standalone)
-   and may produce different results at the same input.
+2. **Concrete diagnostic next step: per-layer L2 dump for both paths.**
+   Add a `DISMANTLE_LAYER_TRACE=1` env-var instrumentation that
+   prints `x` and `x_norm` L2 norms at each layer boundary in BOTH
+   the CPU walk and `forward_token`. First diverging layer + the size
+   of the diff fingerprints the kernel(s). The existing diagnostic
+   test `eagle4_cpu_gpu_ab` captures the *end-of-pipeline* divergence
+   already — the next iteration captures the *first* divergence.
 
-3. **Fix the `ffn_shared_only` zero-output bug** (already chipped out
-   as a follow-up — see step-3 commit message `711893c`). If `ffn()`'s
-   shared-expert leg also returns zero in the unfused path, the CPU
-   walk's `ffn()` output is missing shared-expert contributions at
-   every MoE layer.
+3. **Resolve the spawned `ffn_shared_only` zero-output chip** (step 3
+   `711893c`). Independent of the attention divergence; impacts both
+   acceptance-rate measurement using `shared_only` and the eagle4
+   capture's h_shared component. Already queued as a chip.
 
-4. **Once divergence is fixed, re-run `eagle4_decode_parity`:**
+4. **Once CPU `attention()` divergence is fixed, re-run both
+   diagnostic tests:**
 
    ```bash
    EAGLE4_PARITY_TEST=1 cargo test -p dismantle-core --release \
-       --test eagle4_decode_parity -- --ignored --nocapture
-   ```
+       --test eagle4_cpu_gpu_ab -- --ignored --nocapture
+   # Expected: shared_only argmax == GPU argmax (~185 on the BOS prompt)
 
-   Expected: zero token-level mismatches between Off and Eagle4 over 16
-   tokens.
+   EAGLE4_PARITY_TEST=1 cargo test -p dismantle-core --release \
+       --test eagle4_decode_parity -- --ignored --nocapture
+   # Expected: zero token-level mismatches between Off and Eagle4
+   ```
 
 ## What's parked vs. what's blocked
 
