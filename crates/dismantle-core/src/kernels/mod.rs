@@ -3202,6 +3202,147 @@ mod metal_dispatch {
         Ok(())
     }
 
+    // path-to-150 Phase L7.2 — single-kernel MoE expert fusion (Q4_K
+    // gate/up + Q8_0 down). One TG per route; threadgroup memory holds
+    // x_cache + act_cache so the intermediate `silu(gate)*up` vector never
+    // round-trips through device memory. See
+    // shaders/moe_expert_pair_fused.metal for the algorithm.
+    //
+    // Buffer layout:
+    //   w_all:     uchar pinned buffer (or a contiguous view) holding all
+    //              weight bytes for gate/up/down across every expert. The
+    //              three `*_offset` arguments locate each tensor's first
+    //              expert; per-expert offsets are computed inside the
+    //              kernel from the dimension constants.
+    //   per_k_x:   K × hidden_in f32 packed (row-major; route i reads
+    //              per_k_x[route_kk[i], :])
+    //   route_ids: n_routes × u32, expert id per route (in [0, n_experts))
+    //   route_kk:  n_routes × u32, which kk in [0, K) per route
+    //   out:       n_routes × hidden_out f32, route-major
+    //
+    // Dispatch:
+    //   grid (1, n_routes, 1), TG (256, 1, 1),
+    //   threadgroup memory (hidden_in + routed_mid) × 4 bytes.
+    #[allow(clippy::too_many_arguments)]
+    pub fn dispatch_moe_expert_pair_fused_pinned(
+        ctx: &MetalContext,
+        w_all: &PinnedBuffer,
+        gate_offset: usize,
+        up_offset: usize,
+        down_offset: usize,
+        n_experts: u32,
+        n_routes: u32,
+        hidden_in: u32,
+        routed_mid: u32,
+        hidden_out: u32,
+        route_ids: &[u32],
+        route_kk: &[u32],
+        per_k_x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "moe_expert_pair_fused";
+        if hidden_in % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires hidden_in % 256 == 0; got hidden_in={hidden_in}"
+            )));
+        }
+        if routed_mid % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires routed_mid % 32 == 0; got routed_mid={routed_mid}"
+            )));
+        }
+        if route_ids.len() != n_routes as usize || route_kk.len() != n_routes as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} route arrays len ({}, {}) != n_routes {}",
+                route_ids.len(), route_kk.len(), n_routes
+            )));
+        }
+        let k_max = route_kk.iter().copied().max().unwrap_or(0) as usize + 1;
+        if per_k_x.len() < k_max * hidden_in as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} per_k_x len {} insufficient for k_max={k_max} hidden_in={hidden_in}",
+                per_k_x.len()
+            )));
+        }
+        if out.len() != n_routes as usize * hidden_out as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} out len {} != n_routes ({n_routes}) × hidden_out ({hidden_out})",
+                out.len()
+            )));
+        }
+
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let route_kk_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_kk));
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(per_k_x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+
+        let gate_off_u64 = gate_offset as u64;
+        let up_off_u64 = up_offset as u64;
+        let down_off_u64 = down_offset as u64;
+        let shmem_bytes = (hidden_in as u64 + routed_mid as u64) * std::mem::size_of::<f32>() as u64;
+        const TG: u32 = 256;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (TG, n_routes, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_all), 0);
+                enc.set_buffer(1, Some(&route_ids_buf), 0);
+                enc.set_buffer(2, Some(&route_kk_buf), 0);
+                enc.set_buffer(3, Some(&x_buf), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u64>() as u64,
+                    &gate_off_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u64>() as u64,
+                    &up_off_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u64>() as u64,
+                    &down_off_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_in as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    9,
+                    std::mem::size_of::<u32>() as u64,
+                    &routed_mid as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    10,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_out as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    11,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_routes as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    12,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_experts as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice =
+            unsafe { std::slice::from_raw_parts(out_ptr, out.len()) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
     // Wedge K Approach 1 Iter 2 — v3_dual: 128 threads per TG (4 simdgroups),
     // 2 rows per simdgroup (N_R0=2), 8 rows per TG.
     // grid=(ceil(rows/8)*128, 1, 1). Amortizes activation load over 2 rows.

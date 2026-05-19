@@ -6,7 +6,7 @@
   "model_arch": "deepseek2",
   "tensor_layout_hash": "6540aaa223c931038ec4ddde",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "b935ca3dc359992d716b4826",
+  "shader_hash": "1d71174fdbc56412996f9c19",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
