@@ -343,24 +343,33 @@ fn assert_mla_kbatch_matches_sequential(
 
     let kv_b_buf = new_f32_buf(ctx, &kv_b_proj_data);
 
-    // Sequential reference: K independent K=1 dispatches via the existing
-    // mla_decode_metal (slot-correct K=1 dispatcher).
+    // Causal-mask convention for the K-batched kernel (A1.1):
+    //   seq_len = seq_len_base + k_batch (caller appends K new KVs first)
+    //   query kk attends to positions [0, seq_len_base + kk]
+    //                              = [0, seq_len - k_batch + kk]
+    // So the sequential reference computes mla_decode at per-K seq_lens:
+    //   query 0:        seq_len - k_batch + 1
+    //   query k_batch-1: seq_len
+    // At k_batch=1 this reduces to seq_len (bit-identical to the K=1 path).
     let mut seq_out = vec![0.0f32; k_batch * n_heads * v_head_dim];
     for k in 0..k_batch {
         let q_k = &q_kbatch[k * n_heads * q_head_dim..(k + 1) * n_heads * q_head_dim];
         let mut y_k = vec![0.0f32; n_heads * v_head_dim];
+        let per_k_seq_len = seq_len - k_batch + k + 1;
+        let c_kv_slice = &c_kv[..per_k_seq_len * kv_lora_rank];
+        let k_pe_slice = &k_pe[..per_k_seq_len * qk_rope_head_dim];
         dismantle_core::kernels::mla_decode_metal(
             ctx,
             q_k,
-            &c_kv,
-            &k_pe,
+            c_kv_slice,
+            k_pe_slice,
             &kv_b_buf,
             n_heads,
             qk_nope_head_dim,
             qk_rope_head_dim,
             v_head_dim,
             kv_lora_rank,
-            seq_len,
+            per_k_seq_len,
             scale,
             &mut y_k,
         )

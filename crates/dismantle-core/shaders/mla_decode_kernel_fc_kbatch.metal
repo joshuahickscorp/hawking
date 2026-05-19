@@ -76,6 +76,13 @@ kernel void mla_decode_kernel_fc_kbatch(
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
     // ── Phase 1: scores_head[kk, t] = (qp_kk · c_kv[t] + q_rope_kk · k_pe[t]) × scale
+    //
+    // Causal mask convention: seq_len = seq_len_base + k_batch (caller
+    // appends all K new KVs before dispatch). Query kk attends only to
+    // positions [0, seq_len_base + kk] = [0, seq_len - k_batch + kk].
+    // Positions ≥ seq_len - k_batch + kk + 1 get -INFINITY so they drop
+    // out of softmax. At k_batch=1 kk_cap=seq_len so all positions
+    // attended — bit-identical to the K=1 non-causal kernel by construction.
     for (uint kk = 0; kk < k_batch; ++kk) {
         device const float* q_kk = q_kbatch
             + (uint64_t)kk * (uint64_t)n_heads * (uint64_t)q_head_dim
@@ -83,8 +90,13 @@ kernel void mla_decode_kernel_fc_kbatch(
         device const float* q_rope = q_kk + qk_nope_head_dim;
         threadgroup const float* qp_kk = q_nope_proj_k + kk * kv_lora_rank;
         device float* s_kk = scores_head + (uint64_t)kk * (uint64_t)seq_len;
+        const uint kk_cap = seq_len - k_batch + kk + 1u;
 
         for (uint t = tid; t < seq_len; t += tg_size) {
+            if (t >= kk_cap) {
+                s_kk[t] = -INFINITY;
+                continue;
+            }
             device const float* c_kv_t = c_kv + (uint64_t)t * (uint64_t)kv_lora_rank;
             device const float* k_pe_t = k_pe + (uint64_t)t * (uint64_t)qk_rope_head_dim;
             float s = 0.0f;
