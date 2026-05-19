@@ -436,6 +436,116 @@ pub fn mla_decode_metal_kbatch(
     Ok(())
 }
 
+// ── Stage 2.5 — K-batched MoE block (no-overlap baseline) ───────────────────
+
+/// Path B Stage 2.5 — K-batched routed-MoE block, no-overlap baseline.
+///
+/// Per the production roadmap (Stage 2.5: "ship no-overlap K=4 first to
+/// validate parity; the masked-prefetch variant is Stage 3 task 3.2"),
+/// this dispatcher bundles K independent MoE forwards into a SINGLE
+/// `TokenCommandBuffer`. Each of the K queries runs its own per-route
+/// gate/up/down + silu_mul + accumulate sequence; weight reads are NOT
+/// amortized across the K (that's Stage 3.2's union-routing kernel).
+///
+/// The value of the no-overlap variant is twofold:
+///   1. Provides the Path B API surface that the Stage 2.6 wire-up
+///      (`forward_tokens_batched_parallel_k`) calls into.
+///   2. Validates that K dispatches inside one TCB produce output
+///      bit-identical to K independent TCB commits (no shared-scratch
+///      ordering bugs).
+///
+/// Per-K-query inputs: `(x_buf, out_buf, route_ids, route_weights,
+/// shared_route_ids)` — typically the K speculative query slots from the
+/// arena. Per-query buffers are caller-owned PinnedBuffers; this fn
+/// only encodes the TCB and does NOT commit (caller decides when to
+/// commit, allowing further dispatches to be batched after).
+///
+/// Returns the union of temporary scratch buffers (gate/up outputs etc.)
+/// across the K calls. Caller must hold them alive until the TCB
+/// commits.
+///
+/// At K=1 the result is bit-identical to a single
+/// `encode_moe_block_batched_indexed_tcb` call.
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn moe_block_batched_indexed_kbatch_tcb<'a>(
+    tcb: &mut TokenCommandBuffer<'_>,
+    ctx: &MetalContext,
+    model_buf: &PinnedBuffer,
+    routed_gate_offset: usize,
+    routed_up_offset: usize,
+    routed_down_offset: usize,
+    per_k_route_ids: &[&'a PinnedBuffer],     // K buffers of (top_k,) u32
+    per_k_route_weights: &[&'a PinnedBuffer], // K buffers of (top_k,) f32
+    per_k_routes: usize,                       // top_k (constant per K)
+    shared_route_ids_buf: &PinnedBuffer,
+    shared_gate_offset: Option<usize>,
+    shared_up_offset: Option<usize>,
+    shared_down_offset: Option<usize>,
+    hidden: usize,
+    routed_mid: usize,
+    shared_mid: usize,
+    q4k_schedule: &str,
+    routed_down_kernel: &str,
+    shared_down_kernel: &str,
+    per_k_x: &[&'a PinnedBuffer],   // K input buffers of (hidden,) f32
+    per_k_out: &[&'a PinnedBuffer], // K output buffers of (hidden,) f32
+) -> Result<Vec<PinnedBuffer>> {
+    let k = per_k_x.len();
+    if k == 0 {
+        return Err(Error::Kernel(
+            "moe_block_batched_indexed_kbatch_tcb: k_batch must be >= 1".into(),
+        ));
+    }
+    if !(1..=8).contains(&k) {
+        return Err(Error::Kernel(format!(
+            "moe_block_batched_indexed_kbatch_tcb: k_batch in 1..=8; k={k}"
+        )));
+    }
+    if per_k_out.len() != k
+        || per_k_route_ids.len() != k
+        || per_k_route_weights.len() != k
+    {
+        return Err(Error::Kernel(format!(
+            "moe_block_batched_indexed_kbatch_tcb: ragged per-K slots: \
+             x={} out={} ids={} weights={} (all must equal k_batch={k})",
+            per_k_x.len(),
+            per_k_out.len(),
+            per_k_route_ids.len(),
+            per_k_route_weights.len(),
+        )));
+    }
+
+    let mut scratch: Vec<PinnedBuffer> = Vec::with_capacity(k * 8);
+    for kk in 0..k {
+        let part = crate::kernels::encode_moe_block_batched_indexed_tcb(
+            tcb,
+            ctx,
+            model_buf,
+            routed_gate_offset,
+            routed_up_offset,
+            routed_down_offset,
+            per_k_route_ids[kk],
+            per_k_route_weights[kk],
+            per_k_routes,
+            shared_route_ids_buf,
+            shared_gate_offset,
+            shared_up_offset,
+            shared_down_offset,
+            hidden,
+            routed_mid,
+            shared_mid,
+            q4k_schedule,
+            routed_down_kernel,
+            shared_down_kernel,
+            per_k_x[kk],
+            per_k_out[kk],
+        )?;
+        scratch.extend(part);
+    }
+    Ok(scratch)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
