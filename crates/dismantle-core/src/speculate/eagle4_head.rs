@@ -119,7 +119,15 @@ pub struct Eagle4Weights {
     pub block_mlp_gate: Vec<f32>,     // (INTERMEDIATE, HIDDEN)
     pub block_mlp_up: Vec<f32>,       // (INTERMEDIATE, HIDDEN)
     pub block_mlp_down: Vec<f32>,     // (HIDDEN, INTERMEDIATE)
-    pub residual_gate: f32,           // scalar
+    /// path-to-125 L8 fix-(f) — `residual_gate` may be either:
+    ///   length 1 (scalar gate, v3/iter1/iter2 behavior — one global
+    ///     multiplier broadcast to all HIDDEN dims), OR
+    ///   length HIDDEN_DIM (per-dim vector gate, iter3+ behavior —
+    ///     each hidden dim has its own gate value).
+    /// The NPZ loader accepts either shape; the forward computes the
+    /// effective per-element alpha as `gate[i.min(gate.len()-1)]` so
+    /// both shapes work without branching.
+    pub residual_gate: Vec<f32>,
     pub mask_proj_in: Vec<f32>,       // (MASK_HIDDEN, HIDDEN)
     pub mask_proj_out: Vec<f32>,      // (N_MOE_LAYERS*N_ROUTED, MASK_HIDDEN)
     pub calib_proj_w: Vec<f32>,       // (1, HIDDEN)
@@ -146,7 +154,7 @@ impl Eagle4Weights {
             block_mlp_gate: vec![0.0; i * h],
             block_mlp_up: vec![0.0; i * h],
             block_mlp_down: vec![0.0; h * i],
-            residual_gate: 0.0,
+            residual_gate: vec![0.0; 1],
             mask_proj_in: vec![0.0; m * h],
             mask_proj_out: vec![0.0; cfg::N_MOE_LAYERS * cfg::N_ROUTED * m],
             calib_proj_w: vec![0.0; h],
@@ -354,7 +362,7 @@ impl Eagle4Head {
             block_mlp_gate: take_f32(&mut entries, "block.mlp.gate.weight", &[inter, h])?,
             block_mlp_up: take_f32(&mut entries, "block.mlp.up.weight", &[inter, h])?,
             block_mlp_down: take_f32(&mut entries, "block.mlp.down.weight", &[h, inter])?,
-            residual_gate: take_f32_scalar(&mut entries, "residual_gate")?,
+            residual_gate: take_f32_gate(&mut entries, "residual_gate", h)?,
             mask_proj_in: take_f32(&mut entries, "mask_proj_in.weight", &[mhid, h])?,
             mask_proj_out: take_f32(&mut entries, "mask_proj_out.weight", &[mask_out, mhid])?,
             calib_proj_w: take_f32(&mut entries, "calib_proj.weight", &[1, h])?,
@@ -582,13 +590,15 @@ impl Eagle4Head {
             x[i] += mlp_out[i];
         }
 
-        // 5. Baseline + residual gate
+        // 5. Baseline + residual gate (scalar or per-dim vector)
         let mut baseline = vec![0.0f32; h];
         rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
-        let alpha = w.residual_gate;
+        let gate = &w.residual_gate;
+        let gate_last = gate.len() - 1;
         let mut draft_hidden = vec![0.0f32; h];
         for i in 0..h {
-            draft_hidden[i] = baseline[i] + alpha * x[i];
+            let alpha_i = gate[i.min(gate_last)];
+            draft_hidden[i] = baseline[i] + alpha_i * x[i];
         }
 
         // 6. mask_proj SKIPPED (Stage 3 only).
@@ -759,13 +769,16 @@ impl Eagle4Head {
         x.copy_from_slice(src);
 
         // 4. baseline + residual gate (CPU — 2048-element ops; Metal
-        //    launch overhead exceeds compute).
+        //    launch overhead exceeds compute). Supports scalar gate
+        //    (length 1, broadcast) or per-dim vector (length HIDDEN).
         let mut baseline = vec![0.0f32; h];
         rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
-        let alpha = w.residual_gate;
+        let gate = &w.residual_gate;
+        let gate_last = gate.len() - 1;
         let mut draft_hidden = vec![0.0f32; h];
         for i in 0..h {
-            draft_hidden[i] = baseline[i] + alpha * x[i];
+            let alpha_i = gate[i.min(gate_last)];
+            draft_hidden[i] = baseline[i] + alpha_i * x[i];
         }
 
         // 6. mask_proj is SKIPPED in the Metal path. mask_logits is
@@ -970,10 +983,14 @@ impl Eagle4Head {
         rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
 
         // 6. Residual-gate fusion. draft_hidden = baseline + α · x.
-        let alpha = w.residual_gate;
+        //    Supports scalar gate (length 1, broadcast) or per-dim
+        //    vector gate (length HIDDEN) per path-to-125 fix-(f).
+        let gate = &w.residual_gate;
+        let gate_last = gate.len() - 1;
         let mut draft_hidden = vec![0.0f32; h];
         for i in 0..h {
-            draft_hidden[i] = baseline[i] + alpha * x[i];
+            let alpha_i = gate[i.min(gate_last)];
+            draft_hidden[i] = baseline[i] + alpha_i * x[i];
         }
 
         // 7. token_logits = draft_hidden @ lm_head; lm_head is (VOCAB, HIDDEN).
@@ -1064,6 +1081,24 @@ fn take_f32_scalar(entries: &mut HashMap<String, NpyArray>, key: &str) -> Result
     arr.as_f32_scalar()
 }
 
+/// path-to-125 L8 fix-(f) — accept residual_gate as scalar `(1,)` or
+/// vector `(HIDDEN,)`. Either shape becomes a `Vec<f32>` of the natural
+/// length; the forward indexes with `gate[i.min(gate.len()-1)]` so
+/// scalar broadcast and vector per-dim are both supported.
+fn take_f32_gate(entries: &mut HashMap<String, NpyArray>, key: &str, hidden: usize) -> Result<Vec<f32>> {
+    let arr = entries
+        .remove(key)
+        .ok_or_else(|| Error::Model(format!("Eagle4Head::from_npz: missing key '{}'", key)))?;
+    let allowed = arr.shape == [1] || arr.shape == [hidden];
+    if !allowed {
+        return Err(Error::Model(format!(
+            "Eagle4Head::from_npz: '{}' shape {:?}, expected [1] or [{}]",
+            key, arr.shape, hidden
+        )));
+    }
+    arr.as_f32()
+}
+
 impl DraftHead for Eagle4Head {
     fn propose(&mut self, inputs: &DraftInputs<'_>, k: usize) -> Result<DraftOutputs> {
         if inputs.hiddens.len() != cfg::N_HIDDENS {
@@ -1146,7 +1181,7 @@ mod tests {
             w.mask_proj_out.len(),
             cfg::N_MOE_LAYERS * cfg::N_ROUTED * cfg::MASK_HIDDEN
         );
-        assert_eq!(w.residual_gate, 0.0);
+        assert_eq!(w.residual_gate, vec![0.0]);
     }
 
     #[test]

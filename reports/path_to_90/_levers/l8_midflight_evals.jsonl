@@ -1,0 +1,1 @@
+{"scored": 500, "top1_vs_target": 0.846, "top1_vs_corpus": 0.508, "mask_top_k": 8, "mask_topk_mean_recall": 0.06007692307692307, "dump_logits": null, "ckpt": "latest", "train_step": "400", "train_gate": "?", "train_alpha": "0.80", "checked_at": "2026-05-19T19:46:29Z", "top1_target_rate": 0.0, "top1_corpus_rate": 0.0}
