@@ -1512,6 +1512,284 @@ impl Engine for DeepSeekV2 {
                 .take()
                 .ok_or_else(|| Error::Model("--speculate eagle4 requires --draft-head".into()))?;
 
+            // path-to-125 Phase A2 — Eagle4 chain spec decode at K=4.
+            //
+            // Set EAGLE4_CHAIN_K=k (2..=8) to engage chain spec decode:
+            // each outer iteration runs one V2-Lite capture forward
+            // (emits 1 token + populates h_low/h_mid/h_high/h_shared),
+            // then K head propose calls autoregressively (drafts =
+            // head outputs 1..=K — head call 0's output covers the
+            // already-known v2_argmax position, used only to seed
+            // h_high for call 1). One forward_tokens_batched verify
+            // over [last_id, drafts...] at positions [pos..pos+K].
+            // Longest-matching-prefix accept rule + KV rollback.
+            //
+            // EAGLE4_CHAIN_K unset OR =1 → existing K=1 behavior
+            // (always emit v2_argmax, head's prediction tracked in
+            // stats only). Bit-identical to Off by construction.
+            //
+            // Combined with verify_kernels=parallel-k in the active
+            // kernel profile, this is the path that exercises the
+            // A1.0 K-batched LM head dispatch in production.
+            let chain_k: usize = std::env::var("EAGLE4_CHAIN_K")
+                .ok()
+                .and_then(|s| s.parse::<usize>().ok())
+                .unwrap_or(1)
+                .clamp(1, 8);
+
+            if chain_k >= 2 {
+                let mut pos = prompt_len;
+                'eagle4_chain: while produced < req.max_new_tokens {
+                    if abort_set(&req) {
+                        reason = StopReason::Aborted;
+                        break 'eagle4_chain;
+                    }
+                    let step_start = Instant::now();
+                    let seed_prev_token = last_id;
+
+                    // Seed: forward_token_argmax with capture. Emits 1
+                    // token (v2_argmax) AND populates h_low/h_mid/
+                    // h_high/h_shared from layers {2,13,25,26+shared}.
+                    self.eagle4_capture_active = true;
+                    let v2_argmax =
+                        self.forward_token_argmax(last_id, pos, use_profiled_greedy)?;
+                    self.eagle4_capture_active = false;
+                    let capture = self.eagle4_capture.take().ok_or_else(|| {
+                        Error::Model(
+                            "--speculate eagle4 chain: GPU capture buffer absent after \
+                             seed forward_token; Wedge C path may not have executed"
+                                .into(),
+                        )
+                    })?;
+
+                    let h_shared_norm2: f32 =
+                        capture.h_shared_gpu.iter().map(|v| v * v).sum();
+                    let h_shared = if h_shared_norm2 > 0.0 {
+                        capture.h_shared_gpu.clone()
+                    } else {
+                        self.cpu_shared_expert_forward(26, &capture.x_norm_26)?
+                    };
+
+                    // Emit v2_argmax (always bit-identical to Off-mode
+                    // greedy at this position by construction —
+                    // forward_token_argmax is the same Wedge C path).
+                    self.sampler.record(v2_argmax);
+                    let text = self.tokenizer.decode_one(v2_argmax).unwrap_or_default();
+                    sink(StreamEvent::Token { id: v2_argmax, text });
+                    produced += 1;
+                    if Some(v2_argmax) == eos {
+                        reason = StopReason::Eos;
+                        break 'eagle4_chain;
+                    }
+                    if produced >= req.max_new_tokens {
+                        last_id = v2_argmax;
+                        break 'eagle4_chain;
+                    }
+                    last_id = v2_argmax;
+                    pos += 1;
+
+                    // Head autoregressive: K+1 calls, drafts =
+                    // head outputs 1..=K.
+                    //
+                    // Call 0: prev_token=seed_prev_token, captures from
+                    //   seed (aligned with seed_prev_token at the seed's
+                    //   RoPE position). Output: head's guess for v2_argmax
+                    //   (= already-known last_id). We discard the token but
+                    //   keep draft_hidden_0 as h_high for call 1.
+                    // Call k (k≥1): prev_token=previous draft token, h_high
+                    //   = previous call's draft_hidden, h_low/h_mid/h_shared
+                    //   stay constant. Output: draft for position pos+k-1+1
+                    //   = pos+k (where pos is the position of last_id
+                    //   = v2_argmax = batch[0] in the upcoming verify).
+                    //
+                    // (Per AUTONOMOUS_PLAN §6 A2: "h_low / h_mid / h_shared
+                    // stay constant (most recent verifier values).")
+                    let vocab_size = self.config.vocab_size;
+                    let mut drafts: Vec<u32> = Vec::with_capacity(chain_k);
+                    let mut cur_h_high = capture.h_high.clone();
+                    let mut cur_prev = seed_prev_token;
+                    for k_idx in 0..=chain_k {
+                        #[cfg(target_os = "macos")]
+                        let head_out = {
+                            let backend = std::env::var("EAGLE4_BACKEND").ok();
+                            let want_metal = backend.as_deref() == Some("metal");
+                            let want_cpu = backend.as_deref() == Some("cpu");
+                            if !want_metal && !want_cpu {
+                                head.forward_full_amx_no_lm_head(
+                                    cur_prev,
+                                    &capture.h_low,
+                                    &capture.h_mid,
+                                    &cur_h_high,
+                                    &h_shared,
+                                )?
+                            } else if want_metal && head.has_metal_pinned() {
+                                let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                                    Error::Model(
+                                        "eagle4 chain metal forward: no metal context"
+                                            .into(),
+                                    )
+                                })?;
+                                head.forward_full_metal_no_lm_head(
+                                    ctx,
+                                    cur_prev,
+                                    &capture.h_low,
+                                    &capture.h_mid,
+                                    &cur_h_high,
+                                    &h_shared,
+                                )?
+                            } else {
+                                head.forward_full_no_lm_head(
+                                    cur_prev,
+                                    &capture.h_low,
+                                    &capture.h_mid,
+                                    &cur_h_high,
+                                    &h_shared,
+                                )?
+                            }
+                        };
+                        #[cfg(not(target_os = "macos"))]
+                        let head_out = head.forward_full_no_lm_head(
+                            cur_prev,
+                            &capture.h_low,
+                            &capture.h_mid,
+                            &cur_h_high,
+                            &h_shared,
+                        )?;
+                        let hidden_size = head_out.draft_hidden.len();
+                        let draft_id = self
+                            .gemv_f16_argmax_dispatch(
+                                vocab_size,
+                                hidden_size,
+                                &head_out.draft_hidden,
+                            )?
+                            .unwrap_or(0);
+                        if k_idx >= 1 {
+                            drafts.push(draft_id);
+                        }
+                        cur_h_high = head_out.draft_hidden;
+                        // Anchor: after call 0 (head's guess at v2_argmax's
+                        // position), use the KNOWN v2_argmax for call 1's
+                        // prev_token instead of head's possibly-wrong
+                        // draft_token_0. This grounds the autoregressive
+                        // chain at the first verifier-validated token; only
+                        // calls 2+ chain on head's own predictions.
+                        cur_prev = if k_idx == 0 { last_id } else { draft_id };
+                    }
+
+                    // Verify K drafts via batched forward.
+                    // batch_tokens[0] = last_id (= v2_argmax), at pos.
+                    // batch_tokens[1..=K] = drafts, at pos+1..pos+K.
+                    let draft_actual_k = drafts.len();
+                    let draft_start_seq = self.kv.seq_len;
+                    let batch_tokens: Vec<u32> = std::iter::once(last_id)
+                        .chain(drafts.iter().copied())
+                        .collect();
+                    let batch_positions: Vec<usize> =
+                        (0..=draft_actual_k).map(|ki| pos + ki).collect();
+                    let logits_batch =
+                        self.forward_tokens_batched(&batch_tokens, &batch_positions)?;
+
+                    // Longest-matching-prefix accept.
+                    let mut first_reject = 0usize;
+                    let mut correction_id: Option<u32> = None;
+                    for k in 0..draft_actual_k {
+                        let pred = crate::kernels::argmax_f32(&logits_batch[k]);
+                        if pred != drafts[k] {
+                            correction_id = Some(pred);
+                            break;
+                        }
+                        first_reject += 1;
+                    }
+                    let bonus_id = correction_id.unwrap_or_else(|| {
+                        crate::kernels::argmax_f32(&logits_batch[draft_actual_k])
+                    });
+
+                    // KV rollback: keep slots through the last accepted
+                    // draft (or last_id if first_reject=0).
+                    self.kv.seq_len = draft_start_seq + first_reject + 1;
+                    stats.draft_accepted += first_reject;
+                    stats.draft_rejected += draft_actual_k - first_reject;
+
+                    // Emit accepted drafts + bonus.
+                    let mut chain_break = false;
+                    for k in 0..first_reject {
+                        let id = drafts[k];
+                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                        sink(StreamEvent::Token { id, text });
+                        self.sampler.record(id);
+                        produced += 1;
+                        if Some(id) == eos {
+                            reason = StopReason::Eos;
+                            chain_break = true;
+                            break;
+                        }
+                        if produced >= req.max_new_tokens {
+                            chain_break = true;
+                            break;
+                        }
+                    }
+                    if chain_break {
+                        last_id = if first_reject > 0 {
+                            drafts[first_reject - 1]
+                        } else {
+                            last_id
+                        };
+                        break 'eagle4_chain;
+                    }
+                    let text = self.tokenizer.decode_one(bonus_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: bonus_id, text });
+                    self.sampler.record(bonus_id);
+                    produced += 1;
+                    last_id = bonus_id;
+                    pos += first_reject + 1;
+
+                    if spec_log {
+                        let step_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                        eprintln!(
+                            "[spec/eagle4-chain] K={} accept={}/{} step={:.1}ms \
+                             emit={} tps={:.1}",
+                            chain_k,
+                            first_reject,
+                            draft_actual_k,
+                            step_ms,
+                            first_reject + 2,
+                            (first_reject + 2) as f64 / (step_ms / 1000.0)
+                        );
+                    }
+
+                    if Some(bonus_id) == eos {
+                        reason = StopReason::Eos;
+                        break 'eagle4_chain;
+                    }
+                    if stall_active && step_start.elapsed() > stall_limit {
+                        reason = StopReason::Aborted;
+                        break 'eagle4_chain;
+                    }
+                }
+                self.eagle4_head = Some(head);
+                // Skip the K=1 loop below.
+                stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+                stats.completion_tokens = produced;
+                stats.dispatch_samples = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_trace())
+                    .unwrap_or_default();
+                let (buffers_created, bytes_allocated, commits) = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_stats())
+                    .unwrap_or_default();
+                stats.metal_buffers_created = buffers_created;
+                stats.metal_bytes_allocated = bytes_allocated;
+                stats.metal_commits = commits;
+                sink(StreamEvent::Done {
+                    reason,
+                    stats: stats.clone(),
+                });
+                return Ok(stats);
+            }
+
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
