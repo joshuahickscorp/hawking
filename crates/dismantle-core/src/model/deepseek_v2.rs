@@ -2838,23 +2838,45 @@ impl DeepSeekV2 {
         Ok(results)
     }
 
-    /// path-to-90 Stage 2.6 — K-batched Path B forward.
+    /// path-to-125 Phase A1.0 — K-batched verify, lm_head-only amortization.
     ///
-    /// Routes K speculative tokens through the K-batched verify kernels
-    /// (`gemv_f16_lmhead_kbatch_tcb`, `gemv_q4_k_m_v2_kbatch_pinned_tcb`,
-    /// `mla_decode_kernel_fc_kbatch`, `moe_block_batched_indexed_kbatch_tcb`)
-    /// so weight reads amortize across the K queries inside one
-    /// threadgroup. Gated on `kernel_profile.selected.verify_kernels ==
-    /// "parallel-k"`.
+    /// Gated on `kernel_profile.selected.verify_kernels == "parallel-k"`.
     ///
-    /// **Scaffold semantics (this commit):**
-    /// - K=1 → delegates to `forward_tokens_batched_tcb` (bit-identical by
-    ///   construction; satisfies the Stage 2.6 test gate).
-    /// - K>1 → returns `Err(Unimplemented)`. The full K-batched body
-    ///   lands in a follow-up commit.
+    /// The per-token layer loop is intentionally identical to
+    /// `forward_tokens_batched_tcb` (per-token attn + MoE inside a single
+    /// `TokenCommandBuffer`). This preserves the MLA causal-seq_len
+    /// semantics that the Off-mode greedy path relies on, so the
+    /// bit-identical greedy parity gate stays load-bearing.
     ///
-    /// This minimal wire-up validates the kernel-profile flag toggle
-    /// and the routing seam without risking the K=1 production path.
+    /// The only structural change versus `forward_tokens_batched_tcb` is
+    /// the post-layer LM head:
+    ///   - sequential path: K post-commit `gemv_f16_metal_pinned` calls
+    ///     (one weight read of vocab×hidden per K)
+    ///   - this path: one in-TCB `gemv_f16_lmhead_kbatch_tcb` dispatch
+    ///     (one weight read shared across K)
+    ///
+    /// On V2-Lite (vocab=102400, hidden=2048, fp16) the LM-head weight is
+    /// ~400 MB; at K=4 the bandwidth saving is ~1.2 GB / verify step,
+    /// the largest single weight read in the model.
+    ///
+    /// The other Path B K-batched kernels (`mla_decode_metal_kbatch`,
+    /// `gemv_q4_k_m_v2_kbatch_pinned_tcb`, `moe_block_batched_indexed_kbatch_tcb`)
+    /// are intentionally NOT used here:
+    ///   * `mla_decode_metal_kbatch` uses one `seq_len` for all K queries —
+    ///     no causal mask across K — so wiring it in would let draft
+    ///     token k attend to draft token k+1's KV, breaking causality
+    ///     and the bit-identical greedy gate.
+    ///   * `moe_block_batched_indexed_kbatch_tcb` is the Stage 2.5
+    ///     "no-overlap baseline" that re-issues K independent MoE
+    ///     forwards in one TCB — same compute as the per-token loop in
+    ///     `forward_tokens_batched_tcb`, so no bandwidth win until the
+    ///     masked / union-routing variant lands.
+    /// Both are queued for a follow-up commit (causal-mask MLA + true
+    /// MoE expert-union K-batch).
+    ///
+    /// K=1 still delegates to `forward_tokens_batched_tcb` so the K=1
+    /// hot path is byte-for-byte identical to production. The K-batched
+    /// LM-head path engages only at K≥2.
     #[cfg(target_os = "macos")]
     fn forward_tokens_batched_parallel_k(
         &mut self,
@@ -2862,18 +2884,184 @@ impl DeepSeekV2 {
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
         if tokens.len() == 1 {
-            // K=1 — sequential and parallel-k must produce bit-identical
-            // output; delegate to the existing path to preserve the
-            // production hot path while still exercising the new entry.
             return self.forward_tokens_batched_tcb(tokens, positions);
         }
-        Err(Error::Unimplemented(
-            "forward_tokens_batched_parallel_k: K>1 body not yet shipped \
-             (Stage 2.6 scaffold lands the flag + routing seam; the full \
-             K-batched verify body using the Path B kernels is the next \
-             commit). To force the sequential path until then, set \
-             kernel_profile.selected.verify_kernels = \"sequential\".",
-        ))
+        // K-batched lm_head requires a pinned fp16 lm_head buffer; fall
+        // through to the sequential path when not present (e.g. tied-
+        // embedding models without a separate lm_head tensor).
+        if self.lm_head_buf.is_none() {
+            return self.forward_tokens_batched_tcb(tokens, positions);
+        }
+
+        let k = tokens.len();
+        let h = self.config.hidden;
+        let n_layers = self.config.n_layers;
+        let eps = self.config.rms_norm_eps;
+        let kv_lora_rank = self.config.kv_lora_rank;
+        let qk_rope_head_dim = self.config.qk_rope_head_dim;
+        let vocab = self.config.vocab_size;
+
+        if !self.mla_kv_gpu_synced && self.kv.seq_len > 0 {
+            let sl = self.kv.seq_len;
+            for li in 0..n_layers {
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &self.mla_c_kv_gpu[li],
+                    bytemuck::cast_slice(&self.mla_c_kv[li][..sl * kv_lora_rank]),
+                );
+                crate::metal::MetalContext::write_buffer_bytes(
+                    &self.mla_k_pe_gpu[li],
+                    bytemuck::cast_slice(&self.mla_k_pe[li][..sl * qk_rope_head_dim]),
+                );
+            }
+        }
+
+        let seq_slot_base = self.kv.seq_len;
+        let q4k_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.gemm_q4_k_schedule.as_str())
+            .unwrap_or("scalar");
+        let routed_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.routed_down_schedule.as_str())
+            .unwrap_or("basic");
+        let shared_down_schedule = self.kernel_profile.as_ref()
+            .map(|p| p.selected.shared_down_schedule.as_str())
+            .unwrap_or("basic");
+
+        let x_packed_bytes = k * h * std::mem::size_of::<f32>();
+        let y_packed_bytes = k * vocab * std::mem::size_of::<f32>();
+        let h_bytes = (h * std::mem::size_of::<f32>()) as u64;
+
+        let (x_packed, y_packed) = {
+            let ctx = self.metal_ctx.as_ref().unwrap();
+            (ctx.new_buffer(x_packed_bytes), ctx.new_buffer(y_packed_bytes))
+        };
+
+        {
+            let ctx = self.metal_ctx.as_ref().unwrap();
+            let arena = self.decode_arena.as_ref().unwrap();
+            let model_buf = self.weights_mmap_buf.as_ref().unwrap();
+            let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
+            let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
+
+            let mut global_tcb = crate::metal::TokenCommandBuffer::new(ctx);
+
+            for (ki, &token) in tokens.iter().enumerate() {
+                let seq_slot = seq_slot_base + ki;
+                let seq_len = seq_slot + 1;
+                let pos = positions[ki];
+
+                for li in 0..n_layers {
+                    crate::metal::set_current_layer(Some(li as u32));
+
+                    let moe_setup = self.ffn_moe_check(li)?;
+                    let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                        .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} kv_b_proj not pinned")))?;
+                    let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                        .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} o_proj not pinned")))?;
+                    let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
+                    let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                    let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+
+                    self.encode_attention_phase1_into_tcb(
+                        &mut global_tcb, li, pos, Some(token), seq_slot,
+                    )?;
+                    self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
+                    self.dispatch_mla_decode_and_o_proj(
+                        &mut global_tcb, arena, kv_b_proj_buf, o_proj_buf,
+                        li, seq_len, scale, h,
+                    )?;
+                    crate::kernels::add_inplace_metal_tcb(
+                        &mut global_tcb, &arena.x_buf, &arena.out, h,
+                    )?;
+                    crate::kernels::rmsnorm_metal_buf_tcb(
+                        &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                    )?;
+
+                    if let Some(ref setup) = moe_setup {
+                        let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                        crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                            &mut global_tcb, gate_buf,
+                            self.config.n_routed_experts, self.config.hidden,
+                            &arena.x_norm_buf, &arena.moe_logits_buf,
+                        )?;
+                        crate::kernels::moe_topk_gate_tcb(
+                            &mut global_tcb,
+                            &arena.moe_logits_buf,
+                            &arena.moe_route_ids_buf,
+                            &arena.moe_route_weights_buf,
+                            self.config.n_routed_experts,
+                            self.config.top_k_routed,
+                        )?;
+                        crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                            &mut global_tcb,
+                            model_buf,
+                            setup.routed_gate_off,
+                            setup.routed_up_off,
+                            setup.routed_down_off,
+                            &arena.moe_route_ids_buf,
+                            &arena.moe_route_weights_buf,
+                            self.config.top_k_routed,
+                            &arena.shared_route_ids_buf,
+                            setup.shared_gate_off,
+                            setup.shared_up_off,
+                            setup.shared_down_off,
+                            self.config.hidden,
+                            self.config.moe_intermediate,
+                            setup.shared_mid,
+                            q4k_schedule,
+                            setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
+                            setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
+                            &arena.x_norm_buf,
+                            &arena.ffn_out_buf,
+                            &arena.moe_routed_gate_out_buf,
+                            &arena.moe_routed_up_out_buf,
+                            &arena.moe_routed_act_buf,
+                            &arena.moe_routed_out_buf,
+                            &arena.moe_shared_gate_out_buf,
+                            &arena.moe_shared_up_out_buf,
+                            &arena.moe_shared_act_buf,
+                            &arena.moe_shared_out_buf,
+                        )?;
+                    } else {
+                        let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
+                        if !dense_ok {
+                            return Err(Error::Model(format!(
+                                "forward_tokens_batched_parallel_k: l{li} dense weights not pinned"
+                            )));
+                        }
+                    }
+                }
+
+                crate::kernels::add_inplace_metal_tcb(
+                    &mut global_tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                )?;
+                crate::kernels::rmsnorm_metal_buf_tcb(
+                    &mut global_tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                )?;
+                // Pack final x_norm into x_packed[ki * h..(ki+1) * h] for
+                // the K-batched LM head dispatch below.
+                global_tcb.copy_buffer_bytes(
+                    &arena.x_norm_buf, 0, &x_packed, (ki as u64) * h_bytes, h_bytes,
+                )?;
+            }
+
+            crate::kernels::parallel_k::gemv_f16_lmhead_kbatch_tcb(
+                &mut global_tcb, lm_head_buf, vocab, h, &x_packed, &y_packed, k,
+            )?;
+
+            global_tcb.commit_and_wait()?;
+        }
+
+        self.kv.seq_len += k;
+        self.mla_kv_gpu_synced = true;
+        crate::metal::set_current_layer(None);
+
+        let y_ptr = y_packed.contents() as *const f32;
+        let y_slice = unsafe { std::slice::from_raw_parts(y_ptr, k * vocab) };
+        let mut results = Vec::with_capacity(k);
+        for ki in 0..k {
+            results.push(y_slice[ki * vocab..(ki + 1) * vocab].to_vec());
+        }
+        Ok(results)
     }
 
     /// Reset MLA KV cache to empty state for test isolation.
