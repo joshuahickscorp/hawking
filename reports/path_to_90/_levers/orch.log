@@ -1,0 +1,29 @@
+[11:19:33] path-to-125 cross-lever orchestrator starting
+[11:19:33] rebuild: dismantle-core + dismantle binary
+warning: `dismantle-core` (lib) generated 8 warnings (run `cargo fix --lib -p dismantle-core` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 0.14s
+   Compiling dismantle v0.2.2 (/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/crates/dismantle)
+    Finished `release` profile [optimized] target(s) in 40.08s
+[11:20:14] LEVER 1: parallel-k vs parallel-k-union A/B
+[11:20:14] LEVER 1: bench with parallel-k baseline
+[11:20:14] lever1_parallel_k: starting clean-window bench
+[11:20:14] lever1_parallel_k: WARN Claude is open — bench will run contended (numbers indicative only)
+[11:20:14] lever1_parallel_k: bench medians  off= ngram= eagle4= chain=
+[11:20:14] LEVER 1: bench with parallel-k-union
+[11:20:14] lever1_parallel_k_union: starting clean-window bench
+[11:20:14] lever1_parallel_k_union: WARN Claude is open — bench will run contended (numbers indicative only)
+[11:20:14] lever1_parallel_k_union: bench medians  off= ngram= eagle4= chain=
+[11:20:14] LEVER 2: head re-arch (gate init = 0.1)
+patched eagle4.py for gate init = 0.1
+[11:20:14] LEVER 2: training iter6 with gate init = 0.1, k=4, 5 shards
+[11:23:00] LEVER 2: training done; final gate value:
+gate=0.062
+gate=0.039
+gate=0.034
+[11:23:00] LEVER 2: tau_eval on heldout shard
+[11:23:05] LEVER 2: tau-at-depth-4 = 2.065065065065065
+[11:23:05] lever2_head_rearch: starting clean-window bench
+[11:23:05] lever2_head_rearch: WARN Claude is open — bench will run contended (numbers indicative only)
+[11:23:05] lever2_head_rearch: bench medians  off= ngram= eagle4= chain=
+[11:23:05] LEVER 3: Phase F3 (async verify) — design audit only this round
+[11:23:05] all levers complete; see /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_levers/status.json for results

@@ -1,0 +1,2 @@
+ERROR: Claude is still running. Quit Claude.app (Cmd-Q) before benching.
+       Contended GPU produces 4-5x inflated dec_tps — useless data.

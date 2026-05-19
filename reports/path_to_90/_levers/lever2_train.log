@@ -1,0 +1,11 @@
+[train] head built (aux=0.5 mask=0.3 calib=0.1 k=4 decay=0.7 chain_h_high=True)
+[data] loaded 40960 records from 5 shard(s)
+[data] 2410 ordered windows of len 16
+step=1 epoch=0 loss=93.300 gate=0.099 α=0.00 wall=4.2s
+step=25 epoch=0 loss=87.032 gate=0.062 α=0.48 wall=56.0s
+step=50 epoch=0 loss=31.179 gate=0.039 α=0.98 wall=111.1s
+step=75 epoch=0 loss=23.317 gate=0.034 α=1.00 wall=159.7s
+[train] done: 75 steps in 164s
+gate=0.062
+gate=0.039
+gate=0.034

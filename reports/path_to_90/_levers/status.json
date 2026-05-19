@@ -1,0 +1,122 @@
+{
+  "history": [
+    {
+      "t": "2026-05-19T11:19:33",
+      "lever": "orchestrator",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_branch2_step4",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k",
+      "state": "bench_running"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k",
+      "state": "bench_contended"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k",
+      "state": "bench_done"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k_union",
+      "state": "bench_running"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k_union",
+      "state": "bench_contended"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_parallel_k_union",
+      "state": "bench_done"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever1_branch2_step4",
+      "state": "done"
+    },
+    {
+      "t": "2026-05-19T11:20:14",
+      "lever": "lever2_head_rearch",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever2_head_rearch",
+      "state": "bench_running"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever2_head_rearch",
+      "state": "bench_contended"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever2_head_rearch",
+      "state": "bench_done"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever2_head_rearch",
+      "state": "done"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever3_phase_f3_audit",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "lever3_phase_f3_audit",
+      "state": "done"
+    },
+    {
+      "t": "2026-05-19T11:23:05",
+      "lever": "orchestrator",
+      "state": "done"
+    }
+  ],
+  "orchestrator": {
+    "state": "done",
+    "last_update": "2026-05-19T11:23:05"
+  },
+  "lever1_branch2_step4": {
+    "state": "done",
+    "last_update": "2026-05-19T11:20:14"
+  },
+  "lever1_parallel_k": {
+    "state": "bench_done",
+    "last_update": "2026-05-19T11:20:14",
+    "off_med": null,
+    "ngram_med": null,
+    "eagle4_med": null,
+    "chain_med": null
+  },
+  "lever1_parallel_k_union": {
+    "state": "bench_done",
+    "last_update": "2026-05-19T11:20:14",
+    "off_med": null,
+    "ngram_med": null,
+    "eagle4_med": null,
+    "chain_med": null
+  },
+  "lever2_head_rearch": {
+    "state": "done",
+    "last_update": "2026-05-19T11:23:05",
+    "tau_at_depth_4": 2.065065065065065
+  },
+  "lever3_phase_f3_audit": {
+    "state": "done",
+    "last_update": "2026-05-19T11:23:05"
+  }
+}
