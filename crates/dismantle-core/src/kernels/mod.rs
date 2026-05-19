@@ -3006,6 +3006,84 @@ mod metal_dispatch {
         Ok(())
     }
 
+    // path-to-125 L7.1 — v3_xtg: v3_8r + cooperative threadgroup x_cache.
+    // Saves the 8x-redundant device-memory x reads per TG by loading x into
+    // threadgroup SRAM once per TG. Geometry identical to v3_8r (8 rows/TG,
+    // 256 threads, 8 simdgroups). Threadgroup memory: cols * 4 bytes.
+    pub fn dispatch_q4_k_m_v3_xtg_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_xtg";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = (rows_u32 + V3_ROWS - 1) / V3_ROWS;
+        let shmem_bytes = (cols * std::mem::size_of::<f32>()) as u64;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
     // Wedge K Approach 1 Iter 2 — v3_dual: 128 threads per TG (4 simdgroups),
     // 2 rows per simdgroup (N_R0=2), 8 rows per TG.
     // grid=(ceil(rows/8)*128, 1, 1). Amortizes activation load over 2 rows.

@@ -512,6 +512,7 @@ mod imp {
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
             "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
             "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
+            "gemm_q4_k_m_v3_xtg" => "gemm_q4_k_m_v3_xtg",
             "gemv_f16_f16in" => "gemv_f16_f16in",
             "kv_append_f32" => "kv_append_f32",
             "rmsnorm_f32" => "rmsnorm_f32",
