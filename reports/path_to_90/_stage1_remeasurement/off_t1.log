@@ -1,0 +1,4 @@
+[dismantle] DISMANTLE_TCB_TRACE="(unset)" → mode=Off
+, there was a young girl named Cinderella. She lived with her evil stepmother
+
+[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=1059.3 decode_ms=589.4 dec_tps=27.15 draft_accepted=0 draft_rejected=0 profile=kp-140aa1de8df9d7acb897e7c8

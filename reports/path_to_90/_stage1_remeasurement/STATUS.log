@@ -1,0 +1,130 @@
+[20:10:17] === stage1_remeasurement starting ===
+[20:10:17] Worktree: /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8
+[20:10:17] Branch:   claude/dreamy-golick-d54ff8
+[20:10:17] Commit:   93025ba14cd953054d7ed38580d65fd9c8e68a07
+[20:10:17] ✓ Claude.app: not running
+[20:10:17] ✓ slm: not running
+[20:10:17] Building --release (incremental) ...
+   Compiling dismantle-core v0.2.2 (/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/crates/dismantle-core)
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:116:26
+    |
+116 |         let start: f64 = msg_send![cb, GPUStartTime];
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:117:24
+    |
+117 |         let end: f64 = msg_send![cb, GPUEndTime];
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:249:21
+    |
+249 | ...   msg_send![&*self.sample_buf, resolveCounterRange: ns_range];
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:253:44
+    |
+253 |                     let bytes: *const u8 = msg_send![nsdata, bytes];
+    |                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unexpected `cfg` condition value: `cargo-clippy`
+   --> crates/dismantle-core/src/metal/mod.rs:254:38
+    |
+254 |                     let len: usize = msg_send![nsdata, length];
+    |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: no expected values for `feature`
+    = note: using a cfg inside a macro will use the cfgs from the destination crate and not the ones from the defining crate
+    = help: try referring to `sel_impl` crate for guidance on how handle this unexpected cfg
+    = help: the macro `sel_impl` may come from an old version of the `objc` crate, try updating your dependency with `cargo update -p objc`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: this warning originates in the macro `sel_impl` which comes from the expansion of the macro `msg_send` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: variable does not need to be mutable
+    --> crates/dismantle-core/src/model/deepseek_v2.rs:1494:17
+     |
+1494 |             let mut head = self
+     |                 ----^^^^
+     |                 |
+     |                 help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling dismantle-bench v0.2.2 (/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/crates/dismantle-bench)
+   Compiling dismantle-serve v0.2.2 (/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/crates/dismantle-serve)
+warning: `dismantle-core` (lib) generated 6 warnings (run `cargo fix --lib -p dismantle-core` to apply 1 suggestion)
+   Compiling dismantle v0.2.2 (/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/crates/dismantle)
+    Finished `release` profile [optimized] target(s) in 36.19s
+[20:10:53] ✓ build OK
+[20:10:53] ✓ all artifacts present
+[20:10:53] 
+[20:10:53] ── Off-mode greedy baseline (16 tokens × 3 prompts) ──
+[20:10:53]   prompt 0: The quick brown fox...
+[20:10:57]     dec_tps=27.02
+[20:10:57]   prompt 1: Once upon a time...
+[20:11:00]     dec_tps=27.15
+[20:11:00]   prompt 2: def fibonacci(n):...
+[20:11:02]     dec_tps=27.11
+[20:11:02] 
+[20:11:02] ── Eagle4 spec decode (K=1, GPU-side capture) ──
+[20:11:02]   prompt 0: The quick brown fox...
+[20:11:20]     dec_tps=8.17  draft=15/1
+[20:11:20]   prompt 1: Once upon a time...
+[20:11:37]     dec_tps=7.36  draft=14/2
+[20:11:37]   prompt 2: def fibonacci(n):...
+[20:11:53]     dec_tps=7.78  draft=14/2
+[20:11:53] 
+[20:11:53] ── Summary ──
+[20:11:53] Off    median dec_tps: 27.02
+[20:11:53] Eagle4 median dec_tps: 7.36
+[20:11:53] Eagle4 draft acceptance: 89.6 %  (total accepts 43/48 drafts)
+[20:11:53] 
+[20:11:53] Block-ship gate (≥ 18 tps for Stage 1): HALT
+[20:11:53] 
+[20:11:53] Stage 1 gate still HALTS at 18 tps. Architectural progression:
+[20:11:53]   - Step 8  (CPU walk):           0.54 dec_tps,  2 % accept
+[20:11:53]   - Step 10f (GPU capture):       1.89 dec_tps,  94 % accept (commit 679c077)
+[20:11:53]   - Step 10f (GPU lm_head arg):   6.52 dec_tps,  94 % accept (commit 808d8db)
+[20:11:53]   - Step 10f (GPU h_shared):      7.36 dec_tps,  89.6 % accept (this run; commit acca22d)
+[20:11:53]   - Step 7   (full Metal head):   target ~22 dec_tps (next architectural unlock)
+[20:11:53] 
+[20:11:53] Remaining bottleneck (~80 ms/token): Eagle4Head's CPU forward for
+[20:11:53] in_proj + transformer block + mask + calib gemvs. Step 7 from
+[20:11:53] execution_plan.md routes these through dismantle's Metal helpers
+[20:11:53] and pins the eagle4 head weights as Metal buffers (~half day work).
+[20:11:53] 
+[20:11:53] === stage1_remeasurement DONE ===
+[20:11:53] Next: relaunch Claude Code and tell it:
+[20:11:53]   'step 10 remeasure done — read reports/path_to_90/_stage1_remeasurement/'
