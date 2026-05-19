@@ -1,0 +1,48 @@
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":1,"dec_tps":26.73,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":2,"dec_tps":26.79,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":3,"dec_tps":26.74,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":1,"dec_tps":26.77,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":2,"dec_tps":26.77,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":3,"dec_tps":26.81,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":1,"dec_tps":26.76,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":2,"dec_tps":26.80,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":3,"dec_tps":26.73,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":1,"dec_tps":26.78,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":2,"dec_tps":26.83,"draft_accepted":0,"draft_rejected":0}
+{"mode":"off","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":3,"dec_tps":26.83,"draft_accepted":0,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The quick brown fox","trial":1,"dec_tps":25.64,"draft_accepted":28,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The quick brown fox","trial":2,"dec_tps":25.64,"draft_accepted":28,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The quick brown fox","trial":3,"dec_tps":25.63,"draft_accepted":28,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":1,"dec_tps":24.06,"draft_accepted":0,"draft_rejected":7}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":2,"dec_tps":24.09,"draft_accepted":0,"draft_rejected":7}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":3,"dec_tps":24.11,"draft_accepted":0,"draft_rejected":7}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":1,"dec_tps":26.77,"draft_accepted":0,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":2,"dec_tps":26.77,"draft_accepted":0,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":3,"dec_tps":26.83,"draft_accepted":0,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The capital of France is","trial":1,"dec_tps":26.71,"draft_accepted":45,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The capital of France is","trial":2,"dec_tps":26.80,"draft_accepted":45,"draft_rejected":0}
+{"mode":"ngram","profile":"parallel-k","chain_k":1,"prompt":"The capital of France is","trial":3,"dec_tps":26.86,"draft_accepted":45,"draft_rejected":0}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":1,"dec_tps":16.93,"draft_accepted":63,"draft_rejected":1}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":2,"dec_tps":17.58,"draft_accepted":63,"draft_rejected":1}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The quick brown fox","trial":3,"dec_tps":16.99,"draft_accepted":63,"draft_rejected":1}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":1,"dec_tps":16.25,"draft_accepted":55,"draft_rejected":9}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":2,"dec_tps":14.16,"draft_accepted":55,"draft_rejected":9}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Write a Python function to compute Fibonacci numbers","trial":3,"dec_tps":17.44,"draft_accepted":55,"draft_rejected":9}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":1,"dec_tps":17.79,"draft_accepted":50,"draft_rejected":14}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":2,"dec_tps":17.42,"draft_accepted":50,"draft_rejected":14}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"Summarize the plot of Hamlet in three sentences","trial":3,"dec_tps":15.89,"draft_accepted":50,"draft_rejected":14}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":1,"dec_tps":13.03,"draft_accepted":62,"draft_rejected":2}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":2,"dec_tps":16.71,"draft_accepted":62,"draft_rejected":2}
+{"mode":"eagle4","profile":"sequential","chain_k":1,"prompt":"The capital of France is","trial":3,"dec_tps":16.86,"draft_accepted":62,"draft_rejected":2}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The quick brown fox","trial":1,"dec_tps":9.63,"draft_accepted":20,"draft_rejected":68}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The quick brown fox","trial":2,"dec_tps":9.67,"draft_accepted":20,"draft_rejected":68}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The quick brown fox","trial":3,"dec_tps":9.52,"draft_accepted":20,"draft_rejected":68}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Write a Python function to compute Fibonacci numbers","trial":1,"dec_tps":7.23,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Write a Python function to compute Fibonacci numbers","trial":2,"dec_tps":7.23,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Write a Python function to compute Fibonacci numbers","trial":3,"dec_tps":7.12,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Summarize the plot of Hamlet in three sentences","trial":1,"dec_tps":7.07,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Summarize the plot of Hamlet in three sentences","trial":2,"dec_tps":7.19,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"Summarize the plot of Hamlet in three sentences","trial":3,"dec_tps":7.09,"draft_accepted":1,"draft_rejected":123}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The capital of France is","trial":1,"dec_tps":7.53,"draft_accepted":5,"draft_rejected":111}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The capital of France is","trial":2,"dec_tps":7.16,"draft_accepted":5,"draft_rejected":111}
+{"mode":"eagle4","profile":"parallel-k","chain_k":4,"prompt":"The capital of France is","trial":3,"dec_tps":7.68,"draft_accepted":5,"draft_rejected":111}
