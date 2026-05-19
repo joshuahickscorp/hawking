@@ -245,6 +245,8 @@ def train(
     resume_ckpt: Path | None = None,
     multi_step_aux_decay: float = 1.0,
     gate_init: float = 0.05,
+    gate_lr_multiplier: float = 1.0,
+    k_curriculum: bool = False,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
@@ -360,7 +362,7 @@ def train(
 
         return weight * (ce + step_aux_weight * mse + mask_weight * bce + calib_weight * calib), tok, draft_h
 
-    def loss_fn(head, b, target_alpha):
+    def loss_fn(head, b, target_alpha, active_k):
         # path-to-125 EAGLE-3-style chain training:
         #   - roll prev_token (existing multi_step_k behavior)
         #   - roll draft_hidden → h_high              (gated by chain_h_high)
@@ -372,10 +374,14 @@ def train(
         # verifier capture). When chain_h_high=False, behaviour
         # collapses to the historical multi_step_k regime (no roll,
         # same target every k).
+        #
+        # path-to-125 efficiency patch — `active_k` lets the caller pass
+        # a step-dependent K (curriculum learning over the chain depth).
+        # When k_curriculum is off this is just multi_step_k each step.
         prev = b["prev"]
         cur_h_high = b["high"]
         total = mx.zeros(())
-        for k in range(multi_step_k):
+        for k in range(active_k):
             w = multi_step_decay ** k
             k_offset = k if chain_h_high else 0
             # path-to-125 aux-decay: at chain step k>0, scale the MSE
@@ -390,7 +396,7 @@ def train(
                 head, b, prev, cur_h_high, w, target_alpha, k_offset, step_aux_w,
             )
             total = total + step_loss
-            if k + 1 < multi_step_k:
+            if k + 1 < active_k:
                 prev = mx.stop_gradient(mx.argmax(tok, axis=-1))
                 if chain_h_high:
                     cur_h_high = mx.stop_gradient(draft_h)
@@ -399,12 +405,35 @@ def train(
     grad_fn = nn.value_and_grad(head, loss_fn)
     opt = mxoptim.AdamW(learning_rate=lr, weight_decay=0.01)
 
+    # path-to-125 efficiency patch — K-curriculum: ramp active_k from 1 to
+    # multi_step_k linearly over `target_argmax_warmup_steps`. Lets the head
+    # learn K=1 (matching V2-Lite argmax) before being asked to predict
+    # deep chain rollouts. Closer to standard curriculum learning.
+    def _active_k_for_step(s: int) -> int:
+        if not k_curriculum or multi_step_k <= 1:
+            return multi_step_k
+        ramp = min(s / max(target_argmax_warmup_steps, 1), 1.0)
+        return max(1, min(multi_step_k, int(round(1 + ramp * (multi_step_k - 1)))))
+
     log = (ckpt_dir / "log.jsonl").open("w")
     step = 0
     t0 = time.time()
     for batch in _iter_batches(parquet_paths, batch_size, seq_len, epochs):
         target_alpha = min(step / max(target_argmax_warmup_steps, 1), 1.0)
-        loss, grads = grad_fn(head, batch, target_alpha)
+        active_k = _active_k_for_step(step)
+        loss, grads = grad_fn(head, batch, target_alpha, active_k)
+
+        # path-to-125 efficiency patch — gate-LR multiplier. The
+        # residual_gate's per-step gradient is ~(∂loss/∂draft_h) ⋅
+        # block_output; block_output magnitudes are tiny so the gate
+        # gets a much smaller effective gradient than other params at
+        # the shared LR. Scaling its grad here gives it an effective
+        # per-step learning rate of `lr × gate_lr_multiplier` and lets
+        # it move freely during the α ramp instead of drifting toward
+        # zero by default.
+        if gate_lr_multiplier != 1.0 and "residual_gate" in grads:
+            grads["residual_gate"] = grads["residual_gate"] * gate_lr_multiplier
+
         opt.update(head, grads)
         mx.eval(head.parameters(), opt.state, loss)
         step += 1
@@ -415,11 +444,13 @@ def train(
                 "loss": float(loss),
                 "gate": float(head.residual_gate[0]),
                 "alpha": target_alpha,
+                "active_k": active_k,
                 "wall": time.time() - t0,
             }
             print(
                 f"step={step} epoch={batch['epoch']} loss={row['loss']:.3f} "
-                f"gate={row['gate']:.3f} α={target_alpha:.2f} wall={row['wall']:.1f}s",
+                f"gate={row['gate']:.3f} α={target_alpha:.2f} k={active_k} "
+                f"wall={row['wall']:.1f}s",
                 flush=True,
             )
             log.write(json.dumps(row) + "\n")
@@ -680,6 +711,19 @@ def main() -> int:
                          "with a larger gate_init (try 0.1) forces the head to learn "
                          "to use the block output. Ignored on --resume (the resumed "
                          "checkpoint's gate value overrides).")
+    tp.add_argument("--gate-lr-multiplier", type=float, default=1.0,
+                    help="path-to-125 L8-eff — scale residual_gate's gradient by this "
+                         "factor per step. Effective LR for the gate becomes "
+                         "`lr × gate_lr_multiplier`. Use ~10.0 to give the gate "
+                         "enough signal to survive the α ramp instead of decaying "
+                         "to ~0.001. Cheapest targeted attack on gate-collapse.")
+    tp.add_argument("--k-curriculum", action="store_true",
+                    help="path-to-125 L8-eff — ramp active chain depth K from 1 to "
+                         "`--multi-step-k` linearly over `--target-warmup-steps`. "
+                         "Lets the head master K=1 prediction first before being "
+                         "asked to predict deep rollouts. Matches standard curriculum "
+                         "learning and avoids early-training waste on impossibly-hard "
+                         "K=4 chain CE losses.")
     tp.add_argument("--multi-step-aux-decay", type=float, default=1.0,
                     help="path-to-125: per-step decay applied to aux MSE weight at "
                          "chain step k (aux *= decay**k). <1.0 tapers MSE toward later "
@@ -719,6 +763,8 @@ def main() -> int:
             resume_ckpt=args.resume,
             multi_step_aux_decay=args.multi_step_aux_decay,
             gate_init=args.gate_init,
+            gate_lr_multiplier=args.gate_lr_multiplier,
+            k_curriculum=args.k_curriculum,
         )
     elif args.cmd == "eval":
         r = evaluate(

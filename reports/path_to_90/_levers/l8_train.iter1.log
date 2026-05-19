@@ -1,0 +1,9 @@
+[train] starting from scratch; residual_gate init = 0.1
+[train] head built (aux=0.5 mask=0.3 calib=0.1 k=4 decay=0.7 chain_h_high=True)
+[data] loaded 500000 records from 62 shard(s)
+[data] 29415 ordered windows of len 16
+step=1 epoch=0 loss=90.628 gate=0.099 α=0.00 wall=105.4s
+step=25 epoch=0 loss=54.967 gate=0.060 α=0.05 wall=1528.4s
+step=50 epoch=0 loss=34.007 gate=0.035 α=0.10 wall=2856.3s
+step=75 epoch=0 loss=29.380 gate=0.027 α=0.15 wall=4170.9s
+step=100 epoch=0 loss=26.691 gate=0.026 α=0.20 wall=5546.5s

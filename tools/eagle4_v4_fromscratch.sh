@@ -31,7 +31,18 @@ LOG_FILE="$LOG_DIR/l8_train.log"
 
 mkdir -p "$LOG_DIR" "$CKPT_DIR"
 
-# Recipe per path-to-125 NEXT_SESSION_PROMPT §3 L8 and closeout § Branch 3 fix (e).
+# Recipe per path-to-125 closeout § Branch 3 fix (e) + L8-eff patches.
+# Iter 2 recipe (this file's current state):
+#   - --gate-init 0.1          : same as iter 1
+#   - --multi-step-aux-decay   : was 0.3 (iter 1), now 0.05 — less MSE
+#                                pressure competing with chain CE
+#   - --gate-lr-multiplier 10  : NEW — gate gets 10× effective LR.
+#                                Targeted attack on the gate-collapse
+#                                signal observed in iter 1 (gate
+#                                0.099 → 0.027 by step 75).
+#   - --k-curriculum           : NEW — ramp K=1→4 over warmup steps so
+#                                early gradient isn't dominated by
+#                                impossibly-deep chain rollouts.
 CMD=(
   "$VENV_PYTHON" eagle4/eagle4.py train
   --parquet training_data/c2_hidden/eagle4_v0/shard_*.parquet
@@ -42,8 +53,10 @@ CMD=(
   --multi-step-decay 0.7
   --chain-h-high
   --target-warmup-steps 500
-  --multi-step-aux-decay 0.3
+  --multi-step-aux-decay 0.05
   --gate-init 0.1
+  --gate-lr-multiplier 10.0
+  --k-curriculum
 )
 
 # Background launch: nohup, write start metadata to l8_status.json,
