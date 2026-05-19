@@ -2702,6 +2702,26 @@ impl DeepSeekV2 {
                         );
                     }
                 }
+                // path-to-125 L7.1 — v3_8r + cooperative threadgroup x_cache.
+                // Same math, but loads x into threadgroup SRAM once per TG
+                // so all 8 simdgroups read activations from there instead
+                // of from device memory. Expected to beat v3_8r 5-15% on
+                // shapes with high x-redundancy-per-TG (LM head, V2-Lite
+                // expert projections); A/B benched once selected.
+                if schedule == "v3_xtg" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v3_xtg_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
+                }
                 if schedule == "v3_dual" {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v3_dual_pinned(

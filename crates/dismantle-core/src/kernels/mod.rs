@@ -628,6 +628,25 @@ mod metal_dispatch {
         gemv_q4_k_m_v3_llama_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
+    /// path-to-125 L7.1 — v3_8r + cooperative threadgroup x_cache.
+    /// Selected via `gemm_q4_k_schedule = "v3_xtg"`. Saves 7/8 of the
+    /// redundant device-memory x reads per TG by loading x into
+    /// threadgroup SRAM once cooperatively. Requires cols × 4 bytes
+    /// of threadgroup memory (8 KB for V2-Lite cols=2048; within
+    /// M3 Pro's 32 KB/core budget).
+    pub fn gemv_q4_k_m_v3_xtg_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_v3_xtg_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
+    }
+
     /// Approach 1 Iter 2 — 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
     /// Selected via `gemm_q4_k_schedule = "v3_dual"`.
     pub fn gemv_q4_k_m_v3_dual_pinned(
