@@ -458,3 +458,280 @@ Realistic landing sequence (gated on attention() fix):
 [compute]  step 17: Stage 2 measurement (38–50 tok/s target)
 ```
 
+---
+
+# STAGE 2.1 REFRESH (2026-05-18)
+
+Task 2.1 of `reports/path_to_90/production_roadmap_to_100_tps.md` —
+finalize kernel signatures and verify threadgroup-memory budget against
+M3 Pro (32 KB / core) before any Metal source lands. Paper-only commit.
+
+The original Path B design (above) targeted three kernels named after a
+DeepSeek-V2 full-fat 236B lm_head storage (Q6_K). On V2-Lite, the
+actual production lm_head is **fp16** (see `model/deepseek_v2.rs:874`
+— `lm_head_buf` is built from `as_deref().unwrap_or(&embed)` with the
+tied f16 embed table). The K=1 production dispatch on this branch is
+`gemv_f16_simdmat_tcb` or `gemv_f16_metal_buf_tcb` (see
+`model/deepseek_v2.rs:2146` / `2154`). Q6_K-quantized lm_head is a
+separate (future) work item, gated on a quantize-lm_head pass that is
+not on the path-to-100 critical path.
+
+**The Stage 2 K-batched kernel for lm_head is therefore renamed
+`gemv_f16_lmhead_kbatch`.** It mirrors the f16 simdmat dispatch
+geometry; weight-row read amortizes across K queries. The Q6_K kernel
+remains a future deliverable.
+
+The Path B effort-estimate section above (steps 13–17, gated on CPU
+attention() fix) is **superseded** by the iteration protocol in the
+production roadmap. The roadmap explicitly defers the CPU attention()
+chip as out-of-scope for path-to-100 (production path uses GPU
+forward); Stage 2 kernel implementation is unblocked. The eagle4
+routing-recall fine-tune (Stage 3.1) is parallel-tracked and does
+NOT block Stage 2.2 kernel work.
+
+## Finalized kernel surfaces
+
+Three kernels land in Stage 2 in this order (easiest first to
+validate the K-batched dispatch graph end-to-end):
+
+1. `gemv_f16_lmhead_kbatch`   — lm_head (102400 × 2048 f16)
+2. `gemv_q4_k_m_v2_kbatch`    — V2-Lite attn (q_b/kv_b/q_a/kv_a) + MoE
+                                 expert projections (Q4_K_M)
+3. `mla_decode_kernel_fc_kbatch` — MLA decode (highest TG-mem pressure)
+
+(`moe_block_batched_indexed_kbatch` is task 2.5 and ships
+no-overlap-K-batched first; the masked-prefetch variant lands at
+Stage 3 task 3.2, already specified in the section above.)
+
+### 1. `gemv_f16_lmhead_kbatch` — finalized
+
+```metal
+// crates/dismantle-core/shaders/gemv_f16_lmhead_kbatch.metal
+kernel void gemv_f16_lmhead_kbatch(
+    device const half*  w_f16           [[buffer(0)]],  // (vocab, hidden) row-major
+    device const half*  x_kbatch        [[buffer(1)]],  // (K, hidden) row-major
+    device       float* y_kbatch        [[buffer(2)]],  // (K, vocab) row-major
+    constant ArgbufRowsColsK& args      [[buffer(3)]],
+    uint                tid             [[thread_position_in_threadgroup]],
+    uint                gid             [[threadgroup_position_in_grid]],
+    uint                simd_lane       [[thread_index_in_simdgroup]],
+    uint                simd_id         [[simdgroup_index_in_threadgroup]]);
+```
+
+Geometry (mirror of `gemv_f16_simdmat`):
+- Grid: `((vocab + 7) / 8, 1, 1)`. NO K dimension in the grid — K-fold
+  amortization lives inside the inner loop, not the dispatch.
+- TG size: 256 (8 simdgroups × 32 lanes).
+- Per simdgroup → 1 output row × K accumulators (`thread float acc[K]`
+  in registers; spec_const K ≤ 8 keeps register pressure bounded).
+- Per lane → strided 32-elements-at-a-time chunks of the row, dot-
+  producting against each K query in turn before advancing.
+
+Threadgroup memory: **0 bytes.** Registers only; per-thread cost is
+K f32 accumulators. At K=4 that's 16 B/thread × 256 = 4 KB of
+register file across the TG — well within the spilling threshold for
+simdmat kernels.
+
+Bit-identical at K=1: the inner loop reduces to the existing
+`gemv_f16_simdmat` shape when K=1, by construction.
+
+Wall-clock projection at K=4: weight read amortizes 4× (1 row read
+vs 4); inner loop cost grows from `cols` flops to `cols × K`. Per
+spec-decode emit the lm_head went from ~10 ms × 4 = 40 ms (sequential
+verify) to ~10 ms + ~3 × K-extra-loop ≈ 13 ms. Saving ~27 ms per
+4-emit cycle.
+
+### 2. `gemv_q4_k_m_v2_kbatch` — NEW
+
+V2-Lite uses Q4_K_M for attention projections (`q_b_proj`,
+`kv_b_proj`, `q_a_proj`, `kv_a_proj`) and the routed MoE expert
+weights (`gate_proj`, `up_proj`, `down_proj`). These dispatch through
+`gemv_q4_k_m_v2_pinned_tcb` (see `kernels/mod.rs:394`); the K=1 shader
+is `gemm_q4_k_m_fused_v2` (`shaders/quant.metal:283`).
+
+```metal
+// crates/dismantle-core/shaders/gemv_q4_k_m_v2_kbatch.metal
+kernel void gemm_q4_k_m_fused_v2_kbatch(
+    device const uchar* w_q4            [[buffer(0)]],  // (rows, cols) Q4_K_M, 144 B/block
+    device const float* x_kbatch        [[buffer(1)]],  // (K, cols) row-major
+    device       float* y_kbatch        [[buffer(2)]],  // (K, rows) row-major
+    constant ArgbufRowsColsK& args      [[buffer(3)]],
+    uint                tid             [[thread_position_in_threadgroup]],
+    uint                gid             [[threadgroup_position_in_grid]],
+    uint                simd_lane       [[thread_index_in_simdgroup]],
+    uint                simd_id         [[simdgroup_index_in_threadgroup]]);
+```
+
+Geometry (mirror of `gemm_q4_k_m_fused_v2`):
+- Grid: `((rows + 7) / 8, 1, 1)`. ROWS_PER_TG=8, TG_SIZE=256.
+- Per simdgroup → 1 output row × K accumulators (register-resident
+  `float partial[K]`).
+- Per Q4_K block decode (144 B): decoded element value `w_val` reused
+  in dot product against `x_kbatch[k * cols + b*256 + elem]` for each
+  k ∈ [0, K). Weight decode happens **once per element** per TG —
+  same compute as K=1 — and the K-fold cost is just the extra
+  multiply-adds against pre-loaded x slices.
+
+Threadgroup memory: **0 bytes** (pure simdgroup/register; matches the
+K=1 kernel's no-TG-mem property).
+
+Bit-identical at K=1: the inner loop reduces to `gemm_q4_k_m_fused_v2`
+exactly when K=1 (spec_constant fold + dead-code elimination on the
+K>1 accumulator paths).
+
+ArgbufRowsColsK layout (3 u32 fields, 12 B + 4 B padding):
+```
+struct ArgbufRowsColsK { uint rows; uint cols; uint k; uint _pad; };
+```
+
+### 3. `mla_decode_kernel_fc_kbatch` — TG budget verification
+
+This is the kernel where the K=4 budget needs design care. The K=1
+kernel allocates 3 threadgroup buffers (see `attn.metal:179-181`):
+
+| TG buffer | K=1 footprint | Naive K=4 footprint |
+|---|---|---|
+| `q_nope_proj` (kv_lora_rank floats) | 512 × 4 B = 2 KB | 4 × 512 × 4 B = **8 KB** |
+| `scores` (seq_len floats) | seq_len × 4 B | 4 × seq_len × 4 B |
+| `c_kv_wt` (kv_lora_rank floats) | 512 × 4 B = 2 KB | 4 × 512 × 4 B = **8 KB** |
+
+At seq_len = 4096 (mid-context decode), naive `scores` × K=4 alone is
+**64 KB** — busts the 32 KB / core budget. At seq_len = 32768 (full
+context), naive `scores` × K=4 is 512 KB — wildly out.
+
+**Mitigation: flash-style online softmax** over seq_len, tiled at
+SEQ_TILE = 256 timesteps. The K-batched kernel never materializes the
+full `scores[seq_len]` array; it streams the QK scores through a
+running (max, sum) state per (k, head):
+
+```metal
+// Per (head, k) carries running flash-softmax state:
+threadgroup float m_state[K][HEADS_PER_TG];   // running max
+threadgroup float l_state[K][HEADS_PER_TG];   // running sum
+threadgroup float o_state[K][HEADS_PER_TG][kFcKvLoraRank];  // running ΣP·V
+
+// Per SEQ_TILE step:
+//   1. Load c_kv_tile (SEQ_TILE × kv_lora_rank) cooperatively into TG mem.
+//   2. Compute scores_tile (K × SEQ_TILE) into registers.
+//   3. Per (k, head): update (m, l, o) via standard online-softmax recurrence.
+//   4. Discard scores_tile; advance.
+// After loop: emit o / l as the head output per k.
+```
+
+K=4 TG budget with one head per TG and SEQ_TILE=256:
+
+| TG buffer | Layout | Bytes |
+|---|---|---|
+| `q_nope_proj_k` | (K=4, kv_lora_rank=512) f32 | 8 KB |
+| `c_kv_tile`     | (SEQ_TILE=256, kv_lora_rank=512) f16 | 256 KB (× ½ for f16 cast — **still 256 KB**, doesn't fit) |
+
+A 256-timestep tile of `c_kv` does NOT fit in TG memory; the f16 tile
+is 256 KB. Revised approach: **don't tile c_kv in TG mem** — let each
+thread stream `c_kv[t * kv_lora_rank + r]` from device memory inside
+the score-and-update loop. The KV-cache reuse across K queries still
+happens at L2 (the K threads of a simdgroup read the same address in
+sequence; the M3 GPU coalesces).
+
+Revised TG budget (one head per TG, K=4, SEQ_TILE=256):
+
+| TG buffer | Layout | Bytes |
+|---|---|---|
+| `q_nope_proj_k` | (K=4, kv_lora_rank=512) f32 | 8 KB |
+| `scores_tile`   | (K=4, SEQ_TILE=256) f32 | 4 KB |
+| `o_state_k`     | (K=4, kv_lora_rank=512) f32 | 8 KB |
+| `m_state_k` + `l_state_k` | 2 × K=4 f32 | 32 B |
+| **Total**       |  | **~20 KB** |
+
+Fits in 32 KB / core with 12 KB headroom for kernel-local scratch.
+
+Geometry:
+- Grid: `(kFcN_heads × K, 1, 1)` — one threadgroup per (head, k)
+  pair. This loses some K-sharing on `q_nope_proj` but the larger
+  win (no `scores[K × seq_len]` materialization) keeps the kernel
+  inside budget. KV-cache read still benefits from L2 coalescing
+  across the K threadgroups dispatched for the same head.
+- Alternative (deferred to a later optimization commit): one TG per
+  head, K queries fused — needs cooperative loading of all K query
+  rows into TG mem (8 KB) and per-tile recompute of `o_state[K]`.
+  Same 20 KB total budget; marginally fewer dispatches.
+
+Threadgroup memory verified ≤ 32 KB at K ∈ {1, 2, 4, 8} via the
+above accounting. Above K=8 the o_state[K] term dominates and we'd
+need to tile over kv_lora_rank too — out of scope for Stage 2.
+
+```metal
+// crates/dismantle-core/shaders/mla_decode_kernel_fc_kbatch.metal
+kernel void mla_decode_kernel_fc_kbatch(
+    device const float* q_kbatch        [[buffer(0)]],  // (K, n_heads, qk_nope+qk_rope)
+    device const float* c_kv            [[buffer(1)]],
+    device const float* k_pe            [[buffer(2)]],
+    device const float* kv_b_proj       [[buffer(3)]],
+    device       float* out_kbatch      [[buffer(4)]],  // (K, n_heads, v_head_dim)
+    constant     uint&  seq_len         [[buffer(5)]],
+    constant     uint&  k_batch         [[buffer(6)]],
+    threadgroup  float* q_nope_proj_k   [[threadgroup(0)]],
+    threadgroup  float* scores_tile     [[threadgroup(1)]],
+    threadgroup  float* o_state_k       [[threadgroup(2)]],
+    threadgroup  float* ml_state_k      [[threadgroup(3)]],
+    uint                tid             [[thread_position_in_threadgroup]],
+    uint                gid             [[threadgroup_position_in_grid]],
+    uint                tg_size         [[threads_per_threadgroup]]);
+```
+
+Function constants reuse the existing `kFc*` indices (0–5) and add:
+- `kFcSeqTile`  [[function_constant(6)]]  // = 256
+- `kFcKBatch`   [[function_constant(7)]]  // bake K into the pipeline
+  for spec_constant unrolling of the small inner loops
+
+Bit-identical at K=1: with kFcKBatch=1 and the flash-softmax
+recurrence reducing to standard softmax, output matches
+`mla_decode_kernel_fc` exactly. Synthetic-parity test in
+`tests/path_b_parity.rs` confirms at atol=1e-3 fp16 against
+4 sequential K=1 dispatches.
+
+## Per-kernel TG memory budget summary (K=4, M3 Pro 32 KB / core)
+
+| Kernel | TG memory | Headroom |
+|---|---|---|
+| `gemv_f16_lmhead_kbatch`     | 0 KB     | 32 KB |
+| `gemv_q4_k_m_v2_kbatch`      | 0 KB     | 32 KB |
+| `mla_decode_kernel_fc_kbatch`| ~20 KB   | ~12 KB |
+| `moe_block_batched_indexed_kbatch` (Stage 2.5 baseline) | ~22 KB (per existing design) | ~10 KB |
+| `moe_block_batched_indexed_kbatch_masked` (Stage 3.2)   | ~22.1 KB (+64 B mask buf) | ~9.9 KB |
+
+All five kernels fit within the M3 Pro per-core 32 KB threadgroup
+memory budget at K=4. The MLA kernel is the tightest at 20 KB;
+further headroom recovery (if a later optimization needs it) tiles
+`o_state` over kv_lora_rank in 256-element strips.
+
+## Implementation-order rationale (updated)
+
+1. `gemv_f16_lmhead_kbatch` first — zero TG memory, easiest dispatch
+   graph to validate, immediately exercises the K-batched call path
+   end-to-end.
+2. `gemv_q4_k_m_v2_kbatch` second — same shape as #1 with a more
+   involved per-block decode, but identical TG/registers story.
+3. `mla_decode_kernel_fc_kbatch` third — only kernel needing the
+   flash-softmax restructure; ship after #1 and #2 prove the K-batch
+   dispatch + parity-test infrastructure.
+4. `moe_block_batched_indexed_kbatch` (Stage 2.5) — non-overlap K=4
+   first, masked-prefetch variant in Stage 3.2.
+
+## Files this refresh marks as new vs existing
+
+```
+crates/dismantle-core/shaders/gemv_f16_lmhead_kbatch.metal      (new, Stage 2.2)
+crates/dismantle-core/shaders/gemv_q4_k_m_v2_kbatch.metal       (new, Stage 2.3)
+crates/dismantle-core/shaders/mla_decode_kernel_fc_kbatch.metal (new, Stage 2.4)
+crates/dismantle-core/shaders/moe_block_kbatch.metal            (new, Stage 2.5)
+crates/dismantle-core/shaders/moe_block_kbatch_masked.metal     (new, Stage 3.2)
+crates/dismantle-core/src/kernels/parallel_k.rs                 (modified — replace
+                                                                 Unimplemented stubs)
+crates/dismantle-core/tests/path_b_parity.rs                    (modified — un-ignore
+                                                                 Q4_K_M and MLA cases)
+```
+
+The `parallel_k::gemv_q6_k_v3_kbatch` Rust stub is **kept** with its
+Unimplemented body; it remains the future deliverable for quantized-
+lm_head models. The new Rust function `parallel_k::gemv_f16_lmhead_kbatch`
+is added alongside it.
