@@ -6,6 +6,19 @@
 //! Once a kernel is implemented, remove the #[ignore] for its test.
 
 use dismantle_core::kernels::parallel_k;
+#[cfg(target_os = "macos")]
+use dismantle_core::{
+    kernels,
+    metal::{MetalContext, PinnedBuffer, TokenCommandBuffer},
+};
+#[cfg(target_os = "macos")]
+use half::f16;
+#[cfg(target_os = "macos")]
+use once_cell::sync::Lazy;
+#[cfg(target_os = "macos")]
+use rand::Rng;
+#[cfg(target_os = "macos")]
+use rand_pcg::Pcg64Mcg;
 
 #[test]
 #[ignore = "Path B kernel not yet implemented; see reports/path_to_90/path_b/design.md"]
@@ -50,6 +63,148 @@ fn moe_block_kbatch_matches_sequential_k4() {
         &mut out, 1, 1, 4,
     );
     assert!(result.is_err());
+}
+
+// ── Stage 2.2 — K-batched fp16 lm_head GEMV parity ─────────────────────────
+
+#[cfg(target_os = "macos")]
+fn ctx() -> &'static MetalContext {
+    static CTX: Lazy<MetalContext> =
+        Lazy::new(|| MetalContext::new().expect("Metal device required"));
+    &CTX
+}
+
+#[cfg(target_os = "macos")]
+fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
+    let mut rng = Pcg64Mcg::new(seed as u128);
+    (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
+}
+
+#[cfg(target_os = "macos")]
+fn fixed_f16(n: usize, seed: u64) -> Vec<f16> {
+    fixed_f32(n, seed).iter().map(|&v| f16::from_f32(v)).collect()
+}
+
+#[cfg(target_os = "macos")]
+fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
+    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
+}
+
+#[cfg(target_os = "macos")]
+fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
+    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
+}
+
+#[cfg(target_os = "macos")]
+fn read_f32_buf(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
+    let ptr = buf.contents() as *const f32;
+    unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+}
+
+#[cfg(target_os = "macos")]
+fn run_kbatch(
+    ctx: &MetalContext,
+    w_buf: &PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    x_kbatch: &[f32],
+    k_batch: usize,
+) -> Vec<f32> {
+    let x_buf = new_f32_buf(ctx, x_kbatch);
+    let y_buf = ctx.new_buffer(k_batch * rows * std::mem::size_of::<f32>());
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    parallel_k::gemv_f16_lmhead_kbatch_tcb(&mut tcb, w_buf, rows, cols, &x_buf, &y_buf, k_batch)
+        .expect("kbatch dispatch");
+    tcb.commit_and_wait().expect("commit");
+    read_f32_buf(&y_buf, k_batch * rows)
+}
+
+#[cfg(target_os = "macos")]
+fn run_sequential(
+    ctx: &MetalContext,
+    w_buf: &PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    x_kbatch: &[f32],
+    k_batch: usize,
+) -> Vec<f32> {
+    let mut out = vec![0.0f32; k_batch * rows];
+    for k in 0..k_batch {
+        let x_buf = new_f32_buf(ctx, &x_kbatch[k * cols..(k + 1) * cols]);
+        let y_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        kernels::gemv_f16_simdmat_tcb(&mut tcb, w_buf, rows, cols, &x_buf, &y_buf)
+            .expect("sequential dispatch");
+        tcb.commit_and_wait().expect("commit");
+        let y = read_f32_buf(&y_buf, rows);
+        out[k * rows..(k + 1) * rows].copy_from_slice(&y);
+    }
+    out
+}
+
+#[cfg(target_os = "macos")]
+fn assert_kbatch_matches_sequential(rows: usize, cols: usize, k_batch: usize, seed: u64) {
+    let ctx = ctx();
+    let w = fixed_f16(rows * cols, seed ^ 0xA5A5_5A5A);
+    let x_kbatch = fixed_f32(k_batch * cols, seed ^ 0x1234_5678);
+    let w_buf = new_f16_buf(ctx, &w);
+
+    let kbatch_out = run_kbatch(ctx, &w_buf, rows, cols, &x_kbatch, k_batch);
+    let seq_out = run_sequential(ctx, &w_buf, rows, cols, &x_kbatch, k_batch);
+
+    let diff = kbatch_out
+        .iter()
+        .zip(seq_out.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        diff < 1e-3,
+        "K={k_batch} rows={rows} cols={cols}: max_abs_diff={diff:.3e} >= 1e-3",
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn gemv_f16_lmhead_kbatch_matches_sequential_basic_shapes() {
+    for &(rows, cols) in &[(8usize, 8usize), (16, 8), (32, 64), (64, 128)] {
+        for &k in &[1usize, 2, 4, 8] {
+            assert_kbatch_matches_sequential(rows, cols, k, 0xDEAD_BEEF ^ (rows * cols) as u64);
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn gemv_f16_lmhead_kbatch_matches_sequential_lmhead_shape_k4() {
+    // V2-Lite lm_head analogue: rows=vocab=102400 is too large for a unit test,
+    // but rows=512 cols=2048 exercises the same (rows % 8 == 0, cols % 8 == 0)
+    // dispatch geometry and the simdgroup_matrix tile shape, mirroring
+    // v1x_lm_head_simdmat_parity::phase_x_simdmat_matches_cpu_lm_head_shape.
+    assert_kbatch_matches_sequential(512, 2048, 4, 0xBEEF_1234);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn gemv_f16_lmhead_kbatch_k1_matches_simdmat_bitwise() {
+    // At K=1 the kbatch kernel reduces to gemv_f16_simdmat exactly (the
+    // K-fold X tile collapses to the original broadcast). Verify the
+    // outputs match bit-for-bit, not just within atol — the only difference
+    // would be rounding-order variation from out-of-range X cols being
+    // zero-padded, which contributes literal zero terms.
+    let ctx = ctx();
+    let rows = 256usize;
+    let cols = 256usize;
+    let w = fixed_f16(rows * cols, 0xCAFE_BABE);
+    let x = fixed_f32(cols, 0xF00D_FEED);
+    let w_buf = new_f16_buf(ctx, &w);
+
+    let kbatch = run_kbatch(ctx, &w_buf, rows, cols, &x, 1);
+    let seq = run_sequential(ctx, &w_buf, rows, cols, &x, 1);
+
+    assert_eq!(
+        kbatch, seq,
+        "K=1 kbatch must match gemv_f16_simdmat bitwise (zero-padded X cols contribute literal zero terms)",
+    );
 }
 
 #[test]

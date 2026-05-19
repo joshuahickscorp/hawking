@@ -19,8 +19,16 @@
 //!   3. `moe_block_batched_indexed_kbatch` — most algorithmically novel
 //!   4. Engine wire-up in `model/deepseek_v2.rs::forward_tokens_batched_parallel_k`
 //!   5. Autotune sweep on M3 Pro 18 GB per context-length bucket
+//!
+//! Stage 2.1 design refresh (see `path_b/design.md`): the V2-Lite
+//! production lm_head is fp16, not Q6_K, so Stage 2.2 lands
+//! `gemv_f16_lmhead_kbatch_tcb` first against the actual production
+//! surface. `gemv_q6_k_v3_kbatch` (below, byte-slice stub) remains a
+//! deferred deliverable for quantized-lm_head model variants.
 
 use crate::{Error, Result};
+#[cfg(target_os = "macos")]
+use crate::metal::{PinnedBuffer, TokenCommandBuffer};
 
 /// Parallel-K MLA decode kernel.
 ///
@@ -113,6 +121,78 @@ pub fn mla_decode_kernel_fc_kbatch_masked(
         "parallel_k::mla_decode_kernel_fc_kbatch_masked (tree decode extension; \
          see reports/path_to_90/tree_decode/design.md)",
     ))
+}
+
+// ── Stage 2.2 — K-batched f16 lm_head GEMV ──────────────────────────────────
+
+/// Path B Stage 2.2 — K-batched fp16 lm_head GEMV.
+///
+/// Computes `y_kbatch[k, r] = Σ_c W[r, c] * x_kbatch[k, c]` for
+/// `k ∈ [0, k_batch)`, `r ∈ [0, rows)`. Mirrors the dispatch geometry of
+/// `gemv_f16_simdmat_tcb` (matmul.metal:97); the K-batching is folded
+/// into the same 8×8 simdgroup matmul tile that the K=1 kernel already
+/// uses, so 1 ≤ K ≤ 8 has identical TG memory (192 floats) and
+/// near-identical wall-clock to the K=1 dispatch.
+///
+/// Requires `cols % 8 == 0` and `k_batch ∈ [1, 8]`. At K=1 the kernel
+/// is bit-equivalent to `gemv_f16_simdmat` by construction (out-of-range
+/// X columns get zero-padded).
+///
+/// Buffer layout:
+/// * `w_buf` — fp16 row-major `(rows × cols)`.
+/// * `x_buf` — fp32 row-major `(k_batch × cols)`.
+/// * `y_buf` — fp32 row-major `(k_batch × rows)`; caller pre-allocates.
+#[cfg(target_os = "macos")]
+pub fn gemv_f16_lmhead_kbatch_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    w_buf: &PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    x_buf: &PinnedBuffer,
+    y_buf: &PinnedBuffer,
+    k_batch: usize,
+) -> Result<()> {
+    if cols % 8 != 0 {
+        return Err(Error::Kernel(format!(
+            "gemv_f16_lmhead_kbatch requires cols % 8 == 0; cols={cols}"
+        )));
+    }
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "gemv_f16_lmhead_kbatch requires k_batch in 1..=8; k_batch={k_batch}"
+        )));
+    }
+    let rows_u32 = rows as u32;
+    let cols_u32 = cols as u32;
+    let k_u32 = k_batch as u32;
+    let n_groups = rows.div_ceil(8) as u32;
+    let shmem_bytes: u64 = 192 * std::mem::size_of::<f32>() as u64;
+    tcb.dispatch_threads(
+        "gemv_f16_lmhead_kbatch",
+        (n_groups * 32, 1, 1),
+        (32, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(w_buf), 0);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(y_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &rows_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<u32>() as u64,
+                &cols_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                5,
+                std::mem::size_of::<u32>() as u64,
+                &k_u32 as *const u32 as *const _,
+            );
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        },
+    )
 }
 
 #[cfg(test)]
