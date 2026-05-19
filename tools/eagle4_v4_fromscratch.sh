@@ -49,18 +49,24 @@ CMD=(
   --frozen eagle4/v2lite_frozen.npz
   --ckpt-dir "$CKPT_DIR"
   --epochs 2
-  --multi-step-k 4
+  # path-to-125 iter-4 — K=2 from step 0 (no curriculum). Vector gate
+  # gets real chain-rollout training signal from the start. K=4 phase
+  # under contention took 76s/step (vs K=2 ~1s/step), so iter 4 also
+  # avoids the memory-paging stall that capped iter 3.
+  --multi-step-k 2
   --multi-step-decay 0.7
   --chain-h-high
   --target-warmup-steps 500
   --multi-step-aux-decay 0.05
   --gate-init 0.1
   --gate-lr-multiplier 10.0
-  --k-curriculum
-  # path-to-125 iter-3 additions:
-  --gate-shape vector        # per-hidden-dim residual_gate, 2048 values
-  --lr-schedule cosine       # warmup→cosine decay over the full run
-  --lr-min-ratio 0.1         # cosine floor = 10% of base lr
+  # iter-3 patches kept:
+  --gate-shape vector
+  --lr-schedule cosine
+  --lr-min-ratio 0.1
+  # --k-curriculum INTENTIONALLY OMITTED (K=2 from step 0).
+  # --chain-reg-weight 0.0 is the default; flip to 0.1 for iter 5 if
+  #   iter 4 also fails (fix-h chain regularizer).
 )
 
 # Background launch: nohup, write start metadata to l8_status.json,

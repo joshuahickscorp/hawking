@@ -275,6 +275,7 @@ def train(
     gate_shape: str = "scalar",
     lr_schedule: str = "constant",
     lr_min_ratio: float = 0.1,
+    chain_reg_weight: float = 0.0,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
@@ -409,6 +410,7 @@ def train(
         prev = b["prev"]
         cur_h_high = b["high"]
         total = mx.zeros(())
+        prev_draft_h = None  # path-to-125 fix-(h): tracks step-k draft_h for the regularizer
         for k in range(active_k):
             w = multi_step_decay ** k
             k_offset = k if chain_h_high else 0
@@ -424,6 +426,20 @@ def train(
                 head, b, prev, cur_h_high, w, target_alpha, k_offset, step_aux_w,
             )
             total = total + step_loss
+
+            # path-to-125 L8 fix-(h) — chain-rollout regularizer.
+            # Penalize fixed-point chain dynamics: if draft_h_k ≈
+            # draft_h_k+1 across rollout steps, the head isn't using
+            # block_output to evolve the prediction. We *subtract*
+            # the mean L2 diff from the loss (i.e., reward larger
+            # step-to-step diff), scaled by chain_reg_weight. Default
+            # weight 0.0 makes this a no-op for runs that don't
+            # enable it.
+            if chain_reg_weight > 0.0 and prev_draft_h is not None:
+                step_diff = ((draft_h - prev_draft_h) ** 2).mean()
+                total = total - chain_reg_weight * step_diff
+            prev_draft_h = draft_h
+
             if k + 1 < active_k:
                 prev = mx.stop_gradient(mx.argmax(tok, axis=-1))
                 if chain_h_high:
@@ -810,6 +826,13 @@ def main() -> int:
                          "typically converges 1.5-2x faster than constant.")
     tp.add_argument("--lr-min-ratio", type=float, default=0.1,
                     help="Floor of the cosine LR decay as a fraction of base lr.")
+    tp.add_argument("--chain-reg-weight", type=float, default=0.0,
+                    help="path-to-125 L8 fix-(h) — chain-rollout regularizer. "
+                         "When > 0, subtracts `weight * mean((draft_h_k - draft_h_k+1)**2)` "
+                         "from the loss at each chain step, rewarding the head for "
+                         "evolving its draft_hidden across rollout steps. Penalizes "
+                         "fixed-point chain dynamics (the gate-collapse failure mode). "
+                         "Default 0.0 (off). Recommended starting value: 0.1.")
     tp.add_argument("--multi-step-aux-decay", type=float, default=1.0,
                     help="path-to-125: per-step decay applied to aux MSE weight at "
                          "chain step k (aux *= decay**k). <1.0 tapers MSE toward later "
@@ -854,6 +877,7 @@ def main() -> int:
             gate_shape=args.gate_shape,
             lr_schedule=args.lr_schedule,
             lr_min_ratio=args.lr_min_ratio,
+            chain_reg_weight=args.chain_reg_weight,
         )
     elif args.cmd == "eval":
         r = evaluate(

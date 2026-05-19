@@ -1,0 +1,23 @@
+[train] starting from scratch; residual_gate init = 0.1
+[train] head built (aux=0.5 mask=0.3 calib=0.1 k=4 decay=0.7 chain_h_high=True)
+[data] loaded 500000 records from 62 shard(s)
+[data] 29415 ordered windows of len 16
+step=1 epoch=0 loss=2.401 gate[mean=0.100,max=0.100,min=0.100,std=0.000] α=0.00 k=1 lr=0.00e+00 wall=69.5s
+step=25 epoch=0 loss=2.285 gate[mean=0.100,max=0.101,min=0.099,std=0.000] α=0.05 k=1 lr=1.44e-05 wall=84.3s
+step=50 epoch=0 loss=2.378 gate[mean=0.099,max=0.102,min=0.098,std=0.000] α=0.10 k=1 lr=2.94e-05 wall=98.5s
+step=75 epoch=0 loss=1.710 gate[mean=0.098,max=0.102,min=0.096,std=0.001] α=0.15 k=1 lr=4.44e-05 wall=112.5s
+step=100 epoch=0 loss=12.959 gate[mean=0.097,max=0.104,min=0.094,std=0.001] α=0.20 k=2 lr=5.94e-05 wall=133.6s
+step=125 epoch=0 loss=10.100 gate[mean=0.096,max=0.109,min=0.089,std=0.002] α=0.25 k=2 lr=7.44e-05 wall=162.6s
+step=150 epoch=0 loss=9.084 gate[mean=0.095,max=0.116,min=0.086,std=0.002] α=0.30 k=2 lr=8.94e-05 wall=246.0s
+step=175 epoch=0 loss=8.909 gate[mean=0.093,max=0.126,min=0.083,std=0.003] α=0.35 k=2 lr=1.04e-04 wall=273.3s
+step=200 epoch=0 loss=8.918 gate[mean=0.092,max=0.136,min=0.080,std=0.004] α=0.40 k=2 lr=1.19e-04 wall=300.5s
+step=225 epoch=0 loss=7.523 gate[mean=0.090,max=0.146,min=0.077,std=0.004] α=0.45 k=2 lr=1.34e-04 wall=331.4s
+step=250 epoch=0 loss=6.779 gate[mean=0.089,max=0.154,min=0.075,std=0.005] α=0.50 k=2 lr=1.49e-04 wall=358.7s
+step=275 epoch=0 loss=12.123 gate[mean=0.087,max=0.162,min=0.071,std=0.006] α=0.55 k=3 lr=1.64e-04 wall=631.7s
+step=300 epoch=0 loss=12.323 gate[mean=0.084,max=0.173,min=0.066,std=0.006] α=0.60 k=3 lr=1.79e-04 wall=762.0s
+step=325 epoch=0 loss=11.159 gate[mean=0.082,max=0.184,min=0.061,std=0.007] α=0.65 k=3 lr=1.94e-04 wall=840.1s
+step=350 epoch=0 loss=11.113 gate[mean=0.080,max=0.193,min=0.059,std=0.008] α=0.70 k=3 lr=2.09e-04 wall=923.8s
+step=375 epoch=0 loss=11.672 gate[mean=0.078,max=0.202,min=0.056,std=0.008] α=0.75 k=3 lr=2.24e-04 wall=987.6s
+step=400 epoch=0 loss=11.544 gate[mean=0.076,max=0.211,min=0.052,std=0.009] α=0.80 k=3 lr=2.39e-04 wall=1025.4s
+step=425 epoch=0 loss=13.386 gate[mean=0.074,max=0.220,min=0.050,std=0.009] α=0.85 k=4 lr=2.54e-04 wall=1565.3s
+step=450 epoch=0 loss=14.839 gate[mean=0.071,max=0.236,min=0.047,std=0.010] α=0.90 k=4 lr=2.69e-04 wall=3610.8s
