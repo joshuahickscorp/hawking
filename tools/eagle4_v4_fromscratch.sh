@@ -57,6 +57,10 @@ CMD=(
   --gate-init 0.1
   --gate-lr-multiplier 10.0
   --k-curriculum
+  # path-to-125 iter-3 additions:
+  --gate-shape vector        # per-hidden-dim residual_gate, 2048 values
+  --lr-schedule cosine       # warmup→cosine decay over the full run
+  --lr-min-ratio 0.1         # cosine floor = 10% of base lr
 )
 
 # Background launch: nohup, write start metadata to l8_status.json,

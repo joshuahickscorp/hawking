@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import sys
 import time
@@ -71,7 +72,8 @@ class _Block(nn.Module):
 
 
 class EagleHead(nn.Module):
-    def __init__(self, token_embd, lm_head, output_norm, gate_init: float = 0.05):
+    def __init__(self, token_embd, lm_head, output_norm, gate_init: float = 0.05,
+                 gate_shape: str = "scalar"):
         super().__init__()
         self._token_embd = token_embd
         self._lm_head = lm_head
@@ -79,16 +81,20 @@ class EagleHead(nn.Module):
         self.in_proj = nn.Linear(5 * HIDDEN_DIM, HIDDEN_DIM, bias=False)
         self.block = _Block()
         # path-to-125 L8 — `gate_init` is the residual_gate's initial value.
-        # The default (0.05) matches v3's init. Path-to-125 L8 closeout
-        # found that v3-warm-started chain training plateaus at ~7% accept
-        # because the gate stays clamped at ~0.001 (block_output magnitudes
-        # are tiny under MSE pressure). Re-training FROM SCRATCH with a
-        # larger gate_init (typically 0.1) forces the head to either learn
-        # to use the block's output or actively zero the gate; reports
-        # /path_to_90/session_closeout_2026-05-19b.md § Branch 3 has the
-        # diagnosis. The training script's `--gate-init` flag threads
-        # through to this constructor.
-        self.residual_gate = mx.array([float(gate_init)])
+        # path-to-125 L8 iter-3 (fix-f) — `gate_shape` selects scalar (one
+        # global multiplier, v3 / iter1 / iter2 behavior) or "vector"
+        # (per-hidden-dim multiplier, HIDDEN_DIM independent gates).
+        # Vector gate gives the head capacity to selectively use the
+        # block's output at some hidden dimensions while suppressing
+        # it at others — addresses the iter-2 finding that the scalar
+        # gate plateaus at ~0.030 (too small for chain decode to
+        # propagate evolution, too large for the head to ignore the
+        # block). Broadcasting in `gate * x` works elementwise for
+        # both shapes; no change to the forward math beyond that.
+        if gate_shape == "vector":
+            self.residual_gate = mx.full((HIDDEN_DIM,), float(gate_init))
+        else:
+            self.residual_gate = mx.array([float(gate_init)])
         self.mask_proj_in = nn.Linear(HIDDEN_DIM, 512, bias=False)
         self.mask_proj_out = nn.Linear(512, N_MOE_LAYERS * N_ROUTED, bias=False)
         self.calib_proj = nn.Linear(HIDDEN_DIM, 1, bias=True)
@@ -116,13 +122,15 @@ class EagleHead(nn.Module):
         return token_logits, mask_logits, draft_hidden, calib_logit
 
 
-def build_head(frozen_npz: Path, gate_init: float = 0.05) -> EagleHead:
+def build_head(frozen_npz: Path, gate_init: float = 0.05,
+               gate_shape: str = "scalar") -> EagleHead:
     z = np.load(frozen_npz)
     return EagleHead(
         mx.array(z["token_embd"]),
         mx.array(z["lm_head"]),
         mx.array(z["output_norm"]),
         gate_init=gate_init,
+        gate_shape=gate_shape,
     )
 
 
@@ -170,6 +178,23 @@ def load_ckpt(head: EagleHead, path: Path) -> int:
 # ---------------------------------------------------------------------------
 # Data loader (parquet → MLX batches)
 # ---------------------------------------------------------------------------
+def _total_steps_estimate(shards: list[Path], batch_size: int, seq_len: int, epochs: int) -> int:
+    """Cheap pre-load estimate of the total training step count.
+
+    Used by the cosine LR schedule to compute progress through training.
+    Reads parquet row counts (metadata only, no row data); within ~1%
+    of the actual window count produced by `_iter_batches` because the
+    only loss is leftover rows in each sample_id group that don't fill
+    a full seq_len window.
+    """
+    total_rows = 0
+    for s in shards:
+        total_rows += pq.read_metadata(s).num_rows
+    total_windows = total_rows // seq_len
+    batches_per_epoch = max(total_windows // batch_size, 1)
+    return batches_per_epoch * max(epochs, 1)
+
+
 def _iter_batches(shards: list[Path], batch_size: int, seq_len: int, epochs: int, seed: int = 0):
     """Yield (batch_size, seq_len)-shaped batches of contiguous-within-conversation rows."""
     rng = random.Random(seed)
@@ -247,6 +272,9 @@ def train(
     gate_init: float = 0.05,
     gate_lr_multiplier: float = 1.0,
     k_curriculum: bool = False,
+    gate_shape: str = "scalar",
+    lr_schedule: str = "constant",
+    lr_min_ratio: float = 0.1,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
@@ -264,7 +292,7 @@ def train(
     instead of training from scratch.
     """
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    head = build_head(frozen, gate_init=gate_init)
+    head = build_head(frozen, gate_init=gate_init, gate_shape=gate_shape)
     if resume_ckpt is not None:
         resume_step = load_ckpt(head, resume_ckpt)
         print(
@@ -415,12 +443,35 @@ def train(
         ramp = min(s / max(target_argmax_warmup_steps, 1), 1.0)
         return max(1, min(multi_step_k, int(round(1 + ramp * (multi_step_k - 1)))))
 
+    # path-to-125 iter-3 — cosine LR schedule. Linear warmup from 0→lr
+    # over the first `target_argmax_warmup_steps`, then cosine decay to
+    # lr * lr_min_ratio over the remaining steps. Constant schedule
+    # (default) keeps lr fixed. Updates `opt.learning_rate` per step.
+    total_steps_est = _total_steps_estimate(parquet_paths, batch_size, seq_len, epochs)
+    def _lr_for_step(s: int) -> float:
+        if lr_schedule == "constant":
+            return lr
+        warmup = max(target_argmax_warmup_steps, 1)
+        if s < warmup:
+            return lr * (s / warmup)
+        progress = (s - warmup) / max(total_steps_est - warmup, 1)
+        progress = min(max(progress, 0.0), 1.0)
+        return lr * (lr_min_ratio + (1.0 - lr_min_ratio) * 0.5 *
+                     (1.0 + math.cos(math.pi * progress)))
+
     log = (ckpt_dir / "log.jsonl").open("w")
     step = 0
     t0 = time.time()
     for batch in _iter_batches(parquet_paths, batch_size, seq_len, epochs):
         target_alpha = min(step / max(target_argmax_warmup_steps, 1), 1.0)
         active_k = _active_k_for_step(step)
+
+        # path-to-125 iter-3 — apply per-step learning rate from the
+        # configured schedule. opt.learning_rate is mutable on AdamW;
+        # setting it before opt.update applies for this step.
+        if lr_schedule != "constant":
+            opt.learning_rate = _lr_for_step(step)
+
         loss, grads = grad_fn(head, batch, target_alpha, active_k)
 
         # path-to-125 efficiency patch — gate-LR multiplier. The
@@ -430,7 +481,9 @@ def train(
         # the shared LR. Scaling its grad here gives it an effective
         # per-step learning rate of `lr × gate_lr_multiplier` and lets
         # it move freely during the α ramp instead of drifting toward
-        # zero by default.
+        # zero by default. With vector gate (iter-3) the same scaling
+        # applies elementwise — each of HIDDEN_DIM gate values gets
+        # the same LR boost.
         if gate_lr_multiplier != 1.0 and "residual_gate" in grads:
             grads["residual_gate"] = grads["residual_gate"] * gate_lr_multiplier
 
@@ -438,19 +491,37 @@ def train(
         mx.eval(head.parameters(), opt.state, loss)
         step += 1
         if step % 25 == 0 or step == 1:
+            # path-to-125 iter-3 — for vector gate, report (mean, max,
+            # min) of the gate values; for scalar, the single value.
+            gate_arr = np.array(head.residual_gate)
+            if gate_arr.size > 1:
+                gate_summary = (f"gate[mean={gate_arr.mean():.3f},"
+                                f"max={gate_arr.max():.3f},"
+                                f"min={gate_arr.min():.3f},"
+                                f"std={gate_arr.std():.3f}]")
+                gate_log = {
+                    "mean": float(gate_arr.mean()),
+                    "max": float(gate_arr.max()),
+                    "min": float(gate_arr.min()),
+                    "std": float(gate_arr.std()),
+                }
+            else:
+                gate_summary = f"gate={float(gate_arr.flat[0]):.3f}"
+                gate_log = float(gate_arr.flat[0])
             row = {
                 "step": step,
                 "epoch": batch["epoch"],
                 "loss": float(loss),
-                "gate": float(head.residual_gate[0]),
+                "gate": gate_log,
+                "lr": float(opt.learning_rate) if hasattr(opt.learning_rate, "__float__") else float(_lr_for_step(step)),
                 "alpha": target_alpha,
                 "active_k": active_k,
                 "wall": time.time() - t0,
             }
             print(
                 f"step={step} epoch={batch['epoch']} loss={row['loss']:.3f} "
-                f"gate={row['gate']:.3f} α={target_alpha:.2f} k={active_k} "
-                f"wall={row['wall']:.1f}s",
+                f"{gate_summary} α={target_alpha:.2f} k={active_k} "
+                f"lr={row['lr']:.2e} wall={row['wall']:.1f}s",
                 flush=True,
             )
             log.write(json.dumps(row) + "\n")
@@ -724,6 +795,21 @@ def main() -> int:
                          "asked to predict deep rollouts. Matches standard curriculum "
                          "learning and avoids early-training waste on impossibly-hard "
                          "K=4 chain CE losses.")
+    tp.add_argument("--gate-shape", choices=["scalar", "vector"], default="scalar",
+                    help="path-to-125 L8 fix-(f) — `scalar` keeps the v3 single-value "
+                         "residual_gate; `vector` makes it per-hidden-dim "
+                         "(HIDDEN_DIM=2048 independent gate values). Vector gate gives "
+                         "the head capacity to use block_output strongly at some "
+                         "dimensions and ignore at others — addresses the iter-2 "
+                         "finding that scalar gate plateaus at ~0.030 and caps chain "
+                         "accept near 8%%.")
+    tp.add_argument("--lr-schedule", choices=["constant", "cosine"], default="constant",
+                    help="path-to-125 iter-3 — `constant` keeps the fixed lr; "
+                         "`cosine` linearly warms up over --target-warmup-steps then "
+                         "decays cosine to lr * --lr-min-ratio by training end. Cosine "
+                         "typically converges 1.5-2x faster than constant.")
+    tp.add_argument("--lr-min-ratio", type=float, default=0.1,
+                    help="Floor of the cosine LR decay as a fraction of base lr.")
     tp.add_argument("--multi-step-aux-decay", type=float, default=1.0,
                     help="path-to-125: per-step decay applied to aux MSE weight at "
                          "chain step k (aux *= decay**k). <1.0 tapers MSE toward later "
@@ -765,6 +851,9 @@ def main() -> int:
             gate_init=args.gate_init,
             gate_lr_multiplier=args.gate_lr_multiplier,
             k_curriculum=args.k_curriculum,
+            gate_shape=args.gate_shape,
+            lr_schedule=args.lr_schedule,
+            lr_min_ratio=args.lr_min_ratio,
         )
     elif args.cmd == "eval":
         r = evaluate(

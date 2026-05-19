@@ -1,0 +1,23 @@
+[train] starting from scratch; residual_gate init = 0.1
+[train] head built (aux=0.5 mask=0.3 calib=0.1 k=4 decay=0.7 chain_h_high=True)
+[data] loaded 500000 records from 62 shard(s)
+[data] 29415 ordered windows of len 16
+step=1 epoch=0 loss=2.424 gate=0.099 α=0.00 k=1 wall=65.1s
+step=25 epoch=0 loss=31.861 gate=0.062 α=0.05 k=1 wall=79.9s
+step=50 epoch=0 loss=4.114 gate=0.044 α=0.10 k=1 wall=94.1s
+step=75 epoch=0 loss=2.386 gate=0.041 α=0.15 k=1 wall=108.3s
+step=100 epoch=0 loss=16.537 gate=0.039 α=0.20 k=2 wall=129.8s
+step=125 epoch=0 loss=14.067 gate=0.036 α=0.25 k=2 wall=243.6s
+step=150 epoch=0 loss=12.257 gate=0.035 α=0.30 k=2 wall=288.0s
+step=175 epoch=0 loss=11.863 gate=0.034 α=0.35 k=2 wall=316.0s
+step=200 epoch=0 loss=11.020 gate=0.033 α=0.40 k=2 wall=344.0s
+step=225 epoch=0 loss=9.978 gate=0.033 α=0.45 k=2 wall=375.7s
+step=250 epoch=0 loss=9.120 gate=0.033 α=0.50 k=2 wall=403.6s
+step=275 epoch=0 loss=16.064 gate=0.032 α=0.55 k=3 wall=480.7s
+step=300 epoch=0 loss=15.239 gate=0.031 α=0.60 k=3 wall=546.8s
+step=325 epoch=0 loss=14.945 gate=0.031 α=0.65 k=3 wall=610.8s
+step=350 epoch=0 loss=14.121 gate=0.030 α=0.70 k=3 wall=667.7s
+step=375 epoch=0 loss=14.520 gate=0.030 α=0.75 k=3 wall=731.3s
+step=400 epoch=0 loss=13.877 gate=0.030 α=0.80 k=3 wall=790.2s
+step=425 epoch=0 loss=18.320 gate=0.030 α=0.85 k=4 wall=1209.8s
+step=450 epoch=0 loss=17.575 gate=0.030 α=0.90 k=4 wall=3499.2s
