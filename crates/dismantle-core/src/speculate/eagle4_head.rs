@@ -45,7 +45,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 #[cfg(target_os = "macos")]
-use crate::metal::{MetalContext, PinnedBuffer};
+use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 
 /// V2-Lite-specific constants the head depends on. Mirrors
 /// `eagle4.py:38-45` exactly.
@@ -250,16 +250,33 @@ pub struct Eagle4ForwardOutput {
 /// readback cost over UMA is negligible.
 #[cfg(target_os = "macos")]
 pub struct Eagle4MetalPinned {
+    // Trainable weight matrices, pinned f16.
     pub in_proj: PinnedBuffer,        // (HIDDEN, 5*HIDDEN) f16
-    pub block_attn_q: PinnedBuffer,   // (HIDDEN, HIDDEN) f16
-    pub block_attn_k: PinnedBuffer,   // (HIDDEN, HIDDEN) f16
+    pub block_attn_q: PinnedBuffer,   // (HIDDEN, HIDDEN) f16     — kept for S>1 future
+    pub block_attn_k: PinnedBuffer,   // (HIDDEN, HIDDEN) f16     — kept for S>1 future
     pub block_attn_v: PinnedBuffer,   // (HIDDEN, HIDDEN) f16
     pub block_attn_o: PinnedBuffer,   // (HIDDEN, HIDDEN) f16
     pub block_mlp_gate: PinnedBuffer, // (INTERMEDIATE, HIDDEN) f16
     pub block_mlp_up: PinnedBuffer,   // (INTERMEDIATE, HIDDEN) f16
     pub block_mlp_down: PinnedBuffer, // (HIDDEN, INTERMEDIATE) f16
-    pub mask_proj_in: PinnedBuffer,   // (MASK_HIDDEN, HIDDEN) f16
-    pub mask_proj_out: PinnedBuffer,  // (N_MOE*N_ROUTED, MASK_HIDDEN) f16
+    pub mask_proj_in: PinnedBuffer,   // (MASK_HIDDEN, HIDDEN) f16 — kept for Stage 3 future
+    pub mask_proj_out: PinnedBuffer,  // (N_MOE*N_ROUTED, MASK_HIDDEN) f16 — same
+    // RMSNorm gammas pinned as f32 (rmsnorm_metal_buf_tcb expects f32 weight).
+    pub attn_norm: PinnedBuffer,      // (HIDDEN,) f32
+    pub mlp_norm: PinnedBuffer,       // (HIDDEN,) f32
+    // Scratch buffers reused across decode steps (sequential decode
+    // loop — no concurrent forwards). Lets the single-TCB forward
+    // dispatch every kernel without per-call allocation.
+    pub x5_buf: PinnedBuffer,         // (5*HIDDEN,) f32 input
+    pub x_buf: PinnedBuffer,          // (HIDDEN,) f32 residual
+    pub x_norm_attn_buf: PinnedBuffer, // (HIDDEN,) f32
+    pub v_buf: PinnedBuffer,          // (HIDDEN,) f32
+    pub attn_out_buf: PinnedBuffer,   // (HIDDEN,) f32
+    pub x_norm_mlp_buf: PinnedBuffer, // (HIDDEN,) f32
+    pub gate_buf: PinnedBuffer,       // (INTERMEDIATE,) f32
+    pub up_buf: PinnedBuffer,         // (INTERMEDIATE,) f32
+    pub act_buf: PinnedBuffer,        // (INTERMEDIATE,) f32
+    pub mlp_out_buf: PinnedBuffer,    // (HIDDEN,) f32
 }
 
 #[cfg(target_os = "macos")]
@@ -411,6 +428,13 @@ impl Eagle4Head {
             return;
         }
         let w = &self.weights;
+        let h = cfg::HIDDEN_DIM;
+        let inter = cfg::INTERMEDIATE;
+        // RMSNorm gammas: kept as f32 on Metal (rmsnorm_metal_buf_tcb's
+        // weight_buf is f32 — matches V2-Lite production rmsnorm path).
+        let attn_norm_bytes: &[u8] = bytemuck::cast_slice(&w.block_attn_norm);
+        let mlp_norm_bytes: &[u8] = bytemuck::cast_slice(&w.block_mlp_norm);
+        let f32_bytes_for = |n: usize| n * std::mem::size_of::<f32>();
         self.metal_pinned = Some(Eagle4MetalPinned {
             in_proj:        pin_f32_as_f16(ctx, &w.in_proj),
             block_attn_q:   pin_f32_as_f16(ctx, &w.block_attn_q),
@@ -422,6 +446,20 @@ impl Eagle4Head {
             block_mlp_down: pin_f32_as_f16(ctx, &w.block_mlp_down),
             mask_proj_in:   pin_f32_as_f16(ctx, &w.mask_proj_in),
             mask_proj_out:  pin_f32_as_f16(ctx, &w.mask_proj_out),
+            attn_norm:      ctx.new_buffer_with_bytes(attn_norm_bytes),
+            mlp_norm:       ctx.new_buffer_with_bytes(mlp_norm_bytes),
+            // Scratch buffers — zero-init via new_buffer; subsequent
+            // writes via write_buffer_bytes from the per-step forward.
+            x5_buf:           ctx.new_buffer(f32_bytes_for(5 * h)),
+            x_buf:            ctx.new_buffer(f32_bytes_for(h)),
+            x_norm_attn_buf:  ctx.new_buffer(f32_bytes_for(h)),
+            v_buf:            ctx.new_buffer(f32_bytes_for(h)),
+            attn_out_buf:     ctx.new_buffer(f32_bytes_for(h)),
+            x_norm_mlp_buf:   ctx.new_buffer(f32_bytes_for(h)),
+            gate_buf:         ctx.new_buffer(f32_bytes_for(inter)),
+            up_buf:           ctx.new_buffer(f32_bytes_for(inter)),
+            act_buf:          ctx.new_buffer(f32_bytes_for(inter)),
+            mlp_out_buf:      ctx.new_buffer(f32_bytes_for(h)),
         });
     }
 
@@ -493,75 +531,83 @@ impl Eagle4Head {
         let pe_off = (prev_token as usize) * h;
         let prev_embed = &frozen.token_embd[pe_off..pe_off + h];
 
-        // 1. Embed + concat (CPU)
-        let mut x5 = Vec::with_capacity(5 * h);
-        x5.extend_from_slice(prev_embed);
-        x5.extend_from_slice(h_low);
-        x5.extend_from_slice(h_mid);
-        x5.extend_from_slice(h_high);
-        x5.extend_from_slice(h_shared);
+        // 1. Embed + concat into the persistent x5 scratch buffer (CPU).
+        //    Write directly into the pinned buffer's memory — UMA, no
+        //    GPU copy.
+        {
+            let mut x5_tmp = Vec::with_capacity(5 * h);
+            x5_tmp.extend_from_slice(prev_embed);
+            x5_tmp.extend_from_slice(h_low);
+            x5_tmp.extend_from_slice(h_mid);
+            x5_tmp.extend_from_slice(h_high);
+            x5_tmp.extend_from_slice(h_shared);
+            let bytes: &[u8] = bytemuck::cast_slice(&x5_tmp);
+            crate::metal::MetalContext::write_buffer_bytes(&pinned.x5_buf, bytes);
+        }
 
-        // 2. in_proj: Metal f16 gemv. (HIDDEN, 5*HIDDEN) × (5*HIDDEN,) → (HIDDEN,)
+        // 2. Single-TCB encoding: all the head's gemv + rmsnorm +
+        //    silu_mul + add_inplace ops go into ONE Metal command
+        //    buffer. One commit per head forward instead of 5-9
+        //    separate dispatches. Q and K stay skipped (at S=1 they
+        //    contribute nothing — see commit 5b17428's rationale).
+        //    mask_proj stays skipped (consumed only by Stage 3
+        //    prefetch — see commit 0d6a2a3).
+        {
+            let mut tcb = TokenCommandBuffer::new(ctx);
+
+            // in_proj: x5 → x_buf
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.in_proj, h, 5 * h, &pinned.x5_buf, &pinned.x_buf,
+            )?;
+            // attn_norm: x_buf → x_norm_attn_buf
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb, &pinned.x_buf, &pinned.attn_norm, eps, h, &pinned.x_norm_attn_buf,
+            )?;
+            // V: x_norm_attn_buf → v_buf
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.block_attn_v, h, h, &pinned.x_norm_attn_buf, &pinned.v_buf,
+            )?;
+            // O: v_buf → attn_out_buf
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.block_attn_o, h, h, &pinned.v_buf, &pinned.attn_out_buf,
+            )?;
+            // x_buf += attn_out_buf
+            crate::kernels::add_inplace_metal_tcb(
+                &mut tcb, &pinned.x_buf, &pinned.attn_out_buf, h,
+            )?;
+            // mlp_norm: x_buf → x_norm_mlp_buf
+            crate::kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb, &pinned.x_buf, &pinned.mlp_norm, eps, h, &pinned.x_norm_mlp_buf,
+            )?;
+            // gate, up: x_norm_mlp_buf → gate_buf, up_buf
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.block_mlp_gate, inter, h, &pinned.x_norm_mlp_buf, &pinned.gate_buf,
+            )?;
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.block_mlp_up, inter, h, &pinned.x_norm_mlp_buf, &pinned.up_buf,
+            )?;
+            // silu_mul(gate, up) → act
+            crate::kernels::silu_mul_tcb(&mut tcb, &pinned.gate_buf, &pinned.up_buf, &pinned.act_buf, inter)?;
+            // down: act_buf → mlp_out_buf
+            crate::kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb, &pinned.block_mlp_down, h, inter, &pinned.act_buf, &pinned.mlp_out_buf,
+            )?;
+            // x_buf += mlp_out_buf
+            crate::kernels::add_inplace_metal_tcb(
+                &mut tcb, &pinned.x_buf, &pinned.mlp_out_buf, h,
+            )?;
+
+            tcb.commit_and_wait()?;
+        }
+
+        // 3. Read x_buf back to CPU (single readback after the TCB).
         let mut x = vec![0.0f32; h];
-        crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.in_proj, h, 5 * h, &x5, &mut x)?;
+        let ptr = pinned.x_buf.contents() as *const f32;
+        let src = unsafe { std::slice::from_raw_parts(ptr, h) };
+        x.copy_from_slice(src);
 
-        // 3a. attn_norm (CPU)
-        let mut x_normed = vec![0.0f32; h];
-        rmsnorm(&x, &w.block_attn_norm, eps, &mut x_normed);
-
-        // 3b. q, k, v (Metal). Q and K are computed for parity-flow
-        //     fidelity (their values don't affect output at S=1 — see
-        //     the CPU forward's commentary).
-        // Q and K projections are SKIPPED at S=1. Diagonal-mask
-        // self-attention with 1 valid token collapses to:
-        //   scores_h = q_h · k_h^T / sqrt(d)       single scalar
-        //   softmax([s]) = [1.0]
-        //   attn_h    = 1.0 · v_h = v_h
-        // So Q and K don't affect the MHA output. The CPU
-        // forward_full path still computes them for parity with
-        // the Python eval flow (eagle4.py's batched (1, take, H)
-        // forward where diagonal-mask softmax produces the same
-        // identity on each record). Saves 2 × HIDDEN×HIDDEN gemv
-        // dispatches per token here. Both pinned weights stay so
-        // a future "S>1 head forward" can reactivate them.
-        let _ = (&pinned.block_attn_q, &pinned.block_attn_k);
-        let mut v = vec![0.0f32; h];
-        crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.block_attn_v, h, h, &x_normed, &mut v)?;
-
-        // 3c. o_proj (Metal): attn output = v at S=1.
-        let mut attn_out = vec![0.0f32; h];
-        crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.block_attn_o, h, h, &v, &mut attn_out)?;
-
-        // 3d. Attention residual (CPU)
-        for i in 0..h {
-            x[i] += attn_out[i];
-        }
-
-        // 4a. mlp_norm (CPU)
-        rmsnorm(&x, &w.block_mlp_norm, eps, &mut x_normed);
-
-        // 4b. gate, up (Metal); silu_mul (CPU); down (Metal)
-        let mut gate_out = vec![0.0f32; inter];
-        let mut up_out = vec![0.0f32; inter];
-        let mut act = vec![0.0f32; inter];
-        crate::kernels::gemv_f16_metal_pinned(
-            ctx, &pinned.block_mlp_gate, inter, h, &x_normed, &mut gate_out,
-        )?;
-        crate::kernels::gemv_f16_metal_pinned(
-            ctx, &pinned.block_mlp_up, inter, h, &x_normed, &mut up_out,
-        )?;
-        silu_mul(&gate_out, &up_out, &mut act);
-        let mut mlp_out = vec![0.0f32; h];
-        crate::kernels::gemv_f16_metal_pinned(
-            ctx, &pinned.block_mlp_down, h, inter, &act, &mut mlp_out,
-        )?;
-
-        // 4c. MLP residual (CPU)
-        for i in 0..h {
-            x[i] += mlp_out[i];
-        }
-
-        // 5. baseline + residual gate (CPU, small)
+        // 4. baseline + residual gate (CPU — 2048-element ops; Metal
+        //    launch overhead exceeds compute).
         let mut baseline = vec![0.0f32; h];
         rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
         let alpha = w.residual_gate;
