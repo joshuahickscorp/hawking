@@ -884,6 +884,98 @@ pub fn moe_down_union_v2t_tcb(
     )
 }
 
+/// Branch 2 step 3 — end-to-end MoE routed-experts union pipeline.
+///
+/// Chains: union_routes_sort_tcb → union_routes_segment_tcb →
+///         moe_gate_up_union_v2t_tcb → moe_down_union_v2t_tcb.
+///
+/// Inputs:
+///   packed_route_ids      (K, top_k) u32   — flat row-major
+///   packed_route_weights  (K, top_k) f32   — flat row-major
+///   packed_x              (K, hidden) f32  — per-K x_norm inputs, packed
+///
+/// Output (written into routed_out_packed):
+///   (K, top_k, hidden) f32 — for each (kk, slot) entry,
+///   silu(gate_e @ x_kk) * (up_e @ x_kk) → down_e gives this slice,
+///   where e = packed_route_ids[kk, slot].
+///
+/// Caller-allocated scratch (all PinnedBuffer):
+///   sorted_expert, sorted_kidx, sorted_slot, sorted_weight: each
+///                  (K * top_k) elements (u32 or f32)
+///   segment_starts: (n_experts + 1) u32
+///   segment_experts: (n_experts) u32
+///   n_distinct_buf: (1) u32
+///   routed_act_packed: (K, top_k, routed_mid) f32
+///   routed_out_packed: (K, top_k, hidden) f32
+///
+/// Does NOT include the per-K shared expert path nor the per-K
+/// route accumulate (weighted sum + bias). Those still run per-K
+/// in the caller's outer loop. This pipeline just amortizes the
+/// routed-experts gate+up+silu+down across the K queries via the
+/// union routing.
+///
+/// Empty experts (not selected by any K query) are no-ops inside
+/// the union expert kernels (they early-return on
+/// `segment_starts[e] == union_N`).
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn moe_routed_union_pipeline_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    model_buf: &PinnedBuffer,
+    gate_offset: usize,
+    up_offset: usize,
+    down_offset: usize,
+    packed_route_ids: &PinnedBuffer,
+    packed_route_weights: &PinnedBuffer,
+    packed_x: &PinnedBuffer,
+    sorted_expert: &PinnedBuffer,
+    sorted_kidx: &PinnedBuffer,
+    sorted_slot: &PinnedBuffer,
+    sorted_weight: &PinnedBuffer,
+    segment_starts: &PinnedBuffer,
+    segment_experts: &PinnedBuffer,
+    n_distinct_buf: &PinnedBuffer,
+    routed_act_packed: &PinnedBuffer,
+    routed_out_packed: &PinnedBuffer,
+    hidden: usize,
+    routed_mid: usize,
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+) -> Result<()> {
+    let n = k_batch
+        .checked_mul(top_k)
+        .ok_or_else(|| Error::Kernel("moe_routed_union_pipeline_tcb: K*top_k overflow".into()))?;
+
+    union_routes_sort_tcb(
+        tcb, packed_route_ids, packed_route_weights,
+        sorted_expert, sorted_kidx, sorted_slot, sorted_weight,
+        k_batch, top_k,
+    )?;
+    union_routes_segment_tcb(
+        tcb, sorted_expert,
+        segment_starts, segment_experts, n_distinct_buf,
+        n, n_experts,
+    )?;
+    moe_gate_up_union_v2t_tcb(
+        tcb, model_buf,
+        segment_starts, sorted_kidx, sorted_slot,
+        packed_x, routed_act_packed,
+        gate_offset, up_offset,
+        routed_mid, hidden,
+        k_batch, top_k, n_experts,
+    )?;
+    moe_down_union_v2t_tcb(
+        tcb, model_buf,
+        segment_starts, sorted_kidx, sorted_slot,
+        routed_act_packed, routed_out_packed,
+        down_offset,
+        hidden, routed_mid,
+        k_batch, top_k, n_experts,
+    )?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
