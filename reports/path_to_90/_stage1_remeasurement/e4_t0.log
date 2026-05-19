@@ -17,4 +17,4 @@
  dog[spec/eagle4] step=15 pos=19 draft=5025 v2=5025 calib=0.929 thresh=0.500 ACCEPT
  dog
 
-[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=6412.6 decode_ms=1958.4 dec_tps=8.17 draft_accepted=15 draft_rejected=1 profile=kp-140aa1de8df9d7acb897e7c8
+[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=7152.9 decode_ms=1537.1 dec_tps=10.41 draft_accepted=15 draft_rejected=1 profile=kp-140aa1de8df9d7acb897e7c8

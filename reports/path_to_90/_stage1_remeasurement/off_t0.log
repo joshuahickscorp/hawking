@@ -1,4 +1,4 @@
 [dismantle] DISMANTLE_TCB_TRACE="(unset)" → mode=Off
  jumps over the lazy dog dog dog dog dog dog dog dog dog dog dog dog
 
-[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=1158.8 decode_ms=592.2 dec_tps=27.02 draft_accepted=0 draft_rejected=0 profile=kp-140aa1de8df9d7acb897e7c8
+[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=3805.4 decode_ms=634.7 dec_tps=25.21 draft_accepted=0 draft_rejected=0 profile=kp-140aa1de8df9d7acb897e7c8

@@ -20,4 +20,4 @@
  return[spec/eagle4] step=15 pos=21 draft=440 v2=207 calib=0.951 thresh=0.500 REJECT
  
 
-[stats] reason=max_tokens prompt=6 completion=16 prefill_ms=4030.3 decode_ms=2055.8 dec_tps=7.78 draft_accepted=14 draft_rejected=2 profile=kp-140aa1de8df9d7acb897e7c8
+[stats] reason=max_tokens prompt=6 completion=16 prefill_ms=6470.2 decode_ms=1628.8 dec_tps=9.82 draft_accepted=14 draft_rejected=2 profile=kp-140aa1de8df9d7acb897e7c8

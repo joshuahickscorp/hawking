@@ -17,4 +17,4 @@
  step[spec/eagle4] step=15 pos=19 draft=14294 v2=14294 calib=0.983 thresh=0.500 ACCEPT
 mother
 
-[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=4049.2 decode_ms=2173.1 dec_tps=7.36 draft_accepted=14 draft_rejected=2 profile=kp-140aa1de8df9d7acb897e7c8
+[stats] reason=max_tokens prompt=4 completion=16 prefill_ms=6549.7 decode_ms=1663.3 dec_tps=9.62 draft_accepted=14 draft_rejected=2 profile=kp-140aa1de8df9d7acb897e7c8

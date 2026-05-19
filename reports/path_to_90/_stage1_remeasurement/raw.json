@@ -1,17 +1,17 @@
 {
-  "captured_at": "2026-05-18T20:11:53-04:00",
-  "git_sha": "93025ba14cd953054d7ed38580d65fd9c8e68a07",
+  "captured_at": "2026-05-18T20:33:00-04:00",
+  "git_sha": "0b4bef50f061646d75274f525d1ca245be4eb34e",
   "branch": "claude/dreamy-golick-d54ff8",
   "host": { "model": "M3 Pro 18 GB" },
   "tokens_per_run": 16,
   "prompts": ["The quick brown fox","Once upon a time","def fibonacci(n):"],
   "off_mode": {
-    "dec_tps_per_prompt": [27.02,27.15,27.11],
-    "median_dec_tps": 27.02
+    "dec_tps_per_prompt": [25.21,27.02,24.76],
+    "median_dec_tps": 24.76
   },
   "eagle4_mode": {
-    "dec_tps_per_prompt": [8.17,7.36,7.78],
-    "median_dec_tps": 7.36,
+    "dec_tps_per_prompt": [10.41,9.62,9.82],
+    "median_dec_tps": 9.62,
     "accept_reject_per_prompt": ["15/1","14/2","14/2"],
     "total_accept_pct": 89.6
   },
