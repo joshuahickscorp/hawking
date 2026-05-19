@@ -561,20 +561,17 @@ impl Eagle4Head {
             draft_hidden[i] = baseline[i] + alpha * x[i];
         }
 
-        // 6. mask_proj_in (Metal) → silu (CPU) → mask_proj_out (Metal)
-        let mut mp_in = vec![0.0f32; mhid];
-        crate::kernels::gemv_f16_metal_pinned(
-            ctx, &pinned.mask_proj_in, mhid, h, &draft_hidden, &mut mp_in,
-        )?;
-        let mut mp_silu = vec![0.0f32; mhid];
-        for i in 0..mhid {
-            let s = mp_in[i];
-            mp_silu[i] = s / (1.0 + (-s).exp());
-        }
-        let mut mask_logits = vec![0.0f32; mask_out];
-        crate::kernels::gemv_f16_metal_pinned(
-            ctx, &pinned.mask_proj_out, mask_out, mhid, &mp_silu, &mut mask_logits,
-        )?;
+        // 6. mask_proj is SKIPPED in the Metal path. mask_logits is
+        //    consumed only by Stage 3's mask-driven prefetch
+        //    (execution_plan.md step 18), which hasn't shipped yet.
+        //    At K=1 spec decode the accept/reject logic doesn't read
+        //    it. Saves ~8 ms/token (mask_proj_in 512×2048 +
+        //    mask_proj_out 1664×512). When Stage 3 lands, add a
+        //    `compute_mask: bool` flag (the pinned weights are kept;
+        //    only the dispatch is gated).
+        let _ = mhid;
+        let _ = mask_out;
+        let mask_logits: Vec<f32> = Vec::new();
 
         // 7. calib_proj (CPU — single-row dot product; Metal launch
         //    overhead exceeds the compute)
