@@ -100,6 +100,18 @@ mod arena_imp {
         /// never written; the code path routes through x_norm_buf instead.
         pub x_norm_f16_buf: PinnedBuffer,
 
+        /// Path-to-90 lever 2 — Eagle4 GPU capture buffers, populated
+        /// by mid-TCB blit + add_inplace at layers 2/13/25/26 when
+        /// `eagle4_capture_active` is set. Lets the Wedge C single-
+        /// TCB path produce captures without forcing per-layer
+        /// commits (~4 ms / token saved at 26 layers × ~150 µs).
+        /// All hidden × f32 except none — readers cast as needed.
+        pub eagle4_h_low_buf: PinnedBuffer,
+        pub eagle4_h_mid_buf: PinnedBuffer,
+        pub eagle4_h_high_buf: PinnedBuffer,
+        pub eagle4_x_norm_26_buf: PinnedBuffer,
+        pub eagle4_h_shared_buf: PinnedBuffer,
+
         /// Cached sizes for bounds-checking at dispatch time.
         pub max_batch_size: usize,
         pub n_heads: usize,
@@ -181,6 +193,11 @@ mod arena_imp {
                     .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
                     .collect(),
                 x_norm_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
+                eagle4_h_low_buf:     ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                eagle4_h_mid_buf:     ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                eagle4_h_high_buf:    ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                eagle4_x_norm_26_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
+                eagle4_h_shared_buf:  ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 max_batch_size: max_batch_size.max(1),
                 n_heads,
                 q_head_dim,
@@ -276,6 +293,35 @@ mod arena_imp {
         /// dispatching a separate shared-only kernel.
         pub fn read_moe_shared_out(&self, dst: &mut [f32]) {
             let ptr = self.moe_shared_out_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+
+        /// Path-to-90 lever 2 — readers for the mid-TCB-blit-populated
+        /// eagle4 capture buffers. Called by the Eagle4 decode loop
+        /// after the single Wedge C TCB commits.
+        pub fn read_eagle4_h_low(&self, dst: &mut [f32]) {
+            let ptr = self.eagle4_h_low_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+        pub fn read_eagle4_h_mid(&self, dst: &mut [f32]) {
+            let ptr = self.eagle4_h_mid_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+        pub fn read_eagle4_h_high(&self, dst: &mut [f32]) {
+            let ptr = self.eagle4_h_high_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+        pub fn read_eagle4_x_norm_26(&self, dst: &mut [f32]) {
+            let ptr = self.eagle4_x_norm_26_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
+        pub fn read_eagle4_h_shared(&self, dst: &mut [f32]) {
+            let ptr = self.eagle4_h_shared_buf.contents() as *const f32;
             let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
             dst.copy_from_slice(src);
         }

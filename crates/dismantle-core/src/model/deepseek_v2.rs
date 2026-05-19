@@ -3030,12 +3030,14 @@ impl DeepSeekV2 {
                 let use_gpu_shared_draft =
                     self.speculate_mode == crate::SpeculateMode::ExactShared
                         && self.shared_only_gpu_argmax_available();
-                // Path-to-90 step 10 follow-up — Eagle4 GPU capture forces
-                // per-layer commits so capture reads at layers 2/13/25 can
-                // pick up arena.x_buf + arena.ffn_out_buf mid-flight.
-                let use_single_tcb = (self.speculate_mode != crate::SpeculateMode::ExactShared
-                    || use_gpu_shared_draft)
-                    && !self.eagle4_capture_active;
+                // Path-to-90 lever 2 — Eagle4 GPU capture no longer
+                // forces per-layer commits. Mid-TCB blit copies at
+                // layers 2/13/25/26 land in dedicated arena buffers
+                // (eagle4_h_low_buf / eagle4_h_mid_buf / etc.) and
+                // are read after the single-TCB commit. Saves the
+                // ~4 ms / token of per-layer commit overhead.
+                let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
+                    || use_gpu_shared_draft;
 
                 // Phase 5B.1: fold final-norm + LM head + argmax into the global TCB when the
                 // greedy-GPU path is available. Eliminates Wedge M C-1 mini-TCB and the separate
@@ -3169,7 +3171,55 @@ impl DeepSeekV2 {
 
                         let dense_handled: bool;
                         if use_single_tcb {
-                            dense_handled = encode_layer(global_tcb.as_mut().unwrap())?;
+                            let tcb = global_tcb.as_mut().unwrap();
+                            dense_handled = encode_layer(tcb)?;
+
+                            // Path-to-90 lever 2 — Eagle4 mid-TCB capture
+                            // blits at layers 2/13/25/26. These run after
+                            // the layer's full encoding so x_buf has the
+                            // post-attn-add value and ffn_out_buf has the
+                            // layer's MoE output; "full layer L output" =
+                            // x_buf + ffn_out_buf. Encoded into the SAME
+                            // single TCB — saves the ~4 ms / token cost
+                            // of the prior per-layer-commit capture path.
+                            if self.eagle4_capture_active {
+                                let n_bytes = (h * std::mem::size_of::<f32>()) as u64;
+                                match li {
+                                    2 | 13 | 25 => {
+                                        let dst = match li {
+                                            2  => &arena.eagle4_h_low_buf,
+                                            13 => &arena.eagle4_h_mid_buf,
+                                            25 => &arena.eagle4_h_high_buf,
+                                            _  => unreachable!(),
+                                        };
+                                        // dst = x_buf
+                                        tcb.copy_buffer_bytes(
+                                            &arena.x_buf, 0, dst, 0, n_bytes,
+                                        )?;
+                                        // dst += ffn_out_buf
+                                        crate::kernels::add_inplace_metal_tcb(
+                                            tcb, dst, &arena.ffn_out_buf, h,
+                                        )?;
+                                    }
+                                    26 => {
+                                        // Pre-MLP rmsnorm output for h_shared
+                                        // computation (consumed CPU-side via
+                                        // cpu_shared_expert_forward) AND the
+                                        // production MoE's shared contribution.
+                                        tcb.copy_buffer_bytes(
+                                            &arena.x_norm_buf, 0,
+                                            &arena.eagle4_x_norm_26_buf, 0, n_bytes,
+                                        )?;
+                                        if moe_setup.is_some() {
+                                            tcb.copy_buffer_bytes(
+                                                &arena.moe_shared_out_buf, 0,
+                                                &arena.eagle4_h_shared_buf, 0, n_bytes,
+                                            )?;
+                                        }
+                                    }
+                                    _ => {}
+                                }
+                            }
                         } else {
                             // Per-layer fallback (ExactShared spec-decode path,
                             // OR Eagle4 GPU capture path — see step 10 follow-up).
@@ -3189,46 +3239,14 @@ impl DeepSeekV2 {
                                     .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
                             }
 
-                            // Eagle4 GPU capture — read x_buf + ffn_out_buf at
-                            // capture layers (h = x_buf + ffn_out_buf, the full
-                            // post-layer-L residual) and read x_norm_buf at
-                            // layer 26 (the pre-MoE input that h_shared is
-                            // computed against). Cheap CPU reads from Metal
-                            // shared buffers; the per-layer commit above
-                            // ensures the writes are visible. The capture
-                            // buffer lives in `local_eagle4_capture` (taken
-                            // out of self at function entry to avoid a borrow
-                            // conflict with `arena = &self.decode_arena`);
-                            // restored to self.eagle4_capture before return.
-                            if let Some(buf) = local_eagle4_capture.as_mut() {
-                                if li == 2 || li == 13 || li == 25 {
-                                    let mut x_cpu = vec![0.0f32; h];
-                                    let mut ffn_cpu = vec![0.0f32; h];
-                                    arena.read_x(&mut x_cpu);
-                                    arena.read_ffn_out(&mut ffn_cpu);
-                                    let target: &mut Vec<f32> = match li {
-                                        2 => &mut buf.h_low,
-                                        13 => &mut buf.h_mid,
-                                        25 => &mut buf.h_high,
-                                        _ => unreachable!(),
-                                    };
-                                    for i in 0..h {
-                                        target[i] = x_cpu[i] + ffn_cpu[i];
-                                    }
-                                }
-                                if li == 26 {
-                                    arena.read_x_norm(&mut buf.x_norm_26);
-                                    // Production MoE kernel writes shared-
-                                    // expert contribution to moe_shared_out_buf
-                                    // BEFORE summing into ffn_out_buf. Read it
-                                    // here to get h_shared GPU-native — same
-                                    // numerical value the routed+shared fused
-                                    // kernel produces, no separate dispatch.
-                                    if moe_setup.is_some() {
-                                        arena.read_moe_shared_out(&mut buf.h_shared_gpu);
-                                    }
-                                }
-                            }
+                            // Path-to-90 lever 2 — Eagle4 GPU capture
+                            // now uses mid-TCB blits encoded in the
+                            // single-TCB branch above; the per-layer-
+                            // commit fallback is the ExactShared spec-
+                            // decode path and doesn't carry eagle4
+                            // captures. local_eagle4_capture stays None
+                            // here; the post-loop read after the single-
+                            // TCB commit populates it.
                         }
 
                         let ffn_handled = moe_setup.is_some() || dense_handled;
@@ -3312,6 +3330,18 @@ impl DeepSeekV2 {
                         let tok_buf = self.token_buf.as_ref().unwrap();
                         let tok_ptr = tok_buf.contents() as *const u32;
                         folded_greedy_token = Some(unsafe { *tok_ptr });
+                    }
+
+                    // Path-to-90 lever 2 — read mid-TCB-blit eagle4 capture
+                    // buffers into the local Eagle4CaptureBuf. All blits
+                    // committed above; arena's eagle4_*_buf is now CPU-
+                    // readable via shared memory.
+                    if let Some(buf) = local_eagle4_capture.as_mut() {
+                        arena.read_eagle4_h_low(&mut buf.h_low);
+                        arena.read_eagle4_h_mid(&mut buf.h_mid);
+                        arena.read_eagle4_h_high(&mut buf.h_high);
+                        arena.read_eagle4_x_norm_26(&mut buf.x_norm_26);
+                        arena.read_eagle4_h_shared(&mut buf.h_shared_gpu);
                     }
 
                     // v1.2.0-9: update expert access stats from route_history_buf.
