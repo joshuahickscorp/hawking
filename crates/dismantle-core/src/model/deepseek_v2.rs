@@ -2611,6 +2611,18 @@ impl DeepSeekV2 {
             let k = tokens.len();
             let max_bs = self.decode_arena.as_ref().map(|a| a.max_batch_size).unwrap_or(0);
             if wedge_c_ready && !self.mla_c_kv_gpu.is_empty() && k <= max_bs {
+                // path-to-90 Stage 2.6 — route through the K-batched Path B
+                // verify if the profile selects it. Falls through to the
+                // sequential TCB path at K=1 (bit-identical by construction)
+                // or when the K>1 body hasn't shipped yet.
+                let use_parallel_k = self
+                    .kernel_profile
+                    .as_ref()
+                    .map(|p| p.selected.verify_kernels == "parallel-k")
+                    .unwrap_or(false);
+                if use_parallel_k {
+                    return self.forward_tokens_batched_parallel_k(tokens, positions);
+                }
                 return self.forward_tokens_batched_tcb(tokens, positions);
             }
         }
@@ -2824,6 +2836,44 @@ impl DeepSeekV2 {
         }
 
         Ok(results)
+    }
+
+    /// path-to-90 Stage 2.6 — K-batched Path B forward.
+    ///
+    /// Routes K speculative tokens through the K-batched verify kernels
+    /// (`gemv_f16_lmhead_kbatch_tcb`, `gemv_q4_k_m_v2_kbatch_pinned_tcb`,
+    /// `mla_decode_kernel_fc_kbatch`, `moe_block_batched_indexed_kbatch_tcb`)
+    /// so weight reads amortize across the K queries inside one
+    /// threadgroup. Gated on `kernel_profile.selected.verify_kernels ==
+    /// "parallel-k"`.
+    ///
+    /// **Scaffold semantics (this commit):**
+    /// - K=1 → delegates to `forward_tokens_batched_tcb` (bit-identical by
+    ///   construction; satisfies the Stage 2.6 test gate).
+    /// - K>1 → returns `Err(Unimplemented)`. The full K-batched body
+    ///   lands in a follow-up commit.
+    ///
+    /// This minimal wire-up validates the kernel-profile flag toggle
+    /// and the routing seam without risking the K=1 production path.
+    #[cfg(target_os = "macos")]
+    fn forward_tokens_batched_parallel_k(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() == 1 {
+            // K=1 — sequential and parallel-k must produce bit-identical
+            // output; delegate to the existing path to preserve the
+            // production hot path while still exercising the new entry.
+            return self.forward_tokens_batched_tcb(tokens, positions);
+        }
+        Err(Error::Unimplemented(
+            "forward_tokens_batched_parallel_k: K>1 body not yet shipped \
+             (Stage 2.6 scaffold lands the flag + routing seam; the full \
+             K-batched verify body using the Path B kernels is the next \
+             commit). To force the sequential path until then, set \
+             kernel_profile.selected.verify_kernels = \"sequential\".",
+        ))
     }
 
     /// Reset MLA KV cache to empty state for test isolation.

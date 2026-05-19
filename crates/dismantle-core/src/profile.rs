@@ -111,6 +111,20 @@ pub struct KernelVariant {
     /// "f32" to enable.
     #[serde(default = "default_residual_fusion")]
     pub residual_fusion: String,
+    /// path-to-90 Stage 2.6 — selects the K-token verify dispatch path.
+    /// `"sequential"` (default) runs K tokens through the existing
+    /// per-token TCB encoder one after another (no weight-read sharing
+    /// across the K queries). `"parallel-k"` routes through the Path B
+    /// K-batched kernels (gemv_f16_lmhead_kbatch /
+    /// gemv_q4_k_m_v2_kbatch / mla_decode_kernel_fc_kbatch /
+    /// moe_block_batched_indexed_kbatch_tcb), amortizing weight reads
+    /// across the K queries inside one threadgroup.
+    /// At K=1 both paths are bit-identical by construction. The Stage 2.6
+    /// scaffold delegates to the sequential path even when this flag is
+    /// `"parallel-k"`; the K>1 body lands in a follow-up commit
+    /// (forward_tokens_batched_parallel_k full impl).
+    #[serde(default = "default_verify_kernels")]
+    pub verify_kernels: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -139,6 +153,10 @@ fn default_rmsnorm_attn_schedule() -> String {
 
 fn default_residual_fusion() -> String {
     "off".to_string()
+}
+
+fn default_verify_kernels() -> String {
+    "sequential".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -300,6 +318,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         shared_down_schedule: "basic".into(),
         rmsnorm_attn_schedule: "basic".into(),
         residual_fusion: "off".into(),
+        verify_kernels: "sequential".into(),
     }]
 }
 
