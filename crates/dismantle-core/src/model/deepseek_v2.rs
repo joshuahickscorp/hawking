@@ -2722,6 +2722,24 @@ impl DeepSeekV2 {
                         );
                     }
                 }
+                // path-to-150 Phase L7 / Stage 0.5 — v3_xtg + sumy trick.
+                // Same geometry as v3_xtg with the min-correction term
+                // accumulated outside the nibble loop via simd_sum, mirroring
+                // the v3_llama and moe_gate_up_union_v2t pattern.
+                if schedule == "v3_xtg_sumy" {
+                    if let Some(model_buf) = &self.weights_mmap_buf {
+                        return crate::kernels::gemv_q4_k_m_v3_xtg_sumy_pinned(
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
+                        );
+                    }
+                }
                 if schedule == "v3_dual" {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v3_dual_pinned(

@@ -647,6 +647,26 @@ mod metal_dispatch {
         dispatch_q4_k_m_v3_xtg_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
+    /// path-to-150 Phase L7 / Stage 0.5 — v3_xtg + sumy (min-correction) trick.
+    /// Selected via `gemm_q4_k_schedule = "v3_xtg_sumy"`. Same geometry as
+    /// v3_xtg; adds the simd_sum-based min-correction accumulation outside
+    /// the nibble loop. Reduces inner-loop MAD count at the cost of 8 extra
+    /// simd_sum calls per block.
+    pub fn gemv_q4_k_m_v3_xtg_sumy_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        dispatch_q4_k_m_v3_xtg_sumy_pinned(
+            ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out,
+        )
+    }
+
     /// Approach 1 Iter 2 — 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
     /// Selected via `gemm_q4_k_schedule = "v3_dual"`.
     pub fn gemv_q4_k_m_v3_dual_pinned(
@@ -3079,6 +3099,85 @@ mod metal_dispatch {
             KERNEL,
             (n_tg * V3_TG, 1, 1),
             (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        let out_ptr = out_buf.contents() as *const f32;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
+        out.copy_from_slice(out_slice);
+        Ok(())
+    }
+
+    // path-to-150 Phase L7 / Stage 0.5 — v3_xtg + sumy.
+    // Same dispatch geometry as v3_xtg (256-thread TG, 8 rows/TG, cols * 4
+    // bytes of threadgroup memory for the cooperative x_cache). The kernel
+    // adds the MLX-LM / v3_llama / union_v2t min-correction sumy trick to
+    // halve the dm-MAD count in the hot loop.
+    pub fn dispatch_q4_k_m_v3_xtg_sumy_pinned(
+        ctx: &MetalContext,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_xtg_sumy";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if x.len() != cols || out.len() != rows {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
+                x.len(), cols, out.len(), rows
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows_u32 + ROWS_PER_TG - 1) / ROWS_PER_TG;
+        let shmem_bytes = (cols * std::mem::size_of::<f32>()) as u64;
+
+        ctx.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
             |enc| {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);

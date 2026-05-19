@@ -631,6 +631,106 @@ kernel void gemm_q4_k_m_v3_xtg(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── gemm_q4_k_m_v3_xtg_sumy ──────────────────────────────────────────────────
+// path-to-150 Phase L7 / Stage 0.5 — v3_xtg + sumy (min-correction) trick.
+//
+// Same 8-rows/TG, 1-simdgroup/row geometry as v3_xtg, with cooperative
+// threadgroup x_cache. Adds the MLX-LM / v3_llama / union_v2t sumy
+// optimization: precompute `sumy[k] = simd_sum(xl[k])` once per sub-block
+// and accumulate the per-sub-block `dm[k] * xl[k]` correction term outside
+// the nibble loop. Saves 256 MADs per row per block (8 sub-blocks × 32 lanes
+// → 8 sumy calls + 8 MADs per simdgroup) at the cost of 8 extra simd_sum
+// invocations.
+//
+// Math sketch (per (row, sub-block k)):
+//   Before:  partial += (ds[k] * nib - dm[k]) * xl[k]  → 2 MADs per nibble
+//   After:   partial += ds[k] * nib * xl[k]            → 1 MAD per nibble
+//            total_corr += dm[k] * sumy[k]             → 1 MAD per sub-block
+//
+// The `total_corr` term is thread-uniform (sumy is the same across all 32
+// lanes after simd_sum). It must be subtracted AFTER simd_sum(partial),
+// otherwise the correction is 32×-replicated.
+//
+// Grid:  (ceil(rows/8)*256, 1, 1)
+// TG:    (256, 1, 1)   — 8 simdgroups × 32 lanes
+// shmem: cols * 4 bytes (Rust dispatcher sets this)
+
+kernel void gemm_q4_k_m_v3_xtg_sumy(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* x       [[buffer(1)]],
+    device       float* y       [[buffer(2)]],
+    constant     uint&  rows    [[buffer(3)]],
+    constant     uint&  cols    [[buffer(4)]],
+    threadgroup  float* x_cache [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                gid     [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // Cooperative x → threadgroup load (same as v3_xtg).
+    for (uint i = tid; i < cols; i += 256u) {
+        x_cache[i] = x[(uint64_t)i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial    = 0.0f;
+    float total_corr = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub] & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k) {
+            xl[k] = x_cache[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+        }
+
+        // Sumy: same value across 32 lanes after simd_sum.
+        float sumy[8];
+        for (uint k = 0; k < 8u; ++k) sumy[k] = simd_sum(xl[k]);
+        for (uint k = 0; k < 8u; ++k) total_corr += dm[k] * sumy[k];
+
+        // Main dot product: nibble × scale × activation (no dm term inline).
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += ds[k0] * (float)(qb & 0x0Fu) * xl[k0];
+            partial += ds[k1] * (float)(qb >> 4u)   * xl[k1];
+        }
+    }
+
+    // Subtract total_corr AFTER simd_sum to avoid 32× replication.
+    partial = simd_sum(partial) - total_corr;
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_v3_dual ──────────────────────────────────────────────────────
 // Phase B Approach 1 Iter 2: 2 rows per simdgroup (N_R0=2), 4 simdgroups per TG
 // (128 threads) — matches llama.cpp's N_R0_Q4_K=2, FC_mul_mv_nsg=4 geometry.
