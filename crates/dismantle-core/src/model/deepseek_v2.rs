@@ -1490,6 +1490,22 @@ impl Engine for DeepSeekV2 {
 
             let calib_threshold = self.eagle4_calib_threshold;
             let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
+
+            // Path-to-90 step 7 — lazy Metal-pin of eagle4 head weights.
+            // Convert all 10 large gemv weights from f32 to f16 + upload
+            // to Metal shared buffers once; subsequent decode steps use
+            // gemv_f16_metal_pinned for the head forward (~5× faster
+            // than CPU gemv_f32 at the head's matrix shapes).
+            #[cfg(target_os = "macos")]
+            {
+                if let Some(head_mut) = self.eagle4_head.as_mut() {
+                    if !head_mut.has_metal_pinned() {
+                        if let Some(ctx) = self.metal_ctx.as_ref() {
+                            head_mut.pin_metal(ctx);
+                        }
+                    }
+                }
+            }
             let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
             let mut head = self
                 .eagle4_head
@@ -1539,11 +1555,33 @@ impl Engine for DeepSeekV2 {
                     self.cpu_shared_expert_forward(26, &capture.x_norm_26)?
                 };
 
-                // Eagle4 head forward WITHOUT the CPU LM head gemv.
-                // Returns draft_hidden + mask_logits + calib (token_logits
-                // = empty Vec). The 165 ms/token CPU LM head call is
-                // replaced below by GPU gemv_f16_argmax_dispatch on
-                // V2-Lite's already-pinned lm_head buffer (~10 ms).
+                // Eagle4 head forward — Metal path when pinning has run,
+                // CPU fallback otherwise. Both skip the CPU LM head
+                // gemv (replaced by GPU argmax on V2-Lite's lm_head_buf
+                // below).
+                #[cfg(target_os = "macos")]
+                let head_out = if head.has_metal_pinned() {
+                    let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                        Error::Model("eagle4 metal forward: no metal context".into())
+                    })?;
+                    head.forward_full_metal_no_lm_head(
+                        ctx,
+                        last_id,
+                        &capture.h_low,
+                        &capture.h_mid,
+                        &capture.h_high,
+                        &h_shared,
+                    )?
+                } else {
+                    head.forward_full_no_lm_head(
+                        last_id,
+                        &capture.h_low,
+                        &capture.h_mid,
+                        &capture.h_high,
+                        &h_shared,
+                    )?
+                };
+                #[cfg(not(target_os = "macos"))]
                 let head_out = head.forward_full_no_lm_head(
                     last_id,
                     &capture.h_low,
