@@ -1,0 +1,127 @@
+{
+  "history": [
+    {
+      "t": "2026-05-19T09:51:41",
+      "stage": "preflight",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T09:51:41",
+      "stage": "wait_capture",
+      "state": "starting"
+    },
+    {
+      "t": "2026-05-19T09:51:41",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:51:56",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:52:11",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:52:26",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:52:41",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:52:57",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:53:12",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:53:27",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:53:42",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:53:57",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:54:12",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:54:27",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:54:42",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:54:57",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:55:13",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:55:28",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:55:43",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:55:58",
+      "stage": "wait_capture",
+      "state": "polling"
+    },
+    {
+      "t": "2026-05-19T09:56:03",
+      "stage": "wait_capture",
+      "state": "done"
+    },
+    {
+      "t": "2026-05-19T09:56:03",
+      "stage": "training",
+      "state": "preflight"
+    },
+    {
+      "t": "2026-05-19T09:56:03",
+      "stage": "training",
+      "state": "running"
+    }
+  ],
+  "current_stage": "training",
+  "current_state": "running",
+  "session_start": "20260519T095141",
+  "last_update": "2026-05-19T09:56:03",
+  "shards": 62,
+  "capture_pids": "none",
+  "final_shards": 62,
+  "log": "/Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_pipeline/train.log"
+}

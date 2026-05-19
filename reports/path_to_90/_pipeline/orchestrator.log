@@ -1,0 +1,5 @@
+[10:08:27] starting training (k=2, 5 epochs, heldout shard)
+[10:09:10] training done
+[10:09:10] running tau_eval
+[10:09:15] tau_eval done
+[10:09:15] pipeline complete
