@@ -1,5 +1,121 @@
 # dismantle — Autonomous plan to 125+ dec_tps
 
+## PLAN AMENDMENT 2026-05-19 (session dreamy-golick-d54ff8 continuation)
+
+Three load-bearing assumptions in the original §6 Phase A plan turned out
+to be wrong on inspection. Reading `crates/dismantle-core/src/kernels/parallel_k.rs`
+and the Eagle4 decode loop end-to-end exposed:
+
+1. **`mla_decode_metal_kbatch` has NO causal masking across K.** It uses
+   one `seq_len` constant for all K queries. The bundled parity test
+   `mla_decode_kbatch_matches_sequential_v2lite_shape` compares against K
+   independent `mla_decode_metal` calls ALL using the same `seq_len` —
+   so the K-batched kernel matches *non-causal* semantics. For chain spec
+   decode this would let draft position k attend to draft position k+1's
+   KV, breaking bit-identical greedy parity. Plan §6 A1 ("K sequential
+   `encode_attention_phase1/2/3` → K-batched MLA via `mla_decode_metal_kbatch`")
+   is **not directly possible** with the kernel as built. Either (a)
+   extend the shader with per-K causal mask, or (b) activate the
+   stubbed `mla_decode_kernel_fc_kbatch_masked` (currently
+   `Err(Unimplemented)`). Both are new shader work + parity-test
+   refresh + shader_hash regen (pitfall #2).
+
+2. **`moe_block_batched_indexed_kbatch_tcb` is a no-overlap Stage 2.5
+   baseline.** Reading `parallel_k.rs:520-545`: it just delegates to K
+   calls of `encode_moe_block_batched_indexed_tcb` inside one TCB. No
+   expert-weight amortization. Same compute as the per-token MoE loop
+   in `forward_tokens_batched_tcb`. The bandwidth win is Stage 3.2 (the
+   masked / union-routing variant the plan defers).
+
+3. **Eagle4 mode is K=1 today.** `deepseek_v2.rs:1456-1652` runs
+   `forward_token_argmax` per emitted token + Eagle4 head + a stats-
+   only compare to v2_argmax. The EMITTED token is always
+   `v2_argmax` (= Off mode's argmax). So Eagle4 mode currently does
+   Off-mode compute PLUS the Eagle4 head per token, which explains
+   the 9-10 dec_tps regression vs Off's 27 (the plan's "Stage 1
+   regression realized" line was understated — it's structural, not
+   accidental). `forward_tokens_batched_parallel_k` is *never called
+   by Eagle4 mode* until the §6 A2 chain decode loop is wired.
+
+### What this means for the §6 phase order
+
+Phase A is now logically:
+
+- **A1.0 (shipped this session, commit `d3f831b`)** — minimal honest
+  wire-up. `forward_tokens_batched_parallel_k` body identical to
+  `forward_tokens_batched_tcb` for the per-token layer loop (preserves
+  MLA causal-seq_len + bit-identical parity), with the post-layer LM
+  head replaced by one in-TCB `gemv_f16_lmhead_kbatch_tcb` dispatch.
+  Bandwidth saving: the 400 MB vocab×hidden fp16 read amortizes 1×
+  across K (was K× post-commit).
+
+- **A1.1 (next critical)** — causal-mask K-batched MLA. Either
+  extend `mla_decode_kernel_fc_kbatch.metal` with a per-K causal
+  conditional in Phase 1 (`if (t > seq_len - k_batch + kk) s_kk[t] =
+  -INFINITY; continue;`) and update the dispatcher to accept
+  `(seq_len_base, k_batch)` such that query kk attends to
+  positions `[0, seq_len_base + kk]`, OR activate the
+  `mla_decode_kernel_fc_kbatch_masked` stub and pass a causal `(K, K)`
+  mask alongside an unmasked base-seq history. Either way, refresh
+  parity tests against per-K-seq_len reference + regen shader_hash.
+
+- **A1.2 (next critical)** — true K-batched MoE with expert-union
+  routing. The Stage 3.2 work the plan currently defers to Phase D;
+  on inspection that's where the bulk of the MoE bandwidth win
+  actually is. Without A1.2, A1.0's ~5-15% lm_head amortization is
+  the only real win on the verify path.
+
+- **A2 (still needed; replaces existing §6 A2)** — rewrite the Eagle4
+  loop to chain decode. Head proposes K drafts autoregressively
+  (draft_hidden[i-1] → h_high[i]; h_low/h_mid/h_shared stay from the
+  prior verifier capture). One `forward_tokens_batched_parallel_k(K+1)`
+  call verifies. Longest-matching-prefix accept. **Tricky bit:**
+  the existing per-step capture seam (`eagle4_capture_active = true;
+  forward_token_argmax(...)`) captures during a single-token forward;
+  after verify the next iteration needs captures for the bonus token.
+  Cleanest path: run one more single-token `forward_token_argmax`
+  (KV already at draft_start_seq + first_reject + 1; bonus advances
+  KV by 1) after each chain step. Cost is +1 single-forward per
+  chain step; net is still favourable when chain accepts ≥2 drafts.
+  A future commit can fold capture into `forward_tokens_batched_tcb`
+  itself to avoid the extra forward.
+
+### Honest projection refresh
+
+Pre-amendment §1 projected Stage 2 → 38-50 dec_tps. That assumed all
+four K-batched kernels actually amortize, which only `lm_head_kbatch`
+does today. Realistic gains by Phase:
+
+| state | what's live | projected Eagle4 K=4 dec_tps (clean-window) |
+|---|---|---|
+| pre-A | none | 9-12 (Stage 1 regression, K=1 + head overhead) |
+| post-A1.0 (this commit) | parallel_k path exists but Eagle4 doesn't call it | unchanged 9-12; ngram smoke shows path is correct at K>1 |
+| post-A2 (chain decode wired through A1.0) | chain spec decode + lm_head amortization | 13-18 |
+| post-A1.1 (causal MLA K-batched) | + MLA weight + KV read amortizes ~2× | 18-25 |
+| post-A1.2 (MoE union K-batched + recall fine-tune) | + MoE expert read amortizes ~1.5-2× | 35-55 |
+| Stage 0.5 (MLX kernel rewrites for Off) | propagates ~40% to Eagle4 | 50-75 |
+| Stages 4+5 hardware (AMX/Q4-KV/async/ANE/multi-q) | stacked | 70-110 |
+| Tree decode (Phase E) | 1.4× MoE multiplier if it works | 95-150 |
+
+≥125 sustained median still plausible but **requires A1.1 + A1.2 +
+recall fine-tune + at least 3 of the Stage 5 levers + meaningful
+tree-decode gain**. None of those are blocked by physics on M3 Pro;
+all are real engineering work the plan continues to authorize.
+
+### Other small corrections
+
+- The K=1 dispatch path in `forward_tokens_batched_parallel_k` MUST
+  delegate to `forward_tokens_batched_tcb` (different lm_head kernel,
+  bit-identical-to-Off requires the pinned variant). A1.0 does this;
+  document it explicitly.
+
+- ngram-spec mode IS the easiest way to exercise the K>1 parallel-k
+  path without writing new chain decode code; this session validated
+  argmax-equivalence to Off mode for "The capital of France is" at
+  K=3 and K=4 with 7/7 drafts accepted under the parallel-k profile.
+
+---
+
 **Purpose:** the *sole* reference document for autonomous agent sessions
 executing the path to 125+ Eagle4 dec_tps on M3 Pro 18 GB DeepSeek-V2-Lite
 Q4_K_M. Self-contained. Every other plan/closeout/research doc in
