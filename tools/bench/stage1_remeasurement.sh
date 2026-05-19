@@ -23,26 +23,33 @@
 #   reports/path_to_90/_stage1_remeasurement/DONE           ← created on success
 #   reports/path_to_90/_stage1_remeasurement/FAILED         ← created on failure
 #
-# Expected outcome (per smoke runs landing commits 679c077, 808d8db, acca22d):
+# Expected outcome (post-step-7 commit 518e580, full Metal Eagle4Head):
 #   Off    : ~27 dec_tps  (unchanged — same Wedge C path as before)
-#   Eagle4 : ~6-10 dec_tps  (up ~12× from CPU-walk's 0.54)
-#   Eagle4 accept: ~85-95 % (up from 2 % with CPU-walk hiddens — head is now
-#                            seeing GPU-sourced hiddens, in-distribution
-#                            with its MLX bf16 training data)
+#   Eagle4 : ~8-10 dec_tps  (up ~17× from CPU-walk's 0.54)
+#   Eagle4 accept: ~85-95 % (vs 2 % with CPU-walk hiddens)
 #
-# Stage 1 gate (≥ 18 tps) still HALTS but the remaining gap is well-bounded.
-# Per-token cost breakdown (decode_ms ~150 / 16 tokens = ~150 ms):
-#   ~41 ms  Wedge C V2-Lite forward (per-layer commits)
-#   ~80 ms  Eagle4Head CPU forward (in_proj + block + mask + calib)  ← step 7 target
+# Stage 1 gate (≥ 18 tps) still HALTS. Remaining ~2× gap is now in
+# the V2-Lite Wedge C forward + per-step head overhead, not the
+# eagle4 head itself. Per-token cost breakdown post-step-7:
+#   ~41 ms  Wedge C V2-Lite forward (per-layer commits for capture)
+#   ~50 ms  Eagle4Head Metal forward (9 f16 gemvs, ~5 ms each + CPU
+#           rmsnorm/silu_mul intermediates between gemvs)
 #   ~10 ms  GPU lm_head argmax via gemv_f16_argmax_dispatch
-#   ~ 0 ms  h_shared (now read from moe_shared_out_buf, was 70 ms)
+#   ~ 0 ms  h_shared (read from moe_shared_out_buf)
 #
-# Next unlock: step 7 from execution_plan.md (Metal-accelerated
-# Eagle4Head forward). Expected Eagle4 ≈ 18-22 dec_tps after.
+# Next unlocks to clear Stage 1's 18 tps gate (in priority):
+#   1. Stage 0.5 MLX-pattern adoption (step 2 mandate). Lifts Off
+#      baseline 27 → ~55-65 tps; cascades to Eagle4 ~25 tps.
+#      1-2 weeks of focused kernel work on gemv_q4_k_v3 (LM head),
+#      MoE expert pair matmul, MLA decode.
+#   2. Single-TCB Eagle4Head encoding (eliminate per-gemv dispatch
+#      overhead inside the head, ~5-10 ms/token). Class A item.
+#   3. K>1 batched verify (Path B kernels, Stage 2 territory).
+#      Multiplicative ~1.5-2× via amortized verify cost.
 #
 # Estimated runtime:
 #   Off:    ~30 s total
-#   Eagle4: ~1-2 min total (vs 5-8 min in the pre-fix version)
+#   Eagle4: ~1-2 min total
 
 set -uo pipefail
 cd "$(dirname "$0")/../.."
@@ -251,13 +258,14 @@ if [[ "$GATE_PASS" == "HALT" ]]; then
     log "  - Step 8  (CPU walk):           0.54 dec_tps,  2 % accept"
     log "  - Step 10f (GPU capture):       1.89 dec_tps,  94 % accept (commit 679c077)"
     log "  - Step 10f (GPU lm_head arg):   6.52 dec_tps,  94 % accept (commit 808d8db)"
-    log "  - Step 10f (GPU h_shared):      $E4_MEDIAN dec_tps,  $accept_pct % accept (this run; commit acca22d)"
-    log "  - Step 7   (full Metal head):   target ~22 dec_tps (next architectural unlock)"
+    log "  - Step 10f (GPU h_shared):      7.36 dec_tps,  90 % accept (commit acca22d)"
+    log "  - Step 7   (Metal Eagle4Head):  $E4_MEDIAN dec_tps,  $accept_pct % accept (this run; commit 518e580)"
     log ""
-    log "Remaining bottleneck (~80 ms/token): Eagle4Head's CPU forward for"
-    log "in_proj + transformer block + mask + calib gemvs. Step 7 from"
-    log "execution_plan.md routes these through dismantle's Metal helpers"
-    log "and pins the eagle4 head weights as Metal buffers (~half day work)."
+    log "Remaining ~2× gap to 18 tps is in V2-Lite Wedge C (per-layer commits"
+    log "for capture, ~41 ms) + per-step head overhead. Next levers:"
+    log "  1. Stage 0.5 MLX-pattern adoption (Off 27 → ~55 tps; cascades)"
+    log "  2. Single-TCB Eagle4Head encoding (eliminate ~10 ms dispatch overhead)"
+    log "  3. K>1 batched verify (Path B kernels, Stage 2)"
 fi
 
 log ""
