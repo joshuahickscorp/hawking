@@ -616,6 +616,26 @@ impl Eagle4Head {
         h_high: &[f32],
         h_shared: &[f32],
     ) -> Result<Eagle4ForwardOutput> {
+        self.forward_full_metal_no_lm_head_on(ctx, prev_token, h_low, h_mid, h_high, h_shared, false)
+    }
+
+    /// path-to-125 L5w — variant that routes the Metal head TCB through
+    /// the secondary command queue when `use_secondary=true`. The
+    /// caller is responsible for setting up a `SharedEventBarrier` if
+    /// the head's output is consumed by a kernel on the primary queue
+    /// (otherwise CPU readback in this function already provides the
+    /// ordering — every Metal kernel in the head completes before
+    /// `commit_and_wait` returns).
+    pub fn forward_full_metal_no_lm_head_on(
+        &self,
+        ctx: &MetalContext,
+        prev_token: u32,
+        h_low: &[f32],
+        h_mid: &[f32],
+        h_high: &[f32],
+        h_shared: &[f32],
+        use_secondary: bool,
+    ) -> Result<Eagle4ForwardOutput> {
         let frozen = self.frozen.as_ref().ok_or_else(|| {
             Error::Model(
                 "Eagle4Head::forward_full_metal_no_lm_head: frozen weights not loaded".into(),
@@ -681,7 +701,11 @@ impl Eagle4Head {
         //    mask_proj stays skipped (consumed only by Stage 3
         //    prefetch — see commit 0d6a2a3).
         {
-            let mut tcb = TokenCommandBuffer::new(ctx);
+            let mut tcb = if use_secondary {
+                TokenCommandBuffer::new_on_secondary(ctx)
+            } else {
+                TokenCommandBuffer::new(ctx)
+            };
 
             // in_proj: x5 → x_buf
             crate::kernels::gemv_f16_metal_buf_tcb(

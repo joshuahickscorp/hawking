@@ -1629,13 +1629,26 @@ impl Engine for DeepSeekV2 {
                                             .into(),
                                     )
                                 })?;
-                                head.forward_full_metal_no_lm_head(
+                                // path-to-125 L5w — when `multi_queue=true` is set in the
+                                // active kernel profile, route the head's TCB to the
+                                // secondary command queue so its dispatches don't serialize
+                                // with verifier work on the primary queue. No SharedEvent
+                                // barrier is needed here because the head's commit_and_wait
+                                // already provides full ordering on its own outputs before
+                                // the CPU reads them back.
+                                let use_secondary = self
+                                    .kernel_profile
+                                    .as_ref()
+                                    .map(|p| p.selected.multi_queue)
+                                    .unwrap_or(false);
+                                head.forward_full_metal_no_lm_head_on(
                                     ctx,
                                     cur_prev,
                                     &capture.h_low,
                                     &capture.h_mid,
                                     &cur_h_high,
                                     &h_shared,
+                                    use_secondary,
                                 )?
                             } else {
                                 head.forward_full_no_lm_head(
@@ -1862,13 +1875,21 @@ impl Engine for DeepSeekV2 {
                         let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
                             Error::Model("eagle4 metal forward: no metal context".into())
                         })?;
-                        head.forward_full_metal_no_lm_head(
+                        // path-to-125 L5w — same secondary-queue routing as the chain
+                        // path: gated by the active profile's multi_queue flag.
+                        let use_secondary = self
+                            .kernel_profile
+                            .as_ref()
+                            .map(|p| p.selected.multi_queue)
+                            .unwrap_or(false);
+                        head.forward_full_metal_no_lm_head_on(
                             ctx,
                             last_id,
                             &capture.h_low,
                             &capture.h_mid,
                             &capture.h_high,
                             &h_shared,
+                            use_secondary,
                         )?
                     } else {
                         head.forward_full_no_lm_head(

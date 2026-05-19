@@ -957,7 +957,22 @@ mod imp {
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
-            let cmd = ctx.inner.queue.new_command_buffer().to_owned();
+            Self::new_on_queue(ctx, &ctx.inner.queue)
+        }
+
+        /// path-to-125 L5w — construct a TCB whose command buffer is
+        /// allocated on the secondary `MTLCommandQueue`. Used by the
+        /// multi_queue=true path so the Eagle4 head's propose work
+        /// runs on a different queue from the verifier's primary
+        /// dispatch, with `SharedEventBarrier` providing cross-queue
+        /// ordering. All other TCB behavior (trace mode, dispatch
+        /// recording, commit semantics) is identical.
+        pub fn new_on_secondary(ctx: &'ctx MetalContext) -> Self {
+            Self::new_on_queue(ctx, &ctx.inner.secondary_queue)
+        }
+
+        fn new_on_queue(ctx: &'ctx MetalContext, queue: &metal::CommandQueue) -> Self {
+            let cmd = queue.new_command_buffer().to_owned();
             let mode = TcbTraceMode::from_env();
             let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
                 ProdCbTracer::try_new(&ctx.inner.device)
@@ -1306,6 +1321,10 @@ mod imp {
             panic!("TokenCommandBuffer: Metal unavailable on this platform")
         }
 
+        pub fn new_on_secondary(_ctx: &'ctx MetalContext) -> Self {
+            panic!("TokenCommandBuffer: Metal unavailable on this platform")
+        }
+
         pub fn dispatch_threads(
             &mut self,
             _fn_name: &str,
@@ -1332,3 +1351,8 @@ pub use argbuf::{ArgLayout, KernelArgBuffer};
 
 pub mod decode_arena;
 pub use decode_arena::DecodeArena;
+
+#[cfg(target_os = "macos")]
+pub mod sync;
+#[cfg(target_os = "macos")]
+pub use sync::SharedEventBarrier;

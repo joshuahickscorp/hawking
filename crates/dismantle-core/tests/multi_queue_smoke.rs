@@ -9,7 +9,7 @@
 
 #![cfg(target_os = "macos")]
 
-use dismantle_core::metal::MetalContext;
+use dismantle_core::metal::{MetalContext, TokenCommandBuffer};
 
 #[test]
 fn secondary_queue_distinct_and_dispatchable() {
@@ -45,4 +45,24 @@ fn secondary_queue_distinct_and_dispatchable() {
     let cb_secondary = secondary.new_command_buffer();
     cb_secondary.commit();
     cb_secondary.wait_until_completed();
+}
+
+#[test]
+fn tcb_on_secondary_constructs_and_commits() {
+    let ctx = match MetalContext::new() {
+        Ok(c) => c,
+        Err(_) => return,
+    };
+    // path-to-125 L5w — TokenCommandBuffer::new_on_secondary should
+    // produce a TCB whose underlying CommandBuffer comes from the
+    // secondary queue. A trivial commit_and_wait must not deadlock
+    // and must not interfere with a subsequent primary-queue TCB.
+    {
+        let tcb_sec = TokenCommandBuffer::new_on_secondary(&ctx);
+        tcb_sec.commit_and_wait().expect("secondary TCB commit");
+    }
+    {
+        let tcb_pri = TokenCommandBuffer::new(&ctx);
+        tcb_pri.commit_and_wait().expect("primary TCB commit");
+    }
 }
