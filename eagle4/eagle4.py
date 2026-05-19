@@ -233,6 +233,7 @@ def train(
     target_argmax_warmup_steps: int = 500,
     chain_h_high: bool = False,
     resume_ckpt: Path | None = None,
+    multi_step_aux_decay: float = 1.0,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
@@ -264,7 +265,8 @@ def train(
     )
 
     def _step_loss(head, b, prev_tok, h_high, weight: float,
-                   target_alpha: float, k_offset: int):
+                   target_alpha: float, k_offset: int,
+                   step_aux_weight: float):
         """One step of the multi-step training loss.
 
         `k_offset` is the autoregressive depth: at step 0 we predict the
@@ -340,7 +342,7 @@ def train(
         )
         calib = (calib_per * pos_mask).sum() / N
 
-        return weight * (ce + aux_weight * mse + mask_weight * bce + calib_weight * calib), tok, draft_h
+        return weight * (ce + step_aux_weight * mse + mask_weight * bce + calib_weight * calib), tok, draft_h
 
     def loss_fn(head, b, target_alpha):
         # path-to-125 EAGLE-3-style chain training:
@@ -360,8 +362,16 @@ def train(
         for k in range(multi_step_k):
             w = multi_step_decay ** k
             k_offset = k if chain_h_high else 0
+            # path-to-125 aux-decay: at chain step k>0, scale the MSE
+            # auxiliary by multi_step_aux_decay**k. Default 1.0 keeps
+            # the historical regime (aux at every step). Values <1
+            # taper aux toward later chain steps, giving the
+            # residual_gate room to grow so the chain block actually
+            # contributes to predictions — see commit message for
+            # the gate-plateau diagnosis.
+            step_aux_w = aux_weight * (multi_step_aux_decay ** k)
             step_loss, tok, draft_h = _step_loss(
-                head, b, prev, cur_h_high, w, target_alpha, k_offset,
+                head, b, prev, cur_h_high, w, target_alpha, k_offset, step_aux_w,
             )
             total = total + step_loss
             if k + 1 < multi_step_k:
@@ -646,6 +656,10 @@ def main() -> int:
                          "h_high through multi_step_k passes. Required for chain spec decode.")
     tp.add_argument("--resume", type=Path, default=None,
                     help="warm-start from an existing .npz checkpoint")
+    tp.add_argument("--multi-step-aux-decay", type=float, default=1.0,
+                    help="path-to-125: per-step decay applied to aux MSE weight at "
+                         "chain step k (aux *= decay**k). <1.0 tapers MSE toward later "
+                         "chain steps so residual_gate can grow.")
 
     ep = sub.add_parser("eval", help="acceptance + per-layer mask recall")
     ep.add_argument("--ckpt", type=Path, required=True)
@@ -679,6 +693,7 @@ def main() -> int:
             target_argmax_warmup_steps=args.target_warmup_steps,
             chain_h_high=args.chain_h_high,
             resume_ckpt=args.resume,
+            multi_step_aux_decay=args.multi_step_aux_decay,
         )
     elif args.cmd == "eval":
         r = evaluate(
