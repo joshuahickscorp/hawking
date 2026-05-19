@@ -89,24 +89,25 @@ run_trial() {
   local trial="$5"
   local chain_k="${6:-1}"
 
-  local extra=()
-  case "$mode" in
-    off)    extra=();;
-    ngram)  extra=(--speculate ngram);;
-    eagle4) extra=(--speculate eagle4 --draft-head "$DRAFT_NPZ" --eagle4-frozen "$FROZEN_NPZ");;
-  esac
-
   local out
   if [[ "$mode" == "eagle4" ]]; then
     out=$(EAGLE4_CHAIN_K="$chain_k" nice -n 19 "$DISMANTLE" generate \
             --weights "$WEIGHTS" --kernel-profile "$profile_path" \
             --prompt "$prompt" --max-new-tokens "$TOKENS" --temperature 0 \
-            "${extra[@]}" 2>&1)
-  else
+            --speculate eagle4 --draft-head "$DRAFT_NPZ" --eagle4-frozen "$FROZEN_NPZ" \
+            2>&1)
+  elif [[ "$mode" == "ngram" ]]; then
     out=$(nice -n 19 "$DISMANTLE" generate \
             --weights "$WEIGHTS" --kernel-profile "$profile_path" \
             --prompt "$prompt" --max-new-tokens "$TOKENS" --temperature 0 \
-            "${extra[@]}" 2>&1)
+            --speculate ngram \
+            2>&1)
+  else
+    # off — no spec-decode flags
+    out=$(nice -n 19 "$DISMANTLE" generate \
+            --weights "$WEIGHTS" --kernel-profile "$profile_path" \
+            --prompt "$prompt" --max-new-tokens "$TOKENS" --temperature 0 \
+            2>&1)
   fi
 
   local dec_tps accepted rejected
