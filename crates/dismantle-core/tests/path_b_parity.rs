@@ -319,6 +319,111 @@ fn gemv_q4_k_m_v2_kbatch_k1_matches_v2_within_atol() {
     assert_q4k_kbatch_matches_sequential(64, 512, 1, 0xCAFE_BABE);
 }
 
+// ── Stage 2.4 — K-batched MLA decode parity ────────────────────────────────
+
+#[cfg(target_os = "macos")]
+fn assert_mla_kbatch_matches_sequential(
+    n_heads: usize,
+    qk_nope_head_dim: usize,
+    qk_rope_head_dim: usize,
+    v_head_dim: usize,
+    kv_lora_rank: usize,
+    seq_len: usize,
+    k_batch: usize,
+    seed: u64,
+) {
+    let ctx = ctx();
+    let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+    let q_kbatch = fixed_f32(k_batch * n_heads * q_head_dim, seed ^ 0x0101_2020);
+    let c_kv = fixed_f32(seq_len * kv_lora_rank, seed ^ 0x0303_4040);
+    let k_pe = fixed_f32(seq_len * qk_rope_head_dim, seed ^ 0x0505_6060);
+    let kv_b_proj_data =
+        fixed_f32(n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank, seed ^ 0x0707_8080);
+    let scale = 1.0f32 / (q_head_dim as f32).sqrt();
+
+    let kv_b_buf = new_f32_buf(ctx, &kv_b_proj_data);
+
+    // Sequential reference: K independent K=1 dispatches via the existing
+    // mla_decode_metal (slot-correct K=1 dispatcher).
+    let mut seq_out = vec![0.0f32; k_batch * n_heads * v_head_dim];
+    for k in 0..k_batch {
+        let q_k = &q_kbatch[k * n_heads * q_head_dim..(k + 1) * n_heads * q_head_dim];
+        let mut y_k = vec![0.0f32; n_heads * v_head_dim];
+        dismantle_core::kernels::mla_decode_metal(
+            ctx,
+            q_k,
+            &c_kv,
+            &k_pe,
+            &kv_b_buf,
+            n_heads,
+            qk_nope_head_dim,
+            qk_rope_head_dim,
+            v_head_dim,
+            kv_lora_rank,
+            seq_len,
+            scale,
+            &mut y_k,
+        )
+        .expect("sequential mla_decode_metal");
+        seq_out[k * n_heads * v_head_dim..(k + 1) * n_heads * v_head_dim].copy_from_slice(&y_k);
+    }
+
+    // K-batched
+    let mut kbatch_out = vec![0.0f32; k_batch * n_heads * v_head_dim];
+    parallel_k::mla_decode_metal_kbatch(
+        ctx,
+        &q_kbatch,
+        &c_kv,
+        &k_pe,
+        &kv_b_buf,
+        n_heads,
+        qk_nope_head_dim,
+        qk_rope_head_dim,
+        v_head_dim,
+        kv_lora_rank,
+        seq_len,
+        scale,
+        &mut kbatch_out,
+        k_batch,
+    )
+    .expect("mla_decode_metal_kbatch");
+
+    let diff = kbatch_out
+        .iter()
+        .zip(seq_out.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        diff < 1e-3,
+        "K={k_batch} seq_len={seq_len} heads={n_heads}: max_abs_diff={diff:.3e} >= 1e-3",
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn mla_decode_kbatch_matches_sequential_v2lite_shape() {
+    // V2-Lite MLA shape: n_heads=16, qk_nope=128, qk_rope=64,
+    // v_head=128, kv_lora=512. seq_len=4 covers Phase 0..4 with
+    // multiple timesteps; small enough to be a unit test.
+    for &k in &[1usize, 2, 4] {
+        assert_mla_kbatch_matches_sequential(16, 128, 64, 128, 512, 4, k, 0xCAFE_BABE);
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn mla_decode_kbatch_matches_sequential_realistic_seq() {
+    // Longer seq_len = 64 (still unit-test-fast) at K=4.
+    assert_mla_kbatch_matches_sequential(16, 128, 64, 128, 512, 64, 4, 0xBEEF_1234);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn mla_decode_kbatch_k1_matches_sequential_at_atol() {
+    // At K=1 the K-batched kernel should reduce to the K=1 reference.
+    assert_mla_kbatch_matches_sequential(16, 128, 64, 128, 512, 8, 1, 0xDEAD_BEEF);
+}
+
 #[test]
 #[ignore = "Tree-decode extension not yet implemented; see reports/path_to_90/tree_decode/design.md"]
 fn mla_decode_kbatch_tree_mask_matches_unmasked_when_all_zero() {

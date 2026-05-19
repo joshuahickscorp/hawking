@@ -28,7 +28,7 @@
 
 use crate::{Error, Result};
 #[cfg(target_os = "macos")]
-use crate::metal::{PinnedBuffer, TokenCommandBuffer};
+use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 
 /// Parallel-K MLA decode kernel.
 ///
@@ -295,6 +295,145 @@ pub fn gemv_q4_k_m_v2_kbatch_pinned_tcb(
             );
         },
     )
+}
+
+// ── Stage 2.4 — K-batched MLA decode ────────────────────────────────────────
+
+/// Path B Stage 2.4 — K-batched MLA decode.
+///
+/// Mirrors `mla_decode_metal` (kernels/mod.rs:1560) but processes K
+/// queries against the SAME (c_kv, k_pe) KV cache in one dispatch.
+/// Weight reads (kv_b_proj) and KV-cache reads amortize across the K
+/// queries inside one threadgroup.
+///
+/// At K ≥ 2 the naive extension of the K=1 TG-mem scores buffer busts
+/// the 32 KB / core budget (scores[K × seq_len] = 64 KB at K=4,
+/// seq_len=4096). This kernel moves scores to a device-scratch buffer
+/// (n_heads × K × seq_len f32) allocated here. TG memory stays at
+/// 2 × K × kv_lora_rank f32 = 16 KB at K=4 kv_lora_rank=512.
+///
+/// At K=1 the kernel is bit-equivalent to `mla_decode_kernel` by
+/// construction (the K-fold loops reduce to single iterations).
+///
+/// One-shot helper for tests/benches (allocates Metal buffers from
+/// CPU slices). Production wire-up will follow the
+/// `mla_decode_and_o_proj_arena_*_tcb` pattern (Stage 2.6).
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn mla_decode_metal_kbatch(
+    ctx: &MetalContext,
+    q_kbatch: &[f32],            // (K × n_heads × (qk_nope + qk_rope)) f32
+    c_kv: &[f32],                // (seq_len × kv_lora_rank) f32
+    k_pe: &[f32],                // (seq_len × qk_rope_head_dim) f32
+    kv_b_proj: &PinnedBuffer,
+    n_heads: usize,
+    qk_nope_head_dim: usize,
+    qk_rope_head_dim: usize,
+    v_head_dim: usize,
+    kv_lora_rank: usize,
+    seq_len: usize,
+    scale: f32,
+    out_kbatch: &mut [f32],      // (K × n_heads × v_head_dim) f32
+    k_batch: usize,
+) -> Result<()> {
+    const KERNEL: &str = "mla_decode_kernel_fc_kbatch";
+    const TG_SIZE: u32 = 256;
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} requires k_batch in 1..=8; k_batch={k_batch}"
+        )));
+    }
+    if seq_len == 0 {
+        return Err(Error::Kernel(format!("{KERNEL}: seq_len must be >= 1")));
+    }
+    let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+    let expected_q = k_batch * n_heads * q_head_dim;
+    if q_kbatch.len() != expected_q {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: q_kbatch.len={} expected {}",
+            q_kbatch.len(),
+            expected_q
+        )));
+    }
+    if c_kv.len() != seq_len * kv_lora_rank {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: c_kv.len={} expected {}",
+            c_kv.len(),
+            seq_len * kv_lora_rank
+        )));
+    }
+    if k_pe.len() != seq_len * qk_rope_head_dim {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: k_pe.len={} expected {}",
+            k_pe.len(),
+            seq_len * qk_rope_head_dim
+        )));
+    }
+    let expected_kv_b =
+        (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+            as u64;
+    if kv_b_proj.length() < expected_kv_b {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: kv_b_proj buffer too small: got {} expected {}",
+            kv_b_proj.length(),
+            expected_kv_b
+        )));
+    }
+    let expected_out = k_batch * n_heads * v_head_dim;
+    if out_kbatch.len() != expected_out {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: out_kbatch.len={} expected {}",
+            out_kbatch.len(),
+            expected_out
+        )));
+    }
+
+    let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q_kbatch));
+    let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
+    let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+    let out_buf = ctx.new_buffer(expected_out * std::mem::size_of::<f32>());
+    let scores_scratch =
+        ctx.new_buffer(n_heads * k_batch * seq_len * std::mem::size_of::<f32>());
+
+    let n_heads_u32 = n_heads as u32;
+    let qk_nope_u32 = qk_nope_head_dim as u32;
+    let qk_rope_u32 = qk_rope_head_dim as u32;
+    let v_head_u32 = v_head_dim as u32;
+    let kv_lora_u32 = kv_lora_rank as u32;
+    let seq_len_u32 = seq_len as u32;
+    let k_batch_u32 = k_batch as u32;
+
+    let qp_bytes = (k_batch * kv_lora_rank * std::mem::size_of::<f32>()) as u64;
+    let cwt_bytes = (k_batch * kv_lora_rank * std::mem::size_of::<f32>()) as u64;
+
+    ctx.dispatch_threads(
+        KERNEL,
+        (n_heads_u32 * TG_SIZE, 1, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(&q_buf), 0);
+            enc.set_buffer(1, Some(&c_kv_buf), 0);
+            enc.set_buffer(2, Some(&k_pe_buf), 0);
+            enc.set_buffer(3, Some(kv_b_proj), 0);
+            enc.set_buffer(4, Some(&out_buf), 0);
+            enc.set_buffer(5, Some(&scores_scratch), 0);
+            enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+            enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+            enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+            enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+            enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+            enc.set_bytes(11, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+            enc.set_bytes(12, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+            enc.set_bytes(13, std::mem::size_of::<u32>() as u64, &k_batch_u32 as *const u32 as *const _);
+            enc.set_threadgroup_memory_length(0, qp_bytes);
+            enc.set_threadgroup_memory_length(1, cwt_bytes);
+        },
+    )?;
+
+    let out_ptr = out_buf.contents() as *const f32;
+    let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, expected_out) };
+    out_kbatch.copy_from_slice(out_slice);
+    Ok(())
 }
 
 #[cfg(test)]
