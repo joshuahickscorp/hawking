@@ -1,0 +1,6 @@
+[train] resumed from eagle4/checkpoints/eagle4_v3/best.npz (step 1000)
+[train] head built (aux=0.5 mask=0.3 calib=0.1 k=4 decay=0.7 chain_h_high=True)
+[data] loaded 500000 records from 62 shard(s)
+[data] 29415 ordered windows of len 16
+step=1 epoch=0 loss=93.587 gate=0.003 α=0.00 wall=28.7s
+step=25 epoch=0 loss=29.886 gate=0.001 α=0.05 wall=1061.8s

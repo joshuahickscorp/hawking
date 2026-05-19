@@ -1,0 +1,7 @@
+[10:43:12] iter4 starting (5 shards × 1 epoch × k=4, warmup=50)
+[10:45:58] iter4 training done
+[10:45:58] tau_eval
+[10:46:02] tau_eval done
+[10:46:03] chain-decode smoke v3
+[10:46:30] chain-decode smoke v4_chain_iter4
+[10:46:56] iter4 complete
