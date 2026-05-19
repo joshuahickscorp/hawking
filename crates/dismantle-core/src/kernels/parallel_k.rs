@@ -195,6 +195,108 @@ pub fn gemv_f16_lmhead_kbatch_tcb(
     )
 }
 
+// ── Stage 2.3 — K-batched Q4_K_M GEMV ───────────────────────────────────────
+
+/// Path B Stage 2.3 — K-batched Q4_K_M GEMV.
+///
+/// Computes `y_kbatch[k, r] = Σ_c W_q4k[r, c] * x_kbatch[k, c]` for
+/// `k ∈ [0, k_batch)`, `r ∈ [0, rows)`. Mirrors the dispatch geometry of
+/// `gemv_q4_k_m_v2_pinned_tcb` (mod.rs:394); the per-block Q4_K_M decode
+/// is unchanged, and each lane accumulates K f32 partials in registers
+/// (zero TG memory; matches the K=1 kernel's no-TG-mem property).
+///
+/// Requires `cols % 256 == 0` and `k_batch ∈ [1, 8]`. At K=1 the kernel
+/// is bit-equivalent to `gemm_q4_k_m_fused_v2`.
+///
+/// `w_buf` is a pinned model buffer; `w_offset` and `w_byte_size` slice
+/// out the Q4_K_M weight tensor. `x_buf` is `(k_batch × cols)` f32
+/// row-major; `y_buf` is `(k_batch × rows)` f32 row-major (caller
+/// pre-allocates).
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn gemv_q4_k_m_v2_kbatch_pinned_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    model_buf: &PinnedBuffer,
+    w_offset: usize,
+    w_byte_size: usize,
+    rows: usize,
+    cols: usize,
+    x_buf: &PinnedBuffer,
+    y_buf: &PinnedBuffer,
+    k_batch: usize,
+) -> Result<()> {
+    const KERNEL: &str = "gemm_q4_k_m_fused_v2_kbatch";
+    if cols % 256 != 0 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+        )));
+    }
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} requires k_batch in 1..=8; k_batch={k_batch}"
+        )));
+    }
+    let blocks_per_row = cols / 256;
+    let expected_bytes = rows
+        .checked_mul(blocks_per_row)
+        .and_then(|v| v.checked_mul(144))
+        .ok_or_else(|| Error::Kernel(format!("{KERNEL} byte-size overflow")))?;
+    if w_byte_size != expected_bytes {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} weight bytes: got {w_byte_size} expected {expected_bytes}"
+        )));
+    }
+    let end = w_offset
+        .checked_add(w_byte_size)
+        .ok_or_else(|| Error::Kernel(format!("{KERNEL} offset overflow")))?;
+    if end > model_buf.length() as usize {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} offset out of bounds: {w_offset}+{w_byte_size} > {}",
+            model_buf.length()
+        )));
+    }
+    let x_bytes = k_batch * cols * std::mem::size_of::<f32>();
+    let y_bytes = k_batch * rows * std::mem::size_of::<f32>();
+    if x_buf.length() < x_bytes as u64 || y_buf.length() < y_bytes as u64 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} buffer sizes: x={} expected>={x_bytes} y={} expected>={y_bytes}",
+            x_buf.length(),
+            y_buf.length()
+        )));
+    }
+
+    let rows_u32 = rows as u32;
+    let cols_u32 = cols as u32;
+    let k_u32 = k_batch as u32;
+    const V2_TG: u32 = 256;
+    let n_tg = rows_u32.div_ceil(8);
+    tcb.dispatch_threads(
+        KERNEL,
+        (n_tg * V2_TG, 1, 1),
+        (V2_TG, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(y_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<u32>() as u64,
+                &rows_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                4,
+                std::mem::size_of::<u32>() as u64,
+                &cols_u32 as *const u32 as *const _,
+            );
+            enc.set_bytes(
+                5,
+                std::mem::size_of::<u32>() as u64,
+                &k_u32 as *const u32 as *const _,
+            );
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

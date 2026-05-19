@@ -24,6 +24,8 @@ pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_GEMV_F16_LMHEAD_KBATCH: &str =
     include_str!("../../shaders/gemv_f16_lmhead_kbatch.metal");
+pub const SHADER_GEMV_Q4_K_M_V2_KBATCH: &str =
+    include_str!("../../shaders/gemv_q4_k_m_v2_kbatch.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
@@ -36,6 +38,7 @@ pub fn all_shader_sources() -> String {
         SHADER_SAMPLE,
         SHADER_MATMUL,
         SHADER_GEMV_F16_LMHEAD_KBATCH,
+        SHADER_GEMV_Q4_K_M_V2_KBATCH,
     ]
     .join("\n\n")
 }
@@ -471,6 +474,8 @@ mod imp {
             "gemv_simdgroup_f32" => "gemv_simdgroup_f32",
             // Path B Stage 2.2 — K-batched f16 LM-head
             "gemv_f16_lmhead_kbatch" => "gemv_f16_lmhead_kbatch",
+            // Path B Stage 2.3 — K-batched Q4_K_M GEMV
+            "gemm_q4_k_m_fused_v2_kbatch" => "gemm_q4_k_m_fused_v2_kbatch",
             // v0.5.10 fp16 Q-format kernels
             "gemm_q4_k_m_fused_f16" => "gemm_q4_k_m_fused_f16",
             "moe_grouped_gemm_q4_f16" => "moe_grouped_gemm_q4_f16",
