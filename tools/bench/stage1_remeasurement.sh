@@ -23,20 +23,26 @@
 #   reports/path_to_90/_stage1_remeasurement/DONE           ← created on success
 #   reports/path_to_90/_stage1_remeasurement/FAILED         ← created on failure
 #
-# Expected outcome (per commit 679c077's smoke run):
+# Expected outcome (per smoke runs landing commits 679c077, 808d8db, acca22d):
 #   Off    : ~27 dec_tps  (unchanged — same Wedge C path as before)
-#   Eagle4 : ~2 dec_tps   (up 3.5× from CPU-walk's 0.54)
+#   Eagle4 : ~6-10 dec_tps  (up ~12× from CPU-walk's 0.54)
 #   Eagle4 accept: ~85-95 % (up from 2 % with CPU-walk hiddens — head is now
 #                            seeing GPU-sourced hiddens, in-distribution
 #                            with its MLX bf16 training data)
-#   → Stage 1 gate still HALTS at 18 tps but with the architectural
-#     progression visible. Next unlock: Metal-accelerated Eagle4Head
-#     forward (step 7 from execution_plan.md). The 165 ms/token CPU
-#     LM head gemv dominates the remaining decode time.
+#
+# Stage 1 gate (≥ 18 tps) still HALTS but the remaining gap is well-bounded.
+# Per-token cost breakdown (decode_ms ~150 / 16 tokens = ~150 ms):
+#   ~41 ms  Wedge C V2-Lite forward (per-layer commits)
+#   ~80 ms  Eagle4Head CPU forward (in_proj + block + mask + calib)  ← step 7 target
+#   ~10 ms  GPU lm_head argmax via gemv_f16_argmax_dispatch
+#   ~ 0 ms  h_shared (now read from moe_shared_out_buf, was 70 ms)
+#
+# Next unlock: step 7 from execution_plan.md (Metal-accelerated
+# Eagle4Head forward). Expected Eagle4 ≈ 18-22 dec_tps after.
 #
 # Estimated runtime:
-#   Off:    ~30 s total (3 prompts × 16 tokens × ~37 ms decode + model load)
-#   Eagle4: ~5-8 minutes (3 prompts × 16 tokens × ~530 ms decode + model load)
+#   Off:    ~30 s total
+#   Eagle4: ~1-2 min total (vs 5-8 min in the pre-fix version)
 
 set -uo pipefail
 cd "$(dirname "$0")/../.."
@@ -242,14 +248,16 @@ log "Block-ship gate (≥ 18 tps for Stage 1): $GATE_PASS"
 if [[ "$GATE_PASS" == "HALT" ]]; then
     log ""
     log "Stage 1 gate still HALTS at 18 tps. Architectural progression:"
-    log "  - Step 8 (CPU walk):       0.54 dec_tps,  2 % accept"
-    log "  - Step 10f (GPU capture):  $E4_MEDIAN dec_tps,  $accept_pct % accept"
-    log "  - Step 7 (Metal head):     target ~22 dec_tps (still TODO)"
+    log "  - Step 8  (CPU walk):           0.54 dec_tps,  2 % accept"
+    log "  - Step 10f (GPU capture):       1.89 dec_tps,  94 % accept (commit 679c077)"
+    log "  - Step 10f (GPU lm_head arg):   6.52 dec_tps,  94 % accept (commit 808d8db)"
+    log "  - Step 10f (GPU h_shared):      $E4_MEDIAN dec_tps,  $accept_pct % accept (this run; commit acca22d)"
+    log "  - Step 7   (full Metal head):   target ~22 dec_tps (next architectural unlock)"
     log ""
-    log "Next unlock: route Eagle4Head's LM head gemv through dismantle's"
-    log "existing GPU gemv_f16_argmax_dispatch (the V2-Lite GGUF lm_head is"
-    log "already pinned as a Metal buffer). Eliminates the 165 ms/token CPU"
-    log "LM head call in the head's CPU forward_full."
+    log "Remaining bottleneck (~80 ms/token): Eagle4Head's CPU forward for"
+    log "in_proj + transformer block + mask + calib gemvs. Step 7 from"
+    log "execution_plan.md routes these through dismantle's Metal helpers"
+    log "and pins the eagle4 head weights as Metal buffers (~half day work)."
 fi
 
 log ""
