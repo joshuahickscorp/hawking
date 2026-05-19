@@ -46,6 +46,8 @@ pub const ALL_KERNEL_NAMES: &[&str] = &[
     "gemv_q4_k_m_v2_pinned_tcb",
     "gemv_q3_k_pinned_tcb",
     "gemv_f16_metal_pinned",
+    "gemv_q4_k_m_v3_xtg_pinned",
+    "gemv_q4_k_m_v3_xtg_sumy_pinned",
 ];
 
 /// Parse a "ROWSxCOLS" string into (rows, cols).
@@ -176,6 +178,113 @@ mod imp {
         Ok(samples)
     }
 
+    // ── Q4_K_M v3_xtg (gemm_q4_k_m_v3_xtg) ──────────────────────────────────
+    //
+    // path-to-125 L7.1 cooperative-x_cache standalone GEMV. Same math as
+    // v3_8r; loads x into threadgroup SRAM once per TG. 256-thread TG,
+    // 8 simdgroups × 1 row each, cols×4 bytes of shmem.
+
+    fn bench_q4k_v3_xtg(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
+        if cols % 256 != 0 {
+            return Err(crate::Error::Kernel(format!(
+                "gemv_q4_k_m_v3_xtg_pinned requires cols%256==0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let w_bytes = rows * blocks_per_row * 144;
+        let x_bytes = cols * size_of::<f32>();
+        let out_bytes = rows * size_of::<f32>();
+
+        let w_buf = ctx.new_buffer(w_bytes);
+        let x_buf = ctx.new_buffer(x_bytes);
+        let out_buf = ctx.new_buffer(out_bytes);
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        let n_tg = (rows as u32 + 7) / 8;
+        let grid = (n_tg * TG, 1, 1);
+        let tg_dim = (TG, 1, 1);
+        let shmem_bytes = (cols as u64) * size_of::<f32>() as u64;
+
+        let dispatch = |ctx: &MetalContext| -> Result<()> {
+            ctx.dispatch_threads("gemm_q4_k_m_v3_xtg", grid, tg_dim, |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(3, size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(4, size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            })
+        };
+
+        for _ in 0..50 {
+            dispatch(ctx)?;
+        }
+
+        let mut samples = Vec::with_capacity(iterations);
+        for _ in 0..iterations {
+            let t0 = Instant::now();
+            dispatch(ctx)?;
+            samples.push(t0.elapsed().as_secs_f64() * 1e6);
+        }
+        Ok(samples)
+    }
+
+    // ── Q4_K_M v3_xtg_sumy (gemm_q4_k_m_v3_xtg_sumy) ────────────────────────
+    //
+    // path-to-150 L7 / Stage 0.5 — v3_xtg + min-correction sumy trick.
+    // Same geometry / shmem as v3_xtg; differs only in the inner-loop
+    // arithmetic. Fair comparison to v3_xtg via identical synthetic
+    // buffers and identical dispatch shape.
+
+    fn bench_q4k_v3_xtg_sumy(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
+        if cols % 256 != 0 {
+            return Err(crate::Error::Kernel(format!(
+                "gemv_q4_k_m_v3_xtg_sumy_pinned requires cols%256==0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let w_bytes = rows * blocks_per_row * 144;
+        let x_bytes = cols * size_of::<f32>();
+        let out_bytes = rows * size_of::<f32>();
+
+        let w_buf = ctx.new_buffer(w_bytes);
+        let x_buf = ctx.new_buffer(x_bytes);
+        let out_buf = ctx.new_buffer(out_bytes);
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        let n_tg = (rows as u32 + 7) / 8;
+        let grid = (n_tg * TG, 1, 1);
+        let tg_dim = (TG, 1, 1);
+        let shmem_bytes = (cols as u64) * size_of::<f32>() as u64;
+
+        let dispatch = |ctx: &MetalContext| -> Result<()> {
+            ctx.dispatch_threads("gemm_q4_k_m_v3_xtg_sumy", grid, tg_dim, |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(&x_buf), 0);
+                enc.set_buffer(2, Some(&out_buf), 0);
+                enc.set_bytes(3, size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+                enc.set_bytes(4, size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            })
+        };
+
+        for _ in 0..50 {
+            dispatch(ctx)?;
+        }
+
+        let mut samples = Vec::with_capacity(iterations);
+        for _ in 0..iterations {
+            let t0 = Instant::now();
+            dispatch(ctx)?;
+            samples.push(t0.elapsed().as_secs_f64() * 1e6);
+        }
+        Ok(samples)
+    }
+
     // ── Q3_K (gemm_q3_k_fused_v2) ────────────────────────────────────────────
 
     fn bench_q3k(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
@@ -274,6 +383,8 @@ mod imp {
             "gemv_q4_k_m_v2_pinned_tcb" => bench_q4k_v2(&ctx, rows, cols, iterations)?,
             "gemv_q3_k_pinned_tcb" => bench_q3k(&ctx, rows, cols, iterations)?,
             "gemv_f16_metal_pinned" => bench_f16_pinned(&ctx, rows, cols, iterations)?,
+            "gemv_q4_k_m_v3_xtg_pinned" => bench_q4k_v3_xtg(&ctx, rows, cols, iterations)?,
+            "gemv_q4_k_m_v3_xtg_sumy_pinned" => bench_q4k_v3_xtg_sumy(&ctx, rows, cols, iterations)?,
             other => {
                 return Err(crate::Error::Kernel(format!(
                     "unknown kernel {other:?}; supported: {}",
