@@ -133,6 +133,16 @@ pub struct KernelVariant {
     /// ≥3% wall-clock improvement on each projection's shape.
     #[serde(default)]
     pub attn_proj_amx: bool,
+    /// path-to-125 L5 — use a secondary `MTLCommandQueue` to dispatch
+    /// the Eagle4 head's `propose` step in parallel with the verifier's
+    /// first-layer kv_append + MLA Phase A on the primary queue.
+    /// Synchronization between queues is mediated by `MTLSharedEvent`
+    /// at the layer boundary; bit-identical to single-queue when this
+    /// flag is `false`. The secondary queue itself is always created
+    /// (cheap); only the dispatch routing is gated. Hot-path wiring
+    /// is deferred to a follow-up that adds the SharedEvent helper.
+    #[serde(default)]
+    pub multi_queue: bool,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -328,6 +338,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         residual_fusion: "off".into(),
         verify_kernels: "sequential".into(),
         attn_proj_amx: false,
+        multi_queue: false,
     }]
 }
 

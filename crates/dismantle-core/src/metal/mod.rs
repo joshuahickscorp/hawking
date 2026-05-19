@@ -389,6 +389,14 @@ mod imp {
     struct Inner {
         device: Device,
         queue: CommandQueue,
+        /// path-to-125 L5 — secondary command queue. Created at MetalContext
+        /// construction so it's always available; opt-in use behind the
+        /// profile flag `multi_queue`. Intended to let the Eagle4 head's
+        /// `propose` step dispatch in parallel with the verifier's first-
+        /// layer kv_append + MLA Phase A on the primary queue, with
+        /// `MTLSharedEvent`-mediated synchronization. The queue costs only
+        /// a few bytes of host memory when idle.
+        secondary_queue: CommandQueue,
         library: Library,
         pipelines: Mutex<HashMap<String, ComputePipelineState>>,
         /// v2.3.0 A5: persistent bump-arena MTLBuffer carved per dispatch by
@@ -534,6 +542,10 @@ mod imp {
             let device = Device::system_default()
                 .ok_or_else(|| Error::Metal("no Metal-capable GPU".into()))?;
             let queue = device.new_command_queue();
+            // path-to-125 L5 — pre-create the secondary queue at construction.
+            // Holding a second `CommandQueue` costs only host memory; the
+            // GPU only sees work when buffers from that queue are committed.
+            let secondary_queue = device.new_command_queue();
             let opts = metal::CompileOptions::new();
             let src = super::all_shader_sources();
             let library = device
@@ -545,6 +557,7 @@ mod imp {
                 inner: Arc::new(Inner {
                     device,
                     queue,
+                    secondary_queue,
                     library,
                     pipelines: Mutex::new(HashMap::new()),
                     argbuf_arena: Mutex::new(ArgbufArena::new()),
@@ -560,6 +573,13 @@ mod imp {
         }
         pub fn queue(&self) -> &CommandQueue {
             &self.inner.queue
+        }
+        /// path-to-125 L5 — accessor for the secondary command queue. Returns
+        /// a distinct `CommandQueue` (not a clone of `queue()`); callers are
+        /// expected to gate use behind the profile's `multi_queue` flag so
+        /// that the default decode path remains single-queue.
+        pub fn secondary_queue(&self) -> &CommandQueue {
+            &self.inner.secondary_queue
         }
 
         /// v2.3.0 A5: carve `size` bytes from the persistent argbuf arena at
