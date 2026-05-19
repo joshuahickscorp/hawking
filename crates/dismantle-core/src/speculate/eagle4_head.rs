@@ -218,7 +218,10 @@ impl Eagle4FrozenWeights {
 /// raw `calib_logit` scalar is the pre-sigmoid value.
 #[derive(Debug, Clone)]
 pub struct Eagle4ForwardOutput {
-    /// (VOCAB,) — `draft_hidden @ lm_head`.
+    /// (VOCAB,) — `draft_hidden @ lm_head`. **Empty when
+    /// `forward_full` was called with `compute_token_logits = false`**
+    /// (production decode loops that route the argmax through GPU
+    /// gemv_f16_argmax via dismantle's V2-Lite-pinned lm_head buffer).
     pub token_logits: Vec<f32>,
     /// (N_MOE_LAYERS * N_ROUTED,) — `mask_proj_out(silu(mask_proj_in(draft_hidden)))`.
     /// Layout matches eagle4.py's `.reshape(B, S, N_MOE_LAYERS, N_ROUTED)`
@@ -371,6 +374,36 @@ impl Eagle4Head {
         h_high: &[f32],
         h_shared: &[f32],
     ) -> Result<Eagle4ForwardOutput> {
+        self.forward_full_inner(prev_token, h_low, h_mid, h_high, h_shared, true)
+    }
+
+    /// Path-to-90 step 10 follow-up — forward without the CPU LM head
+    /// gemv. Production decode loops use this and route the token
+    /// argmax through dismantle's `gemv_f16_argmax_dispatch` against
+    /// the V2-Lite GGUF's already-pinned Metal lm_head buffer
+    /// (~10 ms vs the CPU gemv's ~165 ms on 819 MB of f32 weights).
+    /// Returns the same struct with `token_logits` as an empty Vec —
+    /// caller must compute argmax via the dismantle-side GPU dispatch.
+    pub fn forward_full_no_lm_head(
+        &self,
+        prev_token: u32,
+        h_low: &[f32],
+        h_mid: &[f32],
+        h_high: &[f32],
+        h_shared: &[f32],
+    ) -> Result<Eagle4ForwardOutput> {
+        self.forward_full_inner(prev_token, h_low, h_mid, h_high, h_shared, false)
+    }
+
+    fn forward_full_inner(
+        &self,
+        prev_token: u32,
+        h_low: &[f32],
+        h_mid: &[f32],
+        h_high: &[f32],
+        h_shared: &[f32],
+        compute_token_logits: bool,
+    ) -> Result<Eagle4ForwardOutput> {
         let frozen = self.frozen.as_ref().ok_or_else(|| {
             Error::Model(
                 "Eagle4Head::forward_full: frozen weights not loaded — \
@@ -489,8 +522,19 @@ impl Eagle4Head {
         }
 
         // 7. token_logits = draft_hidden @ lm_head; lm_head is (VOCAB, HIDDEN).
-        let mut token_logits = vec![0.0f32; vocab];
-        gemv_f32(&frozen.lm_head, vocab, h, &draft_hidden, &mut token_logits);
+        // CPU LM head gemv is the dominant cost in this forward
+        // (~165 ms on 819 MB f32). Production decode loops skip it
+        // and recompute argmax via dismantle's GPU
+        // `gemv_f16_argmax_dispatch` against the V2-Lite GGUF's
+        // already-pinned Metal lm_head buffer. Parity tests (step 6)
+        // still compute it because they verify the full logit vector.
+        let token_logits = if compute_token_logits {
+            let mut tl = vec![0.0f32; vocab];
+            gemv_f32(&frozen.lm_head, vocab, h, &draft_hidden, &mut tl);
+            tl
+        } else {
+            Vec::new()
+        };
 
         // 8. mask_logits = mask_proj_out(silu(mask_proj_in(draft_hidden))).
         let mut mp_in = vec![0.0f32; mhid];

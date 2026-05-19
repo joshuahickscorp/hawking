@@ -1519,23 +1519,24 @@ impl Engine for DeepSeekV2 {
                 // 27-layer CPU walk this replaces (~3.7 s).
                 let h_shared = self.cpu_shared_expert_forward(26, &capture.x_norm_26)?;
 
-                use crate::speculate::draft_head::{DraftHead, DraftInputs};
-                let hidden_refs: [&[f32]; 4] = [
+                // Eagle4 head forward WITHOUT the CPU LM head gemv.
+                // Returns draft_hidden + mask_logits + calib (token_logits
+                // = empty Vec). The 165 ms/token CPU LM head call is
+                // replaced below by GPU gemv_f16_argmax_dispatch on
+                // V2-Lite's already-pinned lm_head buffer (~10 ms).
+                let head_out = head.forward_full_no_lm_head(
+                    last_id,
                     &capture.h_low,
                     &capture.h_mid,
                     &capture.h_high,
                     &h_shared,
-                ];
-                let inputs = DraftInputs {
-                    prev_token: last_id,
-                    hiddens: &hidden_refs,
-                };
-                let draft = head.propose(&inputs, 1)?;
-                let draft_id = draft.tokens.first().copied().unwrap_or(v2_argmax);
-                let calib_sigmoid = draft
-                    .calib
-                    .map(|c| 1.0 / (1.0 + (-c).exp()))
-                    .unwrap_or(0.0);
+                )?;
+                let hidden_size = head_out.draft_hidden.len();
+                let vocab_size = self.config.vocab_size;
+                let draft_id = self
+                    .gemv_f16_argmax_dispatch(vocab_size, hidden_size, &head_out.draft_hidden)?
+                    .unwrap_or(v2_argmax);
+                let calib_sigmoid = 1.0 / (1.0 + (-head_out.calib_logit).exp());
 
                 if draft_id == v2_argmax {
                     stats.draft_accepted += 1;
