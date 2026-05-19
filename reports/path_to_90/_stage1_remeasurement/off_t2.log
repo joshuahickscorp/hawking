@@ -1,7 +1,0 @@
-[dismantle] DISMANTLE_TCB_TRACE="(unset)" → mode=Off
-
-
-    if n <= 0:
-        return 
-
-[stats] reason=max_tokens prompt=6 completion=16 prefill_ms=3595.2 decode_ms=646.2 dec_tps=24.76 draft_accepted=0 draft_rejected=0 profile=kp-140aa1de8df9d7acb897e7c8
