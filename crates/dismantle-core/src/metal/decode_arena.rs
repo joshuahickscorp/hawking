@@ -119,6 +119,24 @@ mod arena_imp {
         /// scores here so TG memory stays under the M3 Pro 32 KB / core
         /// budget at K=4 (see shaders/mla_decode_kernel_fc_kbatch.metal).
         pub batch_scores_scratch: PinnedBuffer,
+        /// path-to-125 Branch 2 step 4 — MoE expert-union K-batched routing
+        /// scratch buffers. Together they let one MoE block dispatch
+        /// process all K verify queries' routed-expert contributions in
+        /// O(N_distinct_experts) weight reads instead of O(K × top_k).
+        /// Allocated for max_batch_size × top_k_routed worst case;
+        /// unused at K=1 (the dispatcher path delegates to the per-K loop).
+        pub batch_union_packed_route_ids: PinnedBuffer,    // (max_K × top_k) u32
+        pub batch_union_packed_route_weights: PinnedBuffer, // (max_K × top_k) f32
+        pub batch_union_packed_x: PinnedBuffer,             // (max_K × hidden) f32
+        pub batch_union_sorted_expert: PinnedBuffer,        // (max_K × top_k) u32
+        pub batch_union_sorted_kidx: PinnedBuffer,          // (max_K × top_k) u32
+        pub batch_union_sorted_slot: PinnedBuffer,          // (max_K × top_k) u32
+        pub batch_union_sorted_weight: PinnedBuffer,        // (max_K × top_k) f32
+        pub batch_union_segment_starts: PinnedBuffer,       // (n_experts + 1) u32
+        pub batch_union_segment_experts: PinnedBuffer,      // (n_experts) u32
+        pub batch_union_n_distinct: PinnedBuffer,           // (1) u32
+        pub batch_union_routed_act_packed: PinnedBuffer,    // (max_K × top_k × routed_mid) f32
+        pub batch_union_routed_out_packed: PinnedBuffer,    // (max_K × top_k × hidden) f32
         /// Phase 5C.2: f16 normed activation buffer — hidden × f16.
         /// Written by rmsnorm_f32_to_f16 when x_norm_dtype="f16" is set in the kernel
         /// profile. Used as the activation input to the LM head GEMV (gemv_f16_f16in),
@@ -234,6 +252,40 @@ mod arena_imp {
                 ),
                 batch_scores_scratch: ctx.new_buffer(
                     n_heads * max_batch_size.max(1) * max_seq * std::mem::size_of::<f32>()
+                ),
+                batch_union_packed_route_ids: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<u32>()
+                ),
+                batch_union_packed_route_weights: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<f32>()
+                ),
+                batch_union_packed_x: ctx.new_buffer(
+                    max_batch_size.max(1) * hidden * std::mem::size_of::<f32>()
+                ),
+                batch_union_sorted_expert: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<u32>()
+                ),
+                batch_union_sorted_kidx: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<u32>()
+                ),
+                batch_union_sorted_slot: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<u32>()
+                ),
+                batch_union_sorted_weight: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * std::mem::size_of::<f32>()
+                ),
+                batch_union_segment_starts: ctx.new_buffer(
+                    (n_routed_experts.max(1) + 1) * std::mem::size_of::<u32>()
+                ),
+                batch_union_segment_experts: ctx.new_buffer(
+                    n_routed_experts.max(1) * std::mem::size_of::<u32>()
+                ),
+                batch_union_n_distinct: ctx.new_buffer(std::mem::size_of::<u32>()),
+                batch_union_routed_act_packed: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * moe_intermediate * std::mem::size_of::<f32>()
+                ),
+                batch_union_routed_out_packed: ctx.new_buffer(
+                    max_batch_size.max(1) * top_k_sz * hidden * std::mem::size_of::<f32>()
                 ),
                 x_norm_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 eagle4_h_low_buf:     ctx.new_buffer(hidden * std::mem::size_of::<f32>()),

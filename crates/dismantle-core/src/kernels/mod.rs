@@ -4581,6 +4581,88 @@ mod metal_dispatch {
         )
     }
 
+    /// path-to-125 Branch 2 step 4 — companion to the MoE expert-union
+    /// pipeline. Runs the shared-expert portion of the MoE block plus
+    /// the route-accumulate against a PRE-POPULATED routed_out buffer.
+    /// The union pipeline writes routed_out per-(K, slot, hidden) and
+    /// the caller slices out one K's worth into `routed_out` before
+    /// calling this.
+    ///
+    /// This is the per-K tail of the MoE block when the routed-experts
+    /// path has been amortized across K via the union kernels.
+    #[allow(clippy::too_many_arguments)]
+    pub fn encode_moe_shared_and_accumulate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        shared_route_ids_buf: &PinnedBuffer,
+        shared_gate_offset: Option<usize>,
+        shared_up_offset: Option<usize>,
+        shared_down_offset: Option<usize>,
+        hidden: usize,
+        shared_mid: usize,
+        routes: usize,
+        q4k_schedule: &str,
+        shared_down_kernel: &str,
+        x_buf: &PinnedBuffer,
+        routed_out: &PinnedBuffer,
+        route_weights_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        shared_gate_out: &PinnedBuffer,
+        shared_up_out: &PinnedBuffer,
+        shared_act: &PinnedBuffer,
+        shared_out: &PinnedBuffer,
+    ) -> Result<()> {
+        let has_shared = shared_gate_offset.is_some()
+            || shared_up_offset.is_some()
+            || shared_down_offset.is_some();
+
+        let q4k_indexed_kernel = match q4k_schedule {
+            "v2" | "llama_port" | "per_shape" => "moe_batched_gemm_q4_indexed_v2",
+            "v2s" => "moe_batched_gemm_q4_indexed_v2s",
+            "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" | "v2t_gu_v2_fc" => "moe_batched_gemm_q4_indexed_v2t",
+            _ => "moe_batched_gemm_q4_indexed",
+        };
+        let use_fused_gu_v2_fc = q4k_schedule == "v2t_gu_v2_fc";
+        let use_fused_gu_v2  = q4k_schedule == "v2t_gu_v2";
+        let use_fused_gu     = q4k_schedule == "v2t_gu";
+        let use_serial_gu    = q4k_schedule == "v2t_gu_serial";
+
+        if let (Some(gate_off), Some(up_off), Some(down_off)) =
+            (shared_gate_offset, shared_up_offset, shared_down_offset)
+        {
+            if use_fused_gu_v2 || use_fused_gu_v2_fc {
+                encode_batched_gemv_fused_gu_v2_tcb(
+                    tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
+                    gate_off, up_off, 1, shared_mid, hidden,
+                )?;
+            } else if use_fused_gu || use_serial_gu {
+                encode_batched_gemv_fused_gu_tcb(
+                    tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
+                    gate_off, up_off, 1, shared_mid, hidden,
+                )?;
+            } else {
+                encode_batched_gemv_indexed_tcb(
+                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                    shared_gate_out, gate_off, 1, shared_mid, hidden,
+                )?;
+                encode_batched_gemv_indexed_tcb(
+                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
+                    shared_up_out, up_off, 1, shared_mid, hidden,
+                )?;
+                silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
+            }
+            encode_batched_gemv_indexed_tcb(
+                tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
+                shared_act, shared_out, down_off, 1, hidden, shared_mid,
+            )?;
+        }
+
+        encode_route_accumulate_tcb(
+            tcb, routed_out, route_weights_buf, shared_out, out_buf,
+            hidden, routes, has_shared,
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn encode_moe_block_batched_indexed_tcb(
         tcb: &mut TokenCommandBuffer<'_>,

@@ -3205,6 +3205,20 @@ impl DeepSeekV2 {
         let shared_down_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.shared_down_schedule.as_str())
             .unwrap_or("basic");
+        // path-to-125 Branch 2 step 4 — union MoE strategy.
+        // verify_kernels = "parallel-k-union" activates the K-batched
+        // expert-union routing; "parallel-k" stays as the no-overlap
+        // (per-K MoE loop) baseline. Default "sequential" routes to
+        // forward_tokens_batched_tcb before reaching this function.
+        let use_union_moe = self.kernel_profile.as_ref()
+            .map(|p| p.selected.verify_kernels == "parallel-k-union")
+            .unwrap_or(false);
+        let n_routed_experts = self.config.n_routed_experts;
+        let top_k_routed = self.config.top_k_routed;
+        let moe_intermediate = self.config.moe_intermediate;
+        let top_k_bytes_u32 = (top_k_routed * std::mem::size_of::<u32>()) as u64;
+        let top_k_bytes_f32 = (top_k_routed * std::mem::size_of::<f32>()) as u64;
+        let routed_out_per_k_bytes = (top_k_routed * h * std::mem::size_of::<f32>()) as u64;
 
         let h_bytes = (h * std::mem::size_of::<f32>()) as u64;
         let q_per_token_bytes = (n_heads * q_head_dim * std::mem::size_of::<f32>()) as u64;
@@ -3290,40 +3304,35 @@ impl DeepSeekV2 {
                     seq_len, scale, k,
                 )?;
 
-                // ── Phase C — per-K o_proj + residual + ffn_norm + MoE/dense.
-                for ki in 0..k {
-                    // Restore this token's residual state from after Phase A.
-                    global_tcb.copy_buffer_bytes(
-                        &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
-                    )?;
-                    // Bring this token's attn_out from packed.
-                    global_tcb.copy_buffer_bytes(
-                        &arena.batch_attn_out_packed,
-                        ki as u64 * attn_per_token_bytes,
-                        &arena.attn_out, 0, attn_per_token_bytes,
-                    )?;
-
-                    // o_proj: arena.attn_out (n_heads*v_head_dim f32) →
-                    //         arena.out (hidden f32). Matches the o_proj
-                    //         kernel inside mla_decode_and_o_proj_arena_fc_tcb.
-                    crate::kernels::gemv_f16_simdmat_tcb(
-                        &mut global_tcb, o_proj_buf,
-                        h, n_heads * v_head_dim,
-                        &arena.attn_out, &arena.out,
-                    )?;
-
-                    crate::kernels::add_inplace_metal_tcb(
-                        &mut global_tcb, &arena.x_buf, &arena.out, h,
-                    )?;
-                    crate::kernels::rmsnorm_metal_buf_tcb(
-                        &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
-                    )?;
-
-                    if let Some(ref setup) = moe_setup {
+                // ── Phase C — choose strategy based on union_moe + moe_setup.
+                if use_union_moe && moe_setup.is_some() {
+                    let setup = moe_setup.as_ref().unwrap();
+                    // Phase C1 (per-K): o_proj + residual + rmsnorm + topk_gate,
+                    // pack x_norm/route_ids/route_weights for union.
+                    for ki in 0..k {
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_attn_out_packed,
+                            ki as u64 * attn_per_token_bytes,
+                            &arena.attn_out, 0, attn_per_token_bytes,
+                        )?;
+                        crate::kernels::gemv_f16_simdmat_tcb(
+                            &mut global_tcb, o_proj_buf,
+                            h, n_heads * v_head_dim,
+                            &arena.attn_out, &arena.out,
+                        )?;
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut global_tcb, &arena.x_buf, &arena.out, h,
+                        )?;
+                        crate::kernels::rmsnorm_metal_buf_tcb(
+                            &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
                         let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
                         crate::kernels::gemv_f32_moe_pinned_buf_tcb(
                             &mut global_tcb, gate_buf,
-                            self.config.n_routed_experts, self.config.hidden,
+                            n_routed_experts, h,
                             &arena.x_norm_buf, &arena.moe_logits_buf,
                         )?;
                         crate::kernels::moe_topk_gate_tcb(
@@ -3331,57 +3340,187 @@ impl DeepSeekV2 {
                             &arena.moe_logits_buf,
                             &arena.moe_route_ids_buf,
                             &arena.moe_route_weights_buf,
-                            self.config.n_routed_experts,
-                            self.config.top_k_routed,
+                            n_routed_experts,
+                            top_k_routed,
                         )?;
-                        crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                        // Pack into union buffers.
+                        global_tcb.copy_buffer_bytes(
+                            &arena.moe_route_ids_buf, 0,
+                            &arena.batch_union_packed_route_ids,
+                            ki as u64 * top_k_bytes_u32, top_k_bytes_u32,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.moe_route_weights_buf, 0,
+                            &arena.batch_union_packed_route_weights,
+                            ki as u64 * top_k_bytes_f32, top_k_bytes_f32,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.x_norm_buf, 0,
+                            &arena.batch_union_packed_x,
+                            ki as u64 * h_bytes, h_bytes,
+                        )?;
+                        // Save x_buf so Phase C3 can restore it.
+                        global_tcb.copy_buffer_bytes(
+                            &arena.x_buf, 0, &arena.batch_x_buf[ki], 0, h_bytes,
+                        )?;
+                    }
+
+                    // Phase C2: ONE union pipeline dispatch (sort + segment
+                    // + gate_up + down) — amortizes routed-expert weight
+                    // reads across all K queries.
+                    crate::kernels::parallel_k::moe_routed_union_pipeline_tcb(
+                        &mut global_tcb,
+                        model_buf,
+                        setup.routed_gate_off,
+                        setup.routed_up_off,
+                        setup.routed_down_off,
+                        &arena.batch_union_packed_route_ids,
+                        &arena.batch_union_packed_route_weights,
+                        &arena.batch_union_packed_x,
+                        &arena.batch_union_sorted_expert,
+                        &arena.batch_union_sorted_kidx,
+                        &arena.batch_union_sorted_slot,
+                        &arena.batch_union_sorted_weight,
+                        &arena.batch_union_segment_starts,
+                        &arena.batch_union_segment_experts,
+                        &arena.batch_union_n_distinct,
+                        &arena.batch_union_routed_act_packed,
+                        &arena.batch_union_routed_out_packed,
+                        h,
+                        moe_intermediate,
+                        k,
+                        top_k_routed,
+                        n_routed_experts,
+                    )?;
+
+                    // Phase C3 (per-K): shared expert + route_accumulate.
+                    for ki in 0..k {
+                        // Restore x_norm (for shared expert) + route_weights
+                        // (for accumulate) + routed_out slice.
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_union_packed_x, ki as u64 * h_bytes,
+                            &arena.x_norm_buf, 0, h_bytes,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_union_packed_route_weights,
+                            ki as u64 * top_k_bytes_f32,
+                            &arena.moe_route_weights_buf, 0, top_k_bytes_f32,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_union_routed_out_packed,
+                            ki as u64 * routed_out_per_k_bytes,
+                            &arena.moe_routed_out_buf, 0, routed_out_per_k_bytes,
+                        )?;
+                        // Shared expert + accumulate.
+                        crate::kernels::encode_moe_shared_and_accumulate_tcb(
                             &mut global_tcb,
                             model_buf,
-                            setup.routed_gate_off,
-                            setup.routed_up_off,
-                            setup.routed_down_off,
-                            &arena.moe_route_ids_buf,
-                            &arena.moe_route_weights_buf,
-                            self.config.top_k_routed,
                             &arena.shared_route_ids_buf,
                             setup.shared_gate_off,
                             setup.shared_up_off,
                             setup.shared_down_off,
-                            self.config.hidden,
-                            self.config.moe_intermediate,
+                            h,
                             setup.shared_mid,
+                            top_k_routed,
                             q4k_schedule,
-                            setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
                             setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
                             &arena.x_norm_buf,
-                            &arena.ffn_out_buf,
-                            &arena.moe_routed_gate_out_buf,
-                            &arena.moe_routed_up_out_buf,
-                            &arena.moe_routed_act_buf,
                             &arena.moe_routed_out_buf,
+                            &arena.moe_route_weights_buf,
+                            &arena.ffn_out_buf,
                             &arena.moe_shared_gate_out_buf,
                             &arena.moe_shared_up_out_buf,
                             &arena.moe_shared_act_buf,
                             &arena.moe_shared_out_buf,
                         )?;
-                    } else {
-                        let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
-                        if !dense_ok {
-                            return Err(Error::Model(format!(
-                                "forward_tokens_batched_parallel_k: l{li} dense weights not pinned"
-                            )));
-                        }
+                        // batch_x_buf[ki] was saved in C1; ffn_out_buf is the
+                        // accumulated MoE output for this layer.
+                        global_tcb.copy_buffer_bytes(
+                            &arena.ffn_out_buf, 0, &arena.batch_ffn_out_buf[ki], 0, h_bytes,
+                        )?;
                     }
-
-                    // Save this token's residual + ffn_out so the next layer's
-                    // Phase A (li+1) can restore them before phase1's
-                    // add_inplace(x_buf, ffn_out_buf).
-                    global_tcb.copy_buffer_bytes(
-                        &arena.x_buf, 0, &arena.batch_x_buf[ki], 0, h_bytes,
-                    )?;
-                    global_tcb.copy_buffer_bytes(
-                        &arena.ffn_out_buf, 0, &arena.batch_ffn_out_buf[ki], 0, h_bytes,
-                    )?;
+                } else {
+                    // Existing per-K Phase C (no-overlap baseline OR dense path).
+                    for ki in 0..k {
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_attn_out_packed,
+                            ki as u64 * attn_per_token_bytes,
+                            &arena.attn_out, 0, attn_per_token_bytes,
+                        )?;
+                        crate::kernels::gemv_f16_simdmat_tcb(
+                            &mut global_tcb, o_proj_buf,
+                            h, n_heads * v_head_dim,
+                            &arena.attn_out, &arena.out,
+                        )?;
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut global_tcb, &arena.x_buf, &arena.out, h,
+                        )?;
+                        crate::kernels::rmsnorm_metal_buf_tcb(
+                            &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
+                        if let Some(ref setup) = moe_setup {
+                            let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                            crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                                &mut global_tcb, gate_buf,
+                                n_routed_experts, h,
+                                &arena.x_norm_buf, &arena.moe_logits_buf,
+                            )?;
+                            crate::kernels::moe_topk_gate_tcb(
+                                &mut global_tcb,
+                                &arena.moe_logits_buf,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                n_routed_experts,
+                                top_k_routed,
+                            )?;
+                            crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                                &mut global_tcb,
+                                model_buf,
+                                setup.routed_gate_off,
+                                setup.routed_up_off,
+                                setup.routed_down_off,
+                                &arena.moe_route_ids_buf,
+                                &arena.moe_route_weights_buf,
+                                top_k_routed,
+                                &arena.shared_route_ids_buf,
+                                setup.shared_gate_off,
+                                setup.shared_up_off,
+                                setup.shared_down_off,
+                                h,
+                                moe_intermediate,
+                                setup.shared_mid,
+                                q4k_schedule,
+                                setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
+                                setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
+                                &arena.x_norm_buf,
+                                &arena.ffn_out_buf,
+                                &arena.moe_routed_gate_out_buf,
+                                &arena.moe_routed_up_out_buf,
+                                &arena.moe_routed_act_buf,
+                                &arena.moe_routed_out_buf,
+                                &arena.moe_shared_gate_out_buf,
+                                &arena.moe_shared_up_out_buf,
+                                &arena.moe_shared_act_buf,
+                                &arena.moe_shared_out_buf,
+                            )?;
+                        } else {
+                            let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
+                            if !dense_ok {
+                                return Err(Error::Model(format!(
+                                    "forward_tokens_batched_parallel_k: l{li} dense weights not pinned"
+                                )));
+                            }
+                        }
+                        global_tcb.copy_buffer_bytes(
+                            &arena.x_buf, 0, &arena.batch_x_buf[ki], 0, h_bytes,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.ffn_out_buf, 0, &arena.batch_ffn_out_buf[ki], 0, h_bytes,
+                        )?;
+                    }
                 }
             }
 
