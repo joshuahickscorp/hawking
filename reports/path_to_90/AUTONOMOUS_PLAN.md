@@ -230,6 +230,79 @@ Read this section before writing code. Every pitfall here cost real time.
 
 ---
 
+## 3.5 Autonomy charter — full self-judgment within software
+
+You operate without human review between commits. The user is not
+watching. You decide. The only hard constraints:
+
+**Inviolable rules** (breaking these = halt):
+- Bit-identical greedy gate (`eagle4_decode_parity`) MUST pass at every
+  commit. This is the safety net for everything else.
+- Production K=1 path (`forward_tokens_batched_tcb`) MUST remain
+  unchanged in behavior. Touch by addition only — new methods, new
+  routes, but never alter the existing dispatch sequence.
+- Commit identity is always `Joshua Hicks
+  <joshuahicksboba@gmail.com>` via inline `git -c`. Never `git config`.
+  Never Co-Authored-By or "Generated with" trailers.
+- User's diagnostic edits (pitfall #6) preserved across every commit.
+
+**Everything else is your judgment.** Specifically authorized:
+
+- **Re-order phases** when data justifies. Example: Phase A measures
+  Eagle4 K=4 at only 22 dec_tps, which the decision matrix says is
+  underperforming. You decide to insert a quick bandwidth audit
+  (Phase B's first step) BEFORE the full Phase B because the audit
+  may reveal the bottleneck and let you target Phase B work more
+  surgically. Document the re-order in the next commit message.
+
+- **Skip phases** when data says they won't help. Example: Phase E
+  (tree decode) returns ≤1.1× over chain in early prototype — the
+  MoE tree-decode minefield bit. Skip the rest of Phase E, move
+  straight to Phase F. Document why.
+
+- **Insert new investigations** when something doesn't behave per
+  plan. Example: a Phase B kernel rewrite passes parity but
+  regresses wall-clock. Don't commit; run an isolated bench, decide
+  if it's the kernel or the dispatch pattern, write the diagnosis as
+  a commit message, ship a corrected version.
+
+- **Update this plan inline** when an assumption is invalidated by
+  data. Edit AUTONOMOUS_PLAN.md, add a `## PLAN AMENDMENT YYYY-MM-DD`
+  section at top with what changed and why. The plan is a working
+  document, not a contract.
+
+- **Choose between two plausible paths** based on which has lower
+  wire-up risk + faster validation cycle. Example: AMX extension
+  (F1) vs async verify (F3) — both projected +5-8 tps. F3 is
+  scheduling, no math change → ship F3 first because the bit-
+  identical gate validates trivially.
+
+- **Roll back commits within the current session** if the data says
+  to. `git reset --hard HEAD~1` for the most recent commit is OK
+  IF you haven't pushed and IF the bit-identical gate failed. Always
+  document the rollback in the next commit message.
+
+- **Skip dead ends without writing a halt doc.** If you tried 3
+  variants of a kernel rewrite and all under-perform, that's not a
+  halt — that's a documented "did not ship" in a closeout. Halts are
+  for HARD blockers (build fails you can't fix, correctness gates
+  fail you can't root-cause, RSS >5 GB persistent).
+
+**The only thing you cannot do without the user:** run a clean-window
+bench. Per pitfall #5, Claude.app contaminates dec_tps 4-5×. Even
+"fully autonomous" cannot defeat physics; the GPU is shared. When
+you hit a measurement gate (A3 / B5 / C / D4 / E4 / G1), write
+the bench script, surface it for the user, and either:
+(a) keep working on the next phase's architectural prep (the agent
+    does NOT block on user; just queues the measurement),
+(b) write a session closeout if you've exhausted parallel arch work
+    and need the measurement before deciding the next step.
+
+**Session length:** there is no formal cap. Continue while you have
+useful arch work to ship. The natural stop is when you queue 2+
+measurement gates that all need the user, OR you've spent >6h
+without landing a commit. At that point write the closeout and stop.
+
 ## 4. Iteration protocol
 
 Every commit follows this cycle. No exceptions.
@@ -299,12 +372,26 @@ agent reads `raw.json` and decides without asking the user:
 | Each Phase G hardware lever | A/B vs current | <3% gain: skip + document; ≥3% ship |
 | Phase H headline | ≥95 floor, ≥125 target | <80: full investigation; 95-125 SUCCESS state; ≥125 SUCCESS+ |
 
-**Halt conditions (write blocked doc + stop):**
-- Bit-identical greedy gate fails after any commit
-- Smoke regresses >2× without explanation
-- Build fails on `cargo build --release --workspace` after a Phase commit
-- Memory pressure (`top -l 1 | grep dismantle | awk` shows RSS >5 GB)
-- Total session time >6 hr (write closeout, hand off to next session)
+**Halt conditions (write blocked doc + stop) — NARROW LIST. Most
+"things didn't work" are NOT halts; they're documented dead-ends per
+§3.5. Halt only when you genuinely cannot make further progress
+without the user:**
+- Bit-identical greedy gate fails AND you cannot root-cause within
+  ~30 min of investigation
+- Build fails on `cargo build --release --workspace` AND error is
+  outside your edits (e.g., upstream dependency issue)
+- Memory pressure (`top -l 1 | grep dismantle | awk` shows RSS >5 GB
+  sustained for >5 minutes)
+- User-required action gate hit (Cmd-Q Claude.app for bench) AND
+  you've exhausted parallel arch work
+- Total session time >6 hr without landing a commit (write closeout,
+  hand off)
+
+If a kernel rewrite under-performs: NOT A HALT. Document, don't
+ship, move on. If a phase doesn't deliver predicted gains: NOT A
+HALT. Document, ship what works, move on. If you discover an
+infrastructure bug: NOT A HALT (usually). Fix it inline or chip it
+via `mcp__ccd_session__spawn_task` and keep working.
 
 **Halt template** (`reports/path_to_90/halt_<phase>_<short>.md`):
 ```
