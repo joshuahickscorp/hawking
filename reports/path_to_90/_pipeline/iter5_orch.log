@@ -1,0 +1,7 @@
+[10:50:58] iter5 starting (5 shards × k=4 × aux-decay 0.3)
+[10:53:36] iter5 training done
+[10:53:36] tau_eval
+[10:53:40] tau_eval done
+[10:53:40] chain-decode smoke v3
+[10:54:03] chain-decode smoke v4_chain_iter5
+[10:54:28] iter5 complete

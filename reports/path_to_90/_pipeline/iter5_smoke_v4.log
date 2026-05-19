@@ -1,0 +1,26 @@
+[dismantle] DISMANTLE_TCB_TRACE="(unset)" → mode=Off
+ Paris.[spec/eagle4-chain] K=4 accept=0/4 step=368.3ms emit=2 tps=5.4
+
+
+The[spec/eagle4-chain] K=4 accept=1/4 step=284.7ms emit=3 tps=10.5
+ capital of[spec/eagle4-chain] K=4 accept=0/4 step=291.5ms emit=2 tps=6.9
+ France is[spec/eagle4-chain] K=4 accept=0/4 step=289.8ms emit=2 tps=6.9
+ Paris.[spec/eagle4-chain] K=4 accept=0/4 step=283.4ms emit=2 tps=7.1
+
+
+The[spec/eagle4-chain] K=4 accept=1/4 step=305.3ms emit=3 tps=9.8
+ capital of[spec/eagle4-chain] K=4 accept=0/4 step=285.6ms emit=2 tps=7.0
+ France is[spec/eagle4-chain] K=4 accept=0/4 step=298.4ms emit=2 tps=6.7
+ Paris.[spec/eagle4-chain] K=4 accept=0/4 step=324.5ms emit=2 tps=6.2
+
+
+The[spec/eagle4-chain] K=4 accept=1/4 step=414.1ms emit=3 tps=7.2
+ capital of[spec/eagle4-chain] K=4 accept=0/4 step=297.6ms emit=2 tps=6.7
+ France is[spec/eagle4-chain] K=4 accept=0/4 step=273.9ms emit=2 tps=7.3
+ Paris.[spec/eagle4-chain] K=4 accept=0/4 step=286.6ms emit=2 tps=7.0
+
+
+The[spec/eagle4-chain] K=4 accept=1/4 step=295.4ms emit=3 tps=10.2
+
+
+[stats] reason=max_tokens prompt=5 completion=32 prefill_ms=9040.4 decode_ms=5239.3 dec_tps=6.11 draft_accepted=4 draft_rejected=52 profile=kp-140aa1de8df9d7acb897e7c8

@@ -1,0 +1,12 @@
+[τ-eval] 999 windows × depth 4
+{
+  "windows": 999,
+  "depth": 4,
+  "tau": 2.3323323323323324,
+  "full_accept_rate": 0.4184184184184184
+}
+per-position accept rate (given prior prefix accepted):
+  depth 1: 79.78%
+  depth 2: 61.06%
+  depth 3: 50.55%
+  depth 4: 41.84%
