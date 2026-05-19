@@ -9,7 +9,8 @@ end-to-end bench requires live wiring (deferred).
 - `c0fc428` — `path-to-150 L7 / Stage 0.5 — gemm_q4_k_m_v3_xtg_sumy kernel`
 - `8073a9e` — `path-to-150 L7.2 — mixed-quant moe_expert_pair_fused kernel + parity`
 - `e5c5435` — `path-to-150 L7 closeout — Stage 0.5 + L7.2 shipped, bench queued`
-- (this commit) — `path-to-150 L7 bench — Stage 0.5 contended-window result, negative`
+- `f5788a4` — `path-to-150 L7 bench — Stage 0.5 contended-window result, negative`
+- (this commit) — `path-to-150 L7.2 bench — fused vs chained, ~3.8× regression at every N`
 
 ## What shipped
 
@@ -148,17 +149,52 @@ idea blind), but **do not** flip the active profile or any per-shape
 override to it. The schedule string `"v3_xtg_sumy"` remains opt-in
 only.
 
-### L7.2 (`moe_expert_pair_fused`) — bench not run
+### L7.2 (`moe_expert_pair_fused`) — bench result: **regression, do not ship**
 
-No bench fixture written for the fused kernel (would require a
-matching chained-pipeline fixture for fair A/B). Parity-verified at
-1e-3 rel on V2-Lite shape (2048/1408/2048) so the kernel is correct;
-end-to-end win/loss measurement needs either (a) live wiring into the
-routed-MoE dispatch path so `coexist_bench.sh` can measure dec_tps,
-or (b) bespoke per-kernel benches for the fused vs unfused paths.
-Both are deferred — the v3_xtg_sumy negative above is a useful
-warning that fusion ideas need empirical validation before
-integration time is spent.
+Added a matched-pair bench fixture (`moe_expert_pair_chained`
+dispatching `moe_gate_up_union_v2t` + `moe_down_union_v2t`, vs
+`moe_expert_pair_fused`) in [kernel_bench.rs](crates/dismantle-core/src/kernel_bench.rs).
+Both fixtures use the same synthetic weights (Q4_K gate/up + Q8_0 down,
+n_experts=64) and the same routing table (K=1, route i → expert i, no
+overlap). N_ROUTES is overridable via `DISMANTLE_MOE_BENCH_N_ROUTES`
+env so the sweep covers K=1 (N=6), K=4 (N=24), and a max-overlap
+hypothetical (N=64).
+
+Bench shape 2048×1408 (V2-Lite gate_up + down), 200 iter:
+
+| N_ROUTES | chained mean μs | fused mean μs | fused / chained |
+|----------|-----------------|---------------|-----------------|
+| 6        | 1019.8          | 3847.5        | **3.77×**       |
+| 24       | 1045.3          | 3851.6        | **3.69×**       |
+| 64       | 1018.4          | 3861.5        | **3.79×**       |
+
+Both kernels are essentially flat in N: the chained kernel saturates
+GPU dispatch slots even at N=6 (it dispatches `(ceil(rows/8) ×
+n_experts × 256)` threads regardless of active routes — empty experts
+early-return cheaply), and the fused kernel scales by adding more
+N-TGs to the queue (no per-TG cooperative weight reads, so adding TGs
+helps less than expected).
+
+**The fused kernel is a clean ~3.8× regression vs the chained pipeline
+at every N tested.** The per-route-TG design fundamentally
+underutilizes the GPU: at N=6 only 6 TGs are launched (≪ the M3 Pro's
+parallel slot count); even at N=64 each TG carries 432 outer iterations
+(176 Stage A + 256 Stage B) of serial work behind a Stage-A→Stage-B
+threadgroup barrier. The chained pipeline gets ~1000-1500 active TGs
+in flight (with L2 cache reuse across siblings reading the same expert
+weights) and dominates.
+
+**Verdict:** keep the fused kernel + parity test in tree as a
+documented negative result. Do NOT live-wire it. The schedule string
+`"expert_pair_fused"` remains reserved-but-unwired.
+
+This is the second L7 fusion idea ruled out by empirical measurement
+in one session (Stage 0.5 sumy: ~5% regression at LM head shape;
+L7.2 fused: ~3.8× regression at MoE expert shape). Both passed parity
+on the first try; both lost on the bench. The general lesson:
+parity-only validation is insufficient for kernel rewrites in this
+codebase — write a matched-pair bench fixture before sinking
+integration time.
 
 ## Code-vs-compute accounting (Pattern 9 reality check)
 
