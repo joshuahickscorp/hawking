@@ -231,29 +231,50 @@ def train(
     multi_step_k: int = 1,
     multi_step_decay: float = 0.7,
     target_argmax_warmup_steps: int = 500,
+    chain_h_high: bool = False,
+    resume_ckpt: Path | None = None,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
-    loss with the eval metric. multi_step_k>1 rolls the head's own argmax
-    as the next prev_token for k passes (k=1 is the default and matches k=2
-    within noise; see bench_results.md).
+    loss with the eval metric.
+
+    multi_step_k>1 rolls the head's own argmax as the next prev_token for
+    k passes. If `chain_h_high=True`, ALSO substitutes the head's own
+    `draft_hidden` as the next pass's `h_high` input — the EAGLE-3-style
+    autoregressive self-consumption regime that path-to-125 Eagle4 chain
+    decode (K=4 verify) requires. Defaults to False for backward
+    compatibility with the v3 K=1 training recipe.
+
+    `resume_ckpt` loads weights from an .npz before training. Useful for
+    warm-starting EAGLE-3-style retrains from the existing v3/best.npz
+    instead of training from scratch.
     """
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     head = build_head(frozen)
+    if resume_ckpt is not None:
+        resume_step = load_ckpt(head, resume_ckpt)
+        print(
+            f"[train] resumed from {resume_ckpt} (step {resume_step})",
+            flush=True,
+        )
     print(
         f"[train] head built (aux={aux_weight} mask={mask_weight} calib={calib_weight} "
-        f"k={multi_step_k} decay={multi_step_decay})",
+        f"k={multi_step_k} decay={multi_step_decay} chain_h_high={chain_h_high})",
         flush=True,
     )
 
-    def _step_loss(head, b, prev_tok, weight: float, target_alpha: float):
+    def _step_loss(head, b, prev_tok, h_high, weight: float, target_alpha: float):
         tok, mask_logits, draft_h, calib_logit = head(
-            prev_tok, b["low"], b["mid"], b["high"], b["shared"]
+            prev_tok, b["low"], b["mid"], h_high, b["shared"]
         )
         B, S, V = tok.shape
         pos_mask = mx.concatenate([mx.zeros((B, 3)), mx.ones((B, S - 3))], axis=1).reshape(-1)
         N = mx.maximum(pos_mask.sum(), mx.array(1.0))
 
+        # MSE target uses the ORIGINAL V2-Lite h_high (b["high"]) so the
+        # head keeps learning the post-norm(h_high) residual structure
+        # even when chain-mode rolls draft_hidden as h_high (which would
+        # otherwise create a moving MSE target).
         baseline = mx.fast.rms_norm(b["high"], head._output_norm, RMS_EPS)
         target_logits = baseline @ head._lm_head.astype(mx.float32)
         target_arg_flat = mx.stop_gradient(mx.argmax(target_logits.reshape(-1, V), axis=-1))
@@ -281,17 +302,24 @@ def train(
         )
         calib = (calib_per * pos_mask).sum() / N
 
-        return weight * (ce + aux_weight * mse + mask_weight * bce + calib_weight * calib), tok
+        return weight * (ce + aux_weight * mse + mask_weight * bce + calib_weight * calib), tok, draft_h
 
     def loss_fn(head, b, target_alpha):
+        # path-to-125 EAGLE-3-style chain training: roll prev_token AND
+        # draft_hidden across multi_step_k passes so the head learns to
+        # consume its own previous draft_hidden as h_high (matches the
+        # inference-time chain-decode autoregressive loop).
         prev = b["prev"]
+        cur_h_high = b["high"]
         total = mx.zeros(())
         for k in range(multi_step_k):
             w = multi_step_decay ** k
-            step_loss, tok = _step_loss(head, b, prev, w, target_alpha)
+            step_loss, tok, draft_h = _step_loss(head, b, prev, cur_h_high, w, target_alpha)
             total = total + step_loss
             if k + 1 < multi_step_k:
                 prev = mx.stop_gradient(mx.argmax(tok, axis=-1))
+                if chain_h_high:
+                    cur_h_high = mx.stop_gradient(draft_h)
         return total
 
     grad_fn = nn.value_and_grad(head, loss_fn)
@@ -565,6 +593,11 @@ def main() -> int:
     tp.add_argument("--multi-step-decay", type=float, default=0.7)
     tp.add_argument("--target-warmup-steps", type=int, default=500,
                     help="steps over which token CE ramps from corpus → V2-Lite argmax")
+    tp.add_argument("--chain-h-high", action="store_true",
+                    help="path-to-125 EAGLE-3-style: roll draft_hidden as next-step "
+                         "h_high through multi_step_k passes. Required for chain spec decode.")
+    tp.add_argument("--resume", type=Path, default=None,
+                    help="warm-start from an existing .npz checkpoint")
 
     ep = sub.add_parser("eval", help="acceptance + per-layer mask recall")
     ep.add_argument("--ckpt", type=Path, required=True)
@@ -596,6 +629,8 @@ def main() -> int:
             calib_weight=args.calib_weight,
             multi_step_k=args.multi_step_k, multi_step_decay=args.multi_step_decay,
             target_argmax_warmup_steps=args.target_warmup_steps,
+            chain_h_high=args.chain_h_high,
+            resume_ckpt=args.resume,
         )
     elif args.cmd == "eval":
         r = evaluate(
