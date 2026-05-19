@@ -91,6 +91,34 @@ mod arena_imp {
         /// K final norms survive until the single global TCB commits and LM heads are run.
         /// Size: max_batch_size × hidden × sizeof(f32).
         pub batch_x_norm_buf: Vec<PinnedBuffer>,
+        /// path-to-125 Phase A1.1 — per-K residual stream buffers for the
+        /// K-batched verify path (`forward_tokens_batched_parallel_k`).
+        /// Token ki's running residual is restored to `arena.x_buf` at
+        /// the top of each layer's Phase A and Phase C, and saved back
+        /// after Phase C's MoE add_inplace. Size: max_batch_size × hidden × sizeof(f32).
+        pub batch_x_buf: Vec<PinnedBuffer>,
+        /// path-to-125 Phase A1.1 — per-K MoE output buffers for the
+        /// K-batched verify path. Token ki's previous-layer MoE output
+        /// is restored to `arena.ffn_out_buf` before phase1's
+        /// add_inplace(x_buf, ffn_out_buf) residual at li > 0.
+        /// Size: max_batch_size × hidden × sizeof(f32).
+        pub batch_ffn_out_buf: Vec<PinnedBuffer>,
+        /// path-to-125 Phase A1.1 — packed K queries for one K-batched
+        /// MLA dispatch per layer. `arena.q` is blitted into
+        /// `batch_q_packed[ki * n_heads * q_head_dim]` after each
+        /// token's phase2. Size: max_batch_size × n_heads × q_head_dim × sizeof(f32).
+        pub batch_q_packed: PinnedBuffer,
+        /// path-to-125 Phase A1.1 — packed K outputs from one K-batched
+        /// MLA dispatch per layer. Each token's slice is blitted out
+        /// to `arena.attn_out` for the per-token o_proj.
+        /// Size: max_batch_size × n_heads × v_head_dim × sizeof(f32).
+        pub batch_attn_out_packed: PinnedBuffer,
+        /// path-to-125 Phase A1.1 — device-scratch scores buffer for
+        /// the K-batched MLA kernel. Size n_heads × max_batch_size ×
+        /// max_seq × sizeof(f32). The kernel writes per-(head, kk, t)
+        /// scores here so TG memory stays under the M3 Pro 32 KB / core
+        /// budget at K=4 (see shaders/mla_decode_kernel_fc_kbatch.metal).
+        pub batch_scores_scratch: PinnedBuffer,
         /// Phase 5C.2: f16 normed activation buffer — hidden × f16.
         /// Written by rmsnorm_f32_to_f16 when x_norm_dtype="f16" is set in the kernel
         /// profile. Used as the activation input to the LM head GEMV (gemv_f16_f16in),
@@ -192,6 +220,21 @@ mod arena_imp {
                 batch_x_norm_buf: (0..max_batch_size.max(1))
                     .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
                     .collect(),
+                batch_x_buf: (0..max_batch_size.max(1))
+                    .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
+                    .collect(),
+                batch_ffn_out_buf: (0..max_batch_size.max(1))
+                    .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
+                    .collect(),
+                batch_q_packed: ctx.new_buffer(
+                    max_batch_size.max(1) * n_heads * q_head_dim * std::mem::size_of::<f32>()
+                ),
+                batch_attn_out_packed: ctx.new_buffer(
+                    max_batch_size.max(1) * n_heads * v_head_dim * std::mem::size_of::<f32>()
+                ),
+                batch_scores_scratch: ctx.new_buffer(
+                    n_heads * max_batch_size.max(1) * max_seq * std::mem::size_of::<f32>()
+                ),
                 x_norm_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 eagle4_h_low_buf:     ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 eagle4_h_mid_buf:     ctx.new_buffer(hidden * std::mem::size_of::<f32>()),

@@ -3116,45 +3116,46 @@ impl DeepSeekV2 {
         Ok(results)
     }
 
-    /// path-to-125 Phase A1.0 — K-batched verify, lm_head-only amortization.
+    /// path-to-125 Phase A1.1 — K-batched verify, full wire-up.
     ///
     /// Gated on `kernel_profile.selected.verify_kernels == "parallel-k"`.
     ///
-    /// The per-token layer loop is intentionally identical to
-    /// `forward_tokens_batched_tcb` (per-token attn + MoE inside a single
-    /// `TokenCommandBuffer`). This preserves the MLA causal-seq_len
-    /// semantics that the Off-mode greedy path relies on, so the
-    /// bit-identical greedy parity gate stays load-bearing.
+    /// Per-layer execution restructured into a 3-phase shape that lets
+    /// MLA's KV cache + kv_b_proj weight reads amortize across the K
+    /// verify queries while keeping per-token attn projections + MoE
+    /// (no kernel-side overlap yet — that's Branch 2 / A1.2):
     ///
-    /// The only structural change versus `forward_tokens_batched_tcb` is
-    /// the post-layer LM head:
-    ///   - sequential path: K post-commit `gemv_f16_metal_pinned` calls
-    ///     (one weight read of vocab×hidden per K)
-    ///   - this path: one in-TCB `gemv_f16_lmhead_kbatch_tcb` dispatch
-    ///     (one weight read shared across K)
+    ///   Phase A (K iter): restore per-K residual state from
+    ///     `arena.batch_x_buf[ki]` / `arena.batch_ffn_out_buf[ki]`
+    ///     (at li > 0 — phase1 li=0 does embed_lookup), encode
+    ///     attention_phase1 (kv_append writes mla_c_kv_gpu[li] /
+    ///     mla_k_pe_gpu[li] at slot seq_slot_base+ki) +
+    ///     attention_phase2 (writes `arena.q`), blit `arena.q` →
+    ///     `arena.batch_q_packed[ki * n_heads * q_head_dim]`, save
+    ///     `arena.x_buf` → `arena.batch_x_buf[ki]`.
+    ///   Phase B (1 dispatch): `mla_decode_kbatch_tcb` reads
+    ///     `arena.batch_q_packed` + the just-written
+    ///     `mla_c_kv_gpu[li]` / `mla_k_pe_gpu[li]` (now holding all K
+    ///     new KV entries) → `arena.batch_attn_out_packed`. seq_len
+    ///     = seq_slot_base + k; the kernel's per-K causal mask
+    ///     (A1.1 shader) ensures query kk attends only through
+    ///     position seq_slot_base+kk.
+    ///   Phase C (K iter): restore `arena.batch_x_buf[ki]`,
+    ///     blit `arena.batch_attn_out_packed[ki * ...]` →
+    ///     `arena.attn_out`, run o_proj (gemv_f16_simdmat — matches
+    ///     the o_proj path inside mla_decode_and_o_proj_arena_fc_tcb)
+    ///     + add_inplace + rmsnorm + MoE/dense, save updated
+    ///     `arena.x_buf` and `arena.ffn_out_buf` back into the per-K
+    ///     batch slots.
     ///
-    /// On V2-Lite (vocab=102400, hidden=2048, fp16) the LM-head weight is
-    /// ~400 MB; at K=4 the bandwidth saving is ~1.2 GB / verify step,
-    /// the largest single weight read in the model.
-    ///
-    /// The other Path B K-batched kernels (`mla_decode_metal_kbatch`,
-    /// `gemv_q4_k_m_v2_kbatch_pinned_tcb`, `moe_block_batched_indexed_kbatch_tcb`)
-    /// are intentionally NOT used here:
-    ///   * `mla_decode_metal_kbatch` uses one `seq_len` for all K queries —
-    ///     no causal mask across K — so wiring it in would let draft
-    ///     token k attend to draft token k+1's KV, breaking causality
-    ///     and the bit-identical greedy gate.
-    ///   * `moe_block_batched_indexed_kbatch_tcb` is the Stage 2.5
-    ///     "no-overlap baseline" that re-issues K independent MoE
-    ///     forwards in one TCB — same compute as the per-token loop in
-    ///     `forward_tokens_batched_tcb`, so no bandwidth win until the
-    ///     masked / union-routing variant lands.
-    /// Both are queued for a follow-up commit (causal-mask MLA + true
-    /// MoE expert-union K-batch).
+    /// After all layers: per-K final residual + final-norm into a
+    /// packed `(K, hidden)` buffer, then ONE
+    /// `gemv_f16_lmhead_kbatch_tcb` dispatch (A1.0 lm_head
+    /// amortization). All work inside a single TCB; one commit.
     ///
     /// K=1 still delegates to `forward_tokens_batched_tcb` so the K=1
-    /// hot path is byte-for-byte identical to production. The K-batched
-    /// LM-head path engages only at K≥2.
+    /// path is byte-for-byte identical to the production sequential
+    /// path. The K-batched verify engages only at K≥2.
     #[cfg(target_os = "macos")]
     fn forward_tokens_batched_parallel_k(
         &mut self,
@@ -3164,19 +3165,20 @@ impl DeepSeekV2 {
         if tokens.len() == 1 {
             return self.forward_tokens_batched_tcb(tokens, positions);
         }
-        // K-batched lm_head requires a pinned fp16 lm_head buffer; fall
-        // through to the sequential path when not present (e.g. tied-
-        // embedding models without a separate lm_head tensor).
         if self.lm_head_buf.is_none() {
             return self.forward_tokens_batched_tcb(tokens, positions);
         }
 
         let k = tokens.len();
         let h = self.config.hidden;
+        let n_heads = self.config.n_heads;
         let n_layers = self.config.n_layers;
         let eps = self.config.rms_norm_eps;
         let kv_lora_rank = self.config.kv_lora_rank;
         let qk_rope_head_dim = self.config.qk_rope_head_dim;
+        let qk_nope_head_dim = self.config.qk_nope_head_dim;
+        let v_head_dim = self.config.v_head_dim;
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
         let vocab = self.config.vocab_size;
 
         if !self.mla_kv_gpu_synced && self.kv.seq_len > 0 {
@@ -3204,10 +3206,14 @@ impl DeepSeekV2 {
             .map(|p| p.selected.shared_down_schedule.as_str())
             .unwrap_or("basic");
 
+        let h_bytes = (h * std::mem::size_of::<f32>()) as u64;
+        let q_per_token_bytes = (n_heads * q_head_dim * std::mem::size_of::<f32>()) as u64;
+        let attn_per_token_bytes = (n_heads * v_head_dim * std::mem::size_of::<f32>()) as u64;
+        let scale = 1.0f32 / (q_head_dim as f32).sqrt();
+
+        // K-batched lm_head packed buffers (K-dependent size; allocate per-call).
         let x_packed_bytes = k * h * std::mem::size_of::<f32>();
         let y_packed_bytes = k * vocab * std::mem::size_of::<f32>();
-        let h_bytes = (h * std::mem::size_of::<f32>()) as u64;
-
         let (x_packed, y_packed) = {
             let ctx = self.metal_ctx.as_ref().unwrap();
             (ctx.new_buffer(x_packed_bytes), ctx.new_buffer(y_packed_bytes))
@@ -3222,31 +3228,90 @@ impl DeepSeekV2 {
 
             let mut global_tcb = crate::metal::TokenCommandBuffer::new(ctx);
 
-            for (ki, &token) in tokens.iter().enumerate() {
-                let seq_slot = seq_slot_base + ki;
-                let seq_len = seq_slot + 1;
-                let pos = positions[ki];
+            for li in 0..n_layers {
+                crate::metal::set_current_layer(Some(li as u32));
 
-                for li in 0..n_layers {
-                    crate::metal::set_current_layer(Some(li as u32));
+                let moe_setup = self.ffn_moe_check(li)?;
+                let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
+                    .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} kv_b_proj not pinned")))?;
+                let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+                    .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} o_proj not pinned")))?;
+                let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
 
-                    let moe_setup = self.ffn_moe_check(li)?;
-                    let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                        .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} kv_b_proj not pinned")))?;
-                    let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
-                        .ok_or_else(|| crate::Error::Model(format!("parallel_k: l{li} o_proj not pinned")))?;
-                    let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
-                    let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
-                    let scale = 1.0f32 / (head_dim_q as f32).sqrt();
+                // ── Phase A — per-K phase1 + phase2 + pack q.
+                for ki in 0..k {
+                    let token = tokens[ki];
+                    let pos = positions[ki];
+                    let seq_slot = seq_slot_base + ki;
+
+                    if li > 0 {
+                        // Restore this token's running residual + previous-layer MoE
+                        // output so phase1's add_inplace(x_buf, ffn_out_buf) recovers
+                        // the correct cross-layer residual stream.
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
+                        )?;
+                        global_tcb.copy_buffer_bytes(
+                            &arena.batch_ffn_out_buf[ki], 0, &arena.ffn_out_buf, 0, h_bytes,
+                        )?;
+                    }
 
                     self.encode_attention_phase1_into_tcb(
                         &mut global_tcb, li, pos, Some(token), seq_slot,
                     )?;
                     self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
-                    self.dispatch_mla_decode_and_o_proj(
-                        &mut global_tcb, arena, kv_b_proj_buf, o_proj_buf,
-                        li, seq_len, scale, h,
+
+                    global_tcb.copy_buffer_bytes(
+                        &arena.q, 0,
+                        &arena.batch_q_packed, ki as u64 * q_per_token_bytes,
+                        q_per_token_bytes,
                     )?;
+                    global_tcb.copy_buffer_bytes(
+                        &arena.x_buf, 0, &arena.batch_x_buf[ki], 0, h_bytes,
+                    )?;
+                }
+
+                // ── Phase B — K-batched MLA in one dispatch.
+                //
+                // After Phase A, mla_c_kv_gpu[li] / mla_k_pe_gpu[li] have K
+                // new entries at slots [seq_slot_base..seq_slot_base+K).
+                // The K-batched MLA shader's per-K causal mask (A1.1) ensures
+                // query kk attends only through position seq_slot_base+kk.
+                let seq_len = seq_slot_base + k;
+                crate::kernels::parallel_k::mla_decode_kbatch_tcb(
+                    &mut global_tcb,
+                    &arena.batch_q_packed,
+                    &self.mla_c_kv_gpu[li],
+                    &self.mla_k_pe_gpu[li],
+                    kv_b_proj_buf,
+                    &arena.batch_attn_out_packed,
+                    &arena.batch_scores_scratch,
+                    n_heads, qk_nope_head_dim, qk_rope_head_dim, v_head_dim, kv_lora_rank,
+                    seq_len, scale, k,
+                )?;
+
+                // ── Phase C — per-K o_proj + residual + ffn_norm + MoE/dense.
+                for ki in 0..k {
+                    // Restore this token's residual state from after Phase A.
+                    global_tcb.copy_buffer_bytes(
+                        &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
+                    )?;
+                    // Bring this token's attn_out from packed.
+                    global_tcb.copy_buffer_bytes(
+                        &arena.batch_attn_out_packed,
+                        ki as u64 * attn_per_token_bytes,
+                        &arena.attn_out, 0, attn_per_token_bytes,
+                    )?;
+
+                    // o_proj: arena.attn_out (n_heads*v_head_dim f32) →
+                    //         arena.out (hidden f32). Matches the o_proj
+                    //         kernel inside mla_decode_and_o_proj_arena_fc_tcb.
+                    crate::kernels::gemv_f16_simdmat_tcb(
+                        &mut global_tcb, o_proj_buf,
+                        h, n_heads * v_head_dim,
+                        &arena.attn_out, &arena.out,
+                    )?;
+
                     crate::kernels::add_inplace_metal_tcb(
                         &mut global_tcb, &arena.x_buf, &arena.out, h,
                     )?;
@@ -3307,21 +3372,39 @@ impl DeepSeekV2 {
                             )));
                         }
                     }
-                }
 
+                    // Save this token's residual + ffn_out so the next layer's
+                    // Phase A (li+1) can restore them before phase1's
+                    // add_inplace(x_buf, ffn_out_buf).
+                    global_tcb.copy_buffer_bytes(
+                        &arena.x_buf, 0, &arena.batch_x_buf[ki], 0, h_bytes,
+                    )?;
+                    global_tcb.copy_buffer_bytes(
+                        &arena.ffn_out_buf, 0, &arena.batch_ffn_out_buf[ki], 0, h_bytes,
+                    )?;
+                }
+            }
+
+            // Final per-K residual + final-norm + pack for K-batched lm_head.
+            for ki in 0..k {
+                global_tcb.copy_buffer_bytes(
+                    &arena.batch_x_buf[ki], 0, &arena.x_buf, 0, h_bytes,
+                )?;
+                global_tcb.copy_buffer_bytes(
+                    &arena.batch_ffn_out_buf[ki], 0, &arena.ffn_out_buf, 0, h_bytes,
+                )?;
                 crate::kernels::add_inplace_metal_tcb(
                     &mut global_tcb, &arena.x_buf, &arena.ffn_out_buf, h,
                 )?;
                 crate::kernels::rmsnorm_metal_buf_tcb(
                     &mut global_tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
                 )?;
-                // Pack final x_norm into x_packed[ki * h..(ki+1) * h] for
-                // the K-batched LM head dispatch below.
                 global_tcb.copy_buffer_bytes(
                     &arena.x_norm_buf, 0, &x_packed, (ki as u64) * h_bytes, h_bytes,
                 )?;
             }
 
+            // One K-batched lm_head dispatch (A1.0 amortization).
             crate::kernels::parallel_k::gemv_f16_lmhead_kbatch_tcb(
                 &mut global_tcb, lm_head_buf, vocab, h, &x_packed, &y_packed, k,
             )?;
