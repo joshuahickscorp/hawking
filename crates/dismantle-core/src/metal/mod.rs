@@ -28,6 +28,8 @@ pub const SHADER_GEMV_Q4_K_M_V2_KBATCH: &str =
     include_str!("../../shaders/gemv_q4_k_m_v2_kbatch.metal");
 pub const SHADER_MLA_DECODE_KERNEL_FC_KBATCH: &str =
     include_str!("../../shaders/mla_decode_kernel_fc_kbatch.metal");
+pub const SHADER_MOE_UNION_ROUTING: &str =
+    include_str!("../../shaders/moe_union_routing.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
@@ -42,6 +44,7 @@ pub fn all_shader_sources() -> String {
         SHADER_GEMV_F16_LMHEAD_KBATCH,
         SHADER_GEMV_Q4_K_M_V2_KBATCH,
         SHADER_MLA_DECODE_KERNEL_FC_KBATCH,
+        SHADER_MOE_UNION_ROUTING,
     ]
     .join("\n\n")
 }

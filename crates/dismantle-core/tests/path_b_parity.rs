@@ -433,6 +433,168 @@ fn mla_decode_kbatch_matches_sequential_realistic_seq() {
 /// pipeline; the only difference is buffer ownership (caller-owned
 /// pinned buffers vs internal allocation). They must produce
 /// bit-identical output on the same inputs.
+// ── A1.2 — MoE union routing kernels (sort + segment scan) parity ──────────
+//
+// These kernels build the per-K-query → per-distinct-expert mapping the
+// union-routing GEMM (follow-up commit) consumes. They have no fp parity
+// concerns — pure index manipulation. Each kernel is parity-tested
+// against a Python-equivalent CPU reference: sort by expert_id stably,
+// then linear scan for segment starts.
+
+#[cfg(target_os = "macos")]
+fn cpu_union_sort_and_segment(
+    route_ids: &[u32],
+    route_weights: &[f32],
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+) -> (Vec<u32>, Vec<u32>, Vec<u32>, Vec<f32>, Vec<u32>, Vec<u32>, u32) {
+    let n = k_batch * top_k;
+    let mut triples: Vec<(u32, u32, u32, f32)> = (0..n)
+        .map(|i| {
+            let kk = (i / top_k) as u32;
+            let slot = (i - (kk as usize) * top_k) as u32;
+            (route_ids[i], kk, slot, route_weights[i])
+        })
+        .collect();
+    triples.sort_by(|a, b| a.0.cmp(&b.0));   // stable
+    let sorted_expert: Vec<u32> = triples.iter().map(|t| t.0).collect();
+    let sorted_kidx:   Vec<u32> = triples.iter().map(|t| t.1).collect();
+    let sorted_slot:   Vec<u32> = triples.iter().map(|t| t.2).collect();
+    let sorted_weight: Vec<f32> = triples.iter().map(|t| t.3).collect();
+
+    let n_u32 = n as u32;
+    let mut segment_starts = vec![n_u32; n_experts + 1];
+    let mut segment_experts = vec![0u32; n_experts];
+    let mut n_distinct = 0u32;
+    let mut prev_e: u32 = u32::MAX;
+    for (i, &e) in sorted_expert.iter().enumerate() {
+        if e != prev_e {
+            segment_starts[e as usize] = i as u32;
+            segment_experts[n_distinct as usize] = e;
+            n_distinct += 1;
+            prev_e = e;
+        }
+    }
+    segment_starts[n_experts] = n_u32;
+    (
+        sorted_expert,
+        sorted_kidx,
+        sorted_slot,
+        sorted_weight,
+        segment_starts,
+        segment_experts,
+        n_distinct,
+    )
+}
+
+#[cfg(target_os = "macos")]
+fn run_union_routing_pipeline(
+    ctx: &MetalContext,
+    route_ids: &[u32],
+    route_weights: &[f32],
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+) -> (Vec<u32>, Vec<u32>, Vec<u32>, Vec<f32>, Vec<u32>, Vec<u32>, u32) {
+    let n = k_batch * top_k;
+    let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
+    let route_weights_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_weights));
+    let sorted_expert = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_kidx   = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_slot   = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_weight = ctx.new_buffer(n * std::mem::size_of::<f32>());
+    let segment_starts  = ctx.new_buffer((n_experts + 1) * std::mem::size_of::<u32>());
+    let segment_experts = ctx.new_buffer(n_experts * std::mem::size_of::<u32>());
+    let n_distinct_buf  = ctx.new_buffer(std::mem::size_of::<u32>());
+
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    parallel_k::union_routes_sort_tcb(
+        &mut tcb,
+        &route_ids_buf,
+        &route_weights_buf,
+        &sorted_expert,
+        &sorted_kidx,
+        &sorted_slot,
+        &sorted_weight,
+        k_batch,
+        top_k,
+    ).expect("union_routes_sort_tcb");
+    parallel_k::union_routes_segment_tcb(
+        &mut tcb,
+        &sorted_expert,
+        &segment_starts,
+        &segment_experts,
+        &n_distinct_buf,
+        n,
+        n_experts,
+    ).expect("union_routes_segment_tcb");
+    tcb.commit_and_wait().expect("commit");
+
+    let se = unsafe { std::slice::from_raw_parts(sorted_expert.contents() as *const u32, n) }.to_vec();
+    let sk = unsafe { std::slice::from_raw_parts(sorted_kidx.contents() as *const u32, n) }.to_vec();
+    let ss = unsafe { std::slice::from_raw_parts(sorted_slot.contents() as *const u32, n) }.to_vec();
+    let sw = unsafe { std::slice::from_raw_parts(sorted_weight.contents() as *const f32, n) }.to_vec();
+    let segs = unsafe { std::slice::from_raw_parts(segment_starts.contents() as *const u32, n_experts + 1) }.to_vec();
+    let sege = unsafe { std::slice::from_raw_parts(segment_experts.contents() as *const u32, n_experts) }.to_vec();
+    let nd = unsafe { *(n_distinct_buf.contents() as *const u32) };
+    (se, sk, ss, sw, segs, sege, nd)
+}
+
+#[cfg(target_os = "macos")]
+fn assert_union_routing_matches_cpu(
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+    seed: u64,
+) {
+    let ctx = ctx();
+    let n = k_batch * top_k;
+    let mut rng = Pcg64Mcg::new(seed as u128);
+    let route_ids: Vec<u32> = (0..n)
+        .map(|_| rng.gen_range(0..n_experts as u32))
+        .collect();
+    let route_weights: Vec<f32> = (0..n).map(|_| rng.gen_range(0.0_f32..1.0_f32)).collect();
+
+    let (cpu_se, cpu_sk, cpu_ss, cpu_sw, cpu_segs, cpu_sege, cpu_nd) =
+        cpu_union_sort_and_segment(&route_ids, &route_weights, k_batch, top_k, n_experts);
+    let (gpu_se, gpu_sk, gpu_ss, gpu_sw, gpu_segs, gpu_sege, gpu_nd) =
+        run_union_routing_pipeline(ctx, &route_ids, &route_weights, k_batch, top_k, n_experts);
+
+    assert_eq!(gpu_se, cpu_se, "sorted_expert mismatch (K={k_batch} top_k={top_k})");
+    assert_eq!(gpu_sk, cpu_sk, "sorted_kidx mismatch");
+    assert_eq!(gpu_ss, cpu_ss, "sorted_slot mismatch");
+    assert_eq!(gpu_sw, cpu_sw, "sorted_weight mismatch");
+    assert_eq!(gpu_segs, cpu_segs, "segment_starts mismatch");
+    // segment_experts: only the first n_distinct entries are defined; tail bytes may differ.
+    assert_eq!(gpu_nd, cpu_nd, "n_distinct mismatch ({gpu_nd} vs {cpu_nd})");
+    assert_eq!(
+        &gpu_sege[..gpu_nd as usize],
+        &cpu_sege[..cpu_nd as usize],
+        "segment_experts (first n_distinct) mismatch",
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn union_routing_matches_cpu_v2lite_shape_k4() {
+    // V2-Lite MoE shape: n_routed_experts=64, top_k=6, K=4 → N=24 sorted triples.
+    assert_union_routing_matches_cpu(4, 6, 64, 0xCAFE_F00D);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn union_routing_matches_cpu_k1_top4() {
+    assert_union_routing_matches_cpu(1, 4, 32, 0xDEAD_BEEF);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn union_routing_matches_cpu_k8_top4() {
+    // Stress the K*top_k = 32 boundary (kernel cap is exactly 32).
+    assert_union_routing_matches_cpu(8, 4, 64, 0xFEED_FACE);
+}
+
 #[cfg(target_os = "macos")]
 #[test]
 fn mla_decode_kbatch_tcb_matches_one_shot_v2lite_shape_k4() {

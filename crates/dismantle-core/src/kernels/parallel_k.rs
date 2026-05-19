@@ -634,6 +634,107 @@ pub fn moe_block_batched_indexed_kbatch_tcb<'a>(
     Ok(scratch)
 }
 
+// ── path-to-125 Branch 2 (A1.2) — MoE expert-union routing kernels ──────────
+
+/// Sort the (K, top_k) (route_id, route_weight) table into a flat
+/// (K*top_k,) sequence ordered by `route_id`. Each entry also carries
+/// the originating `(kidx, slot)` so the downstream union-expert GEMM
+/// can write its output back to the correct per-K-query buffer slot.
+///
+/// Caller-allocated buffer sizes:
+///   route_ids_packed     : (K * top_k) u32   — laid out (kk, slot) row-major
+///   route_weights_packed : (K * top_k) f32   — same layout
+///   sorted_expert        : (K * top_k) u32
+///   sorted_kidx          : (K * top_k) u32
+///   sorted_slot          : (K * top_k) u32
+///   sorted_weight        : (K * top_k) f32
+///
+/// Requires K * top_k ≤ 32 (single-TG insertion sort capacity).
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn union_routes_sort_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    route_ids_packed: &PinnedBuffer,
+    route_weights_packed: &PinnedBuffer,
+    sorted_expert: &PinnedBuffer,
+    sorted_kidx: &PinnedBuffer,
+    sorted_slot: &PinnedBuffer,
+    sorted_weight: &PinnedBuffer,
+    k_batch: usize,
+    top_k: usize,
+) -> Result<()> {
+    const KERNEL: &str = "union_routes_sort";
+    let n = k_batch
+        .checked_mul(top_k)
+        .ok_or_else(|| Error::Kernel(format!("{KERNEL}: K*top_k overflow")))?;
+    if !(1..=32).contains(&n) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: K*top_k must be in 1..=32; got {n} (K={k_batch} top_k={top_k})"
+        )));
+    }
+    let k_batch_u32 = k_batch as u32;
+    let top_k_u32 = top_k as u32;
+    // 4 threadgroup arrays, each `n` entries; u32 = 4 bytes, f32 = 4 bytes.
+    let n_bytes = (n * std::mem::size_of::<u32>()) as u64;
+
+    tcb.dispatch_threads(KERNEL, (32, 1, 1), (32, 1, 1), |enc| {
+        enc.set_buffer(0, Some(route_ids_packed), 0);
+        enc.set_buffer(1, Some(route_weights_packed), 0);
+        enc.set_buffer(2, Some(sorted_expert), 0);
+        enc.set_buffer(3, Some(sorted_kidx), 0);
+        enc.set_buffer(4, Some(sorted_slot), 0);
+        enc.set_buffer(5, Some(sorted_weight), 0);
+        enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &k_batch_u32 as *const u32 as *const _);
+        enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &top_k_u32 as *const u32 as *const _);
+        enc.set_threadgroup_memory_length(0, n_bytes);  // shmem_expert  (u32)
+        enc.set_threadgroup_memory_length(1, n_bytes);  // shmem_kidx    (u32)
+        enc.set_threadgroup_memory_length(2, n_bytes);  // shmem_slot    (u32)
+        enc.set_threadgroup_memory_length(3, n_bytes);  // shmem_weight  (f32)
+    })
+}
+
+/// Scan the sorted_expert stream to find segment starts (where each
+/// expert's run of entries begins) and emit a packed list of distinct
+/// expert ids.
+///
+/// Caller-allocated buffer sizes:
+///   sorted_expert    : (N = K*top_k,) u32  — output of union_routes_sort_tcb
+///   segment_starts   : (n_experts + 1,) u32
+///   segment_experts  : (n_experts,) u32     — packed distinct expert list
+///   n_distinct       : (1,) u32
+///
+/// segment_starts[e]      = first index in sorted_expert where e appears
+///                          (or N if e absent).
+/// segment_starts[n_experts] = N (sentinel).
+/// segment_experts[0..n_distinct[0]) = packed distinct experts in
+///                                      first-occurrence-in-sorted order.
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn union_routes_segment_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    sorted_expert: &PinnedBuffer,
+    segment_starts: &PinnedBuffer,
+    segment_experts: &PinnedBuffer,
+    n_distinct: &PinnedBuffer,
+    n: usize,
+    n_experts: usize,
+) -> Result<()> {
+    const KERNEL: &str = "union_routes_segment";
+    if n == 0 {
+        return Err(Error::Kernel(format!("{KERNEL}: N must be >= 1")));
+    }
+    let n_u32 = n as u32;
+    let n_experts_u32 = n_experts as u32;
+    tcb.dispatch_threads(KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+        enc.set_buffer(0, Some(sorted_expert), 0);
+        enc.set_buffer(1, Some(segment_starts), 0);
+        enc.set_buffer(2, Some(segment_experts), 0);
+        enc.set_buffer(3, Some(n_distinct), 0);
+        enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &n_u32 as *const u32 as *const _);
+        enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_experts_u32 as *const u32 as *const _);
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
