@@ -512,11 +512,20 @@ impl Eagle4Head {
         // 3b. q, k, v (Metal). Q and K are computed for parity-flow
         //     fidelity (their values don't affect output at S=1 — see
         //     the CPU forward's commentary).
+        // Q and K projections are SKIPPED at S=1. Diagonal-mask
+        // self-attention with 1 valid token collapses to:
+        //   scores_h = q_h · k_h^T / sqrt(d)       single scalar
+        //   softmax([s]) = [1.0]
+        //   attn_h    = 1.0 · v_h = v_h
+        // So Q and K don't affect the MHA output. The CPU
+        // forward_full path still computes them for parity with
+        // the Python eval flow (eagle4.py's batched (1, take, H)
+        // forward where diagonal-mask softmax produces the same
+        // identity on each record). Saves 2 × HIDDEN×HIDDEN gemv
+        // dispatches per token here. Both pinned weights stay so
+        // a future "S>1 head forward" can reactivate them.
+        let _ = (&pinned.block_attn_q, &pinned.block_attn_k);
         let mut v = vec![0.0f32; h];
-        let mut _q = vec![0.0f32; h];
-        let mut _k = vec![0.0f32; h];
-        crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.block_attn_q, h, h, &x_normed, &mut _q)?;
-        crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.block_attn_k, h, h, &x_normed, &mut _k)?;
         crate::kernels::gemv_f16_metal_pinned(ctx, &pinned.block_attn_v, h, h, &x_normed, &mut v)?;
 
         // 3c. o_proj (Metal): attn output = v at S=1.
