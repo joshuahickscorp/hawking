@@ -267,6 +267,18 @@ mod arena_imp {
             let src = unsafe { std::slice::from_raw_parts(ptr, self.n_routed_experts) };
             dst.copy_from_slice(src);
         }
+
+        /// Read moe_shared_out_buf back to CPU. This holds the shared-
+        /// expert's per-token contribution (post-down-proj, length =
+        /// `hidden`) BEFORE it's summed into ffn_out_buf by the fused
+        /// MoE kernel. Used by the path-to-90 Eagle4 GPU capture to
+        /// extract h_shared from the production MoE forward without
+        /// dispatching a separate shared-only kernel.
+        pub fn read_moe_shared_out(&self, dst: &mut [f32]) {
+            let ptr = self.moe_shared_out_buf.contents() as *const f32;
+            let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
+            dst.copy_from_slice(src);
+        }
     }
 }
 

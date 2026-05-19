@@ -129,7 +129,18 @@ pub struct Eagle4CaptureBuf {
     pub h_low: Vec<f32>,
     pub h_mid: Vec<f32>,
     pub h_high: Vec<f32>,
+    /// Layer-26 pre-MoE post-attn-rmsnorm hidden. Kept as a fallback
+    /// input for `cpu_shared_expert_forward` when the production MoE
+    /// kernel's `moe_shared_out_buf` isn't populated (e.g. dense
+    /// layers, or a future path that bypasses the fused MoE).
     pub x_norm_26: Vec<f32>,
+    /// Shared-expert contribution at layer 26, read directly from
+    /// the production MoE kernel's `moe_shared_out_buf` after layer
+    /// 26's per-layer commit. Zero CPU dequant — same value the
+    /// fused MoE summed into ffn_out_buf during the same forward.
+    /// When non-empty, the Eagle4 decode loop uses this; otherwise
+    /// it falls back to `cpu_shared_expert_forward(26, x_norm_26)`.
+    pub h_shared_gpu: Vec<f32>,
 }
 
 impl Eagle4CaptureBuf {
@@ -139,6 +150,7 @@ impl Eagle4CaptureBuf {
             h_mid: vec![0.0; hidden],
             h_high: vec![0.0; hidden],
             x_norm_26: vec![0.0; hidden],
+            h_shared_gpu: vec![0.0; hidden],
         }
     }
 }
@@ -1513,11 +1525,19 @@ impl Engine for DeepSeekV2 {
                     )
                 })?;
 
-                // h_shared = ffn_shared_only(layer 26, x_norm_26) — CPU
-                // dequant + 3 gemv_f32 calls. ~10 ms on M3 Pro at smid=2816;
-                // small fraction of the per-token budget compared to the
-                // 27-layer CPU walk this replaces (~3.7 s).
-                let h_shared = self.cpu_shared_expert_forward(26, &capture.x_norm_26)?;
+                // h_shared: prefer the production MoE kernel's
+                // `moe_shared_out_buf` (read in the per-layer-commit
+                // capture above) — zero extra dispatch cost, same number
+                // the fused kernel computed during the V2-Lite forward.
+                // Fall back to cpu_shared_expert_forward when the GPU
+                // buffer is all zeros (e.g. layer 26 is dense, or the
+                // capture missed the read for some reason).
+                let h_shared_norm2: f32 = capture.h_shared_gpu.iter().map(|v| v * v).sum();
+                let h_shared = if h_shared_norm2 > 0.0 {
+                    capture.h_shared_gpu.clone()
+                } else {
+                    self.cpu_shared_expert_forward(26, &capture.x_norm_26)?
+                };
 
                 // Eagle4 head forward WITHOUT the CPU LM head gemv.
                 // Returns draft_hidden + mask_logits + calib (token_logits
@@ -3160,6 +3180,15 @@ impl DeepSeekV2 {
                                 }
                                 if li == 26 {
                                     arena.read_x_norm(&mut buf.x_norm_26);
+                                    // Production MoE kernel writes shared-
+                                    // expert contribution to moe_shared_out_buf
+                                    // BEFORE summing into ffn_out_buf. Read it
+                                    // here to get h_shared GPU-native — same
+                                    // numerical value the routed+shared fused
+                                    // kernel produces, no separate dispatch.
+                                    if moe_setup.is_some() {
+                                        arena.read_moe_shared_out(&mut buf.h_shared_gpu);
+                                    }
                                 }
                             }
                         }
