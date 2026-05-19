@@ -735,6 +735,155 @@ pub fn union_routes_segment_tcb(
     })
 }
 
+/// Dispatch the per-expert union gate+up GEMM (Q4_K_M) with SiLU(gate)*up
+/// fused. Each expert weight is read exactly once; the segment loop
+/// inside the kernel iterates over the K queries that selected this
+/// expert and writes silu*up into per-(kk, slot) output positions.
+///
+/// Requires `K * cols * 4 bytes ≤ 32 KB` (M3 Pro TG-mem ceiling).
+/// For V2-Lite (cols=2048 f32), max K = 4.
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn moe_gate_up_union_v2t_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    model_buf: &PinnedBuffer,
+    segment_starts: &PinnedBuffer,
+    sorted_kidx: &PinnedBuffer,
+    sorted_slot: &PinnedBuffer,
+    per_k_x: &PinnedBuffer,
+    routed_act: &PinnedBuffer,
+    gate_offset: usize,
+    up_offset: usize,
+    rows: usize,
+    cols: usize,
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+) -> Result<()> {
+    const KERNEL: &str = "moe_gate_up_union_v2t";
+    const TG_SIZE: u32 = 256;
+    if cols % 256 != 0 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: cols must be a multiple of 256; got {cols}"
+        )));
+    }
+    if rows % 8 != 0 && rows == 0 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: rows must be > 0; got {rows}"
+        )));
+    }
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: k_batch must be in 1..=8; got {k_batch}"
+        )));
+    }
+    let shmem_bytes = (k_batch * cols * std::mem::size_of::<f32>()) as u64;
+    if shmem_bytes > 32 * 1024 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: TG-mem budget exceeded ({} bytes > 32 KB); k_batch={k_batch} cols={cols}",
+            shmem_bytes
+        )));
+    }
+    let gate_offset_u64 = gate_offset as u64;
+    let up_offset_u64 = up_offset as u64;
+    let rows_u32 = rows as u32;
+    let cols_u32 = cols as u32;
+    let k_batch_u32 = k_batch as u32;
+    let top_k_u32 = top_k as u32;
+    let n_experts_u32 = n_experts as u32;
+    let union_n_u32 = (k_batch * top_k) as u32;
+    let n_tg_x = rows_u32.div_ceil(8);
+
+    tcb.dispatch_threads(
+        KERNEL,
+        (n_tg_x * TG_SIZE, n_experts_u32, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(model_buf), 0);
+            enc.set_buffer(1, Some(segment_starts), 0);
+            enc.set_buffer(2, Some(sorted_kidx), 0);
+            enc.set_buffer(3, Some(sorted_slot), 0);
+            enc.set_buffer(4, Some(per_k_x), 0);
+            enc.set_buffer(5, Some(routed_act), 0);
+            enc.set_bytes(6, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
+            enc.set_bytes(7, std::mem::size_of::<u64>() as u64, &up_offset_u64 as *const u64 as *const _);
+            enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+            enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+            enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &k_batch_u32 as *const u32 as *const _);
+            enc.set_bytes(11, std::mem::size_of::<u32>() as u64, &top_k_u32 as *const u32 as *const _);
+            enc.set_bytes(12, std::mem::size_of::<u32>() as u64, &n_experts_u32 as *const u32 as *const _);
+            enc.set_bytes(13, std::mem::size_of::<u32>() as u64, &union_n_u32 as *const u32 as *const _);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        },
+    )
+}
+
+/// Dispatch the per-expert union down projection GEMV (Q4_K_M).
+/// Mirrors gate_up_union but operates on routed_act → routed_out.
+/// No x_cache (activations differ per (kk, slot)), so TG-mem usage is 0.
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn moe_down_union_v2t_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    model_buf: &PinnedBuffer,
+    segment_starts: &PinnedBuffer,
+    sorted_kidx: &PinnedBuffer,
+    sorted_slot: &PinnedBuffer,
+    routed_act: &PinnedBuffer,
+    routed_out: &PinnedBuffer,
+    down_offset: usize,
+    rows: usize,
+    cols: usize,
+    k_batch: usize,
+    top_k: usize,
+    n_experts: usize,
+) -> Result<()> {
+    const KERNEL: &str = "moe_down_union_v2t";
+    const TG_SIZE: u32 = 256;
+    if cols % 256 != 0 {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: cols must be a multiple of 256; got {cols}"
+        )));
+    }
+    if rows == 0 {
+        return Err(Error::Kernel(format!("{KERNEL}: rows must be > 0")));
+    }
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: k_batch must be in 1..=8; got {k_batch}"
+        )));
+    }
+    let down_offset_u64 = down_offset as u64;
+    let rows_u32 = rows as u32;
+    let cols_u32 = cols as u32;
+    let k_batch_u32 = k_batch as u32;
+    let top_k_u32 = top_k as u32;
+    let n_experts_u32 = n_experts as u32;
+    let union_n_u32 = (k_batch * top_k) as u32;
+    let n_tg_x = rows_u32.div_ceil(8);
+
+    tcb.dispatch_threads(
+        KERNEL,
+        (n_tg_x * TG_SIZE, n_experts_u32, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(model_buf), 0);
+            enc.set_buffer(1, Some(segment_starts), 0);
+            enc.set_buffer(2, Some(sorted_kidx), 0);
+            enc.set_buffer(3, Some(sorted_slot), 0);
+            enc.set_buffer(4, Some(routed_act), 0);
+            enc.set_buffer(5, Some(routed_out), 0);
+            enc.set_bytes(6, std::mem::size_of::<u64>() as u64, &down_offset_u64 as *const u64 as *const _);
+            enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
+            enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+            enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &k_batch_u32 as *const u32 as *const _);
+            enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &top_k_u32 as *const u32 as *const _);
+            enc.set_bytes(11, std::mem::size_of::<u32>() as u64, &n_experts_u32 as *const u32 as *const _);
+            enc.set_bytes(12, std::mem::size_of::<u32>() as u64, &union_n_u32 as *const u32 as *const _);
+        },
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

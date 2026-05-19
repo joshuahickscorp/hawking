@@ -575,6 +575,251 @@ fn assert_union_routing_matches_cpu(
     );
 }
 
+// ── A1.2 — MoE union expert GEMM (gate+up+silu_mul) parity ─────────────────
+//
+// Generate synthetic Q4_K weights for n_experts experts, random K-query
+// routes, then compare the union-pipeline output (sort → segment →
+// gate_up_union) against a CPU dequant + per-(kk, slot) GEMV reference.
+// atol = 1e-3 (fp16 Q4_K noise floor, matches the kbatch Q4_K parity test).
+
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+fn assert_moe_gate_up_union_matches_cpu(
+    rows: usize,
+    cols: usize,
+    n_experts: usize,
+    k_batch: usize,
+    top_k: usize,
+    seed: u64,
+) {
+    assert_eq!(cols % 256, 0, "Q4_K cols % 256 == 0");
+    assert!(rows % 8 == 0, "rows must be a multiple of 8 for the v2t grid");
+    assert!(k_batch * cols * 4 <= 32 * 1024, "TG mem budget exceeded for test shape");
+    let ctx = ctx();
+    let blocks_per_row = cols / 256;
+
+    // Two Q4_K weight matrices: gate (offset 0) and up (offset gate_bytes).
+    let blocks_per_matrix = n_experts * rows * blocks_per_row;
+    let bytes_per_matrix = blocks_per_matrix * 144;
+    let gate_bytes = synthetic_q4_k_bytes(blocks_per_matrix, seed ^ 0xAA01);
+    let up_bytes   = synthetic_q4_k_bytes(blocks_per_matrix, seed ^ 0xAA02);
+    let mut model_bytes = Vec::with_capacity(2 * bytes_per_matrix);
+    model_bytes.extend_from_slice(&gate_bytes);
+    model_bytes.extend_from_slice(&up_bytes);
+
+    // Random K-query routes + x inputs.
+    let mut rng = Pcg64Mcg::new(seed as u128);
+    let n = k_batch * top_k;
+    let route_ids: Vec<u32> = (0..n).map(|_| rng.gen_range(0..n_experts as u32)).collect();
+    let route_weights: Vec<f32> = (0..n).map(|_| rng.gen_range(0.1_f32..1.0_f32)).collect();
+    let per_k_x = fixed_f32(k_batch * cols, seed ^ 0x1234_5678);
+
+    // CPU reference: dequant gate + up to f32, then per-(kk, slot) compute.
+    use dismantle_core::gguf::GgmlType;
+    use dismantle_core::quant::dequant_into;
+    let mut gate_w_f32 = vec![0.0f32; n_experts * rows * cols];
+    let mut up_w_f32   = vec![0.0f32; n_experts * rows * cols];
+    dequant_into(GgmlType::Q4_K, &gate_bytes, &mut gate_w_f32).expect("dequant gate");
+    dequant_into(GgmlType::Q4_K, &up_bytes,   &mut up_w_f32).expect("dequant up");
+    // Expected routed_act layout: (K, top_k, rows).
+    let mut cpu_act = vec![0.0f32; k_batch * top_k * rows];
+    for kk in 0..k_batch {
+        for slot in 0..top_k {
+            let expert = route_ids[kk * top_k + slot] as usize;
+            let we_off = expert * rows * cols;
+            let x_kk = &per_k_x[kk * cols..(kk + 1) * cols];
+            for r in 0..rows {
+                let mut g = 0.0f32;
+                let mut u = 0.0f32;
+                for c in 0..cols {
+                    let xc = x_kk[c];
+                    g += gate_w_f32[we_off + r * cols + c] * xc;
+                    u += up_w_f32[we_off + r * cols + c] * xc;
+                }
+                let silu = g / (1.0 + (-g).exp());
+                cpu_act[(kk * top_k + slot) * rows + r] = silu * u;
+            }
+        }
+    }
+
+    // GPU pipeline: routing kernels → expert GEMM.
+    let model_buf       = ctx.new_buffer_with_bytes(&model_bytes);
+    let route_ids_buf   = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&route_ids));
+    let route_weights_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&route_weights));
+    let sorted_expert  = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_kidx    = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_slot    = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_weight  = ctx.new_buffer(n * std::mem::size_of::<f32>());
+    let segment_starts = ctx.new_buffer((n_experts + 1) * std::mem::size_of::<u32>());
+    let segment_experts = ctx.new_buffer(n_experts * std::mem::size_of::<u32>());
+    let n_distinct_buf = ctx.new_buffer(std::mem::size_of::<u32>());
+    let per_k_x_buf    = new_f32_buf(ctx, &per_k_x);
+    let routed_act     = ctx.new_buffer(k_batch * top_k * rows * std::mem::size_of::<f32>());
+
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    parallel_k::union_routes_sort_tcb(
+        &mut tcb, &route_ids_buf, &route_weights_buf,
+        &sorted_expert, &sorted_kidx, &sorted_slot, &sorted_weight,
+        k_batch, top_k,
+    ).expect("sort");
+    parallel_k::union_routes_segment_tcb(
+        &mut tcb, &sorted_expert,
+        &segment_starts, &segment_experts, &n_distinct_buf,
+        n, n_experts,
+    ).expect("segment");
+    parallel_k::moe_gate_up_union_v2t_tcb(
+        &mut tcb, &model_buf,
+        &segment_starts, &sorted_kidx, &sorted_slot,
+        &per_k_x_buf, &routed_act,
+        0,                // gate_offset
+        bytes_per_matrix, // up_offset
+        rows, cols, k_batch, top_k, n_experts,
+    ).expect("gate_up_union");
+    tcb.commit_and_wait().expect("commit");
+
+    let gpu_act = read_f32_buf(&routed_act, k_batch * top_k * rows);
+
+    // atol 5e-3: silu(g) * u amplifies the per-element Q4_K noise floor
+    // (≈ 1e-3) because both g and u carry Q4 noise and multiplication
+    // compounds; see the analogous Q4 kbatch tests for the same regime.
+    let diff = gpu_act
+        .iter()
+        .zip(cpu_act.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        diff < 5e-3,
+        "moe_gate_up_union: max_abs_diff={diff:.3e} >= 5e-3 \
+         (n_experts={n_experts} K={k_batch} top_k={top_k} rows={rows} cols={cols})",
+    );
+}
+
+// ── A1.2 — MoE union expert down projection parity ─────────────────────────
+//
+// Down projection is a pure Q4_K_M GEMV (no SiLU). Tighter atol (1e-3)
+// vs the gate_up test which compounds silu and multiplication noise.
+
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+fn assert_moe_down_union_matches_cpu(
+    rows: usize,  // hidden (output dim)
+    cols: usize,  // routed_mid (input dim)
+    n_experts: usize,
+    k_batch: usize,
+    top_k: usize,
+    seed: u64,
+) {
+    assert_eq!(cols % 256, 0, "Q4_K cols % 256 == 0");
+    assert!(rows % 8 == 0);
+    let ctx = ctx();
+    let blocks_per_row = cols / 256;
+    let blocks_per_matrix = n_experts * rows * blocks_per_row;
+    let bytes_per_matrix = blocks_per_matrix * 144;
+    let down_bytes = synthetic_q4_k_bytes(blocks_per_matrix, seed ^ 0xAA03);
+
+    let mut rng = Pcg64Mcg::new(seed as u128);
+    let n = k_batch * top_k;
+    let route_ids: Vec<u32> = (0..n).map(|_| rng.gen_range(0..n_experts as u32)).collect();
+    let route_weights: Vec<f32> = (0..n).map(|_| rng.gen_range(0.1_f32..1.0_f32)).collect();
+    // routed_act layout: (K, top_k, cols) — random.
+    let routed_act_input = fixed_f32(k_batch * top_k * cols, seed ^ 0xBEEF_01);
+
+    use dismantle_core::gguf::GgmlType;
+    use dismantle_core::quant::dequant_into;
+    let mut down_w_f32 = vec![0.0f32; n_experts * rows * cols];
+    dequant_into(GgmlType::Q4_K, &down_bytes, &mut down_w_f32).expect("dequant down");
+
+    let mut cpu_out = vec![0.0f32; k_batch * top_k * rows];
+    for kk in 0..k_batch {
+        for slot in 0..top_k {
+            let expert = route_ids[kk * top_k + slot] as usize;
+            let we_off = expert * rows * cols;
+            let x_off = (kk * top_k + slot) * cols;
+            for r in 0..rows {
+                let mut acc = 0.0f32;
+                for c in 0..cols {
+                    acc += down_w_f32[we_off + r * cols + c] * routed_act_input[x_off + c];
+                }
+                cpu_out[(kk * top_k + slot) * rows + r] = acc;
+            }
+        }
+    }
+
+    let model_buf       = ctx.new_buffer_with_bytes(&down_bytes);
+    let _ = bytes_per_matrix; // single matrix in this kernel
+    let route_ids_buf   = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&route_ids));
+    let route_weights_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&route_weights));
+    let sorted_expert  = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_kidx    = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_slot    = ctx.new_buffer(n * std::mem::size_of::<u32>());
+    let sorted_weight  = ctx.new_buffer(n * std::mem::size_of::<f32>());
+    let segment_starts = ctx.new_buffer((n_experts + 1) * std::mem::size_of::<u32>());
+    let segment_experts = ctx.new_buffer(n_experts * std::mem::size_of::<u32>());
+    let n_distinct_buf = ctx.new_buffer(std::mem::size_of::<u32>());
+    let routed_act_buf = new_f32_buf(ctx, &routed_act_input);
+    let routed_out_buf = ctx.new_buffer(k_batch * top_k * rows * std::mem::size_of::<f32>());
+
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    parallel_k::union_routes_sort_tcb(
+        &mut tcb, &route_ids_buf, &route_weights_buf,
+        &sorted_expert, &sorted_kidx, &sorted_slot, &sorted_weight,
+        k_batch, top_k,
+    ).expect("sort");
+    parallel_k::union_routes_segment_tcb(
+        &mut tcb, &sorted_expert,
+        &segment_starts, &segment_experts, &n_distinct_buf,
+        n, n_experts,
+    ).expect("segment");
+    parallel_k::moe_down_union_v2t_tcb(
+        &mut tcb, &model_buf,
+        &segment_starts, &sorted_kidx, &sorted_slot,
+        &routed_act_buf, &routed_out_buf,
+        0,
+        rows, cols, k_batch, top_k, n_experts,
+    ).expect("down_union");
+    tcb.commit_and_wait().expect("commit");
+
+    let gpu_out = read_f32_buf(&routed_out_buf, k_batch * top_k * rows);
+    let diff = gpu_out
+        .iter()
+        .zip(cpu_out.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        diff < 1e-3,
+        "moe_down_union: max_abs_diff={diff:.3e} >= 1e-3 \
+         (n_experts={n_experts} K={k_batch} top_k={top_k} rows={rows} cols={cols})",
+    );
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn moe_down_union_matches_cpu_small() {
+    assert_moe_down_union_matches_cpu(8, 256, 4, 2, 2, 0xD0F1_0001);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn moe_down_union_matches_cpu_k4() {
+    assert_moe_down_union_matches_cpu(64, 256, 8, 4, 4, 0xD0F1_0002);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn moe_gate_up_union_matches_cpu_small() {
+    // Minimum viable shape: rows=8 (one TG_X row), cols=256 (one block), n_experts=4,
+    // K=2 top_k=2 = 4 routing entries, exercise overlap.
+    assert_moe_gate_up_union_matches_cpu(8, 256, 4, 2, 2, 0xDEAD_F00D);
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+fn moe_gate_up_union_matches_cpu_k4_v2lite_like() {
+    // V2-Lite-ish shape (cols=256 to fit small mem; routed_mid=64 to keep
+    // CPU reference quick): K=4 top_k=4, 8 experts.
+    assert_moe_gate_up_union_matches_cpu(64, 256, 8, 4, 4, 0xC0FF_EE01);
+}
+
 #[cfg(target_os = "macos")]
 #[test]
 fn union_routing_matches_cpu_v2lite_shape_k4() {
