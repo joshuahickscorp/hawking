@@ -426,6 +426,82 @@ fn mla_decode_kbatch_matches_sequential_realistic_seq() {
     assert_mla_kbatch_matches_sequential(16, 128, 64, 128, 512, 64, 4, 0xBEEF_1234);
 }
 
+/// path-to-125 A1.1 — TCB-form K-batched MLA dispatcher parity.
+///
+/// The TCB dispatcher `mla_decode_kbatch_tcb` and the one-shot
+/// `mla_decode_metal_kbatch` encode the same `mla_decode_kernel_fc_kbatch`
+/// pipeline; the only difference is buffer ownership (caller-owned
+/// pinned buffers vs internal allocation). They must produce
+/// bit-identical output on the same inputs.
+#[cfg(target_os = "macos")]
+#[test]
+fn mla_decode_kbatch_tcb_matches_one_shot_v2lite_shape_k4() {
+    let ctx = ctx();
+    let n_heads = 16usize;
+    let qk_nope = 128usize;
+    let qk_rope = 64usize;
+    let v_head = 128usize;
+    let kv_lora = 512usize;
+    let seq_len = 16usize;
+    let k_batch = 4usize;
+    let seed = 0xFEED_FACEu64;
+
+    let q_head_dim = qk_nope + qk_rope;
+    let q_kbatch = fixed_f32(k_batch * n_heads * q_head_dim, seed ^ 0xA1A1_1111);
+    let c_kv = fixed_f32(seq_len * kv_lora, seed ^ 0xB2B2_2222);
+    let k_pe = fixed_f32(seq_len * qk_rope, seed ^ 0xC3C3_3333);
+    let kv_b_data =
+        fixed_f32(n_heads * (qk_nope + v_head) * kv_lora, seed ^ 0xD4D4_4444);
+    let scale = 1.0f32 / (q_head_dim as f32).sqrt();
+
+    let kv_b_buf = new_f32_buf(ctx, &kv_b_data);
+
+    // One-shot reference (allocates its own internal buffers).
+    let mut one_shot_out = vec![0.0f32; k_batch * n_heads * v_head];
+    parallel_k::mla_decode_metal_kbatch(
+        ctx, &q_kbatch, &c_kv, &k_pe, &kv_b_buf,
+        n_heads, qk_nope, qk_rope, v_head, kv_lora,
+        seq_len, scale, &mut one_shot_out, k_batch,
+    )
+    .expect("one-shot mla_decode_metal_kbatch");
+
+    // TCB form with caller-owned pinned buffers.
+    let q_packed = new_f32_buf(ctx, &q_kbatch);
+    let c_kv_buf = new_f32_buf(ctx, &c_kv);
+    let k_pe_buf = new_f32_buf(ctx, &k_pe);
+    let out_packed = ctx.new_buffer(k_batch * n_heads * v_head * std::mem::size_of::<f32>());
+    let scores_scratch =
+        ctx.new_buffer(n_heads * k_batch * seq_len * std::mem::size_of::<f32>());
+
+    {
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        parallel_k::mla_decode_kbatch_tcb(
+            &mut tcb, &q_packed, &c_kv_buf, &k_pe_buf, &kv_b_buf,
+            &out_packed, &scores_scratch,
+            n_heads, qk_nope, qk_rope, v_head, kv_lora,
+            seq_len, scale, k_batch,
+        )
+        .expect("mla_decode_kbatch_tcb");
+        tcb.commit_and_wait().expect("tcb commit");
+    }
+
+    let tcb_out = unsafe {
+        std::slice::from_raw_parts(
+            out_packed.contents() as *const f32,
+            k_batch * n_heads * v_head,
+        )
+    };
+    let diff = tcb_out
+        .iter()
+        .zip(one_shot_out.iter())
+        .map(|(&a, &b)| (a - b).abs())
+        .fold(0.0f32, f32::max);
+    assert!(
+        diff == 0.0,
+        "TCB form must be bit-identical to one-shot: max_abs_diff={diff:.3e}",
+    );
+}
+
 #[cfg(target_os = "macos")]
 #[test]
 fn mla_decode_kbatch_k1_matches_sequential_at_atol() {

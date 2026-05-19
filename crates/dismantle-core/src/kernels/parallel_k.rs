@@ -436,6 +436,94 @@ pub fn mla_decode_metal_kbatch(
     Ok(())
 }
 
+/// Path-to-125 Phase A1.1 — K-batched MLA decode, TCB form.
+///
+/// Same kernel as `mla_decode_metal_kbatch` (causal mask in Phase 1
+/// added in A1.1 — query kk attends to positions
+/// `[0, seq_len_base + kk]` where `seq_len = seq_len_base + k_batch`).
+///
+/// All buffers are caller-owned PinnedBuffers; this fn only encodes
+/// the dispatch into the supplied `TokenCommandBuffer` and does NOT
+/// commit. Wire-up site is `forward_tokens_batched_parallel_k`.
+///
+/// Buffer layout:
+/// * `q_packed`        — (K, n_heads, qk_nope+qk_rope) f32 row-major.
+/// * `c_kv_buf`        — (seq_len, kv_lora_rank) f32.
+/// * `k_pe_buf`        — (seq_len, qk_rope_head_dim) f32.
+/// * `kv_b_proj_buf`   — model weights, fp32 pinned.
+/// * `out_packed`      — (K, n_heads * v_head_dim) f32; caller allocates.
+/// * `scores_scratch`  — (n_heads × K × seq_len) f32 device scratch;
+///                       sized for the largest seq_len the caller will
+///                       use across the parallel_k call.
+#[cfg(target_os = "macos")]
+#[allow(clippy::too_many_arguments)]
+pub fn mla_decode_kbatch_tcb(
+    tcb: &mut TokenCommandBuffer<'_>,
+    q_packed: &PinnedBuffer,
+    c_kv_buf: &PinnedBuffer,
+    k_pe_buf: &PinnedBuffer,
+    kv_b_proj_buf: &PinnedBuffer,
+    out_packed: &PinnedBuffer,
+    scores_scratch: &PinnedBuffer,
+    n_heads: usize,
+    qk_nope_head_dim: usize,
+    qk_rope_head_dim: usize,
+    v_head_dim: usize,
+    kv_lora_rank: usize,
+    seq_len: usize,
+    scale: f32,
+    k_batch: usize,
+) -> Result<()> {
+    const KERNEL: &str = "mla_decode_kernel_fc_kbatch";
+    const TG_SIZE: u32 = 256;
+    if !(1..=8).contains(&k_batch) {
+        return Err(Error::Kernel(format!(
+            "{KERNEL} requires k_batch in 1..=8; got {k_batch}"
+        )));
+    }
+    if seq_len == 0 {
+        return Err(Error::Kernel(format!("{KERNEL}: seq_len must be >= 1")));
+    }
+    if k_batch > seq_len {
+        return Err(Error::Kernel(format!(
+            "{KERNEL}: k_batch={k_batch} > seq_len={seq_len} would alias causal mask"
+        )));
+    }
+    let n_heads_u32 = n_heads as u32;
+    let qk_nope_u32 = qk_nope_head_dim as u32;
+    let qk_rope_u32 = qk_rope_head_dim as u32;
+    let v_head_u32 = v_head_dim as u32;
+    let kv_lora_u32 = kv_lora_rank as u32;
+    let seq_len_u32 = seq_len as u32;
+    let k_batch_u32 = k_batch as u32;
+    let qp_bytes = (k_batch * kv_lora_rank * std::mem::size_of::<f32>()) as u64;
+    let cwt_bytes = (k_batch * kv_lora_rank * std::mem::size_of::<f32>()) as u64;
+
+    tcb.dispatch_threads(
+        KERNEL,
+        (n_heads_u32 * TG_SIZE, 1, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(q_packed), 0);
+            enc.set_buffer(1, Some(c_kv_buf), 0);
+            enc.set_buffer(2, Some(k_pe_buf), 0);
+            enc.set_buffer(3, Some(kv_b_proj_buf), 0);
+            enc.set_buffer(4, Some(out_packed), 0);
+            enc.set_buffer(5, Some(scores_scratch), 0);
+            enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+            enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+            enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+            enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+            enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+            enc.set_bytes(11, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+            enc.set_bytes(12, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+            enc.set_bytes(13, std::mem::size_of::<u32>() as u64, &k_batch_u32 as *const u32 as *const _);
+            enc.set_threadgroup_memory_length(0, qp_bytes);
+            enc.set_threadgroup_memory_length(1, cwt_bytes);
+        },
+    )
+}
+
 // ── Stage 2.5 — K-batched MoE block (no-overlap baseline) ───────────────────
 
 /// Path B Stage 2.5 — K-batched routed-MoE block, no-overlap baseline.
