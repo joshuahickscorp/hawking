@@ -71,15 +71,24 @@ class _Block(nn.Module):
 
 
 class EagleHead(nn.Module):
-    def __init__(self, token_embd, lm_head, output_norm):
+    def __init__(self, token_embd, lm_head, output_norm, gate_init: float = 0.05):
         super().__init__()
         self._token_embd = token_embd
         self._lm_head = lm_head
         self._output_norm = output_norm
         self.in_proj = nn.Linear(5 * HIDDEN_DIM, HIDDEN_DIM, bias=False)
         self.block = _Block()
-        # Non-zero init keeps gradient flowing through the block from step 1.
-        self.residual_gate = mx.array([0.05])
+        # path-to-125 L8 — `gate_init` is the residual_gate's initial value.
+        # The default (0.05) matches v3's init. Path-to-125 L8 closeout
+        # found that v3-warm-started chain training plateaus at ~7% accept
+        # because the gate stays clamped at ~0.001 (block_output magnitudes
+        # are tiny under MSE pressure). Re-training FROM SCRATCH with a
+        # larger gate_init (typically 0.1) forces the head to either learn
+        # to use the block's output or actively zero the gate; reports
+        # /path_to_90/session_closeout_2026-05-19b.md § Branch 3 has the
+        # diagnosis. The training script's `--gate-init` flag threads
+        # through to this constructor.
+        self.residual_gate = mx.array([float(gate_init)])
         self.mask_proj_in = nn.Linear(HIDDEN_DIM, 512, bias=False)
         self.mask_proj_out = nn.Linear(512, N_MOE_LAYERS * N_ROUTED, bias=False)
         self.calib_proj = nn.Linear(HIDDEN_DIM, 1, bias=True)
@@ -107,12 +116,13 @@ class EagleHead(nn.Module):
         return token_logits, mask_logits, draft_hidden, calib_logit
 
 
-def build_head(frozen_npz: Path) -> EagleHead:
+def build_head(frozen_npz: Path, gate_init: float = 0.05) -> EagleHead:
     z = np.load(frozen_npz)
     return EagleHead(
         mx.array(z["token_embd"]),
         mx.array(z["lm_head"]),
         mx.array(z["output_norm"]),
+        gate_init=gate_init,
     )
 
 
@@ -234,6 +244,7 @@ def train(
     chain_h_high: bool = False,
     resume_ckpt: Path | None = None,
     multi_step_aux_decay: float = 1.0,
+    gate_init: float = 0.05,
 ):
     """Train the head. Token CE linearly ramps from corpus tokens (α=0) to
     V2-Lite argmax (α=1) over `target_argmax_warmup_steps` — aligning the
@@ -251,11 +262,16 @@ def train(
     instead of training from scratch.
     """
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    head = build_head(frozen)
+    head = build_head(frozen, gate_init=gate_init)
     if resume_ckpt is not None:
         resume_step = load_ckpt(head, resume_ckpt)
         print(
             f"[train] resumed from {resume_ckpt} (step {resume_step})",
+            flush=True,
+        )
+    else:
+        print(
+            f"[train] starting from scratch; residual_gate init = {gate_init}",
             flush=True,
         )
     print(
@@ -656,6 +672,14 @@ def main() -> int:
                          "h_high through multi_step_k passes. Required for chain spec decode.")
     tp.add_argument("--resume", type=Path, default=None,
                     help="warm-start from an existing .npz checkpoint")
+    tp.add_argument("--gate-init", type=float, default=0.05,
+                    help="path-to-125 L8 — initial value for EagleHead.residual_gate. "
+                         "Default 0.05 (v3 init). Path-to-125 closeout § Branch 3 "
+                         "showed v3-warm-started training plateaus chain accept at ~7%% "
+                         "because the gate stays at ~0.001; from-scratch training "
+                         "with a larger gate_init (try 0.1) forces the head to learn "
+                         "to use the block output. Ignored on --resume (the resumed "
+                         "checkpoint's gate value overrides).")
     tp.add_argument("--multi-step-aux-decay", type=float, default=1.0,
                     help="path-to-125: per-step decay applied to aux MSE weight at "
                          "chain step k (aux *= decay**k). <1.0 tapers MSE toward later "
@@ -694,6 +718,7 @@ def main() -> int:
             chain_h_high=args.chain_h_high,
             resume_ckpt=args.resume,
             multi_step_aux_decay=args.multi_step_aux_decay,
+            gate_init=args.gate_init,
         )
     elif args.cmd == "eval":
         r = evaluate(
