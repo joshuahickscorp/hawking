@@ -1555,31 +1555,52 @@ impl Engine for DeepSeekV2 {
                     self.cpu_shared_expert_forward(26, &capture.x_norm_26)?
                 };
 
-                // Eagle4 head forward — Metal path when pinning has run,
-                // CPU fallback otherwise. Both skip the CPU LM head
-                // gemv (replaced by GPU argmax on V2-Lite's lm_head_buf
-                // below).
+                // Eagle4 head forward — AMX path (lever 5) preferred on
+                // macOS for the head's f32 gemvs; falls back to Metal-
+                // pinned f16 path if AMX backend was opted out; falls
+                // back to CPU gemv_f32 if neither.
+                //
+                // AMX via direct cblas_sgemv from Accelerate.framework:
+                // ~1790 GFLOPS at batch=1 (vs Metal f16 effective ~225
+                // GFLOPS for these shapes). Per-gemv: ~10-50 µs vs
+                // Metal's ~1-5 ms. Head forward ~3-5 ms total vs
+                // ~50 ms Metal vs ~250 ms CPU.
+                //
+                // Opt out via EAGLE4_BACKEND=metal env var (for A/B).
                 #[cfg(target_os = "macos")]
-                let head_out = if head.has_metal_pinned() {
-                    let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
-                        Error::Model("eagle4 metal forward: no metal context".into())
-                    })?;
-                    head.forward_full_metal_no_lm_head(
-                        ctx,
-                        last_id,
-                        &capture.h_low,
-                        &capture.h_mid,
-                        &capture.h_high,
-                        &h_shared,
-                    )?
-                } else {
-                    head.forward_full_no_lm_head(
-                        last_id,
-                        &capture.h_low,
-                        &capture.h_mid,
-                        &capture.h_high,
-                        &h_shared,
-                    )?
+                let head_out = {
+                    let backend = std::env::var("EAGLE4_BACKEND").ok();
+                    let want_metal = backend.as_deref() == Some("metal");
+                    let want_cpu   = backend.as_deref() == Some("cpu");
+                    if !want_metal && !want_cpu {
+                        head.forward_full_amx_no_lm_head(
+                            last_id,
+                            &capture.h_low,
+                            &capture.h_mid,
+                            &capture.h_high,
+                            &h_shared,
+                        )?
+                    } else if want_metal && head.has_metal_pinned() {
+                        let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                            Error::Model("eagle4 metal forward: no metal context".into())
+                        })?;
+                        head.forward_full_metal_no_lm_head(
+                            ctx,
+                            last_id,
+                            &capture.h_low,
+                            &capture.h_mid,
+                            &capture.h_high,
+                            &h_shared,
+                        )?
+                    } else {
+                        head.forward_full_no_lm_head(
+                            last_id,
+                            &capture.h_low,
+                            &capture.h_mid,
+                            &capture.h_high,
+                            &h_shared,
+                        )?
+                    }
                 };
                 #[cfg(not(target_os = "macos"))]
                 let head_out = head.forward_full_no_lm_head(
@@ -2395,6 +2416,9 @@ impl DeepSeekV2 {
                     schedule,
                     "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_serial"
                 ) {
+                    if std::env::var("DBG_FORCE_NONPINNED").is_ok() {
+                        return crate::kernels::gemv_q4_k_m_v2(ctx, bytes, rows, cols, x, out);
+                    }
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
                             ctx, model_buf, t.offset, t.byte_size, rows, cols, x, out,

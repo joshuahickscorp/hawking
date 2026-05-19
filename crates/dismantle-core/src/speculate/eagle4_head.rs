@@ -47,6 +47,63 @@ use std::path::Path;
 #[cfg(target_os = "macos")]
 use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 
+// Path-to-90 lever 5 — AMX direct cblas for the eagle4 head's
+// largest gemvs. cblas_sgemv from Accelerate.framework routes
+// through Apple's AMX matrix coprocessor; ~1790 GFLOPS at batch=1
+// per the deep-research § Apple Silicon section (vs Metal f16 gemv's
+// effective ~225 GFLOPS for these matrix shapes). Replaces 6-8 Metal
+// gemv dispatches in the head forward with cblas calls that complete
+// in ~10-50 µs each. NOT Core ML — direct cblas via the framework.
+#[cfg(target_os = "macos")]
+#[link(name = "Accelerate", kind = "framework")]
+extern "C" {
+    fn cblas_sgemv(
+        order: i32,            // CblasRowMajor = 101
+        trans: i32,            // CblasNoTrans  = 111
+        m: i32,
+        n: i32,
+        alpha: f32,
+        a: *const f32,
+        lda: i32,
+        x: *const f32,
+        incx: i32,
+        beta: f32,
+        y: *mut f32,
+        incy: i32,
+    );
+}
+
+#[cfg(target_os = "macos")]
+const CBLAS_ROW_MAJOR: i32 = 101;
+#[cfg(target_os = "macos")]
+const CBLAS_NO_TRANS: i32 = 111;
+
+/// AMX-routed (rows × cols) f32 matrix-vector multiply: y = A·x.
+/// Row-major; weight rows are contiguous, dot products per row.
+#[cfg(target_os = "macos")]
+#[inline]
+fn amx_sgemv(rows: usize, cols: usize, a: &[f32], x: &[f32], y: &mut [f32]) {
+    debug_assert_eq!(a.len(), rows * cols);
+    debug_assert_eq!(x.len(), cols);
+    debug_assert_eq!(y.len(), rows);
+    unsafe {
+        cblas_sgemv(
+            CBLAS_ROW_MAJOR,
+            CBLAS_NO_TRANS,
+            rows as i32,
+            cols as i32,
+            1.0,
+            a.as_ptr(),
+            cols as i32,
+            x.as_ptr(),
+            1,
+            0.0,
+            y.as_mut_ptr(),
+            1,
+        );
+    }
+}
+
 /// V2-Lite-specific constants the head depends on. Mirrors
 /// `eagle4.py:38-45` exactly.
 pub mod cfg {
@@ -479,6 +536,128 @@ impl Eagle4Head {
     /// Requires both [`Self::set_frozen`] and [`Self::pin_metal`] to
     /// have run. Errors otherwise.
     #[cfg(target_os = "macos")]
+    /// Path-to-90 lever 5 — AMX-accelerated head forward via direct
+    /// cblas_sgemv from Accelerate.framework. Same outputs as
+    /// `forward_full_no_lm_head` but routes the 6 large gemvs
+    /// (in_proj, V, O, gate, up, down) through AMX. CPU intermediates
+    /// (rmsnorm, silu_mul, residual adds) stay CPU — they're 2048-
+    /// element ops and the AMX dispatch overhead would dominate.
+    ///
+    /// Why AMX vs Metal: per deep_research § Apple Silicon, AMX hits
+    /// ~1790 GFLOPS at batch=1 for cblas_sgemv vs Metal f16 gemv's
+    /// effective ~225 GFLOPS for the head's matrix shapes. Net per-
+    /// gemv cost: ~10-50 µs vs Metal's ~1-5 ms.
+    ///
+    /// Does NOT need frozen weights pinned to Metal (eagle4 head's
+    /// f32 Vec<f32> is the AMX input directly). Does not need a
+    /// MetalContext. Q + K still skipped (S=1 dead computation),
+    /// mask still skipped (Stage 3 only).
+    #[cfg(target_os = "macos")]
+    pub fn forward_full_amx_no_lm_head(
+        &self,
+        prev_token: u32,
+        h_low: &[f32],
+        h_mid: &[f32],
+        h_high: &[f32],
+        h_shared: &[f32],
+    ) -> Result<Eagle4ForwardOutput> {
+        let frozen = self.frozen.as_ref().ok_or_else(|| {
+            Error::Model(
+                "Eagle4Head::forward_full_amx_no_lm_head: frozen weights not loaded".into(),
+            )
+        })?;
+        let h = cfg::HIDDEN_DIM;
+        let inter = cfg::INTERMEDIATE;
+        let vocab = cfg::VOCAB;
+        let eps = cfg::RMS_EPS;
+
+        if (prev_token as usize) >= vocab {
+            return Err(Error::Model(format!(
+                "Eagle4Head::forward_full_amx_no_lm_head: prev_token={} >= VOCAB={}",
+                prev_token, vocab
+            )));
+        }
+        for (name, vsl) in [
+            ("h_low", h_low),
+            ("h_mid", h_mid),
+            ("h_high", h_high),
+            ("h_shared", h_shared),
+        ] {
+            if vsl.len() != h {
+                return Err(Error::Model(format!(
+                    "Eagle4Head::forward_full_amx_no_lm_head: {name}.len()={} expected {h}",
+                    vsl.len()
+                )));
+            }
+        }
+
+        let w = &self.weights;
+        let pe_off = (prev_token as usize) * h;
+        let prev_embed = &frozen.token_embd[pe_off..pe_off + h];
+
+        // 1. Embed + concat into x5
+        let mut x5 = Vec::with_capacity(5 * h);
+        x5.extend_from_slice(prev_embed);
+        x5.extend_from_slice(h_low);
+        x5.extend_from_slice(h_mid);
+        x5.extend_from_slice(h_high);
+        x5.extend_from_slice(h_shared);
+
+        // 2. in_proj via AMX: weight (HIDDEN, 5*HIDDEN), x5 → x (HIDDEN)
+        let mut x = vec![0.0f32; h];
+        amx_sgemv(h, 5 * h, &w.in_proj, &x5, &mut x);
+
+        // 3. Attention block — RMSNorm → V → O → residual.
+        //    Q + K skipped at S=1 (diagonal-mask softmax collapses to v).
+        let mut x_normed = vec![0.0f32; h];
+        rmsnorm(&x, &w.block_attn_norm, eps, &mut x_normed);
+        let mut v = vec![0.0f32; h];
+        amx_sgemv(h, h, &w.block_attn_v, &x_normed, &mut v);
+        let mut attn_out = vec![0.0f32; h];
+        amx_sgemv(h, h, &w.block_attn_o, &v, &mut attn_out);
+        for i in 0..h {
+            x[i] += attn_out[i];
+        }
+
+        // 4. MLP block — RMSNorm → SwiGLU → residual.
+        rmsnorm(&x, &w.block_mlp_norm, eps, &mut x_normed);
+        let mut gate_out = vec![0.0f32; inter];
+        let mut up_out = vec![0.0f32; inter];
+        amx_sgemv(inter, h, &w.block_mlp_gate, &x_normed, &mut gate_out);
+        amx_sgemv(inter, h, &w.block_mlp_up, &x_normed, &mut up_out);
+        let mut act = vec![0.0f32; inter];
+        silu_mul(&gate_out, &up_out, &mut act);
+        let mut mlp_out = vec![0.0f32; h];
+        amx_sgemv(h, inter, &w.block_mlp_down, &act, &mut mlp_out);
+        for i in 0..h {
+            x[i] += mlp_out[i];
+        }
+
+        // 5. Baseline + residual gate
+        let mut baseline = vec![0.0f32; h];
+        rmsnorm(h_high, &frozen.output_norm, eps, &mut baseline);
+        let alpha = w.residual_gate;
+        let mut draft_hidden = vec![0.0f32; h];
+        for i in 0..h {
+            draft_hidden[i] = baseline[i] + alpha * x[i];
+        }
+
+        // 6. mask_proj SKIPPED (Stage 3 only).
+        let mask_logits: Vec<f32> = Vec::new();
+
+        // 7. calib_proj — tiny (1×HIDDEN); CPU is fine.
+        let mut calib_buf = [0.0f32; 1];
+        gemv_f32(&w.calib_proj_w, 1, h, &draft_hidden, &mut calib_buf);
+        let calib_logit = calib_buf[0] + w.calib_proj_b;
+
+        Ok(Eagle4ForwardOutput {
+            token_logits: Vec::new(),
+            mask_logits,
+            draft_hidden,
+            calib_logit,
+        })
+    }
+
     pub fn forward_full_metal_no_lm_head(
         &self,
         ctx: &MetalContext,
