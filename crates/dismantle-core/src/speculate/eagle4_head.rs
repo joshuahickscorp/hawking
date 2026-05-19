@@ -48,61 +48,10 @@ use std::path::Path;
 use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 
 // Path-to-90 lever 5 — AMX direct cblas for the eagle4 head's
-// largest gemvs. cblas_sgemv from Accelerate.framework routes
-// through Apple's AMX matrix coprocessor; ~1790 GFLOPS at batch=1
-// per the deep-research § Apple Silicon section (vs Metal f16 gemv's
-// effective ~225 GFLOPS for these matrix shapes). Replaces 6-8 Metal
-// gemv dispatches in the head forward with cblas calls that complete
-// in ~10-50 µs each. NOT Core ML — direct cblas via the framework.
+// largest gemvs. Implementation extracted to `crate::amx` (path-to-125
+// L4) so V2-Lite attention projections can share the same wrapper.
 #[cfg(target_os = "macos")]
-#[link(name = "Accelerate", kind = "framework")]
-extern "C" {
-    fn cblas_sgemv(
-        order: i32,            // CblasRowMajor = 101
-        trans: i32,            // CblasNoTrans  = 111
-        m: i32,
-        n: i32,
-        alpha: f32,
-        a: *const f32,
-        lda: i32,
-        x: *const f32,
-        incx: i32,
-        beta: f32,
-        y: *mut f32,
-        incy: i32,
-    );
-}
-
-#[cfg(target_os = "macos")]
-const CBLAS_ROW_MAJOR: i32 = 101;
-#[cfg(target_os = "macos")]
-const CBLAS_NO_TRANS: i32 = 111;
-
-/// AMX-routed (rows × cols) f32 matrix-vector multiply: y = A·x.
-/// Row-major; weight rows are contiguous, dot products per row.
-#[cfg(target_os = "macos")]
-#[inline]
-fn amx_sgemv(rows: usize, cols: usize, a: &[f32], x: &[f32], y: &mut [f32]) {
-    debug_assert_eq!(a.len(), rows * cols);
-    debug_assert_eq!(x.len(), cols);
-    debug_assert_eq!(y.len(), rows);
-    unsafe {
-        cblas_sgemv(
-            CBLAS_ROW_MAJOR,
-            CBLAS_NO_TRANS,
-            rows as i32,
-            cols as i32,
-            1.0,
-            a.as_ptr(),
-            cols as i32,
-            x.as_ptr(),
-            1,
-            0.0,
-            y.as_mut_ptr(),
-            1,
-        );
-    }
-}
+use crate::amx::amx_sgemv;
 
 /// V2-Lite-specific constants the head depends on. Mirrors
 /// `eagle4.py:38-45` exactly.

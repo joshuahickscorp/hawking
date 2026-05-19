@@ -15,6 +15,7 @@
 //! - **Engine API** (this file): the [`Engine`] trait that
 //!   `dismantle-serve` and `dismantle-bench` drive through.
 
+pub mod amx;
 pub mod attn;
 pub mod cache;
 pub mod gguf;

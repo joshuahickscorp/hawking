@@ -2491,6 +2491,15 @@ impl DeepSeekV2 {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
+        // path-to-125 L4 — when `attn_proj_amx` is on, route this projection's
+        // GEMV through AMX (cblas_sgemv) instead of the Metal f32 path. The
+        // f32 weight slice `w` is already resident in CPU memory, so this skips
+        // both the Metal dispatch overhead and the optional pinned-buffer hop.
+        #[cfg(target_os = "macos")]
+        if self.attn_proj_amx_enabled() {
+            crate::amx::amx_sgemv(rows, cols, w, x, out);
+            return Ok(());
+        }
         #[cfg(target_os = "macos")]
         if let Some(ctx) = &self.metal_ctx {
             // Guard: only use pinned when it is f32-sized; f16-uploaded buffers are
@@ -2506,6 +2515,17 @@ impl DeepSeekV2 {
         Ok(())
     }
 
+    /// path-to-125 L4 — read the profile's `attn_proj_amx` flag. Returns
+    /// `false` when no profile is loaded (test fixtures, autotune captures)
+    /// to keep the existing Metal path the default.
+    #[inline]
+    fn attn_proj_amx_enabled(&self) -> bool {
+        self.kernel_profile
+            .as_ref()
+            .map(|p| p.selected.attn_proj_amx)
+            .unwrap_or(false)
+    }
+
     /// v0.3.4 — shared-input pair dispatcher: coalesces two independent fp32 GEMVs
     /// (e.g. q_a_proj + kv_a_proj_with_mqa) that read the same `x` into one CB.
     fn gemv_f32_attn_pair_dispatch(
@@ -2517,6 +2537,16 @@ impl DeepSeekV2 {
         out_a: &mut [f32],
         out_b: &mut [f32],
     ) -> Result<()> {
+        // path-to-125 L4 — when AMX is enabled, split the coalesced pair into
+        // two cblas_sgemv calls. The pair's whole point was sharing a Metal
+        // dispatch; AMX has no comparable batched API, so issuing two cblas
+        // calls back-to-back is the right move. Both stay in CPU memory.
+        #[cfg(target_os = "macos")]
+        if self.attn_proj_amx_enabled() {
+            crate::amx::amx_sgemv(rows_a, cols, w_a, x, out_a);
+            crate::amx::amx_sgemv(rows_b, cols, w_b, x, out_b);
+            return Ok(());
+        }
         #[cfg(target_os = "macos")]
         if let Some(ctx) = &self.metal_ctx {
             // Guard: skip pinned buffers that are f16-sized (see gemv_f32_attn_dispatch).

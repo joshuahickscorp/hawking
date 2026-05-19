@@ -125,6 +125,14 @@ pub struct KernelVariant {
     /// (forward_tokens_batched_parallel_k full impl).
     #[serde(default = "default_verify_kernels")]
     pub verify_kernels: String,
+    /// path-to-125 L4 — route V2-Lite attention projections (`q_a_proj`,
+    /// `kv_a_proj_with_mqa`, `q_b_proj`, `kv_b_proj`) through AMX
+    /// (`cblas_sgemv` from Accelerate.framework) instead of the Metal
+    /// f32 GEMV kernel. Bit-identical on row-major f32 input within
+    /// `atol=1e-3`. Default `false` until the bench gate validates a
+    /// ≥3% wall-clock improvement on each projection's shape.
+    #[serde(default)]
+    pub attn_proj_amx: bool,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -319,6 +327,7 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         rmsnorm_attn_schedule: "basic".into(),
         residual_fusion: "off".into(),
         verify_kernels: "sequential".into(),
+        attn_proj_amx: false,
     }]
 }
 
