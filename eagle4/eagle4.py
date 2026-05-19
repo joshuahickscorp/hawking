@@ -263,24 +263,62 @@ def train(
         flush=True,
     )
 
-    def _step_loss(head, b, prev_tok, h_high, weight: float, target_alpha: float):
+    def _step_loss(head, b, prev_tok, h_high, weight: float,
+                   target_alpha: float, k_offset: int):
+        """One step of the multi-step training loss.
+
+        `k_offset` is the autoregressive depth: at step 0 we predict the
+        token at position P+1 from V2-Lite state at P (the original
+        single-step regime); at step k we predict the token at P+k+1
+        from rolled state at P (matches chain-decode inference where
+        the head has been rolled k times forward of the verifier
+        capture). When `k_offset > 0`, targets b["next"], b["mask"],
+        and the b["high"] MSE baseline are all shifted left by
+        k_offset along the seq dim (with zero-padding at the tail
+        that the position_mask excludes from the loss).
+        """
         tok, mask_logits, draft_h, calib_logit = head(
             prev_tok, b["low"], b["mid"], h_high, b["shared"]
         )
         B, S, V = tok.shape
-        pos_mask = mx.concatenate([mx.zeros((B, 3)), mx.ones((B, S - 3))], axis=1).reshape(-1)
+
+        # Position mask: valid positions are [3, S - k_offset). Skipping the
+        # first 3 positions matches the original loss (warm-up of attention);
+        # excluding the last k_offset positions avoids targets that would
+        # shift past the end of the batch sequence.
+        valid_end = max(S - k_offset, 3)
+        if valid_end <= 3:
+            return mx.zeros(()), tok, draft_h
+        pos_mask = mx.concatenate([
+            mx.zeros((B, 3)),
+            mx.ones((B, valid_end - 3)),
+            mx.zeros((B, S - valid_end)),
+        ], axis=1).reshape(-1)
         N = mx.maximum(pos_mask.sum(), mx.array(1.0))
 
-        # MSE target uses the ORIGINAL V2-Lite h_high (b["high"]) so the
-        # head keeps learning the post-norm(h_high) residual structure
-        # even when chain-mode rolls draft_hidden as h_high (which would
-        # otherwise create a moving MSE target).
-        baseline = mx.fast.rms_norm(b["high"], head._output_norm, RMS_EPS)
+        # Shift targets / baseline / mask by k_offset along seq dim.
+        if k_offset == 0:
+            next_shifted = b["next"]
+            high_shifted = b["high"]
+            mask_shifted = b["mask"]
+        else:
+            H = b["high"].shape[-1]
+            ML, MR = b["mask"].shape[-2], b["mask"].shape[-1]
+            pad_next = mx.zeros((B, k_offset), dtype=b["next"].dtype)
+            pad_high = mx.zeros((B, k_offset, H), dtype=b["high"].dtype)
+            pad_mask = mx.zeros((B, k_offset, ML, MR), dtype=b["mask"].dtype)
+            next_shifted = mx.concatenate([b["next"][:, k_offset:], pad_next], axis=1)
+            high_shifted = mx.concatenate([b["high"][:, k_offset:, :], pad_high], axis=1)
+            mask_shifted = mx.concatenate([b["mask"][:, k_offset:, :, :], pad_mask], axis=1)
+
+        # MSE / target-argmax target tracks the SHIFTED V2-Lite h_high
+        # (= the actual h_high at the position the head is predicting for).
+        baseline = mx.fast.rms_norm(high_shifted, head._output_norm, RMS_EPS)
         target_logits = baseline @ head._lm_head.astype(mx.float32)
         target_arg_flat = mx.stop_gradient(mx.argmax(target_logits.reshape(-1, V), axis=-1))
 
         ce_corpus_per = nn.losses.cross_entropy(
-            tok.reshape(-1, V), b["next"].reshape(-1), reduction="none"
+            tok.reshape(-1, V), next_shifted.reshape(-1), reduction="none"
         )
         ce_target_per = nn.losses.cross_entropy(
             tok.reshape(-1, V), target_arg_flat, reduction="none"
@@ -291,7 +329,7 @@ def train(
         mse = (((draft_h - baseline) ** 2).mean(axis=-1).reshape(-1) * pos_mask).sum() / N
 
         bce_per = nn.losses.binary_cross_entropy(
-            mask_logits, b["mask"], with_logits=True, reduction="none"
+            mask_logits, mask_shifted, with_logits=True, reduction="none"
         ).mean(axis=(-1, -2)).reshape(-1)
         bce = (bce_per * pos_mask).sum() / N
 
@@ -305,16 +343,26 @@ def train(
         return weight * (ce + aux_weight * mse + mask_weight * bce + calib_weight * calib), tok, draft_h
 
     def loss_fn(head, b, target_alpha):
-        # path-to-125 EAGLE-3-style chain training: roll prev_token AND
-        # draft_hidden across multi_step_k passes so the head learns to
-        # consume its own previous draft_hidden as h_high (matches the
-        # inference-time chain-decode autoregressive loop).
+        # path-to-125 EAGLE-3-style chain training:
+        #   - roll prev_token (existing multi_step_k behavior)
+        #   - roll draft_hidden → h_high              (gated by chain_h_high)
+        #   - shift targets by k_offset per step      (gated by chain_h_high)
+        # Combined, this matches the inference-time chain-decode loop:
+        # at step k the head sees a rolled prev_token + its own previous
+        # draft_hidden as h_high, and is asked to predict the corpus
+        # token at position P+k+1 (i.e., truly k tokens ahead of the
+        # verifier capture). When chain_h_high=False, behaviour
+        # collapses to the historical multi_step_k regime (no roll,
+        # same target every k).
         prev = b["prev"]
         cur_h_high = b["high"]
         total = mx.zeros(())
         for k in range(multi_step_k):
             w = multi_step_decay ** k
-            step_loss, tok, draft_h = _step_loss(head, b, prev, cur_h_high, w, target_alpha)
+            k_offset = k if chain_h_high else 0
+            step_loss, tok, draft_h = _step_loss(
+                head, b, prev, cur_h_high, w, target_alpha, k_offset,
+            )
             total = total + step_loss
             if k + 1 < multi_step_k:
                 prev = mx.stop_gradient(mx.argmax(tok, axis=-1))
