@@ -3751,6 +3751,63 @@ mod metal_dispatch {
         })
     }
 
+    /// path-to-100 L5 Lever A — fused rmsnorm + residual-gate add for
+    /// the Eagle4 head's output stage. Replaces the CPU tail
+    ///   `baseline = rmsnorm(h_high); out = baseline + gate · x`
+    /// at `speculate/eagle4_head.rs:771-806` with a single dispatch
+    /// inside the head's existing TCB. Lets the downstream lm_head
+    /// gemv_f16 + sample_argmax_f32 also encode into the same TCB,
+    /// saving one `commit_and_wait` per Eagle4 chain step.
+    ///
+    /// `gate_is_vector=true` selects `gate[i]`; `false` broadcasts
+    /// `gate[0]`. Eagle4 trains with either shape (see L8 fix-(f) at
+    /// `eagle4_head.rs:122`). `weight_buf` is the head's
+    /// `output_norm` (HIDDEN,) f32; `gate_buf` is `residual_gate`.
+    /// Single-TG kernel; `out_buf` length must be ≥ hidden×f32.
+    pub fn eagle4_rmsnorm_residual_gate_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        h_high_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        gate_buf: &PinnedBuffer,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        hidden: usize,
+        gate_is_vector: bool,
+        eps: f32,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let gate_is_vector_u32: u32 = if gate_is_vector { 1 } else { 0 };
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "eagle4_rmsnorm_residual_gate",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(h_high_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(gate_buf), 0);
+                enc.set_buffer(3, Some(x_buf), 0);
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    6,
+                    std::mem::size_of::<u32>() as u64,
+                    &gate_is_vector_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<f32>() as u64,
+                    &eps as *const f32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// v0.5.6 — buffer-arg variant of the f16 silu_mul kernel.
     /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
     /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.

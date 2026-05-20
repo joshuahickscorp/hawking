@@ -34,6 +34,8 @@ pub const SHADER_MOE_UNION_EXPERT: &str =
     include_str!("../../shaders/moe_union_expert.metal");
 pub const SHADER_MOE_EXPERT_PAIR_FUSED: &str =
     include_str!("../../shaders/moe_expert_pair_fused.metal");
+pub const SHADER_EAGLE4_HEAD_FUSED: &str =
+    include_str!("../../shaders/eagle4_head_fused.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
@@ -51,6 +53,7 @@ pub fn all_shader_sources() -> String {
         SHADER_MOE_UNION_ROUTING,
         SHADER_MOE_UNION_EXPERT,
         SHADER_MOE_EXPERT_PAIR_FUSED,
+        SHADER_EAGLE4_HEAD_FUSED,
     ]
     .join("\n\n")
 }
