@@ -4,6 +4,17 @@
 **Engineering est:** 3-6 hours focused work.
 **Confidence:** MEDIUM — infrastructure shipped, design known.
 
+**Prereq reading:** `acceleration_patterns.md` (patterns 1–10) +
+`methodology_distilled_post_f2.md` (patterns 11–20) +
+`path_to_100_retool.md` (this phase contributes +5 realistic to the
+100-tps target; runs LAST in the sequence since it's smallest and
+inherits everything else). Apply the 20/20 pre-launch checklist
+before starting. Most-relevant patterns for L5: **16** (loop
+restructure shipped as one infra commit with all sync points
+defined), **2** (bit-identical parity gate is decisive, bench median
+≥3% is the ship bar), **8** (strip-restore diagnostic edits across
+the multiple commits this phase will land).
+
 ## What code is missing (Pattern 9)
 
 | File | Lines (est) | Purpose |

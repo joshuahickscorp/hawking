@@ -1,8 +1,24 @@
 # Phase F — EAGLE-3 medusa-style multi-token head
 
-**Goal:** +20-40 dec_tps. Stretch to 130-150.
+**Goal:** +20-40 dec_tps (realistic +30, baseline of `path_to_100_retool.md`).
 **Engineering est:** 2-4 weeks focused work.
 **Confidence:** LOW — research-grade architectural change.
+
+**Note (2026-05-19):** F.1 + F.2 infra shipped. F.2 training runs
+overnight 2026-05-19. F.3 (Rust port) is the next phase, gated on
+F.2 acceptance. The +20-40 estimate replaces the older "stretch to
+130-150" target — see `path_to_100_retool.md` for revised trajectory
+(Phase E is dead; 150 stretch removed).
+
+**Prereq reading for F.3 next session:** `acceleration_patterns.md`
++ `methodology_distilled_post_f2.md` + `path_to_100_retool.md` +
+`phase_f2_setup.md` + this session's `phase_f2_done.md` (or
+`phase_f2_negative.md`). Most-relevant patterns for F.3: **11**
+(F.3 retrain inherits F.2 shards, no re-capture), **12** (F.3
+retrain uses existing frozen npz, no V2-Lite load), **16** (Rust
+port bakes all medusa kernel patterns into one infra commit before
+parity gates), **20** (F.3 epoch cap inherits F.2 convergence + 20%
+margin).
 
 ## What code is missing (Pattern 9)
 

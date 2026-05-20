@@ -6,6 +6,15 @@ broader MLX-style kernel rewrites (Stage 0.5 from prompt).
 **Confidence:** MEDIUM — kernel work is empirical; each shader needs
 iterative tuning.
 
+**Prereq reading:** `acceleration_patterns.md` (patterns 1–10) +
+`methodology_distilled_post_f2.md` (patterns 11–20) +
+`path_to_100_retool.md` (this phase contributes +20 realistic to the
+100-tps target). Apply the 20/20 pre-launch checklist before starting.
+Most-relevant patterns for L7: **16** (front-load all kernel patterns
+into one infra commit), **18** (kernel geometry reasoned from M3 Pro
+arch, not grid-searched), **2** (synthetic parity → clean-window
+bench is the decisive gate, not mid-flight intuition).
+
 ## What code is missing (Pattern 9)
 
 | File | Lines (est) | Purpose |
