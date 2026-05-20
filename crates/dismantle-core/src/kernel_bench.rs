@@ -50,6 +50,7 @@ pub const ALL_KERNEL_NAMES: &[&str] = &[
     "gemv_q4_k_m_v3_xtg_sumy_pinned",
     "moe_expert_pair_chained",
     "moe_expert_pair_fused",
+    "mla_decode_kernel_fc_kbatch",
 ];
 
 /// Parse a "ROWSxCOLS" string into (rows, cols).
@@ -706,6 +707,111 @@ mod imp {
         Ok(samples)
     }
 
+    // ── MLA kbatch (mla_decode_kernel_fc_kbatch) ────────────────────────────
+    //
+    // path-to-150 Phase E E.0.a — pre-validation K-sweep bench for the
+    // K-batched MLA decode kernel. Answers: does attention-verifier cost
+    // stay roughly flat as K grows? If yes, the tree-decode lever is
+    // physical on V2-Lite; if no, Phase E is killed at the cheapest gate.
+    //
+    // V2-Lite production MLA shape is hardcoded (n_heads=128,
+    // kv_lora_rank=512, qk_nope=128, qk_rope=64, v_head_dim=128). The
+    // rows/cols CLI args are ignored. K and seq_len are overridable via
+    // env vars DISMANTLE_MLA_BENCH_k (default 4) and
+    // DISMANTLE_MLA_BENCH_seq_len (default 256), mirroring the MoE
+    // fixture's env-override pattern. Kernel hard-caps k_batch ∈ [1, 8].
+    //
+    // Dispatch geometry mirrors mla_decode_metal_kbatch (parallel_k.rs:323):
+    // grid = (n_heads × TG_SIZE, 1, 1), tg = (TG_SIZE, 1, 1), with TG_SIZE
+    // = 256. Two threadgroup buffers (q_nope_proj_k, c_kv_wt_k), each
+    // sized k_batch × kv_lora_rank × sizeof(f32).
+
+    fn bench_mla_kbatch(ctx: &MetalContext, _rows: usize, _cols: usize, iterations: usize) -> Result<Vec<f64>> {
+        // V2-Lite MLA shape constants (deepseek_v2.rs:80-107).
+        const N_HEADS: u32 = 128;
+        const KV_LORA_RANK: u32 = 512;
+        const QK_NOPE_HEAD_DIM: u32 = 128;
+        const QK_ROPE_HEAD_DIM: u32 = 64;
+        const V_HEAD_DIM: u32 = 128;
+        const TG_SIZE: u32 = 256;
+
+        let k_batch: u32 = std::env::var("DISMANTLE_MLA_BENCH_k")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .filter(|&k: &u32| (1..=8).contains(&k))
+            .unwrap_or(4);
+        let seq_len: u32 = std::env::var("DISMANTLE_MLA_BENCH_seq_len")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .filter(|&s: &u32| s >= k_batch && s <= 8192)
+            .unwrap_or(256);
+
+        let q_head_dim = QK_NOPE_HEAD_DIM + QK_ROPE_HEAD_DIM;
+        let q_bytes =
+            (k_batch as usize) * (N_HEADS as usize) * (q_head_dim as usize) * size_of::<f32>();
+        let c_kv_bytes = (seq_len as usize) * (KV_LORA_RANK as usize) * size_of::<f32>();
+        let k_pe_bytes = (seq_len as usize) * (QK_ROPE_HEAD_DIM as usize) * size_of::<f32>();
+        let kv_b_bytes = (N_HEADS as usize)
+            * ((QK_NOPE_HEAD_DIM + V_HEAD_DIM) as usize)
+            * (KV_LORA_RANK as usize)
+            * size_of::<f32>();
+        let out_bytes =
+            (k_batch as usize) * (N_HEADS as usize) * (V_HEAD_DIM as usize) * size_of::<f32>();
+        let scores_bytes = (N_HEADS as usize)
+            * (k_batch as usize)
+            * (seq_len as usize)
+            * size_of::<f32>();
+
+        let q_buf = ctx.new_buffer(q_bytes);
+        let c_kv_buf = ctx.new_buffer(c_kv_bytes);
+        let k_pe_buf = ctx.new_buffer(k_pe_bytes);
+        let kv_b_buf = ctx.new_buffer(kv_b_bytes);
+        let out_buf = ctx.new_buffer(out_bytes);
+        let scores_buf = ctx.new_buffer(scores_bytes);
+
+        let scale: f32 = 1.0 / ((q_head_dim as f32).sqrt());
+        let qp_bytes = (k_batch as u64) * (KV_LORA_RANK as u64) * size_of::<f32>() as u64;
+        let cwt_bytes = (k_batch as u64) * (KV_LORA_RANK as u64) * size_of::<f32>() as u64;
+
+        let dispatch = |ctx: &MetalContext| -> Result<()> {
+            ctx.dispatch_threads(
+                "mla_decode_kernel_fc_kbatch",
+                (N_HEADS * TG_SIZE, 1, 1),
+                (TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&q_buf), 0);
+                    enc.set_buffer(1, Some(&c_kv_buf), 0);
+                    enc.set_buffer(2, Some(&k_pe_buf), 0);
+                    enc.set_buffer(3, Some(&kv_b_buf), 0);
+                    enc.set_buffer(4, Some(&out_buf), 0);
+                    enc.set_buffer(5, Some(&scores_buf), 0);
+                    enc.set_bytes(6, size_of::<u32>() as u64, &N_HEADS as *const u32 as *const _);
+                    enc.set_bytes(7, size_of::<u32>() as u64, &QK_NOPE_HEAD_DIM as *const u32 as *const _);
+                    enc.set_bytes(8, size_of::<u32>() as u64, &QK_ROPE_HEAD_DIM as *const u32 as *const _);
+                    enc.set_bytes(9, size_of::<u32>() as u64, &V_HEAD_DIM as *const u32 as *const _);
+                    enc.set_bytes(10, size_of::<u32>() as u64, &KV_LORA_RANK as *const u32 as *const _);
+                    enc.set_bytes(11, size_of::<u32>() as u64, &seq_len as *const u32 as *const _);
+                    enc.set_bytes(12, size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                    enc.set_bytes(13, size_of::<u32>() as u64, &k_batch as *const u32 as *const _);
+                    enc.set_threadgroup_memory_length(0, qp_bytes);
+                    enc.set_threadgroup_memory_length(1, cwt_bytes);
+                },
+            )
+        };
+
+        for _ in 0..50 {
+            dispatch(ctx)?;
+        }
+
+        let mut samples = Vec::with_capacity(iterations);
+        for _ in 0..iterations {
+            let t0 = Instant::now();
+            dispatch(ctx)?;
+            samples.push(t0.elapsed().as_secs_f64() * 1e6);
+        }
+        Ok(samples)
+    }
+
     pub fn run_kernel(kernel: &str, rows: usize, cols: usize, iterations: usize) -> Result<KernelBenchResult> {
         let ctx = MetalContext::new()?;
         let shape_str = format!("{rows}x{cols}");
@@ -719,6 +825,8 @@ mod imp {
             "gemv_q4_k_m_v3_xtg_sumy_pinned" => bench_q4k_v3_xtg_sumy(&ctx, rows, cols, iterations)?,
             "moe_expert_pair_chained" => bench_moe_chained(&ctx, rows, cols, iterations)?,
             "moe_expert_pair_fused" => bench_moe_fused(&ctx, rows, cols, iterations)?,
+            // V2-Lite MLA shape is hardcoded inside; rows/cols ignored.
+            "mla_decode_kernel_fc_kbatch" => bench_mla_kbatch(&ctx, rows, cols, iterations)?,
             other => {
                 return Err(crate::Error::Kernel(format!(
                     "unknown kernel {other:?}; supported: {}",
