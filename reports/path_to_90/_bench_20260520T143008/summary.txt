@@ -1,0 +1,72 @@
+=== path-to-125 bench @ 20260520T143008 ===
+draft head: /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/eagle4/checkpoints/eagle4_v3/best.npz
+
+--- off / sequential / chain_k=1 ---
+  trial=1 prompt=The quick brown fox            dec_tps=26.86
+  trial=2 prompt=The quick brown fox            dec_tps=26.89
+  trial=3 prompt=The quick brown fox            dec_tps=26.88
+  trial=1 prompt=Write a Python function to com dec_tps=26.86
+  trial=2 prompt=Write a Python function to com dec_tps=26.86
+  trial=3 prompt=Write a Python function to com dec_tps=26.87
+  trial=1 prompt=Summarize the plot of Hamlet i dec_tps=26.86
+  trial=2 prompt=Summarize the plot of Hamlet i dec_tps=26.87
+  trial=3 prompt=Summarize the plot of Hamlet i dec_tps=26.88
+  trial=1 prompt=The capital of France is       dec_tps=26.97
+  trial=2 prompt=The capital of France is       dec_tps=26.89
+  trial=3 prompt=The capital of France is       dec_tps=26.87
+  [off/sequential/K1] median=26.87 mean=26.879999999999995 min=26.86 max=26.97 n=12
+
+--- ngram / parallel-k / chain_k=1 ---
+  trial=1 prompt=The quick brown fox            dec_tps=25.42
+  trial=2 prompt=The quick brown fox            dec_tps=25.57
+  trial=3 prompt=The quick brown fox            dec_tps=25.57
+  trial=1 prompt=Write a Python function to com dec_tps=24.12
+  trial=2 prompt=Write a Python function to com dec_tps=24.06
+  trial=3 prompt=Write a Python function to com dec_tps=24.05
+  trial=1 prompt=Summarize the plot of Hamlet i dec_tps=26.69
+  trial=2 prompt=Summarize the plot of Hamlet i dec_tps=26.64
+  trial=3 prompt=Summarize the plot of Hamlet i dec_tps=26.48
+  trial=1 prompt=The capital of France is       dec_tps=26.62
+  trial=2 prompt=The capital of France is       dec_tps=26.72
+  trial=3 prompt=The capital of France is       dec_tps=26.63
+  [ngram/parallel-k/K1] median=26.48 mean=25.714166666666667 min=24.05 max=26.72 n=12
+
+--- eagle4 / sequential / chain_k=1 ---
+  trial=1 prompt=The quick brown fox            dec_tps=17.19
+  trial=2 prompt=The quick brown fox            dec_tps=17.51
+  trial=3 prompt=The quick brown fox            dec_tps=17.47
+  trial=1 prompt=Write a Python function to com dec_tps=18.21
+  trial=2 prompt=Write a Python function to com dec_tps=17.23
+  trial=3 prompt=Write a Python function to com dec_tps=16.7
+  trial=1 prompt=Summarize the plot of Hamlet i dec_tps=18.01
+  trial=2 prompt=Summarize the plot of Hamlet i dec_tps=18.65
+  trial=3 prompt=Summarize the plot of Hamlet i dec_tps=16.89
+  trial=1 prompt=The capital of France is       dec_tps=18.04
+  trial=2 prompt=The capital of France is       dec_tps=18.57
+  trial=3 prompt=The capital of France is       dec_tps=18.53
+  [eagle4/sequential/K1] median=18.01 mean=17.75 min=16.7 max=18.65 n=12
+
+--- eagle4 / parallel-k / chain_k=4 ---
+  trial=1 prompt=The quick brown fox            dec_tps=9.79
+  trial=2 prompt=The quick brown fox            dec_tps=10.03
+  trial=3 prompt=The quick brown fox            dec_tps=9.8
+  trial=1 prompt=Write a Python function to com dec_tps=7.43
+  trial=2 prompt=Write a Python function to com dec_tps=7.16
+  trial=3 prompt=Write a Python function to com dec_tps=7.31
+  trial=1 prompt=Summarize the plot of Hamlet i dec_tps=7.26
+  trial=2 prompt=Summarize the plot of Hamlet i dec_tps=7.24
+  trial=3 prompt=Summarize the plot of Hamlet i dec_tps=7.13
+  trial=1 prompt=The capital of France is       dec_tps=7.52
+  trial=2 prompt=The capital of France is       dec_tps=7.61
+  trial=3 prompt=The capital of France is       dec_tps=7.58
+  [eagle4/parallel-k/K4] median=7.52 mean=7.988333333333332 min=7.13 max=10.03 n=12
+
+
+=== RESULT ===
+raw: /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_bench_20260520T143008/raw.jsonl
+
+config                            median   mean    min     max     n
+off/sequential/K1                   26.87   26.88   26.86   26.97  12
+ngram/parallel-k/K1                 26.48   25.71   24.05   26.72  12
+eagle4/sequential/K1                18.01   17.75   16.70   18.65  12
+eagle4/parallel-k/K4                 7.52    7.99    7.13   10.03  12
