@@ -173,11 +173,15 @@ run_trial() {
 spec_log_capture() {
   local backend="$1"
   local outfile="$2"
+  # macOS env requires options (-u) BEFORE name=value pairs — anything
+  # after the first name=value is treated as the utility to exec. The
+  # AMX run silently produced `env: -u: No such file or directory`
+  # under the older ordering. Keep -u flags first; name=values second.
   local env_prefix=(env DISMANTLE_SPEC_LOG=1)
   case "$backend" in
     metal) env_prefix=(env DISMANTLE_SPEC_LOG=1 EAGLE4_BACKEND=metal) ;;
     cpu)   env_prefix=(env DISMANTLE_SPEC_LOG=1 EAGLE4_BACKEND=cpu)   ;;
-    amx)   env_prefix=(env DISMANTLE_SPEC_LOG=1 -u EAGLE4_BACKEND)    ;;
+    amx)   env_prefix=(env -u EAGLE4_BACKEND DISMANTLE_SPEC_LOG=1)    ;;
   esac
   "${env_prefix[@]}" nice -n 19 "$DISMANTLE" generate \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE_SEQ" \
