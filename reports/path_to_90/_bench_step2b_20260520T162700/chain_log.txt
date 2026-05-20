@@ -1,0 +1,90 @@
+=== prompt 1: The quick brown fox ===
+ jumps over[spec/eagle4-chain] K=4 accept=0/4 step=287.3ms emit=2 tps=7.0
+ the lazy[spec/eagle4-chain] K=4 accept=0/4 step=259.4ms emit=2 tps=7.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=259.2ms emit=3 tps=11.6
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=257.5ms emit=3 tps=11.6
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=257.0ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=252.7ms emit=3 tps=11.9
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.2ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.2ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=257.4ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.4ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.0ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.2ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.1ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=255.4ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=257.2ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.5ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.1ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=256.7ms emit=3 tps=11.7
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=258.3ms emit=3 tps=11.6
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=260.0ms emit=3 tps=11.5
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=258.1ms emit=3 tps=11.6
+ dog dog dog[spec/eagle4-chain] K=4 accept=1/4 step=258.2ms emit=3 tps=11.6
+
+=== prompt 2: Write a Python function to compute Fibonacci numbers ===
+[spec/eagle4-chain] K=4 accept=0/4 step=270.6ms emit=2 tps=7.4
+Here[spec/eagle4-chain] K=4 accept=0/4 step=253.3ms emit=2 tps=7.9
+ is a[spec/eagle4-chain] K=4 accept=0/4 step=256.1ms emit=2 tps=7.8
+ simple Python[spec/eagle4-chain] K=4 accept=0/4 step=255.8ms emit=2 tps=7.8
+ function that[spec/eagle4-chain] K=4 accept=0/4 step=257.5ms emit=2 tps=7.8
+ uses a[spec/eagle4-chain] K=4 accept=0/4 step=265.4ms emit=2 tps=7.5
+ loop to[spec/eagle4-chain] K=4 accept=0/4 step=260.0ms emit=2 tps=7.7
+ compute the[spec/eagle4-chain] K=4 accept=0/4 step=261.0ms emit=2 tps=7.7
+ Fibonacci[spec/eagle4-chain] K=4 accept=0/4 step=257.0ms emit=2 tps=7.8
+ numbers:[spec/eagle4-chain] K=4 accept=0/4 step=260.4ms emit=2 tps=7.7
+```[spec/eagle4-chain] K=4 accept=1/4 step=257.9ms emit=3 tps=11.6
+[spec/eagle4-chain] K=4 accept=0/4 step=257.0ms emit=2 tps=7.8
+def fib[spec/eagle4-chain] K=4 accept=0/4 step=257.1ms emit=2 tps=7.8
+onacci([spec/eagle4-chain] K=4 accept=0/4 step=257.2ms emit=2 tps=7.8
+n):[spec/eagle4-chain] K=4 accept=0/4 step=258.1ms emit=2 tps=7.8
+   [spec/eagle4-chain] K=4 accept=0/4 step=254.7ms emit=2 tps=7.9
+ fib_[spec/eagle4-chain] K=4 accept=0/4 step=256.8ms emit=2 tps=7.8
+sequence =[spec/eagle4-chain] K=4 accept=0/4 step=256.2ms emit=2 tps=7.8
+ [0[spec/eagle4-chain] K=4 accept=0/4 step=256.7ms emit=2 tps=7.8
+, [spec/eagle4-chain] K=4 accept=0/4 step=260.5ms emit=2 tps=7.7
+1][spec/eagle4-chain] K=4 accept=0/4 step=258.6ms emit=2 tps=7.7
+   [spec/eagle4-chain] K=4 accept=0/4 step=258.7ms emit=2 tps=7.7
+ while len[spec/eagle4-chain] K=4 accept=0/4 step=257.6ms emit=2 tps=7.8
+(fib[spec/eagle4-chain] K=4 accept=0/4 step=258.2ms emit=2 tps=7.7
+_sequence[spec/eagle4-chain] K=4 accept=0/4 step=259.5ms emit=2 tps=7.7
+) <[spec/eagle4-chain] K=4 accept=0/4 step=256.7ms emit=2 tps=7.8
+ n:[spec/eagle4-chain] K=4 accept=0/4 step=262.8ms emit=2 tps=7.6
+       [spec/eagle4-chain] K=4 accept=0/4 step=256.9ms emit=2 tps=7.8
+ fib_[spec/eagle4-chain] K=4 accept=0/4 step=259.7ms emit=2 tps=7.7
+sequence.[spec/eagle4-chain] K=4 accept=0/4 step=257.4ms emit=2 tps=7.8
+append([spec/eagle4-chain] K=4 accept=0/4 step=259.8ms emit=2 tps=7.7
+
+=== prompt 3: Summarize the plot of Hamlet in three sentences ===
+[spec/eagle4-chain] K=4 accept=0/4 step=272.3ms emit=2 tps=7.3
+Hamlet[spec/eagle4-chain] K=4 accept=0/4 step=259.1ms emit=2 tps=7.7
+, Prince[spec/eagle4-chain] K=4 accept=0/4 step=258.2ms emit=2 tps=7.7
+ of Denmark[spec/eagle4-chain] K=4 accept=0/4 step=258.3ms emit=2 tps=7.7
+, returns[spec/eagle4-chain] K=4 accept=0/4 step=257.3ms emit=2 tps=7.8
+ home to[spec/eagle4-chain] K=4 accept=0/4 step=257.6ms emit=2 tps=7.8
+ find his[spec/eagle4-chain] K=4 accept=0/4 step=257.5ms emit=2 tps=7.8
+ father dead[spec/eagle4-chain] K=4 accept=0/4 step=258.5ms emit=2 tps=7.7
+. He[spec/eagle4-chain] K=4 accept=0/4 step=260.7ms emit=2 tps=7.7
+ soon learns[spec/eagle4-chain] K=4 accept=0/4 step=257.4ms emit=2 tps=7.8
+ that his[spec/eagle4-chain] K=4 accept=0/4 step=257.0ms emit=2 tps=7.8
+ mother,[spec/eagle4-chain] K=4 accept=0/4 step=256.3ms emit=2 tps=7.8
+ Gertrude,[spec/eagle4-chain] K=4 accept=0/4 step=257.2ms emit=2 tps=7.8
+ has married[spec/eagle4-chain] K=4 accept=0/4 step=260.2ms emit=2 tps=7.7
+ his Uncle[spec/eagle4-chain] K=4 accept=0/4 step=257.9ms emit=2 tps=7.8
+ Claudius[spec/eagle4-chain] K=4 accept=0/4 step=259.4ms emit=2 tps=7.7
+. As[spec/eagle4-chain] K=4 accept=0/4 step=257.5ms emit=2 tps=7.8
+ Hamlet falls[spec/eagle4-chain] K=4 accept=0/4 step=258.4ms emit=2 tps=7.7
+ into a[spec/eagle4-chain] K=4 accept=0/4 step=261.6ms emit=2 tps=7.6
+ deep depression[spec/eagle4-chain] K=4 accept=0/4 step=261.2ms emit=2 tps=7.7
+, he[spec/eagle4-chain] K=4 accept=0/4 step=256.8ms emit=2 tps=7.8
+ begins to[spec/eagle4-chain] K=4 accept=0/4 step=258.4ms emit=2 tps=7.7
+ talk to[spec/eagle4-chain] K=4 accept=0/4 step=267.4ms emit=2 tps=7.5
+ the ghost[spec/eagle4-chain] K=4 accept=0/4 step=262.2ms emit=2 tps=7.6
+ of his[spec/eagle4-chain] K=4 accept=0/4 step=258.3ms emit=2 tps=7.7
+ father who[spec/eagle4-chain] K=4 accept=0/4 step=258.2ms emit=2 tps=7.7
+ reveals Claud[spec/eagle4-chain] K=4 accept=0/4 step=258.7ms emit=2 tps=7.7
+ius'[spec/eagle4-chain] K=4 accept=0/4 step=260.3ms emit=2 tps=7.7
+s treachery.[spec/eagle4-chain] K=4 accept=1/4 step=258.5ms emit=3 tps=11.6
+ Hamlet must[spec/eagle4-chain] K=4 accept=0/4 step=258.8ms emit=2 tps=7.7
+ decide whether[spec/eagle4-chain] K=4 accept=0/4 step=259.4ms emit=2 tps=7.7
+

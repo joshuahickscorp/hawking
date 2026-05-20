@@ -1,0 +1,55 @@
+=== path-to-100 Step 2B — chain-K=4 acceptance @ 20260520T162700 ===
+draft head: /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/eagle4/checkpoints/eagle4_v3/best.npz
+
+--- baseline: off / sequential / K=1 (for break-even calc) ---
+  prompt=The quick brown fox              off_dec_tps=26.87
+  prompt=Write a Python function to compu off_dec_tps=26.85
+  prompt=Summarize the plot of Hamlet in  off_dec_tps=26.84
+  off_dec_tps_mean=26.853333333333335  off_step_ms=37.23932472691162
+
+--- eagle4 / parallel-k / K=4 with DISMANTLE_SPEC_LOG=1 ---
+  [prompt 1] The quick brown fox
+    chain_dec_tps=9.98
+  [prompt 2] Write a Python function to compute Fibonacci numbe
+    chain_dec_tps=7.32
+  [prompt 3] Summarize the plot of Hamlet in three sentences
+    chain_dec_tps=7.34
+
+=== analysis ===
+
+  outer_iters captured       : 84
+  off_step_ms (single-tok)   : 37.24
+  chain_K                    : 4
+
+  accept distribution:
+    accept=0/4  count=  62  pct= 73.8%  ####################################
+    accept=1/4  count=  22  pct= 26.2%  #############
+    accept=2/4  count=   0  pct=  0.0%  
+    accept=3/4  count=   0  pct=  0.0%  
+    accept=4/4  count=   0  pct=  0.0%  
+
+  mean_accept                : 0.262 / 4
+  median_outer_step_ms       : 258.00
+  mean_outer_step_ms         : 258.81
+  median_inst_tps            : 7.80
+  implied_chain_tps          : (1+0.262)/258.00ms = 4.89
+  mean_emit                  : 2.262 tokens/outer
+  step_inflation             : 6.93× off_step_ms
+  acceptance to break-even   : 5.93  (mean_accept must reach this to match off_dec_tps)
+
+=== gate verdict ===
+  Gate 1 (mean_accept < 0.5)               : FAIL → head architectural wall
+  Gate 2 (accept ≥ 1.0 AND step ≥ 1.5×off) : pass
+  Gate break-even (accept ≥ 5.93)       : FAIL — chain loses to off
+
+  Verdict: HEAD IS THE WALL. The draft head's K=4 acceptance is
+  below the no-accept floor required for chain-K=4 to even break
+  even with off-mode. F.2 already ruled out medusa K=8 acceptance;
+  this confirms the eagle4_v3 head is similarly capped. Path-to-100
+  via chain-K=4 is closed. Options: F.3 (medusa rust port retry),
+  F.5 (hybrid tree), or new draft head architecture/training.
+
+=== outputs ===
+summary:    /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_bench_step2b_20260520T162700/summary.txt
+chain_log:  /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_bench_step2b_20260520T162700/chain_log.txt
+steps_csv:  /Users/scammermike/Downloads/dismantle/.claude/worktrees/dreamy-golick-d54ff8/reports/path_to_90/_bench_step2b_20260520T162700/chain_steps.csv
