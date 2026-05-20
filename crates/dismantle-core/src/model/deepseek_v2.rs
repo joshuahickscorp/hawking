@@ -1819,10 +1819,19 @@ impl Engine for DeepSeekV2 {
                 // adds ~26 commit+wait overheads (~4 ms total at ~150 µs each)
                 // vs the single-TCB fast path. Net Eagle4 mode cost: ~41 ms /
                 // token vs Off's ~37 ms.
+                // path-to-100 Step 2A — per-phase timing for K=1 tax allocation.
+                // The four candidates are: (a) capture forward, (b) h_shared
+                // compute (incl. CPU fallback), (c) head propose, (d) head
+                // argmax. Active only when DISMANTLE_SPEC_LOG=1; the
+                // Instant::now() calls are kept unconditional (≤10 ns) so the
+                // breakdown is consistent with the existing `[spec/eagle4]`
+                // line, but the print is gated.
+                let t_step_a0 = Instant::now();
                 self.eagle4_capture_active = true;
                 let argmax_result = self.forward_token_argmax(last_id, pos, use_profiled_greedy);
                 self.eagle4_capture_active = false;
                 let v2_argmax = argmax_result?;
+                let t_after_capture = Instant::now();
 
                 let capture = self.eagle4_capture.take().ok_or_else(|| {
                     Error::Model(
@@ -1840,11 +1849,13 @@ impl Engine for DeepSeekV2 {
                 // buffer is all zeros (e.g. layer 26 is dense, or the
                 // capture missed the read for some reason).
                 let h_shared_norm2: f32 = capture.h_shared_gpu.iter().map(|v| v * v).sum();
+                let h_shared_fallback = h_shared_norm2 == 0.0;
                 let h_shared = if h_shared_norm2 > 0.0 {
                     capture.h_shared_gpu.clone()
                 } else {
                     self.cpu_shared_expert_forward(26, &capture.x_norm_26)?
                 };
+                let t_after_hshared = Instant::now();
 
                 // Eagle4 head forward — AMX path (lever 5) preferred on
                 // macOS for the head's f32 gemvs; falls back to Metal-
@@ -1909,11 +1920,13 @@ impl Engine for DeepSeekV2 {
                     &capture.h_high,
                     &h_shared,
                 )?;
+                let t_after_head = Instant::now();
                 let hidden_size = head_out.draft_hidden.len();
                 let vocab_size = self.config.vocab_size;
                 let draft_id = self
                     .gemv_f16_argmax_dispatch(vocab_size, hidden_size, &head_out.draft_hidden)?
                     .unwrap_or(v2_argmax);
+                let t_after_argmax = Instant::now();
                 let calib_sigmoid = 1.0 / (1.0 + (-head_out.calib_logit).exp());
 
                 if draft_id == v2_argmax {
@@ -1923,6 +1936,21 @@ impl Engine for DeepSeekV2 {
                 }
 
                 if spec_log {
+                    let backend_tag = std::env::var("EAGLE4_BACKEND")
+                        .ok()
+                        .unwrap_or_else(|| "amx".to_string());
+                    eprintln!(
+                        "[spec/eagle4-step] step={} backend={} capture_us={} hshared_us={} \
+                         hshared_fallback={} head_us={} argmax_us={} total_us={}",
+                        step,
+                        backend_tag,
+                        t_after_capture.duration_since(t_step_a0).as_micros(),
+                        t_after_hshared.duration_since(t_after_capture).as_micros(),
+                        h_shared_fallback,
+                        t_after_head.duration_since(t_after_hshared).as_micros(),
+                        t_after_argmax.duration_since(t_after_head).as_micros(),
+                        t_after_argmax.duration_since(t_step_a0).as_micros(),
+                    );
                     eprintln!(
                         "[spec/eagle4] step={} pos={} draft={} v2={} calib={:.3} thresh={:.3} {}",
                         step,
