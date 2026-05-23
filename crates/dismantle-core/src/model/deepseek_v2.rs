@@ -1,16 +1,3 @@
-//! DeepSeek-V2-Lite forward pass.
-//!
-//! Architecture: MLA attention + MoE FFN with 2 shared experts and
-//! top-6 of 64 routed experts (auxiliary-loss-free routing). First
-//! transformer layer is dense (no routing); we still drive it
-//! through the MoE kernel with a single-expert config so there's no
-//! separate dense code path.
-//!
-//! The Phase-0 path runs entirely on CPU in fp32; the model layer's
-//! job is bookkeeping (dequant on demand, KV cache management,
-//! routing, residual stream). Phase 1+ swaps individual ops out for
-//! Metal kernels under the same Rust signatures.
-
 use crate::cache::KvCache;
 use crate::engine::{
     Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
@@ -109,7 +96,7 @@ impl DeepSeekConfig {
 
 /// Phase 0 keeps the GGUF mmap'd for the lifetime of the engine and
 /// lazily dequantizes expert weights on every forward pass. This
-/// trades CPU work (per-call dequant) for resident memory — needed
+/// trades CPU work (per-call dequant) for resident memory -- needed
 /// because Q4_K_M weights expand 8× when materialized to fp32, and
 /// DeepSeek-V2-Lite Q4_K_M (9.7 GB on disk) would balloon to ~70 GB
 /// dequantized, busting any sub-128GB Mac.
@@ -132,7 +119,7 @@ pub struct DeepSeekV2 {
     pub layers: Vec<Layer>,
 
     pub kv: KvCache,
-    /// Wedge 1 — compressed MLA KV cache. Only allocated when
+    /// Wedge 1 -- compressed MLA KV cache. Only allocated when
     /// `kernel_profile.selected.mla_schedule == "metal-mla"`. Shape:
     /// mla_c_kv[li][t * kv_lora_rank .. (t+1) * kv_lora_rank].
     pub mla_c_kv: Vec<Vec<f32>>,
@@ -153,12 +140,12 @@ pub struct DeepSeekV2 {
     /// dispatch helpers fall back to CPU when `None`.
     pub metal_ctx: Option<MetalContext>,
 
-    /// WB — Phase-2 weight pinning. The LM-head fp16 matrix uploaded
+    /// WB -- Phase-2 weight pinning. The LM-head fp16 matrix uploaded
     /// once at load time, reused across every decode token. Eliminates
     /// the per-dispatch `new_buffer_with_bytes` memcpy of ~400 MB that
     /// the byte-slice `gemv_f16_metal` path incurred. `Some` only when
     /// `metal_ctx.is_some()` and the LM head exists (or is tied to
-    /// embedding — both share this Buffer).
+    /// embedding -- both share this Buffer).
     pub lm_head_buf: Option<PinnedBuffer>,
 
     /// Whole GGUF mmap exposed to Metal without copying. Indexed MoE
@@ -176,7 +163,7 @@ pub struct DeepSeekV2 {
     /// (all experts fit in RAM, no eviction needed).
     pub expert_cache: Option<crate::model::expert_cache::ExpertCache>,
 
-    /// Wedge 4 — Decode-arena: pre-allocated Metal buffers for the MLA
+    /// Wedge 4 -- Decode-arena: pre-allocated Metal buffers for the MLA
     /// attention hot path. Allocated once at load time; reused across all
     /// decode steps. Eliminates per-dispatch `new_buffer` overhead.
     /// `Some` only when Metal is available and `gpu_buffer_reuse == "decode-arena"`.
@@ -194,6 +181,14 @@ pub struct DeepSeekV2 {
     /// v1.0.0-E: Greedy argmax output (1 × u32). GPU writes the winning token
     /// index here; only 4 bytes cross the bus instead of 408 KB logits.
     pub token_buf: Option<PinnedBuffer>,
+
+    /// path-to-50 lever 1: optional pruned-vocab handle. `Some` when a
+    /// `vocab_prune_path` was supplied in `EngineConfig`; the LM head has
+    /// been sliced to `pruned_vocab.pruned_len()` rows and `config.vocab_size`
+    /// reflects the pruned count. The argmax kernel returns pruned ids; the
+    /// sampler/streaming layer translates back to original ids before
+    /// emitting tokens or feeding them into the next embed lookup.
+    pub pruned_vocab: Option<crate::vocab_prune::PrunedVocab>,
 }
 
 /// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
@@ -210,7 +205,7 @@ pub struct Layer {
     pub attn_norm: Vec<f32>,
     pub ffn_norm: Vec<f32>,
 
-    // MLA attention weights — eagerly dequanted (each layer's attn
+    // MLA attention weights -- eagerly dequanted (each layer's attn
     // tensors are tens of MB; cumulative footprint is ~1 GB).
     pub q_proj: Vec<f32>, // optional q-lora-rank path
     pub q_a_proj: Option<Vec<f32>>,
@@ -221,10 +216,10 @@ pub struct Layer {
     pub kv_b_proj: Vec<f32>,
     pub o_proj: Vec<f32>,
 
-    // FFN — either dense (rare; only `first_k_dense_layers`) or MoE.
+    // FFN -- either dense (rare; only `first_k_dense_layers`) or MoE.
     pub mode: LayerMode,
 
-    /// WB — Phase-2 weight pinning. One pre-uploaded `metal::Buffer`
+    /// WB -- Phase-2 weight pinning. One pre-uploaded `metal::Buffer`
     /// per kernel-bound attention weight, populated by `Engine::load`
     /// when `metal_ctx.is_some()`. The dispatchers
     /// (`gemv_f32_attn_dispatch`) prefer the pinned path when these
@@ -233,7 +228,7 @@ pub struct Layer {
     pub pinned: LayerPinned,
 }
 
-/// WB — pre-uploaded `metal::Buffer` handles for kernel-bound weights
+/// WB -- pre-uploaded `metal::Buffer` handles for kernel-bound weights
 /// on a single transformer layer. Populated only on macOS with
 /// `metal_ctx.is_some()`; every field is `None` otherwise. Held on
 /// `Layer` so the dispatcher can reach them without a separate field
@@ -418,7 +413,7 @@ impl DeepSeekV2 {
         quant::dequant_to_f16(info, bytes)
     }
 
-    /// Build a `TensorRef` for a single (non-fused) tensor — the
+    /// Build a `TensorRef` for a single (non-fused) tensor -- the
     /// returned ref points into the GGUF mmap.
     fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
         let info = g
@@ -488,8 +483,20 @@ impl DeepSeekV2 {
 impl Engine for DeepSeekV2 {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
         let gguf = GgufFile::open(weights)?;
-        let cfg = DeepSeekConfig::from_gguf(&gguf)?;
+        let mut cfg = DeepSeekConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("deepseek-v2-lite").to_string();
+
+        // path-to-50 lever 1: load vocab whitelist if configured. Slicing
+        // happens after the LM-head dequant a few lines below; we just load
+        // and validate here so a missing/malformed file fails fast.
+        let pruned_vocab = match config.vocab_prune_path.as_ref() {
+            Some(p) => {
+                let pv = crate::vocab_prune::PrunedVocab::load(p)?;
+                pv.validate(cfg.vocab_size)?;
+                Some(pv)
+            }
+            None => None,
+        };
 
         // Tokenizer: prefer sidecar tokenizer.json, fall back to GGUF.
         let sidecar = weights
@@ -505,8 +512,23 @@ impl Engine for DeepSeekV2 {
         let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = Self::dequant(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
-            Some(Self::dequant_f16(&gguf, "output.weight")?)
+            let mut head = Self::dequant_f16(&gguf, "output.weight")?;
+            // path-to-50 lever 1: gather the kept rows so the GEMV + argmax
+            // run over a vocab pruned to corpus-supported tokens. DeepSeek-V2
+            // has an explicit `output.weight` (not tied to the input embed);
+            // we only slice the output head, not the embed table.
+            if let Some(pv) = pruned_vocab.as_ref() {
+                head = pv.slice_lm_head_f16(&head, cfg.hidden)?;
+                cfg.vocab_size = pv.pruned_len();
+            }
+            Some(head)
         } else {
+            if pruned_vocab.is_some() {
+                return Err(Error::Model(
+                    "vocab_prune_path set but model has tied embeddings (no output.weight); \
+                     pruning the tied embed table would break input embed lookup".into(),
+                ));
+            }
             None
         };
 
@@ -538,17 +560,17 @@ impl Engine for DeepSeekV2 {
             } else {
                 // Modern GGUF MoE layout (llama.cpp post-2024-Q3):
                 //
-                //   blk.{li}.ffn_gate_exps.weight    — single 3D tensor,
+                //   blk.{li}.ffn_gate_exps.weight    -- single 3D tensor,
                 //   blk.{li}.ffn_up_exps.weight        outer dim is expert id
                 //   blk.{li}.ffn_down_exps.weight
                 //
-                //   blk.{li}.ffn_gate_shexp.weight   — fused-shared MLPs
+                //   blk.{li}.ffn_gate_shexp.weight   -- fused-shared MLPs
                 //   blk.{li}.ffn_up_shexp.weight       packed into one
                 //   blk.{li}.ffn_down_shexp.weight     wider FFN
                 //                                      (intermediate × n_shared)
                 //
                 // Older exports stored one tensor per expert; we no longer
-                // try those — if a model needs them, it predates dismantle.
+                // try those -- if a model needs them, it predates dismantle.
                 let gate_logits_w = Self::dequant(&gguf, &lp("ffn_gate_inp.weight"))?;
 
                 let routed_fused = MoEFusedTensors {
@@ -636,11 +658,15 @@ impl Engine for DeepSeekV2 {
             cfg.qk_nope_head_dim + cfg.qk_rope_head_dim,
         );
 
+        // Compressed-MLA cache is the default cache layout when no profile is
+        // pinned. Profiles still control via `mla_schedule`; `"legacy-materialized"`
+        // (or any non-`"metal-mla"` value) opts out and keeps the materialized
+        // KvCache as the only cache.
         let mla_metal = config
             .kernel_profile
             .as_ref()
             .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
-            .unwrap_or(false);
+            .unwrap_or(true);
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -657,7 +683,7 @@ impl Engine for DeepSeekV2 {
 
         // Metal context: built once per model, owned for the model's
         // lifetime. Errors here (no GPU, shader compile failure) are
-        // soft — `None` falls back to CPU kernels in every dispatcher.
+        // soft -- `None` falls back to CPU kernels in every dispatcher.
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
@@ -675,7 +701,7 @@ impl Engine for DeepSeekV2 {
         // lifetime. The byte-slice `gemv_f16_metal` path was memcpying
         // ~400 MB on every decode token; the pinned variant references
         // this Buffer instead. Tied-embedding case (lm_head=None) uses
-        // the embed table — shape-compatible since both are
+        // the embed table -- shape-compatible since both are
         // (vocab × hidden) fp16.
         let lm_head_buf = {
             #[cfg(target_os = "macos")]
@@ -705,6 +731,62 @@ impl Engine for DeepSeekV2 {
                 None
             }
         };
+
+        // Wall-clock optimization #1 (2026-05-22): hint the kernel that
+        // every routed-expert byte range will be read soon. macOS
+        // pre-fetches these pages instead of demand-faulting them during
+        // the first decode token. Saves ~1-3 s of cold-start latency
+        // (the user-perceived "first token" cost). Advisory only — pages
+        // still demand-load under memory pressure. Skips if expert_cache
+        // is active (eviction logic owns the access pattern there).
+        #[cfg(unix)]
+        if config.max_routed_expert_ram_mb.is_none() {
+            use std::os::raw::c_int;
+            extern "C" {
+                fn posix_madvise(addr: *mut std::ffi::c_void, len: usize, advice: c_int) -> c_int;
+            }
+            const POSIX_MADV_WILLNEED: c_int = 3;
+            let base = gguf.mmap.as_ptr();
+            let total_len = gguf.mmap.len();
+            let mut hinted_mib: usize = 0;
+            for layer in &layers {
+                if let LayerMode::MoE { routed_fused, shared_fused, .. } = &layer.mode {
+                    for tref in [&routed_fused.gate_w, &routed_fused.up_w, &routed_fused.down_w] {
+                        let off = tref.offset;
+                        let len = tref.byte_size;
+                        if off.saturating_add(len) <= total_len {
+                            unsafe {
+                                let _ = posix_madvise(
+                                    base.add(off) as *mut _,
+                                    len,
+                                    POSIX_MADV_WILLNEED,
+                                );
+                            }
+                            hinted_mib += len / (1024 * 1024);
+                        }
+                    }
+                    if let Some(sf) = shared_fused {
+                        for tref in [&sf.gate_w, &sf.up_w, &sf.down_w] {
+                            let off = tref.offset;
+                            let len = tref.byte_size;
+                            if off.saturating_add(len) <= total_len {
+                                unsafe {
+                                    let _ = posix_madvise(
+                                        base.add(off) as *mut _,
+                                        len,
+                                        POSIX_MADV_WILLNEED,
+                                    );
+                                }
+                                hinted_mib += len / (1024 * 1024);
+                            }
+                        }
+                    }
+                }
+            }
+            if config.trace_dispatch && hinted_mib > 0 {
+                eprintln!("[dismantle] madvise WILLNEED hinted {hinted_mib} MiB of MoE expert weights");
+            }
+        }
 
         // WB per-layer attn-weight pinning: q_a_proj, q_b_proj,
         // kv_a_proj_with_mqa, kv_b_proj, o_proj. Each is a fp32 matrix
@@ -765,7 +847,7 @@ impl Engine for DeepSeekV2 {
             }
         }
 
-        // Wedge 4 — Decode-arena: allocate pre-warmed Metal buffers when
+        // Wedge 4 -- Decode-arena: allocate pre-warmed Metal buffers when
         // the selected profile requests gpu_buffer_reuse == "decode-arena".
         #[cfg(target_os = "macos")]
         let decode_arena = {
@@ -792,7 +874,8 @@ impl Engine for DeepSeekV2 {
                         cfg.ffn_intermediate,
                         cfg.q_lora_rank,
                         cfg.n_layers.saturating_sub(cfg.first_k_dense_layers),
-                        8, // max_batch_size for Phase 5A K-token batched verify
+                        17, // max_batch_size for K-token batched verify
+                            // (NGram K=16 + 1 bonus position; ExactShared K=4/8/16 + 1 bonus)
                     )
                 })
             } else {
@@ -802,7 +885,7 @@ impl Engine for DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let decode_arena: Option<DecodeArena> = None;
 
-        // GPU-resident KV cache — persistent per-layer Metal buffers, one entry per seq slot.
+        // GPU-resident KV cache -- persistent per-layer Metal buffers, one entry per seq slot.
         // Allocated only when Metal + MLA are both active. Mirrors mla_c_kv / mla_k_pe.
         #[cfg(target_os = "macos")]
         let (mla_c_kv_gpu, mla_k_pe_gpu) = {
@@ -893,6 +976,7 @@ impl Engine for DeepSeekV2 {
                     256, // rolling window: 256 tokens
                 )
             }),
+            pruned_vocab,
         })
     }
 
@@ -947,7 +1031,7 @@ impl Engine for DeepSeekV2 {
             ..Default::default()
         };
 
-        // Prefill — process each prompt token sequentially. In Phase 0
+        // Prefill -- process each prompt token sequentially. In Phase 0
         // there is no batched prefill kernel; the win comes in Phase 2.
         // Both the abort flag and the per-step watchdog are checked at
         // each token boundary.
@@ -991,7 +1075,7 @@ impl Engine for DeepSeekV2 {
 
         if self.speculate_mode == crate::SpeculateMode::ExactShared {
             // Speculative decode: draft with shared-only model, verify with full model.
-            // Temperature must be 0 (greedy) — validated above.
+            // Temperature must be 0 (greedy) -- validated above.
             let spec_k = self.verify_window;
             let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
             let mut pos = prompt_len;
@@ -1009,9 +1093,10 @@ impl Engine for DeepSeekV2 {
                 let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
 
                 if actual_k == 0 {
-                    // Too close to budget — single greedy step.
+                    // Too close to budget -- single greedy step.
                     let mut logits = self.forward_token(last_id, pos)?;
-                    let next_id = self.sampler.sample(&mut logits, &req.sampling);
+                    let sampled = self.sampler.sample(&mut logits, &req.sampling);
+                    let next_id = self.id_to_original(sampled);
                     self.sampler.record(next_id);
                     let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                     sink(StreamEvent::Token { id: next_id, text });
@@ -1034,7 +1119,20 @@ impl Engine for DeepSeekV2 {
                 // Rollback KV: draft used future slots as scratch; verifier overwrites them.
                 self.kv.seq_len = draft_start_seq;
 
-                // --- VERIFY: stop at the first mismatch ---
+                // --- VERIFY: serial forward with early termination at first mismatch.
+                //
+                // 2026-05-22 (Session K): reverted from T2.16 batched verify. The
+                // batched path (forward_tokens_batched) always runs actual_k+1 tokens
+                // through the full MoE; at low ExactShared draft-acceptance rate
+                // (greedy shared-only model), most iterations accept 0-1 tokens, so
+                // paying K+1 full forwards per emitted token regressed dec_tps by
+                // -17 (K=4) / -20 (K=16) vs the no-spec baseline. The serial path
+                // stops at the first mismatch, paying only `first_reject + 1` full
+                // forwards (typically 1-2 instead of 5-17). Even though each call
+                // commits its own TCB, the work-saved dominates the commit cost.
+                //
+                // NGram path keeps the batched verifier — drafts are CPU n-gram
+                // lookups (no model forward), so the cost ratio is different.
                 let verify_t0 = Instant::now();
                 tmp_last = last_id;
                 let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
@@ -1135,12 +1233,13 @@ impl Engine for DeepSeekV2 {
                 let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
 
                 if actual_k == 0 {
-                    // Near budget — single greedy step.
+                    // Near budget -- single greedy step.
                     let next_id = match self.forward_token_greedy(last_id, pos)? {
                         Some(t) => t,
                         None => {
                             let mut logits = self.forward_token(last_id, pos)?;
-                            self.sampler.sample(&mut logits, &req.sampling)
+                            let sampled = self.sampler.sample(&mut logits, &req.sampling);
+                            self.id_to_original(sampled)
                         }
                     };
                     self.sampler.record(next_id);
@@ -1156,12 +1255,13 @@ impl Engine for DeepSeekV2 {
                 let draft_ids = ngram.propose(actual_k);
 
                 if draft_ids.is_empty() {
-                    // No draft available — single greedy step.
+                    // No draft available -- single greedy step.
                     let next_id = match self.forward_token_greedy(last_id, pos)? {
                         Some(t) => t,
                         None => {
                             let mut logits = self.forward_token(last_id, pos)?;
-                            self.sampler.sample(&mut logits, &req.sampling)
+                            let sampled = self.sampler.sample(&mut logits, &req.sampling);
+                            self.id_to_original(sampled)
                         }
                     };
                     self.sampler.record(next_id);
@@ -1183,7 +1283,7 @@ impl Engine for DeepSeekV2 {
                 // Save KV state before verify so we can rollback.
                 let draft_start_seq = self.kv.seq_len;
 
-                // --- VERIFY (Phase 5A): batched forward — [last_id, draft_ids...] in one TCB.
+                // --- VERIFY (Phase 5A): batched forward -- [last_id, draft_ids...] in one TCB.
                 // Batch: [last_id, d0, d1, ..., dK-1] at positions [pos, pos+1, ..., pos+K].
                 // logits_batch[k] = model output after processing batch[k] at pos+k.
                 // Acceptance: argmax(logits_batch[k]) should match draft_ids[k].
@@ -1199,7 +1299,10 @@ impl Engine for DeepSeekV2 {
                 let mut first_reject = 0usize;
                 let mut correction_id: Option<u32> = None;
                 for k in 0..draft_actual_k {
-                    let pred = crate::kernels::argmax_f32(&logits_batch[k]);
+                    // logits are in pruned-vocab space when pruning is active;
+                    // translate to original so the comparison vs draft_ids
+                    // (also original space) is correct.
+                    let pred = self.id_to_original(crate::kernels::argmax_f32(&logits_batch[k]));
                     if pred != draft_ids[k] {
                         correction_id = Some(pred);
                         break;
@@ -1207,7 +1310,7 @@ impl Engine for DeepSeekV2 {
                     first_reject += 1;
                 }
                 let bonus_id = correction_id.unwrap_or_else(|| {
-                    crate::kernels::argmax_f32(&logits_batch[draft_actual_k])
+                    self.id_to_original(crate::kernels::argmax_f32(&logits_batch[draft_actual_k]))
                 });
 
                 // Rollback KV to the correct accepted prefix length.
@@ -1265,12 +1368,14 @@ impl Engine for DeepSeekV2 {
                         Some(token) => token,
                         None => {
                             let mut logits = self.forward_token(last_id, pos)?;
-                            self.sampler.sample(&mut logits, &req.sampling)
+                            let sampled = self.sampler.sample(&mut logits, &req.sampling);
+                            self.id_to_original(sampled)
                         }
                     }
                 } else {
                     let mut logits = self.forward_token(last_id, pos)?;
-                    self.sampler.sample(&mut logits, &req.sampling)
+                    let sampled = self.sampler.sample(&mut logits, &req.sampling);
+                    self.id_to_original(sampled)
                 };
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
@@ -1399,6 +1504,32 @@ impl Engine for DeepSeekV2 {
 }
 
 impl DeepSeekV2 {
+    /// path-to-50 lever 1: translate a pruned-vocab argmax index back to the
+    /// model's original tokenizer space. The LM-head GEMV + argmax run over
+    /// the pruned vocab (`self.config.vocab_size == pruned_len`), so every
+    /// token id leaving the argmax path is in pruned space. Pass-through
+    /// (zero-overhead) when no whitelist was configured.
+    ///
+    /// Call this at the boundary where the id is about to be:
+    /// - passed to `tokenizer.decode_one`
+    /// - emitted to the `sink`
+    /// - fed back into the next `forward_token` (embed lookup expects original)
+    /// - compared against `eos` (also original)
+    ///
+    /// IDs flowing into `sampler.record` / `ngram.note_token` after this
+    /// translation are in *original* space; the sampler's repetition-penalty
+    /// guard `if i < logits.len()` then silently skips rep-penalty for original
+    /// ids that don't survive pruning. This is acceptable because every
+    /// emitted token id originated from an argmax over pruned logits and is
+    /// therefore guaranteed to be in the whitelist (round-trips losslessly).
+    #[inline]
+    pub(crate) fn id_to_original(&self, pruned: u32) -> u32 {
+        match &self.pruned_vocab {
+            Some(pv) => pv.pruned_to_original(pruned),
+            None => pruned,
+        }
+    }
+
     fn layer_has_tcb_attention(layer: &Layer) -> bool {
         let q_lora_ready = layer.pinned.q_a_proj.is_some()
             && layer.pinned.q_b_proj.is_some()
@@ -1644,7 +1775,7 @@ impl DeepSeekV2 {
         self.mla_kv_gpu_synced = true;
 
         let tok_ptr = tok_buf.contents() as *const u32;
-        Ok(unsafe { *tok_ptr })
+        Ok(self.id_to_original(unsafe { *tok_ptr }))
     }
 
     /// rmsnorm dispatcher: Metal when the context is present, CPU
@@ -1713,7 +1844,7 @@ impl DeepSeekV2 {
         Ok(())
     }
 
-    /// v0.3.4 — shared-input pair dispatcher: coalesces two independent fp32 GEMVs
+    /// v0.3.4 -- shared-input pair dispatcher: coalesces two independent fp32 GEMVs
     /// (e.g. q_a_proj + kv_a_proj_with_mqa) that read the same `x` into one CB.
     fn gemv_f32_attn_pair_dispatch(
         &self,
@@ -1743,7 +1874,7 @@ impl DeepSeekV2 {
     }
 
     /// MoE gate-logits fp32 GEMV dispatcher (`ffn_gate_inp`). Tiny but
-    /// frequent — once per token per MoE layer.
+    /// frequent -- once per token per MoE layer.
     fn gemv_f32_moe_dispatch(
         &self,
         w: &[f32],
@@ -1760,7 +1891,7 @@ impl DeepSeekV2 {
         Ok(())
     }
 
-    /// v0.3.3 — pair+silu dispatcher: coalesces gate+up GEMVs and silu_mul into ONE
+    /// v0.3.3 -- pair+silu dispatcher: coalesces gate+up GEMVs and silu_mul into ONE
     /// CommandBatch when the simd schedule is active, writing the silu'd result
     /// directly into `a`. Fallback computes gate+up separately then CPU silu_mul.
     fn moe_expert_pair_matmul_dispatch(
@@ -2027,7 +2158,7 @@ impl DeepSeekV2 {
     }
 
     /// Multi-token forward pass. Phase 2 Wedge 2a: initial impl is a loop
-    /// over `forward_token` — semantically identical to N sequential single-
+    /// over `forward_token` -- semantically identical to N sequential single-
     /// token calls. Subsequent wedges (2c-2f) widen the internals.
     fn forward_tokens(
         &mut self,
@@ -2047,7 +2178,7 @@ impl DeepSeekV2 {
         Ok(out)
     }
 
-    /// Phase 4C/5A — multi-token forward pass for n-gram spec decode verify.
+    /// Phase 4C/5A -- multi-token forward pass for n-gram spec decode verify.
     ///
     /// Accepts K tokens at sequential positions and returns K logit vectors.
     ///
@@ -2076,7 +2207,7 @@ impl DeepSeekV2 {
             return Ok(vec![]);
         }
 
-        // Phase 5A: single-TCB fast path — same conditions as Wedge C.
+        // Phase 5A: single-TCB fast path -- same conditions as Wedge C.
         #[cfg(target_os = "macos")]
         {
             let tcb_base = self.metal_ctx.is_some()
@@ -2105,7 +2236,7 @@ impl DeepSeekV2 {
         Ok(out)
     }
 
-    /// Phase 5A — single-TCB K-token batched forward.
+    /// Phase 5A -- single-TCB K-token batched forward.
     ///
     /// Processes K tokens sequentially within one Metal command buffer.
     /// Each token reuses the shared arena scratch buffers (x_buf, x_norm_buf,
@@ -2150,7 +2281,7 @@ impl DeepSeekV2 {
             .unwrap_or("scalar");
         // v2.1.0-T2.11: Q5_0 routed-down kernel selector. "basic" routes to
         // the historical kernel; "v2t" opts into the new 8-rows-per-TG
-        // simdsum kernel. Default is "basic" — flip via profile JSON.
+        // simdsum kernel. Default is "basic" -- flip via profile JSON.
         let routed_down_schedule = self.kernel_profile.as_ref()
             .map(|p| p.selected.routed_down_schedule.as_str())
             .unwrap_or("basic");
@@ -2199,14 +2330,27 @@ impl DeepSeekV2 {
                         self.config.qk_rope_head_dim, self.config.v_head_dim,
                         self.config.kv_lora_rank, seq_len, scale, h,
                     )?;
-                    // Residual: x_buf += attn_out (arena.out).
-                    crate::kernels::add_inplace_metal_tcb(
-                        &mut global_tcb, &arena.x_buf, &arena.out, h,
-                    )?;
-                    // FFN norm: x_buf → x_norm_buf.
-                    crate::kernels::rmsnorm_metal_buf_tcb(
-                        &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
-                    )?;
+                    // Session F (sketch): opt-in fused add_inplace + rmsnorm.
+                    // Default OFF; flip via DISMANTLE_FUSED_ADD_RMSNORM=1.
+                    // Fuses x += attn_out and rmsnorm(x → x_norm) into one
+                    // dispatch, eliminating one DRAM pass over x.
+                    if std::env::var_os("DISMANTLE_FUSED_ADD_RMSNORM").is_some() {
+                        crate::kernels::add_rmsnorm_fused_tcb(
+                            &mut global_tcb,
+                            &arena.x_buf, &arena.out,
+                            ffn_norm_buf, &arena.x_norm_buf,
+                            eps, h,
+                        )?;
+                    } else {
+                        // Residual: x_buf += attn_out (arena.out).
+                        crate::kernels::add_inplace_metal_tcb(
+                            &mut global_tcb, &arena.x_buf, &arena.out, h,
+                        )?;
+                        // FFN norm: x_buf → x_norm_buf.
+                        crate::kernels::rmsnorm_metal_buf_tcb(
+                            &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                        )?;
+                    }
 
                     // FFN: MoE or dense.
                     if let Some(ref setup) = moe_setup {
@@ -2257,7 +2401,7 @@ impl DeepSeekV2 {
                     } else {
                         let dense_ok = self.encode_dense_ffn_tcb(&mut global_tcb, li, arena)?;
                         if !dense_ok {
-                            // Dense weights not pinned — not supported in batched fast path.
+                            // Dense weights not pinned -- not supported in batched fast path.
                             // Caller should not reach here (wedge_c_ready requires all weights).
                             return Err(Error::Model(format!(
                                 "forward_tokens_batched_tcb: l{li} dense weights not pinned"
@@ -2325,7 +2469,7 @@ impl DeepSeekV2 {
 
     /// Append a single (c_kv, k_pe) entry to the MLA cache for layer `li`
     /// at sequence slot `seq_slot`. Pure refactor of the inlined writes;
-    /// N=1 semantics unchanged. Phase 2 Wedge 2b — wedge 2d will add a
+    /// N=1 semantics unchanged. Phase 2 Wedge 2b -- wedge 2d will add a
     /// _batch counterpart.
     ///
     /// Takes field references directly so callers holding `&self.config`
@@ -2367,11 +2511,11 @@ impl DeepSeekV2 {
 
         let (x_norm, maybe_greedy) = self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
 
-        // Phase 5B.1: LM head + argmax were folded into the global TCB — token ready.
+        // Phase 5B.1: LM head + argmax were folded into the global TCB -- token ready.
         // This is the fast path: one TCB commit covers all 27 layers + final-norm + LM head.
         #[cfg(target_os = "macos")]
         if let Some(tok) = maybe_greedy {
-            return Ok(Some(tok));
+            return Ok(Some(self.id_to_original(tok)));
         }
 
         // Fallback: LM head not yet folded (e.g. ExactShared without gpu_shared_draft).
@@ -2393,7 +2537,7 @@ impl DeepSeekV2 {
                     let tok_buf = self.token_buf.as_ref().unwrap();
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                     // Phase 5C.2: if x_norm_f16 path ran in forward_token_final_norm_maybe_read,
-                    // the final norm was already written to x_norm_f16_buf — but that path is
+                    // the final norm was already written to x_norm_f16_buf -- but that path is
                     // lm_head_foldable and returns early, so we never reach here in the f16 path.
                     // This fallback handles the non-fold (ExactShared) case which stays f32.
                     let use_simdmat = self
@@ -2415,7 +2559,7 @@ impl DeepSeekV2 {
                     let tok_ptr = tok_buf.contents() as *const u32;
                     unsafe { *tok_ptr }
                 };
-                return Ok(Some(result));
+                return Ok(Some(self.id_to_original(result)));
             }
         }
 
@@ -2423,6 +2567,7 @@ impl DeepSeekV2 {
             Error::Model("forward_token_greedy: missing CPU final norm for fallback argmax".into())
         })?;
         self.gemv_f16_argmax_dispatch(self.config.vocab_size, self.config.hidden, &x_norm)
+            .map(|opt| opt.map(|t| self.id_to_original(t)))
     }
 
     fn forward_token_argmax(
@@ -2432,22 +2577,24 @@ impl DeepSeekV2 {
         use_profiled_greedy: bool,
     ) -> Result<u32> {
         if use_profiled_greedy {
+            // forward_token_greedy already returned an original-space id.
             if let Some(next) = self.forward_token_greedy(token, pos)? {
                 return Ok(next);
             }
         }
         let logits = self.forward_token(token, pos)?;
-        Ok(crate::kernels::argmax_f32(&logits))
+        Ok(self.id_to_original(crate::kernels::argmax_f32(&logits)))
     }
 
     fn forward_token_shared_only_argmax(&mut self, token: u32, pos: usize) -> Result<u32> {
         #[cfg(target_os = "macos")]
         if self.shared_only_gpu_argmax_available() {
+            // gpu helper translates internally; pass through.
             return self.forward_token_shared_only_gpu_argmax(token, pos);
         }
 
         let logits = self.forward_token_shared_only(token, pos)?;
-        Ok(crate::kernels::argmax_f32(&logits))
+        Ok(self.id_to_original(crate::kernels::argmax_f32(&logits)))
     }
 
     fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
@@ -2469,7 +2616,6 @@ impl DeepSeekV2 {
     ) -> Result<(Option<Vec<f32>>, Option<u32>)> {
         let h = self.config.hidden;
 
-        // ---- Wedge C: all attention + FFN kernels on TCB (zero counted dispatches).
         // Active when: Metal + arena present, all norm weights pre-uploaded,
         // MLA path active, model_buf present, and all layers have q_a/kv_a pinned.
         #[cfg(target_os = "macos")]
@@ -2514,7 +2660,7 @@ impl DeepSeekV2 {
                 let seq_len = seq_slot + 1;
 
                 // Pillar 2: encode ALL 27 layers into a SINGLE command buffer.
-                // Metal guarantees sequential encoder execution within one command buffer —
+                // Metal guarantees sequential encoder execution within one command buffer --
                 // writes in encoder N are visible to encoder N+1 without explicit barriers.
                 // This eliminates 26 commit+wait round-trips (saves ~4ms/token at 162μs/commit).
                 // ExactShared originally needed CPU KV mirrors for CPU draft; with
@@ -2759,6 +2905,9 @@ impl DeepSeekV2 {
                     }
 
                     // Post-commit: read greedy token if LM head was folded in.
+                    // Stored as the pruned-vocab index when vocab-prune is active;
+                    // forward_token_greedy translates the result to original space
+                    // before returning to the generate loop.
                     if lm_head_folded {
                         let tok_buf = self.token_buf.as_ref().unwrap();
                         let tok_ptr = tok_buf.contents() as *const u32;
@@ -2834,7 +2983,6 @@ impl DeepSeekV2 {
                 }
             }
         }
-        // ---- End Wedge C ----
 
         // Wedge C is the only supported decode path for V2-Lite. If its
         // preconditions don't hold (Metal context + decode arena + pinned
@@ -3180,7 +3328,7 @@ impl DeepSeekV2 {
         let kv_a_dim = cfg.kv_lora_rank + cfg.qk_rope_head_dim;
         let mut kv_a = vec![0.0f32; kv_a_dim];
 
-        // Q projection — either direct (q_proj) or via q-lora
+        // Q projection -- either direct (q_proj) or via q-lora
         // (q_a_proj → norm → q_b_proj). W1B (Phase 2 super-haul-1):
         // q_a_proj / q_b_proj routed through gemv_f32_attn_dispatch so
         // they hit Metal under cfg(target_os = "macos") + Some(ctx).
@@ -3215,7 +3363,7 @@ impl DeepSeekV2 {
                 &mut q_full,
             )?;
         } else if !layer.q_proj.is_empty() {
-            // q_proj and kv_a_proj share input x — coalesce into one CB.
+            // q_proj and kv_a_proj share input x -- coalesce into one CB.
             self.gemv_f32_attn_pair_dispatch(
                 &layer.q_proj, layer.pinned.q_proj.as_ref(), n_heads * head_dim_q,
                 &layer.kv_a_proj_with_mqa,
@@ -3242,7 +3390,7 @@ impl DeepSeekV2 {
             rope_inplace(rope_part, pos as u32, cfg.rope_theta);
         }
 
-        // Wedge 1 — Metal MLA decode path.
+        // Wedge 1 -- Metal MLA decode path.
         // When active, skip the kv_b_proj expand + mha_decode_step and
         // instead append (c_kv, k_pe) to the compressed cache, then
         // dispatch the mla_decode_kernel which operates on the compressed
@@ -3284,7 +3432,7 @@ impl DeepSeekV2 {
                     .map(|p| p.selected.command_buffering == "layer-cb")
                     .unwrap_or(false);
 
-                // Wedge 4 — Decode-arena: when gpu_buffer_reuse == "decode-arena"
+                // Wedge 4 -- Decode-arena: when gpu_buffer_reuse == "decode-arena"
                 // AND layer_cb AND o_proj pinned, use pre-allocated arena buffers.
                 // Saves one allocation+free per attention layer per token.
                 if layer_cb {
@@ -3322,7 +3470,7 @@ impl DeepSeekV2 {
                     }
                 }
 
-                // Wedge 3 — Layer-CB (no arena): batch mla_decode + o_proj into
+                // Wedge 3 -- Layer-CB (no arena): batch mla_decode + o_proj into
                 // one command buffer, saving one commit+wait per attention layer.
                 if layer_cb {
                     if let Some(o_proj_buf) = layer.pinned.o_proj.as_ref() {
@@ -3429,7 +3577,7 @@ impl DeepSeekV2 {
         )?;
 
         // Append per-head K/V into the cache. Cache slot is sized to
-        // (n_kv_heads, head_dim_q) — for MLA we set n_kv_heads=n_heads
+        // (n_kv_heads, head_dim_q) -- for MLA we set n_kv_heads=n_heads
         // and head_dim=head_dim_q. v_head_dim ≠ head_dim_q is fine; we
         // pack the v_head_dim values into the V cache slot, padding
         // with zeros if v_head_dim < head_dim_q.
@@ -3558,7 +3706,7 @@ impl DeepSeekV2 {
                     return Ok(out);
                 }
 
-                // Reusable scratch buffers — sized for the routed-expert
+                // Reusable scratch buffers -- sized for the routed-expert
                 // intermediate (1408 in this model). Reallocated below
                 // for the shared expert (intermediate = 2816).
                 let mid = cfg.moe_intermediate;
@@ -3663,7 +3811,7 @@ impl DeepSeekV2 {
                         out[i] += tmp[i];
                     }
                 } else if shared_fused.is_some() {
-                    // Fused shared path — fall back to the non-fused for simplicity
+                    // Fused shared path -- fall back to the non-fused for simplicity
                     // (shared_fused is None in DeepSeek-V2-Lite w/ current schedule).
                 }
             }

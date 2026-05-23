@@ -78,6 +78,16 @@ enum Cmd {
         /// detection (80% of system RAM). Default: unlimited.
         #[arg(long)]
         memory_limit_mb: Option<usize>,
+        /// path-to-50 lever 1: path to a vocab whitelist JSON (built by
+        /// `tools/training/analyze_corpus.py`). When set, the LM head is
+        /// sliced to the pruned vocab at load time. DeepSeek-V2-Lite only.
+        #[arg(long)]
+        vocab_prune_path: Option<PathBuf>,
+        /// path-to-50 lever 2: path to a per-layer quant tier-map JSON
+        /// (see `crates/dismantle-core/src/quant_tier_map.rs`). When set,
+        /// MoE expert weights are re-quantized per-layer at load time.
+        #[arg(long)]
+        quant_tier_map_path: Option<PathBuf>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -162,7 +172,7 @@ enum Cmd {
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
     /// 50-launch shell loop in capture-baseline-50 / token-regression
-    /// — the one model load amortizes across all prompts.
+    /// -- the one model load amortizes across all prompts.
     BatchHash {
         #[arg(long)]
         weights: PathBuf,
@@ -282,6 +292,8 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            vocab_prune_path,
+            quant_tier_map_path,
         } => generate_main(
             weights,
             prompt,
@@ -297,6 +309,8 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            vocab_prune_path,
+            quant_tier_map_path,
         ),
         Cmd::Bench {
             weights,
@@ -938,6 +952,8 @@ fn generate_main(
     trace_dispatch: bool,
     max_routed_expert_ram_mb: Option<usize>,
     memory_limit_mb: Option<usize>,
+    vocab_prune_path: Option<PathBuf>,
+    quant_tier_map_path: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -959,10 +975,10 @@ fn generate_main(
         ctrlc::set_handler(move || {
             let n = press_count.fetch_add(1, Ordering::SeqCst);
             if n == 0 {
-                eprintln!("\n[dismantle] Ctrl-C — aborting at next token boundary; press again to force-exit");
+                eprintln!("\n[dismantle] Ctrl-C -- aborting at next token boundary; press again to force-exit");
                 abort.store(true, Ordering::SeqCst);
             } else {
-                eprintln!("\n[dismantle] second Ctrl-C — force-exit");
+                eprintln!("\n[dismantle] second Ctrl-C -- force-exit");
                 std::process::exit(130);
             }
         })
@@ -985,6 +1001,8 @@ fn generate_main(
         trace_dispatch,
         max_routed_expert_ram_mb,
         memory_limit_mb,
+        vocab_prune_path,
+        quant_tier_map_path,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -1152,7 +1170,7 @@ fn batch_hash_main(
             .trim()
             .to_string();
 
-        // Escape \n in prompt — same convention as expand-baseline.sh.
+        // Escape \n in prompt -- same convention as expand-baseline.sh.
         let prompt_escaped = prompt.replace('\n', "\\n");
         output_lines.push(format!("{id} {tokens} {hash} {prompt_escaped}"));
         eprintln!(
@@ -1168,7 +1186,7 @@ fn batch_hash_main(
 
     // Header + lines, matching expand-baseline.sh's output format.
     let header = format!(
-        "# Phase 1 token-output baseline — captured by `dismantle batch-hash`\n\
+        "# Phase 1 token-output baseline -- captured by `dismantle batch-hash`\n\
          # Format: <prompt-id> <max-new-tokens> <hash-hex> <prompt-text>\n\
          # algo: blake3\n\
          # Generation: temp=0 greedy, max_new_tokens={}, model=DeepSeek-V2-Lite-Chat-Q4_K_M\n",
