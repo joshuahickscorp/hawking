@@ -11,7 +11,7 @@
 | per-kernel comparison | `dismantle bench-kernel` | `--iterations 500` | <30s |
 | cross-commit decision | `bench_diff.sh` | HEAD~1 HEAD | instant |
 
-**Never** use authoritative ship bench while Claude.app is running — use
+**Never** use authoritative ship bench while Claude.app is running -- use
 `clean_bench.sh` from a fresh terminal (Cmd+Q Claude first).
 
 ## Standardized parameters (do not change per session)
@@ -41,11 +41,11 @@ median: 19.8 dec_tps (95% CI: [18.9, 20.7], IQR: 1.4)
 - **trimmed_mean**: median with 25% dropped from each tail (for N≥4).
   More robust to a single anomalous trial.
 
-A `⚠ SPREAD HIGH` flag means the trials have high variance — Claude.app was
+A `⚠ SPREAD HIGH` flag means the trials have high variance -- Claude.app was
 probably doing heavy GPU work during some trials. Discard and re-run with
 more settling time, or just note it as a coexist-mode limitation.
 
-## bench_diff.sh — cross-commit significance test
+## bench_diff.sh -- cross-commit significance test
 
 ```bash
 bash tools/bench/bench_diff.sh HEAD~1 HEAD
@@ -61,7 +61,7 @@ Reports:
 Run enough trials that the CIs are narrow. At 6 trials with typical coexist
 variance, a 5% real speedup usually clears significance.
 
-## bench-server — persistent model for fast iteration
+## bench-server -- persistent model for fast iteration
 
 ```bash
 ./target/release/dismantle bench-server \
@@ -74,7 +74,7 @@ Loads model once, accepts JSON-line requests on stdin, emits JSON-line
 responses on stdout. Eliminates the 5-15s model load per smoke iteration.
 Use `tools/bench/bench_server_driver.sh` for automated multi-request runs.
 
-## bench-kernel — per-kernel micro-benchmarks
+## bench-kernel -- per-kernel micro-benchmarks
 
 ```bash
 # Single kernel at one shape
@@ -96,7 +96,7 @@ Answers "is kernel A really faster than kernel B?" in <30 seconds.
 
 Results append to `bench_results/kernel_perf_history.jsonl`.
 
-## git bisect — finding the regressing commit
+## git bisect -- finding the regressing commit
 
 See `tools/bisect/README.md` for the full workflow. Quick summary:
 

@@ -1,0 +1,10 @@
+torch>=2.4.0
+transformers>=4.45.0
+datasets>=3.0.0
+pyarrow>=17.0.0
+numpy>=1.26.0
+tqdm>=4.66.0
+accelerate>=1.0.0
+sentencepiece>=0.2.0
+# path-to-50 lever 3: eagle5 v2 head training (Apple Silicon)
+mlx>=0.18.0
