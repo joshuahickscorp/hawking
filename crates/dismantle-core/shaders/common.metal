@@ -173,6 +173,61 @@ kernel void add_rmsnorm_fused(
     }
 }
 
+// P3 — Batched add_rmsnorm_fused: B rows in one dispatch.
+// Grid: (TG_SIZE * B, 1, 1) — B TGs, each TG handles one row.
+// All buffers laid out (B, hidden) contiguous.
+kernel void add_rmsnorm_fused_batched(
+    device       float* x        [[buffer(0)]],
+    device const float* attn_out [[buffer(1)]],
+    device const float* weight   [[buffer(2)]],
+    device       float* x_norm   [[buffer(3)]],
+    constant ArgbufRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                tg_id    [[threadgroup_position_in_grid]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    uint row_off = tg_id * args.hidden;
+    device       float* x_row        = x        + row_off;
+    device const float* attn_out_row = attn_out + row_off;
+    device       float* x_norm_row   = x_norm   + row_off;
+
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x_row[i] + attn_out_row[i];
+        x_row[i] = v;
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm_row[i] = x_row[i] * inv * weight[i];
+    }
+}
+
+// P3 — Batched add-bias: broadcasts a single (dim) bias vector across
+// B output rows in one dispatch. Grid: (B*dim,). Replaces B sequential
+// add_inplace calls for Qwen2 q/k/v biases in the batched prefill path.
+struct ArgbufAddBroadcast {
+    uint n;     // total elems = B * dim
+    uint dim;   // bias length
+};
+kernel void add_inplace_broadcast(
+    device       float* a       [[buffer(0)]],
+    device const float* bias    [[buffer(1)]],
+    constant ArgbufAddBroadcast& args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    a[id] = a[id] + bias[id % args.dim];
+}
+
 kernel void silu_mul(
     device const half* gate [[buffer(0)]],
     device const half* up   [[buffer(1)]],

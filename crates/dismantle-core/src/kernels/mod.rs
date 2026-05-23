@@ -6077,6 +6077,74 @@ mod metal_dispatch {
         )
     }
     // ── end P3 offset variants ────────────────────────────────────────────
+
+    // ── P3 — Batched per-layer-op dispatchers ─────────────────────────
+    //
+    // These collapse the B-times-sequential dispatches in the batched
+    // prefill loop into single dispatches that cover all B rows. Same
+    // math, fewer kernel launches.
+
+    pub fn add_rmsnorm_fused_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        attn_out_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        batch: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        let total_threads = (batch as u32) * TG_SIZE;
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused_batched",
+            (total_threads, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(attn_out_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    pub fn add_inplace_broadcast_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a_buf: &PinnedBuffer,
+        bias_buf: &PinnedBuffer,
+        dim: usize,
+        batch: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        let n = (dim * batch) as u32;
+        let dim_u32 = dim as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n);
+        ab.set_u32(1, dim_u32);
+        let n_tg = n.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "add_inplace_broadcast",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), 0);
+                enc.set_buffer(1, Some(bias_buf), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
+            },
+        )
+    }
 }
 
 
