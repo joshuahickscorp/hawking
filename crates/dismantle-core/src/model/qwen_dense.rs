@@ -192,6 +192,9 @@ pub struct QwenDense {
     /// so this is "tied-embed friendly".
     pub lm_head_pruned_buf: Option<crate::metal::PinnedBuffer>,
     pub vocab_pruned: Option<usize>,
+    /// True when `lm_head_pruned_buf` holds Q4_K bytes; selects the
+    /// Q4_K kernel in the forward dispatch.
+    pub vocab_pruned_is_q4k: bool,
 }
 
 impl QwenDense {
@@ -327,6 +330,7 @@ impl Engine for QwenDense {
             lm_head_q4k_buf,
             lm_head_pruned_buf,
             vocab_pruned,
+            vocab_pruned_is_q4k,
         ) = if let Some(ctx) = metal_ctx.as_ref() {
                 let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
                 // `embed_lookup_f32` is misnamed: the kernel signature
@@ -414,6 +418,11 @@ impl Engine for QwenDense {
                 // tokens at low IDs so a 32K cutoff covers ~99% of natural
                 // English without a calibration corpus). LM-head GEMV
                 // reads pruned_vocab × hidden instead of full vocab × hidden.
+                // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the pruned
+                // slice is Q4_K-quantized for compound BW savings.
+                let want_q4k_lmhead = std::env::var("DISMANTLE_QWEN_Q4K_LMHEAD")
+                    .map(|v| v == "1")
+                    .unwrap_or(false);
                 let (pruned_buf, pruned_n) = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
                     Ok(v) if v != "0" && !v.is_empty() => {
                         let n_req = v.parse::<usize>().unwrap_or(32000);
@@ -425,21 +434,38 @@ impl Engine for QwenDense {
                                 None => &embed,
                             };
                             let slice = &src[..n * h];
-                            (
-                                Some(ctx.new_buffer_with_bytes(
+                            // If both flags set, quantize the slice to Q4_K
+                            // and pin those bytes (overrides the plain f16
+                            // path -- the forward dispatcher checks the Q4_K
+                            // buf first when both are present).
+                            let buf = if want_q4k_lmhead && (n * h) % 256 == 0 {
+                                let slice_f32: Vec<f32> =
+                                    slice.iter().map(|&hh| hh.to_f32()).collect();
+                                let nb = (n * h) / 256;
+                                let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                                quant::quantize_q4_k(&slice_f32, &mut q4k)?;
+                                ctx.new_buffer_with_bytes(&q4k)
+                            } else {
+                                ctx.new_buffer_with_bytes(
                                     bytemuck::cast_slice::<f16, u8>(slice),
-                                )),
-                                Some(n),
-                            )
+                                )
+                            };
+                            (Some(buf), Some(n))
                         } else {
                             (None, None)
                         }
                     }
                     _ => (None, None),
                 };
-                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k, pruned_buf, pruned_n)
+                // Whether the pruned buffer holds Q4_K bytes (vs plain f16).
+                let pruned_is_q4k =
+                    want_q4k_lmhead && pruned_n.is_some() && pruned_n.unwrap() > 0;
+                (
+                    Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k,
+                    pruned_buf, pruned_n, pruned_is_q4k,
+                )
             } else {
-                (None, None, None, None, None, None, None)
+                (None, None, None, None, None, None, None, false)
             };
         #[cfg(not(target_os = "macos"))]
         let (
@@ -450,6 +476,7 @@ impl Engine for QwenDense {
             lm_head_q4k_buf,
             lm_head_pruned_buf,
             vocab_pruned,
+            vocab_pruned_is_q4k,
         ): (
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
@@ -458,7 +485,8 @@ impl Engine for QwenDense {
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<usize>,
-        ) = (None, None, None, None, None, None, None);
+            bool,
+        ) = (None, None, None, None, None, None, None, false);
 
         Ok(Self {
             config: cfg,
@@ -481,6 +509,7 @@ impl Engine for QwenDense {
             lm_head_q4k_buf,
             lm_head_pruned_buf,
             vocab_pruned,
+            vocab_pruned_is_q4k,
         })
     }
 
@@ -1235,14 +1264,29 @@ impl QwenDense {
         if let (Some(pruned_buf), Some(pn)) =
             (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
         {
-            kernels::gemv_f16_metal_buf_tcb(
-                &mut tcb,
-                pruned_buf,
-                pn,
-                h,
-                &arena.x_norm_buf,
-                &arena.logits_buf,
-            )?;
+            if self.vocab_pruned_is_q4k {
+                let blocks_per_row = h / 256;
+                let row_bytes = blocks_per_row * 144;
+                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                    &mut tcb,
+                    pruned_buf,
+                    0,
+                    pn * row_bytes,
+                    pn,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?;
+            } else {
+                kernels::gemv_f16_metal_buf_tcb(
+                    &mut tcb,
+                    pruned_buf,
+                    pn,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?;
+            }
             kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, pn)?;
 
             tcb.commit_and_wait()?;
