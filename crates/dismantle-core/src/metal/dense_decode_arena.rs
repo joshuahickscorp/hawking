@@ -61,9 +61,12 @@ mod arena_imp {
             vocab_size: usize,
             max_seq: usize,
         ) -> Self {
+            // max_batch=8 — covers the v3w widened kernel (B in 1..=8).
+            // Cost vs B=4: doubles the B-wide scratch buffer footprint,
+            // still trivial vs weight memory.
             Self::new_with_batch(
                 ctx, n_layers, n_heads, n_kv_heads, head_dim,
-                hidden, intermediate, vocab_size, max_seq, 4,
+                hidden, intermediate, vocab_size, max_seq, 8,
             )
         }
 
