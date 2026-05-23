@@ -158,6 +158,14 @@ pub struct DeepSeekV2 {
     pub speculate_mode: SpeculateMode,
     pub verify_window: usize,
 
+    /// Eagle5 v2 draft head. `Some` when `speculate_mode == Eagle5`;
+    /// `None` otherwise. Initialized in `load`: tries to deserialize
+    /// `config.eagle5_head_path` via `Eagle5Head::load_from_safetensors`
+    /// and falls back to a deterministic mock head when the loader is
+    /// not yet implemented (current state) or the checkpoint path is
+    /// `None`.
+    pub eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+
     /// v1.2.0-9: Per-layer expert access stats + POSIX madvise offloading.
     /// `Some` when `--max-routed-expert-ram-mb` is set. `None` on V2-Lite default
     /// (all experts fit in RAM, no eviction needed).
@@ -696,6 +704,53 @@ impl Engine for DeepSeekV2 {
         };
         let verify_window = config.verify_window;
 
+        // Eagle5 head construction. Tries the trained-checkpoint loader
+        // first when a path is supplied; on Err it logs the reason to
+        // stderr and falls back to the deterministic mock head. The
+        // mock is documented in `reports/eagle5_v2_wiring_handoff.md`
+        // §9 as the runtime-validation fallback while the overnight
+        // training run completes — it lets the spec-decode runtime
+        // ship behind DISMANTLE_SPEC_DECODE=eagle5 without blocking
+        // on training completion.
+        let eagle5_head: Option<crate::speculate::eagle5::Eagle5Head> = if speculate_mode
+            == SpeculateMode::Eagle5
+        {
+            let h = cfg.hidden;
+            let v = cfg.vocab_size;
+            let head = match config.eagle5_head_path.as_deref() {
+                Some(p) => {
+                    match crate::speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
+                        Ok(loaded) => {
+                            eprintln!(
+                                "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
+                                p.display()
+                            );
+                            loaded
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "[eagle5] WARNING: trained-head loader failed ({e:?}); \
+                                 falling back to deterministic mock head — accept rate will \
+                                 be near 1/vocab and is only useful for runtime validation."
+                            );
+                            crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                        }
+                    }
+                }
+                None => {
+                    eprintln!(
+                        "[eagle5] no --eagle5-head path supplied; using deterministic mock \
+                         head (hidden={h}, vocab={v}). Accept rate will be near 1/vocab — \
+                         runtime-validation mode only."
+                    );
+                    crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                }
+            };
+            Some(head)
+        } else {
+            None
+        };
+
         // WB weight-pinning: when Metal is alive, upload the LM-head
         // fp16 matrix to a single Buffer that lives for the model's
         // lifetime. The byte-slice `gemv_f16_metal` path was memcpying
@@ -961,6 +1016,7 @@ impl Engine for DeepSeekV2 {
             kernel_profile: config.kernel_profile,
             speculate_mode,
             verify_window,
+            eagle5_head,
             decode_arena,
             embed_buf,
             final_norm_buf,
@@ -989,6 +1045,29 @@ impl Engine for DeepSeekV2 {
 
         if let Some(seed) = req.sampling.seed {
             self.sampler = Sampler::new(seed);
+        }
+        if self.speculate_mode == SpeculateMode::Eagle5 {
+            // Eagle5 spec-decode is a correctness-preserving optimization:
+            // verify uses the full V2-Lite model so at temp=0 the emitted
+            // tokens are bit-identical to no-spec greedy. We enforce the
+            // greedy/temp=0/rep-penalty=1 contract here so accidental
+            // non-greedy sampling does not silently diverge.
+            if req.sampling.temperature > 0.0 {
+                return Err(Error::Model(
+                    "--speculate eagle5 currently requires temperature=0".into(),
+                ));
+            }
+            if req.sampling.repetition_penalty != 1.0 {
+                return Err(Error::Model(
+                    "--speculate eagle5 currently requires repetition_penalty=1.0".into(),
+                ));
+            }
+            if self.eagle5_head.is_none() {
+                return Err(Error::Model(
+                    "--speculate eagle5 requested but no Eagle5Head was constructed; \
+                     this is a load-time bug — check EngineConfig::eagle5_head_path".into(),
+                ));
+            }
         }
         if self.speculate_mode == SpeculateMode::ExactShared {
             if req.sampling.temperature > 0.0 {
@@ -1345,6 +1424,177 @@ impl Engine for DeepSeekV2 {
                     eprintln!(
                         "[ngram-spec] accept={}/{} step={:.1}ms emit={} tps={:.1}",
                         first_reject, draft_actual_k, step_ms,
+                        first_reject + 1,
+                        (first_reject + 1) as f64 / (step_ms / 1000.0)
+                    );
+                }
+
+                if Some(bonus_id) == eos { reason = StopReason::Eos; break; }
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted; break;
+                }
+            }
+        } else if self.speculate_mode == crate::SpeculateMode::Eagle5 {
+            // Eagle5 v2 speculative decoding: small learned draft head proposes
+            // K tokens per step; full V2-Lite verifies via the same batched
+            // forward path used by the NGram branch. Verify is batched (one
+            // TCB for [last_id, d0..dK]) so the per-token amortization story
+            // matches NGram. Greedy correctness is preserved because the
+            // verifier's argmax is the final arbiter at every position.
+            //
+            // The Eagle5Head dispatches to either a deterministic mock or a
+            // trained checkpoint (loaded at engine construction); the
+            // decode loop is identical for both. See
+            // `crates/dismantle-core/src/speculate/eagle5.rs` for the
+            // head's contract and the mock→trained swap path.
+            //
+            // Hidden-state input: the trained head was specified against
+            // residual+intermediate streams from capture layer 25. The mock
+            // head doesn't use hidden state, so we don't cache it today.
+            // When the trained-head loader lands, this branch will need a
+            // small sidecar buffer to hold the verifier's per-token hidden
+            // — that wiring is gated on the safetensors layout being
+            // finalized (see speculate/eagle5.rs::load_from_safetensors).
+            let spec_k = self.verify_window;
+            let spec_log = std::env::var("DISMANTLE_SPEC_LOG").is_ok();
+            let mut pos = prompt_len;
+
+            // Reset the head's per-sequence state; the head's last_token
+            // is seeded by note_token below as we emit each verified id.
+            if let Some(head) = self.eagle5_head.as_mut() {
+                head.reset();
+            }
+
+            'eagle5_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+                let remaining = req.max_new_tokens - produced;
+                let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
+
+                if actual_k == 0 {
+                    // Near budget — single greedy step.
+                    let next_id = match self.forward_token_greedy(last_id, pos)? {
+                        Some(t) => t,
+                        None => {
+                            let mut logits = self.forward_token(last_id, pos)?;
+                            self.sampler.sample(&mut logits, &req.sampling)
+                        }
+                    };
+                    self.sampler.record(next_id);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(next_id);
+                    }
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos { reason = StopReason::Eos; }
+                    break 'eagle5_loop;
+                }
+
+                // --- DRAFT: eagle5 head proposes `actual_k` tokens ---
+                let draft_t0 = Instant::now();
+                let draft_ids: Vec<u32> = match self.eagle5_head.as_mut() {
+                    Some(head) => head.propose(last_id, actual_k),
+                    None => Vec::new(),
+                };
+                let draft_ms = draft_t0.elapsed().as_secs_f64() * 1000.0;
+
+                // If the head returned no drafts (e.g., k=0 race), fall
+                // back to a single greedy step to maintain progress.
+                if draft_ids.is_empty() {
+                    let next_id = match self.forward_token_greedy(last_id, pos)? {
+                        Some(t) => t,
+                        None => {
+                            let mut logits = self.forward_token(last_id, pos)?;
+                            self.sampler.sample(&mut logits, &req.sampling)
+                        }
+                    };
+                    self.sampler.record(next_id);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(next_id);
+                    }
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos { reason = StopReason::Eos; break 'eagle5_loop; }
+                    if stall_active && step_start.elapsed() > stall_limit {
+                        reason = StopReason::Aborted; break 'eagle5_loop;
+                    }
+                    last_id = next_id;
+                    pos += 1;
+                    continue;
+                }
+                let draft_actual_k = draft_ids.len();
+
+                // Save KV state before verify so we can rollback to the
+                // accepted prefix length after the batched verify pass.
+                let draft_start_seq = self.kv.seq_len;
+
+                // --- VERIFY: batched forward over [last_id, d0..dK] in one TCB.
+                // Same shape as the NGram branch; correctness invariant is that
+                // logits_batch[k] is the model's prediction *after* processing
+                // batch[k] at pos+k.
+                let verify_t0 = Instant::now();
+                let batch_tokens: Vec<u32> = std::iter::once(last_id)
+                    .chain(draft_ids.iter().copied())
+                    .collect();
+                let batch_positions: Vec<usize> = (0..=draft_actual_k)
+                    .map(|ki| pos + ki)
+                    .collect();
+                let logits_batch = self.forward_tokens_batched(&batch_tokens, &batch_positions)?;
+
+                let mut first_reject = 0usize;
+                let mut correction_id: Option<u32> = None;
+                for k in 0..draft_actual_k {
+                    let pred = crate::kernels::argmax_f32(&logits_batch[k]);
+                    if pred != draft_ids[k] {
+                        correction_id = Some(pred);
+                        break;
+                    }
+                    first_reject += 1;
+                }
+                let bonus_id = correction_id.unwrap_or_else(|| {
+                    crate::kernels::argmax_f32(&logits_batch[draft_actual_k])
+                });
+                let verify_ms = verify_t0.elapsed().as_secs_f64() * 1000.0;
+
+                self.kv.seq_len = draft_start_seq + first_reject + 1;
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_actual_k - first_reject;
+
+                // --- EMIT accepted drafts ---
+                for k in 0..first_reject {
+                    let id = draft_ids[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(id);
+                    }
+                    produced += 1;
+                    if Some(id) == eos { reason = StopReason::Eos; break 'eagle5_loop; }
+                    if produced >= req.max_new_tokens { break 'eagle5_loop; }
+                }
+
+                // --- EMIT correction / bonus ---
+                let text = self.tokenizer.decode_one(bonus_id).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus_id, text });
+                self.sampler.record(bonus_id);
+                if let Some(head) = self.eagle5_head.as_mut() {
+                    head.note_token(bonus_id);
+                }
+                produced += 1;
+                last_id = bonus_id;
+                pos += first_reject + 1;
+
+                if spec_log {
+                    let step_ms = step_start.elapsed().as_secs_f64() * 1000.0;
+                    eprintln!(
+                        "[eagle5-spec] accept={}/{} draft={:.2}ms verify={:.1}ms step={:.1}ms emit={} tps={:.1}",
+                        first_reject, draft_actual_k, draft_ms, verify_ms, step_ms,
                         first_reject + 1,
                         (first_reject + 1) as f64 / (step_ms / 1000.0)
                     );

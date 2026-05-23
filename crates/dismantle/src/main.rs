@@ -88,6 +88,14 @@ enum Cmd {
         /// MoE expert weights are re-quantized per-layer at load time.
         #[arg(long)]
         quant_tier_map_path: Option<PathBuf>,
+        /// Path to a trained Eagle5 v2 head checkpoint (safetensors).
+        /// Only meaningful when `--speculate eagle5` (or
+        /// `DISMANTLE_SPEC_DECODE=eagle5`) is set. When omitted, a
+        /// deterministic mock head is constructed — useful for
+        /// validating the spec-decode runtime path while the trained
+        /// checkpoint is being produced.
+        #[arg(long)]
+        eagle5_head: Option<PathBuf>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -294,6 +302,7 @@ fn main() -> Result<()> {
             memory_limit_mb,
             vocab_prune_path,
             quant_tier_map_path,
+            eagle5_head,
         } => generate_main(
             weights,
             prompt,
@@ -311,6 +320,7 @@ fn main() -> Result<()> {
             memory_limit_mb,
             vocab_prune_path,
             quant_tier_map_path,
+            eagle5_head,
         ),
         Cmd::Bench {
             weights,
@@ -954,6 +964,7 @@ fn generate_main(
     memory_limit_mb: Option<usize>,
     vocab_prune_path: Option<PathBuf>,
     quant_tier_map_path: Option<PathBuf>,
+    eagle5_head: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -1003,7 +1014,7 @@ fn generate_main(
         memory_limit_mb,
         vocab_prune_path,
         quant_tier_map_path,
-        eagle5_head_path: None,
+        eagle5_head_path: eagle5_head,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
