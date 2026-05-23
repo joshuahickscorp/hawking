@@ -1,18 +1,3 @@
-//! MLX backend — spawns `mlx_lm.generate`.
-//!
-//! `mlx_lm.generate` prints two summary lines after the generation
-//! body: `Prompt: N tokens, X tokens-per-sec` (prefill) and
-//! `Generation: N tokens, Y tokens-per-sec` (decode). We capture
-//! both.
-//!
-//! The model id resolves from `DISMANTLE_MLX_MODEL_ID` (defaulting to
-//! the upstream MLX-format DeepSeek-V2-Lite Q4 weights), since MLX
-//! reads HF-id strings or local MLX-format directories — not the
-//! GGUF path the rest of dismantle uses. The `weights` argument from
-//! the bench harness is therefore *informational only* for this
-//! backend; it identifies which model family we're benching but isn't
-//! passed to mlx_lm.
-
 use super::{extract_after, Competitor, Measurement};
 use anyhow::{bail, Result};
 use std::path::Path;

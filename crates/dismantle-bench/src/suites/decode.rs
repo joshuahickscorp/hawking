@@ -1,12 +1,3 @@
-//! decode-tps: tokens/sec at batch=1, configurable completion length, fixed
-//! seed. Reported as min / median / max over N trials.
-//!
-//! Backend-aware as of haul 3 / B4: when `opts.backend != "dismantle"`,
-//! the suite drives a `Competitor` (llama.cpp or MLX) instead of the
-//! in-process Engine. The shape of the JSON result is the same
-//! regardless of backend so run-gates.sh's `bench-decode` validator
-//! can parse uniformly.
-
 use crate::competitors::{Competitor, LlamaCppBackend, MlxBackend};
 use crate::BenchOptions;
 use anyhow::{anyhow, Result};
@@ -17,6 +8,22 @@ use dismantle_core::{
 
 const PROMPT: &str = "Once upon a time";
 const TEMPERATURE: f32 = 0.0;
+
+/// Returns the prompt for this decode bench. Defaults to `PROMPT` but can
+/// be overridden by `DISMANTLE_BENCH_PROMPT_FILE=<path>` for long-context
+/// gate decisions (e.g. the MLA flash-attn lever which only wins past
+/// ~1K seq_len). The file is read once and the contents used verbatim.
+fn resolve_prompt() -> String {
+    if let Ok(path) = std::env::var("DISMANTLE_BENCH_PROMPT_FILE") {
+        match std::fs::read_to_string(&path) {
+            Ok(s) => return s,
+            Err(e) => eprintln!(
+                "warning: DISMANTLE_BENCH_PROMPT_FILE={path} unreadable ({e}); falling back to default prompt"
+            ),
+        }
+    }
+    PROMPT.to_string()
+}
 
 pub fn run(opts: &BenchOptions) -> Result<serde_json::Value> {
     let backend = opts.backend.as_str();
@@ -102,9 +109,10 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
     // lib.rs can compute summaries for --trace-json.
     let mut all_dispatch_samples: Vec<dismantle_core::metal::DispatchSample> = Vec::new();
     let mut total_decode_ms: f64 = 0.0;
+    let prompt = resolve_prompt();
     for _ in 0..opts.trials {
         let req = GenerateRequest {
-            prompt: PROMPT.into(),
+            prompt: prompt.clone(),
             max_new_tokens: opts.max_new_tokens,
             sampling: SamplingParams {
                 temperature: TEMPERATURE,
@@ -143,7 +151,7 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
             "dispatch_count": stats.dispatch_samples.len(),
         });
         // Add structural counters when tracing was active (via --trace-dispatch
-        // flag or DISMANTLE_TRACE_DISPATCH env var — both set trace_dispatch on
+        // flag or DISMANTLE_TRACE_DISPATCH env var -- both set trace_dispatch on
         // the MetalContext, so non-zero counts indicate tracing was on).
         if stats.metal_buffers_created > 0 && stats.completion_tokens > 0 {
             let ct = stats.completion_tokens as f64;
@@ -203,7 +211,7 @@ fn run_competitor(opts: &BenchOptions, backend: &mut dyn Competitor) -> Result<s
     let name = backend.name();
     let version = backend.version();
 
-    // Drop the first trial as warm-up — model load and shader compile
+    // Drop the first trial as warm-up -- model load and shader compile
     // are first-trial costs that distort decode-tps. Trial budget +1
     // when called this way.
     let trials_with_warmup = opts.trials + 1;

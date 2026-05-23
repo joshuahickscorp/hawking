@@ -1,18 +1,3 @@
-//! competitive: head-to-head against llama.cpp.
-//!
-//! Replaces the old `wax-vs-llama-cpp` suite. The audit doc
-//! (`docs/competitive_audit.md`) frames the broader competitive
-//! landscape including MLX; this suite measures what we can
-//! reproduce locally without crossing into a foreign tensor format.
-//!
-//! Spawns each competitor as a sibling process on the same prompt
-//! suite + same hardware + same model. Emits a single JSON document
-//! with per-(backend, prompt) measurements; the audit doc is
-//! generated from this output.
-//!
-//! Output shape matches `tools/competitors/results.json` so the
-//! in-binary harness and the offline shell harness are interchangeable.
-
 use crate::competitors::{Competitor, DismantleBackend, LlamaCppBackend};
 use crate::BenchOptions;
 use anyhow::Result;
