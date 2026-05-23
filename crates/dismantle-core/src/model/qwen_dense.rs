@@ -1,23 +1,3 @@
-//! Qwen2 / Qwen2.5 dense forward pass (Stage 2 of the dual-path
-//! Phase-2 plan).
-//!
-//! Targets `general.architecture == "qwen2"` GGUFs (Qwen2.5-3B-Instruct
-//! is the reference). Architecture: standard MHA with GQA (n_heads=16,
-//! n_kv_heads=2 for the 3B variant), full-head RoPE (no nope/rope
-//! split), standard SwiGLU FFN (no MoE), tied LM head (no separate
-//! output.weight in the 3B Q4_K_M).
-//!
-//! Reuses the same Metal kernels as DeepSeek-V2-Lite:
-//! - `rmsnorm_metal` for the per-layer norms + final norm
-//! - `gemv_q4_k_m` for the Q4_K_M matmuls (q/k/v/o projections and
-//!   gate/up/down FFN)
-//! - `gemv_f16_metal` for the (potentially tied) LM head
-//!
-//! Weights are stored as `TensorRef` into the mmap'd GGUF and dispatched
-//! to Metal via the `gemv_q4_k_m` fused-dequant kernel — no eager fp32
-//! materialization of the bulk weights. Per-layer norms + bias vectors
-//! are dequanted eagerly (small).
-
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
@@ -103,7 +83,7 @@ impl QwenConfig {
     }
 }
 
-/// Pointer into the mmap'd GGUF for one tensor — same shape as the
+/// Pointer into the mmap'd GGUF for one tensor -- same shape as the
 /// DeepSeek path's `TensorRef` but kept module-local so qwen_dense
 /// doesn't import internals from `model::deepseek_v2`.
 #[derive(Debug, Clone)]
@@ -118,7 +98,7 @@ pub struct QwenLayer {
     // Per-layer norms (eager fp32, small).
     pub attn_norm: Vec<f32>,
     pub ffn_norm: Vec<f32>,
-    // Attention projection weights (lazy — dispatch via gemv_q4_k_m).
+    // Attention projection weights (lazy -- dispatch via gemv_q4_k_m).
     q_proj: TensorRef,
     k_proj: TensorRef,
     v_proj: TensorRef,
@@ -131,6 +111,31 @@ pub struct QwenLayer {
     ffn_gate: TensorRef,
     ffn_up: TensorRef,
     ffn_down: TensorRef,
+    /// P1f: pre-uploaded small per-layer buffers for TCB dispatches.
+    /// Populated in `load` once `metal_ctx.is_some()`.
+    pub pinned: QwenLayerPinned,
+}
+
+#[derive(Default)]
+pub struct QwenLayerPinned {
+    pub attn_norm: Option<crate::metal::PinnedBuffer>,
+    pub ffn_norm: Option<crate::metal::PinnedBuffer>,
+    pub q_bias: Option<crate::metal::PinnedBuffer>,
+    pub k_bias: Option<crate::metal::PinnedBuffer>,
+    pub v_bias: Option<crate::metal::PinnedBuffer>,
+    /// P1f: f16 fallback for non-Q4_K projection weights. Q4_K_M GGUFs
+    /// mix Q4_K (most matrices) with Q6_K (typically k/v projections,
+    /// some FFN-down) for accuracy. Q4_K weights stay in the mmap and
+    /// use `gemv_q4_k_m_v2_pinned_tcb`; Q6_K (or anything non-Q4_K) is
+    /// dequantized to f16 once at load, pinned here, and dispatched
+    /// via `gemv_f16_metal_buf_tcb`.
+    pub q_proj_f16: Option<crate::metal::PinnedBuffer>,
+    pub k_proj_f16: Option<crate::metal::PinnedBuffer>,
+    pub v_proj_f16: Option<crate::metal::PinnedBuffer>,
+    pub o_proj_f16: Option<crate::metal::PinnedBuffer>,
+    pub ffn_gate_f16: Option<crate::metal::PinnedBuffer>,
+    pub ffn_up_f16: Option<crate::metal::PinnedBuffer>,
+    pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
 
 pub struct QwenDense {
@@ -151,6 +156,24 @@ pub struct QwenDense {
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
     pub metal_ctx: Option<MetalContext>,
+
+    /// P1a: decode arena holding the GPU-resident buffer set for the
+    /// TCB-based forward pipeline. Allocated lazily on the first
+    /// `forward_token_greedy_tcb` call so models that only use the
+    /// CPU/Metal-hybrid `forward_token` path don't pay for it.
+    pub dense_arena: Option<crate::metal::DenseDecodeArena>,
+
+    /// P1f: pinned whole-mmap buffer holding all Q4_K_M weight bytes.
+    /// `gemv_q4_k_m_v2_pinned_tcb` reads a (offset, byte_size) window
+    /// straight out of this -- no per-token memcpy of weights.
+    pub weights_mmap_buf: Option<crate::metal::PinnedBuffer>,
+
+    /// Embed table pinned as f32 (dequant once at load). `embed_lookup_f32`
+    /// kernel needs f32 input.
+    pub embed_buf: Option<crate::metal::PinnedBuffer>,
+    pub final_norm_buf: Option<crate::metal::PinnedBuffer>,
+    /// LM head pinned as f16 -- either own tensor or tied to embed.
+    pub lm_head_buf: Option<crate::metal::PinnedBuffer>,
 }
 
 impl QwenDense {
@@ -217,7 +240,7 @@ impl Engine for QwenDense {
             Tokenizer::from_gguf(&gguf)?
         };
 
-        // Embed table — typically fp16 in Q4_K_M GGUFs but read whatever
+        // Embed table -- typically fp16 in Q4_K_M GGUFs but read whatever
         // dtype the GGUF carries.
         let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = Self::dequant_f32(&gguf, "output_norm.weight")?;
@@ -263,6 +286,7 @@ impl Engine for QwenDense {
                 ffn_gate,
                 ffn_up,
                 ffn_down,
+                pinned: QwenLayerPinned::default(),
             });
         }
 
@@ -270,6 +294,83 @@ impl Engine for QwenDense {
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+
+        // P1f: weight pinning -- one big buffer for the whole mmap, plus
+        // small per-layer + per-model pinned buffers for norms, biases,
+        // embed, lm-head. Q4_K_M projection weights stay quantized in
+        // `weights_mmap_buf`; `gemv_q4_k_m_v2_pinned_tcb` reads a window
+        // directly. Skipped off-macOS.
+        #[cfg(target_os = "macos")]
+        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf) =
+            if let Some(ctx) = metal_ctx.as_ref() {
+                let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
+                // `embed_lookup_f32` is misnamed: the kernel signature
+                // reads the embed table as `device const half*`. Pin the
+                // f16 bytes directly (no dequant).
+                let eb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed));
+                let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
+                // LM head -- explicit tensor if present, else tied to embed (f16).
+                let lhb = match lm_head.as_ref() {
+                    Some(w) => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(w)),
+                    None => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed)),
+                };
+                // Per-layer norm + bias pinning.
+                for layer in layers.iter_mut() {
+                    let up_f32 = |w: &[f32]| {
+                        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w))
+                    };
+                    layer.pinned.attn_norm = Some(up_f32(&layer.attn_norm));
+                    layer.pinned.ffn_norm = Some(up_f32(&layer.ffn_norm));
+                    if !layer.q_bias.is_empty() {
+                        layer.pinned.q_bias = Some(up_f32(&layer.q_bias));
+                    }
+                    if !layer.k_bias.is_empty() {
+                        layer.pinned.k_bias = Some(up_f32(&layer.k_bias));
+                    }
+                    if !layer.v_bias.is_empty() {
+                        layer.pinned.v_bias = Some(up_f32(&layer.v_bias));
+                    }
+
+                    // P1f: non-Q4_K projections (typically Q6_K in Q4_K_M
+                    // mix-quant GGUFs) get dequantized once to f16 and
+                    // pinned. forward_token_greedy_tcb picks the
+                    // dispatcher based on .is_some().
+                    let dequant_to_f16_pin =
+                        |t: &TensorRef| -> Result<crate::metal::PinnedBuffer> {
+                            let mut f32_tmp = vec![0.0f32; t.n_elems];
+                            let bytes = &gguf.mmap[t.offset..t.offset + t.byte_size];
+                            quant::dequant_into(t.dtype, bytes, &mut f32_tmp)?;
+                            let f16_vec: Vec<f16> =
+                                f32_tmp.into_iter().map(f16::from_f32).collect();
+                            Ok(ctx.new_buffer_with_bytes(
+                                bytemuck::cast_slice::<f16, u8>(&f16_vec),
+                            ))
+                        };
+                    for (t, slot) in [
+                        (&layer.q_proj, &mut layer.pinned.q_proj_f16),
+                        (&layer.k_proj, &mut layer.pinned.k_proj_f16),
+                        (&layer.v_proj, &mut layer.pinned.v_proj_f16),
+                        (&layer.o_proj, &mut layer.pinned.o_proj_f16),
+                        (&layer.ffn_gate, &mut layer.pinned.ffn_gate_f16),
+                        (&layer.ffn_up, &mut layer.pinned.ffn_up_f16),
+                        (&layer.ffn_down, &mut layer.pinned.ffn_down_f16),
+                    ] {
+                        if t.dtype != GgmlType::Q4_K {
+                            *slot = Some(dequant_to_f16_pin(t)?);
+                        }
+                    }
+                }
+                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb))
+            } else {
+                (None, None, None, None)
+            };
+        #[cfg(not(target_os = "macos"))]
+        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf): (
+            Option<crate::metal::PinnedBuffer>,
+            Option<crate::metal::PinnedBuffer>,
+            Option<crate::metal::PinnedBuffer>,
+            Option<crate::metal::PinnedBuffer>,
+        ) = (None, None, None, None);
 
         Ok(Self {
             config: cfg,
@@ -284,6 +385,11 @@ impl Engine for QwenDense {
             sampler,
             _weights_path: weights.to_owned(),
             metal_ctx,
+            dense_arena: None,
+            weights_mmap_buf,
+            embed_buf,
+            final_norm_buf,
+            lm_head_buf,
         })
     }
 
@@ -323,6 +429,22 @@ impl Engine for QwenDense {
                 break;
             }
             let step_start = Instant::now();
+            // P1f: route prefill through the full-Metal TCB path when
+            // opted in. Reuses the same kernel set as decode; we discard
+            // the predicted next token (prefill already knows what comes
+            // next) but the side effect is the GPU KV cache buffer is
+            // populated incrementally, which means no CPU→GPU sync is
+            // needed when the decode loop starts.
+            let use_tcb_prefill = std::env::var("DISMANTLE_QWEN_TCB")
+                .map(|v| v == "1")
+                .unwrap_or(false);
+            #[cfg(target_os = "macos")]
+            if use_tcb_prefill {
+                let _ = self.forward_token_greedy_tcb(t, i)?;
+            } else {
+                let _ = self.forward_token(t, i)?;
+            }
+            #[cfg(not(target_os = "macos"))]
             let _ = self.forward_token(t, i)?;
             if stall_active && step_start.elapsed() > stall_limit {
                 prefill_aborted = true;
@@ -345,6 +467,15 @@ impl Engine for QwenDense {
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
 
+        // P1f: opt-in full-Metal TCB path. Greedy (argmax) only -- the
+        // GPU sample kernel implements pure argmax, so any non-greedy
+        // sampling must take the CPU/Metal-hybrid `forward_token` path
+        // (full logits → CPU sampler).
+        let use_tcb = std::env::var("DISMANTLE_QWEN_TCB")
+            .map(|v| v == "1")
+            .unwrap_or(false)
+            && req.sampling.temperature == 0.0;
+
         for step in 0..req.max_new_tokens {
             if abort_set(&req) {
                 reason = StopReason::Aborted;
@@ -352,12 +483,24 @@ impl Engine for QwenDense {
             }
             let pos = prompt_len + step;
             let step_start = Instant::now();
-            let mut logits = self.forward_token(last_id, pos)?;
+            let next_id = if use_tcb {
+                #[cfg(target_os = "macos")]
+                {
+                    self.forward_token_greedy_tcb(last_id, pos)?
+                }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    let mut logits = self.forward_token(last_id, pos)?;
+                    self.sampler.sample(&mut logits, &req.sampling)
+                }
+            } else {
+                let mut logits = self.forward_token(last_id, pos)?;
+                self.sampler.sample(&mut logits, &req.sampling)
+            };
             if stall_active && step_start.elapsed() > stall_limit {
                 reason = StopReason::Aborted;
                 break;
             }
-            let next_id = self.sampler.sample(&mut logits, &req.sampling);
             self.sampler.record(next_id);
             let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
             sink(StreamEvent::Token { id: next_id, text });
@@ -459,7 +602,7 @@ impl QwenDense {
     /// projections + gate/up/down FFN). On macOS with Metal alive, reads
     /// raw 4-bit bytes from the GGUF mmap and dispatches `gemv_q4_k_m`
     /// (dequant fused inside FMA). Off-macOS or non-Q4_K, falls back to
-    /// dequant-into-scratch + CPU gemv_f32 — slow but correct.
+    /// dequant-into-scratch + CPU gemv_f32 -- slow but correct.
     fn matmul_q4_dispatch(
         &self,
         t: &TensorRef,
@@ -511,7 +654,6 @@ impl QwenDense {
         let mha_seq_len = self.kv.seq_len + 1;
 
         for li in 0..cfg.n_layers {
-            // ---- Attention block ----
             let mut x_norm = vec![0.0f32; h];
             self.rmsnorm_dispatch(
                 &x,
@@ -594,7 +736,6 @@ impl QwenDense {
             self.matmul_q4_dispatch(&layer.o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
             add_inplace(&mut x, &o);
 
-            // ---- FFN block (standard SwiGLU) ----
             let mut x_norm = vec![0.0f32; h];
             self.rmsnorm_dispatch(&x, &layer.ffn_norm, cfg.rms_norm_eps, &mut x_norm)?;
             let mid = cfg.intermediate;
@@ -624,5 +765,401 @@ impl QwenDense {
         };
         self.gemv_f16_dispatch(w_f16, cfg.vocab_size, h, &x_norm, &mut logits)?;
         Ok(logits)
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl QwenDense {
+    /// P1f: full-Metal decode forward. Encodes the entire per-layer
+    /// graph + final norm + LM head + GPU argmax into a single
+    /// `TokenCommandBuffer`, commits once, and reads back the next
+    /// token id (4 bytes) from the GPU.
+    ///
+    /// Requires `metal_ctx`, `weights_mmap_buf`, `embed_buf`,
+    /// `final_norm_buf`, `lm_head_buf`, and all per-layer pinned
+    /// norm + bias buffers to be populated (done in `Self::load` on
+    /// macOS). Returns `Err(Metal)` if anything is missing.
+    pub fn forward_token_greedy_tcb(&mut self, token: u32, pos: usize) -> Result<u32> {
+        use crate::kernels;
+        use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
+
+        let ctx = self
+            .metal_ctx
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: no metal_ctx".into()))?;
+        let mmap_buf = self
+            .weights_mmap_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: weights not pinned".into()))?;
+        let embed_buf = self
+            .embed_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: embed not pinned".into()))?;
+        let final_norm_buf = self
+            .final_norm_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: final_norm not pinned".into()))?;
+        let lm_head_buf = self
+            .lm_head_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: lm_head not pinned".into()))?;
+
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+        let intermediate = cfg.intermediate;
+        let eps = cfg.rms_norm_eps;
+        let theta = cfg.rope_theta;
+        let vocab = cfg.vocab_size;
+        let pos_u32 = pos as u32;
+
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
+        }
+        let seq_slot = self.kv.seq_len;
+        let mha_seq_len = seq_slot + 1;
+        let max_seq = self.kv.max_seq;
+
+        // Lazy-init arena on first call + bridge any CPU-side prefill
+        // KV state into the GPU arena buffers. The CPU `forward_token`
+        // path used during prefill writes K/V into `self.kv.keys/values`
+        // but not into `arena.k_cache_buf/v_cache_buf`, so on the first
+        // TCB call we copy the populated prefix once.
+        let fresh_arena = self.dense_arena.is_none();
+        if fresh_arena {
+            self.dense_arena = Some(DenseDecodeArena::new(
+                ctx,
+                cfg.n_layers,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                h,
+                intermediate,
+                vocab,
+                max_seq,
+            ));
+        }
+        if fresh_arena && seq_slot > 0 {
+            let arena = self.dense_arena.as_ref().unwrap();
+            let kv_stride = n_kv_heads * head_dim;
+            let prefill_elems = seq_slot * kv_stride;
+            let layer_stride_elems = max_seq * kv_stride;
+            for li in 0..cfg.n_layers {
+                let layer_off_elems = li * layer_stride_elems;
+                let k_src = &self.kv.keys[li][..prefill_elems];
+                let v_src = &self.kv.values[li][..prefill_elems];
+                let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                unsafe {
+                    std::ptr::copy_nonoverlapping(
+                        k_src.as_ptr(),
+                        k_dst.add(layer_off_elems),
+                        prefill_elems,
+                    );
+                    std::ptr::copy_nonoverlapping(
+                        v_src.as_ptr(),
+                        v_dst.add(layer_off_elems),
+                        prefill_elems,
+                    );
+                }
+            }
+        }
+        let arena = self.dense_arena.as_ref().unwrap();
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // x_buf <- embed[token]
+        kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, token, h, &arena.x_buf)?;
+
+        let f32_bytes = std::mem::size_of::<f32>();
+        let kv_dim_bytes = kv_dim * f32_bytes;
+        let layer_kv_stride_bytes = max_seq * kv_dim_bytes;
+
+        // Pre-norm for layer 0 (hoisted so the loop can fuse the residual-add
+        // of layer li with the attn_norm of layer li+1 -- saving 73 dispatches
+        // per token across 36 layers + final norm).
+        let layer0_attn_norm = self.layers[0]
+            .pinned
+            .attn_norm
+            .as_ref()
+            .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
+        kernels::rmsnorm_metal_buf_tcb(
+            &mut tcb,
+            &arena.x_buf,
+            layer0_attn_norm,
+            eps,
+            h,
+            &arena.x_norm_buf,
+        )?;
+
+        for li in 0..cfg.n_layers {
+            let layer = &self.layers[li];
+
+            // Dispatcher choice helper. When the projection's GGUF dtype
+            // isn't Q4_K, `pinned.*_f16` holds a dequantized-once f16
+            // copy and we go through `gemv_f16_metal_buf_tcb`; otherwise
+            // the Q4_K_M-aware kernel reads directly from the pinned mmap.
+            // P2 (2026-05-23): dispatch by Q-quant dtype. Q4_K and Q6_K
+            // both decode directly from the pinned mmap; only truly
+            // exotic dtypes fall back to the f16 dequant path.
+            macro_rules! gemv_proj {
+                ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr, $x:expr, $out:expr) => {{
+                    match $tref.dtype {
+                        GgmlType::Q4_K => {
+                            // Winner of the Q4_K variant sweep (2026-05-23):
+                            // v3_8r (TG=256, 8 rows/TG, scale + activation
+                            // preload, paired nibble reads). Beat v2 by
+                            // +5.4%, simdmat by +1.6%, v3_llama within noise.
+                            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                $x,
+                                $out,
+                            )?;
+                        }
+                        GgmlType::Q6_K => {
+                            kernels::gemv_q6_k_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                $x,
+                                $out,
+                            )?;
+                        }
+                        _ => {
+                            let buf_f16 = $pinned_f16.ok_or_else(|| {
+                                Error::Metal(
+                                    "gemv_proj: non-Q4_K/Q6_K dtype and no f16 fallback pinned"
+                                        .into(),
+                                )
+                            })?;
+                            kernels::gemv_f16_metal_buf_tcb(
+                                &mut tcb, buf_f16, $rows, $cols, $x, $out,
+                            )?;
+                        }
+                    }
+                }};
+            }
+
+            // Attn-norm already in arena.x_norm_buf (hoisted for layer 0,
+            // produced by the previous layer's tail-fusion for layers 1+).
+
+            // ── Q / K / V projections ────────────────────────────────
+            gemv_proj!(
+                layer.q_proj,
+                layer.pinned.q_proj_f16.as_ref(),
+                q_dim,
+                h,
+                &arena.x_norm_buf,
+                &arena.q_buf
+            );
+            gemv_proj!(
+                layer.k_proj,
+                layer.pinned.k_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf,
+                &arena.k_token_buf
+            );
+            gemv_proj!(
+                layer.v_proj,
+                layer.pinned.v_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf,
+                &arena.v_token_buf
+            );
+
+            // ── Biases (Qwen2 carries q/k/v biases) ──────────────────
+            if let Some(qb) = layer.pinned.q_bias.as_ref() {
+                kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
+            }
+            if let Some(kb) = layer.pinned.k_bias.as_ref() {
+                kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
+            }
+            if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+            }
+
+            // ── RoPE on full head_dim for every Q and K head ─────────
+            // rope_q_f32_inplace with qk_nope_dim=0 ⇒ rotates the entire
+            // head; matches Qwen's standard interleaved RoPE.
+            kernels::rope_q_f32_inplace_tcb(
+                &mut tcb,
+                &arena.q_buf,
+                n_heads,
+                head_dim,
+                0,
+                head_dim,
+                pos_u32,
+                theta,
+            )?;
+            kernels::rope_q_f32_inplace_tcb(
+                &mut tcb,
+                &arena.k_token_buf,
+                n_kv_heads,
+                head_dim,
+                0,
+                head_dim,
+                pos_u32,
+                theta,
+            )?;
+
+            // ── KV append into per-layer slice of k/v_cache buffer ───
+            let layer_kv_off_elems = li * max_seq * kv_dim;
+            let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
+            kernels::memcpy_f32_off_tcb(
+                &mut tcb,
+                &arena.k_token_buf,
+                &arena.k_cache_buf,
+                0,
+                slot_kv_off_elems,
+                kv_dim,
+            )?;
+            kernels::memcpy_f32_off_tcb(
+                &mut tcb,
+                &arena.v_token_buf,
+                &arena.v_cache_buf,
+                0,
+                slot_kv_off_elems,
+                kv_dim,
+            )?;
+
+            // ── MHA decode (GQA) ─────────────────────────────────────
+            let layer_kv_off_bytes = li * layer_kv_stride_bytes;
+            kernels::mha_decode_f32_tcb(
+                &mut tcb,
+                &arena.q_buf,
+                &arena.k_cache_buf,
+                layer_kv_off_bytes,
+                &arena.v_cache_buf,
+                layer_kv_off_bytes,
+                &arena.attn_out_buf,
+                mha_seq_len,
+                head_dim,
+                n_heads,
+                n_kv_heads,
+            )?;
+
+            // ── O projection ─────────────────────────────────────────
+            gemv_proj!(
+                layer.o_proj,
+                layer.pinned.o_proj_f16.as_ref(),
+                h,
+                q_dim,
+                &arena.attn_out_buf,
+                &arena.o_proj_out_buf
+            );
+            // ── Fused (x += o_proj_out) + FFN norm ───────────────────
+            let ffn_norm_pin = layer
+                .pinned
+                .ffn_norm
+                .as_ref()
+                .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
+            kernels::add_rmsnorm_fused_tcb(
+                &mut tcb,
+                &arena.x_buf,
+                &arena.o_proj_out_buf,
+                ffn_norm_pin,
+                &arena.x_norm_buf,
+                eps,
+                h,
+            )?;
+
+            // ── FFN gate / up / silu_mul / down ──────────────────────
+            gemv_proj!(
+                layer.ffn_gate,
+                layer.pinned.ffn_gate_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf,
+                &arena.ffn_gate_buf
+            );
+            gemv_proj!(
+                layer.ffn_up,
+                layer.pinned.ffn_up_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf,
+                &arena.ffn_up_buf
+            );
+            kernels::silu_mul_tcb(
+                &mut tcb,
+                &arena.ffn_gate_buf,
+                &arena.ffn_up_buf,
+                &arena.ffn_act_buf,
+                intermediate,
+            )?;
+            gemv_proj!(
+                layer.ffn_down,
+                layer.pinned.ffn_down_f16.as_ref(),
+                h,
+                intermediate,
+                &arena.ffn_act_buf,
+                &arena.ffn_down_buf
+            );
+            // ── Fused (x += ffn_down) + next-layer's attn_norm (or
+            //    final_norm on the last layer). After the loop, x_norm
+            //    already holds the final norm output -- no separate
+            //    final-norm dispatch needed.
+            let next_norm = if li + 1 < cfg.n_layers {
+                self.layers[li + 1]
+                    .pinned
+                    .attn_norm
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("attn_norm not pinned".into()))?
+            } else {
+                final_norm_buf
+            };
+            kernels::add_rmsnorm_fused_tcb(
+                &mut tcb,
+                &arena.x_buf,
+                &arena.ffn_down_buf,
+                next_norm,
+                &arena.x_norm_buf,
+                eps,
+                h,
+            )?;
+            let _ = kv_dim_bytes;
+        }
+
+        // ── LM head → argmax (x_norm already holds final_norm output) ─
+        // LM head: `gemv_f16` is faster than `gemv_f16_simdmat` here even
+        // at vocab=151936 -- M3 Pro simdgroup_matrix path needs cols >= ~4096
+        // and 2-pass tiling to break even on this shape. Both alternatives
+        // tested 2026-05-23: simdmat -3% at LM head, -13% at Q6_K projections.
+        kernels::gemv_f16_metal_buf_tcb(
+            &mut tcb,
+            lm_head_buf,
+            vocab,
+            h,
+            &arena.x_norm_buf,
+            &arena.logits_buf,
+        )?;
+        kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
+
+        tcb.commit_and_wait()?;
+
+        // KV cache pointer bump (CPU mirror), so the CPU fallback path
+        // remains consistent for hybrid runs that mix the two.
+        self.kv.seq_len += 1;
+
+        let token_ptr = arena.token_buf.contents() as *const u32;
+        let next = unsafe { *token_ptr };
+        Ok(next)
     }
 }
