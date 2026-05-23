@@ -146,6 +146,26 @@ fn bench_shape(rows: usize, cols: usize, calls: usize, warmup: usize) {
         let mean_us = t0.elapsed().as_micros() as f64 / calls as f64;
         eprintln!("[B=4 batched v3 (shmem)] mean={:.1} us/call", mean_us);
     }
+
+    // B=8 batched v3w: widened accumulator.
+    {
+        let x_batch = new_f32_buf(ctx, 8 * cols, 0x5555);
+        let y_batch = ctx.new_buffer(8 * rows * f32_bytes);
+        let mut run = || {
+            let mut tcb = TokenCommandBuffer::new(ctx);
+            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb, &model_buf, w_offset, w_byte_size,
+                rows, cols, 8, &x_batch, &y_batch,
+            ).expect("gemm batched v3w");
+            tcb.commit_and_wait().expect("commit");
+        };
+        for _ in 0..warmup { run(); }
+        let t0 = Instant::now();
+        for _ in 0..calls { run(); }
+        let mean_us = t0.elapsed().as_micros() as f64 / calls as f64;
+        eprintln!("[B=8 batched v3w]        mean={:.1} us/call  ({:.1} us/token)",
+                  mean_us, mean_us / 8.0);
+    }
 }
 
 #[test]

@@ -1064,6 +1064,108 @@ kernel void gemm_q4_k_m_batched_v3(
     }
 }
 
+// P3 v3w — Batched Q4_K_M GEMM with shmem activation tile, widened to
+// B in 1..=8. Same shmem-staged approach as v3; partial accumulator
+// is two float4s. Shmem tile size is B*256 floats (8 KB at B=8, fits
+// well under the 32 KB threadgroup memory limit).
+//
+// Predicates on B at each broadcast site so B<8 callers still pay
+// only their share of the multiplies; the rest of the GEMM dataflow
+// (weight decode, shmem load) is unchanged.
+
+kernel void gemm_q4_k_m_batched_v3w(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint B = min(args.batch, 8u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial_lo = float4(0.0f);
+    float4 partial_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint x_off_base = blk * 256u;
+        // Cooperative shmem load — each of 256 threads loads B floats.
+        for (uint b = 0; b < B; ++b) {
+            x_tile[b * 256u + tid] = x_batch[b * args.cols + x_off_base + tid];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off + (uint64_t)blk * 144ul;
+
+            ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+            ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+            float d    = (float)as_type<half>(d_bits);
+            float dmin = (float)as_type<half>(dmin_bits);
+
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem = k * 32u + simd_lane;
+                uint sub  = elem >> 5;
+                uchar s_byte, m_byte;
+                if (sub < 4u) {
+                    s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                    m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+                } else {
+                    uint j = sub - 4u;
+                    s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                           | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                    m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                           | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+                }
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+                float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+                if (B >= 1u) partial_lo.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial_lo.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial_lo.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial_lo.w += w_val * x_tile[3u * 256u + elem];
+                if (B >= 5u) partial_hi.x += w_val * x_tile[4u * 256u + elem];
+                if (B >= 6u) partial_hi.y += w_val * x_tile[5u * 256u + elem];
+                if (B >= 7u) partial_hi.z += w_val * x_tile[6u * 256u + elem];
+                if (B >= 8u) partial_hi.w += w_val * x_tile[7u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (!row_valid) return;
+
+    partial_lo.x = simd_sum(partial_lo.x);
+    if (B >= 2u) partial_lo.y = simd_sum(partial_lo.y);
+    if (B >= 3u) partial_lo.z = simd_sum(partial_lo.z);
+    if (B >= 4u) partial_lo.w = simd_sum(partial_lo.w);
+    if (B >= 5u) partial_hi.x = simd_sum(partial_hi.x);
+    if (B >= 6u) partial_hi.y = simd_sum(partial_hi.y);
+    if (B >= 7u) partial_hi.z = simd_sum(partial_hi.z);
+    if (B >= 8u) partial_hi.w = simd_sum(partial_hi.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + base_row] = partial_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + base_row] = partial_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + base_row] = partial_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + base_row] = partial_hi.w;
+    }
+}
+
 // P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
 // moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
 // Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one

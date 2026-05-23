@@ -723,7 +723,7 @@ impl Engine for QwenDense {
                 .unwrap_or(false);
         #[cfg(target_os = "macos")]
         if batch_prefill {
-            const B_MAX: usize = 4;
+            const B_MAX: usize = 8;
             let positions: Vec<usize> = (0..prompt_len).collect();
             let mut i = 0usize;
             while i < prompt_len {
@@ -1736,7 +1736,7 @@ impl QwenDense {
                             "batched_proj: Q4_K requires contiguous x_stride");
                         debug_assert_eq!($out_stride, $rows * f32_bytes,
                             "batched_proj: Q4_K requires contiguous out_stride");
-                        kernels::gemm_q4_k_m_batched_v3_pinned_tcb(
+                        kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                             &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                             $rows, $cols, b, $x_batch, $out_batch,
                         )?;
@@ -1922,7 +1922,7 @@ impl QwenDense {
             if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
-                kernels::gemm_q4_k_m_batched_v2_pinned_tcb(
+                kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                     &mut tcb, q4k_buf, 0, h * row_bytes,
                     h, intermediate, b,
                     &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
