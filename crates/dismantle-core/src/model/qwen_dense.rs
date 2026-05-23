@@ -1795,27 +1795,22 @@ impl QwenDense {
                 &arena.v_token_buf_batch, kv_dim_bytes
             );
 
-            // ── Biases (B sequential add_inplace per batch elem) ──
+            // ── Biases: broadcast one bias vector across B output
+            // rows in a single dispatch — saves 3*(B-1) per layer.
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                for bi in 0..b {
-                    kernels::add_inplace_metal_off_tcb(
-                        &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes, qb, q_dim,
-                    )?;
-                }
+                kernels::add_inplace_broadcast_tcb(
+                    &mut tcb, &arena.q_buf_batch, qb, q_dim, b,
+                )?;
             }
             if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                for bi in 0..b {
-                    kernels::add_inplace_metal_off_tcb(
-                        &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes, kb, kv_dim,
-                    )?;
-                }
+                kernels::add_inplace_broadcast_tcb(
+                    &mut tcb, &arena.k_token_buf_batch, kb, kv_dim, b,
+                )?;
             }
             if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                for bi in 0..b {
-                    kernels::add_inplace_metal_off_tcb(
-                        &mut tcb, &arena.v_token_buf_batch, bi * kv_dim_bytes, vb, kv_dim,
-                    )?;
-                }
+                kernels::add_inplace_broadcast_tcb(
+                    &mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b,
+                )?;
             }
 
             // ── RoPE on Q and K, per batch element (different pos) ─
@@ -1831,29 +1826,28 @@ impl QwenDense {
                 )?;
             }
 
-            // ── KV append: write B new K/V slices into the per-layer
-            // window at slot p0+bi. memcpy_f32_off already takes
-            // element offsets in src and dst.
+            // ── KV append: B contiguous slots [p0..p0+B) in the
+            // per-layer window. Source (B, kv_dim) is contiguous and
+            // dest k_cache[layer][p0..p0+B] is contiguous, so one
+            // memcpy of B*kv_dim floats replaces 2B sequential calls.
             let layer_kv_off_elems = li * max_seq * kv_dim;
-            for bi in 0..b {
-                let slot_kv_off_elems = layer_kv_off_elems + (p0 + bi) * kv_dim;
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb,
-                    &arena.k_token_buf_batch,
-                    &arena.k_cache_buf,
-                    bi * kv_dim,
-                    slot_kv_off_elems,
-                    kv_dim,
-                )?;
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb,
-                    &arena.v_token_buf_batch,
-                    &arena.v_cache_buf,
-                    bi * kv_dim,
-                    slot_kv_off_elems,
-                    kv_dim,
-                )?;
-            }
+            let slot_kv_off_elems = layer_kv_off_elems + p0 * kv_dim;
+            kernels::memcpy_f32_off_tcb(
+                &mut tcb,
+                &arena.k_token_buf_batch,
+                &arena.k_cache_buf,
+                0,
+                slot_kv_off_elems,
+                b * kv_dim,
+            )?;
+            kernels::memcpy_f32_off_tcb(
+                &mut tcb,
+                &arena.v_token_buf_batch,
+                &arena.v_cache_buf,
+                0,
+                slot_kv_off_elems,
+                b * kv_dim,
+            )?;
 
             // ── MHA decode per batch element (different seq_len) ─
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
@@ -1877,22 +1871,20 @@ impl QwenDense {
                 &arena.o_proj_out_buf_batch, h_bytes
             );
 
-            // ── Fused (x += o_proj_out) + FFN norm, per batch ────
+            // ── Fused (x += o_proj_out) + FFN norm, B rows in 1 dispatch.
             let ffn_norm_pin = layer
                 .pinned
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            for bi in 0..b {
-                kernels::add_rmsnorm_fused_off_tcb(
-                    &mut tcb,
-                    &arena.x_buf_batch, bi * h_bytes,
-                    &arena.o_proj_out_buf_batch, bi * h_bytes,
-                    ffn_norm_pin,
-                    &arena.x_norm_buf_batch, bi * h_bytes,
-                    eps, h,
-                )?;
-            }
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb,
+                &arena.x_buf_batch,
+                &arena.o_proj_out_buf_batch,
+                ffn_norm_pin,
+                &arena.x_norm_buf_batch,
+                eps, h, b,
+            )?;
 
             // ── FFN gate / up / silu_mul / down ──────────────────
             batched_proj!(
@@ -1907,15 +1899,17 @@ impl QwenDense {
                 &arena.x_norm_buf_batch, h_bytes,
                 &arena.ffn_up_buf_batch, int_bytes
             );
-            for bi in 0..b {
-                kernels::silu_mul_off_tcb(
-                    &mut tcb,
-                    &arena.ffn_gate_buf_batch, bi * int_bytes,
-                    &arena.ffn_up_buf_batch, bi * int_bytes,
-                    &arena.ffn_act_buf_batch, bi * int_bytes,
-                    intermediate,
-                )?;
-            }
+            // silu_mul is flat elementwise; (B, intermediate) buffers
+            // are contiguous so one dispatch with n=intermediate*B
+            // replaces B sequential calls — saves (B-1)*36 dispatches
+            // per chunk.
+            kernels::silu_mul_tcb(
+                &mut tcb,
+                &arena.ffn_gate_buf_batch,
+                &arena.ffn_up_buf_batch,
+                &arena.ffn_act_buf_batch,
+                intermediate * b,
+            )?;
             // ffn_down: prefer requant'd Q4_K buffer if active (~31% BW
             // saving on the largest weight per layer); else go through
             // the standard projection dispatcher.
@@ -1947,16 +1941,14 @@ impl QwenDense {
             } else {
                 final_norm_buf
             };
-            for bi in 0..b {
-                kernels::add_rmsnorm_fused_off_tcb(
-                    &mut tcb,
-                    &arena.x_buf_batch, bi * h_bytes,
-                    &arena.ffn_down_buf_batch, bi * h_bytes,
-                    next_norm,
-                    &arena.x_norm_buf_batch, bi * h_bytes,
-                    eps, h,
-                )?;
-            }
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb,
+                &arena.x_buf_batch,
+                &arena.ffn_down_buf_batch,
+                next_norm,
+                &arena.x_norm_buf_batch,
+                eps, h, b,
+            )?;
             let _ = kv_dim_bytes;
         }
 
