@@ -6084,6 +6084,69 @@ mod metal_dispatch {
     // prefill loop into single dispatches that cover all B rows. Same
     // math, fewer kernel launches.
 
+    /// P3 — Batched MHA decode: one dispatch handles all B query tokens.
+    /// 2D grid (n_heads, B) of TGs. Each TG computes attention for one
+    /// (head, batch_elem) using its own causal seq_len = p0 + b + 1.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f32_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        p0: usize,
+        batch: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f32_batched_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        let max_seq_len = p0 + batch; // largest batch's seq_len
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, p0 as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_heads as u32);
+        ab.set_u32(3, n_kv_heads as u32);
+        ab.set_u32(4, group_size);
+        ab.set_f32(5, scale);
+
+        const TG_SIZE_MHA: u32 = 128;
+        let shmem_bytes =
+            ((max_seq_len + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f32_batched",
+            (n_heads as u32 * TG_SIZE_MHA, batch as u32, 1),
+            (TG_SIZE_MHA, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     pub fn add_rmsnorm_fused_batched_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         x_buf: &PinnedBuffer,
