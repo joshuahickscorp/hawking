@@ -1849,19 +1849,19 @@ impl QwenDense {
                 b * kv_dim,
             )?;
 
-            // ── MHA decode per batch element (different seq_len) ─
+            // ── MHA decode: one dispatch over (n_heads, B) TGs.
+            // Each batch element gets its own causal seq_len = p0+b+1.
+            // Saves B-1 dispatches per layer (n_heads × B TGs in one
+            // launch vs B separate launches of n_heads TGs).
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            for bi in 0..b {
-                let mha_seq_len = p0 + bi + 1;
-                kernels::mha_decode_f32_off_tcb(
-                    &mut tcb,
-                    &arena.q_buf_batch, bi * q_dim_bytes,
-                    &arena.k_cache_buf, layer_kv_off_bytes,
-                    &arena.v_cache_buf, layer_kv_off_bytes,
-                    &arena.attn_out_buf_batch, bi * q_dim_bytes,
-                    mha_seq_len, head_dim, n_heads, n_kv_heads,
-                )?;
-            }
+            kernels::mha_decode_f32_batched_tcb(
+                &mut tcb,
+                &arena.q_buf_batch,
+                &arena.k_cache_buf, layer_kv_off_bytes,
+                &arena.v_cache_buf, layer_kv_off_bytes,
+                &arena.attn_out_buf_batch,
+                p0, b, head_dim, n_heads, n_kv_heads,
+            )?;
 
             // ── O projection (batched) ───────────────────────────
             batched_proj!(
