@@ -174,6 +174,14 @@ pub struct QwenDense {
     pub final_norm_buf: Option<crate::metal::PinnedBuffer>,
     /// LM head pinned as f16 -- either own tensor or tied to embed.
     pub lm_head_buf: Option<crate::metal::PinnedBuffer>,
+
+    /// P2 (2026-05-23): on-the-fly Q4_K quantization of the LM-head matrix.
+    /// LM-head GEMV is the single largest weight read per token (Qwen-3B:
+    /// vocab=151936 × hidden=2048 × 2B = 622 MB). Storing it as Q4_K
+    /// (~175 MB, ~3.5× smaller) trades a one-time quant cost at load
+    /// against per-token bandwidth. Activated via DISMANTLE_QWEN_Q4K_LMHEAD=1.
+    /// f16 lm_head_buf stays live as the parity fallback.
+    pub lm_head_q4k_buf: Option<crate::metal::PinnedBuffer>,
 }
 
 impl QwenDense {
@@ -301,7 +309,7 @@ impl Engine for QwenDense {
         // `weights_mmap_buf`; `gemv_q4_k_m_v2_pinned_tcb` reads a window
         // directly. Skipped off-macOS.
         #[cfg(target_os = "macos")]
-        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf) =
+        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf, lm_head_q4k_buf) =
             if let Some(ctx) = metal_ctx.as_ref() {
                 let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
                 // `embed_lookup_f32` is misnamed: the kernel signature
@@ -313,6 +321,31 @@ impl Engine for QwenDense {
                 let lhb = match lm_head.as_ref() {
                     Some(w) => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(w)),
                     None => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed)),
+                };
+                // Optional one-time Q4_K quantization of the LM-head matrix.
+                // Activated by DISMANTLE_QWEN_Q4K_LMHEAD=1; trades one-time
+                // load-side quant cost for ~3.5× LM-head bandwidth savings
+                // per decode token. Skipped if vocab*hidden % 256 != 0.
+                let lhq4k = if std::env::var("DISMANTLE_QWEN_Q4K_LMHEAD")
+                    .map(|v| v == "1")
+                    .unwrap_or(false)
+                {
+                    let src_f16: &[f16] = match lm_head.as_ref() {
+                        Some(w) => w,
+                        None => &embed,
+                    };
+                    let total = src_f16.len();
+                    if total % 256 == 0 {
+                        let src_f32: Vec<f32> = src_f16.iter().map(|&h| h.to_f32()).collect();
+                        let nb = total / 256;
+                        let mut q4k_bytes = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                        quant::quantize_q4_k(&src_f32, &mut q4k_bytes)?;
+                        Some(ctx.new_buffer_with_bytes(&q4k_bytes))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
                 };
                 // Per-layer norm + bias pinning.
                 for layer in layers.iter_mut() {
@@ -360,17 +393,18 @@ impl Engine for QwenDense {
                         }
                     }
                 }
-                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb))
+                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k)
             } else {
-                (None, None, None, None)
+                (None, None, None, None, None)
             };
         #[cfg(not(target_os = "macos"))]
-        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf): (
+        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf, lm_head_q4k_buf): (
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
-        ) = (None, None, None, None);
+            Option<crate::metal::PinnedBuffer>,
+        ) = (None, None, None, None, None);
 
         Ok(Self {
             config: cfg,
@@ -390,6 +424,7 @@ impl Engine for QwenDense {
             embed_buf,
             final_norm_buf,
             lm_head_buf,
+            lm_head_q4k_buf,
         })
     }
 
@@ -1138,18 +1173,36 @@ impl QwenDense {
         }
 
         // ── LM head → argmax (x_norm already holds final_norm output) ─
-        // LM head: `gemv_f16` is faster than `gemv_f16_simdmat` here even
-        // at vocab=151936 -- M3 Pro simdgroup_matrix path needs cols >= ~4096
-        // and 2-pass tiling to break even on this shape. Both alternatives
-        // tested 2026-05-23: simdmat -3% at LM head, -13% at Q6_K projections.
-        kernels::gemv_f16_metal_buf_tcb(
-            &mut tcb,
-            lm_head_buf,
-            vocab,
-            h,
-            &arena.x_norm_buf,
-            &arena.logits_buf,
-        )?;
+        // LM head: Q4_K path saves ~3.5× weight bandwidth on the largest
+        // single matmul of the forward pass (vocab × hidden). Activated
+        // when DISMANTLE_QWEN_Q4K_LMHEAD=1 made `lm_head_q4k_buf` populated.
+        // Falls back to f16 gemv otherwise. Argmax over the resulting
+        // logits absorbs Q4_K's last-place noise for sufficiently-distinct
+        // top tokens; if it ever flips the predicted id, just unset the
+        // env var.
+        if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
+            let blocks_per_row = h / 256;
+            let row_bytes = blocks_per_row * 144;
+            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                &mut tcb,
+                lhq,
+                0,
+                vocab * row_bytes,
+                vocab,
+                h,
+                &arena.x_norm_buf,
+                &arena.logits_buf,
+            )?;
+        } else {
+            kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb,
+                lm_head_buf,
+                vocab,
+                h,
+                &arena.x_norm_buf,
+                &arena.logits_buf,
+            )?;
+        }
         kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
 
         tcb.commit_and_wait()?;
