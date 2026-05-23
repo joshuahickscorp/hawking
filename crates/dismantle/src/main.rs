@@ -1003,6 +1003,7 @@ fn generate_main(
         memory_limit_mb,
         vocab_prune_path,
         quant_tier_map_path,
+        eagle5_head_path: None,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
