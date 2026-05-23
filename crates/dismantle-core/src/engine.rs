@@ -1,8 +1,3 @@
-//! The [`Engine`] trait: the single seam between dismantle-core and
-//! its consumers (`dismantle-serve`, `dismantle-bench`, `dismantle
-//! generate`). Stable from v0.1.0; extensions go behind feature flags
-//! or new methods with default impls.
-
 use crate::profile::KernelProfile;
 use crate::Result;
 use serde::{Deserialize, Serialize};
@@ -32,6 +27,16 @@ pub struct EngineConfig {
     /// estimated working set (model file + KV cache) exceeds N MiB. `Some(0)`
     /// triggers auto-detection (80% of system RAM). `None` = unlimited.
     pub memory_limit_mb: Option<usize>,
+    /// path-to-50 lever 1: optional vocab whitelist JSON (see `vocab_prune`
+    /// module). When `Some`, the LM-head weight is sliced to the pruned
+    /// vocab at model load and `cfg.vocab_size` is overridden accordingly.
+    /// `None` ⇒ full vocab (default behavior, unchanged).
+    pub vocab_prune_path: Option<std::path::PathBuf>,
+    /// path-to-50 lever 2: optional per-layer quant tier map JSON (see
+    /// `quant_tier_map` module). When `Some`, MoE expert weights are
+    /// re-quantized per layer to the dtype specified in the map. `None` ⇒
+    /// GGUF native dtypes (default behavior, unchanged).
+    pub quant_tier_map_path: Option<std::path::PathBuf>,
 }
 
 impl Default for EngineConfig {
@@ -47,6 +52,8 @@ impl Default for EngineConfig {
             trace_dispatch: false,
             max_routed_expert_ram_mb: None,
             memory_limit_mb: None,
+            vocab_prune_path: None,
+            quant_tier_map_path: None,
         }
     }
 }
@@ -159,7 +166,7 @@ pub struct GenStats {
     /// Non-empty only when `DISMANTLE_TRACE_DISPATCH=1` is set or
     /// `EngineConfig::trace_dispatch` is true; always empty otherwise.
     pub dispatch_samples: Vec<crate::metal::DispatchSample>,
-    /// Structural counters — non-zero only when trace_dispatch is on.
+    /// Structural counters -- non-zero only when trace_dispatch is on.
     pub metal_buffers_created: usize,
     pub metal_bytes_allocated: usize,
     pub metal_commits: usize,
@@ -211,7 +218,7 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_for_test(tokens, positions)
     }
 
-    /// Phase 2 Wedge 2a — multi-token forward shim. Currently a loop;
+    /// Phase 2 Wedge 2a -- multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.
     fn forward_tokens_for_test(
@@ -220,7 +227,7 @@ pub trait Engine: Send + Sync {
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>>;
 
-    /// Phase 3 prep — shared-only forward for spec acceptance measurement.
+    /// Phase 3 prep -- shared-only forward for spec acceptance measurement.
     /// Returns logits from a forward pass that runs only shared experts
     /// (routed contributions zeroed). Dense models return Err("unimplemented").
     fn forward_token_shared_only_for_test(
@@ -231,7 +238,7 @@ pub trait Engine: Send + Sync {
         Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
     }
 
-    /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
+    /// Phase A Wedge A1 -- layer-first batched forward. Accepts N tokens
     /// and N positions; processes each transformer layer for all N tokens
     /// before advancing to the next layer. Returns N logit vectors.
     /// A1: kernels still dispatch serially per token within each layer.
@@ -244,7 +251,7 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
-    /// Phase A parity helper — reset KV cache to empty so two forward passes
+    /// Phase A parity helper -- reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}
 
