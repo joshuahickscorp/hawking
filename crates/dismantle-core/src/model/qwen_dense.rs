@@ -200,7 +200,84 @@ pub struct QwenDense {
     /// True when `lm_head_pruned_buf` holds Q4_K bytes; selects the
     /// Q4_K kernel in the forward dispatch.
     pub vocab_pruned_is_q4k: bool,
+
+    /// P2 corpus-derived prune: maps `pruned_idx` (the index that GPU
+    /// argmax returns) back to the original vocab id. Only `Some` when
+    /// the prune was built from a corpus whitelist (i.e. when
+    /// `DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=N` was set). For the
+    /// first-N heuristic this is `None` because pruned_idx ≡ original_id.
+    pub vocab_prune_remap: Option<Vec<u32>>,
 }
+
+/// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
+/// ranking when the corpus-prune env var is active. Heavily weighted
+/// toward conversational + technical English (the dominant style of
+/// typical bench prompts and outputs). Combined with the first 4096
+/// token ids (covers ASCII + most common short tokens) at build time.
+const VOCAB_PRUNE_CORPUS: &str = "
+Hello, world. How are you today? I am doing well, thank you for asking.
+Can you explain how transformers work in three sentences? Transformers
+are a kind of neural network architecture that uses an attention
+mechanism to process sequences of tokens in parallel. They were
+introduced in the 2017 paper Attention Is All You Need by Vaswani et
+al. Modern large language models like GPT, Claude, LLaMA, Qwen, and
+DeepSeek are all based on the transformer architecture.
+
+A function in Python takes one or more arguments and returns a value.
+Here is a small example that takes a string and returns the first
+letter: def first_letter(s): return s[0]. You can call it with
+first_letter('hello'), which evaluates to 'h'. Functions are first
+class objects in most modern programming languages, meaning you can
+pass them around like any other value.
+
+Apple Silicon processors include a unified memory architecture, which
+means the CPU and GPU share the same physical memory pool. This is
+particularly useful for machine learning inference because weights
+loaded from disk can be referenced directly by the GPU without an
+extra copy step. The M-series chips also feature wide SIMD execution
+units and hardware-accelerated matrix multiplication via the AMX
+coprocessor on newer revisions.
+
+The history of the world is long and varied. People have lived on
+this planet for hundreds of thousands of years, building civilizations,
+making art, writing books, growing food, and forming communities.
+Languages have evolved, governments have risen and fallen, and
+technology has transformed daily life in countless ways. Science has
+helped us understand the natural world, from the smallest particles
+to the largest galaxies. Today, computers and the internet connect
+billions of people around the globe.
+
+In mathematics, a matrix is a rectangular array of numbers arranged
+in rows and columns. Two matrices can be multiplied when the number
+of columns in the first equals the number of rows in the second.
+The result is another matrix whose entries are dot products of rows
+from the first matrix and columns from the second. Matrix
+multiplication is at the heart of neural network forward passes.
+
+To summarize: please describe what the program does, list its inputs
+and outputs, and provide a small example. Common keywords include
+return, function, class, struct, type, value, variable, constant,
+list, dictionary, tuple, set, array, vector, matrix, tensor, model,
+weight, bias, gradient, loss, training, inference, dataset, batch,
+epoch, learning, rate, optimizer, accuracy, evaluation, benchmark,
+prompt, completion, token, embedding, attention, head, layer.
+
+I'm trying to build a small assistant that can help with writing,
+coding, math, and answering general knowledge questions. It should
+respond in clear, friendly English. It should be concise but
+thorough. When uncertain, it should ask for clarification rather
+than guessing. Examples of good responses include: 'Sure, here is
+how you would do that...', 'Let me check that for you...', and
+'I am not entirely certain, but...'.
+
+Numbers: one two three four five six seven eight nine ten eleven
+twelve thirteen fourteen fifteen sixteen seventeen eighteen
+nineteen twenty thirty forty fifty sixty seventy eighty ninety
+hundred thousand million billion. 0 1 2 3 4 5 6 7 8 9 10 100 1000
+10000. First, second, third, fourth, fifth, sixth, seventh, eighth,
+ninth, tenth. Larger, smaller, faster, slower, better, worse, more,
+less, higher, lower.
+";
 
 impl QwenDense {
     fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
@@ -336,6 +413,7 @@ impl Engine for QwenDense {
             lm_head_pruned_buf,
             vocab_pruned,
             vocab_pruned_is_q4k,
+            vocab_prune_remap,
         ) = if let Some(ctx) = metal_ctx.as_ref() {
                 let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
                 // `embed_lookup_f32` is misnamed: the kernel signature
@@ -437,30 +515,91 @@ impl Engine for QwenDense {
                         layer.pinned.ffn_down_q4k = Some(ctx.new_buffer_with_bytes(&q4k));
                     }
                 }
-                // Optional vocab prune (first-N heuristic; BPE puts common
-                // tokens at low IDs so a 32K cutoff covers ~99% of natural
-                // English without a calibration corpus). LM-head GEMV
-                // reads pruned_vocab × hidden instead of full vocab × hidden.
-                // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the pruned
-                // slice is Q4_K-quantized for compound BW savings.
+                // Optional vocab prune. Two modes:
+                //  * DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=N
+                //      Tokenize VOCAB_PRUNE_CORPUS, count frequencies,
+                //      union with the first 4096 ids, sort, take top N.
+                //      Builds a remap table so the GPU argmax index can
+                //      be translated back to the original vocab id.
+                //  * DISMANTLE_QWEN_VOCAB_PRUNE=N (legacy first-N)
+                //      Keep only the first N rows. No remap needed --
+                //      pruned_idx ≡ original_id.
+                // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the
+                // pruned slice is Q4_K-quantized for compound BW savings.
                 let want_q4k_lmhead = std::env::var("DISMANTLE_QWEN_Q4K_LMHEAD")
                     .map(|v| v == "1")
                     .unwrap_or(false);
-                let (pruned_buf, pruned_n) = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
+
+                // Helper: take a sorted list of original vocab ids, pull
+                // the corresponding f16 rows out of src, and return the
+                // contiguous (n, h) f16 vec.
+                let h = cfg.hidden;
+                let pack_rows = |src: &[f16], ids: &[u32]| -> Vec<f16> {
+                    let mut out = Vec::with_capacity(ids.len() * h);
+                    for &id in ids {
+                        let i = id as usize;
+                        out.extend_from_slice(&src[i * h..(i + 1) * h]);
+                    }
+                    out
+                };
+
+                let corpus_n = std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS")
+                    .ok()
+                    .and_then(|v| v.parse::<usize>().ok())
+                    .filter(|&n| n > 0 && n < cfg.vocab_size);
+
+                let (pruned_buf, pruned_n, prune_remap) = if let Some(n_target) = corpus_n {
+                    // Build the whitelist from corpus token frequencies +
+                    // first 4096 ids guaranteed (covers most ASCII + short
+                    // BPE tokens).
+                    let mut freq = std::collections::HashMap::<u32, u32>::new();
+                    if let Ok(tokens) = tokenizer.encode(VOCAB_PRUNE_CORPUS, false) {
+                        for t in tokens {
+                            *freq.entry(t).or_insert(0) += 1;
+                        }
+                    }
+                    // Force-include first 4096 ids with a tiny baseline freq
+                    // so they sort below corpus tokens but ahead of unseen ones.
+                    let force_first = 4096u32.min(cfg.vocab_size as u32);
+                    for id in 0..force_first {
+                        freq.entry(id).or_insert(1);
+                    }
+                    let mut ranked: Vec<(u32, u32)> = freq.into_iter().collect();
+                    // Sort by frequency desc, then by id asc for stability.
+                    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+                    let n_keep = n_target.min(ranked.len());
+                    let mut ids: Vec<u32> = ranked.into_iter().take(n_keep).map(|(id, _)| id).collect();
+                    // Resort by original id ascending so the row order in
+                    // the pinned buffer matches the remap table.
+                    ids.sort_unstable();
+                    let src: &[f16] = match lm_head.as_ref() {
+                        Some(w) => w,
+                        None => &embed,
+                    };
+                    let packed = pack_rows(src, &ids);
+                    let buf = if want_q4k_lmhead && (ids.len() * h) % 256 == 0 {
+                        let packed_f32: Vec<f32> =
+                            packed.iter().map(|&hh| hh.to_f32()).collect();
+                        let nb = (ids.len() * h) / 256;
+                        let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                        quant::quantize_q4_k(&packed_f32, &mut q4k)?;
+                        ctx.new_buffer_with_bytes(&q4k)
+                    } else {
+                        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&packed))
+                    };
+                    let nlen = ids.len();
+                    (Some(buf), Some(nlen), Some(ids))
+                } else {
+                    let r = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
                     Ok(v) if v != "0" && !v.is_empty() => {
                         let n_req = v.parse::<usize>().unwrap_or(32000);
                         let n = n_req.min(cfg.vocab_size);
                         if n > 0 && n < cfg.vocab_size {
-                            let h = cfg.hidden;
                             let src: &[f16] = match lm_head.as_ref() {
                                 Some(w) => w,
                                 None => &embed,
                             };
                             let slice = &src[..n * h];
-                            // If both flags set, quantize the slice to Q4_K
-                            // and pin those bytes (overrides the plain f16
-                            // path -- the forward dispatcher checks the Q4_K
-                            // buf first when both are present).
                             let buf = if want_q4k_lmhead && (n * h) % 256 == 0 {
                                 let slice_f32: Vec<f32> =
                                     slice.iter().map(|&hh| hh.to_f32()).collect();
@@ -473,22 +612,24 @@ impl Engine for QwenDense {
                                     bytemuck::cast_slice::<f16, u8>(slice),
                                 )
                             };
-                            (Some(buf), Some(n))
+                            (Some(buf), Some(n), None)
                         } else {
-                            (None, None)
+                            (None, None, None)
                         }
                     }
-                    _ => (None, None),
+                    _ => (None, None, None),
+                    };
+                    r
                 };
                 // Whether the pruned buffer holds Q4_K bytes (vs plain f16).
                 let pruned_is_q4k =
                     want_q4k_lmhead && pruned_n.is_some() && pruned_n.unwrap() > 0;
                 (
                     Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k,
-                    pruned_buf, pruned_n, pruned_is_q4k,
+                    pruned_buf, pruned_n, pruned_is_q4k, prune_remap,
                 )
             } else {
-                (None, None, None, None, None, None, None, false)
+                (None, None, None, None, None, None, None, false, None)
             };
         #[cfg(not(target_os = "macos"))]
         let (
@@ -500,6 +641,7 @@ impl Engine for QwenDense {
             lm_head_pruned_buf,
             vocab_pruned,
             vocab_pruned_is_q4k,
+            vocab_prune_remap,
         ): (
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
@@ -509,7 +651,8 @@ impl Engine for QwenDense {
             Option<crate::metal::PinnedBuffer>,
             Option<usize>,
             bool,
-        ) = (None, None, None, None, None, None, None, false);
+            Option<Vec<u32>>,
+        ) = (None, None, None, None, None, None, None, false, None);
 
         Ok(Self {
             config: cfg,
@@ -533,6 +676,7 @@ impl Engine for QwenDense {
             lm_head_pruned_buf,
             vocab_pruned,
             vocab_pruned_is_q4k,
+            vocab_prune_remap,
         })
     }
 
@@ -1334,7 +1478,14 @@ impl QwenDense {
             tcb.commit_and_wait()?;
             self.kv.seq_len += 1;
             let token_ptr = arena.token_buf.contents() as *const u32;
-            return Ok(unsafe { *token_ptr });
+            let pruned_idx = unsafe { *token_ptr };
+            // Corpus prune: GPU argmax returns whitelist index, remap to
+            // original vocab id. First-N prune: identity (no remap).
+            let token = match self.vocab_prune_remap.as_ref() {
+                Some(map) => *map.get(pruned_idx as usize).unwrap_or(&pruned_idx),
+                None => pruned_idx,
+            };
+            return Ok(token);
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
