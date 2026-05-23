@@ -861,6 +861,106 @@ kernel void dequant_q6_k_f16(
     dst[(uint64_t)gid * 256ul + (uint64_t)tid] = (half)val;
 }
 
+// P3 — Batched Q4_K_M GEMM: one weight matrix W applied to B activation
+// vectors in parallel. Compared to running B back-to-back single-matrix
+// GEMVs (each of which re-reads W from DRAM), this reads W *once* per
+// row and broadcasts to B output dot products in registers.
+//
+// Bandwidth amortization: a single-token forward through Qwen-3B-Q4_K_M
+// reads ~1.6 GB of weights. At B=4 prefill, the same weight read produces
+// 4 token outputs — effective compute per byte ~4×. Translates to a
+// near-linear prefill speedup until the kernel becomes compute-bound or
+// the activation reads dominate.
+//
+// Geometry matches gemm_q4_k_m_fused_v2 (8 rows per TG, 32 threads per row,
+// TG=256) so callers can swap dispatchers without re-thinking grid shape.
+// `args.batch` carries B; supported values 1..=4 (uses float4 partial
+// accumulator). B > 4 callers should issue multiple dispatches.
+//
+// Memory layout:
+//   x_batch : (B, cols)    f32, row-major (each row is one activation vec)
+//   y_batch : (B, rows)    f32, row-major
+//
+// Activation x is read B times per weight-block-decode iteration, which
+// the GPU L1 cache absorbs cleanly for small B (the same x_batch[b, off]
+// addresses are re-read across rows, so they live in cache).
+
+struct ArgbufBatchedRowsCols {
+    uint rows;
+    uint cols;
+    uint batch;
+};
+
+kernel void gemm_q4_k_m_batched_v2(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint B = min(args.batch, 4u);
+
+    float4 partial = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t bo = row_byte_off + (uint64_t)blk * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            uint sub  = elem >> 5;
+            uchar s_byte, m_byte;
+            if (sub < 4u) {
+                s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+            } else {
+                uint j = sub - 4u;
+                s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                       | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                       | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+            }
+            uint pair  = sub >> 1;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = elem & 31u;
+            uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+            float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+            uint64_t x_off = (uint64_t)blk * 256ul + (uint64_t)elem;
+
+            if (B >= 1u) partial.x += w_val * x_batch[0u * args.cols + x_off];
+            if (B >= 2u) partial.y += w_val * x_batch[1u * args.cols + x_off];
+            if (B >= 3u) partial.z += w_val * x_batch[2u * args.cols + x_off];
+            if (B >= 4u) partial.w += w_val * x_batch[3u * args.cols + x_off];
+        }
+    }
+
+    partial.x = simd_sum(partial.x);
+    if (B >= 2u) partial.y = simd_sum(partial.y);
+    if (B >= 3u) partial.z = simd_sum(partial.z);
+    if (B >= 4u) partial.w = simd_sum(partial.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial.w;
+    }
+}
+
 // P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
 // moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
 // Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one
