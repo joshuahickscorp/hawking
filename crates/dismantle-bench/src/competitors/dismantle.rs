@@ -1,13 +1,3 @@
-//! dismantle backend — drives the in-process Engine, no subprocess.
-//!
-//! Reuses `dismantle_core::model::load_engine`. The engine is loaded
-//! once on first call and reused; for honest comparison with llama.cpp
-//! (which pays process-start cost on every invocation) the audit doc
-//! notes this asymmetry. We could spawn the `dismantle generate`
-//! binary instead, but that adds tokenizer-load + GGUF-mmap to every
-//! call, which biases against dismantle in a way that obscures real
-//! engine perf.
-
 use super::{Competitor, Measurement};
 use anyhow::{anyhow, Result};
 use dismantle_core::{
