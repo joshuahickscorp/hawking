@@ -1736,7 +1736,7 @@ impl QwenDense {
                             "batched_proj: Q4_K requires contiguous x_stride");
                         debug_assert_eq!($out_stride, $rows * f32_bytes,
                             "batched_proj: Q4_K requires contiguous out_stride");
-                        kernels::gemm_q4_k_m_batched_v2_pinned_tcb(
+                        kernels::gemm_q4_k_m_batched_v3_pinned_tcb(
                             &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                             $rows, $cols, b, $x_batch, $out_batch,
                         )?;

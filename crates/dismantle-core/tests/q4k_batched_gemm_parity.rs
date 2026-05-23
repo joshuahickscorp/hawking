@@ -121,5 +121,22 @@ fn batched_q4k_matches_per_token_gemv() {
             diff < 1e-3,
             "batched Q4_K vs per-token v2 (batch={batch}): max_abs_diff = {diff} (limit 1e-3)"
         );
+
+        // v3 parity: same expected output via the shmem-staged variant.
+        let y_buf_v3 = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
+        {
+            let mut tcb = TokenCommandBuffer::new(ctx);
+            kernels::gemm_q4_k_m_batched_v3_pinned_tcb(
+                &mut tcb, &model_buf, 0, w_q4.len(),
+                rows, cols, batch, &x_buf, &y_buf_v3,
+            ).expect("batched gemm v3 encode");
+            tcb.commit_and_wait().expect("commit v3");
+        }
+        let actual_v3 = read_f32_buf(&y_buf_v3, batch * rows);
+        let diff_v3 = max_abs_diff(&expected, &actual_v3);
+        assert!(
+            diff_v3 < 1e-3,
+            "batched Q4_K v3 vs per-token v2 (batch={batch}): max_abs_diff = {diff_v3} (limit 1e-3)"
+        );
     }
 }
