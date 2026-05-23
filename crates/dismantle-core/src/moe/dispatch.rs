@@ -1,10 +1,3 @@
-//! Host-side MoE dispatch: builds the per-block work queue, encodes
-//! the Metal command. Phase 2 replaces the per-expert dispatch loop
-//! with a single grid that pulls (expert, token-tile) work items.
-//!
-//! v0 — pure CPU bookkeeping. The Phase-2 single-launch kernel reads
-//! the same queue layout encoded as a Metal buffer.
-
 /// One work item: one expert + the list of tokens routed to it, with
 /// per-token gate weights.
 #[derive(Debug, Clone)]
