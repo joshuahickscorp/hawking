@@ -5557,6 +5557,377 @@ mod metal_dispatch {
     }
 
     // ── end Phase 5C.2 ────────────────────────────────────────────────────────
+
+    // ── P3 — Offset-variant dispatchers for batched prefill ───────────────
+    //
+    // Thin wrappers around the existing single-token dispatchers that accept
+    // byte offsets on the per-token input/output buffers. Used by
+    // `forward_tokens_batch_tcb` to slice B-wide arena buffers into B
+    // single-token windows. The compiled kernel is identical; only the GPU
+    // buffer base pointer is shifted.
+
+    pub fn embed_lookup_metal_f32_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let tg = TG_SIZE.min(hidden_u32);
+        tcb.dispatch_threads(
+            "embed_lookup_f32",
+            (hidden_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &hidden_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &token as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    pub fn rmsnorm_metal_buf_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        weight_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads("rmsnorm_f32", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), x_off_bytes as u64);
+            enc.set_buffer(1, Some(weight_buf), 0);
+            enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_rmsnorm_fused_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        attn_out_buf: &PinnedBuffer,
+        attn_off_bytes: usize,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        x_norm_off_bytes: usize,
+        eps: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(1, Some(attn_out_buf), attn_off_bytes as u64);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), x_norm_off_bytes as u64);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    pub fn add_inplace_metal_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a_buf: &PinnedBuffer,
+        a_off_bytes: usize,
+        b_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a_buf), a_off_bytes as u64);
+                enc.set_buffer(1, Some(b_buf), 0);
+                enc.set_bytes(
+                    2,
+                    std::mem::size_of::<u32>() as u64,
+                    &n_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_q_f32_inplace_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        q_off_bytes: usize,
+        n_heads: usize,
+        q_head_dim: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        let n_heads_u32 = n_heads as u32;
+        let q_head_u32 = q_head_dim as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
+        let tg = TG_SIZE.min(total_pairs.max(1));
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[
+            ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+            ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+        ])?;
+        ab.set_u32(0, n_heads_u32);
+        ab.set_u32(1, q_head_u32);
+        ab.set_u32(2, qk_nope_u32);
+        ab.set_u32(3, qk_rope_u32);
+        ab.set_u32(4, pos);
+        ab.set_f32(5, base);
+        tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(q_buf), q_off_bytes as u64);
+            enc.set_buffer(1, Some(ab.handle()), 0);
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f32_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        q_off_bytes: usize,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        out_off_bytes: usize,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f32_off_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, seq_len as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_kv_heads as u32);
+        ab.set_u32(3, group_size);
+        ab.set_f32(4, scale);
+
+        const TG_SIZE_MHA: u32 = 128;
+        let shmem_bytes =
+            ((seq_len + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f32",
+            (n_heads as u32 * TG_SIZE_MHA, 1, 1),
+            (TG_SIZE_MHA, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), q_off_bytes as u64);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), out_off_bytes as u64);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn silu_mul_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gate_buf: &PinnedBuffer,
+        gate_off_bytes: usize,
+        up_buf: &PinnedBuffer,
+        up_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+        n: usize,
+    ) -> Result<()> {
+        let n_u32 = n as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32])?;
+        ab.set_u32(0, n_u32);
+        tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_buf), gate_off_bytes as u64);
+            enc.set_buffer(1, Some(up_buf), up_off_bytes as u64);
+            enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_8r_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_8r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_off_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+                enc.set_bytes(
+                    3, std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4, std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_pinned_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_fused_v2";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_off_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_off_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V2_TG: u32 = 256;
+        let n_tg = rows_u32.div_ceil(8);
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V2_TG, 1, 1),
+            (V2_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    pub fn gemv_f16_metal_buf_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_buf: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        y_buf: &PinnedBuffer,
+        y_off_bytes: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        tcb.dispatch_threads(
+            "gemv_f16",
+            (rows_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(2, Some(y_buf), y_off_bytes as u64);
+                enc.set_bytes(
+                    3, std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4, std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+    // ── end P3 offset variants ────────────────────────────────────────────
 }
 
 

@@ -710,28 +710,61 @@ impl Engine for QwenDense {
         self.kv.reset();
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
+        let use_tcb_prefill = std::env::var("DISMANTLE_QWEN_TCB")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        // P3 — batched prefill: chunk prompt into B≤4 token windows and
+        // process each through `forward_tokens_batch_tcb`. Each weight
+        // is read once per chunk (instead of once per token), amortizing
+        // BW across B. Decode loop is unchanged. Requires TCB prefill.
+        let batch_prefill = use_tcb_prefill
+            && std::env::var("DISMANTLE_QWEN_BATCH_PREFILL")
+                .map(|v| v == "1")
+                .unwrap_or(false);
+        #[cfg(target_os = "macos")]
+        if batch_prefill {
+            const B_MAX: usize = 4;
+            let positions: Vec<usize> = (0..prompt_len).collect();
+            let mut i = 0usize;
+            while i < prompt_len {
+                if abort_set(&req) {
+                    prefill_aborted = true;
+                    break;
+                }
+                let step_start = Instant::now();
+                let end = (i + B_MAX).min(prompt_len);
+                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
+                if stall_active && step_start.elapsed() > stall_limit {
+                    prefill_aborted = true;
+                    break;
+                }
+                i = end;
+            }
+        } else {
+            for (i, &t) in prompt_ids.iter().enumerate() {
+                if abort_set(&req) {
+                    prefill_aborted = true;
+                    break;
+                }
+                let step_start = Instant::now();
+                if use_tcb_prefill {
+                    let _ = self.forward_token_greedy_tcb(t, i)?;
+                } else {
+                    let _ = self.forward_token(t, i)?;
+                }
+                if stall_active && step_start.elapsed() > stall_limit {
+                    prefill_aborted = true;
+                    break;
+                }
+            }
+        }
+        #[cfg(not(target_os = "macos"))]
         for (i, &t) in prompt_ids.iter().enumerate() {
             if abort_set(&req) {
                 prefill_aborted = true;
                 break;
             }
             let step_start = Instant::now();
-            // P1f: route prefill through the full-Metal TCB path when
-            // opted in. Reuses the same kernel set as decode; we discard
-            // the predicted next token (prefill already knows what comes
-            // next) but the side effect is the GPU KV cache buffer is
-            // populated incrementally, which means no CPU→GPU sync is
-            // needed when the decode loop starts.
-            let use_tcb_prefill = std::env::var("DISMANTLE_QWEN_TCB")
-                .map(|v| v == "1")
-                .unwrap_or(false);
-            #[cfg(target_os = "macos")]
-            if use_tcb_prefill {
-                let _ = self.forward_token_greedy_tcb(t, i)?;
-            } else {
-                let _ = self.forward_token(t, i)?;
-            }
-            #[cfg(not(target_os = "macos"))]
             let _ = self.forward_token(t, i)?;
             if stall_active && step_start.elapsed() > stall_limit {
                 prefill_aborted = true;
@@ -1520,5 +1553,419 @@ impl QwenDense {
         let token_ptr = arena.token_buf.contents() as *const u32;
         let next = unsafe { *token_ptr };
         Ok(next)
+    }
+
+    /// P3 — Batched prefill: process `tokens.len()` consecutive prompt
+    /// tokens (1..=arena.max_batch) through one full forward pass, reading
+    /// each weight once and producing B = `tokens.len()` output rows of
+    /// activations. K/V cache writes happen at positions `[positions[0] ..
+    /// positions[0]+B)`, which the caller must guarantee are contiguous.
+    ///
+    /// Does not sample / write a token result -- prefill discards the
+    /// predicted next token (we already know what comes next in the
+    /// prompt). The side effect is the GPU KV cache buffer is populated
+    /// for slots [positions[0] .. positions[0]+B), same as
+    /// `forward_token_greedy_tcb` would do B times.
+    #[cfg(target_os = "macos")]
+    #[allow(clippy::too_many_arguments)]
+    pub fn forward_tokens_batch_tcb(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<()> {
+        use crate::kernels;
+        use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
+
+        if tokens.len() != positions.len() {
+            return Err(Error::Model(format!(
+                "forward_tokens_batch_tcb: tokens={} positions={}",
+                tokens.len(), positions.len()
+            )));
+        }
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(());
+        }
+        // Require contiguous positions [p0..p0+B).
+        for (i, &p) in positions.iter().enumerate() {
+            if p != positions[0] + i {
+                return Err(Error::Model(format!(
+                    "forward_tokens_batch_tcb: positions must be contiguous; got [{}]={} expected {}",
+                    i, p, positions[0] + i
+                )));
+            }
+        }
+
+        let ctx = self
+            .metal_ctx
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: no metal_ctx".into()))?;
+        let mmap_buf = self
+            .weights_mmap_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: weights not pinned".into()))?;
+        let embed_buf = self
+            .embed_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: embed not pinned".into()))?;
+        let final_norm_buf = self
+            .final_norm_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: final_norm not pinned".into()))?;
+
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+        let intermediate = cfg.intermediate;
+        let eps = cfg.rms_norm_eps;
+        let theta = cfg.rope_theta;
+
+        let p0 = positions[0];
+        if self.kv.seq_len != p0 {
+            return Err(Error::Model(format!(
+                "forward_tokens_batch_tcb: kv.seq_len={} != positions[0]={}",
+                self.kv.seq_len, p0
+            )));
+        }
+        if self.kv.seq_len + b > self.kv.max_seq {
+            return Err(Error::Model(format!(
+                "forward_tokens_batch_tcb: kv overflow ({} + {} > {})",
+                self.kv.seq_len, b, self.kv.max_seq
+            )));
+        }
+        let max_seq = self.kv.max_seq;
+
+        // Lazy-init arena. Bridge CPU prefill KV state into GPU arena
+        // (only matters if a hybrid prefill ran some CPU-path steps
+        // earlier -- in pure-batched prefill paths this branch is a
+        // no-op).
+        let fresh_arena = self.dense_arena.is_none();
+        if fresh_arena {
+            self.dense_arena = Some(DenseDecodeArena::new(
+                ctx,
+                cfg.n_layers,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                h,
+                intermediate,
+                cfg.vocab_size,
+                max_seq,
+            ));
+        }
+        if fresh_arena && p0 > 0 {
+            let arena = self.dense_arena.as_ref().unwrap();
+            let kv_stride = n_kv_heads * head_dim;
+            let prefill_elems = p0 * kv_stride;
+            let layer_stride_elems = max_seq * kv_stride;
+            for li in 0..cfg.n_layers {
+                let layer_off_elems = li * layer_stride_elems;
+                let k_src = &self.kv.keys[li][..prefill_elems];
+                let v_src = &self.kv.values[li][..prefill_elems];
+                let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                unsafe {
+                    std::ptr::copy_nonoverlapping(
+                        k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
+                    );
+                    std::ptr::copy_nonoverlapping(
+                        v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
+                    );
+                }
+            }
+        }
+        let arena = self.dense_arena.as_ref().unwrap();
+        if b > arena.max_batch {
+            return Err(Error::Model(format!(
+                "forward_tokens_batch_tcb: B={} > arena.max_batch={}",
+                b, arena.max_batch
+            )));
+        }
+
+        let f32_bytes = std::mem::size_of::<f32>();
+        let h_bytes = h * f32_bytes;
+        let q_dim_bytes = q_dim * f32_bytes;
+        let kv_dim_bytes = kv_dim * f32_bytes;
+        let int_bytes = intermediate * f32_bytes;
+        let layer_kv_stride_bytes = max_seq * kv_dim_bytes;
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // ── Embed B tokens into x_buf_batch[b, :] ────────────────
+        for (bi, &tok) in tokens.iter().enumerate() {
+            kernels::embed_lookup_metal_f32_off_tcb(
+                &mut tcb, embed_buf, tok, h,
+                &arena.x_buf_batch, bi * h_bytes,
+            )?;
+        }
+
+        // Pre-norm for layer 0 (B sequential rmsnorm dispatches).
+        let layer0_attn_norm = self.layers[0]
+            .pinned
+            .attn_norm
+            .as_ref()
+            .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
+        for bi in 0..b {
+            kernels::rmsnorm_metal_buf_off_tcb(
+                &mut tcb,
+                &arena.x_buf_batch, bi * h_bytes,
+                layer0_attn_norm, eps, h,
+                &arena.x_norm_buf_batch, bi * h_bytes,
+            )?;
+        }
+
+        // Helper: batched projection via Q4_K batched GEMM (single
+        // dispatch, weight read once) when dtype is Q4_K; else B
+        // sequential single-vector GEMV calls (no BW saving) for Q6_K /
+        // f16 fallback. `x_off_stride` and `out_off_stride` are byte
+        // strides between consecutive batch rows -- usually `dim *
+        // f32_bytes`.
+        macro_rules! batched_proj {
+            ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
+             $x_batch:expr, $x_stride:expr,
+             $out_batch:expr, $out_stride:expr) => {{
+                match $tref.dtype {
+                    GgmlType::Q4_K => {
+                        // Contiguous layout: (B, cols) f32 → (B, rows) f32.
+                        // Requires x_stride = cols*f32 and out_stride = rows*f32.
+                        debug_assert_eq!($x_stride, $cols * f32_bytes,
+                            "batched_proj: Q4_K requires contiguous x_stride");
+                        debug_assert_eq!($out_stride, $rows * f32_bytes,
+                            "batched_proj: Q4_K requires contiguous out_stride");
+                        kernels::gemm_q4_k_m_batched_v2_pinned_tcb(
+                            &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                            $rows, $cols, b, $x_batch, $out_batch,
+                        )?;
+                    }
+                    GgmlType::Q6_K => {
+                        for bi in 0..b {
+                            kernels::gemv_q6_k_pinned_off_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                    _ => {
+                        let buf_f16 = $pinned_f16.ok_or_else(|| {
+                            Error::Metal(
+                                "batched_proj: non-Q4_K/Q6_K dtype and no f16 fallback".into(),
+                            )
+                        })?;
+                        for bi in 0..b {
+                            kernels::gemv_f16_metal_buf_off_tcb(
+                                &mut tcb, buf_f16, $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                }
+            }};
+        }
+
+        for li in 0..cfg.n_layers {
+            let layer = &self.layers[li];
+
+            // x_norm_buf_batch is already populated (hoisted at layer 0,
+            // produced by previous layer's tail fusion at layers 1+).
+
+            // ── Q / K / V projections ────────────────────────────
+            batched_proj!(
+                layer.q_proj, layer.pinned.q_proj_f16.as_ref(),
+                q_dim, h,
+                &arena.x_norm_buf_batch, h_bytes,
+                &arena.q_buf_batch, q_dim_bytes
+            );
+            batched_proj!(
+                layer.k_proj, layer.pinned.k_proj_f16.as_ref(),
+                kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes,
+                &arena.k_token_buf_batch, kv_dim_bytes
+            );
+            batched_proj!(
+                layer.v_proj, layer.pinned.v_proj_f16.as_ref(),
+                kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes,
+                &arena.v_token_buf_batch, kv_dim_bytes
+            );
+
+            // ── Biases (B sequential add_inplace per batch elem) ──
+            if let Some(qb) = layer.pinned.q_bias.as_ref() {
+                for bi in 0..b {
+                    kernels::add_inplace_metal_off_tcb(
+                        &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes, qb, q_dim,
+                    )?;
+                }
+            }
+            if let Some(kb) = layer.pinned.k_bias.as_ref() {
+                for bi in 0..b {
+                    kernels::add_inplace_metal_off_tcb(
+                        &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes, kb, kv_dim,
+                    )?;
+                }
+            }
+            if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                for bi in 0..b {
+                    kernels::add_inplace_metal_off_tcb(
+                        &mut tcb, &arena.v_token_buf_batch, bi * kv_dim_bytes, vb, kv_dim,
+                    )?;
+                }
+            }
+
+            // ── RoPE on Q and K, per batch element (different pos) ─
+            for bi in 0..b {
+                let pos_u32 = (p0 + bi) as u32;
+                kernels::rope_q_f32_inplace_off_tcb(
+                    &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes,
+                    n_heads, head_dim, 0, head_dim, pos_u32, theta,
+                )?;
+                kernels::rope_q_f32_inplace_off_tcb(
+                    &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes,
+                    n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
+                )?;
+            }
+
+            // ── KV append: write B new K/V slices into the per-layer
+            // window at slot p0+bi. memcpy_f32_off already takes
+            // element offsets in src and dst.
+            let layer_kv_off_elems = li * max_seq * kv_dim;
+            for bi in 0..b {
+                let slot_kv_off_elems = layer_kv_off_elems + (p0 + bi) * kv_dim;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    &arena.k_cache_buf,
+                    bi * kv_dim,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    &arena.v_cache_buf,
+                    bi * kv_dim,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+            }
+
+            // ── MHA decode per batch element (different seq_len) ─
+            let layer_kv_off_bytes = li * layer_kv_stride_bytes;
+            for bi in 0..b {
+                let mha_seq_len = p0 + bi + 1;
+                kernels::mha_decode_f32_off_tcb(
+                    &mut tcb,
+                    &arena.q_buf_batch, bi * q_dim_bytes,
+                    &arena.k_cache_buf, layer_kv_off_bytes,
+                    &arena.v_cache_buf, layer_kv_off_bytes,
+                    &arena.attn_out_buf_batch, bi * q_dim_bytes,
+                    mha_seq_len, head_dim, n_heads, n_kv_heads,
+                )?;
+            }
+
+            // ── O projection (batched) ───────────────────────────
+            batched_proj!(
+                layer.o_proj, layer.pinned.o_proj_f16.as_ref(),
+                h, q_dim,
+                &arena.attn_out_buf_batch, q_dim_bytes,
+                &arena.o_proj_out_buf_batch, h_bytes
+            );
+
+            // ── Fused (x += o_proj_out) + FFN norm, per batch ────
+            let ffn_norm_pin = layer
+                .pinned
+                .ffn_norm
+                .as_ref()
+                .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
+            for bi in 0..b {
+                kernels::add_rmsnorm_fused_off_tcb(
+                    &mut tcb,
+                    &arena.x_buf_batch, bi * h_bytes,
+                    &arena.o_proj_out_buf_batch, bi * h_bytes,
+                    ffn_norm_pin,
+                    &arena.x_norm_buf_batch, bi * h_bytes,
+                    eps, h,
+                )?;
+            }
+
+            // ── FFN gate / up / silu_mul / down ──────────────────
+            batched_proj!(
+                layer.ffn_gate, layer.pinned.ffn_gate_f16.as_ref(),
+                intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes,
+                &arena.ffn_gate_buf_batch, int_bytes
+            );
+            batched_proj!(
+                layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(),
+                intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes,
+                &arena.ffn_up_buf_batch, int_bytes
+            );
+            for bi in 0..b {
+                kernels::silu_mul_off_tcb(
+                    &mut tcb,
+                    &arena.ffn_gate_buf_batch, bi * int_bytes,
+                    &arena.ffn_up_buf_batch, bi * int_bytes,
+                    &arena.ffn_act_buf_batch, bi * int_bytes,
+                    intermediate,
+                )?;
+            }
+            // ffn_down: prefer requant'd Q4_K buffer if active (~31% BW
+            // saving on the largest weight per layer); else go through
+            // the standard projection dispatcher.
+            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                kernels::gemm_q4_k_m_batched_v2_pinned_tcb(
+                    &mut tcb, q4k_buf, 0, h * row_bytes,
+                    h, intermediate, b,
+                    &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                )?;
+            } else {
+                batched_proj!(
+                    layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(),
+                    h, intermediate,
+                    &arena.ffn_act_buf_batch, int_bytes,
+                    &arena.ffn_down_buf_batch, h_bytes
+                );
+            }
+
+            // ── Fused (x += ffn_down) + next-layer attn_norm
+            // (or final_norm on the last layer). Per batch element.
+            let next_norm = if li + 1 < cfg.n_layers {
+                self.layers[li + 1]
+                    .pinned
+                    .attn_norm
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("attn_norm not pinned".into()))?
+            } else {
+                final_norm_buf
+            };
+            for bi in 0..b {
+                kernels::add_rmsnorm_fused_off_tcb(
+                    &mut tcb,
+                    &arena.x_buf_batch, bi * h_bytes,
+                    &arena.ffn_down_buf_batch, bi * h_bytes,
+                    next_norm,
+                    &arena.x_norm_buf_batch, bi * h_bytes,
+                    eps, h,
+                )?;
+            }
+            let _ = kv_dim_bytes;
+        }
+
+        // No LM head / sample — prefill discards the predicted token.
+        tcb.commit_and_wait()?;
+
+        // Bump CPU-side KV mirror so hybrid runs stay consistent.
+        self.kv.seq_len += b;
+
+        Ok(())
     }
 }
