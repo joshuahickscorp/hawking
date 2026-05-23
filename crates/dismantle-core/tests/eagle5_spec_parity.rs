@@ -76,17 +76,11 @@ fn find_weights() -> Option<PathBuf> {
     None
 }
 
-fn find_profile() -> Option<dismantle_core::profile::KernelProfile> {
-    for candidate in [
-        "../../profiles/deepseek-v2-lite-q4.m3pro18.json",
-        "profiles/deepseek-v2-lite-q4.m3pro18.json",
-    ] {
-        let p = PathBuf::from(candidate);
-        if p.exists() {
-            return dismantle_core::profile::KernelProfile::load(&p).ok();
-        }
-    }
-    None
+fn find_profile(weights: &PathBuf) -> Option<dismantle_core::profile::KernelProfile> {
+    // Prefer a freshly-built deterministic profile so this test
+    // doesn't fail when shader sources change between sessions and
+    // the on-disk profile snapshot lags behind.
+    dismantle_core::profile::fresh_test_profile(weights).ok()
 }
 
 #[test]
@@ -95,7 +89,7 @@ fn eagle5_greedy_parity_k4() {
         eprintln!("skipping eagle5_greedy_parity_k4: no deepseek-v2-lite-q4.gguf");
         return;
     };
-    let profile = find_profile();
+    let profile = find_profile(&weights);
 
     // Baseline: no-spec greedy.
     let cfg_baseline = dismantle_core::EngineConfig {
@@ -132,7 +126,7 @@ fn eagle5_greedy_parity_k2_and_k8() {
         eprintln!("skipping eagle5_greedy_parity_k2_and_k8: no weights");
         return;
     };
-    let profile = find_profile();
+    let profile = find_profile(&weights);
 
     let cfg_baseline = dismantle_core::EngineConfig {
         kernel_profile: profile.clone(),

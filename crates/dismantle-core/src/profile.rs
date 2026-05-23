@@ -412,6 +412,15 @@ fn short_hex(bytes: &[u8]) -> String {
         .collect::<String>()
 }
 
+/// Test-only helper: build a fresh deterministic KernelProfile from a
+/// GGUF on disk, skipping the on-disk profile lookup entirely. Used by
+/// integration tests so a shader-source edit doesn't fail
+/// `validate_for_gguf` against a stale pinned profile.
+pub fn fresh_test_profile(weights_path: &std::path::Path) -> crate::Result<KernelProfile> {
+    let gguf = crate::gguf::GgufFile::open(weights_path)?;
+    Ok(build_deterministic_profile(&gguf, &AutotuneOptions::default()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
