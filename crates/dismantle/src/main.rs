@@ -1,6 +1,11 @@
+mod bench_kernel;
+mod bench_server;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::collections::BTreeMap;
 use std::path::PathBuf;
+use std::time::Instant;
 
 #[derive(Parser, Debug)]
 #[command(name = "dismantle", about = "Apple Silicon MoE inference", version)]
@@ -73,6 +78,16 @@ enum Cmd {
         /// detection (80% of system RAM). Default: unlimited.
         #[arg(long)]
         memory_limit_mb: Option<usize>,
+        /// path-to-50 lever 1: path to a vocab whitelist JSON (built by
+        /// `tools/training/analyze_corpus.py`). When set, the LM head is
+        /// sliced to the pruned vocab at load time. DeepSeek-V2-Lite only.
+        #[arg(long)]
+        vocab_prune_path: Option<PathBuf>,
+        /// path-to-50 lever 2: path to a per-layer quant tier-map JSON
+        /// (see `crates/dismantle-core/src/quant_tier_map.rs`). When set,
+        /// MoE expert weights are re-quantized per-layer at load time.
+        #[arg(long)]
+        quant_tier_map_path: Option<PathBuf>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -122,6 +137,13 @@ enum Cmd {
         #[arg(long)]
         log: Option<PathBuf>,
     },
+    /// Benchmark Q4_K GEMV kernels at production shapes and emit JSON.
+    BenchQ4kShapes {
+        #[arg(long, default_value_t = 100)]
+        iters: usize,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Inspect model size, KV-cache budget, current RSS, and M3-Pro fit.
     Doctor {
         #[arg(long)]
@@ -150,7 +172,7 @@ enum Cmd {
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
     /// 50-launch shell loop in capture-baseline-50 / token-regression
-    /// — the one model load amortizes across all prompts.
+    /// -- the one model load amortizes across all prompts.
     BatchHash {
         #[arg(long)]
         weights: PathBuf,
@@ -176,6 +198,50 @@ enum Cmd {
     /// Print the SHA-256 prefix of all compiled Metal shader sources.
     /// Used to update kernel-profile JSON after shader changes.
     ShaderHash,
+    /// Load a model once and serve repeated inference requests over stdin/stdout
+    /// (JSON-line protocol). Eliminates the 5-15s model-load cost for each
+    /// smoke iteration during development. Use bench_server_driver.sh for
+    /// automated multi-request runs.
+    BenchServer {
+        #[arg(long)]
+        weights: PathBuf,
+        #[arg(long)]
+        kernel_profile: Option<PathBuf>,
+        #[arg(long, num_args = 0..=1, default_missing_value = "exact-shared", value_name = "MODE")]
+        speculate: Option<String>,
+        #[arg(long, default_value_t = 4)]
+        verify_window: usize,
+        /// Enable Metal dispatch tracing for per-request structural metrics.
+        #[arg(long, default_value_t = false)]
+        trace_dispatch: bool,
+        /// Read requests from stdin (JSON-line). Currently the only supported
+        /// transport; HTTP bind will be added in a future sub-phase.
+        #[arg(long, default_value_t = true)]
+        stdin: bool,
+    },
+    /// Micro-benchmark an individual Metal GEMV kernel at a production tensor
+    /// shape without loading a model. Allocates synthetic buffers, dispatches
+    /// the kernel N times, and reports mean/p50/p99/min/max latency in μs.
+    /// Use --all to bench every supported kernel at a given shape.
+    BenchKernel {
+        /// Kernel name, e.g. gemv_q4_k_m_v2_pinned_tcb. Use --all to bench
+        /// all kernels that support the given shape.
+        #[arg(long, conflicts_with = "all")]
+        kernel: Option<String>,
+        /// Bench all kernels that support the given shape.
+        #[arg(long, default_value_t = false)]
+        all: bool,
+        /// Matrix shape as ROWSxCOLS, e.g. 1408x2048 (rows=output, cols=input).
+        /// Kernel constraints (e.g. cols%256==0) are checked at runtime.
+        #[arg(long)]
+        shape: String,
+        /// Number of dispatches to time. Default 1000.
+        #[arg(long, default_value_t = 1000)]
+        iterations: usize,
+        /// Suppress appending to bench_results/kernel_perf_history.jsonl.
+        #[arg(long, default_value_t = false)]
+        no_history: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -226,6 +292,8 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            vocab_prune_path,
+            quant_tier_map_path,
         } => generate_main(
             weights,
             prompt,
@@ -241,6 +309,8 @@ fn main() -> Result<()> {
             trace_dispatch,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            vocab_prune_path,
+            quant_tier_map_path,
         ),
         Cmd::Bench {
             weights,
@@ -276,6 +346,7 @@ fn main() -> Result<()> {
             out,
             log,
         } => autotune_main(weights, profile, max_hours, out, log),
+        Cmd::BenchQ4kShapes { iters, out } => bench_q4k_shapes_main(iters, out),
         Cmd::Doctor {
             weights,
             max_seq_len,
@@ -317,6 +388,33 @@ fn main() -> Result<()> {
             println!("{}", dismantle_core::profile::shader_source_hash());
             Ok(())
         }
+        Cmd::BenchServer {
+            weights,
+            kernel_profile,
+            speculate,
+            verify_window,
+            trace_dispatch,
+            stdin: _,
+        } => bench_server::run(bench_server::BenchServerOptions {
+            weights,
+            kernel_profile,
+            speculate,
+            verify_window,
+            trace_dispatch,
+        }),
+        Cmd::BenchKernel {
+            kernel,
+            all,
+            shape,
+            iterations,
+            no_history,
+        } => bench_kernel::run(bench_kernel::BenchKernelOptions {
+            kernel,
+            all,
+            shape,
+            iterations,
+            no_history,
+        }),
     }
 }
 
@@ -575,20 +673,178 @@ fn current_rss_mb() -> Option<f64> {
     Some(kb / 1024.0)
 }
 
-fn residual_dtype_from_env() -> Result<dismantle_core::ResidualDtype> {
-    match std::env::var("DISMANTLE_RESIDUAL_DTYPE") {
-        Ok(v) if v.eq_ignore_ascii_case("f16") => {
-            anyhow::bail!(
-                "DISMANTLE_RESIDUAL_DTYPE=f16 is not supported in this build; F32 only"
-            )
+struct Q4ShapeBenchSummary {
+    json: serde_json::Value,
+    winners: BTreeMap<String, String>,
+}
+
+fn bench_q4k_shapes_main(iters: usize, out: Option<PathBuf>) -> Result<()> {
+    let summary = bench_q4k_shapes(iters)?;
+    let text = serde_json::to_string_pretty(&summary.json)?;
+    if let Some(path) = out {
+        if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+            std::fs::create_dir_all(parent)?;
         }
-        Ok(v) if v.eq_ignore_ascii_case("f32") => Ok(dismantle_core::ResidualDtype::F32),
-        Ok(v) => anyhow::bail!(
-            "unsupported DISMANTLE_RESIDUAL_DTYPE={v:?}; expected f32 (f16 is disabled)"
-        ),
-        Err(std::env::VarError::NotPresent) => Ok(dismantle_core::ResidualDtype::F32),
-        Err(e) => anyhow::bail!("read DISMANTLE_RESIDUAL_DTYPE: {e}"),
+        std::fs::write(&path, &text)?;
+        println!("wrote Q4_K shape bench: {}", path.display());
+    } else {
+        println!("{text}");
     }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn bench_q4k_shapes(iters: usize) -> Result<Q4ShapeBenchSummary> {
+    use dismantle_core::metal::MetalContext;
+
+    if iters == 0 {
+        anyhow::bail!("--iters must be positive");
+    }
+
+    let ctx = MetalContext::new()?;
+    let shapes = [
+        ("gate_up_1024x4096", 1024usize, 4096usize),
+        ("down_4096x1024", 4096usize, 1024usize),
+        ("dense_4096x4096", 4096usize, 4096usize),
+    ];
+    let kernels = ["v2", "simdmat", "v3_dual", "llama_port"];
+    let mut shape_json = Vec::with_capacity(shapes.len());
+    let mut winners = BTreeMap::new();
+
+    for (label, rows, cols) in shapes {
+        let w_bytes = synthetic_q4_k_bytes(rows * (cols / 256));
+        let model_buf = ctx.new_buffer_with_bytes(&w_bytes);
+        let x = synthetic_input(cols);
+        let mut results = serde_json::Map::new();
+        let mut best_name = "";
+        let mut best_us = f64::INFINITY;
+
+        for kernel in kernels {
+            let mut out = vec![0.0f32; rows];
+            for _ in 0..5 {
+                run_q4k_shape_kernel(&ctx, &model_buf, &w_bytes, rows, cols, &x, &mut out, kernel)?;
+            }
+            let start = Instant::now();
+            for _ in 0..iters {
+                run_q4k_shape_kernel(&ctx, &model_buf, &w_bytes, rows, cols, &x, &mut out, kernel)?;
+            }
+            let mean_us = start.elapsed().as_secs_f64() * 1_000_000.0 / iters as f64;
+            if mean_us < best_us {
+                best_us = mean_us;
+                best_name = kernel;
+            }
+            results.insert(
+                kernel.to_string(),
+                serde_json::json!({
+                    "mean_us": mean_us,
+                }),
+            );
+        }
+
+        let key = format!("{rows}x{cols}");
+        winners.insert(key.clone(), best_name.to_string());
+        shape_json.push(serde_json::json!({
+            "label": label,
+            "key": key,
+            "rows": rows,
+            "cols": cols,
+            "winner": best_name,
+            "kernels": results,
+        }));
+    }
+
+    Ok(Q4ShapeBenchSummary {
+        winners,
+        json: serde_json::json!({
+            "iters": iters,
+            "shapes": shape_json,
+        }),
+    })
+}
+
+#[cfg(not(target_os = "macos"))]
+fn bench_q4k_shapes(_iters: usize) -> Result<Q4ShapeBenchSummary> {
+    anyhow::bail!("bench-q4k-shapes requires macOS Metal")
+}
+
+#[cfg(target_os = "macos")]
+fn run_q4k_shape_kernel(
+    ctx: &dismantle_core::metal::MetalContext,
+    model_buf: &dismantle_core::metal::PinnedBuffer,
+    w_bytes: &[u8],
+    rows: usize,
+    cols: usize,
+    x: &[f32],
+    out: &mut [f32],
+    kernel: &str,
+) -> Result<()> {
+    match kernel {
+        "v2" => dismantle_core::kernels::gemv_q4_k_m_v2_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "simdmat" => dismantle_core::kernels::gemv_q4_k_m_simdmat_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "v3_dual" => dismantle_core::kernels::gemv_q4_k_m_v3_dual_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        "llama_port" => dismantle_core::kernels::gemv_q4_k_m_llama_port_pinned(
+            ctx,
+            model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            x,
+            out,
+        )?,
+        other => anyhow::bail!("unknown Q4_K shape kernel {other:?}"),
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn synthetic_q4_k_bytes(n_blocks: usize) -> Vec<u8> {
+    let mut bytes = vec![0u8; n_blocks * 144];
+    for b in 0..n_blocks {
+        let off = b * 144;
+        bytes[off] = 0x00;
+        bytes[off + 1] = 0x3c; // f16 1.0
+        bytes[off + 2] = 0x00;
+        bytes[off + 3] = 0x00; // f16 0.0 dmin
+        for i in 4..144 {
+            bytes[off + i] = ((b * 13 + i * 37) & 0xff) as u8;
+        }
+    }
+    bytes
+}
+
+#[cfg(target_os = "macos")]
+fn synthetic_input(cols: usize) -> Vec<f32> {
+    (0..cols)
+        .map(|i| ((i % 97) as f32 - 48.0) / 97.0)
+        .collect()
 }
 
 fn autotune_main(
@@ -610,7 +866,12 @@ fn autotune_main(
         max_hours,
         target_tps: 60.0,
     };
-    let selected = build_deterministic_profile(&gguf, &opts);
+    let mut selected = build_deterministic_profile(&gguf, &opts);
+    let q4_shape_bench = bench_q4k_shapes(100).ok();
+    if let Some(summary) = q4_shape_bench.as_ref() {
+        selected.selected.gemm_q4_k_schedule = "per_shape".into();
+        selected.selected.gemm_q4_k_schedule_per_shape = summary.winners.clone();
+    }
     if let Some(parent) = out.parent().filter(|p| !p.as_os_str().is_empty()) {
         std::fs::create_dir_all(parent)?;
     }
@@ -641,6 +902,16 @@ fn autotune_main(
                 "deterministic_rank": m.deterministic_rank,
                 "score": m.score,
                 "status": m.status,
+            })
+            .to_string(),
+        );
+    }
+    if let Some(summary) = q4_shape_bench.as_ref() {
+        log_lines.push(
+            serde_json::json!({
+                "event": "bench-q4k-shapes",
+                "profile_id": selected.profile_id,
+                "summary": summary.json,
             })
             .to_string(),
         );
@@ -681,6 +952,8 @@ fn generate_main(
     trace_dispatch: bool,
     max_routed_expert_ram_mb: Option<usize>,
     memory_limit_mb: Option<usize>,
+    vocab_prune_path: Option<PathBuf>,
+    quant_tier_map_path: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -702,10 +975,10 @@ fn generate_main(
         ctrlc::set_handler(move || {
             let n = press_count.fetch_add(1, Ordering::SeqCst);
             if n == 0 {
-                eprintln!("\n[dismantle] Ctrl-C — aborting at next token boundary; press again to force-exit");
+                eprintln!("\n[dismantle] Ctrl-C -- aborting at next token boundary; press again to force-exit");
                 abort.store(true, Ordering::SeqCst);
             } else {
-                eprintln!("\n[dismantle] second Ctrl-C — force-exit");
+                eprintln!("\n[dismantle] second Ctrl-C -- force-exit");
                 std::process::exit(130);
             }
         })
@@ -717,7 +990,6 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -727,10 +999,10 @@ fn generate_main(
         prefill_cache_dir: None,
         kernel_profile: profile,
         trace_dispatch,
-        activation_dtype: Default::default(),
-        residual_dtype,
         max_routed_expert_ram_mb,
         memory_limit_mb,
+        vocab_prune_path,
+        quant_tier_map_path,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
     let req = GenerateRequest {
@@ -828,7 +1100,6 @@ fn batch_hash_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
-    let residual_dtype = residual_dtype_from_env()?;
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: 1,
@@ -838,8 +1109,6 @@ fn batch_hash_main(
         prefill_cache_dir: None,
         kernel_profile: profile,
         trace_dispatch: false,
-        activation_dtype: Default::default(),
-        residual_dtype,
         ..Default::default()
     };
     let load_start = std::time::Instant::now();
@@ -901,7 +1170,7 @@ fn batch_hash_main(
             .trim()
             .to_string();
 
-        // Escape \n in prompt — same convention as expand-baseline.sh.
+        // Escape \n in prompt -- same convention as expand-baseline.sh.
         let prompt_escaped = prompt.replace('\n', "\\n");
         output_lines.push(format!("{id} {tokens} {hash} {prompt_escaped}"));
         eprintln!(
@@ -917,7 +1186,7 @@ fn batch_hash_main(
 
     // Header + lines, matching expand-baseline.sh's output format.
     let header = format!(
-        "# Phase 1 token-output baseline — captured by `dismantle batch-hash`\n\
+        "# Phase 1 token-output baseline -- captured by `dismantle batch-hash`\n\
          # Format: <prompt-id> <max-new-tokens> <hash-hex> <prompt-text>\n\
          # algo: blake3\n\
          # Generation: temp=0 greedy, max_new_tokens={}, model=DeepSeek-V2-Lite-Chat-Q4_K_M\n",

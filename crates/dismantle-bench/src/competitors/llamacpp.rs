@@ -1,10 +1,3 @@
-//! llama.cpp backend — spawns `llama-cli`.
-//!
-//! Parses the canonical `eval time = ... ms / N runs (... tokens per
-//! second)` line from llama-cli's stderr summary. llama-cli emits two
-//! such lines: one for "prompt eval" (prefill) and one for "eval"
-//! (decode). We capture both.
-
 use super::{extract_after, Competitor, Measurement};
 use anyhow::{bail, Result};
 use std::path::Path;

@@ -1,19 +1,8 @@
-//! Metal device, command queues, shader cache.
-//!
-//! Pure runtime layer — no model knowledge. Owns the
-//! `MTLDevice`, holds compiled shader pipelines, and exposes a
-//! command-buffer abstraction the rest of the engine talks to.
-//!
-//! On non-macOS targets every constructor returns
-//! `Error::Metal("metal unavailable on this platform")`; the engine
-//! still compiles so dev tooling (gguf-cli, tests, schema-only checks)
-//! works on Linux CI.
-
 use crate::{Error, Result};
 use std::sync::Arc;
 
 /// Embedded shader sources. Compiled at runtime via
-/// `MTLDevice::newLibraryWithSource:` — shipping a single binary with
+/// `MTLDevice::newLibraryWithSource:` -- shipping a single binary with
 /// no `metallib` artifact in tree means contributors don't need
 /// xcrun to build.
 pub const SHADER_COMMON: &str = include_str!("../../shaders/common.metal");
@@ -22,6 +11,7 @@ pub const SHADER_MOE: &str = include_str!("../../shaders/moe.metal");
 pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
+pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
@@ -33,6 +23,7 @@ pub fn all_shader_sources() -> String {
         SHADER_ATTN,
         SHADER_SAMPLE,
         SHADER_MATMUL,
+        SHADER_MHA,
     ]
     .join("\n\n")
 }
@@ -46,11 +37,20 @@ pub fn current_device_name() -> Option<String> {
 /// One timed GPU dispatch. `kernel_name` is a `&'static str` to avoid
 /// per-dispatch allocation; `layer_hint` comes from the thread-local
 /// set by `forward_token_final_norm`.
+///
+/// `wall_us` is CPU encoding wall time (pipeline lookup + command
+/// encoding, not GPU execution). `gpu_us` is populated only by
+/// `DISMANTLE_TCB_TRACE=gpu` mode where each dispatch lands in its own
+/// command buffer so `MTLCommandBuffer::gpuStartTime/gpuEndTime` can be
+/// read directly. In the default and `DISMANTLE_TCB_TRACE=cpu` modes
+/// `gpu_us` is `None`.
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct DispatchSample {
     pub kernel_name: &'static str,
     pub wall_us: u64,
     pub layer_hint: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_us: Option<u64>,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -59,7 +59,7 @@ pub struct DispatchSample {
 ///
 /// Exposed as free functions rather than on MetalContext because the
 /// caller (`deepseek_v2::forward_token_final_norm`) runs on whatever
-/// thread calls `generate` — not on the GPU thread.
+/// thread calls `generate` -- not on the GPU thread.
 mod layer_hint {
     use std::cell::Cell;
     thread_local! {
@@ -91,10 +91,190 @@ mod imp {
         Buffer, CommandBufferRef, CommandQueue, ComputePipelineState, Device, Library,
         MTLResourceOptions, MTLSize,
     };
+    use metal::objc::{msg_send, sel, sel_impl};
+
+    /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
+    /// objc msg_send. The `metal` 0.29 crate doesn't wrap these selectors,
+    /// so we go direct. Returns the GPU compute duration in microseconds,
+    /// clamped to 0 if the times come back inverted or zero (driver
+    /// quirks; callers shouldn't have to defend).
+    ///
+    /// SAFETY: caller must guarantee the command buffer has finished
+    /// (`wait_until_completed`) before reading; otherwise the values are
+    /// undefined.
+    unsafe fn cb_gpu_duration_us(cb: &metal::CommandBufferRef) -> u64 {
+        // CFTimeInterval is `double` (f64) -- seconds since absolute reference.
+        let start: f64 = msg_send![cb, GPUStartTime];
+        let end: f64 = msg_send![cb, GPUEndTime];
+        let dt = end - start;
+        if dt > 0.0 {
+            (dt * 1_000_000.0) as u64
+        } else {
+            0
+        }
+    }
     use parking_lot::Mutex;
     use std::collections::HashMap;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
+
+    /// v2.2.0-L7: lookup the `timestamp` common counter set on the device,
+    /// returning `Some(CounterSet)` if available. Apple silicon (M1/M2/M3)
+    /// always supports the timestamp counter set; intel macs may not.
+    ///
+    /// Counter-set names are reported as NSString. We compare against the
+    /// well-known constant `MTLCommonCounterSetTimestamp` (which is itself
+    /// an NSString with value "timestamp"); the simplest match is by name.
+    fn find_timestamp_counter_set(device: &Device) -> Option<::metal::CounterSet> {
+        let sets = device.counter_sets();
+        sets.into_iter().find(|s| s.name() == "timestamp")
+    }
+
+    /// v2.2.0-L7: counter-sample tracer used by `ProdCbGpu` mode.
+    ///
+    /// One sample buffer per `TokenCommandBuffer`; `sample_count` is sized
+    /// for 2 samples per dispatch × MAX_DISPATCHES. Each dispatch occupies
+    /// indices `[2*n, 2*n+1]`. After CB completes, the sample buffer holds
+    /// raw GPU timestamps (ns); `gpu_us = (ts[2n+1] - ts[2n]) / 1000`.
+    struct ProdCbTracer {
+        sample_buf: ::metal::CounterSampleBuffer,
+        /// Index of the next pair (so the start of the next dispatch's
+        /// samples is `2 * next_pair`). One pair per dispatch.
+        next_pair: AtomicUsize,
+        capacity_pairs: usize,
+        /// Pending samples, populated in dispatch order with the pair index
+        /// they were stamped at; resolved into `tcb_samples` post-wait.
+        pending: Mutex<Vec<ProdCbPending>>,
+    }
+
+    struct ProdCbPending {
+        kernel_name: &'static str,
+        cpu_us: u64,
+        pair_index: usize,
+        layer_hint: Option<u32>,
+    }
+
+    impl ProdCbTracer {
+        /// Sample slot capacity per TCB. Apple caps the sample buffer at
+        /// 32 KiB (= 4096 u64 samples = 2048 pairs). One TCB = one token =
+        /// ~270 dispatches for V2-Lite (27 layers × ~10 kernels + LM head),
+        /// so 1024 pairs (= 16 KiB) is comfortably above the worst-case
+        /// per-token dispatch count.
+        const CAPACITY_PAIRS: usize = 1024;
+
+        fn try_new(device: &Device) -> Option<Self> {
+            let cset = find_timestamp_counter_set(device)?;
+            let desc = ::metal::CounterSampleBufferDescriptor::new();
+            desc.set_counter_set(&cset);
+            desc.set_sample_count((Self::CAPACITY_PAIRS * 2) as u64);
+            // Shared storage so we can read raw via resolveCounterRange:
+            // without a separate blit-encoder resolve pass.
+            desc.set_storage_mode(::metal::MTLStorageMode::Shared);
+            let sample_buf = device.new_counter_sample_buffer_with_descriptor(&desc).ok()?;
+            Some(Self {
+                sample_buf,
+                next_pair: AtomicUsize::new(0),
+                capacity_pairs: Self::CAPACITY_PAIRS,
+                pending: Mutex::new(Vec::with_capacity(Self::CAPACITY_PAIRS)),
+            })
+        }
+
+        /// Reserve a pair index for the next dispatch. Returns `None` if
+        /// capacity is exhausted (in which case the caller falls back to
+        /// recording the sample without `gpu_us`).
+        fn reserve_pair(&self) -> Option<usize> {
+            let i = self.next_pair.fetch_add(1, Ordering::Relaxed);
+            if i < self.capacity_pairs {
+                Some(i)
+            } else {
+                None
+            }
+        }
+
+        /// Record one dispatch's metadata; gpu_us is populated post-wait.
+        fn record_pending(
+            &self,
+            kernel_name: &'static str,
+            cpu_us: u64,
+            pair_index: usize,
+            layer_hint: Option<u32>,
+        ) {
+            self.pending.lock().push(ProdCbPending {
+                kernel_name,
+                cpu_us,
+                pair_index,
+                layer_hint,
+            });
+        }
+
+        /// After commit+wait, walk pending and emit one `DispatchSample`
+        /// per recorded dispatch, with `gpu_us` filled from the resolved
+        /// counter sample buffer.
+        ///
+        /// `resolveCounterRange:` returns NSData of `2 * sample_count`
+        /// `u64` words; we read pairs and subtract. The values are in
+        /// nanoseconds for the timestamp counter set (per Apple docs).
+        fn drain(&self) -> Vec<super::DispatchSample> {
+            let pending = std::mem::take(&mut *self.pending.lock());
+            let pair_count = self.next_pair.load(Ordering::Relaxed).min(self.capacity_pairs);
+            if pair_count == 0 {
+                return pending
+                    .into_iter()
+                    .map(|p| super::DispatchSample {
+                        kernel_name: p.kernel_name,
+                        wall_us: p.cpu_us,
+                        layer_hint: p.layer_hint,
+                        gpu_us: None,
+                    })
+                    .collect();
+            }
+            // Resolve the [0, 2*pair_count) sample range. Returns NSData.
+            // SAFETY: CB has committed + waited before this is called;
+            // resolveCounterRange: is a synchronous read on shared storage.
+            let timestamps = unsafe {
+                let ns_range = ::metal::NSRange {
+                    location: 0,
+                    length: (pair_count * 2) as u64,
+                };
+                let nsdata: *mut metal::objc::runtime::Object =
+                    msg_send![&*self.sample_buf, resolveCounterRange: ns_range];
+                if nsdata.is_null() {
+                    Vec::new()
+                } else {
+                    let bytes: *const u8 = msg_send![nsdata, bytes];
+                    let len: usize = msg_send![nsdata, length];
+                    let n_u64 = len / 8;
+                    let slice = std::slice::from_raw_parts(bytes as *const u64, n_u64);
+                    slice.to_vec()
+                }
+            };
+            // Per Apple, an "absent" sample is encoded as MTLCounterErrorValue
+            // (0xFFFFFFFFFFFFFFFF). If we see one we leave gpu_us=None.
+            const ERR: u64 = u64::MAX;
+            pending
+                .into_iter()
+                .map(|p| {
+                    let i0 = p.pair_index * 2;
+                    let i1 = i0 + 1;
+                    let gpu_us = if i1 < timestamps.len()
+                        && timestamps[i0] != ERR
+                        && timestamps[i1] != ERR
+                        && timestamps[i1] >= timestamps[i0]
+                    {
+                        Some((timestamps[i1] - timestamps[i0]) / 1000)
+                    } else {
+                        None
+                    };
+                    super::DispatchSample {
+                        kernel_name: p.kernel_name,
+                        wall_us: p.cpu_us,
+                        layer_hint: p.layer_hint,
+                        gpu_us,
+                    }
+                })
+                .collect()
+        }
+    }
 
     // Re-export Metal's Buffer type so callers can hold pinned-weight
     // handles without depending on the upstream `metal` crate directly.
@@ -121,6 +301,7 @@ mod imp {
                 kernel_name,
                 wall_us,
                 layer_hint,
+                gpu_us: None,
             });
         }
 
@@ -197,29 +378,13 @@ mod imp {
             "gemv_f16" => "gemv_f16",
             "gemv_f32_attn" => "gemv_f32_attn",
             "mla_decode_kernel" => "mla_decode_kernel",
-            "mla_decode_kernel_batched" => "mla_decode_kernel_batched",
-            "mla_decode_kernel_batched_slots" => "mla_decode_kernel_batched_slots",
             "moe_topk_gate" => "moe_topk_gate",
             "moe_gather_combine" => "moe_gather_combine",
-            "moe_batched_gemm_q4" => "moe_batched_gemm_q4",
-            "moe_batched_gemm_q6_k" => "moe_batched_gemm_q6_k",
-            "moe_batched_gemm_q8_0" => "moe_batched_gemm_q8_0",
             "moe_batched_silu_mul" => "moe_batched_silu_mul",
-            "moe_block_fused_q4_one" => "moe_block_fused_q4_one",
-            "moe_block_fused_q4_topk" => "moe_block_fused_q4_topk",
-            "moe_block_fused_v2lite" => "moe_block_fused_v2lite",
-            "moe_block_fused_v2lite_indexed" => "moe_block_fused_v2lite_indexed",
-            "moe_block_two_stage_intermediate" => "moe_block_two_stage_intermediate",
-            "moe_block_two_stage_output" => "moe_block_two_stage_output",
             "moe_route_accumulate" => "moe_route_accumulate",
             "sample_argmax_f32" => "sample_argmax_f32",
             // attn / rope / embed kernels
-            "attn_kv_append_stub" => "attn_kv_append_stub",
-            "attn_mha_qkv_stub" => "attn_mha_qkv_stub",
-            "attn_mla_compress_stub" => "attn_mla_compress_stub",
-            "attn_mla_decompress_stub" => "attn_mla_decompress_stub",
             "rope_inplace" => "rope_inplace",
-            "embed_lookup" => "embed_lookup",
             // dequant / gemm variants
             "dequant_q8_0" => "dequant_q8_0",
             "gemm_q4_k_m_fused" => "gemm_q4_k_m_fused",
@@ -227,7 +392,6 @@ mod imp {
             "gemm_q4_k_m_fused_v2" => "gemm_q4_k_m_fused_v2",
             "gemv_f32_moe" => "gemv_f32_moe",
             "moe_grouped_gemm_q4" => "moe_grouped_gemm_q4",
-            "moe_grouped_gemm_q4_v2" => "moe_grouped_gemm_q4_v2",
             // indexed moe batched gemm variants
             "moe_batched_gemm_q4_indexed" => "moe_batched_gemm_q4_indexed",
             "moe_batched_gemm_q4_indexed_v2" => "moe_batched_gemm_q4_indexed_v2",
@@ -236,8 +400,6 @@ mod imp {
             "moe_batched_gemm_q5_0_indexed" => "moe_batched_gemm_q5_0_indexed",
             "moe_batched_gemm_q6_k_indexed" => "moe_batched_gemm_q6_k_indexed",
             "moe_batched_gemm_q8_0_indexed" => "moe_batched_gemm_q8_0_indexed",
-            // fused block variants
-            "moe_block_fused_stub" => "moe_block_fused_stub",
             // silu / activation
             "silu_mul" => "silu_mul",
             // residual / element-wise kernels
@@ -246,10 +408,8 @@ mod imp {
             "rmsnorm_f16" => "rmsnorm_f16",
             "silu_mul_f16" => "silu_mul_f16",
             // sampling kernels
-            "sample_constraint" => "sample_constraint",
             "sample_repetition" => "sample_repetition",
             "sample_temperature" => "sample_temperature",
-            "sample_topk_topp_stub" => "sample_topk_topp_stub",
             // v0.5.7 sampling kernels
             "sample_topk" => "sample_topk",
             "sample_topp" => "sample_topp",
@@ -257,13 +417,9 @@ mod imp {
             // v0.5.8 fused rmsnorm+gemv kernels
             "rmsnorm_gemv_f32_attn_pinned" => "rmsnorm_gemv_f32_attn_pinned",
             "rmsnorm_gemv_q4k_pair" => "rmsnorm_gemv_q4k_pair",
-            // v0.8.1-v0.8.2 Phase 7 f16 bridge kernels
-            "rmsnorm_gemv_f16_attn_pinned" => "rmsnorm_gemv_f16_attn_pinned",
-            "rmsnorm_gemv_q4k_pair_f16" => "rmsnorm_gemv_q4k_pair_f16",
             // v0.5.9 fp16 activation kernels
             "gemv_f32_attn_f16" => "gemv_f32_attn_f16",
             "gemv_f32_moe_f16" => "gemv_f32_moe_f16",
-            "add_inplace_f16" => "add_inplace_f16",
             "softmax_f16" => "softmax_f16",
             "layer_norm_f16" => "layer_norm_f16",
             // v1.1.0-X simdgroup LM-head
@@ -273,6 +429,31 @@ mod imp {
             "gemm_q4_k_m_fused_f16" => "gemm_q4_k_m_fused_f16",
             "moe_grouped_gemm_q4_f16" => "moe_grouped_gemm_q4_f16",
             "dequant_q6_k_f16" => "dequant_q6_k_f16",
+            // v1.1.1 / v2.1.0 -- T1.1 audit closed 22 names previously
+            // bucketed as "other" (incl. the post-T2.1 default MoE Q4_K
+            // v2t_gu_v2 kernel itself -- biggest attribution miss).
+            "moe_batched_gemm_q4_indexed_v2t_gu" => "moe_batched_gemm_q4_indexed_v2t_gu",
+            "moe_batched_gemm_q4_indexed_v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t_gu_v2",
+            "moe_batched_gemm_q8_0_indexed_v2t" => "moe_batched_gemm_q8_0_indexed_v2t",
+            "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
+            "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
+            "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
+            "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
+            "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
+            "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
+            "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
+            "gemv_f16_f16in" => "gemv_f16_f16in",
+            "kv_append_f32" => "kv_append_f32",
+            "rmsnorm_f32" => "rmsnorm_f32",
+            "rmsnorm_f32_to_f16" => "rmsnorm_f32_to_f16",
+            "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
+            "rmsnorm_gemv_f16w_attn_pinned_v2t" => "rmsnorm_gemv_f16w_attn_pinned_v2t",
+            "rope_q_f32_inplace" => "rope_q_f32_inplace",
+            "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
+            "embed_lookup_f32" => "embed_lookup_f32",
+            "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
+            // Session F (sketch) -- fused add_inplace + rmsnorm_f32
+            "add_rmsnorm_fused" => "add_rmsnorm_fused",
             _ => "other",
         }
     }
@@ -319,7 +500,7 @@ mod imp {
             self.inner.device.name().to_string()
         }
 
-        /// Look up — or create + cache — a compute pipeline for a
+        /// Look up -- or create + cache -- a compute pipeline for a
         /// kernel function.
         pub fn pipeline(&self, fn_name: &str) -> Result<ComputePipelineState> {
             let mut pipes = self.inner.pipelines.lock();
@@ -366,7 +547,7 @@ mod imp {
 
         /// Write `bytes` into an existing shared buffer. The buffer must
         /// have been allocated with `new_buffer` and have capacity ≥ `bytes.len()`.
-        /// On unified-memory Apple Silicon this is a plain `memcpy` — no GPU
+        /// On unified-memory Apple Silicon this is a plain `memcpy` -- no GPU
         /// round-trip; the data is visible to subsequent GPU dispatches immediately.
         pub fn write_buffer_bytes(buf: &Buffer, bytes: &[u8]) {
             let ptr = buf.contents() as *mut u8;
@@ -421,6 +602,7 @@ mod imp {
             let pipe = self.pipeline(fn_name)?;
             let cmd = self.inner.queue.new_command_buffer();
             let enc = cmd.new_compute_command_encoder();
+            enc.set_label(fn_name);
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -481,6 +663,7 @@ mod imp {
         ) -> Result<()> {
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = self.cmd.new_compute_command_encoder();
+            enc.set_label(fn_name);
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -505,19 +688,110 @@ mod imp {
     /// tcb.dispatch_threads("add_inplace", ...)?;
     /// tcb.commit_and_wait()?;
     /// ```
+    ///
+    /// TCB-internal trace mode (parsed once from `DISMANTLE_TCB_TRACE` at
+    /// construction so the hot path is a single enum compare).
+    ///
+    /// - **Off** (env var unset or `=0`): zero-overhead default.
+    /// - **CpuEncode** (`=1` or `=cpu`): per-dispatch CPU encoding wall time.
+    /// - **SplitCbGpu** (`=gpu`): per-dispatch GPU time via dedicated CBs --
+    ///   `MTLCommandBuffer::gpuStartTime`/`gpuEndTime` after wait. Inflates
+    ///   absolute percentages because each dispatch pays a commit/wait sync.
+    /// - **ProdCbGpu** (`=gpu_prod`, v2.2.0-L7): per-dispatch GPU time via
+    ///   `MTLCounterSampleBuffer` inside the SAME command buffer. No split,
+    ///   so the production TCB pipelining is preserved. Inserts two
+    ///   `sampleCountersInBuffer:atSampleIndex:withBarrier:true` calls per
+    ///   dispatch (one before, one after); after `commit_and_wait` we read
+    ///   the sample buffer and populate `DispatchSample::gpu_us` with the
+    ///   real production GPU duration of each kernel. Use this whenever
+    ///   tier-2/3 perf decisions need accurate per-kernel attribution
+    ///   without the split-CB skew.
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    pub enum TcbTraceMode {
+        Off,
+        CpuEncode,
+        SplitCbGpu,
+        ProdCbGpu,
+    }
+
+    impl TcbTraceMode {
+        fn from_env() -> Self {
+            let raw = std::env::var("DISMANTLE_TCB_TRACE");
+            let mode = match raw.as_deref() {
+                Err(_) => Self::Off,
+                Ok("") | Ok("0") => Self::Off,
+                Ok(s) if s.eq_ignore_ascii_case("gpu_prod") => Self::ProdCbGpu,
+                Ok(s) if s.eq_ignore_ascii_case("gpu") => Self::SplitCbGpu,
+                Ok(_) => Self::CpuEncode,
+            };
+            static ONCE: std::sync::Once = std::sync::Once::new();
+            ONCE.call_once(|| {
+                eprintln!(
+                    "[dismantle] DISMANTLE_TCB_TRACE={:?} → mode={}",
+                    raw.as_deref().unwrap_or("(unset)"),
+                    match mode {
+                        Self::Off => "Off",
+                        Self::CpuEncode => "CpuEncode",
+                        Self::SplitCbGpu => "SplitCbGpu",
+                        Self::ProdCbGpu => "ProdCbGpu",
+                    }
+                );
+            });
+            mode
+        }
+    }
+
+    /// Set `DISMANTLE_TCB_TRACE=cpu` for per-kernel CPU encoding timing
+    /// (records pipeline-lookup + encode wall time per call, plus a
+    /// `tcb_commit` total for the whole CB).
+    ///
+    /// Set `DISMANTLE_TCB_TRACE=gpu` for per-kernel GPU-side timing
+    /// (each dispatch in its own CB so `gpu_start_time/gpu_end_time` can
+    /// be read directly). Populates `DispatchSample::gpu_us`. Slower --
+    /// diagnostic mode only. See `TcbTraceMode` for details.
     pub struct TokenCommandBuffer<'ctx> {
-        ctx: &'ctx MetalContext,
+        pub ctx: &'ctx MetalContext,
         /// `None` after `commit_and_wait` so the Drop impl knows not to re-commit.
         cmd: Option<metal::CommandBuffer>,
+        /// TCB-internal trace mode; resolved once at construction.
+        mode: TcbTraceMode,
+        /// Accumulated per-dispatch samples; only populated when `mode` is on.
+        tcb_samples: Vec<super::DispatchSample>,
+        /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
+        /// when the device doesn't support the timestamp counter set.
+        prod_cb_tracer: Option<ProdCbTracer>,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
-            Self { ctx, cmd: Some(cmd) }
+            let mode = TcbTraceMode::from_env();
+            let prod_cb_tracer = if mode == TcbTraceMode::ProdCbGpu {
+                ProdCbTracer::try_new(&ctx.inner.device)
+            } else {
+                None
+            };
+            Self {
+                ctx,
+                cmd: Some(cmd),
+                mode,
+                tcb_samples: Vec::new(),
+                prod_cb_tracer,
+            }
         }
 
-        /// Encode one kernel dispatch into the pending command buffer.
+        /// Encode one kernel dispatch.
+        ///
+        /// In **Off** and **CpuEncode** modes the dispatch is appended to the
+        /// pending TCB and committed in bulk at `commit_and_wait`. CpuEncode
+        /// additionally records pipeline-lookup + encoding wall time.
+        ///
+        /// In **SplitCbGpu** mode the dispatch is encoded into a fresh
+        /// dedicated command buffer that is committed and waited
+        /// synchronously. The CB's `gpu_start_time/gpu_end_time` are read
+        /// and recorded as `DispatchSample::gpu_us`. The pending TCB is
+        /// left empty (`commit_and_wait` will commit an empty CB, which is
+        /// a fast no-op on Apple Silicon).
         pub fn dispatch_threads(
             &mut self,
             fn_name: &str,
@@ -525,12 +799,24 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                return self.dispatch_threads_split_cb(fn_name, grid, tg, encode);
+            }
+            if self.mode == TcbTraceMode::ProdCbGpu && self.prod_cb_tracer.is_some() {
+                return self.dispatch_threads_prod_cb(fn_name, grid, tg, encode);
+            }
+            let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                Some(Instant::now())
+            } else {
+                None
+            };
             let cmd = self
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
             let pipe = self.ctx.pipeline(fn_name)?;
             let enc = cmd.new_compute_command_encoder();
+            enc.set_label(fn_name);
             enc.set_compute_pipeline_state(&pipe);
             encode(enc);
             enc.dispatch_threads(
@@ -538,14 +824,136 @@ mod imp {
                 MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
             );
             enc.end_encoding();
+            if let Some(t0) = t0 {
+                self.tcb_samples.push(super::DispatchSample {
+                    kernel_name: static_kernel_name(fn_name),
+                    wall_us: t0.elapsed().as_micros() as u64,
+                    layer_hint: super::current_layer(),
+                    gpu_us: None,
+                });
+            }
+            Ok(())
+        }
+
+        /// v2.2.0-L7: ProdCbGpu path -- same TCB pipelining as Off mode,
+        /// but each per-dispatch compute encoder is created via
+        /// `MTLComputePassDescriptor` with a sample-buffer attachment
+        /// that records GPU timestamps at the encoder's start and end
+        /// boundary. After CB wait, those timestamps give the real
+        /// production GPU duration per kernel without splitting the
+        /// command buffer.
+        ///
+        /// We use BOUNDARY sampling rather than mid-pass
+        /// `sampleCountersInBuffer:atSampleIndex:withBarrier:` because
+        /// the M-series GPU family (AGXG15X on M3 Pro) does NOT support
+        /// mid-pass compute counter sampling. Boundary-mode IS supported
+        /// -- see Apple's
+        /// `MTLCommandEncoder::startOfEncoderSampleIndex`/`endOfEncoderSampleIndex`.
+        fn dispatch_threads_prod_cb(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let t0_cpu = Instant::now();
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let tracer = self
+                .prod_cb_tracer
+                .as_ref()
+                .expect("ProdCbGpu path requires a tracer; constructor ensures this");
+            let pipe = self.ctx.pipeline(fn_name)?;
+            let pair_index = tracer.reserve_pair();
+
+            // Build a per-encoder ComputePassDescriptor with one sample
+            // buffer attachment at slot 0, pointing at our shared sample
+            // buffer with start/end indices = (2p, 2p+1).
+            let enc = if let Some(p) = pair_index {
+                let pass = ::metal::ComputePassDescriptor::new();
+                let attachments = pass.sample_buffer_attachments();
+                let att = ::metal::ComputePassSampleBufferAttachmentDescriptor::new();
+                att.set_sample_buffer(&tracer.sample_buf);
+                att.set_start_of_encoder_sample_index((p * 2) as u64);
+                att.set_end_of_encoder_sample_index((p * 2 + 1) as u64);
+                attachments.set_object_at(0, Some(&att));
+                cmd.compute_command_encoder_with_descriptor(pass)
+            } else {
+                cmd.new_compute_command_encoder()
+            };
+            enc.set_label(fn_name);
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            let cpu_us = t0_cpu.elapsed().as_micros() as u64;
+            let kn = static_kernel_name(fn_name);
+            if let Some(p) = pair_index {
+                tracer.record_pending(kn, cpu_us, p, super::current_layer());
+            } else {
+                // Out of capacity -- emit the sample now with gpu_us=None.
+                self.tcb_samples.push(super::DispatchSample {
+                    kernel_name: kn,
+                    wall_us: cpu_us,
+                    layer_hint: super::current_layer(),
+                    gpu_us: None,
+                });
+            }
+            Ok(())
+        }
+
+        /// SplitCbGpu path: each dispatch in its own CB, gpu times read
+        /// directly from `gpu_start_time/gpu_end_time` after wait.
+        fn dispatch_threads_split_cb(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            let t0_cpu = Instant::now();
+            let dedicated = self.ctx.inner.queue.new_command_buffer();
+            let pipe = self.ctx.pipeline(fn_name)?;
+            let enc = dedicated.new_compute_command_encoder();
+            enc.set_label(fn_name);
+            enc.set_compute_pipeline_state(&pipe);
+            encode(enc);
+            enc.dispatch_threads(
+                MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+            );
+            enc.end_encoding();
+            let cpu_us = t0_cpu.elapsed().as_micros() as u64;
+            dedicated.commit();
+            dedicated.wait_until_completed();
+            // GPUStartTime / GPUEndTime are not wrapped by metal 0.29 -- go
+            // direct via objc msg_send. Both return CFTimeInterval (f64
+            // seconds since an absolute reference); their difference is the
+            // GPU compute duration. Safe because we just waited.
+            let gpu_us = unsafe { cb_gpu_duration_us(&dedicated) };
+            self.tcb_samples.push(super::DispatchSample {
+                kernel_name: static_kernel_name(fn_name),
+                wall_us: cpu_us,
+                layer_hint: super::current_layer(),
+                gpu_us: Some(gpu_us),
+            });
             Ok(())
         }
 
         /// Encode a GPU-side buffer copy into the pending command buffer.
         ///
-        /// Uses a `MTLBlitCommandEncoder` — very cheap (~100 ns; a plain GPU
+        /// Uses a `MTLBlitCommandEncoder` -- very cheap (~100 ns; a plain GPU
         /// memcpy). Call once per MoE layer to snapshot route_ids into the
         /// per-token route history buffer without breaking the single-CB design.
+        ///
+        /// In `SplitCbGpu` mode the blit is committed in its own CB so the
+        /// next compute dispatch starts cleanly; no GPU time is recorded for
+        /// blits (they're not the audit target).
         pub fn copy_buffer_bytes(
             &mut self,
             src: &metal::Buffer,
@@ -555,6 +963,15 @@ mod imp {
             size: u64,
         ) -> Result<()> {
             if size == 0 {
+                return Ok(());
+            }
+            if self.mode == TcbTraceMode::SplitCbGpu {
+                let dedicated = self.ctx.inner.queue.new_command_buffer();
+                let blit = dedicated.new_blit_command_encoder();
+                blit.copy_from_buffer(src, src_offset, dst, dst_offset, size);
+                blit.end_encoding();
+                dedicated.commit();
+                dedicated.wait_until_completed();
                 return Ok(());
             }
             let cmd = self
@@ -571,18 +988,68 @@ mod imp {
         /// Consumes self; subsequent dispatch calls would fail.
         pub fn commit_and_wait(mut self) -> Result<()> {
             if let Some(cmd) = self.cmd.take() {
-                cmd.commit();
-                cmd.wait_until_completed();
+                self.flush_and_commit(cmd);
             }
             Ok(())
+        }
+
+        /// Internal: commit `cmd`, wait for GPU completion, then flush TCB trace
+        /// samples to `ctx.trace`. In SplitCbGpu mode `cmd` is the trailing
+        /// empty CB (each dispatch already self-committed); we still commit
+        /// it for symmetry and flush the per-dispatch samples without adding
+        /// a tcb_commit record (it would be meaningless in split mode).
+        fn flush_and_commit(&mut self, cmd: metal::CommandBuffer) {
+            let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                Some(Instant::now())
+            } else {
+                None
+            };
+            cmd.commit();
+            cmd.wait_until_completed();
+            match self.mode {
+                TcbTraceMode::Off => {}
+                TcbTraceMode::CpuEncode => {
+                    let layer = super::current_layer();
+                    let total_us = t0.unwrap().elapsed().as_micros() as u64;
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx
+                            .trace
+                            .record(s.kernel_name, s.wall_us, s.layer_hint);
+                    }
+                    self.ctx.trace.record("tcb_commit", total_us, layer);
+                }
+                TcbTraceMode::SplitCbGpu => {
+                    // Flush per-dispatch GPU-timed samples directly. There is
+                    // no aggregate `tcb_commit` in split mode -- the GPU times
+                    // already sum to the decoded total.
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx.trace.samples.lock().push(s);
+                    }
+                }
+                TcbTraceMode::ProdCbGpu => {
+                    // v2.2.0-L7: resolve the counter sample buffer now that
+                    // the CB has completed. `drain()` reads the raw
+                    // timestamps and pairs them with the recorded
+                    // dispatch metadata to populate `gpu_us`.
+                    if let Some(tracer) = self.prod_cb_tracer.as_ref() {
+                        for s in tracer.drain() {
+                            self.ctx.trace.samples.lock().push(s);
+                        }
+                    }
+                    // Any out-of-capacity dispatches were pushed straight
+                    // to `tcb_samples` with gpu_us=None.
+                    for s in self.tcb_samples.drain(..) {
+                        self.ctx.trace.samples.lock().push(s);
+                    }
+                }
+            }
         }
     }
 
     impl Drop for TokenCommandBuffer<'_> {
         fn drop(&mut self) {
             if let Some(cmd) = self.cmd.take() {
-                cmd.commit();
-                cmd.wait_until_completed();
+                self.flush_and_commit(cmd);
             }
         }
     }
@@ -660,5 +1127,11 @@ pub use imp::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 #[cfg(target_os = "macos")]
 pub use imp::CommandBatch;
 
+pub mod argbuf;
+pub use argbuf::{ArgLayout, KernelArgBuffer};
+
 pub mod decode_arena;
 pub use decode_arena::DecodeArena;
+
+pub mod dense_decode_arena;
+pub use dense_decode_arena::DenseDecodeArena;

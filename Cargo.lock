@@ -465,6 +465,8 @@ dependencies = [
  "dismantle-bench",
  "dismantle-core",
  "dismantle-serve",
+ "half",
+ "serde",
  "serde_json",
  "tokio",
  "tracing",

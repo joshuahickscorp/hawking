@@ -9,6 +9,7 @@ use crate::gguf::GgufFile;
 use crate::{metal, Error, Result};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 pub const PROFILE_SCHEMA_VERSION: u32 = 1;
@@ -67,8 +68,43 @@ pub struct KernelVariant {
     pub deterministic_rank: u32,
     #[serde(default = "default_gemm_q4_k_schedule")]
     pub gemm_q4_k_schedule: String,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub gemm_q4_k_schedule_per_shape: BTreeMap<String, String>,
     #[serde(default = "default_attn_block_schedule")]
     pub attn_block_schedule: String,
+    /// Phase 5C.2: "f32" (default) or "f16" — selects final-norm activation dtype.
+    /// When "f16", the final rmsnorm output (x_norm_f16_buf) is stored as half
+    /// and the LM head GEMV reads f16 activations, halving that read bandwidth.
+    /// Residual stream between layers remains f32 (no accumulation error).
+    /// Per-layer FFN-norm paths stay f32 in this release; only the final-layer
+    /// norm → LM head path uses f16 when this flag is set.
+    #[serde(default = "default_x_norm_dtype")]
+    pub x_norm_dtype: String,
+    /// v2.1.0-T2.11: "basic" (default) or "v2t" — selects the kernel for
+    /// MoE routed-down GEMV on Q5_0 tensors. The basic kernel is the
+    /// original 1-row-per-TG tree-reduce path; v2t mirrors the Q8_0_v2t
+    /// pattern (8 rows/TG, threadgroup x_cache, simdsum). Opt-in until
+    /// a clean bench validates the +5% e2e gate.
+    /// Only affects models where routed_down_dtype == Q5_0 (DeepSeek-V2-Lite).
+    #[serde(default = "default_routed_down_schedule")]
+    pub routed_down_schedule: String,
+    /// v2.1.0-T2.12: "basic" (default) or "v2t" — selects the kernel for
+    /// MoE shared-expert-down GEMV on Q6_K tensors. Same pattern as
+    /// `routed_down_schedule` but for the shared-expert path; v2t is
+    /// the new 8-rows-per-TG threadgroup-x_cache simdsum kernel
+    /// `moe_batched_gemm_q6_k_indexed_v2t`. Opt-in until bench gate.
+    /// Only affects models where shared_down_dtype == Q6_K.
+    #[serde(default = "default_shared_down_schedule")]
+    pub shared_down_schedule: String,
+    /// v2.2.0-T2.14: "basic" (default) or "v2t" — selects the kernel
+    /// for the fused rmsnorm + attention GEMV (`q_proj`, `q_a_proj`,
+    /// `kv_a_proj_with_mqa`). The basic kernel launches one TG per
+    /// row; v2t launches one TG per 8 rows with a threadgroup
+    /// `xw_cache` so the rmsnorm-scaled activation is computed once
+    /// per 8 output rows. Requires rows % 8 == 0 and cols % 32 == 0.
+    /// Opt-in until a clean bench validates the +5% e2e gate.
+    #[serde(default = "default_rmsnorm_attn_schedule")]
+    pub rmsnorm_attn_schedule: String,
 }
 
 fn default_gemm_q4_k_schedule() -> String {
@@ -77,6 +113,22 @@ fn default_gemm_q4_k_schedule() -> String {
 
 fn default_attn_block_schedule() -> String {
     "mla".to_string()
+}
+
+fn default_x_norm_dtype() -> String {
+    "f32".to_string()
+}
+
+fn default_routed_down_schedule() -> String {
+    "basic".to_string()
+}
+
+fn default_shared_down_schedule() -> String {
+    "basic".to_string()
+}
+
+fn default_rmsnorm_attn_schedule() -> String {
+    "basic".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -231,7 +283,12 @@ pub fn deterministic_candidates() -> Vec<KernelVariant> {
         gpu_buffer_reuse: "decode-arena".into(),
         deterministic_rank: 1,
         gemm_q4_k_schedule: "v2".into(),
+        gemm_q4_k_schedule_per_shape: BTreeMap::new(),
         attn_block_schedule: "mla".into(),
+        x_norm_dtype: "f32".into(),
+        routed_down_schedule: "basic".into(),
+        shared_down_schedule: "basic".into(),
+        rmsnorm_attn_schedule: "basic".into(),
     }]
 }
 
@@ -276,13 +333,7 @@ fn select_variant<'a>(
 
 fn variant_score(v: &KernelVariant) -> u64 {
     let mut score = 100_u64.saturating_sub(v.deterministic_rank as u64);
-    if v.moe_schedule == "single-kernel" {
-        score += 30;
-    } else if v.moe_schedule == "two-stage" {
-        // Reduced from 28 after v0.2.1 diagnostic: −79% regression at batch=1 decode.
-        // May recover for prefill/batch>1 contexts; kept in tree as research variant.
-        score += 5;
-    } else if v.moe_schedule.contains("indexed-no-pack") {
+    if v.moe_schedule.contains("indexed-no-pack") {
         score += 25;
     }
     if v.lm_head_schedule.contains("argmax") || v.lm_head_schedule.contains("simdgroup-matrix") {

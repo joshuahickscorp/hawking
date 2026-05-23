@@ -17,6 +17,45 @@
 #include <metal_stdlib>
 using namespace metal;
 
+static inline float q3_k_fp16_at(device const uchar* p, uint64_t off)
+{
+    ushort bits = (ushort)p[off] | ((ushort)p[off + 1] << 8);
+    return (float)as_type<half>(bits);
+}
+
+static inline int q3_k_scale(device const uchar* w_q3, uint64_t bo, uint scale_idx)
+{
+    uint low;
+    if (scale_idx < 8u) {
+        low = (uint)w_q3[bo + 96ul + (uint64_t)scale_idx] & 0x0Fu;
+    } else {
+        low = ((uint)w_q3[bo + 96ul + (uint64_t)(scale_idx - 8u)] >> 4) & 0x0Fu;
+    }
+    uint high = ((uint)w_q3[bo + 104ul + (uint64_t)(scale_idx & 3u)]
+              >> (2u * (scale_idx >> 2))) & 0x03u;
+    return (int)(low | (high << 4)) - 32;
+}
+
+static inline float q3_k_value(device const uchar* w_q3, uint64_t bo, uint c)
+{
+    float d = q3_k_fp16_at(w_q3, bo + 108ul);
+    uint half_idx = c >> 7;
+    uint local = c & 127u;
+    uint group16 = local >> 4;
+    uint j = group16 >> 1;
+    uint second = group16 & 1u;
+    uint lane = local & 15u;
+
+    uint q_idx = half_idx * 32u + second * 16u + lane;
+    uint h_idx = second * 16u + lane;
+    uint shift = j * 2u;
+    uint high_mask = 1u << (half_idx * 4u + j);
+    int q = (int)(((uint)w_q3[bo + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+          - (((uint)w_q3[bo + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+    int scale = q3_k_scale(w_q3, bo, half_idx * 8u + group16);
+    return d * (float)scale * (float)q;
+}
+
 // One thread = one Q8_0 block (32 elems). Cheap; called per-tensor at
 // most once when materializing reference fp16 weights.
 kernel void dequant_q8_0(
@@ -245,8 +284,7 @@ kernel void gemm_q4_k_m_fused_v2(
     device const uchar* w_q4   [[buffer(0)]],   // (rows, cols) Q4_K_M
     device const float* x      [[buffer(1)]],   // (cols,)
     device       float* y      [[buffer(2)]],   // (rows,)
-    constant     uint&  rows   [[buffer(3)]],
-    constant     uint&  cols   [[buffer(4)]],
+    constant ArgbufRowsCols& args [[buffer(3)]],
     uint                tid          [[thread_position_in_threadgroup]],
     uint                gid          [[threadgroup_position_in_grid]],
     uint                simd_lane    [[thread_index_in_simdgroup]],
@@ -254,9 +292,9 @@ kernel void gemm_q4_k_m_fused_v2(
 {
     // ROWS_PER_TG=8 (one simdgroup per row), TG_SIZE=256 (8 simdgroups).
     uint base_row = gid * 8u + simd_id;
-    if (base_row >= rows) return;     // tail simdgroups do nothing
+    if (base_row >= args.rows) return;     // tail simdgroups do nothing
 
-    uint  blocks_per_row = cols / 256u;
+    uint  blocks_per_row = args.cols / 256u;
     uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
     float partial = 0.0f;
 
@@ -297,6 +335,44 @@ kernel void gemm_q4_k_m_fused_v2(
     }
 
     // 32-thread simdgroup reduction. Zero barriers.
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
+}
+
+// ── gemm_q3_k_fused_v2 ──────────────────────────────────────────────────────
+// Q3_K GEMV using the same 256-thread / 8-row-per-TG geometry as the Q4_K
+// v2 kernel. One simdgroup owns one row; each lane covers eight elements of
+// the 256-element Q3_K super-block.
+
+kernel void gemm_q3_k_fused_v2(
+    device const uchar* w_q3   [[buffer(0)]],   // (rows, cols) Q3_K
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant ArgbufRowsCols& args [[buffer(3)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 110ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 110ul;
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            float w_val = q3_k_value(w_q3, bo, elem);
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+            partial += w_val * xv;
+        }
+    }
+
     partial = simd_sum(partial);
     if (simd_lane == 0u) {
         y[base_row] = partial;
@@ -783,4 +859,75 @@ kernel void dequant_q6_k_f16(
                                     + (uint64_t)(l >> 4) + (uint64_t)group * 2ul];
     float val = d * (float)scale * (float)q_signed;
     dst[(uint64_t)gid * 256ul + (uint64_t)tid] = (half)val;
+}
+
+// P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
+// moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
+// Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one
+// simdgroup per row (32 threads). Drops the f16-fallback dequant penalty
+// for Q6_K weights in Q4_K_M mix-quant GGUFs.
+//
+// Q6_K block layout (210 B / 256 elems):
+//   ql[128] — 4-bit lows, packed two-per-byte
+//   qh[64]  — 2-bit highs, packed four-per-byte
+//   scales[16] — int8 per-16-elem scales
+//   d[2]    — half-precision block scale
+kernel void gemm_q6_k_fused_v2(
+    device const uchar* w_q6   [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant ArgbufRowsCols& args [[buffer(3)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 210ul;
+
+    // Per-lane constants (same scheme as the MoE v2t Q6_K kernel).
+    uint half_idx          = simd_lane >> 4u;          // 0 or 1
+    uint group             = (simd_lane >> 2u) & 3u;   // 0..3
+    uint l_base            = (simd_lane & 3u) * 8u;    // 0, 8, 16, 24
+    uint scale_l_off       = l_base >> 4u;
+    uint scale_byte_off    = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off      = (group & 1u) * 32u;
+    bool group_high_nibble = (group >= 2u);
+    uint qh_shift          = group * 2u;
+    uint tid_base          = half_idx * 128u + group * 32u + l_base;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 210ul;
+        ushort d_bits = (ushort)w_q6[bo + 208u] | ((ushort)w_q6[bo + 209u] << 8);
+        float d = (float)as_type<half>(d_bits);
+        int scale = (int)(signed char)w_q6[bo + (uint64_t)scale_byte_off];
+        float dscale = d * (float)scale;
+
+        uint64_t ql_base = bo + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base = bo + 128ul + (uint64_t)half_idx * 32ul;
+
+        float lane_acc = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l = l_base + k;
+            uchar qlb = w_q6[ql_base + (uint64_t)l];
+            uint qlow = group_high_nibble
+                      ? ((uint)(qlb >> 4) & 0x0Fu)
+                      : ((uint)qlb & 0x0Fu);
+            uchar qhb = w_q6[qh_base + (uint64_t)l];
+            uint qhigh = ((uint)qhb >> qh_shift) & 0x03u;
+            int qi = (int)(qlow | (qhigh << 4)) - 32;
+            float xi = x[b * 256u + tid_base + k];
+            lane_acc += (float)qi * xi;
+        }
+        partial += dscale * lane_acc;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
 }

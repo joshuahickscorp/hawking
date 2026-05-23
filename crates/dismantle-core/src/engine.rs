@@ -1,45 +1,9 @@
-//! The [`Engine`] trait: the single seam between dismantle-core and
-//! its consumers (`dismantle-serve`, `dismantle-bench`, `dismantle
-//! generate`). Stable from v0.1.0; extensions go behind feature flags
-//! or new methods with default impls.
-
 use crate::profile::KernelProfile;
 use crate::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
-
-/// Controls whether intermediate activations are kept in f32 or cast to f16
-/// before the fused rmsnorm+gemv bridge kernels. F16 is the Phase 7 goal;
-/// F32 is the legacy path preserved as a regression guard.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum ActivationDtype {
-    F32,
-    F16,
-}
-
-impl Default for ActivationDtype {
-    fn default() -> Self {
-        // v0.8.6: reverted to F32 (bridge approach regressed -6.7%).
-        // Phase E (residual_dtype) is the replacement path.
-        Self::F32
-    }
-}
-
-/// Phase E: controls the dtype of the residual stream `x` itself.
-///
-/// F32 = legacy path (x is Vec<f32> throughout).
-/// F16 = Phase E "doing it right": x is Vec<f16> throughout, eliminating
-///        the f32→f16 conversion overhead that caused Phase 7 to regress.
-///        Bridge kernels in attention/ffn read from x_f16_buf (no conversion).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum ResidualDtype {
-    F32,
-    F16,
-}
 
 #[derive(Debug, Clone)]
 pub struct EngineConfig {
@@ -54,12 +18,6 @@ pub struct EngineConfig {
     /// collects dispatch timing. Matches `DISMANTLE_TRACE_DISPATCH=1` (env var
     /// remains a fallback when this is false).
     pub trace_dispatch: bool,
-    /// Phase 7: activation dtype for fused bridge kernels. F32 = legacy;
-    /// F16 = read residual as half-precision (v0.8.4+ default, reverted v0.8.6).
-    pub activation_dtype: ActivationDtype,
-    /// Phase E: dtype of the residual stream x. F32 = legacy; F16 = x is Vec<f16>
-    /// throughout (eliminates Phase 7 bridge conversion overhead).
-    pub residual_dtype: ResidualDtype,
     /// Optional routed-expert RAM budget. In v1.0.0 partial-tier V2-Lite this
     /// is accepted as a no-op; Mixtral/offload engines attach real ExpertCache
     /// ranges to enforce it.
@@ -69,6 +27,16 @@ pub struct EngineConfig {
     /// estimated working set (model file + KV cache) exceeds N MiB. `Some(0)`
     /// triggers auto-detection (80% of system RAM). `None` = unlimited.
     pub memory_limit_mb: Option<usize>,
+    /// path-to-50 lever 1: optional vocab whitelist JSON (see `vocab_prune`
+    /// module). When `Some`, the LM-head weight is sliced to the pruned
+    /// vocab at model load and `cfg.vocab_size` is overridden accordingly.
+    /// `None` ⇒ full vocab (default behavior, unchanged).
+    pub vocab_prune_path: Option<std::path::PathBuf>,
+    /// path-to-50 lever 2: optional per-layer quant tier map JSON (see
+    /// `quant_tier_map` module). When `Some`, MoE expert weights are
+    /// re-quantized per layer to the dtype specified in the map. `None` ⇒
+    /// GGUF native dtypes (default behavior, unchanged).
+    pub quant_tier_map_path: Option<std::path::PathBuf>,
 }
 
 impl Default for EngineConfig {
@@ -82,10 +50,10 @@ impl Default for EngineConfig {
             prefill_cache_dir: None,
             kernel_profile: None,
             trace_dispatch: false,
-            activation_dtype: ActivationDtype::F32,
-            residual_dtype: ResidualDtype::F32,
             max_routed_expert_ram_mb: None,
             memory_limit_mb: None,
+            vocab_prune_path: None,
+            quant_tier_map_path: None,
         }
     }
 }
@@ -95,6 +63,8 @@ impl Default for EngineConfig {
 pub enum SpeculateMode {
     Off,
     ExactShared,
+    /// N-gram lookup draft: zero compute cost, serial verify with full model.
+    NGram,
 }
 
 impl Default for SpeculateMode {
@@ -110,8 +80,9 @@ impl SpeculateMode {
             None => Ok(Self::Off),
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
+            Some("ngram" | "n-gram" | "ngram-spec") => Ok(Self::NGram),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared or off"
+                "unknown speculate mode `{other}`; expected exact-shared, ngram, or off"
             ))),
         }
     }
@@ -120,6 +91,7 @@ impl SpeculateMode {
         match self {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
+            Self::NGram => "ngram",
         }
     }
 }
@@ -194,7 +166,7 @@ pub struct GenStats {
     /// Non-empty only when `DISMANTLE_TRACE_DISPATCH=1` is set or
     /// `EngineConfig::trace_dispatch` is true; always empty otherwise.
     pub dispatch_samples: Vec<crate::metal::DispatchSample>,
-    /// Structural counters — non-zero only when trace_dispatch is on.
+    /// Structural counters -- non-zero only when trace_dispatch is on.
     pub metal_buffers_created: usize,
     pub metal_bytes_allocated: usize,
     pub metal_commits: usize,
@@ -246,7 +218,7 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_for_test(tokens, positions)
     }
 
-    /// Phase 2 Wedge 2a — multi-token forward shim. Currently a loop;
+    /// Phase 2 Wedge 2a -- multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.
     fn forward_tokens_for_test(
@@ -255,7 +227,7 @@ pub trait Engine: Send + Sync {
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>>;
 
-    /// Phase 3 prep — shared-only forward for spec acceptance measurement.
+    /// Phase 3 prep -- shared-only forward for spec acceptance measurement.
     /// Returns logits from a forward pass that runs only shared experts
     /// (routed contributions zeroed). Dense models return Err("unimplemented").
     fn forward_token_shared_only_for_test(
@@ -266,7 +238,7 @@ pub trait Engine: Send + Sync {
         Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
     }
 
-    /// Phase A Wedge A1 — layer-first batched forward. Accepts N tokens
+    /// Phase A Wedge A1 -- layer-first batched forward. Accepts N tokens
     /// and N positions; processes each transformer layer for all N tokens
     /// before advancing to the next layer. Returns N logit vectors.
     /// A1: kernels still dispatch serially per token within each layer.
@@ -279,7 +251,7 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
-    /// Phase A parity helper — reset KV cache to empty so two forward passes
+    /// Phase A parity helper -- reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}
 

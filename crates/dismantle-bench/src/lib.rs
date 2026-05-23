@@ -1,13 +1,3 @@
-//! dismantle-bench: produces every published benchmark number.
-//!
-//! Each suite is a function in [`suites`]. The binary entrypoint
-//! lives in `dismantle bench`; this crate is invoked from that
-//! umbrella binary.
-//!
-//! Output is a single JSON document per run, written to stdout or a
-//! `--json <path>` target. `docs/benchmarks.md` is auto-generated
-//! from these JSON outputs by a script in `docs/`.
-
 pub mod competitors;
 pub mod suites;
 
@@ -31,7 +21,7 @@ pub struct BenchOptions {
     /// Which backend to run a single-suite bench against. `"dismantle"`
     /// (default) drives the in-process Engine; `"llamacpp"` and
     /// `"mlx"` shell out to the corresponding competitor binaries.
-    /// Only the decode and prefill suites honor this — the
+    /// Only the decode and prefill suites honor this -- the
     /// `competitive` suite explicitly runs all three.
     pub backend: String,
     /// When true, enables Metal dispatch tracing and structural counters

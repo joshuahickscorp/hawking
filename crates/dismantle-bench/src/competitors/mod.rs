@@ -1,12 +1,3 @@
-//! Competitor-process spawning. One backend per file, all behind the
-//! [`Competitor`] trait so the `competitive` suite can run them
-//! through the same loop.
-//!
-//! Each backend captures its own version string (so the audit doc
-//! can cite exact pinned versions), spawns a child process (or for
-//! dismantle, drives the in-process Engine), and parses tok/s out
-//! of the backend-specific output format.
-
 pub mod dismantle;
 pub mod llamacpp;
 pub mod mlx;
@@ -37,7 +28,7 @@ pub trait Competitor: Send {
     /// JSON output is reproducible against the same backend version.
     fn version(&self) -> String;
 
-    /// Phase tag — only dismantle uses this (returns `Some(0)` until
+    /// Phase tag -- only dismantle uses this (returns `Some(0)` until
     /// Phase 1 lands real Metal kernels). All competitors return `None`.
     fn phase_tag(&self) -> Option<u32> {
         None
@@ -55,7 +46,7 @@ pub trait Competitor: Send {
 
 /// Parse a number out of an arbitrary output blob using a regex-ish
 /// substring match. Helper used by the `llamacpp` stdout/stderr
-/// parser — keeps the backend files small and tested.
+/// parser -- keeps the backend files small and tested.
 pub(crate) fn extract_after(s: &str, marker: &str) -> Option<f64> {
     let pos = s.find(marker)?;
     let tail = &s[pos + marker.len()..];

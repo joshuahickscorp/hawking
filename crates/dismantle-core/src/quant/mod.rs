@@ -1,4 +1,4 @@
-//! Quantization formats: Q4_K_M, Q5_K_M, Q8_0, plus dequant helpers.
+//! Quantization formats: Q3_K, Q4_K_M, Q5_K_M, Q8_0, plus dequant helpers.
 //!
 //! Phase 0 ships CPU dequant; that's what the reference path uses to
 //! materialize fp32 weights from the GGUF mmap on demand.
@@ -45,12 +45,13 @@ pub fn dequant_into(dtype: GgmlType, bytes: &[u8], out: &mut [f32]) -> Result<()
         GgmlType::Q5_0 => dequant_q5_0(bytes, out),
         GgmlType::Q5_1 => dequant_q5_1(bytes, out),
         GgmlType::Q8_0 => dequant_q8_0(bytes, out),
+        GgmlType::Q3_K => dequant_q3_k_into(bytes, out),
         GgmlType::Q4_K => dequant_q4_k(bytes, out),
         GgmlType::Q5_K => dequant_q5_k(bytes, out),
         GgmlType::Q6_K => dequant_q6_k(bytes, out),
         other => Err(Error::Kernel(format!(
             "dequant: type {:?} not implemented yet (Phase 0 covers F16/BF16/F32/\
-             Q4_0/Q4_1/Q5_0/Q5_1/Q8_0/Q4_K/Q5_K/Q6_K)",
+             Q4_0/Q4_1/Q5_0/Q5_1/Q8_0/Q3_K/Q4_K/Q5_K/Q6_K)",
             other
         ))),
     }
@@ -367,6 +368,90 @@ fn dequant_q4_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     Ok(())
 }
 
+// ---------- Q3_K ---------------------------------------------------------
+//
+// Super-block of 256 elements; layout (110 bytes):
+//   uint8 hmask[32];  // high/sign bit, eight bit-planes over 32 columns
+//   uint8 qs[64];     // low 2 bits
+//   uint8 scales[12]; // 16x6-bit packed signed scales, stored +32
+//   f16   d;          // super-block scale
+//
+// Per 16-elem sub-block i (0..15):
+//   scale = unpacked_scale[i] - 32
+//   q     = low2 - (high_bit_set ? 0 : 4)   // q in [-4, 3]
+//   x     = d * scale * q
+pub fn dequant_q3_k_into(bytes: &[u8], out: &mut [f32]) -> Result<()> {
+    const BLOCK_BYTES: usize = 110;
+    if out.len() % Q_K != 0 {
+        return Err(Error::Kernel("q3_k: out len not multiple of 256".into()));
+    }
+    let nb = out.len() / Q_K;
+    if bytes.len() < nb * BLOCK_BYTES {
+        return Err(Error::Kernel(format!(
+            "q3_k: have {}B need {}B",
+            bytes.len(),
+            nb * BLOCK_BYTES
+        )));
+    }
+
+    for b in 0..nb {
+        let off = b * BLOCK_BYTES;
+        let hmask = &bytes[off..off + 32];
+        let qs = &bytes[off + 32..off + 96];
+        let scale_bytes = &bytes[off + 96..off + 108];
+        let d = f16::from_bits(u16::from_le_bytes(
+            bytes[off + 108..off + 110].try_into().unwrap(),
+        ))
+        .to_f32();
+
+        let mut scales = [0i8; 16];
+        decode_q3_k_scales(scale_bytes, &mut scales);
+
+        let dst = &mut out[b * Q_K..(b + 1) * Q_K];
+        for half in 0..2 {
+            let half_q = half * 32;
+            let bit_base = half * 4;
+            let elem_base = half * 128;
+            for j in 0..4 {
+                let shift = j * 2;
+                let high_mask = 1u8 << (bit_base + j);
+                for lane in 0..16 {
+                    let q0_idx = half_q + lane;
+                    let q1_idx = half_q + 16 + lane;
+                    let q0 = ((qs[q0_idx] >> shift) & 0x03) as i8
+                        - if (hmask[lane] & high_mask) != 0 { 0 } else { 4 };
+                    let q1 = ((qs[q1_idx] >> shift) & 0x03) as i8
+                        - if (hmask[16 + lane] & high_mask) != 0 { 0 } else { 4 };
+                    let s0 = d * scales[half * 8 + j * 2] as f32;
+                    let s1 = d * scales[half * 8 + j * 2 + 1] as f32;
+                    dst[elem_base + j * 32 + lane] = s0 * q0 as f32;
+                    dst[elem_base + j * 32 + 16 + lane] = s1 * q1 as f32;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn decode_q3_k_scales(src: &[u8], scales: &mut [i8; 16]) {
+    debug_assert!(src.len() >= 12);
+    let aux0 = u32::from_le_bytes(src[0..4].try_into().unwrap());
+    let aux1 = u32::from_le_bytes(src[4..8].try_into().unwrap());
+    let aux2 = u32::from_le_bytes(src[8..12].try_into().unwrap());
+    let decoded = [
+        (aux0 & 0x0f0f_0f0f) | (((aux2 >> 0) & 0x0303_0303) << 4),
+        (aux1 & 0x0f0f_0f0f) | (((aux2 >> 2) & 0x0303_0303) << 4),
+        ((aux0 >> 4) & 0x0f0f_0f0f) | (((aux2 >> 4) & 0x0303_0303) << 4),
+        ((aux1 >> 4) & 0x0f0f_0f0f) | (((aux2 >> 6) & 0x0303_0303) << 4),
+    ];
+    for (chunk, word) in decoded.iter().enumerate() {
+        let bytes = word.to_le_bytes();
+        for (i, &v) in bytes.iter().enumerate() {
+            scales[chunk * 4 + i] = v as i8 - 32;
+        }
+    }
+}
+
 /// Decode the 12-byte packed (scale, min) array into two 8-element u8
 /// arrays. Layout matches ggml's `get_scale_min_k4` exactly:
 ///
@@ -527,6 +612,33 @@ mod tests {
         let mut out = vec![1.0f32; 32];
         dequant_q8_0(&bytes, &mut out).unwrap();
         assert!(out.iter().all(|&v| v == 0.0));
+    }
+
+    #[test]
+    fn q3_k_known_pattern() {
+        let mut bytes = vec![0u8; 110];
+        // Give all 16 sub-blocks scale byte 33 -> signed scale +1.
+        for j in 0..16 {
+            let l = 33u8;
+            if j < 8 {
+                bytes[96 + j] |= l & 0x0f;
+            } else {
+                bytes[96 + j - 8] |= (l & 0x0f) << 4;
+            }
+            bytes[96 + 8 + j % 4] |= (l >> 4) << (2 * (j / 4));
+        }
+        bytes[108..110].copy_from_slice(&f16::from_f32(2.0).to_bits().to_le_bytes());
+
+        // Element 0: low2=3 and hmask bit set -> q=+3, value=6.
+        bytes[0] = 0x01;
+        bytes[32] = 0x03;
+        // Element 1: low2=2 and hmask bit clear -> q=-2, value=-4.
+        bytes[33] = 0x02;
+
+        let mut out = vec![0.0f32; 256];
+        dequant_q3_k_into(&bytes, &mut out).unwrap();
+        assert_eq!(out[0], 6.0);
+        assert_eq!(out[1], -4.0);
     }
 
     #[test]

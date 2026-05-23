@@ -10,10 +10,6 @@
 //   sample_topk_topp      — fused top-K + top-P + softmax + draw.
 //                           Single launch.
 //                           [Phase 2.5]
-//   sample_constraint     — applies a constraint mask (JSON-schema /
-//                           regex) by setting masked logits to -inf
-//                           before sampling.
-//                           [Phase 2.5]
 //   sample_argmax_f32     — deterministic greedy argmax over fp32
 //                           logits. Bootstrap kernel for token-only
 //                           GPU readback.
@@ -43,18 +39,6 @@ kernel void sample_repetition(
     uint t = recent[id];
     float v = (float)logits[t];
     logits[t] = half(v >= 0.0f ? v / penalty : v * penalty);
-}
-
-// Kept for binary compatibility; no-op.
-kernel void sample_topk_topp_stub(
-    device const half*  logits [[buffer(0)]],
-    device       uint*  token  [[buffer(1)]],
-    constant     uint&  top_k  [[buffer(2)]],
-    constant     float& top_p  [[buffer(3)]],
-    constant     uint&  seed   [[buffer(4)]],
-    uint tid [[thread_position_in_threadgroup]])
-{
-    (void)tid;
 }
 
 // v0.5.7-A — parallel 256-thread simdgroup-reduced argmax.
@@ -226,14 +210,3 @@ kernel void sample_multinomial(
     out_token[0] = topk_idx[sc > 0 ? sc - 1 : 0];
 }
 
-kernel void sample_constraint(
-    device       half*  logits [[buffer(0)]],
-    device const uchar* mask   [[buffer(1)]],
-    constant     uint&  n      [[buffer(2)]],
-    uint id [[thread_position_in_grid]])
-{
-    if (id >= n) return;
-    if (mask[id] == 0) {
-        logits[id] = half(-INFINITY);
-    }
-}

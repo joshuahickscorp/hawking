@@ -1,7 +1,3 @@
-//! prefill-tps@1024: tokens/sec on a 1024-token prompt before the
-//! first generation step. The headline benchmark for Phase 2 (single-
-//! launch MoE). Also reports time-to-first-token (TTFT).
-
 use crate::BenchOptions;
 use anyhow::Result;
 use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, StreamEvent};

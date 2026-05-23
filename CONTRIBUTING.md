@@ -22,48 +22,69 @@ cargo build --release --workspace
 Run before any PR. All must pass:
 
 ```sh
-cargo test --workspace --lib
-cargo test --release --test phase1_kernel_parity
-cargo test --release --test phase2_mla_metal_parity
-cargo test --release --test phase2_weight_pinning_parity
-cargo test --release --test phase2_moe_block_batched_parity
-cargo test --release --test phase2_moe_block_fused_parity
+cargo test --release --workspace --lib
+cargo test --release --workspace --tests
 ```
 
 The parity regime is tight: max absolute diff < `1e-3` for every
-Metal-vs-CPU reference kernel path. Token-output baselines live in
-`tests/golden/` and are checked separately via
-`tools/haul/token-regression.sh`.
+Metal-vs-CPU reference kernel path (5e-3 acceptable for fp16 storage,
+1e-2 for Q3-class quants). Token-output baselines live in `tests/golden/`.
+
+## Bench gates
+
+Performance changes require a measured bench delta:
+
+```sh
+TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh    # before
+# ... apply your change ...
+TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh    # after
+bash tools/bench/bench_diff.sh HEAD~1 HEAD              # significance
+```
+
+`bench_diff.sh` reports whether the change is statistically significant
+given trial-to-trial variance. Defaults flip in profile JSON only if
+the change clears the +5% gate.
+
+For per-kernel claims:
+
+```sh
+./target/release/dismantle bench-kernel --kernel <name> --shape <RxC> --iterations 200
+```
 
 ## Code conventions
 
-- `cargo fmt --all` — non-optional. CI rejects unformatted code.
-- `cargo clippy --workspace --all-targets` — target ≤ 30 warnings.
-- Kernel changes: include a parity test against the CPU reference and a
-  `cargo bench` diff in the PR description.
+- `cargo fmt --all` — non-optional.
+- `cargo clippy --workspace --all-targets -- -D warnings` — clean.
+- Kernel changes: include a parity test against the CPU reference + a
+  bench-kernel timing in the PR description.
 - No clippy `allow` at module level. Per-function `allow` with a comment
   explaining why.
+- Internal accumulators (variance, softmax, MAC) stay f32 even when
+  storage is f16. Non-negotiable for numerical stability.
 
 ## What's in scope
 
 - Bug fixes
-- Performance improvements with a `dismantle bench` measurement
+- Performance improvements with a measured bench delta
 - New MoE architectures (Mixtral, Qwen-MoE, future DeepSeek lines)
 - Test coverage
 - Documentation improvements
+- Apple Neural Engine, AMX, MPSGraph integration (long-term perf work)
 
-## What's out of scope
+## What's out of scope (for now)
 
 - Dense-model support as a primary target. dismantle is a MoE engine.
-- Backends beyond Metal (CUDA, ROCm, Vulkan) until v0.3.
+- Non-Apple backends (CUDA, ROCm, Vulkan).
 - Chat UIs. dismantle is a runtime; bring your own client.
 - Trainer code.
 
 ## Pull requests
 
 - One concern per PR.
-- Every kernel-level change: parity test + benchmark diff.
-- Every behavioural change: a test.
+- Kernel-level change: parity test + bench-kernel measurement in description.
+- Behavioural change: a test.
+- New optional feature: bench-first commit gate (must clear +5% e2e on
+  V2-Lite to flip default; else lands as opt-in only).
 
 ## License
 

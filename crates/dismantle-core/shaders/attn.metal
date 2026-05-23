@@ -1,19 +1,6 @@
 // attn.metal — attention kernels.
 //
 // Kernels:
-//   attn_mha_qkv          — standard multi-head attention (Qwen3-MoE).
-//                           Flash-style tiling, fp16 mma via simdgroup
-//                           matrix.
-//                           [Phase 0 reference; Phase 3 tuned]
-//   attn_mla_compress     — DeepSeek MLA: compresses K/V into the
-//                           latent on prefill.
-//                           [Phase 3]
-//   attn_mla_decompress   — MLA: decompresses on read inside the
-//                           attention kernel; KV cache stays compressed.
-//                           [Phase 3]
-//   attn_kv_append        — fused KV-cache append (no separate copy
-//                           pass).
-//                           [Phase 3]
 //   rmsnorm_gemv_f32_attn_pinned — fused rmsnorm + gemv_f32_attn.
 //                           Reads x once; computes variance in-register,
 //                           then runs GEMV with normalized x.
@@ -23,53 +10,9 @@
 //                           Reads x once; grid = 2×rows threadgroups.
 //                           gid < rows → gate; gid >= rows → up.
 //                           [v0.5.8]
-//   rmsnorm_gemv_f16_attn_pinned — f16-input bridge variant of
-//                           rmsnorm_gemv_f32_attn_pinned. Reads half*
-//                           from x; variance accumulation stays f32.
-//                           [v0.8.1 Phase 7 session 1]
-//   rmsnorm_gemv_q4k_pair_f16 — f16-input bridge variant of
-//                           rmsnorm_gemv_q4k_pair. Reads half* from x.
-//                           [v0.8.2 Phase 7 session 1]
 
 #include <metal_stdlib>
 using namespace metal;
-
-// Stub kernels — Phase 0 runs attention on the host CPU. Replaced by
-// flash-attention-style tiled kernels in Phase 3.
-kernel void attn_mha_qkv_stub(
-    device const half* q   [[buffer(0)]],
-    device const half* k   [[buffer(1)]],
-    device const half* v   [[buffer(2)]],
-    device       half* out [[buffer(3)]],
-    uint id [[thread_position_in_grid]])
-{
-    (void)id;
-}
-
-kernel void attn_mla_compress_stub(
-    device const half* x   [[buffer(0)]],
-    device       half* c   [[buffer(1)]],
-    uint id [[thread_position_in_grid]])
-{
-    (void)id;
-}
-
-kernel void attn_mla_decompress_stub(
-    device const half* c   [[buffer(0)]],
-    device       half* kv  [[buffer(1)]],
-    uint id [[thread_position_in_grid]])
-{
-    (void)id;
-}
-
-kernel void attn_kv_append_stub(
-    device const half* k_new [[buffer(0)]],
-    device       half* k_buf [[buffer(1)]],
-    constant     uint& pos   [[buffer(2)]],
-    uint id [[thread_position_in_grid]])
-{
-    (void)id;
-}
 
 // Wedge 1 — Metal MLA decode kernel.
 //
@@ -202,223 +145,26 @@ kernel void mla_decode_kernel(
     }
 }
 
-// Phase A Wedge A2 — batched MLA decode kernel (M=1..8 tokens, M=4 default).
-//
-// Grid: (n_heads * TG_SIZE, M, 1) with (TG_SIZE, 1, 1) threads per group.
-// threadgroup_position_in_grid.x = head index (0..n_heads-1)
-// threadgroup_position_in_grid.y = token index m (0..M-1)
-//
-// q_batch layout: [M][n_heads][head_dim_q]  (token-major)
-// c_kv layout:   [total_seq][kv_lora_rank]  (all tokens: prefix + batch)
-// k_pe layout:   [total_seq][qk_rope_head_dim]
-// out_batch:     [M][n_heads][v_head_dim]   (token-major)
-//
-// Causal mask: token m attends to entries 0..max(base_seq_len + m, 1) - 1.
-// The M new tokens' KVs are pre-appended at slots base_seq_len..base_seq_len+M-1.
-kernel void mla_decode_kernel_batched(
-    device const float* q_batch     [[buffer(0)]],
-    device const float* c_kv        [[buffer(1)]],
-    device const float* k_pe        [[buffer(2)]],
-    device const float* kv_b_proj   [[buffer(3)]],
-    device       float* out_batch   [[buffer(4)]],
-    constant     uint&  n_heads             [[buffer(5)]],
-    constant     uint&  qk_nope_head_dim    [[buffer(6)]],
-    constant     uint&  qk_rope_head_dim    [[buffer(7)]],
-    constant     uint&  v_head_dim          [[buffer(8)]],
-    constant     uint&  kv_lora_rank        [[buffer(9)]],
-    constant     uint&  base_seq_len        [[buffer(10)]],
-    constant     float& scale               [[buffer(11)]],
-    threadgroup  float* q_nope_proj         [[threadgroup(0)]],
-    threadgroup  float* scores              [[threadgroup(1)]],
-    threadgroup  float* c_kv_wt             [[threadgroup(2)]],
-    uint2               gid     [[threadgroup_position_in_grid]],
-    uint2               tid_v   [[thread_position_in_threadgroup]],
-    uint2               tg_size_v [[threads_per_threadgroup]])
-{
-    const uint head = gid.x;
-    const uint m    = gid.y;  // token index in batch
+// REMOVED in v2.2.0-cleanup-9: mla_decode_kernel_batched and
+// mla_decode_kernel_batched_slots — replaced by the arena-TCB flow
+// (`mla_decode_and_o_proj_arena_tcb` + `mla_decode_kernel`). The
+// pre-arena batched wrappers had only test-suite callers.
 
-    if (head >= n_heads) return;
-
-    // Causal seq_len for token m: prefix + m tokens from this batch.
-    // max(base_seq_len + m, 1u) handles the first-token edge case.
-    const uint seq_len_m = (base_seq_len + m > 0u) ? (base_seq_len + m) : 1u;
-
-    const uint q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
-
-    // Q for token m, head h.
-    device const float* q_base = q_batch + (uint64_t)m * n_heads * q_head_dim;
-    device const float* q_nope = q_base + (uint64_t)head * q_head_dim;
-    device const float* q_rope = q_nope + qk_nope_head_dim;
-
-    // kv_b_proj layout per head: [w_uk rows (qk_nope_head_dim × kv_lora_rank),
-    //                              w_uv rows (v_head_dim × kv_lora_rank)]
-    const uint kv_b_per_head = (qk_nope_head_dim + v_head_dim) * kv_lora_rank;
-    device const float* w_uk = kv_b_proj + (uint64_t)head * kv_b_per_head;
-    device const float* w_uv = w_uk + (uint64_t)qk_nope_head_dim * kv_lora_rank;
-
-    // Phase 0: q_nope_proj[r] = Σ_i w_uk[i,r] × q_nope[i]
-    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
-        float acc = 0.0f;
-        for (uint i = 0; i < qk_nope_head_dim; i++) {
-            acc += w_uk[i * kv_lora_rank + r] * q_nope[i];
-        }
-        q_nope_proj[r] = acc;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // Phase 1: scores[t] = (q_nope_proj · c_kv[t] + q_rope · k_pe[t]) × scale
-    for (uint t = tid_v.x; t < seq_len_m; t += tg_size_v.x) {
-        device const float* c_kv_t = c_kv + (uint64_t)t * kv_lora_rank;
-        device const float* k_pe_t = k_pe + (uint64_t)t * qk_rope_head_dim;
-
-        float s = 0.0f;
-        for (uint r = 0; r < kv_lora_rank; r++)      s += q_nope_proj[r] * c_kv_t[r];
-        for (uint r = 0; r < qk_rope_head_dim; r++)  s += q_rope[r] * k_pe_t[r];
-        scores[t] = s * scale;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // Phase 2: softmax over attended entries (serial in thread 0).
-    if (tid_v.x == 0) {
-        float mx = -INFINITY;
-        for (uint t = 0; t < seq_len_m; t++) if (scores[t] > mx) mx = scores[t];
-        float sum = 0.0f;
-        for (uint t = 0; t < seq_len_m; t++) { scores[t] = exp(scores[t] - mx); sum += scores[t]; }
-        float inv = 1.0f / sum;
-        for (uint t = 0; t < seq_len_m; t++) scores[t] *= inv;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // Phase 3: c_kv_wt[r] = Σ_t scores[t] × c_kv[t, r]
-    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
-        float acc = 0.0f;
-        for (uint t = 0; t < seq_len_m; t++) acc += scores[t] * c_kv[(uint64_t)t * kv_lora_rank + r];
-        c_kv_wt[r] = acc;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    // Phase 4: out_batch[m, head, vi] = w_uv[vi, :] · c_kv_wt
-    device float* out_m = out_batch + ((uint64_t)m * n_heads + head) * v_head_dim;
-    for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) {
-        device const float* w_uv_row = w_uv + (uint64_t)vi * kv_lora_rank;
-        float acc = 0.0f;
-        for (uint r = 0; r < kv_lora_rank; r++) acc += w_uv_row[r] * c_kv_wt[r];
-        out_m[vi] = acc;
-    }
-}
-
-kernel void mla_decode_kernel_batched_slots(
-    device const float* q_batch     [[buffer(0)]],
-    device const float* c_kv        [[buffer(1)]],
-    device const float* k_pe        [[buffer(2)]],
-    device const float* kv_b_proj   [[buffer(3)]],
-    device       float* out_batch   [[buffer(4)]],
-    device const uint*  slot_offsets        [[buffer(5)]],
-    device const uint*  seq_lens            [[buffer(6)]],
-    constant     uint&  n_heads             [[buffer(7)]],
-    constant     uint&  qk_nope_head_dim    [[buffer(8)]],
-    constant     uint&  qk_rope_head_dim    [[buffer(9)]],
-    constant     uint&  v_head_dim          [[buffer(10)]],
-    constant     uint&  kv_lora_rank        [[buffer(11)]],
-    constant     float& scale               [[buffer(12)]],
-    threadgroup  float* q_nope_proj         [[threadgroup(0)]],
-    threadgroup  float* scores              [[threadgroup(1)]],
-    threadgroup  float* c_kv_wt             [[threadgroup(2)]],
-    uint2               gid     [[threadgroup_position_in_grid]],
-    uint2               tid_v   [[thread_position_in_threadgroup]],
-    uint2               tg_size_v [[threads_per_threadgroup]])
-{
-    const uint head = gid.x;
-    const uint m    = gid.y;
-
-    if (head >= n_heads) return;
-
-    const uint seq_len_m = seq_lens[m];
-    device float* out_m = out_batch + ((uint64_t)m * n_heads + head) * v_head_dim;
-    if (seq_len_m == 0u) {
-        for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) out_m[vi] = 0.0f;
-        return;
-    }
-
-    const uint slot_base = slot_offsets[m];
-    const uint q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
-
-    device const float* q_base = q_batch + (uint64_t)m * n_heads * q_head_dim;
-    device const float* q_nope = q_base + (uint64_t)head * q_head_dim;
-    device const float* q_rope = q_nope + qk_nope_head_dim;
-
-    const uint kv_b_per_head = (qk_nope_head_dim + v_head_dim) * kv_lora_rank;
-    device const float* w_uk = kv_b_proj + (uint64_t)head * kv_b_per_head;
-    device const float* w_uv = w_uk + (uint64_t)qk_nope_head_dim * kv_lora_rank;
-
-    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
-        float acc = 0.0f;
-        for (uint i = 0; i < qk_nope_head_dim; i++) {
-            acc += w_uk[i * kv_lora_rank + r] * q_nope[i];
-        }
-        q_nope_proj[r] = acc;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    for (uint t = tid_v.x; t < seq_len_m; t += tg_size_v.x) {
-        const uint kv_index = slot_base + t;
-        device const float* c_kv_t = c_kv + (uint64_t)kv_index * kv_lora_rank;
-        device const float* k_pe_t = k_pe + (uint64_t)kv_index * qk_rope_head_dim;
-
-        float s = 0.0f;
-        for (uint r = 0; r < kv_lora_rank; r++)      s += q_nope_proj[r] * c_kv_t[r];
-        for (uint r = 0; r < qk_rope_head_dim; r++)  s += q_rope[r] * k_pe_t[r];
-        scores[t] = s * scale;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    if (tid_v.x == 0) {
-        float mx = -INFINITY;
-        for (uint t = 0; t < seq_len_m; t++) if (scores[t] > mx) mx = scores[t];
-        float sum = 0.0f;
-        for (uint t = 0; t < seq_len_m; t++) { scores[t] = exp(scores[t] - mx); sum += scores[t]; }
-        float inv = 1.0f / sum;
-        for (uint t = 0; t < seq_len_m; t++) scores[t] *= inv;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    for (uint r = tid_v.x; r < kv_lora_rank; r += tg_size_v.x) {
-        float acc = 0.0f;
-        for (uint t = 0; t < seq_len_m; t++) {
-            acc += scores[t] * c_kv[(uint64_t)(slot_base + t) * kv_lora_rank + r];
-        }
-        c_kv_wt[r] = acc;
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-
-    for (uint vi = tid_v.x; vi < v_head_dim; vi += tg_size_v.x) {
-        device const float* w_uv_row = w_uv + (uint64_t)vi * kv_lora_rank;
-        float acc = 0.0f;
-        for (uint r = 0; r < kv_lora_rank; r++) acc += w_uv_row[r] * c_kv_wt[r];
-        out_m[vi] = acc;
-    }
-}
-
-// G1.3 — fp32 GEMV for attention's o_proj.
-// One workgroup per output row; threadgroup reduction; same shape as
-// gemv_f16 but with f32 weights (lazy-dequant scratch from the host).
 kernel void gemv_f32_attn(
     device const float* w     [[buffer(0)]],   // (rows, cols) row-major fp32
     device const float* x     [[buffer(1)]],   // (cols,)
     device       float* y     [[buffer(2)]],   // (rows,)
-    constant     uint&  rows  [[buffer(3)]],
-    constant     uint&  cols  [[buffer(4)]],
+    constant ArgbufRowsCols& args [[buffer(3)]],
     threadgroup  float* shmem [[threadgroup(0)]],
     uint                tid       [[thread_position_in_threadgroup]],
     uint                gid       [[threadgroup_position_in_grid]],
     uint                tg_size   [[threads_per_threadgroup]])
 {
-    if (gid >= rows) return;
-    device const float* row = w + (uint64_t)gid * (uint64_t)cols;
+    if (gid >= args.rows) return;
+    device const float* row = w + (uint64_t)gid * (uint64_t)args.cols;
 
     float partial = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
+    for (uint c = tid; c < args.cols; c += tg_size) {
         partial += row[c] * x[c];
     }
     shmem[tid] = partial;
@@ -574,6 +320,87 @@ kernel void rmsnorm_gemv_f16w_attn_pinned(
     if (tid == 0) out[gid] = shmem[0];
 }
 
+// v2.2.0-T2.14 — v2t-pattern port of rmsnorm_gemv_f16w_attn_pinned.
+//
+// Mirrors the MoE v2t structure: 8 rows per threadgroup (one row per
+// simdgroup, 8 simdgroups per TG), 32 lanes per simdgroup splitting
+// the cols dot product, and a threadgroup `xw_cache` that holds the
+// rmsnorm-scaled activation precomputed once per TG and shared across
+// the 8 rows.
+//
+// Why this is faster than the 1-row-per-TG variant under the
+// production single-CB pipeline (ProdCbGpu trace puts this kernel at
+// ~13% of decode GPU time post-T2.13):
+//   - variance reduction runs once per 8 rows (8× less redundant x
+//     reads vs the basic kernel where every TG computes variance)
+//   - rmsnorm scaling (x * inv_rms * weight) is materialised once per
+//     TG into xw_cache; the basic kernel recomputes it per row
+//   - 8× fewer threadgroups dispatched → lower dispatch overhead
+//
+// Bindings: identical scalar/buffer set to the basic kernel; adds a
+// second threadgroup buffer for xw_cache (cols × f32).
+//   0  w        (rows × cols) f16
+//   1  x        (cols,)        f32
+//   2  weight   (cols,)        f32
+//   3  eps      constant float
+//   4  out      (rows,)        f32
+//   5  rows     constant uint
+//   6  cols     constant uint
+//   threadgroup(0): shmem (16 floats — 8 simd partials + inv_rms slot)
+//   threadgroup(1): xw_cache (cols floats)
+//
+// Constraints: rows % 8 == 0, cols % 32 == 0, TG = 256.
+// Grid: (rows / 8, 1, 1) TGs of (256, 1, 1) threads.
+kernel void rmsnorm_gemv_f16w_attn_pinned_v2t(
+    device const half*  w        [[buffer(0)]],
+    device const float* x        [[buffer(1)]],
+    device const float* weight   [[buffer(2)]],
+    constant     float& eps      [[buffer(3)]],
+    device       float* out      [[buffer(4)]],
+    constant     uint&  rows     [[buffer(5)]],
+    constant     uint&  cols     [[buffer(6)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    threadgroup  float* xw_cache [[threadgroup(1)]],
+    uint                tid       [[thread_position_in_threadgroup]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // ── Phase 1: cooperative variance reduction over x ──
+    float partial_sq = 0.0f;
+    for (uint c = tid; c < cols; c += 256u) {
+        float v = x[c];
+        partial_sq += v * v;
+    }
+    partial_sq = simd_sum(partial_sq);
+    if (simd_lane == 0u) shmem[simd_id] = partial_sq;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float t = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) t += shmem[i];
+        shmem[8] = rsqrt(t / float(cols) + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float inv_rms = shmem[8];
+
+    // ── Phase 2: precompute xw_cache[c] = x[c] * inv_rms * weight[c] ──
+    for (uint c = tid; c < cols; c += 256u) {
+        xw_cache[c] = x[c] * inv_rms * weight[c];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // ── Phase 3: per-row GEMV; one simdgroup per row ──
+    uint row = gid * 8u + simd_id;
+    if (row >= rows) return;
+    device const half* row_w = w + (uint64_t)row * (uint64_t)cols;
+    float partial_dot = 0.0f;
+    for (uint c = simd_lane; c < cols; c += 32u) {
+        partial_dot += (float)row_w[c] * xw_cache[c];
+    }
+    partial_dot = simd_sum(partial_dot);
+    if (simd_lane == 0u) out[row] = partial_dot;
+}
+
 // Append one KV entry to the persistent GPU KV cache.
 // Used by the merged Phase-1+Wedge-N TCB to avoid a CPU round-trip for kv_append.
 // Writes c_kv_normed (kv_lora_rank f32) and k_pe (qk_rope_head_dim f32) at seq_slot.
@@ -589,18 +416,16 @@ kernel void kv_append_f32(
     device const float* src_kv_a_out     [[buffer(1)]],
     device       float* dst_c_kv         [[buffer(2)]],
     device       float* dst_k_pe         [[buffer(3)]],
-    constant     uint&  seq_slot         [[buffer(4)]],
-    constant     uint&  kv_lora_rank     [[buffer(5)]],
-    constant     uint&  qk_rope_head_dim [[buffer(6)]],
+    constant ArgbufKvAppend& args        [[buffer(4)]],
     uint tid [[thread_position_in_grid]])
 {
-    uint64_t c_base  = (uint64_t)seq_slot * (uint64_t)kv_lora_rank;
-    uint64_t pe_base = (uint64_t)seq_slot * (uint64_t)qk_rope_head_dim;
-    if (tid < kv_lora_rank) {
+    uint64_t c_base  = (uint64_t)args.seq_slot * (uint64_t)args.kv_lora_rank;
+    uint64_t pe_base = (uint64_t)args.seq_slot * (uint64_t)args.qk_rope_head_dim;
+    if (tid < args.kv_lora_rank) {
         dst_c_kv[c_base + tid] = src_c_kv_normed[tid];
     }
-    if (tid < qk_rope_head_dim) {
-        dst_k_pe[pe_base + tid] = src_kv_a_out[(uint64_t)kv_lora_rank + tid];
+    if (tid < args.qk_rope_head_dim) {
+        dst_k_pe[pe_base + tid] = src_kv_a_out[(uint64_t)args.kv_lora_rank + tid];
     }
 }
 
@@ -707,167 +532,6 @@ kernel void rmsnorm_gemv_q4k_pair(
     }
     if (tid == 0u) out_ptr[row_idx] = shmem[0];
 }
-
-// v0.8.1 — f16-input bridge: rmsnorm + f32-weight GEMV (attention path).
-//
-// Mirrors rmsnorm_gemv_f32_attn_pinned exactly; only the input dtype
-// changes from float to half. Variance accumulation stays f32.
-//
-// Binding scheme (matches rmsnorm_gemv_f32_attn_pinned):
-//   0  w       (rows × cols) f32   pinned weight matrix
-//   1  x       (cols,)       f16   residual stream (bridge input)
-//   2  weight  (cols,)       f32   rmsnorm learnable scale
-//   3  eps     constant float
-//   4  out     (rows,)       f32   output
-//   5  rows    constant uint
-//   6  cols    constant uint
-//   threadgroup(0): shmem (TG_SIZE × f32)
-//
-// Grid: (rows, 1, 1) threadgroups; TG_SIZE 256.
-kernel void rmsnorm_gemv_f16_attn_pinned(
-    device const float* w       [[buffer(0)]],
-    device const half*  x       [[buffer(1)]],
-    device const float* weight  [[buffer(2)]],
-    constant     float& eps     [[buffer(3)]],
-    device       float* out     [[buffer(4)]],
-    constant     uint&  rows    [[buffer(5)]],
-    constant     uint&  cols    [[buffer(6)]],
-    threadgroup  float* shmem   [[threadgroup(0)]],
-    uint                tid     [[thread_position_in_threadgroup]],
-    uint                gid     [[threadgroup_position_in_grid]],
-    uint                tg_size [[threads_per_threadgroup]])
-{
-    if (gid >= rows) return;
-
-    // Phase 1: variance reduction over x (f16 → f32 accumulation).
-    float partial_sq = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
-        float v = (float)x[c];
-        partial_sq += v * v;
-    }
-    shmem[tid] = partial_sq;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    float inv_rms = rsqrt(shmem[0] / float(cols) + eps);
-
-    // Phase 2: GEMV with rmsnorm-scaled x.
-    device const float* row = w + (uint64_t)gid * (uint64_t)cols;
-    float partial_dot = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
-        partial_dot += row[c] * ((float)x[c] * inv_rms * weight[c]);
-    }
-    shmem[tid] = partial_dot;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    if (tid == 0) out[gid] = shmem[0];
-}
-
-// v0.8.2 — f16-input bridge: rmsnorm + Q4_K_M GEMV pair (gate+up).
-//
-// Mirrors rmsnorm_gemv_q4k_pair exactly; only x dtype changes to half.
-//
-// Binding scheme (matches rmsnorm_gemv_q4k_pair):
-//   0  weight   (cols,) f16   rmsnorm learnable scale
-//   1  eps      constant float
-//   2  w_gate   Q4_K_M bytes
-//   3  w_up     Q4_K_M bytes
-//   4  gate_out (rows,) f32
-//   5  up_out   (rows,) f32
-//   6  x        (cols,) f16   residual stream (bridge input)
-//   7  rows     constant uint
-//   8  cols     constant uint
-//   threadgroup(0): shmem (TG_SIZE × f32)
-//
-// Grid: (2 × rows, 1, 1); TG_SIZE 256. cols % 256 == 0 required.
-kernel void rmsnorm_gemv_q4k_pair_f16(
-    device const half*  weight   [[buffer(0)]],
-    constant     float& eps      [[buffer(1)]],
-    device const uchar* w_gate   [[buffer(2)]],
-    device const uchar* w_up     [[buffer(3)]],
-    device       float* gate_out [[buffer(4)]],
-    device       float* up_out   [[buffer(5)]],
-    device const half*  x        [[buffer(6)]],
-    constant     uint&  rows     [[buffer(7)]],
-    constant     uint&  cols     [[buffer(8)]],
-    threadgroup  float* shmem    [[threadgroup(0)]],
-    uint                tid      [[thread_position_in_threadgroup]],
-    uint                gid      [[threadgroup_position_in_grid]],
-    uint                tg_size  [[threads_per_threadgroup]])
-{
-    bool is_up = gid >= rows;
-    uint row_idx = is_up ? (gid - rows) : gid;
-    if (row_idx >= rows) return;
-
-    device const uchar* w_q4 = is_up ? w_up : w_gate;
-    device float*       out_ptr = is_up ? up_out : gate_out;
-
-    // Phase 1: variance reduction over x (f16 → f32).
-    float partial_sq = 0.0f;
-    for (uint c = tid; c < cols; c += tg_size) {
-        float v = (float)x[c];
-        partial_sq += v * v;
-    }
-    shmem[tid] = partial_sq;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    float inv_rms = rsqrt(shmem[0] / float(cols) + eps);
-
-    // Phase 2: Q4_K_M GEMV with normalized x.
-    uint blocks_per_row = cols / 256u;
-    uint64_t row_byte_off = (uint64_t)row_idx * (uint64_t)blocks_per_row * 144ul;
-
-    float partial = 0.0f;
-    for (uint b = 0; b < blocks_per_row; ++b) {
-        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
-
-        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
-        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
-        float d    = (float)as_type<half>(d_bits);
-        float dmin = (float)as_type<half>(dmin_bits);
-
-        uint sub = tid >> 5;
-        uchar s_byte, m_byte;
-        if (sub < 4u) {
-            s_byte = w_q4[bo + 4u + sub]      & 0x3F;
-            m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
-        } else {
-            uint j = sub - 4u;
-            s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
-                   | ((w_q4[bo + 4u + j]      >> 6) << 4);
-            m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
-                   | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
-        }
-
-        uint pair = sub >> 1;
-        bool upper = (sub & 1u) != 0u;
-        uint i = tid & 31u;
-        uchar q = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
-        uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
-        float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
-
-        uint global_col = b * 256u + tid;
-        float xv = (float)x[global_col] * inv_rms * (float)weight[global_col];
-        partial += w_val * xv;
-    }
-
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    if (tid == 0u) out_ptr[row_idx] = shmem[0];
-}
-
 
 // ── flash_attn_decode_kernel ──────────────────────────────────────────────────
 // Wedge L — Flash attention decode for DeepSeek MLA compressed KV cache.
@@ -1015,3 +679,9 @@ kernel void flash_attn_decode_kernel(
         out[head * v_head_dim + vi] = dot;
     }
 }
+
+// REMOVED in v2.2.0-cleanup-8: Phase 5C.1 f16 KV cache variants
+// (kv_append_f16, mla_decode_kernel_f16, mla_decode_kernel_batched_slots_f16).
+// The f16-KV path was prototyped but never wired in; the dispatchers were
+// dead and the KernelVariant::kv_cache_dtype field that would have selected
+// this path is also unused (target #11).

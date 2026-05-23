@@ -22,6 +22,42 @@
 #include <metal_stdlib>
 using namespace metal;
 
+// ── Phase 3 argbuf structs ────────────────────────────────────────────────────
+// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the
+// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index
+// that previously held the first `set_bytes` arg.
+
+/// (rows: u32, cols: u32) — used by GEMV kernels with weight+activation buffers.
+struct ArgbufRowsCols { uint rows; uint cols; };
+
+/// (hidden: u32, eps: f32) — used by rmsnorm_f32 TCB path.
+struct ArgbufRmsnorm { uint hidden; float eps; };
+
+/// (n_experts: u32, top_k: u32) — used by moe_topk_gate.
+struct ArgbufTopkGate { uint n_experts; uint top_k; };
+
+/// (n: u32) — used by silu_mul / moe_batched_silu_mul.
+struct ArgbufN { uint n; };
+
+/// (seq_slot: u32, kv_lora_rank: u32, qk_rope_head_dim: u32) — used by kv_append_f32.
+struct ArgbufKvAppend { uint seq_slot; uint kv_lora_rank; uint qk_rope_head_dim; };
+
+/// (hidden: u32, routes: u32, has_shared: u32) — used by moe_route_accumulate.
+struct ArgbufRouteAcc { uint hidden; uint routes; uint has_shared; };
+
+/// (n_heads: u32, q_head_dim: u32, qk_nope_dim: u32, qk_rope_dim: u32, pos: u32, base: float)
+/// — used by rope_q_f32_inplace.
+struct ArgbufRopeQ {
+    uint n_heads;
+    uint q_head_dim;
+    uint qk_nope_dim;
+    uint qk_rope_dim;
+    uint pos;
+    float base;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // One workgroup normalizes one (hidden,) row.
 kernel void rmsnorm(
     device const half*  x        [[buffer(0)]],
@@ -58,14 +94,13 @@ kernel void rmsnorm_f32(
     device const float* x       [[buffer(0)]],
     device const float* weight  [[buffer(1)]],
     device       float* out     [[buffer(2)]],
-    constant     uint&  hidden  [[buffer(3)]],
-    constant     float& eps     [[buffer(4)]],
+    constant ArgbufRmsnorm& args [[buffer(3)]],
     threadgroup  float* shmem   [[threadgroup(0)]],
     uint                tid     [[thread_position_in_threadgroup]],
     uint                tg_size [[threads_per_threadgroup]])
 {
     float partial = 0.0f;
-    for (uint i = tid; i < hidden; i += tg_size) {
+    for (uint i = tid; i < args.hidden; i += tg_size) {
         float v = x[i];
         partial += v * v;
     }
@@ -75,10 +110,66 @@ kernel void rmsnorm_f32(
         if (tid < stride) shmem[tid] += shmem[tid + stride];
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
-    float rms = sqrt(shmem[0] / (float)hidden + eps);
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
     float inv = 1.0f / rms;
-    for (uint i = tid; i < hidden; i += tg_size) {
+    for (uint i = tid; i < args.hidden; i += tg_size) {
         out[i] = x[i] * inv * weight[i];
+    }
+}
+
+// Session F (sketch) — fused add_inplace + rmsnorm_f32.
+//
+// Replaces two back-to-back dispatches:
+//   add_inplace(x, attn_out, n)          // x[i] += attn_out[i]
+//   rmsnorm_f32(x, weight, eps -> x_norm)
+//
+// Combined into a single TG that:
+//   1. Loads attn_out[i], adds to x[i], stores x[i] back, accumulates v*v.
+//   2. Reduces partial → inv_rms.
+//   3. Re-reads x[i] (already in cache), writes x_norm[i] = x[i] * inv * weight[i].
+//
+// Eliminates one full pass over x (DRAM) and one dispatch's launch overhead.
+// Single TG of 256 threads strides over `hidden` (≤ 2048 on V2-Lite, so one TG
+// is sufficient — same shape contract as `rmsnorm_f32`).
+//
+// Bindings:
+//   0  x         (hidden,) f32   IN/OUT — residual stream, gets += attn_out
+//   1  attn_out  (hidden,) f32   read-only
+//   2  weight    (hidden,) f32   rmsnorm learnable scale
+//   3  x_norm    (hidden,) f32   OUT — normalized x
+//   4  args      ArgbufRmsnorm   { hidden, eps }
+//   threadgroup(0): shmem (tg_size × f32) — variance reduction
+//
+// Grid: (TG_SIZE, 1, 1) — single TG per dispatch. Cf. rmsnorm_f32 caller.
+kernel void add_rmsnorm_fused(
+    device       float* x        [[buffer(0)]],
+    device const float* attn_out [[buffer(1)]],
+    device const float* weight   [[buffer(2)]],
+    device       float* x_norm   [[buffer(3)]],
+    constant ArgbufRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    // Phase 1: add residual + accumulate variance in one pass.
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i] + attn_out[i];
+        x[i] = v;
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: normalize and write x_norm. x[i] is hot in cache after phase 1.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
     }
 }
 
@@ -93,6 +184,26 @@ kernel void silu_mul(
     float g = (float)gate[id];
     float s = g / (1.0f + exp(-g));
     out[id] = half(s * (float)up[id]);
+}
+
+// P1f: generic GPU memcpy of `n` f32 elements from src+src_off to dst+dst_off.
+// Offsets are in element units (not bytes). Used by GQA KV-cache append:
+// copy k_token / v_token into the per-layer K/V cache slice at the
+// current `seq_slot * kv_dim` offset.
+struct ArgbufMemcpyF32 {
+    uint n;
+    uint src_off;
+    uint dst_off;
+};
+
+kernel void memcpy_f32_off(
+    device const float*           src  [[buffer(0)]],
+    device       float*           dst  [[buffer(1)]],
+    constant ArgbufMemcpyF32&     args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst[args.dst_off + id] = src[args.src_off + id];
 }
 
 kernel void rope_inplace(
@@ -115,23 +226,18 @@ kernel void rope_inplace(
 
 kernel void rope_q_f32_inplace(
     device       float* q              [[buffer(0)]],
-    constant     uint&  n_heads        [[buffer(1)]],
-    constant     uint&  q_head_dim     [[buffer(2)]],
-    constant     uint&  qk_nope_dim    [[buffer(3)]],
-    constant     uint&  qk_rope_dim    [[buffer(4)]],
-    constant     uint&  pos            [[buffer(5)]],
-    constant     float& base           [[buffer(6)]],
+    constant ArgbufRopeQ& args         [[buffer(1)]],
     uint id                            [[thread_position_in_grid]])
 {
-    uint pairs_per_head = qk_rope_dim / 2u;
-    uint total_pairs = n_heads * pairs_per_head;
+    uint pairs_per_head = args.qk_rope_dim / 2u;
+    uint total_pairs = args.n_heads * pairs_per_head;
     if (id >= total_pairs) return;
 
     uint head = id / pairs_per_head;
     uint pair = id - head * pairs_per_head;
-    uint off = head * q_head_dim + qk_nope_dim + 2u * pair;
+    uint off = head * args.q_head_dim + args.qk_nope_dim + 2u * pair;
 
-    float theta = (float)pos / pow(base, 2.0f * float(pair) / float(qk_rope_dim));
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.qk_rope_dim));
     float c = cos(theta);
     float s = sin(theta);
     float x0 = q[off];
@@ -159,17 +265,6 @@ kernel void rope_slice_f32_inplace(
     float x1 = x[off + 1u];
     x[off]      = x0 * c - x1 * s;
     x[off + 1u] = x0 * s + x1 * c;
-}
-
-kernel void embed_lookup(
-    device const half* embed  [[buffer(0)]],
-    device       half* out    [[buffer(1)]],
-    constant     uint& hidden [[buffer(2)]],
-    constant     uint& token  [[buffer(3)]],
-    uint id                    [[thread_position_in_grid]])
-{
-    if (id >= hidden) return;
-    out[id] = embed[token * hidden + id];
 }
 
 // v1.0.0-D — embed lookup writing f32 residual stream.
@@ -289,63 +384,6 @@ kernel void silu_mul_f16(
     out[gid] = (half)(silu_g * u);
 }
 
-// v1.0.0-F — f16 residual stream: rmsnorm reading f16, writing f32 norm.
-// Variance reduction in f32 (non-negotiable for numeric stability).
-// Same binding layout as rmsnorm_f16 but buffer(4) is float* not half*.
-// Grid: (TG_SIZE, 1, 1), threadgroup: (TG_SIZE, 1, 1).
-kernel void rmsnorm_f16_to_f32(
-    device const half*  x       [[buffer(0)]],
-    device const float* weight  [[buffer(1)]],
-    constant     float& eps     [[buffer(2)]],
-    constant     uint&  hidden  [[buffer(3)]],
-    device       float* out     [[buffer(4)]],
-    threadgroup  float* shmem   [[threadgroup(0)]],
-    uint                tid     [[thread_position_in_threadgroup]],
-    uint                tg_size [[threads_per_threadgroup]])
-{
-    float partial = 0.0f;
-    for (uint i = tid; i < hidden; i += tg_size) {
-        float v = (float)x[i];
-        partial += v * v;
-    }
-    shmem[tid] = partial;
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
-        if (tid < stride) shmem[tid] += shmem[tid + stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    float mean = shmem[0] / (float)hidden;
-    float scale = rsqrt(mean + eps);
-    for (uint i = tid; i < hidden; i += tg_size) {
-        out[i] = (float)x[i] * scale * weight[i];
-    }
-}
-
-// v1.0.0-F — trivial f32→f16 cast: out[i] = (half)src[i].
-// Used to convert f32 attention/FFN outputs to f16 residual deltas.
-// Grid: (n, 1, 1), threadgroup (TG_SIZE, 1, 1).
-kernel void cast_f32_to_f16(
-    device const float* src [[buffer(0)]],
-    device       half*  dst [[buffer(1)]],
-    constant     uint&  n   [[buffer(2)]],
-    uint                gid [[thread_position_in_grid]])
-{
-    if (gid >= n) return;
-    dst[gid] = (half)src[gid];
-}
-
-// v0.5.9-C — fp16 residual add: a[i] += b[i], both f16.
-kernel void add_inplace_f16(
-    device       half*  a   [[buffer(0)]],
-    device const half*  b   [[buffer(1)]],
-    constant     uint&  n   [[buffer(2)]],
-    uint                gid [[thread_position_in_grid]])
-{
-    if (gid >= n) return;
-    a[gid] = (half)((float)a[gid] + (float)b[gid]);
-}
-
 // v0.5.9-E — standalone f16 softmax.
 // Single-threadgroup kernel: reads n f16 logits, writes n f16 probabilities.
 // Max and exp-sum computed in f32. Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
@@ -436,4 +474,73 @@ kernel void layer_norm_f16(
         float v = ((float)x[i] - mean) * inv_std;
         out[i] = (half)(v * (float)weight[i] + (float)bias[i]);
     }
+}
+
+// Phase 5C.2 — f32 residual → f16 normed activation.
+// Keeps the canonical residual stream as f32 between layers. Only the
+// per-layer normed activation buffer is f16, halving downstream GEMV
+// activation read bandwidth (e.g. LM head reads hidden×2 bytes vs hidden×4).
+//
+// Variance accumulator stays f32 (non-negotiable for stability).
+// Binding layout matches rmsnorm_f32 so the Rust dispatcher can share the
+// ArgbufRmsnorm struct. Buffer(3) is half* out instead of float* out.
+// Grid: (TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void rmsnorm_f32_to_f16(
+    device const float* x       [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    constant ArgbufRmsnorm& args [[buffer(2)]],
+    device       half*  out     [[buffer(3)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint                tid     [[thread_position_in_threadgroup]],
+    uint                tg_size [[threads_per_threadgroup]])
+{
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        out[i] = (half)(x[i] * inv * weight[i]);
+    }
+}
+
+// Phase 5C.2 — f16-weight × f16-activation GEMV → f32 output.
+// Used when x_norm_dtype="f16": LM head reads f16 activation (x_norm_f16_buf)
+// instead of f32, halving the activation read bandwidth for the vocab GEMV.
+// Weight is still f16 (same as gemv_f16). Output is f32 (logits need f32 range).
+// MAC accumulates in f32. Binding layout identical to gemv_f16 except
+// buffer(1) is half* instead of float*.
+// Grid: (rows * TG_SIZE, 1, 1), TG: (TG_SIZE, 1, 1).
+kernel void gemv_f16_f16in(
+    device const half*  w      [[buffer(0)]],   // (rows, cols) row-major f16
+    device const half*  x      [[buffer(1)]],   // (cols,) f16 activation
+    device       float* y      [[buffer(2)]],   // (rows,) f32 output
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    threadgroup  float* shmem  [[threadgroup(0)]],
+    uint                tid        [[thread_position_in_threadgroup]],
+    uint                gid        [[threadgroup_position_in_grid]],
+    uint                tg_size    [[threads_per_threadgroup]])
+{
+    if (gid >= rows) return;
+    device const half* row = w + (uint64_t)gid * (uint64_t)cols;
+    float partial = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial += (float)row[c] * (float)x[c];
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) y[gid] = shmem[0];
 }

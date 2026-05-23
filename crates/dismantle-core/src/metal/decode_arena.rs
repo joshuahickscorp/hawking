@@ -68,9 +68,6 @@ mod arena_imp {
         pub dense_up_out_buf: PinnedBuffer,
         /// Dense FFN activation scratch — ffn_intermediate.
         pub dense_act_buf: PinnedBuffer,
-        /// Phase 7 bridge: f16 residual stream — hidden × f16. Written before
-        /// each rmsnorm step so f16 bridge kernels can read pre-norm activations.
-        pub x_f16_buf: PinnedBuffer,
         /// v1.0.0-C: q-LoRA intermediate — q_lora_rank × f32.
         /// Output of q_a_proj GEMV; input to q_a_norm.
         pub q_lora_buf: PinnedBuffer,
@@ -83,21 +80,28 @@ mod arena_imp {
         /// v1.0.0-C: normed kv-A latent — kv_lora_rank × f32.
         /// Output of kv_a_norm rmsnorm; read by CPU for mla_kv_append.
         pub c_kv_normed_buf: PinnedBuffer,
-        /// v1.0.0-F: f16 residual stream for `residual_dtype=F16` path.
-        /// hidden × f16. Replaces x_buf (f32) as the running residual accumulator.
-        pub wedge_f_x_f16: PinnedBuffer,
-        /// v1.0.0-F: scratch delta buffer — hidden × f16. Reused each layer for
-        /// both the attention output delta and the FFN output delta before
-        /// add_inplace_f16 accumulates them into wedge_f_x_f16.
-        pub wedge_f_delta_f16: PinnedBuffer,
         /// v1.2.0-9: Route ID history for expert access stats.
         /// Layout: `route_history_buf[layer * top_k_routed + i]` = i-th routed expert id
         /// for the given layer in the most recent token.  Written per-token by a
         /// blit copy inside the TokenCommandBuffer; read by the CPU after commit.
         /// Size: n_moe_layers × top_k_routed × sizeof(u32).
         pub route_history_buf: PinnedBuffer,
+        /// Phase 5A: per-slot final-norm output buffers used by `forward_tokens_batched_tcb`.
+        /// After each token's final rmsnorm, x_norm_buf is blitted into slot[ki] so all
+        /// K final norms survive until the single global TCB commits and LM heads are run.
+        /// Size: max_batch_size × hidden × sizeof(f32).
+        pub batch_x_norm_buf: Vec<PinnedBuffer>,
+        /// Phase 5C.2: f16 normed activation buffer — hidden × f16.
+        /// Written by rmsnorm_f32_to_f16 when x_norm_dtype="f16" is set in the kernel
+        /// profile. Used as the activation input to the LM head GEMV (gemv_f16_f16in),
+        /// halving the hidden-size read bandwidth for the final vocab projection.
+        /// The residual stream (x_buf) remains f32; this buffer does NOT cross layer
+        /// boundaries. When x_norm_dtype="f32" (default) this buffer is allocated but
+        /// never written; the code path routes through x_norm_buf instead.
+        pub x_norm_f16_buf: PinnedBuffer,
 
         /// Cached sizes for bounds-checking at dispatch time.
+        pub max_batch_size: usize,
         pub n_heads: usize,
         pub q_head_dim: usize,
         pub v_head_dim: usize,
@@ -131,6 +135,7 @@ mod arena_imp {
             ffn_intermediate: usize,
             q_lora_rank: usize,
             n_moe_layers: usize,
+            max_batch_size: usize,
         ) -> Self {
             let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
             let kv_a_dim = kv_lora_rank + qk_rope_head_dim;
@@ -165,9 +170,6 @@ mod arena_imp {
                 dense_gate_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
                 dense_up_out_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
                 dense_act_buf: ctx.new_buffer(ffn_intermediate * std::mem::size_of::<f32>()),
-                x_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
-                wedge_f_x_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
-                wedge_f_delta_f16: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
                 q_lora_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
                 kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
                 q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
@@ -175,6 +177,11 @@ mod arena_imp {
                 route_history_buf: ctx.new_buffer(
                     n_moe_layers.max(1) * top_k_sz * std::mem::size_of::<u32>()
                 ),
+                batch_x_norm_buf: (0..max_batch_size.max(1))
+                    .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
+                    .collect(),
+                x_norm_f16_buf: ctx.new_buffer(hidden * std::mem::size_of::<half::f16>()),
+                max_batch_size: max_batch_size.max(1),
                 n_heads,
                 q_head_dim,
                 v_head_dim,
@@ -228,16 +235,6 @@ mod arena_imp {
             let ptr = self.x_buf.contents() as *const f32;
             let src = unsafe { std::slice::from_raw_parts(ptr, self.hidden) };
             dst.copy_from_slice(src);
-        }
-
-        /// Convert f32 residual to f16 and write into x_f16_buf.
-        /// Called before each rmsnorm step so f16 bridge kernels can read
-        /// the pre-norm residual as half-precision.
-        pub fn write_x_f16(&self, x: &[f32]) {
-            let ptr = self.x_f16_buf.contents() as *mut half::f16;
-            for (i, &v) in x.iter().enumerate() {
-                unsafe { ptr.add(i).write(half::f16::from_f32(v)) };
-            }
         }
 
         /// Write into x_norm_buf (rmsnorm output scratch).

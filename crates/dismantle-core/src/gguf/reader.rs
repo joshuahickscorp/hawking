@@ -170,6 +170,12 @@ impl MetaValue {
             _ => None,
         }
     }
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Self::Bool(v) => Some(*v),
+            _ => None,
+        }
+    }
     pub fn as_str(&self) -> Option<&str> {
         match self {
             Self::String(s) => Some(s.as_str()),
@@ -185,6 +191,12 @@ impl MetaValue {
     pub fn as_u32_array(&self) -> Option<Vec<u32>> {
         match self {
             Self::Array(a) => a.iter().map(|v| v.as_u32()).collect(),
+            _ => None,
+        }
+    }
+    pub fn as_f32_array(&self) -> Option<Vec<f32>> {
+        match self {
+            Self::Array(a) => a.iter().map(|v| v.as_f32()).collect(),
             _ => None,
         }
     }

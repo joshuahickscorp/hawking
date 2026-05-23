@@ -17,9 +17,24 @@ PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
 BIN="./target/release/dismantle"
 
+CLAUDE_RUNNING=0
 if pgrep -f "Claude.app" > /dev/null 2>&1; then
+    CLAUDE_RUNNING=1
     echo "⚠️  Claude desktop app is running — dec_tps will be contaminated." >&2
     echo "   Use tools/bench/clean_bench.sh for shippable numbers." >&2
+fi
+
+# `--strict` (or STRICT=1 env) blocks contaminated runs entirely. Use when
+# you intend to gate a wedge on absolute dec_tps — past sessions wasted
+# hours treating contaminated numbers as truth (see bench_contamination.md
+# and feedback_bench_with_claude_open.md). Paired-delta runs don't need
+# this; absolute-tps gates do.
+STRICT_FLAG="${STRICT:-}"
+if [[ "${1:-}" == "--strict" ]]; then STRICT_FLAG=1; shift || true; fi
+if [[ -n "$STRICT_FLAG" ]] && [[ "$CLAUDE_RUNNING" == "1" ]]; then
+    echo "❌ STRICT mode: refusing to bench with Claude running." >&2
+    echo "   Cmd+Q the Claude desktop app and any CLI sessions, then re-run." >&2
+    exit 64
 fi
 
 echo "=== quick_bench: 3 trials × ${TOKENS} tokens ==="

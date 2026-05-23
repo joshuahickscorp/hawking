@@ -1,13 +1,3 @@
-//! MoE block: gate, dispatch, grouped GEMM, gather.
-//!
-//! The moat. Phase 1 ships per-expert grouped GEMM with fused Q4
-//! dequant (wedge 2). Phase 2 collapses the entire block into a
-//! single Metal grid via a work queue (wedge 1).
-//!
-//! This file provides a CPU reference path used by Phase 0; it
-//! produces the correct numerical output that Phase 1+ kernels are
-//! validated against.
-
 pub mod dispatch;
 
 use crate::kernels::{gemv_f32, silu_mul, softmax_inplace};
@@ -77,10 +67,9 @@ pub struct ExpertWeights<'a> {
     pub down_w: &'a [f32],
 }
 
-/// MoE block forward — single token, top-K routing, weighted sum.
+/// MoE block forward -- single token, top-K routing, weighted sum.
 ///
 /// `experts[i]` corresponds to expert id `i`. Only the experts in
-/// `routes` are actually evaluated; the rest contribute zero. `routes`
 /// comes from `topk_gate`.
 pub fn moe_forward_token(
     x: &[f32],
