@@ -182,6 +182,16 @@ pub struct QwenDense {
     /// against per-token bandwidth. Activated via DISMANTLE_QWEN_Q4K_LMHEAD=1.
     /// f16 lm_head_buf stays live as the parity fallback.
     pub lm_head_q4k_buf: Option<crate::metal::PinnedBuffer>,
+
+    /// P2 (2026-05-23): pruned LM-head buffer (f16, first N rows of the
+    /// embed table). Activated via DISMANTLE_QWEN_VOCAB_PRUNE=N (or =1
+    /// for default N=32000). Because the first N IDs of Qwen's BPE
+    /// vocab are the most frequent tokens by construction, argmax over
+    /// the pruned set returns the same ID space (0..N) without any
+    /// remap. The unpruned `embed_buf` stays live for embed_lookup_f32,
+    /// so this is "tied-embed friendly".
+    pub lm_head_pruned_buf: Option<crate::metal::PinnedBuffer>,
+    pub vocab_pruned: Option<usize>,
 }
 
 impl QwenDense {
@@ -309,8 +319,15 @@ impl Engine for QwenDense {
         // `weights_mmap_buf`; `gemv_q4_k_m_v2_pinned_tcb` reads a window
         // directly. Skipped off-macOS.
         #[cfg(target_os = "macos")]
-        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf, lm_head_q4k_buf) =
-            if let Some(ctx) = metal_ctx.as_ref() {
+        let (
+            weights_mmap_buf,
+            embed_buf,
+            final_norm_buf,
+            lm_head_buf,
+            lm_head_q4k_buf,
+            lm_head_pruned_buf,
+            vocab_pruned,
+        ) = if let Some(ctx) = metal_ctx.as_ref() {
                 let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
                 // `embed_lookup_f32` is misnamed: the kernel signature
                 // reads the embed table as `device const half*`. Pin the
@@ -393,18 +410,55 @@ impl Engine for QwenDense {
                         }
                     }
                 }
-                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k)
+                // Optional vocab prune (first-N heuristic; BPE puts common
+                // tokens at low IDs so a 32K cutoff covers ~99% of natural
+                // English without a calibration corpus). LM-head GEMV
+                // reads pruned_vocab × hidden instead of full vocab × hidden.
+                let (pruned_buf, pruned_n) = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
+                    Ok(v) if v != "0" && !v.is_empty() => {
+                        let n_req = v.parse::<usize>().unwrap_or(32000);
+                        let n = n_req.min(cfg.vocab_size);
+                        if n > 0 && n < cfg.vocab_size {
+                            let h = cfg.hidden;
+                            let src: &[f16] = match lm_head.as_ref() {
+                                Some(w) => w,
+                                None => &embed,
+                            };
+                            let slice = &src[..n * h];
+                            (
+                                Some(ctx.new_buffer_with_bytes(
+                                    bytemuck::cast_slice::<f16, u8>(slice),
+                                )),
+                                Some(n),
+                            )
+                        } else {
+                            (None, None)
+                        }
+                    }
+                    _ => (None, None),
+                };
+                (Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k, pruned_buf, pruned_n)
             } else {
-                (None, None, None, None, None)
+                (None, None, None, None, None, None, None)
             };
         #[cfg(not(target_os = "macos"))]
-        let (weights_mmap_buf, embed_buf, final_norm_buf, lm_head_buf, lm_head_q4k_buf): (
+        let (
+            weights_mmap_buf,
+            embed_buf,
+            final_norm_buf,
+            lm_head_buf,
+            lm_head_q4k_buf,
+            lm_head_pruned_buf,
+            vocab_pruned,
+        ): (
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
-        ) = (None, None, None, None, None);
+            Option<crate::metal::PinnedBuffer>,
+            Option<usize>,
+        ) = (None, None, None, None, None, None, None);
 
         Ok(Self {
             config: cfg,
@@ -425,6 +479,8 @@ impl Engine for QwenDense {
             final_norm_buf,
             lm_head_buf,
             lm_head_q4k_buf,
+            lm_head_pruned_buf,
+            vocab_pruned,
         })
     }
 
@@ -1173,14 +1229,27 @@ impl QwenDense {
         }
 
         // ── LM head → argmax (x_norm already holds final_norm output) ─
-        // LM head: Q4_K path saves ~3.5× weight bandwidth on the largest
-        // single matmul of the forward pass (vocab × hidden). Activated
-        // when DISMANTLE_QWEN_Q4K_LMHEAD=1 made `lm_head_q4k_buf` populated.
-        // Falls back to f16 gemv otherwise. Argmax over the resulting
-        // logits absorbs Q4_K's last-place noise for sufficiently-distinct
-        // top tokens; if it ever flips the predicted id, just unset the
-        // env var.
-        if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
+        // LM head: priority is (1) vocab-prune buf if active (smaller GEMV,
+        // pruned argmax over first-N tokens), else (2) Q4_K-quantized buf
+        // if active, else (3) full f16 gemv.
+        if let (Some(pruned_buf), Some(pn)) =
+            (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
+        {
+            kernels::gemv_f16_metal_buf_tcb(
+                &mut tcb,
+                pruned_buf,
+                pn,
+                h,
+                &arena.x_norm_buf,
+                &arena.logits_buf,
+            )?;
+            kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, pn)?;
+
+            tcb.commit_and_wait()?;
+            self.kv.seq_len += 1;
+            let token_ptr = arena.token_buf.contents() as *const u32;
+            return Ok(unsafe { *token_ptr });
+        } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
             kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
