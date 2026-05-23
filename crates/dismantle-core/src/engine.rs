@@ -37,6 +37,13 @@ pub struct EngineConfig {
     /// re-quantized per layer to the dtype specified in the map. `None` ⇒
     /// GGUF native dtypes (default behavior, unchanged).
     pub quant_tier_map_path: Option<std::path::PathBuf>,
+    /// Eagle5 v2 trained head checkpoint path (safetensors). When `None` and
+    /// `speculate_mode == Eagle5`, the runtime constructs a deterministic
+    /// mock head with random weights of the correct shape. The mock-head
+    /// path is intended for runtime-wiring validation; production accept
+    /// rate requires a trained checkpoint produced by
+    /// `tools/training/eagle5_train.py`.
+    pub eagle5_head_path: Option<std::path::PathBuf>,
 }
 
 impl Default for EngineConfig {
@@ -54,6 +61,7 @@ impl Default for EngineConfig {
             memory_limit_mb: None,
             vocab_prune_path: None,
             quant_tier_map_path: None,
+            eagle5_head_path: None,
         }
     }
 }
@@ -65,6 +73,14 @@ pub enum SpeculateMode {
     ExactShared,
     /// N-gram lookup draft: zero compute cost, serial verify with full model.
     NGram,
+    /// Eagle5 v2 activation-sparsity head: a small learned draft model that
+    /// proposes K tokens per step. Verify path is the full V2-Lite model so
+    /// greedy output at temperature=0 is bit-identical to no-spec greedy.
+    /// When no trained checkpoint is supplied via
+    /// `EngineConfig::eagle5_head_path`, the runtime builds a deterministic
+    /// mock head with random weights of the correct shape — useful for
+    /// runtime-path validation while the head trains.
+    Eagle5,
 }
 
 impl Default for SpeculateMode {
@@ -74,15 +90,27 @@ impl Default for SpeculateMode {
 }
 
 impl SpeculateMode {
+    /// Parse a CLI `--speculate <mode>` value. Also honors the
+    /// `DISMANTLE_SPEC_DECODE` environment variable when no CLI value is
+    /// supplied; the CLI flag wins when both are set. This mirrors the
+    /// `DISMANTLE_QWEN_BATCH_PREFILL=1` style env-var toggles used
+    /// elsewhere in the codebase.
     pub fn from_cli(value: Option<&str>, legacy_bool: bool) -> Result<Self> {
-        match value.map(str::trim).filter(|s| !s.is_empty()) {
+        let env_val = std::env::var("DISMANTLE_SPEC_DECODE").ok();
+        let effective: Option<&str> = value
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .or_else(|| env_val.as_deref().map(str::trim).filter(|s| !s.is_empty()));
+
+        match effective {
             None if legacy_bool => Ok(Self::ExactShared),
             None => Ok(Self::Off),
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
             Some("ngram" | "n-gram" | "ngram-spec") => Ok(Self::NGram),
+            Some("eagle5" | "eagle-5" | "eagle5-v2") => Ok(Self::Eagle5),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared, ngram, or off"
+                "unknown speculate mode `{other}`; expected exact-shared, ngram, eagle5, or off"
             ))),
         }
     }
@@ -92,6 +120,7 @@ impl SpeculateMode {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
             Self::NGram => "ngram",
+            Self::Eagle5 => "eagle5",
         }
     }
 }
