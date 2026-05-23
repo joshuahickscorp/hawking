@@ -449,6 +449,260 @@ mod metal_dispatch {
         )
     }
 
+    /// P2 — Wedge K Q4_K GEMV (scale + activation preload, paired-nibble
+    /// reads). TCB-encoded variant of `gemv_q4_k_m_simdmat_pinned`.
+    /// Geometry: 128 threads/TG, 4 rows/TG. Per the kernel comment, this
+    /// improves small-row shapes (e.g. Qwen attn k/v_proj rows=256) over
+    /// the v2 (8 rows/TG) baseline. Same buffer layout as v2.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_simdmat_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_simdmat";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const SM_TG: u32 = 128;
+        const SM_ROWS: u32 = 4;
+        let n_tg = rows_u32.div_ceil(SM_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * SM_TG, 1, 1),
+            (SM_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// P2 — Wedge K-pattern Q4_K GEMV in v3 8-rows-per-TG geometry.
+    /// Same scale/activation preload + paired-nibble reads as simdmat
+    /// but with 8 rows/TG (256 threads, 8 simdgroups) → fewer TGs;
+    /// candidate for larger-row shapes like Qwen FFN gate/up.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_8r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_8r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// P2 — v3_llama: 2 simdgroups × 4-rows-each per TG (TG=64, 8 rows/TG).
+    /// Lower per-TG occupancy + higher TG count compared to v3_8r;
+    /// candidate for shapes where the GPU scheduler benefits from more
+    /// independent threadgroups.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_m_v3_llama_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_v3_llama";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 64;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// P2 — Q6_K-weight × fp32-vec → fp32 GEMV against pinned model
+    /// buffer + byte offset window. Same dispatch shape as
+    /// `gemv_q4_k_m_v2_pinned_tcb`: 8 rows per TG, 32 threads/row.
+    /// Replaces the f16-dequant fallback for Q6_K weights in Q4_K_M
+    /// mix-quant GGUFs; saves ~2.46× bandwidth on those layers.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_fused_v2";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V2_TG: u32 = 256;
+        let n_tg = rows_u32.div_ceil(8);
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V2_TG, 1, 1),
+            (V2_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// Q3_K-weight × fp32-vec → fp32 GEMV, dispatching `gemm_q3_k_fused_v2`
     /// against a pinned model buffer.
     #[allow(clippy::too_many_arguments)]
@@ -3992,6 +4246,112 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(dst_c_kv), 0);
                 enc.set_buffer(3, Some(dst_k_pe), 0);
                 enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
+    /// P1b: standard GQA multi-head attention for one decode step.
+    /// Encodes `mha_decode_f32` into the supplied TCB. One TG per query
+    /// head; TG size 64. Caller commits.
+    ///
+    /// `k_off_bytes` / `v_off_bytes` are byte offsets into the K/V cache
+    /// buffer (used to address one layer's window when a single buffer
+    /// holds all layers' KV cache).
+    ///
+    /// Buffer roles match the shader:
+    ///   q       (n_heads, head_dim) f32
+    ///   k_cache (seq_len, n_kv_heads, head_dim) f32 -- after applying k_off_bytes
+    ///   v_cache (seq_len, n_kv_heads, head_dim) f32 -- after applying v_off_bytes
+    ///   out     (n_heads, head_dim) f32
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f32_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, seq_len as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_kv_heads as u32);
+        ab.set_u32(3, group_size);
+        ab.set_f32(4, scale);
+
+        // TG=128 matches Qwen-3B head_dim (128), so Phase 4 (per-output-element
+        // accumulation) achieves full TG occupancy.
+        const TG_SIZE: u32 = 128;
+        let shmem_bytes =
+            ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f32",
+            (n_heads as u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// P1f: encode `memcpy_f32_off` — copy `n` f32 elements from
+    /// `src[src_off..]` into `dst[dst_off..]`. Used by the dense (GQA)
+    /// KV append path to write the per-token K/V slice into the
+    /// per-layer cache window at `(layer * max_seq + seq_slot) * kv_dim`.
+    /// Both offsets are element units.
+    pub fn memcpy_f32_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst: &PinnedBuffer,
+        src_off: usize,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, src_off as u32);
+        ab.set_u32(2, dst_off as u32);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "memcpy_f32_off",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src), 0);
+                enc.set_buffer(1, Some(dst), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
             },
         )
     }

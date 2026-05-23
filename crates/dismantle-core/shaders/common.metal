@@ -117,6 +117,62 @@ kernel void rmsnorm_f32(
     }
 }
 
+// Session F (sketch) — fused add_inplace + rmsnorm_f32.
+//
+// Replaces two back-to-back dispatches:
+//   add_inplace(x, attn_out, n)          // x[i] += attn_out[i]
+//   rmsnorm_f32(x, weight, eps -> x_norm)
+//
+// Combined into a single TG that:
+//   1. Loads attn_out[i], adds to x[i], stores x[i] back, accumulates v*v.
+//   2. Reduces partial → inv_rms.
+//   3. Re-reads x[i] (already in cache), writes x_norm[i] = x[i] * inv * weight[i].
+//
+// Eliminates one full pass over x (DRAM) and one dispatch's launch overhead.
+// Single TG of 256 threads strides over `hidden` (≤ 2048 on V2-Lite, so one TG
+// is sufficient — same shape contract as `rmsnorm_f32`).
+//
+// Bindings:
+//   0  x         (hidden,) f32   IN/OUT — residual stream, gets += attn_out
+//   1  attn_out  (hidden,) f32   read-only
+//   2  weight    (hidden,) f32   rmsnorm learnable scale
+//   3  x_norm    (hidden,) f32   OUT — normalized x
+//   4  args      ArgbufRmsnorm   { hidden, eps }
+//   threadgroup(0): shmem (tg_size × f32) — variance reduction
+//
+// Grid: (TG_SIZE, 1, 1) — single TG per dispatch. Cf. rmsnorm_f32 caller.
+kernel void add_rmsnorm_fused(
+    device       float* x        [[buffer(0)]],
+    device const float* attn_out [[buffer(1)]],
+    device const float* weight   [[buffer(2)]],
+    device       float* x_norm   [[buffer(3)]],
+    constant ArgbufRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem    [[threadgroup(0)]],
+    uint                tid      [[thread_position_in_threadgroup]],
+    uint                tg_size  [[threads_per_threadgroup]])
+{
+    // Phase 1: add residual + accumulate variance in one pass.
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i] + attn_out[i];
+        x[i] = v;
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: normalize and write x_norm. x[i] is hot in cache after phase 1.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
+    }
+}
+
 kernel void silu_mul(
     device const half* gate [[buffer(0)]],
     device const half* up   [[buffer(1)]],
@@ -128,6 +184,26 @@ kernel void silu_mul(
     float g = (float)gate[id];
     float s = g / (1.0f + exp(-g));
     out[id] = half(s * (float)up[id]);
+}
+
+// P1f: generic GPU memcpy of `n` f32 elements from src+src_off to dst+dst_off.
+// Offsets are in element units (not bytes). Used by GQA KV-cache append:
+// copy k_token / v_token into the per-layer K/V cache slice at the
+// current `seq_slot * kv_dim` offset.
+struct ArgbufMemcpyF32 {
+    uint n;
+    uint src_off;
+    uint dst_off;
+};
+
+kernel void memcpy_f32_off(
+    device const float*           src  [[buffer(0)]],
+    device       float*           dst  [[buffer(1)]],
+    constant ArgbufMemcpyF32&     args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst[args.dst_off + id] = src[args.src_off + id];
 }
 
 kernel void rope_inplace(
