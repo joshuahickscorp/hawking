@@ -449,6 +449,90 @@ mod metal_dispatch {
         )
     }
 
+    /// P3 — Batched Q4_K_M GEMM: one weight applied to B activation
+    /// vectors in parallel. Reads the weight matrix once and produces B
+    /// output rows worth of dot products per row. Bandwidth amortized
+    /// near-linearly across B until compute-bound. Supported B: 1..=4.
+    ///
+    /// Layouts:
+    ///   `x_batch`: (B, cols) f32, row-major
+    ///   `y_batch`: (B, rows) f32, row-major
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v2_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v2";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if !(1..=4).contains(&batch) {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb supports batch in 1..=4; got {batch}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = batch * cols * std::mem::size_of::<f32>();
+        let y_bytes = batch * rows * std::mem::size_of::<f32>();
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb buffer sizes: x={} need={} y={} need={}",
+                x_batch_buf.length(),
+                x_bytes,
+                y_batch_buf.length(),
+                y_bytes,
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let batch_u32 = batch as u32;
+        const V2_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        ab.set_u32(2, batch_u32);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V2_TG, 1, 1),
+            (V2_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_batch_buf), 0);
+                enc.set_buffer(2, Some(y_batch_buf), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// P2 — Wedge K Q4_K GEMV (scale + activation preload, paired-nibble
     /// reads). TCB-encoded variant of `gemv_q4_k_m_simdmat_pinned`.
     /// Geometry: 128 threads/TG, 4 rows/TG. Per the kernel comment, this
