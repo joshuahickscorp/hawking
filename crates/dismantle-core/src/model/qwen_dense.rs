@@ -118,6 +118,11 @@ pub struct QwenLayer {
 
 #[derive(Default)]
 pub struct QwenLayerPinned {
+    /// P2 (2026-05-23): opt-in Q4_K requant of the Q6_K `ffn_down`
+    /// weight. ffn_down is the single largest weight per layer (Q6_K:
+    /// ~18.5 MB; Q4_K: ~12.7 MB) and is read once per token per layer.
+    /// Activated via DISMANTLE_QWEN_FFN_DOWN_Q4K=1.
+    pub ffn_down_q4k: Option<crate::metal::PinnedBuffer>,
     pub attn_norm: Option<crate::metal::PinnedBuffer>,
     pub ffn_norm: Option<crate::metal::PinnedBuffer>,
     pub q_bias: Option<crate::metal::PinnedBuffer>,
@@ -412,6 +417,24 @@ impl Engine for QwenDense {
                         if t.dtype != GgmlType::Q4_K {
                             *slot = Some(dequant_to_f16_pin(t)?);
                         }
+                    }
+                    // Optional: requant ffn_down (typically Q6_K) to Q4_K.
+                    // Biggest single weight per token; ~31% BW saving on
+                    // the Q6_K share at the cost of one extra pinned copy.
+                    if std::env::var("DISMANTLE_QWEN_FFN_DOWN_Q4K")
+                        .map(|v| v == "1")
+                        .unwrap_or(false)
+                        && layer.ffn_down.dtype != GgmlType::Q4_K
+                        && layer.ffn_down.n_elems % 256 == 0
+                    {
+                        let mut f32_tmp = vec![0.0f32; layer.ffn_down.n_elems];
+                        let bytes = &gguf.mmap[layer.ffn_down.offset
+                            ..layer.ffn_down.offset + layer.ffn_down.byte_size];
+                        quant::dequant_into(layer.ffn_down.dtype, bytes, &mut f32_tmp)?;
+                        let nb = layer.ffn_down.n_elems / 256;
+                        let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                        quant::quantize_q4_k(&f32_tmp, &mut q4k)?;
+                        layer.pinned.ffn_down_q4k = Some(ctx.new_buffer_with_bytes(&q4k));
                     }
                 }
                 // Optional vocab prune (first-N heuristic; BPE puts common
@@ -1224,14 +1247,33 @@ impl QwenDense {
                 &arena.ffn_act_buf,
                 intermediate,
             )?;
-            gemv_proj!(
-                layer.ffn_down,
-                layer.pinned.ffn_down_f16.as_ref(),
-                h,
-                intermediate,
-                &arena.ffn_act_buf,
-                &arena.ffn_down_buf
-            );
+            // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
+            // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
+            // f16 fallback / native Q6_K path. ~31% BW saving on the
+            // single largest weight per layer.
+            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                    &mut tcb,
+                    q4k_buf,
+                    0,
+                    h * row_bytes,
+                    h,
+                    intermediate,
+                    &arena.ffn_act_buf,
+                    &arena.ffn_down_buf,
+                )?;
+            } else {
+                gemv_proj!(
+                    layer.ffn_down,
+                    layer.pinned.ffn_down_f16.as_ref(),
+                    h,
+                    intermediate,
+                    &arena.ffn_act_buf,
+                    &arena.ffn_down_buf
+                );
+            }
             // ── Fused (x += ffn_down) + next-layer's attn_norm (or
             //    final_norm on the last layer). After the loop, x_norm
             //    already holds the final norm output -- no separate
