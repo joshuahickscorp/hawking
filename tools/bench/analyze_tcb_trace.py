@@ -1,33 +1,4 @@
 #!/usr/bin/env python3
-"""
-Analyze a dismantle trace JSON produced by:
-
-    DISMANTLE_TCB_TRACE=gpu \\
-      ./target/release/dismantle bench \\
-        --weights models/deepseek-v2-lite-q4.gguf \\
-        --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \\
-        --suite decode --trials 1 --max-new-tokens 8 \\
-        --trace-json trace.json
-
-Produces a per-kernel breakdown with GPU time attribution, call counts,
-average us-per-call, and bandwidth-utilization estimates against the
-M3 Pro theoretical peak (150 GB/s, ~120-135 sustained).
-
-This is the consumer side of T1.1 — it turns split-CB-mode raw samples
-into the "what's hot" table the closeout doc was asking for.
-
-Caveat: split-CB mode kills GPU pipelining (each dispatch syncs), so
-absolute %s are skewed vs the production single-CB-per-block reality.
-Relative ordering is reliable; use this to pick the NEXT kernel target,
-then validate the actual win via the bench-first gate on the default
-(non-trace) path.
-
-Usage:
-    python3 tools/bench/analyze_tcb_trace.py trace.json
-    python3 tools/bench/analyze_tcb_trace.py trace.json --by-layer
-    python3 tools/bench/analyze_tcb_trace.py trace.json --json
-"""
-
 import argparse
 import collections
 import json
@@ -41,7 +12,6 @@ M3_PRO_SUSTAINED_GBPS = 130.0
 
 
 # Per-token total read footprint for DeepSeek-V2-Lite Q4_K_M on M3 Pro,
-# from docs/v2.1.0_comprehensive_perf_push.md §1.2.
 V2_LITE_BYTES_PER_TOKEN = int(1.82 * 1024 ** 3)  # ~1.82 GB
 
 
