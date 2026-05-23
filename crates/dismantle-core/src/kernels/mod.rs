@@ -1,19 +1,5 @@
-//! Rust host code that dispatches `.metal` kernels.
-//!
-//! Each function in this module corresponds to a kernel in
-//! `shaders/*.metal`. The Phase 0 reference path runs everything on
-//! the CPU in fp32 — correctness-first; real kernels arrive in Phase
-//! 1+. Both implementations share the same Rust signature, so the
-//! model layer is unchanged when we swap.
-//!
-//! All host-side ops here operate on plain `[f32]` slices for the
-//! Phase 0 reference path. When the Metal kernels land, the same
-//! function names will gain a `Tensor`-shaped overload that takes
-//! `MTLBuffer`s.
-
 use half::f16;
 
-// -------- common.metal -------------------------------------------------
 
 /// RMS-normalize a row in-place.
 ///
@@ -82,7 +68,7 @@ pub fn rope_inplace(x: &mut [f32], pos: u32, base: f32) {
     }
 }
 
-/// Phase 2 Wedge 2c — apply RoPE to N rotation vectors at N positions in
+/// Phase 2 Wedge 2c -- apply RoPE to N rotation vectors at N positions in
 /// one call. RoPE is element-wise per (vector, position); this helper
 /// makes the multi-token call site obvious without changing the math.
 ///
@@ -112,7 +98,6 @@ pub fn embed_lookup(embed: &[f16], hidden: usize, token_id: u32, out: &mut [f32]
     }
 }
 
-// -------- generic GEMV ------------------------------------------------
 
 /// Row-major GEMV: `out = W @ x`, where `W` is (rows, cols) and `x` is (cols,).
 /// Phase 0 reference; replaced by Metal in Phase 1+.
@@ -205,8 +190,8 @@ pub fn gather_combine(
 /// kernel uses (mask-and-pick-next-max).
 ///
 ///   logits: (n_tokens, n_experts) row-major
-///   expert_ids_out: (n_tokens, top_k) — selected expert indices
-///   weights_out: (n_tokens, top_k) — softmax probs of those experts
+///   expert_ids_out: (n_tokens, top_k) -- selected expert indices
+///   weights_out: (n_tokens, top_k) -- softmax probs of those experts
 pub fn topk_softmax_batch(
     logits: &[f32],
     n_tokens: usize,
@@ -239,7 +224,6 @@ pub fn topk_softmax_batch(
     }
 }
 
-// -------- Metal-backed paths (Phase 1+) -------------------------------
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
@@ -251,9 +235,22 @@ mod metal_dispatch {
     // shader's stride>>=1 pairwise reduction requires a power of two).
     const TG_SIZE: u32 = 256;
 
+    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in
+    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,
+    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from
+    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`
+    /// — not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,
+    /// which leaves `args.cols` undefined in the synthetic test setup.
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    struct ArgbufRowsCols {
+        rows: u32,
+        cols: u32,
+    }
+
     /// Q4_K_M-weight × fp32-vec → fp32 GEMV, dispatching the
     /// dense-path `gemm_q4_k_m_fused` kernel in `shaders/quant.metal`.
-    /// Wedge 2 / H2.4 — dequant is fused inside the FMA loop in
+    /// Wedge 2 / H2.4 -- dequant is fused inside the FMA loop in
     /// threadgroup memory; weights stay 4-bit in DRAM.
     pub fn gemv_q4_k_m(
         ctx: &MetalContext,
@@ -266,7 +263,7 @@ mod metal_dispatch {
         dispatch_q4_k_m_gemv(ctx, "gemm_q4_k_m_fused", w_bytes, rows, cols, x, out)
     }
 
-    /// v0.3.0 — simdgroup_matrix variant of gemv_q4_k_m.  Dispatches
+    /// v0.3.0 -- simdgroup_matrix variant of gemv_q4_k_m.  Dispatches
     /// `gemm_q4_k_m_fused_simd`; selected via kernel-profile
     /// `gemm_q4_k_schedule = "simdgroup"`.
     pub fn gemv_q4_k_m_simd(
@@ -343,7 +340,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// v0.4.0 — multi-row TG + simd_sum variant.  Dispatches
+    /// v0.4.0 -- multi-row TG + simd_sum variant.  Dispatches
     /// `gemm_q4_k_m_fused_v2`; selected via kernel-profile
     /// `gemm_q4_k_schedule = "v2"`.
     pub fn gemv_q4_k_m_v2(
@@ -357,7 +354,7 @@ mod metal_dispatch {
         dispatch_q4_k_m_gemv_v2(ctx, "gemm_q4_k_m_fused_v2", w_bytes, rows, cols, x, out)
     }
 
-    /// Wedge A — pinned-buffer variant of `gemv_q4_k_m_v2`. Reads Q4_K_M weights
+    /// Wedge A -- pinned-buffer variant of `gemv_q4_k_m_v2`. Reads Q4_K_M weights
     /// directly from `model_buf` at `w_offset` bytes, skipping the per-call
     /// `new_buffer_with_bytes` memcpy (1.6–11 MB per expert).
     pub fn gemv_q4_k_m_v2_pinned(
@@ -551,7 +548,7 @@ mod metal_dispatch {
         )
     }
 
-    /// Wedge K — simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
+    /// Wedge K -- simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
     /// as `gemv_q4_k_m_v2_pinned`; dispatches `gemm_q4_k_m_simdmat`.
     /// Selected via `gemm_q4_k_schedule = "simdmat"`.
     ///
@@ -579,7 +576,7 @@ mod metal_dispatch {
         )
     }
 
-    /// Approach 1 Iter 1 — 256 threads, 8 rows/TG, 8 simdgroups.
+    /// Approach 1 Iter 1 -- 256 threads, 8 rows/TG, 8 simdgroups.
     /// Selected via `gemm_q4_k_schedule = "v3_8r"`.
     pub fn gemv_q4_k_m_v3_8r_pinned(
         ctx: &MetalContext,
@@ -594,7 +591,7 @@ mod metal_dispatch {
         dispatch_q4_k_m_v3_8r_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
-    /// Approach 3 — 64 threads, 4 rows/simdgroup (N_R0=4), sumy trick.
+    /// Approach 3 -- 64 threads, 4 rows/simdgroup (N_R0=4), sumy trick.
     /// Selected via `gemm_q4_k_schedule = "v3_llama"`.
     pub fn gemv_q4_k_m_v3_llama_pinned(
         ctx: &MetalContext,
@@ -624,7 +621,7 @@ mod metal_dispatch {
         gemv_q4_k_m_v3_llama_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
-    /// Approach 1 Iter 2 — 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
+    /// Approach 1 Iter 2 -- 128 threads, 2 rows/simdgroup (N_R0=2), 8 rows/TG.
     /// Selected via `gemm_q4_k_schedule = "v3_dual"`.
     pub fn gemv_q4_k_m_v3_dual_pinned(
         ctx: &MetalContext,
@@ -639,7 +636,7 @@ mod metal_dispatch {
         dispatch_q4_k_m_v3_dual_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
-    /// v0.3.1 — low-level batched encoder for `gemm_q4_k_m_fused_simd`.
+    /// v0.3.1 -- low-level batched encoder for `gemm_q4_k_m_fused_simd`.
     /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch
     /// without allocation or readback. Use this to coalesce multiple independent
     /// simd GEMVs (e.g. gate + up) into a single command buffer.
@@ -680,7 +677,7 @@ mod metal_dispatch {
         )
     }
 
-    /// v0.3.4 — low-level batched encoder for `gemv_f32_attn`.
+    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.
     /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch
     /// without allocation or readback. Use this to coalesce two independent
     /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.
@@ -694,6 +691,7 @@ mod metal_dispatch {
     ) -> Result<()> {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
         batch.dispatch_threads(
             "gemv_f32_attn",
@@ -705,20 +703,15 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
     }
 
-    /// v0.3.1 — slice-in / slice-out wrapper: allocates Metal buffers, routes
+    /// v0.3.1 -- slice-in / slice-out wrapper: allocates Metal buffers, routes
     /// through `ctx.dispatch_batch { encode_gemv_q4_k_m_simd }`, reads back.
     /// Replaces the standalone `ctx.dispatch_threads` path in
     /// `moe_expert_matmul_dispatch` so simd GEMVs appear in the
@@ -766,7 +759,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// v0.3.2 — pair wrapper: allocates x once, encodes gate+up into ONE CommandBatch.
+    /// v0.3.2 -- pair wrapper: allocates x once, encodes gate+up into ONE CommandBatch.
     /// Two Q4_K_M simd GEMVs (w_a, w_b) sharing the same input (x) and output
     /// dimensions coalesce into a single command-buffer commit instead of two.
     pub fn dispatch_gemv_q4_k_m_simd_pair_batched(
@@ -822,7 +815,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// v0.3.3 — fused pair+silu: encode gate, up, and silu_mul in ONE CommandBatch.
+    /// v0.3.3 -- fused pair+silu: encode gate, up, and silu_mul in ONE CommandBatch.
     /// `a` receives `silu(gate_out) * up_out`; intermediate gate/up buffers stay
     /// on the GPU and are never read back.
     pub fn dispatch_gemv_q4_k_m_simd_pair_silu_batched(
@@ -878,7 +871,6 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // ---- Phase 1 / Haul 1 — stubs the haul replaces with bodies ----
     //
     // Each function below is the seam the haul targets. The signature
     // and call-from-host expectations are locked: bodies arrive in
@@ -887,7 +879,7 @@ mod metal_dispatch {
     // call sites in `model::deepseek_v2` and the parity tests in
     // `tests/phase1_kernel_parity.rs`.
 
-    /// G1.1 — RMSNorm via the existing `rmsnorm` kernel in
+    /// G1.1 -- RMSNorm via the existing `rmsnorm` kernel in
     /// `shaders/common.metal`. Inputs and outputs are fp32 from the
     /// caller's view; the kernel works in fp16 internally.
     ///
@@ -954,7 +946,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// G1.2 — fp16 GEMV. Maps to a new `gemv_f16` kernel in
+    /// G1.2 -- fp16 GEMV. Maps to a new `gemv_f16` kernel in
     /// `shaders/common.metal` (added during the haul). Used for the
     /// LM-head projection (vocab × hidden).
     ///
@@ -1033,7 +1025,7 @@ mod metal_dispatch {
     ///
     /// Caller owns `w_buf` (typically held on the model). Shape
     /// constraints identical to `gemv_f16_metal`. Output buffer is
-    /// allocated fresh per dispatch (small — `rows * 4` bytes).
+    /// allocated fresh per dispatch (small -- `rows * 4` bytes).
     pub fn gemv_f16_metal_pinned(
         ctx: &MetalContext,
         w_buf: &PinnedBuffer,
@@ -1177,7 +1169,7 @@ mod metal_dispatch {
         Ok(unsafe { *token_ptr })
     }
 
-    /// G1.3 — fp32 GEMV for attention's `o_proj`. Maps to a new
+    /// G1.3 -- fp32 GEMV for attention's `o_proj`. Maps to a new
     /// `gemv_f32_attn` kernel in `shaders/attn.metal`. The model
     /// layer dequants per-call into a scratch buffer (lazy-dequant
     /// invariant from Phase 0); this kernel reads that scratch as
@@ -1197,7 +1189,7 @@ mod metal_dispatch {
     /// `&PinnedBuffer` for the weight matrix instead of a host
     /// `&[f32]`. Eliminates the per-dispatch `new_buffer_with_bytes`
     /// memcpy for the 5 attention-projection gemvs (q_a_proj,
-    /// q_b_proj, kv_a_proj_with_mqa, kv_b_proj, o_proj — totaling
+    /// q_b_proj, kv_a_proj_with_mqa, kv_b_proj, o_proj -- totaling
     /// ~50 MB / token in DeepSeek-V2-Lite at 27 layers).
     pub fn gemv_f32_attn_metal_pinned(
         ctx: &MetalContext,
@@ -1210,7 +1202,7 @@ mod metal_dispatch {
         dispatch_gemv_f32_pinned(ctx, "gemv_f32_attn", w_buf, rows, cols, x, out)
     }
 
-    /// v0.3.4 — shared-input pair wrapper: coalesces two independent fp32 GEMVs
+    /// v0.3.4 -- shared-input pair wrapper: coalesces two independent fp32 GEMVs
     /// (e.g. q_a_proj + kv_a_proj) that read the same `x` into ONE CommandBatch.
     /// Saves one CB commit per attention layer per token vs two standalone calls.
     pub fn dispatch_gemv_f32_attn_pinned_pair_batched(
@@ -1260,7 +1252,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// G1.4 — fp32 GEMV for the MoE gate-logit projection
+    /// G1.4 -- fp32 GEMV for the MoE gate-logit projection
     /// (`ffn_gate_inp`). Maps to a new `gemv_f32_moe` kernel in
     /// `shaders/moe.metal`. Tiny (n_routed × hidden = 64 × 2048) but
     /// proves MoE-shaped weight access.
@@ -1275,7 +1267,7 @@ mod metal_dispatch {
         dispatch_gemv_f32(ctx, "gemv_f32_moe", w, rows, cols, x, out)
     }
 
-    /// Phase 2 — no-pack batched DeepSeek MoE block. The weight buffer is
+    /// Phase 2 -- no-pack batched DeepSeek MoE block. The weight buffer is
     /// the full GGUF mmap (or a test stand-in), and tensor byte offsets
     /// select the fused routed/shared expert tensors in-place. Route IDs
     /// choose experts inside the fused routed tensors, eliminating the
@@ -1543,7 +1535,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// Wedge 1 — Metal MLA decode kernel.
+    /// Wedge 1 -- Metal MLA decode kernel.
     ///
     /// Replaces the CPU `mla_decode_step` for DeepSeek-V2-family models.
     /// Operates on the compressed KV cache (c_kv, k_pe) rather than the
@@ -1626,9 +1618,9 @@ mod metal_dispatch {
         let seq_len_u32 = seq_len as u32;
 
         // Threadgroup slots:
-        //   0 — q_nope_proj: kv_lora_rank floats
-        //   1 — scores:      seq_len floats
-        //   2 — c_kv_wt:     kv_lora_rank floats
+        //   0 -- q_nope_proj: kv_lora_rank floats
+        //   1 -- scores:      seq_len floats
+        //   2 -- c_kv_wt:     kv_lora_rank floats
         let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
         let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
 
@@ -1687,7 +1679,218 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// Wedge L — flash attention decode using online softmax (MLA-aware).
+    /// Q8 KV variant of `mla_decode_metal`.
+    ///
+    /// Same semantics, same I/O — except `c_kv_q8` is the Q8_0-packed
+    /// latent cache instead of `&[f32]`. Per-row byte count must equal
+    /// `(kv_lora_rank / 32) * 34`. `kv_lora_rank` must be a multiple of 32.
+    ///
+    /// k_pe stays f32 — positional-embedding precision matters and the
+    /// bandwidth contribution is small (qk_rope_head_dim ≪ kv_lora_rank).
+    ///
+    /// The match for the f32 `mla_decode_metal` is ATOL ~5e-3 (per-block
+    /// f16 scale + round-to-nearest int8 introduces bounded error).
+    #[allow(clippy::too_many_arguments)]
+    pub fn mla_decode_q8kv_metal(
+        ctx: &MetalContext,
+        q: &[f32],
+        c_kv_q8: &[u8],
+        k_pe: &[f32],
+        kv_b_proj: &PinnedBuffer,
+        n_heads: usize,
+        qk_nope_head_dim: usize,
+        qk_rope_head_dim: usize,
+        v_head_dim: usize,
+        kv_lora_rank: usize,
+        seq_len: usize,
+        scale: f32,
+        out: &mut [f32],
+    ) -> Result<()> {
+        if kv_lora_rank % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: kv_lora_rank {kv_lora_rank} not multiple of 32"
+            )));
+        }
+        let row_bytes = (kv_lora_rank / 32) * 34;
+        let q_head_dim = qk_nope_head_dim + qk_rope_head_dim;
+        if q.len() != n_heads * q_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: q.len={} expected {}",
+                q.len(),
+                n_heads * q_head_dim
+            )));
+        }
+        if c_kv_q8.len() < seq_len * row_bytes {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: c_kv_q8 len={} need at least {}",
+                c_kv_q8.len(),
+                seq_len * row_bytes
+            )));
+        }
+        if k_pe.len() != seq_len * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: k_pe.len={} expected {}",
+                k_pe.len(),
+                seq_len * qk_rope_head_dim
+            )));
+        }
+        let expected_kv_b =
+            (n_heads * (qk_nope_head_dim + v_head_dim) * kv_lora_rank * std::mem::size_of::<f32>())
+                as u64;
+        if kv_b_proj.length() < expected_kv_b {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: kv_b_proj buffer too small: got {} expected {}",
+                kv_b_proj.length(),
+                expected_kv_b
+            )));
+        }
+        if out.len() != n_heads * v_head_dim {
+            return Err(Error::Kernel(format!(
+                "mla_decode_q8kv_metal: out.len={} expected {}",
+                out.len(),
+                n_heads * v_head_dim
+            )));
+        }
+        if seq_len == 0 {
+            return Err(Error::Kernel(
+                "mla_decode_q8kv_metal: seq_len must be >= 1".into(),
+            ));
+        }
+
+        let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
+        let c_kv_buf = ctx.new_buffer_with_bytes(c_kv_q8);
+        let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+
+        let n_heads_u32 = n_heads as u32;
+        let qk_nope_u32 = qk_nope_head_dim as u32;
+        let qk_rope_u32 = qk_rope_head_dim as u32;
+        let v_head_u32 = v_head_dim as u32;
+        let kv_lora_u32 = kv_lora_rank as u32;
+        let seq_len_u32 = seq_len as u32;
+
+        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;
+        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;
+
+        ctx.dispatch_threads(
+            "mla_decode_kernel_q8kv",
+            (n_heads_u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&q_buf), 0);
+                enc.set_buffer(1, Some(&c_kv_buf), 0);
+                enc.set_buffer(2, Some(&k_pe_buf), 0);
+                enc.set_buffer(3, Some(kv_b_proj), 0);
+                enc.set_buffer(4, Some(&out_buf), 0);
+                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
+                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
+                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
+                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
+                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
+                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
+                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
+                enc.set_threadgroup_memory_length(1, scores_bytes);
+                enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
+            },
+        )?;
+
+        copy_f32_buffer(&out_buf, out);
+        Ok(())
+    }
+
+    /// One-token GPU-side Q8_0 quantize-and-append for the latent KV cache.
+    ///
+    /// This is the standalone "single token in, Q8 bytes out" path used by
+    /// parity tests. Production code calls the TCB variant
+    /// `kv_append_q8_0_f32_tcb` (see below) to chain into a multi-kernel
+    /// command buffer. Both go through the same `kv_append_q8_0_f32` shader.
+    ///
+    /// `c_kv_normed` (kv_lora_rank f32) is quantized to Q8_0 and written to
+    /// `dst_c_kv_q8` at slot `seq_slot`. `kv_a_out[kv_lora_rank..]` (the
+    /// k_pe slice) is copied verbatim to `dst_k_pe` at slot `seq_slot`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn kv_append_q8_0_f32_metal(
+        ctx: &MetalContext,
+        c_kv_normed: &[f32],
+        kv_a_out: &[f32],
+        dst_c_kv_q8: &mut [u8],
+        dst_k_pe: &mut [f32],
+        seq_slot: usize,
+        kv_lora_rank: usize,
+        qk_rope_head_dim: usize,
+        max_seq: usize,
+    ) -> Result<()> {
+        if kv_lora_rank % 32 != 0 {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: kv_lora_rank {kv_lora_rank} not multiple of 32"
+            )));
+        }
+        let n_blocks = kv_lora_rank / 32;
+        let row_bytes = n_blocks * 34;
+        if c_kv_normed.len() != kv_lora_rank {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: c_kv_normed.len={} expected {}",
+                c_kv_normed.len(),
+                kv_lora_rank
+            )));
+        }
+        if kv_a_out.len() < kv_lora_rank + qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: kv_a_out.len={} need {}",
+                kv_a_out.len(),
+                kv_lora_rank + qk_rope_head_dim
+            )));
+        }
+        if dst_c_kv_q8.len() < max_seq * row_bytes {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: dst_c_kv_q8.len={} need {}",
+                dst_c_kv_q8.len(),
+                max_seq * row_bytes
+            )));
+        }
+        if dst_k_pe.len() < max_seq * qk_rope_head_dim {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: dst_k_pe.len={} need {}",
+                dst_k_pe.len(),
+                max_seq * qk_rope_head_dim
+            )));
+        }
+        if seq_slot >= max_seq {
+            return Err(Error::Kernel(format!(
+                "kv_append_q8_0_f32: seq_slot {seq_slot} >= max_seq {max_seq}"
+            )));
+        }
+
+        let src_c_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv_normed));
+        let src_kv_a_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(kv_a_out));
+        let dst_c_buf = ctx.new_buffer_with_bytes(dst_c_kv_q8);
+        let dst_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(dst_k_pe));
+
+        // Argbuf: { seq_slot, kv_lora_rank, qk_rope_head_dim } as 3 packed u32s.
+        let args: [u32; 3] = [seq_slot as u32, kv_lora_rank as u32, qk_rope_head_dim as u32];
+
+        let absmax_bytes = 32u64 * std::mem::size_of::<f32>() as u64;
+        ctx.dispatch_threads(
+            "kv_append_q8_0_f32",
+            (n_blocks as u32 * 32, 1, 1),
+            (32, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&src_c_buf), 0);
+                enc.set_buffer(1, Some(&src_kv_a_buf), 0);
+                enc.set_buffer(2, Some(&dst_c_buf), 0);
+                enc.set_buffer(3, Some(&dst_pe_buf), 0);
+                enc.set_bytes(4, std::mem::size_of::<[u32; 3]>() as u64, args.as_ptr() as *const _);
+                enc.set_threadgroup_memory_length(0, absmax_bytes);
+            },
+        )?;
+
+        copy_u8_buffer(&dst_c_buf, dst_c_kv_q8);
+        copy_f32_buffer(&dst_pe_buf, dst_k_pe);
+        Ok(())
+    }
+
+    /// Wedge L -- flash attention decode using online softmax (MLA-aware).
     ///
     /// Replaces phases 1-3 of `mla_decode_metal` with a tiled flash loop that
     /// never materialises the full seq_len scores array. TG shmem drops from
@@ -1836,7 +2039,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// Wedge 3 — Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
+    /// Wedge 3 -- Layer-CB: batch mla_decode_kernel + gemv_f32_attn (o_proj)
     /// into one command buffer. Saves one commit+wait per attention layer
     /// (27 fewer roundtrips per token on DeepSeek-V2-Lite).
     ///
@@ -1904,7 +2107,7 @@ mod metal_dispatch {
         let q_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(q));
         let c_kv_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(c_kv));
         let k_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(k_pe));
-        // Intermediate attn_out stays in GPU memory — shared between mla_decode and o_proj.
+        // Intermediate attn_out stays in GPU memory -- shared between mla_decode and o_proj.
         let attn_out_buf = ctx.new_buffer(attn_out_len * std::mem::size_of::<f32>());
         let out_buf = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
 
@@ -1974,7 +2177,7 @@ mod metal_dispatch {
                 },
             )?;
 
-            // Kernel 2: gemv_f32_attn (o_proj) — reads attn_out_buf, writes out_buf.
+            // Kernel 2: gemv_f32_attn (o_proj) -- reads attn_out_buf, writes out_buf.
             // Metal serializes these within the command buffer.
             batch.dispatch_threads(
                 "gemv_f32_attn",
@@ -2005,7 +2208,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// Wedge 4 — Decode-Arena variant of `mla_decode_and_o_proj_metal`.
+    /// Wedge 4 -- Decode-Arena variant of `mla_decode_and_o_proj_metal`.
     /// Uses pre-allocated arena buffers for attn_out and final out, and
     /// writes q/c_kv/k_pe into arena buffers via direct CPU memcpy.
     /// Eliminates all 5 per-dispatch Metal buffer allocations.
@@ -2552,11 +2755,17 @@ mod metal_dispatch {
         out.copy_from_slice(slice);
     }
 
+    fn copy_u8_buffer(buf: &PinnedBuffer, out: &mut [u8]) {
+        let ptr = buf.contents() as *const u8;
+        let slice = unsafe { std::slice::from_raw_parts(ptr, out.len()) };
+        out.copy_from_slice(slice);
+    }
+
     // Shared dispatch for the two Q4_K_M-fused GEMV kernels (H2.2 in
     // moe.metal, H2.4 in quant.metal). Same kernel body in both files;
     // only the function name differs because the manifest split puts
     // them in different shader modules. tg_size hardcoded to 256
-    // (matches the Q4_K_M super-block size — see kernel comments).
+    // (matches the Q4_K_M super-block size -- see kernel comments).
     fn dispatch_q4_k_m_gemv(
         ctx: &MetalContext,
         kernel_name: &str,
@@ -2627,7 +2836,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // v0.4.0 — v2 dispatch: 256-thread TG, 8 rows per TG (8 simdgroups),
+    // v0.4.0 -- v2 dispatch: 256-thread TG, 8 rows per TG (8 simdgroups),
     // simd_sum reduction.  No threadgroup memory needed.
     fn dispatch_q4_k_m_gemv_v2(
         ctx: &MetalContext,
@@ -2668,6 +2877,7 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
@@ -2681,15 +2891,10 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
-                // NO set_threadgroup_memory_length — kernel uses none.
+                // NO set_threadgroup_memory_length -- kernel uses none.
             },
         )?;
 
@@ -2700,7 +2905,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Wedge A — pinned-buffer variant of dispatch_q4_k_m_gemv_v2. Uses set_buffer
+    // Wedge A -- pinned-buffer variant of dispatch_q4_k_m_gemv_v2. Uses set_buffer
     // offset instead of new_buffer_with_bytes, eliminating the per-call
     // weight memcpy (1.6–11 MB per expert × 236 calls/token).
     fn dispatch_q4_k_m_gemv_v2_pinned(
@@ -2747,6 +2952,7 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
@@ -2760,15 +2966,10 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
-                // NO set_threadgroup_memory_length — kernel uses none.
+                // NO set_threadgroup_memory_length -- kernel uses none.
             },
         )?;
 
@@ -2823,6 +3024,7 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
@@ -2836,13 +3038,8 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
             },
         )?;
@@ -2854,7 +3051,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Wedge K dispatcher — gemm_q4_k_m_simdmat geometry: 128 threads per TG
+    // Wedge K dispatcher -- gemm_q4_k_m_simdmat geometry: 128 threads per TG
     // (4 simdgroups × 32), 4 rows per TG, grid=(ceil(rows/4)*128, 1, 1).
     fn dispatch_q4_k_m_simdmat_pinned(
         ctx: &MetalContext,
@@ -2928,7 +3125,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Wedge K Approach 1 Iter 1 — v3_8r: 256 threads per TG (8 simdgroups),
+    // Wedge K Approach 1 Iter 1 -- v3_8r: 256 threads per TG (8 simdgroups),
     // 8 rows per TG, grid=(ceil(rows/8)*256, 1, 1).
     fn dispatch_q4_k_m_v3_8r_pinned(
         ctx: &MetalContext,
@@ -3002,7 +3199,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Wedge K Approach 1 Iter 2 — v3_dual: 128 threads per TG (4 simdgroups),
+    // Wedge K Approach 1 Iter 2 -- v3_dual: 128 threads per TG (4 simdgroups),
     // 2 rows per simdgroup (N_R0=2), 8 rows per TG.
     // grid=(ceil(rows/8)*128, 1, 1). Amortizes activation load over 2 rows.
     fn dispatch_q4_k_m_v3_dual_pinned(
@@ -3077,7 +3274,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    // Approach 3 — v3_llama: 64 threads per TG (2 simdgroups), 4 rows per
+    // Approach 3 -- v3_llama: 64 threads per TG (2 simdgroups), 4 rows per
     // simdgroup (N_R0=4), sumy trick for min correction.
     // grid=(ceil(rows/8)*64, 1, 1). Faithful llama.cpp port.
     fn dispatch_q4_k_m_v3_llama_pinned(
@@ -3187,6 +3384,7 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
         ctx.dispatch_threads(
@@ -3199,13 +3397,8 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
@@ -3254,6 +3447,7 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
         ctx.dispatch_threads(
@@ -3266,13 +3460,8 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
@@ -3285,7 +3474,7 @@ mod metal_dispatch {
         Ok(())
     }
 
-    /// Wedge B — TCB variant of add_inplace_metal. Encodes into `tcb` without
+    /// Wedge B -- TCB variant of add_inplace_metal. Encodes into `tcb` without
     /// committing. Caller commits when a batch boundary is appropriate.
     pub fn add_inplace_metal_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -3316,9 +3505,9 @@ mod metal_dispatch {
     // Each function below is a "buf" sibling of an existing dispatcher.
     // The difference: callers pass pre-existing Metal Buffers instead of
     // having the dispatcher allocate per-call. Same kernel, same binding
-    // scheme — only the buffer-allocation boilerplate is removed.
+    // scheme -- only the buffer-allocation boilerplate is removed.
 
-    /// v0.5.6 — buffer-arg sibling of `rmsnorm_metal`.
+    /// v0.5.6 -- buffer-arg sibling of `rmsnorm_metal`.
     /// Takes pre-existing f16 Metal Buffers; skips the Vec→Buffer round-trip.
     /// Same kernel `"rmsnorm"`, same binding scheme (buf0=x, buf1=weight,
     /// buf2=out, bytes3=hidden, bytes4=eps, tg0=shmem).
@@ -3350,7 +3539,7 @@ mod metal_dispatch {
         })
     }
 
-    /// Wedge B — TCB variant of rmsnorm for the f32 residual stream.
+    /// Wedge B -- TCB variant of rmsnorm for the f32 residual stream.
     /// Uses `"rmsnorm_f32"` kernel (f32 x, f32 weight → f32 out). Encodes into
     /// `tcb` without committing. Caller commits when a batch boundary is appropriate.
     pub fn rmsnorm_metal_buf_tcb(
@@ -3375,7 +3564,48 @@ mod metal_dispatch {
         })
     }
 
-    /// v0.5.6 — buffer-arg variant of the f16 silu_mul kernel.
+    /// Session F (sketch) — fused add_inplace + rmsnorm_f32 dispatcher.
+    ///
+    /// Replaces the back-to-back pair
+    /// `add_inplace_metal_tcb(&x, &attn_out)` + `rmsnorm_metal_buf_tcb(&x, w, eps, h, &x_norm)`
+    /// with a single dispatch of `add_rmsnorm_fused`.
+    ///
+    /// Effect on x_buf: same as the unfused pair (x += attn_out, then x_norm = norm(x)).
+    /// Eliminates one dispatch and one full DRAM pass over `x`.
+    ///
+    /// Opt-in only: gated behind the `DISMANTLE_FUSED_ADD_RMSNORM` env var at
+    /// call sites in `deepseek_v2.rs`. Parity test:
+    /// `tests/rmsnorm_fused_parity.rs`.
+    pub fn add_rmsnorm_fused_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        attn_out_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(attn_out_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// v0.5.6 -- buffer-arg variant of the f16 silu_mul kernel.
     /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
     /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.
     pub fn silu_mul_metal_buf(
@@ -3404,10 +3634,10 @@ mod metal_dispatch {
         )
     }
 
-    // add_inplace_metal_buf: SKIPPED — existing `add_inplace_metal` already
+    // add_inplace_metal_buf: SKIPPED -- existing `add_inplace_metal` already
     // takes PinnedBuffer args (it IS the buf variant). No wrapper needed.
 
-    /// v0.5.6 — buffer-arg sibling of `gemv_f32_attn_metal`.
+    /// v0.5.6 -- buffer-arg sibling of `gemv_f32_attn_metal`.
     /// `w` is still a host slice (allocates a temp buffer); `x_buf` and
     /// `y_buf` are pre-existing Metal Buffers. Same kernel `"gemv_f32_attn"`.
     pub fn gemv_f32_attn_metal_buf(
@@ -3451,7 +3681,7 @@ mod metal_dispatch {
         )
     }
 
-    /// v0.5.6 — buffer-arg sibling of `gemv_f32_attn_metal_pinned`.
+    /// v0.5.6 -- buffer-arg sibling of `gemv_f32_attn_metal_pinned`.
     /// All three matrix buffers are pre-existing; no allocation inside.
     /// Same kernel `"gemv_f32_attn"`.
     pub fn gemv_f32_attn_metal_pinned_buf(
@@ -3488,7 +3718,7 @@ mod metal_dispatch {
         )
     }
 
-    /// v0.5.6 — buffer-arg sibling of `dispatch_gemv_f32_attn_pinned_pair_batched`.
+    /// v0.5.6 -- buffer-arg sibling of `dispatch_gemv_f32_attn_pinned_pair_batched`.
     /// All buffers are pre-existing; dispatches two `"gemv_f32_attn"` kernels
     /// in a single CommandBatch, sharing the same x_buf.
     pub fn gemv_f32_attn_pair_metal_buf(
@@ -3508,7 +3738,7 @@ mod metal_dispatch {
         })
     }
 
-    /// v0.5.6 — buffer-arg sibling of `gemv_f32_moe_metal`.
+    /// v0.5.6 -- buffer-arg sibling of `gemv_f32_moe_metal`.
     /// `w` is still a host slice (allocates a temp buffer); `x_buf` and
     /// `y_buf` are pre-existing Metal Buffers. Same kernel `"gemv_f32_moe"`.
     pub fn gemv_f32_moe_metal_buf(
@@ -3552,7 +3782,7 @@ mod metal_dispatch {
         )
     }
 
-    /// v0.5.6 — buffer-arg sibling of `moe_grouped_gemm_q4_metal`.
+    /// v0.5.6 -- buffer-arg sibling of `moe_grouped_gemm_q4_metal`.
     /// `w_q4_bytes` is still a host slice (allocates a temp buffer);
     /// `x_buf` and `y_buf` are pre-existing Metal Buffers.
     /// Same kernel `"moe_grouped_gemm_q4"`.
@@ -3770,7 +4000,7 @@ mod metal_dispatch {
     /// Reads arena.q / c_kv / k_pe; writes arena.attn_out / arena.out.
     /// c_kv and k_pe are passed explicitly so callers can use persistent GPU
     /// KV buffers (GPU-resident KV cache) or arena scratch buffers.
-    /// No commit — caller commits the TCB when ready.
+    /// No commit -- caller commits the TCB when ready.
     #[allow(clippy::too_many_arguments)]
     pub fn mla_decode_and_o_proj_arena_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -3875,8 +4105,41 @@ mod metal_dispatch {
         let tg_size = TG_SIZE as u32;
         let is_v2t = kernel_name.ends_with("_v2t");
         let is_v2_family = kernel_name.ends_with("_v2") || kernel_name.ends_with("_v2s") || is_v2t;
-        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
-        let shmem_bytes = if is_v2t {
+        // Session J sketch: opt-in Q8_0 down "wide-N" kernels.
+        // - DISMANTLE_Q8_DOWN_W4=1 → 4 rows/simdgroup, 32 rows/TG (rows%32==0).
+        // - DISMANTLE_Q8_DOWN_W2=1 → 2 rows/simdgroup, 16 rows/TG (rows%16==0).
+        // W4 takes precedence over W2. Both only apply to the Q8_0 _v2t down
+        // kernel; fall back to default _v2t otherwise. No default changed.
+        let q8_w4_opt_in = std::env::var_os("DISMANTLE_Q8_DOWN_W4")
+            .map(|v| v == "1" || v == "true")
+            .unwrap_or(false);
+        let q8_w2_opt_in = std::env::var_os("DISMANTLE_Q8_DOWN_W2")
+            .map(|v| v == "1" || v == "true")
+            .unwrap_or(false);
+        let use_q8_w4 = q8_w4_opt_in
+            && kernel_name == "moe_batched_gemm_q8_0_indexed_v2t"
+            && rows_u32 % 32 == 0;
+        let use_q8_w2 = !use_q8_w4
+            && q8_w2_opt_in
+            && kernel_name == "moe_batched_gemm_q8_0_indexed_v2t"
+            && rows_u32 % 16 == 0;
+        let effective_kernel: &str = if use_q8_w4 {
+            "moe_batched_gemm_q8_0_indexed_v2t_w4"
+        } else if use_q8_w2 {
+            "moe_batched_gemm_q8_0_indexed_v2t_w2"
+        } else {
+            kernel_name
+        };
+        let n_tg_x = if use_q8_w4 {
+            (rows_u32 + 31) / 32
+        } else if use_q8_w2 {
+            (rows_u32 + 15) / 16
+        } else if is_v2_family {
+            (rows_u32 + 7) / 8
+        } else {
+            rows_u32
+        };
+        let shmem_bytes = if is_v2t || use_q8_w2 || use_q8_w4 {
             // x_cache: cols floats in threadgroup SRAM
             (cols as u64) * std::mem::size_of::<f32>() as u64
         } else if is_v2_family {
@@ -3885,7 +4148,7 @@ mod metal_dispatch {
             (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64
         };
         tcb.dispatch_threads(
-            kernel_name,
+            effective_kernel,
             (n_tg_x * tg_size, routes_u32, 1),
             (tg_size, 1, 1),
             |enc| {
@@ -3897,7 +4160,7 @@ mod metal_dispatch {
                 enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
                 enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
                 enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
-                if !is_v2_family || is_v2t {
+                if !is_v2_family || is_v2t || use_q8_w2 || use_q8_w4 {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 }
             },
@@ -4026,7 +4289,7 @@ mod metal_dispatch {
 
     // v2t_gu_v2: same signature as encode_batched_gemv_fused_gu_tcb but dispatches
     // moe_batched_gemm_q4_indexed_v2t_gu_v2 (sumy trick + scale preload +
-    // paired nibble reads — Phase 2 optimisation).
+    // paired nibble reads -- Phase 2 optimisation).
     #[allow(clippy::too_many_arguments)]
     fn encode_batched_gemv_fused_gu_v2_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -4097,7 +4360,7 @@ mod metal_dispatch {
             let ids_off = (route_i * std::mem::size_of::<u32>()) as u64;
             // Offset act_buf so this route writes to act[route_i * rows .. +rows].
             let act_off = (route_i * rows * std::mem::size_of::<f32>()) as u64;
-            // x (hidden state) is the same for all routes — no offset needed.
+            // x (hidden state) is the same for all routes -- no offset needed.
             tcb.dispatch_threads(
                 "moe_batched_gemm_q4_indexed_v2t_gu",
                 (n_tg_x * tg_size, 1, 1),
@@ -4641,7 +4904,7 @@ mod metal_dispatch {
         )
     }
 
-    /// v2.2.0-T2.14 — v2t-pattern dispatch: 8 rows per threadgroup, one simdgroup
+    /// v2.2.0-T2.14 -- v2t-pattern dispatch: 8 rows per threadgroup, one simdgroup
     /// per row, threadgroup `xw_cache` for once-per-TG rmsnorm-scaled activation.
     /// Requires rows % 8 == 0 and cols % 32 == 0.
     pub fn rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
