@@ -39,6 +39,12 @@ models/
 *.gguf
 *.bin
 
+# Generated specialization artifacts: calibration corpus parquet shards,
+# learned-head .npz files, per-tensor quant configs, vocab-prune tables.
+# Produced by tools/training/* and tools/quant/*. Multi-GB; rebuild from
+# source, never commit. See dismantle-execution-plan-* / task #7.
+/artifacts/
+
 # Competitor benchmark outputs / pinned versions / installs
 tools/competitors/results.json
 tools/competitors/versions.json
@@ -61,3 +67,4 @@ bench_out/
 # Per-run bench output dirs (history is kept in bench_history.jsonl)
 bench_results/coexist_*/
 bench_results/v0.3.*/
+/vendor/
