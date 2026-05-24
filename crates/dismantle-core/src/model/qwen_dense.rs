@@ -328,9 +328,26 @@ impl QwenDense {
 
 impl Engine for QwenDense {
     fn load(weights: &Path, config: EngineConfig) -> Result<Self> {
+        // 2026-05-24 — per-stage load timing. Gated behind
+        // DISMANTLE_QWEN_LOAD_TIMING=1 so it stays quiet for normal
+        // runs but unblocks the model-load category of the latency
+        // budget when investigation is needed.
+        let load_t0 = Instant::now();
+        let load_timing_enabled = std::env::var("DISMANTLE_QWEN_LOAD_TIMING")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        let mut stage_marks: Vec<(&'static str, std::time::Duration)> = Vec::new();
+        let mark = |stage_marks: &mut Vec<_>, name: &'static str, t: &mut Instant| {
+            let now = Instant::now();
+            stage_marks.push((name, now.duration_since(*t)));
+            *t = now;
+        };
+        let mut t = load_t0;
+
         let gguf = GgufFile::open(weights)?;
         let cfg = QwenConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("qwen2-dense").to_string();
+        mark(&mut stage_marks, "gguf_open+config", &mut t);
 
         // Tokenizer: prefer sidecar tokenizer.json, fall back to GGUF.
         let sidecar = weights
@@ -342,6 +359,7 @@ impl Engine for QwenDense {
         } else {
             Tokenizer::from_gguf(&gguf)?
         };
+        mark(&mut stage_marks, "tokenizer", &mut t);
 
         // Embed table -- typically fp16 in Q4_K_M GGUFs but read whatever
         // dtype the GGUF carries.
@@ -396,7 +414,9 @@ impl Engine for QwenDense {
         let max_seq = config.max_seq_len.min(cfg.max_seq_len);
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
+        mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        mark(&mut stage_marks, "metal_ctx_init", &mut t);
 
         // P1f: weight pinning -- one big buffer for the whole mmap, plus
         // small per-layer + per-model pinned buffers for norms, biases,
@@ -483,6 +503,16 @@ impl Engine for QwenDense {
                                 bytemuck::cast_slice::<f16, u8>(&f16_vec),
                             ))
                         };
+                    // 2026-05-24: only pin the f16 fallback for dtypes that
+                    // actually route through the f16 path at runtime. Q4_K
+                    // reads bit-packed from `weights_mmap_buf` via
+                    // `gemv_q4_k_m_v3_8r_pinned_tcb`; Q6_K reads bit-packed
+                    // from the same mmap via `gemv_q6_k_pinned_tcb` (see the
+                    // `gemv_proj!` macro in `forward_token_greedy_tcb`). For
+                    // a Q4_K_M GGUF every weight here is Q4_K or Q6_K, so
+                    // the f16 pin was ~1.7 GiB of resident memory the
+                    // engine never read. Other quant formats (Q3_K, Q5_K,
+                    // IQ-variants) still need the f16 fallback.
                     for (t, slot) in [
                         (&layer.q_proj, &mut layer.pinned.q_proj_f16),
                         (&layer.k_proj, &mut layer.pinned.k_proj_f16),
@@ -492,7 +522,7 @@ impl Engine for QwenDense {
                         (&layer.ffn_up, &mut layer.pinned.ffn_up_f16),
                         (&layer.ffn_down, &mut layer.pinned.ffn_down_f16),
                     ] {
-                        if t.dtype != GgmlType::Q4_K {
+                        if t.dtype != GgmlType::Q4_K && t.dtype != GgmlType::Q6_K {
                             *slot = Some(dequant_to_f16_pin(t)?);
                         }
                     }
@@ -624,6 +654,40 @@ impl Engine for QwenDense {
                 // Whether the pruned buffer holds Q4_K bytes (vs plain f16).
                 let pruned_is_q4k =
                     want_q4k_lmhead && pruned_n.is_some() && pruned_n.unwrap() > 0;
+
+                // 2026-05-24 — Metal pipeline cache pre-touch. The
+                // `pipeline()` call lazily compiles each kernel's
+                // ComputePipelineState on its first dispatch. For TTFT
+                // that means the first decode step pays a ~10-50 ms
+                // JIT compile per unique kernel. Warming all Qwen TCB
+                // kernels here moves that cost into load time, where
+                // the user already expects a pause. Missing kernels
+                // are ignored so other model architectures using this
+                // context don't fail.
+                const QWEN_TCB_KERNELS: &[&str] = &[
+                    "gemm_q4_k_m_v3_8r",
+                    "gemm_q6_k_fused_v2",
+                    "gemm_q4_k_m_batched_v3w",
+                    "gemv_f16",
+                    "rmsnorm_f32",
+                    "rmsnorm_metal_buf",
+                    "rope_q_f32_inplace",
+                    "kv_append_f32",
+                    "mha_decode_f32",
+                    "silu_mul",
+                    "add_inplace",
+                    "add_inplace_broadcast",
+                    "add_rmsnorm_fused",
+                    "sample_argmax_f32",
+                    "embed_lookup_f32",
+                    "embed_lookup_metal_f32",
+                    "memcpy_f32",
+                    "moe_batched_silu_mul",
+                ];
+                for k in QWEN_TCB_KERNELS {
+                    let _ = ctx.pipeline(k);
+                }
+
                 (
                     Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k,
                     pruned_buf, pruned_n, pruned_is_q4k, prune_remap,
@@ -653,6 +717,21 @@ impl Engine for QwenDense {
             bool,
             Option<Vec<u32>>,
         ) = (None, None, None, None, None, None, None, false, None);
+
+        mark(&mut stage_marks, "metal_pinning+lm_head+vocab_prune+warmup", &mut t);
+
+        if load_timing_enabled {
+            let total = load_t0.elapsed();
+            eprintln!("[dismantle] qwen_dense load timing:");
+            for (name, dt) in &stage_marks {
+                eprintln!("  {:42}{:>9.2} ms", name, dt.as_secs_f64() * 1000.0);
+            }
+            eprintln!(
+                "  {:42}{:>9.2} ms",
+                "TOTAL",
+                total.as_secs_f64() * 1000.0
+            );
+        }
 
         Ok(Self {
             config: cfg,
@@ -833,6 +912,11 @@ impl Engine for QwenDense {
         }
         stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
         stats.completion_tokens = produced;
+        stats.dispatch_samples = self
+            .metal_ctx
+            .as_ref()
+            .map(|ctx| ctx.drain_trace())
+            .unwrap_or_default();
         let (buffers_created, bytes_allocated, commits) = self
             .metal_ctx
             .as_ref()
