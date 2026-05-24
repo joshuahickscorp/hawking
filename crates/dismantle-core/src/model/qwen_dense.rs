@@ -248,6 +248,14 @@ pub struct QwenDense {
     /// underscore matches `_weights_path`'s "kept-for-aliveness" convention.
     #[cfg(target_os = "macos")]
     pub(crate) _weight_heap: Option<crate::metal::heap::WeightHeap>,
+
+    /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
+    /// tables, keyed by GGUF mmap offset. Populated by
+    /// `ensure_q4k_predec_cache` on first forward when
+    /// DISMANTLE_QWEN_Q4K_PREDEC=1. `None` = feature off, no memory cost.
+    #[cfg(target_os = "macos")]
+    pub(crate) q4k_predec_cache:
+        Option<std::collections::HashMap<usize, crate::metal::PinnedBuffer>>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -955,6 +963,8 @@ impl Engine for QwenDense {
             vocab_prune_remap,
             #[cfg(target_os = "macos")]
             _weight_heap: None,
+            #[cfg(target_os = "macos")]
+            q4k_predec_cache: None,
         })
     }
 
@@ -1614,6 +1624,57 @@ impl QwenDense {
 
 #[cfg(target_os = "macos")]
 impl QwenDense {
+    /// Item 1 wire-up: lazy-build the Q4_K pre-decoded scale cache.
+    /// Walks every Q4_K weight in the forward path (q/k/v/o + ffn
+    /// gate/up/down + ffn_down_q4k requant + lm_head_q4k), pre-decodes
+    /// the 8 sub-block (scale, min) f32 pairs per block, pins each
+    /// table as a separate PinnedBuffer, and inserts into the cache
+    /// keyed by the source weight's GGUF mmap offset.
+    ///
+    /// Called once on first forward when DISMANTLE_QWEN_Q4K_PREDEC=1
+    /// is set. Memory cost is ~0.444× the Q4_K weight size = ~760 MB
+    /// at Qwen-3B-Q4_K_M scale. See memory/build_predec_2026_05_25.md.
+    #[cfg(target_os = "macos")]
+    fn ensure_q4k_predec_cache(&mut self) -> Result<()> {
+        if self.q4k_predec_cache.is_some() {
+            return Ok(());
+        }
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+        let mut cache = std::collections::HashMap::new();
+        let mut insert_q4k = |tref: &TensorRef,
+                              ctx: &crate::metal::MetalContext,
+                              cache: &mut std::collections::HashMap<usize, crate::metal::PinnedBuffer>|
+         -> Result<()> {
+            if tref.dtype != GgmlType::Q4_K {
+                return Ok(());
+            }
+            if cache.contains_key(&tref.offset) {
+                return Ok(());
+            }
+            let bytes = &self.gguf.mmap[tref.offset..tref.offset + tref.byte_size];
+            let scales = crate::kernels::predecode_q4_k_scale_table(bytes);
+            let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+            let buf = ctx.new_buffer_with_bytes(scales_bytes);
+            cache.insert(tref.offset, buf);
+            Ok(())
+        };
+        // Walk every layer's Q4_K projection sites.
+        for layer in &self.layers {
+            insert_q4k(&layer.q_proj, ctx, &mut cache)?;
+            insert_q4k(&layer.k_proj, ctx, &mut cache)?;
+            insert_q4k(&layer.v_proj, ctx, &mut cache)?;
+            insert_q4k(&layer.o_proj, ctx, &mut cache)?;
+            insert_q4k(&layer.ffn_gate, ctx, &mut cache)?;
+            insert_q4k(&layer.ffn_up, ctx, &mut cache)?;
+            insert_q4k(&layer.ffn_down, ctx, &mut cache)?;
+        }
+        self.q4k_predec_cache = Some(cache);
+        Ok(())
+    }
+
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
     /// graph + final norm + LM head + GPU argmax into a single
     /// `TokenCommandBuffer`, commits once, and reads back the next
@@ -1626,6 +1687,25 @@ impl QwenDense {
     pub fn forward_token_greedy_tcb(&mut self, token: u32, pos: usize) -> Result<u32> {
         use crate::kernels;
         use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
+
+        // Item 1 wire-up: lazy-build the Q4_K pre-decoded scale cache
+        // on first forward when DISMANTLE_QWEN_Q4K_PREDEC=1. The cache
+        // is keyed by Q4_K weight offset (in the GGUF mmap) so each
+        // dispatch site can look it up by tref.offset.
+        let predec_active = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        if predec_active && self.q4k_predec_cache.is_none() {
+            self.ensure_q4k_predec_cache()?;
+        }
+        // Bind cache reference for the macro body; None when env flag
+        // is off OR cache wasn't built (e.g., load_engine on a build
+        // without macOS). Captured by `gemv_proj!` macro below.
+        let predec_cache_ref = if predec_active {
+            self.q4k_predec_cache.as_ref()
+        } else {
+            None
+        };
 
         let ctx = self
             .metal_ctx
@@ -1835,6 +1915,28 @@ impl QwenDense {
                                     $cols,
                                     $x_i8,
                                     $x_sc,
+                                    $out,
+                                )?;
+                            } else if let Some(scales_buf) = predec_cache_ref
+                                .as_ref()
+                                .and_then(|m| m.get(&$tref.offset))
+                            {
+                                // Item 1 wire-up: pre-decoded sub-block
+                                // scales. Same v3_8r geometry as below,
+                                // but reads the 8 (ds, dm) f32 pairs
+                                // per block from the pinned predec table
+                                // instead of re-decoding inline every
+                                // dispatch.
+                                kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales_buf,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    $x,
                                     $out,
                                 )?;
                             } else {
