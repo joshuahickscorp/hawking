@@ -4252,6 +4252,55 @@ mod metal_dispatch {
         )
     }
 
+    /// W4A8 fusion (2026-05-24): single-dispatch version of
+    /// `add_rmsnorm_fused_tcb` + `quantize_f32_to_int8_per_block_tcb`. Same
+    /// add+rmsnorm semantics, also writes per-256-block int8 + f32 scales
+    /// of the normalized output.
+    ///
+    /// Replaces two dispatches per layer × 2 sites per layer = 72 dispatches
+    /// per decode token on Qwen-3B (36 layers). Bit-identical to the unfused
+    /// pair (parity test: `tests/add_rmsnorm_fused_q8_parity.rs`).
+    ///
+    /// Requires `hidden % 256 == 0`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_rmsnorm_fused_q8_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        attn_out_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        x_norm_int8_buf: &PinnedBuffer,
+        x_norm_scales_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        if hidden % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_fused_q8_tcb requires hidden % 256 == 0; got hidden={hidden}"
+            )));
+        }
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused_q8",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(attn_out_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(x_norm_int8_buf), 0);
+                enc.set_buffer(5, Some(x_norm_scales_buf), 0);
+                enc.set_buffer(6, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// v0.5.6 -- buffer-arg variant of the f16 silu_mul kernel.
     /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
     /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.

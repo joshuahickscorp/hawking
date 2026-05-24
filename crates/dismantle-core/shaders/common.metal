@@ -173,6 +173,90 @@ kernel void add_rmsnorm_fused(
     }
 }
 
+// W4A8 fusion (2026-05-24): same add+rmsnorm as add_rmsnorm_fused, plus per-256-
+// block int8 quantize of the normalized output. Saves one dispatch + one DRAM
+// round-trip on x_norm vs back-to-back add_rmsnorm_fused + quantize_f32_to_int8_per_block.
+//
+// Phase 3 reads x_norm back from DRAM (rather than a register held over from
+// phase 2) so the quantization math is byte-for-byte identical to the standalone
+// quantize kernel, which is the bit-identical fusion gate (parity test).
+//
+// Requires hidden % 256 == 0; one TG (TG_SIZE=256 threads), single dispatch.
+kernel void add_rmsnorm_fused_q8(
+    device       float*       x             [[buffer(0)]],
+    device const float*       attn_out      [[buffer(1)]],
+    device const float*       weight        [[buffer(2)]],
+    device       float*       x_norm        [[buffer(3)]],
+    device       signed char* x_norm_int8   [[buffer(4)]],
+    device       float*       x_norm_scales [[buffer(5)]],
+    constant ArgbufRmsnorm&   args          [[buffer(6)]],
+    threadgroup  float*       shmem         [[threadgroup(0)]],
+    uint                      tid           [[thread_position_in_threadgroup]],
+    uint                      tg_size       [[threads_per_threadgroup]])
+{
+    // Phase 1: residual add + accumulate variance (unchanged from add_rmsnorm_fused).
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i] + attn_out[i];
+        x[i] = v;
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: normalize and write x_norm (unchanged).
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 3: per-256-element block int8 quantize, **parallel across blocks**.
+    // Each simdgroup (32 lanes) owns one 256-element block. Each lane handles
+    // 8 elements via a strided pattern. simd_max gives the per-block reduction
+    // in one warp-shuffle (no barriers, no shmem). All `hidden/256` blocks
+    // execute concurrently within the single TG — matches the parallelism of
+    // the standalone quantize kernel (which dispatched one TG per block) while
+    // saving the inter-dispatch encoding overhead and the x_norm DRAM round-trip.
+    //
+    // Bit-identical to standalone: scales are max(|x|) of the same 256-elem
+    // set (order-independent for max-of-floats); int8 conversion uses identical
+    // precise::divide/round/clamp math.
+    //
+    // Requires tg_size == 256 (8 simdgroups × 32 lanes).
+    uint blocks = args.hidden / 256u;
+    uint simd_id   = tid / 32u;
+    uint simd_lane = tid % 32u;
+    if (simd_id < blocks) {
+        uint block_off = simd_id * 256u;
+        // Each lane reads 8 elements via stride-32 (lane, lane+32, ..., lane+224)
+        // to coalesce DRAM loads across the simdgroup.
+        float vals[8];
+        float my_abs_max = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            float v = x_norm[block_off + simd_lane + k * 32u];
+            vals[k] = v;
+            my_abs_max = max(my_abs_max, fabs(v));
+        }
+        float max_abs = simd_max(my_abs_max);
+        float scale = (max_abs > 0.0f)
+                    ? metal::precise::divide(max_abs, 127.0f)
+                    : 1.0f;
+        if (simd_lane == 0u) x_norm_scales[simd_id] = scale;
+        float inv_s = metal::precise::divide(1.0f, scale);
+        for (uint k = 0u; k < 8u; ++k) {
+            float q = round(vals[k] * inv_s);
+            q = clamp(q, -127.0f, 127.0f);
+            x_norm_int8[block_off + simd_lane + k * 32u] = (signed char)q;
+        }
+    }
+}
+
 // P3 — Batched add_rmsnorm_fused: B rows in one dispatch.
 // Grid: (TG_SIZE * B, 1, 1) — B TGs, each TG handles one row.
 // All buffers laid out (B, hidden) contiguous.
