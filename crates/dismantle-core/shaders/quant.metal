@@ -675,6 +675,136 @@ kernel void gemm_q4_k_a8_v3_8r(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── gemm_q4k_fast_v1 ─────────────────────────────────────────────────────────
+// Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but reads
+// from the Q4K_FAST sub-block-contiguous layout instead of GGUF Q4_K:
+//
+//   per super-block (160 bytes total, 256 elements):
+//     for sub-block k in 0..8:
+//       bytes [k*20 .. k*20+2]   sub_scale (fp16)  = d    * sb_idx[k]
+//       bytes [k*20+2 .. k*20+4] sub_min   (fp16)  = dmin * mb_idx[k]
+//       bytes [k*20+4 .. k*20+20] 16 bytes (32 nibbles, two 4-bit values/byte)
+//
+// Decode loop reads the fp16 sub_scale / sub_min once, then iterates the 16
+// nibble bytes paired across pi in {0..4}, exactly mirroring v3_8r's pi
+// loop. The per-thread element layout inside a sub-block matches v3_8r:
+// thread `simd_lane` in [0..32) reads nibble byte `pi*32+simd_lane` of the
+// 32-byte sub-block-pair... but Q4K_FAST groups 16 nibble bytes per sub-
+// block (not per super-block half), so the indexing simplifies to:
+//
+//   for k in 0..8:                      // sub-block
+//     for pi in 0..2:                   // 2 nibble bytes per (k, simd_lane/16 pair)
+//
+// Wait — v3_8r uses pi in [0..4) with each pi covering 32 nibble bytes that
+// span TWO sub-blocks (k0 = pi*2, k1 = pi*2+1). Q4K_FAST stores all 16
+// nibble bytes per sub-block contiguously, so the natural loop is per
+// sub-block. Each sub-block has 32 4-bit values = 16 nibble bytes; thread
+// `simd_lane` (0..32) reads `nibbles[simd_lane / 2]` low or high nibble
+// based on `simd_lane & 1`. This is a re-indexing that produces the SAME
+// per-element partial sums as v3_8r — verified by the parity test.
+
+kernel void gemm_q4k_fast_v1(
+    device const uchar* w_fast [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 160ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 160ul;
+
+        // Match v3_8r's pi-paired iteration so each thread's per-element
+        // accumulation order is bit-identical to the source kernel:
+        //   pi in [0..4)
+        //     k0 = pi*2,  k1 = pi*2+1
+        //     qb = byte at bo + 16 + pi*32 + simd_lane   (v3_8r layout)
+        //
+        // In Q4K_FAST, that same byte lives at:
+        //   bo + (k0)*20 + 4 + (simd_lane half within k0/k1 layout)
+        //
+        // v3_8r's pi-byte simd_lane in [0..32) splits into:
+        //   lane in [0..16)  → low half: byte = sub_block k0 nibble lane
+        //   lane in [16..32) → high half: byte = sub_block k1 nibble (lane-16)
+        // Q4_K packs k0's 16 nibble bytes followed by k1's 16 nibble bytes
+        // contiguously inside the (pi*32) span at bo+16+pi*32. Q4K_FAST
+        // separates those into bo+k0*20+4 (16 bytes) and bo+k1*20+4 (16
+        // bytes). To preserve v3_8r ordering, each lane reads the byte
+        // corresponding to its half:
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u;
+            uint k1 = k0 + 1u;
+            ushort s0_bits = (ushort)w_fast[bo + k0 * 20ul + 0ul]
+                           | ((ushort)w_fast[bo + k0 * 20ul + 1ul] << 8);
+            ushort m0_bits = (ushort)w_fast[bo + k0 * 20ul + 2ul]
+                           | ((ushort)w_fast[bo + k0 * 20ul + 3ul] << 8);
+            ushort s1_bits = (ushort)w_fast[bo + k1 * 20ul + 0ul]
+                           | ((ushort)w_fast[bo + k1 * 20ul + 1ul] << 8);
+            ushort m1_bits = (ushort)w_fast[bo + k1 * 20ul + 2ul]
+                           | ((ushort)w_fast[bo + k1 * 20ul + 3ul] << 8);
+            float ds0 = (float)as_type<half>(s0_bits);
+            float dm0 = (float)as_type<half>(m0_bits);
+            float ds1 = (float)as_type<half>(s1_bits);
+            float dm1 = (float)as_type<half>(m1_bits);
+
+            float xl0 = x[(uint64_t)b * 256ul + (uint64_t)(k0 * 32u + simd_lane)];
+            float xl1 = x[(uint64_t)b * 256ul + (uint64_t)(k1 * 32u + simd_lane)];
+
+            // v3_8r reads ONE byte per pi (at bo+16+pi*32+simd_lane) and
+            // uses its low nibble for k0, high nibble for k1. Q4K_FAST
+            // splits k0/k1 into separate sub-block payloads, but the byte
+            // positions within each sub-block use the SAME simd_lane
+            // index — meaning lane reads byte simd_lane of k0's 16-byte
+            // nibble run (covers TWO 4-bit values: low for k0 element
+            // simd_lane*2, high for k0 element simd_lane*2+1).
+            //
+            // To stay bit-identical to v3_8r we need the SAME nibble
+            // selection: v3_8r used `qb & 0x0F` for the k0 element at
+            // index simd_lane and `qb >> 4` for the k1 element at the
+            // SAME index simd_lane (both within their respective
+            // sub-blocks). The byte that holds the k0 element at
+            // sub-block-internal index `simd_lane` (with simd_lane in
+            // [0..32)) is byte `simd_lane / 2` in the 16-byte payload;
+            // low nibble if simd_lane is even, high nibble if odd.
+            //
+            // Wait — v3_8r's `qb & 0x0F` is the k0 element at sub-block
+            // index `simd_lane`. The activation lookup uses
+            // `xl[k0] = x[b*256 + k0*32 + simd_lane]` (simd_lane in
+            // [0..32)), so per-thread there are exactly 32 elements per
+            // sub-block (one per lane). Each nibble byte holds 2 elements
+            // (low + high) of DIFFERENT sub-blocks (k0 low, k1 high).
+            //
+            // In Q4K_FAST each sub-block has its OWN 16-byte nibble
+            // payload, holding 32 4-bit values. Thread `simd_lane` (one
+            // element per sub-block) reads:
+            //   byte_idx = simd_lane / 2u
+            //   nib_sel  = simd_lane & 1u   (0=low nibble, 1=high nibble)
+            uint byte_idx = simd_lane >> 1u;
+            uint nib_sel  = simd_lane & 1u;
+            uchar nb0 = w_fast[bo + k0 * 20ul + 4ul + (uint64_t)byte_idx];
+            uchar nb1 = w_fast[bo + k1 * 20ul + 4ul + (uint64_t)byte_idx];
+            uint q0 = (nib_sel == 0u) ? ((uint)nb0 & 0x0Fu) : (((uint)nb0 >> 4u) & 0x0Fu);
+            uint q1 = (nib_sel == 0u) ? ((uint)nb1 & 0x0Fu) : (((uint)nb1 >> 4u) & 0x0Fu);
+
+            partial += (ds0 * (float)q0 - dm0) * xl0;
+            partial += (ds1 * (float)q1 - dm1) * xl1;
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_v3_dual ──────────────────────────────────────────────────────
 // Phase B Approach 1 Iter 2: 2 rows per simdgroup (N_R0=2), 4 simdgroups per TG
 // (128 threads) — matches llama.cpp's N_R0_Q4_K=2, FC_mul_mv_nsg=4 geometry.
