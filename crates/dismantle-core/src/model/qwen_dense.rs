@@ -256,6 +256,17 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) q4k_predec_cache:
         Option<std::collections::HashMap<usize, crate::metal::PinnedBuffer>>,
+
+    /// Item 3 wire-up: lazy-loaded Q4K_FAST sidecar (whole file pinned)
+    /// + mapping from GGUF source offset → (sidecar offset, byte length).
+    /// Populated by `ensure_q4k_fast_cache` on first forward when
+    /// DISMANTLE_QWEN_Q4K_FAST=1 and the sidecar file is present at
+    /// `<gguf_path>.dismantle` (or the q4k_fast_recompute output path).
+    #[cfg(target_os = "macos")]
+    pub(crate) q4k_fast_buf: Option<crate::metal::PinnedBuffer>,
+    #[cfg(target_os = "macos")]
+    pub(crate) q4k_fast_offsets:
+        Option<std::collections::HashMap<usize, (usize, usize)>>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -965,6 +976,10 @@ impl Engine for QwenDense {
             _weight_heap: None,
             #[cfg(target_os = "macos")]
             q4k_predec_cache: None,
+            #[cfg(target_os = "macos")]
+            q4k_fast_buf: None,
+            #[cfg(target_os = "macos")]
+            q4k_fast_offsets: None,
         })
     }
 
@@ -1675,6 +1690,80 @@ impl QwenDense {
         Ok(())
     }
 
+    /// Item 3 wire-up: lazy-load the Q4K_FAST sidecar and build the
+    /// per-tensor offset map. Sidecar path is `<gguf>.dismantle` or
+    /// `models/<basename>-q4k_fast.dismantle`. Pins the sidecar body
+    /// once as a single MTLBuffer; offsets map is keyed by source
+    /// GGUF offset so the dispatch macro can look up by tref.offset.
+    #[cfg(target_os = "macos")]
+    fn ensure_q4k_fast_cache(&mut self) -> Result<()> {
+        if self.q4k_fast_buf.is_some() {
+            return Ok(());
+        }
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+        // Probe sidecar paths in order of specificity.
+        let weights_path = &self._weights_path;
+        let candidates = [
+            weights_path.with_extension("dismantle"),
+            std::path::PathBuf::from(format!(
+                "models/{}-q4k_fast.dismantle",
+                weights_path
+                    .file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("model")
+            )),
+            std::path::PathBuf::from(
+                "models/qwen2.5-3b-instruct-q4k_fast.dismantle"
+            ),
+        ];
+        let sidecar_path = candidates.iter().find(|p| p.exists()).cloned();
+        let sidecar_path = match sidecar_path {
+            Some(p) => p,
+            None => return Ok(()), // No sidecar; feature stays off.
+        };
+        let bytes = std::fs::read(&sidecar_path).map_err(|e| {
+            Error::Model(format!(
+                "read Q4K_FAST sidecar {}: {e}", sidecar_path.display()
+            ))
+        })?;
+        let hdr = crate::q4k_fast::parse_header(&bytes).map_err(|e| {
+            Error::Model(format!("parse Q4K_FAST sidecar: {e}"))
+        })?;
+        // Build name → (sidecar_offset, byte_len) map.
+        let mut by_name = std::collections::HashMap::with_capacity(hdr.tensors.len());
+        for ent in &hdr.tensors {
+            by_name.insert(ent.name.clone(), (ent.byte_off as usize, ent.byte_len as usize));
+        }
+        // Walk every Q4_K projection per layer and map by source GGUF offset.
+        let mut offsets = std::collections::HashMap::new();
+        let cfg = &self.config;
+        for li in 0..cfg.n_layers {
+            let proj_to_name: &[(usize, &str)] = &[
+                (self.layers[li].q_proj.offset,    "attn_q.weight"),
+                (self.layers[li].k_proj.offset,    "attn_k.weight"),
+                (self.layers[li].v_proj.offset,    "attn_v.weight"),
+                (self.layers[li].o_proj.offset,    "attn_output.weight"),
+                (self.layers[li].ffn_gate.offset,  "ffn_gate.weight"),
+                (self.layers[li].ffn_up.offset,    "ffn_up.weight"),
+                (self.layers[li].ffn_down.offset,  "ffn_down.weight"),
+            ];
+            for (src_off, name_suf) in proj_to_name {
+                let full = format!("blk.{li}.{name_suf}");
+                if let Some(&(side_off, side_len)) = by_name.get(&full) {
+                    offsets.insert(*src_off, (side_off, side_len));
+                }
+            }
+        }
+        // Pin the whole sidecar bytes as one MTLBuffer.
+        let buf = ctx.new_buffer_with_bytes(&bytes);
+        self.q4k_fast_buf = Some(buf);
+        self.q4k_fast_offsets = Some(offsets);
+        Ok(())
+    }
+
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
     /// graph + final norm + LM head + GPU argmax into a single
     /// `TokenCommandBuffer`, commits once, and reads back the next
@@ -1698,11 +1787,28 @@ impl QwenDense {
         if predec_active && self.q4k_predec_cache.is_none() {
             self.ensure_q4k_predec_cache()?;
         }
-        // Bind cache reference for the macro body; None when env flag
-        // is off OR cache wasn't built (e.g., load_engine on a build
-        // without macOS). Captured by `gemv_proj!` macro below.
+        // Item 3: optional Q4K_FAST sidecar swap. When env is set AND
+        // the sidecar exists, every Q4_K projection routes through the
+        // custom sub-block-contiguous kernel.
+        let q4k_fast_active = std::env::var_os("DISMANTLE_QWEN_Q4K_FAST")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        if q4k_fast_active && self.q4k_fast_buf.is_none() {
+            self.ensure_q4k_fast_cache()?;
+        }
+        // Bind cache references for the macro body. predec takes
+        // precedence if both are active (they're mutually exclusive
+        // in practice; predec is mathematically equivalent and lower
+        // quality risk, so it wins on overlap).
         let predec_cache_ref = if predec_active {
             self.q4k_predec_cache.as_ref()
+        } else {
+            None
+        };
+        let q4k_fast_ref = if q4k_fast_active && !predec_active {
+            self.q4k_fast_buf
+                .as_ref()
+                .zip(self.q4k_fast_offsets.as_ref())
         } else {
             None
         };
@@ -1934,6 +2040,26 @@ impl QwenDense {
                                     $tref.byte_size,
                                     scales_buf,
                                     0,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            } else if let Some((fast_buf, fast_off, fast_len)) = q4k_fast_ref
+                                .and_then(|(buf, map)| {
+                                    map.get(&$tref.offset).map(|&(o, l)| (buf, o, l))
+                                })
+                            {
+                                // Item 3 wire-up: custom Q4K_FAST layout.
+                                // 160-byte sub-block-contiguous blocks
+                                // pinned from the sidecar; same v3_8r
+                                // dispatch geometry, kernel reads fp16
+                                // sub-scales + 16 contiguous nibble bytes.
+                                kernels::gemv_q4k_fast_v1_pinned_tcb(
+                                    &mut tcb,
+                                    fast_buf,
+                                    fast_off,
+                                    fast_len,
                                     $rows,
                                     $cols,
                                     $x,
