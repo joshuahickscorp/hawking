@@ -207,6 +207,14 @@ pub struct QwenDense {
     /// `DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=N` was set). For the
     /// first-N heuristic this is `None` because pruned_idx ≡ original_id.
     pub vocab_prune_remap: Option<Vec<u32>>,
+
+    /// Heap-residency POC (see `memory/build_heap_residency_2026_05_25.md`).
+    /// `Some` only when constructed via `load_heap_resident`; the regular
+    /// `Engine::load` leaves this `None`. Held to keep the heap alive for
+    /// the lifetime of every sub-buffer carved from it. The leading
+    /// underscore matches `_weights_path`'s "kept-for-aliveness" convention.
+    #[cfg(target_os = "macos")]
+    pub(crate) _weight_heap: Option<crate::metal::heap::WeightHeap>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -280,6 +288,162 @@ less, higher, lower.
 ";
 
 impl QwenDense {
+    /// POC entry point for `MTLHeap`-backed weight residency.
+    ///
+    /// Mirrors `<QwenDense as Engine>::load`'s behavior but, after the
+    /// normal load completes, migrates all pinned weight buffers (the
+    /// dominant Q4_K-bearing mmap blob, embed, final norm, LM head, and
+    /// every per-layer norm/bias/f16-fallback buffer) onto a single
+    /// `metal::heap::WeightHeap`. The resulting `QwenDense` has the same
+    /// public surface as one built by `Engine::load` — forward paths
+    /// don't need to care which allocator backed each buffer.
+    ///
+    /// Held inside `QwenDense::_weight_heap` (added below) so the heap
+    /// out-lives every sub-buffer carved from it.
+    ///
+    /// Off-macOS this falls through to the regular load path.
+    ///
+    /// See `memory/build_heap_residency_2026_05_25.md` for scope, the
+    /// POC budget, and what's deliberately not on the heap yet.
+    #[cfg(target_os = "macos")]
+    pub fn load_heap_resident(
+        weights: &Path,
+        config: EngineConfig,
+    ) -> Result<Self> {
+        // 1) Load via the established path — preserves every optional
+        //    code path (vocab prune, Q4_K LM-head, FFN-down requant, etc.)
+        //    without duplicating the load logic.
+        let mut model = <Self as Engine>::load(weights, config)?;
+
+        // 2) Need a MetalContext to build the heap. If `load` didn't
+        //    construct one (e.g. headless CI without GPU access), there's
+        //    nothing to migrate — return the model unchanged.
+        let ctx = match model.metal_ctx.clone() {
+            Some(c) => c,
+            None => return Ok(model),
+        };
+
+        // 3) Size the heap. Compute aligned size of every buffer we
+        //    intend to migrate, sum, add 1 MB slack for descriptor and
+        //    rounding overhead. The aligned-size queries are exact per
+        //    `heapBufferSizeAndAlignWithLength:options:` — no need to
+        //    over-allocate beyond the slack.
+        let mut needed: u64 = 0;
+        let aligned_for =
+            |n: u64| crate::metal::heap::WeightHeap::aligned_buffer_size(&ctx, n);
+        // The whole-mmap blob (Q4_K + Q6_K weight bytes — the bandwidth
+        // dominant matter the heap was designed to corral).
+        let mmap_len = model.gguf.mmap.len() as u64;
+        if model.weights_mmap_buf.is_some() {
+            needed += aligned_for(mmap_len);
+        }
+        if let Some(b) = model.embed_buf.as_ref() {
+            needed += aligned_for(b.length());
+        }
+        if let Some(b) = model.final_norm_buf.as_ref() {
+            needed += aligned_for(b.length());
+        }
+        if let Some(b) = model.lm_head_buf.as_ref() {
+            needed += aligned_for(b.length());
+        }
+        if let Some(b) = model.lm_head_q4k_buf.as_ref() {
+            needed += aligned_for(b.length());
+        }
+        if let Some(b) = model.lm_head_pruned_buf.as_ref() {
+            needed += aligned_for(b.length());
+        }
+        for layer in &model.layers {
+            let p = &layer.pinned;
+            for b in [
+                p.attn_norm.as_ref(),
+                p.ffn_norm.as_ref(),
+                p.q_bias.as_ref(),
+                p.k_bias.as_ref(),
+                p.v_bias.as_ref(),
+                p.ffn_down_q4k.as_ref(),
+                p.q_proj_f16.as_ref(),
+                p.k_proj_f16.as_ref(),
+                p.v_proj_f16.as_ref(),
+                p.o_proj_f16.as_ref(),
+                p.ffn_gate_f16.as_ref(),
+                p.ffn_up_f16.as_ref(),
+                p.ffn_down_f16.as_ref(),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                needed += aligned_for(b.length());
+            }
+        }
+        // 1 MiB slack for descriptor + per-allocation rounding tail.
+        needed += 1 << 20;
+
+        let mut heap = crate::metal::heap::WeightHeap::new(&ctx, needed)?;
+
+        // 4) Migration helper: read bytes out of an existing shared
+        //    Buffer (host-mapped) and re-alloc them on the heap, then
+        //    swap the slot.
+        //
+        //    SAFETY: every buffer here was allocated `StorageModeShared`
+        //    by MetalContext::new_buffer_with_bytes, so `contents()` is
+        //    a valid host pointer for `length()` bytes.
+        unsafe fn copy_buf_bytes(buf: &metal::Buffer) -> Vec<u8> {
+            let n = buf.length() as usize;
+            let src = buf.contents() as *const u8;
+            let mut out = vec![0u8; n];
+            std::ptr::copy_nonoverlapping(src, out.as_mut_ptr(), n);
+            out
+        }
+
+        let migrate = |slot: &mut Option<crate::metal::PinnedBuffer>,
+                       heap: &mut crate::metal::heap::WeightHeap|
+         -> Result<()> {
+            if let Some(old) = slot.take() {
+                let bytes = unsafe { copy_buf_bytes(&old) };
+                let new = heap.new_buffer_with_bytes(&bytes)?;
+                *slot = Some(new);
+                // `old` drops here; its underlying MTLBuffer is freed
+                // once no command-buffer retains it.
+            }
+            Ok(())
+        };
+
+        // The mmap blob is the bandwidth-dominant Q4_K source. Copy it
+        // directly from the mmap bytes (avoids a host-to-host
+        // round-trip via the existing buffer).
+        if model.weights_mmap_buf.is_some() {
+            let new_mmap_buf = heap.new_buffer_with_bytes(&model.gguf.mmap[..])?;
+            // Drop the old buffer by replacing it.
+            model.weights_mmap_buf = Some(new_mmap_buf);
+        }
+
+        migrate(&mut model.embed_buf, &mut heap)?;
+        migrate(&mut model.final_norm_buf, &mut heap)?;
+        migrate(&mut model.lm_head_buf, &mut heap)?;
+        migrate(&mut model.lm_head_q4k_buf, &mut heap)?;
+        migrate(&mut model.lm_head_pruned_buf, &mut heap)?;
+
+        for layer in model.layers.iter_mut() {
+            migrate(&mut layer.pinned.attn_norm, &mut heap)?;
+            migrate(&mut layer.pinned.ffn_norm, &mut heap)?;
+            migrate(&mut layer.pinned.q_bias, &mut heap)?;
+            migrate(&mut layer.pinned.k_bias, &mut heap)?;
+            migrate(&mut layer.pinned.v_bias, &mut heap)?;
+            migrate(&mut layer.pinned.ffn_down_q4k, &mut heap)?;
+            migrate(&mut layer.pinned.q_proj_f16, &mut heap)?;
+            migrate(&mut layer.pinned.k_proj_f16, &mut heap)?;
+            migrate(&mut layer.pinned.v_proj_f16, &mut heap)?;
+            migrate(&mut layer.pinned.o_proj_f16, &mut heap)?;
+            migrate(&mut layer.pinned.ffn_gate_f16, &mut heap)?;
+            migrate(&mut layer.pinned.ffn_up_f16, &mut heap)?;
+            migrate(&mut layer.pinned.ffn_down_f16, &mut heap)?;
+        }
+
+        // 5) Pin the heap so its sub-buffers stay valid.
+        model._weight_heap = Some(heap);
+        Ok(model)
+    }
+
     fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
             .tensor(name)
@@ -756,6 +920,8 @@ impl Engine for QwenDense {
             vocab_pruned,
             vocab_pruned_is_q4k,
             vocab_prune_remap,
+            #[cfg(target_os = "macos")]
+            _weight_heap: None,
         })
     }
 

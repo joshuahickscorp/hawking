@@ -1243,3 +1243,9 @@ pub use dense_decode_arena::DenseDecodeArena;
 // the next attended session decides whether to wire it into forward paths.
 #[cfg(target_os = "macos")]
 pub mod icb;
+
+// Weight-heap residency POC — see `memory/build_heap_residency_2026_05_25.md`.
+// `pub(crate)` so `model::qwen_dense::load_heap_resident` can reach it without
+// exposing the heap struct on the crate's public surface.
+#[cfg(target_os = "macos")]
+pub(crate) mod heap;
