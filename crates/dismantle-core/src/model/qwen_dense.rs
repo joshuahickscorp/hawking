@@ -2503,6 +2503,61 @@ impl QwenDense {
     }
 }
 
+// ── Q4K_FAST sidecar loader ──────────────────────────────────────────────
+//
+// Reads a `.dismantle` sidecar file (see `crate::q4k_fast`) and returns
+// the bytes for a named tensor as a `Vec<u8>` ready to be passed to
+// `MetalContext::new_buffer_with_bytes`. NOT WIRED into the production
+// load path this session — the consolidation session decides whether to
+// route Q4_K projections through Q4K_FAST. Lives here so the parity test
+// + offline tool have a CPU-side reference for what the runtime will
+// eventually do.
+#[allow(dead_code)]
+pub(crate) fn load_q4k_fast_tensor(
+    path: &Path,
+    name: &str,
+) -> Result<Option<Vec<u8>>> {
+    use crate::q4k_fast::parse_header;
+    if !path.exists() {
+        return Ok(None);
+    }
+    let bytes = std::fs::read(path)
+        .map_err(|e| Error::Model(format!("read Q4K_FAST sidecar {}: {e}", path.display())))?;
+    let hdr = parse_header(&bytes)
+        .map_err(|e| Error::Model(format!("parse Q4K_FAST sidecar {}: {e}", path.display())))?;
+    let Some(entry) = hdr.tensors.iter().find(|t| t.name == name) else {
+        return Ok(None);
+    };
+    let off = entry.byte_off as usize;
+    let len = entry.byte_len as usize;
+    if off + len > bytes.len() {
+        return Err(Error::Model(format!(
+            "Q4K_FAST sidecar {}: tensor {} offset/len out of bounds ({}+{} > {})",
+            path.display(),
+            name,
+            off,
+            len,
+            bytes.len()
+        )));
+    }
+    Ok(Some(bytes[off..off + len].to_vec()))
+}
+
+/// Wrapper that prefers a Q4K_FAST sidecar tensor when available, falling
+/// back to `None` if the sidecar is absent or doesn't carry this tensor.
+/// The caller (eventual consolidation session) is responsible for the
+/// fallback to the source GGUF path. Not wired in production this session.
+#[allow(dead_code)]
+pub(crate) fn maybe_load_q4k_fast_or_none(
+    sidecar: Option<&Path>,
+    name: &str,
+) -> Result<Option<Vec<u8>>> {
+    match sidecar {
+        Some(p) => load_q4k_fast_tensor(p, name),
+        None => Ok(None),
+    }
+}
+
 /// Build a stable fingerprint of the tokenizer so cached KV state
 /// invalidates if the user swaps tokenizers under the same model.
 /// vocab_size + bos/eos/pad ids is enough to distinguish Qwen tokenizer
