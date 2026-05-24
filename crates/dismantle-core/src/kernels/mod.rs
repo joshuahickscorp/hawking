@@ -811,6 +811,110 @@ mod metal_dispatch {
         )
     }
 
+    /// W4A8 prototype — Q4_K weight × int8 activation GEMV at v3_8r geometry.
+    /// Activation is per-block (256-element) int8 + f32 scale, expected to
+    /// be quantized CPU-side once per layer via `quantize_to_int8_per_block`.
+    /// Bandwidth on the activation buffer drops 4× vs `gemv_q4_k_m_v3_8r`;
+    /// kernel structure is otherwise identical so the per-call delta is
+    /// purely the activation BW saving.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_a8_v3_8r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_int8_buf: &PinnedBuffer,
+        x_scales_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_a8_v3_8r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let x_bytes = cols * std::mem::size_of::<i8>();
+        let scales_bytes = blocks_per_row * std::mem::size_of::<f32>();
+        if x_int8_buf.length() < x_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb x_int8 buffer too small: got {} need {}",
+                x_int8_buf.length(), x_bytes,
+            )));
+        }
+        if x_scales_buf.length() < scales_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb x_scales buffer too small: got {} need {}",
+                x_scales_buf.length(), scales_bytes,
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_int8_buf), 0);
+                enc.set_buffer(2, Some(x_scales_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// CPU-side per-block int8 quantization of a length-cols f32 activation
+    /// vector. Splits into ceil(cols/256) blocks, computes `scale = max|x|/127`
+    /// per block, encodes `x_int8[i] = round(x[i] / scale)` clamped to
+    /// [-127, 127]. Returns (int8 bytes, f32 scales). Used by the W4A8
+    /// prototype to feed `gemm_q4_k_a8_v3_8r_pinned_tcb`.
+    pub fn quantize_to_int8_per_block(x: &[f32], block_size: usize) -> (Vec<i8>, Vec<f32>) {
+        let blocks = x.len().div_ceil(block_size);
+        let mut out_int8 = vec![0i8; x.len()];
+        let mut scales = vec![0.0f32; blocks];
+        for b in 0..blocks {
+            let lo = b * block_size;
+            let hi = (lo + block_size).min(x.len());
+            let mut max_abs = 0.0f32;
+            for &v in &x[lo..hi] {
+                let a = v.abs();
+                if a > max_abs { max_abs = a; }
+            }
+            let scale = if max_abs > 0.0 { max_abs / 127.0 } else { 1.0 };
+            let inv_scale = 1.0 / scale;
+            scales[b] = scale;
+            for i in lo..hi {
+                let q = (x[i] * inv_scale).round().clamp(-127.0, 127.0) as i8;
+                out_int8[i] = q;
+            }
+        }
+        (out_int8, scales)
+    }
+
     /// P2 — v3_llama: 2 simdgroups × 4-rows-each per TG (TG=64, 8 rows/TG).
     /// Lower per-TG occupancy + higher TG count compared to v3_8r;
     /// candidate for shapes where the GPU scheduler benefits from more
