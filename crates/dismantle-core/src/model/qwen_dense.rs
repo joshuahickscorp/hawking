@@ -1388,6 +1388,147 @@ impl QwenDense {
         self.gemv_f16_dispatch(w_f16, cfg.vocab_size, h, &x_norm, &mut logits)?;
         Ok(logits)
     }
+
+    /// Debug-only API used by `tests/megakernel_2layer_parity.rs`:
+    /// run the first `last_layer + 1` transformer layers of the
+    /// existing CPU forward path and return the residual stream
+    /// (the `x` buffer after layer `last_layer`'s FFN add, BEFORE
+    /// `final_norm` and the LM head).
+    ///
+    /// Body mirrors `forward_token` up to `last_layer`, then returns
+    /// without final_norm / LM head / `kv.seq_len` bump. K/V are
+    /// written for layers `0..=last_layer` at `self.kv.seq_len`'s
+    /// slot, matching `forward_token`. Parity tests should reload
+    /// the model between reference and POC invocations to keep KV
+    /// clean.
+    ///
+    /// Errors if `last_layer >= cfg.n_layers` or the KV cache is full.
+    pub fn forward_layers_subset(
+        &mut self,
+        token: u32,
+        pos: usize,
+        last_layer: usize,
+    ) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        if last_layer >= cfg.n_layers {
+            return Err(Error::Model(format!(
+                "forward_layers_subset: last_layer={} >= n_layers={}",
+                last_layer, cfg.n_layers
+            )));
+        }
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+        let mut scratch = Vec::<f32>::new();
+
+        let stride = n_kv_heads * head_dim;
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
+        }
+        let kv_off = self.kv.seq_len * stride;
+        let mha_seq_len = self.kv.seq_len + 1;
+
+        for li in 0..=last_layer {
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(
+                &x,
+                &self.layers[li].attn_norm,
+                cfg.rms_norm_eps,
+                &mut x_norm,
+            )?;
+
+            let layer = &self.layers[li];
+            let mut q_full = vec![0.0f32; q_dim];
+            let mut k_token = vec![0.0f32; kv_dim];
+            let mut v_token = vec![0.0f32; kv_dim];
+            self.matmul_q4_dispatch(&layer.q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &layer.k_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut k_token,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &layer.v_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut v_token,
+                &mut scratch,
+            )?;
+            if !layer.q_bias.is_empty() {
+                add_inplace(&mut q_full, &layer.q_bias);
+            }
+            if !layer.k_bias.is_empty() {
+                add_inplace(&mut k_token, &layer.k_bias);
+            }
+            if !layer.v_bias.is_empty() {
+                add_inplace(&mut v_token, &layer.v_bias);
+            }
+
+            for h_i in 0..n_heads {
+                let off = h_i * head_dim;
+                rope_inplace(&mut q_full[off..off + head_dim], pos as u32, cfg.rope_theta);
+            }
+            for h_i in 0..n_kv_heads {
+                let off = h_i * head_dim;
+                rope_inplace(
+                    &mut k_token[off..off + head_dim],
+                    pos as u32,
+                    cfg.rope_theta,
+                );
+            }
+
+            self.kv.keys[li][kv_off..kv_off + stride].copy_from_slice(&k_token);
+            self.kv.values[li][kv_off..kv_off + stride].copy_from_slice(&v_token);
+
+            let kv_size = mha_seq_len * stride;
+            let keys = &self.kv.keys[li][..kv_size];
+            let values = &self.kv.values[li][..kv_size];
+
+            let mut attn_out = vec![0.0f32; q_dim];
+            mha_decode_step(
+                &q_full,
+                keys,
+                values,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                mha_seq_len,
+                &mut attn_out,
+            )?;
+
+            let mut o = vec![0.0f32; h];
+            self.matmul_q4_dispatch(&layer.o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            add_inplace(&mut x, &o);
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &layer.ffn_norm, cfg.rms_norm_eps, &mut x_norm)?;
+            let mid = cfg.intermediate;
+            let mut g = vec![0.0f32; mid];
+            let mut u = vec![0.0f32; mid];
+            let mut a = vec![0.0f32; mid];
+            self.matmul_q4_dispatch(&layer.ffn_gate, mid, h, &x_norm, &mut g, &mut scratch)?;
+            self.matmul_q4_dispatch(&layer.ffn_up, mid, h, &x_norm, &mut u, &mut scratch)?;
+            silu_mul(&g, &u, &mut a);
+            let mut f = vec![0.0f32; h];
+            self.matmul_q4_dispatch(&layer.ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            add_inplace(&mut x, &f);
+        }
+
+        Ok(x)
+    }
 }
 
 #[cfg(target_os = "macos")]
