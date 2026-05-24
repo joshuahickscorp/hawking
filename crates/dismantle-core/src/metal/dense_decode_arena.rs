@@ -22,6 +22,21 @@ mod arena_imp {
         pub logits_buf: PinnedBuffer,
         pub token_buf: PinnedBuffer,
 
+        // W4A8 scratch (DISMANTLE_QWEN_W4A8=1). Lazy-init via `ensure_w4a8`
+        // — None until the flag is observed, then allocated once. Sized
+        // for the three quantize sites:
+        //   x_norm_int8/scales:    hidden bytes / hidden/256 f32 (q_proj,
+        //                          ffn_gate, ffn_up, LM head — quant once
+        //                          per rmsnorm, dispatch up to 4 GEMVs).
+        //   attn_out_int8/scales:  q_dim bytes (o_proj).
+        //   ffn_act_int8/scales:   intermediate bytes (ffn_down).
+        pub x_norm_int8: Option<PinnedBuffer>,
+        pub x_norm_scales: Option<PinnedBuffer>,
+        pub attn_out_int8: Option<PinnedBuffer>,
+        pub attn_out_scales: Option<PinnedBuffer>,
+        pub ffn_act_int8: Option<PinnedBuffer>,
+        pub ffn_act_scales: Option<PinnedBuffer>,
+
         // P3 — B-wide scratch buffers for batched prefill
         // (forward_tokens_batch_tcb). Sized for max_batch.
         // Same dims as per-token buffers but with leading B stride.
@@ -121,6 +136,13 @@ mod arena_imp {
                 ffn_down_buf_batch: ctx.new_buffer(b * hidden * f32_bytes),
                 o_proj_out_buf_batch: ctx.new_buffer(b * hidden * f32_bytes),
 
+                x_norm_int8: None,
+                x_norm_scales: None,
+                attn_out_int8: None,
+                attn_out_scales: None,
+                ffn_act_int8: None,
+                ffn_act_scales: None,
+
                 n_layers,
                 n_heads,
                 n_kv_heads,
@@ -134,6 +156,27 @@ mod arena_imp {
 
         pub fn kv_layer_byte_offset(&self, layer: usize) -> usize {
             layer * self.max_seq * self.n_kv_heads * self.head_dim * std::mem::size_of::<f32>()
+        }
+
+        /// Lazy-init the W4A8 scratch buffers. Called once on the first
+        /// forward pass when `DISMANTLE_QWEN_W4A8=1`. No-op on subsequent
+        /// calls. Total footprint at Qwen-3B: ~16 KB (negligible vs the
+        /// ~1.6 GB weight + 60 MB KV cache).
+        pub fn ensure_w4a8(&mut self, ctx: &MetalContext) {
+            if self.x_norm_int8.is_some() {
+                return;
+            }
+            let q_dim = self.n_heads * self.head_dim;
+            let f32_bytes = std::mem::size_of::<f32>();
+            let h_blocks = self.hidden / 256;
+            let q_blocks = q_dim / 256;
+            let ffn_blocks = self.intermediate / 256;
+            self.x_norm_int8 = Some(ctx.new_buffer(self.hidden));
+            self.x_norm_scales = Some(ctx.new_buffer(h_blocks * f32_bytes));
+            self.attn_out_int8 = Some(ctx.new_buffer(q_dim));
+            self.attn_out_scales = Some(ctx.new_buffer(q_blocks * f32_bytes));
+            self.ffn_act_int8 = Some(ctx.new_buffer(self.intermediate));
+            self.ffn_act_scales = Some(ctx.new_buffer(ffn_blocks * f32_bytes));
         }
     }
 }
