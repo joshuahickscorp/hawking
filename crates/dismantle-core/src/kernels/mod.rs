@@ -811,6 +811,150 @@ mod metal_dispatch {
         )
     }
 
+    /// Pre-decode the 8 sub-block (scale, min) f32 pairs for every Q4_K block
+    /// in `w_q4_bytes` into a flat host-side `Vec<f32>`.
+    ///
+    /// Layout per block (16 f32 = 64 bytes):
+    ///   `out[block_idx*16 + sub*2 + 0]` = ds[sub] = (f32)d    * (f32)sb[sub]
+    ///   `out[block_idx*16 + sub*2 + 1]` = dm[sub] = (f32)dmin * (f32)mb[sub]
+    /// for `sub` in 0..8, where `d` / `dmin` are the f16 block header and
+    /// `sb` / `mb` are the 6-bit sub-block scale/min indices decoded from
+    /// bytes 4..16 of each 144-byte Q4_K block.
+    ///
+    /// Math is exactly equivalent to the inline decode in `gemm_q4_k_m_v3_8r`:
+    /// `gemm_q4_k_v4_predec` reads (ds, dm) from this table at the same
+    /// fp16→f32 / uchar→f32 widening order, so the output is bit-identical.
+    ///
+    /// Intended use: call once at load time when pinning a Q4_K weight tensor
+    /// and upload the result as a `PinnedBuffer` alongside the existing Q4_K
+    /// weight buffer. Total table size = `(w_q4_bytes.len() / 144) * 64`
+    /// bytes (= 0.444× the Q4_K weight size).
+    pub fn predecode_q4_k_scale_table(w_q4_bytes: &[u8]) -> Vec<f32> {
+        debug_assert_eq!(w_q4_bytes.len() % 144, 0,
+            "predecode_q4_k_scale_table: byte len {} not a multiple of 144",
+            w_q4_bytes.len());
+        let n_blocks = w_q4_bytes.len() / 144;
+        let mut out = vec![0.0f32; n_blocks * 16];
+        for b in 0..n_blocks {
+            let bo = b * 144;
+            // Block header: d (f16 LE), dmin (f16 LE).
+            let d_bits = u16::from_le_bytes([w_q4_bytes[bo], w_q4_bytes[bo + 1]]);
+            let dmin_bits = u16::from_le_bytes([w_q4_bytes[bo + 2], w_q4_bytes[bo + 3]]);
+            let d = half::f16::from_bits(d_bits).to_f32();
+            let dmin = half::f16::from_bits(dmin_bits).to_f32();
+            // 6-bit sub-block indices: same unpack as the shader.
+            //   sub 0..4: low 6 bits of bytes [4+sub] / [8+sub]
+            //   sub 4..8: low 4 bits of bytes [12+j]  | (high-2-bits of [4+j]/[8+j] << 4)
+            let mut sb = [0u8; 8];
+            let mut mb = [0u8; 8];
+            for sub in 0..4 {
+                sb[sub] = w_q4_bytes[bo + 4 + sub] & 0x3F;
+                mb[sub] = w_q4_bytes[bo + 8 + sub] & 0x3F;
+            }
+            for j in 0..4 {
+                let b12 = w_q4_bytes[bo + 12 + j];
+                let b4  = w_q4_bytes[bo + 4 + j];
+                let b8  = w_q4_bytes[bo + 8 + j];
+                sb[4 + j] = (b12 & 0x0F) | ((b4 >> 6) << 4);
+                mb[4 + j] = (b12 >> 4)   | ((b8 >> 6) << 4);
+            }
+            let so = b * 16;
+            for sub in 0..8 {
+                out[so + sub * 2]     = d    * (sb[sub] as f32);
+                out[so + sub * 2 + 1] = dmin * (mb[sub] as f32);
+            }
+        }
+        out
+    }
+
+    /// Q4_K decode GEMV with pre-decoded sub-block scales (v4_predec).
+    ///
+    /// Identical math to `gemv_q4_k_m_v3_8r_pinned_tcb` (same v3_8r geometry:
+    /// 256 threads/TG, 8 simdgroups, 8 rows/TG) but reads the 8 sub-block
+    /// (ds, dm) f32 pairs per block from a parallel pre-decoded table
+    /// (`scales_buf`) instead of decoding them inline from the packed 6-bit
+    /// indices every call.
+    ///
+    /// Build the table once at load time via `predecode_q4_k_scale_table`
+    /// and pin it as a `PinnedBuffer`. Expected `scales_buf` length is
+    /// `rows * (cols / 256) * 16 * sizeof(f32)`.
+    ///
+    /// **Private API entry point** — not yet wired into the production
+    /// forward pass; that's the consolidation step.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// W4A8 prototype — Q4_K weight × int8 activation GEMV at v3_8r geometry.
     /// Activation is per-block (256-element) int8 + f32 scale, expected to
     /// be quantized CPU-side once per layer via `quantize_to_int8_per_block`.
