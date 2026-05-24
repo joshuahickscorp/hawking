@@ -1346,6 +1346,16 @@ impl QwenDense {
         let w4a8_ffn_up = w4a8_active;
         let w4a8_ffn_down = w4a8_active;
         let w4a8_lmhead = w4a8_active;
+        // P0.1 spike: env-gated Q/K/V concurrent-encoder. When set, the
+        // three Q/K/V GEMV dispatches per layer share one
+        // MTLDispatchTypeConcurrent encoder; the driver may overlap them
+        // on the GPU (all three read x_norm_buf, write disjoint outputs).
+        // Default off until ≥+5% paired-bench delta + cosine > 0.998 +
+        // first-8 greedy match clear the ship rule. See
+        // ~/.claude/plans/closing-the-2-4-virtual-phoenix.md.
+        let qkv_concurrent = std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV")
+            .map(|v| v == "1")
+            .unwrap_or(false);
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
         }
@@ -1490,6 +1500,14 @@ impl QwenDense {
             // x_norm was quantized at the end of the previous iteration
             // (or pre-loop for li=0). Q4_K → W4A8 path; Q6_K → f32 path
             // (W4A8 doesn't apply to Q6_K weights).
+            //
+            // P0.1: when DISMANTLE_QWEN_CONCURRENT_QKV=1, share one
+            // concurrent encoder for the three GEMVs. All three read
+            // x_norm_buf and write disjoint outputs (q_buf, k_token_buf,
+            // v_token_buf) — no overlap, no barrier needed.
+            if qkv_concurrent {
+                tcb.begin_concurrent_group()?;
+            }
             gemv_proj!(
                 w4a8_qproj,
                 layer.q_proj,
@@ -1527,6 +1545,9 @@ impl QwenDense {
                 x_scales,
                 &arena.v_token_buf
             );
+            if qkv_concurrent {
+                tcb.end_concurrent_group()?;
+            }
 
             // ── Biases (Qwen2 carries q/k/v biases) ──────────────────
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
