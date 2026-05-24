@@ -541,6 +541,53 @@ kernel void gemm_q4_k_m_v3_8r(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── quantize_f32_to_int8_per_block ───────────────────────────────────────────
+//
+// GPU-side quant for the W4A8 path. Reads a length-`n` f32 activation and
+// writes per-256-elem int8 + f32 scales using the same formula as the CPU
+// reference (`quantize_to_int8_per_block`): scale = max|x|/127 per block,
+// q[i] = round(x[i] / scale) clamped to [-127, 127].
+//
+// Grid:  (n, 1, 1)               (one thread per element)
+// TG:    (256, 1, 1)             (one threadgroup per block)
+// Shmem: 256 * sizeof(float)     (reduce buffer)
+//
+// Production wire-up replaces the CPU readback + quantize per layer with
+// one GPU dispatch fused into the same TCB as the rmsnorm/gemv pair.
+kernel void quantize_f32_to_int8_per_block(
+    device const float*       x        [[buffer(0)]],
+    device       signed char* x_int8   [[buffer(1)]],
+    device       float*       x_scales [[buffer(2)]],
+    threadgroup  float*       red      [[threadgroup(0)]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    uint block_off = tg_id * 256u;
+    float xv = x[block_off + tid];
+    red[tid] = fabs(xv);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint s = tg_size / 2u; s > 0u; s >>= 1u) {
+        if (tid < s) red[tid] = max(red[tid], red[tid + s]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_abs = red[0];
+    // Use metal::precise::divide for IEEE-correct round-to-nearest division,
+    // matching the CPU reference. Metal's default `/` is relaxed (fast-math)
+    // and produces 1-ULP deltas on some block max values.
+    float scale = (max_abs > 0.0f)
+                ? metal::precise::divide(max_abs, 127.0f)
+                : 1.0f;
+    if (tid == 0u) x_scales[tg_id] = scale;
+    // CPU computes `1.0 / scale` once then multiplies; replicate that
+    // (rather than `xv / scale`) so the rounding before `round(...)` is
+    // identical across CPU and GPU.
+    float inv = metal::precise::divide(1.0f, scale);
+    float q = round(xv * inv);
+    q = clamp(q, -127.0f, 127.0f);
+    x_int8[block_off + tid] = (signed char)q;
+}
+
 // ── W4A8 prototype: gemm_q4_k_a8_v3_8r ───────────────────────────────────────
 //
 // Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but with
