@@ -541,6 +541,93 @@ kernel void gemm_q4_k_m_v3_8r(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── W4A8 prototype: gemm_q4_k_a8_v3_8r ───────────────────────────────────────
+//
+// Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but with
+// activations packed as per-block (256-element) int8 + f32 scale instead of
+// raw f32. Bandwidth on the activation buffer drops 4× (8 bytes/block/thread
+// vs 32 bytes/block/thread), trading a small per-block scale lookup.
+//
+// Activation layout per row:
+//   x_int8 : (cols,)               int8   — quantized values
+//   x_scales : (cols / 256,)       f32    — per-block scales: real = x_int8 * scale
+//
+// The activation is per-token (1D) for decode; for batched callers each
+// batch element has its own (x_int8, x_scales) pair laid out contiguously.
+//
+// Math: per block, the dot product becomes:
+//   sum_k weight[k] * (act_int8[k] * scale_block) = scale_block * sum_k(weight[k] * act_int8[k])
+//
+// We factor scale_block out and apply it once per block. Weight stays Q4_K,
+// dequanted per element as in v3_8r. No simd_mma here — that's the prefill
+// path (separate v3w_a8 kernel). This kernel exists to measure decode
+// activation-BW savings in isolation.
+
+kernel void gemm_q4_k_a8_v3_8r(
+    device const uchar*       w_q4     [[buffer(0)]],
+    device const signed char* x_int8   [[buffer(1)]],
+    device const float*       x_scales [[buffer(2)]],
+    device       float*       y        [[buffer(3)]],
+    constant     uint&        rows     [[buffer(4)]],
+    constant     uint&        cols     [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub] & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        // Per-block activation scale + int8 lane loads.
+        float scale_b = x_scales[b];
+        signed char xq[8];
+        for (uint k = 0; k < 8u; ++k) {
+            xq[k] = x_int8[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+        }
+
+        float block_acc = 0.0f;
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            block_acc += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * (float)xq[k0];
+            block_acc += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * (float)xq[k1];
+        }
+        partial += block_acc * scale_b;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_v3_dual ──────────────────────────────────────────────────────
 // Phase B Approach 1 Iter 2: 2 rows per simdgroup (N_R0=2), 4 simdgroups per TG
 // (128 threads) — matches llama.cpp's N_R0_Q4_K=2, FC_mul_mv_nsg=4 geometry.
