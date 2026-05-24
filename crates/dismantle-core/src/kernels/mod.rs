@@ -226,6 +226,9 @@ pub fn topk_softmax_batch(
 
 
 #[cfg(target_os = "macos")]
+mod megakernel;
+
+#[cfg(target_os = "macos")]
 mod metal_dispatch {
     use crate::metal::{ArgLayout, CommandBatch, DecodeArena, KernelArgBuffer, MetalContext, PinnedBuffer, TokenCommandBuffer};
     use crate::{Error, Result};
