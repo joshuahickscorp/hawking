@@ -143,6 +143,39 @@ pub struct QwenLayerPinned {
     pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
 
+/// Pre-dequantized f16 weights for one transformer layer, in the
+/// shape the 2-layer megakernel POC consumes. Produced by
+/// [`QwenDense::prep_megakernel_layer_f16`]. See
+/// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
+/// for the rationale (POC uses pre-dequant; production port replaces
+/// these with Q4_K block pointers + inline decode).
+pub struct MegakernelLayerWeightsF16 {
+    /// `(q_dim × hidden)` row-major.
+    pub q_proj: Vec<f16>,
+    /// `(kv_dim × hidden)` row-major.
+    pub k_proj: Vec<f16>,
+    /// `(kv_dim × hidden)` row-major.
+    pub v_proj: Vec<f16>,
+    /// `(hidden × q_dim)` row-major.
+    pub o_proj: Vec<f16>,
+    /// `(intermediate × hidden)` row-major.
+    pub ffn_gate: Vec<f16>,
+    /// `(intermediate × hidden)` row-major.
+    pub ffn_up: Vec<f16>,
+    /// `(hidden × intermediate)` row-major.
+    pub ffn_down: Vec<f16>,
+    /// `(hidden,)` rmsnorm weight applied before Q/K/V.
+    pub attn_norm: Vec<f32>,
+    /// `(hidden,)` rmsnorm weight applied before FFN.
+    pub ffn_norm: Vec<f32>,
+    /// `(q_dim,)`, empty if the layer has no Q bias.
+    pub q_bias: Vec<f32>,
+    /// `(kv_dim,)`, empty if the layer has no K bias.
+    pub k_bias: Vec<f32>,
+    /// `(kv_dim,)`, empty if the layer has no V bias.
+    pub v_bias: Vec<f32>,
+}
+
 pub struct QwenDense {
     pub config: QwenConfig,
     pub tokenizer: Tokenizer,
@@ -1528,6 +1561,54 @@ impl QwenDense {
         }
 
         Ok(x)
+    }
+
+    /// Pre-dequantize one transformer layer's weights into the
+    /// f16-resident form the megakernel POC expects.
+    ///
+    /// The 2-layer megakernel takes the pre-dequant-to-f16 shortcut so
+    /// its shader can do straight f16 GEMVs inline (see
+    /// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
+    /// § "Q4_K inline decode"). Q4_K inline decode is followup work.
+    ///
+    /// Weight layout matches `forward_token`: `q_proj` is row-major
+    /// `(q_dim × hidden)`, `o_proj` is `(hidden × q_dim)`, `ffn_gate`
+    /// and `ffn_up` are `(intermediate × hidden)`, `ffn_down` is
+    /// `(hidden × intermediate)`.
+    ///
+    /// Bias vectors are empty if the underlying layer has no bias
+    /// (Qwen2 carries Q/K/V biases but no O bias).
+    pub fn prep_megakernel_layer_f16(
+        &self,
+        li: usize,
+    ) -> Result<MegakernelLayerWeightsF16> {
+        if li >= self.config.n_layers {
+            return Err(Error::Model(format!(
+                "prep_megakernel_layer_f16: li={} >= n_layers={}",
+                li, self.config.n_layers
+            )));
+        }
+        let layer = &self.layers[li];
+        let dq = |t: &TensorRef| -> Result<Vec<f16>> {
+            let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+            let mut tmp = vec![0.0f32; t.n_elems];
+            quant::dequant_into(t.dtype, bytes, &mut tmp)?;
+            Ok(tmp.into_iter().map(f16::from_f32).collect())
+        };
+        Ok(MegakernelLayerWeightsF16 {
+            q_proj: dq(&layer.q_proj)?,
+            k_proj: dq(&layer.k_proj)?,
+            v_proj: dq(&layer.v_proj)?,
+            o_proj: dq(&layer.o_proj)?,
+            ffn_gate: dq(&layer.ffn_gate)?,
+            ffn_up: dq(&layer.ffn_up)?,
+            ffn_down: dq(&layer.ffn_down)?,
+            attn_norm: layer.attn_norm.clone(),
+            ffn_norm: layer.ffn_norm.clone(),
+            q_bias: layer.q_bias.clone(),
+            k_bias: layer.k_bias.clone(),
+            v_bias: layer.v_bias.clone(),
+        })
     }
 }
 
