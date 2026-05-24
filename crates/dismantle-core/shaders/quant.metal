@@ -1370,3 +1370,70 @@ kernel void gemm_q6_k_fused_v2(
         y[base_row] = partial;
     }
 }
+
+// ── gemm_q4_k_v4_predec ──────────────────────────────────────────────────────
+// Q4_K decode GEMV with pre-decoded sub-block scales.
+//
+// Same v3_8r geometry (256 threads/TG, 8 simdgroups, 8 rows/TG) and identical
+// math, but the 8 (ds, dm) f32 pairs per block are read from a parallel
+// pre-decoded buffer instead of being decoded inline from the packed 6-bit
+// indices each call. The block d/dmin fp16 header and the 4-bit quants are
+// still read from the same Q4_K bytes; only the per-sub-block-scale decode
+// (which is invariant across forward passes) is hoisted to load time.
+//
+// Pre-decoded scale layout (matches `predecode_q4_k_scale_table` in Rust):
+//   `scales[block_idx * 16 + sub*2 + 0]` = ds[sub] = (f32)d    * (f32)sb[sub]
+//   `scales[block_idx * 16 + sub*2 + 1]` = dm[sub] = (f32)dmin * (f32)mb[sub]
+// where `sb[sub]`, `mb[sub]` are the 6-bit sub-block scale/min indices.
+//
+// Bit-identical to gemm_q4_k_m_v3_8r when the host pre-decoder uses the same
+// fp16->f32 widening for d/dmin and the same uchar->float widening for the
+// 6-bit indices, then multiplies in f32.
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+
+kernel void gemm_q4_k_v4_predec(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        // ds[k] at scales[so + k*2 + 0], dm[k] at scales[so + k*2 + 1].
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = scales[so + (uint64_t)(sub * 2u)];
+            dm[sub] = scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * xl[k0];
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * xl[k1];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
