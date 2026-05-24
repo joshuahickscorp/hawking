@@ -138,6 +138,189 @@ fn dequant_q8_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     Ok(())
 }
 
+
+// ---------- Inverse quantize helpers (Q8_0 / Q4_K / Q6_K) ---------------
+//
+// Required by mixed_quant_store re-quant + the Qwen-dense LM head /
+// FFN-down requant fast paths.
+
+pub const Q8_0_BLOCK_ELEMS: usize = 32;
+pub const Q8_0_BLOCK_BYTES: usize = 34;
+
+pub fn quantize_q8_0(src: &[f32], dst: &mut [u8]) -> Result<()> {
+    if src.len() % Q8_0_BLOCK_ELEMS != 0 {
+        return Err(Error::Kernel(
+            "q8_0 quantize: src len not multiple of 32".into(),
+        ));
+    }
+    let nb = src.len() / Q8_0_BLOCK_ELEMS;
+    let need = nb * Q8_0_BLOCK_BYTES;
+    if dst.len() < need {
+        return Err(Error::Kernel(format!(
+            "q8_0 quantize: dst {}B need {}B",
+            dst.len(), need
+        )));
+    }
+    for b in 0..nb {
+        let block = &src[b * Q8_0_BLOCK_ELEMS..(b + 1) * Q8_0_BLOCK_ELEMS];
+        let amax = block.iter().copied().fold(0.0_f32, |m, v| m.max(v.abs()));
+        let d = if amax > 0.0 { amax / 127.0 } else { 0.0 };
+        let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
+        let off = b * Q8_0_BLOCK_BYTES;
+        let d_f16 = f16::from_f32(d);
+        dst[off..off + 2].copy_from_slice(&d_f16.to_bits().to_le_bytes());
+        for i in 0..Q8_0_BLOCK_ELEMS {
+            let q = (block[i] * inv_d).round().clamp(-127.0, 127.0) as i8;
+            dst[off + 2 + i] = q as u8;
+        }
+    }
+    Ok(())
+}
+
+pub const Q4_K_BLOCK_BYTES: usize = 144;
+pub const Q6_K_BLOCK_BYTES: usize = 210;
+
+pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
+    if src.len() % Q_K != 0 {
+        return Err(Error::Kernel("q4_K quantize: src len not multiple of 256".into()));
+    }
+    let nb = src.len() / Q_K;
+    let need = nb * Q4_K_BLOCK_BYTES;
+    if dst.len() < need {
+        return Err(Error::Kernel(format!("q4_K quantize: dst {}B need {}B", dst.len(), need)));
+    }
+    for b in 0..nb {
+        let block = &src[b * Q_K..(b + 1) * Q_K];
+        let off = b * Q4_K_BLOCK_BYTES;
+        for byte in &mut dst[off + 16..off + 144] { *byte = 0; }
+        let mut sub_scale = [0.0f32; 8];
+        let mut sub_min = [0.0f32; 8];
+        for s in 0..8 {
+            let vals = &block[s * 32..(s + 1) * 32];
+            let mut mn = f32::INFINITY;
+            let mut mx = f32::NEG_INFINITY;
+            for &v in vals { if v < mn { mn = v; } if v > mx { mx = v; } }
+            if mn > 0.0 { mn = 0.0; }
+            if mx < 0.0 { mx = 0.0; }
+            if (mx - mn).abs() < 1e-30 {
+                sub_scale[s] = 0.0; sub_min[s] = -mn;
+            } else {
+                sub_scale[s] = (mx - mn) / 15.0; sub_min[s] = -mn;
+            }
+        }
+        let max_scale = sub_scale.iter().copied().fold(0.0f32, f32::max);
+        let max_min = sub_min.iter().copied().fold(0.0f32, f32::max);
+        let d = if max_scale > 0.0 { max_scale / 63.0 } else { 0.0 };
+        let dmin = if max_min > 0.0 { max_min / 63.0 } else { 0.0 };
+        let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
+        let inv_dmin = if dmin > 0.0 { 1.0 / dmin } else { 0.0 };
+        let mut sc_u6 = [0u8; 8];
+        let mut mn_u6 = [0u8; 8];
+        for s in 0..8 {
+            sc_u6[s] = (sub_scale[s] * inv_d).round().clamp(0.0, 63.0) as u8;
+            mn_u6[s] = (sub_min[s] * inv_dmin).round().clamp(0.0, 63.0) as u8;
+        }
+        dst[off..off + 2].copy_from_slice(&f16::from_f32(d).to_bits().to_le_bytes());
+        dst[off + 2..off + 4].copy_from_slice(&f16::from_f32(dmin).to_bits().to_le_bytes());
+        encode_q_k_scale_min(&sc_u6, &mn_u6, &mut dst[off + 4..off + 16]);
+        let qs = &mut dst[off + 16..off + 144];
+        for s in 0..8 {
+            let eff_scale = d * sc_u6[s] as f32;
+            let eff_min = dmin * mn_u6[s] as f32;
+            let inv_eff = if eff_scale > 0.0 { 1.0 / eff_scale } else { 0.0 };
+            let pair = s / 2;
+            let upper = (s % 2) == 1;
+            let qbase = pair * 32;
+            for i in 0..32 {
+                let x = block[s * 32 + i];
+                let nib = ((x + eff_min) * inv_eff).round().clamp(0.0, 15.0) as u8;
+                let byte_idx = qbase + i;
+                if upper {
+                    qs[byte_idx] = (qs[byte_idx] & 0x0F) | ((nib & 0xF) << 4);
+                } else {
+                    qs[byte_idx] = (qs[byte_idx] & 0xF0) | (nib & 0xF);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn encode_q_k_scale_min(scales: &[u8; 8], mins: &[u8; 8], dst: &mut [u8]) {
+    debug_assert!(dst.len() >= 12);
+    for j in 0..4 {
+        dst[j] = (scales[j] & 0x3F) | (((scales[4 + j] >> 4) & 0x3) << 6);
+        dst[4 + j] = (mins[j] & 0x3F) | (((mins[4 + j] >> 4) & 0x3) << 6);
+        dst[8 + j] = (scales[4 + j] & 0x0F) | ((mins[4 + j] & 0x0F) << 4);
+    }
+}
+
+pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
+    if src.len() % Q_K != 0 {
+        return Err(Error::Kernel("q6_K quantize: src len not multiple of 256".into()));
+    }
+    let nb = src.len() / Q_K;
+    let need = nb * Q6_K_BLOCK_BYTES;
+    if dst.len() < need {
+        return Err(Error::Kernel(format!("q6_K quantize: dst {}B need {}B", dst.len(), need)));
+    }
+    for b in 0..nb {
+        let block = &src[b * Q_K..(b + 1) * Q_K];
+        let off = b * Q6_K_BLOCK_BYTES;
+        for byte in &mut dst[off..off + 208] { *byte = 0; }
+        let mut local_scale = [0.0f32; 16];
+        for s in 0..16 {
+            let mut amax = 0.0f32;
+            for &v in &block[s * 16..(s + 1) * 16] {
+                let av = v.abs();
+                if av > amax { amax = av; }
+            }
+            if amax > 0.0 { local_scale[s] = amax / 32.0; }
+        }
+        let max_scale = local_scale.iter().copied().fold(0.0f32, f32::max);
+        let d = if max_scale > 0.0 { max_scale / 127.0 } else { 0.0 };
+        let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
+        let mut sc_i8 = [0i8; 16];
+        for s in 0..16 {
+            sc_i8[s] = (local_scale[s] * inv_d).round().clamp(0.0, 127.0) as i8;
+        }
+        for half in 0..2 {
+            let ql_off = off + half * 64;
+            let qh_off = off + 128 + half * 32;
+            let base = half * 128;
+            for l in 0..32 {
+                for group in 0..4u32 {
+                    let off_in_half = l + (group as usize) * 32;
+                    let e = base + off_in_half;
+                    let sub = e / 16;
+                    let eff = d * sc_i8[sub] as f32;
+                    let inv_eff = if eff != 0.0 { 1.0 / eff } else { 0.0 };
+                    let q_signed = (block[e] * inv_eff).round().clamp(-32.0, 31.0) as i32;
+                    let u = (q_signed + 32) as u8;
+                    let low4 = u & 0xF;
+                    let high2 = (u >> 4) & 0x3;
+                    let ql_idx_in_half = if group & 1 == 0 { l } else { 32 + l };
+                    let ql_byte = &mut dst[ql_off + ql_idx_in_half];
+                    if group < 2 {
+                        *ql_byte = (*ql_byte & 0xF0) | low4;
+                    } else {
+                        *ql_byte = (*ql_byte & 0x0F) | (low4 << 4);
+                    }
+                    let shift = (group * 2) as u8;
+                    let qh_byte = &mut dst[qh_off + l];
+                    *qh_byte = (*qh_byte & !(0x3 << shift)) | (high2 << shift);
+                }
+            }
+        }
+        for s in 0..16 {
+            dst[off + 192 + s] = sc_i8[s] as u8;
+        }
+        dst[off + 208..off + 210].copy_from_slice(&f16::from_f32(d).to_bits().to_le_bytes());
+    }
+    Ok(())
+}
+
+
 // ---------- Q4_0 ---------------------------------------------------------
 //
 // Block layout: { f16 d; uint8 qs[16] }   total 18 bytes per 32 elems.
