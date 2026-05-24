@@ -789,13 +789,51 @@ impl Engine for QwenDense {
         self.kv.reset();
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
+
+        // Track B — Prefix-cache wire-up. When `DISMANTLE_PREFIX_CACHE_DIR`
+        // is set, look up the longest cached prefix of `prompt_ids` and
+        // skip re-prefilling it. The lookup deliberately never matches the
+        // full prompt (the cache module bails one token short) so we
+        // always have at least one token to prefill — keeps the decode
+        // loop's `last_id = prompt_ids.last()` path intact.
+        let prefix_cache = crate::cache::prefill_disk::PrefillDiskCache::open_from_env()?;
+        let tokenizer_sig = tokenizer_signature(&self.tokenizer);
+        let cache_key_full = if prefix_cache.is_some() {
+            Some(crate::cache::prefill_disk::PrefillKey::from_model_and_prompt(
+                &self.model_id,
+                &tokenizer_sig,
+                &prompt_ids,
+            ))
+        } else {
+            None
+        };
+        let prefill_skipped = if let Some(cache) = prefix_cache.as_ref() {
+            let key = cache_key_full.as_ref().unwrap();
+            match cache.lookup_longest_prefix(
+                &key.model_hash,
+                &key.tokenizer_hash,
+                &prompt_ids,
+            )? {
+                Some(hit) => {
+                    let n = hit.n_tokens;
+                    crate::cache::prefill_disk::restore_hit_into_kv(&hit, &mut self.kv)?;
+                    n
+                }
+                None => 0,
+            }
+        } else {
+            0
+        };
+
         let use_tcb_prefill = std::env::var("DISMANTLE_QWEN_TCB")
             .map(|v| v == "1")
             .unwrap_or(false);
-        // P3 — batched prefill: chunk prompt into B≤4 token windows and
+        // P3 — batched prefill: chunk prompt into B≤8 token windows and
         // process each through `forward_tokens_batch_tcb`. Each weight
         // is read once per chunk (instead of once per token), amortizing
         // BW across B. Decode loop is unchanged. Requires TCB prefill.
+        // Skips the leading `prefill_skipped` tokens already restored
+        // from the prefix cache.
         let batch_prefill = use_tcb_prefill
             && std::env::var("DISMANTLE_QWEN_BATCH_PREFILL")
                 .map(|v| v == "1")
@@ -804,7 +842,7 @@ impl Engine for QwenDense {
         if batch_prefill {
             const B_MAX: usize = 8;
             let positions: Vec<usize> = (0..prompt_len).collect();
-            let mut i = 0usize;
+            let mut i = prefill_skipped;
             while i < prompt_len {
                 if abort_set(&req) {
                     prefill_aborted = true;
@@ -820,7 +858,7 @@ impl Engine for QwenDense {
                 i = end;
             }
         } else {
-            for (i, &t) in prompt_ids.iter().enumerate() {
+            for (i, &t) in prompt_ids.iter().enumerate().skip(prefill_skipped) {
                 if abort_set(&req) {
                     prefill_aborted = true;
                     break;
@@ -838,7 +876,7 @@ impl Engine for QwenDense {
             }
         }
         #[cfg(not(target_os = "macos"))]
-        for (i, &t) in prompt_ids.iter().enumerate() {
+        for (i, &t) in prompt_ids.iter().enumerate().skip(prefill_skipped) {
             if abort_set(&req) {
                 prefill_aborted = true;
                 break;
@@ -851,6 +889,20 @@ impl Engine for QwenDense {
             }
         }
         stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+
+        // Store the post-prefill KV snapshot for the *full* prompt so a
+        // subsequent turn whose prompt extends this one can reload it.
+        // Only stores on a clean (non-aborted) prefill where we actually
+        // produced a new entry (skip if we already had the full prefix —
+        // but the lookup guarantees skipped < prompt_len, so the new key
+        // is always strictly longer than what we loaded).
+        if !prefill_aborted {
+            if let (Some(cache), Some(key)) = (prefix_cache.as_ref(), cache_key_full.as_ref()) {
+                if let Err(e) = cache.store(key, &self.kv) {
+                    eprintln!("dismantle: prefix cache store failed: {e}");
+                }
+            }
+        }
         if prefill_aborted {
             sink(StreamEvent::Done {
                 reason: StopReason::Aborted,
@@ -2044,4 +2096,17 @@ impl QwenDense {
 
         Ok(())
     }
+}
+
+/// Build a stable fingerprint of the tokenizer so cached KV state
+/// invalidates if the user swaps tokenizers under the same model.
+/// vocab_size + bos/eos/pad ids is enough to distinguish Qwen tokenizer
+/// versions without scanning the full vocab on every generate() call.
+fn tokenizer_signature(tok: &Tokenizer) -> Vec<u8> {
+    let mut sig = Vec::with_capacity(20);
+    sig.extend_from_slice(&(tok.vocab_size() as u32).to_le_bytes());
+    sig.extend_from_slice(&tok.bos_id().unwrap_or(u32::MAX).to_le_bytes());
+    sig.extend_from_slice(&tok.eos_id().unwrap_or(u32::MAX).to_le_bytes());
+    sig.extend_from_slice(&tok.pad_id().unwrap_or(u32::MAX).to_le_bytes());
+    sig
 }
