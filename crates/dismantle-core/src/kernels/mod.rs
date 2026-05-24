@@ -955,6 +955,86 @@ mod metal_dispatch {
         )
     }
 
+    /// Q4K_FAST v1 — Q4_K with sub-block-contiguous re-layout.
+    ///
+    /// Weight buffer layout: 160 bytes per 256-element block. Per sub-block
+    /// (32 elements):
+    ///
+    /// ```text
+    ///   bytes [k*20 + 0 ..k*20 + 2]   sub_scale (fp16) = d * sb_idx[k]
+    ///   bytes [k*20 + 2 ..k*20 + 4]   sub_min   (fp16) = dmin * mb_idx[k]
+    ///   bytes [k*20 + 4 ..k*20 + 20]  16 bytes; 32 4-bit values, where
+    ///                                 element 2i lives in the low nibble
+    ///                                 of byte i and element 2i+1 in the
+    ///                                 high nibble.
+    /// ```
+    ///
+    /// Same dispatch geometry as v3_8r (8 rows/TG, 256 threads/TG, 8
+    /// simdgroups). Output is bit-identical to `gemv_q4_k_m_v3_8r_pinned_tcb`
+    /// when applied to a `q4k_fast`-converted tensor whose per-sub-block
+    /// products `d*sb_idx[k]` and `dmin*mb_idx[k]` are exactly representable
+    /// in fp16 (the parity-test invariant; covered by
+    /// `tests/q4k_fast_parity.rs`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_fast_v1_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_fast_v1";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(160))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// W4A8 prototype — Q4_K weight × int8 activation GEMV at v3_8r geometry.
     /// Activation is per-block (256-element) int8 + f32 scale, expected to
     /// be quantized CPU-side once per layer via `quantize_to_int8_per_block`.
