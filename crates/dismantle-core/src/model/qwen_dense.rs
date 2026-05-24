@@ -1327,7 +1327,47 @@ impl QwenDense {
                 }
             }
         }
+        // W4A8 (2026-05-24): per-block int8 activation × Q4_K weight GEMV
+        // (`gemm_q4_k_a8_v3_8r`). Opt-in via `DISMANTLE_QWEN_W4A8=1`.
+        // Default OFF — production behavior unchanged. Lazy-init arena
+        // scratch the first time we see the flag.
+        // W4A8 (2026-05-24): per-block int8 activation × Q4_K weight
+        // GEMV (`gemm_q4_k_a8_v3_8r`). Opt-in via `DISMANTLE_QWEN_W4A8=1`.
+        // When active, every Q4_K projection in the forward (q/o/gate/up,
+        // optional Q4_K LM head and requant'd Q4_K ffn_down) takes the
+        // W4A8 path; Q6_K projections (k/v_proj, native Q6_K ffn_down)
+        // keep the f32 path because W4A8 is Q4_K-specific.
+        let w4a8_active = std::env::var_os("DISMANTLE_QWEN_W4A8")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        let w4a8_qproj = w4a8_active;
+        let w4a8_oproj = w4a8_active;
+        let w4a8_ffn_gate = w4a8_active;
+        let w4a8_ffn_up = w4a8_active;
+        let w4a8_ffn_down = w4a8_active;
+        let w4a8_lmhead = w4a8_active;
+        if w4a8_active {
+            self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
+        }
         let arena = self.dense_arena.as_ref().unwrap();
+        // Pre-bind the W4A8 scratch buffers (None when flag is off) so the
+        // dispatch macros don't have to re-Option-walk per call. Each is
+        // unwrap()ped only when w4a8_active is true.
+        let (x_int8, x_scales, attn_int8, attn_scales, ffn_int8, ffn_scales) = if w4a8_active {
+            (
+                arena.x_norm_int8.as_ref().unwrap(),
+                arena.x_norm_scales.as_ref().unwrap(),
+                arena.attn_out_int8.as_ref().unwrap(),
+                arena.attn_out_scales.as_ref().unwrap(),
+                arena.ffn_act_int8.as_ref().unwrap(),
+                arena.ffn_act_scales.as_ref().unwrap(),
+            )
+        } else {
+            // Borrow x_buf as a harmless stand-in for the unused refs;
+            // the macros never read these when w4a8_active is false.
+            let dummy = &arena.x_buf;
+            (dummy, dummy, dummy, dummy, dummy, dummy)
+        };
 
         let mut tcb = TokenCommandBuffer::new(ctx);
 
@@ -1354,6 +1394,15 @@ impl QwenDense {
             h,
             &arena.x_norm_buf,
         )?;
+        if w4a8_active {
+            kernels::quantize_f32_to_int8_per_block_tcb(
+                &mut tcb,
+                &arena.x_norm_buf,
+                x_int8,
+                x_scales,
+                h,
+            )?;
+        }
 
         for li in 0..cfg.n_layers {
             let layer = &self.layers[li];
@@ -1365,24 +1414,47 @@ impl QwenDense {
             // P2 (2026-05-23): dispatch by Q-quant dtype. Q4_K and Q6_K
             // both decode directly from the pinned mmap; only truly
             // exotic dtypes fall back to the f16 dequant path.
+            // `gemv_proj!` callers pass the f32 activation; when W4A8 is
+            // active, the per-block int8/scales pair for that activation is
+            // also needed for the Q4_K arm. Three activations are quantized
+            // per layer (x_norm, attn_out, ffn_act) → the macro takes both
+            // representations and the Q4_K arm switches on `w4a8_active`.
             macro_rules! gemv_proj {
-                ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr, $x:expr, $out:expr) => {{
+                ($site_w4a8:expr, $tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
+                 $x:expr, $x_i8:expr, $x_sc:expr, $out:expr) => {{
                     match $tref.dtype {
                         GgmlType::Q4_K => {
-                            // Winner of the Q4_K variant sweep (2026-05-23):
-                            // v3_8r (TG=256, 8 rows/TG, scale + activation
-                            // preload, paired nibble reads). Beat v2 by
-                            // +5.4%, simdmat by +1.6%, v3_llama within noise.
-                            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                                &mut tcb,
-                                mmap_buf,
-                                $tref.offset,
-                                $tref.byte_size,
-                                $rows,
-                                $cols,
-                                $x,
-                                $out,
-                            )?;
+                            if $site_w4a8 {
+                                // W4A8: per-block int8 activation × Q4_K
+                                // weight GEMV. Same v3_8r geometry; activation
+                                // BW drops 4× vs the f32 baseline.
+                                kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x_i8,
+                                    $x_sc,
+                                    $out,
+                                )?;
+                            } else {
+                                // Winner of the Q4_K variant sweep (2026-05-23):
+                                // v3_8r (TG=256, 8 rows/TG, scale + activation
+                                // preload, paired nibble reads). Beat v2 by
+                                // +5.4%, simdmat by +1.6%, v3_llama within noise.
+                                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
+                            }
                         }
                         GgmlType::Q6_K => {
                             kernels::gemv_q6_k_pinned_tcb(
@@ -1415,28 +1487,44 @@ impl QwenDense {
             // produced by the previous layer's tail-fusion for layers 1+).
 
             // ── Q / K / V projections ────────────────────────────────
+            // x_norm was quantized at the end of the previous iteration
+            // (or pre-loop for li=0). Q4_K → W4A8 path; Q6_K → f32 path
+            // (W4A8 doesn't apply to Q6_K weights).
             gemv_proj!(
+                w4a8_qproj,
                 layer.q_proj,
                 layer.pinned.q_proj_f16.as_ref(),
                 q_dim,
                 h,
                 &arena.x_norm_buf,
+                x_int8,
+                x_scales,
                 &arena.q_buf
             );
+            // k_proj is Q4_K in Qwen-3B-Q4_K_M (verified via tensor dump);
+            // route it through W4A8 too. Rows are small (256) so the BW
+            // saving is proportionally small, but it costs nothing extra
+            // because x_norm is already quantized for q_proj.
             gemv_proj!(
+                w4a8_qproj,
                 layer.k_proj,
                 layer.pinned.k_proj_f16.as_ref(),
                 kv_dim,
                 h,
                 &arena.x_norm_buf,
+                x_int8,
+                x_scales,
                 &arena.k_token_buf
             );
             gemv_proj!(
+                false,
                 layer.v_proj,
                 layer.pinned.v_proj_f16.as_ref(),
                 kv_dim,
                 h,
                 &arena.x_norm_buf,
+                x_int8,
+                x_scales,
                 &arena.v_token_buf
             );
 
@@ -1512,12 +1600,26 @@ impl QwenDense {
             )?;
 
             // ── O projection ─────────────────────────────────────────
+            // attn_out is the output of mha_decode (f32). When W4A8 active,
+            // quantize once before o_proj.
+            if w4a8_oproj {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.attn_out_buf,
+                    attn_int8,
+                    attn_scales,
+                    q_dim,
+                )?;
+            }
             gemv_proj!(
+                w4a8_oproj,
                 layer.o_proj,
                 layer.pinned.o_proj_f16.as_ref(),
                 h,
                 q_dim,
                 &arena.attn_out_buf,
+                attn_int8,
+                attn_scales,
                 &arena.o_proj_out_buf
             );
             // ── Fused (x += o_proj_out) + FFN norm ───────────────────
@@ -1535,22 +1637,40 @@ impl QwenDense {
                 eps,
                 h,
             )?;
+            // Re-quantize x_norm now that the fused add_rmsnorm has
+            // overwritten it with the FFN-norm output (feeds ffn_gate
+            // and ffn_up).
+            if w4a8_active {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            }
 
             // ── FFN gate / up / silu_mul / down ──────────────────────
             gemv_proj!(
+                w4a8_ffn_gate,
                 layer.ffn_gate,
                 layer.pinned.ffn_gate_f16.as_ref(),
                 intermediate,
                 h,
                 &arena.x_norm_buf,
+                x_int8,
+                x_scales,
                 &arena.ffn_gate_buf
             );
             gemv_proj!(
+                w4a8_ffn_up,
                 layer.ffn_up,
                 layer.pinned.ffn_up_f16.as_ref(),
                 intermediate,
                 h,
                 &arena.x_norm_buf,
+                x_int8,
+                x_scales,
                 &arena.ffn_up_buf
             );
             kernels::silu_mul_tcb(
@@ -1560,6 +1680,17 @@ impl QwenDense {
                 &arena.ffn_act_buf,
                 intermediate,
             )?;
+            // Quantize ffn_act for the upcoming ffn_down (when both W4A8
+            // and the ffn_down_q4k requant buffer are active).
+            if w4a8_ffn_down && layer.pinned.ffn_down_q4k.is_some() {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.ffn_act_buf,
+                    ffn_int8,
+                    ffn_scales,
+                    intermediate,
+                )?;
+            }
             // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
             // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
             // f16 fallback / native Q6_K path. ~31% BW saving on the
@@ -1567,25 +1698,61 @@ impl QwenDense {
             if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
-                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                    &mut tcb,
-                    q4k_buf,
-                    0,
-                    h * row_bytes,
-                    h,
-                    intermediate,
-                    &arena.ffn_act_buf,
-                    &arena.ffn_down_buf,
-                )?;
+                if w4a8_ffn_down {
+                    kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        h,
+                        intermediate,
+                        ffn_int8,
+                        ffn_scales,
+                        &arena.ffn_down_buf,
+                    )?;
+                } else {
+                    kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf,
+                        &arena.ffn_down_buf,
+                    )?;
+                }
             } else {
-                gemv_proj!(
-                    layer.ffn_down,
-                    layer.pinned.ffn_down_f16.as_ref(),
-                    h,
-                    intermediate,
-                    &arena.ffn_act_buf,
-                    &arena.ffn_down_buf
-                );
+                // ffn_down WITHOUT requant (Q6_K or fallback). Inline so
+                // we don't pass w4a8_ffn_down into the macro at all; the
+                // bisect found that any non-false $site_w4a8 here was
+                // somehow contaminating the f32 result.
+                match layer.ffn_down.dtype {
+                    GgmlType::Q6_K => {
+                        kernels::gemv_q6_k_pinned_tcb(
+                            &mut tcb, mmap_buf,
+                            layer.ffn_down.offset, layer.ffn_down.byte_size,
+                            h, intermediate,
+                            &arena.ffn_act_buf, &arena.ffn_down_buf,
+                        )?;
+                    }
+                    GgmlType::Q4_K => {
+                        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                            &mut tcb, mmap_buf,
+                            layer.ffn_down.offset, layer.ffn_down.byte_size,
+                            h, intermediate,
+                            &arena.ffn_act_buf, &arena.ffn_down_buf,
+                        )?;
+                    }
+                    _ => {
+                        let f16b = layer.pinned.ffn_down_f16.as_ref()
+                            .ok_or_else(|| Error::Metal("ffn_down dtype needs f16 fallback".into()))?;
+                        kernels::gemv_f16_metal_buf_tcb(
+                            &mut tcb, f16b, h, intermediate,
+                            &arena.ffn_act_buf, &arena.ffn_down_buf,
+                        )?;
+                    }
+                }
             }
             // ── Fused (x += ffn_down) + next-layer's attn_norm (or
             //    final_norm on the last layer). After the loop, x_norm
@@ -1609,6 +1776,18 @@ impl QwenDense {
                 eps,
                 h,
             )?;
+            // Re-quantize x_norm: this is the input for layer li+1's
+            // q_proj (next loop iteration) OR for the LM head after the
+            // last layer.
+            if w4a8_active {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            }
             let _ = kv_dim_bytes;
         }
 
@@ -1622,16 +1801,30 @@ impl QwenDense {
             if self.vocab_pruned_is_q4k {
                 let blocks_per_row = h / 256;
                 let row_bytes = blocks_per_row * 144;
-                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                    &mut tcb,
-                    pruned_buf,
-                    0,
-                    pn * row_bytes,
-                    pn,
-                    h,
-                    &arena.x_norm_buf,
-                    &arena.logits_buf,
-                )?;
+                if w4a8_lmhead {
+                    kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                        &mut tcb,
+                        pruned_buf,
+                        0,
+                        pn * row_bytes,
+                        pn,
+                        h,
+                        x_int8,
+                        x_scales,
+                        &arena.logits_buf,
+                    )?;
+                } else {
+                    kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                        &mut tcb,
+                        pruned_buf,
+                        0,
+                        pn * row_bytes,
+                        pn,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.logits_buf,
+                    )?;
+                }
             } else {
                 kernels::gemv_f16_metal_buf_tcb(
                     &mut tcb,
@@ -1658,16 +1851,30 @@ impl QwenDense {
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
-            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                &mut tcb,
-                lhq,
-                0,
-                vocab * row_bytes,
-                vocab,
-                h,
-                &arena.x_norm_buf,
-                &arena.logits_buf,
-            )?;
+            if w4a8_lmhead {
+                kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                    &mut tcb,
+                    lhq,
+                    0,
+                    vocab * row_bytes,
+                    vocab,
+                    h,
+                    x_int8,
+                    x_scales,
+                    &arena.logits_buf,
+                )?;
+            } else {
+                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                    &mut tcb,
+                    lhq,
+                    0,
+                    vocab * row_bytes,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?;
+            }
         } else {
             kernels::gemv_f16_metal_buf_tcb(
                 &mut tcb,
