@@ -20,10 +20,13 @@ pub const SHADER_MEGAKERNEL: &str =
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
 ///
-/// SHADER_MEGAKERNEL excluded: the skeleton declares `buffer(31)` which
-/// exceeds Metal's max-30 buffer-index limit and would fail the runtime
-/// library compile. Re-add once the functional 2-layer POC lands and
-/// the bindings are consolidated. See `memory/build_megakernel_design_2026_05_25.md`.
+/// SHADER_MEGAKERNEL re-included after the day-3 argbuf refactor
+/// consolidated the per-layer weight pointers into two
+/// `MkLayerArgs` argbufs, dropping the kernel's binding count from
+/// 32 to 8 (well within Metal's 30-slot limit). The kernel body is
+/// still a pass-through (stages A..L TODO); the dispatcher returns
+/// `Err`. See `memory/build_megakernel_day2_2026_05_25.md`
+/// § "Day-3 entry points".
 pub fn all_shader_sources() -> String {
     [
         SHADER_COMMON,
@@ -33,6 +36,7 @@ pub fn all_shader_sources() -> String {
         SHADER_SAMPLE,
         SHADER_MATMUL,
         SHADER_MHA,
+        SHADER_MEGAKERNEL,
     ]
     .join("\n\n")
 }
