@@ -887,6 +887,62 @@ mod metal_dispatch {
         )
     }
 
+    /// GPU-side per-block int8 quantization of a length-`n` f32 activation
+    /// to int8 + per-256-elem f32 scales, matching the CPU reference
+    /// (`quantize_to_int8_per_block`) bit-identically. Production W4A8
+    /// path uses this to avoid the GPU→CPU readback after rmsnorm.
+    ///
+    /// Requires `n % 256 == 0`. Writes `n` bytes to `x_int8_buf` and
+    /// `n / 256` f32 to `x_scales_buf`.
+    pub fn quantize_f32_to_int8_per_block_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        x_int8_buf: &PinnedBuffer,
+        x_scales_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "quantize_f32_to_int8_per_block";
+        if n % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb requires n % 256 == 0; got n={n}"
+            )));
+        }
+        if x_buf.length() < (n * std::mem::size_of::<f32>()) as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_buf too small: got {} need {}",
+                x_buf.length(), n * std::mem::size_of::<f32>(),
+            )));
+        }
+        if x_int8_buf.length() < n as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
+                x_int8_buf.length(), n,
+            )));
+        }
+        let n_blocks = n / 256;
+        let scales_bytes = n_blocks * std::mem::size_of::<f32>();
+        if x_scales_buf.length() < scales_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_scales_buf too small: got {} need {}",
+                x_scales_buf.length(), scales_bytes,
+            )));
+        }
+        const TG: u32 = 256;
+        let grid_x = n as u32;
+        let shmem_bytes = (TG as usize * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            KERNEL,
+            (grid_x, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(x_int8_buf), 0);
+                enc.set_buffer(2, Some(x_scales_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// CPU-side per-block int8 quantization of a length-cols f32 activation
     /// vector. Splits into ceil(cols/256) blocks, computes `scale = max|x|/127`
     /// per block, encodes `x_int8[i] = round(x[i] / scale)` clamped to
