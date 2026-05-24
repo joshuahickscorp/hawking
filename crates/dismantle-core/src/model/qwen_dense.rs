@@ -1628,24 +1628,29 @@ impl QwenDense {
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            kernels::add_rmsnorm_fused_tcb(
-                &mut tcb,
-                &arena.x_buf,
-                &arena.o_proj_out_buf,
-                ffn_norm_pin,
-                &arena.x_norm_buf,
-                eps,
-                h,
-            )?;
-            // Re-quantize x_norm now that the fused add_rmsnorm has
-            // overwritten it with the FFN-norm output (feeds ffn_gate
-            // and ffn_up).
+            // Fused add+rmsnorm+(optional)int8-quantize. When W4A8 is active
+            // this collapses the two dispatches into one and skips the
+            // x_norm DRAM round-trip.
             if w4a8_active {
-                kernels::quantize_f32_to_int8_per_block_tcb(
+                kernels::add_rmsnorm_fused_q8_tcb(
                     &mut tcb,
+                    &arena.x_buf,
+                    &arena.o_proj_out_buf,
+                    ffn_norm_pin,
                     &arena.x_norm_buf,
                     x_int8,
                     x_scales,
+                    eps,
+                    h,
+                )?;
+            } else {
+                kernels::add_rmsnorm_fused_tcb(
+                    &mut tcb,
+                    &arena.x_buf,
+                    &arena.o_proj_out_buf,
+                    ffn_norm_pin,
+                    &arena.x_norm_buf,
+                    eps,
                     h,
                 )?;
             }
@@ -1767,24 +1772,30 @@ impl QwenDense {
             } else {
                 final_norm_buf
             };
-            kernels::add_rmsnorm_fused_tcb(
-                &mut tcb,
-                &arena.x_buf,
-                &arena.ffn_down_buf,
-                next_norm,
-                &arena.x_norm_buf,
-                eps,
-                h,
-            )?;
-            // Re-quantize x_norm: this is the input for layer li+1's
-            // q_proj (next loop iteration) OR for the LM head after the
-            // last layer.
+            // Fused add+rmsnorm+(optional)int8-quantize, same pattern as the
+            // post-attn-norm site above. Produces x_norm and (when W4A8
+            // active) the int8/scales needed by the next layer's q_proj or
+            // the LM head.
             if w4a8_active {
-                kernels::quantize_f32_to_int8_per_block_tcb(
+                kernels::add_rmsnorm_fused_q8_tcb(
                     &mut tcb,
+                    &arena.x_buf,
+                    &arena.ffn_down_buf,
+                    next_norm,
                     &arena.x_norm_buf,
                     x_int8,
                     x_scales,
+                    eps,
+                    h,
+                )?;
+            } else {
+                kernels::add_rmsnorm_fused_tcb(
+                    &mut tcb,
+                    &arena.x_buf,
+                    &arena.ffn_down_buf,
+                    next_norm,
+                    &arena.x_norm_buf,
+                    eps,
                     h,
                 )?;
             }
