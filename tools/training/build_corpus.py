@@ -555,9 +555,16 @@ def main() -> int:
                 bnb_4bit_quant_type="nf4",
                 bnb_4bit_compute_dtype=dtype_map[args.dtype],
                 bnb_4bit_use_double_quant=True,
+                # CRITICAL: without this, bnb 4-bit IGNORES the max_memory
+                # device_map="auto" cap and stuffs everything on GPU 0,
+                # OOMing on T4 (14.5 GB usable, model + bnb overhead =
+                # 14.55 GB needed). With this flag, accelerate spills the
+                # overflow to CPU (as fp32 since CPU can't run 4-bit ops),
+                # respecting max_memory.
+                llm_int8_enable_fp32_cpu_offload=True,
             )
-            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype})",
-                  file=sys.stderr)
+            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype}, "
+                  f"CPU-offload enabled)", file=sys.stderr)
         except ImportError:
             print("error: --load-4bit requires bitsandbytes — `pip install bitsandbytes`",
                   file=sys.stderr)
