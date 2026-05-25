@@ -600,6 +600,11 @@ def main() -> int:
         offload_folder=str(offload_folder),
         offload_buffers=True,
         low_cpu_mem_usage=True,
+        # Fused memory-efficient attention via PyTorch SDPA. Without this,
+        # HF native attention at seq_len=4096 batch=32 allocates an O(S²)
+        # attention matrix (~16 GB at fp16) per layer → 20× slower than
+        # peak FLOPs. SDPA is fused and O(S) memory.
+        attn_implementation="sdpa",
     )
     if quantization_config is not None:
         model_kwargs["quantization_config"] = quantization_config
