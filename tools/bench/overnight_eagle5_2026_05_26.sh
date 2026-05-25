@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
-# tools/bench/overnight_eagle5_2026_05_26.sh — MAXED 8h CONFIG
+# tools/bench/overnight_eagle5_2026_05_26.sh — MEMORY-SAFE RECOVERY CONFIG
 #
-# Overnight chain (~6.5-7 hr wall on M3 Pro 18 GB):
-#   1. Corpus rebuild         10000 seqs, batch=8        ~2.5 hr
-#   2. Eagle5 v2 train        5 epochs, batch=24         ~2.5 hr
-#   3. τ-at-depth eval        K=1..8 acceptance          ~15 min
-#   4. build release dismantle                            ~1 min
-#   5. Eagle5 paired bench (TOKENS=64, n=10 trials)      ~15 min
-#   6. Eagle5 paired bench (TOKENS=256, n=10 trials)     ~30 min
-#   7. W4A8 LM_HEAD calibration on Qwen-3B               ~1 min
-#   8. Lookahead n-gram parity sweep on Qwen-3B          ~10 min
+# Overnight chain (~3.5-4 hr wall on M3 Pro 18 GB):
+#   1. Corpus rebuild       3000 seqs, batch=4, max_tok=1024   ~1.5-2 hr
+#   2. Eagle5 v2 train      3 epochs, batch=24                  ~1 hr
+#   3. τ-at-depth eval      K=1..8 acceptance                   ~10 min
+#   4. build release dismantle                                  ~1 min
+#   5. Eagle5 paired bench  TOKENS=64, n=10 trials              ~15 min
+#   6. Eagle5 paired bench  TOKENS=256, n=10 trials             ~30 min
+#   7. W4A8 LM_HEAD calibration on Qwen-3B                      ~1 min
+#   8. Lookahead n-gram parity sweep on Qwen-3B                 ~10 min
 #
-# Levers up from the SAFE 3hr config: corpus 3000→10000 seqs (richer
-# distribution), epochs 3→5 (more passes settle the head), paired
-# bench 5→10 trials at two token counts (tighter dec_tps delta with
-# CI bars), 2 ride-along quality checks after Eagle5 releases GPU.
+# History: The MAXED 8h config (batch=8, max-tokens=2048, 10000 seqs)
+# OOMed at the first batch (18.15 GB resident + 6.25 GB transient >
+# 22.64 GB MPS ceiling) after 1h 15min of model load. Recovery drops
+# batch=8→4 and max-tokens=2048→1024 (~1.6 GB transient, well clear
+# of the ceiling); reverts seqs and epochs to the SAFE-config values
+# so the chain completes inside the remaining budget.
 #
 # Launch:
 #   nohup tools/bench/overnight_eagle5_2026_05_26.sh \
@@ -30,7 +32,7 @@ cd "$(dirname "$0")/../.."
 LOG="reports/overnight_eagle5_2026_05_26.log"
 mkdir -p reports
 exec > >(tee -a "$LOG") 2>&1
-echo "[overnight] start $(date -u +%FT%TZ)  CONFIG=MAXED_8H"
+echo "[overnight] start $(date -u +%FT%TZ)  CONFIG=MEMORY_SAFE_RECOVERY"
 
 # Pin python3 to the python.org 3.12 framework where pip installed the
 # deps (torch, transformers, datasets, pyarrow, mlx, accelerate, ...).
@@ -72,27 +74,29 @@ soft_step() {
   fi
 }
 
-# (1) Corpus rebuild  ~2.5 hr (10000 sequences, batch=8)
-#     Resumable: --skip-existing is on by default, so the ~2 shards
-#     produced by the killed earlier run will be reused.
+# (1) Corpus rebuild  ~1.5-2 hr (3000 seqs, batch=4, max_tok=1024)
+#     Resumable: --skip-existing is on by default.
+#     Memory: per-batch transient ≈ (1024/2048)·(4/8)·6.25 GB = 1.6 GB;
+#     resident 18.15 GB + transient 1.6 GB = 19.75 GB, ~3 GB clear of
+#     the 22.64 GB MPS ceiling.
 step corpus \
   nice -n 19 taskpolicy -b python3 tools/training/build_corpus.py \
     --model deepseek-ai/DeepSeek-V2-Lite-Chat \
     --dataset HuggingFaceH4/ultrachat_200k \
-    --max-sequences 10000 \
-    --batch-size 8 \
-    --max-tokens-per-seq 2048 \
+    --max-sequences 3000 \
+    --batch-size 4 \
+    --max-tokens-per-seq 1024 \
     --shard-size 32 \
     --capture all \
     --out artifacts/calibration/v2_lite_corpus
 
-# (2) Eagle5 v2 train  ~2.5 hr (5 epochs over 10k seqs, batch=24)
+# (2) Eagle5 v2 train  ~1 hr (3 epochs over 3k seqs, batch=24)
 step train \
   nice -n 19 taskpolicy -b python3 tools/training/eagle5_train.py \
     --corpus-dir artifacts/calibration/v2_lite_corpus \
     --frozen     eagle4/v2lite_frozen.npz \
     --ckpt-dir   checkpoints/eagle5_v2 \
-    --epochs 5 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --epochs 3 --batch-size 24 --seq-len 16 --lr 3e-4 \
     --sparsity-head proxy --seed 0
 
 # (3) τ-at-depth eval (K=1..8 acceptance)  ~15 min
