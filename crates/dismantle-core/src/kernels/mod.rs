@@ -1114,6 +1114,85 @@ mod metal_dispatch {
         )
     }
 
+    /// W4A8 per-channel — Q4_K weight × int8 activation GEMV at v3_8r geometry,
+    /// but with ONE f32 scale PER ACTIVATION CHANNEL instead of per 256-element
+    /// block. Pairs with `quantize_to_int8_per_channel` (CPU) for the
+    /// activation side. Rationale + reconstruction-RMSE evidence in
+    /// memory/w4a8_quality_redesign_2026_05_26.md and
+    /// memory/w4a8_activation_distribution_2026_05_26.md.
+    ///
+    /// `x_scales_buf` size: `cols * sizeof(f32)` (vs `(cols/256) * sizeof(f32)`
+    /// for the per-block variant).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_int8_buf: &PinnedBuffer,
+        x_scales_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_a8_v3_8r_per_channel";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let x_bytes = cols * std::mem::size_of::<i8>();
+        let scales_bytes = cols * std::mem::size_of::<f32>();
+        if x_int8_buf.length() < x_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb x_int8 buffer too small: got {} need {}",
+                x_int8_buf.length(), x_bytes,
+            )));
+        }
+        if x_scales_buf.length() < scales_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb x_scales buffer too small: got {} need {}",
+                x_scales_buf.length(), scales_bytes,
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_int8_buf), 0);
+                enc.set_buffer(2, Some(x_scales_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// GPU-side per-block int8 quantization of a length-`n` f32 activation
     /// to int8 + per-256-elem f32 scales, matching the CPU reference
     /// (`quantize_to_int8_per_block`) bit-identically. Production W4A8
@@ -1196,6 +1275,57 @@ mod metal_dispatch {
             }
         }
         (out_int8, scales)
+    }
+
+    /// CPU-side PER-CHANNEL int8 quantization of a length-cols f32 activation
+    /// vector. Each channel gets its OWN scale (one f32 per element) computed
+    /// from a running per-channel max|x| estimate provided by the caller.
+    ///
+    /// For the static-calibration use case, `channel_scales[c]` is the
+    /// pre-computed `max|x_c| / 127` over a calibration corpus (e.g., the
+    /// 180-sample analysis in
+    /// memory/w4a8_activation_distribution_2026_05_26.md). For the dynamic
+    /// use case (where we have to recompute every token), `channel_scales` is
+    /// derived from the current activation itself — equivalent to per-block
+    /// with block_size=1, i.e., trivially scaled by |x[c]|, which makes the
+    /// int8 quantum meaningless (every element rounds to ±127). The
+    /// production wire-up therefore uses STATIC scales from calibration plus
+    /// a per-token rescaling guard.
+    ///
+    /// Returns int8 bytes (one per channel). The caller owns `channel_scales`.
+    /// Bit-identical with the per-block path when each block_size=1; quality
+    /// improvement comes from the per-channel scales being chosen from a
+    /// CORPUS distribution, not a single token's max.
+    pub fn quantize_to_int8_per_channel(x: &[f32], channel_scales: &[f32]) -> Vec<i8> {
+        assert_eq!(
+            x.len(),
+            channel_scales.len(),
+            "quantize_to_int8_per_channel: x.len()={} != scales.len()={}",
+            x.len(),
+            channel_scales.len()
+        );
+        let mut out = vec![0i8; x.len()];
+        for i in 0..x.len() {
+            let s = channel_scales[i];
+            let inv = if s > 0.0 { 1.0 / s } else { 0.0 };
+            let q = (x[i] * inv).round().clamp(-127.0, 127.0) as i8;
+            out[i] = q;
+        }
+        out
+    }
+
+    /// Convenience: derive per-channel scales from a single-vector max — i.e.,
+    /// `channel_scales[c] = |x[c]| / 127`. Useful only as a parity-test fixture
+    /// (the dynamic case degenerates to "every element saturates at ±127");
+    /// production calibration-based scales come from a corpus pass and are
+    /// stored in the model/profile.
+    pub fn per_channel_scales_from_abs(x: &[f32]) -> Vec<f32> {
+        x.iter()
+            .map(|&v| {
+                let a = v.abs();
+                if a > 0.0 { a / 127.0 } else { 1.0 }
+            })
+            .collect()
     }
 
     /// P2 — v3_llama: 2 simdgroups × 4-rows-each per TG (TG=64, 8 rows/TG).

@@ -675,6 +675,103 @@ kernel void gemm_q4_k_a8_v3_8r(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── W4A8 per-channel — gemm_q4_k_a8_v3_8r_per_channel ───────────────────────
+//
+// Per-channel int8 activation × Q4_K weight GEMV. Same v3_8r geometry as
+// the per-block version (8 rows/TG, 32 threads/row, 256 threads/TG)
+// but reads ONE scale per ACTIVATION CHANNEL instead of one scale per
+// 256-element block.
+//
+// Why per-channel: the per-block scheme suffers from super-outlier
+// channels (e.g., on Qwen-3B, ch[1979] consistently has |x|=150 while
+// neighbors are ~3-7). One outlier in a block dominates the block's
+// scale = max/127, crushing the dynamic range for the other 255
+// channels — see memory/w4a8_activation_distribution_2026_05_26.md.
+//
+// Per-channel scales (one f32 per hidden dim, total 8 KB at hidden=2048
+// vs 32 bytes for per-block) give each channel its own scale, so the
+// outlier's 1.18 scale doesn't punish the block-neighbors' 0.04 scales.
+// Reconstruction RMSE drops 3.83× globally, 4.24× on outlier blocks
+// (memory/w4a8_quality_redesign_2026_05_26.md UPDATE 2026-05-26).
+//
+// Buffers:
+//   buffer(0): w_q4       — Q4_K weight bytes (rows * blocks * 144)
+//   buffer(1): x_int8     — int8 activations (cols bytes)
+//   buffer(2): x_scales   — f32 PER-CHANNEL scales (cols floats)
+//   buffer(3): y          — f32 output (rows floats)
+//   buffer(4): rows       — u32
+//   buffer(5): cols       — u32
+//
+// The activation buffer layout matches per-block (x_int8 is cols
+// length); only the scales buffer changes meaning: cols entries instead
+// of cols/256.
+
+kernel void gemm_q4_k_a8_v3_8r_per_channel(
+    device const uchar*       w_q4     [[buffer(0)]],
+    device const signed char* x_int8   [[buffer(1)]],
+    device const float*       x_scales [[buffer(2)]],
+    device       float*       y        [[buffer(3)]],
+    constant     uint&        rows     [[buffer(4)]],
+    constant     uint&        cols     [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub] & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        // Per-CHANNEL activation recovery: each element has its own scale.
+        // Recover the f32 activation inline (x_rec[k] = int8 * channel_scale).
+        // Reads 8 int8 bytes + 8 f32 scales from DRAM per thread per block;
+        // L1 caches the scale array (8 KB at hidden=2048, fits easily).
+        float x_rec[8];
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = (uint)b * 256u + k * 32u + simd_lane;
+            x_rec[k] = (float)x_int8[elem] * x_scales[elem];
+        }
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * x_rec[k0];
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * x_rec[k1];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4k_fast_v1 ─────────────────────────────────────────────────────────
 // Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but reads
 // from the Q4K_FAST sub-block-contiguous layout instead of GGUF Q4_K:
