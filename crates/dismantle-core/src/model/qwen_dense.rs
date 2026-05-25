@@ -251,8 +251,9 @@ pub struct QwenDense {
 
     /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
     /// tables, keyed by GGUF mmap offset. Populated by
-    /// `ensure_q4k_predec_cache` on first forward when
-    /// DISMANTLE_QWEN_Q4K_PREDEC=1. `None` = feature off, no memory cost.
+    /// `ensure_q4k_predec_cache` on first forward (DEFAULT-ON as of
+    /// 2026-05-26; opt out via DISMANTLE_QWEN_Q4K_PREDEC=0).
+    /// `None` = feature off, no memory cost.
     #[cfg(target_os = "macos")]
     pub(crate) q4k_predec_cache:
         Option<std::collections::HashMap<usize, crate::metal::PinnedBuffer>>,
@@ -1778,12 +1779,16 @@ impl QwenDense {
         use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
 
         // Item 1 wire-up: lazy-build the Q4_K pre-decoded scale cache
-        // on first forward when DISMANTLE_QWEN_Q4K_PREDEC=1. The cache
-        // is keyed by Q4_K weight offset (in the GGUF mmap) so each
+        // on first forward. DEFAULT-ON as of 2026-05-26 per
+        // memory/composition_decision_matrix_2026_05_26.md (100% bit-
+        // identical N=100, +34% paired dec_tps). Set
+        // DISMANTLE_QWEN_Q4K_PREDEC=0 to opt out (e.g. if the ~760 MB
+        // RSS cost of the scale table is unaffordable). The cache is
+        // keyed by Q4_K weight offset (in the GGUF mmap) so each
         // dispatch site can look it up by tref.offset.
         let predec_active = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+            .map(|v| v != "0")
+            .unwrap_or(true);
         if predec_active && self.q4k_predec_cache.is_none() {
             self.ensure_q4k_predec_cache()?;
         }
