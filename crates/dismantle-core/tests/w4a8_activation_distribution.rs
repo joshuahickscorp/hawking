@@ -209,4 +209,131 @@ fn w4a8_activation_distribution() {
     }
     let _ = std::fs::write(&out_path, &report);
     eprintln!("\n[w4a8-act] full per-channel CSV written to {}", out_path.display());
+
+    // ── Per-block vs per-channel reconstruction-error analysis ──────────────
+    //
+    // Now that we have 180 samples in memory, simulate both
+    // quantization approaches and compare reconstruction RMS error.
+    // This answers: "is per-channel actually worth the 1-week kernel
+    // rebuild, OR does it only help a few outlier blocks?"
+    //
+    // Per-block: existing approach. scale_b = max(|x[b*256..(b+1)*256]|)/127
+    // Per-channel: proposed. scale_c = max_over_samples(|x[c]|)/127
+    //
+    // For each sample, quantize then dequantize via both approaches.
+    // Compute the L2 norm of the reconstruction error.
+    eprintln!("\n[w4a8-act] reconstruction error analysis (per-block vs per-channel)");
+
+    // Per-channel scales — computed from the global max_abs we already have.
+    let per_channel_scale: Vec<f32> = max_abs
+        .iter()
+        .map(|&m| if m > 0.0 { m / 127.0 } else { 1.0 })
+        .collect();
+
+    let block_size = 256usize;
+    let mut sum_sq_err_block = 0.0f64;
+    let mut sum_sq_err_channel = 0.0f64;
+    let mut sum_sq_signal = 0.0f64;
+    let mut sum_abs_err_block_per_outlier_block = 0.0f64;
+    let mut sum_abs_err_channel_per_outlier_block = 0.0f64;
+    let mut outlier_block_elem_count = 0usize;
+
+    // Identify which 256-blocks contain a super-outlier channel
+    // (max_abs > 30 — captures the top 10 outliers in the dataset).
+    let outlier_blocks: Vec<usize> = {
+        let nb = hidden / block_size;
+        (0..nb)
+            .filter(|&b| {
+                (b * block_size..(b + 1) * block_size)
+                    .any(|c| max_abs[c] > 30.0)
+            })
+            .collect()
+    };
+    eprintln!(
+        "  {} of {} blocks contain a super-outlier channel (max|x|>30)",
+        outlier_blocks.len(),
+        hidden / block_size
+    );
+
+    for sample in &samples {
+        // Per-block quantize+dequantize.
+        let nb = hidden / block_size;
+        let mut recon_block = vec![0.0f32; hidden];
+        for b in 0..nb {
+            let lo = b * block_size;
+            let hi = lo + block_size;
+            let mut bmax = 0.0f32;
+            for c in lo..hi {
+                let a = sample[c].abs();
+                if a > bmax { bmax = a; }
+            }
+            let scale = if bmax > 0.0 { bmax / 127.0 } else { 1.0 };
+            let inv = 1.0 / scale;
+            for c in lo..hi {
+                let q = (sample[c] * inv).round().clamp(-127.0, 127.0) as i32;
+                recon_block[c] = (q as f32) * scale;
+            }
+        }
+
+        // Per-channel quantize+dequantize.
+        let mut recon_channel = vec![0.0f32; hidden];
+        for c in 0..hidden {
+            let scale = per_channel_scale[c];
+            let inv = 1.0 / scale;
+            let q = (sample[c] * inv).round().clamp(-127.0, 127.0) as i32;
+            recon_channel[c] = (q as f32) * scale;
+        }
+
+        // Accumulate errors.
+        for c in 0..hidden {
+            let signal = sample[c];
+            let err_b = recon_block[c] - signal;
+            let err_c = recon_channel[c] - signal;
+            sum_sq_err_block += (err_b as f64) * (err_b as f64);
+            sum_sq_err_channel += (err_c as f64) * (err_c as f64);
+            sum_sq_signal += (signal as f64) * (signal as f64);
+        }
+
+        // Outlier-block focused analysis: errors only inside the
+        // blocks that contain a super-outlier.
+        for &b in &outlier_blocks {
+            for c in b * block_size..(b + 1) * block_size {
+                sum_abs_err_block_per_outlier_block +=
+                    (recon_block[c] - sample[c]).abs() as f64;
+                sum_abs_err_channel_per_outlier_block +=
+                    (recon_channel[c] - sample[c]).abs() as f64;
+                outlier_block_elem_count += 1;
+            }
+        }
+    }
+
+    let total_elems = (samples.len() * hidden) as f64;
+    let rmse_block = (sum_sq_err_block / total_elems).sqrt();
+    let rmse_channel = (sum_sq_err_channel / total_elems).sqrt();
+    let signal_rms = (sum_sq_signal / total_elems).sqrt();
+
+    eprintln!("\n[w4a8-act] global reconstruction RMSE (all blocks, all samples):");
+    eprintln!("  signal RMS:        {:.4}", signal_rms);
+    eprintln!("  per-block RMSE:    {:.4e}   ({:.4}% of signal RMS)", rmse_block, rmse_block / signal_rms as f64 * 100.0);
+    eprintln!("  per-channel RMSE:  {:.4e}   ({:.4}% of signal RMS)", rmse_channel, rmse_channel / signal_rms as f64 * 100.0);
+    eprintln!("  improvement:       {:.2}×  (per-channel is {:.2}× lower error)", rmse_block / rmse_channel, rmse_block / rmse_channel);
+
+    let mae_block_outlier = sum_abs_err_block_per_outlier_block / outlier_block_elem_count as f64;
+    let mae_channel_outlier = sum_abs_err_channel_per_outlier_block / outlier_block_elem_count as f64;
+    eprintln!("\n[w4a8-act] reconstruction MAE on OUTLIER blocks only:");
+    eprintln!("  per-block MAE:     {:.4e}", mae_block_outlier);
+    eprintln!("  per-channel MAE:   {:.4e}", mae_channel_outlier);
+    eprintln!("  improvement:       {:.2}× on outlier blocks", mae_block_outlier / mae_channel_outlier);
+
+    let global_ratio = rmse_block / rmse_channel;
+    if global_ratio > 3.0 {
+        eprintln!("\n[w4a8-act] VERDICT: per-channel recovers significantly more activation precision.");
+        eprintln!("  Recommendation: per-channel W4A8 kernel work is JUSTIFIED ({:.1}× lower error).", global_ratio);
+    } else if global_ratio > 1.5 {
+        eprintln!("\n[w4a8-act] VERDICT: per-channel modestly better.");
+        eprintln!("  Recommendation: per-channel W4A8 is WORTH TRYING but expected quality gain is modest.");
+    } else {
+        eprintln!("\n[w4a8-act] VERDICT: per-channel barely beats per-block.");
+        eprintln!("  Recommendation: skip per-channel; investigate other mechanisms.");
+    }
 }
