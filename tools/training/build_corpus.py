@@ -67,6 +67,7 @@ class Args:
     skip_rows: int
     load_4bit: bool
     cuda_max_vram_gb: float | None
+    no_trust_remote_code: bool
 
 
 def parse_args() -> Args:
@@ -93,6 +94,14 @@ def parse_args() -> Args:
                         "CPU via accelerate. Use when T4 (14.5 GB usable) is "
                         "almost-but-not-quite full after model load; pass "
                         "12-13 to leave headroom for activations.")
+    p.add_argument("--no-trust-remote-code", action="store_true", default=False,
+                   help="disable trust_remote_code in from_pretrained. Forces "
+                        "transformers to use its NATIVE DeepSeek-V2 loader "
+                        "instead of the remote modeling_deepseek.py on HF "
+                        "Hub. The remote file expects per-expert split "
+                        "tensors but the checkpoint uses a fused per-block "
+                        "format, leaving experts UNINITIALIZED. Required for "
+                        "correct V2-Lite load on transformers v4.45+.")
     p.add_argument("--dtype", default="float16",
                    choices=["float16", "bfloat16", "float32"])
     p.add_argument("--quantize-intermediates", default="int8",
@@ -137,6 +146,7 @@ def parse_args() -> Args:
         skip_rows=a.skip_rows,
         load_4bit=a.load_4bit,
         cuda_max_vram_gb=a.cuda_max_vram_gb,
+        no_trust_remote_code=a.no_trust_remote_code,
     )
 
 
@@ -523,8 +533,12 @@ def main() -> int:
         "float32": torch.float32,
     }
 
+    trust_rc = not args.no_trust_remote_code
+    if not trust_rc:
+        print("trust_remote_code=False — using transformers NATIVE loader",
+              file=sys.stderr)
     print(f"loading {args.model} …", file=sys.stderr)
-    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=trust_rc)
     offload_folder = args.out / "offload"
     offload_folder.mkdir(parents=True, exist_ok=True)
     if args.device == "mps":
@@ -572,7 +586,7 @@ def main() -> int:
 
     model_kwargs = dict(
         torch_dtype=dtype_map[args.dtype],
-        trust_remote_code=True,
+        trust_remote_code=trust_rc,
         device_map="auto",
         max_memory=max_memory,
         offload_folder=str(offload_folder),
