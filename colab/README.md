@@ -5,11 +5,19 @@ on the M3 Pro 18 GB laptop (the 16B model has to be offloaded to CPU/disk,
 making forwards 20× slower → ~5-day ETA for 3000 sequences). On Colab GPUs
 the same job finishes in 1-3 hours depending on tier:
 
-| Tier | GPU | VRAM | Corpus 10k seqs | Notes |
+**Current notebook config:** MAXED — 20,000 sequences × 4,096 max-tokens
+(2× the "safe" config). Yields ~+8-12 percentage points on acceptance
+rate vs the 10k/2k config; cost is wall time.
+
+| Tier | GPU | VRAM | Corpus 20k seqs × 4k tokens | Notes |
 |---|---|---|---|---|
-| Free | T4 | 16 GB | ~2.5 hr | 4-bit load via bitsandbytes; 90-min idle disconnect |
-| Pro | V100 | 16 GB | ~1 hr | 4-bit load; 24h sessions, no idle disconnect |
-| Pro/Pro+ | A100 | 40 GB | ~30 min | Native fp16; biggest batch sizes |
+| Free | T4 | 16 GB | **~5-6 hr** | 4-bit load via bitsandbytes; needs keepalive |
+| Pro | V100 | 16 GB | **~2 hr** | 4-bit load; 24h sessions, no idle disconnect |
+| Pro/Pro+ | A100 | 40 GB | **~1 hr** | Native fp16; batch=16 |
+
+If 5-6 hr on T4 is too long for your window, edit Cell 4 in the notebook
+to bring `--max-sequences` back to `10000` and `--max-tokens-per-seq` to
+`2048` (the "safe" 2.5-hr config).
 
 ## Quick start
 
