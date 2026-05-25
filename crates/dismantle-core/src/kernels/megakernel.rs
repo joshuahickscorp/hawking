@@ -43,7 +43,8 @@ pub mod inner {
     pub const MK_PROBE_O_PROJ: u32 = 3; // layer-0 stage G (o_proj out, 2048)
     pub const MK_PROBE_XNORM_FFN: u32 = 4; // layer-0 stage H (post-attn rmsnorm)
     pub const MK_PROBE_FFN_DOWN: u32 = 5; // layer-0 stage K (ffn_down out, 2048)
-    pub const MK_PROBE_RESIDUAL: u32 = 6; // final residual (default — full 2-layer)
+    pub const MK_PROBE_RESIDUAL_L0: u32 = 6; // post-layer-0 residual
+    pub const MK_PROBE_RESIDUAL: u32 = 7; // post-layer-1 residual (final 2-layer)
 
     /// Per-layer argument buffer — must match `struct MkLayerArgs` in
     /// `shaders/megakernel_qwen3b.metal` byte-for-byte.
@@ -322,5 +323,5 @@ pub mod inner {
 pub use inner::{
     megakernel_2layer_dispatch, LayerMetalBuffers, MkArgs, MkLayerArgs,
     MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
-    MK_PROBE_RESIDUAL, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
