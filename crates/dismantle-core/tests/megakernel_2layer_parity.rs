@@ -1,11 +1,16 @@
-//! 2-layer megakernel parity test — POC scaffold (2026-05-25,
-//! build/megakernel-day2 builds on 4591133).
+//! 2-layer megakernel parity test (2026-05-25, day-3+).
 //!
-//! GATED OFF by default (`#[ignore]`'d) because the megakernel
-//! dispatcher itself is still a stub
-//! (`crate::kernels::megakernel::megakernel_2layer_dispatch` returns
-//! `Err`). The reference-side infrastructure landed in day 2:
+//! Day-3 (this commit) exercises the full dispatch harness — weight
+//! upload via `gpu_address`, argbuf encode, `useResource`, dispatch,
+//! readback — with the shader body still a pass-through (stages A..L
+//! TODO). The correctness gate this lays down is the **pass-through
+//! invariant** `x_out == x_in`, NOT a full CPU-vs-megakernel
+//! comparison. That gate proves the harness moves bytes around
+//! correctly; once stages A..L land, the comparison flips to
+//! `atol=1e-3 fp16` vs the residual returned by
+//! [`QwenDense::forward_layers_subset`] (already wired below).
 //!
+//! Infrastructure built in day-2:
 //!   * [`QwenDense::forward_layers_subset`] — runs the first N layers
 //!     of the existing CPU forward path and returns the residual
 //!     stream after layer N (before final_norm + LM head).
@@ -13,25 +18,23 @@
 //!     layer's Q4_K / Q6_K weights into f16 + f32 buffers in the
 //!     layout the megakernel shader expects.
 //!
-//! When the dispatcher becomes functional (day 3+ of the megakernel
-//! POC), drop the `#[ignore]`, plug `megakernel_2layer_dispatch` into
-//! the marked TODO below, and compare its output residual to
-//! `ref_x` with the `atol=1e-3` fp16 tolerance from
-//! `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
-//! § "Verification rule" (relaxed from bit-identical because the
-//! megakernel runs GEMVs in f16 with f32 accumulators, so fp16 noise
-//! at the residual is expected).
+//! See `memory/build_megakernel_day3_2026_05_25.md` for the day-3
+//! closeout and stage-A entry point.
 
 #![cfg(target_os = "macos")]
 
 use std::path::PathBuf;
 
+use dismantle_core::kernels::megakernel::megakernel_2layer_dispatch;
+use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
 use dismantle_core::{Engine, EngineConfig};
+use half::f16;
 
 const TOKEN: u32 = 42;
 const POS: usize = 0;
 const LAST_LAYER: usize = 1;
+const MAX_SEQ: u32 = 256;
 
 fn weights_path() -> PathBuf {
     if let Ok(p) = std::env::var("DISMANTLE_QWEN_GGUF") {
@@ -41,7 +44,7 @@ fn weights_path() -> PathBuf {
 }
 
 #[test]
-#[ignore = "megakernel POC: dispatcher is a stub; see build_megakernel_design_2026_05_25.md § What attended work unblocks"]
+#[ignore = "megakernel POC day-3: harness-only (pass-through invariant); requires Qwen-3B weights via DISMANTLE_QWEN_GGUF"]
 fn megakernel_2layer_parity_qwen3b() {
     let weights = weights_path();
     if !weights.exists() {
@@ -50,13 +53,17 @@ fn megakernel_2layer_parity_qwen3b() {
     }
 
     let cfg = EngineConfig::default();
-    let mut model = QwenDense::load(&weights, cfg).expect("load QwenDense");
+    let mut model = <QwenDense as Engine>::load(&weights, cfg).expect("load QwenDense");
     let h = model.config.hidden;
     let q_dim = model.config.n_heads * model.config.head_dim;
     let kv_dim = model.config.n_kv_heads * model.config.head_dim;
     let mid = model.config.intermediate;
 
     // Reference: first 2 layers of the existing CPU forward path.
+    // Day-3 doesn't compare against ref_x (shader is pass-through),
+    // but the call still validates the CPU-side helper is healthy and
+    // produces the residual that stage-A onwards will be measured
+    // against in later days.
     let ref_x = model
         .forward_layers_subset(TOKEN, POS, LAST_LAYER)
         .expect("forward_layers_subset");
@@ -76,19 +83,39 @@ fn megakernel_2layer_parity_qwen3b() {
     assert_layer_shapes(&layer0, h, q_dim, kv_dim, mid, "layer 0");
     assert_layer_shapes(&layer1, h, q_dim, kv_dim, mid, "layer 1");
 
-    // TODO(megakernel-day3): when megakernel_2layer_dispatch is
-    // functional, allocate Metal buffers for layer0/layer1 + KV cache
-    // + ffn_scratch, dispatch the megakernel, read back the residual,
-    // and compare to ref_x with atol=1e-3.
-    //
-    // The dispatcher currently lives at
-    //   crates/dismantle-core/src/kernels/megakernel.rs
-    // and is `pub(crate)`. Day 3 either (a) bumps it to `pub` so this
-    // integration test can call it directly, or (b) exposes a thin
-    // public adapter on QwenDense (e.g.
-    // `forward_2layer_megakernel(token, pos) -> Vec<f32>`) that
-    // wraps the dispatcher's argbuf assembly.
-    let _ = (ref_x, layer0, layer1);
+    // Synthetic input residual — deterministic, distinct per element so
+    // any harness bug (off-by-one stride, wrong gpu_address indexing,
+    // etc.) surfaces in the readback.
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
+
+    let ctx = MetalContext::new().expect("MetalContext::new");
+    let x_out = megakernel_2layer_dispatch(
+        &ctx,
+        &layer0,
+        &layer1,
+        &x_in,
+        POS as u32,
+        (POS + 1) as u32,
+        MAX_SEQ,
+    )
+    .expect("megakernel_2layer_dispatch");
+
+    assert_eq!(x_out.len(), h, "megakernel output residual length");
+
+    // Day-3 invariant: shader body is still pass-through, so x_out
+    // must equal x_in bit-identically. When stages A..L land, this
+    // becomes a CPU-ref atol=1e-3 comparison.
+    for (i, (got, want)) in x_out.iter().zip(x_in.iter()).enumerate() {
+        assert_eq!(
+            got.to_bits(),
+            want.to_bits(),
+            "pass-through mismatch at i={i}: got {} want {}",
+            got.to_f32(),
+            want.to_f32(),
+        );
+    }
 }
 
 fn assert_layer_shapes(
