@@ -65,6 +65,7 @@ class Args:
     capture: tuple[str, ...]
     batch_size: int
     skip_rows: int
+    load_4bit: bool
 
 
 def parse_args() -> Args:
@@ -81,6 +82,11 @@ def parse_args() -> Args:
     p.add_argument("--device", default="mps",
                    choices=["mps", "cpu", "cuda"],
                    help="MPS is the default on M3 Pro; CUDA for cross-machine runs")
+    p.add_argument("--load-4bit", action="store_true", default=False,
+                   help="quantize model to 4-bit at load via bitsandbytes "
+                        "nf4 (requires CUDA + bitsandbytes). Brings DeepSeek-"
+                        "V2-Lite from 32 GB fp16 → 8 GB nf4 so it fits on a "
+                        "T4 (16 GB) without offload. CUDA-only.")
     p.add_argument("--dtype", default="float16",
                    choices=["float16", "bfloat16", "float32"])
     p.add_argument("--quantize-intermediates", default="int8",
@@ -123,6 +129,7 @@ def parse_args() -> Args:
         capture=capture,
         batch_size=a.batch_size,
         skip_rows=a.skip_rows,
+        load_4bit=a.load_4bit,
     )
 
 
@@ -519,8 +526,31 @@ def main() -> int:
         max_memory = None
     else:
         max_memory = {"cpu": "12GiB"}
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
+
+    # 4-bit loading via bitsandbytes nf4 — for low-VRAM GPUs like Colab T4
+    # (16 GB). Brings DeepSeek-V2-Lite from ~32 GB fp16 → ~8 GB nf4 so it
+    # fits entirely on-device without offload.
+    quantization_config = None
+    if args.load_4bit:
+        if args.device != "cuda":
+            print(f"warn: --load-4bit requires --device cuda; got {args.device}",
+                  file=sys.stderr)
+        try:
+            from transformers import BitsAndBytesConfig  # type: ignore[import-not-found]
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=dtype_map[args.dtype],
+                bnb_4bit_use_double_quant=True,
+            )
+            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype})",
+                  file=sys.stderr)
+        except ImportError:
+            print("error: --load-4bit requires bitsandbytes — `pip install bitsandbytes`",
+                  file=sys.stderr)
+            return 2
+
+    model_kwargs = dict(
         torch_dtype=dtype_map[args.dtype],
         trust_remote_code=True,
         device_map="auto",
@@ -528,6 +558,15 @@ def main() -> int:
         offload_folder=str(offload_folder),
         offload_buffers=True,
         low_cpu_mem_usage=True,
+    )
+    if quantization_config is not None:
+        model_kwargs["quantization_config"] = quantization_config
+        # When 4-bit, transformers ignores torch_dtype for the linear
+        # weights; the compute_dtype on the bnb_config governs.
+        del model_kwargs["torch_dtype"]
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        **model_kwargs,
     ).eval()
     if hasattr(model.config, "output_router_logits"):
         model.config.output_router_logits = True
