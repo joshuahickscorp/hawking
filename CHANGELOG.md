@@ -1,5 +1,41 @@
 # Changelog
 
+## Unreleased (post-v2.0.0)
+
+### Performance — Qwen2.5-3B-Q4_K_M decode shipped at 26.6 dec_tps (2026-05-26)
+
+Locked-config default-on baseline for Qwen-3B-Q4_K_M on M3 Pro 18 GB:
+**~26.6 dec_tps median** (n=5 paired, 32-token greedy). Up from ~21 dec_tps
+on May 23, ~17 dec_tps on May 20, and ~1.3 dec_tps in early baselines.
+Gap to llama.cpp Metal (~50 dec_tps on the same hardware/model) closes
+from 2.46× → **1.88×** — first sub-2× measurement.
+
+Headline lever: pre-decoded Q4_K sub-block scale tables
+(`DISMANTLE_QWEN_Q4K_PREDEC`, default-on, opt-out via `=0`). Lifts the
+8 sub-block (scale, min) f32-pair decoding out of the Q4_K matvec hot
+path at load time. RSS cost ~760 MB. Math is exactly equivalent — 100%
+bit-identical at N=100 corpus greedy sweep.
+
+Stacked stack (all default-on at locked Qwen-3B config):
+- `DISMANTLE_QWEN_TCB=1` — Token Command Buffer single-commit decode
+- `DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=32000` — 32K corpus-derived LM head
+- `DISMANTLE_QWEN_Q4K_LMHEAD=1` — quantized LM head GEMV
+- `DISMANTLE_QWEN_FFN_DOWN_Q4K=1` — opt-in ffn_down Q6_K→Q4_K requant
+- `DISMANTLE_QWEN_Q4K_PREDEC=1` — pre-decoded sub-block scales (new default)
+
+Opt-in held levers (not default; tradeoffs explicit):
+- `DISMANTLE_QWEN_Q4K_FAST=1` — custom 160 B/block sub-block-contiguous
+  layout. Quality 91% (vs predec's 100%). Use when the 760 MB predec
+  RAM cost is unaffordable; takes +24.6% vs baseline at lower RAM.
+- `DISMANTLE_QWEN_W4A8=1` — per-block int8 activation × Q4_K weight.
+  Quality 20% (drift on long-form generation). Bit-identical gate
+  blocks default-on; opt-in for tolerant workloads delivers +14.1%.
+- `DISMANTLE_QWEN_BATCH_PREFILL=1` — B=8 batched prefill (2.1× prefill).
+
+See `memory/qwen_dense_metal_pipeline.md` for the canonical locked
+config and `memory/composition_decision_matrix_2026_05_26.md` for the
+full quality × perf matrix.
+
 ## v2.0.0 — pending
 
 **Goals of this release:** ship dismantle as a working pure-Rust + Metal MoE

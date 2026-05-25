@@ -19,10 +19,11 @@ Currently supports:
 
 | model | quant | dec_tps (default) | notes |
 |---|---|---:|---|
+| Qwen2.5-3B-Instruct | Q4_K_M | **~26.6** | n=5 paired median, locked default config (predec + vocab-prune-32K + Q4K-LM-head + ffn_down-Q4K) |
 | DeepSeek-V2-Lite-Chat | Q4_K_M | **~17** | TRIALS=4 TOKENS=24 coexist, 95% CI [16.6, 18.0] |
 | Mixtral-8x7B-Instruct-v0.1 | Q3_K_M | **~0.1** | functional, SSD-bandwidth-limited on 18 GB |
 
-llama.cpp Metal on the same hardware/model is roughly 3× faster on V2-Lite. dismantle prioritizes a small, auditable Rust codebase over matching every C++ kernel optimization. The gap is honest engineering work; it's not a fundamental architectural limit. See [reports/v1.1.0_architecture_audit.md](reports/v1.1.0_architecture_audit.md) for the bandwidth/utilization breakdown.
+llama.cpp Metal on Qwen-3B-Q4_K_M on the same hardware lands around **50 dec_tps**; dismantle's gap is **1.88×** as of 2026-05-26 (first sub-2× measurement on M3 Pro). For DeepSeek-V2-Lite the gap is roughly 3×. dismantle prioritizes a small, auditable Rust codebase over matching every C++ kernel optimization. The gap is honest engineering work; it's not a fundamental architectural limit. See [reports/v1.1.0_architecture_audit.md](reports/v1.1.0_architecture_audit.md) for the bandwidth/utilization breakdown and the composition decision matrix in `memory/composition_decision_matrix_2026_05_26.md` for the Qwen-3B optimization path.
 
 ## Requirements
 
