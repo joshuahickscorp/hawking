@@ -592,10 +592,14 @@ def main() -> int:
         model.config.output_router_logits = True
     try:
         input_device = next(iter(model.hf_device_map.values()))
-    except Exception:
+        print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
+              file=sys.stderr)
+    except (AttributeError, Exception):
+        # Single-device load (e.g., 102 GB GPU fits whole model on cuda:0):
+        # transformers doesn't set hf_device_map when no offload was needed.
         input_device = args.device
-    print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
-          file=sys.stderr)
+        print(f"hf_device_map: not set (model is single-device on {input_device})",
+              file=sys.stderr)
     print(f"inputs will go to: {input_device}", file=sys.stderr)
     args.device = str(input_device)
 
