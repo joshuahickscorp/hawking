@@ -83,11 +83,25 @@ struct MkLayerArgs {
 
 // Megakernel argbuf. Position + scratch cache strides.
 struct MkArgs {
-    uint pos;        // current decode position (RoPE phase)
-    uint seq_len;    // pos + 1 (length of attended KV slice)
-    uint max_seq;    // K/V cache stride per layer
-    uint _padding;   // align to 16
+    uint pos;          // current decode position (RoPE phase)
+    uint seq_len;      // pos + 1 (length of attended KV slice)
+    uint max_seq;      // K/V cache stride per layer
+    uint probe_stage;  // dev-only: which intermediate is written to x_out
 };
+
+// Probe-stage IDs (must match `MK_PROBE_*` in
+// `crates/dismantle-core/src/kernels/megakernel.rs`). Dev-only escape
+// hatch — pinned to a single integer-compare in the terminal write
+// stage so the shader can be parity-tested per stage without rewiring
+// each commit. Eliminated when 2-layer parity ships (probe_stage 6
+// becomes the only terminal write).
+constant constexpr uint MK_PROBE_XNORM_A   = 0u;  // layer-0 stage A
+constant constexpr uint MK_PROBE_Q_ROT     = 1u;  // layer-0 stage D (post-RoPE Q)
+constant constexpr uint MK_PROBE_ATTN_OUT  = 2u;  // layer-0 stage F (MHA out)
+constant constexpr uint MK_PROBE_O_PROJ    = 3u;  // layer-0 stage G (o_proj out)
+constant constexpr uint MK_PROBE_XNORM_FFN = 4u;  // layer-0 stage H (post-attn rmsnorm)
+constant constexpr uint MK_PROBE_FFN_DOWN  = 5u;  // layer-0 stage K (ffn_down out)
+constant constexpr uint MK_PROBE_RESIDUAL  = 6u;  // final 2-layer residual
 
 // 2-layer Qwen-3B megakernel POC. Grid = (1, 1, 1). TG size = 256.
 //
@@ -146,10 +160,9 @@ kernel void qwen3b_megakernel_2layer(
     threadgroup half* vbuf     = shmem + SH_V;
     threadgroup half* scores   = shmem + SH_SCORES;
     threadgroup half* attnout  = shmem + SH_ATTNOUT;
-    // Voids for slots not yet referenced by stage A (day-3 step 4).
-    // Each goes live as stages B..L land in later sessions.
-    (void)qbuf; (void)kbuf; (void)vbuf; (void)scores; (void)attnout;
-    (void)args; (void)k_cache; (void)v_cache; (void)ffn_scratch;
+    // Voids for slots not yet referenced by stages B..D (day-4).
+    (void)scores; (void)attnout;
+    (void)k_cache; (void)v_cache; (void)ffn_scratch;
     (void)l1;
 
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
@@ -194,14 +207,115 @@ kernel void qwen3b_megakernel_2layer(
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 
-    // TODO(megakernel-day4+): stages B..L for layer 0, then A..L for layer 1.
+    // Stage B (day-4): Q / K / V f16 GEMVs from shmem `xnorm`.
+    //   qbuf[r] = Σ_c qw[r, c] * xnorm[c]   for r ∈ [0, Q_DIM)
+    //   kbuf[r] = Σ_c kw[r, c] * xnorm[c]   for r ∈ [0, KV_DIM)
+    //   vbuf[r] = Σ_c vw[r, c] * xnorm[c]   for r ∈ [0, KV_DIM)
+    // Row-major weights. Per-row f32 accumulator, f16 store. Each
+    // thread strides by tg_size across the output rows. TG=256 ⇒ Q has
+    // 8 rows/thread, K/V have one row per thread for tid<256 (with
+    // only 256 rows total → first 256 threads do work).
+    for (uint r = tid; r < MK_Q_DIM; r += tg_size) {
+        float acc = 0.0f;
+        device const half* row = l0.qw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0; c < MK_HIDDEN; ++c) {
+            acc += (float)row[c] * (float)xnorm[c];
+        }
+        qbuf[r] = (half)acc;
+    }
+    for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+        float acc_k = 0.0f;
+        float acc_v = 0.0f;
+        device const half* row_k = l0.kw + (uint64_t)r * MK_HIDDEN;
+        device const half* row_v = l0.vw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0; c < MK_HIDDEN; ++c) {
+            acc_k += (float)row_k[c] * (float)xnorm[c];
+            acc_v += (float)row_v[c] * (float)xnorm[c];
+        }
+        kbuf[r] = (half)acc_k;
+        vbuf[r] = (half)acc_v;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
 
-    // Day-3 step-4 probe: write xnorm → DRAM x_out so the parity test
-    // can compare against CPU rmsnorm(x_in, l0.attn_norm). When stages
-    // B..L land, this terminal write moves back to residual (which by
-    // then carries the post-FFN residual stream).
-    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
-        x_out[i] = xnorm[i];
+    // Stage C (day-4): add Q/K/V biases (Qwen2 always has them).
+    if (l0.has_qbias != 0u) {
+        for (uint r = tid; r < MK_Q_DIM; r += tg_size) {
+            qbuf[r] = (half)((float)qbuf[r] + l0.qb[r]);
+        }
+    }
+    if (l0.has_kbias != 0u) {
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+            kbuf[r] = (half)((float)kbuf[r] + l0.kb[r]);
+        }
+    }
+    if (l0.has_vbias != 0u) {
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+            vbuf[r] = (half)((float)vbuf[r] + l0.vb[r]);
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage D (day-4): RoPE on Q and K (V unrotated).
+    //   For each (head, pair j ∈ 0..head_dim/2):
+    //     θ = pos / base^(2j/head_dim)
+    //     (x[2j], x[2j+1]) ← (x0·cosθ − x1·sinθ, x0·sinθ + x1·cosθ)
+    // Q: n_heads × (head_dim/2) = 16 × 64 = 1024 pairs.
+    // K: n_kv_heads × (head_dim/2) = 2 × 64 = 128 pairs.
+    {
+        const uint half_dim = MK_HEAD_DIM / 2u;
+        const float pos_f = (float)args.pos;
+        const float base = l0.rope_theta;
+        const float inv_hd = 1.0f / (float)MK_HEAD_DIM;
+        // Q (Q_DIM/2 = 1024 pair-rotations).
+        const uint q_pairs = MK_Q_DIM / 2u;
+        for (uint idx = tid; idx < q_pairs; idx += tg_size) {
+            uint h = idx / half_dim;
+            uint j = idx % half_dim;
+            float theta = pos_f / pow(base, 2.0f * (float)j * inv_hd);
+            float c = cos(theta);
+            float s = sin(theta);
+            uint off = h * MK_HEAD_DIM + 2u * j;
+            float x0 = (float)qbuf[off];
+            float x1 = (float)qbuf[off + 1u];
+            qbuf[off]      = (half)(x0 * c - x1 * s);
+            qbuf[off + 1u] = (half)(x0 * s + x1 * c);
+        }
+        // K (KV_DIM/2 = 128 pair-rotations).
+        const uint k_pairs = MK_KV_DIM / 2u;
+        for (uint idx = tid; idx < k_pairs; idx += tg_size) {
+            uint h = idx / half_dim;
+            uint j = idx % half_dim;
+            float theta = pos_f / pow(base, 2.0f * (float)j * inv_hd);
+            float c = cos(theta);
+            float s = sin(theta);
+            uint off = h * MK_HEAD_DIM + 2u * j;
+            float x0 = (float)kbuf[off];
+            float x1 = (float)kbuf[off + 1u];
+            kbuf[off]      = (half)(x0 * c - x1 * s);
+            kbuf[off + 1u] = (half)(x0 * s + x1 * c);
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // TODO(megakernel-day5+): stages E..L for layer 0, then A..L for layer 1.
+
+    // Terminal probe-write. `args.probe_stage` selects which intermediate
+    // is emitted to x_out for parity testing. Dev-only — collapses to a
+    // single residual write when full 2-layer parity ships.
+    if (args.probe_stage == MK_PROBE_XNORM_A) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = xnorm[i];
+        }
+    } else if (args.probe_stage == MK_PROBE_Q_ROT) {
+        for (uint i = tid; i < MK_Q_DIM; i += tg_size) {
+            x_out[i] = qbuf[i];
+        }
+    } else {
+        // Stages F..residual not yet implemented — return zeros so the
+        // test fails loud (rather than passing on uninitialised memory).
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = (half)0.0f;
+        }
     }
 }
 
