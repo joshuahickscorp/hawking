@@ -66,6 +66,7 @@ class Args:
     batch_size: int
     skip_rows: int
     load_4bit: bool
+    cuda_max_vram_gb: float | None
 
 
 def parse_args() -> Args:
@@ -87,6 +88,11 @@ def parse_args() -> Args:
                         "nf4 (requires CUDA + bitsandbytes). Brings DeepSeek-"
                         "V2-Lite from 32 GB fp16 → 8 GB nf4 so it fits on a "
                         "T4 (16 GB) without offload. CUDA-only.")
+    p.add_argument("--cuda-max-vram-gb", type=float, default=None,
+                   help="cap CUDA memory at this many GiB; spillover goes to "
+                        "CPU via accelerate. Use when T4 (14.5 GB usable) is "
+                        "almost-but-not-quite full after model load; pass "
+                        "12-13 to leave headroom for activations.")
     p.add_argument("--dtype", default="float16",
                    choices=["float16", "bfloat16", "float32"])
     p.add_argument("--quantize-intermediates", default="int8",
@@ -130,6 +136,7 @@ def parse_args() -> Args:
         batch_size=a.batch_size,
         skip_rows=a.skip_rows,
         load_4bit=a.load_4bit,
+        cuda_max_vram_gb=a.cuda_max_vram_gb,
     )
 
 
@@ -523,7 +530,13 @@ def main() -> int:
     if args.device == "mps":
         max_memory = {"mps": "3GiB", "cpu": "11GiB"}
     elif args.device == "cuda":
-        max_memory = None
+        if args.cuda_max_vram_gb is not None:
+            max_memory = {0: f"{args.cuda_max_vram_gb:.2f}GiB",
+                          "cpu": "32GiB"}
+            print(f"capping CUDA at {args.cuda_max_vram_gb:.2f} GiB; "
+                  f"spillover → CPU", file=sys.stderr)
+        else:
+            max_memory = None
     else:
         max_memory = {"cpu": "12GiB"}
 
