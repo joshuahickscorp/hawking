@@ -61,6 +61,10 @@ def main() -> int:
     p.add_argument("--batch-size", type=int, default=8)
     p.add_argument("--capture-layer", type=int, default=25)
     p.add_argument("--shard-size", type=int, default=16)
+    p.add_argument("--load-4bit", action="store_true",
+                   help="Load model in 4-bit nf4 via bitsandbytes. Required "
+                        "on L4 (24 GB), V100 (16 GB), T4 (16 GB) since the "
+                        "fp16 V2-Lite is 32 GB and won't fit.")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
 
@@ -70,19 +74,40 @@ def main() -> int:
     import pyarrow as pa
     import pyarrow.parquet as pq
 
-    print(f"[corpus] loading {args.model} (native HF, fp16, sdpa attention)",
-          flush=True)
+    print(f"[corpus] loading {args.model}", flush=True)
+    print(f"[corpus] mode: {'4-bit nf4 (bitsandbytes)' if args.load_4bit else 'native fp16'}, "
+          f"sdpa attention", flush=True)
     t0 = time.time()
     tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=False)
     if tok.pad_token_id is None:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
+
+    model_kwargs = dict(
         trust_remote_code=False,
-        device_map="cuda",
         torch_dtype=torch.float16,
         attn_implementation="sdpa",
-    ).eval()
+        low_cpu_mem_usage=True,
+    )
+
+    if args.load_4bit:
+        # Required for L4 / V100 / T4 (sub-32 GB VRAM): V2-Lite is 32 GB in
+        # fp16 and won't fit. nf4 brings it to ~8 GB. CPU offload fallback
+        # in case bnb chooses to spill any layers (e.g., on T4 16 GB).
+        from transformers import BitsAndBytesConfig
+        model_kwargs["quantization_config"] = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_use_double_quant=True,
+            llm_int8_enable_fp32_cpu_offload=True,
+        )
+        model_kwargs["device_map"] = "auto"
+        del model_kwargs["torch_dtype"]  # bnb governs compute_dtype
+    else:
+        # Big GPUs (Blackwell, A100 40/80, H100): fit native fp16 cleanly
+        model_kwargs["device_map"] = "cuda"
+
+    model = AutoModelForCausalLM.from_pretrained(args.model, **model_kwargs).eval()
     print(f"[corpus] loaded in {time.time() - t0:.1f}s", flush=True)
 
     # Single-layer hooks (way less memory than legacy all-layers capture)
