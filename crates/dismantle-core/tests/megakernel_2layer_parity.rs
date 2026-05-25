@@ -104,18 +104,54 @@ fn megakernel_2layer_parity_qwen3b() {
 
     assert_eq!(x_out.len(), h, "megakernel output residual length");
 
-    // Day-3 invariant: shader body is still pass-through, so x_out
-    // must equal x_in bit-identically. When stages A..L land, this
-    // becomes a CPU-ref atol=1e-3 comparison.
-    for (i, (got, want)) in x_out.iter().zip(x_in.iter()).enumerate() {
-        assert_eq!(
-            got.to_bits(),
-            want.to_bits(),
-            "pass-through mismatch at i={i}: got {} want {}",
-            got.to_f32(),
-            want.to_f32(),
-        );
+    // Day-3 step-4 invariant: shader now runs stage A (layer-0 pre-
+    // attention rmsnorm) on shmem residual and writes xnorm → x_out.
+    // CPU reference: same arithmetic in f32, then quantize to f16 for
+    // a fair comparison against the shader's f16 store.
+    //
+    // Tolerance: atol=1e-3 fp16 per the design memo § "Verification
+    // rule". The shader reduces via simd_sum across 8 simdgroups; CPU
+    // reference is a single serial f32 reduction, so we expect noise
+    // at the last 1-2 fp16 mantissa bits but no order-of-magnitude
+    // divergence.
+    let rms_eps = 1e-6f32;
+    let mut ssq = 0.0f32;
+    for v in &x_in {
+        let f = v.to_f32();
+        ssq += f * f;
     }
+    let rnorm = 1.0f32 / (ssq / (h as f32) + rms_eps).sqrt();
+    let mut ref_xnorm = vec![0.0f32; h];
+    for i in 0..h {
+        ref_xnorm[i] = x_in[i].to_f32() * rnorm * layer0.attn_norm[i];
+    }
+
+    const ATOL: f32 = 1e-3;
+    let mut max_abs_diff = 0.0f32;
+    let mut argmax = 0usize;
+    for i in 0..h {
+        let got = x_out[i].to_f32();
+        let want = ref_xnorm[i];
+        let d = (got - want).abs();
+        if d > max_abs_diff {
+            max_abs_diff = d;
+            argmax = i;
+        }
+    }
+    assert!(
+        max_abs_diff <= ATOL,
+        "stage-A rmsnorm parity FAIL: max |diff|={:.3e} at i={} \
+         (got {}, want {}), atol={:.0e}",
+        max_abs_diff,
+        argmax,
+        x_out[argmax].to_f32(),
+        ref_xnorm[argmax],
+        ATOL,
+    );
+    eprintln!(
+        "stage-A rmsnorm parity OK: max |diff|={:.3e} (atol {:.0e})",
+        max_abs_diff, ATOL
+    );
 }
 
 fn assert_layer_shapes(

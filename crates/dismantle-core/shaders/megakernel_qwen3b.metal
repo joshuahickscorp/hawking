@@ -146,21 +146,62 @@ kernel void qwen3b_megakernel_2layer(
     threadgroup half* vbuf     = shmem + SH_V;
     threadgroup half* scores   = shmem + SH_SCORES;
     threadgroup half* attnout  = shmem + SH_ATTNOUT;
-    (void)qbuf; (void)kbuf; (void)vbuf; (void)scores; (void)attnout; (void)xnorm;
+    // Voids for slots not yet referenced by stage A (day-3 step 4).
+    // Each goes live as stages B..L land in later sessions.
+    (void)qbuf; (void)kbuf; (void)vbuf; (void)scores; (void)attnout;
     (void)args; (void)k_cache; (void)v_cache; (void)ffn_scratch;
-    (void)l0; (void)l1;
+    (void)l1;
 
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
         residual[i] = x_in[i];
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
-    // TODO(megakernel-day3+): stages A..L for layer 0 (use l0.qw, l0.kw, ...)
-    // TODO(megakernel-day3+): stages A..L for layer 1 (use l1.qw, l1.kw, ...)
+    // Stage A (day-3 step 4): layer-0 pre-attention rmsnorm.
+    //   xnorm[i] = (residual[i] / sqrt(mean(residual^2) + eps))
+    //                * l0.attn_norm[i]
+    // Reduction strategy: per-thread partial sum of squares → simdgroup
+    // reduce via simd_sum → 8 partials in shmem (TG=256 → 8 simdgroups)
+    // → final 8-way sum is computed locally by every thread (the
+    // barrier upstream makes all simd partials visible). f32
+    // accumulation, f16 store to xnorm.
+    {
+        threadgroup float simd_partials[8];
 
-    // Stage 13: write residual → DRAM x_out (POC: pass-through).
+        float local = 0.0f;
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            local += v * v;
+        }
+        float simd_red = simd_sum(local);
+        uint simd_lane  = tid & 31u;
+        uint simd_group = tid >> 5u;
+        if (simd_lane == 0u) {
+            simd_partials[simd_group] = simd_red;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        float total = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) {
+            total += simd_partials[i];
+        }
+        float rnorm = rsqrt(total / (float)MK_HIDDEN + l0.rms_eps);
+
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            xnorm[i] = (half)(v * rnorm * l0.attn_norm[i]);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // TODO(megakernel-day4+): stages B..L for layer 0, then A..L for layer 1.
+
+    // Day-3 step-4 probe: write xnorm → DRAM x_out so the parity test
+    // can compare against CPU rmsnorm(x_in, l0.attn_norm). When stages
+    // B..L land, this terminal write moves back to residual (which by
+    // then carries the post-FFN residual stream).
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
-        x_out[i] = residual[i];
+        x_out[i] = xnorm[i];
     }
 }
 
