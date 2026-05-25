@@ -206,6 +206,16 @@ kernel void qwen3b_megakernel_2layer(
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 
+    // Early probe: stage A. Each subsequent probe gate is inlined right
+    // after the stage that produces its target intermediate, so the
+    // shader's later stages don't clobber earlier shmem before readback.
+    if (args.probe_stage == MK_PROBE_XNORM_A) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = xnorm[i];
+        }
+        return;
+    }
+
     // Stage B (day-4): Q / K / V f16 GEMVs from shmem `xnorm`.
     //   qbuf[r] = Σ_c qw[r, c] * xnorm[c]   for r ∈ [0, Q_DIM)
     //   kbuf[r] = Σ_c kw[r, c] * xnorm[c]   for r ∈ [0, KV_DIM)
@@ -295,6 +305,13 @@ kernel void qwen3b_megakernel_2layer(
         }
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (args.probe_stage == MK_PROBE_Q_ROT) {
+        for (uint i = tid; i < MK_Q_DIM; i += tg_size) {
+            x_out[i] = qbuf[i];
+        }
+        return;
+    }
 
     // Stage E (day-5): write rotated K and V into DRAM kv_cache at
     // (li=0, slot=args.pos). Layout per layer: row-major
@@ -391,29 +408,40 @@ kernel void qwen3b_megakernel_2layer(
         }
     }
 
-    // TODO(megakernel-day6+): stages G..L for layer 0, then A..L for layer 1.
-
-    // Terminal probe-write. `args.probe_stage` selects which intermediate
-    // is emitted to x_out for parity testing. Dev-only — collapses to a
-    // single residual write when full 2-layer parity ships.
-    if (args.probe_stage == MK_PROBE_XNORM_A) {
-        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
-            x_out[i] = xnorm[i];
-        }
-    } else if (args.probe_stage == MK_PROBE_Q_ROT) {
-        for (uint i = tid; i < MK_Q_DIM; i += tg_size) {
-            x_out[i] = qbuf[i];
-        }
-    } else if (args.probe_stage == MK_PROBE_ATTN_OUT) {
+    if (args.probe_stage == MK_PROBE_ATTN_OUT) {
         for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
             x_out[i] = attnout[i];
         }
-    } else {
-        // Stages F..residual not yet implemented — return zeros so the
-        // test fails loud (rather than passing on uninitialised memory).
-        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
-            x_out[i] = (half)0.0f;
+        return;
+    }
+
+    // Stage G (day-6): o_proj GEMV — `o = ow @ attnout`.
+    // ow is (hidden × q_dim) row-major. attnout is q_dim in shmem.
+    // Output is written into shmem[xnorm] (the post-stage-A xnorm is no
+    // longer live by this point; stage H will overwrite it with the
+    // post-attn rmsnorm). Avoids in-place hazard on attnout.
+    for (uint r = tid; r < MK_HIDDEN; r += tg_size) {
+        float acc = 0.0f;
+        device const half* row = l0.ow + (uint64_t)r * MK_Q_DIM;
+        for (uint c = 0u; c < MK_Q_DIM; ++c) {
+            acc += (float)row[c] * (float)attnout[c];
         }
+        xnorm[r] = (half)acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (args.probe_stage == MK_PROBE_O_PROJ) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = xnorm[i];
+        }
+        return;
+    }
+
+    // TODO(megakernel-day7+): stages H..L for layer 0, then A..L for layer 1.
+    // For now, stages beyond G are unimplemented — emit zeros so the
+    // test fails loud (vs passing on uninitialised memory).
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+        x_out[i] = (half)0.0f;
     }
 }
 
