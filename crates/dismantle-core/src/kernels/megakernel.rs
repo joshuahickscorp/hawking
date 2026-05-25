@@ -21,14 +21,29 @@ pub mod inner {
 
     /// Megakernel scalar argbuf — must match `struct MkArgs` in
     /// `shaders/megakernel_qwen3b.metal`.
+    ///
+    /// `probe_stage` selects which intermediate buffer the shader copies
+    /// into `x_out` at the end of the dispatch (dev-only escape hatch so
+    /// stages B..L can be parity-tested incrementally without rewiring
+    /// the terminal write each commit). Values: see `MK_PROBE_*` consts.
     #[repr(C)]
     #[derive(Copy, Clone, Default)]
     pub struct MkArgs {
         pub pos: u32,
         pub seq_len: u32,
         pub max_seq: u32,
-        pub _padding: u32,
+        pub probe_stage: u32,
     }
+
+    /// Probe-stage IDs (must match `MK_PROBE_*` in shader). Each picks
+    /// which intermediate the shader emits into `x_out`.
+    pub const MK_PROBE_XNORM_A: u32 = 0; // layer-0 stage A (pre-attn rmsnorm)
+    pub const MK_PROBE_Q_ROT: u32 = 1; // layer-0 stage D (post-RoPE Q, 2048)
+    pub const MK_PROBE_ATTN_OUT: u32 = 2; // layer-0 stage F (MHA out, 2048)
+    pub const MK_PROBE_O_PROJ: u32 = 3; // layer-0 stage G (o_proj out, 2048)
+    pub const MK_PROBE_XNORM_FFN: u32 = 4; // layer-0 stage H (post-attn rmsnorm)
+    pub const MK_PROBE_FFN_DOWN: u32 = 5; // layer-0 stage K (ffn_down out, 2048)
+    pub const MK_PROBE_RESIDUAL: u32 = 6; // final residual (default — full 2-layer)
 
     /// Per-layer argument buffer — must match `struct MkLayerArgs` in
     /// `shaders/megakernel_qwen3b.metal` byte-for-byte.
@@ -213,6 +228,7 @@ pub mod inner {
         pos: u32,
         seq_len: u32,
         max_seq: u32,
+        probe_stage: u32,
     ) -> Result<Vec<f16>> {
         if x_in.len() != MK_HIDDEN {
             return Err(Error::Metal(format!(
@@ -263,7 +279,7 @@ pub mod inner {
             pos,
             seq_len,
             max_seq,
-            _padding: 0,
+            probe_stage,
         };
         let scalar_bytes: [u8; std::mem::size_of::<MkArgs>()] =
             unsafe { std::mem::transmute(scalar_args) };
@@ -305,4 +321,6 @@ pub mod inner {
 #[allow(unused_imports)]
 pub use inner::{
     megakernel_2layer_dispatch, LayerMetalBuffers, MkArgs, MkLayerArgs,
+    MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
+    MK_PROBE_RESIDUAL, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
