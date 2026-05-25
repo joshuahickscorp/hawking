@@ -18,7 +18,7 @@ use std::path::PathBuf;
 
 use dismantle_core::kernels::megakernel::{
     megakernel_2layer_dispatch, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ,
-    MK_PROBE_Q_ROT, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
 use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -319,6 +319,60 @@ fn megakernel_2layer_parity_qwen3b() {
             "stage-K ffn_down parity OK (worst violation {worst:.3e} ≤ 0, atol={ATOL:.0e} rtol={RTOL:.0e})"
         );
     }
+
+    // ── Stage L: post-FFN add (probe = residual, currently post-layer-0)
+    // Once layer-1 lands, the same probe naturally becomes post-layer-1.
+    {
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_RESIDUAL,
+        )
+        .expect("megakernel dispatch (stage L)");
+        assert_eq!(x_out.len(), h);
+
+        let residual = cpu_layer_forward(&x_in_f32, &layer0, POS as u32);
+        let (worst, idx, gv, wv) = max_violation_f16_vs_f32(&x_out, &residual);
+        assert!(
+            worst <= 0.0,
+            "stage-L residual (post-layer-0) parity FAIL: violation={worst:.3e} at i={idx} \
+             (got {gv}, want {wv}, allowed atol+rtol·|want|, atol={ATOL:.0e}, rtol={RTOL:.0e})",
+        );
+        eprintln!(
+            "stage-L residual (post-layer-0) parity OK (worst violation {worst:.3e} ≤ 0, atol={ATOL:.0e} rtol={RTOL:.0e})"
+        );
+    }
+}
+
+/// Full CPU layer forward (stages A..L) at pos=0. Mirrors
+/// `QwenDense::forward_layers_subset` for a single layer, with synthetic
+/// f32 input. Generalises the per-stage helpers used above.
+fn cpu_layer_forward(
+    x_in_f32: &[f32],
+    layer: &MegakernelLayerWeightsF16,
+    _pos: u32, // POS=0 → MHA softmax degenerate (attn = V replicated)
+) -> Vec<f32> {
+    let attn_out = cpu_layer0_attn_out_pos0(x_in_f32, layer);
+    let o = cpu_gemv_f16(&layer.o_proj, HIDDEN, Q_DIM, &attn_out);
+    let mut residual: Vec<f32> = x_in_f32.iter().zip(o.iter()).map(|(a, b)| a + b).collect();
+    let x_norm_ffn = cpu_rmsnorm(&residual, &layer.ffn_norm, RMS_EPS);
+    let g = cpu_gemv_f16(&layer.ffn_gate, INTERMEDIATE, HIDDEN, &x_norm_ffn);
+    let u = cpu_gemv_f16(&layer.ffn_up, INTERMEDIATE, HIDDEN, &x_norm_ffn);
+    let act: Vec<f32> = g
+        .iter()
+        .zip(u.iter())
+        .map(|(gi, ui)| (gi / (1.0 + (-gi).exp())) * ui)
+        .collect();
+    let ffn_down = cpu_gemv_f16(&layer.ffn_down, HIDDEN, INTERMEDIATE, &act);
+    for i in 0..HIDDEN {
+        residual[i] += ffn_down[i];
+    }
+    residual
 }
 
 /// CPU reference for layer-0 stage-F attn_out at pos=0/seq_len=1.

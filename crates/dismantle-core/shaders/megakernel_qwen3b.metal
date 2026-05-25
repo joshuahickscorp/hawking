@@ -520,11 +520,18 @@ kernel void qwen3b_megakernel_2layer(
         return;
     }
 
-    // TODO(megakernel-day9+): stage L for layer 0, then A..L for layer 1.
-    // For now, stages beyond K are unimplemented — emit zeros so the
-    // test fails loud (vs passing on uninitialised memory).
+    // Stage L (day-9): post-FFN residual add. xnorm holds the ffn_down
+    // output; merge it into the cross-layer residual stream.
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
-        x_out[i] = (half)0.0f;
+        residual[i] = (half)((float)residual[i] + (float)xnorm[i]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // TODO(megakernel-day10+): re-run stages A..L for layer 1 (l1 args).
+    // Terminal write: residual (post-layer-0 for now; post-layer-1 once
+    // layer-1 lands). MK_PROBE_RESIDUAL is the production terminal probe.
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+        x_out[i] = residual[i];
     }
 }
 
