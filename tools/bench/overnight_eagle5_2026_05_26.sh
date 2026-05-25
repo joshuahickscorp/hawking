@@ -20,6 +20,20 @@ mkdir -p reports
 exec > >(tee -a "$LOG") 2>&1
 echo "[overnight] start $(date -u +%FT%TZ)"
 
+# Pin python3 to the python.org 3.12 framework where pip installed the
+# deps (torch, transformers, datasets, pyarrow, mlx, accelerate, ...).
+# Without this, on macOS with Homebrew installed `python3` may resolve
+# to Homebrew Python 3.14 which has none of those packages and the
+# corpus step halts with "missing python deps: torch, transformers, ...".
+PYBIN_PINNED="/Library/Frameworks/Python.framework/Versions/3.12/bin"
+if [[ -x "$PYBIN_PINNED/python3" ]]; then
+  export PATH="$PYBIN_PINNED:$PATH"
+  echo "[overnight] using python3 = $PYBIN_PINNED/python3"
+else
+  echo "[overnight] WARN — pinned python at $PYBIN_PINNED/python3 missing; falling back to PATH python3 = $(command -v python3)"
+fi
+python3 --version 2>&1 | sed 's/^/[overnight] /'
+
 step() {
   local name="$1"; shift
   echo "[overnight] ▶ $name  $(date -u +%FT%TZ)"
