@@ -476,8 +476,52 @@ kernel void qwen3b_megakernel_2layer(
         return;
     }
 
-    // TODO(megakernel-day8+): stages I..L for layer 0, then A..L for layer 1.
-    // For now, stages beyond H are unimplemented — emit zeros so the
+    // Stages I+J (day-8): fused gate + up + silu_mul into DRAM ffn_scratch.
+    //   Per intermediate row r:
+    //     g = Σ_c gw[r,c] · xnorm[c]
+    //     u = Σ_c uw[r,c] · xnorm[c]
+    //     ffn_scratch[r] = silu(g) · u
+    //   silu(x) = x / (1 + exp(-x))
+    // Each thread handles ⌈intermediate / tg_size⌉ = ⌈11008/256⌉ = 43 rows.
+    // Fused per-row keeps gate's f32 acc + up's f32 acc in registers; only
+    // the final act value spills to DRAM, saving an intermediate scratch.
+    for (uint r = tid; r < MK_INTERMEDIATE; r += tg_size) {
+        float g = 0.0f;
+        float u = 0.0f;
+        device const half* gw_row = l0.gw + (uint64_t)r * MK_HIDDEN;
+        device const half* uw_row = l0.uw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0u; c < MK_HIDDEN; ++c) {
+            float xc = (float)xnorm[c];
+            g += (float)gw_row[c] * xc;
+            u += (float)uw_row[c] * xc;
+        }
+        float s = g / (1.0f + exp(-g));
+        ffn_scratch[r] = (half)(s * u);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+
+    // Stage K (day-8): ffn_down GEMV — DRAM ffn_scratch → shmem xnorm.
+    //   xnorm[r] = Σ_c dw[r,c] · ffn_scratch[c]    r ∈ [0, HIDDEN)
+    // dw is (hidden × intermediate) row-major.
+    for (uint r = tid; r < MK_HIDDEN; r += tg_size) {
+        float acc = 0.0f;
+        device const half* dw_row = l0.dw + (uint64_t)r * MK_INTERMEDIATE;
+        for (uint c = 0u; c < MK_INTERMEDIATE; ++c) {
+            acc += (float)dw_row[c] * (float)ffn_scratch[c];
+        }
+        xnorm[r] = (half)acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (args.probe_stage == MK_PROBE_FFN_DOWN) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = xnorm[i];
+        }
+        return;
+    }
+
+    // TODO(megakernel-day9+): stage L for layer 0, then A..L for layer 1.
+    // For now, stages beyond K are unimplemented — emit zeros so the
     // test fails loud (vs passing on uninitialised memory).
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
         x_out[i] = (half)0.0f;
