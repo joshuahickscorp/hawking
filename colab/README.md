@@ -9,14 +9,22 @@ the same job finishes in 1-3 hours depending on tier:
 
 | GPU | VRAM | Strategy | Corpus seqs | Batch | ETA |
 |---|---|---|---|---|---|
+| **H100** (Pro+) | 80 GB | Native fp16 (no quant) | **100,000** | 32 | ~1 hr |
 | **A100** (Pro/Pro+) | 40 GB | Native fp16 (no quant) | **50,000** | 16 | ~1 hr |
 | **L4** (Pro) | 24 GB | 4-bit nf4, no offload | **30,000** | 8 | ~1.5 hr |
 | **V100** (Pro) | 16 GB | 4-bit nf4 + CPU offload | 20,000 | 4 | ~2 hr |
 | **T4** (Free/Pro) | 16 GB | 4-bit nf4 + CPU offload | 20,000 | 4 | ~2.5 hr |
 
-**Recommended:** Pro tier + request A100. `Runtime → Change runtime type → Hardware accelerator: A100 GPU`. If A100 unavailable that day, Colab silently falls back to L4 or V100 — the notebook auto-adjusts the config.
+**Recommended:** H100 if you have access — it builds 2× the corpus (100k seqs) in the same wall time as A100 (50k seqs), giving an extra ~2-3pp Eagle5 acceptance at K=8.
 
-50,000 sequences on A100 produces a substantially better-trained Eagle5 head than the 20k T4 config: more distribution coverage + sharper τ-at-depth-K acceptance, especially at the K=8 horizon. Worth the Pro upgrade just for this run.
+To request: `Runtime → Change runtime type → Hardware accelerator → A100 GPU → then in the GPU dropdown pick H100`. If H100 unavailable, Colab falls back through A100 → L4 → V100 → T4 — the notebook auto-adjusts.
+
+**Compute units (Pro tier ~100 units/month):**
+- H100: ~13 units/hr
+- A100: ~8 units/hr
+- L4: ~5 units/hr
+
+A single Eagle5 corpus build burns 8-13 units — well within Pro's monthly budget.
 
 ## Quick start
 
