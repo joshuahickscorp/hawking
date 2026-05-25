@@ -683,3 +683,33 @@ kernel void gemv_f16_f16in(
     }
     if (tid == 0) y[gid] = shmem[0];
 }
+
+// ── use_resource + gpu_address POC ──────────────────────────────────────────
+//
+// Canonical art for the megakernel day-3 dispatch harness. Demonstrates
+// reading device buffers through pointer-in-argbuf (gpu_address)
+// rather than per-dispatch set_buffer calls. The Metal driver requires
+// either (a) set_buffer for residency tracking, or (b) explicit
+// use_resource declaration when the buffer is referenced via raw
+// pointer/gpu_address.
+//
+// Pattern used by the megakernel (each layer has 13 weight pointers
+// in a single argbuf; calling set_buffer 13× per dispatch hits the
+// 31-binding ceiling — see commit 7e4dc2c that compressed bindings
+// 32→8). This kernel exists to validate the use_resource pattern in
+// isolation before the megakernel relies on it.
+
+struct PointerArgs {
+    device const float* a;   // gpu_address of buffer A
+    device const float* b;   // gpu_address of buffer B
+    uint n;
+};
+
+kernel void use_resource_poc_add(
+    constant PointerArgs& args [[buffer(0)]],
+    device float* out          [[buffer(1)]],
+    uint tid                   [[thread_position_in_grid]])
+{
+    if (tid >= args.n) return;
+    out[tid] = args.a[tid] + args.b[tid];
+}
