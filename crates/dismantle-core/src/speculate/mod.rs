@@ -11,3 +11,4 @@
 pub mod eagle5;
 pub mod ngram;
 pub mod shared;
+pub mod ngram_lookahead;
