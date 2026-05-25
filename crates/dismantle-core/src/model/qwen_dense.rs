@@ -2691,6 +2691,34 @@ impl QwenDense {
         Ok(next)
     }
 
+    /// Debug accessor — run one greedy forward and return the
+    /// post-final-norm activation (`x_norm_buf` contents). Used by the
+    /// W4A8 quality redesign investigation
+    /// (memory/w4a8_quality_redesign_2026_05_26.md) to dump per-channel
+    /// activation distributions across many forward steps. NOT for
+    /// production use; allocates a fresh Vec<f32> per call.
+    ///
+    /// Returns the activation at `hidden` length. Caller is responsible
+    /// for running this once per token to build a sample sequence.
+    #[cfg(target_os = "macos")]
+    pub fn dump_x_norm_after_forward(
+        &mut self,
+        token: u32,
+        pos: usize,
+    ) -> Result<Vec<f32>> {
+        // Run forward as usual; we don't care about the predicted token,
+        // only the x_norm side effect in the arena.
+        let _ = self.forward_token_greedy_tcb(token, pos)?;
+        let arena = self
+            .dense_arena
+            .as_ref()
+            .ok_or_else(|| Error::Metal("dump_x_norm: arena missing".into()))?;
+        let hidden = self.config.hidden;
+        let ptr = arena.x_norm_buf.contents() as *const f32;
+        let slice = unsafe { std::slice::from_raw_parts(ptr, hidden) };
+        Ok(slice.to_vec())
+    }
+
     /// P3 — Batched prefill: process `tokens.len()` consecutive prompt
     /// tokens (1..=arena.max_batch) through one full forward pass, reading
     /// each weight once and producing B = `tokens.len()` output rows of
