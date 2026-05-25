@@ -163,3 +163,28 @@ kernel void qwen3b_megakernel_2layer(
         x_out[i] = residual[i];
     }
 }
+
+// ── gpu_address probe (day-3 microbench) ─────────────────────────────
+// Smallest test of the Metal 3 `gpuAddress` + `useResource:` pattern
+// that the megakernel dispatcher will scale up to ~24 buffers/layer.
+// One buffer in, one buffer out, both referenced via raw device pointers
+// passed through a constant argbuf — no set_buffer for the data
+// buffers; only the argbuf itself is bound. The dispatcher MUST call
+// `useResource(in, Read)` and `useResource(out, Write)` on the
+// encoder before dispatch, otherwise the driver page-faults on first
+// dereference.
+struct GpuAddrProbeArgs {
+    device const float* in_ptr;
+    device float*       out_ptr;
+    uint n;
+    uint _pad;
+};
+
+kernel void gpu_address_probe(
+    constant GpuAddrProbeArgs& args [[buffer(0)]],
+    uint tid                        [[thread_position_in_grid]])
+{
+    if (tid < args.n) {
+        args.out_ptr[tid] = args.in_ptr[tid] * 2.0f;
+    }
+}
