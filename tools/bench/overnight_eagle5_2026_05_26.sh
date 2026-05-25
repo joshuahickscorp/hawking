@@ -90,13 +90,17 @@ step corpus \
     --capture all \
     --out artifacts/calibration/v2_lite_corpus
 
-# (2) Eagle5 v2 train  ~1 hr (3 epochs over 3k seqs, batch=24)
+# (2) Eagle5 v2 train  ~2-2.5 hr (5 epochs over 20k Colab corpus, batch=24)
+#     Bumped from 3→5 epochs because the Colab-built corpus has ~7× more
+#     samples than the killed laptop attempt. More passes are useful with
+#     bigger data; loss plateau in path_to_50_complete.md was at epoch 2
+#     for a 3k corpus, expected ~epoch 4 for 20k.
 step train \
   nice -n 19 taskpolicy -b python3 tools/training/eagle5_train.py \
     --corpus-dir artifacts/calibration/v2_lite_corpus \
     --frozen     eagle4/v2lite_frozen.npz \
     --ckpt-dir   checkpoints/eagle5_v2 \
-    --epochs 3 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --epochs 5 --batch-size 24 --seq-len 16 --lr 3e-4 \
     --sparsity-head proxy --seed 0
 
 # (3) τ-at-depth eval (K=1..8 acceptance)  ~15 min
