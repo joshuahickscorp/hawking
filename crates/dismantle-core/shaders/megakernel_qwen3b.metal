@@ -160,9 +160,8 @@ kernel void qwen3b_megakernel_2layer(
     threadgroup half* vbuf     = shmem + SH_V;
     threadgroup half* scores   = shmem + SH_SCORES;
     threadgroup half* attnout  = shmem + SH_ATTNOUT;
-    // Voids for slots not yet referenced by stages B..D (day-4).
-    (void)scores; (void)attnout;
-    (void)k_cache; (void)v_cache; (void)ffn_scratch;
+    // Voids for slots not yet referenced by stages B..F (day-5).
+    (void)ffn_scratch;
     (void)l1;
 
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
@@ -297,7 +296,102 @@ kernel void qwen3b_megakernel_2layer(
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
 
-    // TODO(megakernel-day5+): stages E..L for layer 0, then A..L for layer 1.
+    // Stage E (day-5): write rotated K and V into DRAM kv_cache at
+    // (li=0, slot=args.pos). Layout per layer: row-major
+    //   k_cache[li * max_seq * KV_DIM + pos * KV_DIM + r]
+    // For layer 0 the layer-offset is 0.
+    {
+        const uint64_t slot_off = (uint64_t)args.pos * MK_KV_DIM;
+        device half* k_slot = k_cache + slot_off;
+        device half* v_slot = v_cache + slot_off;
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+            k_slot[r] = kbuf[r];
+            v_slot[r] = vbuf[r];
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+
+    // Stage F (day-5): MHA decode for layer 0.
+    //   per head h: scores[t] = (q_h · K[t, kv_h]) / √head_dim, t<seq_len
+    //               softmax(scores)
+    //               attn_h[d] = Σ_t scores[t] · V[t, kv_h, d]
+    // group_size = n_heads / n_kv_heads = 8.
+    //
+    // Per-head serial schedule: all 256 threads cooperate on one head at
+    // a time. Cheap parallelism waste (B=1 decode is gap-bound, not
+    // compute-bound — see decode_gap_anatomy_2026_05_24.md).
+    {
+        const uint group_size = MK_N_HEADS / MK_N_KV_HEADS; // 8
+        const float scale = 1.0f / sqrt((float)MK_HEAD_DIM);
+        const uint seq_len = args.seq_len;
+        threadgroup float reduce_partials[8];
+
+        for (uint hh = 0u; hh < MK_N_HEADS; ++hh) {
+            uint kv_h = hh / group_size;
+            threadgroup half* q_head = qbuf + hh * MK_HEAD_DIM;
+            threadgroup half* out_head = attnout + hh * MK_HEAD_DIM;
+
+            // Scores: one thread per position, full-dim dot product per
+            // position. Tail threads (tid ≥ seq_len) idle.
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                device const half* k_t =
+                    k_cache + (uint64_t)t * MK_KV_DIM + kv_h * MK_HEAD_DIM;
+                float s = 0.0f;
+                for (uint i = 0u; i < MK_HEAD_DIM; ++i) {
+                    s += (float)q_head[i] * (float)k_t[i];
+                }
+                scores[t] = (half)(s * scale);
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // Stable softmax — max over seq_len, then exp/sum, then div.
+            float local_max = -INFINITY;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                float v = (float)scores[t];
+                if (v > local_max) local_max = v;
+            }
+            float simd_m = simd_max(local_max);
+            uint simd_lane  = tid & 31u;
+            uint simd_group = tid >> 5u;
+            if (simd_lane == 0u) reduce_partials[simd_group] = simd_m;
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            float gmax = reduce_partials[0];
+            for (uint k = 1u; k < 8u; ++k) {
+                gmax = max(gmax, reduce_partials[k]);
+            }
+
+            float local_sum = 0.0f;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                float e = exp((float)scores[t] - gmax);
+                scores[t] = (half)e;
+                local_sum += e;
+            }
+            float simd_s = simd_sum(local_sum);
+            if (simd_lane == 0u) reduce_partials[simd_group] = simd_s;
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            float gsum = 0.0f;
+            for (uint k = 0u; k < 8u; ++k) gsum += reduce_partials[k];
+            float inv_sum = 1.0f / gsum;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                scores[t] = (half)((float)scores[t] * inv_sum);
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // Weighted V sum into shmem attnout for this head.
+            for (uint d = tid; d < MK_HEAD_DIM; d += tg_size) {
+                float a = 0.0f;
+                for (uint t = 0u; t < seq_len; ++t) {
+                    device const half* v_t =
+                        v_cache + (uint64_t)t * MK_KV_DIM + kv_h * MK_HEAD_DIM;
+                    a += (float)scores[t] * (float)v_t[d];
+                }
+                out_head[d] = (half)a;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    // TODO(megakernel-day6+): stages G..L for layer 0, then A..L for layer 1.
 
     // Terminal probe-write. `args.probe_stage` selects which intermediate
     // is emitted to x_out for parity testing. Dev-only — collapses to a
@@ -309,6 +403,10 @@ kernel void qwen3b_megakernel_2layer(
     } else if (args.probe_stage == MK_PROBE_Q_ROT) {
         for (uint i = tid; i < MK_Q_DIM; i += tg_size) {
             x_out[i] = qbuf[i];
+        }
+    } else if (args.probe_stage == MK_PROBE_ATTN_OUT) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = attnout[i];
         }
     } else {
         // Stages F..residual not yet implemented — return zeros so the
