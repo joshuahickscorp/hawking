@@ -437,8 +437,47 @@ kernel void qwen3b_megakernel_2layer(
         return;
     }
 
-    // TODO(megakernel-day7+): stages H..L for layer 0, then A..L for layer 1.
-    // For now, stages beyond G are unimplemented — emit zeros so the
+    // Stage H (day-7): post-attention residual add + rmsnorm.
+    //   residual += o    (xnorm currently holds o from stage G)
+    //   xnorm    = rmsnorm(residual, l0.ffn_norm)
+    // Two-pass: add first (so the rmsnorm sees the merged residual),
+    // barrier, then rmsnorm that writes back into the (now-stale) xnorm
+    // slot.
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+        residual[i] = (half)((float)residual[i] + (float)xnorm[i]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    {
+        threadgroup float simd_partials[8];
+        float local = 0.0f;
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            local += v * v;
+        }
+        float simd_red = simd_sum(local);
+        uint simd_lane  = tid & 31u;
+        uint simd_group = tid >> 5u;
+        if (simd_lane == 0u) simd_partials[simd_group] = simd_red;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        float total = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) total += simd_partials[i];
+        float rnorm = rsqrt(total / (float)MK_HIDDEN + l0.rms_eps);
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            xnorm[i] = (half)(v * rnorm * l0.ffn_norm[i]);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (args.probe_stage == MK_PROBE_XNORM_FFN) {
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            x_out[i] = xnorm[i];
+        }
+        return;
+    }
+
+    // TODO(megakernel-day8+): stages I..L for layer 0, then A..L for layer 1.
+    // For now, stages beyond H are unimplemented — emit zeros so the
     // test fails loud (vs passing on uninitialised memory).
     for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
         x_out[i] = (half)0.0f;
