@@ -179,10 +179,27 @@ def main() -> int:
             captured.clear()
             _ = model(input_ids=ids, attention_mask=attn)
 
-        # captured["residual"] / ["intermediate"] are GPU tensors; pull each
-        # row at its real seq_len and quantize to int8 immediately so we
-        # free GPU memory before the next batch.
-        for b in range(ids.shape[0]):
+        # Normalize captured shapes — in transformers v5 native, the layer
+        # residual hook returns (B, S, H), but the MoE experts hook returns
+        # a flat (B*S, H) (since experts route per-token). Reshape the flat
+        # case back to (B, S, H) so we can slice per-sequence uniformly.
+        B, S = ids.shape[0], ids.shape[1]
+        for key in list(captured.keys()):
+            t = captured[key]
+            if t.dim() == 2 and t.shape[0] == B * S:
+                captured[key] = t.reshape(B, S, t.shape[-1])
+            elif t.dim() == 3:
+                pass  # already (B, S, H)
+            else:
+                # Unexpected shape — drop this capture, log on first occurrence
+                if yielded == 0:
+                    print(f"[corpus] WARN: dropping '{key}' with shape {tuple(t.shape)} "
+                          f"(expected 3D or flat 2D)", flush=True)
+                del captured[key]
+
+        # pull each row at its real seq_len and quantize to int8 immediately
+        # so we free GPU memory before the next batch.
+        for b in range(B):
             real_len = int(attn[b].sum().item())
             tokens = ids[b, :real_len].cpu().numpy().astype(np.int32)
             sample = {"tokens": tokens.tobytes(), "n_tokens": int(real_len)}
@@ -202,6 +219,14 @@ def main() -> int:
                 _flush(buf, args.out, shard_idx, pa, pq)
                 buf = []
                 shard_idx += 1
+
+        # One-shot diagnostic on the first batch — confirms hooks are
+        # producing usable shapes before we commit to 100k iterations.
+        if yielded == B:
+            print(f"[corpus] first batch OK — captures: "
+                  + ", ".join(f"{k}{tuple(captured[k].shape)}"
+                              for k in sorted(captured.keys())),
+                  flush=True)
 
         # Aggressive cleanup — KEY for staying under VRAM ceiling
         del ids, attn, _
