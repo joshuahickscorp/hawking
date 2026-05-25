@@ -247,7 +247,11 @@ def capture_one_sequence(
         for li, layer in enumerate(getattr(model, "model", model).layers):
             mlp = getattr(layer, "mlp", None)
             if mlp is not None and hasattr(mlp, "experts"):
-                hooks.append(mlp.experts[0].register_forward_hook(_make_hook(li)))
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
 
     captured_gates: list[dict] = []
     want_routing = ("routing_logits" in cap_set or "expert_idx" in cap_set)
@@ -387,7 +391,11 @@ def capture_batch(
         for li, layer in enumerate(getattr(model, "model", model).layers):
             mlp = getattr(layer, "mlp", None)
             if mlp is not None and hasattr(mlp, "experts"):
-                hooks.append(mlp.experts[0].register_forward_hook(_make_hook(li)))
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
 
     with torch.inference_mode():
         out = model(
