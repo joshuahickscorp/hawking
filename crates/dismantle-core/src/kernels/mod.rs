@@ -226,7 +226,7 @@ pub fn topk_softmax_batch(
 
 
 #[cfg(target_os = "macos")]
-mod megakernel;
+pub mod megakernel;
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
