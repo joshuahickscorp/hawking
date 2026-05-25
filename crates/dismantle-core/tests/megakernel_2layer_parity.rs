@@ -17,7 +17,8 @@
 use std::path::PathBuf;
 
 use dismantle_core::kernels::megakernel::{
-    megakernel_2layer_dispatch, MK_PROBE_ATTN_OUT, MK_PROBE_Q_ROT, MK_PROBE_XNORM_A,
+    megakernel_2layer_dispatch, MK_PROBE_ATTN_OUT, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
+    MK_PROBE_XNORM_A,
 };
 use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -212,6 +213,34 @@ fn megakernel_2layer_parity_qwen3b() {
         );
         eprintln!(
             "stage-F attn_out (pos=0, seq_len=1) parity OK (worst violation {worst:.3e} ≤ 0, atol={ATOL:.0e} rtol={RTOL:.0e})"
+        );
+    }
+
+    // ── Stage G: o_proj (probe = o) ─────────────────────────────────────
+    {
+        let x_out = megakernel_2layer_dispatch(
+            &ctx,
+            &layer0,
+            &layer1,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_O_PROJ,
+        )
+        .expect("megakernel dispatch (stage G)");
+        assert_eq!(x_out.len(), h);
+
+        let attn_out = cpu_layer0_attn_out_pos0(&x_in_f32, &layer0);
+        let o = cpu_gemv_f16(&layer0.o_proj, HIDDEN, Q_DIM, &attn_out);
+        let (worst, idx, gv, wv) = max_violation_f16_vs_f32(&x_out, &o);
+        assert!(
+            worst <= 0.0,
+            "stage-G o_proj parity FAIL: violation={worst:.3e} at i={idx} \
+             (got {gv}, want {wv}, allowed atol+rtol·|want|, atol={ATOL:.0e}, rtol={RTOL:.0e})",
+        );
+        eprintln!(
+            "stage-G o_proj parity OK (worst violation {worst:.3e} ≤ 0, atol={ATOL:.0e} rtol={RTOL:.0e})"
         );
     }
 }
