@@ -1152,6 +1152,158 @@ impl Engine for QwenDense {
             .unwrap_or(false)
             && req.sampling.temperature == 0.0;
 
+        // Lookahead n-gram decoding (Cai et al., 2024). Opt-in.
+        // DISMANTLE_LOOKAHEAD=N -> n-gram order N (key = last N-1 tokens).
+        // DISMANTLE_LOOKAHEAD_K -> max draft length per step (default 4).
+        // Requires TCB + greedy. NOTE: this branch shares state with the
+        // simple decode loop below; only one runs per generate() call.
+        let lookahead_n: usize = std::env::var("DISMANTLE_LOOKAHEAD")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&n| n >= 2)
+            .unwrap_or(0);
+        let lookahead_k: usize = std::env::var("DISMANTLE_LOOKAHEAD_K")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&k| k >= 1)
+            .unwrap_or(4);
+        let use_lookahead = lookahead_n > 0 && use_tcb;
+
+        #[cfg(target_os = "macos")]
+        if use_lookahead {
+            use crate::speculate::ngram_lookahead::{LookaheadCache, LookaheadConfig};
+            let mut cache = LookaheadCache::new(LookaheadConfig {
+                n: lookahead_n,
+                max_branches_per_key: 4,
+                cap: 16_384,
+            });
+            // Seed with prompt tokens.
+            for &t in &prompt_ids {
+                cache.observe(t);
+            }
+            let mut pos = prompt_len;
+            'lk_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+                let remaining = req.max_new_tokens - produced;
+                let k_avail = lookahead_k.min(remaining);
+                let draft = cache.propose(k_avail);
+                let draft_len = draft.len();
+
+                if draft.is_empty() {
+                    // No n-gram hit -- single greedy step.
+                    let next_id = self.forward_token_greedy_tcb(last_id, pos)?;
+                    self.sampler.record(next_id);
+                    cache.observe(next_id);
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos {
+                        reason = StopReason::Eos;
+                        break 'lk_loop;
+                    }
+                    if stall_active && step_start.elapsed() > stall_limit {
+                        reason = StopReason::Aborted;
+                        break 'lk_loop;
+                    }
+                    last_id = next_id;
+                    pos += 1;
+                    continue;
+                }
+
+                // Verify pass: serial K forwards. Each writes KV at the
+                // current self.kv.seq_len slot. We roll back at the end
+                // based on first_reject + whether a correction was needed.
+                let backup_seq = self.kv.seq_len;
+                let mut first_reject = draft_len;
+                let mut correction: Option<u32> = None;
+                let mut tmp_last = last_id;
+                for i in 0..draft_len {
+                    let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
+                    if pred != draft[i] {
+                        first_reject = i;
+                        correction = Some(pred);
+                        break;
+                    }
+                    tmp_last = pred;
+                }
+                let committed = first_reject + if correction.is_some() { 1 } else { 0 };
+                self.kv.seq_len = backup_seq + committed;
+                cache.record_outcome(first_reject, draft_len);
+
+                // Emit accepted drafts.
+                for k in 0..first_reject {
+                    let id = draft[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    cache.observe(id);
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        break 'lk_loop;
+                    }
+                    if produced >= req.max_new_tokens {
+                        break 'lk_loop;
+                    }
+                }
+
+                if let Some(corr) = correction {
+                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                    sink(StreamEvent::Token { id: corr, text });
+                    self.sampler.record(corr);
+                    cache.observe(corr);
+                    produced += 1;
+                    last_id = corr;
+                    pos += first_reject + 1;
+                    if Some(corr) == eos {
+                        reason = StopReason::Eos;
+                        break 'lk_loop;
+                    }
+                } else {
+                    last_id = draft[draft_len - 1];
+                    pos += draft_len;
+                }
+
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break 'lk_loop;
+                }
+            }
+        } else {
+            for step in 0..req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let pos = prompt_len + step;
+                let step_start = Instant::now();
+                let next_id = if use_tcb {
+                    self.forward_token_greedy_tcb(last_id, pos)?
+                } else {
+                    let mut logits = self.forward_token(last_id, pos)?;
+                    self.sampler.sample(&mut logits, &req.sampling)
+                };
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                self.sampler.record(next_id);
+                let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                sink(StreamEvent::Token { id: next_id, text });
+                produced += 1;
+                if Some(next_id) == eos {
+                    reason = StopReason::Eos;
+                    break;
+                }
+                last_id = next_id;
+            }
+        }
+
+        #[cfg(not(target_os = "macos"))]
         for step in 0..req.max_new_tokens {
             if abort_set(&req) {
                 reason = StopReason::Aborted;
@@ -1159,20 +1311,8 @@ impl Engine for QwenDense {
             }
             let pos = prompt_len + step;
             let step_start = Instant::now();
-            let next_id = if use_tcb {
-                #[cfg(target_os = "macos")]
-                {
-                    self.forward_token_greedy_tcb(last_id, pos)?
-                }
-                #[cfg(not(target_os = "macos"))]
-                {
-                    let mut logits = self.forward_token(last_id, pos)?;
-                    self.sampler.sample(&mut logits, &req.sampling)
-                }
-            } else {
-                let mut logits = self.forward_token(last_id, pos)?;
-                self.sampler.sample(&mut logits, &req.sampling)
-            };
+            let mut logits = self.forward_token(last_id, pos)?;
+            let next_id = self.sampler.sample(&mut logits, &req.sampling);
             if stall_active && step_start.elapsed() > stall_limit {
                 reason = StopReason::Aborted;
                 break;
