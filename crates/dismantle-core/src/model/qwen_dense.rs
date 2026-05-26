@@ -268,6 +268,16 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) q4k_fast_offsets:
         Option<std::collections::HashMap<usize, (usize, usize)>>,
+
+    /// Track E: pinned per-channel f32 scales for the LM_HEAD W4A8 path.
+    /// Loaded once at model init from `reports/w4a8_lmhead_calibration_*.json`
+    /// when `DISMANTLE_QWEN_W4A8_PER_CHANNEL=1`. Pairs with the per-channel
+    /// kernel `gemm_q4_k_a8_v3_8r_per_channel` at the LM_HEAD site (when
+    /// `DISMANTLE_QWEN_W4A8=1` AND `DISMANTLE_QWEN_W4A8_PER_CHANNEL=1`).
+    /// `None` when feature disabled or calibration file missing.
+    /// Length = hidden (2048 for Qwen-3B).
+    #[cfg(target_os = "macos")]
+    pub(crate) lmhead_per_channel_scales_buf: Option<crate::metal::PinnedBuffer>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -981,6 +991,8 @@ impl Engine for QwenDense {
             q4k_fast_buf: None,
             #[cfg(target_os = "macos")]
             q4k_fast_offsets: None,
+            #[cfg(target_os = "macos")]
+            lmhead_per_channel_scales_buf: None,
         })
     }
 
@@ -1905,6 +1917,75 @@ impl QwenDense {
         Ok(())
     }
 
+    /// Track E: load static per-channel scales for LM_HEAD W4A8.
+    /// JSON schema produced by `tests/w4a8_per_channel_calibrate.rs`:
+    ///   { "model": ..., "site": "lm_head_input_post_final_norm",
+    ///     "hidden": N, "scales_per_channel": [f32 × N], ... }
+    /// Looks for the calibration file at the canonical path under reports/.
+    /// Silent no-op if the file is missing — the per-channel path then
+    /// falls back to the per-block path at the forward dispatch site.
+    #[cfg(target_os = "macos")]
+    fn ensure_lmhead_per_channel_scales(&mut self) -> Result<()> {
+        if self.lmhead_per_channel_scales_buf.is_some() {
+            return Ok(());
+        }
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+        // Probe candidate paths.
+        let candidates = [
+            std::path::PathBuf::from("reports/w4a8_lmhead_calibration_2026_05_26.json"),
+            std::path::PathBuf::from("crates/dismantle-core/reports/w4a8_lmhead_calibration_2026_05_26.json"),
+        ];
+        let json_path = match candidates.iter().find(|p| p.exists()) {
+            Some(p) => p,
+            None => {
+                eprintln!(
+                    "[w4a8-per-channel] WARN: calibration JSON missing at any of {:?} — \
+                     falling back to per-block path",
+                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>()
+                );
+                return Ok(());
+            }
+        };
+        // Tiny ad-hoc parser to avoid pulling in serde_json just for this
+        // single field. Format: `..."scales_per_channel": [f32, f32, ...]`.
+        let txt = std::fs::read_to_string(json_path)
+            .map_err(|e| Error::Model(format!("read {}: {}", json_path.display(), e)))?;
+        let key = "\"scales_per_channel\"";
+        let kstart = txt.find(key)
+            .ok_or_else(|| Error::Model(format!("missing {} in {}", key, json_path.display())))?;
+        let lb = txt[kstart..].find('[')
+            .ok_or_else(|| Error::Model("scales_per_channel missing [".into()))?
+            + kstart;
+        let rb = txt[lb..].find(']')
+            .ok_or_else(|| Error::Model("scales_per_channel missing ]".into()))?
+            + lb;
+        let inner = &txt[lb + 1..rb];
+        let scales: Vec<f32> = inner
+            .split(',')
+            .filter_map(|s| s.trim().parse::<f32>().ok())
+            .collect();
+        if scales.len() != self.config.hidden {
+            return Err(Error::Model(format!(
+                "scales_per_channel len {} != config.hidden {}",
+                scales.len(),
+                self.config.hidden,
+            )));
+        }
+        let buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&scales));
+        self.lmhead_per_channel_scales_buf = Some(buf);
+        eprintln!(
+            "[w4a8-per-channel] loaded {} per-channel scales from {} (max={:.4}, min={:.4})",
+            scales.len(),
+            json_path.display(),
+            scales.iter().copied().fold(0.0f32, f32::max),
+            scales.iter().copied().filter(|s| *s > 0.0).fold(f32::INFINITY, f32::min),
+        );
+        Ok(())
+    }
+
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
     /// graph + final norm + LM head + GPU argmax into a single
     /// `TokenCommandBuffer`, commits once, and reads back the next
@@ -1940,6 +2021,21 @@ impl QwenDense {
             .unwrap_or(false);
         if q4k_fast_active && self.q4k_fast_buf.is_none() {
             self.ensure_q4k_fast_cache()?;
+        }
+        // Track E: lazy-load per-channel LM_HEAD scales (mutable borrow
+        // of self). Must be done BEFORE the immutable borrows of
+        // q4k_predec_cache / q4k_fast_buf below.
+        let w4a8_active_early = std::env::var_os("DISMANTLE_QWEN_W4A8")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        let w4a8_lmhead_per_channel_early =
+            std::env::var_os("DISMANTLE_QWEN_W4A8_PER_CHANNEL")
+                .map(|v| v == "1")
+                .unwrap_or(false);
+        if w4a8_active_early && w4a8_lmhead_per_channel_early
+            && self.lmhead_per_channel_scales_buf.is_none()
+        {
+            self.ensure_lmhead_per_channel_scales()?;
         }
         // Bind cache references for the macro body. predec takes
         // precedence if both are active (they're mutually exclusive
@@ -2065,6 +2161,18 @@ impl QwenDense {
         let w4a8_ffn_up = w4a8_active;
         let w4a8_ffn_down = w4a8_active;
         let w4a8_lmhead = w4a8_active;
+        // Track E: per-channel W4A8 at the LM_HEAD site. Default off.
+        // When set AND DISMANTLE_QWEN_W4A8=1 AND the calibration JSON is
+        // present at reports/w4a8_lmhead_calibration_*.json, the LM_HEAD
+        // dispatch swaps to `gemm_q4_k_a8_v3_8r_per_channel` with static
+        // pre-computed per-channel scales. Other 6 W4A8 sites stay on the
+        // per-block path (no calibration data yet for those sites).
+        // ensure_lmhead_per_channel_scales was already called above
+        // (BEFORE the immutable borrows). Just bind the cache ref here.
+        let w4a8_lmhead_per_channel = w4a8_lmhead_per_channel_early;
+        let lmhead_per_channel_buf = self.lmhead_per_channel_scales_buf.as_ref();
+        let use_per_channel_lmhead =
+            w4a8_lmhead && w4a8_lmhead_per_channel && lmhead_per_channel_buf.is_some();
         // P0.1 spike: env-gated Q/K/V concurrent-encoder. When set, the
         // three Q/K/V GEMV dispatches per layer share one
         // MTLDispatchTypeConcurrent encoder; the driver may overlap them
@@ -2588,13 +2696,40 @@ impl QwenDense {
         // LM head: priority is (1) vocab-prune buf if active (smaller GEMV,
         // pruned argmax over first-N tokens), else (2) Q4_K-quantized buf
         // if active, else (3) full f16 gemv.
+        //
+        // Track E: when per-channel W4A8 is active for LM_HEAD, overwrite
+        // x_int8 with per-channel quantization using the static calibrated
+        // scales. The per-block quantize from the last layer's fused norm
+        // is wasted but harmless (1 extra dispatch worth of compute).
+        if use_per_channel_lmhead {
+            kernels::quantize_f32_to_int8_per_channel_tcb(
+                &mut tcb,
+                &arena.x_norm_buf,
+                lmhead_per_channel_buf.unwrap(),
+                x_int8,
+                h,
+            )?;
+        }
         if let (Some(pruned_buf), Some(pn)) =
             (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
         {
             if self.vocab_pruned_is_q4k {
                 let blocks_per_row = h / 256;
                 let row_bytes = blocks_per_row * 144;
-                if w4a8_lmhead {
+                if w4a8_lmhead && use_per_channel_lmhead {
+                    // Per-channel W4A8 path
+                    kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
+                        &mut tcb,
+                        pruned_buf,
+                        0,
+                        pn * row_bytes,
+                        pn,
+                        h,
+                        x_int8,
+                        lmhead_per_channel_buf.unwrap(),
+                        &arena.logits_buf,
+                    )?;
+                } else if w4a8_lmhead {
                     kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
                         &mut tcb,
                         pruned_buf,
@@ -2644,7 +2779,20 @@ impl QwenDense {
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
-            if w4a8_lmhead {
+            if w4a8_lmhead && use_per_channel_lmhead {
+                // Per-channel W4A8 path (Track E)
+                kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
+                    &mut tcb,
+                    lhq,
+                    0,
+                    vocab * row_bytes,
+                    vocab,
+                    h,
+                    x_int8,
+                    lmhead_per_channel_buf.unwrap(),
+                    &arena.logits_buf,
+                )?;
+            } else if w4a8_lmhead {
                 kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
                     &mut tcb,
                     lhq,

@@ -588,6 +588,41 @@ kernel void quantize_f32_to_int8_per_block(
     x_int8[block_off + tid] = (signed char)q;
 }
 
+// ── quantize_f32_to_int8_per_channel ─────────────────────────────────────────
+//
+// GPU-side quant using STATIC pre-computed per-channel scales. Pairs with
+// `gemm_q4_k_a8_v3_8r_per_channel` for the per-channel W4A8 path. The scales
+// come from a calibration pass (memory/w4a8_lmhead_calibration_2026_05_26.md)
+// and are pinned at model load — they do NOT change per token.
+//
+// Per the CPU `quantize_to_int8_per_channel` reference:
+//   q[i] = round(x[i] / scales[i]) clamped to [-127, 127]
+//
+// Grid:  (n, 1, 1)   one thread per element
+// TG:    (256, 1, 1) flat, no shmem needed (no reduction)
+//
+// Unlike per-block quant, no scale-output buffer — scales are an INPUT
+// (read-only, pre-computed). Output is just int8 bytes.
+kernel void quantize_f32_to_int8_per_channel(
+    device const float*       x        [[buffer(0)]],
+    device const float*       scales   [[buffer(1)]],  // PER-CHANNEL, length n
+    device       signed char* x_int8   [[buffer(2)]],
+    constant     uint&        n        [[buffer(3)]],
+    uint i [[thread_position_in_grid]])
+{
+    if (i >= n) return;
+    float s = scales[i];
+    if (s > 1e-8f) {
+        float inv = metal::precise::divide(1.0f, s);
+        float q = round(x[i] * inv);
+        q = clamp(q, -127.0f, 127.0f);
+        x_int8[i] = (signed char)q;
+    } else {
+        // Zero-magnitude calibration channel (never active) → emit zero.
+        x_int8[i] = 0;
+    }
+}
+
 // ── W4A8 prototype: gemm_q4_k_a8_v3_8r ───────────────────────────────────────
 //
 // Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but with
