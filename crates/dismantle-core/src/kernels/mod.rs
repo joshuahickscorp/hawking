@@ -1249,6 +1249,70 @@ mod metal_dispatch {
         )
     }
 
+    /// AWQ Option B: GPU-side fused activation-divide + per-block int8
+    /// quantization. Same shape as `quantize_f32_to_int8_per_block_tcb` but
+    /// divides each input element by the matching entry of a per-channel
+    /// smoothing vector `s_buf` (length `n`) BEFORE computing the per-block
+    /// `max|x|/127` scale. Pairs with offline-baked Q4_K weights
+    /// (`W' = W * s`) produced by `tools/awq_bake/`.
+    pub fn quantize_f32_to_int8_per_block_scaled_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        s_buf: &PinnedBuffer,
+        x_int8_buf: &PinnedBuffer,
+        x_scales_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "quantize_f32_to_int8_per_block_scaled";
+        if n % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb requires n % 256 == 0; got n={n}"
+            )));
+        }
+        let f32_bytes = (n * std::mem::size_of::<f32>()) as u64;
+        if x_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_buf too small: got {} need {}",
+                x_buf.length(), f32_bytes,
+            )));
+        }
+        if s_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb s_buf too small: got {} need {}",
+                s_buf.length(), f32_bytes,
+            )));
+        }
+        if x_int8_buf.length() < n as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
+                x_int8_buf.length(), n,
+            )));
+        }
+        let n_blocks = n / 256;
+        let scales_bytes = n_blocks * std::mem::size_of::<f32>();
+        if x_scales_buf.length() < scales_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_scales_buf too small: got {} need {}",
+                x_scales_buf.length(), scales_bytes,
+            )));
+        }
+        const TG: u32 = 256;
+        let grid_x = n as u32;
+        let shmem_bytes = (TG as usize * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            KERNEL,
+            (grid_x, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(s_buf), 0);
+                enc.set_buffer(2, Some(x_int8_buf), 0);
+                enc.set_buffer(3, Some(x_scales_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// GPU-side per-CHANNEL int8 quantization. Pairs with the per-channel
     /// W4A8 path: uses STATIC scales pinned from a calibration pass (e.g.
     /// reports/w4a8_lmhead_calibration_2026_05_26.json on Qwen-3B). Scales
@@ -1327,6 +1391,51 @@ mod metal_dispatch {
             scales[b] = scale;
             for i in lo..hi {
                 let q = (x[i] * inv_scale).round().clamp(-127.0, 127.0) as i8;
+                out_int8[i] = q;
+            }
+        }
+        (out_int8, scales)
+    }
+
+    /// CPU reference for the AWQ Option B fused divide-and-quantize. Same
+    /// semantics as `quantize_to_int8_per_block` but pre-divides each element
+    /// by the matching entry of a per-channel smoothing vector `s` BEFORE
+    /// computing the per-block scale. Used by the parity test for
+    /// `quantize_f32_to_int8_per_block_scaled`.
+    pub fn quantize_to_int8_per_block_scaled(
+        x: &[f32],
+        s: &[f32],
+        block_size: usize,
+    ) -> (Vec<i8>, Vec<f32>) {
+        assert_eq!(
+            x.len(),
+            s.len(),
+            "quantize_to_int8_per_block_scaled: x.len()={} != s.len()={}",
+            x.len(),
+            s.len(),
+        );
+        let blocks = x.len().div_ceil(block_size);
+        let mut out_int8 = vec![0i8; x.len()];
+        let mut scales = vec![0.0f32; blocks];
+        for b in 0..blocks {
+            let lo = b * block_size;
+            let hi = (lo + block_size).min(x.len());
+            let mut max_abs = 0.0f32;
+            for i in lo..hi {
+                let sv = s[i];
+                let inv_s = if sv > 1e-12 { 1.0 / sv } else { 0.0 };
+                let scaled = x[i] * inv_s;
+                let a = scaled.abs();
+                if a > max_abs { max_abs = a; }
+            }
+            let scale = if max_abs > 0.0 { max_abs / 127.0 } else { 1.0 };
+            let inv_scale = 1.0 / scale;
+            scales[b] = scale;
+            for i in lo..hi {
+                let sv = s[i];
+                let inv_s = if sv > 1e-12 { 1.0 / sv } else { 0.0 };
+                let scaled = x[i] * inv_s;
+                let q = (scaled * inv_scale).round().clamp(-127.0, 127.0) as i8;
                 out_int8[i] = q;
             }
         }
@@ -4709,6 +4818,60 @@ mod metal_dispatch {
                 enc.set_buffer(4, Some(x_norm_int8_buf), 0);
                 enc.set_buffer(5, Some(x_norm_scales_buf), 0);
                 enc.set_buffer(6, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// AWQ Option B variant of `add_rmsnorm_fused_q8_tcb`. Same residual+norm+
+    /// int8-quantize fusion but the phase-3 quantize divides each `x_norm`
+    /// element by the matching entry of a per-channel smoothing vector `s_buf`
+    /// (length `hidden`) before computing the per-block scale. The stored
+    /// `x_norm` is unchanged so f32 fallback consumers still see the canonical
+    /// normalized activation.
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_rmsnorm_fused_q8_scaled_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        attn_out_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        x_norm_int8_buf: &PinnedBuffer,
+        x_norm_scales_buf: &PinnedBuffer,
+        s_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        if hidden % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_fused_q8_scaled_tcb requires hidden % 256 == 0; got hidden={hidden}"
+            )));
+        }
+        let f32_bytes = (hidden * std::mem::size_of::<f32>()) as u64;
+        if s_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_fused_q8_scaled_tcb s_buf too small: got {} need {}",
+                s_buf.length(), f32_bytes,
+            )));
+        }
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused_q8_scaled",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(attn_out_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(x_norm_int8_buf), 0);
+                enc.set_buffer(5, Some(x_norm_scales_buf), 0);
+                enc.set_buffer(6, Some(s_buf), 0);
+                enc.set_buffer(7, Some(ab.handle()), 0);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )

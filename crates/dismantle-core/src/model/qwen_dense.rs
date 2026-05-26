@@ -278,6 +278,28 @@ pub struct QwenDense {
     /// Length = hidden (2048 for Qwen-3B).
     #[cfg(target_os = "macos")]
     pub(crate) lmhead_per_channel_scales_buf: Option<crate::metal::PinnedBuffer>,
+
+    /// AWQ Option B: per-layer activation smoothing vectors. Loaded once
+    /// from `profiles/qwen3b_awq_smoothing.json` when `DISMANTLE_QWEN_AWQ=1`
+    /// (requires `DISMANTLE_QWEN_W4A8=1` and a baked Q4K_FAST sidecar
+    /// produced by `tools/awq_bake/`). Each `Vec` has `n_layers` entries:
+    ///   - `awq_smoothing_x_norm[li]`     → length `hidden`, used for the
+    ///     quantize that feeds layer `li`'s q/k/v projections (Q/K/V share
+    ///     the same input activation `x_norm` so they share `s`).
+    ///   - `awq_smoothing_attn_out[li]`   → length `hidden`, feeds o_proj.
+    ///   - `awq_smoothing_ffn_act[li]`    → length `hidden`, feeds
+    ///     gate/up_proj (they share input).
+    ///   - `awq_smoothing_silu_mul[li]`   → length `intermediate`, feeds
+    ///     down_proj.
+    /// `None` when feature disabled or the smoothing JSON is missing.
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_x_norm: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_attn_out: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_ffn_act: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_silu_mul: Option<Vec<crate::metal::PinnedBuffer>>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -993,6 +1015,14 @@ impl Engine for QwenDense {
             q4k_fast_offsets: None,
             #[cfg(target_os = "macos")]
             lmhead_per_channel_scales_buf: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_x_norm: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_attn_out: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_ffn_act: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_silu_mul: None,
         })
     }
 
@@ -1857,9 +1887,33 @@ impl QwenDense {
             Some(c) => c,
             None => return Ok(()),
         };
-        // Probe sidecar paths in order of specificity.
+        // Probe sidecar paths in order of specificity. When
+        // DISMANTLE_QWEN_AWQ=1, look for the AWQ-baked sidecar first
+        // (produced by `tools/awq_bake/`). Falls through to the plain
+        // Q4K_FAST sidecar if the AWQ file is missing — the AWQ loader
+        // will then refuse to enable smoothing in that case.
         let weights_path = &self._weights_path;
-        let candidates = [
+        let awq_requested = std::env::var_os("DISMANTLE_QWEN_AWQ")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        let mut candidates: Vec<std::path::PathBuf> = Vec::new();
+        if awq_requested {
+            // <gguf-stem>.awq.dismantle next to the model, plus a canned path.
+            let stem = weights_path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("model");
+            if let Some(parent) = weights_path.parent() {
+                candidates.push(parent.join(format!("{stem}.awq.dismantle")));
+            }
+            candidates.push(std::path::PathBuf::from(format!(
+                "models/{stem}-awq.dismantle"
+            )));
+            candidates.push(std::path::PathBuf::from(
+                "artifacts/qwen3b_awq_baked.dismantle",
+            ));
+        }
+        candidates.extend([
             weights_path.with_extension("dismantle"),
             std::path::PathBuf::from(format!(
                 "models/{}-q4k_fast.dismantle",
@@ -1871,7 +1925,7 @@ impl QwenDense {
             std::path::PathBuf::from(
                 "models/qwen2.5-3b-instruct-q4k_fast.dismantle"
             ),
-        ];
+        ]);
         let sidecar_path = candidates.iter().find(|p| p.exists()).cloned();
         let sidecar_path = match sidecar_path {
             Some(p) => p,
@@ -1986,6 +2040,110 @@ impl QwenDense {
         Ok(())
     }
 
+    /// AWQ Option B: load per-layer activation smoothing vectors from
+    /// `profiles/qwen3b_awq_smoothing.json` (schema `awq-smoothing-v1`,
+    /// produced by the offline AWQ pre-pass). Builds 4 per-layer pinned
+    /// f32 buffers — one per dispatch site — keyed by layer index. Pairs
+    /// with the AWQ-baked Q4K_FAST sidecar (W' = W * s) produced by
+    /// `tools/awq_bake/`. Silent no-op if the JSON is missing — the
+    /// caller should refuse to enable AWQ when the loader returns
+    /// without populating the buffers.
+    #[cfg(target_os = "macos")]
+    fn ensure_awq_smoothing_scales(&mut self) -> Result<()> {
+        if self.awq_smoothing_x_norm.is_some() {
+            return Ok(());
+        }
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+        let candidates = [
+            std::path::PathBuf::from("profiles/qwen3b_awq_smoothing.json"),
+            std::path::PathBuf::from("crates/dismantle-core/profiles/qwen3b_awq_smoothing.json"),
+        ];
+        let json_path = match candidates.iter().find(|p| p.exists()) {
+            Some(p) => p,
+            None => {
+                eprintln!(
+                    "[awq] WARN: smoothing JSON missing at any of {:?} — \
+                     AWQ disabled (set DISMANTLE_QWEN_AWQ=0 to silence)",
+                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>()
+                );
+                return Ok(());
+            }
+        };
+        let txt = std::fs::read_to_string(json_path)
+            .map_err(|e| Error::Model(format!("read {}: {}", json_path.display(), e)))?;
+        let root: serde_json::Value = serde_json::from_str(&txt)
+            .map_err(|e| Error::Model(format!("parse AWQ smoothing JSON: {e}")))?;
+        let schema = root.get("schema").and_then(|v| v.as_str()).unwrap_or("");
+        if schema != "awq-smoothing-v1" {
+            return Err(Error::Model(format!(
+                "unexpected AWQ smoothing schema {schema:?} at {}",
+                json_path.display()
+            )));
+        }
+        let factors = root.get("smoothing_factors")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| Error::Model("missing smoothing_factors object".into()))?;
+
+        let cfg = &self.config;
+        let hidden = cfg.hidden;
+        let intermediate = cfg.intermediate;
+        let n_layers = cfg.n_layers;
+
+        let mut x_norm_bufs = Vec::with_capacity(n_layers);
+        let mut attn_out_bufs = Vec::with_capacity(n_layers);
+        let mut ffn_act_bufs = Vec::with_capacity(n_layers);
+        let mut silu_mul_bufs = Vec::with_capacity(n_layers);
+
+        let extract = |key: &str, expected_len: usize| -> Result<Vec<f32>> {
+            let arr = factors.get(key)
+                .and_then(|v| v.as_array())
+                .ok_or_else(|| Error::Model(format!("AWQ smoothing missing key {key}")))?;
+            if arr.len() != expected_len {
+                return Err(Error::Model(format!(
+                    "AWQ smoothing {key}: len {} != expected {}",
+                    arr.len(), expected_len
+                )));
+            }
+            let mut out = Vec::with_capacity(expected_len);
+            for v in arr {
+                let f = v.as_f64()
+                    .ok_or_else(|| Error::Model(format!("AWQ {key}: non-numeric entry")))?;
+                out.push(f as f32);
+            }
+            Ok(out)
+        };
+
+        for li in 0..n_layers {
+            // Q/K/V share x_norm — use q_proj's factor (verified equal to
+            // k_proj / v_proj per profiles/qwen3b_awq_smoothing.json).
+            let s_q = extract(&format!("layer_{li}_q_proj"), hidden)?;
+            let s_o = extract(&format!("layer_{li}_o_proj"), hidden)?;
+            // Gate/Up share ffn_act — use gate_proj's factor.
+            let s_g = extract(&format!("layer_{li}_gate_proj"), hidden)?;
+            let s_d = extract(&format!("layer_{li}_down_proj"), intermediate)?;
+            x_norm_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_q)));
+            attn_out_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_o)));
+            ffn_act_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_g)));
+            silu_mul_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_d)));
+        }
+
+        self.awq_smoothing_x_norm = Some(x_norm_bufs);
+        self.awq_smoothing_attn_out = Some(attn_out_bufs);
+        self.awq_smoothing_ffn_act = Some(ffn_act_bufs);
+        self.awq_smoothing_silu_mul = Some(silu_mul_bufs);
+        eprintln!(
+            "[awq] loaded smoothing for {} layers from {} (4 sites × {} = {} pinned buffers)",
+            n_layers,
+            json_path.display(),
+            n_layers,
+            4 * n_layers,
+        );
+        Ok(())
+    }
+
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
     /// graph + final norm + LM head + GPU argmax into a single
     /// `TokenCommandBuffer`, commits once, and reads back the next
@@ -2037,6 +2195,39 @@ impl QwenDense {
         {
             self.ensure_lmhead_per_channel_scales()?;
         }
+        // AWQ Option B: lazy-load per-layer activation smoothing vectors.
+        // Requires W4A8 (the AWQ math only makes sense when activations
+        // are int8-quantized) AND a Q4K_FAST sidecar that has been baked
+        // through `tools/awq_bake/` (W' = W * s pre-multiplied into the
+        // Q4_K weights). The bake-aware sidecar path lookup is handled
+        // by `ensure_q4k_fast_cache` when `DISMANTLE_QWEN_AWQ=1` is set;
+        // PREDEC is incompatible (its pre-decoded scales come from the
+        // un-smoothed weights and would give wrong logits).
+        let awq_active_early = std::env::var_os("DISMANTLE_QWEN_AWQ")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        if awq_active_early && !w4a8_active_early {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_AWQ=1 requires DISMANTLE_QWEN_W4A8=1".into(),
+            ));
+        }
+        if awq_active_early && predec_active {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_AWQ=1 is incompatible with DISMANTLE_QWEN_Q4K_PREDEC=1; \
+                 set DISMANTLE_QWEN_Q4K_PREDEC=0 to opt out of predec".into(),
+            ));
+        }
+        // Force the Q4K_FAST sidecar path so the AWQ-baked weights are
+        // actually loaded. The lookup inside ensure_q4k_fast_cache picks
+        // the `.awq.dismantle` file when AWQ is set.
+        if awq_active_early && self.q4k_fast_buf.is_none() {
+            self.ensure_q4k_fast_cache()?;
+        }
+        if awq_active_early && w4a8_active_early
+            && self.awq_smoothing_x_norm.is_none()
+        {
+            self.ensure_awq_smoothing_scales()?;
+        }
         // Bind cache references for the macro body. predec takes
         // precedence if both are active (they're mutually exclusive
         // in practice; predec is mathematically equivalent and lower
@@ -2046,13 +2237,30 @@ impl QwenDense {
         } else {
             None
         };
-        let q4k_fast_ref = if q4k_fast_active && !predec_active {
+        // When AWQ is active the sidecar IS the AWQ-baked Q4K_FAST file,
+        // so we must route the Q4_K projections through the q4k_fast
+        // kernel even if DISMANTLE_QWEN_Q4K_FAST wasn't set explicitly.
+        let q4k_fast_ref = if (q4k_fast_active || awq_active_early)
+            && !predec_active
+        {
             self.q4k_fast_buf
                 .as_ref()
                 .zip(self.q4k_fast_offsets.as_ref())
         } else {
             None
         };
+        // AWQ smoothing buffer refs (None unless all four loaded). Bind
+        // here under the immutable-borrow window so the dispatch sites
+        // can index by layer without re-borrowing self.
+        let awq_active = awq_active_early
+            && self.awq_smoothing_x_norm.is_some()
+            && self.awq_smoothing_attn_out.is_some()
+            && self.awq_smoothing_ffn_act.is_some()
+            && self.awq_smoothing_silu_mul.is_some();
+        let awq_x_norm = self.awq_smoothing_x_norm.as_ref();
+        let awq_attn_out = self.awq_smoothing_attn_out.as_ref();
+        let awq_ffn_act = self.awq_smoothing_ffn_act.as_ref();
+        let awq_silu_mul = self.awq_smoothing_silu_mul.as_ref();
 
         let ctx = self
             .metal_ctx
@@ -2232,13 +2440,26 @@ impl QwenDense {
             &arena.x_norm_buf,
         )?;
         if w4a8_active {
-            kernels::quantize_f32_to_int8_per_block_tcb(
-                &mut tcb,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                h,
-            )?;
+            // Pre-loop x_norm quantize feeds layer 0's q/k/v projections.
+            // Under AWQ, divide by layer-0 q_proj smoothing (== k/v_proj).
+            if awq_active {
+                kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    &awq_x_norm.unwrap()[0],
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            } else {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            }
         }
 
         for li in 0..cfg.n_layers {
@@ -2493,13 +2714,24 @@ impl QwenDense {
             // attn_out is the output of mha_decode (f32). When W4A8 active,
             // quantize once before o_proj.
             if w4a8_oproj {
-                kernels::quantize_f32_to_int8_per_block_tcb(
-                    &mut tcb,
-                    &arena.attn_out_buf,
-                    attn_int8,
-                    attn_scales,
-                    q_dim,
-                )?;
+                if awq_active {
+                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                        &mut tcb,
+                        &arena.attn_out_buf,
+                        &awq_attn_out.unwrap()[li],
+                        attn_int8,
+                        attn_scales,
+                        q_dim,
+                    )?;
+                } else {
+                    kernels::quantize_f32_to_int8_per_block_tcb(
+                        &mut tcb,
+                        &arena.attn_out_buf,
+                        attn_int8,
+                        attn_scales,
+                        q_dim,
+                    )?;
+                }
             }
             gemv_proj!(
                 w4a8_oproj,
@@ -2520,19 +2752,35 @@ impl QwenDense {
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
             // Fused add+rmsnorm+(optional)int8-quantize. When W4A8 is active
             // this collapses the two dispatches into one and skips the
-            // x_norm DRAM round-trip.
+            // x_norm DRAM round-trip. Under AWQ, the int8 phase divides by
+            // the gate_proj smoothing (== up_proj; gate/up share x_norm here).
             if w4a8_active {
-                kernels::add_rmsnorm_fused_q8_tcb(
-                    &mut tcb,
-                    &arena.x_buf,
-                    &arena.o_proj_out_buf,
-                    ffn_norm_pin,
-                    &arena.x_norm_buf,
-                    x_int8,
-                    x_scales,
-                    eps,
-                    h,
-                )?;
+                if awq_active {
+                    kernels::add_rmsnorm_fused_q8_scaled_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.o_proj_out_buf,
+                        ffn_norm_pin,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        &awq_ffn_act.unwrap()[li],
+                        eps,
+                        h,
+                    )?;
+                } else {
+                    kernels::add_rmsnorm_fused_q8_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.o_proj_out_buf,
+                        ffn_norm_pin,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        eps,
+                        h,
+                    )?;
+                }
             } else {
                 kernels::add_rmsnorm_fused_tcb(
                     &mut tcb,
@@ -2576,15 +2824,28 @@ impl QwenDense {
                 intermediate,
             )?;
             // Quantize ffn_act for the upcoming ffn_down (when both W4A8
-            // and the ffn_down_q4k requant buffer are active).
+            // and the ffn_down_q4k requant buffer are active). Under AWQ,
+            // divide by down_proj smoothing (length=intermediate) since
+            // ffn_act (= silu(gate) * up) is down_proj's input.
             if w4a8_ffn_down && layer.pinned.ffn_down_q4k.is_some() {
-                kernels::quantize_f32_to_int8_per_block_tcb(
-                    &mut tcb,
-                    &arena.ffn_act_buf,
-                    ffn_int8,
-                    ffn_scales,
-                    intermediate,
-                )?;
+                if awq_active {
+                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                        &mut tcb,
+                        &arena.ffn_act_buf,
+                        &awq_silu_mul.unwrap()[li],
+                        ffn_int8,
+                        ffn_scales,
+                        intermediate,
+                    )?;
+                } else {
+                    kernels::quantize_f32_to_int8_per_block_tcb(
+                        &mut tcb,
+                        &arena.ffn_act_buf,
+                        ffn_int8,
+                        ffn_scales,
+                        intermediate,
+                    )?;
+                }
             }
             // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
             // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
@@ -2665,19 +2926,40 @@ impl QwenDense {
             // Fused add+rmsnorm+(optional)int8-quantize, same pattern as the
             // post-attn-norm site above. Produces x_norm and (when W4A8
             // active) the int8/scales needed by the next layer's q_proj or
-            // the LM head.
+            // the LM head. Under AWQ: when there's a NEXT layer, divide by
+            // its q_proj smoothing; on the LAST layer the next consumer is
+            // the LM_HEAD (which the bake tool does NOT smooth — output.weight
+            // doesn't match the AWQ key map), so we MUST stay on the
+            // unscaled path so the LM_HEAD W4A8 GEMV sees x · W_lmhead.T,
+            // not (x/s) · W_lmhead.T.
+            let is_last_layer = li + 1 >= cfg.n_layers;
             if w4a8_active {
-                kernels::add_rmsnorm_fused_q8_tcb(
-                    &mut tcb,
-                    &arena.x_buf,
-                    &arena.ffn_down_buf,
-                    next_norm,
-                    &arena.x_norm_buf,
-                    x_int8,
-                    x_scales,
-                    eps,
-                    h,
-                )?;
+                if awq_active && !is_last_layer {
+                    kernels::add_rmsnorm_fused_q8_scaled_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.ffn_down_buf,
+                        next_norm,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        &awq_x_norm.unwrap()[li + 1],
+                        eps,
+                        h,
+                    )?;
+                } else {
+                    kernels::add_rmsnorm_fused_q8_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.ffn_down_buf,
+                        next_norm,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        eps,
+                        h,
+                    )?;
+                }
             } else {
                 kernels::add_rmsnorm_fused_tcb(
                     &mut tcb,

@@ -470,8 +470,10 @@ mod imp {
             "add_rmsnorm_fused" => "add_rmsnorm_fused",
             // W4A8 production wire-up (2026-05-24)
             "quantize_f32_to_int8_per_block" => "quantize_f32_to_int8_per_block",
+            "quantize_f32_to_int8_per_block_scaled" => "quantize_f32_to_int8_per_block_scaled",
             "gemm_q4_k_a8_v3_8r" => "gemm_q4_k_a8_v3_8r",
             "add_rmsnorm_fused_q8" => "add_rmsnorm_fused_q8",
+            "add_rmsnorm_fused_q8_scaled" => "add_rmsnorm_fused_q8_scaled",
             _ => "other",
         }
     }
