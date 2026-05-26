@@ -588,6 +588,60 @@ kernel void quantize_f32_to_int8_per_block(
     x_int8[block_off + tid] = (signed char)q;
 }
 
+// ── quantize_f32_to_int8_per_block_scaled ────────────────────────────────────
+//
+// AWQ Option B fused activation-divide + per-block int8 quant. Identical to
+// `quantize_f32_to_int8_per_block` except each input element is divided by
+// the corresponding entry of a per-channel smoothing vector `s` BEFORE the
+// per-block min/max reduction:
+//     x'[i] = x[i] / s[i]
+//     scale = max|x'| / 127 per 256-elem block
+//     q[i]  = round(x'[i] / scale) clamped to [-127, 127]
+//
+// `s` has length `n` (same as `x`); the i-th smoothing factor pairs with the
+// i-th channel of `x`. Activation-side mate of the offline-baked weights
+// produced by `tools/awq_bake/` (W'[r, c] = W[r, c] * s[c]) such that
+//     (x / s) · (W * s).T == x · W.T
+// holds mathematically while the int8/Q4_K quantizers see a more uniform
+// magnitude profile.
+//
+// Grid/TG/shmem identical to the unscaled variant so the dispatch wrapper
+// can re-use the same launch geometry.
+kernel void quantize_f32_to_int8_per_block_scaled(
+    device const float*       x        [[buffer(0)]],
+    device const float*       s        [[buffer(1)]],
+    device       signed char* x_int8   [[buffer(2)]],
+    device       float*       x_scales [[buffer(3)]],
+    threadgroup  float*       red      [[threadgroup(0)]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    uint block_off = tg_id * 256u;
+    uint i = block_off + tid;
+    float sv = s[i];
+    // Smoothing factors come from a calibration corpus and are strictly > 0
+    // for any channel touched by activation traffic; guard the zero case so
+    // a pathological factor doesn't propagate a NaN through the reduction.
+    float inv_s = (sv > 1e-12f) ? metal::precise::divide(1.0f, sv) : 0.0f;
+    float xv = x[i] * inv_s;
+    red[tid] = fabs(xv);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] = max(red[tid], red[tid + stride]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_abs = red[0];
+    float scale = (max_abs > 0.0f)
+                ? metal::precise::divide(max_abs, 127.0f)
+                : 1.0f;
+    if (tid == 0u) x_scales[tg_id] = scale;
+    float inv = metal::precise::divide(1.0f, scale);
+    float q = round(xv * inv);
+    q = clamp(q, -127.0f, 127.0f);
+    x_int8[i] = (signed char)q;
+}
+
 // ── quantize_f32_to_int8_per_channel ─────────────────────────────────────────
 //
 // GPU-side quant using STATIC pre-computed per-channel scales. Pairs with
