@@ -1,5 +1,16 @@
 # Past-200 TPS H100 Push
 
+> **Note (2026-05-26):** This plan describes the *long-term* path past the
+> M3 Pro ~120 dec_tps memory-bandwidth ceiling. The immediate next training
+> run is now driven by `colab/qwen3b_reconciliation.ipynb` (Eagle6 heads with
+> per-channel AWQ + long-train pass + in-notebook simulation), and the actual
+> blocker for any spec-decode speedup is the Rust port documented in
+> `docs/eagle5_qwen_port_plan.md` — Qwen-3B/1.5B runtime currently ignores
+> `--speculate eagle5`. The original past-200 notebook was retired to
+> `colab/legacy/qwen_past_200_h100.ipynb`. The targets and decision stack
+> below still hold for the post-reconciliation horizon (continuous batching,
+> Q2/IQ2 single-session, MoE conversion); they're the next-after-next.
+
 ## Objective
 
 Produce Colab Pro H100 artifacts that target past 200 decoded tokens/sec on

@@ -2,93 +2,101 @@
 
 Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
-## Active notebooks
+## Active notebook
 
-### `qwen_past_200_h100.ipynb` ⭐ past-200 push
+### `qwen3b_reconciliation.ipynb` ⭐ current
 
-H100-first run-all for the next throughput ceiling break. It trains stacked
-Eagle5 candidates for the Qwen2.5-1.5B student path, emits AWQ and Q2/IQ2
-calibration artifacts, runs tau/frontier ranking, and writes a
-`past200_summary.md` handoff with exact local runtime hints.
+Unified successor to `qwen3b_full_stack.ipynb` and the now-retired
+`qwen_past_200_h100.ipynb` (kept under `legacy/`). One run-all that:
+
+1. Builds/resumes 10k-seq corpora for Qwen2.5-3B-Instruct and Qwen2.5-1.5B-Instruct.
+2. Computes both **per-tensor** AWQ smoothing (heuristic alpha=0.5) and
+   **per-channel adaptive** AWQ smoothing (`colab/awq_per_channel_calibrate.py`).
+3. Emits Q2/IQ2 importance artifacts for the future sub-2-bit ship.
+4. Runs an **Eagle6 grid sweep** (5 specs × 1-block and 2-block × LR/residual-delta
+   variants) per target, then **one extra-long training session** on the per-target
+   grid winner (20 epochs, full corpus, 192-token windows).
+5. Runs tau ranking + frontier policy search on the long-trained head.
+6. **Simulates spec-decode acceptance in-notebook** against held-out corpus
+   windows — gives an honest upper bound BEFORE the Mac runtime port lands.
 
 Launch:
 ```
-https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen_past_200_h100.ipynb
+https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen3b_reconciliation.ipynb
 ```
 
-### `qwen3b_mega_calibration.ipynb` ⭐ current focus
+**Compute:** A100-40GB at MAX_QUALITY_MODE: ~4-6 hr (corpus build + AWQ + grid +
+long-train + tau + frontier + simulation × 2 targets). Drive-backed resume; safe
+to interrupt and re-run.
 
-**Single Colab run produces calibration data for 4 downstream dismantle projects:**
+### Why "reconciliation"?
 
-| Output | Used by |
-|---|---|
-| Per-prompt parquet shards: tokens + layer-32 residual + intermediate | Eagle5 v2 head training |
-| Top-100 logits per token | Quality benchmarks ground truth |
-| Per-site activation aggregates (mean/max per channel × 36 layers × 7 sites) | AWQ smoothing, per-channel W4A8 calibration, SmoothQuant |
+The May 2026 end-to-end paired bench discovered that `--speculate eagle5` on
+Qwen-3B/1.5B is a no-op: spec-decode is wired into `deepseek_v2.rs` only, not
+`qwen_dense.rs`. The trained heads from the prior notebooks were sitting unused
+in RAM. This notebook produces the **best possible heads** (Eagle6 with all the
+levers we've accumulated) so they're ready inventory once the Rust port lands.
 
-**Compute:** ~4-8 hr depending on GPU, with Drive-backed resume during the run.
+See `docs/eagle5_qwen_port_plan.md` for the local Rust port spec.
 
-**Launch:** Open in Colab via `File → Open notebook → GitHub`:
-```
-https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen3b_mega_calibration.ipynb
-```
+## Levers preserved from the retired `qwen_past_200_h100.ipynb`
 
-Set GPU: `Runtime → Change runtime type → A100 GPU` (or H100 if you have Pro+).
+- Variable hidden size (Qwen2.5-1.5B vs 3B)
+- `--num-blocks` (1-block and 2-block Eagle heads)
+- `--head-heads` and `--head-ff-mult`
+- Q2/IQ2 importance calibration
+- 1.5B student path
 
-| GPU | Strategy | Batch | Wall |
-|---|---|---|---|
-| G4 / Blackwell / H100 70GB+ | fp16, chunked LM head | 8 | ~3-4 hr |
-| A100 40 GB | fp16, chunked LM head | 6 | ~5 hr |
-| L4 24 GB | 4-bit nf4, chunked LM head | 4 | ~7 hr |
-| T4/V100 16 GB | 4-bit nf4, chunked LM head | 2 | slow but safer |
+## Levers added in this notebook
 
-## After calibration completes (laptop-side work)
+- **Per-channel adaptive AWQ** — channels with higher activation magnitude get
+  higher alpha, smoothing the outliers more aggressively without over-smoothing
+  the quiet channels.
+- **Extra-long training session** — winner spec retrained for 20 epochs on the
+  full 10k corpus with 192-token windows and tuned residual-delta + calib losses.
+- **In-notebook spec-decode simulation** — Python-side replay of the trained
+  head's drafts against held-out corpus, returns per-step accept rates so we
+  know if the head is good *before* a 2-4 day Mac port.
 
-Once `qwen3b_corpus/` is on Drive (size depends on actual token lengths;
-expect several GB+), download to laptop and run locally:
+## After Colab completes
+
+Download the long-trained head from Drive to the Mac project tree:
 
 ```bash
-# 1. Train Qwen-3B Eagle5 head (MLX, ~2 hr)
-python3 tools/training/eagle5_train.py \
-  --corpus-dir artifacts/calibration/qwen3b_corpus \
-  --frozen     <qwen3b_frozen_baseline>.npz \
-  --ckpt-dir   checkpoints/eagle5_qwen3b \
-  --epochs 8 --batch-size 24 --lr 1e-3 \
-  --max-rows 4000 --max-row-tokens 128 \
-  --sparsity-head proxy --capture-layer 32
+# Example for 3B path:
+gdown <drive-url> -O checkpoints/eagle6_q3b_long/head_final.safetensors
 
-# 2. Apply AWQ algorithm to activation aggregates (~30 min, CPU)
-python3 tools/training/awq_calibrate.py \
-  --stats artifacts/calibration/qwen3b_corpus/per_site_activation_stats.npz \
-  --out   profiles/qwen3b_awq_smoothing.json
-
-# 3. Bench stacked configs
-DISMANTLE_QWEN_AWQ_SMOOTHING=profiles/qwen3b_awq_smoothing.json \
-DISMANTLE_QWEN_W4A8=1 \
-EAGLE5_HEAD=checkpoints/eagle5_qwen3b/head_final.safetensors \
-TRIALS=10 TOKENS=64 \
-  ./tools/bench/eagle5_paired_bench.sh
+# Same for 1.5B if you want both:
+gdown <drive-url> -O checkpoints/eagle6_q1p5_long/head_final.safetensors
 ```
 
-## Expected results stack
+The reconciliation summary on Drive (`reconciliation_summary.md`) contains the
+exact head paths and the runtime hints (lattice K/width, entropy threshold,
+variable-K conf thresh) the future Mac runtime port should consume.
 
-| Config | Qwen-3B dec_tps | Comment |
-|---|---|---|
-| Today (predec default-on) | 26.6 | Current headline |
-| + AWQ → W4A8 default-on | ~36 | Quality unblocked |
-| + Eagle5 (Qwen-3B head, τ ≈ 3.5) | ~60-80 | Stacked win |
+## Sibling notebooks
 
-Past llama.cpp's ~50 dec_tps on M3 Pro.
+### `qwen3b_full_stack.ipynb` (predecessor)
 
-## Historical context
+Still works; produces Eagle5 (not Eagle6) heads on a single Qwen-3B target with
+a fixed grid. Use this if you want a faster (~90 min) single-target run without
+the per-channel AWQ + long-train + simulation passes.
 
-The V2-Lite notebook (`eagle5_v2_corpus.ipynb`) was the original proof-of-concept. It produced 89.20% K=4 acceptance on V2-Lite via `proxy + lr=1e-3` (grid search). That methodology proved the playbook works; this notebook applies it to the actual product target (Qwen-3B) with broader captures (AWQ + quality benchmarks bundled).
+### `qwen3b_mega_calibration.ipynb` (calibration-only)
 
-The V2-Lite artifacts have been removed since the corpus + trained heads are already on local disk (`artifacts/calibration/v2_lite_corpus/` and `checkpoints/eagle5_v2_*/`).
+Drops out the training entirely — just builds the corpus + AWQ + frozen
+baseline. Useful when you want the calibration artifacts but plan to train
+locally.
+
+### `legacy/qwen_past_200_h100.ipynb` (retired)
+
+Kept for reference. The 14-spec grid (1.5B + 3B × 7 specs each) it ran was the
+right direction but didn't ship the long-train pass or in-notebook simulation.
+The reconciliation notebook supersedes it.
 
 ## Resume behavior
 
-`mega_calibrate.py` resumes from the next contiguous shard found either on
-local SSD or Drive. It also saves `per_site_activation_stats.npz` as it goes;
-if shards exist but matching stats are missing/stale, the script stops instead
-of silently producing bad AWQ/W4A8 calibration data.
+Every long-running step in the reconciliation notebook checks for its output
+artifact before launching the subprocess. Set `FORCE_*=True` in Cell 1 to bust
+a specific cache. Corpus shards are Drive-backed at `--sync-every 4` so a
+Colab disconnect mid-build only loses a few shards.
