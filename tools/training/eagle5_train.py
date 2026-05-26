@@ -291,8 +291,8 @@ def _iter_batches(
     capture_layer: int,
     seed: int = 0,
     dedup: bool = True,
-    max_row_tokens: int = 256,
-    max_rows: int = 3000,
+    max_row_tokens: int = 128,
+    max_rows: int = 2000,
 ):
     """Yield (batch_size, seq_len) tensors in row-major (B, S, H) layout.
 
@@ -309,6 +309,22 @@ def _iter_batches(
     by ~60% with no quality loss. Pass `dedup=False` to disable.
     """
     rng = random.Random(seed)
+
+    # Subsample SHARDS upfront so we never load >max_rows worth of data into
+    # memory. Critical on laptops: 1013 shards × 16 rows × 4 MB per truncated
+    # row = ~64 GB peak before subsampling, → SIGKILL. With shard subsample,
+    # peak load = ~target_shards × 16 × per-row-bytes.
+    if max_rows > 0 and len(shards) > 16:
+        avg_rows_per_shard = 16  # corpus_simple.py default
+        # 1.5× safety margin for dedup drops + a few extra shards
+        target_shards = min(len(shards), int(max_rows / avg_rows_per_shard * 1.5) + 16)
+        if target_shards < len(shards):
+            sh_rng = random.Random(seed + 7919)  # different stream than row shuffler
+            shards = sh_rng.sample(shards, target_shards)
+            print(f"[data] subsampling {target_shards} of original shard list "
+                  f"(target rows={max_rows}, ~{target_shards*avg_rows_per_shard} "
+                  f"rows pre-dedup)", flush=True)
+
     rows: list[dict] = []
     seen_fp: set = set()
     n_raw = n_dup = 0
@@ -563,15 +579,15 @@ def main() -> int:
     p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="proxy")
     p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--max-row-tokens", type=int, default=256,
+    p.add_argument("--max-row-tokens", type=int, default=128,
                    help="truncate each parquet row's sequence to first N "
                         "tokens before loading into RAM. 0 = no truncation. "
-                        "Default 256 fits laptops (M3 Pro 18 GB) with the "
-                        "16k-seq Colab corpus.")
-    p.add_argument("--max-rows", type=int, default=3000,
-                   help="random sample of N rows from the deduped corpus. "
-                        "0 = use all. Default 3000 + max-row-tokens=256 → "
-                        "~6 GB peak RAM during load.")
+                        "Default 128 ~= 8 sliding seq_len=16 windows per row.")
+    p.add_argument("--max-rows", type=int, default=2000,
+                   help="random sample of N rows. With default max-row-tokens, "
+                        "_iter_batches also pre-subsamples SHARDS upfront so "
+                        "total RAM stays bounded. Peak ~2 GB at defaults. "
+                        "0 = use all (only safe on big-RAM machines).")
     p.add_argument("--resume", type=Path, default=None)
     p.add_argument(
         "--no-dedup",
