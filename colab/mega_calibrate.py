@@ -358,7 +358,7 @@ def main() -> int:
     registered_site_hooks = 0
 
     def _make_input_hook(li: int, site: str):
-        def _hook(_m, inp, _out):
+        def _hook(_m, inp, _out=None):
             x = inp[0] if isinstance(inp, tuple) else inp
             if x is None:
                 return
