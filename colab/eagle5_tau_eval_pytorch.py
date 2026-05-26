@@ -21,11 +21,56 @@ import numpy as np
 import pyarrow.parquet as pq
 import torch
 
-from eagle5_train_pytorch import HIDDEN_DIM, RMS_EPS, _extract_row, _rms_norm, build_head
+from eagle5_train_pytorch import N_HEADS, RMS_EPS, _extract_row, _rms_norm, build_head
 
 
-def _load_head(ckpt: Path, frozen: Path, device: str):
-    head = build_head(frozen, with_sparsity=False, device=device).eval()
+def _infer_head_knobs(ckpt: Path, requested_blocks: int, requested_heads: int, requested_ff_mult: float):
+    num_blocks = requested_blocks
+    n_heads = requested_heads
+    ff_mult = requested_ff_mult
+    if ckpt.suffix == ".safetensors":
+        try:
+            from safetensors import safe_open
+
+            with safe_open(str(ckpt), framework="pt", device="cpu") as f:
+                meta = f.metadata() or {}
+            num_blocks = int(meta.get("num_blocks", num_blocks))
+            n_heads = int(meta.get("n_heads", n_heads))
+            ff_mult = float(meta.get("ff_mult", ff_mult))
+        except Exception as e:
+            print(f"[tau] WARN: could not read safetensors metadata: {e}", flush=True)
+    else:
+        try:
+            with np.load(ckpt) as z:
+                if "__num_blocks__" in z.files:
+                    num_blocks = int(np.asarray(z["__num_blocks__"]).item())
+                if "__n_heads__" in z.files:
+                    n_heads = int(np.asarray(z["__n_heads__"]).item())
+                if "__ff_mult_x1000__" in z.files:
+                    ff_mult = float(np.asarray(z["__ff_mult_x1000__"]).item()) / 1000.0
+        except Exception as e:
+            print(f"[tau] WARN: could not read npz metadata: {e}", flush=True)
+    return num_blocks, n_heads, ff_mult
+
+
+def _load_head(
+    ckpt: Path,
+    frozen: Path,
+    device: str,
+    *,
+    num_blocks: int = 1,
+    n_heads: int = N_HEADS,
+    ff_mult: float = 4.0,
+):
+    num_blocks, n_heads, ff_mult = _infer_head_knobs(ckpt, num_blocks, n_heads, ff_mult)
+    head = build_head(
+        frozen,
+        with_sparsity=False,
+        device=device,
+        num_blocks=num_blocks,
+        n_heads=n_heads,
+        ff_mult=ff_mult,
+    ).eval()
     if ckpt.suffix == ".safetensors":
         from safetensors import safe_open
 
@@ -123,7 +168,14 @@ def evaluate(args) -> dict:
         torch.backends.cudnn.allow_tf32 = True
         torch.set_float32_matmul_precision("high")
 
-    head = _load_head(args.ckpt, args.frozen, device)
+    head = _load_head(
+        args.ckpt,
+        args.frozen,
+        device,
+        num_blocks=args.num_blocks,
+        n_heads=args.head_heads,
+        ff_mult=args.head_ff_mult,
+    )
     lm_head_f = head._lm_head.float()
     windows = _load_eval_windows(
         args.corpus,
@@ -154,7 +206,7 @@ def evaluate(args) -> dict:
         token_logits, _sparsity, _draft_h, _calib = head(cur_prev, residual_d, inter_d)
         head_arg = token_logits[:, 0, :].float().argmax(dim=-1)
 
-        baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(W, HIDDEN_DIM)
+        baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(W, head.hidden_dim)
         target_logits = torch.matmul(baseline.float(), lm_head_f)
         target_arg = target_logits.argmax(dim=-1)
 
@@ -212,6 +264,9 @@ def main() -> int:
     p.add_argument("--max-row-tokens", type=int, default=128)
     p.add_argument("--seed", type=int, default=123)
     p.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
+    p.add_argument("--num-blocks", type=int, default=1)
+    p.add_argument("--head-heads", type=int, default=N_HEADS)
+    p.add_argument("--head-ff-mult", type=float, default=4.0)
     p.add_argument("--base-tps", type=float, default=26.6)
     p.add_argument("--w4a8-multiplier", type=float, default=1.25)
     p.add_argument("--spec-efficiency", type=float, default=0.85)
