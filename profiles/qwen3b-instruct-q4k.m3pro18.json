@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "profile_id": "kp-ef30ad6d396b992c54834d1a",
+  "profile_name": "m3-pro-18gb",
+  "model_id": "Qwen2.5 3B Instruct",
+  "model_arch": "qwen2",
+  "tensor_layout_hash": "46a61a049d19cca43d3279ec",
+  "device_name": "Apple M3 Pro",
+  "shader_hash": "a7ff7d89ff4de582b3757bc6",
+  "selected": {
+    "id": "metal-default",
+    "moe_schedule": "indexed-no-pack-one-cb",
+    "mla_schedule": "metal-mla",
+    "lm_head_schedule": "metal-argmax-token-only",
+    "command_buffering": "one-cb-per-block",
+    "gpu_buffer_reuse": "decode-arena",
+    "deterministic_rank": 1,
+    "gemm_q4_k_schedule": "per_shape",
+    "gemm_q4_k_schedule_per_shape": {
+      "1024x4096": "v3_dual",
+      "4096x1024": "v3_dual",
+      "4096x4096": "v3_dual"
+    },
+    "attn_block_schedule": "mla",
+    "x_norm_dtype": "f32",
+    "routed_down_schedule": "basic",
+    "shared_down_schedule": "basic",
+    "rmsnorm_attn_schedule": "basic"
+  },
+  "evidence": {
+    "profile": "m3-pro-18gb",
+    "max_hours": 1.0,
+    "prompt_count": 50,
+    "token_lengths": [
+      16,
+      64,
+      256
+    ],
+    "candidate_count": 1,
+    "measurements": [
+      {
+        "variant_id": "metal-default",
+        "deterministic_rank": 1,
+        "score": 164,
+        "status": "candidate"
+      }
+    ],
+    "target_tps": 60.0,
+    "notes": [
+      "deterministic lexicographic candidate order",
+      "temperature=0 greedy validation corpus",
+      "runtime ignores unsupported entries and falls back safely"
+    ]
+  }
+}
