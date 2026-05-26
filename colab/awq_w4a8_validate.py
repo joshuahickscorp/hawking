@@ -464,6 +464,13 @@ def _run_condition(
     print(f"[awq_w4a8_validate] loading model for condition '{tag}'", file=sys.stderr)
     model, _ = _load_model(model_id, device, load_4bit)
     replaced = install_fake_quant(model, smoothing)
+    if replaced == 0:
+        raise RuntimeError(
+            f"condition '{tag}' replaced 0 Linears. This usually means the "
+            "model was loaded through a quantized wrapper that the fake-quant "
+            "validator cannot instrument. Re-run validation in fp16 on A100+ "
+            "or skip this quality gate on small GPUs."
+        )
     print(
         f"[awq_w4a8_validate] '{tag}': replaced {replaced} Linears with "
         f"FakeQuantLinear (expected 7 × n_layers).",
