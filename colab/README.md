@@ -14,7 +14,7 @@ Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 | Top-100 logits per token | Quality benchmarks ground truth |
 | Per-site activation aggregates (mean/max per channel × 36 layers × 7 sites) | AWQ smoothing, per-channel W4A8 calibration, SmoothQuant |
 
-**Compute:** ~6-8 hr on H100, ~$8-12 in Colab Pro compute units (fits monthly Pro budget).
+**Compute:** ~4-8 hr depending on GPU, with Drive-backed resume during the run.
 
 **Launch:** Open in Colab via `File → Open notebook → GitHub`:
 ```
@@ -25,14 +25,15 @@ Set GPU: `Runtime → Change runtime type → A100 GPU` (or H100 if you have Pro
 
 | GPU | Strategy | Batch | Wall |
 |---|---|---|---|
-| Blackwell 102 GB | fp16, batch=8 | 8 | ~3 hr |
-| A100 80 GB / H100 | fp16, batch=8 | 8 | ~4 hr |
-| A100 40 GB | fp16, batch=6 | 6 | ~5 hr |
-| L4 24 GB | 4-bit nf4, batch=4 | 4 | ~7 hr |
+| G4 / Blackwell / H100 70GB+ | fp16, chunked LM head | 8 | ~3-4 hr |
+| A100 40 GB | fp16, chunked LM head | 6 | ~5 hr |
+| L4 24 GB | 4-bit nf4, chunked LM head | 4 | ~7 hr |
+| T4/V100 16 GB | 4-bit nf4, chunked LM head | 2 | slow but safer |
 
 ## After calibration completes (laptop-side work)
 
-Once `qwen3b_corpus/` is on Drive (~3-5 GB), download to laptop and run locally:
+Once `qwen3b_corpus/` is on Drive (size depends on actual token lengths;
+expect several GB+), download to laptop and run locally:
 
 ```bash
 # 1. Train Qwen-3B Eagle5 head (MLX, ~2 hr)
@@ -75,4 +76,7 @@ The V2-Lite artifacts have been removed since the corpus + trained heads are alr
 
 ## Resume behavior
 
-`mega_calibrate.py --skip-existing`-style logic is built in: rerun the same cell after any disconnect and it resumes from the next un-built shard. Drive persistence is the safety net.
+`mega_calibrate.py` resumes from the next contiguous shard found either on
+local SSD or Drive. It also saves `per_site_activation_stats.npz` as it goes;
+if shards exist but matching stats are missing/stale, the script stops instead
+of silently producing bad AWQ/W4A8 calibration data.
