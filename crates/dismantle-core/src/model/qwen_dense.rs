@@ -6,6 +6,7 @@ use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace, silu_mul,
 };
 use crate::metal::MetalContext;
+use crate::profile::KernelProfile;
 use crate::quant;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
@@ -192,6 +193,7 @@ pub struct QwenDense {
 
     pub kv: KvCache,
     pub sampler: Sampler,
+    pub kernel_profile: Option<KernelProfile>,
     pub _weights_path: PathBuf,
     pub metal_ctx: Option<MetalContext>,
 
@@ -665,6 +667,11 @@ impl Engine for QwenDense {
         let sampler = Sampler::new(0);
         mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
+        if let Some(profile) = config.kernel_profile.as_ref() {
+            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
+        }
+        let kernel_profile = config.kernel_profile.clone();
         mark(&mut stage_marks, "metal_ctx_init", &mut t);
 
         // P1f: weight pinning -- one big buffer for the whole mmap, plus
@@ -993,6 +1000,7 @@ impl Engine for QwenDense {
             layers,
             kv,
             sampler,
+            kernel_profile,
             _weights_path: weights.to_owned(),
             metal_ctx,
             dense_arena: None,
@@ -1050,6 +1058,8 @@ impl Engine for QwenDense {
         let prompt_len = prompt_ids.len();
         let mut stats = GenStats {
             prompt_tokens: prompt_len,
+            profile_id: self.kernel_profile.as_ref().map(|p| p.profile_id.clone()),
+            device_id: self.metal_ctx.as_ref().map(|ctx| ctx.device_name()),
             ..Default::default()
         };
 
