@@ -1,97 +1,78 @@
-# Colab Eagle5 v2 corpus build
+# Colab notebooks for dismantle calibration
 
-The DeepSeek-V2-Lite calibration corpus is too big to generate efficiently
-on the M3 Pro 18 GB laptop (the 16B model has to be offloaded to CPU/disk,
-making forwards 20× slower → ~5-day ETA for 3000 sequences). On Colab GPUs
-the same job finishes in 1-3 hours depending on tier:
+Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
-**Current notebook config:** auto-tunes by GPU — Cell 6 detects VRAM and picks the largest config that fits.
+## Active notebooks
 
-| GPU | VRAM | Strategy | Corpus seqs | Batch | ETA |
-|---|---|---|---|---|---|
-| **H100** (Pro+) | 80 GB | Native fp16 (no quant) | **100,000** | 32 | ~1 hr |
-| **A100** (Pro/Pro+) | 40 GB | Native fp16 (no quant) | **50,000** | 16 | ~1 hr |
-| **L4** (Pro) | 24 GB | 4-bit nf4, no offload | **30,000** | 8 | ~1.5 hr |
-| **V100** (Pro) | 16 GB | 4-bit nf4 + CPU offload | 20,000 | 4 | ~2 hr |
-| **T4** (Free/Pro) | 16 GB | 4-bit nf4 + CPU offload | 20,000 | 4 | ~2.5 hr |
+### `qwen3b_mega_calibration.ipynb` ⭐ current focus
 
-**Recommended:** H100 if you have access — it builds 2× the corpus (100k seqs) in the same wall time as A100 (50k seqs), giving an extra ~2-3pp Eagle5 acceptance at K=8.
+**Single Colab run produces calibration data for 4 downstream dismantle projects:**
 
-To request: `Runtime → Change runtime type → Hardware accelerator → A100 GPU → then in the GPU dropdown pick H100`. If H100 unavailable, Colab falls back through A100 → L4 → V100 → T4 — the notebook auto-adjusts.
+| Output | Used by |
+|---|---|
+| Per-prompt parquet shards: tokens + layer-32 residual + intermediate | Eagle5 v2 head training |
+| Top-100 logits per token | Quality benchmarks ground truth |
+| Per-site activation aggregates (mean/max per channel × 36 layers × 7 sites) | AWQ smoothing, per-channel W4A8 calibration, SmoothQuant |
 
-**Compute units (Pro tier ~100 units/month):**
-- H100: ~13 units/hr
-- A100: ~8 units/hr
-- L4: ~5 units/hr
+**Compute:** ~6-8 hr on H100, ~$8-12 in Colab Pro compute units (fits monthly Pro budget).
 
-A single Eagle5 corpus build burns 8-13 units — well within Pro's monthly budget.
-
-## Quick start
-
-1. **Open the notebook in Colab:**
-   - Go to https://colab.research.google.com
-   - `File → Upload notebook` → pick `colab/eagle5_v2_corpus.ipynb` from this repo
-   - OR drop the URL: `File → Open notebook → GitHub` and paste
-     `https://github.com/joshuahickscorp/dismantle/blob/main/colab/eagle5_v2_corpus.ipynb`
-
-2. **Enable GPU:** `Runtime → Change runtime type → T4 GPU` (or V100/A100 on Pro).
-
-3. **Run cells 1-4 in order.** Cell 4 is the corpus build (the long step).
-
-4. **Run Cell 5 (keepalive) in a SECOND browser tab.** Free Colab disconnects
-   idle tabs after ~90 min. The keepalive prints a heartbeat every 60 sec to
-   keep the tab "active." Stop it once Cell 4 finishes.
-
-5. **When Cell 4 completes**, Cell 6 verifies and prints download instructions.
-
-## Resume after disconnect
-
-If Colab kicks you mid-build, just re-run Cell 4. `build_corpus.py
---skip-existing` is on by default — it detects shards already on Drive and
-resumes from the next one. **Nothing is lost.**
-
-The corpus output dir is on Google Drive (`MyDrive/dismantle/v2_lite_corpus/`)
-not on Colab's ephemeral disk, so shards survive any session disconnect.
-
-## After corpus is built
-
-Download from Drive to laptop, then resume the chain locally:
-
-```bash
-# 1. On Drive web UI, right-click MyDrive/dismantle/v2_lite_corpus
-#    → Download (Drive zips it, ~1.5 GB compressed)
-# 2. Extract on laptop:
-cd ~/Downloads/dismantle/artifacts/calibration/
-unzip ~/Downloads/v2_lite_corpus-*.zip
-# Move shards into the expected dir
-mv v2_lite_corpus/*.parquet artifacts/calibration/v2_lite_corpus/
-
-# 3. Resume the overnight chain — corpus step skips (shards exist) so it
-#    goes straight to train (~1.5 hr on M3 Pro with MLX) + eval + bench.
-tools/bench/overnight_eagle5_2026_05_26.sh
+**Launch:** Open in Colab via `File → Open notebook → GitHub`:
+```
+https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen3b_mega_calibration.ipynb
 ```
 
-## Why not train on Colab too?
+Set GPU: `Runtime → Change runtime type → A100 GPU` (or H100 if you have Pro+).
 
-Eagle5 training uses MLX (Apple-only), which doesn't run on CUDA. Porting
-to PyTorch is possible but the head is tiny (~10 MB params), so MLX on M3
-Pro finishes in ~1.5 hr — faster than PyTorch on T4 would be once you factor
-in the corpus download wait. Train locally; only offload the GPU-heavy
-corpus generation to Colab.
+| GPU | Strategy | Batch | Wall |
+|---|---|---|---|
+| Blackwell 102 GB | fp16, batch=8 | 8 | ~3 hr |
+| A100 80 GB / H100 | fp16, batch=8 | 8 | ~4 hr |
+| A100 40 GB | fp16, batch=6 | 6 | ~5 hr |
+| L4 24 GB | 4-bit nf4, batch=4 | 4 | ~7 hr |
 
-## Troubleshooting
+## After calibration completes (laptop-side work)
 
-**"No CUDA GPU"** in Cell 1: You didn't enable GPU. `Runtime → Change runtime
-type → T4 GPU`.
+Once `qwen3b_corpus/` is on Drive (~3-5 GB), download to laptop and run locally:
 
-**`bitsandbytes` import error:** Restart runtime after Cell 2: `Runtime →
-Restart runtime`. The bnb install needs a fresh Python.
+```bash
+# 1. Train Qwen-3B Eagle5 head (MLX, ~2 hr)
+python3 tools/training/eagle5_train.py \
+  --corpus-dir artifacts/calibration/qwen3b_corpus \
+  --frozen     <qwen3b_frozen_baseline>.npz \
+  --ckpt-dir   checkpoints/eagle5_qwen3b \
+  --epochs 8 --batch-size 24 --lr 1e-3 \
+  --max-rows 4000 --max-row-tokens 128 \
+  --sparsity-head proxy --capture-layer 32
 
-**Cell 4 OOMs:** You got a smaller-VRAM GPU than expected. Drop `--batch-size`
-to 2 in the notebook (edit the `batch` variable). Or restart and hope for
-a better assignment.
+# 2. Apply AWQ algorithm to activation aggregates (~30 min, CPU)
+python3 tools/training/awq_calibrate.py \
+  --stats artifacts/calibration/qwen3b_corpus/per_site_activation_stats.npz \
+  --out   profiles/qwen3b_awq_smoothing.json
 
-**Idle disconnect during corpus:** Re-run Cell 4. Skip-existing picks up
-where it left off. To prevent in future: run Cell 5 in a second tab.
+# 3. Bench stacked configs
+DISMANTLE_QWEN_AWQ_SMOOTHING=profiles/qwen3b_awq_smoothing.json \
+DISMANTLE_QWEN_W4A8=1 \
+EAGLE5_HEAD=checkpoints/eagle5_qwen3b/head_final.safetensors \
+TRIALS=10 TOKENS=64 \
+  ./tools/bench/eagle5_paired_bench.sh
+```
 
-**Drive auth expired:** Re-run Cell 1.
+## Expected results stack
+
+| Config | Qwen-3B dec_tps | Comment |
+|---|---|---|
+| Today (predec default-on) | 26.6 | Current headline |
+| + AWQ → W4A8 default-on | ~36 | Quality unblocked |
+| + Eagle5 (Qwen-3B head, τ ≈ 3.5) | ~60-80 | Stacked win |
+
+Past llama.cpp's ~50 dec_tps on M3 Pro.
+
+## Historical context
+
+The V2-Lite notebook (`eagle5_v2_corpus.ipynb`) was the original proof-of-concept. It produced 89.20% K=4 acceptance on V2-Lite via `proxy + lr=1e-3` (grid search). That methodology proved the playbook works; this notebook applies it to the actual product target (Qwen-3B) with broader captures (AWQ + quality benchmarks bundled).
+
+The V2-Lite artifacts have been removed since the corpus + trained heads are already on local disk (`artifacts/calibration/v2_lite_corpus/` and `checkpoints/eagle5_v2_*/`).
+
+## Resume behavior
+
+`mega_calibrate.py --skip-existing`-style logic is built in: rerun the same cell after any disconnect and it resumes from the next un-built shard. Drive persistence is the safety net.
