@@ -68,3 +68,7 @@ bench_out/
 bench_results/coexist_*/
 bench_results/v0.3.*/
 /vendor/
+
+# Derived calibration artifacts (regenerable from corpus + GGUF + scripts)
+eagle4/qwen3b_frozen.npz
+profiles/qwen3b_awq_smoothing.json
