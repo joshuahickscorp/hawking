@@ -124,6 +124,7 @@ def evaluate(args) -> dict:
         torch.set_float32_matmul_precision("high")
 
     head = _load_head(args.ckpt, args.frozen, device)
+    lm_head_f = head._lm_head.float()
     windows = _load_eval_windows(
         args.corpus,
         args.depth,
@@ -154,7 +155,7 @@ def evaluate(args) -> dict:
         head_arg = token_logits[:, 0, :].float().argmax(dim=-1)
 
         baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(W, HIDDEN_DIM)
-        target_logits = torch.matmul(baseline.float(), head._lm_head.float())
+        target_logits = torch.matmul(baseline.float(), lm_head_f)
         target_arg = target_logits.argmax(dim=-1)
 
         still_accepting = accepted_len == d
