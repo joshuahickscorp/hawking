@@ -195,7 +195,16 @@ def _decode_tokens(value) -> np.ndarray:
 
 
 def _decode_compact_tensor(row, stem: str) -> np.ndarray | None:
-    """Decode colab/corpus_simple.py's int8 binary tensor columns."""
+    """Decode colab/corpus_simple.py's int8 binary tensor columns.
+
+    Returns fp16 (not fp32) to halve resident memory in `rows` and
+    `windows` lists. _build_batch upcasts to fp32 at batch construction
+    time so the model still trains in fp32 (peak only one batch worth
+    of fp32 is alive at once, ~24 MB — negligible).
+
+    At fp16, M3 Pro 18 GB can hold ~4000-5000 rows of corpus data
+    comfortably (was ~2000 in fp32).
+    """
     q = row.get(f"{stem}_q")
     scale = row.get(f"{stem}_scale")
     shape = row.get(f"{stem}_shape")
@@ -204,10 +213,13 @@ def _decode_compact_tensor(row, stem: str) -> np.ndarray | None:
     if not isinstance(q, (bytes, bytearray, memoryview)):
         return None
     shape_t = tuple(int(x) for x in shape)
+    # Decode in fp32 (because float(scale) is fp64 and we want the
+    # multiplication math at full precision), then DOWNCAST to fp16
+    # for in-memory residence.
     arr = np.frombuffer(q, dtype=np.int8).astype(np.float32)
     if arr.size != int(np.prod(shape_t)):
         return None
-    return arr.reshape(shape_t) * float(scale)
+    return (arr.reshape(shape_t) * float(scale)).astype(np.float16)
 
 
 def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1,
@@ -396,8 +408,10 @@ def _iter_batches(
     def _build_batch(batch_windows, epoch_id):
         prev = np.stack([w["prev"] for w in batch_windows])
         nxt = np.stack([w["next"] for w in batch_windows])
-        res = np.stack([w["residual"] for w in batch_windows])
-        inter = np.stack([w["intermediate"] for w in batch_windows])
+        # res/inter live as fp16 in rows/windows to halve resident memory.
+        # Upcast to fp32 here for MLX — only one batch is alive at once.
+        res = np.stack([w["residual"] for w in batch_windows]).astype(np.float32)
+        inter = np.stack([w["intermediate"] for w in batch_windows]).astype(np.float32)
         return {
             "prev": mx.array(prev),
             "next": mx.array(nxt),
