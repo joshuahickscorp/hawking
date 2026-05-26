@@ -56,7 +56,8 @@ step train_proxy \
     --corpus-dir "$CORPUS" \
     --frozen     eagle4/v2lite_frozen.npz \
     --ckpt-dir   checkpoints/eagle5_v2_proxy \
-    --epochs 3 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --epochs 5 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --max-rows 5000 --max-row-tokens 128 \
     --sparsity-head proxy --seed 0
 
 # (1B) Train variant B — sparsity-head=off (no aux loss)
@@ -65,7 +66,8 @@ step train_off \
     --corpus-dir "$CORPUS" \
     --frozen     eagle4/v2lite_frozen.npz \
     --ckpt-dir   checkpoints/eagle5_v2_off \
-    --epochs 3 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --epochs 5 --batch-size 24 --seq-len 16 --lr 3e-4 \
+    --max-rows 5000 --max-row-tokens 128 \
     --sparsity-head off --seed 0
 
 # (2A) τ-eval variant A
