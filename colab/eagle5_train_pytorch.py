@@ -538,7 +538,24 @@ def train(args) -> None:
             )
             calib = (calib_per * pos_mask_flat).sum() / N
 
-            total = ce + 0.1 * calib
+            residual_delta = torch.zeros((), device=device, dtype=torch.float32)
+            if args.residual_delta_loss_weight > 0.0 and S > 1:
+                pred_next = _rms_norm(draft_h[:, :-1, :], head._output_norm, RMS_EPS).float()
+                target_next = _rms_norm(
+                    residual[:, 1:, :], head._output_norm, RMS_EPS
+                ).float().detach()
+                delta_per = (pred_next - target_next).pow(2).mean(dim=-1)
+                delta_mask = pos_mask[:, 1:]
+                residual_delta = (
+                    (delta_per * delta_mask).sum()
+                    / delta_mask.sum().clamp(min=1.0)
+                )
+
+            total = (
+                ce
+                + args.calib_loss_weight * calib
+                + args.residual_delta_loss_weight * residual_delta
+            )
 
         if scaler is not None:
             scaler.scale(total).backward()
@@ -556,11 +573,15 @@ def train(args) -> None:
                 "loss": float(total.detach()),
                 "gate": float(head.residual_gate.detach()[0]),
                 "alpha": target_alpha,
+                "calib": float(calib.detach()),
+                "residual_delta": float(residual_delta.detach()),
                 "wall": time.time() - t0,
             }
             print(
                 f"step={step} epoch={row['epoch']} loss={row['loss']:.3f} "
-                f"gate={row['gate']:.3f} α={target_alpha:.2f} wall={row['wall']:.1f}s",
+                f"gate={row['gate']:.3f} α={target_alpha:.2f} "
+                f"calib={row['calib']:.3f} rd={row['residual_delta']:.4f} "
+                f"wall={row['wall']:.1f}s",
                 flush=True,
             )
             log.write(json.dumps(row) + "\n")
@@ -591,6 +612,12 @@ def main() -> int:
     p.add_argument("--capture-layer", type=int, default=32,
                    help="metadata only — actual capture is baked into the corpus")
     p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
+    p.add_argument("--calib-loss-weight", type=float, default=0.1,
+                   help="Weight for the confidence/calibration BCE head.")
+    p.add_argument("--residual-delta-loss-weight", type=float, default=0.0,
+                   help="Optional frontier objective: make draft_hidden track "
+                        "the next residual state, improving multi-step "
+                        "simulation readiness without adding runtime params.")
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="off",
                    help="off for Qwen-3B (dense); proxy is MoE-only and ignored here")
     p.add_argument("--seed", type=int, default=0)
