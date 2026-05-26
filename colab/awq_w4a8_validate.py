@@ -420,7 +420,13 @@ def _load_model(model_id: str, device: torch.device, load_4bit: bool):
         kwargs["quantization_config"] = bnb
         kwargs["device_map"] = {"": device.index if device.type == "cuda" else "cpu"}
     else:
-        kwargs["torch_dtype"] = torch.float16
+        # transformers 5.0 renamed `torch_dtype` to `dtype`. Probe and prefer
+        # the new name; fall back for older transformers builds that still
+        # require `torch_dtype`.
+        import transformers as _hf
+        _hf_major = int(str(_hf.__version__).split(".", 1)[0])
+        dtype_kw = "dtype" if _hf_major >= 5 else "torch_dtype"
+        kwargs[dtype_kw] = torch.float16
         kwargs["device_map"] = (
             {"": device.index} if device.type == "cuda" else None
         )
