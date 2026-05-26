@@ -666,7 +666,8 @@ def train(args) -> None:
             log.flush()
         if step % 500 == 0:
             save_ckpt(head, ckpt_dir / "latest.npz", step)
-            save_ckpt(head, ckpt_dir / f"step_{step:06d}.npz", step)
+            if args.save_step_checkpoints:
+                save_ckpt(head, ckpt_dir / f"step_{step:06d}.npz", step)
 
     save_ckpt(head, ckpt_dir / "latest.npz", step)
     if args.save_safetensors:
@@ -711,6 +712,8 @@ def main() -> int:
     p.add_argument("--device", default="cuda", choices=["cuda", "cpu"])
     p.add_argument("--save-safetensors", action="store_true",
                    help="also write head_final.safetensors for dismantle --eagle5-head")
+    p.add_argument("--save-step-checkpoints", action="store_true",
+                   help="also keep historical step_*.npz checkpoints every 500 steps")
     p.add_argument("--compile", action="store_true",
                    help="enable torch.compile (slow first step, faster steady-state)")
     p.add_argument("--no-dedup", action="store_true")
