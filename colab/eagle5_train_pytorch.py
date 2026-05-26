@@ -389,6 +389,11 @@ def _iter_batches(
                 "intermediate": r["intermediate"][off : off + seq_len],
             })
     print(f"[data] {len(windows)} windows × seq_len {seq_len}", flush=True)
+    if not windows:
+        raise SystemExit(
+            f"no training windows built; lower --seq-len {seq_len} or raise "
+            f"--max-row-tokens {max_row_tokens}"
+        )
 
     def _build_batch(batch_windows, epoch_id):
         prev = np.stack([w["prev"] for w in batch_windows])         # (B, S) i32
@@ -434,6 +439,10 @@ def train(args) -> None:
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     random.seed(args.seed)
+    if device == "cuda":
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+        torch.set_float32_matmul_precision("high")
 
     ckpt_dir = Path(args.ckpt_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
