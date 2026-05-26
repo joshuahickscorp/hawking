@@ -541,6 +541,402 @@ kernel void gemm_q4_k_m_v3_8r(
     if (simd_lane == 0u) y[base_row] = partial;
 }
 
+// ── quantize_f32_to_int8_per_block ───────────────────────────────────────────
+//
+// GPU-side quant for the W4A8 path. Reads a length-`n` f32 activation and
+// writes per-256-elem int8 + f32 scales using the same formula as the CPU
+// reference (`quantize_to_int8_per_block`): scale = max|x|/127 per block,
+// q[i] = round(x[i] / scale) clamped to [-127, 127].
+//
+// Grid:  (n, 1, 1)               (one thread per element)
+// TG:    (256, 1, 1)             (one threadgroup per block)
+// Shmem: 256 * sizeof(float)     (reduce buffer)
+//
+// Production wire-up replaces the CPU readback + quantize per layer with
+// one GPU dispatch fused into the same TCB as the rmsnorm/gemv pair.
+kernel void quantize_f32_to_int8_per_block(
+    device const float*       x        [[buffer(0)]],
+    device       signed char* x_int8   [[buffer(1)]],
+    device       float*       x_scales [[buffer(2)]],
+    threadgroup  float*       red      [[threadgroup(0)]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    uint block_off = tg_id * 256u;
+    float xv = x[block_off + tid];
+    red[tid] = fabs(xv);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint s = tg_size / 2u; s > 0u; s >>= 1u) {
+        if (tid < s) red[tid] = max(red[tid], red[tid + s]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_abs = red[0];
+    // Use metal::precise::divide for IEEE-correct round-to-nearest division,
+    // matching the CPU reference. Metal's default `/` is relaxed (fast-math)
+    // and produces 1-ULP deltas on some block max values.
+    float scale = (max_abs > 0.0f)
+                ? metal::precise::divide(max_abs, 127.0f)
+                : 1.0f;
+    if (tid == 0u) x_scales[tg_id] = scale;
+    // CPU computes `1.0 / scale` once then multiplies; replicate that
+    // (rather than `xv / scale`) so the rounding before `round(...)` is
+    // identical across CPU and GPU.
+    float inv = metal::precise::divide(1.0f, scale);
+    float q = round(xv * inv);
+    q = clamp(q, -127.0f, 127.0f);
+    x_int8[block_off + tid] = (signed char)q;
+}
+
+// ── quantize_f32_to_int8_per_channel ─────────────────────────────────────────
+//
+// GPU-side quant using STATIC pre-computed per-channel scales. Pairs with
+// `gemm_q4_k_a8_v3_8r_per_channel` for the per-channel W4A8 path. The scales
+// come from a calibration pass (memory/w4a8_lmhead_calibration_2026_05_26.md)
+// and are pinned at model load — they do NOT change per token.
+//
+// Per the CPU `quantize_to_int8_per_channel` reference:
+//   q[i] = round(x[i] / scales[i]) clamped to [-127, 127]
+//
+// Grid:  (n, 1, 1)   one thread per element
+// TG:    (256, 1, 1) flat, no shmem needed (no reduction)
+//
+// Unlike per-block quant, no scale-output buffer — scales are an INPUT
+// (read-only, pre-computed). Output is just int8 bytes.
+kernel void quantize_f32_to_int8_per_channel(
+    device const float*       x        [[buffer(0)]],
+    device const float*       scales   [[buffer(1)]],  // PER-CHANNEL, length n
+    device       signed char* x_int8   [[buffer(2)]],
+    constant     uint&        n        [[buffer(3)]],
+    uint i [[thread_position_in_grid]])
+{
+    if (i >= n) return;
+    float s = scales[i];
+    if (s > 1e-8f) {
+        float inv = metal::precise::divide(1.0f, s);
+        float q = round(x[i] * inv);
+        q = clamp(q, -127.0f, 127.0f);
+        x_int8[i] = (signed char)q;
+    } else {
+        // Zero-magnitude calibration channel (never active) → emit zero.
+        x_int8[i] = 0;
+    }
+}
+
+// ── W4A8 prototype: gemm_q4_k_a8_v3_8r ───────────────────────────────────────
+//
+// Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but with
+// activations packed as per-block (256-element) int8 + f32 scale instead of
+// raw f32. Bandwidth on the activation buffer drops 4× (8 bytes/block/thread
+// vs 32 bytes/block/thread), trading a small per-block scale lookup.
+//
+// Activation layout per row:
+//   x_int8 : (cols,)               int8   — quantized values
+//   x_scales : (cols / 256,)       f32    — per-block scales: real = x_int8 * scale
+//
+// The activation is per-token (1D) for decode; for batched callers each
+// batch element has its own (x_int8, x_scales) pair laid out contiguously.
+//
+// Math: per block, the dot product becomes:
+//   sum_k weight[k] * (act_int8[k] * scale_block) = scale_block * sum_k(weight[k] * act_int8[k])
+//
+// We factor scale_block out and apply it once per block. Weight stays Q4_K,
+// dequanted per element as in v3_8r. No simd_mma here — that's the prefill
+// path (separate v3w_a8 kernel). This kernel exists to measure decode
+// activation-BW savings in isolation.
+
+kernel void gemm_q4_k_a8_v3_8r(
+    device const uchar*       w_q4     [[buffer(0)]],
+    device const signed char* x_int8   [[buffer(1)]],
+    device const float*       x_scales [[buffer(2)]],
+    device       float*       y        [[buffer(3)]],
+    constant     uint&        rows     [[buffer(4)]],
+    constant     uint&        cols     [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub] & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        // Per-block activation scale + int8 lane loads.
+        float scale_b = x_scales[b];
+        signed char xq[8];
+        for (uint k = 0; k < 8u; ++k) {
+            xq[k] = x_int8[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+        }
+
+        float block_acc = 0.0f;
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            block_acc += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * (float)xq[k0];
+            block_acc += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * (float)xq[k1];
+        }
+        partial += block_acc * scale_b;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
+// ── W4A8 per-channel — gemm_q4_k_a8_v3_8r_per_channel ───────────────────────
+//
+// Per-channel int8 activation × Q4_K weight GEMV. Same v3_8r geometry as
+// the per-block version (8 rows/TG, 32 threads/row, 256 threads/TG)
+// but reads ONE scale per ACTIVATION CHANNEL instead of one scale per
+// 256-element block.
+//
+// Why per-channel: the per-block scheme suffers from super-outlier
+// channels (e.g., on Qwen-3B, ch[1979] consistently has |x|=150 while
+// neighbors are ~3-7). One outlier in a block dominates the block's
+// scale = max/127, crushing the dynamic range for the other 255
+// channels — see memory/w4a8_activation_distribution_2026_05_26.md.
+//
+// Per-channel scales (one f32 per hidden dim, total 8 KB at hidden=2048
+// vs 32 bytes for per-block) give each channel its own scale, so the
+// outlier's 1.18 scale doesn't punish the block-neighbors' 0.04 scales.
+// Reconstruction RMSE drops 3.83× globally, 4.24× on outlier blocks
+// (memory/w4a8_quality_redesign_2026_05_26.md UPDATE 2026-05-26).
+//
+// Buffers:
+//   buffer(0): w_q4       — Q4_K weight bytes (rows * blocks * 144)
+//   buffer(1): x_int8     — int8 activations (cols bytes)
+//   buffer(2): x_scales   — f32 PER-CHANNEL scales (cols floats)
+//   buffer(3): y          — f32 output (rows floats)
+//   buffer(4): rows       — u32
+//   buffer(5): cols       — u32
+//
+// The activation buffer layout matches per-block (x_int8 is cols
+// length); only the scales buffer changes meaning: cols entries instead
+// of cols/256.
+
+kernel void gemm_q4_k_a8_v3_8r_per_channel(
+    device const uchar*       w_q4     [[buffer(0)]],
+    device const signed char* x_int8   [[buffer(1)]],
+    device const float*       x_scales [[buffer(2)]],
+    device       float*       y        [[buffer(3)]],
+    constant     uint&        rows     [[buffer(4)]],
+    constant     uint&        cols     [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        uchar sb[8], mb[8];
+        for (uint sub = 0; sub < 4u; ++sub) {
+            sb[sub] = w_q4[bo + 4u + sub] & 0x3Fu;
+            mb[sub] = w_q4[bo + 8u + sub] & 0x3Fu;
+        }
+        for (uint j = 0; j < 4u; ++j) {
+            sb[4u + j] = (w_q4[bo + 12u + j] & 0x0Fu)
+                       | ((w_q4[bo + 4u + j]  >> 6u) << 4u);
+            mb[4u + j] = (w_q4[bo + 12u + j]  >> 4u)
+                       | ((w_q4[bo + 8u + j]   >> 6u) << 4u);
+        }
+
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = d    * (float)sb[sub];
+            dm[sub] = dmin * (float)mb[sub];
+        }
+
+        // Per-CHANNEL activation recovery: each element has its own scale.
+        // Recover the f32 activation inline (x_rec[k] = int8 * channel_scale).
+        // Reads 8 int8 bytes + 8 f32 scales from DRAM per thread per block;
+        // L1 caches the scale array (8 KB at hidden=2048, fits easily).
+        float x_rec[8];
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = (uint)b * 256u + k * 32u + simd_lane;
+            x_rec[k] = (float)x_int8[elem] * x_scales[elem];
+        }
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * x_rec[k0];
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * x_rec[k1];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
+// ── gemm_q4k_fast_v1 ─────────────────────────────────────────────────────────
+// Same v3_8r geometry (8 rows/TG, 32 threads/row, 256 threads/TG) but reads
+// from the Q4K_FAST sub-block-contiguous layout instead of GGUF Q4_K:
+//
+//   per super-block (160 bytes total, 256 elements):
+//     for sub-block k in 0..8:
+//       bytes [k*20 .. k*20+2]   sub_scale (fp16)  = d    * sb_idx[k]
+//       bytes [k*20+2 .. k*20+4] sub_min   (fp16)  = dmin * mb_idx[k]
+//       bytes [k*20+4 .. k*20+20] 16 bytes (32 nibbles, two 4-bit values/byte)
+//
+// Decode loop reads the fp16 sub_scale / sub_min once, then iterates the 16
+// nibble bytes paired across pi in {0..4}, exactly mirroring v3_8r's pi
+// loop. The per-thread element layout inside a sub-block matches v3_8r:
+// thread `simd_lane` in [0..32) reads nibble byte `pi*32+simd_lane` of the
+// 32-byte sub-block-pair... but Q4K_FAST groups 16 nibble bytes per sub-
+// block (not per super-block half), so the indexing simplifies to:
+//
+//   for k in 0..8:                      // sub-block
+//     for pi in 0..2:                   // 2 nibble bytes per (k, simd_lane/16 pair)
+//
+// Wait — v3_8r uses pi in [0..4) with each pi covering 32 nibble bytes that
+// span TWO sub-blocks (k0 = pi*2, k1 = pi*2+1). Q4K_FAST stores all 16
+// nibble bytes per sub-block contiguously, so the natural loop is per
+// sub-block. Each sub-block has 32 4-bit values = 16 nibble bytes; thread
+// `simd_lane` (0..32) reads `nibbles[simd_lane / 2]` low or high nibble
+// based on `simd_lane & 1`. This is a re-indexing that produces the SAME
+// per-element partial sums as v3_8r — verified by the parity test.
+
+kernel void gemm_q4k_fast_v1(
+    device const uchar* w_fast [[buffer(0)]],
+    device const float* x      [[buffer(1)]],
+    device       float* y      [[buffer(2)]],
+    constant     uint&  rows   [[buffer(3)]],
+    constant     uint&  cols   [[buffer(4)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 160ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 160ul;
+
+        // Match v3_8r's pi-paired iteration so each thread's per-element
+        // accumulation order is bit-identical to the source kernel:
+        //   pi in [0..4)
+        //     k0 = pi*2,  k1 = pi*2+1
+        //     qb = byte at bo + 16 + pi*32 + simd_lane   (v3_8r layout)
+        //
+        // In Q4K_FAST, that same byte lives at:
+        //   bo + (k0)*20 + 4 + (simd_lane half within k0/k1 layout)
+        //
+        // v3_8r's pi-byte simd_lane in [0..32) splits into:
+        //   lane in [0..16)  → low half: byte = sub_block k0 nibble lane
+        //   lane in [16..32) → high half: byte = sub_block k1 nibble (lane-16)
+        // Q4_K packs k0's 16 nibble bytes followed by k1's 16 nibble bytes
+        // contiguously inside the (pi*32) span at bo+16+pi*32. Q4K_FAST
+        // separates those into bo+k0*20+4 (16 bytes) and bo+k1*20+4 (16
+        // bytes). To preserve v3_8r ordering, each lane reads the byte
+        // corresponding to its half:
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u;
+            uint k1 = k0 + 1u;
+            ushort s0_bits = (ushort)w_fast[bo + k0 * 20ul + 0ul]
+                           | ((ushort)w_fast[bo + k0 * 20ul + 1ul] << 8);
+            ushort m0_bits = (ushort)w_fast[bo + k0 * 20ul + 2ul]
+                           | ((ushort)w_fast[bo + k0 * 20ul + 3ul] << 8);
+            ushort s1_bits = (ushort)w_fast[bo + k1 * 20ul + 0ul]
+                           | ((ushort)w_fast[bo + k1 * 20ul + 1ul] << 8);
+            ushort m1_bits = (ushort)w_fast[bo + k1 * 20ul + 2ul]
+                           | ((ushort)w_fast[bo + k1 * 20ul + 3ul] << 8);
+            float ds0 = (float)as_type<half>(s0_bits);
+            float dm0 = (float)as_type<half>(m0_bits);
+            float ds1 = (float)as_type<half>(s1_bits);
+            float dm1 = (float)as_type<half>(m1_bits);
+
+            float xl0 = x[(uint64_t)b * 256ul + (uint64_t)(k0 * 32u + simd_lane)];
+            float xl1 = x[(uint64_t)b * 256ul + (uint64_t)(k1 * 32u + simd_lane)];
+
+            // v3_8r reads ONE byte per pi (at bo+16+pi*32+simd_lane) and
+            // uses its low nibble for k0, high nibble for k1. Q4K_FAST
+            // splits k0/k1 into separate sub-block payloads, but the byte
+            // positions within each sub-block use the SAME simd_lane
+            // index — meaning lane reads byte simd_lane of k0's 16-byte
+            // nibble run (covers TWO 4-bit values: low for k0 element
+            // simd_lane*2, high for k0 element simd_lane*2+1).
+            //
+            // To stay bit-identical to v3_8r we need the SAME nibble
+            // selection: v3_8r used `qb & 0x0F` for the k0 element at
+            // index simd_lane and `qb >> 4` for the k1 element at the
+            // SAME index simd_lane (both within their respective
+            // sub-blocks). The byte that holds the k0 element at
+            // sub-block-internal index `simd_lane` (with simd_lane in
+            // [0..32)) is byte `simd_lane / 2` in the 16-byte payload;
+            // low nibble if simd_lane is even, high nibble if odd.
+            //
+            // Wait — v3_8r's `qb & 0x0F` is the k0 element at sub-block
+            // index `simd_lane`. The activation lookup uses
+            // `xl[k0] = x[b*256 + k0*32 + simd_lane]` (simd_lane in
+            // [0..32)), so per-thread there are exactly 32 elements per
+            // sub-block (one per lane). Each nibble byte holds 2 elements
+            // (low + high) of DIFFERENT sub-blocks (k0 low, k1 high).
+            //
+            // In Q4K_FAST each sub-block has its OWN 16-byte nibble
+            // payload, holding 32 4-bit values. Thread `simd_lane` (one
+            // element per sub-block) reads:
+            //   byte_idx = simd_lane / 2u
+            //   nib_sel  = simd_lane & 1u   (0=low nibble, 1=high nibble)
+            uint byte_idx = simd_lane >> 1u;
+            uint nib_sel  = simd_lane & 1u;
+            uchar nb0 = w_fast[bo + k0 * 20ul + 4ul + (uint64_t)byte_idx];
+            uchar nb1 = w_fast[bo + k1 * 20ul + 4ul + (uint64_t)byte_idx];
+            uint q0 = (nib_sel == 0u) ? ((uint)nb0 & 0x0Fu) : (((uint)nb0 >> 4u) & 0x0Fu);
+            uint q1 = (nib_sel == 0u) ? ((uint)nb1 & 0x0Fu) : (((uint)nb1 >> 4u) & 0x0Fu);
+
+            partial += (ds0 * (float)q0 - dm0) * xl0;
+            partial += (ds1 * (float)q1 - dm1) * xl1;
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_v3_dual ──────────────────────────────────────────────────────
 // Phase B Approach 1 Iter 2: 2 rows per simdgroup (N_R0=2), 4 simdgroups per TG
 // (128 threads) — matches llama.cpp's N_R0_Q4_K=2, FC_mul_mv_nsg=4 geometry.
@@ -861,6 +1257,311 @@ kernel void dequant_q6_k_f16(
     dst[(uint64_t)gid * 256ul + (uint64_t)tid] = (half)val;
 }
 
+// P3 — Batched Q4_K_M GEMM: one weight matrix W applied to B activation
+// vectors in parallel. Compared to running B back-to-back single-matrix
+// GEMVs (each of which re-reads W from DRAM), this reads W *once* per
+// row and broadcasts to B output dot products in registers.
+//
+// Bandwidth amortization: a single-token forward through Qwen-3B-Q4_K_M
+// reads ~1.6 GB of weights. At B=4 prefill, the same weight read produces
+// 4 token outputs — effective compute per byte ~4×. Translates to a
+// near-linear prefill speedup until the kernel becomes compute-bound or
+// the activation reads dominate.
+//
+// Geometry matches gemm_q4_k_m_fused_v2 (8 rows per TG, 32 threads per row,
+// TG=256) so callers can swap dispatchers without re-thinking grid shape.
+// `args.batch` carries B; supported values 1..=4 (uses float4 partial
+// accumulator). B > 4 callers should issue multiple dispatches.
+//
+// Memory layout:
+//   x_batch : (B, cols)    f32, row-major (each row is one activation vec)
+//   y_batch : (B, rows)    f32, row-major
+//
+// Activation x is read B times per weight-block-decode iteration, which
+// the GPU L1 cache absorbs cleanly for small B (the same x_batch[b, off]
+// addresses are re-read across rows, so they live in cache).
+
+struct ArgbufBatchedRowsCols {
+    uint rows;
+    uint cols;
+    uint batch;
+};
+
+kernel void gemm_q4_k_m_batched_v2(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint B = min(args.batch, 4u);
+
+    float4 partial = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t bo = row_byte_off + (uint64_t)blk * 144ul;
+
+        ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+        ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+        float d    = (float)as_type<half>(d_bits);
+        float dmin = (float)as_type<half>(dmin_bits);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            uint sub  = elem >> 5;
+            uchar s_byte, m_byte;
+            if (sub < 4u) {
+                s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+            } else {
+                uint j = sub - 4u;
+                s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                       | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                       | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+            }
+            uint pair  = sub >> 1;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = elem & 31u;
+            uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+            float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+            uint64_t x_off = (uint64_t)blk * 256ul + (uint64_t)elem;
+
+            if (B >= 1u) partial.x += w_val * x_batch[0u * args.cols + x_off];
+            if (B >= 2u) partial.y += w_val * x_batch[1u * args.cols + x_off];
+            if (B >= 3u) partial.z += w_val * x_batch[2u * args.cols + x_off];
+            if (B >= 4u) partial.w += w_val * x_batch[3u * args.cols + x_off];
+        }
+    }
+
+    partial.x = simd_sum(partial.x);
+    if (B >= 2u) partial.y = simd_sum(partial.y);
+    if (B >= 3u) partial.z = simd_sum(partial.z);
+    if (B >= 4u) partial.w = simd_sum(partial.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial.w;
+    }
+}
+
+// P3 v3 — Batched Q4_K_M GEMM with cooperative shared-memory activation
+// staging. v2 reads each thread's B=4 activations directly from DRAM at
+// stride `cols` apart — on cols-large shapes (ffn_down 2048×11008) those
+// addresses miss the L1 line and the kernel collapses to no better than
+// B sequential GEMVs (microbench: batched 1551us ≈ sequential 1574us).
+//
+// v3 fix: all 256 threads in the TG cooperatively load the current
+// cols-block-of-256 activation slice for all B lanes into threadgroup
+// memory (4 KB / block at B=4). The 32 threads/row compute loop then
+// reads activations from shmem (single-cycle L1) instead of DRAM.
+//
+// Each TG processes 8 rows × 32 threads/row; activation tile is shared
+// across all rows in the TG so a single shmem load serves 8 row dot
+// products × 4 batch lanes.
+//
+// Geometry identical to v2 (TG=256, 8 rows/TG). Same dispatch args.
+// Supported B: 1..=4.
+
+kernel void gemm_q4_k_m_batched_v3(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint B = min(args.batch, 4u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        // ── Cooperative load of the activation tile for this block ────
+        // x_tile layout: [B][256] f32 — batch lane outer, position inner
+        // so that consecutive threads in a simdgroup hit contiguous
+        // shmem slots (no bank conflicts).
+        uint x_off_base = blk * 256u;
+        // 256 threads load 256 elements per batch lane.
+        for (uint b = 0; b < B; ++b) {
+            x_tile[b * 256u + tid] = x_batch[b * args.cols + x_off_base + tid];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off + (uint64_t)blk * 144ul;
+
+            ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+            ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+            float d    = (float)as_type<half>(d_bits);
+            float dmin = (float)as_type<half>(dmin_bits);
+
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem = k * 32u + simd_lane;
+                uint sub  = elem >> 5;
+                uchar s_byte, m_byte;
+                if (sub < 4u) {
+                    s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                    m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+                } else {
+                    uint j = sub - 4u;
+                    s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                           | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                    m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                           | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+                }
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+                float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+                // All B activations are in shmem at x_tile[b * 256 + elem].
+                if (B >= 1u) partial.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial.w += w_val * x_tile[3u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (!row_valid) return;
+
+    partial.x = simd_sum(partial.x);
+    if (B >= 2u) partial.y = simd_sum(partial.y);
+    if (B >= 3u) partial.z = simd_sum(partial.z);
+    if (B >= 4u) partial.w = simd_sum(partial.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial.w;
+    }
+}
+
+// P3 v3w — Batched Q4_K_M GEMM with shmem activation tile, widened to
+// B in 1..=8. Same shmem-staged approach as v3; partial accumulator
+// is two float4s. Shmem tile size is B*256 floats (8 KB at B=8, fits
+// well under the 32 KB threadgroup memory limit).
+//
+// Predicates on B at each broadcast site so B<8 callers still pay
+// only their share of the multiplies; the rest of the GEMM dataflow
+// (weight decode, shmem load) is unchanged.
+
+kernel void gemm_q4_k_m_batched_v3w(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint B = min(args.batch, 8u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial_lo = float4(0.0f);
+    float4 partial_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint x_off_base = blk * 256u;
+        // Cooperative shmem load — each of 256 threads loads B floats.
+        for (uint b = 0; b < B; ++b) {
+            x_tile[b * 256u + tid] = x_batch[b * args.cols + x_off_base + tid];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off + (uint64_t)blk * 144ul;
+
+            ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+            ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+            float d    = (float)as_type<half>(d_bits);
+            float dmin = (float)as_type<half>(dmin_bits);
+
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem = k * 32u + simd_lane;
+                uint sub  = elem >> 5;
+                uchar s_byte, m_byte;
+                if (sub < 4u) {
+                    s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                    m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+                } else {
+                    uint j = sub - 4u;
+                    s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                           | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                    m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                           | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+                }
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+
+                float w_val = d * (float)s_byte * (float)nib - dmin * (float)m_byte;
+                if (B >= 1u) partial_lo.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial_lo.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial_lo.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial_lo.w += w_val * x_tile[3u * 256u + elem];
+                if (B >= 5u) partial_hi.x += w_val * x_tile[4u * 256u + elem];
+                if (B >= 6u) partial_hi.y += w_val * x_tile[5u * 256u + elem];
+                if (B >= 7u) partial_hi.z += w_val * x_tile[6u * 256u + elem];
+                if (B >= 8u) partial_hi.w += w_val * x_tile[7u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (!row_valid) return;
+
+    partial_lo.x = simd_sum(partial_lo.x);
+    if (B >= 2u) partial_lo.y = simd_sum(partial_lo.y);
+    if (B >= 3u) partial_lo.z = simd_sum(partial_lo.z);
+    if (B >= 4u) partial_lo.w = simd_sum(partial_lo.w);
+    if (B >= 5u) partial_hi.x = simd_sum(partial_hi.x);
+    if (B >= 6u) partial_hi.y = simd_sum(partial_hi.y);
+    if (B >= 7u) partial_hi.z = simd_sum(partial_hi.z);
+    if (B >= 8u) partial_hi.w = simd_sum(partial_hi.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + base_row] = partial_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + base_row] = partial_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + base_row] = partial_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + base_row] = partial_hi.w;
+    }
+}
+
 // P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
 // moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
 // Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one
@@ -930,4 +1631,71 @@ kernel void gemm_q6_k_fused_v2(
     if (simd_lane == 0u) {
         y[base_row] = partial;
     }
+}
+
+// ── gemm_q4_k_v4_predec ──────────────────────────────────────────────────────
+// Q4_K decode GEMV with pre-decoded sub-block scales.
+//
+// Same v3_8r geometry (256 threads/TG, 8 simdgroups, 8 rows/TG) and identical
+// math, but the 8 (ds, dm) f32 pairs per block are read from a parallel
+// pre-decoded buffer instead of being decoded inline from the packed 6-bit
+// indices each call. The block d/dmin fp16 header and the 4-bit quants are
+// still read from the same Q4_K bytes; only the per-sub-block-scale decode
+// (which is invariant across forward passes) is hoisted to load time.
+//
+// Pre-decoded scale layout (matches `predecode_q4_k_scale_table` in Rust):
+//   `scales[block_idx * 16 + sub*2 + 0]` = ds[sub] = (f32)d    * (f32)sb[sub]
+//   `scales[block_idx * 16 + sub*2 + 1]` = dm[sub] = (f32)dmin * (f32)mb[sub]
+// where `sb[sub]`, `mb[sub]` are the 6-bit sub-block scale/min indices.
+//
+// Bit-identical to gemm_q4_k_m_v3_8r when the host pre-decoder uses the same
+// fp16->f32 widening for d/dmin and the same uchar->float widening for the
+// 6-bit indices, then multiplies in f32.
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+
+kernel void gemm_q4_k_v4_predec(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        // ds[k] at scales[so + k*2 + 0], dm[k] at scales[so + k*2 + 1].
+        float ds[8], dm[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds[sub] = scales[so + (uint64_t)(sub * 2u)];
+            dm[sub] = scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uchar qb = w_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * xl[k0];
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * xl[k1];
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
 }

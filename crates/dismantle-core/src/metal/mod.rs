@@ -12,9 +12,21 @@ pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
+/// Megakernel POC (2026-05-25, build/megakernel). Skeleton only; see
+/// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`.
+pub const SHADER_MEGAKERNEL: &str =
+    include_str!("../../shaders/megakernel_qwen3b.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than five compile units; lets common helpers be shared.
+///
+/// SHADER_MEGAKERNEL re-included after the day-3 argbuf refactor
+/// consolidated the per-layer weight pointers into two
+/// `MkLayerArgs` argbufs, dropping the kernel's binding count from
+/// 32 to 8 (well within Metal's 30-slot limit). The kernel body is
+/// still a pass-through (stages A..L TODO); the dispatcher returns
+/// `Err`. See `memory/build_megakernel_day2_2026_05_25.md`
+/// § "Day-3 entry points".
 pub fn all_shader_sources() -> String {
     [
         SHADER_COMMON,
@@ -24,6 +36,7 @@ pub fn all_shader_sources() -> String {
         SHADER_SAMPLE,
         SHADER_MATMUL,
         SHADER_MHA,
+        SHADER_MEGAKERNEL,
     ]
     .join("\n\n")
 }
@@ -88,8 +101,8 @@ pub fn current_layer() -> Option<u32> {
 mod imp {
     use super::*;
     use metal::{
-        Buffer, CommandBufferRef, CommandQueue, ComputePipelineState, Device, Library,
-        MTLResourceOptions, MTLSize,
+        Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineState,
+        Device, Library, MTLDispatchType, MTLResourceOptions, MTLSize,
     };
     use metal::objc::{msg_send, sel, sel_impl};
 
@@ -438,6 +451,7 @@ mod imp {
             "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
             "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
             "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
+            "gemm_q6_k_fused_v2" => "gemm_q6_k_fused_v2",
             "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
             "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
@@ -454,6 +468,10 @@ mod imp {
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
             // Session F (sketch) -- fused add_inplace + rmsnorm_f32
             "add_rmsnorm_fused" => "add_rmsnorm_fused",
+            // W4A8 production wire-up (2026-05-24)
+            "quantize_f32_to_int8_per_block" => "quantize_f32_to_int8_per_block",
+            "gemm_q4_k_a8_v3_8r" => "gemm_q4_k_a8_v3_8r",
+            "add_rmsnorm_fused_q8" => "add_rmsnorm_fused_q8",
             _ => "other",
         }
     }
@@ -760,6 +778,14 @@ mod imp {
         /// v2.2.0-L7: live in `ProdCbGpu` mode. `None` in other modes or
         /// when the device doesn't support the timestamp counter set.
         prod_cb_tracer: Option<ProdCbTracer>,
+        /// P0.1 spike: active concurrent encoder. When `Some`, dispatches
+        /// route into this shared encoder instead of creating per-dispatch
+        /// encoders. Only set under `Off` / `CpuEncode` trace modes by
+        /// `begin_concurrent_group`; cleared by `end_concurrent_group`.
+        /// Caller is responsible for the independence claim of the group's
+        /// dispatches (no overlapping read-write or write-write buffer
+        /// ranges between any two dispatches in the group).
+        concurrent_encoder: Option<ComputeCommandEncoder>,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -777,7 +803,60 @@ mod imp {
                 mode,
                 tcb_samples: Vec::new(),
                 prod_cb_tracer,
+                concurrent_encoder: None,
             }
+        }
+
+        /// P0.1 spike (Q/K/V concurrent-encoder).
+        ///
+        /// Open a single `MTLDispatchTypeConcurrent` compute encoder. While
+        /// the group is active, subsequent `dispatch_threads` calls record
+        /// into this shared encoder (no per-dispatch encoder creation, no
+        /// `end_encoding` between them) — the driver may then overlap
+        /// SIMD-group-independent dispatches on the GPU.
+        ///
+        /// **Caller-asserted independence**: the caller MUST guarantee that
+        /// no two dispatches in the group share an overlapping read-write
+        /// or write-write buffer range. Violation produces undefined
+        /// results. The general declarative-range-tracker API is a
+        /// follow-on (P0.5); this is a hard-coded sibling for known-
+        /// independent triples (e.g., the Q/K/V projection triple that
+        /// reads `x_norm_buf` and writes disjoint outputs).
+        ///
+        /// Under `SplitCbGpu` / `ProdCbGpu` trace modes this method is a
+        /// no-op — those modes require per-dispatch encoders for per-
+        /// kernel timing, so dispatches in the "group" continue with the
+        /// existing per-dispatch encoder pattern. Production paired-bench
+        /// runs in `Off` mode, so the spike's ship decision is unaffected.
+        ///
+        /// Calling twice without an intervening `end_concurrent_group` is
+        /// an error.
+        pub fn begin_concurrent_group(&mut self) -> Result<()> {
+            if self.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "begin_concurrent_group called while a group is already active".into(),
+                ));
+            }
+            if !matches!(self.mode, TcbTraceMode::Off | TcbTraceMode::CpuEncode) {
+                return Ok(());
+            }
+            let cmd = self
+                .cmd
+                .as_ref()
+                .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
+            let enc =
+                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
+            enc.set_label("concurrent_group");
+            self.concurrent_encoder = Some(enc.to_owned());
+            Ok(())
+        }
+
+        /// Close the active concurrent group. No-op if none is active.
+        pub fn end_concurrent_group(&mut self) -> Result<()> {
+            if let Some(enc) = self.concurrent_encoder.take() {
+                enc.end_encoding();
+            }
+            Ok(())
         }
 
         /// Encode one kernel dispatch.
@@ -799,6 +878,37 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            // P0.1: if a concurrent group is active, record into its shared
+            // encoder. Only set under Off/CpuEncode modes by
+            // `begin_concurrent_group`, so the Split/Prod branches below
+            // remain reachable for normal (non-grouped) dispatches.
+            if self.concurrent_encoder.is_some() {
+                let t0 = if self.mode == TcbTraceMode::CpuEncode {
+                    Some(Instant::now())
+                } else {
+                    None
+                };
+                let pipe = self.ctx.pipeline(fn_name)?;
+                let enc = self
+                    .concurrent_encoder
+                    .as_ref()
+                    .expect("checked is_some above");
+                enc.set_compute_pipeline_state(&pipe);
+                encode(enc);
+                enc.dispatch_threads(
+                    MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
+                    MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
+                );
+                if let Some(t0) = t0 {
+                    self.tcb_samples.push(super::DispatchSample {
+                        kernel_name: static_kernel_name(fn_name),
+                        wall_us: t0.elapsed().as_micros() as u64,
+                        layer_hint: super::current_layer(),
+                        gpu_us: None,
+                    });
+                }
+                return Ok(());
+            }
             if self.mode == TcbTraceMode::SplitCbGpu {
                 return self.dispatch_threads_split_cb(fn_name, grid, tg, encode);
             }
@@ -999,6 +1109,11 @@ mod imp {
         /// it for symmetry and flush the per-dispatch samples without adding
         /// a tcb_commit record (it would be meaningless in split mode).
         fn flush_and_commit(&mut self, cmd: metal::CommandBuffer) {
+            // Close any still-open concurrent group before committing the
+            // CB — Metal requires all encoders be ended before commit.
+            if let Some(enc) = self.concurrent_encoder.take() {
+                enc.end_encoding();
+            }
             let t0 = if self.mode == TcbTraceMode::CpuEncode {
                 Some(Instant::now())
             } else {
@@ -1135,3 +1250,15 @@ pub use decode_arena::DecodeArena;
 
 pub mod dense_decode_arena;
 pub use dense_decode_arena::DenseDecodeArena;
+
+// ICB wrapper — internal infrastructure for the production-scale measurement
+// in `tests/icb_production_scale.rs`. Not re-exported at this level on purpose:
+// the next attended session decides whether to wire it into forward paths.
+#[cfg(target_os = "macos")]
+pub mod icb;
+
+// Weight-heap residency POC — see `memory/build_heap_residency_2026_05_25.md`.
+// `pub(crate)` so `model::qwen_dense::load_heap_resident` can reach it without
+// exposing the heap struct on the crate's public surface.
+#[cfg(target_os = "macos")]
+pub(crate) mod heap;

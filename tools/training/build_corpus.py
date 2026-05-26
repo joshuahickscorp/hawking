@@ -65,6 +65,9 @@ class Args:
     capture: tuple[str, ...]
     batch_size: int
     skip_rows: int
+    load_4bit: bool
+    cuda_max_vram_gb: float | None
+    no_trust_remote_code: bool
 
 
 def parse_args() -> Args:
@@ -81,6 +84,24 @@ def parse_args() -> Args:
     p.add_argument("--device", default="mps",
                    choices=["mps", "cpu", "cuda"],
                    help="MPS is the default on M3 Pro; CUDA for cross-machine runs")
+    p.add_argument("--load-4bit", action="store_true", default=False,
+                   help="quantize model to 4-bit at load via bitsandbytes "
+                        "nf4 (requires CUDA + bitsandbytes). Brings DeepSeek-"
+                        "V2-Lite from 32 GB fp16 → 8 GB nf4 so it fits on a "
+                        "T4 (16 GB) without offload. CUDA-only.")
+    p.add_argument("--cuda-max-vram-gb", type=float, default=None,
+                   help="cap CUDA memory at this many GiB; spillover goes to "
+                        "CPU via accelerate. Use when T4 (14.5 GB usable) is "
+                        "almost-but-not-quite full after model load; pass "
+                        "12-13 to leave headroom for activations.")
+    p.add_argument("--no-trust-remote-code", action="store_true", default=False,
+                   help="disable trust_remote_code in from_pretrained. Forces "
+                        "transformers to use its NATIVE DeepSeek-V2 loader "
+                        "instead of the remote modeling_deepseek.py on HF "
+                        "Hub. The remote file expects per-expert split "
+                        "tensors but the checkpoint uses a fused per-block "
+                        "format, leaving experts UNINITIALIZED. Required for "
+                        "correct V2-Lite load on transformers v4.45+.")
     p.add_argument("--dtype", default="float16",
                    choices=["float16", "bfloat16", "float32"])
     p.add_argument("--quantize-intermediates", default="int8",
@@ -123,6 +144,9 @@ def parse_args() -> Args:
         capture=capture,
         batch_size=a.batch_size,
         skip_rows=a.skip_rows,
+        load_4bit=a.load_4bit,
+        cuda_max_vram_gb=a.cuda_max_vram_gb,
+        no_trust_remote_code=a.no_trust_remote_code,
     )
 
 
@@ -223,7 +247,11 @@ def capture_one_sequence(
         for li, layer in enumerate(getattr(model, "model", model).layers):
             mlp = getattr(layer, "mlp", None)
             if mlp is not None and hasattr(mlp, "experts"):
-                hooks.append(mlp.experts[0].register_forward_hook(_make_hook(li)))
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
 
     captured_gates: list[dict] = []
     want_routing = ("routing_logits" in cap_set or "expert_idx" in cap_set)
@@ -363,7 +391,11 @@ def capture_batch(
         for li, layer in enumerate(getattr(model, "model", model).layers):
             mlp = getattr(layer, "mlp", None)
             if mlp is not None and hasattr(mlp, "experts"):
-                hooks.append(mlp.experts[0].register_forward_hook(_make_hook(li)))
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
 
     with torch.inference_mode():
         out = model(
@@ -509,34 +541,92 @@ def main() -> int:
         "float32": torch.float32,
     }
 
+    trust_rc = not args.no_trust_remote_code
+    if not trust_rc:
+        print("trust_remote_code=False — using transformers NATIVE loader",
+              file=sys.stderr)
     print(f"loading {args.model} …", file=sys.stderr)
-    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=trust_rc)
     offload_folder = args.out / "offload"
     offload_folder.mkdir(parents=True, exist_ok=True)
     if args.device == "mps":
         max_memory = {"mps": "3GiB", "cpu": "11GiB"}
     elif args.device == "cuda":
-        max_memory = None
+        if args.cuda_max_vram_gb is not None:
+            max_memory = {0: f"{args.cuda_max_vram_gb:.2f}GiB",
+                          "cpu": "32GiB"}
+            print(f"capping CUDA at {args.cuda_max_vram_gb:.2f} GiB; "
+                  f"spillover → CPU", file=sys.stderr)
+        else:
+            max_memory = None
     else:
         max_memory = {"cpu": "12GiB"}
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
+
+    # 4-bit loading via bitsandbytes nf4 — for low-VRAM GPUs like Colab T4
+    # (16 GB). Brings DeepSeek-V2-Lite from ~32 GB fp16 → ~8 GB nf4 so it
+    # fits entirely on-device without offload.
+    quantization_config = None
+    if args.load_4bit:
+        if args.device != "cuda":
+            print(f"warn: --load-4bit requires --device cuda; got {args.device}",
+                  file=sys.stderr)
+        try:
+            from transformers import BitsAndBytesConfig  # type: ignore[import-not-found]
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=dtype_map[args.dtype],
+                bnb_4bit_use_double_quant=True,
+                # CRITICAL: without this, bnb 4-bit IGNORES the max_memory
+                # device_map="auto" cap and stuffs everything on GPU 0,
+                # OOMing on T4 (14.5 GB usable, model + bnb overhead =
+                # 14.55 GB needed). With this flag, accelerate spills the
+                # overflow to CPU (as fp32 since CPU can't run 4-bit ops),
+                # respecting max_memory.
+                llm_int8_enable_fp32_cpu_offload=True,
+            )
+            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype}, "
+                  f"CPU-offload enabled)", file=sys.stderr)
+        except ImportError:
+            print("error: --load-4bit requires bitsandbytes — `pip install bitsandbytes`",
+                  file=sys.stderr)
+            return 2
+
+    model_kwargs = dict(
         torch_dtype=dtype_map[args.dtype],
-        trust_remote_code=True,
+        trust_remote_code=trust_rc,
         device_map="auto",
         max_memory=max_memory,
         offload_folder=str(offload_folder),
         offload_buffers=True,
         low_cpu_mem_usage=True,
+        # Fused memory-efficient attention via PyTorch SDPA. Without this,
+        # HF native attention at seq_len=4096 batch=32 allocates an O(S²)
+        # attention matrix (~16 GB at fp16) per layer → 20× slower than
+        # peak FLOPs. SDPA is fused and O(S) memory.
+        attn_implementation="sdpa",
+    )
+    if quantization_config is not None:
+        model_kwargs["quantization_config"] = quantization_config
+        # When 4-bit, transformers ignores torch_dtype for the linear
+        # weights; the compute_dtype on the bnb_config governs.
+        del model_kwargs["torch_dtype"]
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        **model_kwargs,
     ).eval()
     if hasattr(model.config, "output_router_logits"):
         model.config.output_router_logits = True
     try:
         input_device = next(iter(model.hf_device_map.values()))
-    except Exception:
+        print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
+              file=sys.stderr)
+    except (AttributeError, Exception):
+        # Single-device load (e.g., 102 GB GPU fits whole model on cuda:0):
+        # transformers doesn't set hf_device_map when no offload was needed.
         input_device = args.device
-    print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
-          file=sys.stderr)
+        print(f"hf_device_map: not set (model is single-device on {input_device})",
+              file=sys.stderr)
     print(f"inputs will go to: {input_device}", file=sys.stderr)
     args.device = str(input_device)
 

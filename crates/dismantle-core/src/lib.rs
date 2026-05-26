@@ -9,6 +9,7 @@ pub mod mixed_quant_store;
 pub mod model;
 pub mod moe;
 pub mod profile;
+pub mod q4k_fast;
 pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;

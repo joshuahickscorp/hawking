@@ -188,39 +188,79 @@ def load_ckpt(head: Eagle5Head, path: Path) -> int:
     return int(z.get("__step__", -1))
 
 
-def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1) -> dict | None:
+def _decode_tokens(value) -> np.ndarray:
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return np.frombuffer(value, dtype=np.int32).copy()
+    return np.asarray(value, dtype=np.int32)
+
+
+def _decode_compact_tensor(row, stem: str) -> np.ndarray | None:
+    """Decode colab/corpus_simple.py's int8 binary tensor columns.
+
+    Returns fp16 (not fp32) to halve resident memory in `rows` and
+    `windows` lists. _build_batch upcasts to fp32 at batch construction
+    time so the model still trains in fp32 (peak only one batch worth
+    of fp32 is alive at once, ~24 MB — negligible).
+
+    At fp16, M3 Pro 18 GB can hold ~4000-5000 rows of corpus data
+    comfortably (was ~2000 in fp32).
+    """
+    q = row.get(f"{stem}_q")
+    scale = row.get(f"{stem}_scale")
+    shape = row.get(f"{stem}_shape")
+    if q is None or scale is None or shape is None:
+        return None
+    if not isinstance(q, (bytes, bytearray, memoryview)):
+        return None
+    shape_t = tuple(int(x) for x in shape)
+    # Decode in fp32 (because float(scale) is fp64 and we want the
+    # multiplication math at full precision), then DOWNCAST to fp16
+    # for in-memory residence.
+    arr = np.frombuffer(q, dtype=np.int8).astype(np.float32)
+    if arr.size != int(np.prod(shape_t)):
+        return None
+    return (arr.reshape(shape_t) * float(scale)).astype(np.float16)
+
+
+def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1,
+                 max_row_tokens: int = 0) -> dict | None:
     """One parquet row → numpy tensors for the head's input contract.
 
-    The corpus stores residual_in_per_layer as list[layer][token][hidden]
-    and intermediate_per_layer as list[moe_layer_idx][token][hidden].
-    Note: intermediate is indexed by MoE layer (excludes the leading
-    dense block), so the layer-N residual maps to layer-(N - n_dense)
-    intermediate.
+    Supports both the original all-layer corpus schema and the compact
+    Colab schema from colab/corpus_simple.py. In the original schema,
+    residual_in_per_layer is indexed by layer and intermediate_per_layer
+    is indexed by MoE layer (excluding the leading dense block). In the
+    compact schema, residual_q/intermediate_q are already the requested
+    capture layer.
     """
-    tokens = np.asarray(row["tokens"], dtype=np.int32)
+    tokens = _decode_tokens(row["tokens"])
     n_tok = len(tokens)
     if n_tok < 5:
         return None  # need a few positions; eagle4 skips first 3
 
-    res_all = row["residual_in_per_layer"]
-    if not res_all or capture_layer >= len(res_all):
-        return None
-    res = np.asarray(res_all[capture_layer], dtype=np.float32)  # (n_tok, hidden)
-
-    inter_all = row.get("intermediate_per_layer")
-    if not inter_all:
-        return None
-    moe_idx = capture_layer - n_moe_first_dense
-    if moe_idx < 0 or moe_idx >= len(inter_all):
-        return None
-    inter_item = inter_all[moe_idx]
-    # build_corpus.py stores per-layer entries as {"layer": int, "raw": ndarray}.
-    # Unwrap if so; older direct-tensor format also supported.
-    if isinstance(inter_item, dict):
-        inter_item = inter_item.get("raw")
-        if inter_item is None:
+    res = _decode_compact_tensor(row, "residual")
+    if res is None:
+        res_all = row.get("residual_in_per_layer")
+        if not res_all or capture_layer >= len(res_all):
             return None
-    inter = np.asarray(inter_item, dtype=np.float32)
+        res = np.asarray(res_all[capture_layer], dtype=np.float32)  # (n_tok, hidden)
+
+    inter = _decode_compact_tensor(row, "intermediate")
+    if inter is None:
+        inter_all = row.get("intermediate_per_layer")
+        if not inter_all:
+            return None
+        moe_idx = capture_layer - n_moe_first_dense
+        if moe_idx < 0 or moe_idx >= len(inter_all):
+            return None
+        inter_item = inter_all[moe_idx]
+        # build_corpus.py stores per-layer entries as {"layer": int, "raw": ndarray}.
+        # Unwrap if so; older direct-tensor format also supported.
+        if isinstance(inter_item, dict):
+            inter_item = inter_item.get("raw")
+            if inter_item is None:
+                return None
+        inter = np.asarray(inter_item, dtype=np.float32)
     if inter.ndim == 3:
         # (n_experts, n_tok, hidden) — we want expert 0 per build_corpus.py
         inter = inter[0]
@@ -236,6 +276,16 @@ def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1) -> dict | 
 
     if len(tokens) != res.shape[0]:
         return None
+
+    # Memory cap: truncate each row's sequence to first N tokens. Without
+    # this, the Colab-built corpus (16k seqs × 655-token-avg × 2048 hidden
+    # × fp32 × 2 captures) = ~160 GB in RAM → SIGKILL on any laptop.
+    # 256 tokens still yields 14 sliding windows at seq_len=16; plenty of
+    # training signal per row.
+    if max_row_tokens > 0 and len(tokens) > max_row_tokens:
+        tokens = tokens[:max_row_tokens]
+        res = res[:max_row_tokens]
+        inter = inter[:max_row_tokens]
 
     return {
         "prev_tokens": tokens[:-1],
@@ -253,6 +303,8 @@ def _iter_batches(
     capture_layer: int,
     seed: int = 0,
     dedup: bool = True,
+    max_row_tokens: int = 128,
+    max_rows: int = 2000,
 ):
     """Yield (batch_size, seq_len) tensors in row-major (B, S, H) layout.
 
@@ -269,6 +321,22 @@ def _iter_batches(
     by ~60% with no quality loss. Pass `dedup=False` to disable.
     """
     rng = random.Random(seed)
+
+    # Subsample SHARDS upfront so we never load >max_rows worth of data into
+    # memory. Critical on laptops: 1013 shards × 16 rows × 4 MB per truncated
+    # row = ~64 GB peak before subsampling, → SIGKILL. With shard subsample,
+    # peak load = ~target_shards × 16 × per-row-bytes.
+    if max_rows > 0 and len(shards) > 16:
+        avg_rows_per_shard = 16  # corpus_simple.py default
+        # 1.5× safety margin for dedup drops + a few extra shards
+        target_shards = min(len(shards), int(max_rows / avg_rows_per_shard * 1.5) + 16)
+        if target_shards < len(shards):
+            sh_rng = random.Random(seed + 7919)  # different stream than row shuffler
+            shards = sh_rng.sample(shards, target_shards)
+            print(f"[data] subsampling {target_shards} of original shard list "
+                  f"(target rows={max_rows}, ~{target_shards*avg_rows_per_shard} "
+                  f"rows pre-dedup)", flush=True)
+
     rows: list[dict] = []
     seen_fp: set = set()
     n_raw = n_dup = 0
@@ -285,7 +353,7 @@ def _iter_batches(
         col_names = t.column_names
         for i in range(t.num_rows):
             r = {c: t[c][i].as_py() for c in col_names}
-            ex = _extract_row(r, capture_layer)
+            ex = _extract_row(r, capture_layer, max_row_tokens=max_row_tokens)
             if ex is not None:
                 out.append(ex)
         return out
@@ -303,6 +371,15 @@ def _iter_batches(
                         continue
                     seen_fp.add(fp)
                 rows.append(ex)
+    # Memory cap: subsample rows after load. Keeps RAM bounded for laptops
+    # training on big Colab-built corpora (16k seqs × 256 tokens × 2048 fp32
+    # × 2 = ~67 GB without this cap — would SIGKILL on M3 Pro 18 GB).
+    if max_rows > 0 and len(rows) > max_rows:
+        rng.shuffle(rows)
+        dropped = len(rows) - max_rows
+        rows = rows[:max_rows]
+        print(f"[data] subsampled to {max_rows} rows (dropped {dropped})", flush=True)
+
     print(
         f"[data] loaded {len(rows)} usable rows from {len(shards)} shards "
         f"(raw={n_raw}, dropped {n_dup} duplicate fingerprints)",
@@ -331,8 +408,10 @@ def _iter_batches(
     def _build_batch(batch_windows, epoch_id):
         prev = np.stack([w["prev"] for w in batch_windows])
         nxt = np.stack([w["next"] for w in batch_windows])
-        res = np.stack([w["residual"] for w in batch_windows])
-        inter = np.stack([w["intermediate"] for w in batch_windows])
+        # res/inter live as fp16 in rows/windows to halve resident memory.
+        # Upcast to fp32 here for MLX — only one batch is alive at once.
+        res = np.stack([w["residual"] for w in batch_windows]).astype(np.float32)
+        inter = np.stack([w["intermediate"] for w in batch_windows]).astype(np.float32)
         return {
             "prev": mx.array(prev),
             "next": mx.array(nxt),
@@ -468,6 +547,8 @@ def train(args):
         args.capture_layer,
         seed=args.seed,
         dedup=not args.no_dedup,
+        max_row_tokens=args.max_row_tokens,
+        max_rows=args.max_rows,
     ):
         target_alpha = min(step / max(args.target_argmax_warmup_steps, 1), 1.0)
         loss, grads = grad_fn(head, batch, target_alpha)
@@ -512,6 +593,15 @@ def main() -> int:
     p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="proxy")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--max-row-tokens", type=int, default=128,
+                   help="truncate each parquet row's sequence to first N "
+                        "tokens before loading into RAM. 0 = no truncation. "
+                        "Default 128 ~= 8 sliding seq_len=16 windows per row.")
+    p.add_argument("--max-rows", type=int, default=2000,
+                   help="random sample of N rows. With default max-row-tokens, "
+                        "_iter_batches also pre-subsamples SHARDS upfront so "
+                        "total RAM stays bounded. Peak ~2 GB at defaults. "
+                        "0 = use all (only safe on big-RAM machines).")
     p.add_argument("--resume", type=Path, default=None)
     p.add_argument(
         "--no-dedup",

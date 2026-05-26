@@ -1276,6 +1276,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "q4k_fast_tool"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "dismantle-core",
+ "sha2",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
