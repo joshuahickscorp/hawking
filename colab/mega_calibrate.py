@@ -290,12 +290,19 @@ def main() -> int:
     if tok.pad_token_id is None:
         tok.pad_token = tok.eos_token
 
+    # transformers 5.0 renamed `torch_dtype` → `dtype` on from_pretrained.
+    # Probe the installed version and use the right kwarg name so the same
+    # script works on both 4.x (Colab "stable") and 5.x (latest Colab images).
+    import transformers as _hf
+    _hf_major = int(str(_hf.__version__).split(".", 1)[0])
+    _dtype_kw = "dtype" if _hf_major >= 5 else "torch_dtype"
+
     model_kwargs = dict(
         trust_remote_code=False,
-        torch_dtype=torch.float16,
         attn_implementation="sdpa",
         low_cpu_mem_usage=True,
     )
+    model_kwargs[_dtype_kw] = torch.float16
     if args.load_4bit:
         from transformers import BitsAndBytesConfig
         model_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -306,7 +313,7 @@ def main() -> int:
             llm_int8_enable_fp32_cpu_offload=True,
         )
         model_kwargs["device_map"] = "auto"
-        del model_kwargs["torch_dtype"]
+        del model_kwargs[_dtype_kw]
     else:
         model_kwargs["device_map"] = "cuda"
 
