@@ -28,7 +28,7 @@ import torch
 import torch.nn.functional as F
 
 from eagle5_tau_eval_pytorch import _load_eval_windows, _load_head
-from eagle5_train_pytorch import HIDDEN_DIM, RMS_EPS, _rms_norm
+from eagle5_train_pytorch import N_HEADS, RMS_EPS, _rms_norm
 
 
 def _prefix_len(mask: np.ndarray, depth: int) -> np.ndarray:
@@ -73,7 +73,14 @@ def collect_signals(args) -> dict[str, np.ndarray | dict[int, np.ndarray] | int]
         torch.backends.cudnn.allow_tf32 = True
         torch.set_float32_matmul_precision("high")
 
-    head = _load_head(args.ckpt, args.frozen, device)
+    head = _load_head(
+        args.ckpt,
+        args.frozen,
+        device,
+        num_blocks=args.num_blocks,
+        n_heads=args.head_heads,
+        ff_mult=args.head_ff_mult,
+    )
     head.eval()
     lm_head_f = head._lm_head.float()
     windows = _load_eval_windows(
@@ -125,7 +132,7 @@ def collect_signals(args) -> dict[str, np.ndarray | dict[int, np.ndarray] | int]
             draft_vals, draft_idx = torch.topk(draft_logits, k=max(max_width, 2), dim=-1)
             draft_margin = draft_vals[:, 0] - draft_vals[:, 1]
 
-            baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(B, HIDDEN_DIM)
+            baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(B, head.hidden_dim)
             target_logits = torch.matmul(baseline.float(), lm_head_f)
             base_vals, base_idx = torch.topk(target_logits, k=2, dim=-1)
             target_arg = base_idx[:, 0]
@@ -326,6 +333,9 @@ def main() -> int:
     p.add_argument("--eval-batch-size", type=int, default=128)
     p.add_argument("--seed", type=int, default=444)
     p.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
+    p.add_argument("--num-blocks", type=int, default=1)
+    p.add_argument("--head-heads", type=int, default=N_HEADS)
+    p.add_argument("--head-ff-mult", type=float, default=4.0)
     p.add_argument("--base-tps", type=float, default=26.6)
     p.add_argument("--w4a8-multiplier", type=float, default=1.25)
     p.add_argument("--spec-efficiency", type=float, default=0.85)

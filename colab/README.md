@@ -4,6 +4,18 @@ Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
 ## Active notebooks
 
+### `qwen_past_200_h100.ipynb` ⭐ past-200 push
+
+H100-first run-all for the next throughput ceiling break. It trains stacked
+Eagle5 candidates for the Qwen2.5-1.5B student path, emits AWQ and Q2/IQ2
+calibration artifacts, runs tau/frontier ranking, and writes a
+`past200_summary.md` handoff with exact local runtime hints.
+
+Launch:
+```
+https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen_past_200_h100.ipynb
+```
+
 ### `qwen3b_mega_calibration.ipynb` ⭐ current focus
 
 **Single Colab run produces calibration data for 4 downstream dismantle projects:**

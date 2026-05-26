@@ -64,7 +64,8 @@ except ImportError:
     sys.exit(1)
 
 
-# Qwen-3B constants — see CLAUDE.md / handoff doc.
+# Qwen-3B defaults — the trainer now infers hidden/vocab from frozen.npz.
+# Keep these names for older imports, but do not treat them as authoritative.
 HIDDEN_DIM = 2048
 N_HEADS = 16
 RMS_EPS = 1e-6
@@ -97,29 +98,34 @@ class _SwiGLU(nn.Module):
 class _Block(nn.Module):
     """Pre-norm transformer block with multi-head self-attention + SwiGLU."""
 
-    def __init__(self):
+    def __init__(self, hidden_dim: int, n_heads: int, ff_mult: float = 4.0):
         super().__init__()
-        self.attn_norm = nn.Parameter(torch.ones(HIDDEN_DIM))
+        if hidden_dim % n_heads != 0:
+            raise ValueError(f"hidden_dim={hidden_dim} must divide n_heads={n_heads}")
+        self.hidden_dim = int(hidden_dim)
+        self.n_heads = int(n_heads)
+        self.attn_norm = nn.Parameter(torch.ones(hidden_dim))
         # mlx.nn.MultiHeadAttention has bias=False, so set bias=False here.
         # We implement attention manually so we can pass an additive mask.
-        self.q_proj = nn.Linear(HIDDEN_DIM, HIDDEN_DIM, bias=False)
-        self.k_proj = nn.Linear(HIDDEN_DIM, HIDDEN_DIM, bias=False)
-        self.v_proj = nn.Linear(HIDDEN_DIM, HIDDEN_DIM, bias=False)
-        self.out_proj = nn.Linear(HIDDEN_DIM, HIDDEN_DIM, bias=False)
-        self.mlp_norm = nn.Parameter(torch.ones(HIDDEN_DIM))
-        self.mlp = _SwiGLU(HIDDEN_DIM, 4 * HIDDEN_DIM)
+        self.q_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.k_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.v_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.out_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.mlp_norm = nn.Parameter(torch.ones(hidden_dim))
+        mlp_dim = max(1, int(round(hidden_dim * ff_mult)))
+        self.mlp = _SwiGLU(hidden_dim, mlp_dim)
 
     def _attn(self, h: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         B, S, _ = h.shape
-        head_dim = HIDDEN_DIM // N_HEADS
-        q = self.q_proj(h).view(B, S, N_HEADS, head_dim).transpose(1, 2)
-        k = self.k_proj(h).view(B, S, N_HEADS, head_dim).transpose(1, 2)
-        v = self.v_proj(h).view(B, S, N_HEADS, head_dim).transpose(1, 2)
+        head_dim = self.hidden_dim // self.n_heads
+        q = self.q_proj(h).view(B, S, self.n_heads, head_dim).transpose(1, 2)
+        k = self.k_proj(h).view(B, S, self.n_heads, head_dim).transpose(1, 2)
+        v = self.v_proj(h).view(B, S, self.n_heads, head_dim).transpose(1, 2)
         # scores: (B, n_heads, S, S)
         scores = torch.matmul(q, k.transpose(-1, -2)) / (head_dim ** 0.5)
         scores = scores + mask
         probs = F.softmax(scores, dim=-1, dtype=torch.float32).to(q.dtype)
-        out = torch.matmul(probs, v).transpose(1, 2).contiguous().view(B, S, HIDDEN_DIM)
+        out = torch.matmul(probs, v).transpose(1, 2).contiguous().view(B, S, self.hidden_dim)
         return self.out_proj(out)
 
     def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
@@ -139,23 +145,49 @@ class Eagle5Head(nn.Module):
         lm_head: torch.Tensor,      # fp16 (hidden, vocab)
         output_norm: torch.Tensor,  # fp32 (hidden,)
         with_sparsity: bool = False,
+        num_blocks: int = 1,
+        n_heads: int = N_HEADS,
+        ff_mult: float = 4.0,
     ):
         super().__init__()
+        if token_embd.ndim != 2 or lm_head.ndim != 2:
+            raise ValueError(
+                f"token_embd/lm_head must be 2D, got {token_embd.shape} / {lm_head.shape}"
+            )
+        if token_embd.shape != lm_head.shape:
+            raise ValueError(f"token_embd and lm_head shapes differ: {token_embd.shape} vs {lm_head.shape}")
+        hidden_dim = int(token_embd.shape[0])
+        if output_norm.shape != (hidden_dim,):
+            raise ValueError(f"output_norm shape {output_norm.shape} does not match hidden={hidden_dim}")
+        if num_blocks < 1:
+            raise ValueError("--num-blocks must be >= 1")
+
+        self.hidden_dim = hidden_dim
+        self.vocab_size = int(token_embd.shape[1])
+        self.num_blocks = int(num_blocks)
+        self.n_heads = int(n_heads)
+        self.ff_mult = float(ff_mult)
         # Frozen buffers, NOT registered as parameters. Persistent so they
         # ride with the module move-to-device but are NOT in the optimizer.
         self.register_buffer("_token_embd", token_embd, persistent=False)
         self.register_buffer("_lm_head", lm_head, persistent=False)
         self.register_buffer("_output_norm", output_norm, persistent=False)
 
-        self.in_proj = nn.Linear(3 * HIDDEN_DIM, HIDDEN_DIM, bias=False)
-        self.block = _Block()
+        self.in_proj = nn.Linear(3 * hidden_dim, hidden_dim, bias=False)
+        # Keep the first block named `block` so existing 1-block checkpoints
+        # still load. Extra blocks use `extra_blocks.{i}` keys.
+        self.block = _Block(hidden_dim, self.n_heads, self.ff_mult)
+        self.extra_blocks = nn.ModuleList(
+            _Block(hidden_dim, self.n_heads, self.ff_mult)
+            for _ in range(self.num_blocks - 1)
+        )
         # Scalar gate — non-zero init keeps gradient flowing through the block.
         self.residual_gate = nn.Parameter(torch.tensor([0.05], dtype=torch.float32))
         self.with_sparsity = with_sparsity
         if with_sparsity:
-            self.sparsity_proj_in = nn.Linear(HIDDEN_DIM, 512, bias=False)
+            self.sparsity_proj_in = nn.Linear(hidden_dim, 512, bias=False)
             self.sparsity_proj_out = nn.Linear(512, MOE_INTERMEDIATE, bias=False)
-        self.calib_proj = nn.Linear(HIDDEN_DIM, 1, bias=True)
+        self.calib_proj = nn.Linear(hidden_dim, 1, bias=True)
 
     def forward(
         self,
@@ -178,6 +210,8 @@ class Eagle5Head(nn.Module):
         x = torch.cat([prev_embed.to(residual_in.dtype), residual_in, intermediate_signal], dim=-1)
         x = self.in_proj(x)
         x = self.block(x, attn_mask.to(x.dtype))
+        for block in self.extra_blocks:
+            x = block(x, attn_mask.to(x.dtype))
 
         # Baseline = RMSNorm(residual_in) — done in fp32 like MLX.
         baseline = _rms_norm(residual_in, self._output_norm, RMS_EPS)
@@ -199,7 +233,24 @@ class Eagle5Head(nn.Module):
         return out
 
 
-def build_head(frozen_npz: Path, with_sparsity: bool, device: str) -> Eagle5Head:
+def _choose_heads(hidden_dim: int, requested: int) -> int:
+    if requested > 0 and hidden_dim % requested == 0:
+        return requested
+    for cand in (16, 12, 8, 6, 4, 3, 2, 1):
+        if hidden_dim % cand == 0:
+            return cand
+    return 1
+
+
+def build_head(
+    frozen_npz: Path,
+    with_sparsity: bool,
+    device: str,
+    *,
+    num_blocks: int = 1,
+    n_heads: int = N_HEADS,
+    ff_mult: float = 4.0,
+) -> Eagle5Head:
     z = np.load(frozen_npz)
     needed = ["token_embd", "lm_head", "output_norm"]
     for k in needed:
@@ -207,11 +258,16 @@ def build_head(frozen_npz: Path, with_sparsity: bool, device: str) -> Eagle5Head
             raise SystemExit(
                 f"frozen .npz missing `{k}` — regenerate with `python eagle4/eagle4.py frozen`"
             )
+    hidden_dim = int(np.asarray(z["token_embd"]).shape[0])
+    n_heads = _choose_heads(hidden_dim, n_heads)
     head = Eagle5Head(
         torch.from_numpy(np.asarray(z["token_embd"], dtype=np.float16)),
         torch.from_numpy(np.asarray(z["lm_head"], dtype=np.float16)),
         torch.from_numpy(np.asarray(z["output_norm"], dtype=np.float32)),
         with_sparsity=with_sparsity,
+        num_blocks=num_blocks,
+        n_heads=n_heads,
+        ff_mult=ff_mult,
     )
     head = head.to(device)
     return head
@@ -232,6 +288,10 @@ def _state_to_npz_flat(head: Eagle5Head) -> dict[str, np.ndarray]:
 def save_ckpt(head: Eagle5Head, path: Path, step: int = 0) -> None:
     flat = _state_to_npz_flat(head)
     flat["__step__"] = np.int32(step)
+    flat["__hidden_dim__"] = np.int32(head.hidden_dim)
+    flat["__num_blocks__"] = np.int32(head.num_blocks)
+    flat["__n_heads__"] = np.int32(head.n_heads)
+    flat["__ff_mult_x1000__"] = np.int32(round(head.ff_mult * 1000.0))
     np.savez(path, **flat)
 
 
@@ -249,7 +309,17 @@ def save_safetensors(head: Eagle5Head, path: Path) -> None:
     state["_token_embd"] = head._token_embd.detach().cpu().contiguous()
     state["_lm_head"] = head._lm_head.detach().cpu().contiguous()
     state["_output_norm"] = head._output_norm.detach().cpu().contiguous()
-    save_file(state, str(path))
+    save_file(
+        state,
+        str(path),
+        metadata={
+            "hidden_dim": str(head.hidden_dim),
+            "vocab_size": str(head.vocab_size),
+            "num_blocks": str(head.num_blocks),
+            "n_heads": str(head.n_heads),
+            "ff_mult": str(head.ff_mult),
+        },
+    )
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -452,11 +522,19 @@ def train(args) -> None:
               "ignoring for Qwen-3B (dense)", flush=True)
         with_sparsity = False
 
-    head = build_head(Path(args.frozen), with_sparsity, device)
+    head = build_head(
+        Path(args.frozen),
+        with_sparsity,
+        device,
+        num_blocks=args.num_blocks,
+        n_heads=args.head_heads,
+        ff_mult=args.head_ff_mult,
+    )
     print(
         f"[train] eagle5 v2 head built; capture_layer={args.capture_layer} "
         f"sparsity_head=off lr={args.lr} batch={args.batch_size} "
-        f"seq_len={args.seq_len} device={device}",
+        f"seq_len={args.seq_len} hidden={head.hidden_dim} vocab={head.vocab_size} "
+        f"blocks={head.num_blocks} heads={head.n_heads} device={device}",
         flush=True,
     )
 
@@ -609,6 +687,12 @@ def main() -> int:
     p.add_argument("--batch-size", type=int, default=24)
     p.add_argument("--seq-len", type=int, default=16)
     p.add_argument("--lr", type=float, default=1e-3)
+    p.add_argument("--num-blocks", type=int, default=1,
+                   help="Number of draft transformer blocks to stack. 1 preserves the original Eagle5 shape.")
+    p.add_argument("--head-heads", type=int, default=N_HEADS,
+                   help="Attention heads inside the draft head. If not divisible by hidden dim, a valid divisor is chosen.")
+    p.add_argument("--head-ff-mult", type=float, default=4.0,
+                   help="Draft MLP hidden multiplier, e.g. 4.0 means 4 * hidden.")
     p.add_argument("--capture-layer", type=int, default=32,
                    help="metadata only — actual capture is baked into the corpus")
     p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
