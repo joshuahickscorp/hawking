@@ -62,8 +62,8 @@ train_variant() {
       --corpus-dir "$CORPUS" \
       --frozen     eagle4/v2lite_frozen.npz \
       --ckpt-dir   "checkpoints/eagle5_v2_$name" \
-      --epochs 5 --batch-size 24 --seq-len 16 --lr "$lr" \
-      --max-rows 5000 --max-row-tokens 128 \
+      --epochs 8 --batch-size 24 --seq-len 16 --lr "$lr" \
+      --max-rows 4000 --max-row-tokens 128 \
       --sparsity-head "$spar" --seed 0
 }
 
