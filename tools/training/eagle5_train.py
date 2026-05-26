@@ -188,39 +188,67 @@ def load_ckpt(head: Eagle5Head, path: Path) -> int:
     return int(z.get("__step__", -1))
 
 
-def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1) -> dict | None:
+def _decode_tokens(value) -> np.ndarray:
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return np.frombuffer(value, dtype=np.int32).copy()
+    return np.asarray(value, dtype=np.int32)
+
+
+def _decode_compact_tensor(row, stem: str) -> np.ndarray | None:
+    """Decode colab/corpus_simple.py's int8 binary tensor columns."""
+    q = row.get(f"{stem}_q")
+    scale = row.get(f"{stem}_scale")
+    shape = row.get(f"{stem}_shape")
+    if q is None or scale is None or shape is None:
+        return None
+    if not isinstance(q, (bytes, bytearray, memoryview)):
+        return None
+    shape_t = tuple(int(x) for x in shape)
+    arr = np.frombuffer(q, dtype=np.int8).astype(np.float32)
+    if arr.size != int(np.prod(shape_t)):
+        return None
+    return arr.reshape(shape_t) * float(scale)
+
+
+def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1,
+                 max_row_tokens: int = 0) -> dict | None:
     """One parquet row → numpy tensors for the head's input contract.
 
-    The corpus stores residual_in_per_layer as list[layer][token][hidden]
-    and intermediate_per_layer as list[moe_layer_idx][token][hidden].
-    Note: intermediate is indexed by MoE layer (excludes the leading
-    dense block), so the layer-N residual maps to layer-(N - n_dense)
-    intermediate.
+    Supports both the original all-layer corpus schema and the compact
+    Colab schema from colab/corpus_simple.py. In the original schema,
+    residual_in_per_layer is indexed by layer and intermediate_per_layer
+    is indexed by MoE layer (excluding the leading dense block). In the
+    compact schema, residual_q/intermediate_q are already the requested
+    capture layer.
     """
-    tokens = np.asarray(row["tokens"], dtype=np.int32)
+    tokens = _decode_tokens(row["tokens"])
     n_tok = len(tokens)
     if n_tok < 5:
         return None  # need a few positions; eagle4 skips first 3
 
-    res_all = row["residual_in_per_layer"]
-    if not res_all or capture_layer >= len(res_all):
-        return None
-    res = np.asarray(res_all[capture_layer], dtype=np.float32)  # (n_tok, hidden)
-
-    inter_all = row.get("intermediate_per_layer")
-    if not inter_all:
-        return None
-    moe_idx = capture_layer - n_moe_first_dense
-    if moe_idx < 0 or moe_idx >= len(inter_all):
-        return None
-    inter_item = inter_all[moe_idx]
-    # build_corpus.py stores per-layer entries as {"layer": int, "raw": ndarray}.
-    # Unwrap if so; older direct-tensor format also supported.
-    if isinstance(inter_item, dict):
-        inter_item = inter_item.get("raw")
-        if inter_item is None:
+    res = _decode_compact_tensor(row, "residual")
+    if res is None:
+        res_all = row.get("residual_in_per_layer")
+        if not res_all or capture_layer >= len(res_all):
             return None
-    inter = np.asarray(inter_item, dtype=np.float32)
+        res = np.asarray(res_all[capture_layer], dtype=np.float32)  # (n_tok, hidden)
+
+    inter = _decode_compact_tensor(row, "intermediate")
+    if inter is None:
+        inter_all = row.get("intermediate_per_layer")
+        if not inter_all:
+            return None
+        moe_idx = capture_layer - n_moe_first_dense
+        if moe_idx < 0 or moe_idx >= len(inter_all):
+            return None
+        inter_item = inter_all[moe_idx]
+        # build_corpus.py stores per-layer entries as {"layer": int, "raw": ndarray}.
+        # Unwrap if so; older direct-tensor format also supported.
+        if isinstance(inter_item, dict):
+            inter_item = inter_item.get("raw")
+            if inter_item is None:
+                return None
+        inter = np.asarray(inter_item, dtype=np.float32)
     if inter.ndim == 3:
         # (n_experts, n_tok, hidden) — we want expert 0 per build_corpus.py
         inter = inter[0]
@@ -236,6 +264,16 @@ def _extract_row(row, capture_layer: int, n_moe_first_dense: int = 1) -> dict | 
 
     if len(tokens) != res.shape[0]:
         return None
+
+    # Memory cap: truncate each row's sequence to first N tokens. Without
+    # this, the Colab-built corpus (16k seqs × 655-token-avg × 2048 hidden
+    # × fp32 × 2 captures) = ~160 GB in RAM → SIGKILL on any laptop.
+    # 256 tokens still yields 14 sliding windows at seq_len=16; plenty of
+    # training signal per row.
+    if max_row_tokens > 0 and len(tokens) > max_row_tokens:
+        tokens = tokens[:max_row_tokens]
+        res = res[:max_row_tokens]
+        inter = inter[:max_row_tokens]
 
     return {
         "prev_tokens": tokens[:-1],
@@ -253,6 +291,8 @@ def _iter_batches(
     capture_layer: int,
     seed: int = 0,
     dedup: bool = True,
+    max_row_tokens: int = 256,
+    max_rows: int = 3000,
 ):
     """Yield (batch_size, seq_len) tensors in row-major (B, S, H) layout.
 
@@ -285,7 +325,7 @@ def _iter_batches(
         col_names = t.column_names
         for i in range(t.num_rows):
             r = {c: t[c][i].as_py() for c in col_names}
-            ex = _extract_row(r, capture_layer)
+            ex = _extract_row(r, capture_layer, max_row_tokens=max_row_tokens)
             if ex is not None:
                 out.append(ex)
         return out
@@ -303,6 +343,15 @@ def _iter_batches(
                         continue
                     seen_fp.add(fp)
                 rows.append(ex)
+    # Memory cap: subsample rows after load. Keeps RAM bounded for laptops
+    # training on big Colab-built corpora (16k seqs × 256 tokens × 2048 fp32
+    # × 2 = ~67 GB without this cap — would SIGKILL on M3 Pro 18 GB).
+    if max_rows > 0 and len(rows) > max_rows:
+        rng.shuffle(rows)
+        dropped = len(rows) - max_rows
+        rows = rows[:max_rows]
+        print(f"[data] subsampled to {max_rows} rows (dropped {dropped})", flush=True)
+
     print(
         f"[data] loaded {len(rows)} usable rows from {len(shards)} shards "
         f"(raw={n_raw}, dropped {n_dup} duplicate fingerprints)",
@@ -468,6 +517,8 @@ def train(args):
         args.capture_layer,
         seed=args.seed,
         dedup=not args.no_dedup,
+        max_row_tokens=args.max_row_tokens,
+        max_rows=args.max_rows,
     ):
         target_alpha = min(step / max(args.target_argmax_warmup_steps, 1), 1.0)
         loss, grads = grad_fn(head, batch, target_alpha)
@@ -512,6 +563,15 @@ def main() -> int:
     p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="proxy")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--max-row-tokens", type=int, default=256,
+                   help="truncate each parquet row's sequence to first N "
+                        "tokens before loading into RAM. 0 = no truncation. "
+                        "Default 256 fits laptops (M3 Pro 18 GB) with the "
+                        "16k-seq Colab corpus.")
+    p.add_argument("--max-rows", type=int, default=3000,
+                   help="random sample of N rows from the deduped corpus. "
+                        "0 = use all. Default 3000 + max-row-tokens=256 → "
+                        "~6 GB peak RAM during load.")
     p.add_argument("--resume", type=Path, default=None)
     p.add_argument(
         "--no-dedup",
