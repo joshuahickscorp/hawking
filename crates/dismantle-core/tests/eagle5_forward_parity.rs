@@ -131,9 +131,39 @@ fn eagle6_forward_matches_pytorch_q3b() {
 
     // Load head and run the Rust forward.
     let h = Eagle5Head::load_from_safetensors(&head, hidden, vocab).expect("load head");
-    let rust_logits = h
-        .forward_logits(f.prev_token, &residual, &intermediate)
-        .expect("Trained head must return logits");
+
+    // Time a few forward calls so we have a perf regression signal in
+    // the test output. The first call may be cold (caches not warm,
+    // first-touch alloc); we report median of N=8.
+    use std::time::Instant;
+    let mut timings = Vec::with_capacity(8);
+    let mut rust_logits = Vec::new();
+    for _ in 0..8 {
+        let t0 = Instant::now();
+        let l = h
+            .forward_logits(f.prev_token, &residual, &intermediate)
+            .expect("Trained head must return logits");
+        timings.push(t0.elapsed());
+        rust_logits = l;
+    }
+    timings.sort();
+    let median = timings[timings.len() / 2];
+    let min = timings[0];
+    let max = timings[timings.len() - 1];
+    eprintln!(
+        "forward_single_step timing (n=8): median={:.2}ms min={:.2}ms max={:.2}ms",
+        median.as_secs_f64() * 1000.0,
+        min.as_secs_f64() * 1000.0,
+        max.as_secs_f64() * 1000.0,
+    );
+    // Soft perf gate: median forward should be under 200 ms on any
+    // tier-1 host. The current threaded impl lands at ~5-30 ms; 200 ms
+    // is generous against thermal throttling or single-core CI runners.
+    assert!(
+        median.as_millis() < 200,
+        "forward_single_step median {}ms exceeds 200ms perf gate",
+        median.as_millis()
+    );
 
     assert_eq!(
         rust_logits.len(),
