@@ -92,6 +92,8 @@ fn clear_env() {
     std::env::remove_var("DISMANTLE_QWEN_EAGLE5");
     std::env::remove_var("DISMANTLE_QWEN_EAGLE5_K");
     std::env::remove_var("DISMANTLE_QWEN_EAGLE5_BATCHED");
+    std::env::remove_var("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+    std::env::remove_var("DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER");
 }
 
 #[test]
@@ -239,5 +241,68 @@ fn qwen_eagle5_batched_mock_head_preserves_greedy() {
     eprintln!(
         "batched eagle5 engaged: accepted={} rejected={} ({} tokens emitted)",
         batched_stats.draft_accepted, batched_stats.draft_rejected, batched_ids.len()
+    );
+}
+
+/// Phase B.3.3 — capture-layer plumbing must preserve greedy parity.
+///
+/// With `DISMANTLE_QWEN_EAGLE5_CAPTURE=1` the per-layer forward inserts
+/// two `memcpy_f32_off_tcb` dispatches at the chosen layer to copy
+/// residual + intermediate streams into sidecar buffers. The dispatches
+/// are pure copies — they do not perturb the values used by subsequent
+/// layers — so greedy output MUST be bit-identical to baseline.
+///
+/// Mock head ignores capture (Mock has no in_proj), so accept rate
+/// won't change — what we're verifying is the capture dispatches don't
+/// silently corrupt the verifier's forward.
+#[test]
+fn qwen_eagle5_capture_preserves_greedy() {
+    let _g = ENV_LOCK.lock().unwrap();
+    clear_env();
+    let Some(weights) = find_weights() else {
+        eprintln!("skipping: no qwen2.5-3b-instruct-q4_k_m.gguf in models/");
+        return;
+    };
+    let profile = find_profile(&weights);
+
+    // Baseline.
+    std::env::set_var("DISMANTLE_QWEN_TCB", "1");
+    let cfg_baseline = dismantle_core::EngineConfig {
+        kernel_profile: profile.clone(),
+        ..Default::default()
+    };
+    let (baseline_ids, _) = run_greedy_capture_stats(&weights, cfg_baseline);
+    clear_env();
+
+    // Eagle5 + capture (serial verify, captures populate after first cycle).
+    std::env::set_var("DISMANTLE_QWEN_TCB", "1");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5", "1");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5_K", "4");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5_CAPTURE", "1");
+    let cfg_capture = dismantle_core::EngineConfig {
+        kernel_profile: profile.clone(),
+        speculate: true,
+        speculate_mode: dismantle_core::SpeculateMode::Eagle5,
+        eagle5_head_path: None, // forces mock head (ignores capture)
+        ..Default::default()
+    };
+    let (capture_ids, capture_stats) = run_greedy_capture_stats(&weights, cfg_capture);
+    clear_env();
+
+    assert_eq!(
+        baseline_ids, capture_ids,
+        "eagle5 spec-decode WITH CAPTURE at temp=0 must emit identical tokens to no-spec greedy\n  \
+         baseline: {baseline_ids:?}\n  capture:  {capture_ids:?}",
+    );
+
+    let total = capture_stats.draft_accepted + capture_stats.draft_rejected;
+    assert!(
+        total > 0,
+        "capture-mode eagle5 dispatch never engaged: accepted={} rejected={}",
+        capture_stats.draft_accepted, capture_stats.draft_rejected,
+    );
+    eprintln!(
+        "capture-mode eagle5 engaged: accepted={} rejected={} ({} tokens emitted)",
+        capture_stats.draft_accepted, capture_stats.draft_rejected, capture_ids.len()
     );
 }
