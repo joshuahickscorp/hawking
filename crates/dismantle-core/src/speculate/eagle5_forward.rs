@@ -230,6 +230,68 @@ fn rms_norm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
     out
 }
 
+/// f16-weight version of matmul_no_bias for the verifier's LM head.
+///
+/// `y[j] = sum_i w_f16[j * in_dim + i].to_f32() * x[i]` for `j in 0..out_dim`.
+///
+/// Used by `forward_tokens_batched_with_logits` in qwen_dense.rs to do
+/// per-position CPU LM-head dispatch after the GPU layer-stack runs.
+/// Same threading pattern as `matmul_no_bias` (per-row independence,
+/// bit-identical to single-threaded). Reusing from the Eagle5 module
+/// keeps the threaded-matmul logic in one place.
+pub fn matmul_no_bias_f16w(
+    w_f16: &[f16],
+    x: &[f32],
+    out_dim: usize,
+    in_dim: usize,
+) -> Vec<f32> {
+    debug_assert_eq!(w_f16.len(), out_dim * in_dim);
+    debug_assert_eq!(x.len(), in_dim);
+
+    let n_threads = std::thread::available_parallelism()
+        .map(|n| n.get().clamp(1, 8))
+        .unwrap_or(4);
+    let min_rows_per_thread = 64;
+    if n_threads <= 1 || out_dim < n_threads * min_rows_per_thread {
+        let mut y = vec![0.0f32; out_dim];
+        for j in 0..out_dim {
+            let row = &w_f16[j * in_dim..(j + 1) * in_dim];
+            let mut acc = 0.0_f32;
+            for i in 0..in_dim {
+                acc += row[i].to_f32() * x[i];
+            }
+            y[j] = acc;
+        }
+        return y;
+    }
+
+    let mut y = vec![0.0f32; out_dim];
+    let chunk = out_dim.div_ceil(n_threads);
+    std::thread::scope(|s| {
+        let mut handles = Vec::with_capacity(n_threads);
+        for (t, y_chunk) in y.chunks_mut(chunk).enumerate() {
+            let j0 = t * chunk;
+            let w_ref = w_f16;
+            let x_ref = x;
+            handles.push(s.spawn(move || {
+                for (local_j, slot) in y_chunk.iter_mut().enumerate() {
+                    let j = j0 + local_j;
+                    let row = &w_ref[j * in_dim..(j + 1) * in_dim];
+                    let mut acc = 0.0_f32;
+                    for i in 0..in_dim {
+                        acc += row[i].to_f32() * x_ref[i];
+                    }
+                    *slot = acc;
+                }
+            }));
+        }
+        for h in handles {
+            h.join().unwrap();
+        }
+    });
+    y
+}
+
 /// Matmul `y = W @ x` where `W` is row-major `[out_dim, in_dim]`. Matches
 /// PyTorch nn.Linear(in, out) without bias: y[j] = sum_i W[j, i] * x[i].
 ///
