@@ -136,14 +136,76 @@ pub fn forward_single_step(
     // (so column v is the row of weights that produces logit v):
     //   logits[k] = sum_i draft_hidden[i] * lm_head[i, k]
     //             = sum_i draft_hidden[i] * lm_head_f16[i*v + k]
-    let mut logits = vec![0.0f32; v];
-    for i in 0..h {
-        let dh_i = draft_hidden[i];
-        let row = &lm_head_f16[i * v..(i + 1) * v];
-        for k in 0..v {
-            logits[k] += dh_i * row[k].to_f32();
+    //
+    // Parallel over hidden axis. Each thread accumulates a partial
+    // vocab-length vector from its slice of the hidden axis; the partial
+    // vectors are summed at the end. Cache pattern within each thread
+    // remains sequential (inner loop walks contiguous row of lm_head),
+    // so we get linear scaling without thrashing the LM-head bytes.
+    //
+    // Why parallelize *only* the LM head: it's 311M FMAs at the q3b shape
+    // (hidden=2048 × vocab=151936) — dominates the head's compute. The
+    // earlier transformer-block matmuls (in_proj, q/k/v/out, mlp) are
+    // collectively only ~155M FMAs and are not the bottleneck. Threading
+    // them too would add overhead with marginal benefit.
+    //
+    // FP32 sum-order changes slightly vs the single-threaded loop above
+    // (partials sum is in thread-index order). Differences land in
+    // ~1-2 ULP per logit which is invisible at our parity gate
+    // (atol=5e-2 vs measured 3.5e-4 single-threaded — plenty of room).
+    let n_threads = std::thread::available_parallelism()
+        .map(|n| n.get().clamp(1, 8))
+        .unwrap_or(4);
+    let logits = if n_threads <= 1 || h < n_threads * 32 {
+        // Below this threshold the spawn/join overhead exceeds the
+        // parallelism win — fall through to the simple single-thread
+        // path. (This branch is what unit tests exercise too.)
+        let mut out = vec![0.0f32; v];
+        for i in 0..h {
+            let dh_i = draft_hidden[i];
+            let row = &lm_head_f16[i * v..(i + 1) * v];
+            for k in 0..v {
+                out[k] += dh_i * row[k].to_f32();
+            }
         }
-    }
+        out
+    } else {
+        let chunk = h.div_ceil(n_threads);
+        let partials: Vec<Vec<f32>> = std::thread::scope(|s| {
+            let mut handles = Vec::with_capacity(n_threads);
+            for t in 0..n_threads {
+                let i0 = t * chunk;
+                let i1 = ((t + 1) * chunk).min(h);
+                if i0 >= i1 {
+                    continue;
+                }
+                let dh = &draft_hidden;
+                let lm = lm_head_f16;
+                handles.push(s.spawn(move || {
+                    let mut local = vec![0.0f32; v];
+                    for i in i0..i1 {
+                        let dh_i = dh[i];
+                        let row = &lm[i * v..(i + 1) * v];
+                        for k in 0..v {
+                            local[k] += dh_i * row[k].to_f32();
+                        }
+                    }
+                    local
+                }));
+            }
+            handles.into_iter().map(|h| h.join().unwrap()).collect()
+        });
+        // Reduce partials → final logits. Reused first buffer to avoid
+        // an extra alloc.
+        let mut iter = partials.into_iter();
+        let mut out = iter.next().unwrap_or_else(|| vec![0.0f32; v]);
+        for part in iter {
+            for k in 0..v {
+                out[k] += part[k];
+            }
+        }
+        out
+    };
     logits
 }
 
