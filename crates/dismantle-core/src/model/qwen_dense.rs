@@ -1526,11 +1526,18 @@ impl Engine for QwenDense {
                         .as_ref()
                         .expect("residual capture buf must exist when capture is in use");
                     let ptr = buf.contents() as *const f32;
-                    // SAFETY: buffer was allocated as hidden * f32 bytes
-                    // and populated by memcpy_f32_off_tcb on the prior
-                    // forward (Apple Silicon shared memory means the
-                    // bytes are visible after commit_and_wait).
-                    Some(unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec())
+                    let v: Vec<f32> = unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec();
+                    if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
+                        let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
+                        let mean = v.iter().sum::<f32>() / (v.len() as f32);
+                        let var = v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
+                        let nonzero = v.iter().filter(|&&x| x != 0.0).count();
+                        eprintln!(
+                            "[eagle5-debug] residual stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
+                            nonzero, v.len(), mean, var.sqrt(), abs_max, &v[..8.min(v.len())]
+                        );
+                    }
+                    Some(v)
                 } else {
                     None
                 };
@@ -1555,6 +1562,13 @@ impl Engine for QwenDense {
                     let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
                     head.propose_with_capture(last_id, res_ref, int_ref, k_avail)
                 };
+                if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
+                    let toks: Vec<String> = draft.iter().map(|&id| {
+                        self.tokenizer.decode_one(id).unwrap_or_default()
+                    }).collect();
+                    eprintln!("[eagle5-debug] last_id={} draft_ids={:?} draft_tokens={:?}",
+                        last_id, draft, toks);
+                }
                 let draft_len = draft.len();
                 if draft_len == 0 {
                     // Head refused to propose (vocab=0 or K=0): single
