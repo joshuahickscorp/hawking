@@ -1,6 +1,6 @@
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
-use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace, silu_mul,
@@ -302,6 +302,18 @@ pub struct QwenDense {
     pub(crate) awq_smoothing_ffn_act: Option<Vec<crate::metal::PinnedBuffer>>,
     #[cfg(target_os = "macos")]
     pub(crate) awq_smoothing_silu_mul: Option<Vec<crate::metal::PinnedBuffer>>,
+
+    /// Eagle5 / Eagle6 trained-head draft model for speculative decoding.
+    /// `Some` when `EngineConfig::speculate_mode == SpeculateMode::Eagle5`
+    /// at construction; loaded from `EngineConfig::eagle5_head_path` if
+    /// present, else falls back to a deterministic Mock head for runtime
+    /// wiring tests. `None` when speculate is off — the qwen forward
+    /// path is a no-op on the head in that case.
+    ///
+    /// Storage only — the actual dispatch into this head is gated behind
+    /// the `DISMANTLE_QWEN_EAGLE5=1` env flag and lives in Phase B.4 of
+    /// the port (see `docs/eagle5_qwen_port_plan.md`).
+    pub(crate) eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -989,6 +1001,39 @@ impl Engine for QwenDense {
             );
         }
 
+        // Eagle5/6 head load (Phase B.1). When speculate_mode==Eagle5,
+        // attempt to load the trained head from `eagle5_head_path`. If
+        // path is None, fall back to a deterministic Mock head so the
+        // runtime wiring still has something to invoke for smoke tests.
+        // No forward-path consumption yet — this commit only stages the
+        // head into the struct. Phase B.4 wires the dispatch.
+        let eagle5_head = if config.speculate_mode == SpeculateMode::Eagle5 {
+            let hidden = cfg.hidden;
+            let vocab = cfg.vocab_size;
+            match config.eagle5_head_path.as_deref() {
+                Some(p) => {
+                    eprintln!("[eagle5] loading trained head from {}", p.display());
+                    Some(crate::speculate::eagle5::Eagle5Head::load_from_safetensors(
+                        p, hidden, vocab,
+                    )?)
+                }
+                None => {
+                    eprintln!(
+                        "[eagle5] no --eagle5-head provided; constructing deterministic Mock head \
+                         for runtime wiring (accept rate ≈ 1/vocab — set --eagle5-head to use the \
+                         trained checkpoint)"
+                    );
+                    Some(crate::speculate::eagle5::Eagle5Head::mock(
+                        0xea91e5_u64,
+                        hidden,
+                        vocab,
+                    ))
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -1031,6 +1076,7 @@ impl Engine for QwenDense {
             awq_smoothing_ffn_act: None,
             #[cfg(target_os = "macos")]
             awq_smoothing_silu_mul: None,
+            eagle5_head,
         })
     }
 
@@ -1040,6 +1086,32 @@ impl Engine for QwenDense {
         sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
         use std::sync::atomic::Ordering;
+
+        // Phase B.2: Eagle5 pre-flight gate. Reject incompatible sampling
+        // configs UP FRONT rather than letting the (greedy-only) spec-decode
+        // dispatch silently emit wrong tokens. Same contract as
+        // deepseek_v2.rs:1049-1068. Spec-decode requires:
+        //   - temperature == 0 (greedy)
+        //   - repetition_penalty == 1.0 (no token-level reweighting)
+        //   - eagle5_head loaded (held in the struct after Phase B.1)
+        if self.eagle5_head.is_some() {
+            if req.sampling.temperature != 0.0 {
+                return Err(Error::Model(format!(
+                    "eagle5 spec-decode requires temperature=0 (got {})",
+                    req.sampling.temperature
+                )));
+            }
+            if req.sampling.repetition_penalty != 1.0 {
+                return Err(Error::Model(format!(
+                    "eagle5 spec-decode requires repetition_penalty=1.0 (got {})",
+                    req.sampling.repetition_penalty
+                )));
+            }
+            // Reset per-sequence head state at the start of each generation.
+            if let Some(head) = self.eagle5_head.as_mut() {
+                head.reset();
+            }
+        }
 
         if let Some(seed) = req.sampling.seed {
             self.sampler = Sampler::new(seed);
@@ -1221,6 +1293,39 @@ impl Engine for QwenDense {
             .unwrap_or(4);
         let use_lookahead = lookahead_n > 0 && use_tcb;
 
+        // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
+        // DISMANTLE_QWEN_EAGLE5=1 and the engine's speculate_mode==Eagle5.
+        // DISMANTLE_QWEN_EAGLE5_K controls K (default 4).
+        //
+        // This is the SERIAL verify path: K sequential forwards per
+        // verify cycle. Correctness-preserving (greedy at temp=0 emits
+        // the same tokens as no-spec greedy), but NO throughput win — the
+        // per-cycle cost is K forwards for K accepted drafts. The
+        // throughput win requires a batched-verify-with-logits helper
+        // that returns per-position logits in one TCB; that's its own
+        // ~2-day workstream (Phase B.5+ in the port plan). For now we
+        // ship this serial path so:
+        //   * the dispatch wires end-to-end,
+        //   * draft_accepted / draft_rejected counters increment,
+        //   * acceptance-rate measurement against trained heads works,
+        //   * users can A/B vs baseline without risking correctness.
+        //
+        // The trained head currently runs in ZERO-CAPTURE mode (Phase B.3
+        // tradeoff): residual and intermediate are zero vectors. The head
+        // was trained expecting REAL captures of the verifier's
+        // layer-32 (Qwen-3B) hidden state, so accept rate will be low
+        // (~0.05-0.15) until the capture wiring lands as a follow-up.
+        let use_eagle5 = std::env::var("DISMANTLE_QWEN_EAGLE5")
+            .map(|v| v == "1")
+            .unwrap_or(false)
+            && use_tcb
+            && self.eagle5_head.is_some();
+        let eagle5_k: usize = std::env::var("DISMANTLE_QWEN_EAGLE5_K")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&k| k >= 1)
+            .unwrap_or(4);
+
         #[cfg(target_os = "macos")]
         if use_lookahead {
             use crate::speculate::ngram_lookahead::{LookaheadCache, LookaheadConfig};
@@ -1323,6 +1428,115 @@ impl Engine for QwenDense {
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
                     break 'lk_loop;
+                }
+            }
+        } else if use_eagle5 {
+            // Eagle5 spec-decode (serial verify). See block comment above
+            // for design rationale (no-perf-win path; engages dispatch
+            // for measurement).
+            let hidden = self.config.hidden;
+            // Zero-capture mode — see Phase B.3 in port plan.
+            let zeros = vec![0.0_f32; hidden];
+            let mut pos = prompt_len;
+            'e5_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+                let remaining = req.max_new_tokens - produced;
+                let k_avail = eagle5_k.min(remaining);
+
+                // Draft K tokens from the Eagle5 head.
+                let draft = {
+                    let head = self
+                        .eagle5_head
+                        .as_mut()
+                        .expect("eagle5_head must be Some when use_eagle5");
+                    head.propose_with_capture(last_id, &zeros, &zeros, k_avail)
+                };
+                let draft_len = draft.len();
+                if draft_len == 0 {
+                    // Head refused to propose (vocab=0 or K=0): single
+                    // greedy fallback so the loop still makes progress.
+                    let next_id = self.forward_token_greedy_tcb(last_id, pos)?;
+                    self.sampler.record(next_id);
+                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                    sink(StreamEvent::Token { id: next_id, text });
+                    produced += 1;
+                    if Some(next_id) == eos {
+                        reason = StopReason::Eos;
+                        break 'e5_loop;
+                    }
+                    last_id = next_id;
+                    pos += 1;
+                    continue;
+                }
+
+                // Serial verify — K forwards, same pattern as the
+                // lookahead branch above. Each writes KV at the current
+                // self.kv.seq_len slot; we rewind based on first_reject
+                // + whether correction was needed.
+                let backup_seq = self.kv.seq_len;
+                let mut first_reject = draft_len;
+                let mut correction: Option<u32> = None;
+                let mut tmp_last = last_id;
+                for i in 0..draft_len {
+                    let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
+                    if pred != draft[i] {
+                        first_reject = i;
+                        correction = Some(pred);
+                        break;
+                    }
+                    tmp_last = pred;
+                }
+                let committed = first_reject + if correction.is_some() { 1 } else { 0 };
+                self.kv.seq_len = backup_seq + committed;
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_len - first_reject;
+
+                // Emit accepted drafts.
+                for k in 0..first_reject {
+                    let id = draft[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    // Notify the head so its `last_token` state stays in sync.
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(id);
+                    }
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        break 'e5_loop;
+                    }
+                    if produced >= req.max_new_tokens {
+                        break 'e5_loop;
+                    }
+                }
+
+                if let Some(corr) = correction {
+                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                    sink(StreamEvent::Token { id: corr, text });
+                    self.sampler.record(corr);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(corr);
+                    }
+                    produced += 1;
+                    last_id = corr;
+                    pos += first_reject + 1;
+                    if Some(corr) == eos {
+                        reason = StopReason::Eos;
+                        break 'e5_loop;
+                    }
+                } else {
+                    last_id = draft[draft_len - 1];
+                    pos += draft_len;
+                }
+
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break 'e5_loop;
                 }
             }
         } else {
