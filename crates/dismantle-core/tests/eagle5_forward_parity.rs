@@ -60,7 +60,12 @@ fn b64_decode(s: &str) -> Vec<u8> {
     out
 }
 
+// Fixture fields not read here (`n_heads`, `num_blocks`, `top_values`) are
+// still part of the file format — kept for the human reading the JSON
+// and for any future tighter parity gate. `#[allow(dead_code)]` is
+// scoped to this struct, not the whole file.
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct Fixture {
     schema: String,
     hidden_dim: usize,
