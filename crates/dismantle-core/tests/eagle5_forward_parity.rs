@@ -112,6 +112,23 @@ fn head_path() -> Option<PathBuf> {
     }
 }
 
+fn q1p5_head_path() -> Option<PathBuf> {
+    if let Some(p) = std::env::var_os("DISMANTLE_Q1P5_HEAD") {
+        let pp = PathBuf::from(p);
+        if pp.exists() {
+            return Some(pp);
+        }
+    }
+    let home = std::env::var_os("HOME")?;
+    let candidate = PathBuf::from(home)
+        .join("Downloads/dismantle_export/heads/q1p5_eagle6_long.safetensors");
+    if candidate.exists() {
+        Some(candidate)
+    } else {
+        None
+    }
+}
+
 #[test]
 #[ignore = "needs DISMANTLE_Q3B_HEAD or ~/Downloads/head_final.safetensors"]
 fn eagle6_forward_matches_pytorch_q3b() {
@@ -245,4 +262,93 @@ fn eagle6_forward_matches_pytorch_q3b() {
 
     eprintln!("top-8 overlap: {overlap}/8 OK");
     eprintln!("Rust Eagle6 forward parity ≤{L_INF_TOL} ✓");
+}
+
+/// Same gate, against the 2-block q1p5 head (Qwen-1.5B). Exercises the
+/// `extra_blocks.0.*` code path in the loader and the chained-blocks
+/// path in `forward_single_step`. q3b is num_blocks=1; q1p5 is 2.
+#[test]
+#[ignore = "needs DISMANTLE_Q1P5_HEAD or ~/Downloads/dismantle_export/heads/q1p5_eagle6_long.safetensors"]
+fn eagle6_forward_matches_pytorch_q1p5() {
+    let head = q1p5_head_path()
+        .expect("set DISMANTLE_Q1P5_HEAD or place q1p5_eagle6_long.safetensors at ~/Downloads/dismantle_export/heads/");
+    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/eagle5_parity_q1p5.json");
+    let raw = std::fs::read_to_string(&fixture_path)
+        .unwrap_or_else(|e| panic!("read {}: {e}", fixture_path.display()));
+    let f: Fixture = serde_json::from_str(&raw).expect("parse fixture");
+    assert_eq!(f.schema, "eagle5-forward-parity-v1");
+
+    let hidden = f.hidden_dim;
+    let vocab = f.vocab_size;
+    let residual = decode_f32(&f.residual_b64, hidden);
+    let intermediate = decode_f32(&f.intermediate_b64, hidden);
+    let py_logits = decode_f32(&f.logits_b64, vocab);
+
+    let h = Eagle5Head::load_from_safetensors(&head, hidden, vocab).expect("load q1p5 head");
+    let rust_logits = h
+        .forward_logits(f.prev_token, &residual, &intermediate)
+        .expect("Trained head must return logits");
+    assert_eq!(rust_logits.len(), vocab);
+
+    let rust_argmax = rust_logits
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+        .unwrap()
+        .0 as u32;
+    assert_eq!(
+        rust_argmax, f.argmax,
+        "q1p5 top-1 argmax mismatch: rust={} pytorch={}",
+        rust_argmax, f.argmax
+    );
+
+    let mut l_inf = 0.0_f32;
+    let mut l2_sq = 0.0_f64;
+    let mut l2_rust = 0.0_f64;
+    for i in 0..vocab {
+        let diff = rust_logits[i] - py_logits[i];
+        l_inf = l_inf.max(diff.abs());
+        l2_sq += (diff as f64) * (diff as f64);
+        l2_rust += (rust_logits[i] as f64) * (rust_logits[i] as f64);
+    }
+    let l2 = l2_sq.sqrt();
+    let l2_rust = l2_rust.sqrt() as f32;
+    eprintln!("q1p5 argmax parity: rust={} pytorch={} OK", rust_argmax, f.argmax);
+    eprintln!(
+        "q1p5 rust L2={:.2}  pytorch L2={:.2}  delta L2={:.4}  L_inf={:.4e}",
+        l2_rust, f.logits_l2, l2, l_inf
+    );
+
+    // 2-block accumulates ~2x the FMA count, so we give slightly more
+    // slack on L_inf — still well under any value that would affect
+    // top-K rankings.
+    const L_INF_TOL: f32 = 1e-1;
+    assert!(l_inf <= L_INF_TOL, "q1p5 L_inf parity violation: {l_inf:.4e} > {L_INF_TOL:.4e}");
+
+    let l2_rel = ((l2_rust - f.logits_l2).abs() / f.logits_l2).abs();
+    assert!(
+        l2_rel < 0.01,
+        "q1p5 logits L2 disagrees by {:.2}%; rust={} pytorch={}",
+        l2_rel * 100.0, l2_rust, f.logits_l2,
+    );
+
+    use std::collections::HashSet;
+    let mut rust_top_k: Vec<(usize, f32)> = rust_logits
+        .iter()
+        .enumerate()
+        .map(|(i, &v)| (i, v))
+        .collect();
+    rust_top_k.select_nth_unstable_by(f.top_k - 1, |a, b| b.1.partial_cmp(&a.1).unwrap());
+    rust_top_k.truncate(f.top_k);
+    rust_top_k.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    let rust_set: HashSet<u32> = rust_top_k.iter().take(8).map(|(i, _)| *i as u32).collect();
+    let py_set: HashSet<u32> = f.top_indices.iter().take(8).copied().collect();
+    let overlap = rust_set.intersection(&py_set).count();
+    assert!(
+        overlap >= 7,
+        "q1p5 top-8 overlap too small: {overlap}/8 (rust={rust_set:?} pytorch={py_set:?})"
+    );
+    eprintln!("q1p5 top-8 overlap: {overlap}/8 OK");
+    eprintln!("Rust Eagle6 forward (2-block) parity ≤{L_INF_TOL} ✓");
 }
