@@ -53,8 +53,10 @@
 //!   sidecar buffer. That wiring is documented in the call-site comment
 //!   in `model/deepseek_v2.rs::generate()`'s Eagle5 branch.
 
+use crate::speculate::safetensors_io::SafeTensors;
 use crate::Error;
 use crate::Result;
+use half::f16;
 use std::path::Path;
 
 /// Eagle5 v2 head state. Holds either a mock-random-weights variant
@@ -89,17 +91,76 @@ enum Inner {
         embed: Vec<f32>,
         out_w: Vec<f32>,
     },
-    /// Trained head loaded from a safetensors checkpoint. Currently
-    /// unreachable; the loader returns Unimplemented. The struct is
-    /// kept as a stub so the dispatcher in `propose` can be written
-    /// against the final shape today.
-    #[allow(dead_code)]
+    /// Trained head loaded from a safetensors checkpoint produced by
+    /// `colab/finish_q3b_reconciliation.ipynb` (or the predecessor
+    /// `colab/eagle5_train_pytorch.py`). Holds the full Eagle6 head:
+    /// `in_proj` + N transformer blocks + the frozen lm_head and
+    /// token embedding shared with the verifier model.
+    ///
+    /// Memory footprint is dominated by the frozen `_token_embd` and
+    /// `_lm_head` (kept in f16 to halve RAM): for Qwen-3B that's
+    /// 2 × (2048 × 151936) × 2 bytes ≈ 1.25 GB; trainable weights add
+    /// another ~96M params × 4 = 384 MB. q1p5 head is ~700 MB total.
+    ///
+    /// **Forward pass not yet implemented.** The propose() dispatcher
+    /// currently treats Trained as if it were Mock (linear projection
+    /// of token_embd[prev] through lm_head). The real Eagle6 forward
+    /// (rmsnorm + in_proj + transformer-block attn/mlp + final norm +
+    /// lm_head) lands in a follow-up commit; this commit ships only
+    /// the loader + struct.
     Trained {
-        // Placeholder — real layout (in_proj, block, out_lm_head) lands
-        // when the safetensors loader is implemented.
-        token_embd: Vec<f32>,
-        out_lm_head: Vec<f32>,
+        config: TrainedConfig,
+        /// [hidden, 3 * hidden] f32 — projects [prev_embd | residual |
+        /// intermediate] from the verifier's capture layer down to the
+        /// head's hidden_dim.
+        in_proj: Vec<f32>,
+        /// Length = num_blocks. Each block is one transformer block
+        /// (norm → attn → norm → mlp with gated SiLU).
+        blocks: Vec<TrainedBlock>,
+        /// Scalar gate on the residual stream merge (0..1-ish).
+        residual_gate: f32,
+        /// [hidden] f32 — final RMSNorm gain. Frozen, shared with verifier.
+        output_norm: Vec<f32>,
+        /// [hidden, vocab] f16 — frozen token embedding shared with verifier.
+        token_embd_f16: Vec<f16>,
+        /// [hidden, vocab] f16 — frozen LM head shared with verifier.
+        lm_head_f16: Vec<f16>,
     },
+}
+
+/// Architecture metadata for a loaded Eagle6 trained head.
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
+pub struct TrainedConfig {
+    pub hidden_dim: usize,
+    pub vocab_size: usize,
+    pub n_heads: usize,
+    pub ff_mult: f32,
+    pub num_blocks: usize,
+    /// hidden_dim * ff_mult, the FFN inner dim (gate/up cols, down rows).
+    pub ff_dim: usize,
+}
+
+/// One transformer block of an Eagle6 head. All tensors f32 to match
+/// the trainer's safetensors output; quantization (e.g. Q4_K of the
+/// projections) is a Phase A.2+ optimization.
+#[allow(dead_code)]
+pub struct TrainedBlock {
+    /// [hidden] f32 — pre-attn RMSNorm gain.
+    pub attn_norm: Vec<f32>,
+    /// [hidden, hidden] f32 — Q projection (row-major: rows × cols).
+    pub q_proj: Vec<f32>,
+    pub k_proj: Vec<f32>,
+    pub v_proj: Vec<f32>,
+    pub out_proj: Vec<f32>,
+    /// [hidden] f32 — pre-mlp RMSNorm gain.
+    pub mlp_norm: Vec<f32>,
+    /// [ff_dim, hidden] f32 — gated SiLU gate.
+    pub mlp_gate: Vec<f32>,
+    /// [ff_dim, hidden] f32 — gated SiLU up.
+    pub mlp_up: Vec<f32>,
+    /// [hidden, ff_dim] f32 — gated SiLU down.
+    pub mlp_down: Vec<f32>,
 }
 
 impl Eagle5Head {
@@ -136,23 +197,148 @@ impl Eagle5Head {
         }
     }
 
-    /// Load a trained head from a safetensors checkpoint.
+    /// Load a trained Eagle6 head from a safetensors checkpoint
+    /// produced by `colab/finish_q3b_reconciliation.ipynb`.
     ///
-    /// **Stub**: returns `Err(Error::Unimplemented(...))` until the
-    /// trained head's tensor layout is finalized. The runtime falls
-    /// back to the mock head when this returns Err with the
-    /// "eagle5: trained head loader" tag, so a missing checkpoint
-    /// does not block spec-decode wiring tests.
+    /// Validates the file's `__metadata__` matches `(hidden, vocab)`
+    /// arguments — mismatch is a hard error to catch q3b head being
+    /// loaded against a Qwen-1.5B verifier or vice versa. Reads all
+    /// runtime tensors into RAM (trainable f32 + frozen f16). The
+    /// training-only `calib_proj.{weight,bias}` is intentionally not
+    /// loaded.
+    ///
+    /// File-format expectations (see safetensors_io.rs comment):
+    /// - 1-block head: keys under `block.*`
+    /// - N-block head (N > 1): `block.*` + `extra_blocks.{0..N-2}.*`
+    ///
+    /// **The Trained variant's `propose()` dispatch is still a
+    /// simplified linear projection (lm_head @ token_embd[prev]).
+    /// The real Eagle6 forward (in_proj + transformer block + final
+    /// norm + lm_head) lands in a follow-up commit.** This loader
+    /// stages the weights so that follow-up is a single-file change.
     pub fn load_from_safetensors(
-        _path: &Path,
-        _hidden: usize,
-        _vocab: usize,
+        path: &Path,
+        expected_hidden: usize,
+        expected_vocab: usize,
     ) -> Result<Self> {
-        Err(Error::Unimplemented(
-            "eagle5: trained head loader (use mock head fallback for now; \
-             implement once tools/training/eagle5_quantize.py output \
-             format is finalized)",
-        ))
+        let st = SafeTensors::open(path)?;
+        let meta = st.metadata();
+        let parse_usize = |k: &str| -> Result<usize> {
+            meta.get(k)
+                .ok_or_else(|| Error::Model(format!("eagle5: safetensors missing '{k}' metadata")))?
+                .parse::<usize>()
+                .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+        };
+        let parse_f32 = |k: &str| -> Result<f32> {
+            meta.get(k)
+                .ok_or_else(|| Error::Model(format!("eagle5: safetensors missing '{k}' metadata")))?
+                .parse::<f32>()
+                .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+        };
+        let hidden_dim = parse_usize("hidden_dim")?;
+        let vocab_size = parse_usize("vocab_size")?;
+        let n_heads = parse_usize("n_heads")?;
+        let num_blocks = parse_usize("num_blocks")?;
+        let ff_mult = parse_f32("ff_mult")?;
+        let ff_dim = ((hidden_dim as f32) * ff_mult) as usize;
+        if hidden_dim != expected_hidden {
+            return Err(Error::Model(format!(
+                "eagle5: head hidden_dim={hidden_dim} but verifier expects {expected_hidden}"
+            )));
+        }
+        if vocab_size != expected_vocab {
+            return Err(Error::Model(format!(
+                "eagle5: head vocab_size={vocab_size} but verifier expects {expected_vocab}"
+            )));
+        }
+        if num_blocks == 0 {
+            return Err(Error::Model("eagle5: num_blocks must be ≥1".to_string()));
+        }
+        if n_heads == 0 || hidden_dim % n_heads != 0 {
+            return Err(Error::Model(format!(
+                "eagle5: invalid n_heads={n_heads} for hidden={hidden_dim}"
+            )));
+        }
+
+        let config = TrainedConfig {
+            hidden_dim,
+            vocab_size,
+            n_heads,
+            ff_mult,
+            num_blocks,
+            ff_dim,
+        };
+
+        // in_proj is shape [hidden, 3 * hidden]: takes the concatenated
+        // [prev_token_embd | residual_in | intermediate] (each `hidden`
+        // wide) and projects to hidden. Match the trainer's PyTorch
+        // Linear weight layout: rows = out_features, cols = in_features.
+        let in_proj = st.read_f32("in_proj.weight", &[hidden_dim, 3 * hidden_dim])?;
+
+        // First block keys live under `block.`; subsequent blocks under
+        // `extra_blocks.{N-2}.` (where N is the 1-based block index).
+        // This mirrors the trainer's nn.Module naming.
+        let load_block = |prefix: &str| -> Result<TrainedBlock> {
+            Ok(TrainedBlock {
+                attn_norm: st.read_f32(&format!("{prefix}attn_norm"), &[hidden_dim])?,
+                q_proj: st.read_f32(
+                    &format!("{prefix}q_proj.weight"),
+                    &[hidden_dim, hidden_dim],
+                )?,
+                k_proj: st.read_f32(
+                    &format!("{prefix}k_proj.weight"),
+                    &[hidden_dim, hidden_dim],
+                )?,
+                v_proj: st.read_f32(
+                    &format!("{prefix}v_proj.weight"),
+                    &[hidden_dim, hidden_dim],
+                )?,
+                out_proj: st.read_f32(
+                    &format!("{prefix}out_proj.weight"),
+                    &[hidden_dim, hidden_dim],
+                )?,
+                mlp_norm: st.read_f32(&format!("{prefix}mlp_norm"), &[hidden_dim])?,
+                mlp_gate: st.read_f32(
+                    &format!("{prefix}mlp.gate.weight"),
+                    &[ff_dim, hidden_dim],
+                )?,
+                mlp_up: st.read_f32(&format!("{prefix}mlp.up.weight"), &[ff_dim, hidden_dim])?,
+                mlp_down: st.read_f32(
+                    &format!("{prefix}mlp.down.weight"),
+                    &[hidden_dim, ff_dim],
+                )?,
+            })
+        };
+
+        let mut blocks = Vec::with_capacity(num_blocks);
+        blocks.push(load_block("block.")?);
+        for i in 0..num_blocks.saturating_sub(1) {
+            blocks.push(load_block(&format!("extra_blocks.{i}."))?);
+        }
+
+        // residual_gate is a 1-element f32 vector; unwrap to scalar.
+        let gate_vec = st.read_f32("residual_gate", &[1])?;
+        let residual_gate = gate_vec[0];
+
+        // Frozen tensors shared with the verifier. f16 to halve RAM.
+        let output_norm = st.read_f32("_output_norm", &[hidden_dim])?;
+        let token_embd_f16 = st.read_f16("_token_embd", &[hidden_dim, vocab_size])?;
+        let lm_head_f16 = st.read_f16("_lm_head", &[hidden_dim, vocab_size])?;
+
+        Ok(Self {
+            inner: Inner::Trained {
+                config,
+                in_proj,
+                blocks,
+                residual_gate,
+                output_norm,
+                token_embd_f16,
+                lm_head_f16,
+            },
+            vocab: vocab_size,
+            hidden: hidden_dim,
+            last_token: None,
+        })
     }
 
     /// Propose up to `k` draft token ids for the next decode step.
@@ -226,18 +412,32 @@ impl Eagle5Head {
                 best_id
             }
             Inner::Trained {
-                token_embd,
-                out_lm_head,
+                token_embd_f16,
+                lm_head_f16,
+                ..
             } => {
+                // SIMPLIFIED placeholder: real Eagle6 forward (in_proj +
+                // transformer block + final norm + lm_head) is Phase A.2.
+                // For now we do a single linear-projection-of-embedding
+                // argmax against the frozen lm_head — accept rate will be
+                // near zero, but it proves the loader + dispatch wire
+                // end-to-end. Storage is [hidden, vocab] (transpose of
+                // Mock's [vocab, hidden] layout), so the access pattern
+                // strides through the vocab axis.
                 let h = self.hidden;
-                let row = &token_embd[prev * h..(prev + 1) * h];
+                let v_total = self.vocab;
+                // Extract column `prev` of token_embd: embd_prev[i] = token_embd[i, prev].
+                let mut embd_prev = vec![0.0f32; h];
+                for i in 0..h {
+                    embd_prev[i] = token_embd_f16[i * v_total + prev].to_f32();
+                }
                 let mut best_id = 0u32;
                 let mut best_score = f32::NEG_INFINITY;
-                for v in 0..self.vocab {
-                    let w_row = &out_lm_head[v * h..(v + 1) * h];
+                for v in 0..v_total {
+                    // logit[v] = sum_i lm_head[i, v] * embd_prev[i]
                     let mut acc = 0.0f32;
-                    for k in 0..h {
-                        acc += w_row[k] * row[k];
+                    for i in 0..h {
+                        acc += lm_head_f16[i * v_total + v].to_f32() * embd_prev[i];
                     }
                     if acc > best_score {
                         best_score = acc;
@@ -345,12 +545,167 @@ mod tests {
     }
 
     #[test]
-    fn trained_loader_returns_unimplemented() {
+    fn trained_loader_rejects_nonexistent_file() {
         let result = Eagle5Head::load_from_safetensors(
             Path::new("/nonexistent/path.safetensors"),
             128,
             5000,
         );
-        assert!(matches!(result, Err(Error::Unimplemented(_))));
+        // io::NotFound bubbles up as Error::Io, not Unimplemented anymore.
+        assert!(matches!(result, Err(Error::Io(_))));
+    }
+
+    /// Builds a tiny synthetic Eagle6 safetensors file in a temp dir and
+    /// asserts the loader reads all tensors with the expected shapes
+    /// and the metadata-validation guards fire on mismatches.
+    #[test]
+    fn trained_loader_reads_synthetic_head() {
+        use std::io::Write;
+        let hidden = 8;
+        let vocab = 16;
+        let n_heads = 2;
+        let ff_mult = 2.0_f32;
+        let ff_dim = (hidden as f32 * ff_mult) as usize;
+        let num_blocks = 1;
+
+        // Build the safetensors header JSON + concatenated tensor bytes.
+        // Layout order matches what the loader expects to find by name.
+        let mut tensor_bytes: Vec<u8> = Vec::new();
+        let mut entries: Vec<(String, &'static str, Vec<usize>, usize, usize)> = Vec::new();
+        let mut push_f32 =
+            |name: &str, shape: Vec<usize>, entries: &mut Vec<_>, bytes: &mut Vec<u8>| {
+                let n = shape.iter().product::<usize>();
+                let start = bytes.len();
+                for i in 0..n {
+                    bytes.extend_from_slice(&((i as f32) * 0.01_f32).to_le_bytes());
+                }
+                let end = bytes.len();
+                entries.push((name.to_string(), "F32", shape, start, end));
+            };
+        let mut push_f16 =
+            |name: &str, shape: Vec<usize>, entries: &mut Vec<_>, bytes: &mut Vec<u8>| {
+                let n = shape.iter().product::<usize>();
+                let start = bytes.len();
+                for i in 0..n {
+                    let v = f16::from_f32((i as f32) * 0.01_f32);
+                    bytes.extend_from_slice(&v.to_le_bytes());
+                }
+                let end = bytes.len();
+                entries.push((name.to_string(), "F16", shape, start, end));
+            };
+        push_f32(
+            "in_proj.weight",
+            vec![hidden, 3 * hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f32(
+            "block.attn_norm",
+            vec![hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        for k in ["q_proj", "k_proj", "v_proj", "out_proj"] {
+            push_f32(
+                &format!("block.{k}.weight"),
+                vec![hidden, hidden],
+                &mut entries,
+                &mut tensor_bytes,
+            );
+        }
+        push_f32(
+            "block.mlp_norm",
+            vec![hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f32(
+            "block.mlp.gate.weight",
+            vec![ff_dim, hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f32(
+            "block.mlp.up.weight",
+            vec![ff_dim, hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f32(
+            "block.mlp.down.weight",
+            vec![hidden, ff_dim],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f32("residual_gate", vec![1], &mut entries, &mut tensor_bytes);
+        push_f32(
+            "_output_norm",
+            vec![hidden],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f16(
+            "_token_embd",
+            vec![hidden, vocab],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+        push_f16(
+            "_lm_head",
+            vec![hidden, vocab],
+            &mut entries,
+            &mut tensor_bytes,
+        );
+
+        // Construct the JSON header. Use a manual builder so the field
+        // order is stable and the test doesn't pull serde_json::json! in.
+        let mut header = String::from("{");
+        header.push_str(&format!(
+            "\"__metadata__\":{{\"hidden_dim\":\"{hidden}\",\"vocab_size\":\"{vocab}\",\"n_heads\":\"{n_heads}\",\"ff_mult\":\"{ff_mult}\",\"num_blocks\":\"{num_blocks}\"}}"
+        ));
+        for (name, dtype, shape, start, end) in &entries {
+            let shape_str = shape
+                .iter()
+                .map(|d| d.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            header.push_str(&format!(
+                ",\"{name}\":{{\"dtype\":\"{dtype}\",\"shape\":[{shape_str}],\"data_offsets\":[{start},{end}]}}"
+            ));
+        }
+        header.push('}');
+        let header_bytes = header.as_bytes();
+        let header_len = header_bytes.len() as u64;
+
+        let dir = std::env::temp_dir().join(format!("eagle5_test_{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("synthetic.safetensors");
+        let mut f = std::fs::File::create(&path).unwrap();
+        f.write_all(&header_len.to_le_bytes()).unwrap();
+        f.write_all(header_bytes).unwrap();
+        f.write_all(&tensor_bytes).unwrap();
+        drop(f);
+
+        // Happy path: load + dispatch.
+        let head = Eagle5Head::load_from_safetensors(&path, hidden, vocab).unwrap();
+        assert_eq!(head.hidden(), hidden);
+        assert_eq!(head.vocab(), vocab);
+        // propose() should not crash for the Trained variant; result is
+        // a deterministic argmax over the synthetic weights.
+        let mut h = head;
+        let drafts = h.propose(0, 3);
+        assert_eq!(drafts.len(), 3);
+        for d in &drafts {
+            assert!(((*d) as usize) < vocab);
+        }
+
+        // Mismatched hidden/vocab must fail loudly.
+        let err_hidden = Eagle5Head::load_from_safetensors(&path, hidden + 1, vocab);
+        assert!(matches!(err_hidden, Err(Error::Model(_))));
+        let err_vocab = Eagle5Head::load_from_safetensors(&path, hidden, vocab + 1);
+        assert!(matches!(err_vocab, Err(Error::Model(_))));
+
+        let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_dir(&dir);
     }
 }
