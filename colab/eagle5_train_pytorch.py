@@ -295,6 +295,42 @@ def save_ckpt(head: Eagle5Head, path: Path, step: int = 0) -> None:
     np.savez(path, **flat)
 
 
+def load_ckpt(head: Eagle5Head, path: Path, device: str) -> int:
+    """Warm-start trainable params from a prior latest.npz checkpoint.
+
+    This does not restore optimizer state or skip already-seen batches; it is
+    intentionally a lightweight reconnect recovery path. If Colab drops after
+    a checkpoint write, the next run continues from learned weights instead of
+    starting the head from scratch.
+    """
+    z = np.load(path)
+    loaded = 0
+    missing = []
+    for name, param in head.named_parameters():
+        if name not in z.files:
+            missing.append(name)
+            continue
+        arr = np.asarray(z[name])
+        if tuple(arr.shape) != tuple(param.shape):
+            raise RuntimeError(
+                f"checkpoint tensor {name} shape {arr.shape} != model {tuple(param.shape)}"
+            )
+        tensor = torch.from_numpy(arr).to(device=device, dtype=param.dtype)
+        param.data.copy_(tensor)
+        loaded += 1
+    if loaded == 0:
+        raise RuntimeError(f"checkpoint {path} had no trainable tensors")
+    if missing:
+        print(
+            f"[train] WARN: checkpoint {path} missing {len(missing)} tensor(s); "
+            "continuing with initialized values for those",
+            flush=True,
+        )
+    step = int(np.asarray(z["__step__"]).item()) if "__step__" in z.files else 0
+    print(f"[train] resumed {loaded} tensors from {path} at step={step}", flush=True)
+    return step
+
+
 def save_safetensors(head: Eagle5Head, path: Path) -> None:
     """Write trainable params as a safetensors file for dismantle loading.
 
@@ -550,6 +586,10 @@ def train(args) -> None:
         f"blocks={head.num_blocks} heads={head.n_heads} device={device}",
         flush=True,
     )
+    prior_step = 0
+    latest_path = ckpt_dir / "latest.npz"
+    if latest_path.exists():
+        prior_step = load_ckpt(head, latest_path, device)
 
     # Mixed precision: bf16 on Ampere+, fp16 fallback. fp32 on CPU.
     if device == "cuda":
@@ -577,7 +617,7 @@ def train(args) -> None:
 
     log = (ckpt_dir / "log.jsonl").open("a")
     t0 = time.time()
-    step = 0
+    step = prior_step
     V = head._lm_head.shape[1]
 
     for batch in _iter_batches(
