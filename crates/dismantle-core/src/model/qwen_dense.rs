@@ -310,10 +310,13 @@ pub struct QwenDense {
     /// wiring tests. `None` when speculate is off — the qwen forward
     /// path is a no-op on the head in that case.
     ///
-    /// Storage only — the actual dispatch into this head is gated behind
-    /// the `DISMANTLE_QWEN_EAGLE5=1` env flag and lives in Phase B.4 of
-    /// the port (see `docs/eagle5_qwen_port_plan.md`).
+    /// Storage only; the actual dispatch into this head is selected by
+    /// `EngineConfig::speculate_mode == SpeculateMode::Eagle5`.
     pub(crate) eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+
+    /// Eagle5 verify window from `EngineConfig::verify_window`.
+    /// `DISMANTLE_QWEN_EAGLE5_K=N` remains as a diagnostic override.
+    pub(crate) eagle5_verify_window: usize,
 
     /// Phase B.3: scratch buffers for capturing the verifier's
     /// residual + intermediate streams at a chosen layer. The Eagle6
@@ -1038,6 +1041,8 @@ impl Engine for QwenDense {
                 .unwrap_or(default_capture)
         };
 
+        let eagle5_verify_window = config.verify_window.max(1);
+
         // Eagle5/6 head load (Phase B.1). When speculate_mode==Eagle5,
         // attempt to load the trained head from `eagle5_head_path`. If
         // path is None, fall back to a deterministic Mock head so the
@@ -1114,6 +1119,7 @@ impl Engine for QwenDense {
             #[cfg(target_os = "macos")]
             awq_smoothing_silu_mul: None,
             eagle5_head,
+            eagle5_verify_window,
             #[cfg(target_os = "macos")]
             eagle5_capture_residual_buf: None,
             #[cfg(target_os = "macos")]
@@ -1336,8 +1342,9 @@ impl Engine for QwenDense {
         let use_lookahead = lookahead_n > 0 && use_tcb;
 
         // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
-        // DISMANTLE_QWEN_EAGLE5=1 and the engine's speculate_mode==Eagle5.
-        // DISMANTLE_QWEN_EAGLE5_K controls K (default 4).
+        // `--speculate eagle5` / EngineConfig::speculate_mode == Eagle5.
+        // `--verify-window` controls K; DISMANTLE_QWEN_EAGLE5_K remains
+        // as a diagnostic override.
         //
         // This is the SERIAL verify path: K sequential forwards per
         // verify cycle. Correctness-preserving (greedy at temp=0 emits
@@ -1357,23 +1364,16 @@ impl Engine for QwenDense {
         // was trained expecting REAL captures of the verifier's
         // layer-32 (Qwen-3B) hidden state, so accept rate will be low
         // (~0.05-0.15) until the capture wiring lands as a follow-up.
-        let use_eagle5 = std::env::var("DISMANTLE_QWEN_EAGLE5")
-            .map(|v| v == "1")
-            .unwrap_or(false)
-            && use_tcb
-            && self.eagle5_head.is_some();
+        let use_eagle5 = use_tcb && self.eagle5_head.is_some();
         let eagle5_k: usize = std::env::var("DISMANTLE_QWEN_EAGLE5_K")
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&k| k >= 1)
-            .unwrap_or(4);
-        // Phase B.5.3: opt-in batched verify. When set, the K serial
-        // forward_token_greedy_tcb calls per cycle are replaced by a
-        // single forward_tokens_batched_with_logits call that processes
-        // K positions in one TCB and returns per-position logits.
-        // Saves K-1 TCB commit overheads per verify cycle (~38ms each
-        // on M3 Pro at decode), which is the actual spec-decode win.
-        // Off by default while the path is experimental.
+            .unwrap_or(self.eagle5_verify_window);
+        // Legacy diagnostic flag from the pre-capture batched-verify path.
+        // The bonus-first capture restructure below currently uses serial
+        // verify; when this flag is set we keep capture disabled because
+        // forward_tokens_batched_with_logits has no capture plumbing yet.
         let use_eagle5_batched = std::env::var("DISMANTLE_QWEN_EAGLE5_BATCHED")
             .map(|v| v == "1")
             .unwrap_or(false)
@@ -1503,7 +1503,6 @@ impl Engine for QwenDense {
                 .map(|v| v == "1")
                 .unwrap_or(false)
                 && !use_eagle5_batched;
-            let mut captures_populated = false;
             let mut pos = prompt_len;
             'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -1511,16 +1510,62 @@ impl Engine for QwenDense {
                     break;
                 }
                 let step_start = Instant::now();
+
+                // Phase B.6 verify-FIRST dispatch. Restructured from the
+                // original Phase B.4 "propose-first-then-verify" pattern,
+                // which fed the head captures from rejected-draft forwards
+                // (see reports/eagle5_phase_c_root_cause.md). New order:
+                //
+                //   Stage 1: forward(last_id, pos) -> bonus + populates captures
+                //   Stage 2: read captures, head proposes K drafts (after bonus)
+                //   Stage 3: serial verify drafts at pos+1..pos+1+K
+                //
+                // Captures now come from the LAST VERIFIED token's forward,
+                // matching what the trainer hook captured (ground-truth
+                // positions, not draft attempts).
+                //
+                // Each cycle emits 1+M tokens where M is the number of
+                // accepted drafts (0..K) plus an optional correction.
+
+                // Stage 1: bonus forward. Always runs; produces the next
+                // greedy token AND populates the capture buffers as a
+                // side effect of running through forward_token_greedy_tcb
+                // (which has the memcpy dispatches at capture_layer).
+                let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
+                self.sampler.record(bonus);
+                let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus, text });
+                if let Some(head) = self.eagle5_head.as_mut() {
+                    head.note_token(bonus);
+                }
+                produced += 1;
+                if Some(bonus) == eos {
+                    reason = StopReason::Eos;
+                    break 'e5_loop;
+                }
+                if produced >= req.max_new_tokens {
+                    // Last token of the generation; no point proposing
+                    // drafts we won't emit.
+                    break 'e5_loop;
+                }
+                // After Stage 1: pos++ logically (bonus emitted at pos+1
+                // in old semantics, BUT forward_token_greedy_tcb writes
+                // KV[pos] and the bonus is the prediction for pos+1).
+                // We treat the bonus as "now at position pos+1" for the
+                // next forward. seq_len was bumped by the forward to
+                // pos+1.
+                let bonus_pos = pos + 1;
+                last_id = bonus;
+
+                // Stage 2: read captures + propose. Captures hold layer-L
+                // state from the bonus forward we just did = verified
+                // position state. This is what the trainer expected.
                 let remaining = req.max_new_tokens - produced;
                 let k_avail = eagle5_k.min(remaining);
-
-                // Draft K tokens from the Eagle5 head. When capture mode
-                // is on AND a prior forward populated the buffers, read
-                // them into local Vec<f32>s (8 KB each at q3b — small).
-                // First cycle has no prior forward so we use zeros.
-                let captured_residual: Option<Vec<f32>> = if eagle5_capture_in_use
-                    && captures_populated
-                {
+                if k_avail == 0 {
+                    break 'e5_loop;
+                }
+                let captured_residual: Option<Vec<f32>> = if eagle5_capture_in_use {
                     let buf = self
                         .eagle5_capture_residual_buf
                         .as_ref()
@@ -1541,9 +1586,7 @@ impl Engine for QwenDense {
                 } else {
                     None
                 };
-                let captured_intermediate: Option<Vec<f32>> = if eagle5_capture_in_use
-                    && captures_populated
-                {
+                let captured_intermediate: Option<Vec<f32>> = if eagle5_capture_in_use {
                     let buf = self
                         .eagle5_capture_intermediate_buf
                         .as_ref()
@@ -1560,92 +1603,41 @@ impl Engine for QwenDense {
                         .expect("eagle5_head must be Some when use_eagle5");
                     let res_ref = captured_residual.as_deref().unwrap_or(&zeros);
                     let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
-                    head.propose_with_capture(last_id, res_ref, int_ref, k_avail)
+                    head.propose_with_capture(bonus, res_ref, int_ref, k_avail)
                 };
                 if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
                     let toks: Vec<String> = draft.iter().map(|&id| {
                         self.tokenizer.decode_one(id).unwrap_or_default()
                     }).collect();
-                    eprintln!("[eagle5-debug] last_id={} draft_ids={:?} draft_tokens={:?}",
-                        last_id, draft, toks);
+                    eprintln!("[eagle5-debug] bonus={} draft_ids={:?} draft_tokens={:?}",
+                        bonus, draft, toks);
                 }
                 let draft_len = draft.len();
                 if draft_len == 0 {
-                    // Head refused to propose (vocab=0 or K=0): single
-                    // greedy fallback so the loop still makes progress.
-                    let next_id = self.forward_token_greedy_tcb(last_id, pos)?;
-                    self.sampler.record(next_id);
-                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
-                    sink(StreamEvent::Token { id: next_id, text });
-                    produced += 1;
-                    if Some(next_id) == eos {
-                        reason = StopReason::Eos;
-                        break 'e5_loop;
-                    }
-                    last_id = next_id;
-                    pos += 1;
+                    pos = bonus_pos;
                     continue;
                 }
 
-                // Serial OR batched verify. Both end at the same place:
-                // first_reject + optional correction. Batched does K
-                // forwards in one TCB; serial does K separate TCBs.
-                let backup_seq = self.kv.seq_len;
+                // Stage 3: serial verify. forward(tmp_last, bonus_pos+i)
+                // for i in 0..K. tmp_last starts at bonus (the token we
+                // just emitted). After iteration i, KV[bonus_pos+i]
+                // holds tmp_last (= bonus if i=0, drafts[i-1] otherwise),
+                // and pred is the model's argmax for position bonus_pos+i+1
+                // which we compare to drafts[i].
                 let mut first_reject = draft_len;
                 let mut correction: Option<u32> = None;
-
-                if use_eagle5_batched {
-                    // Build batch: [last_id, draft_0, ..., draft_{K-2}]
-                    // at positions [pos, pos+1, ..., pos+K-1]. The
-                    // function returns K logit vectors; logits[k] is
-                    // the prediction AFTER consuming batch[k] at
-                    // positions[k] = pos+k. Compare each pred to draft[k]
-                    // (which was supposed to land at pos+k+1).
-                    let mut batch_tokens: Vec<u32> = Vec::with_capacity(draft_len);
-                    batch_tokens.push(last_id);
-                    if draft_len > 1 {
-                        batch_tokens.extend_from_slice(&draft[..draft_len - 1]);
+                let mut tmp_last = bonus;
+                for i in 0..draft_len {
+                    let pred = self.forward_token_greedy_tcb(tmp_last, bonus_pos + i)?;
+                    if pred != draft[i] {
+                        first_reject = i;
+                        correction = Some(pred);
+                        break;
                     }
-                    let batch_positions: Vec<usize> =
-                        (0..draft_len).map(|i| pos + i).collect();
-                    let logits_batch = self
-                        .forward_tokens_batched_with_logits(&batch_tokens, &batch_positions)?;
-                    debug_assert_eq!(logits_batch.len(), draft_len);
-                    for k in 0..draft_len {
-                        let pred = crate::kernels::argmax_f32(&logits_batch[k]);
-                        if pred != draft[k] {
-                            first_reject = k;
-                            correction = Some(pred);
-                            break;
-                        }
-                    }
-                } else {
-                    // Serial verify — K forwards, same pattern as the
-                    // lookahead branch above.
-                    let mut tmp_last = last_id;
-                    for i in 0..draft_len {
-                        let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
-                        if pred != draft[i] {
-                            first_reject = i;
-                            correction = Some(pred);
-                            break;
-                        }
-                        tmp_last = pred;
-                    }
+                    tmp_last = pred;
                 }
-                let committed = first_reject + if correction.is_some() { 1 } else { 0 };
-                self.kv.seq_len = backup_seq + committed;
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
-                // At this point at least one forward_token_greedy_tcb (serial
-                // path) OR forward_tokens_batched_with_logits (batched path)
-                // has run. The serial path populates captures; the batched
-                // path does not. Either way, mark this cycle's forwards
-                // complete so subsequent propose calls can read whatever's
-                // in the capture buffers (zeros if batched, real if serial).
-                if eagle5_capture_in_use && !use_eagle5_batched {
-                    captures_populated = true;
-                }
 
                 // Emit accepted drafts.
                 for k in 0..first_reject {
@@ -1653,7 +1645,6 @@ impl Engine for QwenDense {
                     let text = self.tokenizer.decode_one(id).unwrap_or_default();
                     sink(StreamEvent::Token { id, text });
                     self.sampler.record(id);
-                    // Notify the head so its `last_token` state stays in sync.
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.note_token(id);
                     }
@@ -1667,6 +1658,7 @@ impl Engine for QwenDense {
                     }
                 }
 
+                // Emit correction (if any) and advance state.
                 if let Some(corr) = correction {
                     let text = self.tokenizer.decode_one(corr).unwrap_or_default();
                     sink(StreamEvent::Token { id: corr, text });
@@ -1676,14 +1668,36 @@ impl Engine for QwenDense {
                     }
                     produced += 1;
                     last_id = corr;
-                    pos += first_reject + 1;
+                    // KV state after stage 3 on reject at i:
+                    //   - Stage 1 wrote KV[pos] = old last_id, seq_len = pos+1.
+                    //   - Stage 3 did i+1 forwards (iters 0..=i), each
+                    //     writing KV[bonus_pos+iter] and bumping seq_len.
+                    //   - After break: seq_len = bonus_pos + i + 1 = pos + 2 + i.
+                    //   - Correction sits LOGICALLY at bonus_pos + i + 1 = pos + 2 + i.
+                    //     KV[pos+2+i] is NOT yet written; next cycle's stage 1
+                    //     will write it.
+                    //   - Need: pos = pos + 2 + i (= bonus_pos + i + 1).
+                    //     seq_len must equal new pos so the next stage 1's
+                    //     forward(corr, pos_new) writes KV[pos_new] without
+                    //     gap.
+                    pos = bonus_pos + first_reject + 1;
+                    self.kv.seq_len = pos;
                     if Some(corr) == eos {
                         reason = StopReason::Eos;
                         break 'e5_loop;
                     }
                 } else {
+                    // All drafts accepted. Stage 3 did K forwards, so
+                    // seq_len = bonus_pos + K. Last emitted token is
+                    // drafts[K-1], sitting at position bonus_pos + K.
+                    // The forward at iteration K-1 wrote KV[bonus_pos+K-1]
+                    // = drafts[K-2], so KV[bonus_pos+K] (= position of
+                    // drafts[K-1]) is NOT yet written. Next cycle's
+                    // stage 1 forward writes it.
                     last_id = draft[draft_len - 1];
-                    pos += draft_len;
+                    pos = bonus_pos + draft_len;
+                    // seq_len bumped by stage 3 to bonus_pos + draft_len
+                    // = pos, so no rewind is needed.
                 }
 
                 if stall_active && step_start.elapsed() > stall_limit {
