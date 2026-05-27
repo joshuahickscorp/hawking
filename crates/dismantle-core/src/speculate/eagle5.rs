@@ -361,6 +361,98 @@ impl Eagle5Head {
         out
     }
 
+    /// Real Eagle6 forward propose: like `propose()` but supplies the
+    /// verifier's residual + intermediate streams (captured from the
+    /// head's capture layer at the verifier's current decode position)
+    /// for use by the Trained variant's `in_proj`.
+    ///
+    /// For Mock heads, the captured streams are ignored (Mock has no
+    /// `in_proj`). For Trained heads, they're concatenated with the
+    /// previous-token embedding to form the (3 * hidden,) `in_proj`
+    /// input.
+    ///
+    /// Auto-regressive chain at S=1: each step's prev_token is the
+    /// previous draft. residual + intermediate stay constant across
+    /// all K steps within a single verify cycle — they're the
+    /// snapshot from the last verifier forward.
+    pub fn propose_with_capture(
+        &mut self,
+        prev_token: u32,
+        residual_in: &[f32],
+        intermediate: &[f32],
+        k: usize,
+    ) -> Vec<u32> {
+        if k == 0 || self.vocab == 0 {
+            return Vec::new();
+        }
+        let mut out = Vec::with_capacity(k);
+        let mut cur = self.last_token.unwrap_or(prev_token);
+        for _ in 0..k {
+            let next = self.argmax_step_full(cur, residual_in, intermediate);
+            out.push(next);
+            cur = next;
+        }
+        out
+    }
+
+    /// Full-forward argmax step. For Trained heads invokes the real
+    /// Eagle6 forward pass via `eagle5_forward::forward_single_step`.
+    /// For Mock heads falls back to the simple linear projection.
+    fn argmax_step_full(
+        &self,
+        prev: u32,
+        residual_in: &[f32],
+        intermediate: &[f32],
+    ) -> u32 {
+        match &self.inner {
+            Inner::Mock { .. } => self.argmax_step(prev),
+            Inner::Trained { .. } => {
+                let logits = self
+                    .forward_logits(prev, residual_in, intermediate)
+                    .expect("Trained variant must return Some(logits)");
+                crate::kernels::argmax_f32(&logits) as u32
+            }
+        }
+    }
+
+    /// Run a single Eagle6 forward step and return the full vocab-length
+    /// logits vector. Only meaningful for `Inner::Trained`; returns
+    /// `None` for `Inner::Mock` (Mock has no transformer-block forward).
+    ///
+    /// Exposed for parity-testing the Rust forward against the PyTorch
+    /// reference. Not on the runtime hot path — runtime uses
+    /// `propose_with_capture` which argmaxes internally.
+    pub fn forward_logits(
+        &self,
+        prev_token: u32,
+        residual_in: &[f32],
+        intermediate: &[f32],
+    ) -> Option<Vec<f32>> {
+        match &self.inner {
+            Inner::Mock { .. } => None,
+            Inner::Trained {
+                config,
+                in_proj,
+                blocks,
+                residual_gate,
+                output_norm,
+                token_embd_f16,
+                lm_head_f16,
+            } => Some(crate::speculate::eagle5_forward::forward_single_step(
+                config,
+                in_proj,
+                blocks,
+                *residual_gate,
+                output_norm,
+                token_embd_f16,
+                lm_head_f16,
+                prev_token,
+                residual_in,
+                intermediate,
+            )),
+        }
+    }
+
     /// Record a token that was emitted (either an accepted draft or a
     /// verifier correction). The next `propose` call will seed from
     /// this token.
