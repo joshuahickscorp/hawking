@@ -314,6 +314,32 @@ pub struct QwenDense {
     /// the `DISMANTLE_QWEN_EAGLE5=1` env flag and lives in Phase B.4 of
     /// the port (see `docs/eagle5_qwen_port_plan.md`).
     pub(crate) eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+
+    /// Phase B.3: scratch buffers for capturing the verifier's
+    /// residual + intermediate streams at a chosen layer. The Eagle6
+    /// trained head's `in_proj` consumes
+    /// `[prev_token_embd | residual_in | intermediate_signal]` and was
+    /// trained with these captures from the verifier's layer 32
+    /// (Qwen-3B) or 22 (Qwen-1.5B). Lazy-init on the first
+    /// `forward_token_greedy_tcb` call when
+    /// `DISMANTLE_QWEN_EAGLE5_CAPTURE=1`. `None` when capture is off
+    /// (which is the default).
+    ///
+    /// Each buffer holds `hidden * sizeof::<f32>()` bytes. They're
+    /// repurposed across every decode token while capture is active —
+    /// at end of each token's forward, they hold the most recent
+    /// capture, which the Eagle5 dispatch then reads via shared memory.
+    #[cfg(target_os = "macos")]
+    pub(crate) eagle5_capture_residual_buf: Option<crate::metal::PinnedBuffer>,
+    #[cfg(target_os = "macos")]
+    pub(crate) eagle5_capture_intermediate_buf: Option<crate::metal::PinnedBuffer>,
+    /// Layer index (0-based) at which to capture. Defaults to
+    /// `n_layers - 4` (matches the trainer's choice for both
+    /// Qwen-3B 36-layer = 32 and Qwen-1.5B 28-layer = 24, with 24
+    /// being close to the trainer's 22 — accept rate may drift
+    /// slightly for q1p5; q3b matches exactly).
+    /// Override via `DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER=N`.
+    pub(crate) eagle5_capture_layer: usize,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -1001,6 +1027,17 @@ impl Engine for QwenDense {
             );
         }
 
+        // Phase B.3: compute the capture layer index from env or default
+        // before `cfg` is moved into the struct below.
+        let eagle5_capture_layer_resolved = {
+            let default_capture = cfg.n_layers.saturating_sub(4);
+            std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .filter(|&n| n < cfg.n_layers)
+                .unwrap_or(default_capture)
+        };
+
         // Eagle5/6 head load (Phase B.1). When speculate_mode==Eagle5,
         // attempt to load the trained head from `eagle5_head_path`. If
         // path is None, fall back to a deterministic Mock head so the
@@ -1077,6 +1114,11 @@ impl Engine for QwenDense {
             #[cfg(target_os = "macos")]
             awq_smoothing_silu_mul: None,
             eagle5_head,
+            #[cfg(target_os = "macos")]
+            eagle5_capture_residual_buf: None,
+            #[cfg(target_os = "macos")]
+            eagle5_capture_intermediate_buf: None,
+            eagle5_capture_layer: eagle5_capture_layer_resolved,
         })
     }
 
@@ -1443,11 +1485,25 @@ impl Engine for QwenDense {
             }
         } else if use_eagle5 {
             // Eagle5 spec-decode (serial verify). See block comment above
-            // for design rationale (no-perf-win path; engages dispatch
-            // for measurement).
+            // for design rationale.
             let hidden = self.config.hidden;
-            // Zero-capture mode — see Phase B.3 in port plan.
+            // Always allocate the zero fallback; used on cycle 1 (before
+            // any forward has populated the capture buffers) and when
+            // capture mode is off.
             let zeros = vec![0.0_f32; hidden];
+            // Phase B.3.2: capture-mode integration. When the capture
+            // env flag is set, propose_with_capture reads from the
+            // PinnedBuffer that forward_token_greedy_tcb writes to at
+            // the chosen layer. Capture is incompatible with batched
+            // verify in this commit — batched calls forward_tokens_batch_tcb
+            // which has no capture code. Mutually exclusive: setting
+            // BATCHED=1 + CAPTURE=1 together silently degrades to
+            // zero-capture (captures never populate). Documented in port plan.
+            let eagle5_capture_in_use = std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE")
+                .map(|v| v == "1")
+                .unwrap_or(false)
+                && !use_eagle5_batched;
+            let mut captures_populated = false;
             let mut pos = prompt_len;
             'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -1458,13 +1514,46 @@ impl Engine for QwenDense {
                 let remaining = req.max_new_tokens - produced;
                 let k_avail = eagle5_k.min(remaining);
 
-                // Draft K tokens from the Eagle5 head.
+                // Draft K tokens from the Eagle5 head. When capture mode
+                // is on AND a prior forward populated the buffers, read
+                // them into local Vec<f32>s (8 KB each at q3b — small).
+                // First cycle has no prior forward so we use zeros.
+                let captured_residual: Option<Vec<f32>> = if eagle5_capture_in_use
+                    && captures_populated
+                {
+                    let buf = self
+                        .eagle5_capture_residual_buf
+                        .as_ref()
+                        .expect("residual capture buf must exist when capture is in use");
+                    let ptr = buf.contents() as *const f32;
+                    // SAFETY: buffer was allocated as hidden * f32 bytes
+                    // and populated by memcpy_f32_off_tcb on the prior
+                    // forward (Apple Silicon shared memory means the
+                    // bytes are visible after commit_and_wait).
+                    Some(unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec())
+                } else {
+                    None
+                };
+                let captured_intermediate: Option<Vec<f32>> = if eagle5_capture_in_use
+                    && captures_populated
+                {
+                    let buf = self
+                        .eagle5_capture_intermediate_buf
+                        .as_ref()
+                        .expect("intermediate capture buf must exist when capture is in use");
+                    let ptr = buf.contents() as *const f32;
+                    Some(unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec())
+                } else {
+                    None
+                };
                 let draft = {
                     let head = self
                         .eagle5_head
                         .as_mut()
                         .expect("eagle5_head must be Some when use_eagle5");
-                    head.propose_with_capture(last_id, &zeros, &zeros, k_avail)
+                    let res_ref = captured_residual.as_deref().unwrap_or(&zeros);
+                    let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
+                    head.propose_with_capture(last_id, res_ref, int_ref, k_avail)
                 };
                 let draft_len = draft.len();
                 if draft_len == 0 {
@@ -1534,6 +1623,15 @@ impl Engine for QwenDense {
                 self.kv.seq_len = backup_seq + committed;
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
+                // At this point at least one forward_token_greedy_tcb (serial
+                // path) OR forward_tokens_batched_with_logits (batched path)
+                // has run. The serial path populates captures; the batched
+                // path does not. Either way, mark this cycle's forwards
+                // complete so subsequent propose calls can read whatever's
+                // in the capture buffers (zeros if batched, real if serial).
+                if eagle5_capture_in_use && !use_eagle5_batched {
+                    captures_populated = true;
+                }
 
                 // Emit accepted drafts.
                 for k in 0..first_reject {
@@ -2501,6 +2599,26 @@ impl QwenDense {
         } else {
             None
         };
+        // Phase B.3: Eagle5 capture mode. Lazy-allocates two PinnedBuffers
+        // (residual + intermediate, hidden * f32 each) on first activation.
+        // The buffers persist across decode steps and are overwritten by
+        // every forward — the Eagle5 dispatch reads the most recent capture.
+        let eagle5_capture_active = std::env::var_os("DISMANTLE_QWEN_EAGLE5_CAPTURE")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        if eagle5_capture_active {
+            let h_bytes = self.config.hidden * std::mem::size_of::<f32>();
+            if self.eagle5_capture_residual_buf.is_none() {
+                if let Some(ctx) = self.metal_ctx.as_ref() {
+                    self.eagle5_capture_residual_buf = Some(ctx.new_buffer(h_bytes));
+                }
+            }
+            if self.eagle5_capture_intermediate_buf.is_none() {
+                if let Some(ctx) = self.metal_ctx.as_ref() {
+                    self.eagle5_capture_intermediate_buf = Some(ctx.new_buffer(h_bytes));
+                }
+            }
+        }
         // When AWQ is active the sidecar IS the AWQ-baked Q4K_FAST file,
         // so we must route the Q4_K projections through the q4k_fast
         // kernel even if DISMANTLE_QWEN_Q4K_FAST wasn't set explicitly.
@@ -3234,6 +3352,26 @@ impl QwenDense {
                     eps,
                     h,
                 )?;
+            }
+            // Phase B.3: capture residual + intermediate at the chosen
+            // layer for Eagle5 spec-decode. Two `memcpy_f32_off` dispatches
+            // run in the same TCB as the layer compute (no commit split).
+            // Capture happens AFTER the fused add+rmsnorm so `x_buf` holds
+            // the layer's residual output (x + ffn_down). The intermediate
+            // (ffn_down output BEFORE the residual add) was already in
+            // ffn_down_buf since the fused dispatch reads it but doesn't
+            // overwrite it — so we can copy the same buffer here.
+            if eagle5_capture_active && li == self.eagle5_capture_layer {
+                let res_buf = self
+                    .eagle5_capture_residual_buf
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("eagle5 capture residual buf missing".into()))?;
+                let int_buf = self
+                    .eagle5_capture_intermediate_buf
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("eagle5 capture intermediate buf missing".into()))?;
+                kernels::memcpy_f32_off_tcb(&mut tcb, &arena.x_buf, res_buf, 0, 0, h)?;
+                kernels::memcpy_f32_off_tcb(&mut tcb, &arena.ffn_down_buf, int_buf, 0, 0, h)?;
             }
             let _ = kv_dim_bytes;
         }
