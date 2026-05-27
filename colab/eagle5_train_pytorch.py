@@ -296,22 +296,24 @@ def save_ckpt(head: Eagle5Head, path: Path, step: int = 0) -> None:
 
 
 def save_safetensors(head: Eagle5Head, path: Path) -> None:
-    """Write trainable params as a safetensors file for dismantle loading."""
-    try:
-        from safetensors.torch import save_file
-    except ImportError:
-        print("WARN: safetensors not installed; skipping safetensors export.",
-              file=sys.stderr)
-        return
+    """Write trainable params as a safetensors file for dismantle loading.
+
+    Atomic: writes to `path.tmp`, fsyncs, renames into place. Then re-reads
+    to verify the file is loadable. Raises if safetensors is unavailable or
+    the round-trip fails — silent-skip would let the trainer exit 0 without
+    producing the artifact, which is the failure mode that lost a head once.
+    """
+    from safetensors.torch import save_file, safe_open
     state = {k: v.detach().cpu().contiguous() for k, v in head.named_parameters()}
     # Also dump the frozen tensors so the loader can reconstruct without
     # needing a separate frozen.npz on the dismantle side.
     state["_token_embd"] = head._token_embd.detach().cpu().contiguous()
     state["_lm_head"] = head._lm_head.detach().cpu().contiguous()
     state["_output_norm"] = head._output_norm.detach().cpu().contiguous()
+    tmp = path.with_suffix(path.suffix + ".tmp")
     save_file(
         state,
-        str(path),
+        str(tmp),
         metadata={
             "hidden_dim": str(head.hidden_dim),
             "vocab_size": str(head.vocab_size),
@@ -320,6 +322,17 @@ def save_safetensors(head: Eagle5Head, path: Path) -> None:
             "ff_mult": str(head.ff_mult),
         },
     )
+    # fsync the tmp file before rename so the bytes are durable.
+    with open(tmp, "rb") as f:
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+    # Round-trip verify: open in read mode and confirm we can list keys.
+    with safe_open(str(path), framework="pt") as f:
+        keys = list(f.keys())
+    if len(keys) < 4:  # at minimum: some param + the 3 frozen tensors
+        raise RuntimeError(
+            f"safetensors verify failed: only {len(keys)} keys in {path}"
+        )
 
 
 # ────────────────────────────────────────────────────────────────────────
