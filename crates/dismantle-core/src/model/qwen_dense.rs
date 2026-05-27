@@ -1325,6 +1325,17 @@ impl Engine for QwenDense {
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&k| k >= 1)
             .unwrap_or(4);
+        // Phase B.5.3: opt-in batched verify. When set, the K serial
+        // forward_token_greedy_tcb calls per cycle are replaced by a
+        // single forward_tokens_batched_with_logits call that processes
+        // K positions in one TCB and returns per-position logits.
+        // Saves K-1 TCB commit overheads per verify cycle (~38ms each
+        // on M3 Pro at decode), which is the actual spec-decode win.
+        // Off by default while the path is experimental.
+        let use_eagle5_batched = std::env::var("DISMANTLE_QWEN_EAGLE5_BATCHED")
+            .map(|v| v == "1")
+            .unwrap_or(false)
+            && use_eagle5;
 
         #[cfg(target_os = "macos")]
         if use_lookahead {
@@ -1473,22 +1484,51 @@ impl Engine for QwenDense {
                     continue;
                 }
 
-                // Serial verify — K forwards, same pattern as the
-                // lookahead branch above. Each writes KV at the current
-                // self.kv.seq_len slot; we rewind based on first_reject
-                // + whether correction was needed.
+                // Serial OR batched verify. Both end at the same place:
+                // first_reject + optional correction. Batched does K
+                // forwards in one TCB; serial does K separate TCBs.
                 let backup_seq = self.kv.seq_len;
                 let mut first_reject = draft_len;
                 let mut correction: Option<u32> = None;
-                let mut tmp_last = last_id;
-                for i in 0..draft_len {
-                    let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
-                    if pred != draft[i] {
-                        first_reject = i;
-                        correction = Some(pred);
-                        break;
+
+                if use_eagle5_batched {
+                    // Build batch: [last_id, draft_0, ..., draft_{K-2}]
+                    // at positions [pos, pos+1, ..., pos+K-1]. The
+                    // function returns K logit vectors; logits[k] is
+                    // the prediction AFTER consuming batch[k] at
+                    // positions[k] = pos+k. Compare each pred to draft[k]
+                    // (which was supposed to land at pos+k+1).
+                    let mut batch_tokens: Vec<u32> = Vec::with_capacity(draft_len);
+                    batch_tokens.push(last_id);
+                    if draft_len > 1 {
+                        batch_tokens.extend_from_slice(&draft[..draft_len - 1]);
                     }
-                    tmp_last = pred;
+                    let batch_positions: Vec<usize> =
+                        (0..draft_len).map(|i| pos + i).collect();
+                    let logits_batch = self
+                        .forward_tokens_batched_with_logits(&batch_tokens, &batch_positions)?;
+                    debug_assert_eq!(logits_batch.len(), draft_len);
+                    for k in 0..draft_len {
+                        let pred = crate::kernels::argmax_f32(&logits_batch[k]);
+                        if pred != draft[k] {
+                            first_reject = k;
+                            correction = Some(pred);
+                            break;
+                        }
+                    }
+                } else {
+                    // Serial verify — K forwards, same pattern as the
+                    // lookahead branch above.
+                    let mut tmp_last = last_id;
+                    for i in 0..draft_len {
+                        let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
+                        if pred != draft[i] {
+                            first_reject = i;
+                            correction = Some(pred);
+                            break;
+                        }
+                        tmp_last = pred;
+                    }
                 }
                 let committed = first_reject + if correction.is_some() { 1 } else { 0 };
                 self.kv.seq_len = backup_seq + committed;
@@ -3777,6 +3817,99 @@ impl QwenDense {
         self.kv.seq_len += b;
 
         Ok(())
+    }
+
+    /// Batched-verify-with-logits — spec-decode's per-cycle workhorse.
+    ///
+    /// Given B (tokens, positions), runs all B token forwards in ONE GPU
+    /// command buffer (sharing weight reads across positions), then
+    /// computes per-position LM-head logits on CPU and returns them.
+    ///
+    /// Returns `Vec<Vec<f32>>` of length B; element k is the vocab-length
+    /// logit vector AFTER consuming `tokens[k]` at `positions[k]`. Spec-
+    /// decode consumes `argmax(logits[k])` and compares to the draft
+    /// at position k+1.
+    ///
+    /// Implementation: two-stage.
+    ///   1. Delegates to `forward_tokens_batch_tcb` which runs the
+    ///      transformer stack for B positions and ends with the
+    ///      normalized hidden states in `dense_arena.x_norm_buf_batch`.
+    ///   2. Reads `x_norm_buf_batch` from shared memory (Apple Silicon
+    ///      unified memory — no DMA), then does B CPU LM-head matmuls
+    ///      (threaded via `matmul_no_bias_f16w`).
+    ///
+    /// Why CPU LM head instead of GPU: avoids adding offset support to
+    /// the GEMV kernel and avoids a second TCB commit (which would cost
+    /// ~one TCB-commit-time per cycle, eating the spec-decode win).
+    /// CPU at q3b shape: ~6ms per position × B=5 (K=4 + bonus) = ~30ms
+    /// total; GPU would be ~10ms per dispatch × 5 = ~50ms plus another
+    /// TCB commit.
+    ///
+    /// Used by the Eagle5 verify branch in `generate()` when
+    /// `DISMANTLE_QWEN_EAGLE5_BATCHED=1` is set. Phase B.4's serial
+    /// verify is the fallback when the flag is off.
+    ///
+    /// Skips vocab pruning intentionally: spec-decode needs full-vocab
+    /// logits because the draft head proposes over the full vocabulary
+    /// (the trained Eagle6 head's `_lm_head` covers all 151936 ids).
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_batched_with_logits(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(Vec::new());
+        }
+        let h = self.config.hidden;
+        let vocab = self.config.vocab_size;
+
+        // Stage 1: GPU forward through layers + final norm (no LM head).
+        // forward_tokens_batch_tcb populates dense_arena.x_norm_buf_batch
+        // with B normalized hidden states and commits.
+        self.forward_tokens_batch_tcb(tokens, positions)?;
+
+        // Stage 2: read x_norm_buf_batch from shared memory.
+        let arena = self.dense_arena.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_batched_with_logits: arena not initialized".into())
+        })?;
+        let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
+        let total_floats = b * h;
+        // SAFETY: arena.x_norm_buf_batch is sized for max_batch * h * 4
+        // bytes (see DenseDecodeArena::new), so total_floats f32s are
+        // in bounds. The buffer holds f32 (after rmsnorm produces f32
+        // hidden states in unified-memory shared storage on Apple Silicon).
+        let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, total_floats) };
+
+        // Stage 3: per-position CPU LM-head matmul. lm_head_f16 stored
+        // row-major [vocab, hidden]; tied to embed when lm_head is None.
+        let lm_head_src: &[f16] = match self.lm_head.as_ref() {
+            Some(w) => w.as_slice(),
+            None => self.embed.as_slice(),
+        };
+        if lm_head_src.len() != vocab * h {
+            return Err(Error::Model(format!(
+                "forward_tokens_batched_with_logits: lm_head size mismatch ({} vs {}*{}={})",
+                lm_head_src.len(),
+                vocab,
+                h,
+                vocab * h
+            )));
+        }
+
+        let mut out = Vec::with_capacity(b);
+        for k in 0..b {
+            let x_norm_k = &x_norm_all[k * h..(k + 1) * h];
+            let logits = crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+                lm_head_src,
+                x_norm_k,
+                vocab,
+                h,
+            );
+            out.push(logits);
+        }
+        Ok(out)
     }
 }
 

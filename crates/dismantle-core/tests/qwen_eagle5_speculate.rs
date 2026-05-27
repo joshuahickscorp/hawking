@@ -91,6 +91,7 @@ fn clear_env() {
     std::env::remove_var("DISMANTLE_QWEN_TCB");
     std::env::remove_var("DISMANTLE_QWEN_EAGLE5");
     std::env::remove_var("DISMANTLE_QWEN_EAGLE5_K");
+    std::env::remove_var("DISMANTLE_QWEN_EAGLE5_BATCHED");
 }
 
 #[test]
@@ -179,5 +180,64 @@ fn qwen_eagle5_speculate_on_mock_head_engages_and_preserves_greedy() {
     eprintln!(
         "eagle5 dispatch engaged: accepted={} rejected={} ({} tokens emitted)",
         eagle5_stats.draft_accepted, eagle5_stats.draft_rejected, eagle5_ids.len()
+    );
+}
+
+/// Phase B.5.4 — batched verify must preserve greedy parity.
+///
+/// Same invariant as the serial test, but with
+/// `DISMANTLE_QWEN_EAGLE5_BATCHED=1` flipped on. The batched-with-logits
+/// dispatch must produce identical tokens AND increment counters.
+/// Without this gate the entire spec-decode-with-batched-verify path
+/// could silently emit wrong tokens.
+#[test]
+fn qwen_eagle5_batched_mock_head_preserves_greedy() {
+    let _g = ENV_LOCK.lock().unwrap();
+    clear_env();
+    let Some(weights) = find_weights() else {
+        eprintln!("skipping: no qwen2.5-3b-instruct-q4_k_m.gguf in models/");
+        return;
+    };
+    let profile = find_profile(&weights);
+
+    // Baseline.
+    std::env::set_var("DISMANTLE_QWEN_TCB", "1");
+    let cfg_baseline = dismantle_core::EngineConfig {
+        kernel_profile: profile.clone(),
+        ..Default::default()
+    };
+    let (baseline_ids, _) = run_greedy_capture_stats(&weights, cfg_baseline);
+    clear_env();
+
+    // Eagle5 + batched verify with mock head.
+    std::env::set_var("DISMANTLE_QWEN_TCB", "1");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5", "1");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5_K", "4");
+    std::env::set_var("DISMANTLE_QWEN_EAGLE5_BATCHED", "1");
+    let cfg_batched = dismantle_core::EngineConfig {
+        kernel_profile: profile.clone(),
+        speculate: true,
+        speculate_mode: dismantle_core::SpeculateMode::Eagle5,
+        eagle5_head_path: None,
+        ..Default::default()
+    };
+    let (batched_ids, batched_stats) = run_greedy_capture_stats(&weights, cfg_batched);
+    clear_env();
+
+    assert_eq!(
+        baseline_ids, batched_ids,
+        "batched eagle5 spec-decode at temp=0 must emit identical tokens to no-spec greedy\n  \
+         baseline: {baseline_ids:?}\n  batched:  {batched_ids:?}",
+    );
+
+    let total = batched_stats.draft_accepted + batched_stats.draft_rejected;
+    assert!(
+        total > 0,
+        "batched eagle5 dispatch never engaged: accepted={} rejected={}",
+        batched_stats.draft_accepted, batched_stats.draft_rejected,
+    );
+    eprintln!(
+        "batched eagle5 engaged: accepted={} rejected={} ({} tokens emitted)",
+        batched_stats.draft_accepted, batched_stats.draft_rejected, batched_ids.len()
     );
 }
