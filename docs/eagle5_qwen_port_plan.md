@@ -150,19 +150,29 @@ The original "port" plan. Per-section file:line refs from the
 
 4. **Expose capture-layer hidden states for the head.** Phase A.2's
    real forward needs `residual_in` and `intermediate` from the
-   verifier's capture layer (32 for Qwen-3B, 22 for Qwen-1.5B). In
-   qwen_dense.rs the per-layer compute currently writes back to the
-   single residual stream and discards intermediate. Plumbing:
-   - Add an optional `capture_buf: Option<MetalBufferF16>` field to
-     QwenDense that's sized `[hidden]` for residual + `[hidden]` for
-     intermediate.
-   - In the layer loop, after the chosen capture layer's output, copy
-     residual + intermediate to capture_buf.
-   - In the Eagle5 branch, pass capture_buf to `eagle5_head.propose`.
-     Requires extending the `propose` signature to accept these
-     tensors — currently it takes only `prev_token: u32, k: usize`.
-     Update both Mock (ignore the tensors) and Trained (use them in
-     the in_proj input).
+   verifier's capture layer (32 for Qwen-3B, 22 for Qwen-1.5B).
+
+   **Status (2026-05-27 overnight push):** The runtime ships
+   Phase B.3 in "zero-capture mode" — the head sees `residual=[0…]`
+   and `intermediate=[0…]` as in_proj inputs. The trained head was
+   calibrated with real captures, so this degrades accept rate
+   significantly (likely 0.05–0.15 vs trained's projected 0.7).
+   BUT it proves the dispatch path engages end-to-end and the
+   acceptance counters increment; we can measure something now.
+
+   Real Metal→CPU capture at the chosen layer is the next attended
+   session's job and is a substantial refactor of
+   `forward_token_greedy_tcb` because the TCB API commits all
+   dispatches at the end; mid-forward synchronous readback breaks
+   the throughput model. Likely approach:
+   - Add a `forward_token_with_capture` sibling that commits the
+     first L+1 layers, reads residual + intermediate from a
+     temporary Metal staging buffer, then commits the remaining
+     layers + lm_head + argmax in a second TCB.
+   - OR — preferable — keep one TCB but enqueue an explicit
+     `blit_copy_buffer_to_cpu` at layer L's boundary, fence on it
+     before issuing the next layer's dispatches.
+   - Either way: ~2 day attended workstream.
 
 5. **Counter aggregation** — `EngineConfig::draft_accepted` /
    `draft_rejected` already exist on the engine struct
