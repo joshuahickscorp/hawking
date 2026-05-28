@@ -315,28 +315,19 @@ impl Gemma2 {
         let mha_seq_len = self.kv.seq_len + 1;
 
         for li in 0..n_layers {
-            let attn_norm_w = self.layers[li].attn_norm.clone();
-            let post_attn_norm_w = self.layers[li].post_attention_norm.clone();
-            let ffn_norm_w = self.layers[li].ffn_norm.clone();
-            let post_ffw_norm_w = self.layers[li].post_ffw_norm.clone();
-            let q_proj = self.layers[li].q_proj.clone();
-            let k_proj = self.layers[li].k_proj.clone();
-            let v_proj = self.layers[li].v_proj.clone();
-            let o_proj = self.layers[li].o_proj.clone();
-            let ffn_gate = self.layers[li].ffn_gate.clone();
-            let ffn_up = self.layers[li].ffn_up.clone();
-            let ffn_down = self.layers[li].ffn_down.clone();
-
+            // Per-layer weights read in place (shared borrows of self); no
+            // per-token clones. The four sandwich norms were the worst
+            // offenders — 4 hidden-sized allocs/layer/token before this.
             // Pre-attn norm.
             let mut x_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&x, &attn_norm_w, rms_eps, &mut x_norm)?;
+            self.rmsnorm_dispatch(&x, &self.layers[li].attn_norm, rms_eps, &mut x_norm)?;
 
             let mut q_full = vec![0.0f32; q_dim];
             let mut k_token = vec![0.0f32; kv_dim];
             let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_q4_dispatch(&q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_q4_dispatch(&k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
-            self.matmul_q4_dispatch(&v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
 
             for h_i in 0..n_heads {
                 let off = h_i * head_dim;
@@ -369,27 +360,27 @@ impl Gemma2 {
             )?;
 
             let mut o = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
             // Post-attention norm BEFORE the residual add (sandwich).
             let mut o_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&o, &post_attn_norm_w, rms_eps, &mut o_norm)?;
+            self.rmsnorm_dispatch(&o, &self.layers[li].post_attention_norm, rms_eps, &mut o_norm)?;
             add_inplace(&mut x, &o_norm);
 
             // Pre-ffn norm.
             let mut x_norm2 = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&x, &ffn_norm_w, rms_eps, &mut x_norm2)?;
+            self.rmsnorm_dispatch(&x, &self.layers[li].ffn_norm, rms_eps, &mut x_norm2)?;
             let mut g = vec![0.0f32; mid];
             let mut u = vec![0.0f32; mid];
             let mut a = vec![0.0f32; mid];
-            self.matmul_q4_dispatch(&ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
-            self.matmul_q4_dispatch(&ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
             // GeGLU (not SwiGLU).
             gelu_mul(&g, &u, &mut a);
             let mut f = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_down, h, mid, &a, &mut f, &mut scratch)?;
             // Post-ffn norm BEFORE the residual add (sandwich).
             let mut f_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&f, &post_ffw_norm_w, rms_eps, &mut f_norm)?;
+            self.rmsnorm_dispatch(&f, &self.layers[li].post_ffw_norm, rms_eps, &mut f_norm)?;
             add_inplace(&mut x, &f_norm);
         }
 
