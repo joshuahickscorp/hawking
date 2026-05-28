@@ -223,24 +223,66 @@ impl Eagle5Head {
     ) -> Result<Self> {
         let st = SafeTensors::open(path)?;
         let meta = st.metadata();
-        let parse_usize = |k: &str| -> Result<usize> {
+        let parse_usize = |k: &str| -> Result<Option<usize>> {
             meta.get(k)
-                .ok_or_else(|| Error::Model(format!("eagle5: safetensors missing '{k}' metadata")))?
-                .parse::<usize>()
-                .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+                .map(|v| {
+                    v.parse::<usize>()
+                        .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+                })
+                .transpose()
         };
-        let parse_f32 = |k: &str| -> Result<f32> {
+        let parse_f32 = |k: &str| -> Result<Option<f32>> {
             meta.get(k)
-                .ok_or_else(|| Error::Model(format!("eagle5: safetensors missing '{k}' metadata")))?
-                .parse::<f32>()
-                .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+                .map(|v| {
+                    v.parse::<f32>()
+                        .map_err(|e| Error::Model(format!("eagle5: '{k}' parse failed: {e}")))
+                })
+                .transpose()
         };
-        let hidden_dim = parse_usize("hidden_dim")?;
-        let vocab_size = parse_usize("vocab_size")?;
-        let n_heads = parse_usize("n_heads")?;
-        let num_blocks = parse_usize("num_blocks")?;
-        let ff_mult = parse_f32("ff_mult")?;
-        let ff_dim = ((hidden_dim as f32) * ff_mult) as usize;
+        let in_proj_shape = st.shape("in_proj.weight")?;
+        if in_proj_shape.len() != 2 || in_proj_shape[1] != 3 * in_proj_shape[0] {
+            return Err(Error::Model(format!(
+                "eagle5: in_proj.weight shape is {in_proj_shape:?}; expected [hidden, 3*hidden]"
+            )));
+        }
+        let inferred_hidden = in_proj_shape[0];
+        let emb_shape = st.shape("_token_embd")?;
+        if emb_shape.len() != 2 {
+            return Err(Error::Model(format!(
+                "eagle5: _token_embd shape is {emb_shape:?}; expected [hidden, vocab]"
+            )));
+        }
+        let inferred_vocab = emb_shape[1];
+        let gate_shape = st.shape("block.mlp.gate.weight")?;
+        if gate_shape.len() != 2 || gate_shape[1] != inferred_hidden {
+            return Err(Error::Model(format!(
+                "eagle5: block.mlp.gate.weight shape is {gate_shape:?}; expected [ff_dim, hidden]"
+            )));
+        }
+        let inferred_ff_dim = gate_shape[0];
+        let inferred_ff_mult = inferred_ff_dim as f32 / inferred_hidden as f32;
+        let inferred_num_blocks = {
+            let mut n = 1usize;
+            while st.has(&format!("extra_blocks.{}.attn_norm", n - 1)) {
+                n += 1;
+            }
+            n
+        };
+        let inferred_n_heads = if inferred_hidden % 16 == 0 {
+            16
+        } else {
+            [12usize, 8, 4, 2, 1]
+                .into_iter()
+                .find(|h| inferred_hidden % h == 0)
+                .unwrap_or(1)
+        };
+
+        let hidden_dim = parse_usize("hidden_dim")?.unwrap_or(inferred_hidden);
+        let vocab_size = parse_usize("vocab_size")?.unwrap_or(inferred_vocab);
+        let n_heads = parse_usize("n_heads")?.unwrap_or(inferred_n_heads);
+        let num_blocks = parse_usize("num_blocks")?.unwrap_or(inferred_num_blocks);
+        let ff_mult = parse_f32("ff_mult")?.unwrap_or(inferred_ff_mult);
+        let ff_dim = ((hidden_dim as f32) * ff_mult).round() as usize;
         if hidden_dim != expected_hidden {
             return Err(Error::Model(format!(
                 "eagle5: head hidden_dim={hidden_dim} but verifier expects {expected_hidden}"
@@ -257,6 +299,11 @@ impl Eagle5Head {
         if n_heads == 0 || hidden_dim % n_heads != 0 {
             return Err(Error::Model(format!(
                 "eagle5: invalid n_heads={n_heads} for hidden={hidden_dim}"
+            )));
+        }
+        if inferred_ff_dim != ff_dim {
+            return Err(Error::Model(format!(
+                "eagle5: inferred ff_dim={inferred_ff_dim} but metadata implies {ff_dim}"
             )));
         }
 
@@ -797,7 +844,37 @@ mod tests {
         let err_vocab = Eagle5Head::load_from_safetensors(&path, hidden, vocab + 1);
         assert!(matches!(err_vocab, Err(Error::Model(_))));
 
+        // Legacy Colab checkpoints before May 2026 omitted __metadata__.
+        // The loader should infer hidden/vocab/ff shape metadata from tensor
+        // shapes while still validating against the verifier dimensions.
+        let mut legacy_header = String::from("{");
+        for (idx, (name, dtype, shape, start, end)) in entries.iter().enumerate() {
+            if idx > 0 {
+                legacy_header.push(',');
+            }
+            let shape_str = shape
+                .iter()
+                .map(|d| d.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            legacy_header.push_str(&format!(
+                "\"{name}\":{{\"dtype\":\"{dtype}\",\"shape\":[{shape_str}],\"data_offsets\":[{start},{end}]}}"
+            ));
+        }
+        legacy_header.push('}');
+        let legacy_path = dir.join("synthetic_legacy_no_metadata.safetensors");
+        let mut f = std::fs::File::create(&legacy_path).unwrap();
+        f.write_all(&(legacy_header.len() as u64).to_le_bytes())
+            .unwrap();
+        f.write_all(legacy_header.as_bytes()).unwrap();
+        f.write_all(&tensor_bytes).unwrap();
+        drop(f);
+        let legacy = Eagle5Head::load_from_safetensors(&legacy_path, hidden, vocab).unwrap();
+        assert_eq!(legacy.hidden(), hidden);
+        assert_eq!(legacy.vocab(), vocab);
+
         let _ = std::fs::remove_file(&path);
+        let _ = std::fs::remove_file(&legacy_path);
         let _ = std::fs::remove_dir(&dir);
     }
 }

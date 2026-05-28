@@ -2892,7 +2892,17 @@ impl QwenDense {
                  $x:expr, $x_i8:expr, $x_sc:expr, $out:expr) => {{
                     match $tref.dtype {
                         GgmlType::Q4_K => {
-                            if $site_w4a8 {
+                            if $cols % 256 != 0 {
+                                let buf_f16 = $pinned_f16.ok_or_else(|| {
+                                    Error::Metal(
+                                        "gemv_proj: Q4_K cols not divisible by 256 and no f16 fallback pinned"
+                                            .into(),
+                                    )
+                                })?;
+                                kernels::gemv_f16_metal_buf_tcb(
+                                    &mut tcb, buf_f16, $rows, $cols, $x, $out,
+                                )?;
+                            } else if $site_w4a8 {
                                 // W4A8: per-block int8 activation × Q4_K
                                 // weight GEMV. Same v3_8r geometry; activation
                                 // BW drops 4× vs the f32 baseline.
@@ -3426,6 +3436,26 @@ impl QwenDense {
             (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
         {
             if self.vocab_pruned_is_q4k {
+                if h % 256 != 0 {
+                    kernels::gemv_f16_metal_buf_tcb(
+                        &mut tcb,
+                        lm_head_buf,
+                        vocab,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.logits_buf,
+                    )?;
+                    kernels::sample_argmax_f32_tcb(
+                        &mut tcb,
+                        &arena.logits_buf,
+                        &arena.token_buf,
+                        vocab,
+                    )?;
+                    tcb.commit_and_wait()?;
+                    self.kv.seq_len += 1;
+                    let token_ptr = arena.token_buf.contents() as *const u32;
+                    return Ok(unsafe { *token_ptr });
+                }
                 let blocks_per_row = h / 256;
                 let row_bytes = blocks_per_row * 144;
                 if w4a8_lmhead && use_per_channel_lmhead {
@@ -3489,6 +3519,21 @@ impl QwenDense {
             };
             return Ok(token);
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
+            if h % 256 != 0 {
+                kernels::gemv_f16_metal_buf_tcb(
+                    &mut tcb,
+                    lm_head_buf,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?;
+                kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
+                tcb.commit_and_wait()?;
+                self.kv.seq_len += 1;
+                let token_ptr = arena.token_buf.contents() as *const u32;
+                return Ok(unsafe { *token_ptr });
+            }
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
             if w4a8_lmhead && use_per_channel_lmhead {
