@@ -575,6 +575,33 @@ if HF_TOKEN:
     except Exception as e:
         print(f'[bank] HF login skipped/failed: {e}')
 
+# Per-model error isolation. If a model throws in any stage (e.g. dsv2's MoE
+# loader chokes), it gets added to FAILED_SLUGS and every later stage skips
+# it — the other models still complete, eval, and export. A multi-hour
+# unattended run should never lose 3 good models because the 4th failed.
+FAILED_SLUGS = set()
+
+
+def active_slugs():
+    return [s for s in ENABLED_SLUGS if s not in FAILED_SLUGS]
+
+
+def run_stage(label, slug, fn):
+    '''Run fn() for one model; on error, log + mark the model failed + continue.'''
+    if slug in FAILED_SLUGS:
+        print(f'[{label}:{slug}] skipped — model previously failed')
+        return None
+    try:
+        return fn()
+    except Exception as e:
+        import traceback
+        FAILED_SLUGS.add(slug)
+        print(f'[{label}:{slug}] FAILED: {e}')
+        traceback.print_exc()
+        print(f'[{label}:{slug}] marked failed; remaining models continue.')
+        return None
+
+
 ENABLED_SLUGS = [s for s, m in MODELS.items() if m['enabled']]
 print(f'[bank] enabled models: {ENABLED_SLUGS}')
 for s in ENABLED_SLUGS:
@@ -618,7 +645,7 @@ def extract_frozen(slug):
 
 if RUN_FROZEN:
     for slug in ENABLED_SLUGS:
-        extract_frozen(slug)
+        run_stage('frozen', slug, lambda s=slug: extract_frozen(s))
 else:
     print('RUN_FROZEN=False; skipping frozen extraction.')
 """
@@ -665,8 +692,8 @@ def capture_corpus(slug):
 
 
 if RUN_CORPUS:
-    for slug in ENABLED_SLUGS:
-        capture_corpus(slug)
+    for slug in active_slugs():
+        run_stage('capture', slug, lambda s=slug: capture_corpus(s))
 else:
     print('RUN_CORPUS=False; skipping corpus capture.')
 """
@@ -702,8 +729,13 @@ def calibrate_awq(slug):
 
 AWQ_PATHS = {}
 if RUN_AWQ:
-    for slug in ENABLED_SLUGS:
-        AWQ_PATHS[slug] = calibrate_awq(slug)
+    for slug in active_slugs():
+        # AWQ is optional polish — a failure here must NOT fail the model.
+        try:
+            AWQ_PATHS[slug] = calibrate_awq(slug)
+        except Exception as e:
+            print(f'[awq:{slug}] WARN calibration failed (non-fatal): {e}')
+            AWQ_PATHS[slug] = None
 else:
     print('RUN_AWQ=False; skipping AWQ calibration.')
     for slug in ENABLED_SLUGS:
@@ -795,10 +827,12 @@ def train_base_variant(slug, variant):
 
 BASE_HEADS = {slug: [] for slug in ENABLED_SLUGS}
 if RUN_BASE_SWEEP:
-    for slug in ENABLED_SLUGS:
-        for variant in SWEEP_VARIANTS:
-            head, tag, ckpt_dir = train_base_variant(slug, variant)
-            BASE_HEADS[slug].append({'head': head, 'tag': tag, 'ckpt_dir': ckpt_dir, 'variant': variant['name']})
+    for slug in active_slugs():
+        def _sweep(s=slug):
+            for variant in SWEEP_VARIANTS:
+                head, tag, ckpt_dir = train_base_variant(s, variant)
+                BASE_HEADS[s].append({'head': head, 'tag': tag, 'ckpt_dir': ckpt_dir, 'variant': variant['name']})
+        run_stage('sweep', slug, _sweep)
 else:
     print('RUN_BASE_SWEEP=False; collecting existing base heads only.')
     for slug in ENABLED_SLUGS:
@@ -921,28 +955,32 @@ def eval_head(slug, head_path, *, source_tag=None, quick=False):
     }
 
 
+def _eval_model(slug):
+    entries = BASE_HEADS[slug]
+    if not entries:
+        print(f'[eval:{slug}] no base heads; skip')
+        return
+    # Tier 1: quick-eval every variant to rank them cheaply.
+    quick_rows = []
+    for entry in entries:
+        quick_rows.append(eval_head(slug, entry['head'], source_tag=entry['tag'], quick=True))
+    quick_rows.sort(key=leaderboard_sort_key, reverse=True)
+    winner = quick_rows[0]
+    print(f"[eval:{slug}] quick-rank winner = {winner['tag']} "
+          f"(tau={winner.get('tau')}, tps={winner.get('offline_projected_tps')})")
+    # Tier 2: full-eval only the winner. Its full row overwrites its quick
+    # row in the leaderboard (same target+tag key); losers keep quick rows.
+    full_winner = eval_head(slug, winner['head'], source_tag=winner.get('source_tag'), quick=False)
+    merged = merge_model_leaderboard(slug, quick_rows + [full_winner])
+    if merged:
+        top = merged[0]
+        print(f"[eval:{slug}] leaderboard top: {top.get('tag')} tau={top.get('tau')} "
+              f"tps={top.get('offline_projected_tps')} tier={top.get('eval_tier')}")
+
+
 if RUN_EVAL:
-    for slug in ENABLED_SLUGS:
-        entries = BASE_HEADS[slug]
-        if not entries:
-            print(f'[eval:{slug}] no base heads; skip')
-            continue
-        # Tier 1: quick-eval every variant to rank them cheaply.
-        quick_rows = []
-        for entry in entries:
-            quick_rows.append(eval_head(slug, entry['head'], source_tag=entry['tag'], quick=True))
-        quick_rows.sort(key=leaderboard_sort_key, reverse=True)
-        winner = quick_rows[0]
-        print(f"[eval:{slug}] quick-rank winner = {winner['tag']} "
-              f"(tau={winner.get('tau')}, tps={winner.get('offline_projected_tps')})")
-        # Tier 2: full-eval only the winner. Its full row overwrites its quick
-        # row in the leaderboard (same target+tag key); losers keep quick rows.
-        full_winner = eval_head(slug, winner['head'], source_tag=winner.get('source_tag'), quick=False)
-        merged = merge_model_leaderboard(slug, quick_rows + [full_winner])
-        if merged:
-            top = merged[0]
-            print(f"[eval:{slug}] leaderboard top: {top.get('tag')} tau={top.get('tau')} "
-                  f"tps={top.get('offline_projected_tps')} tier={top.get('eval_tier')}")
+    for slug in active_slugs():
+        run_stage('eval', slug, lambda s=slug: _eval_model(s))
 else:
     print('RUN_EVAL=False; skipping base-sweep eval.')
 """
@@ -1191,8 +1229,8 @@ def export_runtime_profile(slug):
 
 WINNER_PROFILES = {}
 if RUN_RUNTIME_PROFILE:
-    for slug in ENABLED_SLUGS:
-        WINNER_PROFILES[slug] = export_runtime_profile(slug)
+    for slug in active_slugs():
+        WINNER_PROFILES[slug] = run_stage('profile', slug, lambda s=slug: export_runtime_profile(s))
 else:
     print('RUN_RUNTIME_PROFILE=False; skipping runtime profile export.')
 """
@@ -1360,6 +1398,14 @@ print('\\nDone. Inspect:')
 print(f'  per-model lab roots: {LAB_ROOT}')
 print(f'  export root:         {EXPORT_ROOT}')
 print(f'  manifest:            {LAB_ROOT / "headbank_manifest.json"}')
+
+succeeded = [s for s in ENABLED_SLUGS if s not in FAILED_SLUGS]
+print(f'\\n[bank] SUCCEEDED: {succeeded}')
+if FAILED_SLUGS:
+    print(f'[bank] FAILED (excluded from later stages): {sorted(FAILED_SLUGS)}')
+    print('[bank] Re-run after fixing the cause; succeeded models skip via existing artifacts.')
+else:
+    print('[bank] all enabled models completed.')
 """
 )
 
