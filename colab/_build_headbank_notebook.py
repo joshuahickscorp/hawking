@@ -60,6 +60,16 @@ flip `RUN_<slug> = True` to train one and it's ready the moment Rust
 verification lands. Llama / Mistral / Gemma are gated on HuggingFace — set
 `HF_TOKEN` in Cell 1.
 
+## v2 — corrected capture layers
+
+This is the v2 run (lab root `headbank_500u_v2`). The v1 bank revealed that
+depth-1 acceptance tracks **`n_layers − 4`** as the capture point: q05b/q7b
+(both −4) hit 95-98%, but q3b captured at layer 30 (`n−6`) on a 36-layer
+model and only reached 74%. v2 fixes every model to `n_layers − 4`:
+q05b=20, q3b=**32** (was 30), q7b=24, dsv2=**23** (was 22). v1 results stay
+intact in the old `headbank_500u` root; v2 is a clean re-capture so there
+are no staleness/skip collisions.
+
 ## Pipeline per model
 
 1. Frozen-weights extraction (`token_embd`, `lm_head`, `output_norm`;
@@ -109,8 +119,8 @@ REPO_URL = 'https://github.com/joshuahickscorp/dismantle.git'
 BRANCH = 'codex/maximal-spec-colab'
 REPO_DIR = Path('/content/dismantle')
 DRIVE_ROOT = Path('/content/drive/MyDrive/dismantle')
-LAB_ROOT = DRIVE_ROOT / 'headbank_500u'
-EXPORT_ROOT = DRIVE_ROOT / 'dismantle_export' / 'headbank_500u'
+LAB_ROOT = DRIVE_ROOT / 'headbank_500u_v2'
+EXPORT_ROOT = DRIVE_ROOT / 'dismantle_export' / 'headbank_500u_v2'
 
 # Per-model toggles. Flip any to False to skip; the rest still run normally.
 #
@@ -246,7 +256,7 @@ MODELS = {
         'enabled': RUN_Q3B,
         'hf_id': 'Qwen/Qwen2.5-3B-Instruct',
         'arch': 'qwen2',
-        'capture_layer': 30,
+        'capture_layer': 32,          # 36 layers, n-4 (v1 used 30=n-6 → only 74% d1)
         'corpus_max_sequences': 2500,
         'awq_calibrate_mode': 'adaptive-alpha',
         'base_tps_placeholder': 65.0,
@@ -280,7 +290,7 @@ MODELS = {
         'enabled': RUN_DSV2,
         'hf_id': 'deepseek-ai/DeepSeek-V2-Lite-Chat',
         'arch': 'deepseek2',
-        'capture_layer': 22,
+        'capture_layer': 23,          # 27 layers, n-4 (v1 used 22=n-5 → 91.9% d1)
         'corpus_max_sequences': 1500,
         'awq_calibrate_mode': 'adaptive-alpha',
         'base_tps_placeholder': 30.0,
