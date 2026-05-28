@@ -38,14 +38,18 @@ fn find_llama_gguf(size_tag: &str) -> Option<PathBuf> {
     None
 }
 
-fn run_greedy(weights: &PathBuf) -> Vec<u32> {
+fn run_greedy(weights: &PathBuf, expect_arch: &str) -> Vec<u32> {
     // No kernel profile: the engine runs with default kernel selections.
     // Profiles are model-specific (generated via `dismantle autotune`);
     // the smoke gate intentionally exercises the no-profile load path.
     let cfg = dismantle_core::EngineConfig::default();
     let mut engine =
         dismantle_core::model::load_engine(weights, cfg).expect("load llama engine");
-    assert_eq!(engine.model_arch(), "llama", "dispatcher must route to llama");
+    assert_eq!(
+        engine.model_arch(),
+        expect_arch,
+        "dispatcher routed to the wrong engine"
+    );
 
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
@@ -105,31 +109,38 @@ fn check_or_pin(label: &str, actual_hash: &str) {
     }
 }
 
-fn smoke_for(size_tag: &str, label: &str) {
+fn smoke_for(size_tag: &str, label: &str, expect_arch: &str) {
     let Some(weights) = find_llama_gguf(size_tag) else {
         eprintln!("skipping {label}: no models/*{size_tag}*.gguf present");
         return;
     };
     eprintln!("running {label} against {}", weights.display());
-    let ids = run_greedy(&weights);
+    let ids = run_greedy(&weights, expect_arch);
     // Sanity: greedy at temp=0 must be deterministic across two runs.
-    let ids2 = run_greedy(&weights);
+    let ids2 = run_greedy(&weights, expect_arch);
     assert_eq!(ids, ids2, "{label}: greedy temp=0 output not deterministic");
     check_or_pin(label, &hash16(&ids));
 }
 
 #[test]
 fn llama32_1b_greedy_smoke() {
-    smoke_for("llama-3.2-1b", "llama-3.2-1b-instruct");
+    smoke_for("llama-3.2-1b", "llama-3.2-1b-instruct", "llama");
 }
 
 #[test]
 fn llama32_3b_greedy_smoke() {
-    smoke_for("llama-3.2-3b", "llama-3.2-3b-instruct");
+    smoke_for("llama-3.2-3b", "llama-3.2-3b-instruct", "llama");
 }
 
 #[test]
 fn llama31_8b_greedy_smoke() {
     // Llama-3.1-8B is the larger coverage target; matcher keys on "8b".
-    smoke_for("llama-3.1-8b", "llama-3.1-8b-instruct");
+    smoke_for("llama-3.1-8b", "llama-3.1-8b-instruct", "llama");
+}
+
+#[test]
+fn mistral_7b_v03_greedy_smoke() {
+    // Mistral-7B-Instruct-v0.3 reports arch "llama" and runs through the
+    // same dense engine (GQA + SwiGLU + RoPE θ=1e6, no biases, no SWA).
+    smoke_for("mistral-7b", "mistral-7b-instruct-v0.3", "llama");
 }
