@@ -18,7 +18,9 @@
 
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
-use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StreamEvent};
+use crate::engine::{
+    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
+};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace_scaled, silu_mul,
@@ -31,6 +33,8 @@ use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::Ordering;
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct LlamaConfig {
@@ -440,15 +444,102 @@ impl Engine for LlamaDense {
 
     fn generate(
         &mut self,
-        _req: GenerateRequest,
-        _sink: &mut dyn FnMut(StreamEvent),
+        req: GenerateRequest,
+        sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
-        // The forward pass lands in steps 4–6. This stub returns a clear
-        // error so accidental invocations against a Llama GGUF fail
-        // loudly instead of silently emitting garbage.
-        Err(Error::Unimplemented(
-            "LlamaDense::generate (forward pass lands in step 4–6)",
-        ))
+        // Step 5: CPU reference generate. Single-token serial prefill +
+        // decode through `forward_token_cpu`. Metal hot path, spec-decode,
+        // and prefix caching are deliberately out of scope here — they
+        // layer on in step 6 behind the same env-var gates Qwen uses.
+        if let Some(seed) = req.sampling.seed {
+            self.sampler = Sampler::new(seed);
+        }
+
+        let abort_set = |req: &GenerateRequest| -> bool {
+            req.abort
+                .as_ref()
+                .map(|f| f.load(Ordering::Relaxed))
+                .unwrap_or(false)
+        };
+        let stall_limit = std::time::Duration::from_millis(req.max_stall_ms);
+        let stall_active = req.max_stall_ms > 0;
+
+        let prompt_ids = self.tokenizer.encode(&req.prompt, true)?;
+        if prompt_ids.is_empty() {
+            return Err(Error::Model("empty prompt after tokenization".into()));
+        }
+        let prompt_len = prompt_ids.len();
+        let mut stats = GenStats {
+            prompt_tokens: prompt_len,
+            profile_id: self.kernel_profile.as_ref().map(|p| p.profile_id.clone()),
+            ..Default::default()
+        };
+
+        self.kv.reset();
+
+        // Prefill: run every prompt token to populate the KV cache.
+        let prefill_start = Instant::now();
+        let mut prefill_aborted = false;
+        for (i, &t) in prompt_ids.iter().enumerate() {
+            if abort_set(&req) {
+                prefill_aborted = true;
+                break;
+            }
+            let step_start = Instant::now();
+            let _ = self.forward_token_cpu(t, i)?;
+            if stall_active && step_start.elapsed() > stall_limit {
+                prefill_aborted = true;
+                break;
+            }
+        }
+        stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
+
+        if prefill_aborted {
+            sink(StreamEvent::Done {
+                reason: StopReason::Aborted,
+                stats: stats.clone(),
+            });
+            return Ok(stats);
+        }
+
+        // Decode loop.
+        let decode_start = Instant::now();
+        let mut last_id = *prompt_ids.last().unwrap();
+        let mut produced = 0usize;
+        let mut reason = StopReason::MaxTokens;
+        let eos = self.tokenizer.eos_id();
+
+        for step in 0..req.max_new_tokens {
+            if abort_set(&req) {
+                reason = StopReason::Aborted;
+                break;
+            }
+            let pos = prompt_len + step;
+            let step_start = Instant::now();
+            let mut logits = self.forward_token_cpu(last_id, pos)?;
+            let next_id = self.sampler.sample(&mut logits, &req.sampling);
+            if stall_active && step_start.elapsed() > stall_limit {
+                reason = StopReason::Aborted;
+                break;
+            }
+            self.sampler.record(next_id);
+            let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+            sink(StreamEvent::Token { id: next_id, text });
+            produced += 1;
+            if Some(next_id) == eos {
+                reason = StopReason::Eos;
+                break;
+            }
+            last_id = next_id;
+        }
+
+        stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+        stats.completion_tokens = produced;
+        sink(StreamEvent::Done {
+            reason,
+            stats: stats.clone(),
+        });
+        Ok(stats)
     }
 
     fn model_id(&self) -> &str {
@@ -457,6 +548,18 @@ impl Engine for LlamaDense {
 
     fn model_arch(&self) -> &str {
         &self.config.arch
+    }
+
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        self.tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        self.tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.eos_id()
     }
 
     fn forward_tokens_for_test(
