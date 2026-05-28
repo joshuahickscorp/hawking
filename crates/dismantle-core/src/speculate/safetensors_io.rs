@@ -172,29 +172,19 @@ impl SafeTensors {
     /// Read a tensor as f32, validating dtype is F32 and shape matches.
     pub fn read_f32(&self, name: &str, expected_shape: &[usize]) -> Result<Vec<f32>> {
         let raw = self.slice(name, "F32", expected_shape, 4)?;
-        let n = expected_shape.iter().product::<usize>();
-        let mut out = vec![0.0f32; n];
-        // Safe pointer-based copy: safetensors uses native-endian on x86/arm64
-        // little-endian targets and we don't aim to support BE.
-        let src = raw.as_ptr() as *const f32;
-        // SAFETY: bounds checked by `slice()` (raw.len() == n * 4); alignment
-        // is guaranteed by the f32 read pattern since we copy by value.
-        unsafe {
-            std::ptr::copy_nonoverlapping(src, out.as_mut_ptr(), n);
-        }
-        Ok(out)
+        Ok(raw
+            .chunks_exact(4)
+            .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+            .collect())
     }
 
     /// Read a tensor as f16, validating dtype is F16 and shape matches.
     pub fn read_f16(&self, name: &str, expected_shape: &[usize]) -> Result<Vec<f16>> {
         let raw = self.slice(name, "F16", expected_shape, 2)?;
-        let n = expected_shape.iter().product::<usize>();
-        let mut out = vec![f16::ZERO; n];
-        let src = raw.as_ptr() as *const f16;
-        unsafe {
-            std::ptr::copy_nonoverlapping(src, out.as_mut_ptr(), n);
-        }
-        Ok(out)
+        Ok(raw
+            .chunks_exact(2)
+            .map(|b| f16::from_le_bytes([b[0], b[1]]))
+            .collect())
     }
 
     fn slice(
