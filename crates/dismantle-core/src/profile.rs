@@ -14,6 +14,21 @@ use std::path::Path;
 
 pub const PROFILE_SCHEMA_VERSION: u32 = 1;
 
+/// Normalize a GGUF `general.architecture` string to the canonical family
+/// used for profile matching and dispatch. Point releases inside a family
+/// (qwen2 / qwen2.5, deepseek2 / deepseek-v2, llama / llama3 / llama3.2,
+/// mistral) share one profile, since the tensor layout hash and shader
+/// hash already gate any real divergence.
+pub fn arch_family(arch: &str) -> &'static str {
+    match arch {
+        "qwen2" | "qwen2.5" | "qwen" => "qwen2",
+        "qwen2moe" | "qwen3moe" | "qwen-moe" => "qwen2moe",
+        "deepseek2" | "deepseek-v2" | "deepseek2-lite" => "deepseek2",
+        "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => "llama",
+        _ => "unknown",
+    }
+}
+
 /// Per-device resource limits embedded in a kernel profile.
 ///
 /// When present, the engine enforces these at load time and will return an
@@ -184,7 +199,10 @@ impl KernelProfile {
 
     pub fn validate_for_gguf(&self, gguf: &GgufFile, device_name: Option<&str>) -> Result<()> {
         let arch = gguf.architecture().unwrap_or("unknown");
-        if self.model_arch != arch {
+        // Profiles are keyed on the canonical arch family so that point
+        // releases inside the same family (qwen2 / qwen2.5, deepseek2 /
+        // deepseek-v2, llama / llama3 / llama3.2) share a profile.
+        if arch_family(&self.model_arch) != arch_family(arch) {
             return Err(Error::Model(format!(
                 "kernel profile model arch mismatch: profile={} gguf={}",
                 self.model_arch, arch
@@ -444,5 +462,21 @@ mod tests {
             select_variant(&candidates, &a).unwrap().id,
             "metal-default"
         );
+    }
+
+    #[test]
+    fn arch_family_groups_point_releases() {
+        assert_eq!(arch_family("qwen2"), "qwen2");
+        assert_eq!(arch_family("qwen2.5"), "qwen2");
+        assert_eq!(arch_family("qwen"), "qwen2");
+        assert_eq!(arch_family("deepseek2"), "deepseek2");
+        assert_eq!(arch_family("deepseek-v2"), "deepseek2");
+        assert_eq!(arch_family("llama"), "llama");
+        assert_eq!(arch_family("llama3"), "llama");
+        assert_eq!(arch_family("llama3.2"), "llama");
+        assert_eq!(arch_family("mistral"), "llama");
+        assert_ne!(arch_family("qwen2"), arch_family("llama"));
+        assert_ne!(arch_family("deepseek2"), arch_family("llama"));
+        assert_eq!(arch_family("phi3"), "unknown");
     }
 }
