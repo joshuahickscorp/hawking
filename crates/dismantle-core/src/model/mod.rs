@@ -8,6 +8,7 @@ pub mod expert_cache;
 pub mod gemma2;
 pub mod llama;
 pub mod mixtral;
+pub mod phi3;
 pub mod qwen_dense;
 pub mod qwen_moe;
 
@@ -83,8 +84,12 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
             let e = gemma2::Gemma2::load(weights, config)?;
             Ok(Box::new(e))
         }
+        "phi3" | "phi-3" | "phi3.5" => {
+            let e = phi3::Phi3::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         other => Err(Error::Model(format!(
-            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe + gemma2"
+            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe + gemma2 + phi3"
         ))),
     }
 }

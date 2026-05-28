@@ -26,6 +26,7 @@ pub fn arch_family(arch: &str) -> &'static str {
         "deepseek2" | "deepseek-v2" | "deepseek2-lite" => "deepseek2",
         "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => "llama",
         "gemma2" | "gemma-2" => "gemma2",
+        "phi3" | "phi-3" | "phi3.5" => "phi3",
         _ => "unknown",
     }
 }
@@ -477,8 +478,11 @@ mod tests {
         assert_eq!(arch_family("llama3.2"), "llama");
         assert_eq!(arch_family("mistral"), "llama");
         assert_eq!(arch_family("gemma2"), "gemma2");
+        assert_eq!(arch_family("phi3"), "phi3");
+        assert_eq!(arch_family("phi3.5"), "phi3");
         assert_ne!(arch_family("qwen2"), arch_family("llama"));
         assert_ne!(arch_family("deepseek2"), arch_family("llama"));
         assert_ne!(arch_family("gemma2"), arch_family("llama"));
+        assert_ne!(arch_family("phi3"), arch_family("gemma2"));
     }
 }
