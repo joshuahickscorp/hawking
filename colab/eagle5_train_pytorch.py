@@ -682,10 +682,54 @@ def train(args) -> None:
                     / delta_mask.sum().clamp(min=1.0)
                 )
 
+            rollout = torch.zeros((), device=device, dtype=torch.float32)
+            if args.rollout_loss_weight > 0.0 and args.rollout_depth > 1:
+                start_min = min(max(args.rollout_start_min_pos, 0), S - 1)
+                usable = S - start_min
+                if usable > 0:
+                    n_starts = min(max(args.rollout_starts_per_batch, 1), usable)
+                    perm = torch.randperm(usable, device=device)[:n_starts]
+                    starts = (perm + start_min).sort().values
+                    base_res = residual.index_select(1, starts)
+                    base_inter = inter.index_select(1, starts)
+                    cur_prev = prev.index_select(1, starts)
+                    active_starts = starts
+                    rollout_sum = torch.zeros((), device=device, dtype=torch.float32)
+                    rollout_den = torch.zeros((), device=device, dtype=torch.float32)
+                    for depth_idx in range(args.rollout_depth):
+                        valid = active_starts + depth_idx < S
+                        if not bool(valid.any()):
+                            break
+                        res_d = base_res[:, valid, :]
+                        inter_d = base_inter[:, valid, :]
+                        prev_d = cur_prev[:, valid]
+                        target_d = nxt.index_select(1, active_starts[valid] + depth_idx)
+                        logits_d, _sp_d, _dh_d, _calib_d = fwd_fn(prev_d, res_d, inter_d)
+                        loss_d = F.cross_entropy(
+                            logits_d.reshape(-1, V).float(),
+                            target_d.reshape(-1),
+                            reduction="mean",
+                        )
+                        weight_d = float(args.rollout_depth_gamma ** depth_idx)
+                        rollout_sum = rollout_sum + weight_d * loss_d
+                        rollout_den = rollout_den + weight_d
+
+                        pred_d = logits_d.argmax(dim=-1).detach()
+                        next_prev = target_d.detach()
+                        if args.rollout_draft_prob > 0.0:
+                            use_draft = (
+                                torch.rand_like(pred_d.float()) < args.rollout_draft_prob
+                            )
+                            next_prev = torch.where(use_draft, pred_d, next_prev)
+                        cur_prev = cur_prev.clone()
+                        cur_prev[:, valid] = next_prev
+                    rollout = rollout_sum / rollout_den.clamp(min=1.0)
+
             total = (
                 ce
                 + args.calib_loss_weight * calib
                 + args.residual_delta_loss_weight * residual_delta
+                + args.rollout_loss_weight * rollout
             )
 
         if scaler is not None:
@@ -706,12 +750,14 @@ def train(args) -> None:
                 "alpha": target_alpha,
                 "calib": float(calib.detach()),
                 "residual_delta": float(residual_delta.detach()),
+                "rollout": float(rollout.detach()),
                 "wall": time.time() - t0,
             }
             print(
                 f"step={step} epoch={row['epoch']} loss={row['loss']:.3f} "
                 f"gate={row['gate']:.3f} α={target_alpha:.2f} "
                 f"calib={row['calib']:.3f} rd={row['residual_delta']:.4f} "
+                f"ro={row['rollout']:.3f} "
                 f"wall={row['wall']:.1f}s",
                 flush=True,
             )
@@ -756,6 +802,21 @@ def main() -> int:
                    help="Optional frontier objective: make draft_hidden track "
                         "the next residual state, improving multi-step "
                         "simulation readiness without adding runtime params.")
+    p.add_argument("--rollout-loss-weight", type=float, default=0.0,
+                   help="Weight for training-time-test rollout CE. This keeps "
+                        "runtime checkpoint shape unchanged but trains the head "
+                        "to draft multiple tokens from one verifier capture.")
+    p.add_argument("--rollout-depth", type=int, default=5,
+                   help="Number of self-draft steps for rollout loss.")
+    p.add_argument("--rollout-starts-per-batch", type=int, default=4,
+                   help="How many start positions per batch receive rollout loss.")
+    p.add_argument("--rollout-draft-prob", type=float, default=0.75,
+                   help="Scheduled-sampling probability of feeding the draft "
+                        "argmax instead of the teacher token during rollout.")
+    p.add_argument("--rollout-depth-gamma", type=float, default=0.85,
+                   help="Per-depth rollout loss decay. 1.0 weights all depths equally.")
+    p.add_argument("--rollout-start-min-pos", type=int, default=3,
+                   help="Earliest sequence position eligible for rollout loss.")
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="off",
                    help="off for Qwen-3B (dense); proxy is MoE-only and ignored here")
     p.add_argument("--seed", type=int, default=0)
