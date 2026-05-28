@@ -102,7 +102,16 @@ RUN_FROZEN = True
 RUN_CORPUS = True
 RUN_AWQ = True
 RUN_BASE_SWEEP = True
-RUN_OVERENGINEER = True
+# OVERENGINEER IS OFF BY DEFAULT. The q1p5 overengineer run (2026-05-28)
+# proved rollout/multi-depth curriculum fine-tuning REGRESSES tau on this
+# head + teacher-forced eval combination: every rung dropped tau from the
+# apex 7.99 down to ~2-3 while depth-1 acceptance stayed ~99.95%. The eval
+# feeds ground-truth captured residuals at every depth, so a pure depth-1
+# CE head (what the base sweep produces) already generalizes to all depths;
+# training on self-drafted tokens creates a train/eval mismatch that only
+# hurts. The base sweep IS the head-production step. Leave this False unless
+# the eval methodology changes to true autoregressive (non-teacher-forced).
+RUN_OVERENGINEER = False
 RUN_EVAL = True
 RUN_RUNTIME_PROFILE = True
 RUN_EXPORT = True
