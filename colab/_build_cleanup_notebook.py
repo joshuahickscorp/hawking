@@ -290,6 +290,46 @@ else:
             failed += 1
             print(f"  FAILED  {path}: {exc}")
     print(f'\\n[done] deleted={deleted} failed={failed} freed={freed/1e9:.2f} GB')
+    print('\\n[!] Files deleted through the Drive mount go to TRASH and keep')
+    print('    counting against your quota. Run Cell 4 to empty the trash and')
+    print('    actually reclaim the space.')
+"""
+)
+
+code(
+    """# Cell 4 - Empty Drive trash (THE step that actually reclaims quota)
+
+# Deletions via the Drive mount move files to Trash, which still counts
+# against your storage quota until emptied. This lists the trash first
+# (dry run), then empties it ONLY when EMPTY_TRASH=True.
+#
+# emptyTrash() permanently deletes EVERYTHING in your Drive trash, not just
+# dismantle files. The listing below shows exactly what will go. If you have
+# unrelated trash to keep, empty selectively at drive.google.com instead.
+
+EMPTY_TRASH = False
+
+from google.colab import auth
+auth.authenticate_user()
+from googleapiclient.discovery import build
+_drive = build('drive', 'v3')
+
+_resp = _drive.files().list(
+    q='trashed = true',
+    fields='files(id,name,size,modifiedTime)',
+    pageSize=1000,
+).execute()
+_files = _resp.get('files', [])
+_total = sum(int(f.get('size', 0)) for f in _files)
+print(f'trashed files: {len(_files)}, {_total/1e9:.2f} GB total')
+for f in sorted(_files, key=lambda x: int(x.get('size', 0)), reverse=True)[:30]:
+    print(f"  {int(f.get('size',0))/1e9:6.2f} GB  {f.get('name')}")
+
+if EMPTY_TRASH:
+    _drive.files().emptyTrash().execute()
+    print('\\n[trash] emptied — quota updates within ~1 min')
+else:
+    print('\\n[trash] DRY RUN. Set EMPTY_TRASH=True and re-run to reclaim the space.')
 """
 )
 
