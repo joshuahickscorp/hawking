@@ -96,6 +96,10 @@ enum Cmd {
         /// checkpoint is being produced.
         #[arg(long)]
         eagle5_head: Option<PathBuf>,
+        /// Write per-cycle Eagle5 accept/reject records as JSONL. Also
+        /// available through DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE.
+        #[arg(long)]
+        eagle5_accept_trace: Option<PathBuf>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -303,6 +307,7 @@ fn main() -> Result<()> {
             vocab_prune_path,
             quant_tier_map_path,
             eagle5_head,
+            eagle5_accept_trace,
         } => generate_main(
             weights,
             prompt,
@@ -321,6 +326,7 @@ fn main() -> Result<()> {
             vocab_prune_path,
             quant_tier_map_path,
             eagle5_head,
+            eagle5_accept_trace,
         ),
         Cmd::Bench {
             weights,
@@ -965,6 +971,7 @@ fn generate_main(
     vocab_prune_path: Option<PathBuf>,
     quant_tier_map_path: Option<PathBuf>,
     eagle5_head: Option<PathBuf>,
+    eagle5_accept_trace: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -997,6 +1004,9 @@ fn generate_main(
     }
 
     let speculate_mode = SpeculateMode::from_cli(speculate.as_deref(), false)?;
+    if let Some(path) = eagle5_accept_trace.as_ref() {
+        std::env::set_var("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE", path);
+    }
     let profile = match kernel_profile.as_ref() {
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,

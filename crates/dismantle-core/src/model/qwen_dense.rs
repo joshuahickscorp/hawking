@@ -12,6 +12,7 @@ use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 use half::f16;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -1503,6 +1504,25 @@ impl Engine for QwenDense {
                 .map(|v| v == "1")
                 .unwrap_or(false)
                 && !use_eagle5_batched;
+            let mut eagle5_accept_trace =
+                if let Some(path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE")
+                    .map(PathBuf::from)
+                {
+                    if let Some(parent) = path.parent() {
+                        if !parent.as_os_str().is_empty() {
+                            std::fs::create_dir_all(parent)?;
+                        }
+                    }
+                    Some(
+                        std::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&path)?,
+                    )
+                } else {
+                    None
+                };
+            let mut eagle5_cycle: usize = 0;
             let mut pos = prompt_len;
             'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -1638,6 +1658,40 @@ impl Engine for QwenDense {
                 }
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
+                if let Some(trace) = eagle5_accept_trace.as_mut() {
+                    let draft_tokens: Vec<String> = draft
+                        .iter()
+                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
+                        .collect();
+                    let accepted_tokens: Vec<String> = draft[..first_reject]
+                        .iter()
+                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
+                        .collect();
+                    let correction_text =
+                        correction.and_then(|id| self.tokenizer.decode_one(id).ok());
+                    let record = serde_json::json!({
+                        "schema": "dismantle-eagle5-accept-trace-v1",
+                        "cycle": eagle5_cycle,
+                        "capture": eagle5_capture_in_use,
+                        "verify_window": eagle5_k,
+                        "k_requested": k_avail,
+                        "draft_len": draft_len,
+                        "accepted": first_reject,
+                        "rejected": draft_len - first_reject,
+                        "pos": pos,
+                        "bonus_pos": bonus_pos,
+                        "bonus_id": bonus,
+                        "bonus_text": self.tokenizer.decode_one(bonus).unwrap_or_default(),
+                        "draft_ids": &draft,
+                        "draft_tokens": draft_tokens,
+                        "accepted_ids": &draft[..first_reject],
+                        "accepted_tokens": accepted_tokens,
+                        "correction_id": correction,
+                        "correction_text": correction_text,
+                    });
+                    writeln!(trace, "{record}")?;
+                }
+                eagle5_cycle += 1;
 
                 // Emit accepted drafts.
                 for k in 0..first_reject {
