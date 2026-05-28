@@ -30,6 +30,38 @@ pub fn silu_mul(gate: &[f32], up: &[f32], out: &mut [f32]) {
     }
 }
 
+/// GeGLU activation: `out = gelu_tanh(gate) * up`.
+///
+/// Uses the tanh approximation of GELU (`gelu_pytorch_tanh`), which is
+/// what Gemma-2 was trained with:
+///   gelu(x) = 0.5·x·(1 + tanh(√(2/π)·(x + 0.044715·x³)))
+pub fn gelu_mul(gate: &[f32], up: &[f32], out: &mut [f32]) {
+    debug_assert_eq!(gate.len(), up.len());
+    debug_assert_eq!(gate.len(), out.len());
+    const SQRT_2_OVER_PI: f32 = 0.797_884_56; // √(2/π)
+    for i in 0..gate.len() {
+        let x = gate[i];
+        let inner = SQRT_2_OVER_PI * (x + 0.044715 * x * x * x);
+        let g = 0.5 * x * (1.0 + inner.tanh());
+        out[i] = g * up[i];
+    }
+}
+
+/// Logit soft-capping: `xs[i] = cap · tanh(xs[i] / cap)` in place.
+///
+/// Gemma-2 caps both the attention scores (cap≈50) and the final logits
+/// (cap≈30). `cap <= 0` is a no-op (capping disabled). Bounds the output
+/// to (−cap, cap) while staying ~linear near 0.
+pub fn logit_softcap_inplace(xs: &mut [f32], cap: f32) {
+    if cap <= 0.0 {
+        return;
+    }
+    let inv = 1.0 / cap;
+    for v in xs.iter_mut() {
+        *v = cap * (*v * inv).tanh();
+    }
+}
+
 /// Softmax in place over a slice. Numerically stable.
 pub fn softmax_inplace(xs: &mut [f32]) {
     if xs.is_empty() {
@@ -7098,6 +7130,49 @@ mod tests {
         gemv_f16(&w, 2, 2, &x, &mut out);
         assert!((out[0] - 3.0).abs() < 1e-5);
         assert!((out[1] - 5.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn gelu_mul_matches_reference() {
+        let gate = [0.0f32, 1.0, -1.0, 2.5];
+        let up = [1.0f32, 2.0, 3.0, 0.5];
+        let mut out = [0.0f32; 4];
+        gelu_mul(&gate, &up, &mut out);
+        // Reference gelu_tanh computed independently.
+        let gelu = |x: f32| {
+            let inner = (2.0f32 / std::f32::consts::PI).sqrt()
+                * (x + 0.044715 * x * x * x);
+            0.5 * x * (1.0 + inner.tanh())
+        };
+        for i in 0..4 {
+            let expect = gelu(gate[i]) * up[i];
+            assert!(
+                (out[i] - expect).abs() < 1e-6,
+                "i={i}: got {} want {expect}",
+                out[i]
+            );
+        }
+        // gelu(0) == 0, so out[0] must be exactly 0.
+        assert_eq!(out[0], 0.0);
+    }
+
+    #[test]
+    fn logit_softcap_bounds_and_noop() {
+        // cap<=0 is a no-op.
+        let mut a = [5.0f32, -3.0, 100.0];
+        logit_softcap_inplace(&mut a, 0.0);
+        assert_eq!(a, [5.0, -3.0, 100.0]);
+
+        // With cap=30, output is bounded to (-30, 30) and monotone.
+        let cap = 30.0f32;
+        let mut b = [0.0f32, 30.0, 1000.0, -1000.0];
+        logit_softcap_inplace(&mut b, cap);
+        assert!((b[0] - 0.0).abs() < 1e-6); // tanh(0)=0
+        assert!((b[1] - cap * (1.0f32).tanh()).abs() < 1e-5);
+        // tanh saturates to exactly 1.0 in f32 for large args, so the
+        // capped value reaches cap; assert bounded (<=) and near-cap.
+        assert!(b[2] <= cap && b[2] > cap - 1e-2);
+        assert!(b[3] >= -cap && b[3] < -cap + 1e-2);
     }
 
     /// `rope_inplace_scaled(..., None)` must be bit-identical to the

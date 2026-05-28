@@ -9,7 +9,7 @@
 //! before any Metal attention work. The Phase 3 Metal kernels live in
 //! `shaders/attn.metal`.
 
-use crate::kernels::softmax_inplace;
+use crate::kernels::{logit_softcap_inplace, softmax_inplace};
 use crate::Result;
 
 /// Standard multi-head attention for one new token (decode step).
@@ -54,6 +54,68 @@ pub fn mha_decode_step(
         }
         softmax_inplace(&mut scores);
         // Weighted sum of values.
+        let out_head = &mut out[h * head_dim..(h + 1) * head_dim];
+        for v in out_head.iter_mut() {
+            *v = 0.0;
+        }
+        for t in 0..seq_len {
+            let off = t * (n_kv_heads * head_dim) + kv_h * head_dim;
+            let val = &v_cache[off..off + head_dim];
+            let w = scores[t];
+            for i in 0..head_dim {
+                out_head[i] += w * val[i];
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Gemma-2 variant of [`mha_decode_step`] with a configurable attention
+/// `scale` and optional attention-logit soft-capping.
+///
+/// Gemma-2 differs from a vanilla GQA decode step in two ways:
+///   - the score scale is `1/sqrt(query_pre_attn_scalar)`, which is not
+///     always `1/sqrt(head_dim)` (they coincide for Gemma-2-2B where
+///     query_pre_attn_scalar == head_dim == 256, but diverge on 9B/27B)
+///   - scores are soft-capped (`cap·tanh(score/cap)`, cap≈50) *after*
+///     scaling and *before* softmax
+///
+/// `attn_softcap <= 0` disables capping, recovering a plain scaled MHA
+/// step. Passing `scale = 1/sqrt(head_dim)` and `attn_softcap = 0` makes
+/// this bit-equivalent to [`mha_decode_step`].
+#[allow(clippy::too_many_arguments)]
+pub fn mha_decode_step_gemma(
+    q: &[f32],
+    k_cache: &[f32],
+    v_cache: &[f32],
+    n_heads: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+    seq_len: usize,
+    scale: f32,
+    attn_softcap: f32,
+    out: &mut [f32],
+) -> Result<()> {
+    debug_assert_eq!(q.len(), n_heads * head_dim);
+    debug_assert_eq!(out.len(), n_heads * head_dim);
+
+    let group_size = n_heads / n_kv_heads;
+    let mut scores = vec![0.0f32; seq_len];
+    for h in 0..n_heads {
+        let kv_h = h / group_size;
+        let q_head = &q[h * head_dim..(h + 1) * head_dim];
+        for t in 0..seq_len {
+            let off = t * (n_kv_heads * head_dim) + kv_h * head_dim;
+            let k = &k_cache[off..off + head_dim];
+            let mut s = 0.0f32;
+            for i in 0..head_dim {
+                s += q_head[i] * k[i];
+            }
+            scores[t] = s * scale;
+        }
+        // Soft-cap the scaled scores before softmax (no-op when cap<=0).
+        logit_softcap_inplace(&mut scores, attn_softcap);
+        softmax_inplace(&mut scores);
         let out_head = &mut out[h * head_dim..(h + 1) * head_dim];
         for v in out_head.iter_mut() {
             *v = 0.0;
@@ -160,4 +222,79 @@ pub fn mla_decode_step(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn rng_vec(n: usize, seed: u32) -> Vec<f32> {
+        let mut s = seed;
+        (0..n)
+            .map(|_| {
+                s = s.wrapping_mul(1664525).wrapping_add(1013904223);
+                ((s >> 8) as f32 / (1u32 << 24) as f32) * 2.0 - 1.0
+            })
+            .collect()
+    }
+
+    /// Gemma attention with cap disabled and the default scale must match
+    /// the vanilla MHA step bit-for-bit (same arithmetic order).
+    #[test]
+    fn gemma_attn_cap_off_matches_mha() {
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 5);
+        let q = rng_vec(n_heads * head_dim, 1);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 2);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 3);
+
+        let mut out_ref = vec![0.0f32; n_heads * head_dim];
+        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
+
+        let mut out_gemma = vec![0.0f32; n_heads * head_dim];
+        let scale = 1.0 / (head_dim as f32).sqrt();
+        mha_decode_step_gemma(
+            &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 0.0, &mut out_gemma,
+        )
+        .unwrap();
+
+        for i in 0..out_ref.len() {
+            assert_eq!(
+                out_ref[i].to_bits(),
+                out_gemma[i].to_bits(),
+                "i={i}: mha={} gemma={}",
+                out_ref[i],
+                out_gemma[i]
+            );
+        }
+    }
+
+    /// With a finite cap, attention output stays a valid convex
+    /// combination of the value rows (softmax weights still sum to 1),
+    /// so every output element is within the min/max of that head's V.
+    #[test]
+    fn gemma_attn_softcap_is_convex() {
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (2, 1, 4, 6);
+        let q = rng_vec(n_heads * head_dim, 7);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 8);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 9);
+        let mut out = vec![0.0f32; n_heads * head_dim];
+        let scale = 1.0 / (head_dim as f32).sqrt();
+        mha_decode_step_gemma(
+            &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 50.0, &mut out,
+        )
+        .unwrap();
+        for d in 0..head_dim {
+            let mut lo = f32::INFINITY;
+            let mut hi = f32::NEG_INFINITY;
+            for t in 0..seq_len {
+                let val = v[t * head_dim + d];
+                lo = lo.min(val);
+                hi = hi.max(val);
+            }
+            for h in 0..n_heads {
+                let o = out[h * head_dim + d];
+                assert!(o >= lo - 1e-4 && o <= hi + 1e-4, "out {o} not in [{lo},{hi}]");
+            }
+        }
+    }
 }
