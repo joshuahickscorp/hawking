@@ -112,6 +112,22 @@ impl LlamaConfig {
         let rms_norm_eps = get_f32("llama.attention.layer_norm_rms_epsilon").unwrap_or(1e-5);
         let max_seq_len = get_u32("llama.context_length").unwrap_or(8192) as usize;
 
+        // Sliding-window attention: Mistral-7B-v0.1 windows attention at
+        // `llama.attention.sliding_window`; v0.2/v0.3 (our target) and
+        // Llama dropped it. This engine runs full causal attention, so a
+        // window strictly smaller than the context would be silently
+        // wrong on long prompts. Surface it rather than fail quietly.
+        if let Some(win) = get_u32("llama.attention.sliding_window") {
+            if (win as usize) < max_seq_len {
+                eprintln!(
+                    "dismantle: warning — GGUF declares sliding_window={win} but the \
+                     llama engine runs full causal attention; output may drift beyond \
+                     {win} tokens of context (use a non-SWA build such as \
+                     Mistral-7B-Instruct-v0.3)"
+                );
+            }
+        }
+
         // RoPE NTK-aware scaling: only honored when scaling.type ==
         // "llama3". Some Llama-3.0 GGUFs leave scaling.type unset; in
         // that case the four scaling params are absent and we fall
