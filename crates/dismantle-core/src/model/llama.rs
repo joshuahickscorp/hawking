@@ -16,10 +16,14 @@
 //! Step 3 lands the loader + dispatcher. Forward path is filled in by
 //! subsequent commits (prefill → decode → Metal hot path).
 
+use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
-use crate::kernels::Llama3RopeScaling;
+use crate::kernels::{
+    add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace_scaled, silu_mul,
+    Llama3RopeScaling,
+};
 use crate::profile::KernelProfile;
 use crate::quant;
 use crate::sample::Sampler;
@@ -144,10 +148,6 @@ impl LlamaConfig {
 /// Pointer into the mmap'd GGUF for one tensor. Module-local mirror of
 /// the same idiom used by `qwen_dense` and `deepseek_v2` so we don't
 /// re-export the type just for cross-module use.
-///
-/// Fields are read by the forward pass added in step 4; for now the
-/// scaffold just records them.
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub(crate) struct TensorRef {
     pub offset: usize,
@@ -156,7 +156,6 @@ pub(crate) struct TensorRef {
     pub n_elems: usize,
 }
 
-#[allow(dead_code)] // fields read once forward pass lands in step 4.
 pub struct LlamaLayer {
     /// Per-layer norms (eager fp32, small).
     pub attn_norm: Vec<f32>,
@@ -223,6 +222,154 @@ impl LlamaDense {
             dtype: info.dtype,
             n_elems,
         })
+    }
+
+    fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
+        if buf.len() != t.n_elems {
+            buf.resize(t.n_elems, 0.0);
+        }
+        let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+        quant::dequant_into(t.dtype, bytes, buf)
+    }
+
+    /// CPU reference matmul: dequantize the weight slab once into the
+    /// `scratch` buffer, then run plain f32 GEMV. Used by step 4's
+    /// reference forward; step 6 replaces every call with the Metal Q4_K
+    /// dispatcher.
+    fn matmul_cpu(
+        &self,
+        t: &TensorRef,
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+        scratch: &mut Vec<f32>,
+    ) -> Result<()> {
+        self.dequant_ref_into(t, scratch)?;
+        gemv_f32(scratch, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// CPU reference forward for a single token at position `pos`.
+    /// Appends K/V at the current `kv.seq_len` slot and bumps `seq_len`.
+    /// Mirrors `qwen_dense::forward_token`, with two differences:
+    ///   - no Q/K/V bias adds (Llama families omit them)
+    ///   - RoPE goes through `rope_inplace_scaled` so Llama-3.1+ NTK
+    ///     rescaling is honored when `cfg.rope_scaling.is_some()`
+    pub(crate) fn forward_token_cpu(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+        let rope_scaling = cfg.rope_scaling;
+        let rope_theta = cfg.rope_theta;
+        let rms_eps = cfg.rms_norm_eps;
+        let n_layers = cfg.n_layers;
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+
+        let mut scratch = Vec::<f32>::new();
+
+        let stride = n_kv_heads * head_dim;
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
+        }
+        let kv_off = self.kv.seq_len * stride;
+        let mha_seq_len = self.kv.seq_len + 1;
+
+        for li in 0..n_layers {
+            let mut x_norm = vec![0.0f32; h];
+            rmsnorm(&x, &self.layers[li].attn_norm, rms_eps, &mut x_norm);
+
+            // Snapshot the per-layer TensorRefs so we can release the
+            // immutable borrow on `self.layers` before the KV write.
+            let q_proj = self.layers[li].q_proj.clone();
+            let k_proj = self.layers[li].k_proj.clone();
+            let v_proj = self.layers[li].v_proj.clone();
+            let o_proj = self.layers[li].o_proj.clone();
+            let ffn_gate = self.layers[li].ffn_gate.clone();
+            let ffn_up = self.layers[li].ffn_up.clone();
+            let ffn_down = self.layers[li].ffn_down.clone();
+            let ffn_norm_w = self.layers[li].ffn_norm.clone();
+
+            let mut q_full = vec![0.0f32; q_dim];
+            let mut k_token = vec![0.0f32; kv_dim];
+            let mut v_token = vec![0.0f32; kv_dim];
+            self.matmul_cpu(&q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_cpu(&k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
+            self.matmul_cpu(&v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+
+            // RoPE on every Q head and every KV head, with optional
+            // Llama-3.1+ NTK rescale (None ⇒ bit-identical to plain
+            // rope_inplace).
+            for h_i in 0..n_heads {
+                let off = h_i * head_dim;
+                rope_inplace_scaled(
+                    &mut q_full[off..off + head_dim],
+                    pos as u32,
+                    rope_theta,
+                    rope_scaling,
+                );
+            }
+            for h_i in 0..n_kv_heads {
+                let off = h_i * head_dim;
+                rope_inplace_scaled(
+                    &mut k_token[off..off + head_dim],
+                    pos as u32,
+                    rope_theta,
+                    rope_scaling,
+                );
+            }
+
+            self.kv.keys[li][kv_off..kv_off + stride].copy_from_slice(&k_token);
+            self.kv.values[li][kv_off..kv_off + stride].copy_from_slice(&v_token);
+
+            let kv_size = mha_seq_len * stride;
+            let keys = &self.kv.keys[li][..kv_size];
+            let values = &self.kv.values[li][..kv_size];
+
+            let mut attn_out = vec![0.0f32; q_dim];
+            mha_decode_step(
+                &q_full, keys, values, n_heads, n_kv_heads, head_dim, mha_seq_len, &mut attn_out,
+            )?;
+
+            let mut o = vec![0.0f32; h];
+            self.matmul_cpu(&o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            add_inplace(&mut x, &o);
+
+            let mut x_norm2 = vec![0.0f32; h];
+            rmsnorm(&x, &ffn_norm_w, rms_eps, &mut x_norm2);
+            let mid = cfg.intermediate;
+            let mut g = vec![0.0f32; mid];
+            let mut u = vec![0.0f32; mid];
+            let mut a = vec![0.0f32; mid];
+            self.matmul_cpu(&ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
+            self.matmul_cpu(&ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            silu_mul(&g, &u, &mut a);
+            let mut f = vec![0.0f32; h];
+            self.matmul_cpu(&ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            add_inplace(&mut x, &f);
+        }
+
+        self.kv.seq_len += 1;
+
+        let mut x_norm = vec![0.0f32; h];
+        rmsnorm(&x, &self.final_norm, rms_eps, &mut x_norm);
+
+        let mut logits = vec![0.0f32; cfg.vocab_size];
+        let w_f16: &[f16] = match &self.lm_head {
+            Some(w) => w,
+            None => &self.embed,
+        };
+        gemv_f16(w_f16, cfg.vocab_size, h, &x_norm, &mut logits);
+        Ok(logits)
     }
 }
 
@@ -314,12 +461,25 @@ impl Engine for LlamaDense {
 
     fn forward_tokens_for_test(
         &mut self,
-        _tokens: &[u32],
-        _positions: &[usize],
+        tokens: &[u32],
+        positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
-        Err(Error::Unimplemented(
-            "LlamaDense::forward_tokens_for_test (lands in step 4)",
-        ))
+        if tokens.len() != positions.len() {
+            return Err(Error::Model(format!(
+                "forward_tokens shape: tokens={} positions={}",
+                tokens.len(),
+                positions.len()
+            )));
+        }
+        let mut out = Vec::with_capacity(tokens.len());
+        for (i, &token) in tokens.iter().enumerate() {
+            out.push(self.forward_token_cpu(token, positions[i])?);
+        }
+        Ok(out)
+    }
+
+    fn reset_kv_for_test(&mut self) {
+        self.kv.seq_len = 0;
     }
 }
 
