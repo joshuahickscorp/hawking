@@ -37,11 +37,21 @@ md(
 
 Reclaims storage from the headbank / overengineer / 500U Colab runs.
 
-**This notebook does nothing destructive until you set `APPLY = True`** in
-Cell 2 and re-run. Default is dry-run: every candidate is printed with size
-+ reason + total-reclaim summary at the bottom.
+## ⚠️ ARMED — Run All deletes + empties trash in one pass
 
-Three modes (set `MODE`):
+This notebook ships armed: `APPLY = True`, `MODE = 'archive'` (max tier),
+`EMPTY_TRASH = True`. **Run All** will delete the planned artifacts and then
+permanently empty Drive trash to actually reclaim quota. The plan is still
+printed before each delete so you see exactly what went. To make it a safe
+dry run again, set `APPLY = False` in Cell 2.
+
+Safety rails stay active even when armed:
+* anything modified within `RECENT_WINDOW_HOURS` (2h) is skipped
+* the apex leaderboard head is never touched
+* archive-tier q1p5 deletes are force-skipped unless the exported apex-head
+  backup exists in `dismantle_export/`
+
+Reclaim tiers (set `MODE`):
 
 * `'conservative'` — only orphans, duplicates, half-written `.tmp` uploads,
   known-regressed polish/push checkpoints. Zero risk to active work.
@@ -82,19 +92,29 @@ print(f'[cleanup] mounted, root = {DRIVE_ROOT}')
 )
 
 code(
-    """# Cell 2 - Settings (edit before running Cell 3)
+    """# Cell 2 - Settings
 
-# DO NOT DELETE ANYTHING IF THIS IS FALSE.
-APPLY = False
+# ⚠️ THIS NOTEBOOK IS ARMED. Run All will DELETE (archive tier) and EMPTY
+#    TRASH in one pass. Set APPLY=False to turn it back into a dry run.
+#
+# Safety still active even when armed:
+#   * anything modified within RECENT_WINDOW_HOURS is skipped
+#   * the apex leaderboard head is never touched
+#   * archive-tier q1p5 deletes are blocked unless the exported apex-head
+#     backup exists in dismantle_export/
 
-# Increasing reclaim:
+APPLY = True
+
+# Reclaim tiers (increasing):
 #   conservative — orphans / regressed checkpoints / .tmp only
 #   moderate     — also deletes redundant latest.npz files (keeps heads)
 #   aggressive   — also deletes recapturable corpora (q3b_ref, q0p5)
-MODE = 'moderate'
+#   archive      — also deletes the shipped q1p5 run's corpus + non-apex
+#                  heads (apex is exported; headbank never uses q1p5)
+MODE = 'archive'
 
-# Don't touch anything modified within this many hours. Protects the
-# currently running overengineer/headbank Colab from losing state.
+# Don't touch anything modified within this many hours. Protects any live
+# Colab from losing state.
 RECENT_WINDOW_HOURS = 2.0
 
 # The leaderboard apex you must never touch. Anything matching this slug
@@ -344,9 +364,10 @@ code(
 #
 # emptyTrash() permanently deletes EVERYTHING in your Drive trash, not just
 # dismantle files. The listing below shows exactly what will go. If you have
-# unrelated trash to keep, empty selectively at drive.google.com instead.
+# unrelated trash to keep, set EMPTY_TRASH=False and empty selectively at
+# drive.google.com instead.
 
-EMPTY_TRASH = False
+EMPTY_TRASH = True
 
 from google.colab import auth
 auth.authenticate_user()
