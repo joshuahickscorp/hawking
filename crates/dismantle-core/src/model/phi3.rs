@@ -308,7 +308,6 @@ impl Phi3 {
         embed_lookup(&self.embed, h, token, &mut x);
 
         let mut scratch = Vec::<f32>::new();
-        let ext_factors = self.rope_ext_factors.clone();
 
         let stride = n_kv_heads * head_dim;
         if self.kv.seq_len >= self.kv.max_seq {
@@ -318,25 +317,19 @@ impl Phi3 {
         let mha_seq_len = self.kv.seq_len + 1;
 
         for li in 0..n_layers {
-            let attn_norm_w = self.layers[li].attn_norm.clone();
-            let ffn_norm_w = self.layers[li].ffn_norm.clone();
-            let q_proj = self.layers[li].q_proj.clone();
-            let k_proj = self.layers[li].k_proj.clone();
-            let v_proj = self.layers[li].v_proj.clone();
-            let o_proj = self.layers[li].o_proj.clone();
-            let ffn_gate = self.layers[li].ffn_gate.clone();
-            let ffn_up = self.layers[li].ffn_up.clone();
-            let ffn_down = self.layers[li].ffn_down.clone();
-
+            // Per-layer weights (incl. the split fused Q/K/V and gate/up
+            // sub-views) read in place; no per-token clones. ext_factors
+            // is read straight off `self.rope_ext_factors` at the rope
+            // call sites — both shared borrows of self.
             let mut x_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&x, &attn_norm_w, rms_eps, &mut x_norm)?;
+            self.rmsnorm_dispatch(&x, &self.layers[li].attn_norm, rms_eps, &mut x_norm)?;
 
             let mut q_full = vec![0.0f32; q_dim];
             let mut k_token = vec![0.0f32; kv_dim];
             let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_q4_dispatch(&q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_q4_dispatch(&k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
-            self.matmul_q4_dispatch(&v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
 
             // NEOX longrope on every Q and KV head.
             for h_i in 0..n_heads {
@@ -345,7 +338,7 @@ impl Phi3 {
                     &mut q_full[off..off + head_dim],
                     pos as u32,
                     rope_theta,
-                    &ext_factors,
+                    &self.rope_ext_factors,
                     mscale,
                 );
             }
@@ -355,7 +348,7 @@ impl Phi3 {
                     &mut k_token[off..off + head_dim],
                     pos as u32,
                     rope_theta,
-                    &ext_factors,
+                    &self.rope_ext_factors,
                     mscale,
                 );
             }
@@ -373,19 +366,19 @@ impl Phi3 {
             )?;
 
             let mut o = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
             add_inplace(&mut x, &o);
 
             let mut x_norm2 = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&x, &ffn_norm_w, rms_eps, &mut x_norm2)?;
+            self.rmsnorm_dispatch(&x, &self.layers[li].ffn_norm, rms_eps, &mut x_norm2)?;
             let mut g = vec![0.0f32; mid];
             let mut u = vec![0.0f32; mid];
             let mut a = vec![0.0f32; mid];
-            self.matmul_q4_dispatch(&ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
-            self.matmul_q4_dispatch(&ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
             silu_mul(&g, &u, &mut a);
             let mut f = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            self.matmul_q4_dispatch(&self.layers[li].ffn_down, h, mid, &a, &mut f, &mut scratch)?;
             add_inplace(&mut x, &f);
         }
 
@@ -459,19 +452,24 @@ impl Engine for Phi3 {
             });
         }
 
+        // Runtime context (matches llama.cpp, which keys longrope factor
+        // selection on n_ctx, not the model's trained max). A 128k model
+        // run at n_ctx<=orig therefore uses the SHORT factors.
+        let max_seq = config.max_seq_len.min(cfg.max_seq_len);
+
         // longrope factor selection. Phi-3.5 ships short/long factor
-        // tensors (length head_dim/2) and an original context length;
-        // pick long when our context exceeds the original, else short.
+        // tensors (length head_dim/2) and an original context length.
         let half = cfg.head_dim / 2;
         let orig_ctx = gguf
             .metadata
             .get("phi3.rope.scaling.original_context_length")
             .and_then(|v| v.as_u32())
             .map(|v| v as usize)
-            .unwrap_or(cfg.max_seq_len);
-        let use_long = cfg.max_seq_len > orig_ctx;
+            .unwrap_or(max_seq);
+        let use_long = max_seq > orig_ctx;
         let short_f = Self::dequant_f32_opt(&gguf, "rope_factors_short.weight")?;
         let long_f = Self::dequant_f32_opt(&gguf, "rope_factors_long.weight")?;
+        let has_factors = short_f.is_some() || long_f.is_some();
         let rope_ext_factors = if use_long {
             long_f.or(short_f)
         } else {
@@ -479,18 +477,23 @@ impl Engine for Phi3 {
         }
         .filter(|f| f.len() == half)
         .unwrap_or_else(|| vec![1.0f32; half]);
-        let rope_mscale = if use_long && orig_ctx > 0 {
-            let scale = cfg.max_seq_len as f32 / orig_ctx as f32;
-            if scale > 1.0 {
-                (1.0 + scale.ln() / (orig_ctx as f32).ln()).sqrt()
-            } else {
-                1.0
-            }
-        } else {
-            1.0
-        };
+        // Attention mscale: prefer the converter-baked value
+        // (phi3.rope.scaling.attn_factor); else the su/longrope closed
+        // form from the model's trained ratio, applied only when the
+        // model actually declares longrope factors.
+        let rope_mscale = gguf
+            .metadata
+            .get("phi3.rope.scaling.attn_factor")
+            .and_then(|v| v.as_f32())
+            .unwrap_or_else(|| {
+                if has_factors && cfg.max_seq_len > orig_ctx && orig_ctx > 0 {
+                    let scale = cfg.max_seq_len as f32 / orig_ctx as f32;
+                    (1.0 + scale.ln() / (orig_ctx as f32).ln()).sqrt()
+                } else {
+                    1.0
+                }
+            });
 
-        let max_seq = config.max_seq_len.min(cfg.max_seq_len);
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
 
