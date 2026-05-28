@@ -164,6 +164,44 @@ pub fn rope_inplace_scaled(
     }
 }
 
+/// Phi-3 "longrope" (su-scaled) RoPE, NEOX pairing.
+///
+/// Two differences from [`rope_inplace`]:
+///   - **NEOX pairing**: dimension `i` rotates with dimension `i+half`
+///     (not the interleaved `2i,2i+1`). llama.cpp uses NEOX rope for the
+///     phi3 arch, so the GGUF Q/K weights are laid out for it.
+///   - **Per-dimension frequency rescale + mscale**: each pair's inverse
+///     frequency is divided by `ext_factors[i]` (the short_factor or
+///     long_factor array Phi-3.5 ships as a GGUF tensor), and the
+///     resulting cos/sin are scaled by `mscale` (the long-context
+///     attention factor).
+///
+/// `ext_factors.len()` must equal `head_dim/2`. With all factors == 1.0
+/// and `mscale == 1.0` this is plain NEOX RoPE.
+pub fn rope_inplace_longrope(
+    x: &mut [f32],
+    pos: u32,
+    base: f32,
+    ext_factors: &[f32],
+    mscale: f32,
+) {
+    let head_dim = x.len();
+    let half = head_dim / 2;
+    debug_assert_eq!(ext_factors.len(), half);
+    for i in 0..half {
+        let inv_freq =
+            1.0 / (ext_factors[i] * base.powf(2.0 * i as f32 / head_dim as f32));
+        let theta = pos as f32 * inv_freq;
+        let (sin, cos) = theta.sin_cos();
+        let sin = sin * mscale;
+        let cos = cos * mscale;
+        let x0 = x[i];
+        let x1 = x[i + half];
+        x[i] = x0 * cos - x1 * sin;
+        x[i + half] = x0 * sin + x1 * cos;
+    }
+}
+
 /// Phase 2 Wedge 2c -- apply RoPE to N rotation vectors at N positions in
 /// one call. RoPE is element-wise per (vector, position); this helper
 /// makes the multi-token call site obvious without changing the math.
@@ -7130,6 +7168,55 @@ mod tests {
         gemv_f16(&w, 2, 2, &x, &mut out);
         assert!((out[0] - 3.0).abs() < 1e-5);
         assert!((out[1] - 5.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn longrope_neox_unit_factors_is_plain_neox() {
+        // With factors == 1 and mscale == 1, rope_inplace_longrope is
+        // plain NEOX RoPE: verify against the closed form on head_dim=8.
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let pos = 5u32;
+        let factors = vec![1.0f32; half];
+        let mut x: Vec<f32> = (0..head_dim).map(|i| (i as f32 + 1.0) * 0.1).collect();
+        let orig = x.clone();
+        rope_inplace_longrope(&mut x, pos, base, &factors, 1.0);
+        for i in 0..half {
+            let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+            let theta = pos as f32 * inv_freq;
+            let (s, c) = theta.sin_cos();
+            let x0 = orig[i];
+            let x1 = orig[i + half];
+            assert!((x[i] - (x0 * c - x1 * s)).abs() < 1e-6);
+            assert!((x[i + half] - (x0 * s + x1 * c)).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn longrope_factor_lowers_frequency() {
+        // A larger ext_factor divides the inverse frequency, so the
+        // rotation angle shrinks. At pos=1, dim i=1, factor 2 vs 1 must
+        // halve the effective angle (inv_freq scales by 1/factor).
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let i = 1usize;
+        let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+
+        let mut a = vec![0.0f32; head_dim];
+        a[i] = 1.0; // (x_i, x_{i+half}) = (1, 0) → reads out (cos, sin)
+        let mut b = a.clone();
+        let mut f1 = vec![1.0f32; half];
+        let mut f2 = vec![1.0f32; half];
+        f1[i] = 1.0;
+        f2[i] = 2.0;
+        rope_inplace_longrope(&mut a, 1, base, &f1, 1.0);
+        rope_inplace_longrope(&mut b, 1, base, &f2, 1.0);
+        let angle_a = a[i + half].atan2(a[i]); // = inv_freq
+        let angle_b = b[i + half].atan2(b[i]); // = inv_freq / 2
+        assert!((angle_a - inv_freq).abs() < 1e-6);
+        assert!((angle_b - inv_freq / 2.0).abs() < 1e-6);
     }
 
     #[test]
