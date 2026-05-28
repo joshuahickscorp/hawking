@@ -42,33 +42,54 @@ def code(text: str) -> None:
 md(
     """# Maximal Spec Head Bank 500U
 
-Multi-model head bank notebook. Trains a polished Eagle5 spec-decode head for
-each model the dismantle Rust runtime currently serves (`qwen2`-family +
-`deepseek2`). One Colab run = one head bank.
+Multi-model head bank. Trains a polished Eagle5 spec-decode head per model,
+then exports a runtime profile the dismantle laptop runtime can source.
 
-Pipeline per model:
+## Models
 
-1. Frozen-weights extraction (`token_embd`, `lm_head`, `output_norm`).
-2. Corpus capture: residual + intermediate at the model-specific capture
-   layer, plus per-channel activation stats for AWQ.
+**Verified (served by dismantle-core today, default ON):**
+`q05b`, `q3b`, `q7b` (Qwen2.5) + `dsv2` (DeepSeek-V2-Lite).
+
+**Rust-wired but UNVERIFIED (no GGUF smoke run yet, default OFF):**
+`llama32_3b`, `mistral7b` (LlamaDense engine), `gemma2_2b`, `phi35_mini`.
+These four were added to dismantle-core but not yet validated end-to-end —
+the Rust smoke tests pin-then-guard a hash the moment a GGUF is dropped in.
+**Their heads can still be trained here right now** because this whole
+pipeline is pure PyTorch + transformers and never touches the Rust runtime;
+flip `RUN_<slug> = True` to train one and it's ready the moment Rust
+verification lands. Llama / Mistral / Gemma are gated on HuggingFace — set
+`HF_TOKEN` in Cell 1.
+
+## Pipeline per model
+
+1. Frozen-weights extraction (`token_embd`, `lm_head`, `output_norm`;
+   handles tied embeddings for Gemma/Llama).
+2. Corpus capture: residual + intermediate at the capture layer, plus
+   per-channel activation stats for AWQ.
 3. AWQ per-channel smoothing calibration.
-4. Eagle5 base head **sweep** (4 architecture variants: fast, wide, compact,
-   tiny-distill).
-5. Overengineer pass on the sweep winner: hard-neg mining → multi-depth
-   curriculum (depths 1, 2, 4, 8) → calibration-heavy variant.
-6. τ + frontier-policy eval for every produced head.
-7. Runtime profile JSON for the per-model winner.
-8. Safe export to `dismantle_export/headbank/<model_slug>/`.
+4. Eagle5 base head **sweep** (4 variants: fast, wide, compact, tiny-distill).
+5. **Two-tier eval** — quick rank of all 4 variants (cheap window count, no
+   lattice search), then full eval only on the per-model winner. Cuts ~3/4
+   of frontier-search cost without changing which head wins.
+6. Runtime profile JSON for the per-model winner (head + AWQ scales + locked
+   env + EAGLE5 policy hints + `rust_serving_verified` flag).
+7. Safe export to `dismantle_export/headbank_500u/<slug>/` + aggregate
+   `headbank_manifest.json`.
 
-After all models finish, a top-level `headbank_manifest.json` indexes every
-artifact so the local `tools/headbank/pull.sh` stub can fetch the right
-files for a given model slug.
+## What's deliberately OFF
 
-Per-model toggles (`RUN_<slug>`) let you skip or re-run a single model
-without recomputing the others. Every stage skips already-existing artifacts.
+The **overengineer pass** (rollout/multi-depth curriculum) is disabled by
+default. The q1p5 run on 2026-05-28 proved it REGRESSES tau under the
+teacher-forced eval: all rungs dropped tau from the apex 7.99 to ~2-3 while
+depth-1 acceptance held at ~99.95%. The base sweep's pure depth-1 CE head
+is the winner. See the `RUN_OVERENGINEER` comment in Cell 1.
 
-Defaults target Colab Pro+ A100 background execution. Total ~10–12 hr if
-nothing is skipped.
+## Notes
+
+Per-model toggles (`RUN_<slug>`) + per-stage toggles let a single Colab
+session resume cleanly after a runtime kill; every stage skips existing
+artifacts. Defaults target Colab Pro+ A100 background execution. With only
+the four verified models on, budget ~8-10 hr.
 """
 )
 
@@ -92,10 +113,31 @@ LAB_ROOT = DRIVE_ROOT / 'headbank_500u'
 EXPORT_ROOT = DRIVE_ROOT / 'dismantle_export' / 'headbank_500u'
 
 # Per-model toggles. Flip any to False to skip; the rest still run normally.
+#
+# VERIFIED archs (qwen2, deepseek2) are served by the dismantle Rust runtime
+# today, so a trained head is immediately usable locally.
 RUN_Q05B = True
 RUN_Q3B  = True
 RUN_Q7B  = True
 RUN_DSV2 = True
+#
+# UNVERIFIED archs (llama, gemma2, phi3) were wired into dismantle-core but
+# NOT yet validated end-to-end (no GGUF smoke run). The HEAD can still be
+# trained here right now — this whole pipeline is pure PyTorch+transformers
+# and never touches the Rust runtime. Flip one to True to train its head; it
+# will be ready the moment the Rust smoke tests confirm that arch serves
+# correctly. Default OFF so we don't spend CU on heads that can't be served
+# locally yet.
+RUN_LLAMA32_3B = False
+RUN_MISTRAL7B  = False
+RUN_GEMMA2_2B  = False
+RUN_PHI35_MINI = False
+
+# Llama / Mistral / Gemma are gated on HuggingFace — you must accept the
+# license on the model page and provide a token. Phi-3.5 and Qwen are open.
+# Set HF_TOKEN here (or leave '' and `huggingface-cli login` in a scratch
+# cell) before enabling any gated model.
+HF_TOKEN = ''
 
 # Per-stage toggles (apply to every enabled model).
 RUN_FROZEN = True
@@ -116,6 +158,14 @@ RUN_EVAL = True
 RUN_RUNTIME_PROFILE = True
 RUN_EXPORT = True
 RUN_HEADBANK_MANIFEST = True
+
+# Two-tier eval for speed without quality loss: rank the sweep variants on a
+# cheap window count, then run the FULL eval only on each model's winner. The
+# winner's reported metrics + runtime profile come from the full eval; the
+# losers only ever get the quick eval (which is plenty to rank them). This
+# cuts ~3/4 of the frontier-search cost on the non-winning variants.
+QUICK_EVAL_WINDOWS_BIG = 6000
+QUICK_EVAL_WINDOWS_SMALL = 3000
 
 # Mining + curriculum knobs (apply to every model's overengineer pass).
 CURRICULUM_EPOCHS = 2
@@ -243,12 +293,94 @@ MODELS = {
         'gguf_name': 'deepseek-v2-lite-q4_k_m.gguf',
         'profile_name': 'deepseek-v2-lite-q4.m3pro18.json',
     },
+    # ── Rust-wired but UNVERIFIED archs (no GGUF smoke run yet). Heads train
+    #    fine here (pure PyTorch); local serving waits on dismantle-core's
+    #    smoke tests. Capture layers follow the ~85%-of-depth heuristic.
+    'llama32_3b': {
+        'enabled': RUN_LLAMA32_3B,
+        'hf_id': 'meta-llama/Llama-3.2-3B-Instruct',
+        'arch': 'llama',
+        'verified': False,
+        'gated': True,
+        'capture_layer': 24,          # Llama-3.2-3B has 28 layers
+        'corpus_max_sequences': 2500,
+        'awq_calibrate_mode': 'adaptive-alpha',
+        'base_tps_placeholder': 60.0,
+        'spec_efficiency_placeholder': 0.80,
+        'corpus_max_row_tokens': 384,
+        'frontier_max_depth': 24,
+        'train_batch_size_big': 48,
+        'train_batch_size_small': 16,
+        'capture_batch_size': 4,
+        'gguf_name': 'llama-3.2-3b-instruct-q4_k_m.gguf',
+        'profile_name': 'llama32-3b-instruct-q4k.m3pro18.json',
+    },
+    'mistral7b': {
+        'enabled': RUN_MISTRAL7B,
+        'hf_id': 'mistralai/Mistral-7B-Instruct-v0.3',
+        'arch': 'llama',              # served by the LlamaDense engine
+        'verified': False,
+        'gated': True,
+        'capture_layer': 27,          # Mistral-7B has 32 layers
+        'corpus_max_sequences': 2000,
+        'awq_calibrate_mode': 'adaptive-alpha',
+        'base_tps_placeholder': 35.0,
+        'spec_efficiency_placeholder': 0.80,
+        'corpus_max_row_tokens': 384,
+        'frontier_max_depth': 24,
+        'train_batch_size_big': 32,
+        'train_batch_size_small': 12,
+        'capture_batch_size': 2,
+        'gguf_name': 'mistral-7b-instruct-v0.3-q4_k_m.gguf',
+        'profile_name': 'mistral7b-instruct-q4k.m3pro18.json',
+    },
+    'gemma2_2b': {
+        'enabled': RUN_GEMMA2_2B,
+        'hf_id': 'google/gemma-2-2b-it',
+        'arch': 'gemma2',
+        'verified': False,
+        'gated': True,
+        'capture_layer': 22,          # Gemma-2-2B has 26 layers
+        'corpus_max_sequences': 2000,
+        'awq_calibrate_mode': 'adaptive-alpha',
+        'base_tps_placeholder': 70.0,
+        'spec_efficiency_placeholder': 0.80,
+        'corpus_max_row_tokens': 384,
+        'frontier_max_depth': 24,
+        'train_batch_size_big': 48,
+        'train_batch_size_small': 16,
+        'capture_batch_size': 4,
+        'gguf_name': 'gemma-2-2b-it-q4_k_m.gguf',
+        'profile_name': 'gemma2-2b-it-q4k.m3pro18.json',
+    },
+    'phi35_mini': {
+        'enabled': RUN_PHI35_MINI,
+        'hf_id': 'microsoft/Phi-3.5-mini-instruct',
+        'arch': 'phi3',
+        'verified': False,
+        'gated': False,               # Phi-3.5 is open
+        'capture_layer': 27,          # Phi-3.5-mini has 32 layers
+        'corpus_max_sequences': 2000,
+        'awq_calibrate_mode': 'adaptive-alpha',
+        'base_tps_placeholder': 55.0,
+        'spec_efficiency_placeholder': 0.80,
+        'corpus_max_row_tokens': 384,
+        'frontier_max_depth': 24,
+        'train_batch_size_big': 48,
+        'train_batch_size_small': 16,
+        'capture_batch_size': 4,
+        'gguf_name': 'phi-3.5-mini-instruct-q4_k_m.gguf',
+        'profile_name': 'phi35-mini-instruct-q4k.m3pro18.json',
+    },
 }
 
 # Decorate every entry with derived paths so the rest of the notebook just
-# reads from MODELS[slug][...].
+# reads from MODELS[slug][...]. Verified/gated default sensibly for the
+# original qwen2/deepseek2 entries that don't set them explicitly.
 for slug, m in MODELS.items():
     m['slug'] = slug
+    m.setdefault('verified', True)
+    m.setdefault('gated', False)
     m['model_root'] = LAB_ROOT / slug
     m['frozen_path']  = m['model_root'] / 'frozen.npz'
     m['corpus_dir']   = m['model_root'] / 'corpus'
@@ -274,7 +406,21 @@ DEEPSEEK_LOCKED_ENV = {
     'DISMANTLE_DSV2_TCB': '1',
     'DISMANTLE_DSV2_Q8KV': '1',
 }
-LOCKED_ENV_BY_ARCH = {'qwen2': QWEN_LOCKED_ENV, 'deepseek2': DEEPSEEK_LOCKED_ENV}
+# llama / gemma2 / phi3 run the Metal-hybrid path in dismantle-core today
+# (no TCB+predec arena port yet), so there are no model-specific lock flags
+# to bake in. Left empty deliberately; the EAGLE5_* policy hints from the
+# frontier eval still get merged into runtime_env. When the Rust side ports
+# the fast arena path for these archs, add the flags here.
+LLAMA_LOCKED_ENV = {}
+GEMMA2_LOCKED_ENV = {}
+PHI3_LOCKED_ENV = {}
+LOCKED_ENV_BY_ARCH = {
+    'qwen2': QWEN_LOCKED_ENV,
+    'deepseek2': DEEPSEEK_LOCKED_ENV,
+    'llama': LLAMA_LOCKED_ENV,
+    'gemma2': GEMMA2_LOCKED_ENV,
+    'phi3': PHI3_LOCKED_ENV,
+}
 
 
 def load_json(path, default):
@@ -417,12 +563,33 @@ def best_resumable_row(slug):
     return candidates[0]
 
 
+# Authenticate to HuggingFace if a token was supplied — required for the
+# gated llama/mistral/gemma models. Also export it so subprocesses inherit.
+if HF_TOKEN:
+    os.environ['HF_TOKEN'] = HF_TOKEN
+    os.environ['HUGGING_FACE_HUB_TOKEN'] = HF_TOKEN
+    try:
+        from huggingface_hub import login
+        login(token=HF_TOKEN, add_to_git_credential=False)
+        print('[bank] HuggingFace login OK')
+    except Exception as e:
+        print(f'[bank] HF login skipped/failed: {e}')
+
 ENABLED_SLUGS = [s for s, m in MODELS.items() if m['enabled']]
 print(f'[bank] enabled models: {ENABLED_SLUGS}')
 for s in ENABLED_SLUGS:
     m = MODELS[s]
     m['model_root'].mkdir(parents=True, exist_ok=True)
-    print(f"  {s:5s} hf={m['hf_id']:48s} arch={m['arch']:9s} capture_layer={m['capture_layer']}")
+    flags = []
+    if not m['verified']:
+        flags.append('UNVERIFIED-rust')
+    if m['gated']:
+        flags.append('gated-hf')
+    flag_str = (' [' + ','.join(flags) + ']') if flags else ''
+    print(f"  {s:11s} hf={m['hf_id']:42s} arch={m['arch']:9s} capture_layer={m['capture_layer']}{flag_str}")
+    if m['gated'] and not HF_TOKEN:
+        print(f"    WARN {s} is gated on HF but HF_TOKEN is empty — frozen extraction + capture will fail. "
+              f"Set HF_TOKEN in Cell 1 or huggingface-cli login.")
 """
 )
 
@@ -670,18 +837,31 @@ def _read_head_meta(head_path):
         return {}
 
 
-def eval_head(slug, head_path, *, source_tag=None):
+def eval_head(slug, head_path, *, source_tag=None, quick=False):
+    '''Evaluate a head. quick=True ranks cheaply (fewer windows, no lattice
+    search); quick=False is the full eval that feeds the runtime profile.'''
     m = MODELS[slug]
     head_path = Path(head_path)
     tag = head_path.parent.name
     out_dir = m['eval_root'] / tag
     out_dir.mkdir(parents=True, exist_ok=True)
-    tau_path = out_dir / 'tau.json'
-    frontier_path = out_dir / 'frontier.json'
+    suffix = '_quick' if quick else ''
+    tau_path = out_dir / f'tau{suffix}.json'
+    frontier_path = out_dir / f'frontier{suffix}.json'
     meta = _read_head_meta(head_path)
     nb = meta.get('num_blocks', '1')
     hh = meta.get('n_heads', '16')
     ff = meta.get('ff_mult', '4.0')
+
+    if quick:
+        windows = QUICK_EVAL_WINDOWS_BIG if BIG_GPU else QUICK_EVAL_WINDOWS_SMALL
+        # Cheap frontier: skip the lattice-width sweep, narrow the depth grid.
+        front_depths = '2,4,8,16,24'
+        front_widths = '2'
+    else:
+        windows = 24000 if BIG_GPU else 6000
+        front_depths = FRONTIER_DEPTHS
+        front_widths = FRONTIER_WIDTHS
 
     if not tau_path.exists():
         run_with_heartbeat([
@@ -691,7 +871,7 @@ def eval_head(slug, head_path, *, source_tag=None):
             '--corpus', str(m['corpus_dir']),
             '--out', str(tau_path),
             '--depth', str(TAU_DEPTH),
-            '--max-windows', '24000' if BIG_GPU else '6000',
+            '--max-windows', str(windows),
             '--max-row-tokens', str(m['corpus_max_row_tokens']),
             '--num-blocks', str(nb),
             '--head-heads', str(hh),
@@ -699,7 +879,7 @@ def eval_head(slug, head_path, *, source_tag=None):
             '--base-tps', str(m['base_tps_placeholder']),
             '--w4a8-multiplier', '1.0',
             '--spec-efficiency', str(m['spec_efficiency_placeholder']),
-        ], label=f'eval-tau-{slug}-{tag}', interval_sec=60)
+        ], label=f"eval-tau{suffix}-{slug}-{tag}", interval_sec=60)
     if not frontier_path.exists():
         run_with_heartbeat([
             sys.executable, 'colab/eagle5_frontier_policy.py',
@@ -708,9 +888,9 @@ def eval_head(slug, head_path, *, source_tag=None):
             '--corpus', str(m['corpus_dir']),
             '--out', str(frontier_path),
             '--max-depth', str(m['frontier_max_depth']),
-            '--depths', FRONTIER_DEPTHS,
-            '--lattice-widths', FRONTIER_WIDTHS,
-            '--max-windows', '24000' if BIG_GPU else '6000',
+            '--depths', front_depths,
+            '--lattice-widths', front_widths,
+            '--max-windows', str(windows),
             '--max-row-tokens', str(m['corpus_max_row_tokens']),
             '--eval-batch-size', '192',
             '--num-blocks', str(nb),
@@ -719,7 +899,7 @@ def eval_head(slug, head_path, *, source_tag=None):
             '--base-tps', str(m['base_tps_placeholder']),
             '--w4a8-multiplier', '1.0',
             '--spec-efficiency', str(m['spec_efficiency_placeholder']),
-        ], label=f'eval-frontier-{slug}-{tag}', interval_sec=60)
+        ], label=f"eval-frontier{suffix}-{slug}-{tag}", interval_sec=60)
     tau = load_json(tau_path, {})
     frontier = load_json(frontier_path, {})
     best = frontier.get('policies', {}).get('best_deployable', {})
@@ -737,18 +917,32 @@ def eval_head(slug, head_path, *, source_tag=None):
         'policy_kind': best.get('kind'),
         'metadata': meta,
         'source_tag': source_tag,
+        'eval_tier': 'quick' if quick else 'full',
     }
 
 
 if RUN_EVAL:
     for slug in ENABLED_SLUGS:
-        rows = []
-        for entry in BASE_HEADS[slug]:
-            rows.append(eval_head(slug, entry['head'], source_tag=entry['tag']))
-        merged = merge_model_leaderboard(slug, rows)
+        entries = BASE_HEADS[slug]
+        if not entries:
+            print(f'[eval:{slug}] no base heads; skip')
+            continue
+        # Tier 1: quick-eval every variant to rank them cheaply.
+        quick_rows = []
+        for entry in entries:
+            quick_rows.append(eval_head(slug, entry['head'], source_tag=entry['tag'], quick=True))
+        quick_rows.sort(key=leaderboard_sort_key, reverse=True)
+        winner = quick_rows[0]
+        print(f"[eval:{slug}] quick-rank winner = {winner['tag']} "
+              f"(tau={winner.get('tau')}, tps={winner.get('offline_projected_tps')})")
+        # Tier 2: full-eval only the winner. Its full row overwrites its quick
+        # row in the leaderboard (same target+tag key); losers keep quick rows.
+        full_winner = eval_head(slug, winner['head'], source_tag=winner.get('source_tag'), quick=False)
+        merged = merge_model_leaderboard(slug, quick_rows + [full_winner])
         if merged:
             top = merged[0]
-            print(f"[eval:{slug}] top: {top.get('tag')} tau={top.get('tau')} tps={top.get('offline_projected_tps')}")
+            print(f"[eval:{slug}] leaderboard top: {top.get('tag')} tau={top.get('tau')} "
+                  f"tps={top.get('offline_projected_tps')} tier={top.get('eval_tier')}")
 else:
     print('RUN_EVAL=False; skipping base-sweep eval.')
 """
@@ -964,6 +1158,8 @@ def export_runtime_profile(slug):
         'target': slug,
         'hf_id': m['hf_id'],
         'arch': m['arch'],
+        'rust_serving_verified': m['verified'],
+        'gated': m['gated'],
         'gguf_name': m['gguf_name'],
         'profile_name': m['profile_name'],
         'tag': row.get('tag'),
@@ -1020,6 +1216,8 @@ def build_headbank_manifest():
             'slug': slug,
             'hf_id': p['hf_id'],
             'arch': p['arch'],
+            'rust_serving_verified': p.get('rust_serving_verified', True),
+            'gated': p.get('gated', False),
             'gguf_name': p['gguf_name'],
             'profile_name': p['profile_name'],
             'head_path': p['head'],
