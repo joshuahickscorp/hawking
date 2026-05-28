@@ -620,6 +620,40 @@ def train(args) -> None:
     step = prior_step
     V = head._lm_head.shape[1]
 
+    # Resolve --rollout-depth-targets / --rollout-depth-target-weights once so
+    # the hot loop stays cheap. ``rollout_depth_targets_set`` is None when the
+    # CLI flag was empty, which means "use the legacy geometric weighting".
+    rollout_depth_targets_set: Optional[set[int]] = None
+    rollout_depth_target_weights: dict[int, float] = {}
+    if args.rollout_depth_targets:
+        try:
+            targets = [int(t) for t in str(args.rollout_depth_targets).split(",") if t.strip()]
+        except ValueError as e:
+            raise SystemExit(f"--rollout-depth-targets must be a comma-separated list of ints: {e}")
+        if not targets:
+            raise SystemExit("--rollout-depth-targets parsed to empty list")
+        if any(t < 1 for t in targets):
+            raise SystemExit("--rollout-depth-targets entries must be >= 1")
+        if args.rollout_depth_target_weights:
+            try:
+                weights = [float(w) for w in str(args.rollout_depth_target_weights).split(",") if w.strip()]
+            except ValueError as e:
+                raise SystemExit(f"--rollout-depth-target-weights must be comma-separated floats: {e}")
+            if len(weights) != len(targets):
+                raise SystemExit(
+                    f"--rollout-depth-target-weights count {len(weights)} "
+                    f"!= --rollout-depth-targets count {len(targets)}"
+                )
+        else:
+            weights = [1.0] * len(targets)
+        rollout_depth_targets_set = set(targets)
+        rollout_depth_target_weights = dict(zip(targets, weights))
+        print(
+            f"[train] rollout_depth_targets={sorted(rollout_depth_targets_set)} "
+            f"weights={rollout_depth_target_weights}",
+            flush=True,
+        )
+
     for batch in _iter_batches(
         sorted(Path(args.corpus_dir).glob("shard_*.parquet")),
         args.batch_size,
@@ -684,6 +718,21 @@ def train(args) -> None:
 
             rollout = torch.zeros((), device=device, dtype=torch.float32)
             if args.rollout_loss_weight > 0.0 and args.rollout_depth > 1:
+                # Multi-depth joint objective: when --rollout-depth-targets is
+                # supplied (e.g. "1,2,4,8"), only those depth steps contribute
+                # to the rollout loss and they each get an explicit weight (via
+                # --rollout-depth-target-weights, or 1.0 by default). This
+                # protects shallow-depth accuracy from being smoothed away by
+                # deeper-step gradients, which is exactly what the runtime
+                # cares about for variable-K speculation.
+                #
+                # When the targets flag is empty, behavior is unchanged: every
+                # depth from 1..rollout_depth contributes with the geometric
+                # ``gamma ** depth_idx`` weight.
+                if rollout_depth_targets_set is not None:
+                    max_target = max(rollout_depth_targets_set)
+                else:
+                    max_target = args.rollout_depth
                 start_min = min(max(args.rollout_start_min_pos, 0), S - 1)
                 usable = S - start_min
                 if usable > 0:
@@ -696,7 +745,7 @@ def train(args) -> None:
                     active_starts = starts
                     rollout_sum = torch.zeros((), device=device, dtype=torch.float32)
                     rollout_den = torch.zeros((), device=device, dtype=torch.float32)
-                    for depth_idx in range(args.rollout_depth):
+                    for depth_idx in range(max_target):
                         valid = active_starts + depth_idx < S
                         if not bool(valid.any()):
                             break
@@ -710,9 +759,18 @@ def train(args) -> None:
                             target_d.reshape(-1),
                             reduction="mean",
                         )
-                        weight_d = float(args.rollout_depth_gamma ** depth_idx)
-                        rollout_sum = rollout_sum + weight_d * loss_d
-                        rollout_den = rollout_den + weight_d
+                        # depth_idx is 0-based; targets are 1-based.
+                        target_pos = depth_idx + 1
+                        if rollout_depth_targets_set is not None:
+                            if target_pos not in rollout_depth_targets_set:
+                                weight_d = 0.0
+                            else:
+                                weight_d = float(rollout_depth_target_weights[target_pos])
+                        else:
+                            weight_d = float(args.rollout_depth_gamma ** depth_idx)
+                        if weight_d > 0.0:
+                            rollout_sum = rollout_sum + weight_d * loss_d
+                            rollout_den = rollout_den + weight_d
 
                         pred_d = logits_d.argmax(dim=-1).detach()
                         next_prev = target_d.detach()
@@ -813,6 +871,13 @@ def main() -> int:
     p.add_argument("--rollout-draft-prob", type=float, default=0.75,
                    help="Scheduled-sampling probability of feeding the draft "
                         "argmax instead of the teacher token during rollout.")
+    p.add_argument("--rollout-depth-targets", type=str, default="",
+                   help="Optional comma list (e.g. '1,2,4,8') of 1-based depths to "
+                        "include in the rollout loss. Empty=legacy geometric "
+                        "weighting across 1..rollout-depth.")
+    p.add_argument("--rollout-depth-target-weights", type=str, default="",
+                   help="Comma list of explicit weights matching --rollout-depth-targets. "
+                        "Empty=uniform 1.0 across the listed targets.")
     p.add_argument("--rollout-depth-gamma", type=float, default=0.85,
                    help="Per-depth rollout loss decay. 1.0 weights all depths equally.")
     p.add_argument("--rollout-start-min-pos", type=int, default=3,
