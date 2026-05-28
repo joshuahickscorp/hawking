@@ -13,8 +13,11 @@
 //!   1. No Q/K/V biases (Llama families omit them; Qwen2 carries them).
 //!   2. RoPE θ is typically 500_000 (Llama-3) instead of 1_000_000.
 //!
-//! Step 3 lands the loader + dispatcher. Forward path is filled in by
-//! subsequent commits (prefill → decode → Metal hot path).
+//! On macOS the Q4_K projections, the f16 LM head, and rmsnorm run on
+//! Metal; the remaining ops (Q6_K weights, attention) use the CPU
+//! reference path. The full TCB pinned-buffer + predec arena (Qwen's
+//! `forward_token_greedy_tcb`) is a follow-up best done with a real
+//! GGUF in hand to bench against.
 
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
@@ -26,6 +29,7 @@ use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace_scaled, silu_mul,
     Llama3RopeScaling,
 };
+use crate::metal::MetalContext;
 use crate::profile::KernelProfile;
 use crate::quant;
 use crate::sample::Sampler;
@@ -164,8 +168,8 @@ pub struct LlamaLayer {
     /// Per-layer norms (eager fp32, small).
     pub attn_norm: Vec<f32>,
     pub ffn_norm: Vec<f32>,
-    /// Attention projection weights (lazy — read via TensorRef on each
-    /// forward; Metal hot path in step 6 will pin them).
+    /// Attention projection weights (read via TensorRef on each forward;
+    /// Q4_K reads bytes straight from the mmap for the Metal GEMV).
     pub(crate) q_proj: TensorRef,
     pub(crate) k_proj: TensorRef,
     pub(crate) v_proj: TensorRef,
@@ -196,6 +200,12 @@ pub struct LlamaDense {
     pub sampler: Sampler,
     pub kernel_profile: Option<KernelProfile>,
     pub _weights_path: PathBuf,
+    /// `Some` when a Metal device is available. The hybrid forward path
+    /// routes Q4_K projections, the f16 LM head, and rmsnorm through
+    /// Metal kernels; everything else (Q6_K weights, attention) stays on
+    /// the CPU reference path. The full TCB pinned-buffer + predec arena
+    /// (Qwen's `forward_token_greedy_tcb`) is a follow-up.
+    pub metal_ctx: Option<MetalContext>,
 }
 
 impl LlamaDense {
@@ -236,11 +246,22 @@ impl LlamaDense {
         quant::dequant_into(t.dtype, bytes, buf)
     }
 
-    /// CPU reference matmul: dequantize the weight slab once into the
-    /// `scratch` buffer, then run plain f32 GEMV. Used by step 4's
-    /// reference forward; step 6 replaces every call with the Metal Q4_K
-    /// dispatcher.
-    fn matmul_cpu(
+    fn rmsnorm_dispatch(&self, x: &[f32], weight: &[f32], eps: f32, out: &mut [f32]) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            return crate::kernels::rmsnorm_metal(ctx, x, weight, eps, out);
+        }
+        rmsnorm(x, weight, eps, out);
+        Ok(())
+    }
+
+    /// Per-layer matmul dispatcher. On macOS with Metal alive and a Q4_K
+    /// weight, reads the raw 4-bit bytes from the GGUF mmap and runs the
+    /// fused Metal Q4_K GEMV. Non-Q4_K weights (typically Q6_K on k/v/
+    /// ffn_down in a Q4_K_M mix) and the off-macOS path fall back to
+    /// dequant-into-scratch + CPU `gemv_f32`. Bringing Q6_K onto the GPU
+    /// is part of the deferred TCB-arena port.
+    fn matmul_q4_dispatch(
         &self,
         t: &TensorRef,
         rows: usize,
@@ -249,18 +270,45 @@ impl LlamaDense {
         out: &mut [f32],
         scratch: &mut Vec<f32>,
     ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            if t.dtype == GgmlType::Q4_K {
+                let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+                return crate::kernels::gemv_q4_k_m(ctx, bytes, rows, cols, x, out);
+            }
+        }
         self.dequant_ref_into(t, scratch)?;
         gemv_f32(scratch, rows, cols, x, out);
         Ok(())
     }
 
-    /// CPU reference forward for a single token at position `pos`.
-    /// Appends K/V at the current `kv.seq_len` slot and bumps `seq_len`.
+    fn gemv_f16_dispatch(
+        &self,
+        w_f16: &[f16],
+        rows: usize,
+        cols: usize,
+        x: &[f32],
+        out: &mut [f32],
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        if let Some(ctx) = &self.metal_ctx {
+            let w_bytes = bytemuck::cast_slice::<f16, u8>(w_f16);
+            return crate::kernels::gemv_f16_metal(ctx, w_bytes, rows, cols, x, out);
+        }
+        gemv_f16(w_f16, rows, cols, x, out);
+        Ok(())
+    }
+
+    /// Forward one token at position `pos`. Appends K/V at the current
+    /// `kv.seq_len` slot and bumps `seq_len`. On macOS the Q4_K
+    /// projections, the f16 LM head, and rmsnorm run on Metal; the rest
+    /// (Q6_K weights, attention) uses the CPU reference path.
+    ///
     /// Mirrors `qwen_dense::forward_token`, with two differences:
     ///   - no Q/K/V bias adds (Llama families omit them)
     ///   - RoPE goes through `rope_inplace_scaled` so Llama-3.1+ NTK
     ///     rescaling is honored when `cfg.rope_scaling.is_some()`
-    pub(crate) fn forward_token_cpu(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+    pub(crate) fn forward_token(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
         let cfg = &self.config;
         let h = cfg.hidden;
         let head_dim = cfg.head_dim;
@@ -272,6 +320,8 @@ impl LlamaDense {
         let rope_theta = cfg.rope_theta;
         let rms_eps = cfg.rms_norm_eps;
         let n_layers = cfg.n_layers;
+        let mid = cfg.intermediate;
+        let vocab_size = cfg.vocab_size;
 
         let mut x = vec![0.0f32; h];
         embed_lookup(&self.embed, h, token, &mut x);
@@ -289,11 +339,10 @@ impl LlamaDense {
         let mha_seq_len = self.kv.seq_len + 1;
 
         for li in 0..n_layers {
-            let mut x_norm = vec![0.0f32; h];
-            rmsnorm(&x, &self.layers[li].attn_norm, rms_eps, &mut x_norm);
-
-            // Snapshot the per-layer TensorRefs so we can release the
-            // immutable borrow on `self.layers` before the KV write.
+            // Snapshot per-layer weights so we drop the borrow on
+            // `self.layers` before the &mut self.kv write below.
+            let attn_norm_w = self.layers[li].attn_norm.clone();
+            let ffn_norm_w = self.layers[li].ffn_norm.clone();
             let q_proj = self.layers[li].q_proj.clone();
             let k_proj = self.layers[li].k_proj.clone();
             let v_proj = self.layers[li].v_proj.clone();
@@ -301,14 +350,16 @@ impl LlamaDense {
             let ffn_gate = self.layers[li].ffn_gate.clone();
             let ffn_up = self.layers[li].ffn_up.clone();
             let ffn_down = self.layers[li].ffn_down.clone();
-            let ffn_norm_w = self.layers[li].ffn_norm.clone();
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &attn_norm_w, rms_eps, &mut x_norm)?;
 
             let mut q_full = vec![0.0f32; q_dim];
             let mut k_token = vec![0.0f32; kv_dim];
             let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_cpu(&q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_cpu(&k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
-            self.matmul_cpu(&v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_q4_dispatch(&k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
+            self.matmul_q4_dispatch(&v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
 
             // RoPE on every Q head and every KV head, with optional
             // Llama-3.1+ NTK rescale (None ⇒ bit-identical to plain
@@ -345,34 +396,36 @@ impl LlamaDense {
             )?;
 
             let mut o = vec![0.0f32; h];
-            self.matmul_cpu(&o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            self.matmul_q4_dispatch(&o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
             add_inplace(&mut x, &o);
 
             let mut x_norm2 = vec![0.0f32; h];
-            rmsnorm(&x, &ffn_norm_w, rms_eps, &mut x_norm2);
-            let mid = cfg.intermediate;
+            self.rmsnorm_dispatch(&x, &ffn_norm_w, rms_eps, &mut x_norm2)?;
             let mut g = vec![0.0f32; mid];
             let mut u = vec![0.0f32; mid];
             let mut a = vec![0.0f32; mid];
-            self.matmul_cpu(&ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
-            self.matmul_cpu(&ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            self.matmul_q4_dispatch(&ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
+            self.matmul_q4_dispatch(&ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
             silu_mul(&g, &u, &mut a);
             let mut f = vec![0.0f32; h];
-            self.matmul_cpu(&ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            self.matmul_q4_dispatch(&ffn_down, h, mid, &a, &mut f, &mut scratch)?;
             add_inplace(&mut x, &f);
         }
 
         self.kv.seq_len += 1;
 
+        // final_norm and the LM head only need shared borrows of `self`
+        // (no intervening &mut), so the dispatchers read them in place —
+        // no per-token clone of the multi-hundred-MB weight matrices.
         let mut x_norm = vec![0.0f32; h];
-        rmsnorm(&x, &self.final_norm, rms_eps, &mut x_norm);
+        self.rmsnorm_dispatch(&x, &self.final_norm, rms_eps, &mut x_norm)?;
 
-        let mut logits = vec![0.0f32; cfg.vocab_size];
+        let mut logits = vec![0.0f32; vocab_size];
         let w_f16: &[f16] = match &self.lm_head {
             Some(w) => w,
             None => &self.embed,
         };
-        gemv_f16(w_f16, cfg.vocab_size, h, &x_norm, &mut logits);
+        self.gemv_f16_dispatch(w_f16, vocab_size, h, &x_norm, &mut logits)?;
         Ok(logits)
     }
 }
@@ -421,8 +474,10 @@ impl Engine for LlamaDense {
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
 
+        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
-            profile.validate_for_gguf(&gguf, None)?;
+            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
         }
         let kernel_profile = config.kernel_profile.clone();
 
@@ -439,6 +494,7 @@ impl Engine for LlamaDense {
             sampler,
             kernel_profile,
             _weights_path: weights.to_path_buf(),
+            metal_ctx,
         })
     }
 
@@ -447,10 +503,10 @@ impl Engine for LlamaDense {
         req: GenerateRequest,
         sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
-        // Step 5: CPU reference generate. Single-token serial prefill +
-        // decode through `forward_token_cpu`. Metal hot path, spec-decode,
-        // and prefix caching are deliberately out of scope here — they
-        // layer on in step 6 behind the same env-var gates Qwen uses.
+        // Single-token serial prefill + decode through `forward_token`
+        // (Metal-hybrid on macOS). Spec-decode, prefix caching, and the
+        // full TCB+predec arena are deliberately out of scope here — they
+        // layer on later behind the same env-var gates Qwen uses.
         if let Some(seed) = req.sampling.seed {
             self.sampler = Sampler::new(seed);
         }
@@ -486,7 +542,7 @@ impl Engine for LlamaDense {
                 break;
             }
             let step_start = Instant::now();
-            let _ = self.forward_token_cpu(t, i)?;
+            let _ = self.forward_token(t, i)?;
             if stall_active && step_start.elapsed() > stall_limit {
                 prefill_aborted = true;
                 break;
@@ -516,7 +572,7 @@ impl Engine for LlamaDense {
             }
             let pos = prompt_len + step;
             let step_start = Instant::now();
-            let mut logits = self.forward_token_cpu(last_id, pos)?;
+            let mut logits = self.forward_token(last_id, pos)?;
             let next_id = self.sampler.sample(&mut logits, &req.sampling);
             if stall_active && step_start.elapsed() > stall_limit {
                 reason = StopReason::Aborted;
@@ -576,7 +632,7 @@ impl Engine for LlamaDense {
         }
         let mut out = Vec::with_capacity(tokens.len());
         for (i, &token) in tokens.iter().enumerate() {
-            out.push(self.forward_token_cpu(token, positions[i])?);
+            out.push(self.forward_token(token, positions[i])?);
         }
         Ok(out)
     }
