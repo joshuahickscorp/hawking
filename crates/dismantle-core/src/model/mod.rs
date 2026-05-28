@@ -5,6 +5,7 @@
 
 pub mod deepseek_v2;
 pub mod expert_cache;
+pub mod llama;
 pub mod mixtral;
 pub mod qwen_dense;
 pub mod qwen_moe;
@@ -58,6 +59,13 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
             let e = mixtral::MixtralEngine::load(weights, config)?;
             Ok(Box::new(e))
         }
+        // Llama-family dense arch (Llama-2 / Llama-3.x / Mistral). The
+        // `is_mixtral` guard above catches MoE Mixtral GGUFs that also
+        // self-report as `"llama"`, so this arm is the dense fallback.
+        "llama" | "llama2" | "llama3" | "llama3.1" | "llama3.2" | "mistral" => {
+            let e = llama::LlamaDense::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         "deepseek2" | "deepseek-v2" | "deepseek2-lite" => {
             let e = deepseek_v2::DeepSeekV2::load(weights, config)?;
             Ok(Box::new(e))
@@ -71,7 +79,7 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
             Ok(Box::new(e))
         }
         other => Err(Error::Model(format!(
-            "unknown architecture {other:?}; v0.1 supports deepseek2 + qwen2 + qwen-moe"
+            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe"
         ))),
     }
 }
