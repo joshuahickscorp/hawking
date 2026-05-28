@@ -50,12 +50,18 @@ Three modes (set `MODE`):
   heads remain inference-usable, just not warm-start-resumable). Bigger
   reclaim, no impact on inference.
 * `'aggressive'` — moderate + delete `q3b_ref_corpus/` and `q0p5_corpus/`
-  (the headbank notebook recaptures these). Biggest reclaim, costs ~10
-  Colab CU when headbank reruns.
+  (the headbank notebook recaptures these). Costs ~10 Colab CU on rerun.
+* `'archive'` — aggressive + delete the shipped q1p5 run's corpus (~25 GB)
+  and non-apex sweep heads. q1p5's apex head + runtime profile are backed
+  up in `dismantle_export/`, and the headbank never touches q1p5. This is
+  GATED: if the exported apex-head backup isn't found, every archive delete
+  is force-skipped. Biggest reclaim; use it when you need headroom for the
+  full 4-model headbank.
 
 Live-protection: anything modified within the last `RECENT_WINDOW_HOURS`
 (default 2h) is skipped no matter the mode — so the running overengineer
-Colab can't lose state.
+Colab can't lose state. The apex leaderboard head is never touched in any
+mode.
 """
 )
 
@@ -218,8 +224,36 @@ plan.append(('aggressive', 'q3b_ref_artifacts', LAB_ROOT / 'artifacts' / 'q3b_re
 plan.append(('aggressive', 'q0p5_artifacts', LAB_ROOT / 'artifacts' / 'q0p5',
              'reference artifacts paired with q0p5_corpus; recaptured by headbank'))
 
+# ── ARCHIVE ───────────────────────────────────────────────────────────────
+# The old maximal_spec_500u run is DONE: q1p5 shipped, its apex head + runtime
+# profile are backed up in dismantle_export/maximal_spec_500u/. The headbank
+# does NOT use any q1p5 artifact (its registry is q05b/q3b/q7b/dsv2). So the
+# q1p5 corpus + the non-apex sweep heads are archivable. Gated below on the
+# export backup actually existing — if it doesn't, these get force-skipped.
+APEX_HEAD_BACKUP = EXPORT_NEW / 'heads' / 'q1p5'
+EXPORT_BACKUP_OK = APEX_HEAD_BACKUP.exists() and any(APEX_HEAD_BACKUP.glob('*.safetensors'))
+
+plan.append(('archive', 'q1p5_corpus', LAB_ROOT / 'corpora' / 'q1p5_corpus',
+             'q1p5 shipped + apex head exported; corpus unused by headbank, recapturable'))
+# Non-apex, non-regressed q1p5 sweep head_final.safetensors — the 500U losers.
+# The apex won; the top alternates are also mirrored in the export. Keep the
+# apex dir untouched (APEX_TAG guard handles it).
+_q1p5_ck = LAB_ROOT / 'artifacts' / 'q1p5' / 'checkpoints'
+if _q1p5_ck.exists():
+    for _ck in sorted(_q1p5_ck.glob('*')):
+        if not _ck.is_dir():
+            continue
+        if APEX_TAG in _ck.name:
+            continue
+        if any(s in _ck.name for s in REGRESSED_CKPT_SLUGS):
+            continue
+        _hf = _ck / 'head_final.safetensors'
+        if _hf.exists():
+            plan.append(('archive', f'q1p5_loser_head:{_ck.name}', _hf,
+                         'non-apex 500U sweep head; apex shipped + top heads mirrored in export'))
+
 # ─── Filter by mode + safety rails ───────────────────────────────────────
-MODE_ORDER = {'conservative': 0, 'moderate': 1, 'aggressive': 2}
+MODE_ORDER = {'conservative': 0, 'moderate': 1, 'aggressive': 2, 'archive': 3}
 selected_mode = MODE_ORDER.get(MODE, 1)
 
 
@@ -242,6 +276,11 @@ for entry_mode, label, path, reason in plan:
         actionable.append({'label': label, 'path': path, 'size': 0,
                            'mode': entry_mode, 'reason': reason,
                            'skip': 'apex tag matched — refuse to touch'})
+        continue
+    if entry_mode == 'archive' and not EXPORT_BACKUP_OK:
+        actionable.append({'label': label, 'path': path, 'size': 0,
+                           'mode': entry_mode, 'reason': reason,
+                           'skip': 'archive blocked — no exported apex-head backup found, refusing to delete q1p5 artifacts'})
         continue
     size = dir_size(path)
     actionable.append({'label': label, 'path': path, 'size': size,
