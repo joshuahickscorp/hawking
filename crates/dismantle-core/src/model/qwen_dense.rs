@@ -3949,8 +3949,12 @@ impl QwenDense {
             && h % 256 == 0
             && (1..=8).contains(&b);
         if fast {
+            let vtim = crate::env_on("DISMANTLE_QWEN_VERIFY_TIMING");
+            let t0 = std::time::Instant::now();
             // Stage 1: layers -> x_norm_buf_batch (committed).
             self.forward_tokens_batch_tcb(tokens, positions)?;
+            let t_fwd = t0.elapsed();
+            let t1 = std::time::Instant::now();
             let pruned = self.vocab_pruned.unwrap();
             let ctx = self
                 .metal_ctx
@@ -3965,12 +3969,22 @@ impl QwenDense {
             let w_bytes = pruned * blocks_per_row * 144;
             // B×pruned f32 logits scratch.
             let logits_buf = ctx.new_buffer(b * pruned * std::mem::size_of::<f32>());
+            let t_alloc = t1.elapsed();
+            let t2 = std::time::Instant::now();
             let mut tcb = TokenCommandBuffer::new(ctx);
             crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                 &mut tcb, lm, 0, w_bytes, pruned, h, b,
                 &arena.x_norm_buf_batch, &logits_buf,
             )?;
             tcb.commit_and_wait()?;
+            let t_gemm = t2.elapsed();
+            if vtim {
+                eprintln!(
+                    "[verify-timing] B={} fwd={:.1}ms alloc={:.1}ms gemm+commit={:.1}ms",
+                    b, t_fwd.as_secs_f64() * 1e3, t_alloc.as_secs_f64() * 1e3,
+                    t_gemm.as_secs_f64() * 1e3,
+                );
+            }
             // CPU argmax over pruned vocab (cheap), map pruned idx -> real id.
             let lp = logits_buf.contents() as *const f32;
             let remap = self.vocab_prune_remap.as_ref();
