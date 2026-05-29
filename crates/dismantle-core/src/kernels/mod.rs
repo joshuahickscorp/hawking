@@ -658,6 +658,78 @@ mod metal_dispatch {
         )
     }
 
+    /// Batched Q4_K GEMM with PRE-DECODED sub-block scales — same as
+    /// `gemm_q4_k_m_batched_v3w_pinned_tcb` but reads `ds/dm` from a predec
+    /// scale table (built via `predecode_q4_k_scale_table`) instead of decoding
+    /// the Q4_K header per element. Brings the single-path predec win to the
+    /// batched decode/verify path. `scales_buf` holds `rows*blocks_per_row*16`
+    /// f32 (16 floats/block); `scales_offset` is its byte offset (usually 0,
+    /// one buffer per tensor).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v3w_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(1..=8).contains(&batch) {
+            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        if scales_buf.length() < scales_need {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+            )));
+        }
+        let x_bytes = batch * cols * std::mem::size_of::<f32>();
+        let y_bytes = batch * rows * std::mem::size_of::<f32>();
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
+        }
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        ab.set_u32(2, batch as u32);
+        const V3_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_batch_buf), 0);
+                enc.set_buffer(3, Some(y_batch_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// P3 v3 — Batched Q4_K_M GEMM with cooperative shmem activation
     /// staging. Same args + layout as v2, but adds a 4 KB threadgroup
     /// tile so all 8 rows in a TG read the activation block from shmem
