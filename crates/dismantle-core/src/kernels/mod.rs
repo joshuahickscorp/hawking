@@ -30,6 +30,38 @@ pub fn silu_mul(gate: &[f32], up: &[f32], out: &mut [f32]) {
     }
 }
 
+/// GeGLU activation: `out = gelu_tanh(gate) * up`.
+///
+/// Uses the tanh approximation of GELU (`gelu_pytorch_tanh`), which is
+/// what Gemma-2 was trained with:
+///   gelu(x) = 0.5·x·(1 + tanh(√(2/π)·(x + 0.044715·x³)))
+pub fn gelu_mul(gate: &[f32], up: &[f32], out: &mut [f32]) {
+    debug_assert_eq!(gate.len(), up.len());
+    debug_assert_eq!(gate.len(), out.len());
+    const SQRT_2_OVER_PI: f32 = 0.797_884_56; // √(2/π)
+    for i in 0..gate.len() {
+        let x = gate[i];
+        let inner = SQRT_2_OVER_PI * (x + 0.044715 * x * x * x);
+        let g = 0.5 * x * (1.0 + inner.tanh());
+        out[i] = g * up[i];
+    }
+}
+
+/// Logit soft-capping: `xs[i] = cap · tanh(xs[i] / cap)` in place.
+///
+/// Gemma-2 caps both the attention scores (cap≈50) and the final logits
+/// (cap≈30). `cap <= 0` is a no-op (capping disabled). Bounds the output
+/// to (−cap, cap) while staying ~linear near 0.
+pub fn logit_softcap_inplace(xs: &mut [f32], cap: f32) {
+    if cap <= 0.0 {
+        return;
+    }
+    let inv = 1.0 / cap;
+    for v in xs.iter_mut() {
+        *v = cap * (*v * inv).tanh();
+    }
+}
+
 /// Softmax in place over a slice. Numerically stable.
 pub fn softmax_inplace(xs: &mut [f32]) {
     if xs.is_empty() {
@@ -65,6 +97,108 @@ pub fn rope_inplace(x: &mut [f32], pos: u32, base: f32) {
         let x1 = x[2 * i + 1];
         x[2 * i] = x0 * cos - x1 * sin;
         x[2 * i + 1] = x0 * sin + x1 * cos;
+    }
+}
+
+/// Llama-3.1+ NTK-aware RoPE frequency-rescaling parameters.
+///
+/// Comes from GGUF metadata `llama.rope.scaling.{factor, low_freq_factor,
+/// high_freq_factor, original_context_length}` when
+/// `llama.rope.scaling.type == "llama3"`. Absent for Llama-3.0, Qwen2,
+/// and DeepSeek-V2, in which case the unscaled [`rope_inplace`] path is
+/// used.
+///
+/// Reference: llama.cpp `llama-model.cpp::llama_init_freqs_llama3`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Llama3RopeScaling {
+    pub factor: f32,
+    pub low_freq_factor: f32,
+    pub high_freq_factor: f32,
+    pub original_max_position_embeddings: u32,
+}
+
+/// In-place RoPE with optional Llama-3.1+ NTK-aware frequency rescale.
+/// When `scaling` is `None`, this is bit-identical to [`rope_inplace`].
+///
+/// Scaling rule per half-pair (interpreted as a wavelength gate):
+/// - wavelen < high_wavelen  → freq unchanged   (high-freq pairs stay)
+/// - wavelen > low_wavelen   → freq / factor     (long-context tail)
+/// - in between              → smooth linear interpolation between the two
+pub fn rope_inplace_scaled(
+    x: &mut [f32],
+    pos: u32,
+    base: f32,
+    scaling: Option<Llama3RopeScaling>,
+) {
+    let Some(s) = scaling else {
+        // Delegate so the Qwen2 / DeepSeek-V2 unscaled paths stay
+        // bit-identical to the baselines captured against `rope_inplace`.
+        rope_inplace(x, pos, base);
+        return;
+    };
+    let head_dim = x.len();
+    let half = head_dim / 2;
+    let two_pi = std::f32::consts::TAU;
+    for i in 0..half {
+        let inv_freq = base.powf(2.0 * i as f32 / head_dim as f32);
+        let freq = 1.0 / inv_freq;
+        let wavelen = two_pi / freq;
+        let low_wavelen = s.original_max_position_embeddings as f32 / s.low_freq_factor;
+        let high_wavelen = s.original_max_position_embeddings as f32 / s.high_freq_factor;
+        let freq_eff = if wavelen < high_wavelen {
+            freq
+        } else if wavelen > low_wavelen {
+            freq / s.factor
+        } else {
+            let smooth = (s.original_max_position_embeddings as f32 / wavelen
+                - s.low_freq_factor)
+                / (s.high_freq_factor - s.low_freq_factor);
+            (1.0 - smooth) * (freq / s.factor) + smooth * freq
+        };
+        let theta = pos as f32 * freq_eff;
+        let (sin, cos) = theta.sin_cos();
+        let x0 = x[2 * i];
+        let x1 = x[2 * i + 1];
+        x[2 * i] = x0 * cos - x1 * sin;
+        x[2 * i + 1] = x0 * sin + x1 * cos;
+    }
+}
+
+/// Phi-3 "longrope" (su-scaled) RoPE, NEOX pairing.
+///
+/// Two differences from [`rope_inplace`]:
+///   - **NEOX pairing**: dimension `i` rotates with dimension `i+half`
+///     (not the interleaved `2i,2i+1`). llama.cpp uses NEOX rope for the
+///     phi3 arch, so the GGUF Q/K weights are laid out for it.
+///   - **Per-dimension frequency rescale + mscale**: each pair's inverse
+///     frequency is divided by `ext_factors[i]` (the short_factor or
+///     long_factor array Phi-3.5 ships as a GGUF tensor), and the
+///     resulting cos/sin are scaled by `mscale` (the long-context
+///     attention factor).
+///
+/// `ext_factors.len()` must equal `head_dim/2`. With all factors == 1.0
+/// and `mscale == 1.0` this is plain NEOX RoPE.
+pub fn rope_inplace_longrope(
+    x: &mut [f32],
+    pos: u32,
+    base: f32,
+    ext_factors: &[f32],
+    mscale: f32,
+) {
+    let head_dim = x.len();
+    let half = head_dim / 2;
+    debug_assert_eq!(ext_factors.len(), half);
+    for i in 0..half {
+        let inv_freq =
+            1.0 / (ext_factors[i] * base.powf(2.0 * i as f32 / head_dim as f32));
+        let theta = pos as f32 * inv_freq;
+        let (sin, cos) = theta.sin_cos();
+        let sin = sin * mscale;
+        let cos = cos * mscale;
+        let x0 = x[i];
+        let x1 = x[i + half];
+        x[i] = x0 * cos - x1 * sin;
+        x[i + half] = x0 * sin + x1 * cos;
     }
 }
 
@@ -226,7 +360,6 @@ pub fn topk_softmax_batch(
 
 
 #[cfg(target_os = "macos")]
-pub mod megakernel;
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
@@ -1249,6 +1382,70 @@ mod metal_dispatch {
         )
     }
 
+    /// AWQ Option B: GPU-side fused activation-divide + per-block int8
+    /// quantization. Same shape as `quantize_f32_to_int8_per_block_tcb` but
+    /// divides each input element by the matching entry of a per-channel
+    /// smoothing vector `s_buf` (length `n`) BEFORE computing the per-block
+    /// `max|x|/127` scale. Pairs with offline-baked Q4_K weights
+    /// (`W' = W * s`) produced by `tools/awq_bake/`.
+    pub fn quantize_f32_to_int8_per_block_scaled_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        s_buf: &PinnedBuffer,
+        x_int8_buf: &PinnedBuffer,
+        x_scales_buf: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        const KERNEL: &str = "quantize_f32_to_int8_per_block_scaled";
+        if n % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb requires n % 256 == 0; got n={n}"
+            )));
+        }
+        let f32_bytes = (n * std::mem::size_of::<f32>()) as u64;
+        if x_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_buf too small: got {} need {}",
+                x_buf.length(), f32_bytes,
+            )));
+        }
+        if s_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb s_buf too small: got {} need {}",
+                s_buf.length(), f32_bytes,
+            )));
+        }
+        if x_int8_buf.length() < n as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
+                x_int8_buf.length(), n,
+            )));
+        }
+        let n_blocks = n / 256;
+        let scales_bytes = n_blocks * std::mem::size_of::<f32>();
+        if x_scales_buf.length() < scales_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_tcb x_scales_buf too small: got {} need {}",
+                x_scales_buf.length(), scales_bytes,
+            )));
+        }
+        const TG: u32 = 256;
+        let grid_x = n as u32;
+        let shmem_bytes = (TG as usize * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            KERNEL,
+            (grid_x, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(s_buf), 0);
+                enc.set_buffer(2, Some(x_int8_buf), 0);
+                enc.set_buffer(3, Some(x_scales_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// GPU-side per-CHANNEL int8 quantization. Pairs with the per-channel
     /// W4A8 path: uses STATIC scales pinned from a calibration pass (e.g.
     /// reports/w4a8_lmhead_calibration_2026_05_26.json on Qwen-3B). Scales
@@ -1327,6 +1524,51 @@ mod metal_dispatch {
             scales[b] = scale;
             for i in lo..hi {
                 let q = (x[i] * inv_scale).round().clamp(-127.0, 127.0) as i8;
+                out_int8[i] = q;
+            }
+        }
+        (out_int8, scales)
+    }
+
+    /// CPU reference for the AWQ Option B fused divide-and-quantize. Same
+    /// semantics as `quantize_to_int8_per_block` but pre-divides each element
+    /// by the matching entry of a per-channel smoothing vector `s` BEFORE
+    /// computing the per-block scale. Used by the parity test for
+    /// `quantize_f32_to_int8_per_block_scaled`.
+    pub fn quantize_to_int8_per_block_scaled(
+        x: &[f32],
+        s: &[f32],
+        block_size: usize,
+    ) -> (Vec<i8>, Vec<f32>) {
+        assert_eq!(
+            x.len(),
+            s.len(),
+            "quantize_to_int8_per_block_scaled: x.len()={} != s.len()={}",
+            x.len(),
+            s.len(),
+        );
+        let blocks = x.len().div_ceil(block_size);
+        let mut out_int8 = vec![0i8; x.len()];
+        let mut scales = vec![0.0f32; blocks];
+        for b in 0..blocks {
+            let lo = b * block_size;
+            let hi = (lo + block_size).min(x.len());
+            let mut max_abs = 0.0f32;
+            for i in lo..hi {
+                let sv = s[i];
+                let inv_s = if sv > 1e-12 { 1.0 / sv } else { 0.0 };
+                let scaled = x[i] * inv_s;
+                let a = scaled.abs();
+                if a > max_abs { max_abs = a; }
+            }
+            let scale = if max_abs > 0.0 { max_abs / 127.0 } else { 1.0 };
+            let inv_scale = 1.0 / scale;
+            scales[b] = scale;
+            for i in lo..hi {
+                let sv = s[i];
+                let inv_s = if sv > 1e-12 { 1.0 / sv } else { 0.0 };
+                let scaled = x[i] * inv_s;
+                let q = (scaled * inv_scale).round().clamp(-127.0, 127.0) as i8;
                 out_int8[i] = q;
             }
         }
@@ -4714,6 +4956,60 @@ mod metal_dispatch {
         )
     }
 
+    /// AWQ Option B variant of `add_rmsnorm_fused_q8_tcb`. Same residual+norm+
+    /// int8-quantize fusion but the phase-3 quantize divides each `x_norm`
+    /// element by the matching entry of a per-channel smoothing vector `s_buf`
+    /// (length `hidden`) before computing the per-block scale. The stored
+    /// `x_norm` is unchanged so f32 fallback consumers still see the canonical
+    /// normalized activation.
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_rmsnorm_fused_q8_scaled_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        attn_out_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        x_norm_int8_buf: &PinnedBuffer,
+        x_norm_scales_buf: &PinnedBuffer,
+        s_buf: &PinnedBuffer,
+        eps: f32,
+        hidden: usize,
+    ) -> Result<()> {
+        if hidden % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_fused_q8_scaled_tcb requires hidden % 256 == 0; got hidden={hidden}"
+            )));
+        }
+        let f32_bytes = (hidden * std::mem::size_of::<f32>()) as u64;
+        if s_buf.length() < f32_bytes {
+            return Err(Error::Kernel(format!(
+                "add_rmsnorm_fused_q8_scaled_tcb s_buf too small: got {} need {}",
+                s_buf.length(), f32_bytes,
+            )));
+        }
+        let hidden_u32 = hidden as u32;
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden_u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "add_rmsnorm_fused_q8_scaled",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(attn_out_buf), 0);
+                enc.set_buffer(2, Some(weight_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(x_norm_int8_buf), 0);
+                enc.set_buffer(5, Some(x_norm_scales_buf), 0);
+                enc.set_buffer(6, Some(s_buf), 0);
+                enc.set_buffer(7, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// v0.5.6 -- buffer-arg variant of the f16 silu_mul kernel.
     /// Takes pre-existing f16 Metal Buffers. Kernel `"silu_mul"` in
     /// common.metal: out[i] = silu(gate[i]) * up[i], f16 I/O, f32 internal.
@@ -6871,5 +7167,195 @@ mod tests {
         gemv_f16(&w, 2, 2, &x, &mut out);
         assert!((out[0] - 3.0).abs() < 1e-5);
         assert!((out[1] - 5.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn longrope_neox_unit_factors_is_plain_neox() {
+        // With factors == 1 and mscale == 1, rope_inplace_longrope is
+        // plain NEOX RoPE: verify against the closed form on head_dim=8.
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let pos = 5u32;
+        let factors = vec![1.0f32; half];
+        let mut x: Vec<f32> = (0..head_dim).map(|i| (i as f32 + 1.0) * 0.1).collect();
+        let orig = x.clone();
+        rope_inplace_longrope(&mut x, pos, base, &factors, 1.0);
+        for i in 0..half {
+            let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+            let theta = pos as f32 * inv_freq;
+            let (s, c) = theta.sin_cos();
+            let x0 = orig[i];
+            let x1 = orig[i + half];
+            assert!((x[i] - (x0 * c - x1 * s)).abs() < 1e-6);
+            assert!((x[i + half] - (x0 * s + x1 * c)).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn longrope_factor_lowers_frequency() {
+        // A larger ext_factor divides the inverse frequency, so the
+        // rotation angle shrinks. At pos=1, dim i=1, factor 2 vs 1 must
+        // halve the effective angle (inv_freq scales by 1/factor).
+        let head_dim = 8usize;
+        let half = head_dim / 2;
+        let base = 10_000.0f32;
+        let i = 1usize;
+        let inv_freq = 1.0 / base.powf(2.0 * i as f32 / head_dim as f32);
+
+        let mut a = vec![0.0f32; head_dim];
+        a[i] = 1.0; // (x_i, x_{i+half}) = (1, 0) → reads out (cos, sin)
+        let mut b = a.clone();
+        let mut f1 = vec![1.0f32; half];
+        let mut f2 = vec![1.0f32; half];
+        f1[i] = 1.0;
+        f2[i] = 2.0;
+        rope_inplace_longrope(&mut a, 1, base, &f1, 1.0);
+        rope_inplace_longrope(&mut b, 1, base, &f2, 1.0);
+        let angle_a = a[i + half].atan2(a[i]); // = inv_freq
+        let angle_b = b[i + half].atan2(b[i]); // = inv_freq / 2
+        assert!((angle_a - inv_freq).abs() < 1e-6);
+        assert!((angle_b - inv_freq / 2.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn gelu_mul_matches_reference() {
+        let gate = [0.0f32, 1.0, -1.0, 2.5];
+        let up = [1.0f32, 2.0, 3.0, 0.5];
+        let mut out = [0.0f32; 4];
+        gelu_mul(&gate, &up, &mut out);
+        // Reference gelu_tanh computed independently.
+        let gelu = |x: f32| {
+            let inner = (2.0f32 / std::f32::consts::PI).sqrt()
+                * (x + 0.044715 * x * x * x);
+            0.5 * x * (1.0 + inner.tanh())
+        };
+        for i in 0..4 {
+            let expect = gelu(gate[i]) * up[i];
+            assert!(
+                (out[i] - expect).abs() < 1e-6,
+                "i={i}: got {} want {expect}",
+                out[i]
+            );
+        }
+        // gelu(0) == 0, so out[0] must be exactly 0.
+        assert_eq!(out[0], 0.0);
+    }
+
+    #[test]
+    fn logit_softcap_bounds_and_noop() {
+        // cap<=0 is a no-op.
+        let mut a = [5.0f32, -3.0, 100.0];
+        logit_softcap_inplace(&mut a, 0.0);
+        assert_eq!(a, [5.0, -3.0, 100.0]);
+
+        // With cap=30, output is bounded to (-30, 30) and monotone.
+        let cap = 30.0f32;
+        let mut b = [0.0f32, 30.0, 1000.0, -1000.0];
+        logit_softcap_inplace(&mut b, cap);
+        assert!((b[0] - 0.0).abs() < 1e-6); // tanh(0)=0
+        assert!((b[1] - cap * (1.0f32).tanh()).abs() < 1e-5);
+        // tanh saturates to exactly 1.0 in f32 for large args, so the
+        // capped value reaches cap; assert bounded (<=) and near-cap.
+        assert!(b[2] <= cap && b[2] > cap - 1e-2);
+        assert!(b[3] >= -cap && b[3] < -cap + 1e-2);
+    }
+
+    /// `rope_inplace_scaled(..., None)` must be bit-identical to the
+    /// unscaled `rope_inplace` so Qwen2 / DeepSeek-V2 paths can swap
+    /// without behavioural change.
+    #[test]
+    fn rope_scaled_none_matches_unscaled() {
+        let mut rng_state: u32 = 0xC0FFEEu32;
+        let mut next = || {
+            rng_state = rng_state.wrapping_mul(1664525).wrapping_add(1013904223);
+            ((rng_state >> 8) as f32 / (1u32 << 24) as f32) * 2.0 - 1.0
+        };
+        let head_dim = 128;
+        let a: Vec<f32> = (0..head_dim).map(|_| next()).collect();
+        for &(pos, base) in &[(0u32, 1_000_000.0f32), (37, 500_000.0), (4096, 1_000_000.0)] {
+            let mut a_unscaled = a.clone();
+            let mut a_scaled = a.clone();
+            rope_inplace(&mut a_unscaled, pos, base);
+            rope_inplace_scaled(&mut a_scaled, pos, base, None);
+            for i in 0..head_dim {
+                assert_eq!(
+                    a_unscaled[i].to_bits(),
+                    a_scaled[i].to_bits(),
+                    "rope_scaled(None) diverged from rope_inplace at pos={pos} base={base} i={i}"
+                );
+            }
+        }
+    }
+
+    /// Llama-3.1 reference parameters. Verify the three regimes:
+    ///   (a) high-frequency (small i): freq unchanged → angle = pos * freq
+    ///   (b) low-frequency  (large i): freq divided by `factor`
+    ///   (c) middle band: smooth interpolation between (a) and (b)
+    #[test]
+    fn rope_scaled_llama3_regimes() {
+        let head_dim = 64usize;
+        let base = 500_000.0f32;
+        let pos = 1u32; // pos=1 makes the rotated angle exactly equal to freq_eff
+        let scaling = Llama3RopeScaling {
+            factor: 8.0,
+            low_freq_factor: 1.0,
+            high_freq_factor: 4.0,
+            original_max_position_embeddings: 8192,
+        };
+
+        // Use a vector of pairs (cos₀=1, sin₀=0) per half-pair so that after
+        // one rotation step the resulting (x0, x1) = (cos θ, sin θ) — i.e. we
+        // can read freq_eff[i] directly off the output without inversion.
+        let mut x = vec![0.0f32; head_dim];
+        for i in 0..head_dim / 2 {
+            x[2 * i] = 1.0;
+            x[2 * i + 1] = 0.0;
+        }
+        rope_inplace_scaled(&mut x, pos, base, Some(scaling));
+
+        let two_pi = std::f32::consts::TAU;
+        let low_wavelen = scaling.original_max_position_embeddings as f32 / scaling.low_freq_factor;
+        let high_wavelen =
+            scaling.original_max_position_embeddings as f32 / scaling.high_freq_factor;
+
+        let mut saw_unscaled = false;
+        let mut saw_scaled = false;
+        let mut saw_smooth = false;
+        for i in 0..head_dim / 2 {
+            let inv_freq = base.powf(2.0 * i as f32 / head_dim as f32);
+            let freq = 1.0 / inv_freq;
+            let wavelen = two_pi / freq;
+            let recovered_freq_eff = x[2 * i + 1].atan2(x[2 * i]); // since pos=1, θ = freq_eff
+            if wavelen < high_wavelen {
+                // Regime (a): unchanged.
+                assert!(
+                    (recovered_freq_eff - freq).abs() < 1e-5,
+                    "i={i}: expected unscaled freq={freq}, got {recovered_freq_eff}"
+                );
+                saw_unscaled = true;
+            } else if wavelen > low_wavelen {
+                // Regime (b): freq / factor.
+                let expected = freq / scaling.factor;
+                assert!(
+                    (recovered_freq_eff - expected).abs() < 1e-5,
+                    "i={i}: expected freq/factor={expected}, got {recovered_freq_eff}"
+                );
+                saw_scaled = true;
+            } else {
+                // Regime (c): smooth.
+                let smooth = (scaling.original_max_position_embeddings as f32 / wavelen
+                    - scaling.low_freq_factor)
+                    / (scaling.high_freq_factor - scaling.low_freq_factor);
+                let expected = (1.0 - smooth) * (freq / scaling.factor) + smooth * freq;
+                assert!(
+                    (recovered_freq_eff - expected).abs() < 1e-5,
+                    "i={i}: expected smooth={expected}, got {recovered_freq_eff}"
+                );
+                saw_smooth = true;
+            }
+        }
+        // Confirm the test actually exercised all three regimes.
+        assert!(saw_unscaled && saw_scaled && saw_smooth, "test did not cover all three regimes");
     }
 }

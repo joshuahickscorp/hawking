@@ -9,6 +9,6 @@
 //! lower we ship as `--speculate` opt-in and don't headline it.
 
 pub mod eagle5;
-pub mod ngram;
+pub mod eagle5_forward;
 pub mod shared;
-pub mod ngram_lookahead;
+pub mod safetensors_io;

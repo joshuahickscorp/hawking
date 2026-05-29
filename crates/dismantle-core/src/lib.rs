@@ -25,3 +25,15 @@ pub use engine::{
     Engine, EngineConfig, GenStats, GenerateRequest,
     SamplingParams, SpeculateMode, StopReason, StreamEvent,
 };
+
+/// `true` when env var `name` is set to "1". The codebase's standard
+/// on/off toggle for `DISMANTLE_*` levers.
+pub fn env_on(name: &str) -> bool {
+    std::env::var(name).map(|v| v == "1").unwrap_or(false)
+}
+
+/// Parse env var `name` as usize, falling back to `default` when unset
+/// or unparseable.
+pub fn env_usize(name: &str, default: usize) -> usize {
+    std::env::var(name).ok().and_then(|v| v.parse().ok()).unwrap_or(default)
+}

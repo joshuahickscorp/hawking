@@ -286,16 +286,24 @@ def main() -> int:
             flush=True,
         )
     t0 = time.time()
+    print(f"[mega-cal] loading tokenizer: {args.model}", flush=True)
     tok = AutoTokenizer.from_pretrained(args.model, trust_remote_code=False)
     if tok.pad_token_id is None:
         tok.pad_token = tok.eos_token
 
+    # transformers 5.0 renamed `torch_dtype` → `dtype` on from_pretrained.
+    # Probe the installed version and use the right kwarg name so the same
+    # script works on both 4.x (Colab "stable") and 5.x (latest Colab images).
+    import transformers as _hf
+    _hf_major = int(str(_hf.__version__).split(".", 1)[0])
+    _dtype_kw = "dtype" if _hf_major >= 5 else "torch_dtype"
+
     model_kwargs = dict(
         trust_remote_code=False,
-        torch_dtype=torch.float16,
         attn_implementation="sdpa",
         low_cpu_mem_usage=True,
     )
+    model_kwargs[_dtype_kw] = torch.float16
     if args.load_4bit:
         from transformers import BitsAndBytesConfig
         model_kwargs["quantization_config"] = BitsAndBytesConfig(
@@ -306,10 +314,11 @@ def main() -> int:
             llm_int8_enable_fp32_cpu_offload=True,
         )
         model_kwargs["device_map"] = "auto"
-        del model_kwargs["torch_dtype"]
+        del model_kwargs[_dtype_kw]
     else:
         model_kwargs["device_map"] = "cuda"
 
+    print(f"[mega-cal] loading model weights: {args.model}", flush=True)
     model = AutoModelForCausalLM.from_pretrained(args.model, **model_kwargs).eval()
     if hasattr(model.config, "use_cache"):
         model.config.use_cache = False
@@ -435,9 +444,10 @@ def main() -> int:
         print("[mega-cal] already complete", flush=True)
         return 0
 
-    print(f"[mega-cal] streaming {args.dataset}[{args.split}]", flush=True)
+    print(f"[mega-cal] opening dataset stream: {args.dataset}[{args.split}]", flush=True)
     ds = load_dataset(args.dataset, split=args.split, streaming=True)
     ds_iter = iter(ds)
+    print(f"[mega-cal] dataset stream ready", flush=True)
     for _ in range(yielded):
         next(ds_iter, None)
 
@@ -595,10 +605,15 @@ def main() -> int:
             pbar.update(1)
 
             if len(buf) >= args.shard_size:
-                _flush(buf, args.out, shard_idx, pa, pq)
+                shard_path = _flush(buf, args.out, shard_idx, pa, pq)
                 buf = []
                 shard_idx += 1
                 shards_since_sync += 1
+                print(
+                    f"[mega-cal] wrote {shard_path.name} "
+                    f"({yielded}/{args.max_sequences} seqs) → {args.out}",
+                    flush=True,
+                )
                 if shard_idx % args.stats_every_shards == 0:
                     _save_site_stats(
                         args.out / "per_site_activation_stats.npz",
@@ -635,7 +650,12 @@ def main() -> int:
         gc.collect()
 
     if buf:
-        _flush(buf, args.out, shard_idx, pa, pq)
+        shard_path = _flush(buf, args.out, shard_idx, pa, pq)
+        print(
+            f"[mega-cal] wrote final {shard_path.name} "
+            f"({yielded}/{args.max_sequences} seqs) → {args.out}",
+            flush=True,
+        )
         shard_idx += 1
     pbar.close()
 

@@ -1,16 +1,18 @@
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
-use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace, silu_mul,
 };
 use crate::metal::MetalContext;
+use crate::profile::KernelProfile;
 use crate::quant;
 use crate::sample::Sampler;
 use crate::tokenizer::Tokenizer;
 use crate::{Error, Result};
 use half::f16;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -143,38 +145,6 @@ pub struct QwenLayerPinned {
     pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
 
-/// Pre-dequantized f16 weights for one transformer layer, in the
-/// shape the 2-layer megakernel POC consumes. Produced by
-/// [`QwenDense::prep_megakernel_layer_f16`]. See
-/// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
-/// for the rationale (POC uses pre-dequant; production port replaces
-/// these with Q4_K block pointers + inline decode).
-pub struct MegakernelLayerWeightsF16 {
-    /// `(q_dim × hidden)` row-major.
-    pub q_proj: Vec<f16>,
-    /// `(kv_dim × hidden)` row-major.
-    pub k_proj: Vec<f16>,
-    /// `(kv_dim × hidden)` row-major.
-    pub v_proj: Vec<f16>,
-    /// `(hidden × q_dim)` row-major.
-    pub o_proj: Vec<f16>,
-    /// `(intermediate × hidden)` row-major.
-    pub ffn_gate: Vec<f16>,
-    /// `(intermediate × hidden)` row-major.
-    pub ffn_up: Vec<f16>,
-    /// `(hidden × intermediate)` row-major.
-    pub ffn_down: Vec<f16>,
-    /// `(hidden,)` rmsnorm weight applied before Q/K/V.
-    pub attn_norm: Vec<f32>,
-    /// `(hidden,)` rmsnorm weight applied before FFN.
-    pub ffn_norm: Vec<f32>,
-    /// `(q_dim,)`, empty if the layer has no Q bias.
-    pub q_bias: Vec<f32>,
-    /// `(kv_dim,)`, empty if the layer has no K bias.
-    pub k_bias: Vec<f32>,
-    /// `(kv_dim,)`, empty if the layer has no V bias.
-    pub v_bias: Vec<f32>,
-}
 
 pub struct QwenDense {
     pub config: QwenConfig,
@@ -192,6 +162,7 @@ pub struct QwenDense {
 
     pub kv: KvCache,
     pub sampler: Sampler,
+    pub kernel_profile: Option<KernelProfile>,
     pub _weights_path: PathBuf,
     pub metal_ctx: Option<MetalContext>,
 
@@ -241,13 +212,6 @@ pub struct QwenDense {
     /// first-N heuristic this is `None` because pruned_idx ≡ original_id.
     pub vocab_prune_remap: Option<Vec<u32>>,
 
-    /// Heap-residency POC (see `memory/build_heap_residency_2026_05_25.md`).
-    /// `Some` only when constructed via `load_heap_resident`; the regular
-    /// `Engine::load` leaves this `None`. Held to keep the heap alive for
-    /// the lifetime of every sub-buffer carved from it. The leading
-    /// underscore matches `_weights_path`'s "kept-for-aliveness" convention.
-    #[cfg(target_os = "macos")]
-    pub(crate) _weight_heap: Option<crate::metal::heap::WeightHeap>,
 
     /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
     /// tables, keyed by GGUF mmap offset. Populated by
@@ -278,6 +242,69 @@ pub struct QwenDense {
     /// Length = hidden (2048 for Qwen-3B).
     #[cfg(target_os = "macos")]
     pub(crate) lmhead_per_channel_scales_buf: Option<crate::metal::PinnedBuffer>,
+
+    /// AWQ Option B: per-layer activation smoothing vectors. Loaded once
+    /// from `profiles/qwen3b_awq_smoothing.json` when `DISMANTLE_QWEN_AWQ=1`
+    /// (requires `DISMANTLE_QWEN_W4A8=1` and a baked Q4K_FAST sidecar
+    /// produced by `tools/awq_bake/`). Each `Vec` has `n_layers` entries:
+    ///   - `awq_smoothing_x_norm[li]`     → length `hidden`, used for the
+    ///     quantize that feeds layer `li`'s q/k/v projections (Q/K/V share
+    ///     the same input activation `x_norm` so they share `s`).
+    ///   - `awq_smoothing_attn_out[li]`   → length `hidden`, feeds o_proj.
+    ///   - `awq_smoothing_ffn_act[li]`    → length `hidden`, feeds
+    ///     gate/up_proj (they share input).
+    ///   - `awq_smoothing_silu_mul[li]`   → length `intermediate`, feeds
+    ///     down_proj.
+    /// `None` when feature disabled or the smoothing JSON is missing.
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_x_norm: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_attn_out: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_ffn_act: Option<Vec<crate::metal::PinnedBuffer>>,
+    #[cfg(target_os = "macos")]
+    pub(crate) awq_smoothing_silu_mul: Option<Vec<crate::metal::PinnedBuffer>>,
+
+    /// Eagle5 / Eagle6 trained-head draft model for speculative decoding.
+    /// `Some` when `EngineConfig::speculate_mode == SpeculateMode::Eagle5`
+    /// at construction; loaded from `EngineConfig::eagle5_head_path` if
+    /// present, else falls back to a deterministic Mock head for runtime
+    /// wiring tests. `None` when speculate is off — the qwen forward
+    /// path is a no-op on the head in that case.
+    ///
+    /// Storage only; the actual dispatch into this head is selected by
+    /// `EngineConfig::speculate_mode == SpeculateMode::Eagle5`.
+    pub(crate) eagle5_head: Option<crate::speculate::eagle5::Eagle5Head>,
+
+    /// Eagle5 verify window from `EngineConfig::verify_window`.
+    /// `DISMANTLE_QWEN_EAGLE5_K=N` remains as a diagnostic override.
+    pub(crate) eagle5_verify_window: usize,
+
+    /// Phase B.3: scratch buffers for capturing the verifier's
+    /// residual + intermediate streams at a chosen layer. The Eagle6
+    /// trained head's `in_proj` consumes
+    /// `[prev_token_embd | residual_in | intermediate_signal]` and was
+    /// trained with these captures from the verifier's layer 32
+    /// (Qwen-3B) or 22 (Qwen-1.5B). Lazy-init on the first
+    /// `forward_token_greedy_tcb` call when
+    /// `DISMANTLE_QWEN_EAGLE5_CAPTURE=1`. `None` when capture is off
+    /// (which is the default).
+    ///
+    /// Each buffer holds `hidden * sizeof::<f32>()` bytes. They're
+    /// repurposed across every decode token while capture is active —
+    /// at end of each token's forward, they hold the most recent
+    /// capture, which the Eagle5 dispatch then reads via shared memory.
+    #[cfg(target_os = "macos")]
+    pub(crate) eagle5_capture_residual_buf: Option<crate::metal::PinnedBuffer>,
+    #[cfg(target_os = "macos")]
+    pub(crate) eagle5_capture_intermediate_buf: Option<crate::metal::PinnedBuffer>,
+    /// Layer index (0-based) at which to capture. Defaults to
+    /// `n_layers - 4` (matches the trainer's choice for both
+    /// Qwen-3B 36-layer = 32 and Qwen-1.5B 28-layer = 24, with 24
+    /// being close to the trainer's 22 — accept rate may drift
+    /// slightly for q1p5; q3b matches exactly).
+    /// Override via `DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER=N`.
+    pub(crate) eagle5_capture_layer: usize,
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -351,161 +378,6 @@ less, higher, lower.
 ";
 
 impl QwenDense {
-    /// POC entry point for `MTLHeap`-backed weight residency.
-    ///
-    /// Mirrors `<QwenDense as Engine>::load`'s behavior but, after the
-    /// normal load completes, migrates all pinned weight buffers (the
-    /// dominant Q4_K-bearing mmap blob, embed, final norm, LM head, and
-    /// every per-layer norm/bias/f16-fallback buffer) onto a single
-    /// `metal::heap::WeightHeap`. The resulting `QwenDense` has the same
-    /// public surface as one built by `Engine::load` — forward paths
-    /// don't need to care which allocator backed each buffer.
-    ///
-    /// Held inside `QwenDense::_weight_heap` (added below) so the heap
-    /// out-lives every sub-buffer carved from it.
-    ///
-    /// Off-macOS this falls through to the regular load path.
-    ///
-    /// See `memory/build_heap_residency_2026_05_25.md` for scope, the
-    /// POC budget, and what's deliberately not on the heap yet.
-    #[cfg(target_os = "macos")]
-    pub fn load_heap_resident(
-        weights: &Path,
-        config: EngineConfig,
-    ) -> Result<Self> {
-        // 1) Load via the established path — preserves every optional
-        //    code path (vocab prune, Q4_K LM-head, FFN-down requant, etc.)
-        //    without duplicating the load logic.
-        let mut model = <Self as Engine>::load(weights, config)?;
-
-        // 2) Need a MetalContext to build the heap. If `load` didn't
-        //    construct one (e.g. headless CI without GPU access), there's
-        //    nothing to migrate — return the model unchanged.
-        let ctx = match model.metal_ctx.clone() {
-            Some(c) => c,
-            None => return Ok(model),
-        };
-
-        // 3) Size the heap. Compute aligned size of every buffer we
-        //    intend to migrate, sum, add 1 MB slack for descriptor and
-        //    rounding overhead. The aligned-size queries are exact per
-        //    `heapBufferSizeAndAlignWithLength:options:` — no need to
-        //    over-allocate beyond the slack.
-        let mut needed: u64 = 0;
-        let aligned_for =
-            |n: u64| crate::metal::heap::WeightHeap::aligned_buffer_size(&ctx, n);
-        // The whole-mmap blob (Q4_K + Q6_K weight bytes — the bandwidth
-        // dominant matter the heap was designed to corral).
-        let mmap_len = model.gguf.mmap.len() as u64;
-        if model.weights_mmap_buf.is_some() {
-            needed += aligned_for(mmap_len);
-        }
-        if let Some(b) = model.embed_buf.as_ref() {
-            needed += aligned_for(b.length());
-        }
-        if let Some(b) = model.final_norm_buf.as_ref() {
-            needed += aligned_for(b.length());
-        }
-        if let Some(b) = model.lm_head_buf.as_ref() {
-            needed += aligned_for(b.length());
-        }
-        if let Some(b) = model.lm_head_q4k_buf.as_ref() {
-            needed += aligned_for(b.length());
-        }
-        if let Some(b) = model.lm_head_pruned_buf.as_ref() {
-            needed += aligned_for(b.length());
-        }
-        for layer in &model.layers {
-            let p = &layer.pinned;
-            for b in [
-                p.attn_norm.as_ref(),
-                p.ffn_norm.as_ref(),
-                p.q_bias.as_ref(),
-                p.k_bias.as_ref(),
-                p.v_bias.as_ref(),
-                p.ffn_down_q4k.as_ref(),
-                p.q_proj_f16.as_ref(),
-                p.k_proj_f16.as_ref(),
-                p.v_proj_f16.as_ref(),
-                p.o_proj_f16.as_ref(),
-                p.ffn_gate_f16.as_ref(),
-                p.ffn_up_f16.as_ref(),
-                p.ffn_down_f16.as_ref(),
-            ]
-            .into_iter()
-            .flatten()
-            {
-                needed += aligned_for(b.length());
-            }
-        }
-        // 1 MiB slack for descriptor + per-allocation rounding tail.
-        needed += 1 << 20;
-
-        let mut heap = crate::metal::heap::WeightHeap::new(&ctx, needed)?;
-
-        // 4) Migration helper: read bytes out of an existing shared
-        //    Buffer (host-mapped) and re-alloc them on the heap, then
-        //    swap the slot.
-        //
-        //    SAFETY: every buffer here was allocated `StorageModeShared`
-        //    by MetalContext::new_buffer_with_bytes, so `contents()` is
-        //    a valid host pointer for `length()` bytes.
-        unsafe fn copy_buf_bytes(buf: &metal::Buffer) -> Vec<u8> {
-            let n = buf.length() as usize;
-            let src = buf.contents() as *const u8;
-            let mut out = vec![0u8; n];
-            std::ptr::copy_nonoverlapping(src, out.as_mut_ptr(), n);
-            out
-        }
-
-        let migrate = |slot: &mut Option<crate::metal::PinnedBuffer>,
-                       heap: &mut crate::metal::heap::WeightHeap|
-         -> Result<()> {
-            if let Some(old) = slot.take() {
-                let bytes = unsafe { copy_buf_bytes(&old) };
-                let new = heap.new_buffer_with_bytes(&bytes)?;
-                *slot = Some(new);
-                // `old` drops here; its underlying MTLBuffer is freed
-                // once no command-buffer retains it.
-            }
-            Ok(())
-        };
-
-        // The mmap blob is the bandwidth-dominant Q4_K source. Copy it
-        // directly from the mmap bytes (avoids a host-to-host
-        // round-trip via the existing buffer).
-        if model.weights_mmap_buf.is_some() {
-            let new_mmap_buf = heap.new_buffer_with_bytes(&model.gguf.mmap[..])?;
-            // Drop the old buffer by replacing it.
-            model.weights_mmap_buf = Some(new_mmap_buf);
-        }
-
-        migrate(&mut model.embed_buf, &mut heap)?;
-        migrate(&mut model.final_norm_buf, &mut heap)?;
-        migrate(&mut model.lm_head_buf, &mut heap)?;
-        migrate(&mut model.lm_head_q4k_buf, &mut heap)?;
-        migrate(&mut model.lm_head_pruned_buf, &mut heap)?;
-
-        for layer in model.layers.iter_mut() {
-            migrate(&mut layer.pinned.attn_norm, &mut heap)?;
-            migrate(&mut layer.pinned.ffn_norm, &mut heap)?;
-            migrate(&mut layer.pinned.q_bias, &mut heap)?;
-            migrate(&mut layer.pinned.k_bias, &mut heap)?;
-            migrate(&mut layer.pinned.v_bias, &mut heap)?;
-            migrate(&mut layer.pinned.ffn_down_q4k, &mut heap)?;
-            migrate(&mut layer.pinned.q_proj_f16, &mut heap)?;
-            migrate(&mut layer.pinned.k_proj_f16, &mut heap)?;
-            migrate(&mut layer.pinned.v_proj_f16, &mut heap)?;
-            migrate(&mut layer.pinned.o_proj_f16, &mut heap)?;
-            migrate(&mut layer.pinned.ffn_gate_f16, &mut heap)?;
-            migrate(&mut layer.pinned.ffn_up_f16, &mut heap)?;
-            migrate(&mut layer.pinned.ffn_down_f16, &mut heap)?;
-        }
-
-        // 5) Pin the heap so its sub-buffers stay valid.
-        model._weight_heap = Some(heap);
-        Ok(model)
-    }
 
     fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
@@ -560,9 +432,7 @@ impl Engine for QwenDense {
         // runs but unblocks the model-load category of the latency
         // budget when investigation is needed.
         let load_t0 = Instant::now();
-        let load_timing_enabled = std::env::var("DISMANTLE_QWEN_LOAD_TIMING")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let load_timing_enabled = crate::env_on("DISMANTLE_QWEN_LOAD_TIMING");
         let mut stage_marks: Vec<(&'static str, std::time::Duration)> = Vec::new();
         let mark = |stage_marks: &mut Vec<_>, name: &'static str, t: &mut Instant| {
             let now = Instant::now();
@@ -643,6 +513,11 @@ impl Engine for QwenDense {
         let sampler = Sampler::new(0);
         mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
         let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
+        if let Some(profile) = config.kernel_profile.as_ref() {
+            profile.validate_for_gguf(&gguf, device_name.as_deref())?;
+        }
+        let kernel_profile = config.kernel_profile.clone();
         mark(&mut stage_marks, "metal_ctx_init", &mut t);
 
         // P1f: weight pinning -- one big buffer for the whole mmap, plus
@@ -677,9 +552,7 @@ impl Engine for QwenDense {
                 // Activated by DISMANTLE_QWEN_Q4K_LMHEAD=1; trades one-time
                 // load-side quant cost for ~3.5× LM-head bandwidth savings
                 // per decode token. Skipped if vocab*hidden % 256 != 0.
-                let lhq4k = if std::env::var("DISMANTLE_QWEN_Q4K_LMHEAD")
-                    .map(|v| v == "1")
-                    .unwrap_or(false)
+                let lhq4k = if crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
                 {
                     let src_f16: &[f16] = match lm_head.as_ref() {
                         Some(w) => w,
@@ -756,9 +629,7 @@ impl Engine for QwenDense {
                     // Optional: requant ffn_down (typically Q6_K) to Q4_K.
                     // Biggest single weight per token; ~31% BW saving on
                     // the Q6_K share at the cost of one extra pinned copy.
-                    if std::env::var("DISMANTLE_QWEN_FFN_DOWN_Q4K")
-                        .map(|v| v == "1")
-                        .unwrap_or(false)
+                    if crate::env_on("DISMANTLE_QWEN_FFN_DOWN_Q4K")
                         && layer.ffn_down.dtype != GgmlType::Q4_K
                         && layer.ffn_down.n_elems % 256 == 0
                     {
@@ -783,9 +654,7 @@ impl Engine for QwenDense {
                 //      pruned_idx ≡ original_id.
                 // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the
                 // pruned slice is Q4_K-quantized for compound BW savings.
-                let want_q4k_lmhead = std::env::var("DISMANTLE_QWEN_Q4K_LMHEAD")
-                    .map(|v| v == "1")
-                    .unwrap_or(false);
+                let want_q4k_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD");
 
                 // Helper: take a sorted list of original vocab ids, pull
                 // the corresponding f16 rows out of src, and return the
@@ -960,6 +829,52 @@ impl Engine for QwenDense {
             );
         }
 
+        // Phase B.3: compute the capture layer index from env or default
+        // before `cfg` is moved into the struct below.
+        let eagle5_capture_layer_resolved = {
+            let default_capture = cfg.n_layers.saturating_sub(4);
+            std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .filter(|&n| n < cfg.n_layers)
+                .unwrap_or(default_capture)
+        };
+
+        let eagle5_verify_window = config.verify_window.max(1);
+
+        // Eagle5/6 head load (Phase B.1). When speculate_mode==Eagle5,
+        // attempt to load the trained head from `eagle5_head_path`. If
+        // path is None, fall back to a deterministic Mock head so the
+        // runtime wiring still has something to invoke for smoke tests.
+        // No forward-path consumption yet — this commit only stages the
+        // head into the struct. Phase B.4 wires the dispatch.
+        let eagle5_head = if config.speculate_mode == SpeculateMode::Eagle5 {
+            let hidden = cfg.hidden;
+            let vocab = cfg.vocab_size;
+            match config.eagle5_head_path.as_deref() {
+                Some(p) => {
+                    eprintln!("[eagle5] loading trained head from {}", p.display());
+                    Some(crate::speculate::eagle5::Eagle5Head::load_from_safetensors(
+                        p, hidden, vocab,
+                    )?)
+                }
+                None => {
+                    eprintln!(
+                        "[eagle5] no --eagle5-head provided; constructing deterministic Mock head \
+                         for runtime wiring (accept rate ≈ 1/vocab — set --eagle5-head to use the \
+                         trained checkpoint)"
+                    );
+                    Some(crate::speculate::eagle5::Eagle5Head::mock(
+                        0xea91e5_u64,
+                        hidden,
+                        vocab,
+                    ))
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Self {
             config: cfg,
             tokenizer,
@@ -971,6 +886,7 @@ impl Engine for QwenDense {
             layers,
             kv,
             sampler,
+            kernel_profile,
             _weights_path: weights.to_owned(),
             metal_ctx,
             dense_arena: None,
@@ -984,8 +900,6 @@ impl Engine for QwenDense {
             vocab_pruned_is_q4k,
             vocab_prune_remap,
             #[cfg(target_os = "macos")]
-            _weight_heap: None,
-            #[cfg(target_os = "macos")]
             q4k_predec_cache: None,
             #[cfg(target_os = "macos")]
             q4k_fast_buf: None,
@@ -993,6 +907,21 @@ impl Engine for QwenDense {
             q4k_fast_offsets: None,
             #[cfg(target_os = "macos")]
             lmhead_per_channel_scales_buf: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_x_norm: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_attn_out: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_ffn_act: None,
+            #[cfg(target_os = "macos")]
+            awq_smoothing_silu_mul: None,
+            eagle5_head,
+            eagle5_verify_window,
+            #[cfg(target_os = "macos")]
+            eagle5_capture_residual_buf: None,
+            #[cfg(target_os = "macos")]
+            eagle5_capture_intermediate_buf: None,
+            eagle5_capture_layer: eagle5_capture_layer_resolved,
         })
     }
 
@@ -1002,6 +931,32 @@ impl Engine for QwenDense {
         sink: &mut dyn FnMut(StreamEvent),
     ) -> Result<GenStats> {
         use std::sync::atomic::Ordering;
+
+        // Phase B.2: Eagle5 pre-flight gate. Reject incompatible sampling
+        // configs UP FRONT rather than letting the (greedy-only) spec-decode
+        // dispatch silently emit wrong tokens. Same contract as
+        // deepseek_v2.rs:1049-1068. Spec-decode requires:
+        //   - temperature == 0 (greedy)
+        //   - repetition_penalty == 1.0 (no token-level reweighting)
+        //   - eagle5_head loaded (held in the struct after Phase B.1)
+        if self.eagle5_head.is_some() {
+            if req.sampling.temperature != 0.0 {
+                return Err(Error::Model(format!(
+                    "eagle5 spec-decode requires temperature=0 (got {})",
+                    req.sampling.temperature
+                )));
+            }
+            if req.sampling.repetition_penalty != 1.0 {
+                return Err(Error::Model(format!(
+                    "eagle5 spec-decode requires repetition_penalty=1.0 (got {})",
+                    req.sampling.repetition_penalty
+                )));
+            }
+            // Reset per-sequence head state at the start of each generation.
+            if let Some(head) = self.eagle5_head.as_mut() {
+                head.reset();
+            }
+        }
 
         if let Some(seed) = req.sampling.seed {
             self.sampler = Sampler::new(seed);
@@ -1020,6 +975,8 @@ impl Engine for QwenDense {
         let prompt_len = prompt_ids.len();
         let mut stats = GenStats {
             prompt_tokens: prompt_len,
+            profile_id: self.kernel_profile.as_ref().map(|p| p.profile_id.clone()),
+            device_id: self.metal_ctx.as_ref().map(|ctx| ctx.device_name()),
             ..Default::default()
         };
 
@@ -1062,9 +1019,7 @@ impl Engine for QwenDense {
             0
         };
 
-        let use_tcb_prefill = std::env::var("DISMANTLE_QWEN_TCB")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let use_tcb_prefill = crate::env_on("DISMANTLE_QWEN_TCB");
         // P3 — batched prefill: chunk prompt into B≤8 token windows and
         // process each through `forward_tokens_batch_tcb`. Each weight
         // is read once per chunk (instead of once per token), amortizing
@@ -1072,9 +1027,7 @@ impl Engine for QwenDense {
         // Skips the leading `prefill_skipped` tokens already restored
         // from the prefix cache.
         let batch_prefill = use_tcb_prefill
-            && std::env::var("DISMANTLE_QWEN_BATCH_PREFILL")
-                .map(|v| v == "1")
-                .unwrap_or(false);
+            && crate::env_on("DISMANTLE_QWEN_BATCH_PREFILL");
         #[cfg(target_os = "macos")]
         if batch_prefill {
             const B_MAX: usize = 8;
@@ -1159,92 +1112,452 @@ impl Engine for QwenDense {
         // GPU sample kernel implements pure argmax, so any non-greedy
         // sampling must take the CPU/Metal-hybrid `forward_token` path
         // (full logits → CPU sampler).
-        let use_tcb = std::env::var("DISMANTLE_QWEN_TCB")
-            .map(|v| v == "1")
-            .unwrap_or(false)
+        let use_tcb = crate::env_on("DISMANTLE_QWEN_TCB")
             && req.sampling.temperature == 0.0;
 
-        // Lookahead n-gram decoding (Cai et al., 2024). Opt-in.
-        // DISMANTLE_LOOKAHEAD=N -> n-gram order N (key = last N-1 tokens).
-        // DISMANTLE_LOOKAHEAD_K -> max draft length per step (default 4).
-        // Requires TCB + greedy. NOTE: this branch shares state with the
-        // simple decode loop below; only one runs per generate() call.
-        let lookahead_n: usize = std::env::var("DISMANTLE_LOOKAHEAD")
-            .ok()
-            .and_then(|v| v.parse::<usize>().ok())
-            .filter(|&n| n >= 2)
-            .unwrap_or(0);
-        let lookahead_k: usize = std::env::var("DISMANTLE_LOOKAHEAD_K")
+
+        // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
+        // `--speculate eagle5` / EngineConfig::speculate_mode == Eagle5.
+        // `--verify-window` controls K; DISMANTLE_QWEN_EAGLE5_K remains
+        // as a diagnostic override.
+        //
+        // This is the SERIAL verify path: K sequential forwards per
+        // verify cycle. Correctness-preserving (greedy at temp=0 emits
+        // the same tokens as no-spec greedy), but NO throughput win — the
+        // per-cycle cost is K forwards for K accepted drafts. The
+        // throughput win requires a batched-verify-with-logits helper
+        // that returns per-position logits in one TCB; that's its own
+        // ~2-day workstream (Phase B.5+ in the port plan). For now we
+        // ship this serial path so:
+        //   * the dispatch wires end-to-end,
+        //   * draft_accepted / draft_rejected counters increment,
+        //   * acceptance-rate measurement against trained heads works,
+        //   * users can A/B vs baseline without risking correctness.
+        //
+        // The trained head currently runs in ZERO-CAPTURE mode (Phase B.3
+        // tradeoff): residual and intermediate are zero vectors. The head
+        // was trained expecting REAL captures of the verifier's
+        // layer-32 (Qwen-3B) hidden state, so accept rate will be low
+        // (~0.05-0.15) until the capture wiring lands as a follow-up.
+        let use_eagle5 = use_tcb && self.eagle5_head.is_some();
+        if crate::env_on("DISMANTLE_QWEN_E5DIAG") {
+            eprintln!(
+                "[e5diag] use_eagle5={} use_tcb={} head_some={} vw={}",
+                use_eagle5, use_tcb, self.eagle5_head.is_some(),
+                self.eagle5_verify_window,
+            );
+        }
+        let eagle5_k: usize = std::env::var("DISMANTLE_QWEN_EAGLE5_K")
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .filter(|&k| k >= 1)
-            .unwrap_or(4);
-        let use_lookahead = lookahead_n > 0 && use_tcb;
+            .unwrap_or(self.eagle5_verify_window);
+        // Legacy diagnostic flag from the pre-capture batched-verify path.
+        // The bonus-first capture restructure below currently uses serial
+        // verify; when this flag is set we keep capture disabled because
+        // forward_tokens_batched_with_logits has no capture plumbing yet.
+        let use_eagle5_batched = crate::env_on("DISMANTLE_QWEN_EAGLE5_BATCHED")
+            && use_eagle5;
 
         #[cfg(target_os = "macos")]
-        if use_lookahead {
-            use crate::speculate::ngram_lookahead::{LookaheadCache, LookaheadConfig};
-            let mut cache = LookaheadCache::new(LookaheadConfig {
-                n: lookahead_n,
-                max_branches_per_key: 4,
-                cap: 16_384,
-            });
-            // Seed with prompt tokens.
-            for &t in &prompt_ids {
-                cache.observe(t);
-            }
+        if use_eagle5 {
+            // Eagle5 spec-decode (serial verify). See block comment above
+            // for design rationale.
+            let hidden = self.config.hidden;
+            // Always allocate the zero fallback; used on cycle 1 (before
+            // any forward has populated the capture buffers) and when
+            // capture mode is off.
+            let zeros = vec![0.0_f32; hidden];
+            // Capture-mode integration. The capture buffers are populated by
+            // the per-cycle Stage-1 bonus forward (forward_token_greedy_tcb,
+            // which has the memcpy at capture_layer) — this runs in BOTH the
+            // serial and batched verify paths, so capture is now compatible
+            // with batched verify (only Stage 3's verify differs).
+            let eagle5_capture_in_use = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+            let mut eagle5_accept_trace =
+                if let Some(path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE")
+                    .map(PathBuf::from)
+                {
+                    if let Some(parent) = path.parent() {
+                        if !parent.as_os_str().is_empty() {
+                            std::fs::create_dir_all(parent)?;
+                        }
+                    }
+                    Some(
+                        std::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&path)?,
+                    )
+                } else {
+                    None
+                };
+            let mut eagle5_cycle: usize = 0;
+            // Logit-lens ceiling probe accumulators (see insertion below).
+            let lens_probe = crate::env_on("DISMANTLE_QWEN_EAGLE5_LENS_PROBE");
+            let mut lens_hits: usize = 0;
+            let mut lens_total: usize = 0;
             let mut pos = prompt_len;
-            'lk_loop: while produced < req.max_new_tokens {
+
+            // ── PROPOSE-FIRST batched spec-decode (DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST).
+            // The lever for realized speedup: ONE batched verify forward per
+            // cycle (no separate bonus forward), and the head's strong depth-1
+            // IS used (it becomes `carried_true`, the first verify token, carried
+            // from the previous cycle's correction). Parity holds unconditionally
+            // — we only ever emit model-VERIFIED tokens; drafts affect speed, not
+            // output. Requires capture (residual) + batched verify primitive.
+            let use_propose_first = crate::env_on("DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST")
+                && eagle5_capture_in_use;
+            if use_propose_first {
+                let k = eagle5_k.max(1);
+                // Read the capture-layer residual the bootstrap/cycle forward
+                // just wrote into the pinned buffer.
+                let read_res = |s: &Self| -> Vec<f32> {
+                    let buf = s
+                        .eagle5_capture_residual_buf
+                        .as_ref()
+                        .expect("residual capture buf");
+                    let ptr = buf.contents() as *const f32;
+                    unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec()
+                };
+                // ── Bootstrap: one forward of the last prompt token gives the
+                // first anchor residual + the true next token (carried_true).
+                let mut anchor_tok = last_id;
+                let mut anchor_pos = pos;
+                let carried0 = self.forward_token_greedy_tcb(anchor_tok, anchor_pos)?;
+                let mut anchor_res = read_res(self);
+                let mut carried_true = carried0;
+                {
+                    let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
+                    self.sampler.record(carried_true);
+                    sink(StreamEvent::Token { id: carried_true, text });
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(carried_true);
+                    }
+                    produced += 1;
+                }
+                if Some(carried_true) == eos {
+                    reason = StopReason::Eos;
+                }
+                'pf_loop: while produced < req.max_new_tokens
+                    && matches!(reason, StopReason::MaxTokens)
+                {
+                    if abort_set(&req) {
+                        reason = StopReason::Aborted;
+                        break;
+                    }
+                    // Propose a chained-hidden draft chain from the anchor.
+                    // d[0] ~ carried_true (already emitted); d[1..] are lookahead.
+                    let drafts = {
+                        let head = self.eagle5_head.as_ref().expect("head");
+                        head.propose_rollout_chained(anchor_tok, &anchor_res, &zeros, k)
+                    };
+                    // Verify [carried_true, d[1..k-1]] at [anchor_pos+1 .. anchor_pos+k].
+                    let mut vtoks = Vec::with_capacity(k);
+                    vtoks.push(carried_true);
+                    for j in 1..k {
+                        vtoks.push(drafts[j]);
+                    }
+                    let vpos: Vec<usize> =
+                        (0..k).map(|j| anchor_pos + 1 + j).collect();
+                    let (preds, residuals) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                    // preds[j] = true token at anchor_pos+2+j (valid while prefix
+                    // matched). Accept lookahead d[1+j] vs preds[j].
+                    let mut na = k - 1; // accepted lookahead count
+                    for j in 0..(k - 1) {
+                        if drafts[1 + j] != preds[j] {
+                            na = j;
+                            break;
+                        }
+                    }
+                    // Emit the verified-new tokens: preds[0..=na]
+                    // (= na accepted lookahead drafts + 1 correction). carried_true
+                    // was already emitted (invariant), so we never re-emit it.
+                    stats.draft_accepted += na;
+                    stats.draft_rejected += (k - 1) - na;
+                    eagle5_cycle += 1;
+                    let mut stop = false;
+                    for j in 0..=na {
+                        let id = preds[j];
+                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                        self.sampler.record(id);
+                        sink(StreamEvent::Token { id, text });
+                        if let Some(head) = self.eagle5_head.as_mut() {
+                            head.note_token(id);
+                        }
+                        produced += 1;
+                        if Some(id) == eos {
+                            reason = StopReason::Eos;
+                            stop = true;
+                            break;
+                        }
+                        if produced >= req.max_new_tokens {
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if stop {
+                        break 'pf_loop;
+                    }
+                    // Advance anchor to the last correctly-processed position
+                    // (anchor_pos+1+na), whose residual we have. carried_true'
+                    // = preds[na] (the just-emitted correction = true next token).
+                    anchor_pos = anchor_pos + 1 + na;
+                    anchor_tok = if na == 0 { carried_true } else { drafts[na] };
+                    anchor_res = residuals[na].clone();
+                    carried_true = preds[na];
+                    // KV: valid through anchor_pos (last accepted). Next cycle's
+                    // verify writes from anchor_pos+1.
+                    self.kv.seq_len = anchor_pos + 1;
+                }
+                // Finalize (mirror the shared tail; we return early).
+                stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+                stats.completion_tokens = produced;
+                stats.dispatch_samples = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_trace())
+                    .unwrap_or_default();
+                let (bc, ba, cm) = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_stats())
+                    .unwrap_or_default();
+                stats.metal_buffers_created = bc;
+                stats.metal_bytes_allocated = ba;
+                stats.metal_commits = cm;
+                sink(StreamEvent::Done {
+                    reason,
+                    stats: stats.clone(),
+                });
+                return Ok(stats);
+            }
+
+            'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
                     break;
                 }
                 let step_start = Instant::now();
-                let remaining = req.max_new_tokens - produced;
-                let k_avail = lookahead_k.min(remaining);
-                let draft = cache.propose(k_avail);
-                let draft_len = draft.len();
 
-                if draft.is_empty() {
-                    // No n-gram hit -- single greedy step.
-                    let next_id = self.forward_token_greedy_tcb(last_id, pos)?;
-                    self.sampler.record(next_id);
-                    cache.observe(next_id);
-                    let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
-                    sink(StreamEvent::Token { id: next_id, text });
-                    produced += 1;
-                    if Some(next_id) == eos {
-                        reason = StopReason::Eos;
-                        break 'lk_loop;
+                // Phase B.6 verify-FIRST dispatch. Restructured from the
+                // original Phase B.4 "propose-first-then-verify" pattern,
+                // which fed the head captures from rejected-draft forwards
+                // (see reports/eagle5_phase_c_root_cause.md). New order:
+                //
+                //   Stage 1: forward(last_id, pos) -> bonus + populates captures
+                //   Stage 2: read captures, head proposes K drafts (after bonus)
+                //   Stage 3: serial verify drafts at pos+1..pos+1+K
+                //
+                // Captures now come from the LAST VERIFIED token's forward,
+                // matching what the trainer hook captured (ground-truth
+                // positions, not draft attempts).
+                //
+                // Each cycle emits 1+M tokens where M is the number of
+                // accepted drafts (0..K) plus an optional correction.
+
+                // Stage 1: bonus forward. Always runs; produces the next
+                // greedy token AND populates the capture buffers as a
+                // side effect of running through forward_token_greedy_tcb
+                // (which has the memcpy dispatches at capture_layer).
+                // `head_start` = the token T whose capture-layer residual the
+                // bonus forward produces. The head's rollout was trained to
+                // predict T+1, T+2, … from (T, residual_T), so the draft chain
+                // must START at T, not at the bonus token T+1.
+                let head_start = last_id;
+                let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
+                self.sampler.record(bonus);
+                let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus, text });
+                if let Some(head) = self.eagle5_head.as_mut() {
+                    head.note_token(bonus);
+                }
+                produced += 1;
+                if Some(bonus) == eos {
+                    reason = StopReason::Eos;
+                    break 'e5_loop;
+                }
+                if produced >= req.max_new_tokens {
+                    // Last token of the generation; no point proposing
+                    // drafts we won't emit.
+                    break 'e5_loop;
+                }
+                // After Stage 1: pos++ logically (bonus emitted at pos+1
+                // in old semantics, BUT forward_token_greedy_tcb writes
+                // KV[pos] and the bonus is the prediction for pos+1).
+                // We treat the bonus as "now at position pos+1" for the
+                // next forward. seq_len was bumped by the forward to
+                // pos+1.
+                let bonus_pos = pos + 1;
+                last_id = bonus;
+
+                // Stage 2: read captures + propose. Captures hold layer-L
+                // state from the bonus forward we just did = verified
+                // position state. This is what the trainer expected.
+                let remaining = req.max_new_tokens - produced;
+                let k_avail = eagle5_k.min(remaining);
+                if k_avail == 0 {
+                    break 'e5_loop;
+                }
+                let captured_residual: Option<Vec<f32>> = if eagle5_capture_in_use {
+                    let buf = self
+                        .eagle5_capture_residual_buf
+                        .as_ref()
+                        .expect("residual capture buf must exist when capture is in use");
+                    let ptr = buf.contents() as *const f32;
+                    let v: Vec<f32> = unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec();
+                    if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
+                        let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
+                        let mean = v.iter().sum::<f32>() / (v.len() as f32);
+                        let var = v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
+                        let nonzero = v.iter().filter(|&&x| x != 0.0).count();
+                        eprintln!(
+                            "[eagle5-debug] residual stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
+                            nonzero, v.len(), mean, var.sqrt(), abs_max, &v[..8.min(v.len())]
+                        );
                     }
-                    if stall_active && step_start.elapsed() > stall_limit {
-                        reason = StopReason::Aborted;
-                        break 'lk_loop;
+                    Some(v)
+                } else {
+                    None
+                };
+                let captured_intermediate: Option<Vec<f32>> = if eagle5_capture_in_use {
+                    let buf = self
+                        .eagle5_capture_intermediate_buf
+                        .as_ref()
+                        .expect("intermediate capture buf must exist when capture is in use");
+                    let ptr = buf.contents() as *const f32;
+                    Some(unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec())
+                } else {
+                    None
+                };
+                // Logit-lens ceiling probe (DISMANTLE_QWEN_EAGLE5_LENS_PROBE=1).
+                // `bonus` is the real next token the full forward just produced
+                // from `last_id`; `captured_residual` is the layer-K residual of
+                // that same forward. lens_argmax(residual) == bonus measures how
+                // often the capture layer's logit-lens already agrees with the
+                // model's real output — the ceiling for any head at this layer,
+                // independent of head training.
+                if lens_probe {
+                    if let Some(res) = captured_residual.as_ref() {
+                        if let Some(head) = self.eagle5_head.as_ref() {
+                            if let Some(la) = head.lens_argmax(res) {
+                                lens_total += 1;
+                                if la == bonus {
+                                    lens_hits += 1;
+                                }
+                            }
+                        }
                     }
-                    last_id = next_id;
-                    pos += 1;
+                }
+                let draft = {
+                    let head = self
+                        .eagle5_head
+                        .as_ref()
+                        .expect("eagle5_head must be Some when use_eagle5");
+                    let res_ref = captured_residual.as_deref().unwrap_or(&zeros);
+                    let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
+                    // Roll out K+1 from token T (head_start): out[0] is the
+                    // head's T+1 prediction (≈ bonus, which we already have),
+                    // out[1..] are the genuine look-ahead drafts for T+2,T+3,…
+                    // that the verifier checks. Dropping out[0] keeps the head
+                    // aligned with how it was trained (residual_T pairs with T).
+                    let mut rolled =
+                        head.propose_rollout_chained(head_start, res_ref, int_ref, k_avail + 1);
+                    if rolled.is_empty() {
+                        rolled
+                    } else {
+                        rolled.split_off(1)
+                    }
+                };
+                if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
+                    let toks: Vec<String> = draft.iter().map(|&id| {
+                        self.tokenizer.decode_one(id).unwrap_or_default()
+                    }).collect();
+                    eprintln!("[eagle5-debug] bonus={} draft_ids={:?} draft_tokens={:?}",
+                        bonus, draft, toks);
+                }
+                let draft_len = draft.len();
+                if draft_len == 0 {
+                    pos = bonus_pos;
                     continue;
                 }
 
-                // Verify pass: serial K forwards. Each writes KV at the
-                // current self.kv.seq_len slot. We roll back at the end
-                // based on first_reject + whether a correction was needed.
-                let backup_seq = self.kv.seq_len;
+                // Stage 3: verify. preds[i] = model argmax after consuming
+                // verify_tokens[i] at bonus_pos+i, compared to draft[i].
+                // verify_tokens = [bonus, draft[0..draft_len-1)].
+                //
+                // Two paths, same accept semantics + same post-verify KV
+                // bookkeeping (the emit/advance code below sets pos/seq_len):
+                //   * BATCHED (DISMANTLE_QWEN_EAGLE5_BATCHED=1): all draft_len
+                //     positions verified in ONE forward (forward_tokens_verify),
+                //     sharing weight reads — the throughput path.
+                //   * SERIAL (default): draft_len sequential forwards. Safe
+                //     fallback; no throughput win but correctness-proven.
                 let mut first_reject = draft_len;
                 let mut correction: Option<u32> = None;
-                let mut tmp_last = last_id;
-                for i in 0..draft_len {
-                    let pred = self.forward_token_greedy_tcb(tmp_last, pos + i)?;
-                    if pred != draft[i] {
-                        first_reject = i;
-                        correction = Some(pred);
-                        break;
+                if use_eagle5_batched {
+                    let mut vtoks = Vec::with_capacity(draft_len);
+                    vtoks.push(bonus);
+                    if draft_len > 1 {
+                        vtoks.extend_from_slice(&draft[..draft_len - 1]);
                     }
-                    tmp_last = pred;
+                    let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
+                    let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                    for i in 0..draft_len {
+                        if preds[i] != draft[i] {
+                            first_reject = i;
+                            correction = Some(preds[i]);
+                            break;
+                        }
+                    }
+                } else {
+                    let mut tmp_last = bonus;
+                    for i in 0..draft_len {
+                        let pred = self.forward_token_greedy_tcb(tmp_last, bonus_pos + i)?;
+                        if pred != draft[i] {
+                            first_reject = i;
+                            correction = Some(pred);
+                            break;
+                        }
+                        tmp_last = pred;
+                    }
                 }
-                let committed = first_reject + if correction.is_some() { 1 } else { 0 };
-                self.kv.seq_len = backup_seq + committed;
-                cache.record_outcome(first_reject, draft_len);
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_len - first_reject;
+                if let Some(trace) = eagle5_accept_trace.as_mut() {
+                    let draft_tokens: Vec<String> = draft
+                        .iter()
+                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
+                        .collect();
+                    let accepted_tokens: Vec<String> = draft[..first_reject]
+                        .iter()
+                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
+                        .collect();
+                    let correction_text =
+                        correction.and_then(|id| self.tokenizer.decode_one(id).ok());
+                    let record = serde_json::json!({
+                        "schema": "dismantle-eagle5-accept-trace-v1",
+                        "cycle": eagle5_cycle,
+                        "capture": eagle5_capture_in_use,
+                        "verify_window": eagle5_k,
+                        "k_requested": k_avail,
+                        "draft_len": draft_len,
+                        "accepted": first_reject,
+                        "rejected": draft_len - first_reject,
+                        "pos": pos,
+                        "bonus_pos": bonus_pos,
+                        "bonus_id": bonus,
+                        "bonus_text": self.tokenizer.decode_one(bonus).unwrap_or_default(),
+                        "draft_ids": &draft,
+                        "draft_tokens": draft_tokens,
+                        "accepted_ids": &draft[..first_reject],
+                        "accepted_tokens": accepted_tokens,
+                        "correction_id": correction,
+                        "correction_text": correction_text,
+                    });
+                    writeln!(trace, "{record}")?;
+                }
+                eagle5_cycle += 1;
 
                 // Emit accepted drafts.
                 for k in 0..first_reject {
@@ -1252,40 +1565,112 @@ impl Engine for QwenDense {
                     let text = self.tokenizer.decode_one(id).unwrap_or_default();
                     sink(StreamEvent::Token { id, text });
                     self.sampler.record(id);
-                    cache.observe(id);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(id);
+                    }
                     produced += 1;
                     if Some(id) == eos {
                         reason = StopReason::Eos;
-                        break 'lk_loop;
+                        break 'e5_loop;
                     }
                     if produced >= req.max_new_tokens {
-                        break 'lk_loop;
+                        break 'e5_loop;
                     }
                 }
 
+                // Emit correction (if any) and advance state.
                 if let Some(corr) = correction {
                     let text = self.tokenizer.decode_one(corr).unwrap_or_default();
                     sink(StreamEvent::Token { id: corr, text });
                     self.sampler.record(corr);
-                    cache.observe(corr);
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(corr);
+                    }
                     produced += 1;
                     last_id = corr;
-                    pos += first_reject + 1;
+                    // KV state after stage 3 on reject at i:
+                    //   - Stage 1 wrote KV[pos] = old last_id, seq_len = pos+1.
+                    //   - Stage 3 did i+1 forwards (iters 0..=i), each
+                    //     writing KV[bonus_pos+iter] and bumping seq_len.
+                    //   - After break: seq_len = bonus_pos + i + 1 = pos + 2 + i.
+                    //   - Correction sits LOGICALLY at bonus_pos + i + 1 = pos + 2 + i.
+                    //     KV[pos+2+i] is NOT yet written; next cycle's stage 1
+                    //     will write it.
+                    //   - Need: pos = pos + 2 + i (= bonus_pos + i + 1).
+                    //     seq_len must equal new pos so the next stage 1's
+                    //     forward(corr, pos_new) writes KV[pos_new] without
+                    //     gap.
+                    pos = bonus_pos + first_reject + 1;
+                    self.kv.seq_len = pos;
                     if Some(corr) == eos {
                         reason = StopReason::Eos;
-                        break 'lk_loop;
+                        break 'e5_loop;
                     }
                 } else {
+                    // All drafts accepted. Stage 3 did K forwards, so
+                    // seq_len = bonus_pos + K. Last emitted token is
+                    // drafts[K-1], sitting at position bonus_pos + K.
+                    // The forward at iteration K-1 wrote KV[bonus_pos+K-1]
+                    // = drafts[K-2], so KV[bonus_pos+K] (= position of
+                    // drafts[K-1]) is NOT yet written. Next cycle's
+                    // stage 1 forward writes it.
                     last_id = draft[draft_len - 1];
-                    pos += draft_len;
+                    pos = bonus_pos + draft_len;
+                    // seq_len bumped by stage 3 to bonus_pos + draft_len
+                    // = pos, so no rewind is needed.
                 }
 
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
-                    break 'lk_loop;
+                    break 'e5_loop;
                 }
             }
+            if lens_probe && lens_total > 0 {
+                eprintln!(
+                    "[eagle5-lens-probe] layer-K logit-lens ceiling: {}/{} = {:.1}% \
+                     (fraction of steps where argmax(RMSNorm(captured_residual)@lm_head) \
+                     == the model's real next token). This is the upper bound for any \
+                     head at this capture layer.",
+                    lens_hits,
+                    lens_total,
+                    100.0 * lens_hits as f32 / lens_total as f32,
+                );
+            }
         } else {
+            // Quantized-residual corpus capture (DISMANTLE_QWEN_CAPTURE_CORPUS_PATH).
+            // When set AND DISMANTLE_QWEN_EAGLE5_CAPTURE=1, append per-step
+            // (prev_token, next_token, residual[h], intermediate[h]) records to
+            // the file, prefixed by a per-sequence sentinel. This captures the
+            // residuals the QUANTIZED runtime actually serves — eliminating the
+            // fp16→Q4_K_M training/serving distribution shift. A companion
+            // packer (tools/orchestrator/pack_corpus.py) converts the binary
+            // stream to the trainer's int8 parquet schema. Greedy decode only.
+            use std::io::Write as _CorpusWrite;
+            let hidden = self.config.hidden;
+            let eagle5_capture_active = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+            let mut corpus_file: Option<std::fs::File> =
+                std::env::var_os("DISMANTLE_QWEN_CAPTURE_CORPUS_PATH").and_then(|p| {
+                    if !eagle5_capture_active {
+                        eprintln!("[capture-corpus] WARN: CORPUS_PATH set but \
+                                   DISMANTLE_QWEN_EAGLE5_CAPTURE!=1; no residuals will \
+                                   be captured. Skipping dump.");
+                        return None;
+                    }
+                    match std::fs::OpenOptions::new().create(true).append(true).open(&p) {
+                        Ok(mut f) => {
+                            // Per-sequence sentinel: two u32 0xFFFFFFFF then the
+                            // hidden dim, so the packer can self-describe.
+                            let _ = f.write_all(&0xFFFF_FFFFu32.to_le_bytes());
+                            let _ = f.write_all(&0xFFFF_FFFFu32.to_le_bytes());
+                            let _ = f.write_all(&(hidden as u32).to_le_bytes());
+                            Some(f)
+                        }
+                        Err(e) => {
+                            eprintln!("[capture-corpus] WARN: cannot open {p:?}: {e}");
+                            None
+                        }
+                    }
+                });
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
@@ -1304,6 +1689,31 @@ impl Engine for QwenDense {
                     break;
                 }
                 self.sampler.record(next_id);
+                // Corpus dump: residual/intermediate of the forward that just
+                // processed `last_id` (the prev token) producing `next_id`.
+                if let Some(f) = corpus_file.as_mut() {
+                    if let (Some(res_buf), Some(int_buf)) = (
+                        self.eagle5_capture_residual_buf.as_ref(),
+                        self.eagle5_capture_intermediate_buf.as_ref(),
+                    ) {
+                        let res = unsafe {
+                            std::slice::from_raw_parts(res_buf.contents() as *const f32, hidden)
+                        };
+                        let inter = unsafe {
+                            std::slice::from_raw_parts(int_buf.contents() as *const f32, hidden)
+                        };
+                        let _ = f.write_all(&last_id.to_le_bytes());
+                        let _ = f.write_all(&next_id.to_le_bytes());
+                        let res_bytes = unsafe {
+                            std::slice::from_raw_parts(res.as_ptr() as *const u8, hidden * 4)
+                        };
+                        let int_bytes = unsafe {
+                            std::slice::from_raw_parts(inter.as_ptr() as *const u8, hidden * 4)
+                        };
+                        let _ = f.write_all(res_bytes);
+                        let _ = f.write_all(int_bytes);
+                    }
+                }
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                 sink(StreamEvent::Token { id: next_id, text });
                 produced += 1;
@@ -1312,6 +1722,9 @@ impl Engine for QwenDense {
                     break;
                 }
                 last_id = next_id;
+            }
+            if let Some(mut f) = corpus_file {
+                let _ = f.flush();
             }
         }
 
@@ -1600,194 +2013,6 @@ impl QwenDense {
         Ok(logits)
     }
 
-    /// Debug-only API used by `tests/megakernel_2layer_parity.rs`:
-    /// run the first `last_layer + 1` transformer layers of the
-    /// existing CPU forward path and return the residual stream
-    /// (the `x` buffer after layer `last_layer`'s FFN add, BEFORE
-    /// `final_norm` and the LM head).
-    ///
-    /// Body mirrors `forward_token` up to `last_layer`, then returns
-    /// without final_norm / LM head / `kv.seq_len` bump. K/V are
-    /// written for layers `0..=last_layer` at `self.kv.seq_len`'s
-    /// slot, matching `forward_token`. Parity tests should reload
-    /// the model between reference and POC invocations to keep KV
-    /// clean.
-    ///
-    /// Errors if `last_layer >= cfg.n_layers` or the KV cache is full.
-    pub fn forward_layers_subset(
-        &mut self,
-        token: u32,
-        pos: usize,
-        last_layer: usize,
-    ) -> Result<Vec<f32>> {
-        let cfg = &self.config;
-        if last_layer >= cfg.n_layers {
-            return Err(Error::Model(format!(
-                "forward_layers_subset: last_layer={} >= n_layers={}",
-                last_layer, cfg.n_layers
-            )));
-        }
-        let h = cfg.hidden;
-        let head_dim = cfg.head_dim;
-        let n_heads = cfg.n_heads;
-        let n_kv_heads = cfg.n_kv_heads;
-        let q_dim = n_heads * head_dim;
-        let kv_dim = n_kv_heads * head_dim;
-
-        let mut x = vec![0.0f32; h];
-        embed_lookup(&self.embed, h, token, &mut x);
-        let mut scratch = Vec::<f32>::new();
-
-        let stride = n_kv_heads * head_dim;
-        if self.kv.seq_len >= self.kv.max_seq {
-            return Err(Error::Model(format!(
-                "kv cache full at {}",
-                self.kv.max_seq
-            )));
-        }
-        let kv_off = self.kv.seq_len * stride;
-        let mha_seq_len = self.kv.seq_len + 1;
-
-        for li in 0..=last_layer {
-            let mut x_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(
-                &x,
-                &self.layers[li].attn_norm,
-                cfg.rms_norm_eps,
-                &mut x_norm,
-            )?;
-
-            let layer = &self.layers[li];
-            let mut q_full = vec![0.0f32; q_dim];
-            let mut k_token = vec![0.0f32; kv_dim];
-            let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_q4_dispatch(&layer.q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_q4_dispatch(
-                &layer.k_proj,
-                kv_dim,
-                h,
-                &x_norm,
-                &mut k_token,
-                &mut scratch,
-            )?;
-            self.matmul_q4_dispatch(
-                &layer.v_proj,
-                kv_dim,
-                h,
-                &x_norm,
-                &mut v_token,
-                &mut scratch,
-            )?;
-            if !layer.q_bias.is_empty() {
-                add_inplace(&mut q_full, &layer.q_bias);
-            }
-            if !layer.k_bias.is_empty() {
-                add_inplace(&mut k_token, &layer.k_bias);
-            }
-            if !layer.v_bias.is_empty() {
-                add_inplace(&mut v_token, &layer.v_bias);
-            }
-
-            for h_i in 0..n_heads {
-                let off = h_i * head_dim;
-                rope_inplace(&mut q_full[off..off + head_dim], pos as u32, cfg.rope_theta);
-            }
-            for h_i in 0..n_kv_heads {
-                let off = h_i * head_dim;
-                rope_inplace(
-                    &mut k_token[off..off + head_dim],
-                    pos as u32,
-                    cfg.rope_theta,
-                );
-            }
-
-            self.kv.keys[li][kv_off..kv_off + stride].copy_from_slice(&k_token);
-            self.kv.values[li][kv_off..kv_off + stride].copy_from_slice(&v_token);
-
-            let kv_size = mha_seq_len * stride;
-            let keys = &self.kv.keys[li][..kv_size];
-            let values = &self.kv.values[li][..kv_size];
-
-            let mut attn_out = vec![0.0f32; q_dim];
-            mha_decode_step(
-                &q_full,
-                keys,
-                values,
-                n_heads,
-                n_kv_heads,
-                head_dim,
-                mha_seq_len,
-                &mut attn_out,
-            )?;
-
-            let mut o = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&layer.o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
-            add_inplace(&mut x, &o);
-
-            let mut x_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&x, &layer.ffn_norm, cfg.rms_norm_eps, &mut x_norm)?;
-            let mid = cfg.intermediate;
-            let mut g = vec![0.0f32; mid];
-            let mut u = vec![0.0f32; mid];
-            let mut a = vec![0.0f32; mid];
-            self.matmul_q4_dispatch(&layer.ffn_gate, mid, h, &x_norm, &mut g, &mut scratch)?;
-            self.matmul_q4_dispatch(&layer.ffn_up, mid, h, &x_norm, &mut u, &mut scratch)?;
-            silu_mul(&g, &u, &mut a);
-            let mut f = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&layer.ffn_down, h, mid, &a, &mut f, &mut scratch)?;
-            add_inplace(&mut x, &f);
-        }
-
-        Ok(x)
-    }
-
-    /// Pre-dequantize one transformer layer's weights into the
-    /// f16-resident form the megakernel POC expects.
-    ///
-    /// The 2-layer megakernel takes the pre-dequant-to-f16 shortcut so
-    /// its shader can do straight f16 GEMVs inline (see
-    /// `~/.claude/projects/-Users-scammermike-Downloads-dismantle/memory/build_megakernel_design_2026_05_25.md`
-    /// § "Q4_K inline decode"). Q4_K inline decode is followup work.
-    ///
-    /// Weight layout matches `forward_token`: `q_proj` is row-major
-    /// `(q_dim × hidden)`, `o_proj` is `(hidden × q_dim)`, `ffn_gate`
-    /// and `ffn_up` are `(intermediate × hidden)`, `ffn_down` is
-    /// `(hidden × intermediate)`.
-    ///
-    /// Bias vectors are empty if the underlying layer has no bias
-    /// (Qwen2 carries Q/K/V biases but no O bias).
-    pub fn prep_megakernel_layer_f16(
-        &self,
-        li: usize,
-    ) -> Result<MegakernelLayerWeightsF16> {
-        if li >= self.config.n_layers {
-            return Err(Error::Model(format!(
-                "prep_megakernel_layer_f16: li={} >= n_layers={}",
-                li, self.config.n_layers
-            )));
-        }
-        let layer = &self.layers[li];
-        let dq = |t: &TensorRef| -> Result<Vec<f16>> {
-            let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
-            let mut tmp = vec![0.0f32; t.n_elems];
-            quant::dequant_into(t.dtype, bytes, &mut tmp)?;
-            Ok(tmp.into_iter().map(f16::from_f32).collect())
-        };
-        Ok(MegakernelLayerWeightsF16 {
-            q_proj: dq(&layer.q_proj)?,
-            k_proj: dq(&layer.k_proj)?,
-            v_proj: dq(&layer.v_proj)?,
-            o_proj: dq(&layer.o_proj)?,
-            ffn_gate: dq(&layer.ffn_gate)?,
-            ffn_up: dq(&layer.ffn_up)?,
-            ffn_down: dq(&layer.ffn_down)?,
-            attn_norm: layer.attn_norm.clone(),
-            ffn_norm: layer.ffn_norm.clone(),
-            q_bias: layer.q_bias.clone(),
-            k_bias: layer.k_bias.clone(),
-            v_bias: layer.v_bias.clone(),
-        })
-    }
 }
 
 #[cfg(target_os = "macos")]
@@ -1857,9 +2082,31 @@ impl QwenDense {
             Some(c) => c,
             None => return Ok(()),
         };
-        // Probe sidecar paths in order of specificity.
+        // Probe sidecar paths in order of specificity. When
+        // DISMANTLE_QWEN_AWQ=1, look for the AWQ-baked sidecar first
+        // (produced by `tools/awq_bake/`). Falls through to the plain
+        // Q4K_FAST sidecar if the AWQ file is missing — the AWQ loader
+        // will then refuse to enable smoothing in that case.
         let weights_path = &self._weights_path;
-        let candidates = [
+        let awq_requested = crate::env_on("DISMANTLE_QWEN_AWQ");
+        let mut candidates: Vec<std::path::PathBuf> = Vec::new();
+        if awq_requested {
+            // <gguf-stem>.awq.dismantle next to the model, plus a canned path.
+            let stem = weights_path
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("model");
+            if let Some(parent) = weights_path.parent() {
+                candidates.push(parent.join(format!("{stem}.awq.dismantle")));
+            }
+            candidates.push(std::path::PathBuf::from(format!(
+                "models/{stem}-awq.dismantle"
+            )));
+            candidates.push(std::path::PathBuf::from(
+                "artifacts/qwen3b_awq_baked.dismantle",
+            ));
+        }
+        candidates.extend([
             weights_path.with_extension("dismantle"),
             std::path::PathBuf::from(format!(
                 "models/{}-q4k_fast.dismantle",
@@ -1871,7 +2118,7 @@ impl QwenDense {
             std::path::PathBuf::from(
                 "models/qwen2.5-3b-instruct-q4k_fast.dismantle"
             ),
-        ];
+        ]);
         let sidecar_path = candidates.iter().find(|p| p.exists()).cloned();
         let sidecar_path = match sidecar_path {
             Some(p) => p,
@@ -1986,6 +2233,110 @@ impl QwenDense {
         Ok(())
     }
 
+    /// AWQ Option B: load per-layer activation smoothing vectors from
+    /// `profiles/qwen3b_awq_smoothing.json` (schema `awq-smoothing-v1`,
+    /// produced by the offline AWQ pre-pass). Builds 4 per-layer pinned
+    /// f32 buffers — one per dispatch site — keyed by layer index. Pairs
+    /// with the AWQ-baked Q4K_FAST sidecar (W' = W * s) produced by
+    /// `tools/awq_bake/`. Silent no-op if the JSON is missing — the
+    /// caller should refuse to enable AWQ when the loader returns
+    /// without populating the buffers.
+    #[cfg(target_os = "macos")]
+    fn ensure_awq_smoothing_scales(&mut self) -> Result<()> {
+        if self.awq_smoothing_x_norm.is_some() {
+            return Ok(());
+        }
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+        let candidates = [
+            std::path::PathBuf::from("profiles/qwen3b_awq_smoothing.json"),
+            std::path::PathBuf::from("crates/dismantle-core/profiles/qwen3b_awq_smoothing.json"),
+        ];
+        let json_path = match candidates.iter().find(|p| p.exists()) {
+            Some(p) => p,
+            None => {
+                eprintln!(
+                    "[awq] WARN: smoothing JSON missing at any of {:?} — \
+                     AWQ disabled (set DISMANTLE_QWEN_AWQ=0 to silence)",
+                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>()
+                );
+                return Ok(());
+            }
+        };
+        let txt = std::fs::read_to_string(json_path)
+            .map_err(|e| Error::Model(format!("read {}: {}", json_path.display(), e)))?;
+        let root: serde_json::Value = serde_json::from_str(&txt)
+            .map_err(|e| Error::Model(format!("parse AWQ smoothing JSON: {e}")))?;
+        let schema = root.get("schema").and_then(|v| v.as_str()).unwrap_or("");
+        if schema != "awq-smoothing-v1" {
+            return Err(Error::Model(format!(
+                "unexpected AWQ smoothing schema {schema:?} at {}",
+                json_path.display()
+            )));
+        }
+        let factors = root.get("smoothing_factors")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| Error::Model("missing smoothing_factors object".into()))?;
+
+        let cfg = &self.config;
+        let hidden = cfg.hidden;
+        let intermediate = cfg.intermediate;
+        let n_layers = cfg.n_layers;
+
+        let mut x_norm_bufs = Vec::with_capacity(n_layers);
+        let mut attn_out_bufs = Vec::with_capacity(n_layers);
+        let mut ffn_act_bufs = Vec::with_capacity(n_layers);
+        let mut silu_mul_bufs = Vec::with_capacity(n_layers);
+
+        let extract = |key: &str, expected_len: usize| -> Result<Vec<f32>> {
+            let arr = factors.get(key)
+                .and_then(|v| v.as_array())
+                .ok_or_else(|| Error::Model(format!("AWQ smoothing missing key {key}")))?;
+            if arr.len() != expected_len {
+                return Err(Error::Model(format!(
+                    "AWQ smoothing {key}: len {} != expected {}",
+                    arr.len(), expected_len
+                )));
+            }
+            let mut out = Vec::with_capacity(expected_len);
+            for v in arr {
+                let f = v.as_f64()
+                    .ok_or_else(|| Error::Model(format!("AWQ {key}: non-numeric entry")))?;
+                out.push(f as f32);
+            }
+            Ok(out)
+        };
+
+        for li in 0..n_layers {
+            // Q/K/V share x_norm — use q_proj's factor (verified equal to
+            // k_proj / v_proj per profiles/qwen3b_awq_smoothing.json).
+            let s_q = extract(&format!("layer_{li}_q_proj"), hidden)?;
+            let s_o = extract(&format!("layer_{li}_o_proj"), hidden)?;
+            // Gate/Up share ffn_act — use gate_proj's factor.
+            let s_g = extract(&format!("layer_{li}_gate_proj"), hidden)?;
+            let s_d = extract(&format!("layer_{li}_down_proj"), intermediate)?;
+            x_norm_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_q)));
+            attn_out_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_o)));
+            ffn_act_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_g)));
+            silu_mul_bufs.push(ctx.new_buffer_with_bytes(bytemuck::cast_slice(&s_d)));
+        }
+
+        self.awq_smoothing_x_norm = Some(x_norm_bufs);
+        self.awq_smoothing_attn_out = Some(attn_out_bufs);
+        self.awq_smoothing_ffn_act = Some(ffn_act_bufs);
+        self.awq_smoothing_silu_mul = Some(silu_mul_bufs);
+        eprintln!(
+            "[awq] loaded smoothing for {} layers from {} (4 sites × {} = {} pinned buffers)",
+            n_layers,
+            json_path.display(),
+            n_layers,
+            4 * n_layers,
+        );
+        Ok(())
+    }
+
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
     /// graph + final norm + LM head + GPU argmax into a single
     /// `TokenCommandBuffer`, commits once, and reads back the next
@@ -2016,26 +2367,51 @@ impl QwenDense {
         // Item 3: optional Q4K_FAST sidecar swap. When env is set AND
         // the sidecar exists, every Q4_K projection routes through the
         // custom sub-block-contiguous kernel.
-        let q4k_fast_active = std::env::var_os("DISMANTLE_QWEN_Q4K_FAST")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let q4k_fast_active = crate::env_on("DISMANTLE_QWEN_Q4K_FAST");
         if q4k_fast_active && self.q4k_fast_buf.is_none() {
             self.ensure_q4k_fast_cache()?;
         }
         // Track E: lazy-load per-channel LM_HEAD scales (mutable borrow
         // of self). Must be done BEFORE the immutable borrows of
         // q4k_predec_cache / q4k_fast_buf below.
-        let w4a8_active_early = std::env::var_os("DISMANTLE_QWEN_W4A8")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let w4a8_active_early = crate::env_on("DISMANTLE_QWEN_W4A8");
         let w4a8_lmhead_per_channel_early =
-            std::env::var_os("DISMANTLE_QWEN_W4A8_PER_CHANNEL")
-                .map(|v| v == "1")
-                .unwrap_or(false);
+            crate::env_on("DISMANTLE_QWEN_W4A8_PER_CHANNEL");
         if w4a8_active_early && w4a8_lmhead_per_channel_early
             && self.lmhead_per_channel_scales_buf.is_none()
         {
             self.ensure_lmhead_per_channel_scales()?;
+        }
+        // AWQ Option B: lazy-load per-layer activation smoothing vectors.
+        // Requires W4A8 (the AWQ math only makes sense when activations
+        // are int8-quantized) AND a Q4K_FAST sidecar that has been baked
+        // through `tools/awq_bake/` (W' = W * s pre-multiplied into the
+        // Q4_K weights). The bake-aware sidecar path lookup is handled
+        // by `ensure_q4k_fast_cache` when `DISMANTLE_QWEN_AWQ=1` is set;
+        // PREDEC is incompatible (its pre-decoded scales come from the
+        // un-smoothed weights and would give wrong logits).
+        let awq_active_early = crate::env_on("DISMANTLE_QWEN_AWQ");
+        if awq_active_early && !w4a8_active_early {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_AWQ=1 requires DISMANTLE_QWEN_W4A8=1".into(),
+            ));
+        }
+        if awq_active_early && predec_active {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_AWQ=1 is incompatible with DISMANTLE_QWEN_Q4K_PREDEC=1; \
+                 set DISMANTLE_QWEN_Q4K_PREDEC=0 to opt out of predec".into(),
+            ));
+        }
+        // Force the Q4K_FAST sidecar path so the AWQ-baked weights are
+        // actually loaded. The lookup inside ensure_q4k_fast_cache picks
+        // the `.awq.dismantle` file when AWQ is set.
+        if awq_active_early && self.q4k_fast_buf.is_none() {
+            self.ensure_q4k_fast_cache()?;
+        }
+        if awq_active_early && w4a8_active_early
+            && self.awq_smoothing_x_norm.is_none()
+        {
+            self.ensure_awq_smoothing_scales()?;
         }
         // Bind cache references for the macro body. predec takes
         // precedence if both are active (they're mutually exclusive
@@ -2046,13 +2422,48 @@ impl QwenDense {
         } else {
             None
         };
-        let q4k_fast_ref = if q4k_fast_active && !predec_active {
+        // Phase B.3: Eagle5 capture mode. Lazy-allocates two PinnedBuffers
+        // (residual + intermediate, hidden * f32 each) on first activation.
+        // The buffers persist across decode steps and are overwritten by
+        // every forward — the Eagle5 dispatch reads the most recent capture.
+        let eagle5_capture_active = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+        if eagle5_capture_active {
+            let h_bytes = self.config.hidden * std::mem::size_of::<f32>();
+            if self.eagle5_capture_residual_buf.is_none() {
+                if let Some(ctx) = self.metal_ctx.as_ref() {
+                    self.eagle5_capture_residual_buf = Some(ctx.new_buffer(h_bytes));
+                }
+            }
+            if self.eagle5_capture_intermediate_buf.is_none() {
+                if let Some(ctx) = self.metal_ctx.as_ref() {
+                    self.eagle5_capture_intermediate_buf = Some(ctx.new_buffer(h_bytes));
+                }
+            }
+        }
+        // When AWQ is active the sidecar IS the AWQ-baked Q4K_FAST file,
+        // so we must route the Q4_K projections through the q4k_fast
+        // kernel even if DISMANTLE_QWEN_Q4K_FAST wasn't set explicitly.
+        let q4k_fast_ref = if (q4k_fast_active || awq_active_early)
+            && !predec_active
+        {
             self.q4k_fast_buf
                 .as_ref()
                 .zip(self.q4k_fast_offsets.as_ref())
         } else {
             None
         };
+        // AWQ smoothing buffer refs (None unless all four loaded). Bind
+        // here under the immutable-borrow window so the dispatch sites
+        // can index by layer without re-borrowing self.
+        let awq_active = awq_active_early
+            && self.awq_smoothing_x_norm.is_some()
+            && self.awq_smoothing_attn_out.is_some()
+            && self.awq_smoothing_ffn_act.is_some()
+            && self.awq_smoothing_silu_mul.is_some();
+        let awq_x_norm = self.awq_smoothing_x_norm.as_ref();
+        let awq_attn_out = self.awq_smoothing_attn_out.as_ref();
+        let awq_ffn_act = self.awq_smoothing_ffn_act.as_ref();
+        let awq_silu_mul = self.awq_smoothing_silu_mul.as_ref();
 
         let ctx = self
             .metal_ctx
@@ -2152,9 +2563,7 @@ impl QwenDense {
         // optional Q4_K LM head and requant'd Q4_K ffn_down) takes the
         // W4A8 path; Q6_K projections (k/v_proj, native Q6_K ffn_down)
         // keep the f32 path because W4A8 is Q4_K-specific.
-        let w4a8_active = std::env::var_os("DISMANTLE_QWEN_W4A8")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let w4a8_active = crate::env_on("DISMANTLE_QWEN_W4A8");
         let w4a8_qproj = w4a8_active;
         let w4a8_oproj = w4a8_active;
         let w4a8_ffn_gate = w4a8_active;
@@ -2180,9 +2589,7 @@ impl QwenDense {
         // Default off until ≥+5% paired-bench delta + cosine > 0.998 +
         // first-8 greedy match clear the ship rule. See
         // ~/.claude/plans/closing-the-2-4-virtual-phoenix.md.
-        let qkv_concurrent = std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV")
-            .map(|v| v == "1")
-            .unwrap_or(false);
+        let qkv_concurrent = crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
         }
@@ -2232,13 +2639,26 @@ impl QwenDense {
             &arena.x_norm_buf,
         )?;
         if w4a8_active {
-            kernels::quantize_f32_to_int8_per_block_tcb(
-                &mut tcb,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                h,
-            )?;
+            // Pre-loop x_norm quantize feeds layer 0's q/k/v projections.
+            // Under AWQ, divide by layer-0 q_proj smoothing (== k/v_proj).
+            if awq_active {
+                kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    &awq_x_norm.unwrap()[0],
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            } else {
+                kernels::quantize_f32_to_int8_per_block_tcb(
+                    &mut tcb,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    h,
+                )?;
+            }
         }
 
         for li in 0..cfg.n_layers {
@@ -2261,7 +2681,17 @@ impl QwenDense {
                  $x:expr, $x_i8:expr, $x_sc:expr, $out:expr) => {{
                     match $tref.dtype {
                         GgmlType::Q4_K => {
-                            if $site_w4a8 {
+                            if $cols % 256 != 0 {
+                                let buf_f16 = $pinned_f16.ok_or_else(|| {
+                                    Error::Metal(
+                                        "gemv_proj: Q4_K cols not divisible by 256 and no f16 fallback pinned"
+                                            .into(),
+                                    )
+                                })?;
+                                kernels::gemv_f16_metal_buf_tcb(
+                                    &mut tcb, buf_f16, $rows, $cols, $x, $out,
+                                )?;
+                            } else if $site_w4a8 {
                                 // W4A8: per-block int8 activation × Q4_K
                                 // weight GEMV. Same v3_8r geometry; activation
                                 // BW drops 4× vs the f32 baseline.
@@ -2493,13 +2923,24 @@ impl QwenDense {
             // attn_out is the output of mha_decode (f32). When W4A8 active,
             // quantize once before o_proj.
             if w4a8_oproj {
-                kernels::quantize_f32_to_int8_per_block_tcb(
-                    &mut tcb,
-                    &arena.attn_out_buf,
-                    attn_int8,
-                    attn_scales,
-                    q_dim,
-                )?;
+                if awq_active {
+                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                        &mut tcb,
+                        &arena.attn_out_buf,
+                        &awq_attn_out.unwrap()[li],
+                        attn_int8,
+                        attn_scales,
+                        q_dim,
+                    )?;
+                } else {
+                    kernels::quantize_f32_to_int8_per_block_tcb(
+                        &mut tcb,
+                        &arena.attn_out_buf,
+                        attn_int8,
+                        attn_scales,
+                        q_dim,
+                    )?;
+                }
             }
             gemv_proj!(
                 w4a8_oproj,
@@ -2520,19 +2961,35 @@ impl QwenDense {
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
             // Fused add+rmsnorm+(optional)int8-quantize. When W4A8 is active
             // this collapses the two dispatches into one and skips the
-            // x_norm DRAM round-trip.
+            // x_norm DRAM round-trip. Under AWQ, the int8 phase divides by
+            // the gate_proj smoothing (== up_proj; gate/up share x_norm here).
             if w4a8_active {
-                kernels::add_rmsnorm_fused_q8_tcb(
-                    &mut tcb,
-                    &arena.x_buf,
-                    &arena.o_proj_out_buf,
-                    ffn_norm_pin,
-                    &arena.x_norm_buf,
-                    x_int8,
-                    x_scales,
-                    eps,
-                    h,
-                )?;
+                if awq_active {
+                    kernels::add_rmsnorm_fused_q8_scaled_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.o_proj_out_buf,
+                        ffn_norm_pin,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        &awq_ffn_act.unwrap()[li],
+                        eps,
+                        h,
+                    )?;
+                } else {
+                    kernels::add_rmsnorm_fused_q8_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.o_proj_out_buf,
+                        ffn_norm_pin,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        eps,
+                        h,
+                    )?;
+                }
             } else {
                 kernels::add_rmsnorm_fused_tcb(
                     &mut tcb,
@@ -2576,15 +3033,28 @@ impl QwenDense {
                 intermediate,
             )?;
             // Quantize ffn_act for the upcoming ffn_down (when both W4A8
-            // and the ffn_down_q4k requant buffer are active).
+            // and the ffn_down_q4k requant buffer are active). Under AWQ,
+            // divide by down_proj smoothing (length=intermediate) since
+            // ffn_act (= silu(gate) * up) is down_proj's input.
             if w4a8_ffn_down && layer.pinned.ffn_down_q4k.is_some() {
-                kernels::quantize_f32_to_int8_per_block_tcb(
-                    &mut tcb,
-                    &arena.ffn_act_buf,
-                    ffn_int8,
-                    ffn_scales,
-                    intermediate,
-                )?;
+                if awq_active {
+                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                        &mut tcb,
+                        &arena.ffn_act_buf,
+                        &awq_silu_mul.unwrap()[li],
+                        ffn_int8,
+                        ffn_scales,
+                        intermediate,
+                    )?;
+                } else {
+                    kernels::quantize_f32_to_int8_per_block_tcb(
+                        &mut tcb,
+                        &arena.ffn_act_buf,
+                        ffn_int8,
+                        ffn_scales,
+                        intermediate,
+                    )?;
+                }
             }
             // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
             // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
@@ -2665,19 +3135,40 @@ impl QwenDense {
             // Fused add+rmsnorm+(optional)int8-quantize, same pattern as the
             // post-attn-norm site above. Produces x_norm and (when W4A8
             // active) the int8/scales needed by the next layer's q_proj or
-            // the LM head.
+            // the LM head. Under AWQ: when there's a NEXT layer, divide by
+            // its q_proj smoothing; on the LAST layer the next consumer is
+            // the LM_HEAD (which the bake tool does NOT smooth — output.weight
+            // doesn't match the AWQ key map), so we MUST stay on the
+            // unscaled path so the LM_HEAD W4A8 GEMV sees x · W_lmhead.T,
+            // not (x/s) · W_lmhead.T.
+            let is_last_layer = li + 1 >= cfg.n_layers;
             if w4a8_active {
-                kernels::add_rmsnorm_fused_q8_tcb(
-                    &mut tcb,
-                    &arena.x_buf,
-                    &arena.ffn_down_buf,
-                    next_norm,
-                    &arena.x_norm_buf,
-                    x_int8,
-                    x_scales,
-                    eps,
-                    h,
-                )?;
+                if awq_active && !is_last_layer {
+                    kernels::add_rmsnorm_fused_q8_scaled_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.ffn_down_buf,
+                        next_norm,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        &awq_x_norm.unwrap()[li + 1],
+                        eps,
+                        h,
+                    )?;
+                } else {
+                    kernels::add_rmsnorm_fused_q8_tcb(
+                        &mut tcb,
+                        &arena.x_buf,
+                        &arena.ffn_down_buf,
+                        next_norm,
+                        &arena.x_norm_buf,
+                        x_int8,
+                        x_scales,
+                        eps,
+                        h,
+                    )?;
+                }
             } else {
                 kernels::add_rmsnorm_fused_tcb(
                     &mut tcb,
@@ -2688,6 +3179,33 @@ impl QwenDense {
                     eps,
                     h,
                 )?;
+            }
+            // Phase B.3: capture residual + intermediate at the chosen
+            // layer for Eagle5 spec-decode. Two `memcpy_f32_off` dispatches
+            // run in the same TCB as the layer compute (no commit split).
+            // Capture happens AFTER the fused add+rmsnorm so `x_buf` holds
+            // the layer's residual output (x + ffn_down). The intermediate
+            // (ffn_down output BEFORE the residual add) was already in
+            // ffn_down_buf since the fused dispatch reads it but doesn't
+            // overwrite it — so we can copy the same buffer here.
+            if eagle5_capture_active && li == self.eagle5_capture_layer {
+                let res_buf = self
+                    .eagle5_capture_residual_buf
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("eagle5 capture residual buf missing".into()))?;
+                let int_buf = self
+                    .eagle5_capture_intermediate_buf
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("eagle5 capture intermediate buf missing".into()))?;
+                // DIAGNOSTIC: when DISMANTLE_QWEN_EAGLE5_CAPTURE_XNORM=1,
+                // capture the post-final-norm hidden (x_norm_buf — what
+                // literally feeds the LM head) into res_buf instead of the
+                // pre-norm residual. Used to validate the capture mechanism:
+                // (captured @ lm_head).argmax must equal the generated token.
+                let cap_xnorm = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE_XNORM");
+                let res_src = if cap_xnorm { &arena.x_norm_buf } else { &arena.x_buf };
+                kernels::memcpy_f32_off_tcb(&mut tcb, res_src, res_buf, 0, 0, h)?;
+                kernels::memcpy_f32_off_tcb(&mut tcb, &arena.ffn_down_buf, int_buf, 0, 0, h)?;
             }
             let _ = kv_dim_bytes;
         }
@@ -2714,6 +3232,26 @@ impl QwenDense {
             (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
         {
             if self.vocab_pruned_is_q4k {
+                if h % 256 != 0 {
+                    kernels::gemv_f16_metal_buf_tcb(
+                        &mut tcb,
+                        lm_head_buf,
+                        vocab,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.logits_buf,
+                    )?;
+                    kernels::sample_argmax_f32_tcb(
+                        &mut tcb,
+                        &arena.logits_buf,
+                        &arena.token_buf,
+                        vocab,
+                    )?;
+                    tcb.commit_and_wait()?;
+                    self.kv.seq_len += 1;
+                    let token_ptr = arena.token_buf.contents() as *const u32;
+                    return Ok(unsafe { *token_ptr });
+                }
                 let blocks_per_row = h / 256;
                 let row_bytes = blocks_per_row * 144;
                 if w4a8_lmhead && use_per_channel_lmhead {
@@ -2777,6 +3315,21 @@ impl QwenDense {
             };
             return Ok(token);
         } else if let Some(lhq) = self.lm_head_q4k_buf.as_ref() {
+            if h % 256 != 0 {
+                kernels::gemv_f16_metal_buf_tcb(
+                    &mut tcb,
+                    lm_head_buf,
+                    vocab,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.logits_buf,
+                )?;
+                kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
+                tcb.commit_and_wait()?;
+                self.kv.seq_len += 1;
+                let token_ptr = arena.token_buf.contents() as *const u32;
+                return Ok(unsafe { *token_ptr });
+            }
             let blocks_per_row = h / 256;
             let row_bytes = blocks_per_row * 144;
             if w4a8_lmhead && use_per_channel_lmhead {
@@ -3271,6 +3824,198 @@ impl QwenDense {
         self.kv.seq_len += b;
 
         Ok(())
+    }
+
+    /// Batched-verify-with-logits — spec-decode's per-cycle workhorse.
+    ///
+    /// Given B (tokens, positions), runs all B token forwards in ONE GPU
+    /// command buffer (sharing weight reads across positions), then
+    /// computes per-position LM-head logits on CPU and returns them.
+    ///
+    /// Returns `Vec<Vec<f32>>` of length B; element k is the vocab-length
+    /// logit vector AFTER consuming `tokens[k]` at `positions[k]`. Spec-
+    /// decode consumes `argmax(logits[k])` and compares to the draft
+    /// at position k+1.
+    ///
+    /// Implementation: two-stage.
+    ///   1. Delegates to `forward_tokens_batch_tcb` which runs the
+    ///      transformer stack for B positions and ends with the
+    ///      normalized hidden states in `dense_arena.x_norm_buf_batch`.
+    ///   2. Reads `x_norm_buf_batch` from shared memory (Apple Silicon
+    ///      unified memory — no DMA), then does B CPU LM-head matmuls
+    ///      (threaded via `matmul_no_bias_f16w`).
+    ///
+    /// Why CPU LM head instead of GPU: avoids adding offset support to
+    /// the GEMV kernel and avoids a second TCB commit (which would cost
+    /// ~one TCB-commit-time per cycle, eating the spec-decode win).
+    /// CPU at q3b shape: ~6ms per position × B=5 (K=4 + bonus) = ~30ms
+    /// total; GPU would be ~10ms per dispatch × 5 = ~50ms plus another
+    /// TCB commit.
+    ///
+    /// Used by the Eagle5 verify branch in `generate()` when
+    /// `DISMANTLE_QWEN_EAGLE5_BATCHED=1` is set. Phase B.4's serial
+    /// verify is the fallback when the flag is off.
+    ///
+    /// Skips vocab pruning intentionally: spec-decode needs full-vocab
+    /// logits because the draft head proposes over the full vocabulary
+    /// (the trained Eagle6 head's `_lm_head` covers all 151936 ids).
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_batched_with_logits(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(Vec::new());
+        }
+        let h = self.config.hidden;
+        let vocab = self.config.vocab_size;
+
+        // Stage 1: GPU forward through layers + final norm (no LM head).
+        // forward_tokens_batch_tcb populates dense_arena.x_norm_buf_batch
+        // with B normalized hidden states and commits.
+        self.forward_tokens_batch_tcb(tokens, positions)?;
+
+        // Stage 2: read x_norm_buf_batch from shared memory.
+        let arena = self.dense_arena.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_batched_with_logits: arena not initialized".into())
+        })?;
+        let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
+        let total_floats = b * h;
+        // SAFETY: arena.x_norm_buf_batch is sized for max_batch * h * 4
+        // bytes (see DenseDecodeArena::new), so total_floats f32s are
+        // in bounds. The buffer holds f32 (after rmsnorm produces f32
+        // hidden states in unified-memory shared storage on Apple Silicon).
+        let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, total_floats) };
+
+        // Stage 3: per-position CPU LM-head matmul. lm_head_f16 stored
+        // row-major [vocab, hidden]; tied to embed when lm_head is None.
+        let lm_head_src: &[f16] = match self.lm_head.as_ref() {
+            Some(w) => w.as_slice(),
+            None => self.embed.as_slice(),
+        };
+        if lm_head_src.len() != vocab * h {
+            return Err(Error::Model(format!(
+                "forward_tokens_batched_with_logits: lm_head size mismatch ({} vs {}*{}={})",
+                lm_head_src.len(),
+                vocab,
+                h,
+                vocab * h
+            )));
+        }
+
+        let mut out = Vec::with_capacity(b);
+        for k in 0..b {
+            let x_norm_k = &x_norm_all[k * h..(k + 1) * h];
+            let logits = crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+                lm_head_src,
+                x_norm_k,
+                vocab,
+                h,
+            );
+            out.push(logits);
+        }
+        Ok(out)
+    }
+
+    /// Spec-decode verify primitive: B forwards in ONE TCB, returns
+    /// (per-position argmax token, per-position capture-layer residual).
+    /// The residual is `x_buf_batch` after the layer loop = the layer-(n-1)
+    /// residual the head consumes for chained-hidden proposing (capture layer
+    /// is always n-1 = last layer, so the last layer's residual IS it).
+    ///
+    /// Two LM-head paths for the per-position argmax:
+    ///   * FAST (production locked config): when the vocab-pruned Q4_K LM head
+    ///     is active, ONE batched Q4_K GEMM produces B×pruned logits on GPU
+    ///     (weight read once), then a cheap CPU argmax over the pruned vocab.
+    ///     This matches the single-token baseline's GPU pruned-Q4K argmax →
+    ///     bit-identical, and avoids the CPU full-vocab matmul.
+    ///   * FALLBACK: CPU fp16 full-vocab LM head (forward_tokens_batched_with_logits).
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_verify(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        use crate::metal::TokenCommandBuffer;
+        let b = tokens.len();
+        let h = self.config.hidden;
+
+        // FAST path: GPU batched Q4_K GEMM over the pruned LM head.
+        let fast = self.vocab_pruned_is_q4k
+            && self.lm_head_pruned_buf.is_some()
+            && self.vocab_pruned.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b);
+        if fast {
+            let vtim = crate::env_on("DISMANTLE_QWEN_VERIFY_TIMING");
+            let t0 = std::time::Instant::now();
+            // Stage 1: layers -> x_norm_buf_batch (committed).
+            self.forward_tokens_batch_tcb(tokens, positions)?;
+            let t_fwd = t0.elapsed();
+            let t1 = std::time::Instant::now();
+            let pruned = self.vocab_pruned.unwrap();
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_verify: no ctx".into()))?;
+            let lm = self.lm_head_pruned_buf.as_ref().unwrap();
+            let arena = self
+                .dense_arena
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_verify: no arena".into()))?;
+            let blocks_per_row = h / 256;
+            let w_bytes = pruned * blocks_per_row * 144;
+            // B×pruned f32 logits scratch.
+            let logits_buf = ctx.new_buffer(b * pruned * std::mem::size_of::<f32>());
+            let t_alloc = t1.elapsed();
+            let t2 = std::time::Instant::now();
+            let mut tcb = TokenCommandBuffer::new(ctx);
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb, lm, 0, w_bytes, pruned, h, b,
+                &arena.x_norm_buf_batch, &logits_buf,
+            )?;
+            tcb.commit_and_wait()?;
+            let t_gemm = t2.elapsed();
+            if vtim {
+                eprintln!(
+                    "[verify-timing] B={} fwd={:.1}ms alloc={:.1}ms gemm+commit={:.1}ms",
+                    b, t_fwd.as_secs_f64() * 1e3, t_alloc.as_secs_f64() * 1e3,
+                    t_gemm.as_secs_f64() * 1e3,
+                );
+            }
+            // CPU argmax over pruned vocab (cheap), map pruned idx -> real id.
+            let lp = logits_buf.contents() as *const f32;
+            let remap = self.vocab_prune_remap.as_ref();
+            let argmax: Vec<u32> = (0..b)
+                .map(|i| {
+                    let row = unsafe { std::slice::from_raw_parts(lp.add(i * pruned), pruned) };
+                    let pi = crate::kernels::argmax_f32(row) as u32;
+                    remap.map(|r| r[pi as usize]).unwrap_or(pi)
+                })
+                .collect();
+            let xbuf = arena.x_buf_batch.contents() as *const f32;
+            let residuals: Vec<Vec<f32>> = (0..b)
+                .map(|i| unsafe { std::slice::from_raw_parts(xbuf.add(i * h), h) }.to_vec())
+                .collect();
+            return Ok((argmax, residuals));
+        }
+
+        // FALLBACK: CPU fp16 full-vocab LM head.
+        let logits = self.forward_tokens_batched_with_logits(tokens, positions)?;
+        let arena = self.dense_arena.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_verify: arena not initialized".into())
+        })?;
+        let xbuf = arena.x_buf_batch.contents() as *const f32;
+        let residuals: Vec<Vec<f32>> = (0..b)
+            .map(|i| unsafe { std::slice::from_raw_parts(xbuf.add(i * h), h) }.to_vec())
+            .collect();
+        let argmax: Vec<u32> = logits
+            .iter()
+            .map(|l| crate::kernels::argmax_f32(l) as u32)
+            .collect();
+        Ok((argmax, residuals))
     }
 }
 

@@ -6,6 +6,7 @@ members = [
     "crates/dismantle-serve",
     "crates/dismantle-bench",
     "tools/q4k_fast",
+    "tools/awq_bake",
 ]
 
 [workspace.package]

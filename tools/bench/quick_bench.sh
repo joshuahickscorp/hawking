@@ -37,6 +37,20 @@ if [[ -n "$STRICT_FLAG" ]] && [[ "$CLAUDE_RUNNING" == "1" ]]; then
     exit 64
 fi
 
+if [[ "$(basename "$WEIGHTS")" == qwen2.5-3b-instruct-q4_k_m.gguf ]]; then
+    # README's Qwen headline is the locked fast stack, not the raw
+    # CPU/Metal-hybrid fallback path. Keep explicit user overrides intact.
+    : "${DISMANTLE_QWEN_TCB:=1}"
+    : "${DISMANTLE_QWEN_VOCAB_PRUNE:=32000}"
+    : "${DISMANTLE_QWEN_Q4K_LMHEAD:=1}"
+    : "${DISMANTLE_QWEN_FFN_DOWN_Q4K:=1}"
+    export DISMANTLE_QWEN_TCB
+    export DISMANTLE_QWEN_VOCAB_PRUNE
+    export DISMANTLE_QWEN_Q4K_LMHEAD
+    export DISMANTLE_QWEN_FFN_DOWN_Q4K
+    echo "Qwen locked fast-path env: TCB=$DISMANTLE_QWEN_TCB vocab=$DISMANTLE_QWEN_VOCAB_PRUNE q4k_lmhead=$DISMANTLE_QWEN_Q4K_LMHEAD ffn_down_q4k=$DISMANTLE_QWEN_FFN_DOWN_Q4K" >&2
+fi
+
 echo "=== quick_bench: 3 trials × ${TOKENS} tokens ==="
 TRIALS_TPS=()
 for i in 1 2 3; do

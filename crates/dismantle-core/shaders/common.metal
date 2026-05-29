@@ -257,6 +257,84 @@ kernel void add_rmsnorm_fused_q8(
     }
 }
 
+// AWQ Option B fused variant: residual-add + rmsnorm + per-block int8
+// quantization with a per-channel smoothing-divide folded into phase 3.
+//
+// Same five-buffer plus argbuf shape as `add_rmsnorm_fused_q8`, with an
+// added `s` buffer holding the per-channel AWQ smoothing factors. The
+// int8 quantize sees `x_norm[i] / s[i]` rather than `x_norm[i]`, but the
+// stored `x_norm` is unchanged — downstream f32 consumers (`o_proj`-
+// style fallback paths when W4A8 is force-disabled per-projection)
+// still see the canonical normalized activation.
+//
+// Phases 1 (add + variance) and 2 (write x_norm) are byte-identical to
+// `add_rmsnorm_fused_q8`. Phase 3 reads `s[block_off + ...]` alongside
+// `x_norm[...]` and divides before fabs/simd_max.
+kernel void add_rmsnorm_fused_q8_scaled(
+    device       float*       x             [[buffer(0)]],
+    device const float*       attn_out      [[buffer(1)]],
+    device const float*       weight        [[buffer(2)]],
+    device       float*       x_norm        [[buffer(3)]],
+    device       signed char* x_norm_int8   [[buffer(4)]],
+    device       float*       x_norm_scales [[buffer(5)]],
+    device const float*       s             [[buffer(6)]],
+    constant ArgbufRmsnorm&   args          [[buffer(7)]],
+    threadgroup  float*       shmem         [[threadgroup(0)]],
+    uint                      tid           [[thread_position_in_threadgroup]],
+    uint                      tg_size       [[threads_per_threadgroup]])
+{
+    // Phase 1: residual add + accumulate variance.
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x[i] + attn_out[i];
+        x[i] = v;
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: normalize and write x_norm (unscaled).
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 3: per-256-element block int8 quantize with smoothing-divide.
+    uint blocks = args.hidden / 256u;
+    uint simd_id   = tid / 32u;
+    uint simd_lane = tid % 32u;
+    if (simd_id < blocks) {
+        uint block_off = simd_id * 256u;
+        float vals[8];
+        float my_abs_max = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint idx = block_off + simd_lane + k * 32u;
+            float sv = s[idx];
+            float inv_s = (sv > 1e-12f) ? metal::precise::divide(1.0f, sv) : 0.0f;
+            float v = x_norm[idx] * inv_s;
+            vals[k] = v;
+            my_abs_max = max(my_abs_max, fabs(v));
+        }
+        float max_abs = simd_max(my_abs_max);
+        float scale = (max_abs > 0.0f)
+                    ? metal::precise::divide(max_abs, 127.0f)
+                    : 1.0f;
+        if (simd_lane == 0u) x_norm_scales[simd_id] = scale;
+        float inv_sc = metal::precise::divide(1.0f, scale);
+        for (uint k = 0u; k < 8u; ++k) {
+            float q = round(vals[k] * inv_sc);
+            q = clamp(q, -127.0f, 127.0f);
+            x_norm_int8[block_off + simd_lane + k * 32u] = (signed char)q;
+        }
+    }
+}
+
 // P3 — Batched add_rmsnorm_fused: B rows in one dispatch.
 // Grid: (TG_SIZE * B, 1, 1) — B TGs, each TG handles one row.
 // All buffers laid out (B, hidden) contiguous.

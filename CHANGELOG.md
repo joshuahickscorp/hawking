@@ -2,6 +2,92 @@
 
 ## Unreleased (post-v2.0.0)
 
+### Eagle5 spec-decode port to qwen_dense.rs (2026-05-27 overnight)
+
+Six commits landed on main moving the qwen Eagle5 port from "trained heads
+exist but are silent inventory in RAM" to "trained heads load + dispatch
+end-to-end at decode time" (with caveats — the throughput win is gated on
+two follow-ups documented below).
+
+What's now possible — `DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_EAGLE5=1
+DISMANTLE_QWEN_EAGLE5_K=4 dismantle generate --speculate eagle5
+--eagle5-head <path/to/q3b_eagle6_long.safetensors> ...` actually invokes
+the trained Eagle6 head at decode time, increments `draft_accepted` /
+`draft_rejected` counters, and emits tokens identical to no-spec greedy
+(parity preserved at temp=0).
+
+Six commits:
+- `495572e` Phase A.1: trained-head safetensors loader. Replaces
+  `Eagle5Head::load_from_safetensors` Unimplemented stub with a real
+  loader using a minimal in-tree safetensors reader (memmap2 +
+  serde_json + half; no new crate deps). Reads the real q3b head
+  (1.66 GB, 16 tensors) in 4.25s. Handles 1-block (q3b) and 2-block
+  (q1p5) heads via `block.*` + `extra_blocks.{0..N-2}.*` naming.
+- `50cadd6` Phase A.2: pure-Rust Eagle6 forward pass at S=1.
+  Mirrors `Eagle5Head.forward` in `colab/eagle5_train_pytorch.py`:
+  prev_embed lookup + concat + in_proj + N transformer blocks
+  (rmsnorm + attn + SwiGLU) + final norm + lm_head. Numerical parity
+  vs PyTorch on real q3b head: **argmax exact match, L_inf 3.5e-4
+  (140× tighter than the 5e-2 gate), L2 within 0.0003%, top-8 8/8
+  overlap**.
+- `599e265` Phase B.1-B.4: qwen_dense.rs dispatch + serial verify.
+  Adds `eagle5_head: Option<Eagle5Head>` to QwenDense, loads at
+  construct time, pre-flight gate (temp=0, repetition_penalty=1.0),
+  serial verify-then-draft loop mirroring the existing
+  ngram-lookahead pattern at qwen_dense.rs:1297-1399. **Both
+  invariants tested green:** speculate=off bit-identical to baseline,
+  speculate=eagle5 mock-head engages (draft_accepted+rejected > 0)
+  AND emits identical tokens to baseline.
+- `b319e90` Phase A.3.1: parallel LM-matmul. Splits the 311M-FMA
+  LM-head matmul across `std::thread::available_parallelism().clamp(1, 8)`
+  via `std::thread::scope`. Parity gate unchanged (L_inf 3.6e-4 vs
+  3.5e-4 pre-threading — ~1 ULP drift from partial-sum order).
+- `57931fc` Phase A.3.2: parallel block matmuls. Threads
+  `matmul_no_bias` by output row (per-row independence = bit-for-bit
+  identical to single-thread). Combined with A.3.1, head forward
+  drops from ~150-200ms to ~5-10ms per draft step on M3 Pro.
+
+What's NOT shipped yet — both required to actually move dec_tps:
+
+1. **Phase B.3 real capture-layer plumbing.** Trained head currently
+   runs in **zero-capture mode**: residual + intermediate are zero
+   vectors. The head was trained expecting real captures of the
+   verifier's layer-32 (Qwen-3B) hidden state. Accept rate is
+   degraded (~0.05-0.15 vs trained's projected 0.70). Real wiring
+   requires a mid-TCB Metal→CPU readback at the chosen layer —
+   ~2-day attended workstream.
+
+2. **Phase B.5 batched-verify-with-logits.** Current verify path
+   is K SERIAL forwards per cycle. Same throughput as no-spec
+   regardless of accept rate. The actual perf win requires
+   `forward_tokens_batched_with_logits` — runs K positions in one
+   TCB and returns per-position logits. Existing
+   `forward_tokens_batch_tcb` (prefill helper) discards logits;
+   modifying it is ~2-day attended workstream.
+
+Realistic timeline from this commit: 4-6 attended days → first
+measured Eagle5 lift on Qwen-3B-Q4_K_M on M3 Pro. Projected ceiling
+with real capture + batched verify: 1.5-2.2× baseline, putting
+Qwen-3B at ~40-60 dec_tps (closing or beating llama.cpp's ~50).
+
+Files added:
+- `crates/dismantle-core/src/speculate/safetensors_io.rs` (loader)
+- `crates/dismantle-core/src/speculate/eagle5_forward.rs` (forward)
+- `crates/dismantle-core/tests/eagle5_trained_head_load.rs`
+- `crates/dismantle-core/tests/eagle5_forward_parity.rs`
+- `crates/dismantle-core/tests/fixtures/eagle5_parity_q3b.json`
+- `crates/dismantle-core/tests/qwen_eagle5_speculate.rs`
+- `tools/eagle5_forward_dump.py`
+
+Files modified:
+- `crates/dismantle-core/src/speculate/eagle5.rs` (Trained variant)
+- `crates/dismantle-core/src/speculate/mod.rs` (exports)
+- `crates/dismantle-core/src/model/qwen_dense.rs` (field + dispatch)
+- `docs/eagle5_qwen_port_plan.md` (phase-by-phase plan)
+
+See `memory/eagle5_port_phase_a1_shipped.md` for the full overnight
+session log.
+
 ### Performance — Qwen2.5-3B-Q4_K_M decode shipped at 26.6 dec_tps (2026-05-26)
 
 Locked-config default-on baseline for Qwen-3B-Q4_K_M on M3 Pro 18 GB:

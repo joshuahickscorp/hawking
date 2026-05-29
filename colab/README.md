@@ -2,81 +2,71 @@
 
 Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
-## Active notebooks
+## Active notebook
 
-### `qwen3b_mega_calibration.ipynb` ⭐ current focus
+### `finish_q3b_reconciliation.ipynb` ⭐ current
 
-**Single Colab run produces calibration data for 4 downstream dismantle projects:**
+Single end-to-end notebook to finish the Qwen reconciliation pipeline.
+After a May 26 run lost the q3b long head to over-aggressive cleanup,
+the older multi-notebook flow was retired in favour of this one.
 
-| Output | Used by |
-|---|---|
-| Per-prompt parquet shards: tokens + layer-32 residual + intermediate | Eagle5 v2 head training |
-| Top-100 logits per token | Quality benchmarks ground truth |
-| Per-site activation aggregates (mean/max per channel × 36 layers × 7 sites) | AWQ smoothing, per-channel W4A8 calibration, SmoothQuant |
+Run order (run-all from top):
 
-**Compute:** ~4-8 hr depending on GPU, with Drive-backed resume during the run.
+1. **Setup + pre-flight** — mounts Drive, installs deps, clones repo, and
+   hard-asserts every input is present (q3b corpus, frozen, AWQ artifacts,
+   q1p5 long head). Halts loudly on any FAIL.
+2. **Progress journal** — loads `reconciliation_progress.json`; safe to
+   re-run after a disconnect, each stage skips if it already wrote its
+   artifact and the sha256 matches.
+3. **q3b long retrain** — exact winner spec (`b1_wide`, 16 heads,
+   ff_mult=6.0, lr=5e-4, residual_delta=0.020, calib_weight=0.20,
+   20 epochs, 8k rows, 192-token windows). On completion, verifies the
+   safetensors is loadable, sha256s it, AND triggers an immediate local
+   `files.download()` so the head survives any subsequent Drive disaster.
+4. **q3b tau eval**
+5. **q3b frontier policy search**
+6. **Reconciliation summary** — combines q3b + q1p5 frontier winners into
+   `reconciliation_frontier_winners.json` + `reconciliation_summary.md`.
+7. **Export essentials** — runs `export_reconciliation_essentials.py
+   --strict --zip`, then triggers local download of the zip.
 
-**Launch:** Open in Colab via `File → Open notebook → GitHub`:
+Launch:
 ```
-https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/qwen3b_mega_calibration.ipynb
-```
-
-Set GPU: `Runtime → Change runtime type → A100 GPU` (or H100 if you have Pro+).
-
-| GPU | Strategy | Batch | Wall |
-|---|---|---|---|
-| G4 / Blackwell / H100 70GB+ | fp16, chunked LM head | 8 | ~3-4 hr |
-| A100 40 GB | fp16, chunked LM head | 6 | ~5 hr |
-| L4 24 GB | 4-bit nf4, chunked LM head | 4 | ~7 hr |
-| T4/V100 16 GB | 4-bit nf4, chunked LM head | 2 | slow but safer |
-
-## After calibration completes (laptop-side work)
-
-Once `qwen3b_corpus/` is on Drive (size depends on actual token lengths;
-expect several GB+), download to laptop and run locally:
-
-```bash
-# 1. Train Qwen-3B Eagle5 head (MLX, ~2 hr)
-python3 tools/training/eagle5_train.py \
-  --corpus-dir artifacts/calibration/qwen3b_corpus \
-  --frozen     <qwen3b_frozen_baseline>.npz \
-  --ckpt-dir   checkpoints/eagle5_qwen3b \
-  --epochs 8 --batch-size 24 --lr 1e-3 \
-  --max-rows 4000 --max-row-tokens 128 \
-  --sparsity-head proxy --capture-layer 32
-
-# 2. Apply AWQ algorithm to activation aggregates (~30 min, CPU)
-python3 tools/training/awq_calibrate.py \
-  --stats artifacts/calibration/qwen3b_corpus/per_site_activation_stats.npz \
-  --out   profiles/qwen3b_awq_smoothing.json
-
-# 3. Bench stacked configs
-DISMANTLE_QWEN_AWQ_SMOOTHING=profiles/qwen3b_awq_smoothing.json \
-DISMANTLE_QWEN_W4A8=1 \
-EAGLE5_HEAD=checkpoints/eagle5_qwen3b/head_final.safetensors \
-TRIALS=10 TOKENS=64 \
-  ./tools/bench/eagle5_paired_bench.sh
+https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/colab/finish_q3b_reconciliation.ipynb
 ```
 
-## Expected results stack
+**Compute:** A100-40GB ≈ 3–4 hr for the retrain + ~20 min for eval/export.
+T4 will be ~3× slower; A100/L4 strongly preferred.
 
-| Config | Qwen-3B dec_tps | Comment |
-|---|---|---|
-| Today (predec default-on) | 26.6 | Current headline |
-| + AWQ → W4A8 default-on | ~36 | Quality unblocked |
-| + Eagle5 (Qwen-3B head, τ ≈ 3.5) | ~60-80 | Stacked win |
+## Hard rules learned from the loss
 
-Past llama.cpp's ~50 dec_tps on M3 Pro.
+1. **No silent advance.** Every stage hard-asserts its artifact exists,
+   is loadable, has expected size, and records its sha256. The trainer's
+   `save_safetensors` was patched to write atomically (`.tmp` + rename)
+   and raise on missing-deps instead of silently returning.
+2. **Local backup after long-train.** Right after the q3b head lands on
+   Drive, `google.colab.files.download()` pushes it to the user's local
+   machine. Drive-side disasters can't take the head down once this fires.
+3. **No inline cleanup cells.** If Drive fills up, stop and triage. Do
+   not paste `rm -rf` cells into the notebook — the previous run did this
+   to free space mid-training and over-matched several critical paths.
 
-## Historical context
+## Why "reconciliation"?
 
-The V2-Lite notebook (`eagle5_v2_corpus.ipynb`) was the original proof-of-concept. It produced 89.20% K=4 acceptance on V2-Lite via `proxy + lr=1e-3` (grid search). That methodology proved the playbook works; this notebook applies it to the actual product target (Qwen-3B) with broader captures (AWQ + quality benchmarks bundled).
+The May 2026 end-to-end paired bench discovered that `--speculate eagle5`
+on Qwen-3B/1.5B is a no-op: spec-decode is wired into `deepseek_v2.rs`
+only, not `qwen_dense.rs`. The trained heads are inventory waiting on
+the Rust port (see `docs/eagle5_qwen_port_plan.md`).
 
-The V2-Lite artifacts have been removed since the corpus + trained heads are already on local disk (`artifacts/calibration/v2_lite_corpus/` and `checkpoints/eagle5_v2_*/`).
+## Supporting scripts (kept; not user-runnable from Colab UI)
 
-## Resume behavior
-
-`mega_calibrate.py` resumes from the next contiguous shard found either on
-local SSD or Drive. It also saves `per_site_activation_stats.npz` as it goes;
-if shards exist but matching stats are missing/stale, the script stops instead
-of silently producing bad AWQ/W4A8 calibration data.
+- `eagle5_train_pytorch.py` — trainer; `save_safetensors` is now atomic
+  and raises on round-trip failure.
+- `eagle5_tau_eval_pytorch.py` — tau eval.
+- `eagle5_frontier_policy.py` — frontier policy search.
+- `mega_calibrate.py` — corpus + activation-stats builder. Not run in the
+  current notebook (corpus already on Drive). Kept for rebuilds.
+- `build_qwen3b_frozen_hf.py` — frozen baseline dump. Already produced.
+- `awq_per_channel_calibrate.py`, `q2k_importance_calibrate.py`,
+  `awq_w4a8_validate.py` — calibration helpers. Artifacts already produced.
+- `export_reconciliation_essentials.py` — invoked by Cell 7.

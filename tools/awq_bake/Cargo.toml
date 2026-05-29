@@ -1,0 +1,20 @@
+[package]
+name = "awq_bake_tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Offline tool to bake AWQ smoothing (W' = W * s) into Q4_K tensors and emit a Q4K_FAST-format sidecar."
+
+[[bin]]
+name = "awq_bake_sidecar"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+dismantle-core = { path = "../../crates/dismantle-core" }
