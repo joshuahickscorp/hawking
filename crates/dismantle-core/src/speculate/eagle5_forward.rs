@@ -60,6 +60,7 @@ const RMS_EPS: f32 = 1e-6;
 /// does saturating clamp for safety but a real out-of-range value
 /// indicates a bug upstream.
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)]
 pub fn forward_single_step(
     config: &TrainedConfig,
     in_proj: &[f32],
@@ -72,6 +73,30 @@ pub fn forward_single_step(
     residual_in: &[f32],
     intermediate: &[f32],
 ) -> Vec<f32> {
+    forward_single_step_with_hidden(
+        config, in_proj, blocks, residual_gate, output_norm,
+        token_embd_f16, lm_head_f16, prev_token, residual_in, intermediate,
+    )
+    .0
+}
+
+/// Like `forward_single_step` but also returns the `draft_hidden` vector
+/// (the head's predicted hidden state). The runtime chains this forward as
+/// the next-depth `residual_in` for EAGLE-style multi-depth speculation
+/// (matching `--rollout-chain-hidden` training).
+#[allow(clippy::too_many_arguments)]
+pub fn forward_single_step_with_hidden(
+    config: &TrainedConfig,
+    in_proj: &[f32],
+    blocks: &[TrainedBlock],
+    residual_gate: f32,
+    output_norm: &[f32],
+    token_embd_f16: &[f16],
+    lm_head_f16: &[f16],
+    prev_token: u32,
+    residual_in: &[f32],
+    intermediate: &[f32],
+) -> (Vec<f32>, Vec<f32>) {
     let h = config.hidden_dim;
     let v = config.vocab_size;
     let ff = config.ff_dim;
@@ -206,7 +231,7 @@ pub fn forward_single_step(
         }
         out
     };
-    logits
+    (logits, draft_hidden)
 }
 
 /// RMSNorm matching `_rms_norm` in eagle5_train_pytorch.py:79-84:
