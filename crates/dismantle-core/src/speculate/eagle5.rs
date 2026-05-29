@@ -472,6 +472,59 @@ impl Eagle5Head {
         out
     }
 
+    /// EAGLE-style chained-hidden rollout propose. Matches `--rollout-chain-
+    /// hidden` training: depth 0 uses the captured `residual_in`; each deeper
+    /// depth feeds the head's OWN `draft_hidden` from the previous step as the
+    /// residual (intermediate=0), so the head advances its own hidden state.
+    /// This is what makes depth-2+ drafts usable (q3b depth-2 16%→47%).
+    /// `out[0]` ≈ T+1 (the verifier's free token); `out[1..]` are the genuine
+    /// look-ahead drafts. Trained heads only; Mock falls back to fixed-residual.
+    pub fn propose_rollout_chained(
+        &self,
+        start_token: u32,
+        residual_in: &[f32],
+        intermediate: &[f32],
+        k: usize,
+    ) -> Vec<u32> {
+        if k == 0 || self.vocab == 0 {
+            return Vec::new();
+        }
+        match &self.inner {
+            Inner::Mock { .. } => self.propose_rollout(start_token, residual_in, intermediate, k),
+            Inner::Trained {
+                config,
+                in_proj,
+                blocks,
+                residual_gate,
+                output_norm,
+                token_embd_f16,
+                lm_head_f16,
+            } => {
+                let h = config.hidden_dim;
+                let zeros = vec![0.0f32; h];
+                let mut out = Vec::with_capacity(k);
+                let mut cur = start_token;
+                let mut res: Vec<f32> = residual_in.to_vec();
+                let mut inter: &[f32] = intermediate;
+                for _ in 0..k {
+                    let (logits, draft_hidden) =
+                        crate::speculate::eagle5_forward::forward_single_step_with_hidden(
+                            config, in_proj, blocks, *residual_gate, output_norm,
+                            token_embd_f16, lm_head_f16, cur, &res, inter,
+                        );
+                    let next = crate::kernels::argmax_f32(&logits) as u32;
+                    out.push(next);
+                    cur = next;
+                    // Chain: next depth's residual = this depth's draft_hidden,
+                    // intermediate carries no chained signal.
+                    res = draft_hidden;
+                    inter = &zeros;
+                }
+                out
+            }
+        }
+    }
+
     /// Full-forward argmax step. For Trained heads invokes the real
     /// Eagle6 forward pass via `eagle5_forward::forward_single_step`.
     /// For Mock heads falls back to the simple linear projection.
