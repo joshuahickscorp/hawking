@@ -54,10 +54,18 @@ RELEASE_TAG = "headbank-corpus-v1"
 # slug -> (capture_layer = n-1, human label). hidden/vocab are inferred from
 # frozen_gguf.npz by the trainer, so we don't hardcode them.
 MODELS = {
-    "q05b": {"capture_layer": 23, "label": "Qwen2.5-0.5B-Instruct"},
-    "q1p5b": {"capture_layer": 27, "label": "Qwen2.5-1.5B-Instruct"},
-    "q3b": {"capture_layer": 35, "label": "Qwen2.5-3B-Instruct"},
-    "q7b": {"capture_layer": 27, "label": "Qwen2.5-7B-Instruct"},
+    "q05b": {"capture_layer": 23, "label": "Qwen2.5-0.5B-Instruct",
+             "hf_repo": "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+             "hf_file": "qwen2.5-0.5b-instruct-q4_k_m.gguf"},
+    "q1p5b": {"capture_layer": 27, "label": "Qwen2.5-1.5B-Instruct",
+              "hf_repo": "Qwen/Qwen2.5-1.5B-Instruct-GGUF",
+              "hf_file": "qwen2.5-1.5b-instruct-q4_k_m.gguf"},
+    "q3b": {"capture_layer": 35, "label": "Qwen2.5-3B-Instruct",
+            "hf_repo": "Qwen/Qwen2.5-3B-Instruct-GGUF",
+            "hf_file": "qwen2.5-3b-instruct-q4_k_m.gguf"},
+    "q7b": {"capture_layer": 27, "label": "Qwen2.5-7B-Instruct",
+            "hf_repo": "bartowski/Qwen2.5-7B-Instruct-GGUF",
+            "hf_file": "Qwen2.5-7B-Instruct-Q4_K_M.gguf"},
 }
 
 # Training hyperparameters validated on q3b (loss converged ~1.0, 73.9% depth-1).
@@ -127,51 +135,72 @@ def build() -> dict:
     ))
 
     cells.append(md(
-        "## 2. Auto-download inputs from the GitHub release\n"
-        "Pulls `<slug>_corpus.tar` + `<slug>_frozen.npz` for each model into "
-        "`/content/headbank_inputs/<slug>/` — no manual upload."
+        "## 2. Auto-fetch inputs (corpus from release, frozen rebuilt from HF)\n"
+        "Corpora (locally-captured quantized residuals) download from the GitHub "
+        "release. Frozen weights are rebuilt on Colab from the **official Qwen "
+        "HF GGUFs** (fast Colab pipe, not your slow upstream) and **verified "
+        "against an `output_norm` fingerprint** — a mismatch fails safe (skips "
+        "the model) rather than training a bad head."
     ))
     cells.append(code(
         f"REPO_SLUG = {REPO_SLUG!r}\n"
         f"RELEASE_TAG = {RELEASE_TAG!r}\n"
-        "import os, tarfile, urllib.request\n"
+        f"MODELS = {json.dumps(MODELS, indent=4)}\n"
+        "import os, json, tarfile, urllib.request, subprocess, numpy as np\n"
+        "!pip -q install huggingface_hub >/dev/null\n"
+        "from huggingface_hub import hf_hub_download\n"
         "DATA_ROOT = '/content/headbank_inputs'\n"
         "BASE = f'https://github.com/{REPO_SLUG}/releases/download/{RELEASE_TAG}'\n"
-        "SLUGS = ['q05b', 'q1p5b', 'q3b', 'q7b']\n"
-        "for slug in SLUGS:\n"
+        "BUILDER = '/content/dismantle/tools/orchestrator/build_frozen_gguf.py'\n"
+        "os.makedirs(DATA_ROOT, exist_ok=True)\n"
+        "# fingerprints for frozen verification\n"
+        "fp_path = os.path.join(DATA_ROOT, 'frozen_fingerprints.json')\n"
+        "urllib.request.urlretrieve(f'{BASE}/frozen_fingerprints.json', fp_path)\n"
+        "FP = json.load(open(fp_path))\n"
+        "\n"
+        "READY = []\n"
+        "for slug, cfg in MODELS.items():\n"
         "    dst = os.path.join(DATA_ROOT, slug)\n"
         "    shards = os.path.join(dst, 'corpus_shards')\n"
         "    os.makedirs(shards, exist_ok=True)\n"
         "    frozen = os.path.join(dst, 'frozen_gguf.npz')\n"
-        "    tarp = os.path.join(dst, 'corpus.tar')\n"
+        "    # 1) corpus from release\n"
         "    if not any(f.endswith('.parquet') for f in os.listdir(shards)):\n"
+        "        tarp = os.path.join(dst, 'corpus.tar')\n"
         "        print(f'{slug}: downloading corpus...')\n"
         "        urllib.request.urlretrieve(f'{BASE}/{slug}_corpus.tar', tarp)\n"
         "        with tarfile.open(tarp) as t: t.extractall(shards)\n"
         "        os.remove(tarp)\n"
+        "    # 2) frozen: rebuild from HF GGUF, verify against fingerprint\n"
         "    if not os.path.isfile(frozen):\n"
-        "        print(f'{slug}: downloading frozen...')\n"
-        "        urllib.request.urlretrieve(f'{BASE}/{slug}_frozen.npz', frozen)\n"
+        "        print(f'{slug}: downloading GGUF {cfg[\"hf_repo\"]}/{cfg[\"hf_file\"]} ...')\n"
+        "        gguf = hf_hub_download(repo_id=cfg['hf_repo'], filename=cfg['hf_file'])\n"
+        "        print(f'{slug}: building frozen from GGUF dequant...')\n"
+        "        r = subprocess.run(['python', BUILDER, '--gguf', gguf, '--out', frozen],\n"
+        "                           capture_output=True, text=True)\n"
+        "        if r.returncode != 0:\n"
+        "            print(f'{slug}: build_frozen failed:', r.stderr[-400:]); continue\n"
+        "    # 3) verify output_norm fingerprint\n"
+        "    z = np.load(frozen)\n"
+        "    on = z['output_norm'].astype(np.float32)\n"
+        "    ref = np.array(FP[slug]['output_norm'], dtype=np.float32)\n"
+        "    ok = on.shape == ref.shape and float(np.abs(on - ref).max()) < 1e-3\n"
         "    n = len([f for f in os.listdir(shards) if f.endswith('.parquet')])\n"
-        "    print(f'{slug}: {n} shards, frozen={os.path.isfile(frozen)}')\n"
+        "    print(f'{slug}: {n} shards, frozen_verified={ok}')\n"
+        "    if ok and n > 0:\n"
+        "        READY.append(slug)\n"
+        "    else:\n"
+        "        print(f'   !! {slug} SKIPPED — frozen fingerprint mismatch (GGUF source differs). '\n"
+        "              f'Upload {slug}_frozen.npz to the release to train it.')\n"
+        "print('\\nREADY:', READY)\n"
     ))
 
-    cells.append(md("## 3. Model configs + input verification"))
+    cells.append(md("## 3. Training config"))
     cells.append(code(
-        f"MODELS = {json.dumps(MODELS, indent=4)}\n"
         f"TRAIN = {json.dumps(TRAIN)}\n"
-        "\n"
-        "import os\n"
-        "ready = {}\n"
-        "for slug, cfg in MODELS.items():\n"
-        "    shards = os.path.join(DATA_ROOT, slug, 'corpus_shards')\n"
-        "    frozen = os.path.join(DATA_ROOT, slug, 'frozen_gguf.npz')\n"
-        "    have_shards = os.path.isdir(shards) and any(f.endswith('.parquet') for f in os.listdir(shards)) if os.path.isdir(shards) else False\n"
-        "    have_frozen = os.path.isfile(frozen)\n"
-        "    ready[slug] = have_shards and have_frozen\n"
-        "    print(f'{slug:6s} shards={have_shards} frozen={have_frozen} -> {\"READY\" if ready[slug] else \"MISSING\"}')\n"
-        "TRAINABLE = [s for s, r in ready.items() if r]\n"
-        "print('\\ntrainable:', TRAINABLE)\n"
+        "TRAINABLE = READY  # set in cell 2 (corpus present + frozen fingerprint verified)\n"
+        "print('trainable:', TRAINABLE)\n"
+        "assert TRAINABLE, 'no models ready — check cell 2 output'\n"
     ))
 
     cells.append(md("## 4. Train every ready head (corrected pipeline)"))
