@@ -38,6 +38,19 @@ https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/col
 **Compute:** A100-40GB ≈ 3–4 hr for the retrain + ~20 min for eval/export.
 T4 will be ~3× slower; A100/L4 strongly preferred.
 
+## Maintenance notebooks
+
+### `drive_cleanup_v2.ipynb` (reclaim Drive space)
+
+Finds **exact-content duplicates** by Drive's server-side `md5Checksum` (no
+downloads) across the current trees — `dismantle_final_push/`,
+`dismantle_headbank_corrected/`, `dismantle/dismantle_export/` — and trashes the
+redundant copies, keeping one per checksum (prefers the newest tree). Dry-run by
+default; `APPLY=True` moves dupes to Trash; a separate `EMPTY_TRASH=True` cell
+reclaims quota. Built by `_build_drive_cleanup_v2.py`. Supersedes
+`cleanup_drive.ipynb`, whose hard-coded `maximal_spec_500u` paths predate the
+May 29 re-layout.
+
 ## Hard rules learned from the loss
 
 1. **No silent advance.** Every stage hard-asserts its artifact exists,
