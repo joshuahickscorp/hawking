@@ -500,6 +500,56 @@ impl Eagle5Head {
         }
     }
 
+    /// Pure logit-lens argmax: `argmax(RMSNorm(residual, output_norm) @ lm_head)`.
+    /// This is the head's `baseline` term with NO transformer-block / gate
+    /// contribution — i.e. "what does the captured residual predict on its
+    /// own through the unembedding." Comparing this to the model's real
+    /// next token measures the layer-K logit-lens ceiling (how viable the
+    /// capture layer is for speculation), independent of head training.
+    /// Returns `None` for Mock heads.
+    pub fn lens_argmax(&self, residual_in: &[f32]) -> Option<u32> {
+        match &self.inner {
+            Inner::Mock { .. } => None,
+            Inner::Trained {
+                config,
+                output_norm,
+                lm_head_f16,
+                ..
+            } => {
+                let h = config.hidden_dim;
+                let v = config.vocab_size;
+                // RMSNorm(residual, output_norm), fp32.
+                let mut ss = 0.0f32;
+                for &x in &residual_in[..h] {
+                    ss += x * x;
+                }
+                let inv = 1.0f32 / ((ss / h as f32) + 1e-6).sqrt();
+                let mut baseline = vec![0.0f32; h];
+                for i in 0..h {
+                    baseline[i] = residual_in[i] * inv * output_norm[i];
+                }
+                // argmax over lm_head: logits[k] = sum_i baseline[i]*lm_head[i*v+k]
+                let mut best_k = 0u32;
+                let mut best_v = f32::NEG_INFINITY;
+                let mut acc = vec![0.0f32; v];
+                for i in 0..h {
+                    let bi = baseline[i];
+                    let row = &lm_head_f16[i * v..(i + 1) * v];
+                    for k in 0..v {
+                        acc[k] += bi * row[k].to_f32();
+                    }
+                }
+                for (k, &val) in acc.iter().enumerate() {
+                    if val > best_v {
+                        best_v = val;
+                        best_k = k as u32;
+                    }
+                }
+                Some(best_k)
+            }
+        }
+    }
+
     /// Record a token that was emitted (either an accepted draft or a
     /// verifier correction). The next `propose` call will seed from
     /// this token.

@@ -1523,6 +1523,12 @@ impl Engine for QwenDense {
                     None
                 };
             let mut eagle5_cycle: usize = 0;
+            // Logit-lens ceiling probe accumulators (see insertion below).
+            let lens_probe = std::env::var("DISMANTLE_QWEN_EAGLE5_LENS_PROBE")
+                .map(|v| v == "1")
+                .unwrap_or(false);
+            let mut lens_hits: usize = 0;
+            let mut lens_total: usize = 0;
             let mut pos = prompt_len;
             'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -1616,6 +1622,25 @@ impl Engine for QwenDense {
                 } else {
                     None
                 };
+                // Logit-lens ceiling probe (DISMANTLE_QWEN_EAGLE5_LENS_PROBE=1).
+                // `bonus` is the real next token the full forward just produced
+                // from `last_id`; `captured_residual` is the layer-K residual of
+                // that same forward. lens_argmax(residual) == bonus measures how
+                // often the capture layer's logit-lens already agrees with the
+                // model's real output — the ceiling for any head at this layer,
+                // independent of head training.
+                if lens_probe {
+                    if let Some(res) = captured_residual.as_ref() {
+                        if let Some(head) = self.eagle5_head.as_ref() {
+                            if let Some(la) = head.lens_argmax(res) {
+                                lens_total += 1;
+                                if la == bonus {
+                                    lens_hits += 1;
+                                }
+                            }
+                        }
+                    }
+                }
                 let draft = {
                     let head = self
                         .eagle5_head
@@ -1758,6 +1783,17 @@ impl Engine for QwenDense {
                     reason = StopReason::Aborted;
                     break 'e5_loop;
                 }
+            }
+            if lens_probe && lens_total > 0 {
+                eprintln!(
+                    "[eagle5-lens-probe] layer-K logit-lens ceiling: {}/{} = {:.1}% \
+                     (fraction of steps where argmax(RMSNorm(captured_residual)@lm_head) \
+                     == the model's real next token). This is the upper bound for any \
+                     head at this capture layer.",
+                    lens_hits,
+                    lens_total,
+                    100.0 * lens_hits as f32 / lens_total as f32,
+                );
             }
         } else {
             for step in 0..req.max_new_tokens {
