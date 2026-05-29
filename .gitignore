@@ -72,3 +72,13 @@ bench_results/v0.3.*/
 # Derived calibration artifacts (regenerable from corpus + GGUF + scripts)
 eagle4/qwen3b_frozen.npz
 profiles/qwen3b_awq_smoothing.json
+
+# Eagle5 corrected-pipeline local artifacts (large, regenerable)
+_capture/
+frozen/
+_headbank_upload/
+eagle4/
+*.npz
+*.parquet
+crates/dismantle-core/reports/
+*.bak

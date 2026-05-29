@@ -172,6 +172,14 @@ class Eagle5Head(nn.Module):
         self.register_buffer("_token_embd", token_embd, persistent=False)
         self.register_buffer("_lm_head", lm_head, persistent=False)
         self.register_buffer("_output_norm", output_norm, persistent=False)
+        # Contiguous (vocab, hidden) embedding table for the prev-token gather.
+        # `_token_embd` is stored (hidden, vocab); a `.transpose(0,1)` view is
+        # NON-contiguous, and advanced indexing into a non-contiguous tensor on
+        # MPS reads garbage indices (out-of-bounds AcceleratorError). Holding a
+        # contiguous copy once at init makes the per-step gather correct + fast.
+        self.register_buffer(
+            "_embed_table", token_embd.transpose(0, 1).contiguous(), persistent=False
+        )
 
         self.in_proj = nn.Linear(3 * hidden_dim, hidden_dim, bias=False)
         # Keep the first block named `block` so existing 1-block checkpoints
@@ -202,10 +210,10 @@ class Eagle5Head(nn.Module):
         # Broadcast to (1, 1, S, S).
         attn_mask = attn_mask.view(1, 1, S, S)
 
-        # token_embd is stored (hidden, vocab); transpose to (vocab, hidden)
-        # for the row lookup.
-        embed_table = self._token_embd.transpose(0, 1)  # (vocab, hidden)
-        prev_embed = embed_table[prev_tok]              # (B, S, hidden)
+        # Contiguous (vocab, hidden) table built at init — see __init__ for the
+        # MPS non-contiguous-gather rationale. F.embedding is the canonical,
+        # device-safe gather.
+        prev_embed = F.embedding(prev_tok, self._embed_table)  # (B, S, hidden)
 
         x = torch.cat([prev_embed.to(residual_in.dtype), residual_in, intermediate_signal], dim=-1)
         x = self.in_proj(x)
@@ -555,6 +563,11 @@ def train(args) -> None:
     if device == "cuda" and not torch.cuda.is_available():
         print("WARN: cuda requested but unavailable; falling back to cpu", file=sys.stderr)
         device = "cpu"
+    if device == "mps" and not (
+        hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+    ):
+        print("WARN: mps requested but unavailable; falling back to cpu", file=sys.stderr)
+        device = "cpu"
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     random.seed(args.seed)
@@ -701,20 +714,37 @@ def train(args) -> None:
             pos_mask_flat = pos_mask.reshape(-1)
             N = pos_mask_flat.sum().clamp(min=1.0)
 
-            # Baseline + target-argmax — fp32 for parity with MLX.
-            with torch.amp.autocast(device_type="cuda", enabled=False) if use_amp else torch.enable_grad():
-                baseline = _rms_norm(residual, head._output_norm, RMS_EPS).float()
-                target_logits = torch.matmul(baseline, head._lm_head.float())
-                target_arg_flat = target_logits.reshape(-1, V).argmax(dim=-1).detach()
-
+            # Self-referential proxy target — only needed for proxy/blend
+            # modes. In corpus mode (the default, correct objective) it is
+            # unused, so we skip the full baseline @ lm_head matmul + the
+            # argmax over the whole vocab entirely. That op is ~1e11 FLOPs and
+            # an argmax over 151936 columns; on MPS the large-dim argmax also
+            # triggered an out-of-bounds AcceleratorError. Guarding it both
+            # fixes MPS training and removes pure overhead.
             tok_flat = token_logits.reshape(-1, V).float()
             ce_corpus_per = F.cross_entropy(tok_flat, nxt.reshape(-1), reduction="none")
-            ce_target_per = F.cross_entropy(tok_flat, target_arg_flat, reduction="none")
-            ce_per = target_alpha * ce_target_per + (1.0 - target_alpha) * ce_corpus_per
+            if args.target_mode != "corpus":
+                with torch.amp.autocast(device_type="cuda", enabled=False) if use_amp else torch.enable_grad():
+                    baseline = _rms_norm(residual, head._output_norm, RMS_EPS).float()
+                    target_logits = torch.matmul(baseline, head._lm_head.float())
+                    target_arg_flat = target_logits.reshape(-1, V).argmax(dim=-1).detach()
+                ce_target_per = F.cross_entropy(tok_flat, target_arg_flat, reduction="none")
+                ce_per = target_alpha * ce_target_per + (1.0 - target_alpha) * ce_corpus_per
+            else:
+                target_arg_flat = None
+                ce_per = ce_corpus_per
             ce = (ce_per * pos_mask_flat).sum() / N
 
             head_arg = tok_flat.argmax(dim=-1)
-            accept_target = (head_arg == target_arg_flat).float()
+            # Calibration head predicts P(draft accepted). The runtime accepts
+            # when the draft equals the model's REAL next token, so in corpus
+            # mode the accept target must be the corpus token — matching the
+            # ce objective. Proxy/blend keep the legacy self-referential target.
+            if args.target_mode == "corpus":
+                accept_ref = nxt.reshape(-1)
+            else:
+                accept_ref = target_arg_flat
+            accept_target = (head_arg == accept_ref).float()
             calib_per = F.binary_cross_entropy_with_logits(
                 calib_logit.reshape(-1).float(), accept_target, reduction="none"
             )
@@ -913,7 +943,7 @@ def main() -> int:
     p.add_argument("--max-row-tokens", type=int, default=128)
     p.add_argument("--max-rows", type=int, default=4000,
                    help="random sample of N rows. On Colab H100 8000-16000 is fine.")
-    p.add_argument("--device", default="cuda", choices=["cuda", "cpu"])
+    p.add_argument("--device", default="cuda", choices=["cuda", "cpu", "mps"])
     p.add_argument("--save-safetensors", action="store_true",
                    help="also write head_final.safetensors for dismantle --eagle5-head")
     p.add_argument("--save-step-checkpoints", action="store_true",
