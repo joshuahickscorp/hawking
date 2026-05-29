@@ -360,7 +360,6 @@ pub fn topk_softmax_batch(
 
 
 #[cfg(target_os = "macos")]
-pub mod megakernel;
 
 #[cfg(target_os = "macos")]
 mod metal_dispatch {

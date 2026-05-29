@@ -44,7 +44,9 @@ enum Cmd {
     Generate {
         #[arg(long)]
         weights: PathBuf,
-        #[arg(long)]
+        /// Single prompt. Optional when --prompts-file is given (the file
+        /// then supplies every prompt).
+        #[arg(long, default_value = "")]
         prompt: String,
         #[arg(long, default_value_t = 256)]
         max_new_tokens: usize,
@@ -100,6 +102,14 @@ enum Cmd {
         /// available through DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE.
         #[arg(long)]
         eagle5_accept_trace: Option<PathBuf>,
+        /// Capture corpus mode: path to a newline-delimited prompts file.
+        /// When set, the model is loaded ONCE and every prompt is decoded
+        /// in sequence into the same process — the efficient path for
+        /// building a quantized-residual capture corpus (set
+        /// DISMANTLE_QWEN_CAPTURE_CORPUS_PATH + DISMANTLE_QWEN_EAGLE5_CAPTURE=1).
+        /// Overrides --prompt when present.
+        #[arg(long)]
+        prompts_file: Option<PathBuf>,
     },
     /// Run a benchmark suite.
     Bench {
@@ -308,6 +318,7 @@ fn main() -> Result<()> {
             quant_tier_map_path,
             eagle5_head,
             eagle5_accept_trace,
+            prompts_file,
         } => generate_main(
             weights,
             prompt,
@@ -327,6 +338,7 @@ fn main() -> Result<()> {
             quant_tier_map_path,
             eagle5_head,
             eagle5_accept_trace,
+            prompts_file,
         ),
         Cmd::Bench {
             weights,
@@ -972,6 +984,7 @@ fn generate_main(
     quant_tier_map_path: Option<PathBuf>,
     eagle5_head: Option<PathBuf>,
     eagle5_accept_trace: Option<PathBuf>,
+    prompts_file: Option<PathBuf>,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -1027,52 +1040,92 @@ fn generate_main(
         eagle5_head_path: eagle5_head,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
-    let req = GenerateRequest {
-        prompt,
-        max_new_tokens,
-        sampling: SamplingParams {
-            temperature,
-            top_k,
-            top_p,
-            repetition_penalty: 1.0,
-            seed,
-        },
-        stop: Vec::new(),
-        abort: Some(Arc::clone(&abort)),
-        max_stall_ms,
+
+    // Build the prompt list: either every line of --prompts-file (capture
+    // corpus mode — model loaded once, all prompts decoded in sequence) or
+    // the single --prompt. Blank lines and leading/trailing whitespace are
+    // dropped so a hand-edited prompts file is forgiving.
+    let prompts: Vec<String> = match prompts_file.as_ref() {
+        Some(path) => {
+            let raw = std::fs::read_to_string(path)
+                .map_err(|e| anyhow::anyhow!("read prompts file {}: {e}", path.display()))?;
+            let v: Vec<String> = raw
+                .lines()
+                .map(|l| l.trim())
+                .filter(|l| !l.is_empty())
+                .map(|l| l.to_string())
+                .collect();
+            if v.is_empty() {
+                return Err(anyhow::anyhow!("prompts file {} has no prompts", path.display()));
+            }
+            eprintln!("[capture] {} prompts from {}", v.len(), path.display());
+            v
+        }
+        None => {
+            if prompt.is_empty() {
+                return Err(anyhow::anyhow!(
+                    "provide --prompt or --prompts-file"
+                ));
+            }
+            vec![prompt]
+        }
     };
+
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
-    let mut sink = |ev: StreamEvent| match ev {
-        StreamEvent::Token { text, .. } => {
-            let _ = out.write_all(text.as_bytes());
-            let _ = out.flush();
+    let n_prompts = prompts.len();
+    for (idx, p) in prompts.into_iter().enumerate() {
+        if abort.load(Ordering::SeqCst) {
+            break;
         }
-        StreamEvent::Done { stats, reason } => {
-            let _ = out.write_all(b"\n");
-            let _ = out.flush();
-            let dec = (stats.completion_tokens as f64) / (stats.decode_ms / 1000.0).max(1e-6);
-            let reason_s = match reason {
-                StopReason::MaxTokens => "max_tokens",
-                StopReason::StopString => "stop_string",
-                StopReason::Eos => "eos",
-                StopReason::Aborted => "aborted",
-            };
-            eprintln!(
-                "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} draft_accepted={} draft_rejected={} profile={}",
-                reason_s,
-                stats.prompt_tokens,
-                stats.completion_tokens,
-                stats.prefill_ms,
-                stats.decode_ms,
-                dec,
-                stats.draft_accepted,
-                stats.draft_rejected,
-                stats.profile_id.as_deref().unwrap_or("none")
-            );
+        if n_prompts > 1 {
+            eprintln!("[capture] prompt {}/{}", idx + 1, n_prompts);
         }
-    };
-    engine.generate(req, &mut sink)?;
+        let req = GenerateRequest {
+            prompt: p,
+            max_new_tokens,
+            sampling: SamplingParams {
+                temperature,
+                top_k,
+                top_p,
+                repetition_penalty: 1.0,
+                seed,
+            },
+            stop: Vec::new(),
+            abort: Some(Arc::clone(&abort)),
+            max_stall_ms,
+        };
+        let mut sink = |ev: StreamEvent| match ev {
+            StreamEvent::Token { text, .. } => {
+                let _ = out.write_all(text.as_bytes());
+                let _ = out.flush();
+            }
+            StreamEvent::Done { stats, reason } => {
+                let _ = out.write_all(b"\n");
+                let _ = out.flush();
+                let dec = (stats.completion_tokens as f64) / (stats.decode_ms / 1000.0).max(1e-6);
+                let reason_s = match reason {
+                    StopReason::MaxTokens => "max_tokens",
+                    StopReason::StopString => "stop_string",
+                    StopReason::Eos => "eos",
+                    StopReason::Aborted => "aborted",
+                };
+                eprintln!(
+                    "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} draft_accepted={} draft_rejected={} profile={}",
+                    reason_s,
+                    stats.prompt_tokens,
+                    stats.completion_tokens,
+                    stats.prefill_ms,
+                    stats.decode_ms,
+                    dec,
+                    stats.draft_accepted,
+                    stats.draft_rejected,
+                    stats.profile_id.as_deref().unwrap_or("none")
+                );
+            }
+        };
+        engine.generate(req, &mut sink)?;
+    }
     Ok(())
 }
 

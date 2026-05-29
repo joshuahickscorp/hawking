@@ -118,6 +118,7 @@ def _read_windows_from_shard(
             out.append(
                 {
                     "prev": ex["prev_tokens"][off : off + depth],
+                    "next": ex["next_tokens"][off : off + depth],
                     "residual": ex["residual"][off : off + depth],
                     "intermediate": ex["intermediate"][off : off + depth],
                 }
@@ -163,6 +164,11 @@ def evaluate(args) -> dict:
     if device == "cuda" and not torch.cuda.is_available():
         print("[tau] WARN: CUDA unavailable; falling back to CPU", flush=True)
         device = "cpu"
+    if device == "mps" and not (
+        hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
+    ):
+        print("[tau] WARN: MPS unavailable; falling back to CPU", flush=True)
+        device = "cpu"
     if device == "cuda":
         torch.backends.cuda.matmul.allow_tf32 = True
         torch.backends.cudnn.allow_tf32 = True
@@ -189,6 +195,7 @@ def evaluate(args) -> dict:
 
     W = len(windows)
     prev = torch.from_numpy(np.stack([w["prev"] for w in windows]).astype(np.int64)).to(device)
+    nxt = torch.from_numpy(np.stack([w["next"] for w in windows]).astype(np.int64)).to(device)
     residual = torch.from_numpy(
         np.stack([w["residual"] for w in windows]).astype(np.float32)
     ).to(device)
@@ -206,9 +213,22 @@ def evaluate(args) -> dict:
         token_logits, _sparsity, _draft_h, _calib = head(cur_prev, residual_d, inter_d)
         head_arg = token_logits[:, 0, :].float().argmax(dim=-1)
 
-        baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(W, head.hidden_dim)
-        target_logits = torch.matmul(baseline.float(), lm_head_f)
-        target_arg = target_logits.argmax(dim=-1)
+        # Acceptance target. THE CRITICAL FIX (2026-05-29): the runtime
+        # verifier accepts a draft only when it equals the model's REAL next
+        # token. The legacy metric compared against
+        # argmax(RMSNorm(captured_residual) @ lm_head) — a self-referential
+        # proxy derived from the head's own input — which inflates τ to ~100%
+        # while real acceptance is ~0%. target-mode:
+        #   corpus (default) — the captured real next token (ground truth)
+        #   proxy            — legacy self-referential baseline
+        if args.target_mode == "corpus":
+            target_arg = nxt[:, d]
+        else:
+            baseline = _rms_norm(residual_d, head._output_norm, RMS_EPS).reshape(
+                W, head.hidden_dim
+            )
+            target_logits = torch.matmul(baseline.float(), lm_head_f)
+            target_arg = target_logits.argmax(dim=-1)
 
         still_accepting = accepted_len == d
         accepted_step = still_accepting & (head_arg == target_arg)
@@ -263,7 +283,10 @@ def main() -> int:
     p.add_argument("--max-windows", type=int, default=4000)
     p.add_argument("--max-row-tokens", type=int, default=128)
     p.add_argument("--seed", type=int, default=123)
-    p.add_argument("--device", choices=("cuda", "cpu"), default="cuda")
+    p.add_argument("--device", choices=("cuda", "cpu", "mps"), default="cuda")
+    p.add_argument("--target-mode", choices=("corpus", "proxy"), default="corpus",
+                   help="corpus = real next token (ground truth); proxy = legacy "
+                        "self-referential baseline argmax")
     p.add_argument("--num-blocks", type=int, default=1)
     p.add_argument("--head-heads", type=int, default=N_HEADS)
     p.add_argument("--head-ff-mult", type=float, default=4.0)
