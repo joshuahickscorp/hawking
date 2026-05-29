@@ -790,14 +790,21 @@ def train(args) -> None:
                     base_inter = inter.index_select(1, starts)
                     cur_prev = prev.index_select(1, starts)
                     active_starts = starts
+                    # Chained-hidden state (EAGLE-style). At depth 0 this is the
+                    # real captured residual; at depth>0, when --rollout-chain-
+                    # hidden is set, it holds the head's own draft_hidden from the
+                    # previous depth so the head learns to roll its hidden state
+                    # forward (intermediate then carries no signal -> zeros).
+                    chain_res = base_res
+                    chain_inter = base_inter
                     rollout_sum = torch.zeros((), device=device, dtype=torch.float32)
                     rollout_den = torch.zeros((), device=device, dtype=torch.float32)
                     for depth_idx in range(max_target):
                         valid = active_starts + depth_idx < S
                         if not bool(valid.any()):
                             break
-                        res_d = base_res[:, valid, :]
-                        inter_d = base_inter[:, valid, :]
+                        res_d = chain_res[:, valid, :]
+                        inter_d = chain_inter[:, valid, :]
                         prev_d = cur_prev[:, valid]
                         target_d = nxt.index_select(1, active_starts[valid] + depth_idx)
                         logits_d, _sp_d, _dh_d, _calib_d = fwd_fn(prev_d, res_d, inter_d)
@@ -828,6 +835,14 @@ def train(args) -> None:
                             next_prev = torch.where(use_draft, pred_d, next_prev)
                         cur_prev = cur_prev.clone()
                         cur_prev[:, valid] = next_prev
+                        # EAGLE-style hidden chaining: the next depth's residual_in
+                        # is THIS depth's draft_hidden (detached, so each step is a
+                        # standalone learned map from prev-hidden -> next token).
+                        # Intermediate carries no chained signal -> zeros.
+                        if args.rollout_chain_hidden:
+                            chain_res = chain_res.clone()
+                            chain_res[:, valid, :] = _dh_d.detach()
+                            chain_inter = torch.zeros_like(chain_res)
                     rollout = rollout_sum / rollout_den.clamp(min=1.0)
 
             total = (
@@ -937,6 +952,12 @@ def main() -> int:
                    help="Per-depth rollout loss decay. 1.0 weights all depths equally.")
     p.add_argument("--rollout-start-min-pos", type=int, default=3,
                    help="Earliest sequence position eligible for rollout loss.")
+    p.add_argument("--rollout-chain-hidden", action="store_true",
+                   help="EAGLE-style: feed the head's own draft_hidden as the "
+                        "next-depth residual_in (intermediate=0) instead of the "
+                        "fixed captured residual. Teaches the head to advance its "
+                        "own hidden state across depths — the mechanism that "
+                        "makes depth-2+ lookahead usable for real spec speedup.")
     p.add_argument("--sparsity-head", choices=["proxy", "off"], default="off",
                    help="off for Qwen-3B (dense); proxy is MoE-only and ignored here")
     p.add_argument("--seed", type=int, default=0)
