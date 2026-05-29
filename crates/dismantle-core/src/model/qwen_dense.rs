@@ -1198,6 +1198,141 @@ impl Engine for QwenDense {
             let mut lens_hits: usize = 0;
             let mut lens_total: usize = 0;
             let mut pos = prompt_len;
+
+            // ── PROPOSE-FIRST batched spec-decode (DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST).
+            // The lever for realized speedup: ONE batched verify forward per
+            // cycle (no separate bonus forward), and the head's strong depth-1
+            // IS used (it becomes `carried_true`, the first verify token, carried
+            // from the previous cycle's correction). Parity holds unconditionally
+            // — we only ever emit model-VERIFIED tokens; drafts affect speed, not
+            // output. Requires capture (residual) + batched verify primitive.
+            let use_propose_first = crate::env_on("DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST")
+                && eagle5_capture_in_use;
+            if use_propose_first {
+                let k = eagle5_k.max(1);
+                // Read the capture-layer residual the bootstrap/cycle forward
+                // just wrote into the pinned buffer.
+                let read_res = |s: &Self| -> Vec<f32> {
+                    let buf = s
+                        .eagle5_capture_residual_buf
+                        .as_ref()
+                        .expect("residual capture buf");
+                    let ptr = buf.contents() as *const f32;
+                    unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec()
+                };
+                // ── Bootstrap: one forward of the last prompt token gives the
+                // first anchor residual + the true next token (carried_true).
+                let mut anchor_tok = last_id;
+                let mut anchor_pos = pos;
+                let carried0 = self.forward_token_greedy_tcb(anchor_tok, anchor_pos)?;
+                let mut anchor_res = read_res(self);
+                let mut carried_true = carried0;
+                {
+                    let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
+                    self.sampler.record(carried_true);
+                    sink(StreamEvent::Token { id: carried_true, text });
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.note_token(carried_true);
+                    }
+                    produced += 1;
+                }
+                if Some(carried_true) == eos {
+                    reason = StopReason::Eos;
+                }
+                'pf_loop: while produced < req.max_new_tokens
+                    && matches!(reason, StopReason::MaxTokens)
+                {
+                    if abort_set(&req) {
+                        reason = StopReason::Aborted;
+                        break;
+                    }
+                    // Propose a chained-hidden draft chain from the anchor.
+                    // d[0] ~ carried_true (already emitted); d[1..] are lookahead.
+                    let drafts = {
+                        let head = self.eagle5_head.as_ref().expect("head");
+                        head.propose_rollout_chained(anchor_tok, &anchor_res, &zeros, k)
+                    };
+                    // Verify [carried_true, d[1..k-1]] at [anchor_pos+1 .. anchor_pos+k].
+                    let mut vtoks = Vec::with_capacity(k);
+                    vtoks.push(carried_true);
+                    for j in 1..k {
+                        vtoks.push(drafts[j]);
+                    }
+                    let vpos: Vec<usize> =
+                        (0..k).map(|j| anchor_pos + 1 + j).collect();
+                    let (preds, residuals) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                    // preds[j] = true token at anchor_pos+2+j (valid while prefix
+                    // matched). Accept lookahead d[1+j] vs preds[j].
+                    let mut na = k - 1; // accepted lookahead count
+                    for j in 0..(k - 1) {
+                        if drafts[1 + j] != preds[j] {
+                            na = j;
+                            break;
+                        }
+                    }
+                    // Emit the verified-new tokens: preds[0..=na]
+                    // (= na accepted lookahead drafts + 1 correction). carried_true
+                    // was already emitted (invariant), so we never re-emit it.
+                    stats.draft_accepted += na;
+                    stats.draft_rejected += (k - 1) - na;
+                    eagle5_cycle += 1;
+                    let mut stop = false;
+                    for j in 0..=na {
+                        let id = preds[j];
+                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                        self.sampler.record(id);
+                        sink(StreamEvent::Token { id, text });
+                        if let Some(head) = self.eagle5_head.as_mut() {
+                            head.note_token(id);
+                        }
+                        produced += 1;
+                        if Some(id) == eos {
+                            reason = StopReason::Eos;
+                            stop = true;
+                            break;
+                        }
+                        if produced >= req.max_new_tokens {
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if stop {
+                        break 'pf_loop;
+                    }
+                    // Advance anchor to the last correctly-processed position
+                    // (anchor_pos+1+na), whose residual we have. carried_true'
+                    // = preds[na] (the just-emitted correction = true next token).
+                    anchor_pos = anchor_pos + 1 + na;
+                    anchor_tok = if na == 0 { carried_true } else { drafts[na] };
+                    anchor_res = residuals[na].clone();
+                    carried_true = preds[na];
+                    // KV: valid through anchor_pos (last accepted). Next cycle's
+                    // verify writes from anchor_pos+1.
+                    self.kv.seq_len = anchor_pos + 1;
+                }
+                // Finalize (mirror the shared tail; we return early).
+                stats.decode_ms = decode_start.elapsed().as_secs_f64() * 1000.0;
+                stats.completion_tokens = produced;
+                stats.dispatch_samples = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_trace())
+                    .unwrap_or_default();
+                let (bc, ba, cm) = self
+                    .metal_ctx
+                    .as_ref()
+                    .map(|ctx| ctx.drain_stats())
+                    .unwrap_or_default();
+                stats.metal_buffers_created = bc;
+                stats.metal_bytes_allocated = ba;
+                stats.metal_commits = cm;
+                sink(StreamEvent::Done {
+                    reason,
+                    stats: stats.clone(),
+                });
+                return Ok(stats);
+            }
+
             'e5_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
