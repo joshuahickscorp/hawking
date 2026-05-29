@@ -442,6 +442,36 @@ impl Eagle5Head {
         out
     }
 
+    /// Rollout propose from an EXPLICIT start token (ignores `self.last_token`).
+    ///
+    /// The head is trained so that, given `residual_T` (the capture-layer
+    /// residual of the forward that consumed token T) and an advancing token,
+    /// it predicts the continuation T+1, T+2, … with the residual held FIXED
+    /// across depths (matching the rollout training objective). The runtime
+    /// must therefore start the chain at T — the token whose residual was
+    /// captured — NOT at the bonus token T+1. `out[0]` is the head's
+    /// prediction of T+1 (≈ the verifier's bonus); `out[1..]` are the genuine
+    /// look-ahead drafts for T+2, T+3, … that the verifier checks.
+    pub fn propose_rollout(
+        &self,
+        start_token: u32,
+        residual_in: &[f32],
+        intermediate: &[f32],
+        k: usize,
+    ) -> Vec<u32> {
+        if k == 0 || self.vocab == 0 {
+            return Vec::new();
+        }
+        let mut out = Vec::with_capacity(k);
+        let mut cur = start_token;
+        for _ in 0..k {
+            let next = self.argmax_step_full(cur, residual_in, intermediate);
+            out.push(next);
+            cur = next;
+        }
+        out
+    }
+
     /// Full-forward argmax step. For Trained heads invokes the real
     /// Eagle6 forward pass via `eagle5_forward::forward_single_step`.
     /// For Mock heads falls back to the simple linear projection.

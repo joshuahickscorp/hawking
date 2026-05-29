@@ -1222,6 +1222,11 @@ impl Engine for QwenDense {
                 // greedy token AND populates the capture buffers as a
                 // side effect of running through forward_token_greedy_tcb
                 // (which has the memcpy dispatches at capture_layer).
+                // `head_start` = the token T whose capture-layer residual the
+                // bonus forward produces. The head's rollout was trained to
+                // predict T+1, T+2, … from (T, residual_T), so the draft chain
+                // must START at T, not at the bonus token T+1.
+                let head_start = last_id;
                 let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
                 self.sampler.record(bonus);
                 let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
@@ -1309,11 +1314,22 @@ impl Engine for QwenDense {
                 let draft = {
                     let head = self
                         .eagle5_head
-                        .as_mut()
+                        .as_ref()
                         .expect("eagle5_head must be Some when use_eagle5");
                     let res_ref = captured_residual.as_deref().unwrap_or(&zeros);
                     let int_ref = captured_intermediate.as_deref().unwrap_or(&zeros);
-                    head.propose_with_capture(bonus, res_ref, int_ref, k_avail)
+                    // Roll out K+1 from token T (head_start): out[0] is the
+                    // head's T+1 prediction (≈ bonus, which we already have),
+                    // out[1..] are the genuine look-ahead drafts for T+2,T+3,…
+                    // that the verifier checks. Dropping out[0] keeps the head
+                    // aligned with how it was trained (residual_T pairs with T).
+                    let mut rolled =
+                        head.propose_rollout(head_start, res_ref, int_ref, k_avail + 1);
+                    if rolled.is_empty() {
+                        rolled
+                    } else {
+                        rolled.split_off(1)
+                    }
                 };
                 if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
                     let toks: Vec<String> = draft.iter().map(|&id| {
