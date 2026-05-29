@@ -671,7 +671,24 @@ def train(args) -> None:
         inter = batch["intermediate"].to(device, non_blocking=True)
         B, S = prev.shape
 
-        target_alpha = min(step / max(args.target_argmax_warmup_steps, 1), 1.0)
+        # Objective target weighting. THE CRITICAL FIX (2026-05-29): the
+        # head must learn the model's REAL next token, not a self-referential
+        # proxy. The old default ramped target_alpha→1, training the head to
+        # match argmax(RMSNorm(captured_residual) @ lm_head) — a baseline
+        # derived from the head's own input. That makes offline τ ~100% by
+        # construction (head ≈ baseline) but gives ~0% REAL acceptance,
+        # because the runtime verifier checks the model's actual next token
+        # (full forward), which the mid-stack residual's lm_head projection
+        # does not equal. target-mode:
+        #   corpus (default) — target the real next token tokens[i+1]
+        #   proxy            — legacy self-referential baseline (broken)
+        #   blend            — legacy warmup ramp proxy↔corpus
+        if args.target_mode == "corpus":
+            target_alpha = 0.0
+        elif args.target_mode == "proxy":
+            target_alpha = 1.0
+        else:  # blend (legacy)
+            target_alpha = min(step / max(args.target_argmax_warmup_steps, 1), 1.0)
 
         opt.zero_grad(set_to_none=True)
         ctx = torch.autocast(device_type="cuda", dtype=amp_dtype) if use_amp else torch.enable_grad()
@@ -853,7 +870,15 @@ def main() -> int:
                    help="Draft MLP hidden multiplier, e.g. 4.0 means 4 * hidden.")
     p.add_argument("--capture-layer", type=int, default=32,
                    help="metadata only — actual capture is baked into the corpus")
-    p.add_argument("--target-argmax-warmup-steps", type=int, default=500)
+    p.add_argument("--target-argmax-warmup-steps", type=int, default=500,
+                   help="only used when --target-mode=blend (legacy ramp).")
+    p.add_argument("--target-mode", choices=["corpus", "proxy", "blend"], default="corpus",
+                   help="What next-token target to train against. 'corpus' (default, "
+                        "CORRECT): the model's real next token tokens[i+1] — what the "
+                        "runtime verifier checks. 'proxy' (legacy, BROKEN): the "
+                        "self-referential argmax(RMSNorm(residual)@lm_head) baseline, "
+                        "which gives inflated offline τ but ~0% real acceptance. "
+                        "'blend': the legacy warmup ramp from corpus to proxy.")
     p.add_argument("--calib-loss-weight", type=float, default=0.1,
                    help="Weight for the confidence/calibration BCE head.")
     p.add_argument("--residual-delta-loss-weight", type=float, default=0.0,
