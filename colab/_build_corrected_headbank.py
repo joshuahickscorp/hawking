@@ -68,14 +68,16 @@ MODELS = {
             "hf_file": "Qwen2.5-7B-Instruct-Q4_K_M.gguf"},
 }
 
-# Training hyperparameters validated on q3b (loss converged ~1.0, 73.9% depth-1).
-# Rollout loss trains multi-depth prediction (depths 1-4 from one residual,
-# autoregressive token feeding) — required for K>1 speculation speedup; a
-# depth-1-only head can only re-predict the token we already have.
+# Training hyperparameters. CHAINED-HIDDEN rollout (EAGLE-style) is the key:
+# the head feeds its OWN draft_hidden forward as the next-depth residual,
+# learning to advance its hidden state. Validated on q3b — lifted multi-depth
+# acceptance dramatically (depth-2 16%→47%, accepted-prefix 1.0→1.6 ≈ ~2.6×
+# decode potential) vs fixed-residual rollout (which caps at depth-1).
 TRAIN = dict(
-    epochs=8, batch_size=24, seq_len=16, lr=1e-3,
-    rollout_loss_weight=0.5, rollout_depth=5,
+    epochs=10, batch_size=24, seq_len=16, lr=1e-3,
+    rollout_loss_weight=1.0, rollout_depth=5,
     rollout_depth_targets="1,2,3,4", rollout_draft_prob=0.75,
+    rollout_chain_hidden=True,
 )
 
 
@@ -230,6 +232,8 @@ def build() -> dict:
         "           '--rollout-depth-targets', TRAIN['rollout_depth_targets'],\n"
         "           '--rollout-draft-prob', str(TRAIN['rollout_draft_prob']),\n"
         "           '--save-safetensors']\n"
+        "    if TRAIN.get('rollout_chain_hidden'):\n"
+        "        cmd.append('--rollout-chain-hidden')\n"
         "    print('\\n===', slug, cfg['label'], '===')\n"
         "    print(' '.join(cmd))\n"
         "    r = subprocess.run(cmd, capture_output=True, text=True)\n"
