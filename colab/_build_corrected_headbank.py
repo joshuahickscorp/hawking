@@ -199,7 +199,7 @@ def build() -> dict:
 
     cells.append(md("## 3. Training config"))
     cells.append(code(
-        f"TRAIN = {json.dumps(TRAIN)}\n"
+        f"TRAIN = {TRAIN!r}\n"
         "TRAINABLE = READY  # set in cell 2 (corpus present + frozen fingerprint verified)\n"
         "print('trainable:', TRAINABLE)\n"
         "assert TRAINABLE, 'no models ready — check cell 2 output'\n"
