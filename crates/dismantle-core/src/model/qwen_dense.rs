@@ -1161,16 +1161,12 @@ impl Engine for QwenDense {
             // any forward has populated the capture buffers) and when
             // capture mode is off.
             let zeros = vec![0.0_f32; hidden];
-            // Phase B.3.2: capture-mode integration. When the capture
-            // env flag is set, propose_with_capture reads from the
-            // PinnedBuffer that forward_token_greedy_tcb writes to at
-            // the chosen layer. Capture is incompatible with batched
-            // verify in this commit — batched calls forward_tokens_batch_tcb
-            // which has no capture code. Mutually exclusive: setting
-            // BATCHED=1 + CAPTURE=1 together silently degrades to
-            // zero-capture (captures never populate). Documented in port plan.
-            let eagle5_capture_in_use = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE")
-                && !use_eagle5_batched;
+            // Capture-mode integration. The capture buffers are populated by
+            // the per-cycle Stage-1 bonus forward (forward_token_greedy_tcb,
+            // which has the memcpy at capture_layer) — this runs in BOTH the
+            // serial and batched verify paths, so capture is now compatible
+            // with batched verify (only Stage 3's verify differs).
+            let eagle5_capture_in_use = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
             let mut eagle5_accept_trace =
                 if let Some(path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE")
                     .map(PathBuf::from)
@@ -1344,23 +1340,45 @@ impl Engine for QwenDense {
                     continue;
                 }
 
-                // Stage 3: serial verify. forward(tmp_last, bonus_pos+i)
-                // for i in 0..K. tmp_last starts at bonus (the token we
-                // just emitted). After iteration i, KV[bonus_pos+i]
-                // holds tmp_last (= bonus if i=0, drafts[i-1] otherwise),
-                // and pred is the model's argmax for position bonus_pos+i+1
-                // which we compare to drafts[i].
+                // Stage 3: verify. preds[i] = model argmax after consuming
+                // verify_tokens[i] at bonus_pos+i, compared to draft[i].
+                // verify_tokens = [bonus, draft[0..draft_len-1)].
+                //
+                // Two paths, same accept semantics + same post-verify KV
+                // bookkeeping (the emit/advance code below sets pos/seq_len):
+                //   * BATCHED (DISMANTLE_QWEN_EAGLE5_BATCHED=1): all draft_len
+                //     positions verified in ONE forward (forward_tokens_verify),
+                //     sharing weight reads — the throughput path.
+                //   * SERIAL (default): draft_len sequential forwards. Safe
+                //     fallback; no throughput win but correctness-proven.
                 let mut first_reject = draft_len;
                 let mut correction: Option<u32> = None;
-                let mut tmp_last = bonus;
-                for i in 0..draft_len {
-                    let pred = self.forward_token_greedy_tcb(tmp_last, bonus_pos + i)?;
-                    if pred != draft[i] {
-                        first_reject = i;
-                        correction = Some(pred);
-                        break;
+                if use_eagle5_batched {
+                    let mut vtoks = Vec::with_capacity(draft_len);
+                    vtoks.push(bonus);
+                    if draft_len > 1 {
+                        vtoks.extend_from_slice(&draft[..draft_len - 1]);
                     }
-                    tmp_last = pred;
+                    let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
+                    let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                    for i in 0..draft_len {
+                        if preds[i] != draft[i] {
+                            first_reject = i;
+                            correction = Some(preds[i]);
+                            break;
+                        }
+                    }
+                } else {
+                    let mut tmp_last = bonus;
+                    for i in 0..draft_len {
+                        let pred = self.forward_token_greedy_tcb(tmp_last, bonus_pos + i)?;
+                        if pred != draft[i] {
+                            first_reject = i;
+                            correction = Some(pred);
+                            break;
+                        }
+                        tmp_last = pred;
+                    }
                 }
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
@@ -3757,6 +3775,39 @@ impl QwenDense {
             out.push(logits);
         }
         Ok(out)
+    }
+
+    /// Spec-decode verify primitive: B forwards in ONE TCB, returns
+    /// (per-position argmax token, per-position capture-layer residual).
+    /// The residual is `x_buf_batch` after the layer loop = the layer-(n-1)
+    /// residual the head consumes for chained-hidden proposing (capture layer
+    /// is always n-1 = last layer, so the last layer's residual IS it).
+    ///
+    /// NOTE: argmax is over the CPU fp16 LM head (full vocab), inheriting
+    /// `forward_tokens_batched_with_logits`. For exact bit-identical parity
+    /// with the GPU vocab-pruned-Q4K baseline this should use a per-position
+    /// GPU LM head — tracked as a follow-up refinement.
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_verify(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        let logits = self.forward_tokens_batched_with_logits(tokens, positions)?;
+        let b = tokens.len();
+        let h = self.config.hidden;
+        let arena = self.dense_arena.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_verify: arena not initialized".into())
+        })?;
+        let xbuf = arena.x_buf_batch.contents() as *const f32;
+        let residuals: Vec<Vec<f32>> = (0..b)
+            .map(|i| unsafe { std::slice::from_raw_parts(xbuf.add(i * h), h) }.to_vec())
+            .collect();
+        let argmax: Vec<u32> = logits
+            .iter()
+            .map(|l| crate::kernels::argmax_f32(l) as u32)
+            .collect();
+        Ok((argmax, residuals))
     }
 }
 
