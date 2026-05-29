@@ -206,12 +206,27 @@ def evaluate(args) -> dict:
     accepted_len = torch.zeros(W, device=device, dtype=torch.int32)
     per_pos_accept = torch.zeros(args.depth, device=device, dtype=torch.int64)
     cur_prev = prev[:, :1]
+    # Chained-hidden state for --chain-hidden: depth 0 uses the real captured
+    # residual; deeper depths feed the head's own draft_hidden forward
+    # (intermediate=0) — EXACTLY what the runtime does. This makes the reported
+    # accepted-prefix the RUNTIME-PREDICTIVE number (the speedup driver),
+    # whereas feeding the real per-depth residual is optimistic (the runtime
+    # never has it). See memory/eagle5_corrected_pipeline_2026_05_29.md.
+    chain_res = residual[:, 0:1, :]
+    chain_inter = inter[:, 0:1, :]
 
     for d in range(args.depth):
-        residual_d = residual[:, d : d + 1, :]
-        inter_d = inter[:, d : d + 1, :]
+        if args.chain_hidden:
+            residual_d = chain_res
+            inter_d = chain_inter
+        else:
+            residual_d = residual[:, d : d + 1, :]
+            inter_d = inter[:, d : d + 1, :]
         token_logits, _sparsity, _draft_h, _calib = head(cur_prev, residual_d, inter_d)
         head_arg = token_logits[:, 0, :].float().argmax(dim=-1)
+        if args.chain_hidden:
+            chain_res = _draft_h.detach()
+            chain_inter = torch.zeros_like(chain_res)
 
         # Acceptance target. THE CRITICAL FIX (2026-05-29): the runtime
         # verifier accepts a draft only when it equals the model's REAL next
@@ -287,6 +302,11 @@ def main() -> int:
     p.add_argument("--target-mode", choices=("corpus", "proxy"), default="corpus",
                    help="corpus = real next token (ground truth); proxy = legacy "
                         "self-referential baseline argmax")
+    p.add_argument("--chain-hidden", action="store_true",
+                   help="Feed the head's own draft_hidden forward as the next-depth "
+                        "residual (matches the runtime + --rollout-chain-hidden). "
+                        "Reports the RUNTIME-PREDICTIVE accepted-prefix; without it "
+                        "the eval uses real per-depth residuals (optimistic).")
     p.add_argument("--num-blocks", type=int, default=1)
     p.add_argument("--head-heads", type=int, default=N_HEADS)
     p.add_argument("--head-ff-mult", type=float, default=4.0)

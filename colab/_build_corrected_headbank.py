@@ -74,7 +74,7 @@ MODELS = {
 # acceptance dramatically (depth-2 16%→47%, accepted-prefix 1.0→1.6 ≈ ~2.6×
 # decode potential) vs fixed-residual rollout (which caps at depth-1).
 TRAIN = dict(
-    epochs=10, batch_size=24, seq_len=16, lr=1e-3,
+    epochs=12, batch_size=24, seq_len=16, lr=1e-3,
     rollout_loss_weight=1.0, rollout_depth=5,
     rollout_depth_targets="1,2,3,4", rollout_draft_prob=0.75,
     rollout_chain_hidden=True,
@@ -264,13 +264,16 @@ def build() -> dict:
         "    cmd = ['python', EVAL,\n"
         "           '--ckpt', ckpt, '--frozen', frozen, '--corpus', shards,\n"
         "           '--out', out, '--device', 'cuda',\n"
-        "           '--target-mode', 'corpus', '--depth', '4']\n"
+        "           '--target-mode', 'corpus', '--chain-hidden', '--depth', '4']\n"
         "    r = subprocess.run(cmd, capture_output=True, text=True)\n"
         "    if r.returncode == 0 and os.path.isfile(out):\n"
         "        tau_results[slug] = json.load(open(out))\n"
         "        d1 = tau_results[slug].get('depth1_accept_rate', 0)\n"
-        "        tau = tau_results[slug].get('tau', 0)\n"
-        "        print(f'{slug:6s} depth1={d1:.1%} tau={tau:.2f}')\n"
+        "        tau = tau_results[slug].get('tau', 0)  # chained accepted-prefix\n"
+        "        # tokens per batched-forward = accepted-prefix + 1 (correction);\n"
+        "        # ~ the realized decode speedup once batched verify is GPU-side.\n"
+        "        print(f'{slug:6s} depth1={d1:.1%} accepted_prefix={tau:.2f} '\n"
+        "              f'-> ~{1+tau:.2f}x decode potential')\n"
         "    else:\n"
         "        print(slug, 'eval failed:', r.stderr[-800:])\n"
     ))
@@ -302,7 +305,8 @@ def build() -> dict:
         "print('wrote', mpath)\n"
         "for e in entries:\n"
         "    m = e['metrics']\n"
-        "    print(f\"{e['slug']:6s} depth1={m.get('depth1_accept_rate',0):.1%} tau={m.get('tau',0):.2f}\")\n"
+        "    print(f\"{e['slug']:6s} depth1={m.get('depth1_accept_rate',0):.1%} \"\n"
+        "          f\"accepted_prefix={m.get('tau',0):.2f} -> ~{1+m.get('tau',0):.2f}x\")\n"
         "print('\\nDownload heads_corrected/ from Drive and stage with tools/headbank/pull.py')\n"
     ))
 
