@@ -1324,7 +1324,7 @@ impl Engine for QwenDense {
                     // that the verifier checks. Dropping out[0] keeps the head
                     // aligned with how it was trained (residual_T pairs with T).
                     let mut rolled =
-                        head.propose_rollout(head_start, res_ref, int_ref, k_avail + 1);
+                        head.propose_rollout_chained(head_start, res_ref, int_ref, k_avail + 1);
                     if rolled.is_empty() {
                         rolled
                     } else {
