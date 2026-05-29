@@ -71,8 +71,6 @@ impl Default for EngineConfig {
 pub enum SpeculateMode {
     Off,
     ExactShared,
-    /// N-gram lookup draft: zero compute cost, serial verify with full model.
-    NGram,
     /// Eagle5 v2 activation-sparsity head: a small learned draft model that
     /// proposes K tokens per step. Verify path is the full V2-Lite model so
     /// greedy output at temperature=0 is bit-identical to no-spec greedy.
@@ -107,10 +105,9 @@ impl SpeculateMode {
             None => Ok(Self::Off),
             Some("off" | "none" | "false" | "0") => Ok(Self::Off),
             Some("exact-shared" | "exact_shared") => Ok(Self::ExactShared),
-            Some("ngram" | "n-gram" | "ngram-spec") => Ok(Self::NGram),
             Some("eagle5" | "eagle-5" | "eagle5-v2") => Ok(Self::Eagle5),
             Some(other) => Err(crate::Error::Model(format!(
-                "unknown speculate mode `{other}`; expected exact-shared, ngram, eagle5, or off"
+                "unknown speculate mode `{other}`; expected exact-shared, eagle5, or off"
             ))),
         }
     }
@@ -119,7 +116,6 @@ impl SpeculateMode {
         match self {
             Self::Off => "off",
             Self::ExactShared => "exact-shared",
-            Self::NGram => "ngram",
             Self::Eagle5 => "eagle5",
         }
     }
