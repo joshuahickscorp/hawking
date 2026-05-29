@@ -3790,19 +3790,71 @@ impl QwenDense {
     /// residual the head consumes for chained-hidden proposing (capture layer
     /// is always n-1 = last layer, so the last layer's residual IS it).
     ///
-    /// NOTE: argmax is over the CPU fp16 LM head (full vocab), inheriting
-    /// `forward_tokens_batched_with_logits`. For exact bit-identical parity
-    /// with the GPU vocab-pruned-Q4K baseline this should use a per-position
-    /// GPU LM head — tracked as a follow-up refinement.
+    /// Two LM-head paths for the per-position argmax:
+    ///   * FAST (production locked config): when the vocab-pruned Q4_K LM head
+    ///     is active, ONE batched Q4_K GEMM produces B×pruned logits on GPU
+    ///     (weight read once), then a cheap CPU argmax over the pruned vocab.
+    ///     This matches the single-token baseline's GPU pruned-Q4K argmax →
+    ///     bit-identical, and avoids the CPU full-vocab matmul.
+    ///   * FALLBACK: CPU fp16 full-vocab LM head (forward_tokens_batched_with_logits).
     #[cfg(target_os = "macos")]
     pub fn forward_tokens_verify(
         &mut self,
         tokens: &[u32],
         positions: &[usize],
     ) -> Result<(Vec<u32>, Vec<Vec<f32>>)> {
-        let logits = self.forward_tokens_batched_with_logits(tokens, positions)?;
+        use crate::metal::TokenCommandBuffer;
         let b = tokens.len();
         let h = self.config.hidden;
+
+        // FAST path: GPU batched Q4_K GEMM over the pruned LM head.
+        let fast = self.vocab_pruned_is_q4k
+            && self.lm_head_pruned_buf.is_some()
+            && self.vocab_pruned.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b);
+        if fast {
+            // Stage 1: layers -> x_norm_buf_batch (committed).
+            self.forward_tokens_batch_tcb(tokens, positions)?;
+            let pruned = self.vocab_pruned.unwrap();
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_verify: no ctx".into()))?;
+            let lm = self.lm_head_pruned_buf.as_ref().unwrap();
+            let arena = self
+                .dense_arena
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_verify: no arena".into()))?;
+            let blocks_per_row = h / 256;
+            let w_bytes = pruned * blocks_per_row * 144;
+            // B×pruned f32 logits scratch.
+            let logits_buf = ctx.new_buffer(b * pruned * std::mem::size_of::<f32>());
+            let mut tcb = TokenCommandBuffer::new(ctx);
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb, lm, 0, w_bytes, pruned, h, b,
+                &arena.x_norm_buf_batch, &logits_buf,
+            )?;
+            tcb.commit_and_wait()?;
+            // CPU argmax over pruned vocab (cheap), map pruned idx -> real id.
+            let lp = logits_buf.contents() as *const f32;
+            let remap = self.vocab_prune_remap.as_ref();
+            let argmax: Vec<u32> = (0..b)
+                .map(|i| {
+                    let row = unsafe { std::slice::from_raw_parts(lp.add(i * pruned), pruned) };
+                    let pi = crate::kernels::argmax_f32(row) as u32;
+                    remap.map(|r| r[pi as usize]).unwrap_or(pi)
+                })
+                .collect();
+            let xbuf = arena.x_buf_batch.contents() as *const f32;
+            let residuals: Vec<Vec<f32>> = (0..b)
+                .map(|i| unsafe { std::slice::from_raw_parts(xbuf.add(i * h), h) }.to_vec())
+                .collect();
+            return Ok((argmax, residuals));
+        }
+
+        // FALLBACK: CPU fp16 full-vocab LM head.
+        let logits = self.forward_tokens_batched_with_logits(tokens, positions)?;
         let arena = self.dense_arena.as_ref().ok_or_else(|| {
             Error::Metal("forward_tokens_verify: arena not initialized".into())
         })?;
