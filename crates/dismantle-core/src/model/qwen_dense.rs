@@ -1140,6 +1140,13 @@ impl Engine for QwenDense {
         // layer-32 (Qwen-3B) hidden state, so accept rate will be low
         // (~0.05-0.15) until the capture wiring lands as a follow-up.
         let use_eagle5 = use_tcb && self.eagle5_head.is_some();
+        if crate::env_on("DISMANTLE_QWEN_E5DIAG") {
+            eprintln!(
+                "[e5diag] use_eagle5={} use_tcb={} head_some={} vw={}",
+                use_eagle5, use_tcb, self.eagle5_head.is_some(),
+                self.eagle5_verify_window,
+            );
+        }
         let eagle5_k: usize = std::env::var("DISMANTLE_QWEN_EAGLE5_K")
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
