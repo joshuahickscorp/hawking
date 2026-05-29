@@ -3558,6 +3558,13 @@ impl QwenDense {
         let int_bytes = intermediate * f32_bytes;
         let layer_kv_stride_bytes = max_seq * kv_dim_bytes;
 
+        // Predec scale tables (built by the single-decode path's
+        // ensure_q4k_predec_cache; Some during decode/verify, None in cold
+        // prefill). When present, the batched Q4_K GEMM uses the predec kernel
+        // (skips per-element header decode → the +40% single-path lever on the
+        // batched verify forward). Keyed by tensor mmap offset.
+        let predec_cache = self.q4k_predec_cache.as_ref();
+
         let mut tcb = TokenCommandBuffer::new(ctx);
 
         // ── Embed B tokens into x_buf_batch[b, :] ────────────────
@@ -3601,10 +3608,19 @@ impl QwenDense {
                             "batched_proj: Q4_K requires contiguous x_stride");
                         debug_assert_eq!($out_stride, $rows * f32_bytes,
                             "batched_proj: Q4_K requires contiguous out_stride");
-                        kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                            &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                            $rows, $cols, b, $x_batch, $out_batch,
-                        )?;
+                        if let Some(scales) =
+                            predec_cache.and_then(|c| c.get(&$tref.offset))
+                        {
+                            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                            )?;
+                        } else {
+                            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols, b, $x_batch, $out_batch,
+                            )?;
+                        }
                     }
                     GgmlType::Q6_K => {
                         for bi in 0..b {
