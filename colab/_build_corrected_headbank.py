@@ -44,7 +44,12 @@ import json
 from pathlib import Path
 
 REPO_URL = "https://github.com/joshuahickscorp/dismantle.git"
+REPO_SLUG = "joshuahickscorp/dismantle"
 BRANCH = "codex/maximal-spec-colab"
+# GitHub release holding the locally-captured corpora + GGUF-dequant frozen
+# weights. Assets: <slug>_corpus.tar + <slug>_frozen.npz. Public repo, so the
+# notebook wget's them with no auth — the user uploads nothing.
+RELEASE_TAG = "headbank-corpus-v1"
 
 # slug -> (capture_layer = n-1, human label). hidden/vocab are inferred from
 # frozen_gguf.npz by the trainer, so we don't hardcode them.
@@ -95,31 +100,21 @@ def build() -> dict:
         "next token, not the self-referential baseline proxy.\n"
         "3. Residuals captured from the **quantized (Q4_K_M)** runtime at layer n-1.\n"
         "\n"
-        "**Before running:** upload the locally-prepared inputs to Drive under "
-        "`DRIVE_ROOT/<slug>/{corpus_shards/, frozen_gguf.npz}`. The local side "
-        "produces these via `tools/orchestrator/capture_all.sh` + "
-        "`build_frozen_gguf.py` and `stage_headbank_upload.py`.\n"
+        "**Just `Runtime → Run all`.** Inputs (corpora + frozen weights) auto-"
+        "download from the GitHub release — nothing to upload. Trained heads are "
+        "written to your Drive.\n"
     ))
 
-    cells.append(md("## 1. Mount Drive + config"))
+    cells.append(md("## 1. Mount Drive (for output) + clone repo + deps"))
     cells.append(code(
         "from google.colab import drive\n"
         "drive.mount('/content/drive')\n"
-        "\n"
-        "# EDIT THIS to where you uploaded the inputs:\n"
-        "DRIVE_ROOT = '/content/drive/MyDrive/dismantle_headbank_corrected'\n"
-        "\n"
+        "OUT_ROOT = '/content/drive/MyDrive/dismantle_headbank_corrected/heads_corrected'\n"
         "import os\n"
-        "assert os.path.isdir(DRIVE_ROOT), f'DRIVE_ROOT not found: {DRIVE_ROOT}'\n"
-        "print('DRIVE_ROOT:', DRIVE_ROOT)\n"
-        "print('contents:', os.listdir(DRIVE_ROOT))\n"
-    ))
-
-    cells.append(md("## 2. Clone repo (fixed trainer) + install deps"))
-    cells.append(code(
+        "os.makedirs(OUT_ROOT, exist_ok=True)\n"
+        "\n"
         f"REPO_URL = {REPO_URL!r}\n"
         f"BRANCH = {BRANCH!r}\n"
-        "import os\n"
         "if not os.path.isdir('/content/dismantle'):\n"
         "    !git clone --depth 1 --branch $BRANCH $REPO_URL /content/dismantle\n"
         "else:\n"
@@ -127,7 +122,38 @@ def build() -> dict:
         "!pip -q install pyarrow safetensors gguf packaging\n"
         "import sys\n"
         "sys.path.insert(0, '/content/dismantle/colab')\n"
+        "print('output ->', OUT_ROOT)\n"
         "print('repo + deps ready')\n"
+    ))
+
+    cells.append(md(
+        "## 2. Auto-download inputs from the GitHub release\n"
+        "Pulls `<slug>_corpus.tar` + `<slug>_frozen.npz` for each model into "
+        "`/content/headbank_inputs/<slug>/` — no manual upload."
+    ))
+    cells.append(code(
+        f"REPO_SLUG = {REPO_SLUG!r}\n"
+        f"RELEASE_TAG = {RELEASE_TAG!r}\n"
+        "import os, tarfile, urllib.request\n"
+        "DATA_ROOT = '/content/headbank_inputs'\n"
+        "BASE = f'https://github.com/{REPO_SLUG}/releases/download/{RELEASE_TAG}'\n"
+        "SLUGS = ['q05b', 'q1p5b', 'q3b', 'q7b']\n"
+        "for slug in SLUGS:\n"
+        "    dst = os.path.join(DATA_ROOT, slug)\n"
+        "    shards = os.path.join(dst, 'corpus_shards')\n"
+        "    os.makedirs(shards, exist_ok=True)\n"
+        "    frozen = os.path.join(dst, 'frozen_gguf.npz')\n"
+        "    tarp = os.path.join(dst, 'corpus.tar')\n"
+        "    if not any(f.endswith('.parquet') for f in os.listdir(shards)):\n"
+        "        print(f'{slug}: downloading corpus...')\n"
+        "        urllib.request.urlretrieve(f'{BASE}/{slug}_corpus.tar', tarp)\n"
+        "        with tarfile.open(tarp) as t: t.extractall(shards)\n"
+        "        os.remove(tarp)\n"
+        "    if not os.path.isfile(frozen):\n"
+        "        print(f'{slug}: downloading frozen...')\n"
+        "        urllib.request.urlretrieve(f'{BASE}/{slug}_frozen.npz', frozen)\n"
+        "    n = len([f for f in os.listdir(shards) if f.endswith('.parquet')])\n"
+        "    print(f'{slug}: {n} shards, frozen={os.path.isfile(frozen)}')\n"
     ))
 
     cells.append(md("## 3. Model configs + input verification"))
@@ -138,8 +164,8 @@ def build() -> dict:
         "import os\n"
         "ready = {}\n"
         "for slug, cfg in MODELS.items():\n"
-        "    shards = os.path.join(DRIVE_ROOT, slug, 'corpus_shards')\n"
-        "    frozen = os.path.join(DRIVE_ROOT, slug, 'frozen_gguf.npz')\n"
+        "    shards = os.path.join(DATA_ROOT, slug, 'corpus_shards')\n"
+        "    frozen = os.path.join(DATA_ROOT, slug, 'frozen_gguf.npz')\n"
         "    have_shards = os.path.isdir(shards) and any(f.endswith('.parquet') for f in os.listdir(shards)) if os.path.isdir(shards) else False\n"
         "    have_frozen = os.path.isfile(frozen)\n"
         "    ready[slug] = have_shards and have_frozen\n"
@@ -151,14 +177,12 @@ def build() -> dict:
     cells.append(md("## 4. Train every ready head (corrected pipeline)"))
     cells.append(code(
         "import subprocess, os\n"
-        "OUT_ROOT = os.path.join(DRIVE_ROOT, 'heads_corrected')\n"
-        "os.makedirs(OUT_ROOT, exist_ok=True)\n"
         "TRAINER = '/content/dismantle/colab/eagle5_train_pytorch.py'\n"
         "\n"
         "for slug in TRAINABLE:\n"
         "    cfg = MODELS[slug]\n"
-        "    shards = os.path.join(DRIVE_ROOT, slug, 'corpus_shards')\n"
-        "    frozen = os.path.join(DRIVE_ROOT, slug, 'frozen_gguf.npz')\n"
+        "    shards = os.path.join(DATA_ROOT, slug, 'corpus_shards')\n"
+        "    frozen = os.path.join(DATA_ROOT, slug, 'frozen_gguf.npz')\n"
         "    ckpt = os.path.join(OUT_ROOT, slug)\n"
         "    os.makedirs(ckpt, exist_ok=True)\n"
         "    cmd = ['python', TRAINER,\n"
@@ -199,8 +223,8 @@ def build() -> dict:
         "for slug in TRAINABLE:\n"
         "    cfg = MODELS[slug]\n"
         "    ckpt = os.path.join(OUT_ROOT, slug, 'latest.npz')\n"
-        "    frozen = os.path.join(DRIVE_ROOT, slug, 'frozen_gguf.npz')\n"
-        "    shards = os.path.join(DRIVE_ROOT, slug, 'corpus_shards')\n"
+        "    frozen = os.path.join(DATA_ROOT, slug, 'frozen_gguf.npz')\n"
+        "    shards = os.path.join(DATA_ROOT, slug, 'corpus_shards')\n"
         "    out = os.path.join(OUT_ROOT, slug, 'tau_eval.json')\n"
         "    if not os.path.isfile(ckpt):\n"
         "        print(slug, 'no checkpoint, skipping'); continue\n"
