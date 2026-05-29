@@ -56,7 +56,14 @@ MODELS = {
 }
 
 # Training hyperparameters validated on q3b (loss converged ~1.0, 73.9% depth-1).
-TRAIN = dict(epochs=8, batch_size=24, seq_len=16, lr=1e-3)
+# Rollout loss trains multi-depth prediction (depths 1-4 from one residual,
+# autoregressive token feeding) — required for K>1 speculation speedup; a
+# depth-1-only head can only re-predict the token we already have.
+TRAIN = dict(
+    epochs=8, batch_size=24, seq_len=16, lr=1e-3,
+    rollout_loss_weight=0.5, rollout_depth=5,
+    rollout_depth_targets="1,2,3,4", rollout_draft_prob=0.75,
+)
 
 
 def md(text: str) -> dict:
@@ -165,6 +172,10 @@ def build() -> dict:
         "           '--batch-size', str(TRAIN['batch_size']),\n"
         "           '--seq-len', str(TRAIN['seq_len']),\n"
         "           '--lr', str(TRAIN['lr']),\n"
+        "           '--rollout-loss-weight', str(TRAIN['rollout_loss_weight']),\n"
+        "           '--rollout-depth', str(TRAIN['rollout_depth']),\n"
+        "           '--rollout-depth-targets', TRAIN['rollout_depth_targets'],\n"
+        "           '--rollout-draft-prob', str(TRAIN['rollout_draft_prob']),\n"
         "           '--save-safetensors']\n"
         "    print('\\n===', slug, cfg['label'], '===')\n"
         "    print(' '.join(cmd))\n"
