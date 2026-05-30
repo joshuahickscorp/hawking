@@ -1,61 +1,158 @@
 # %% [markdown]
-# # Stage 4 — EAGLE spec-decode head for Qwen2.5-3B (retrain on Q4_K_M captures)
+# # Stage 4 — EAGLE head retrain on Q4_K_M captures
 #
-# **Why this exists (measured this session):** the existing
-# `checkpoints/eagle5_final/q3b/head_final.safetensors` *loads* fine but gives
-# **0.000 acceptance** on Qwen-3B code and makes decode **4.5× slower** (34→7.6 tps).
-# Oracle A also ruled out the free n-gram path (τ=1.43 NO-GO). So spec needs a head
-# that actually accepts — this notebook orchestrates the repo's **existing** trainer
-# with the two fixes the 0%-accept points to.
+# This notebook is an artifact producer, not a runtime benchmark. It trains a
+# Qwen2.5-3B draft head from **dismantle Q4_K_M residual captures**, evaluates a
+# runtime-predictive accepted-prefix metric, and writes a safetensors head for the
+# M3 parity/runtime loop.
 #
-# **This is an ORCHESTRATOR** of scripts that already exist in the repo
-# (`colab/eagle5_train_pytorch.py`, `colab/eagle5_tau_eval_pytorch.py`,
-# `colab/mega_calibrate.py`, `tools/training/build_qwen3b_frozen.py`). It does not
-# reinvent them — it wires them with the right config + **two hard gates**.
+# **Why this exists:** the existing `checkpoints/eagle5_final/q3b/head_final.safetensors`
+# loaded but produced 0.000 acceptance and made decode 4.5x slower. The likely
+# failure mode is f16/capture mismatch or head/runtime parity mismatch.
 #
-# **Two root-cause gates (the checks-and-balances):**
-# 1. **Capture provenance** — training residuals MUST come from dismantle's **Q4_K_M**
-#    capture mode, not f16. f16-trained / Q4_K_M-served is the distribution shift that
-#    kills acceptance (see `memory/eagle5_port_phase_a1_shipped`).
-# 2. **Head↔runtime parity** — before trusting τ, confirm the Rust runtime computes the
-#    SAME logits as the trained head via `cargo test eagle5_forward_parity` on the M3.
-#    If parity fails, the 0% is an integration bug, not the head.
-#
-# **Gate to ship:** τ (mean accepted length) **≥ 2.5** at depth K on code AND parity passes.
+# **Ship gate:** tau >= 2.5 on held-out code captures **and** M3
+# `eagle5_forward_parity` passes.
 
 # %%
-# --- 0. GPU check ---
-import torch, os, sys, subprocess, json, re
+# --- 0. Dependency + GPU preflight ---
+import json
+import os
+import signal
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+os.environ.setdefault("PIP_DISABLE_PIP_VERSION_CHECK", "1")
+os.environ.setdefault("PYTHONUNBUFFERED", "1")
+
+
+def run(cmd, *, check=True):
+    cmd = [str(x) for x in cmd]
+    print("$ " + " ".join(cmd), flush=True)
+    return subprocess.run(cmd, check=check)
+
+
+run(
+    [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "-q",
+        "--no-cache-dir",
+        "numpy==1.26.4",
+        "pyarrow>=15,<25",
+        "safetensors>=0.5,<0.8",
+        "tqdm>=4.66",
+    ]
+)
+
+import pyarrow  # noqa: F401
+import torch
+
 assert torch.cuda.is_available(), "No GPU. Runtime > Change runtime type > GPU."
-print("GPU:", torch.cuda.get_device_name(0), "torch", torch.__version__)
+GPU_NAME = torch.cuda.get_device_name(0)
+VRAM_GB = torch.cuda.get_device_properties(0).total_memory / 1e9
+print(f"GPU: {GPU_NAME}  VRAM={VRAM_GB:.1f} GB  torch={torch.__version__}")
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.set_float32_matmul_precision("high")
+
+
+def run_with_heartbeat(cmd, label, interval_sec=30):
+    cmd = [str(x) for x in cmd]
+    print("$ " + " ".join(cmd), flush=True)
+    proc = subprocess.Popen(cmd, env={**os.environ, "PYTHONUNBUFFERED": "1"})
+    stop = threading.Event()
+    start = time.time()
+
+    def heartbeat():
+        while not stop.wait(interval_sec):
+            elapsed = (time.time() - start) / 60
+            try:
+                out = subprocess.check_output(
+                    [
+                        "nvidia-smi",
+                        "--query-gpu=utilization.gpu,memory.used,memory.total",
+                        "--format=csv,noheader,nounits",
+                    ],
+                    text=True,
+                    timeout=5,
+                ).strip()
+                util, mem_used, mem_total = [x.strip() for x in out.split(",")]
+                gpu = f"GPU util={util}% mem={mem_used}/{mem_total} MB"
+            except Exception as e:
+                gpu = f"GPU query failed: {e}"
+            print(f"[{label}] RUNNING elapsed={elapsed:.1f}m {gpu}", flush=True)
+
+    t = threading.Thread(target=heartbeat, daemon=True)
+    t.start()
+    try:
+        rc = proc.wait()
+    finally:
+        stop.set()
+        t.join(timeout=2)
+    elapsed = (time.time() - start) / 60
+    print(f"[{label}] finished rc={rc} elapsed={elapsed:.1f}m", flush=True)
+    if rc != 0:
+        raise subprocess.CalledProcessError(rc, cmd)
+
+
+def kill_stale_trainers():
+    try:
+        out = subprocess.check_output(["pgrep", "-f", "eagle5_train_pytorch.py"], text=True).strip()
+    except subprocess.CalledProcessError:
+        return
+    pids = [int(p) for p in out.splitlines() if p.strip()]
+    if not pids:
+        return
+    print("[kill-stale] terminating leftover trainers:", pids, flush=True)
+    for pid in pids:
+        if pid != os.getpid():
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+    time.sleep(3)
 
 # %%
-# --- 1. Get repo scripts + artifacts onto Colab ---
-# Option A (git): set REPO_URL to your pushed dismantle remote, then this clones it.
-# Option B (upload): leave REPO_URL empty and upload a tarball of `colab/` +
-#   `tools/training/` + the frozen npz + the capture-corpus parquet dir to /content.
-REPO_URL = ""  # e.g. "https://<token>@github.com/you/dismantle.git"
+# --- 1. Get repo scripts onto Colab ---
+# Default clones the branch that contains the three Bible notebooks. If you are
+# testing local edits, upload a repo tarball to /content/dismantle and set
+# REPO_URL="" before running this cell.
+REPO_URL = "https://github.com/joshuahickscorp/dismantle.git"
+REPO_BRANCH = "codex/maximal-spec-colab"
+REPO_DIR = Path("/content/dismantle")
+
 if REPO_URL:
-    subprocess.run(["git", "clone", "--depth", "1", REPO_URL, "/content/dismantle"], check=True)
-    os.chdir("/content/dismantle")
+    if not REPO_DIR.exists():
+        run(["git", "clone", "--depth", "1", "--branch", REPO_BRANCH, REPO_URL, str(REPO_DIR)])
+    else:
+        run(["git", "-C", str(REPO_DIR), "fetch", "origin", REPO_BRANCH, "--depth", "1"])
+        run(["git", "-C", str(REPO_DIR), "reset", "--hard", f"origin/{REPO_BRANCH}"])
+    os.chdir(REPO_DIR)
 else:
-    print("Upload to /content: colab/eagle5_train_pytorch.py, eagle5_tau_eval_pytorch.py,")
-    print("mega_calibrate.py, tools/training/build_qwen3b_frozen.py, the frozen .npz,")
-    print("and the capture-corpus parquet dir. Then set paths in cell 3.")
-sys.path.insert(0, "colab")
+    assert REPO_DIR.exists(), "Upload repo to /content/dismantle or set REPO_URL."
+    os.chdir(REPO_DIR)
 
-# %%
-# --- 2. Deps (mirror the trainer's contract) ---
-subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-                "torch", "numpy<2.2", "pyarrow", "safetensors", "transformers", "huggingface_hub"],
-               check=False)
-import pyarrow  # noqa
+required = [
+    Path("colab/eagle5_train_pytorch.py"),
+    Path("colab/eagle5_tau_eval_pytorch.py"),
+    Path("colab/mega_calibrate.py"),
+    Path("tools/training/build_qwen3b_frozen.py"),
+]
+missing = [str(p) for p in required if not p.exists()]
+assert not missing, f"repo checkout missing required scripts: {missing}"
+sys.path.insert(0, str(Path("colab").resolve()))
+print("repo ready:", subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip())
 
 # %% [markdown]
-# ## GATE 1 — capture provenance (DO THIS ON THE M3 FIRST)
-# The parquet corpus must hold **Q4_K_M** residual captures. Produce on the M3:
+# ## Gate 1 — Capture Provenance
+# Produce these on the M3 first, then upload to `/content/artifacts/eagle5/`:
+#
 # ```bash
-# # 1) capture Q4_K_M hidden-state residuals over a CODE corpus
 # DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_Q4K_PREDEC=1 \
 # DISMANTLE_QWEN_EAGLE5_CAPTURE=1 DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER=32 \
 # DISMANTLE_QWEN_CAPTURE_CORPUS_PATH=artifacts/eagle5/captures \
@@ -63,93 +160,205 @@ import pyarrow  # noqa
 #     --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
 #     --kernel-profile profiles/qwen3b-instruct-q4k.m3pro18.json \
 #     --prompts-file artifacts/quant/calib_code.txt --max-new-tokens 64 --temperature 0
-# # 2) pack to parquet shards (trainer input contract)
+#
 # python3 colab/mega_calibrate.py --captures artifacts/eagle5/captures --out artifacts/eagle5/corpus
-# # 3) frozen base tensors (token_embd / lm_head / output_norm) from the GGUF
 # python3 tools/training/build_qwen3b_frozen.py \
 #   --gguf models/qwen2.5-3b-instruct-q4_k_m.gguf --out artifacts/eagle5/qwen3b_frozen.npz
 # ```
-# Upload `artifacts/eagle5/corpus` and `qwen3b_frozen.npz` to Colab.
 
 # %%
-# --- 3. Paths + config (Qwen-3B preset per memory/eagle5_train_qwen3b_adapter_notes) ---
-CORPUS_DIR = "artifacts/eagle5/corpus"          # parquet shards from mega_calibrate.py
-FROZEN     = "artifacts/eagle5/qwen3b_frozen.npz"
-CKPT_DIR   = "artifacts/eagle5/ckpt_q4km"
-CAPTURE_LAYER = 32      # must match the M3 capture layer
-DEPTH      = 4          # τ eval depth (K)
-TAU_GATE   = 2.5
+# --- 2. Paths + training preset ---
+ART = Path("/content/artifacts/eagle5")
+CORPUS_DIR = ART / "corpus"
+FROZEN = ART / "qwen3b_frozen.npz"
+CKPT_DIR = ART / "ckpt_q4km"
+CAPTURE_LAYER = 32
+DEPTH = 4
+TAU_GATE = 2.5
+ALLOW_UNSTAMPED_CORPUS = False
+
+# Proven baseline from corrected headbank: chained-hidden rollout is the key
+# speedup driver. Ordered for performance per compute unit, not exhaustive grid.
+TRAIN = {
+    "epochs": 12,
+    "batch_size": 24 if VRAM_GB >= 35 else (16 if VRAM_GB >= 22 else 8),
+    "seq_len": 16,
+    "lr": 1e-3,
+    "max_rows": 8000 if VRAM_GB >= 22 else 4000,
+    "max_row_tokens": 128,
+    "num_blocks": 1,
+    "head_heads": 16,
+    "head_ff_mult": 4.0,
+    "calib_loss_weight": 0.1,
+    "residual_delta_loss_weight": 0.0,
+    "rollout_loss_weight": 1.0,
+    "rollout_depth": 5,
+    "rollout_depth_targets": "1,2,3,4",
+    "rollout_draft_prob": 0.75,
+}
+
 for p in (CORPUS_DIR, FROZEN):
-    assert os.path.exists(p), f"missing {p} — see GATE 1 (produce on M3, upload)."
-# provenance assertion: mega_calibrate stamps source precision; refuse f16 corpus.
-meta = os.path.join(CORPUS_DIR, "meta.json")
-if os.path.exists(meta):
-    src = json.load(open(meta)).get("source_precision", "unknown")
-    assert "q4" in src.lower(), f"corpus source_precision={src!r} — MUST be Q4_K_M (GATE 1)."
+    assert p.exists(), f"missing {p} — produce on M3 and upload before training."
+
+shards = sorted(CORPUS_DIR.glob("shard_*.parquet"))
+assert shards, f"no parquet shards found under {CORPUS_DIR}"
+meta = CORPUS_DIR / "meta.json"
+if meta.exists():
+    src = json.loads(meta.read_text()).get("source_precision", "unknown")
+    assert "q4" in src.lower(), f"corpus source_precision={src!r}; MUST be Q4_K_M"
     print("provenance OK:", src)
+elif not ALLOW_UNSTAMPED_CORPUS:
+    raise SystemExit("missing corpus meta.json; set ALLOW_UNSTAMPED_CORPUS=True only after manual Q4_K_M verification")
 else:
-    print("WARN: no corpus meta.json — manually confirm residuals are Q4_K_M captures.")
+    print("WARN: proceeding with unstamped corpus by explicit override")
+
+CKPT_DIR.mkdir(parents=True, exist_ok=True)
+print("shards:", len(shards))
+print("train config:", json.dumps(TRAIN, indent=2))
 
 # %%
-# --- 4. Train (wraps colab/eagle5_train_pytorch.py) ---
-cmd = [sys.executable, "colab/eagle5_train_pytorch.py",
-       "--corpus-dir", CORPUS_DIR, "--frozen", FROZEN, "--ckpt-dir", CKPT_DIR,
-       "--epochs", "8", "--batch-size", "24", "--seq-len", "16",
-       "--capture-layer", str(CAPTURE_LAYER), "--num-blocks", "1",
-       "--target-mode", "corpus"]
-print(" ".join(cmd))
-subprocess.run(cmd, check=True)
-HEAD = os.path.join(CKPT_DIR, "head_final.safetensors")
-assert os.path.exists(HEAD), "training did not emit head_final.safetensors"
-print("trained head ->", HEAD, f"({os.path.getsize(HEAD)/1e6:.0f} MB)")
+# --- 3. Train (writes latest.npz AND head_final.safetensors) ---
+kill_stale_trainers()
+torch.cuda.empty_cache()
+cmd = [
+    sys.executable,
+    "-u",
+    "colab/eagle5_train_pytorch.py",
+    "--corpus-dir",
+    str(CORPUS_DIR),
+    "--frozen",
+    str(FROZEN),
+    "--ckpt-dir",
+    str(CKPT_DIR),
+    "--device",
+    "cuda",
+    "--target-mode",
+    "corpus",
+    "--capture-layer",
+    str(CAPTURE_LAYER),
+    "--epochs",
+    str(TRAIN["epochs"]),
+    "--batch-size",
+    str(TRAIN["batch_size"]),
+    "--seq-len",
+    str(TRAIN["seq_len"]),
+    "--lr",
+    str(TRAIN["lr"]),
+    "--max-rows",
+    str(TRAIN["max_rows"]),
+    "--max-row-tokens",
+    str(TRAIN["max_row_tokens"]),
+    "--num-blocks",
+    str(TRAIN["num_blocks"]),
+    "--head-heads",
+    str(TRAIN["head_heads"]),
+    "--head-ff-mult",
+    str(TRAIN["head_ff_mult"]),
+    "--calib-loss-weight",
+    str(TRAIN["calib_loss_weight"]),
+    "--residual-delta-loss-weight",
+    str(TRAIN["residual_delta_loss_weight"]),
+    "--rollout-loss-weight",
+    str(TRAIN["rollout_loss_weight"]),
+    "--rollout-depth",
+    str(TRAIN["rollout_depth"]),
+    "--rollout-depth-targets",
+    TRAIN["rollout_depth_targets"],
+    "--rollout-draft-prob",
+    str(TRAIN["rollout_draft_prob"]),
+    "--rollout-chain-hidden",
+    "--save-safetensors",
+]
+run_with_heartbeat(cmd, "train", interval_sec=30)
+
+HEAD = CKPT_DIR / "head_final.safetensors"
+LATEST = CKPT_DIR / "latest.npz"
+assert HEAD.exists(), "training did not emit head_final.safetensors"
+assert LATEST.exists(), "training did not emit latest.npz"
+assert HEAD.stat().st_size > 1_000_000, f"head_final.safetensors too small: {HEAD.stat().st_size}"
+print("trained head ->", HEAD, f"({HEAD.stat().st_size / 1e6:.0f} MB)")
 
 # %%
-# --- 5. GATE 2a — τ (mean accepted length) on a held-out code slice ---
-TAU_OUT = "artifacts/eagle5/tau.json"
-subprocess.run([sys.executable, "colab/eagle5_tau_eval_pytorch.py",
-                "--ckpt", CKPT_DIR, "--frozen", FROZEN, "--corpus", CORPUS_DIR,
-                "--out", TAU_OUT, "--depth", str(DEPTH)], check=True)
-tau_doc = json.load(open(TAU_OUT))
-tau = tau_doc.get("tau") or tau_doc.get("mean_accepted_len") or \
-      tau_doc.get(f"tau_depth_{DEPTH}")
-print("τ doc:", json.dumps(tau_doc, indent=2)[:600])
-verdict = "GO" if (tau and tau >= TAU_GATE) else "NO-GO"
-print(f"\nτ@K={DEPTH} = {tau}  (gate ≥{TAU_GATE})  ->  {verdict}")
+# --- 4. Gate 2a — runtime-predictive tau on held-out windows ---
+TAU_OUT = ART / "tau.json"
+eval_cmd = [
+    sys.executable,
+    "-u",
+    "colab/eagle5_tau_eval_pytorch.py",
+    "--ckpt",
+    str(HEAD),
+    "--frozen",
+    str(FROZEN),
+    "--corpus",
+    str(CORPUS_DIR),
+    "--out",
+    str(TAU_OUT),
+    "--depth",
+    str(DEPTH),
+    "--target-mode",
+    "corpus",
+    "--chain-hidden",
+    "--max-windows",
+    "4000",
+]
+run_with_heartbeat(eval_cmd, "tau", interval_sec=30)
+tau_doc = json.loads(TAU_OUT.read_text())
+tau = None
+for key in ("tau", "mean_accepted_len", f"tau_depth_{DEPTH}"):
+    if key in tau_doc and tau_doc[key] is not None:
+        tau = float(tau_doc[key])
+        break
+assert tau is not None, f"tau eval did not report a tau field: {tau_doc.keys()}"
+verdict = "GO" if tau >= TAU_GATE else "NO-GO"
+print("tau doc:", json.dumps(tau_doc, indent=2)[:1200])
+print(f"\ntau@K={DEPTH} = {tau:.3f}  gate >= {TAU_GATE}  ->  {verdict}")
 
 # %% [markdown]
-# ## GATE 2b — head↔runtime parity (run on the M3, BEFORE believing τ)
-# τ here is PyTorch-side. The 0%-accept could be a Rust-runtime/head logit mismatch.
-# Confirm they agree before shipping:
+# ## Gate 2b — M3 Head/Runtime Parity
+# Run this on the M3 before trusting any speedup claim:
+#
 # ```bash
-# # make a fixture from the new head, then run the parity test
 # python3 tools/eagle5_forward_dump.py --head <downloaded head_final.safetensors> \
 #   --out crates/dismantle-core/tests/fixtures/eagle5_parity_q3b.json --seed 0xea91e5
 # cargo test -p dismantle-core --test eagle5_forward_parity -- --nocapture
 # ```
-# Parity PASS + τ≥2.5 ⇒ ship. Parity FAIL ⇒ fix the runtime forward (`speculate/eagle5_forward.rs`),
-# not the head.
+#
+# Parity PASS + tau >= 2.5 means proceed to paired runtime bench. Parity FAIL means
+# fix the Rust/Metal forward path, not the Colab head.
 
 # %%
-# --- 6. Package + record ---
-res = {"head": HEAD, "tau": tau, "depth": DEPTH, "tau_gate": TAU_GATE,
-       "verdict": verdict, "capture_layer": CAPTURE_LAYER,
-       "prior_head_accept": 0.0, "ngram_oracle_tau": 1.43,
-       "next": "M3: eagle5_forward_parity test, then tools/bench/eagle5_paired_bench.sh"}
-json.dump(res, open("artifacts/eagle5/eagle3_train_result.json", "w"), indent=2)
+# --- 5. Package + record ---
+res = {
+    "head": str(HEAD),
+    "latest_npz": str(LATEST),
+    "tau": tau,
+    "depth": DEPTH,
+    "tau_gate": TAU_GATE,
+    "verdict": verdict,
+    "capture_layer": CAPTURE_LAYER,
+    "train": TRAIN,
+    "prior_head_accept": 0.0,
+    "ngram_oracle_tau": 1.43,
+    "next": "M3: eagle5_forward_parity, then tools/bench/eagle5_paired_bench.sh",
+}
+out = ART / "eagle3_train_result.json"
+out.write_text(json.dumps(res, indent=2))
 print(json.dumps(res, indent=2))
 try:
     from google.colab import files
-    files.download(HEAD); files.download("artifacts/eagle5/eagle3_train_result.json")
+
+    files.download(str(HEAD))
+    files.download(str(out))
 except Exception:
     pass
 
 # %% [markdown]
-# ## M3 final measurement (the loop closes here)
+# ## M3 Final Measurement
 # ```bash
 # WEIGHTS=models/qwen2.5-3b-instruct-q4_k_m.gguf \
 # PROFILE=profiles/qwen3b-instruct-q4k.m3pro18.json \
 # EAGLE5_HEAD=<new head_final.safetensors> PROMPT='def quicksort(arr):' \
 #   bash tools/bench/eagle5_paired_bench.sh
 # ```
-# Expect accepted-length ≫ 0 and dec_tps **above** the no-spec baseline (the existing
-# head gave 0.000 / 4.5× slower — that is the bar to beat). Report under the §1 gate.
+#
+# Report the paired bench only after `tools/bench/analyze_tcb_trace.py` passes.

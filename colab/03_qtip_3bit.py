@@ -1,152 +1,232 @@
 # %% [markdown]
-# # Stage 3 (deep) — QTIP 3-bit lookup-free trellis quant for Qwen2.5-3B
+# # Stage 3 deep — QTIP 3-bit research scaffold
 #
-# **Bible axis 2, deepest byte-cut.** ~3 bits → ~99 tps wall (vs ~66 at Q4_K_M) — what
-# makes triple-digit *dense* tps physically reachable. QTIP's trellis decode is
-# **lookup-free + contiguous** (no gather), which is the Apple-GPU-friendly property.
+# **Default state: DEFERRED.** This notebook is intentionally not part of the
+# active compute-unit path. QTIP needs a custom M3 trellis-decode kernel before a
+# Colab artifact can become a dismantle lever, and upstream QTIP is Llama-oriented.
+# Run `01_awq_bytecut.ipynb` first; only revisit this if W3 quality is promising
+# or Stage 2 makes the runtime clearly bandwidth-bound.
 #
-# **Read the caveats before running — this is a SCAFFOLD, lower priority than nb 01:**
-# 1. **M3 blocker:** QTIP needs a custom **trellis-decode Metal kernel** on the M3.
-#    None exists; it's multi-session work. This notebook only produces the artifact +
-#    quality verdict, NOT a runnable dismantle lever.
-# 2. **Sequencing:** QTIP only pays off once the kernels are **bandwidth-bound**
-#    (after Bible Stage 2). Its trellis decode adds compute, so axis-1 × QTIP is
-#    sub-multiplicative. Do nb 01 (AWQ/GPTQ) first — it's the practical byte-cut.
-# 3. **Quality floor:** a 3B degrades hard below ~3 bits. **Gate: code-PPL within ~10%
-#    of f16.** If it fails, QTIP is dead for this model.
-# 4. QTIP is research code (Llama-oriented); Qwen2 adaptation may be needed.
-#
-# **Produces:** a QTIP-quantized Qwen-3B + `qtip_3bit_results.json`. **Needs an A100/L4**
-# (Hessian compute is heavy).
+# This file is kept as a guarded scaffold so "Run all" does not burn a GPU session
+# on a known-manual research path.
 
 # %%
-# --- 0. GPU check (QTIP wants real VRAM) ---
-import torch, os, sys, subprocess, json
-assert torch.cuda.is_available(), "No GPU."
-name = torch.cuda.get_device_name(0)
-vram = torch.cuda.get_device_properties(0).total_memory / 1e9
-print("GPU:", name, f"{vram:.0f} GB")
-if vram < 24:
-    print("WARN: QTIP Hessian/quant is heavy; <24GB may OOM. Prefer A100/L4.")
+# --- 0. Guardrail + GPU preflight ---
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 
-# %%
-# --- 1. Clone QTIP + deps ---
-if not os.path.isdir("QTIP"):
-    subprocess.run(["git", "clone", "https://github.com/Cornell-RelaxML/QTIP.git"], check=False)
-subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-                "transformers", "accelerate", "datasets", "fast-hadamard-transform",
-                "safetensors", "numpy<2.2"], check=False)
-# QTIP CUDA kernels (optional for quantization; required for fast eval):
-subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-e", "QTIP/qtip-kernels"],
-               check=False)
-print("QTIP present:", os.path.isdir("QTIP"))
-
-# %%
-# --- 2. Config ---
+RUN_QTIP = False
 MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"
-BITS = 3                      # the byte-cut target
-HESS_DIR = "hessians_code"
-CKPT_DIR = "qwen3b-qtip-3bit"
-PPL_GATE_RATIO = 1.10         # code-PPL(QTIP)/code-PPL(f16) must be <= this
-CALIB_TEXT = "/content/calib_trim.txt"   # auto-fetched below if missing
-EVAL_TEXT  = "/content/ppl_trim.txt"     # disjoint holdout
-results = {"model": MODEL_ID, "bits": BITS, "gate_ratio": PPL_GATE_RATIO}
-# Fetch the repo's code corpora from raw GitHub (no HF auth) if not already present.
-import urllib.request
-_RAW = ("https://raw.githubusercontent.com/joshuahickscorp/dismantle/"
-        "codex/maximal-spec-colab/colab/data")
-for _p in (CALIB_TEXT, EVAL_TEXT):
-    if not os.path.exists(_p):
-        urllib.request.urlretrieve(f"{_RAW}/{os.path.basename(_p)}", _p)
-        print("fetched", _p)
+BITS = 3
+HESS_DIR = Path("hessians_code")
+CKPT_DIR = Path("qwen3b-qtip-3bit")
+HF_DIR = Path("qwen3b-qtip-3bit-hf")
+PPL_GATE_RATIO = 1.10
+results = {
+    "model": MODEL_ID,
+    "bits": BITS,
+    "gate_ratio": PPL_GATE_RATIO,
+    "verdict": "DEFERRED",
+    "reason": "QTIP is not compute-unit-efficient until AWQ/GPTQ and M3 trellis-kernel work justify it.",
+}
+
+if not RUN_QTIP:
+    print("QTIP disabled by default. Set RUN_QTIP=True in this cell to use a fresh, separate GPU runtime.")
+else:
+    import torch
+
+    assert torch.cuda.is_available(), "No GPU."
+    name = torch.cuda.get_device_name(0)
+    vram = torch.cuda.get_device_properties(0).total_memory / 1e9
+    print("GPU:", name, f"{vram:.0f} GB")
+    assert vram >= 24, "QTIP Hessian/quant is heavy; use L4/A100-class VRAM."
+
+# %%
+# --- 1. Clone QTIP + install deps (guarded) ---
+if RUN_QTIP:
+    if not Path("QTIP").is_dir():
+        subprocess.run(["git", "clone", "https://github.com/Cornell-RelaxML/QTIP.git"], check=True)
+    # QTIP pins its own research stack. Run in a fresh runtime, separate from
+    # notebook 01, so scipy/numpy changes cannot poison Transformers imports.
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", "QTIP/requirements.txt"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-e", "QTIP/qtip-kernels"], check=False)
+    print("QTIP present:", Path("QTIP").is_dir())
+else:
+    print("skipped")
+
+# %%
+# --- 2. Config + code corpora fetch (guarded) ---
+CALIB_TEXT = Path("/content/calib_trim.txt")
+EVAL_TEXT = Path("/content/ppl_trim.txt")
+if RUN_QTIP:
+    import urllib.request
+
+    raw = (
+        "https://raw.githubusercontent.com/joshuahickscorp/dismantle/"
+        "codex/maximal-spec-colab/colab/data"
+    )
+    for p in (CALIB_TEXT, EVAL_TEXT):
+        if not p.exists():
+            urllib.request.urlretrieve(f"{raw}/{p.name}", p)
+            print("fetched", p)
+else:
+    print("skipped")
 
 # %% [markdown]
-# ## Calibration (CODE Hessians)
-# QTIP estimates per-layer input Hessians from calibration data. Use a **code**
-# corpus so the quant is code-aware (upload the repo's `calib_trim.txt`). QTIP's
-# scripts default to RedPajama/wikitext — point them at code instead.
+# ## Known Manual Patch
+# Upstream QTIP's Hessian script samples its default dataset; it does not accept
+# the code corpus path used by notebook 01. For a true apples-to-apples code-PPL
+# gate, patch `QTIP/quantize_llama/input_hessian_llama.py` to consume
+# `/content/calib_trim.txt`, then run the guarded cells below.
 
 # %%
-# --- 3. Build Hessians on code (QTIP hessian_offline) ---
-# QTIP ships hessian_offline_llama.py; Qwen2 is architecturally close. If the script
-# rejects Qwen2, patch its model-loading to AutoModelForCausalLM(trust_remote_code).
-os.chdir("QTIP")
-src = CALIB_TEXT if os.path.exists(CALIB_TEXT) else None
-hess_cmd = [sys.executable, "hessian_offline_llama.py",
-            "--base_model", MODEL_ID, "--save_path", "../" + HESS_DIR,
-            "--devset_size", "256", "--ctx_size", "1024"]
-if src:
-    hess_cmd += ["--devset_path", src]   # code calibration
-print(" ".join(hess_cmd))
-r = subprocess.run(hess_cmd)
-results["hessian_rc"] = r.returncode
-os.chdir("..")
-assert r.returncode == 0, "Hessian step failed — likely Qwen2 arch patch needed (see md)."
+# --- 3. Build Hessians (correct upstream module path, guarded) ---
+if RUN_QTIP:
+    os.chdir("QTIP")
+    hess_cmd = [
+        sys.executable,
+        "-m",
+        "quantize_llama.input_hessian_llama",
+        "--base_model",
+        MODEL_ID,
+        "--save_path",
+        "../" + str(HESS_DIR),
+        "--devset_size",
+        "256",
+        "--ctx_size",
+        "1024",
+    ]
+    print(" ".join(hess_cmd))
+    r = subprocess.run(hess_cmd)
+    results["hessian_rc"] = r.returncode
+    os.chdir("..")
+    assert r.returncode == 0, "Hessian step failed; likely Qwen2/data-loader patch needed."
+else:
+    results["hessian_rc"] = "skipped"
+    print("skipped")
 
 # %%
-# --- 4. Quantize (QTIP quantize_finetune, 3-bit trellis) ---
-os.chdir("QTIP")
-q_cmd = [sys.executable, "quantize_finetune_llama.py",
-         "--base_model", MODEL_ID, "--hessian_path", "../" + HESS_DIR,
-         "--save_path", "../" + CKPT_DIR,
-         "--codebook", "bitshift", "--K", str(BITS), "--td_x", "16", "--td_y", "16"]
-print(" ".join(q_cmd))
-r = subprocess.run(q_cmd)
-results["quant_rc"] = r.returncode
-os.chdir("..")
-assert r.returncode == 0, "Quant step failed."
-print("QTIP ckpt ->", CKPT_DIR)
+# --- 4. Quantize + HF-ize (correct upstream module paths, guarded) ---
+if RUN_QTIP:
+    os.chdir("QTIP")
+    q_cmd = [
+        sys.executable,
+        "-m",
+        "quantize_llama.quantize_finetune_llama",
+        "--base_model",
+        MODEL_ID,
+        "--in_hess_path",
+        "../" + str(HESS_DIR),
+        "--save_path",
+        "../" + str(CKPT_DIR),
+        "--codebook",
+        "bitshift",
+        "--scale_override",
+        "0.9",
+        "--ft_epochs",
+        "5",
+        "--td_x",
+        "16",
+        "--td_y",
+        "16",
+        "--L",
+        "16",
+        "--K",
+        str(BITS),
+        "--V",
+        "2",
+        "--decode_mode",
+        "quantlut_sym",
+        "--tlut_bits",
+        "9",
+    ]
+    print(" ".join(q_cmd))
+    r = subprocess.run(q_cmd)
+    results["quant_rc"] = r.returncode
+    assert r.returncode == 0, "Quant step failed."
+    hf_cmd = [
+        sys.executable,
+        "-m",
+        "quantize_llama.hfize_llama",
+        "--quantized_path",
+        "../" + str(CKPT_DIR),
+        "--hf_output_path",
+        "../" + str(HF_DIR),
+    ]
+    print(" ".join(hf_cmd))
+    r = subprocess.run(hf_cmd)
+    results["hfize_rc"] = r.returncode
+    os.chdir("..")
+    assert r.returncode == 0, "HF conversion failed."
+else:
+    results["quant_rc"] = "skipped"
+    results["hfize_rc"] = "skipped"
+    print("skipped")
 
 # %%
-# --- 5. PPL gate on CODE (the decision) ---
-# Reuse the HF sliding-window PPL so the f16 vs QTIP ratio is fair.
-from transformers import AutoTokenizer, AutoModelForCausalLM
-tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
-def ppl(model, text, max_len=2048, stride=512):
-    ids = tok(text, return_tensors="pt").input_ids.to(model.device); import torch
-    nlls, n, prev = [], 0, 0
-    for beg in range(0, ids.size(1), stride):
-        end = min(beg+max_len, ids.size(1)); trg = end-prev
-        inp = ids[:, beg:end]; tgt = inp.clone(); tgt[:, :-trg] = -100
-        with torch.no_grad(): nlls.append(model(inp, labels=tgt).loss*trg)
-        n += trg; prev = end
-        if end == ids.size(1): break
-    return float(torch.exp(torch.stack(nlls).sum()/n))
-ev = open(EVAL_TEXT, encoding="utf-8", errors="replace").read() if os.path.exists(EVAL_TEXT) \
-     else open(CALIB_TEXT, encoding="utf-8", errors="replace").read()[:40000]
-m_f16 = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.float16,
-                                             device_map="cuda", trust_remote_code=True)
-results["ppl_f16"] = ppl(m_f16, ev); del m_f16; torch.cuda.empty_cache()
-# Load QTIP model via its eval loader (see QTIP/eval/); falls back to noting manual step.
-try:
-    sys.path.insert(0, "QTIP")
-    from lib.utils.unsafe_import import model_from_hf_path  # QTIP helper
-    m_q, _ = model_from_hf_path(CKPT_DIR, use_cuda_graph=False)
+# --- 5. PPL gate (guarded) ---
+if RUN_QTIP and HF_DIR.is_dir():
+    import torch
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
+
+    @torch.inference_mode()
+    def ppl(model, text, max_len=2048, stride=512, max_eval_tokens=32768):
+        ids = tok(text, return_tensors="pt", add_special_tokens=False).input_ids[:, :max_eval_tokens]
+        ids = ids.to(model.device)
+        nlls, n, prev = [], 0, 0
+        for beg in range(0, ids.size(1), stride):
+            end = min(beg + max_len, ids.size(1))
+            trg = end - prev
+            inp = ids[:, beg:end]
+            tgt = inp.clone()
+            tgt[:, :-trg] = -100
+            nlls.append(model(inp, labels=tgt).loss.float() * trg)
+            n += trg
+            prev = end
+            if end == ids.size(1):
+                break
+        return float(torch.exp(torch.stack(nlls).sum() / n))
+
+    ev = EVAL_TEXT.read_text(encoding="utf-8", errors="replace")
+    m_f16 = AutoModelForCausalLM.from_pretrained(
+        MODEL_ID, torch_dtype=torch.float16, device_map="cuda", trust_remote_code=True
+    )
+    results["ppl_f16"] = ppl(m_f16, ev)
+    del m_f16
+    torch.cuda.empty_cache()
+    m_q = AutoModelForCausalLM.from_pretrained(str(HF_DIR), torch_dtype=torch.float16, device_map="cuda")
     results["ppl_qtip"] = ppl(m_q, ev)
-except Exception as e:
-    results["ppl_qtip"] = None
-    results["ppl_note"] = f"load QTIP model manually via QTIP eval scripts: {e!r}"
+    del m_q
+    torch.cuda.empty_cache()
+else:
+    results["ppl_note"] = "skipped; RUN_QTIP=False or HF_DIR missing"
+    print("skipped")
 
 # %%
-# --- 6. VERDICT ---
+# --- 6. Verdict ---
 f16, q = results.get("ppl_f16"), results.get("ppl_qtip")
 if f16 and q:
-    ratio = q/f16
+    ratio = q / f16
     results["ratio"] = ratio
     results["verdict"] = "GO" if ratio <= PPL_GATE_RATIO else "NO-GO"
-    print(f"f16 PPL={f16:.3f}  QTIP-{BITS}bit PPL={q:.3f}  ratio={ratio:.3f} "
-          f"(gate ≤{PPL_GATE_RATIO}) -> {results['verdict']}")
+    print(
+        f"f16 PPL={f16:.3f} QTIP-{BITS}bit PPL={q:.3f} "
+        f"ratio={ratio:.3f} gate<={PPL_GATE_RATIO} -> {results['verdict']}"
+    )
 else:
-    results["verdict"] = "INCOMPLETE"
-    print("QTIP PPL not measured — finish via QTIP eval scripts, then apply gate.")
+    print("QTIP not run; result is deferred.")
+
 results["local_oracle_c_ref"] = {"q4km": 4.485, "q3_imatrix": 5.915}
-json.dump(results, open("qtip_3bit_results.json", "w"), indent=2)
+Path("qtip_3bit_results.json").write_text(json.dumps(results, indent=2))
 print(json.dumps(results, indent=2))
 
 # %% [markdown]
-# ## M3 integration boundary (the real blocker)
-# A GO here is a **quality** verdict only. To run QTIP in dismantle you must write a
-# **trellis-decode GEMV kernel in Metal** (lookup-free bitshift codebook → dequant →
-# accumulate). There is **no prior art** in the repo — budget this with the Stage-2
-# kernel work, and only after the Q4_K GEMV is bandwidth-bound (else QTIP's decode
-# compute pulls you back toward compute-bound). Until then, QTIP stays a quality result.
+# ## M3 Integration Boundary
+# A QTIP GO is still only a quality result. Shipping it requires a native
+# trellis-decode GEMV path in Metal plus a loader format. Do not spend Colab CUs
+# here until that M3 work is scheduled.
