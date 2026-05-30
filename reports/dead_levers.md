@@ -46,6 +46,15 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Host-side per-dispatch overhead (concurrent encoder, PSO batching, gap-closing)
+
+**Status:** family exhausted 2026-05-24 — the decode "gap" is real GPU-side, not host
+**Evidence:** Three host-side hypotheses for the ~36 ms/token inter-dispatch "gap" all ruled out. (1) Q/K/V concurrent encoder (`begin/end_concurrent_group`, `DISMANTLE_QWEN_CONCURRENT_QKV=1`): bit-identical but paired only **+1.68%**, below the +5% ship gate. (2) PSO-transition batching: 200 dispatches with 199 PSO transitions runs **1.06×** vs identical-kernel — essentially free. (3) CPU encode is **0.51%** of wall ([[v230-icb-dead]], [[cpu-gpu-pipelining-audit]]). And `gpu_us` is **accurate** at production workload (host_wall/Σgpu = 1.03×), so the gap is NOT a measurement artifact — it is real GPU-side time. **Conclusion: every host-side per-dispatch lever (ICB, concurrent encoder, PSO batching, megakernel-for-dispatch-count) caps below the ship gate.** The real lever is kernel bandwidth efficiency (Bible Stage 2, ~41%→60%+ of peak), not dispatch overhead.
+**Killing memory:** [[gpu-us-accuracy-verified-2026-05-24]], [[pso-transitions-dead-2026-05-24]], [[qkv-concurrent-2026-05-24]], [[decode-gap-anatomy-2026-05-24]]
+**Resurrection check:** only if a future kernel restructuring pushes dispatch count per token far higher (CPU encode crossing ~1 ms/token), or Apple ships a materially cheaper concurrent-encode primitive. The gap itself is closed by making each kernel faster (Stage 2 simdgroup-matrix decode, worklist 1.7), not by removing dispatch overhead.
+
+---
+
 ## 🪦 ICB (Indirect Command Buffer)
 
 **Status:** killed 2026-05-14 by 0.51% CPU-encode budget
@@ -53,6 +62,15 @@ Ordered alphabetically by lever name.
 **Killing memory:** [[v230-icb-dead]]
 **Resurrection check:** if dispatch count per token grows substantially (e.g. via per-expert serial dispatch or new fused-kernel restructuring), re-measure CPU encode budget. If it crosses 1 ms / token, the lever becomes plausible again.
 **Pre-flight gate:** always run `DISMANTLE_TCB_TRACE=cpu` and check p50 weighted per-kernel encode sum vs Off-mode wall before proposing an ICB / megakernel / pipeline-replay lever.
+
+---
+
+## 🪦 Mixed-precision / W4A8 as a default decode path
+
+**Status:** held (not shipped) 2026-05-24 — quality-blocked + below ship gate
+**Evidence:** Per-block int8 activation × Q4_K GEMV is correct and fast in microbench (−34% kernel time, [[w4a8-prototype-2026-05-24]]) but at the model level it fails on two axes. Quality: N=100 corpus = **20% bit-identical** at 32-tok greedy ([[w4a8-corpus-quality-2026-05-24]]). Perf: paired decode **1.115×** — below the 1.20× ship rule, and the fused-quantize variant landed identical 1.116× ([[w4a8-production-held]], [[w4a8-fused-quantize-held]]). Composition: every W4A8 combo is **sub-additive** vs predec-alone (predec+w4a8 = 1.151× < predec 1.340×, [[composition-decision-matrix-2026-05-26]]). Naive per-tensor mixed precision likewise lost in the M5 stack matrix.
+**Killing memory:** [[composition-decision-matrix-2026-05-26]], [[w4a8-corpus-quality-2026-05-24]], [[w4a8-production-held]]
+**Resurrection check:** needs BOTH (1) a logit-streaming quality metric — bit-identical is too strict; cosine/KL on logits may show acceptable quality — AND (2) a clean low-bit source: the byte-cut path requires AWQ-from-f16, not requant-from-Q4_K ([[bible-execution-2026-05-30]]). Held infra stays behind `DISMANTLE_QWEN_W4A8=1`.
 
 ---
 
@@ -89,6 +107,15 @@ Ordered alphabetically by lever name.
 **Evidence:** `moe_batched_gemm_q4_indexed_v3` (64 threads/TG, 4 rows/simdgroup, sumy trick) is parity-correct but 14% slower than v2. `ds[4][8]` + `dm[4][8]` = 64 floats/thread of local scale arrays → register pressure → occupancy collapse.
 **Killing memory:** [[v110-path30-findings]]
 **Resurrection check:** the "keep v2 geometry (256 threads/TG, 1 row/simdgroup) but add sumy trick with only `ds[8]`+`dm[8]`+`xl[8]`+`sumy[8]` = 32 floats overhead" idea was never tried; if Q4_K bandwidth becomes the dominant bottleneck again, that variant might escape the register-pressure trap.
+
+---
+
+## 🪦 Predec 4-row ILP (`_4r`) as a default — speculative, unvalidated
+
+**Status:** parked 2026-05-30 — a guess not grounded in valid profiling
+**Evidence:** `gemm_q4_k_v4_predec_4r` (4 accumulator chains) was added on the theory that the decode GEMV underfills the GPU at 2 rows/simdgroup. But the homemade TCB trace that motivated it is split-CB-distorted and the §1 methodology gate rejects it ([[bible-execution-2026-05-30]]), so the "occupancy-starved" premise is unproven. The validated win is `_2r` (+6.2% bit-identical, default-on); `_4r` is bit-identical but **not adopted** and stays opt-in (`DISMANTLE_QWEN_PREDEC_4R=1`).
+**Killing memory:** [[bible-execution-2026-05-30]], [[path-to-50-gap-corrected-2026-05-29]]
+**Resurrection check:** re-evaluate ONLY after worklist 0.1 (xctrace profiling export) gives valid per-kernel occupancy/stall data. Adopt `_4r` only if profiling shows the predec GEMV is occupancy-limited (not bandwidth-limited) at 2 rows — the Bible says decode is bandwidth-bound (~41% of peak), which predicts more ILP will NOT help. The canonical example of "don't guess kernel geometry without valid profiling."
 
 ---
 
@@ -154,3 +181,6 @@ Before opening a wedge, audit:
 - [[v230-icb-dead]] — ICB + MoE megakernel kill notes
 - [[feedback-kernel-parity-gate]] — Q5_0 simd_shuffle kill + the suffix-matcher bug story
 - [[path-to-100-repath]] — current spec-decode runtime regression context
+- [[gpu-us-accuracy-verified-2026-05-24]] — proved the ~36 ms/token decode gap is real GPU-side, killing the host-side per-dispatch overhead family
+- [[composition-decision-matrix-2026-05-26]] — predec wins quality+perf; every W4A8 combo is sub-additive
+- [[bible-execution-2026-05-30]] — §1 gate enforced; homemade trace rejected (motivates 0.1 profiling); 4r unvalidated
