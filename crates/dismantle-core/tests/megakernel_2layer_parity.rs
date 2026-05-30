@@ -17,9 +17,9 @@
 use std::path::PathBuf;
 
 use dismantle_core::kernels::megakernel::{
-    megakernel_2layer_dispatch, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ,
-    MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A,
-    MK_PROBE_XNORM_FFN,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MK_PROBE_ATTN_OUT,
+    MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL,
+    MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
 use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -398,6 +398,133 @@ fn megakernel_2layer_parity_qwen3b() {
         );
         eprintln!(
             "2-layer post-l1 residual parity OK (worst violation {worst:.3e} ≤ 0, atol={ATOL_MULTILAYER:.0e} rtol={RTOL_MULTILAYER:.0e}) — FUNCTIONAL 2-LAYER POC ACCEPTANCE"
+        );
+    }
+}
+
+/// N-layer megakernel parity (the scaling kernel `qwen3b_megakernel_nlayer`).
+///
+/// Two gates:
+///   (a) **N=2 matches the validated `qwen3b_megakernel_2layer`.** Same
+///       per-layer arithmetic, so this pins the loop + packed-array argbuf +
+///       helper extraction against known-good code with no new reference.
+///       (Reported bit-exactness is informational; the assert is the tight
+///       single-stage tolerance, which any structural bug blows past.)
+///   (b) **N=8 vs a CPU chained-layer forward.** Catches per-layer KV-stride
+///       / indexing bugs that only surface at depth > 2, within the
+///       multi-layer fp16 tolerance scaled for the deeper accumulation.
+#[test]
+#[ignore = "megakernel POC: requires Qwen-3B weights via DISMANTLE_QWEN_GGUF"]
+fn megakernel_nlayer_parity_qwen3b() {
+    let weights = weights_path();
+    if !weights.exists() {
+        eprintln!("SKIP: model not at {}", weights.display());
+        return;
+    }
+
+    let cfg = EngineConfig::default();
+    let model = <QwenDense as Engine>::load(&weights, cfg).expect("load QwenDense");
+    let h = model.config.hidden;
+    assert_eq!(h, HIDDEN);
+
+    let ctx = MetalContext::new().expect("MetalContext::new");
+
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
+    let x_in_f32: Vec<f32> = x_in.iter().map(|v| v.to_f32()).collect();
+
+    // ── Gate (a): N=2 matches the validated 2-layer kernel ──────────────
+    {
+        let two: Vec<MegakernelLayerWeightsF16> = (0..2)
+            .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+            .collect();
+        let want = megakernel_2layer_dispatch(
+            &ctx,
+            &two[0],
+            &two[1],
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+            MK_PROBE_RESIDUAL,
+        )
+        .expect("2-layer dispatch");
+        let got = megakernel_nlayer_dispatch(
+            &ctx,
+            &two,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+        )
+        .expect("n-layer dispatch (N=2)");
+        assert_eq!(got.len(), h);
+
+        let want_f32: Vec<f32> = want.iter().map(|v| v.to_f32()).collect();
+        let (worst, idx, gv, wv) =
+            max_violation_f16_vs_f32_tol(&got, &want_f32, ATOL, RTOL);
+        assert!(
+            worst <= 0.0,
+            "N=2 megakernel vs 2-layer kernel FAIL: violation={worst:.3e} at i={idx} \
+             (got {gv}, want {wv}, atol={ATOL:.0e}, rtol={RTOL:.0e})",
+        );
+        let exact = got
+            .iter()
+            .zip(want.iter())
+            .filter(|(a, b)| a.to_bits() == b.to_bits())
+            .count();
+        eprintln!(
+            "N=2 megakernel matches 2-layer kernel (worst {worst:.3e} ≤ 0; {exact}/{h} f16 bit-exact)"
+        );
+    }
+
+    // ── Gate (b): N=8 vs CPU chained-layer forward ──────────────────────
+    {
+        const N8: usize = 8;
+        assert!(
+            model.config.n_layers >= N8,
+            "model has {} layers (< {N8})",
+            model.config.n_layers
+        );
+        let layers: Vec<MegakernelLayerWeightsF16> = (0..N8)
+            .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+            .collect();
+
+        let got = megakernel_nlayer_dispatch(
+            &ctx,
+            &layers,
+            &x_in,
+            POS as u32,
+            (POS + 1) as u32,
+            MAX_SEQ,
+        )
+        .expect("n-layer dispatch (N=8)");
+        assert_eq!(got.len(), h);
+        assert!(
+            got.iter().all(|v| v.to_f32().is_finite()),
+            "N=8 megakernel output has NaN/Inf"
+        );
+
+        let mut ref_res = x_in_f32.clone();
+        for layer in &layers {
+            ref_res = cpu_layer_forward(&ref_res, layer, POS as u32);
+        }
+
+        // fp16 noise accumulates ~linearly in depth; scale the 2-layer
+        // tolerance by N/2 (the depth this test runs vs the 2-layer gate).
+        let scale = (N8 as f32) / 2.0;
+        let atol = ATOL_MULTILAYER * scale;
+        let rtol = RTOL_MULTILAYER * scale;
+        let (worst, idx, gv, wv) =
+            max_violation_f16_vs_f32_tol(&got, &ref_res, atol, rtol);
+        assert!(
+            worst <= 0.0,
+            "N=8 megakernel parity FAIL: violation={worst:.3e} at i={idx} \
+             (got {gv}, want {wv}, atol={atol:.1e}, rtol={rtol:.1e})",
+        );
+        eprintln!(
+            "N=8 megakernel parity OK (worst violation {worst:.3e} ≤ 0, atol={atol:.1e} rtol={rtol:.1e}) — N-LAYER SCALING ACCEPTANCE"
         );
     }
 }
