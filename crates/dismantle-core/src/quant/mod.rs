@@ -635,6 +635,36 @@ fn decode_q3_k_scales(src: &[u8], scales: &mut [i8; 16]) {
     }
 }
 
+/// Pre-decoded Q3_K sub-block scale table (worklist 1.6): for each 110-byte
+/// block, the 16 `d * scale[i]` f32 values. Q3_K is symmetric (no min term,
+/// unlike Q4_K's (ds, dm) pairs), so it's 16 f32/block. A Q3_K predec GEMV
+/// reads these instead of unpacking the packed 6-bit scales + super-block `d`
+/// on every call. Build once at load; pair with a `gemm_q3_k_v4_predec` kernel.
+pub fn predecode_q3_k_scale_table(bytes: &[u8]) -> Vec<f32> {
+    const BLOCK_BYTES: usize = 110;
+    debug_assert_eq!(
+        bytes.len() % BLOCK_BYTES,
+        0,
+        "predecode_q3_k_scale_table: len {} not a multiple of 110",
+        bytes.len()
+    );
+    let nb = bytes.len() / BLOCK_BYTES;
+    let mut out = vec![0.0f32; nb * 16];
+    for b in 0..nb {
+        let off = b * BLOCK_BYTES;
+        let d = f16::from_bits(u16::from_le_bytes(
+            bytes[off + 108..off + 110].try_into().unwrap(),
+        ))
+        .to_f32();
+        let mut scales = [0i8; 16];
+        decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
+        for i in 0..16 {
+            out[b * 16 + i] = d * scales[i] as f32;
+        }
+    }
+    out
+}
+
 /// Decode the 12-byte packed (scale, min) array into two 8-element u8
 /// arrays. Layout matches ggml's `get_scale_min_k4` exactly:
 ///
@@ -836,5 +866,31 @@ mod tests {
         assert!((out[0] - 1.0).abs() < 1e-3);
         assert!((out[1] + 1.5).abs() < 1e-3);
         assert!((out[2] - 2.25).abs() < 1e-3);
+    }
+
+    #[test]
+    fn q3_k_predec_table_matches_decode() {
+        // Two blocks of pseudo-random bytes with known super-block d values.
+        let mut bytes = vec![0u8; 220];
+        for (i, b) in bytes.iter_mut().enumerate() {
+            *b = ((i * 37 + 11) & 0xFF) as u8;
+        }
+        bytes[108..110].copy_from_slice(&f16::from_f32(0.5).to_bits().to_le_bytes());
+        bytes[218..220].copy_from_slice(&f16::from_f32(-0.25).to_bits().to_le_bytes());
+
+        let table = predecode_q3_k_scale_table(&bytes);
+        assert_eq!(table.len(), 32);
+        for blk in 0..2 {
+            let off = blk * 110;
+            let d = f16::from_bits(u16::from_le_bytes(
+                bytes[off + 108..off + 110].try_into().unwrap(),
+            ))
+            .to_f32();
+            let mut scales = [0i8; 16];
+            decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
+            for i in 0..16 {
+                assert_eq!(table[blk * 16 + i], d * scales[i] as f32, "block {blk} sub {i}");
+            }
+        }
     }
 }
