@@ -376,6 +376,9 @@ def _corpus_candidates() -> list[Path]:
         ART / "corpus",
         Path("/content/artifacts/eagle5/corpus"),
         Path("/content/qwen3b_corpus"),
+        # Shipped in-repo (zero upload): the M3-produced Q4_K_M capture corpus,
+        # fetched by the `git clone` in cell 1.
+        Path("/content/dismantle/colab/data/eagle5_corpus"),
     ]
     if _maybe_mount_drive():
         drive_root = Path("/content/drive/MyDrive")
