@@ -1,0 +1,5 @@
+tag	type	gguf_GiB	ppl	ppl_pm
+baseline	qwen2.5-3b-instruct-q4_k_m.gguf	1.797	4.4852	0.10122
+q3km_naive	q3km_naive.gguf	1.481	11.4316	0.32697
+q3km_imat	q3km_imat.gguf	1.481	5.9148	0.14576
+q2k_naive	q2k_naive.gguf	1.187	16549814.9900	784165.13872

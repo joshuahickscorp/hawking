@@ -11,8 +11,31 @@ M3_PRO_PEAK_GBPS = 150.0
 M3_PRO_SUSTAINED_GBPS = 130.0
 
 
-# Per-token total read footprint for DeepSeek-V2-Lite Q4_K_M on M3 Pro,
-V2_LITE_BYTES_PER_TOKEN = int(1.82 * 1024 ** 3)  # ~1.82 GB
+# Per-token total weight-read footprint, Q4_K_M, by model. Nearly the whole
+# weight file streams per decode token at batch=1.
+V2_LITE_BYTES_PER_TOKEN = int(1.82 * 1024 ** 3)  # ~1.82 GB (DeepSeek-V2-Lite)
+QWEN3B_BYTES_PER_TOKEN = int(1.93 * 1024 ** 3)   # ~1.93 GB (Qwen2.5-3B GGUF)
+MODEL_BYTES = {
+    "qwen3b": QWEN3B_BYTES_PER_TOKEN,
+    "v2lite": V2_LITE_BYTES_PER_TOKEN,
+}
+
+
+def find_first_key(obj, key):
+    """First value for `key` anywhere in a nested JSON doc, else None."""
+    if isinstance(obj, dict):
+        if key in obj:
+            return obj[key]
+        for v in obj.values():
+            r = find_first_key(v, key)
+            if r is not None:
+                return r
+    elif isinstance(obj, list):
+        for v in obj:
+            r = find_first_key(v, key)
+            if r is not None:
+                return r
+    return None
 
 
 def find_samples_and_tps(obj, path=""):
@@ -130,6 +153,89 @@ def print_by_layer(by_lk):
         print(f"\n... ({len(layers) - 10} more layers; rerun with --by-layer-all for full)")
 
 
+def methodology_gate(samples, by_k, total_gpu_us, tokens,
+                     model_bytes_per_token, dec_ms, doc):
+    """Bible §1 — four physical invariants that refuse a lying result.
+
+    Returns (failures, notes, eff_gbps). A non-empty `failures` means the
+    measurement violates physics and must not drive a decision.
+    """
+    failures, notes = [], []
+
+    # INV1 — busy-time bandwidth cannot exceed hardware peak. This alone kills
+    # any "N% idle" claim that would imply pushing the weights at >100% of peak
+    # during the busy window. Also catches a halved token count (gpu_us/token
+    # too small ⇒ inflated BW) — the exact artifact that misled twice.
+    eff_gbps = None
+    if total_gpu_us > 0 and tokens > 0:
+        per_token_s = (total_gpu_us / tokens) / 1_000_000
+        eff_gbps = model_bytes_per_token / per_token_s / 1024 ** 3
+        if eff_gbps > M3_PRO_PEAK_GBPS * 1.001:
+            failures.append(
+                f"INV1: busy-time BW {eff_gbps:.1f} > peak {M3_PRO_PEAK_GBPS:.0f} "
+                f"GiB/s — bytes/token too high or gpu_us undercounted "
+                f"(token miscount? wrong --model?).")
+
+    # INV2 — per-kernel accounting closes: the unmapped 'other' bucket must be
+    # small, and Σ per-kernel must match a measured GPU-busy if the trace has one.
+    if total_gpu_us > 0:
+        other = by_k.get("other", {}).get("gpu_us", 0)
+        other_share = other / total_gpu_us
+        if other_share > 0.05:
+            failures.append(
+                f"INV2: unmapped 'other' bucket {other_share*100:.1f}% > 5% "
+                f"— expand static_kernel_name; accounting drift.")
+    gpu_busy = find_first_key(doc, "gpu_busy_us")
+    if gpu_busy and total_gpu_us > 0:
+        drift = abs(total_gpu_us - gpu_busy) / gpu_busy
+        if drift > 0.05:
+            failures.append(
+                f"INV2: Σkernel {total_gpu_us} vs measured gpu_busy {gpu_busy} "
+                f"drift {drift*100:.1f}% > 5%.")
+
+    # INV3 — token count must come from sample_* dispatches, never completion_tokens.
+    traced = sum(1 for x in samples
+                 if x.get("kernel_name", "").startswith("sample_"))
+    if traced == 0:
+        notes.append(
+            "INV3: no sample_* dispatch found — token count NOT verified from "
+            "argmax; per-token math may be off (the ÷64-vs-÷32 trap).")
+
+    # INV4 — bit-identical greedy parity is a separate Rust gate; surface it.
+    parity = find_first_key(doc, "parity_bit_identical")
+    if parity is False:
+        failures.append("INV4: trace marked parity_bit_identical=false.")
+    elif parity is None:
+        notes.append(
+            "INV4: bit-identical parity not recorded here — enforce via the "
+            "correctness parity gate for every kernel change.")
+
+    # Headline busy fraction (the '~85% busy ⇒ kernel-bound' claim).
+    if dec_ms and total_gpu_us > 0 and tokens:
+        busy_frac = (total_gpu_us / tokens) / (dec_ms * 1000)
+        notes.append(f"GPU-busy ≈ {busy_frac*100:.0f}% of decode wall "
+                     f"(Bible: ~85% ⇒ kernel-bound, not gap-bound).")
+        if busy_frac > 1.05:
+            failures.append(
+                f"INV1: busy fraction {busy_frac*100:.0f}% > 100% — serial decode "
+                f"cannot be busy longer than the wall; measurement is wrong.")
+    return failures, notes, eff_gbps
+
+
+def print_gate(failures, notes, strict):
+    print("\n=== METHODOLOGY GATE (Bible §1) ===")
+    for n in notes:
+        print(f"  [note] {n}")
+    if failures:
+        for f in failures:
+            print(f"  [FAIL] {f}")
+        print(f"  GATE: FAILED ({len(failures)} invariant violation(s)) — "
+              f"this result must not drive a decision.")
+    else:
+        print("  GATE: PASS — all checkable invariants hold.")
+    return bool(failures) and strict
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -138,23 +244,44 @@ def main():
                     help="Show per-layer breakdown (default: aggregate)")
     ap.add_argument("--json", action="store_true",
                     help="Emit machine-readable JSON summary instead of human table")
-    ap.add_argument("--model-bytes-per-token", type=float,
-                    default=V2_LITE_BYTES_PER_TOKEN,
-                    help="Model read footprint per token (bytes). Default: V2-Lite Q4_K_M.")
+    ap.add_argument("--model", choices=sorted(MODEL_BYTES), default="qwen3b",
+                    help="Model footprint preset for bandwidth/gate math (default: qwen3b).")
+    ap.add_argument("--model-bytes-per-token", type=float, default=None,
+                    help="Override per-token read footprint (bytes). Default: from --model.")
+    ap.add_argument("--no-gate", action="store_true",
+                    help="Print the §1 gate but do not exit non-zero on violation.")
     args = ap.parse_args()
+    if args.model_bytes_per_token is None:
+        args.model_bytes_per_token = MODEL_BYTES[args.model]
 
     if not args.trace_json.exists():
         sys.exit(f"trace not found: {args.trace_json}")
     doc = json.loads(args.trace_json.read_text())
-    samples, dec_tps, _ = find_samples_and_tps(doc)
+    samples, dec_tps, dec_ms = find_samples_and_tps(doc)
     tokens = find_completion_tokens(doc) or 1
     if not samples:
         sys.exit("no dispatch_samples found in trace JSON (was --trace-json passed?)")
+
+    # The ProdCbGpu counter buffer captures only the tokens it traced, which
+    # can be FEWER than completion_tokens (e.g. 32 of 64). `sample_argmax_f32`
+    # fires exactly once per greedy decode token, so its count is the true
+    # number of traced tokens. Using completion_tokens here would halve
+    # per-token GPU time and double the apparent inter-dispatch gap.
+    traced = sum(1 for x in samples
+                 if x.get("kernel_name", "").startswith("sample_"))
+    if traced > 0 and traced != tokens:
+        print(f"[note] trace covers {traced} tokens (sample_* count), not "
+              f"completion_tokens={tokens}; using {traced} for per-token math.")
+        tokens = traced
 
     by_k = summarize(samples)
     total_gpu_us = sum(v["gpu_us"] for v in by_k.values())
     with_gpu = sum(v["n"] for v in by_k.values() if v["gpu_us"] > 0)
     has_gpu = total_gpu_us > 0
+
+    failures, notes, eff_gbps = methodology_gate(
+        samples, by_k, total_gpu_us, tokens,
+        args.model_bytes_per_token, dec_ms, doc)
 
     if args.json:
         out = {
@@ -175,7 +302,10 @@ def main():
             out["effective_bandwidth_gibps"] = (
                 args.model_bytes_per_token / per_token_s / 1024**3
             )
+        out["gate"] = {"passed": not failures, "failures": failures, "notes": notes}
         print(json.dumps(out, indent=2))
+        if failures and not args.no_gate:
+            sys.exit(2)
         return
 
     print(f"--- Trace: {args.trace_json} ---")
@@ -196,6 +326,10 @@ def main():
         print_bandwidth(total_gpu_us, tokens, args.model_bytes_per_token)
     if args.by_layer:
         print_by_layer(by_layer(samples))
+
+    should_exit = print_gate(failures, notes, strict=not args.no_gate)
+    if should_exit:
+        sys.exit(2)
 
 
 if __name__ == "__main__":
