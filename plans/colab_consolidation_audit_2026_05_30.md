@@ -34,7 +34,15 @@ Scope: the three recent Bible Colabs:
    - Fixed by training with chained-hidden rollout and evaluating with
      `--chain-hidden`.
 
-6. `03_qtip_3bit` used stale upstream QTIP script paths
+6. `02_eagle3_train` hard-stopped when `/content/artifacts/eagle5/corpus` was
+   empty, even if the raw M3 capture, restored Drive corpus, or frozen GGUF were
+   available in the runtime.
+   - Fixed by adding artifact prep that discovers common Drive paths, auto-packs
+     `q3b_residuals.bin`, can build `qwen3b_frozen.npz` from an uploaded GGUF,
+     validates shard/frozen schemas, and leaves HF capture as an explicit opt-in
+     fallback.
+
+7. `03_qtip_3bit` used stale upstream QTIP script paths
    (`hessian_offline_llama.py`, root-level `quantize_finetune_llama.py`).
    - Fixed to the current module paths, but the notebook is now guarded with
      `RUN_QTIP=False` because it is still a research scaffold.
@@ -55,8 +63,9 @@ Do not merge all three into one run-all notebook.
 1. Run `01_awq_bytecut.ipynb`.
    - T4/L4: trust AWQ W4 first.
    - A100/L4 or cc >= 8.0: enable GPTQ W3 if the W3 answer is worth the extra run.
-2. Run `02_eagle3_train.ipynb` only after M3 Q4_K_M captures and
-   `qwen3b_frozen.npz` exist under `/content/artifacts/eagle5/`.
+2. Run `02_eagle3_train.ipynb` after M3 Q4_K_M captures. Upload either
+   packed shards or `q3b_residuals.bin`; the notebook will auto-pack the raw
+   capture. It will also use the restored Drive corpus/frozen paths when present.
 3. Do not run `03_qtip_3bit.ipynb` by default.
 
 ## Verification Performed Locally
