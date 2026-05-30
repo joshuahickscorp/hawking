@@ -17,9 +17,9 @@
 use std::path::PathBuf;
 
 use dismantle_core::kernels::megakernel::{
-    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MK_PROBE_ATTN_OUT,
-    MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL,
-    MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner,
+    MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
+    MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
 use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -527,6 +527,85 @@ fn megakernel_nlayer_parity_qwen3b() {
             "N=8 megakernel parity OK (worst violation {worst:.3e} ≤ 0, atol={atol:.1e} rtol={rtol:.1e}) — N-LAYER SCALING ACCEPTANCE"
         );
     }
+}
+
+/// Steady-state micro-bench — the handoff's "bench early at ~8 layers"
+/// GO/STOP gate. Uploads N=8 layers once via [`MegakernelRunner`], then
+/// times one fused dispatch per token against the same N layers run
+/// through the standard per-op path ([`QwenDense::forward_layers_subset`]).
+///
+/// The fused kernel runs in a SINGLE threadgroup (256 threads, one GPU
+/// core): it collapses ~6·N dispatches into one but cannot saturate the
+/// M3 Pro's ~18 cores. This measures whether the dispatch saving beats
+/// the occupancy loss. NOTE the baseline `forward_layers_subset` is
+/// CPU-orchestrated (Vec round-trips between ops) and therefore SLOWER
+/// than the production TCB-batched decode — it *over*-favors the
+/// megakernel, so a megakernel loss against even this baseline is a hard
+/// STOP per the handoff's ICB-risk warning.
+#[test]
+#[ignore = "megakernel bench: requires Qwen-3B weights via DISMANTLE_QWEN_GGUF"]
+fn megakernel_nlayer_bench_qwen3b() {
+    let weights = weights_path();
+    if !weights.exists() {
+        eprintln!("SKIP: model not at {}", weights.display());
+        return;
+    }
+    let cfg = EngineConfig::default();
+    let mut model = <QwenDense as Engine>::load(&weights, cfg).expect("load QwenDense");
+    let h = model.config.hidden;
+    let ctx = MetalContext::new().expect("MetalContext::new");
+
+    const N: usize = 8;
+    const ITERS: usize = 40;
+    const WARMUP: usize = 5;
+
+    let layers: Vec<MegakernelLayerWeightsF16> = (0..N)
+        .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
+        .collect();
+    let runner = MegakernelRunner::new(&ctx, &layers, MAX_SEQ).expect("runner");
+
+    let x_in: Vec<f16> = (0..h)
+        .map(|i| f16::from_f32((i as f32) * 0.001 - 1.0))
+        .collect();
+
+    // Fused megakernel: one dispatch per token.
+    for _ in 0..WARMUP {
+        let _ = runner.step(&ctx, &x_in, 0, 1).expect("mk step");
+    }
+    let t0 = std::time::Instant::now();
+    for _ in 0..ITERS {
+        let _ = runner.step(&ctx, &x_in, 0, 1).expect("mk step");
+    }
+    let mk_us = t0.elapsed().as_secs_f64() * 1e6 / ITERS as f64;
+
+    // Per-op baseline: the same N layers via the standard dispatch path.
+    for _ in 0..WARMUP {
+        let _ = model.forward_layers_subset(TOKEN, 0, N - 1).expect("fwd");
+    }
+    let t1 = std::time::Instant::now();
+    for _ in 0..ITERS {
+        let _ = model.forward_layers_subset(TOKEN, 0, N - 1).expect("fwd");
+    }
+    let perop_us = t1.elapsed().as_secs_f64() * 1e6 / ITERS as f64;
+
+    let ratio = perop_us / mk_us;
+    eprintln!("──────── MEGAKERNEL BENCH (N={N} layers, {ITERS} iters) ────────");
+    eprintln!("  fused megakernel : {mk_us:8.1} us/token  (1 dispatch, single threadgroup)");
+    eprintln!(
+        "  per-op baseline  : {perop_us:8.1} us/token  (~{} dispatches, CPU-orchestrated)",
+        N * 6
+    );
+    eprintln!(
+        "  perop / mk       : {ratio:6.2}x  → {}",
+        if mk_us < perop_us {
+            "megakernel faster than (slow) per-op baseline"
+        } else {
+            "megakernel SLOWER — single-threadgroup occupancy loss outweighs dispatch saving"
+        }
+    );
+    eprintln!(
+        "  (baseline over-favors megakernel; production TCB decode is faster than forward_layers_subset)"
+    );
 }
 
 /// Full CPU layer forward (stages A..L) at pos=0. Mirrors
