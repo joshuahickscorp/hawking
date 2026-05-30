@@ -9,7 +9,9 @@ Run order for the new throughput-Bible Colabs:
 1. `01_awq_bytecut.ipynb` — active byte-cut quality gate. Runs f16 PPL once,
    then AWQ W4, with GPTQ W3 guarded/lazy for suitable GPUs.
 2. `02_eagle3_train.ipynb` — EAGLE head retrain from M3-produced Q4_K_M captures.
-   Requires `/content/artifacts/eagle5/corpus` and `qwen3b_frozen.npz`.
+   Prefers `/content/artifacts/eagle5/corpus` and `qwen3b_frozen.npz`, but now
+   also discovers common Drive restore paths, auto-packs an uploaded
+   `q3b_residuals.bin`, and can build the frozen npz from an uploaded GGUF.
 3. `03_qtip_3bit.ipynb` — guarded research scaffold only. `RUN_QTIP=False` by
    default; do not spend GPU time here until AWQ/GPTQ and the M3 trellis-kernel
    path justify it.
