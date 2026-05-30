@@ -2,6 +2,20 @@
 
 Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
+## Bible stage notebooks (May 30)
+
+Run order for the new throughput-Bible Colabs:
+
+1. `01_awq_bytecut.ipynb` — active byte-cut quality gate. Runs f16 PPL once,
+   then AWQ W4, with GPTQ W3 guarded/lazy for suitable GPUs.
+2. `02_eagle3_train.ipynb` — EAGLE head retrain from M3-produced Q4_K_M captures.
+   Requires `/content/artifacts/eagle5/corpus` and `qwen3b_frozen.npz`.
+3. `03_qtip_3bit.ipynb` — guarded research scaffold only. `RUN_QTIP=False` by
+   default; do not spend GPU time here until AWQ/GPTQ and the M3 trellis-kernel
+   path justify it.
+
+Audit notes: `plans/colab_consolidation_audit_2026_05_30.md`.
+
 ## Active notebook
 
 ### `finish_q3b_reconciliation.ipynb` ⭐ current
