@@ -1077,6 +1077,19 @@ mod metal_dispatch {
         out
     }
 
+    /// f16 variant of [`predecode_q4_k_scale_table`] (worklist 1.2). Stores the
+    /// pre-decoded (ds, dm) pairs as `half::f16` (32 B/block vs the f32 table's
+    /// 64 B), cutting the dominant-GEMV predec scale bandwidth ~17% (160 vs
+    /// 192 B/block effective). The matching kernel reads `half` and widens to
+    /// float in-register. Parity is atol-1e-3 fp16 (scale rounding), NOT
+    /// bit-identical — gate via a Rust atol parity test, not the greedy gate.
+    pub fn predecode_q4_k_scale_table_f16(w_q4_bytes: &[u8]) -> Vec<half::f16> {
+        predecode_q4_k_scale_table(w_q4_bytes)
+            .into_iter()
+            .map(half::f16::from_f32)
+            .collect()
+    }
+
     /// Q4_K decode GEMV with pre-decoded sub-block scales (v4_predec).
     ///
     /// Identical math to `gemv_q4_k_m_v3_8r_pinned_tcb` (same v3_8r geometry:
