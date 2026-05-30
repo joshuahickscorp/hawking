@@ -57,21 +57,19 @@ results = {"model": MODEL_ID, "seed": SEED, "ppl": {}, "bits": {}, "verdict": {}
 
 # %%
 # --- 3. Build disjoint code calib + eval text blocks ---
+# Fetches the repo's code corpora from raw GitHub (no HF auth, no gated dataset)
+# so this matches local oracle C exactly. Drop a file in /content to override.
+RAW = ("https://raw.githubusercontent.com/joshuahickscorp/dismantle/"
+       "codex/maximal-spec-colab/colab/data")
 def load_code_blocks():
-    calib_p, eval_p = "/content/calib_trim.txt", "/content/ppl_trim.txt"
-    if os.path.exists(calib_p) and os.path.exists(eval_p):
-        calib = open(calib_p, encoding="utf-8", errors="replace").read()
-        ev    = open(eval_p, encoding="utf-8", errors="replace").read()
-        print("using uploaded repo corpora (comparable to local oracle C)")
-    else:
-        from datasets import load_dataset
-        ds = load_dataset("bigcode/the-stack-smol", data_dir="data/python",
-                          split="train", streaming=False)
-        texts = [r["content"] for r in ds.select(range(400))]
-        cut = len(texts) * 3 // 4
-        calib = "\n\n".join(texts[:cut]); ev = "\n\n".join(texts[cut:])
-        print("using bigcode/the-stack-smol python (fallback)")
-    return calib, ev
+    import urllib.request
+    def get(name):
+        local = "/content/" + name
+        if os.path.exists(local):
+            return open(local, encoding="utf-8", errors="replace").read()
+        return urllib.request.urlopen(f"{RAW}/{name}").read().decode("utf-8", "replace")
+    print("code corpora: /content override else raw GitHub (== local oracle C scale)")
+    return get("calib_trim.txt"), get("ppl_trim.txt")
 CALIB_TEXT, EVAL_TEXT = load_code_blocks()
 print(f"calib chars={len(CALIB_TEXT)}  eval chars={len(EVAL_TEXT)}")
 
