@@ -603,11 +603,41 @@ def _gguf_candidates() -> list[Path]:
     return _unique_paths(candidates)
 
 
+def _download_q4km_gguf() -> "Path | None":
+    """Fetch the Qwen2.5-3B Q4_K_M GGUF from HF so the frozen base can be built
+    with ZERO upload. The frozen tensors (token_embd/lm_head/output_norm) are the
+    same in any Q4_K_M GGUF of this model — only the capture corpus is
+    distribution-sensitive, and that ships in-repo."""
+    try:
+        _ensure_python_packages({"huggingface_hub": "huggingface_hub>=0.34"})
+        from huggingface_hub import hf_hub_download, list_repo_files
+    except Exception as e:
+        print(f"[prep] cannot import huggingface_hub to fetch GGUF: {e}", flush=True)
+        return None
+    for repo in ("Qwen/Qwen2.5-3B-Instruct-GGUF", "bartowski/Qwen2.5-3B-Instruct-GGUF"):
+        try:
+            files = [f for f in list_repo_files(repo) if f.lower().endswith(".gguf")]
+        except Exception as e:
+            print(f"[prep] skip GGUF repo {repo}: {e}", flush=True)
+            continue
+        hits = sorted((f for f in files if "q4_k_m" in f.lower() and "-of-" not in f), key=len)
+        if hits:
+            print(f"[prep] downloading {repo}/{hits[0]} for the frozen build...", flush=True)
+            try:
+                return Path(hf_hub_download(repo, hits[0]))
+            except Exception as e:
+                print(f"[prep] download from {repo} failed: {e}", flush=True)
+    print("[prep] no single-file Q4_K_M GGUF found on HF; upload one or the frozen npz.", flush=True)
+    return None
+
+
 def _build_frozen_from_gguf_if_possible() -> None:
     global FROZEN
     if FROZEN.exists() or not AUTO_BUILD_FROZEN_FROM_GGUF:
         return
     gguf = _discover_file(_gguf_candidates(), min_size=1_000_000_000)
+    if gguf is None:
+        gguf = _download_q4km_gguf()   # zero-upload path: pull the GGUF from HF
     if gguf is None:
         return
     _ensure_python_packages({"gguf": "gguf>=0.10"})
