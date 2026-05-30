@@ -48,9 +48,17 @@ BITS = 3                      # the byte-cut target
 HESS_DIR = "hessians_code"
 CKPT_DIR = "qwen3b-qtip-3bit"
 PPL_GATE_RATIO = 1.10         # code-PPL(QTIP)/code-PPL(f16) must be <= this
-CALIB_TEXT = "/content/calib_trim.txt"   # upload repo's artifacts/quant/calib_trim.txt
+CALIB_TEXT = "/content/calib_trim.txt"   # auto-fetched below if missing
 EVAL_TEXT  = "/content/ppl_trim.txt"     # disjoint holdout
 results = {"model": MODEL_ID, "bits": BITS, "gate_ratio": PPL_GATE_RATIO}
+# Fetch the repo's code corpora from raw GitHub (no HF auth) if not already present.
+import urllib.request
+_RAW = ("https://raw.githubusercontent.com/joshuahickscorp/dismantle/"
+        "codex/maximal-spec-colab/colab/data")
+for _p in (CALIB_TEXT, EVAL_TEXT):
+    if not os.path.exists(_p):
+        urllib.request.urlretrieve(f"{_RAW}/{os.path.basename(_p)}", _p)
+        print("fetched", _p)
 
 # %% [markdown]
 # ## Calibration (CODE Hessians)
