@@ -1,5 +1,7 @@
 use half::f16;
 
+pub mod megakernel;
+
 
 /// RMS-normalize a row in-place.
 ///

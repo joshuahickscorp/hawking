@@ -463,7 +463,208 @@ ninth, tenth. Larger, smaller, faster, slower, better, worse, more,
 less, higher, lower.
 ";
 
+pub struct MegakernelLayerWeightsF16 {
+    /// `(q_dim × hidden)` row-major.
+    pub q_proj: Vec<f16>,
+    /// `(kv_dim × hidden)` row-major.
+    pub k_proj: Vec<f16>,
+    /// `(kv_dim × hidden)` row-major.
+    pub v_proj: Vec<f16>,
+    /// `(hidden × q_dim)` row-major.
+    pub o_proj: Vec<f16>,
+    /// `(intermediate × hidden)` row-major.
+    pub ffn_gate: Vec<f16>,
+    /// `(intermediate × hidden)` row-major.
+    pub ffn_up: Vec<f16>,
+    /// `(hidden × intermediate)` row-major.
+    pub ffn_down: Vec<f16>,
+    /// `(hidden,)` rmsnorm weight applied before Q/K/V.
+    pub attn_norm: Vec<f32>,
+    /// `(hidden,)` rmsnorm weight applied before FFN.
+    pub ffn_norm: Vec<f32>,
+    /// `(q_dim,)`, empty if the layer has no Q bias.
+    pub q_bias: Vec<f32>,
+    /// `(kv_dim,)`, empty if the layer has no K bias.
+    pub k_bias: Vec<f32>,
+    /// `(kv_dim,)`, empty if the layer has no V bias.
+    pub v_bias: Vec<f32>,
+}
+
 impl QwenDense {
+
+    pub fn forward_layers_subset(
+        &mut self,
+        token: u32,
+        pos: usize,
+        last_layer: usize,
+    ) -> Result<Vec<f32>> {
+        let cfg = &self.config;
+        if last_layer >= cfg.n_layers {
+            return Err(Error::Model(format!(
+                "forward_layers_subset: last_layer={} >= n_layers={}",
+                last_layer, cfg.n_layers
+            )));
+        }
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+
+        let mut x = vec![0.0f32; h];
+        embed_lookup(&self.embed, h, token, &mut x);
+        let mut scratch = Vec::<f32>::new();
+
+        let stride = n_kv_heads * head_dim;
+        if self.kv.seq_len >= self.kv.max_seq {
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
+        }
+        let kv_off = self.kv.seq_len * stride;
+        let mha_seq_len = self.kv.seq_len + 1;
+
+        for li in 0..=last_layer {
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(
+                &x,
+                &self.layers[li].attn_norm,
+                cfg.rms_norm_eps,
+                &mut x_norm,
+            )?;
+
+            let layer = &self.layers[li];
+            let mut q_full = vec![0.0f32; q_dim];
+            let mut k_token = vec![0.0f32; kv_dim];
+            let mut v_token = vec![0.0f32; kv_dim];
+            self.matmul_q4_dispatch(&layer.q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &layer.k_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut k_token,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &layer.v_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut v_token,
+                &mut scratch,
+            )?;
+            if !layer.q_bias.is_empty() {
+                add_inplace(&mut q_full, &layer.q_bias);
+            }
+            if !layer.k_bias.is_empty() {
+                add_inplace(&mut k_token, &layer.k_bias);
+            }
+            if !layer.v_bias.is_empty() {
+                add_inplace(&mut v_token, &layer.v_bias);
+            }
+
+            for h_i in 0..n_heads {
+                let off = h_i * head_dim;
+                rope_inplace(&mut q_full[off..off + head_dim], pos as u32, cfg.rope_theta);
+            }
+            for h_i in 0..n_kv_heads {
+                let off = h_i * head_dim;
+                rope_inplace(
+                    &mut k_token[off..off + head_dim],
+                    pos as u32,
+                    cfg.rope_theta,
+                );
+            }
+
+            self.kv.keys[li][kv_off..kv_off + stride].copy_from_slice(&k_token);
+            self.kv.values[li][kv_off..kv_off + stride].copy_from_slice(&v_token);
+
+            let kv_size = mha_seq_len * stride;
+            let keys = &self.kv.keys[li][..kv_size];
+            let values = &self.kv.values[li][..kv_size];
+
+            let mut attn_out = vec![0.0f32; q_dim];
+            mha_decode_step(
+                &q_full,
+                keys,
+                values,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                mha_seq_len,
+                &mut attn_out,
+            )?;
+
+            let mut o = vec![0.0f32; h];
+            self.matmul_q4_dispatch(&layer.o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            add_inplace(&mut x, &o);
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &layer.ffn_norm, cfg.rms_norm_eps, &mut x_norm)?;
+            let mid = cfg.intermediate;
+            let mut g = vec![0.0f32; mid];
+            let mut u = vec![0.0f32; mid];
+            let mut a = vec![0.0f32; mid];
+            self.matmul_q4_dispatch(&layer.ffn_gate, mid, h, &x_norm, &mut g, &mut scratch)?;
+            self.matmul_q4_dispatch(&layer.ffn_up, mid, h, &x_norm, &mut u, &mut scratch)?;
+            silu_mul(&g, &u, &mut a);
+            let mut f = vec![0.0f32; h];
+            self.matmul_q4_dispatch(&layer.ffn_down, h, mid, &a, &mut f, &mut scratch)?;
+            add_inplace(&mut x, &f);
+        }
+
+        Ok(x)
+    }
+
+    /// Pre-dequantize one transformer layer's weights into the
+    /// f16-resident form the megakernel POC expects.
+    ///
+    /// The 2-layer megakernel takes the pre-dequant-to-f16 shortcut so
+    /// its shader can do straight f16 GEMVs inline. Q4_K inline decode
+    /// is followup work.
+    ///
+    /// Weight layout matches `forward_token`: `q_proj` is row-major
+    /// `(q_dim × hidden)`, `o_proj` is `(hidden × q_dim)`, `ffn_gate`
+    /// and `ffn_up` are `(intermediate × hidden)`, `ffn_down` is
+    /// `(hidden × intermediate)`.
+    ///
+    /// Bias vectors are empty if the underlying layer has no bias
+    /// (Qwen2 carries Q/K/V biases but no O bias).
+    pub fn prep_megakernel_layer_f16(
+        &self,
+        li: usize,
+    ) -> Result<MegakernelLayerWeightsF16> {
+        if li >= self.config.n_layers {
+            return Err(Error::Model(format!(
+                "prep_megakernel_layer_f16: li={} >= n_layers={}",
+                li, self.config.n_layers
+            )));
+        }
+        let layer = &self.layers[li];
+        let dq = |t: &TensorRef| -> Result<Vec<f16>> {
+            let bytes = &self.gguf.mmap[t.offset..t.offset + t.byte_size];
+            let mut tmp = vec![0.0f32; t.n_elems];
+            quant::dequant_into(t.dtype, bytes, &mut tmp)?;
+            Ok(tmp.into_iter().map(f16::from_f32).collect())
+        };
+        Ok(MegakernelLayerWeightsF16 {
+            q_proj: dq(&layer.q_proj)?,
+            k_proj: dq(&layer.k_proj)?,
+            v_proj: dq(&layer.v_proj)?,
+            o_proj: dq(&layer.o_proj)?,
+            ffn_gate: dq(&layer.ffn_gate)?,
+            ffn_up: dq(&layer.ffn_up)?,
+            ffn_down: dq(&layer.ffn_down)?,
+            attn_norm: layer.attn_norm.clone(),
+            ffn_norm: layer.ffn_norm.clone(),
+            q_bias: layer.q_bias.clone(),
+            k_bias: layer.k_bias.clone(),
+            v_bias: layer.v_bias.clone(),
+        })
+    }
 
     fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
         let info = g
