@@ -446,13 +446,132 @@ pub mod inner {
         out.copy_from_slice(out_slice);
         Ok(out)
     }
+
+    /// Persistent N-layer megakernel runner: uploads weights and
+    /// allocates the KV / scratch / I/O buffers ONCE, then runs one
+    /// fused dispatch per `step`. This is the shape a decode loop — or a
+    /// steady-state bench — needs: re-dequantizing + re-uploading the
+    /// f16 layers every token would dwarf the kernel itself. Output is
+    /// identical to `megakernel_nlayer_dispatch`; only upload is hoisted.
+    pub struct MegakernelRunner {
+        layer_buffers: Vec<LayerMetalBuffers>,
+        layer_args_buf: Buffer,
+        k_cache_buf: Buffer,
+        v_cache_buf: Buffer,
+        ffn_scratch_buf: Buffer,
+        x_in_buf: Buffer,
+        x_out_buf: Buffer,
+        n_layers: u32,
+        max_seq: u32,
+    }
+
+    impl MegakernelRunner {
+        pub fn new(
+            ctx: &MetalContext,
+            layers: &[MegakernelLayerWeightsF16],
+            max_seq: u32,
+        ) -> Result<Self> {
+            if layers.is_empty() {
+                return Err(Error::Metal(
+                    "MegakernelRunner::new: layers must be non-empty".into(),
+                ));
+            }
+            let n = layers.len();
+            let mut layer_buffers = Vec::with_capacity(n);
+            let mut layer_args = Vec::with_capacity(n);
+            for w in layers {
+                let (bufs, args) = LayerMetalBuffers::upload(ctx, w);
+                layer_buffers.push(bufs);
+                layer_args.push(args);
+            }
+            let layer_args_bytes = unsafe {
+                std::slice::from_raw_parts(
+                    layer_args.as_ptr() as *const u8,
+                    std::mem::size_of_val(layer_args.as_slice()),
+                )
+            };
+            let layer_args_buf = ctx.new_buffer_with_bytes(layer_args_bytes);
+            let kv_bytes =
+                n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
+            Ok(Self {
+                layer_buffers,
+                layer_args_buf,
+                k_cache_buf: ctx.new_buffer(kv_bytes),
+                v_cache_buf: ctx.new_buffer(kv_bytes),
+                ffn_scratch_buf: ctx
+                    .new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>()),
+                x_in_buf: ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>()),
+                x_out_buf: ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>()),
+                n_layers: n as u32,
+                max_seq,
+            })
+        }
+
+        /// One fused forward over all `n_layers`. Writes `x_in` into the
+        /// persistent input buffer, dispatches, returns the residual.
+        pub fn step(
+            &self,
+            ctx: &MetalContext,
+            x_in: &[f16],
+            pos: u32,
+            seq_len: u32,
+        ) -> Result<Vec<f16>> {
+            if x_in.len() != MK_HIDDEN {
+                return Err(Error::Metal(format!(
+                    "MegakernelRunner::step: x_in len {} != {}",
+                    x_in.len(),
+                    MK_HIDDEN
+                )));
+            }
+            unsafe {
+                let dst = self.x_in_buf.contents() as *mut f16;
+                std::ptr::copy_nonoverlapping(x_in.as_ptr(), dst, MK_HIDDEN);
+            }
+            let scalar_args = MkArgs {
+                pos,
+                seq_len,
+                max_seq: self.max_seq,
+                probe_stage: 0,
+                n_layers: self.n_layers,
+            };
+            let scalar_bytes: [u8; std::mem::size_of::<MkArgs>()] =
+                unsafe { std::mem::transmute(scalar_args) };
+            let scalar_buf = ctx.new_buffer_with_bytes(&scalar_bytes);
+            let shmem_bytes =
+                (MK_SHMEM_HALFS * std::mem::size_of::<f16>()) as u64;
+            ctx.dispatch_threads(
+                "qwen3b_megakernel_nlayer",
+                (MK_TG_SIZE, 1, 1),
+                (MK_TG_SIZE, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&scalar_buf), 0);
+                    enc.set_buffer(1, Some(&self.x_in_buf), 0);
+                    enc.set_buffer(2, Some(&self.x_out_buf), 0);
+                    enc.set_buffer(3, Some(&self.k_cache_buf), 0);
+                    enc.set_buffer(4, Some(&self.v_cache_buf), 0);
+                    enc.set_buffer(5, Some(&self.ffn_scratch_buf), 0);
+                    enc.set_buffer(6, Some(&self.layer_args_buf), 0);
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                    for lb in &self.layer_buffers {
+                        lb.mark_used(enc);
+                    }
+                },
+            )?;
+            let mut out = vec![f16::ZERO; MK_HIDDEN];
+            let out_ptr = self.x_out_buf.contents() as *const f16;
+            let out_slice =
+                unsafe { std::slice::from_raw_parts(out_ptr, MK_HIDDEN) };
+            out.copy_from_slice(out_slice);
+            Ok(out)
+        }
+    }
 }
 
 #[cfg(target_os = "macos")]
 #[allow(unused_imports)]
 pub use inner::{
     megakernel_2layer_dispatch, megakernel_nlayer_dispatch, LayerMetalBuffers,
-    MkArgs, MkLayerArgs,
+    MegakernelRunner, MkArgs, MkLayerArgs,
     MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
     MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
