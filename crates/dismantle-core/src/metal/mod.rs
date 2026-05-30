@@ -467,6 +467,28 @@ mod imp {
             "gemm_q4_k_a8_v3_8r" => "gemm_q4_k_a8_v3_8r",
             "add_rmsnorm_fused_q8" => "add_rmsnorm_fused_q8",
             "add_rmsnorm_fused_q8_scaled" => "add_rmsnorm_fused_q8_scaled",
+            // 0.4 (2026-05-30): close the remaining unmapped 'other' bucket so
+            // every dispatched kernel is attributed and traces pass the §1 gate
+            // (INV2: other-share must be < 5%). Covers decode-path attention +
+            // residual/util kernels plus the prefill/batched, W4A8-per-channel,
+            // Q4K_FAST, and megakernel/POC kernels (named now so they attribute
+            // correctly the moment they're wired in, never silently as 'other').
+            "mha_decode_f32" => "mha_decode_f32",
+            "mha_decode_f32_batched" => "mha_decode_f32_batched",
+            "add_inplace_broadcast" => "add_inplace_broadcast",
+            "memcpy_f32_off" => "memcpy_f32_off",
+            "add_rmsnorm_fused_batched" => "add_rmsnorm_fused_batched",
+            "gemm_q4_k_m_batched_v2" => "gemm_q4_k_m_batched_v2",
+            "gemm_q4_k_m_batched_v3" => "gemm_q4_k_m_batched_v3",
+            "gemm_q4_k_m_batched_v3w" => "gemm_q4_k_m_batched_v3w",
+            "gemm_q4_k_m_batched_v3w_predec" => "gemm_q4_k_m_batched_v3w_predec",
+            "gemm_q4k_fast_v1" => "gemm_q4k_fast_v1",
+            "gemm_q4_k_a8_v3_8r_per_channel" => "gemm_q4_k_a8_v3_8r_per_channel",
+            "quantize_f32_to_int8_per_channel" => "quantize_f32_to_int8_per_channel",
+            "qwen3b_megakernel_2layer" => "qwen3b_megakernel_2layer",
+            "qwen3b_megakernel_nlayer" => "qwen3b_megakernel_nlayer",
+            "gpu_address_probe" => "gpu_address_probe",
+            "use_resource_poc_add" => "use_resource_poc_add",
             _ => "other",
         }
     }
