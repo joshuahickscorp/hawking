@@ -34,20 +34,30 @@ def run(cmd, *, check=True):
     return subprocess.run(cmd, check=check)
 
 
-run(
-    [
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "-q",
-        "--no-cache-dir",
-        "numpy==1.26.4",
-        "pyarrow>=15,<25",
-        "safetensors>=0.5,<0.8",
-        "tqdm>=4.66",
-    ]
-)
+# numpy==1.26.4 can't load into a kernel that already imported numpy 2.x (Colab
+# default) — surfaces as "cannot import name '_center'". Install + restart once;
+# a sentinel skips the reinstall on the second pass. ("session crashed" = the
+# restart; just Run-All again, installs are cached.)
+_DEPS_SENTINEL = "/content/.dismantle_eagle_deps_ready"
+if not os.path.exists(_DEPS_SENTINEL):
+    run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "--no-cache-dir",
+            "numpy==1.26.4",
+            "pyarrow>=15,<25",
+            "safetensors>=0.5,<0.8",
+            "tqdm>=4.66",
+        ]
+    )
+    Path(_DEPS_SENTINEL).touch()
+    print("\n*** deps installed — RESTARTING runtime once for a clean numpy. ***")
+    print("*** when it reconnects, just Run-All again (cached). ***", flush=True)
+    os.kill(os.getpid(), 9)
 
 import pyarrow  # noqa: F401
 import torch
