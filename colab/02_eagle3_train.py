@@ -274,7 +274,10 @@ AUTO_BUILD_FROZEN_FROM_GGUF = _env_bool("EAGLE5_AUTO_BUILD_FROZEN_FROM_GGUF", Tr
 # Opt-in only: this is convenient for a smoke test but is not the preferred data
 # distribution for a production head. Set to True in this cell, or export
 # EAGLE5_RUN_HF_FALLBACK_CAPTURE=1 before running the notebook.
-RUN_HF_FALLBACK_CAPTURE = _env_bool("EAGLE5_RUN_HF_FALLBACK_CAPTURE", False)
+RUN_HF_FALLBACK_CAPTURE = _env_bool(
+    "EAGLE5_RUN_HF_FALLBACK_CAPTURE",
+    bool(globals().get("RUN_HF_FALLBACK_CAPTURE", False)),
+)
 HF_FALLBACK_MAX_SEQUENCES = int(os.environ.get("EAGLE5_HF_FALLBACK_MAX_SEQUENCES", "2000"))
 HF_FALLBACK_BATCH_SIZE = int(
     os.environ.get(
@@ -342,6 +345,20 @@ def _discover_file(candidates, *, min_size: int = 1) -> Path | None:
         if p.exists() and p.is_file() and p.stat().st_size >= min_size:
             return p
     return None
+
+
+def _path_inventory(paths, *, pattern: str = "shard_*.parquet", max_items: int = 12) -> str:
+    lines = []
+    for p in _unique_paths(paths)[:max_items]:
+        if p.exists():
+            if p.is_dir():
+                count = len(list(p.glob(pattern)))
+                lines.append(f"  - {p}  [dir, {count} x {pattern}]")
+            else:
+                lines.append(f"  - {p}  [file, {p.stat().st_size / 1e6:.1f} MB]")
+        else:
+            lines.append(f"  - {p}  [missing]")
+    return "\n".join(lines)
 
 
 def _ensure_python_packages(mod_specs: dict[str, str]) -> None:
@@ -623,6 +640,8 @@ def _validate_frozen(path: Path) -> None:
 
 
 def _fail_missing_corpus():
+    corpus_inventory = _path_inventory(_corpus_candidates(), pattern="shard_*.parquet")
+    raw_inventory = _path_inventory(_raw_capture_candidates(), pattern="*.bin")
     raise SystemExit(
         "\n".join([
             f"Corpus dir not found / empty: {CORPUS_DIR}",
@@ -631,8 +650,14 @@ def _fail_missing_corpus():
             f"  (best) upload q3b_residuals.bin under {ART}; this cell will auto-pack it",
             "  (fallback)    colab/mega_calibrate.py --model Qwen/Qwen2.5-3B-Instruct "
             f"--capture-layer {CAPTURE_LAYER} --out {CORPUS_DIR}",
-            "  (fallback)    set RUN_HF_FALLBACK_CAPTURE=True in this cell and rerun",
-            "Also checked the common Drive corpus paths from the reconciliation notebook.",
+            "  (fallback)    set RUN_HF_FALLBACK_CAPTURE=True in this cell and rerun, "
+            "or set os.environ['EAGLE5_RUN_HF_FALLBACK_CAPTURE']='1' before a hotfix-loader exec",
+            "",
+            "Corpus path inventory:",
+            corpus_inventory or "  (none)",
+            "",
+            "Raw-capture file inventory:",
+            raw_inventory or "  (none)",
             "See the capture-source markdown cell above.",
         ])
     )
