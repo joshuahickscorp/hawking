@@ -311,6 +311,86 @@ pub struct QwenDense {
     /// slightly for q1p5; q3b matches exactly).
     /// Override via `DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER=N`.
     pub(crate) eagle5_capture_layer: usize,
+
+    /// Track B (FFN contextual sparsity) capture sink. `Some` only while a
+    /// `DISMANTLE_QWEN_CAPTURE_FFN_PATH` decode run is active. The
+    /// `forward_token` FFN site appends one `(layer, ffn_norm_out[hidden],
+    /// per-block max|silu*up|[n_blocks])` record per layer per decode step.
+    /// `Mutex` (not `RefCell`) because `Engine: Send + Sync`; the lock is
+    /// only taken on the non-TCB `forward_token` path (production decode uses
+    /// `forward_token_greedy_tcb`, which never touches this), so it is free
+    /// for the hot path. See `memory/HANDOFF_track_B_ffn_sparsity.md`.
+    #[cfg(target_os = "macos")]
+    pub(crate) ffn_capture: std::sync::Mutex<Option<FfnCaptureWriter>>,
+}
+
+/// Track B: contiguous intermediate channels per "block" for the FFN
+/// sparsity capture/predictor. 11008 / 256 = 43 blocks/layer at Qwen-3B.
+/// Must match `colab/sparsity_predictor_train.py --block-size`.
+#[cfg(target_os = "macos")]
+pub(crate) const FFN_CAPTURE_BLOCK: usize = 256;
+
+/// Track B: buffered binary sink for the FFN sparsity capture. Streams, per
+/// decode step per layer, the `ffn_norm` output (predictor input) and the
+/// per-block `max|silu(gate)*up|` (the active-block label source). The
+/// companion packer `tools/orchestrator/pack_ffn.py` converts the stream to
+/// the int8 parquet schema `colab/sparsity_predictor_train.py` consumes.
+///
+/// Binary layout (all little-endian), mirroring the eagle5 corpus dump:
+///   per sequence:  u32 0xFFFFFFFF, u32 0xFFFFFFFF, u32 hidden, u32 n_blocks
+///   per record:    u32 layer, f32 norm_in[hidden],
+///                  f32 blockmax[n_blocks], f32 blockl2[n_blocks]
+/// `blockmax` (= max|silu*up| per block) is the trainer's active-block label
+/// source (matches the schema in `sparsity_predictor_train.py`). `blockl2`
+/// (= ||silu*up||_2 per block) is the Step-2 gate proxy: a block's
+/// contribution to the `ffn_down` output scales with its activation L2 norm,
+/// not its single peak channel, so L2 gives a far truer "is this block
+/// skippable" signal than max.
+#[cfg(target_os = "macos")]
+pub(crate) struct FfnCaptureWriter {
+    file: std::io::BufWriter<std::fs::File>,
+    block_size: usize,
+    n_blocks: usize,
+    hidden: usize,
+}
+
+#[cfg(target_os = "macos")]
+impl FfnCaptureWriter {
+    /// Append one `(layer, norm_in, blockmax, blockl2)` record. `norm_in` is
+    /// the `ffn_norm` RMSNorm output (length `hidden`); `act` is
+    /// `silu(gate)*up` (length `intermediate`), reduced here to `n_blocks`
+    /// per-block max-abs and L2 norm.
+    fn record(&mut self, layer: usize, norm_in: &[f32], act: &[f32]) {
+        use std::io::Write as _;
+        let _ = self.file.write_all(&(layer as u32).to_le_bytes());
+        let norm_bytes = unsafe {
+            std::slice::from_raw_parts(norm_in.as_ptr() as *const u8, self.hidden * 4)
+        };
+        let _ = self.file.write_all(norm_bytes);
+        // Per-block max|a|, then (in a second pass) per-block ||a||_2, so the
+        // packer can read the two arrays back-to-back.
+        for b in 0..self.n_blocks {
+            let start = b * self.block_size;
+            let end = (start + self.block_size).min(act.len());
+            let mut m = 0.0f32;
+            for &v in &act[start..end] {
+                let av = v.abs();
+                if av > m {
+                    m = av;
+                }
+            }
+            let _ = self.file.write_all(&m.to_le_bytes());
+        }
+        for b in 0..self.n_blocks {
+            let start = b * self.block_size;
+            let end = (start + self.block_size).min(act.len());
+            let mut sumsq = 0.0f64;
+            for &v in &act[start..end] {
+                sumsq += (v as f64) * (v as f64);
+            }
+            let _ = self.file.write_all(&(sumsq.sqrt() as f32).to_le_bytes());
+        }
+    }
 }
 
 /// P2: built-in English corpus used to seed a Qwen-tokenizer frequency
@@ -938,6 +1018,8 @@ impl Engine for QwenDense {
             #[cfg(target_os = "macos")]
             eagle5_capture_intermediate_buf: None,
             eagle5_capture_layer: eagle5_capture_layer_resolved,
+            #[cfg(target_os = "macos")]
+            ffn_capture: std::sync::Mutex::new(None),
         })
     }
 
@@ -1713,6 +1795,40 @@ impl Engine for QwenDense {
                         }
                     }
                 });
+            // Track B: FFN sparsity capture (DISMANTLE_QWEN_CAPTURE_FFN_PATH).
+            // Forces the non-TCB `forward_token` path so each layer's ffn_norm
+            // output + silu*up activations are computed on-host and tapped (the
+            // TCB path keeps them GPU-side). Writes a per-sequence sentinel,
+            // then `forward_token` appends per-layer records;
+            // `tools/orchestrator/pack_ffn.py` converts the stream to parquet.
+            let ffn_capturing = match std::env::var_os("DISMANTLE_QWEN_CAPTURE_FFN_PATH") {
+                Some(p) => {
+                    let n_blocks =
+                        (self.config.intermediate + FFN_CAPTURE_BLOCK - 1) / FFN_CAPTURE_BLOCK;
+                    match std::fs::OpenOptions::new().create(true).append(true).open(&p) {
+                        Ok(f) => {
+                            use std::io::Write as _;
+                            let mut bw = std::io::BufWriter::new(f);
+                            let _ = bw.write_all(&0xFFFF_FFFFu32.to_le_bytes());
+                            let _ = bw.write_all(&0xFFFF_FFFFu32.to_le_bytes());
+                            let _ = bw.write_all(&(hidden as u32).to_le_bytes());
+                            let _ = bw.write_all(&(n_blocks as u32).to_le_bytes());
+                            *self.ffn_capture.lock().unwrap() = Some(FfnCaptureWriter {
+                                file: bw,
+                                block_size: FFN_CAPTURE_BLOCK,
+                                n_blocks,
+                                hidden,
+                            });
+                            true
+                        }
+                        Err(e) => {
+                            eprintln!("[capture-ffn] WARN: cannot open {p:?}: {e}");
+                            false
+                        }
+                    }
+                }
+                None => false,
+            };
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
@@ -1720,7 +1836,7 @@ impl Engine for QwenDense {
                 }
                 let pos = prompt_len + step;
                 let step_start = Instant::now();
-                let next_id = if use_tcb {
+                let next_id = if use_tcb && !ffn_capturing {
                     self.forward_token_greedy_tcb(last_id, pos)?
                 } else {
                     let mut logits = self.forward_token(last_id, pos)?;
@@ -1767,6 +1883,12 @@ impl Engine for QwenDense {
             }
             if let Some(mut f) = corpus_file {
                 let _ = f.flush();
+            }
+            if ffn_capturing {
+                if let Some(mut w) = self.ffn_capture.lock().unwrap().take() {
+                    use std::io::Write as _;
+                    let _ = w.file.flush();
+                }
             }
         }
 
@@ -2033,6 +2155,17 @@ impl QwenDense {
             self.matmul_q4_dispatch(&layer.ffn_gate, mid, h, &x_norm, &mut g, &mut scratch)?;
             self.matmul_q4_dispatch(&layer.ffn_up, mid, h, &x_norm, &mut u, &mut scratch)?;
             silu_mul(&g, &u, &mut a);
+            // Track B: FFN sparsity capture. Records the predictor input
+            // (`x_norm` = ffn_norm output) and the active-block label source
+            // (per-block max|silu*up|). Active only during a
+            // DISMANTLE_QWEN_CAPTURE_FFN_PATH decode run (lock is None
+            // otherwise); never on the production TCB decode path.
+            #[cfg(target_os = "macos")]
+            if let Ok(mut guard) = self.ffn_capture.lock() {
+                if let Some(w) = guard.as_mut() {
+                    w.record(li, &x_norm, &a);
+                }
+            }
             let mut f = vec![0.0f32; h];
             self.matmul_q4_dispatch(&layer.ffn_down, h, mid, &a, &mut f, &mut scratch)?;
             add_inplace(&mut x, &f);
