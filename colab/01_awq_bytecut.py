@@ -52,21 +52,32 @@ def pip_install(*pkgs, check=True, extra=()):
 
 
 # Remove optional packages that Transformers probes but this notebook does not
-# need. A broken sklearn -> scipy -> numpy chain caused the reported failure.
-run([sys.executable, "-m", "pip", "uninstall", "-y", "sklearn", "scikit-learn", "scipy"], check=False)
-
-pip_install(
-    "numpy==1.26.4",
-    "transformers>=4.57,<5",
-    "tokenizers>=0.22,<0.23",
-    "accelerate>=1.10,<2",
-    "datasets>=3.2,<5",
-    "huggingface_hub>=0.34,<1",
-    "hf_transfer>=0.1.9",
-    "safetensors>=0.5,<0.8",
-    "zstandard>=0.22",
-)
-pip_install("autoawq==0.2.7.post3")
+# need (a broken sklearn -> scipy -> numpy chain caused the first failure), then
+# install the pinned stack. CRITICAL: a freshly-pinned numpy==1.26.4 cannot load
+# into a kernel that already imported numpy 2.x (Colab's default) — it surfaces
+# as "cannot import name '_center' from numpy._core.umath". So on first run we
+# install + restart the runtime once; a sentinel makes the second pass skip
+# straight to clean imports. (If you see "session crashed", that's the restart —
+# just run again / Run-All; the installs are cached so it takes ~10s.)
+_DEPS_SENTINEL = "/content/.dismantle_awq_deps_ready"
+if not os.path.exists(_DEPS_SENTINEL):
+    run([sys.executable, "-m", "pip", "uninstall", "-y", "sklearn", "scikit-learn", "scipy"], check=False)
+    pip_install(
+        "numpy==1.26.4",
+        "transformers>=4.57,<5",
+        "tokenizers>=0.22,<0.23",
+        "accelerate>=1.10,<2",
+        "datasets>=3.2,<5",
+        "huggingface_hub>=0.34,<1",
+        "hf_transfer>=0.1.9",
+        "safetensors>=0.5,<0.8",
+        "zstandard>=0.22",
+    )
+    pip_install("autoawq==0.2.7.post3")
+    Path(_DEPS_SENTINEL).touch()
+    print("\n*** deps installed — RESTARTING runtime once for a clean numpy. ***")
+    print("*** when it reconnects, just Run-All again (cached, ~10s). ***", flush=True)
+    os.kill(os.getpid(), 9)
 
 import numpy as np
 import torch
