@@ -47,8 +47,12 @@ should use:
 - **Hypothesis to test:** train on dismantle-runtime (Q4_K_M) captures, not HF
   captures. Figure out the parquet schema the trainer expects
   (`colab/eagle5_train_pytorch.py` "Input contract" docstring: `tokens`,
-  `residual_q` int8, `residual_scale` f32, …) and whether mega_calibrate or a
-  runtime-capture packer produces it. If a packer is missing, that's the work.
+  `residual_q` int8, `residual_scale` f32, …). **The runtime-capture packer
+  EXISTS:** `tools/orchestrator/pack_corpus.py --in <residuals.bin> --out-dir
+  <corpus>` turns a dismantle-runtime capture `.bin` into the `shard_*.parquet`
+  the trainer reads. So the Q4_K_M path is: runtime capture (env above) →
+  pack_corpus.py → train. (`mega_calibrate.py` is the *other* path — it generates
+  HF-model captures itself, the one that produced the 0%-accept head.)
 
 ## Pipeline (once steps 1–2 resolved)
 1. **M3 — captures** from the source step 2 picks (Q4_K_M runtime preferred).
