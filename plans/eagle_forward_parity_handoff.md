@@ -1,5 +1,49 @@
 # Handoff — EAGLE head↔runtime forward parity (the on-device 0%-accept blocker)
 
+> ## ✅✅ RESOLVED 2026-05-30 — Part 1 FIXED (`4384f68`), Part 2 = head generalization
+> **Part 1 (wiring) SHIPPED + verified:** the residual/intermediate feed is now active
+> in plain `--speculate eagle5` (gated on `eagle5_head.is_some()`/`use_eagle5`, not the
+> corpus-dump flag), residuals cosine-1.0 vs the corpus capture path. On-device accept
+> **0% → ~10.5%** (K=2), bit-identical no-spec, all tests green. The runtime spec path
+> is no longer broken.
+> **Part 2 (still open) = HEAD GENERALIZATION, not runtime:** the agent proved the feed
+> is already correct, so the remaining gap is the head itself. It scores ~90% depth-0
+> **in-sample** on its 619-seq training corpus but only **33% on a fresh held-out
+> capture** (13.6% live) — i.e. it OVERFIT the small corpus. The in-scope teacher-forcing
+> ceiling is 33%, which the runtime already feeds. So spec is still net-negative on tps
+> (~16 vs ~35 no-spec) until the head GENERALIZES. **Fix = retrain on a bigger / more
+> diverse capture corpus from the current build** (the 619-seq corpus was too small +
+> the capture degenerated into repetition at ~620). That's the cloud/capture track, not
+> a runtime change. Everything below is now historical.
+>
+> ## ✅ ROOT CAUSE CONFIRMED 2026-05-30 — it's NOT the forward, NOT the head
+> The single-step forward parity **passes** for the retrained num_blocks=2 head
+> (argmax 315=315, L2 identical, top-8 8/8). The 0%-accept is a **wiring bug**:
+> the head's residual/intermediate feed is gated behind `DISMANTLE_QWEN_EAGLE5_CAPTURE`
+> (`qwen_dense.rs:1727` — `captured_residual = if eagle5_capture_in_use {...} else None`,
+> then `res_ref = …unwrap_or(&zeros)` at :1782). In normal spec decode that flag is
+> off, so **the head is fed zeros → garbage drafts (`.Content`, `酤`, `Breadcrumb`) →
+> 100% reject.** Proven: setting `DISMANTLE_QWEN_EAGLE5_CAPTURE=1` makes the residual
+> real (std≈6.1) and accept goes **0 → 6/112**; drafts become code-like.
+>
+> **The fix has two parts:**
+> 1. **Wiring (cheap):** populate the layer-32 residual+intermediate buffers and feed
+>    them to the head when `use_eagle5` (spec mode), independent of the corpus-dump
+>    flag — gate the buffer *population* + the `:1727`/`:1748` reads on
+>    `(eagle5_capture_in_use || use_eagle5)`, and SKIP the expensive corpus quantize+
+>    disk-write (`:1965+`). The capture flag is 3× slower (prefill 0.55→1.9 s) because
+>    it dumps a corpus; spec decode only needs the buffer, which the GPU already computes.
+> 2. **Representation gap:** even with real residuals, accept is only 5.4% vs the
+>    PyTorch ~50%+ implied by τ=1.91. So the runtime's residual/intermediate still
+>    don't fully match training — check the **intermediate** feed (is it populated or
+>    zeros?), and the residual **scale/normalization** vs the dequantized int8
+>    (`residual_q`×`residual_scale`) the τ-eval uses. Align them until on-device per-pos
+>    accept tracks the PyTorch [0.84,0.54,0.33,0.21].
+>
+> Bench the fix with `tools/bench/paired_lever.sh` + `eagle5_paired_bench.sh` under the
+> §1 gate; net win needs accept high enough to beat the ~31.9 no-spec dec_tps.
+> Original parity-diagnostic notes below are now historical context.
+
 Paste as the opening prompt for a fresh session that has (or can make) a **torch
 env** — the definitive check needs PyTorch. Runs parallel to the M3 (Stage 2 +
 capture) and cloud (training) tracks.
