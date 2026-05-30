@@ -33,10 +33,12 @@ xcrun xctrace export --input "$TRACE" --toc --output "$TOC" 2>/dev/null \
 
 # Schema names that carry Metal GPU work intervals vary by Instruments version;
 # surface every candidate rather than hardcoding one.
-mapfile -t SCHEMAS < <(grep -oE 'schema="[^"]+"' "$TOC" | sed -E 's/schema="([^"]+)"/\1/' | sort -u)
+# bash 3.2 (macOS default) has no `mapfile`; schema names are whitespace-free,
+# so a newline-delimited string + unquoted word-splitting is equivalent.
+SCHEMAS=$(grep -oE 'schema="[^"]+"' "$TOC" | sed -E 's/schema="([^"]+)"/\1/' | sort -u)
 echo "=== schemas in $TRACE ==="
-printf '  %s\n' "${SCHEMAS[@]}"
-GPU_CANDIDATES=$(printf '%s\n' "${SCHEMAS[@]}" | grep -iE 'gpu|metal|shader|kernel|channel|interval' || true)
+printf '  %s\n' $SCHEMAS
+GPU_CANDIDATES=$(printf '%s\n' $SCHEMAS | grep -iE 'gpu|metal|shader|kernel|channel|interval' || true)
 echo "=== GPU-interval candidates (export these) ==="
 printf '  %s\n' $GPU_CANDIDATES
 
