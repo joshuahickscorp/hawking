@@ -730,11 +730,13 @@ print(f"frozen: {FROZEN} ({FROZEN.stat().st_size / 1e6:.0f} MB)", flush=True)
 # multi-depth targets (1..4) protect shallow-depth accuracy. batch_size scales
 # with VRAM. These flags mirror eagle5_train_pytorch.py's argparse exactly.
 TRAIN = {
-    "epochs": 12,
+    # Extract the most from the in-repo 619-seq / 39.6k-step Q4_K_M corpus in ONE
+    # cloud run (Blackwell-class GPU is fast) so we avoid another slow M3 capture.
+    "epochs": 18,                # 12→18: more passes on 2x data; depth-rollout needs it
     "batch_size": 24 if VRAM_GB >= 35 else (16 if VRAM_GB >= 22 else 8),
     "seq_len": 16,
     "lr": 1e-3,
-    "max_rows": 8000 if VRAM_GB >= 22 else 4000,
+    "max_rows": 40000 if VRAM_GB >= 22 else 12000,  # use the full 39.6k steps, don't cap
     "max_row_tokens": 128,
     "num_blocks": 2,  # 2 = block + extra_blocks.0 — the only structure the M3 runtime
                       # forward is parity-verified against; num_blocks=1 trained a head
@@ -743,9 +745,14 @@ TRAIN = {
     "head_ff_mult": 4.0,
     "calib_loss_weight": 0.1,
     "residual_delta_loss_weight": 0.0,
+    # Fight the depth-collapse (prior per-pos accept 0.80→0.32→0.14→0.07): weight the
+    # deeper rollout targets harder and give more rollout starts per batch so depths
+    # 2-4 get far more training signal.
     "rollout_loss_weight": 1.0,
     "rollout_depth": 5,
     "rollout_depth_targets": "1,2,3,4",
+    "rollout_depth_target_weights": "1,1.5,2,2.5",
+    "rollout_starts_per_batch": 8,
     "rollout_draft_prob": 0.75,
 }
 CKPT_DIR.mkdir(parents=True, exist_ok=True)
@@ -780,6 +787,8 @@ train_cmd = [
     "--rollout-loss-weight", str(TRAIN["rollout_loss_weight"]),
     "--rollout-depth", str(TRAIN["rollout_depth"]),
     "--rollout-depth-targets", TRAIN["rollout_depth_targets"],
+    "--rollout-depth-target-weights", TRAIN["rollout_depth_target_weights"],
+    "--rollout-starts-per-batch", str(TRAIN["rollout_starts_per_batch"]),
     "--rollout-draft-prob", str(TRAIN["rollout_draft_prob"]),
     "--rollout-chain-hidden",
     "--seed", str(SEED),
