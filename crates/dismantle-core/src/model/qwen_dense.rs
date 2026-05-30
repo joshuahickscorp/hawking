@@ -125,6 +125,12 @@ pub struct QwenLayerPinned {
     /// ~18.5 MB; Q4_K: ~12.7 MB) and is read once per token per layer.
     /// Activated via DISMANTLE_QWEN_FFN_DOWN_Q4K=1.
     pub ffn_down_q4k: Option<crate::metal::PinnedBuffer>,
+    /// Phase-1 verify-perf: pre-decoded Q4_K sub-block scale table for
+    /// the `ffn_down_q4k` requant buffer above. Built at the same site
+    /// when DISMANTLE_QWEN_Q4K_PREDEC=1, consumed by the batched predec
+    /// GEMM in `forward_tokens_batch_tcb` so the requantized ffn_down
+    /// site skips per-call header repacking like the mmap-backed sites.
+    pub ffn_down_q4k_predec: Option<crate::metal::PinnedBuffer>,
     pub attn_norm: Option<crate::metal::PinnedBuffer>,
     pub ffn_norm: Option<crate::metal::PinnedBuffer>,
     pub q_bias: Option<crate::metal::PinnedBuffer>,
@@ -640,6 +646,16 @@ impl Engine for QwenDense {
                         let nb = layer.ffn_down.n_elems / 256;
                         let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
                         quant::quantize_q4_k(&f32_tmp, &mut q4k)?;
+                        // Phase-1: pre-decode the sub-block scale table for
+                        // this requant buffer when predec is active, so the
+                        // batched verify GEMM can use the predec kernel and
+                        // skip per-call Q4_K header repacking.
+                        if crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC") {
+                            let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
+                            let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+                            layer.pinned.ffn_down_q4k_predec =
+                                Some(ctx.new_buffer_with_bytes(scales_bytes));
+                        }
                         layer.pinned.ffn_down_q4k = Some(ctx.new_buffer_with_bytes(&q4k));
                     }
                 }
@@ -1161,6 +1177,32 @@ impl Engine for QwenDense {
 
         #[cfg(target_os = "macos")]
         if use_eagle5 {
+            // One-time: build the head's vocab-pruned LM head so the propose
+            // hot path argmaxes over the verifier's pruned vocab (~32K) rather
+            // than the full ~152K — the dominant per-draft cost. Gated by
+            // `needs_vocab_prune` so the build + remap clone run once. Skipped
+            // when vocab prune is inactive (head stays full-vocab). Parity is
+            // unaffected: drafts only change speed, never emitted tokens.
+            if self
+                .eagle5_head
+                .as_ref()
+                .map_or(false, |h| h.needs_vocab_prune())
+            {
+                // Reuse the verifier's prune mapping: an explicit corpus
+                // remap if present, else the legacy first-N identity prune
+                // (`DISMANTLE_QWEN_VOCAB_PRUNE=N` → pruned idx j == real id j).
+                let remap: Option<Vec<u32>> =
+                    match (&self.vocab_prune_remap, self.vocab_pruned) {
+                        (Some(r), _) => Some(r.clone()),
+                        (None, Some(n)) => Some((0..n as u32).collect()),
+                        _ => None,
+                    };
+                if let Some(remap) = remap {
+                    if let Some(head) = self.eagle5_head.as_mut() {
+                        head.set_vocab_prune(&remap);
+                    }
+                }
+            }
             // Eagle5 spec-decode (serial verify). See block comment above
             // for design rationale.
             let hidden = self.config.hidden;
@@ -3797,11 +3839,19 @@ impl QwenDense {
             if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
-                kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                    &mut tcb, q4k_buf, 0, h * row_bytes,
-                    h, intermediate, b,
-                    &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                )?;
+                if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
+                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes,
+                        scales, 0, h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                } else {
+                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes,
+                        h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                }
             } else {
                 batched_proj!(
                     layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(),

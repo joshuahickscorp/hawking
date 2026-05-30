@@ -75,6 +75,15 @@ pub struct Eagle5Head {
     /// Most-recently-accepted token id, used as the starting prev_token
     /// for the next draft window. `None` until the first `note_token`.
     last_token: Option<u32>,
+    /// Optional vocab-pruned LM head for the propose hot path:
+    /// `(pruned_lm_head [hidden, n_pruned] f16, remap[pruned_idx] = real id)`.
+    /// Built by `set_vocab_prune` from the verifier's prune mapping. When
+    /// present, `propose_rollout_chained` sizes its lm_head matmul to the
+    /// pruned vocab (the dominant propose cost, ~4.7× smaller at q3b) and
+    /// remaps draft ids back to real ids. **Parity-safe:** drafts only
+    /// affect speed, and the verifier emits only pruned-vocab tokens, so a
+    /// draft outside the pruned set could never have been accepted anyway.
+    lm_head_pruned: Option<(Vec<f16>, Vec<u32>)>,
 }
 
 enum Inner {
@@ -194,7 +203,47 @@ impl Eagle5Head {
             vocab,
             hidden,
             last_token: None,
+            lm_head_pruned: None,
         }
+    }
+
+    /// Build the vocab-pruned LM head used by the propose hot path from the
+    /// verifier's prune mapping (`remap[pruned_idx] = real_token_id`, the
+    /// same `vocab_prune_remap` the verifier slices its own LM head with).
+    /// No-op for Mock heads. Idempotent — safe to call once after load.
+    ///
+    /// Cost: builds a `[hidden, n_pruned]` f16 copy of the relevant LM-head
+    /// columns (~131 MB at q3b 32K). Pays back by shrinking the per-draft
+    /// argmax matmul from full vocab (151936) to `n_pruned` (32000).
+    pub fn set_vocab_prune(&mut self, remap: &[u32]) {
+        if self.lm_head_pruned.is_some() {
+            return; // idempotent — already built.
+        }
+        let (h, v) = (self.hidden, self.vocab);
+        if let Inner::Trained { lm_head_f16, .. } = &self.inner {
+            let n = remap.len();
+            let mut pruned = vec![f16::from_f32(0.0); h * n];
+            for i in 0..h {
+                let src = &lm_head_f16[i * v..(i + 1) * v];
+                let dst = &mut pruned[i * n..(i + 1) * n];
+                for (j, &rid) in remap.iter().enumerate() {
+                    dst[j] = src[(rid as usize).min(v - 1)];
+                }
+            }
+            self.lm_head_pruned = Some((pruned, remap.to_vec()));
+            eprintln!(
+                "[eagle5] built vocab-pruned propose LM head: {} -> {} cols",
+                v,
+                remap.len()
+            );
+        }
+    }
+
+    /// True for a Trained head that has not yet had its pruned LM head
+    /// built. Used to gate the one-time `set_vocab_prune` build (and the
+    /// remap clone it needs) so it runs once, not per decode step.
+    pub fn needs_vocab_prune(&self) -> bool {
+        matches!(self.inner, Inner::Trained { .. }) && self.lm_head_pruned.is_none()
     }
 
     /// Load a trained Eagle6 head from a safetensors checkpoint
@@ -385,6 +434,7 @@ impl Eagle5Head {
             vocab: vocab_size,
             hidden: hidden_dim,
             last_token: None,
+            lm_head_pruned: None,
         })
     }
 
@@ -500,19 +550,36 @@ impl Eagle5Head {
                 token_embd_f16,
                 lm_head_f16,
             } => {
+                use crate::speculate::eagle5_forward::{compute_draft_hidden, lm_head_logits};
                 let h = config.hidden_dim;
+                let v = config.vocab_size;
                 let zeros = vec![0.0f32; h];
+                // Pruned LM head for the per-draft argmax — the dominant
+                // propose cost. When present, the matmul is sized to the
+                // verifier's pruned vocab (~32K) instead of the full ~152K.
+                // Parity-safe: the verifier emits only pruned-vocab tokens,
+                // so a draft outside the pruned set could never be accepted.
+                let pruned = self.lm_head_pruned.as_ref();
                 let mut out = Vec::with_capacity(k);
                 let mut cur = start_token;
                 let mut res: Vec<f32> = residual_in.to_vec();
                 let mut inter: &[f32] = intermediate;
                 for _ in 0..k {
-                    let (logits, draft_hidden) =
-                        crate::speculate::eagle5_forward::forward_single_step_with_hidden(
-                            config, in_proj, blocks, *residual_gate, output_norm,
-                            token_embd_f16, lm_head_f16, cur, &res, inter,
-                        );
-                    let next = crate::kernels::argmax_f32(&logits) as u32;
+                    let draft_hidden = compute_draft_hidden(
+                        config, in_proj, blocks, *residual_gate, output_norm,
+                        token_embd_f16, cur, &res, inter,
+                    );
+                    let next = match pruned {
+                        Some((lm_pruned, remap)) => {
+                            let logits =
+                                lm_head_logits(&draft_hidden, lm_pruned, h, remap.len());
+                            remap[crate::kernels::argmax_f32(&logits) as usize]
+                        }
+                        None => {
+                            let logits = lm_head_logits(&draft_hidden, lm_head_f16, h, v);
+                            crate::kernels::argmax_f32(&logits) as u32
+                        }
+                    };
                     out.push(next);
                     cur = next;
                     // Chain: next depth's residual = this depth's draft_hidden,
