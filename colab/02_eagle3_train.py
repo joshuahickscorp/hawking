@@ -736,7 +736,9 @@ TRAIN = {
     "lr": 1e-3,
     "max_rows": 8000 if VRAM_GB >= 22 else 4000,
     "max_row_tokens": 128,
-    "num_blocks": 1,
+    "num_blocks": 2,  # 2 = block + extra_blocks.0 — the only structure the M3 runtime
+                      # forward is parity-verified against; num_blocks=1 trained a head
+                      # that scored 80% depth-1 in PyTorch but 0% accept on-device.
     "head_heads": 16,
     "head_ff_mult": 4.0,
     "calib_loss_weight": 0.1,
