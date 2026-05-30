@@ -87,6 +87,10 @@ struct MkArgs {
     uint seq_len;      // pos + 1 (length of attended KV slice)
     uint max_seq;      // K/V cache stride per layer
     uint probe_stage;  // dev-only: which intermediate is written to x_out
+    uint n_layers;     // N-layer kernel: transformer layers to run in one
+                       // dispatch. The 2-layer kernel ignores this field
+                       // (it is appended after the 4 fields that kernel
+                       // reads, so its byte offsets are unchanged).
 };
 
 // Probe-stage IDs (must match `MK_PROBE_*` in
@@ -834,4 +838,299 @@ kernel void gpu_address_probe(
     if (tid < args.n) {
         args.out_ptr[tid] = args.in_ptr[tid] * 2.0f;
     }
+}
+
+// ─────────────────────── N-layer megakernel ─────────────────────────
+// Production scaling path: run `args.n_layers` transformer layers in a
+// single dispatch. `mk_layer_forward` is the clean per-layer body
+// (stages A..L) extracted from the layer-1 block of
+// `qwen3b_megakernel_2layer`, parameterized by the layer argbuf `L` and
+// this layer's KV-cache slice so the kernel can loop it. The reduction
+// scratch (`reduce8`) is declared by the caller and passed in: Metal
+// forbids declaring threadgroup variables inside a non-kernel function.
+static void mk_layer_forward(
+    constant MkArgs&          args,
+    device const MkLayerArgs& L,
+    device half*              k_cache_layer,
+    device half*              v_cache_layer,
+    device half*              ffn_scratch,
+    threadgroup half*         residual,
+    threadgroup half*         xnorm,
+    threadgroup half*         qbuf,
+    threadgroup half*         kbuf,
+    threadgroup half*         vbuf,
+    threadgroup half*         scores,
+    threadgroup half*         attnout,
+    threadgroup float*        reduce8,
+    uint                      tid,
+    uint                      tg_size)
+{
+    // Stage A: pre-attn rmsnorm(residual) → xnorm.
+    {
+        float local = 0.0f;
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            local += v * v;
+        }
+        float simd_red = simd_sum(local);
+        uint simd_lane  = tid & 31u;
+        uint simd_group = tid >> 5u;
+        if (simd_lane == 0u) reduce8[simd_group] = simd_red;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        float total = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) total += reduce8[i];
+        float rnorm = rsqrt(total / (float)MK_HIDDEN + L.rms_eps);
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            xnorm[i] = (half)(v * rnorm * L.attn_norm[i]);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // Stage B: Q/K/V GEMVs (xnorm → qbuf/kbuf/vbuf).
+    for (uint r = tid; r < MK_Q_DIM; r += tg_size) {
+        float acc = 0.0f;
+        device const half* row = L.qw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0u; c < MK_HIDDEN; ++c) acc += (float)row[c] * (float)xnorm[c];
+        qbuf[r] = (half)acc;
+    }
+    for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+        float acc_k = 0.0f;
+        float acc_v = 0.0f;
+        device const half* row_k = L.kw + (uint64_t)r * MK_HIDDEN;
+        device const half* row_v = L.vw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0u; c < MK_HIDDEN; ++c) {
+            acc_k += (float)row_k[c] * (float)xnorm[c];
+            acc_v += (float)row_v[c] * (float)xnorm[c];
+        }
+        kbuf[r] = (half)acc_k;
+        vbuf[r] = (half)acc_v;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage C: Q/K/V biases.
+    if (L.has_qbias != 0u) {
+        for (uint r = tid; r < MK_Q_DIM; r += tg_size) qbuf[r] = (half)((float)qbuf[r] + L.qb[r]);
+    }
+    if (L.has_kbias != 0u) {
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) kbuf[r] = (half)((float)kbuf[r] + L.kb[r]);
+    }
+    if (L.has_vbias != 0u) {
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) vbuf[r] = (half)((float)vbuf[r] + L.vb[r]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage D: RoPE on Q and K.
+    {
+        const uint half_dim = MK_HEAD_DIM / 2u;
+        const float pos_f = (float)args.pos;
+        const float base = L.rope_theta;
+        const float inv_hd = 1.0f / (float)MK_HEAD_DIM;
+        const uint q_pairs = MK_Q_DIM / 2u;
+        for (uint idx = tid; idx < q_pairs; idx += tg_size) {
+            uint h = idx / half_dim;
+            uint j = idx % half_dim;
+            float theta = pos_f / pow(base, 2.0f * (float)j * inv_hd);
+            float c = cos(theta);
+            float s = sin(theta);
+            uint off = h * MK_HEAD_DIM + 2u * j;
+            float x0 = (float)qbuf[off];
+            float x1 = (float)qbuf[off + 1u];
+            qbuf[off]      = (half)(x0 * c - x1 * s);
+            qbuf[off + 1u] = (half)(x0 * s + x1 * c);
+        }
+        const uint k_pairs = MK_KV_DIM / 2u;
+        for (uint idx = tid; idx < k_pairs; idx += tg_size) {
+            uint h = idx / half_dim;
+            uint j = idx % half_dim;
+            float theta = pos_f / pow(base, 2.0f * (float)j * inv_hd);
+            float c = cos(theta);
+            float s = sin(theta);
+            uint off = h * MK_HEAD_DIM + 2u * j;
+            float x0 = (float)kbuf[off];
+            float x1 = (float)kbuf[off + 1u];
+            kbuf[off]      = (half)(x0 * c - x1 * s);
+            kbuf[off + 1u] = (half)(x0 * s + x1 * c);
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage E: write k_token/v_token into this layer's KV slot.
+    {
+        const uint64_t slot_off = (uint64_t)args.pos * MK_KV_DIM;
+        device half* k_slot = k_cache_layer + slot_off;
+        device half* v_slot = v_cache_layer + slot_off;
+        for (uint r = tid; r < MK_KV_DIM; r += tg_size) {
+            k_slot[r] = kbuf[r];
+            v_slot[r] = vbuf[r];
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+
+    // Stage F: MHA decode (GQA), reading this layer's KV slice.
+    {
+        const uint group_size = MK_N_HEADS / MK_N_KV_HEADS;
+        const float scale = 1.0f / sqrt((float)MK_HEAD_DIM);
+        const uint seq_len = args.seq_len;
+        for (uint hh = 0u; hh < MK_N_HEADS; ++hh) {
+            uint kv_h = hh / group_size;
+            threadgroup half* q_head = qbuf + hh * MK_HEAD_DIM;
+            threadgroup half* out_head = attnout + hh * MK_HEAD_DIM;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                device const half* k_t =
+                    k_cache_layer + (uint64_t)t * MK_KV_DIM + kv_h * MK_HEAD_DIM;
+                float s = 0.0f;
+                for (uint i = 0u; i < MK_HEAD_DIM; ++i) s += (float)q_head[i] * (float)k_t[i];
+                scores[t] = (half)(s * scale);
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            float local_max = -INFINITY;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                float v = (float)scores[t];
+                if (v > local_max) local_max = v;
+            }
+            float simd_m = simd_max(local_max);
+            uint simd_lane  = tid & 31u;
+            uint simd_group = tid >> 5u;
+            if (simd_lane == 0u) reduce8[simd_group] = simd_m;
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            float gmax = reduce8[0];
+            for (uint k = 1u; k < 8u; ++k) gmax = max(gmax, reduce8[k]);
+            float local_sum = 0.0f;
+            for (uint t = tid; t < seq_len; t += tg_size) {
+                float e = exp((float)scores[t] - gmax);
+                scores[t] = (half)e;
+                local_sum += e;
+            }
+            float simd_s = simd_sum(local_sum);
+            if (simd_lane == 0u) reduce8[simd_group] = simd_s;
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            float gsum = 0.0f;
+            for (uint k = 0u; k < 8u; ++k) gsum += reduce8[k];
+            float inv_sum = 1.0f / gsum;
+            for (uint t = tid; t < seq_len; t += tg_size) scores[t] = (half)((float)scores[t] * inv_sum);
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            for (uint d = tid; d < MK_HEAD_DIM; d += tg_size) {
+                float a = 0.0f;
+                for (uint t = 0u; t < seq_len; ++t) {
+                    device const half* v_t =
+                        v_cache_layer + (uint64_t)t * MK_KV_DIM + kv_h * MK_HEAD_DIM;
+                    a += (float)scores[t] * (float)v_t[d];
+                }
+                out_head[d] = (half)a;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    // Stage G: o_proj (attnout → xnorm).
+    for (uint r = tid; r < MK_HIDDEN; r += tg_size) {
+        float acc = 0.0f;
+        device const half* row = L.ow + (uint64_t)r * MK_Q_DIM;
+        for (uint c = 0u; c < MK_Q_DIM; ++c) acc += (float)row[c] * (float)attnout[c];
+        xnorm[r] = (half)acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage H: residual += o; rmsnorm(residual, ffn_norm) → xnorm.
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+        residual[i] = (half)((float)residual[i] + (float)xnorm[i]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    {
+        float local = 0.0f;
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            local += v * v;
+        }
+        float simd_red = simd_sum(local);
+        uint simd_lane  = tid & 31u;
+        uint simd_group = tid >> 5u;
+        if (simd_lane == 0u) reduce8[simd_group] = simd_red;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        float total = 0.0f;
+        for (uint i = 0u; i < 8u; ++i) total += reduce8[i];
+        float rnorm = rsqrt(total / (float)MK_HIDDEN + L.rms_eps);
+        for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+            float v = (float)residual[i];
+            xnorm[i] = (half)(v * rnorm * L.ffn_norm[i]);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // Stages I+J: fused gate+up+silu_mul → DRAM ffn_scratch.
+    for (uint r = tid; r < MK_INTERMEDIATE; r += tg_size) {
+        float g = 0.0f;
+        float u = 0.0f;
+        device const half* gw_row = L.gw + (uint64_t)r * MK_HIDDEN;
+        device const half* uw_row = L.uw + (uint64_t)r * MK_HIDDEN;
+        for (uint c = 0u; c < MK_HIDDEN; ++c) {
+            float xc = (float)xnorm[c];
+            g += (float)gw_row[c] * xc;
+            u += (float)uw_row[c] * xc;
+        }
+        float s = g / (1.0f + exp(-g));
+        ffn_scratch[r] = (half)(s * u);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup | mem_flags::mem_device);
+
+    // Stage K: ffn_down GEMV (ffn_scratch → xnorm).
+    for (uint r = tid; r < MK_HIDDEN; r += tg_size) {
+        float acc = 0.0f;
+        device const half* dw_row = L.dw + (uint64_t)r * MK_INTERMEDIATE;
+        for (uint c = 0u; c < MK_INTERMEDIATE; ++c) acc += (float)dw_row[c] * (float)ffn_scratch[c];
+        xnorm[r] = (half)acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Stage L: residual += ffn_down output.
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) {
+        residual[i] = (half)((float)residual[i] + (float)xnorm[i]);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+}
+
+// N-layer megakernel entry. Grid = (1,1,1), TG size = 256. Buffers:
+//   0 args        constant MkArgs&         (uses .pos/.seq_len/.max_seq/.n_layers)
+//   1 x_in        device const half*       (hidden, pre-embedded residual in)
+//   2 x_out       device half*             (hidden, residual after n_layers)
+//   3 k_cache     device half*             (n_layers × max_seq × kv_dim)
+//   4 v_cache     device half*             (n_layers × max_seq × kv_dim)
+//   5 ffn_scratch device half*             (intermediate)
+//   6 layers      device const MkLayerArgs* (array of n_layers argbufs)
+kernel void qwen3b_megakernel_nlayer(
+    constant MkArgs&                  args        [[buffer(0)]],
+    device const half*                x_in        [[buffer(1)]],
+    device       half*                x_out       [[buffer(2)]],
+    device       half*                k_cache     [[buffer(3)]],
+    device       half*                v_cache     [[buffer(4)]],
+    device       half*                ffn_scratch [[buffer(5)]],
+    device const MkLayerArgs*         layers      [[buffer(6)]],
+    threadgroup half*                 shmem       [[threadgroup(0)]],
+    uint tid                                      [[thread_position_in_threadgroup]],
+    uint tg_size                                  [[threads_per_threadgroup]])
+{
+    threadgroup half* residual = shmem + SH_RESIDUAL;
+    threadgroup half* xnorm    = shmem + SH_XNORM;
+    threadgroup half* qbuf     = shmem + SH_Q;
+    threadgroup half* kbuf     = shmem + SH_K;
+    threadgroup half* vbuf     = shmem + SH_V;
+    threadgroup half* scores   = shmem + SH_SCORES;
+    threadgroup half* attnout  = shmem + SH_ATTNOUT;
+    threadgroup float reduce8[8];
+
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) residual[i] = x_in[i];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint64_t layer_kv_stride = (uint64_t)args.max_seq * MK_KV_DIM;
+    for (uint li = 0u; li < args.n_layers; ++li) {
+        device const MkLayerArgs& L = layers[li];
+        device half* kc = k_cache + (uint64_t)li * layer_kv_stride;
+        device half* vc = v_cache + (uint64_t)li * layer_kv_stride;
+        mk_layer_forward(args, L, kc, vc, ffn_scratch,
+                         residual, xnorm, qbuf, kbuf, vbuf, scores, attnout,
+                         reduce8, tid, tg_size);
+    }
+
+    for (uint i = tid; i < MK_HIDDEN; i += tg_size) x_out[i] = residual[i];
 }

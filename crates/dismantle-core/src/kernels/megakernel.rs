@@ -33,6 +33,10 @@ pub mod inner {
         pub seq_len: u32,
         pub max_seq: u32,
         pub probe_stage: u32,
+        /// Number of transformer layers the N-layer kernel runs in one
+        /// dispatch. Ignored by `qwen3b_megakernel_2layer` (appended
+        /// after the 4 fields that kernel reads).
+        pub n_layers: u32,
     }
 
     /// Probe-stage IDs (must match `MK_PROBE_*` in shader). Each picks
@@ -93,7 +97,7 @@ pub mod inner {
     // has drifted from the Rust struct (or vice-versa).
     const _MK_LAYER_ARGS_SIZE_CHECK: [(); 120] =
         [(); std::mem::size_of::<MkLayerArgs>()];
-    const _MK_ARGS_SIZE_CHECK: [(); 16] = [(); std::mem::size_of::<MkArgs>()];
+    const _MK_ARGS_SIZE_CHECK: [(); 20] = [(); std::mem::size_of::<MkArgs>()];
 
     // ── Qwen-3B megakernel shape constants (mirror shader header) ───────────
     pub const MK_HIDDEN: usize = 2048;
@@ -281,6 +285,7 @@ pub mod inner {
             seq_len,
             max_seq,
             probe_stage,
+            n_layers: 2,
         };
         let scalar_bytes: [u8; std::mem::size_of::<MkArgs>()] =
             unsafe { std::mem::transmute(scalar_args) };
@@ -316,12 +321,138 @@ pub mod inner {
         out.copy_from_slice(out_slice);
         Ok(out)
     }
+
+    /// Dispatch the N-layer Qwen-3B megakernel.
+    ///
+    /// Runs `layers.len()` transformer layers in a single GPU dispatch
+    /// (one threadgroup, shared-memory working set) — the scaling path
+    /// past the 2-layer correctness POC. Returns the hidden-state
+    /// residual after the last layer.
+    ///
+    /// `x_in` is the pre-embedded hidden state. `pos` / `seq_len` index
+    /// the KV cache as in `megakernel_2layer_dispatch`. `max_seq` is the
+    /// per-layer KV stride; it must be ≥ `seq_len` and ≤ 256 (the shmem
+    /// `scores` buffer caps attended length at the POC `MK_MAX_SEQ`).
+    pub fn megakernel_nlayer_dispatch(
+        ctx: &MetalContext,
+        layers: &[MegakernelLayerWeightsF16],
+        x_in: &[f16],
+        pos: u32,
+        seq_len: u32,
+        max_seq: u32,
+    ) -> Result<Vec<f16>> {
+        if x_in.len() != MK_HIDDEN {
+            return Err(Error::Metal(format!(
+                "megakernel_nlayer_dispatch: x_in len {} != MK_HIDDEN {}",
+                x_in.len(),
+                MK_HIDDEN
+            )));
+        }
+        if layers.is_empty() {
+            return Err(Error::Metal(
+                "megakernel_nlayer_dispatch: layers must be non-empty".into(),
+            ));
+        }
+        if (max_seq as usize) < 1 || seq_len > max_seq {
+            return Err(Error::Metal(format!(
+                "megakernel_nlayer_dispatch: need 1 ≤ seq_len ({seq_len}) ≤ max_seq ({max_seq})"
+            )));
+        }
+        let n = layers.len();
+
+        // Residual buffers.
+        let x_in_bytes = unsafe {
+            std::slice::from_raw_parts(
+                x_in.as_ptr() as *const u8,
+                std::mem::size_of_val(x_in),
+            )
+        };
+        let x_in_buf = ctx.new_buffer_with_bytes(x_in_bytes);
+        let x_out_buf = ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>());
+
+        // KV cache: n layers × max_seq × kv_dim halfs per buffer. The
+        // shader strides layer `li` by `max_seq * kv_dim`.
+        let kv_bytes =
+            n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
+        let k_cache_buf = ctx.new_buffer(kv_bytes);
+        let v_cache_buf = ctx.new_buffer(kv_bytes);
+
+        // FFN scratch (reused per layer).
+        let ffn_scratch_buf =
+            ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>());
+
+        // Upload every layer's weights; keep the buffer bundles alive
+        // for the dispatch (their gpu_addresses live in the argbufs).
+        let mut layer_buffers: Vec<LayerMetalBuffers> = Vec::with_capacity(n);
+        let mut layer_args: Vec<MkLayerArgs> = Vec::with_capacity(n);
+        for w in layers {
+            let (bufs, args) = LayerMetalBuffers::upload(ctx, w);
+            layer_buffers.push(bufs);
+            layer_args.push(args);
+        }
+
+        // Pack per-layer argbufs into one contiguous array buffer; the
+        // buffer argument table can't hold 36 separate binds, so the
+        // shader indexes `layers[li]`. MkLayerArgs is #[repr(C)] 120 B
+        // with no padding (size check above), so the Vec is already the
+        // wire layout.
+        let layer_args_bytes = unsafe {
+            std::slice::from_raw_parts(
+                layer_args.as_ptr() as *const u8,
+                std::mem::size_of_val(layer_args.as_slice()),
+            )
+        };
+        let layer_args_buf = ctx.new_buffer_with_bytes(layer_args_bytes);
+
+        // Scalar argbuf.
+        let scalar_args = MkArgs {
+            pos,
+            seq_len,
+            max_seq,
+            probe_stage: 0,
+            n_layers: n as u32,
+        };
+        let scalar_bytes: [u8; std::mem::size_of::<MkArgs>()] =
+            unsafe { std::mem::transmute(scalar_args) };
+        let scalar_buf = ctx.new_buffer_with_bytes(&scalar_bytes);
+
+        let shmem_bytes = (MK_SHMEM_HALFS * std::mem::size_of::<f16>()) as u64;
+
+        ctx.dispatch_threads(
+            "qwen3b_megakernel_nlayer",
+            (MK_TG_SIZE, 1, 1),
+            (MK_TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&scalar_buf), 0);
+                enc.set_buffer(1, Some(&x_in_buf), 0);
+                enc.set_buffer(2, Some(&x_out_buf), 0);
+                enc.set_buffer(3, Some(&k_cache_buf), 0);
+                enc.set_buffer(4, Some(&v_cache_buf), 0);
+                enc.set_buffer(5, Some(&ffn_scratch_buf), 0);
+                enc.set_buffer(6, Some(&layer_args_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+                // Weight buffers are referenced only via gpu_address in
+                // the argbufs; tell the driver to keep them resident.
+                for lb in &layer_buffers {
+                    lb.mark_used(enc);
+                }
+            },
+        )?;
+
+        // Readback.
+        let mut out = vec![f16::ZERO; MK_HIDDEN];
+        let out_ptr = x_out_buf.contents() as *const f16;
+        let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, MK_HIDDEN) };
+        out.copy_from_slice(out_slice);
+        Ok(out)
+    }
 }
 
 #[cfg(target_os = "macos")]
 #[allow(unused_imports)]
 pub use inner::{
-    megakernel_2layer_dispatch, LayerMetalBuffers, MkArgs, MkLayerArgs,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, LayerMetalBuffers,
+    MkArgs, MkLayerArgs,
     MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
     MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
