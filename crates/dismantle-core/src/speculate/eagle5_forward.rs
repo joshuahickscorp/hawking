@@ -99,13 +99,46 @@ pub fn forward_single_step_with_hidden(
 ) -> (Vec<f32>, Vec<f32>) {
     let h = config.hidden_dim;
     let v = config.vocab_size;
+    debug_assert_eq!(lm_head_f16.len(), h * v);
+    // draft_hidden = the head's predicted hidden state (in_proj + blocks +
+    // gated residual). Extracted into `compute_draft_hidden` so the
+    // vocab-pruned propose path can reuse it and size the lm_head matmul
+    // to the pruned vocab (the dominant cost — 311M FMAs at full q3b vocab).
+    let draft_hidden = compute_draft_hidden(
+        config, in_proj, blocks, residual_gate, output_norm,
+        token_embd_f16, prev_token, residual_in, intermediate,
+    );
+    // logits = draft_hidden @ lm_head over the FULL vocab (parity path).
+    let logits = lm_head_logits(&draft_hidden, lm_head_f16, h, v);
+    (logits, draft_hidden)
+}
+
+/// Compute the head's `draft_hidden` (everything except the final lm_head
+/// matmul): prev-token embed, `[embed|residual|intermediate]` in_proj,
+/// the transformer blocks, and the gated-residual combine. Shared by the
+/// full-vocab `forward_single_step_with_hidden` and the vocab-pruned
+/// propose path so the costly lm_head matmul can be sized to the pruned
+/// vocab without duplicating the block math.
+#[allow(clippy::too_many_arguments)]
+pub fn compute_draft_hidden(
+    config: &TrainedConfig,
+    in_proj: &[f32],
+    blocks: &[TrainedBlock],
+    residual_gate: f32,
+    output_norm: &[f32],
+    token_embd_f16: &[f16],
+    prev_token: u32,
+    residual_in: &[f32],
+    intermediate: &[f32],
+) -> Vec<f32> {
+    let h = config.hidden_dim;
+    let v = config.vocab_size;
     let ff = config.ff_dim;
     debug_assert_eq!(residual_in.len(), h);
     debug_assert_eq!(intermediate.len(), h);
     debug_assert_eq!(output_norm.len(), h);
     debug_assert_eq!(in_proj.len(), h * 3 * h);
     debug_assert_eq!(token_embd_f16.len(), h * v);
-    debug_assert_eq!(lm_head_f16.len(), h * v);
     debug_assert_eq!(blocks.len(), config.num_blocks);
 
     // (1) prev_embed = embed_table[prev_token] where embed_table is
@@ -156,35 +189,25 @@ pub fn forward_single_step_with_hidden(
     for i in 0..h {
         draft_hidden[i] = baseline[i] + residual_gate * x[i];
     }
+    draft_hidden
+}
 
-    // (7) logits = draft_hidden @ _lm_head. _lm_head is stored [h, v]
-    // (so column v is the row of weights that produces logit v):
-    //   logits[k] = sum_i draft_hidden[i] * lm_head[i, k]
-    //             = sum_i draft_hidden[i] * lm_head_f16[i*v + k]
-    //
-    // Parallel over hidden axis. Each thread accumulates a partial
-    // vocab-length vector from its slice of the hidden axis; the partial
-    // vectors are summed at the end. Cache pattern within each thread
-    // remains sequential (inner loop walks contiguous row of lm_head),
-    // so we get linear scaling without thrashing the LM-head bytes.
-    //
-    // Why parallelize *only* the LM head: it's 311M FMAs at the q3b shape
-    // (hidden=2048 × vocab=151936) — dominates the head's compute. The
-    // earlier transformer-block matmuls (in_proj, q/k/v/out, mlp) are
-    // collectively only ~155M FMAs and are not the bottleneck. Threading
-    // them too would add overhead with marginal benefit.
-    //
-    // FP32 sum-order changes slightly vs the single-threaded loop above
-    // (partials sum is in thread-index order). Differences land in
-    // ~1-2 ULP per logit which is invisible at our parity gate
-    // (atol=5e-2 vs measured 3.5e-4 single-threaded — plenty of room).
+/// `logits[k] = sum_i draft_hidden[i] * lm_head_f16[i*vocab + k]` for
+/// `k in 0..vocab`. `vocab` may be the FULL vocab or a PRUNED vocab — the
+/// caller supplies the matching `[hidden, vocab]` weight slice. This is the
+/// head's dominant cost (311M FMAs at full q3b vocab), so the propose path
+/// passes a 32K-pruned slice to cut it ~4.7×.
+///
+/// Parallel over the hidden axis: each thread accumulates a partial
+/// vocab-length vector, summed at the end. FP32 sum-order differs slightly
+/// from single-threaded (~1-2 ULP/logit, invisible at the parity gate).
+pub fn lm_head_logits(draft_hidden: &[f32], lm_head_f16: &[f16], h: usize, v: usize) -> Vec<f32> {
+    debug_assert_eq!(draft_hidden.len(), h);
+    debug_assert_eq!(lm_head_f16.len(), h * v);
     let n_threads = std::thread::available_parallelism()
         .map(|n| n.get().clamp(1, 8))
         .unwrap_or(4);
-    let logits = if n_threads <= 1 || h < n_threads * 32 {
-        // Below this threshold the spawn/join overhead exceeds the
-        // parallelism win — fall through to the simple single-thread
-        // path. (This branch is what unit tests exercise too.)
+    if n_threads <= 1 || h < n_threads * 32 {
         let mut out = vec![0.0f32; v];
         for i in 0..h {
             let dh_i = draft_hidden[i];
@@ -204,7 +227,7 @@ pub fn forward_single_step_with_hidden(
                 if i0 >= i1 {
                     continue;
                 }
-                let dh = &draft_hidden;
+                let dh = draft_hidden;
                 let lm = lm_head_f16;
                 handles.push(s.spawn(move || {
                     let mut local = vec![0.0f32; v];
@@ -220,8 +243,6 @@ pub fn forward_single_step_with_hidden(
             }
             handles.into_iter().map(|h| h.join().unwrap()).collect()
         });
-        // Reduce partials → final logits. Reused first buffer to avoid
-        // an extra alloc.
         let mut iter = partials.into_iter();
         let mut out = iter.next().unwrap_or_else(|| vec![0.0f32; v]);
         for part in iter {
@@ -230,8 +251,7 @@ pub fn forward_single_step_with_hidden(
             }
         }
         out
-    };
-    (logits, draft_hidden)
+    }
 }
 
 /// RMSNorm matching `_rms_norm` in eagle5_train_pytorch.py:79-84:
