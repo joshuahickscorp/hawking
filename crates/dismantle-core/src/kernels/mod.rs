@@ -1140,10 +1140,37 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         const V3_TG: u32 = 256;
-        const V3_ROWS: u32 = 8;
-        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        // path-to-50: 2-rows-per-simdgroup variant (2 accumulator chains, shared
+        // x load) for better DRAM-latency hiding. Default-on (paired bench +6.2%
+        // bit-identical vs 1-row predec, 2026-05-30); opt out DISMANTLE_QWEN_PREDEC_2R=0.
+        let use_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
+                    .map(|v| v != "0")
+                    .unwrap_or(true)
+            })
+        };
+        // Stage 2: 4-rows-per-simdgroup variant (4 accumulator chains). Opt-in,
+        // takes precedence over 2r when set. Bit-identical (same per-row math).
+        let use_4r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        let (dispatch_kernel, rows_per_tg): (&str, u32) = if use_4r {
+            ("gemm_q4_k_v4_predec_4r", 32)
+        } else if use_2r {
+            ("gemm_q4_k_v4_predec_2r", 16)
+        } else {
+            (KERNEL, 8)
+        };
+        let n_tg = rows_u32.div_ceil(rows_per_tg);
         tcb.dispatch_threads(
-            KERNEL,
+            dispatch_kernel,
             (n_tg * V3_TG, 1, 1),
             (V3_TG, 1, 1),
             |enc| {
@@ -1158,6 +1185,98 @@ mod metal_dispatch {
                 );
                 enc.set_bytes(
                     5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Fused gate+up predec GEMV: ONE dispatch computes both `g_out` and
+    /// `u_out` from the shared activation `x_buf`. Bit-identical to two
+    /// separate `gemv_q4_k_v4_predec_pinned_tcb` calls. Halves the FFN
+    /// projection dispatch count (path-to-50 gate+up fusion, 2026-05-30).
+    /// `model_buf` is the shared mmap; gate and up are addressed by offset.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), g_offset as u64);
+                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+                enc.set_buffer(2, Some(model_buf), u_offset as u64);
+                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+                enc.set_buffer(4, Some(x_buf), 0);
+                enc.set_buffer(5, Some(g_out_buf), 0);
+                enc.set_buffer(6, Some(u_out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
                     std::mem::size_of::<u32>() as u64,
                     &cols_u32 as *const u32 as *const _,
                 );

@@ -2944,6 +2944,37 @@ impl QwenDense {
         let w4a8_oproj = w4a8_active;
         let w4a8_ffn_gate = w4a8_active;
         let w4a8_ffn_up = w4a8_active;
+        // path-to-50 gate+up fusion: ONE predec dispatch for both FFN gate
+        // and up (they share the post-norm activation). Halves FFN-proj
+        // dispatch count for +8.0% decode tps, bit-identical. Requires predec
+        // active and not-W4A8 (the predec kernel path). DEFAULT-ON (like
+        // predec); opt out via DISMANTLE_QWEN_FFN_GATEUP_FUSE=0.
+        let ffn_gateup_fuse = std::env::var_os("DISMANTLE_QWEN_FFN_GATEUP_FUSE")
+            .map(|v| v != "0")
+            .unwrap_or(true)
+            && predec_active
+            && !w4a8_ffn_gate
+            && !w4a8_ffn_up;
+        // path-to-50 k+v fusion: k_proj and v_proj are Q4_K, same shape
+        // (kv_dim x h), and read the same post-norm activation, so they fuse
+        // into ONE predec_pair dispatch (bit-identical). BUT benched FLAT vs
+        // gate+up alone (31.51 → 31.46): k/v are tiny (256 rows) so removing
+        // their dispatch carries negligible drain. The fusion win scales with
+        // dispatch SIZE — big FFN gate+up pays off, tiny attn k+v does not.
+        // DEFAULT-OFF; opt in via DISMANTLE_QWEN_KV_FUSE=1. q stays separate.
+        let kv_fuse = crate::env_on("DISMANTLE_QWEN_KV_FUSE")
+            && predec_active
+            && !w4a8_qproj;
+        // path-to-50: route ffn_down through the predec kernel too. ffn_down is
+        // the single largest weight read/layer and is the #1 GPU consumer
+        // (v3_8r 46%), but unlike the projections it was NOT on predec. The
+        // predec scale table already exists (ffn_down_q4k_predec for requant'd
+        // layers; predec_cache for native-Q4_K layers). DEFAULT-ON; opt out =0.
+        let ffn_down_predec = std::env::var_os("DISMANTLE_QWEN_FFN_DOWN_PREDEC")
+            .map(|v| v != "0")
+            .unwrap_or(true)
+            && predec_active
+            && !w4a8_active;
         let w4a8_ffn_down = w4a8_active;
         let w4a8_lmhead = w4a8_active;
         // Track E: per-channel W4A8 at the LM_HEAD site. Default off.
@@ -3198,28 +3229,62 @@ impl QwenDense {
             // route it through W4A8 too. Rows are small (256) so the BW
             // saving is proportionally small, but it costs nothing extra
             // because x_norm is already quantized for q_proj.
-            gemv_proj!(
-                w4a8_qproj,
-                layer.k_proj,
-                layer.pinned.k_proj_f16.as_ref(),
-                kv_dim,
-                h,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                &arena.k_token_buf
-            );
-            gemv_proj!(
-                false,
-                layer.v_proj,
-                layer.pinned.v_proj_f16.as_ref(),
-                kv_dim,
-                h,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                &arena.v_token_buf
-            );
+            // path-to-50 k+v fusion: same shape/dtype/input → ONE pair dispatch.
+            let did_fuse_kv = kv_fuse
+                && layer.k_proj.dtype == GgmlType::Q4_K
+                && layer.v_proj.dtype == GgmlType::Q4_K
+                && h % 256 == 0
+                && predec_cache_ref
+                    .map(|m| {
+                        m.contains_key(&layer.k_proj.offset)
+                            && m.contains_key(&layer.v_proj.offset)
+                    })
+                    .unwrap_or(false);
+            if did_fuse_kv {
+                let cache = predec_cache_ref.expect("checked is_some via map");
+                let k_scales = &cache[&layer.k_proj.offset];
+                let v_scales = &cache[&layer.v_proj.offset];
+                kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.k_proj.offset,
+                    layer.k_proj.byte_size,
+                    k_scales,
+                    0,
+                    layer.v_proj.offset,
+                    layer.v_proj.byte_size,
+                    v_scales,
+                    0,
+                    kv_dim,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.k_token_buf,
+                    &arena.v_token_buf,
+                )?;
+            } else {
+                gemv_proj!(
+                    w4a8_qproj,
+                    layer.k_proj,
+                    layer.pinned.k_proj_f16.as_ref(),
+                    kv_dim,
+                    h,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    &arena.k_token_buf
+                );
+                gemv_proj!(
+                    false,
+                    layer.v_proj,
+                    layer.pinned.v_proj_f16.as_ref(),
+                    kv_dim,
+                    h,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    &arena.v_token_buf
+                );
+            }
             if qkv_concurrent {
                 tcb.end_concurrent_group()?;
             }
@@ -3379,28 +3444,64 @@ impl QwenDense {
             }
 
             // ── FFN gate / up / silu_mul / down ──────────────────────
-            gemv_proj!(
-                w4a8_ffn_gate,
-                layer.ffn_gate,
-                layer.pinned.ffn_gate_f16.as_ref(),
-                intermediate,
-                h,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                &arena.ffn_gate_buf
-            );
-            gemv_proj!(
-                w4a8_ffn_up,
-                layer.ffn_up,
-                layer.pinned.ffn_up_f16.as_ref(),
-                intermediate,
-                h,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                &arena.ffn_up_buf
-            );
+            // path-to-50 fusion: when enabled and both gate/up are predec
+            // Q4_K with cached scale tables, compute both in ONE dispatch
+            // (shared activation). Else fall back to two gemv_proj! calls.
+            let did_fuse_gateup = ffn_gateup_fuse
+                && layer.ffn_gate.dtype == GgmlType::Q4_K
+                && layer.ffn_up.dtype == GgmlType::Q4_K
+                && h % 256 == 0
+                && predec_cache_ref
+                    .map(|m| {
+                        m.contains_key(&layer.ffn_gate.offset)
+                            && m.contains_key(&layer.ffn_up.offset)
+                    })
+                    .unwrap_or(false);
+            if did_fuse_gateup {
+                let cache = predec_cache_ref.expect("checked is_some via map");
+                let g_scales = &cache[&layer.ffn_gate.offset];
+                let u_scales = &cache[&layer.ffn_up.offset];
+                kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.ffn_gate.offset,
+                    layer.ffn_gate.byte_size,
+                    g_scales,
+                    0,
+                    layer.ffn_up.offset,
+                    layer.ffn_up.byte_size,
+                    u_scales,
+                    0,
+                    intermediate,
+                    h,
+                    &arena.x_norm_buf,
+                    &arena.ffn_gate_buf,
+                    &arena.ffn_up_buf,
+                )?;
+            } else {
+                gemv_proj!(
+                    w4a8_ffn_gate,
+                    layer.ffn_gate,
+                    layer.pinned.ffn_gate_f16.as_ref(),
+                    intermediate,
+                    h,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    &arena.ffn_gate_buf
+                );
+                gemv_proj!(
+                    w4a8_ffn_up,
+                    layer.ffn_up,
+                    layer.pinned.ffn_up_f16.as_ref(),
+                    intermediate,
+                    h,
+                    &arena.x_norm_buf,
+                    x_int8,
+                    x_scales,
+                    &arena.ffn_up_buf
+                );
+            }
             kernels::silu_mul_tcb(
                 &mut tcb,
                 &arena.ffn_gate_buf,
@@ -3451,6 +3552,22 @@ impl QwenDense {
                         ffn_scales,
                         &arena.ffn_down_buf,
                     )?;
+                } else if let Some(predec_scales) = ffn_down_predec
+                    .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
+                    .flatten()
+                {
+                    kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        predec_scales,
+                        0,
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf,
+                        &arena.ffn_down_buf,
+                    )?;
                 } else {
                     kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
                         &mut tcb,
@@ -3478,12 +3595,25 @@ impl QwenDense {
                         )?;
                     }
                     GgmlType::Q4_K => {
-                        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                            &mut tcb, mmap_buf,
-                            layer.ffn_down.offset, layer.ffn_down.byte_size,
-                            h, intermediate,
-                            &arena.ffn_act_buf, &arena.ffn_down_buf,
-                        )?;
+                        if let Some(predec_scales) = ffn_down_predec
+                            .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                            .flatten()
+                        {
+                            kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                                &mut tcb, mmap_buf,
+                                layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                predec_scales, 0,
+                                h, intermediate,
+                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                            )?;
+                        } else {
+                            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                                &mut tcb, mmap_buf,
+                                layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                h, intermediate,
+                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                            )?;
+                        }
                     }
                     _ => {
                         let f16b = layer.pinned.ffn_down_f16.as_ref()
