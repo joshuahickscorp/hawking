@@ -1499,6 +1499,17 @@ impl Engine for QwenDense {
             // serial and batched verify paths, so capture is now compatible
             // with batched verify (only Stage 3's verify differs).
             let eagle5_capture_in_use = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+            // Part 1 (wiring fix 2026-05-30): in plain `--speculate eagle5`
+            // the corpus-dump flag (EAGLE5_CAPTURE) is OFF, but the head
+            // STILL needs the real layer-32 residual/intermediate or it is
+            // fed zeros → 0% accept (see plans/eagle_forward_parity_handoff.md).
+            // Populate + read the capture buffers whenever spec is active,
+            // independent of the corpus-dump flag. The expensive corpus
+            // quantize + disk-write stays gated on the corpus path (the
+            // `else` branch below, keyed on DISMANTLE_QWEN_CAPTURE_CORPUS_PATH).
+            // `forward_token_greedy_tcb` mirrors this: it populates the
+            // buffers when `self.eagle5_head.is_some()` too.
+            let feed_head_captures = eagle5_capture_in_use || use_eagle5;
             let mut eagle5_accept_trace =
                 if let Some(path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE")
                     .map(PathBuf::from)
@@ -1724,7 +1735,7 @@ impl Engine for QwenDense {
                 if k_avail == 0 {
                     break 'e5_loop;
                 }
-                let captured_residual: Option<Vec<f32>> = if eagle5_capture_in_use {
+                let captured_residual: Option<Vec<f32>> = if feed_head_captures {
                     let buf = self
                         .eagle5_capture_residual_buf
                         .as_ref()
@@ -1745,13 +1756,25 @@ impl Engine for QwenDense {
                 } else {
                     None
                 };
-                let captured_intermediate: Option<Vec<f32>> = if eagle5_capture_in_use {
+                let captured_intermediate: Option<Vec<f32>> = if feed_head_captures {
                     let buf = self
                         .eagle5_capture_intermediate_buf
                         .as_ref()
                         .expect("intermediate capture buf must exist when capture is in use");
                     let ptr = buf.contents() as *const f32;
-                    Some(unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec())
+                    let v: Vec<f32> = unsafe { std::slice::from_raw_parts(ptr, hidden) }.to_vec();
+                    if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
+                        let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
+                        let mean = v.iter().sum::<f32>() / (v.len() as f32);
+                        let var =
+                            v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
+                        let nonzero = v.iter().filter(|&&x| x != 0.0).count();
+                        eprintln!(
+                            "[eagle5-debug] intermediate stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
+                            nonzero, v.len(), mean, var.sqrt(), abs_max, &v[..8.min(v.len())]
+                        );
+                    }
+                    Some(v)
                 } else {
                     None
                 };
@@ -1771,6 +1794,35 @@ impl Engine for QwenDense {
                                     lens_hits += 1;
                                 }
                             }
+                        }
+                    }
+                }
+                // DIAGNOSTIC (part 2 investigation): dump the exact head
+                // inputs (head_start prev token, captured residual+intermediate,
+                // bonus) so the PyTorch head can be fed the runtime's real feed
+                // and out[0] compared to bonus. Set
+                // DISMANTLE_QWEN_EAGLE5_FEED_DUMP=<path> to emit one binary
+                // record per cycle: [u32 head_start][u32 bonus][f32 res*h][f32 int*h].
+                if let Some(dump_path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_FEED_DUMP") {
+                    if let (Some(res), Some(int)) =
+                        (captured_residual.as_ref(), captured_intermediate.as_ref())
+                    {
+                        use std::io::Write as _FeedW;
+                        if let Ok(mut f) = std::fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(&dump_path)
+                        {
+                            let _ = f.write_all(&head_start.to_le_bytes());
+                            let _ = f.write_all(&bonus.to_le_bytes());
+                            let rb = unsafe {
+                                std::slice::from_raw_parts(res.as_ptr() as *const u8, res.len() * 4)
+                            };
+                            let ib = unsafe {
+                                std::slice::from_raw_parts(int.as_ptr() as *const u8, int.len() * 4)
+                            };
+                            let _ = f.write_all(rb);
+                            let _ = f.write_all(ib);
                         }
                     }
                 }
@@ -2802,7 +2854,17 @@ impl QwenDense {
         // (residual + intermediate, hidden * f32 each) on first activation.
         // The buffers persist across decode steps and are overwritten by
         // every forward — the Eagle5 dispatch reads the most recent capture.
-        let eagle5_capture_active = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE");
+        //
+        // Part 1 (wiring fix 2026-05-30): the capture buffers must also be
+        // populated in plain `--speculate eagle5` (no corpus-dump flag), or
+        // the head is fed zeros → 0% accept. We populate whenever a head is
+        // loaded (`self.eagle5_head.is_some()`), which costs only two cheap
+        // memcpy_f32 dispatches the GPU already has the data for — NOT the
+        // expensive corpus quantize+disk-write (that stays in `generate`'s
+        // corpus-path branch). The env flag still forces population for the
+        // corpus-capture decode.
+        let eagle5_capture_active =
+            crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE") || self.eagle5_head.is_some();
         if eagle5_capture_active {
             let h_bytes = self.config.hidden * std::mem::size_of::<f32>();
             if self.eagle5_capture_residual_buf.is_none() {
