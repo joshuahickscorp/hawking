@@ -218,6 +218,16 @@ pub struct QwenDense {
     /// first-N heuristic this is `None` because pruned_idx ≡ original_id.
     pub vocab_prune_remap: Option<Vec<u32>>,
 
+    /// A1 (2026-05-31): pre-decoded sub-block scale table for the
+    /// Q4_K-quantized pruned LM head (`lm_head_pruned_buf` when
+    /// `vocab_pruned_is_q4k`). Built at the same load site as the pruned
+    /// buffer when `DISMANTLE_QWEN_Q4K_PREDEC` is active. Lets the final
+    /// LM-head GEMV route through `gemv_q4_k_v4_predec_pinned_tcb` (the
+    /// pre-decoded-scale kernel; bit-identical to inline Q4_K) instead of
+    /// `gemv_q4_k_m_v3_8r_pinned_tcb`. `None` = predec off or LM-head not
+    /// Q4_K-pruned.
+    pub lm_head_pruned_predec: Option<crate::metal::PinnedBuffer>,
+
 
     /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
     /// tables, keyed by GGUF mmap offset. Populated by
@@ -823,6 +833,7 @@ impl Engine for QwenDense {
             vocab_pruned,
             vocab_pruned_is_q4k,
             vocab_prune_remap,
+            lm_head_pruned_predec,
         ) = if let Some(ctx) = metal_ctx.as_ref() {
                 let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
                 // `embed_lookup_f32` is misnamed: the kernel signature
@@ -971,7 +982,13 @@ impl Engine for QwenDense {
                     .and_then(|v| v.parse::<usize>().ok())
                     .filter(|&n| n > 0 && n < cfg.vocab_size);
 
-                let (pruned_buf, pruned_n, prune_remap) = if let Some(n_target) = corpus_n {
+                // A1: predec scale table for the Q4_K pruned head is built
+                // from the same `q4k` bytes when DISMANTLE_QWEN_Q4K_PREDEC is
+                // active, so the final LM-head GEMV can use the pre-decoded
+                // kernel (bit-identical to inline Q4_K).
+                let want_predec_lmhead =
+                    want_q4k_lmhead && crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC");
+                let (pruned_buf, pruned_n, prune_remap, pruned_predec) = if let Some(n_target) = corpus_n {
                     // Build the whitelist from corpus token frequencies +
                     // first 4096 ids guaranteed (covers most ASCII + short
                     // BPE tokens).
@@ -1000,18 +1017,25 @@ impl Engine for QwenDense {
                         None => &embed,
                     };
                     let packed = pack_rows(src, &ids);
+                    let mut predec_buf = None;
                     let buf = if want_q4k_lmhead && (ids.len() * h) % 256 == 0 {
                         let packed_f32: Vec<f32> =
                             packed.iter().map(|&hh| hh.to_f32()).collect();
                         let nb = (ids.len() * h) / 256;
                         let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
                         quant::quantize_q4_k(&packed_f32, &mut q4k)?;
+                        if want_predec_lmhead {
+                            let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
+                            predec_buf = Some(ctx.new_buffer_with_bytes(
+                                bytemuck::cast_slice::<f32, u8>(&scales),
+                            ));
+                        }
                         ctx.new_buffer_with_bytes(&q4k)
                     } else {
                         ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&packed))
                     };
                     let nlen = ids.len();
-                    (Some(buf), Some(nlen), Some(ids))
+                    (Some(buf), Some(nlen), Some(ids), predec_buf)
                 } else {
                     let r = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
                     Ok(v) if v != "0" && !v.is_empty() => {
@@ -1023,24 +1047,32 @@ impl Engine for QwenDense {
                                 None => &embed,
                             };
                             let slice = &src[..n * h];
+                            let mut predec_buf = None;
                             let buf = if want_q4k_lmhead && (n * h) % 256 == 0 {
                                 let slice_f32: Vec<f32> =
                                     slice.iter().map(|&hh| hh.to_f32()).collect();
                                 let nb = (n * h) / 256;
                                 let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
                                 quant::quantize_q4_k(&slice_f32, &mut q4k)?;
+                                if want_predec_lmhead {
+                                    let scales =
+                                        crate::kernels::predecode_q4_k_scale_table(&q4k);
+                                    predec_buf = Some(ctx.new_buffer_with_bytes(
+                                        bytemuck::cast_slice::<f32, u8>(&scales),
+                                    ));
+                                }
                                 ctx.new_buffer_with_bytes(&q4k)
                             } else {
                                 ctx.new_buffer_with_bytes(
                                     bytemuck::cast_slice::<f16, u8>(slice),
                                 )
                             };
-                            (Some(buf), Some(n), None)
+                            (Some(buf), Some(n), None, predec_buf)
                         } else {
-                            (None, None, None)
+                            (None, None, None, None)
                         }
                     }
-                    _ => (None, None, None),
+                    _ => (None, None, None, None),
                     };
                     r
                 };
@@ -1083,10 +1115,10 @@ impl Engine for QwenDense {
 
                 (
                     Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k,
-                    pruned_buf, pruned_n, pruned_is_q4k, prune_remap,
+                    pruned_buf, pruned_n, pruned_is_q4k, prune_remap, pruned_predec,
                 )
             } else {
-                (None, None, None, None, None, None, None, false, None)
+                (None, None, None, None, None, None, None, false, None, None)
             };
         #[cfg(not(target_os = "macos"))]
         let (
@@ -1099,6 +1131,7 @@ impl Engine for QwenDense {
             vocab_pruned,
             vocab_pruned_is_q4k,
             vocab_prune_remap,
+            lm_head_pruned_predec,
         ): (
             Option<crate::metal::PinnedBuffer>,
             Option<crate::metal::PinnedBuffer>,
@@ -1109,7 +1142,8 @@ impl Engine for QwenDense {
             Option<usize>,
             bool,
             Option<Vec<u32>>,
-        ) = (None, None, None, None, None, None, None, false, None);
+            Option<crate::metal::PinnedBuffer>,
+        ) = (None, None, None, None, None, None, None, false, None, None);
 
         mark(&mut stage_marks, "metal_pinning+lm_head+vocab_prune+warmup", &mut t);
 
@@ -1196,6 +1230,7 @@ impl Engine for QwenDense {
             vocab_pruned,
             vocab_pruned_is_q4k,
             vocab_prune_remap,
+            lm_head_pruned_predec,
             #[cfg(target_os = "macos")]
             q4k_predec_cache: None,
             #[cfg(target_os = "macos")]
@@ -2789,6 +2824,16 @@ impl QwenDense {
         let predec_active = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC")
             .map(|v| v != "0")
             .unwrap_or(true);
+        // A1: route the Q4_K pruned LM head through the pre-decoded-scale
+        // GEMV (bit-identical to inline Q4_K). Default-on when predec is
+        // active + the predec table was built at load time; opt out with
+        // DISMANTLE_QWEN_LMHEAD_PREDEC=0 (used by the paired bench to A/B
+        // the old `gemv_q4_k_m_v3_8r` path against the predec path).
+        let lmhead_predec_active = predec_active
+            && self.lm_head_pruned_predec.is_some()
+            && std::env::var_os("DISMANTLE_QWEN_LMHEAD_PREDEC")
+                .map(|v| v != "0")
+                .unwrap_or(true);
         if predec_active && self.q4k_predec_cache.is_none() {
             self.ensure_q4k_predec_cache()?;
         }
@@ -3845,6 +3890,24 @@ impl QwenDense {
                         h,
                         x_int8,
                         x_scales,
+                        &arena.logits_buf,
+                    )?;
+                } else if let Some(predec_scales) = lmhead_predec_active
+                    .then(|| self.lm_head_pruned_predec.as_ref())
+                    .flatten()
+                {
+                    // A1: pre-decoded-scale LM-head GEMV (bit-identical to
+                    // inline Q4_K; skips per-call Q4_K header repacking).
+                    kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                        &mut tcb,
+                        pruned_buf,
+                        0,
+                        pn * row_bytes,
+                        predec_scales,
+                        0,
+                        pn,
+                        h,
+                        &arena.x_norm_buf,
                         &arena.logits_buf,
                     )?;
                 } else {
