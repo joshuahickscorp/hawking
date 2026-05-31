@@ -1,5 +1,7 @@
 use half::f16;
 
+pub mod megakernel;
+
 
 /// RMS-normalize a row in-place.
 ///
@@ -658,6 +660,78 @@ mod metal_dispatch {
         )
     }
 
+    /// Batched Q4_K GEMM with PRE-DECODED sub-block scales — same as
+    /// `gemm_q4_k_m_batched_v3w_pinned_tcb` but reads `ds/dm` from a predec
+    /// scale table (built via `predecode_q4_k_scale_table`) instead of decoding
+    /// the Q4_K header per element. Brings the single-path predec win to the
+    /// batched decode/verify path. `scales_buf` holds `rows*blocks_per_row*16`
+    /// f32 (16 floats/block); `scales_offset` is its byte offset (usually 0,
+    /// one buffer per tensor).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v3w_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(1..=8).contains(&batch) {
+            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        if scales_buf.length() < scales_need {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+            )));
+        }
+        let x_bytes = batch * cols * std::mem::size_of::<f32>();
+        let y_bytes = batch * rows * std::mem::size_of::<f32>();
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
+        }
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        ab.set_u32(2, batch as u32);
+        const V3_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_batch_buf), 0);
+                enc.set_buffer(3, Some(y_batch_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     /// P3 v3 — Batched Q4_K_M GEMM with cooperative shmem activation
     /// staging. Same args + layout as v2, but adds a 4 KB threadgroup
     /// tile so all 8 rows in a TG read the activation block from shmem
@@ -1003,6 +1077,19 @@ mod metal_dispatch {
         out
     }
 
+    /// f16 variant of [`predecode_q4_k_scale_table`] (worklist 1.2). Stores the
+    /// pre-decoded (ds, dm) pairs as `half::f16` (32 B/block vs the f32 table's
+    /// 64 B), cutting the dominant-GEMV predec scale bandwidth ~17% (160 vs
+    /// 192 B/block effective). The matching kernel reads `half` and widens to
+    /// float in-register. Parity is atol-1e-3 fp16 (scale rounding), NOT
+    /// bit-identical — gate via a Rust atol parity test, not the greedy gate.
+    pub fn predecode_q4_k_scale_table_f16(w_q4_bytes: &[u8]) -> Vec<half::f16> {
+        predecode_q4_k_scale_table(w_q4_bytes)
+            .into_iter()
+            .map(half::f16::from_f32)
+            .collect()
+    }
+
     /// Q4_K decode GEMV with pre-decoded sub-block scales (v4_predec).
     ///
     /// Identical math to `gemv_q4_k_m_v3_8r_pinned_tcb` (same v3_8r geometry:
@@ -1066,10 +1153,37 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         const V3_TG: u32 = 256;
-        const V3_ROWS: u32 = 8;
-        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        // path-to-50: 2-rows-per-simdgroup variant (2 accumulator chains, shared
+        // x load) for better DRAM-latency hiding. Default-on (paired bench +6.2%
+        // bit-identical vs 1-row predec, 2026-05-30); opt out DISMANTLE_QWEN_PREDEC_2R=0.
+        let use_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
+                    .map(|v| v != "0")
+                    .unwrap_or(true)
+            })
+        };
+        // Stage 2: 4-rows-per-simdgroup variant (4 accumulator chains). Opt-in,
+        // takes precedence over 2r when set. Bit-identical (same per-row math).
+        let use_4r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        let (dispatch_kernel, rows_per_tg): (&str, u32) = if use_4r {
+            ("gemm_q4_k_v4_predec_4r", 32)
+        } else if use_2r {
+            ("gemm_q4_k_v4_predec_2r", 16)
+        } else {
+            (KERNEL, 8)
+        };
+        let n_tg = rows_u32.div_ceil(rows_per_tg);
         tcb.dispatch_threads(
-            KERNEL,
+            dispatch_kernel,
             (n_tg * V3_TG, 1, 1),
             (V3_TG, 1, 1),
             |enc| {
@@ -1084,6 +1198,385 @@ mod metal_dispatch {
                 );
                 enc.set_bytes(
                     5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Q4_K decode GEMV with pre-decoded sub-block scales stored as **f16**
+    /// (Stage-2 bandwidth lever, `_2r_f16s`).
+    ///
+    /// Identical 2-row-ILP math + geometry to the default `_2r` predec kernel,
+    /// but the pre-decoded `(ds, dm)` pairs are read as `half` (2 B) instead of
+    /// f32 (4 B), cutting the predec scale table 192→160 B/block (−17%) on the
+    /// bandwidth-bound Q4_K GEMV (the profiling-confirmed ~76%-of-decode-time
+    /// wall). Scales widen to f32 in register.
+    ///
+    /// **NOT bit-identical** to the f32 predec path — the f16 scale rounding
+    /// perturbs each `(d*scale)` by ~half-mantissa (≈5e-4 relative), so this is
+    /// gated on a quality check (relative parity), not exact equality. Build the
+    /// table via [`predecode_q4_k_scale_table_f16`] (16 halfs/block); expected
+    /// `scales_buf` length is `rows * (cols / 256) * 16 * sizeof(f16)`.
+    ///
+    /// **Private API entry point** — not yet wired into the production forward
+    /// pass; production opt-in is `DISMANTLE_QWEN_PREDEC_F16SCALES=1`, gated on
+    /// the on-GPU relative-parity + paired bench (must clear the quality bar
+    /// before the bandwidth win is bankable).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_2r_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        // f16 scale table: 16 halfs/block, sizeof(f16) = 2 bytes.
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16; // 8 simdgroups × 2 rows (2r geometry)
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3).
+    ///
+    /// The fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
+    /// otherwise runs the generic dequant path (~19 dec_tps vs ~32 on the Q4_K
+    /// fast stack, because predec/2r are Q4_K-specific). Same 8-rows-per-TG
+    /// geometry as `gemm_q3_k_fused_v2` but reads the 16 per-sub-block
+    /// `d * scale[i]` f32 values per block from a parallel pre-decoded table
+    /// (`scales_buf`) instead of unpacking the packed 6-bit scales + super-block
+    /// `d` inline every call. Bit-identical to `gemm_q3_k_fused_v2`.
+    ///
+    /// Build the table once at load time via
+    /// [`crate::quant::predecode_q3_k_scale_table`] and pin it. Q3_K is
+    /// symmetric (no min term): the table is `rows * (cols / 256) * 16` f32.
+    /// Q3_K block is 110 bytes (vs Q4_K's 144).
+    ///
+    /// **Private API entry point** — not yet wired into the production forward
+    /// pass (dismantle's dense path serves Q4_K_M today); that's the byte-cut
+    /// consolidation step, gated on the on-GPU parity + paired bench.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q3_k_v4_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q3_k_v4_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(110))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// Fused gate+up predec GEMV: ONE dispatch computes both `g_out` and
+    /// `u_out` from the shared activation `x_buf`. Bit-identical to two
+    /// separate `gemv_q4_k_v4_predec_pinned_tcb` calls. Halves the FFN
+    /// projection dispatch count (path-to-50 gate+up fusion, 2026-05-30).
+    /// `model_buf` is the shared mmap; gate and up are addressed by offset.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), g_offset as u64);
+                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+                enc.set_buffer(2, Some(model_buf), u_offset as u64);
+                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+                enc.set_buffer(4, Some(x_buf), 0);
+                enc.set_buffer(5, Some(g_out_buf), 0);
+                enc.set_buffer(6, Some(u_out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
+    /// f16-scales twin of [`gemv_q4_k_v4_predec_pair_pinned_tcb`] (A6.5,
+    /// 2026-05-31). Same fused gate+up dispatch (ONE call computes both
+    /// `g_out` and `u_out` from the shared `x_buf`), but BOTH scale tables are
+    /// read as `half` (2 B/elem) and widened to float in-register, cutting the
+    /// scale-table traffic 192→160 B/block (−17%) on the dominant
+    /// (`_pair` = 46.6% of decode, bandwidth-bound) FFN gate+up GEMV.
+    ///
+    /// NOT bit-identical to the f32 pair (f16 scale rounding ~5e-4 relative);
+    /// gated on rel-L2 < 1e-2 parity + paired bench, opt-in via
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1`. Build each table once at load via
+    /// [`predecode_q4_k_scale_table_f16`] (16 halfs/block); expected
+    /// `*_scales_buf` length is `rows * (cols / 256) * 16 * sizeof(f16)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        // f16 scale table: 16 halfs/block, sizeof(f16) = 2 bytes (vs the f32
+        // pair's 64 B/block); this is the byte-cut the f16s pair is for.
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), g_offset as u64);
+                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+                enc.set_buffer(2, Some(model_buf), u_offset as u64);
+                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+                enc.set_buffer(4, Some(x_buf), 0);
+                enc.set_buffer(5, Some(g_out_buf), 0);
+                enc.set_buffer(6, Some(u_out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
                     std::mem::size_of::<u32>() as u64,
                     &cols_u32 as *const u32 as *const _,
                 );
@@ -1826,6 +2319,13 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        // gemm_q3_k_fused_v2 reads ONE `ArgbufRowsCols` struct at buffer(3), not
+        // two separate uints — pack it like gemv_q3_k_pinned does. (Writing two
+        // set_bytes at 3/4 left args.cols=0 → blocks_per_row=0 → all-zero output.)
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
         tcb.dispatch_threads(
@@ -1838,13 +2338,86 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
+            },
+        )
+    }
+
+    /// 2-row-ILP FUSED Q3_K GEMV — dispatches `gemm_q3_k_fused_2r`. Same buffer
+    /// layout and `ArgbufRowsCols` binding as `gemv_q3_k_pinned_tcb`, but 16
+    /// rows/TG (8 simdgroups x 2 rows) with two accumulator chains sharing the
+    /// `x` load. Bit-identical per-row to `gemm_q3_k_fused_v2`; the byte-cut
+    /// speed lever (no scale table — fewest bytes).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q3_k_fused_2r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q3_k_fused_2r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(110))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb offset out of bounds: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let x_bytes = cols * std::mem::size_of::<f32>();
+        let out_bytes = rows * std::mem::size_of::<f32>();
+        if x_buf.length() < x_bytes as u64 || out_buf.length() < out_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb buffer sizes: x={} expected>={x_bytes} out={} expected>={out_bytes}",
+                x_buf.length(),
+                out_buf.length()
+            )));
+        }
+
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        // Same packed ArgbufRowsCols binding as gemm_q3_k_fused_v2 (buffer 3).
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
+        const TG: u32 = 256;
+        // 16 rows/TG (8 simdgroups x 2 rows).
+        let n_tg = rows_u32.div_ceil(16);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(x_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
                 enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    3,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
             },
         )

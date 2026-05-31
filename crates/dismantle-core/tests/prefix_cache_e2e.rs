@@ -79,6 +79,9 @@ fn run_generate(weights: &PathBuf, prompt: &str) -> (Vec<u32>, f64) {
 fn cache_disabled_baseline_matches_itself() {
     let Some(weights) = weights_path() else { return };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    // Isolate the DISK tier: the in-RAM prefix cache is default-ON, so
+    // disable it explicitly here (this file tests the disk tier only).
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
     let prompt = format!("{SYSTEM_PROMPT}{USER_TURN_1}");
     let (a, _) = run_generate(&weights, &prompt);
@@ -94,6 +97,8 @@ fn cache_miss_matches_no_cache() {
 
     let prompt = format!("{SYSTEM_PROMPT}{USER_TURN_1}");
 
+    // Disk tier only — keep the RAM tier out of this comparison.
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
     let (ids_nocache, _) = run_generate(&weights, &prompt);
 
@@ -117,7 +122,9 @@ fn cache_hit_matches_no_cache_and_speeds_prefill() {
     let prompt_t2 = format!("{SYSTEM_PROMPT}{USER_TURN_2}");
     let prompt_t3 = format!("{SYSTEM_PROMPT}{USER_TURN_3}");
 
-    // No-cache reference for turn 2 + turn 3.
+    // No-cache reference for turn 2 + turn 3. Disk tier only — the RAM
+    // tier is default-ON, so disable it to isolate the disk-cache effect.
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
     let (ids_t2_nocache, t2_nocache_ms) = run_generate(&weights, &prompt_t2);
     let (ids_t3_nocache, t3_nocache_ms) = run_generate(&weights, &prompt_t3);

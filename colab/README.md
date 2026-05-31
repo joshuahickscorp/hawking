@@ -2,6 +2,22 @@
 
 Big-GPU calibration work that doesn't fit on M3 Pro 18 GB.
 
+## Bible stage notebooks (May 30)
+
+Run order for the new throughput-Bible Colabs:
+
+1. `01_awq_bytecut.ipynb` — active byte-cut quality gate. Runs f16 PPL once,
+   then AWQ W4, with GPTQ W3 guarded/lazy for suitable GPUs.
+2. `02_eagle3_train.ipynb` — EAGLE head retrain from M3-produced Q4_K_M captures.
+   Prefers `/content/artifacts/eagle5/corpus` and `qwen3b_frozen.npz`, but now
+   also discovers common Drive restore paths, auto-packs an uploaded
+   `q3b_residuals.bin`, and can build the frozen npz from an uploaded GGUF.
+3. `03_qtip_3bit.ipynb` — guarded research scaffold only. `RUN_QTIP=False` by
+   default; do not spend GPU time here until AWQ/GPTQ and the M3 trellis-kernel
+   path justify it.
+
+Audit notes: `plans/colab_consolidation_audit_2026_05_30.md`.
+
 ## Active notebook
 
 ### `finish_q3b_reconciliation.ipynb` ⭐ current
@@ -37,6 +53,19 @@ https://colab.research.google.com/github/joshuahickscorp/dismantle/blob/main/col
 
 **Compute:** A100-40GB ≈ 3–4 hr for the retrain + ~20 min for eval/export.
 T4 will be ~3× slower; A100/L4 strongly preferred.
+
+## Maintenance notebooks
+
+### `drive_cleanup_v2.ipynb` (reclaim Drive space)
+
+Finds **exact-content duplicates** by Drive's server-side `md5Checksum` (no
+downloads) across the current trees — `dismantle_final_push/`,
+`dismantle_headbank_corrected/`, `dismantle/dismantle_export/` — and trashes the
+redundant copies, keeping one per checksum (prefers the newest tree). Dry-run by
+default; `APPLY=True` moves dupes to Trash; a separate `EMPTY_TRASH=True` cell
+reclaims quota. Built by `_build_drive_cleanup_v2.py`. Supersedes
+`cleanup_drive.ipynb`, whose hard-coded `maximal_spec_500u` paths predate the
+May 29 re-layout.
 
 ## Hard rules learned from the loss
 

@@ -45,6 +45,15 @@ models/
 # source, never commit. See dismantle-execution-plan-* / task #7.
 /artifacts/
 
+# Python virtualenvs (never commit; multi-GB with torch)
+.venv/
+venv/
+__pycache__/
+
+# Silicon-build kernel prototypes (~629MB; the simdgroup-MMA + int4kv sources the
+# Tier-1/2 levers port from). Kept on disk for the GPU-bench lane; never committed.
+silicon-builds/
+
 # Competitor benchmark outputs / pinned versions / installs
 tools/competitors/results.json
 tools/competitors/versions.json

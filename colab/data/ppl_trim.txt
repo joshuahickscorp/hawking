@@ -1,0 +1,3826 @@
+#!/usr/bin/env python3
+import argparse
+import collections
+import json
+import sys
+from pathlib import Path
+
+
+# M3 Pro 18GB unified memory: 150 GB/s vendor spec, ~120-135 sustained.
+M3_PRO_PEAK_GBPS = 150.0
+M3_PRO_SUSTAINED_GBPS = 130.0
+
+
+# Per-token total read footprint for DeepSeek-V2-Lite Q4_K_M on M3 Pro,
+V2_LITE_BYTES_PER_TOKEN = int(1.82 * 1024 ** 3)  # ~1.82 GB
+
+
+def find_samples_and_tps(obj, path=""):
+    """Walk nested JSON looking for dispatch_samples + decode_tps."""
+    samples, dec_tps, dec_ms = None, None, None
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "dispatch_samples" and samples is None and isinstance(v, list):
+                samples = v
+            elif k == "decode_tps" and dec_tps is None and isinstance(v, (int, float)):
+                dec_tps = v
+            elif k == "decode_ms" and dec_ms is None and isinstance(v, (int, float)):
+                dec_ms = v
+            else:
+                sub_s, sub_t, sub_m = find_samples_and_tps(v)
+                samples = samples or sub_s
+                dec_tps = dec_tps or sub_t
+                dec_ms = dec_ms or sub_m
+    elif isinstance(obj, list):
+        for v in obj:
+            sub_s, sub_t, sub_m = find_samples_and_tps(v)
+            samples = samples or sub_s
+            dec_tps = dec_tps or sub_t
+            dec_ms = dec_ms or sub_m
+    return samples, dec_tps, dec_ms
+
+
+def find_completion_tokens(obj):
+    """First completion_tokens encountered, walking nested."""
+    if isinstance(obj, dict):
+        if "completion_tokens" in obj:
+            return obj["completion_tokens"]
+        for v in obj.values():
+            r = find_completion_tokens(v)
+            if r is not None:
+                return r
+    elif isinstance(obj, list):
+        for v in obj:
+            r = find_completion_tokens(v)
+            if r is not None:
+                return r
+    return None
+
+
+def summarize(samples):
+    """Aggregate samples by kernel name."""
+    by_k = collections.defaultdict(lambda: {"n": 0, "cpu_us": 0, "gpu_us": 0})
+    for s in samples:
+        k = s["kernel_name"]
+        by_k[k]["n"] += 1
+        by_k[k]["cpu_us"] += s.get("wall_us", 0) or 0
+        by_k[k]["gpu_us"] += s.get("gpu_us") or 0
+    return by_k
+
+
+def by_layer(samples):
+    """Aggregate samples by (layer_hint, kernel_name)."""
+    by_lk = collections.defaultdict(lambda: {"n": 0, "gpu_us": 0})
+    for s in samples:
+        layer = s.get("layer_hint")
+        k = s["kernel_name"]
+        by_lk[(layer, k)]["n"] += 1
+        by_lk[(layer, k)]["gpu_us"] += s.get("gpu_us") or 0
+    return by_lk
+
+
+def print_per_kernel(by_k, total_gpu_us, tokens):
+    print(f"\n{'kernel':45s} {'n':>5s}  {'gpu_us_total':>13s}  {'us/call':>9s}  {'us/token':>9s}  {'% GPU':>7s}")
+    print("-" * 100)
+    rows = sorted(by_k.items(), key=lambda kv: -kv[1]["gpu_us"])
+    for k, v in rows:
+        gpu = v["gpu_us"]
+        if gpu == 0 and v["n"] == 0:
+            continue
+        n = v["n"]
+        pct = (gpu / total_gpu_us * 100) if total_gpu_us else 0
+        per_call = gpu / max(n, 1)
+        per_token = gpu / max(tokens, 1)
+        flag = ""
+        if k == "other":
+            flag = "  <-- UNMAPPED; expand static_kernel_name"
+        print(f"{k:45s} {n:5d}  {gpu:13d}  {per_call:9.1f}  {per_token:9.0f}  {pct:7.2f}%{flag}")
+
+
+def print_bandwidth(total_gpu_us, tokens, model_bytes_per_token):
+    if total_gpu_us == 0 or tokens == 0:
+        return
+    per_token_us = total_gpu_us / tokens
+    per_token_s = per_token_us / 1_000_000
+    # Effective bandwidth = bytes / time
+    eff_gbps = model_bytes_per_token / per_token_s / 1024**3
+    print(f"\n--- Bandwidth ---")
+    print(f"per-token GPU time:       {per_token_us/1000:.2f} ms")
+    print(f"per-token model reads:    {model_bytes_per_token/1024**3:.2f} GiB (V2-Lite Q4_K_M)")
+    print(f"effective GPU bandwidth:  {eff_gbps:.1f} GiB/s")
+    print(f"M3 Pro vendor peak:       {M3_PRO_PEAK_GBPS:.0f} GiB/s ({eff_gbps/M3_PRO_PEAK_GBPS*100:.0f}% util)")
+    print(f"M3 Pro sustained anchor:  {M3_PRO_SUSTAINED_GBPS:.0f} GiB/s ({eff_gbps/M3_PRO_SUSTAINED_GBPS*100:.0f}% util)")
+    print(f"NOTE: split-CB mode adds per-dispatch sync overhead; production")
+    print(f"      single-CB-per-block bandwidth will be HIGHER than this.")
+
+
+def print_by_layer(by_lk):
+    print(f"\n--- Per-layer breakdown (top kernel per layer) ---")
+    layers = sorted({l for (l, _) in by_lk.keys() if l is not None})
+    for layer in layers[:10]:  # cap at 10 to keep output readable
+        items = [(k, v["gpu_us"], v["n"]) for (l, k), v in by_lk.items() if l == layer]
+        items.sort(key=lambda x: -x[1])
+        total = sum(g for _, g, _ in items)
+        if total == 0:
+            continue
+        print(f"\nlayer {layer}  total {total/1000:.1f} ms")
+        for k, g, n in items[:5]:
+            print(f"  {k:42s} n={n:3d}  gpu_us={g:8d}  ({g/total*100:5.1f}%)")
+    if len(layers) > 10:
+        print(f"\n... ({len(layers) - 10} more layers; rerun with --by-layer-all for full)")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("trace_json", type=Path)
+    ap.add_argument("--by-layer", action="store_true",
+                    help="Show per-layer breakdown (default: aggregate)")
+    ap.add_argument("--json", action="store_true",
+                    help="Emit machine-readable JSON summary instead of human table")
+    ap.add_argument("--model-bytes-per-token", type=float,
+                    default=V2_LITE_BYTES_PER_TOKEN,
+                    help="Model read footprint per token (bytes). Default: V2-Lite Q4_K_M.")
+    args = ap.parse_args()
+
+    if not args.trace_json.exists():
+        sys.exit(f"trace not found: {args.trace_json}")
+    doc = json.loads(args.trace_json.read_text())
+    samples, dec_tps, _ = find_samples_and_tps(doc)
+    tokens = find_completion_tokens(doc) or 1
+    if not samples:
+        sys.exit("no dispatch_samples found in trace JSON (was --trace-json passed?)")
+
+    # The ProdCbGpu counter buffer captures only the tokens it traced, which
+    # can be FEWER than completion_tokens (e.g. 32 of 64). `sample_argmax_f32`
+    # fires exactly once per greedy decode token, so its count is the true
+    # number of traced tokens. Using completion_tokens here would halve
+    # per-token GPU time and double the apparent inter-dispatch gap.
+    traced = sum(1 for x in samples
+                 if x.get("kernel_name", "").startswith("sample_"))
+    if traced > 0 and traced != tokens:
+        print(f"[note] trace covers {traced} tokens (sample_* count), not "
+              f"completion_tokens={tokens}; using {traced} for per-token math.")
+        tokens = traced
+
+    by_k = summarize(samples)
+    total_gpu_us = sum(v["gpu_us"] for v in by_k.values())
+    with_gpu = sum(v["n"] for v in by_k.values() if v["gpu_us"] > 0)
+    has_gpu = total_gpu_us > 0
+
+    if args.json:
+        out = {
+            "trace": str(args.trace_json),
+            "samples": len(samples),
+            "samples_with_gpu_us": with_gpu,
+            "tokens": tokens,
+            "decode_tps": dec_tps,
+            "total_gpu_us": total_gpu_us,
+            "per_token_gpu_us": total_gpu_us / tokens if tokens else 0,
+            "by_kernel": {
+                k: {"n": v["n"], "gpu_us": v["gpu_us"], "cpu_us": v["cpu_us"]}
+                for k, v in by_k.items()
+            },
+        }
+        if has_gpu:
+            per_token_s = (total_gpu_us / tokens) / 1_000_000
+            out["effective_bandwidth_gibps"] = (
+                args.model_bytes_per_token / per_token_s / 1024**3
+            )
+        print(json.dumps(out, indent=2))
+        return
+
+    print(f"--- Trace: {args.trace_json} ---")
+    print(f"samples:                  {len(samples)}")
+    print(f"samples with gpu_us:      {with_gpu}/{len(samples)}")
+    print(f"tokens decoded:           {tokens}")
+    if dec_tps:
+        print(f"decode_tps (this run):    {dec_tps:.2f}")
+    print(f"total GPU time:           {total_gpu_us/1000:.2f} ms")
+    if tokens:
+        print(f"per-token GPU time:       {total_gpu_us/tokens/1000:.2f} ms")
+    if not has_gpu:
+        print("\nWARNING: no gpu_us values populated. Run with DISMANTLE_TCB_TRACE=gpu.")
+        print("With DISMANTLE_TCB_TRACE=cpu (or =1) you get CPU encode times only.")
+
+    print_per_kernel(by_k, total_gpu_us, tokens)
+    if has_gpu:
+        print_bandwidth(total_gpu_us, tokens, args.model_bytes_per_token)
+    if args.by_layer:
+        print_by_layer(by_layer(samples))
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
+"""Dump an Eagle6 head forward-pass fixture for Rust parity testing.
+
+Loads a trained head from safetensors, runs the PyTorch forward on a
+fixed-seed (prev_token, residual, intermediate) input, and writes a
+JSON fixture that the Rust parity test consumes.
+
+The fixture intentionally stores the full logits vector (so the Rust
+test can compute L2 distance + a top-K comparison) but uses base64-
+encoded raw f32 bytes for compactness — JSON with 151936 ascii floats
+is ~3 MB, which would clog the repo. Base64 of raw bytes is ~810 KB,
+acceptable as a test fixture.
+
+Example:
+  python3 tools/eagle5_forward_dump.py \\
+    --head $HOME/Downloads/head_final.safetensors \\
+    --out crates/dismantle-core/tests/fixtures/eagle5_parity_q3b.json \\
+    --seed 0xea91e5
+"""
+from __future__ import annotations
+
+import argparse
+import base64
+import json
+import struct
+import sys
+from pathlib import Path
+
+
+def main() -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument("--head", type=Path, required=True, help="Path to head_final.safetensors")
+    p.add_argument("--out", type=Path, required=True, help="Output JSON fixture path")
+    p.add_argument("--seed", type=lambda s: int(s, 0), default=0xea91e5,
+                   help="Seed for the deterministic input vector (int, e.g. 0xea91e5)")
+    p.add_argument("--prev-token", type=int, default=13,
+                   help="prev_token id to feed (default 13, an arbitrary in-vocab id)")
+    args = p.parse_args()
+
+    try:
+        import numpy as np
+        import torch
+    except ImportError as e:
+        print(f"ERROR: needs numpy + torch in this env: {e}", file=sys.stderr)
+        return 1
+
+    try:
+        from safetensors import safe_open
+    except ImportError:
+        print("ERROR: pip install safetensors", file=sys.stderr)
+        return 1
+
+    # Load the head's safetensors directly (don't rely on the trainer's
+    # Python module — this script must be runnable from a clean env).
+    with safe_open(str(args.head), framework="pt") as f:
+        meta = f.metadata() or {}
+        hidden_dim = int(meta["hidden_dim"])
+        vocab_size = int(meta["vocab_size"])
+        n_heads = int(meta["n_heads"])
+        ff_mult = float(meta["ff_mult"])
+        num_blocks = int(meta["num_blocks"])
+        ff_dim = int(round(hidden_dim * ff_mult))
+
+        def t(name: str) -> torch.Tensor:
+            return f.get_tensor(name)
+
+        # Frozen tensors (will be converted to f32 for compute parity).
+        token_embd_f16 = t("_token_embd")  # (hidden, vocab) f16
+        lm_head_f16 = t("_lm_head")        # (hidden, vocab) f16
+        output_norm = t("_output_norm")    # (hidden,) f32
+        in_proj = t("in_proj.weight")      # (hidden, 3*hidden) f32
+        residual_gate = t("residual_gate").item()  # scalar
+
+        def block_keys(prefix: str) -> dict:
+            return {
+                "attn_norm": t(f"{prefix}attn_norm"),
+                "q_proj": t(f"{prefix}q_proj.weight"),
+                "k_proj": t(f"{prefix}k_proj.weight"),
+                "v_proj": t(f"{prefix}v_proj.weight"),
+                "out_proj": t(f"{prefix}out_proj.weight"),
+                "mlp_norm": t(f"{prefix}mlp_norm"),
+                "mlp_gate": t(f"{prefix}mlp.gate.weight"),
+                "mlp_up": t(f"{prefix}mlp.up.weight"),
+                "mlp_down": t(f"{prefix}mlp.down.weight"),
+            }
+
+        blocks = [block_keys("block.")]
+        for i in range(num_blocks - 1):
+            blocks.append(block_keys(f"extra_blocks.{i}."))
+
+    print(f"Loaded head: hidden={hidden_dim} vocab={vocab_size} "
+          f"n_heads={n_heads} ff_mult={ff_mult} num_blocks={num_blocks}")
+
+    # Build a deterministic input vector using numpy's seeded PRNG.
+    # Real verifier residual/intermediate at the capture layer would
+    # be on the order of N(0, 1) post-norm; we use that scale here.
+    rng = np.random.default_rng(args.seed)
+    residual = rng.standard_normal(hidden_dim).astype(np.float32) * 0.5
+    intermediate = rng.standard_normal(hidden_dim).astype(np.float32) * 0.5
+
+    residual_t = torch.from_numpy(residual)
+    intermediate_t = torch.from_numpy(intermediate)
+
+    # Forward — bit-for-bit replicate the Eagle5Head.forward in
+    # eagle5_train_pytorch.py:192-226 at B=1, S=1.
+
+    RMS_EPS = 1e-6
+
+    def rms_norm(x: torch.Tensor, w: torch.Tensor) -> torch.Tensor:
+        x32 = x.float()
+        rms = torch.rsqrt(x32.pow(2).mean(dim=-1, keepdim=True) + RMS_EPS)
+        return (x32 * rms * w.float()).to(x.dtype)
+
+    def linear(x: torch.Tensor, w: torch.Tensor) -> torch.Tensor:
+        # nn.Linear without bias: y = x @ w.T
+        return x @ w.t()
+
+    def silu(x: torch.Tensor) -> torch.Tensor:
+        return x * torch.sigmoid(x)
+
+    def attn_s1(h: torch.Tensor, block: dict) -> torch.Tensor:
+        head_dim = hidden_dim // n_heads
+        q = linear(h, block["q_proj"]).view(n_heads, head_dim)
+        k = linear(h, block["k_proj"]).view(n_heads, head_dim)
+        v = linear(h, block["v_proj"]).view(n_heads, head_dim)
+        # S=1: scores per head = q·k / sqrt(d), single scalar each.
+        # Mask 0, softmax([scalar]) = 1. attn_per_head = v.
+        # We do the explicit matmul for parity clarity.
+        scale = 1.0 / (head_dim ** 0.5)
+        # scores: (n_heads, 1, 1) — but at S=1 just compute q·k
+        _scores = (q * k).sum(dim=-1, keepdim=True) * scale  # (n_heads, 1)
+        # softmax over the single key axis is 1.0; multiply by v.
+        attn = v  # (n_heads, head_dim)
+        attn_flat = attn.reshape(hidden_dim)
+        return linear(attn_flat, block["out_proj"])
+
+    # (1) prev_embed: column `prev_token` of token_embd (hidden,)
+    prev_embed_f32 = token_embd_f16[:, args.prev_token].float()
+
+    # (2) concat
+    x = torch.cat([prev_embed_f32, residual_t, intermediate_t], dim=-1)
+
+    # (3) in_proj
+    x = linear(x, in_proj)
+
+    # (4) blocks
+    for b in blocks:
+        h = rms_norm(x, b["attn_norm"])
+        a = attn_s1(h, b)
+        x = x + a
+        h = rms_norm(x, b["mlp_norm"])
+        m_gate = linear(h, b["mlp_gate"])
+        m_up = linear(h, b["mlp_up"])
+        m_act = silu(m_gate) * m_up
+        m_out = linear(m_act, b["mlp_down"])
+        x = x + m_out
+
+    # (5) baseline
+    baseline = rms_norm(residual_t, output_norm)
+    # (6) draft_hidden = baseline + residual_gate * x
+    draft_hidden = baseline + residual_gate * x
+    # (7) logits = draft_hidden @ lm_head
+    logits = draft_hidden @ lm_head_f16.float()  # (vocab,)
+
+    logits_np = logits.detach().cpu().numpy().astype(np.float32)
+    argmax = int(np.argmax(logits_np))
+    top_k = 16
+    top_idx = np.argpartition(-logits_np, top_k)[:top_k]
+    top_idx = top_idx[np.argsort(-logits_np[top_idx])]
+    top_vals = logits_np[top_idx].tolist()
+    print(f"argmax token id = {argmax}, top logit = {logits_np[argmax]:.4f}")
+    print(f"top-{top_k} indices = {top_idx[:8].tolist()}")
+    print(f"logits L2 = {float(np.sqrt((logits_np ** 2).sum())):.4f}")
+
+    fixture = {
+        "schema": "eagle5-forward-parity-v1",
+        "head_path": str(args.head),
+        "hidden_dim": hidden_dim,
+        "vocab_size": vocab_size,
+        "n_heads": n_heads,
+        "ff_mult": ff_mult,
+        "num_blocks": num_blocks,
+        "seed": args.seed,
+        "prev_token": args.prev_token,
+        "residual_b64": base64.b64encode(residual.tobytes()).decode("ascii"),
+        "intermediate_b64": base64.b64encode(intermediate.tobytes()).decode("ascii"),
+        # Reference logits packed as raw little-endian f32 bytes, b64.
+        "logits_b64": base64.b64encode(logits_np.tobytes()).decode("ascii"),
+        "argmax": argmax,
+        "top_k": top_k,
+        "top_indices": top_idx.tolist(),
+        "top_values": top_vals,
+        "logits_l2": float(np.sqrt((logits_np ** 2).sum())),
+    }
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(fixture, indent=1) + "\n")
+    print(f"wrote {args.out} ({args.out.stat().st_size / 1024:.1f} KB)")
+    # Quick sanity: residual b64 round-trips.
+    assert struct.unpack(
+        f"<{hidden_dim}f", base64.b64decode(fixture["residual_b64"])
+    )[0] == residual[0]
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+#!/usr/bin/env python3
+"""dismantle headbank pull — fetch a model's Eagle5 head + runtime profile.
+
+Reads a ``headbank_manifest.json`` (either a local copy or one downloaded
+from Drive / GitHub release) and stages the artifacts for a given model
+slug into ``$DISMANTLE_HOME/headbank/<slug>/``. Emits a shell snippet you
+can ``source`` to set the runtime env vars.
+
+Usage
+-----
+    # List every model in the bank
+    python3 tools/headbank/pull.py --manifest path/to/headbank_manifest.json --list
+
+    # Stage a specific model
+    python3 tools/headbank/pull.py --manifest path/to/headbank_manifest.json --slug q3b
+
+    # Stage a specific model and emit an env file to source
+    python3 tools/headbank/pull.py --manifest ... --slug q3b --env-file ~/.dismantle/env
+
+After staging, the runtime profile JSON path is printed. Source the env
+file then run ``dismantle bench`` / ``dismantle serve`` and the Eagle5
+head + AWQ scales + locked-config env are all in place.
+
+Manifest schema is ``dismantle-headbank-manifest-v1`` produced by
+``colab/maximal_spec_headbank_500u.ipynb``.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import sys
+from pathlib import Path
+
+
+def _dismantle_home() -> Path:
+    return Path(os.environ.get("DISMANTLE_HOME") or (Path.home() / ".dismantle")).resolve()
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _copy_local(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists() and src.samefile(dst):
+        return
+    tmp = dst.with_suffix(dst.suffix + ".tmp")
+    if tmp.exists():
+        tmp.unlink()
+    shutil.copyfile(src, tmp)
+    os.replace(tmp, dst)
+
+
+def _stage_entry(entry: dict, headbank_root: Path, manifest_dir: Path, *, verify_sha: bool) -> dict:
+    slug = entry["slug"]
+    dst_dir = headbank_root / slug
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    # Resolve every path. Manifests written by the Colab notebook contain
+    # absolute Drive paths; when running locally those paths won't exist
+    # so we also try ``<manifest_dir>/<slug>/<filename>`` which matches the
+    # Drive export layout (``dismantle_export/headbank_500u/<slug>/...``).
+    def _resolve(maybe_abs: str | None, *fallback_relative: str) -> Path | None:
+        if not maybe_abs:
+            return None
+        p = Path(maybe_abs)
+        if p.is_file():
+            return p
+        for rel in fallback_relative:
+            cand = manifest_dir / rel
+            if cand.is_file():
+                return cand
+        return None
+
+    staged: dict[str, str | None] = {"slug": slug}
+
+    head_src = _resolve(entry.get("head_path"), f"{slug}/heads", f"heads/{slug}")
+    if head_src is None:
+        # Fall back to scanning the slug heads folder for a *.safetensors.
+        for cand in sorted((manifest_dir / slug / "heads").glob("*.safetensors")) if (manifest_dir / slug / "heads").exists() else []:
+            head_src = cand
+            break
+    if head_src is None:
+        raise FileNotFoundError(f"can't locate head safetensors for slug={slug}; manifest said {entry.get('head_path')}")
+    head_dst = dst_dir / "head.safetensors"
+    _copy_local(head_src, head_dst)
+    staged["head"] = str(head_dst)
+    if verify_sha and entry.get("head_sha256"):
+        got = _sha256_file(head_dst)
+        if got != entry["head_sha256"]:
+            raise RuntimeError(f"head sha mismatch for {slug}: expected {entry['head_sha256']}, got {got}")
+        staged["head_sha256"] = got
+
+    awq_src = _resolve(entry.get("awq_scales"), f"{slug}/awq/awq_smoothing.json")
+    if awq_src is not None:
+        awq_dst = dst_dir / "awq_smoothing.json"
+        _copy_local(awq_src, awq_dst)
+        staged["awq_scales"] = str(awq_dst)
+    else:
+        staged["awq_scales"] = None
+
+    profile_src = _resolve(entry.get("runtime_profile"),
+                           f"{slug}/runtime_profiles/{slug}_winner.runtime.json")
+    if profile_src is None:
+        raise FileNotFoundError(f"can't locate runtime profile for slug={slug}")
+    profile_dst = dst_dir / "runtime_profile.json"
+    _copy_local(profile_src, profile_dst)
+    staged["runtime_profile"] = str(profile_dst)
+
+    # Patch the staged runtime profile so EAGLE5_HEAD / DISMANTLE_AWQ_SCALES
+    # point at the local copies, not the Drive original.
+    payload = json.loads(profile_dst.read_text())
+    env = dict(payload.get("runtime_env") or {})
+    env["EAGLE5_HEAD"] = str(head_dst)
+    if staged["awq_scales"]:
+        env["DISMANTLE_AWQ_SCALES"] = staged["awq_scales"]
+    payload["runtime_env"] = env
+    payload["head"] = str(head_dst)
+    payload["awq_scales"] = staged["awq_scales"]
+    profile_dst.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+    staged["metrics"] = entry.get("metrics") or {}
+    return staged
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="dismantle-headbank-pull")
+    p.add_argument("--manifest", required=True, type=Path,
+                   help="path to headbank_manifest.json (Drive export or local copy)")
+    p.add_argument("--slug", help="model slug to stage (e.g. q3b, q7b, q05b, dsv2)")
+    p.add_argument("--list", action="store_true", help="list available models and exit")
+    p.add_argument("--env-file", type=Path,
+                   help="if set, write a sh-compatible env file you can `source`")
+    p.add_argument("--home", type=Path, default=None,
+                   help="override DISMANTLE_HOME (defaults to $DISMANTLE_HOME or ~/.dismantle)")
+    p.add_argument("--no-verify-sha", action="store_true",
+                   help="skip sha256 check after copy")
+    args = p.parse_args()
+
+    if not args.manifest.exists():
+        sys.stderr.write(f"manifest not found: {args.manifest}\n")
+        return 2
+
+    manifest = json.loads(args.manifest.read_text())
+    entries = manifest.get("entries") or []
+    if not entries:
+        sys.stderr.write("manifest has no entries\n")
+        return 2
+
+    if args.list or not args.slug:
+        print(f"manifest: {args.manifest} ({manifest.get('repo_sha')})")
+        print(f"models in bank: {len(entries)}")
+        for e in entries:
+            m = e.get("metrics") or {}
+            print(
+                f"  {e['slug']:6s} hf={e.get('hf_id'):48s} "
+                f"tps={m.get('offline_projected_tps') or 0:>7.1f} "
+                f"tau={m.get('tau') or 0:>5.2f} "
+                f"policy={(m.get('policy_kind') or '-'):>24s}"
+            )
+        if args.list:
+            return 0
+        sys.stderr.write("--slug required when not --list\n")
+        return 2
+
+    by_slug = {e["slug"]: e for e in entries}
+    if args.slug not in by_slug:
+        sys.stderr.write(f"unknown slug {args.slug}; available: {sorted(by_slug)}\n")
+        return 2
+
+    home = args.home or _dismantle_home()
+    headbank_root = home / "headbank"
+    headbank_root.mkdir(parents=True, exist_ok=True)
+
+    manifest_dir = args.manifest.parent
+    staged = _stage_entry(by_slug[args.slug], headbank_root, manifest_dir,
+                          verify_sha=not args.no_verify_sha)
+    print(f"[headbank] staged {args.slug} → {headbank_root / args.slug}")
+    print(f"[headbank] runtime profile: {staged['runtime_profile']}")
+
+    profile_payload = json.loads(Path(staged["runtime_profile"]).read_text())
+    env = profile_payload.get("runtime_env") or {}
+    if args.env_file:
+        args.env_file.parent.mkdir(parents=True, exist_ok=True)
+        with args.env_file.open("w") as f:
+            f.write(f"# dismantle headbank env for slug={args.slug}\n")
+            f.write(f"# generated from {args.manifest}\n")
+            for k, v in sorted(env.items()):
+                # quote conservatively; values are simple strings.
+                f.write(f'export {k}="{v}"\n')
+        print(f"[headbank] wrote env file: {args.env_file}")
+        print(f"[headbank] then: source {args.env_file} && dismantle bench --prompt 'hello'")
+    else:
+        print("[headbank] runtime env (export these or pass --env-file):")
+        for k, v in sorted(env.items()):
+            print(f'  export {k}="{v}"')
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""bench_head — the orchestrator's spec-decode measurement primitive.
+
+Runs a deterministic baseline-vs-spec-decode comparison for one model + one
+Eagle5 head, sweeping the verify-window to find the best real decode tps.
+Parses the `[stats]` line dismantle's `generate` prints and reports:
+
+  * baseline dec_tps (no speculation)
+  * per-verify-window: spec dec_tps, draft accept rate, speedup
+  * the winning window + whether the head is a net win (speedup > 1.0)
+
+This is the local ground-truth that the offline (teacher-forced) τ/accept
+numbers only estimate. A head that scored 97% offline can still be a net
+loss here if the fp16→Q4_K_M distribution shift tanks real acceptance.
+
+Usage
+-----
+    # Baseline only (no head)
+    python3 tools/orchestrator/bench_head.py \
+        --weights models/qwen2.5-7b-instruct-q4_k_m.gguf --slug q7b
+
+    # Baseline + spec-decode with a head, sweep verify-windows
+    python3 tools/orchestrator/bench_head.py \
+        --weights models/qwen2.5-7b-instruct-q4_k_m.gguf --slug q7b \
+        --head /path/to/q7b_head.safetensors \
+        --verify-windows 2,4,6,8 \
+        --out _orchestrator/q7b_validate.json
+
+Greedy (temperature 0) so runs are deterministic and comparable.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import statistics
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+# The locked Qwen production env (optimized decode path). Mirrors the runtime
+# profile's locked_env. DeepSeek uses a different set; pass --arch deepseek2
+# to switch.
+QWEN_LOCKED_ENV = {
+    "DISMANTLE_QWEN_TCB": "1",
+    "DISMANTLE_QWEN_VOCAB_PRUNE": "32000",
+    "DISMANTLE_QWEN_Q4K_LMHEAD": "1",
+    "DISMANTLE_QWEN_FFN_DOWN_Q4K": "1",
+    "DISMANTLE_QWEN_Q4K_PREDEC": "1",
+}
+DEEPSEEK_LOCKED_ENV = {
+    "DISMANTLE_DSV2_TCB": "1",
+}
+
+# Fixed prompt set — varied enough that decode tps + acceptance aren't a
+# single-prompt fluke. Greedy decode makes each deterministic.
+PROMPTS = [
+    "Explain in detail how photosynthesis converts sunlight into chemical energy.",
+    "Write a short story about a lighthouse keeper who discovers a message in a bottle.",
+    "Describe the steps to implement a binary search tree in Rust, with code.",
+]
+
+STATS_RE = re.compile(
+    r"dec_tps=(?P<tps>[0-9.]+).*?draft_accepted=(?P<acc>\d+)\s+draft_rejected=(?P<rej>\d+)"
+)
+
+
+def run_generate(binary: str, weights: str, prompt: str, max_new: int,
+                 env: dict, head: str | None, verify_window: int | None) -> dict | None:
+    """Run one generate, return parsed {tps, accepted, rejected} or None."""
+    cmd = [
+        binary, "generate",
+        "--weights", weights,
+        "--prompt", prompt,
+        "--max-new-tokens", str(max_new),
+        "--temperature", "0",
+    ]
+    if head is not None:
+        cmd += ["--speculate", "eagle5", "--eagle5-head", head]
+        if verify_window is not None:
+            cmd += ["--verify-window", str(verify_window)]
+    full_env = dict(os.environ)
+    full_env.update(env)
+    proc = subprocess.run(cmd, env=full_env, capture_output=True, text=True)
+    out = proc.stdout + proc.stderr
+    m = None
+    for line in out.splitlines():
+        if "[stats]" in line:
+            m = STATS_RE.search(line)
+    if m is None:
+        sys.stderr.write(f"[bench_head] no [stats] parsed (exit {proc.returncode}). Tail:\n")
+        sys.stderr.write("\n".join(out.splitlines()[-8:]) + "\n")
+        return None
+    acc = int(m.group("acc"))
+    rej = int(m.group("rej"))
+    return {
+        "dec_tps": float(m.group("tps")),
+        "accepted": acc,
+        "rejected": rej,
+        "accept_rate": (acc / (acc + rej)) if (acc + rej) > 0 else 0.0,
+    }
+
+
+def measure(binary, weights, env, head, verify_window, max_new, prompts) -> dict:
+    """Median dec_tps + mean accept rate across the prompt set."""
+    tpss, accs, accepted, rejected = [], [], 0, 0
+    for p in prompts:
+        r = run_generate(binary, weights, p, max_new, env, head, verify_window)
+        if r is None:
+            continue
+        tpss.append(r["dec_tps"])
+        accs.append(r["accept_rate"])
+        accepted += r["accepted"]
+        rejected += r["rejected"]
+    if not tpss:
+        return {"ok": False}
+    return {
+        "ok": True,
+        "dec_tps_median": statistics.median(tpss),
+        "dec_tps_all": tpss,
+        "accept_rate_mean": statistics.mean(accs) if accs else 0.0,
+        "accepted_total": accepted,
+        "rejected_total": rejected,
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="bench_head")
+    ap.add_argument("--weights", required=True)
+    ap.add_argument("--slug", required=True, help="model label for output (q7b, q3b, ...)")
+    ap.add_argument("--head", default=None, help="Eagle5 head safetensors; omit for baseline-only")
+    ap.add_argument("--arch", choices=["qwen2", "deepseek2"], default="qwen2")
+    ap.add_argument("--binary", default="./target/release/dismantle")
+    ap.add_argument("--verify-windows", default="2,4,6,8")
+    ap.add_argument("--max-new-tokens", type=int, default=128)
+    ap.add_argument("--out", default=None)
+    args = ap.parse_args()
+
+    env = dict(QWEN_LOCKED_ENV if args.arch == "qwen2" else DEEPSEEK_LOCKED_ENV)
+    windows = [int(w) for w in args.verify_windows.split(",") if w.strip()]
+
+    print(f"[bench_head] {args.slug} arch={args.arch} head={'(baseline only)' if not args.head else Path(args.head).name}")
+    t0 = time.time()
+
+    # Baseline (no speculation).
+    base = measure(args.binary, args.weights, env, None, None, args.max_new_tokens, PROMPTS)
+    if not base["ok"]:
+        sys.stderr.write("[bench_head] baseline failed; aborting\n")
+        return 1
+    base_tps = base["dec_tps_median"]
+    print(f"  baseline dec_tps median = {base_tps:.2f}")
+
+    result = {
+        "slug": args.slug,
+        "arch": args.arch,
+        "weights": args.weights,
+        "head": args.head,
+        "baseline_dec_tps": base_tps,
+        "windows": {},
+        "max_new_tokens": args.max_new_tokens,
+        "created_at_unix": int(time.time()),
+    }
+
+    best = None
+    if args.head:
+        for w in windows:
+            spec = measure(args.binary, args.weights, env, args.head, w, args.max_new_tokens, PROMPTS)
+            if not spec["ok"]:
+                print(f"  verify_window={w}: FAILED")
+                continue
+            speedup = spec["dec_tps_median"] / base_tps if base_tps > 0 else 0.0
+            result["windows"][str(w)] = {
+                "dec_tps_median": spec["dec_tps_median"],
+                "accept_rate_mean": spec["accept_rate_mean"],
+                "speedup": speedup,
+                "accepted_total": spec["accepted_total"],
+                "rejected_total": spec["rejected_total"],
+            }
+            print(f"  verify_window={w}: spec_tps={spec['dec_tps_median']:.2f} "
+                  f"accept={spec['accept_rate_mean']*100:.1f}% speedup={speedup:.2f}x")
+            if best is None or speedup > best[1]:
+                best = (w, speedup, spec["dec_tps_median"], spec["accept_rate_mean"])
+
+    if best:
+        w, speedup, tps, acc = best
+        result["best"] = {"verify_window": w, "speedup": speedup,
+                          "dec_tps_median": tps, "accept_rate_mean": acc}
+        verdict = "NET WIN" if speedup > 1.0 else "NET LOSS (spec overhead exceeds acceptance gain)"
+        print(f"\n  VERDICT [{args.slug}]: best window={w} "
+              f"{tps:.2f} tps vs {base_tps:.2f} baseline = {speedup:.2f}x → {verdict}")
+        result["verdict"] = "win" if speedup > 1.0 else "loss"
+    else:
+        result["verdict"] = "baseline_only"
+
+    result["elapsed_sec"] = round(time.time() - t0, 1)
+
+    if args.out:
+        outp = Path(args.out)
+        outp.parent.mkdir(parents=True, exist_ok=True)
+        outp.write_text(json.dumps(result, indent=2) + "\n")
+        print(f"[bench_head] wrote {outp}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""build_frozen_gguf — build an Eagle5 frozen-weights npz from the GGUF the
+runtime actually serves.
+
+THE FIX (2026-05-29): the Eagle5 head's baseline is
+`argmax(RMSNorm(residual, output_norm) @ lm_head)`. For the head's drafts to
+match the runtime verifier, `lm_head`/`token_embd`/`output_norm` MUST be the
+exact weights the runtime serves — i.e. the GGUF's Q6_K-dequantized tensors,
+NOT an HF fp16 export. The old `eagle4/qwen3b_frozen.npz` was built from HF
+fp16 and differed from the GGUF by up to 0.27 per element, which completely
+flips the argmax and tanks real spec-decode acceptance to ~0%. Rebuilding
+frozen weights from the GGUF dequant lifts the offline lens ceiling from 0%
+to ~85-100%.
+
+Emits the trainer's frozen-npz schema:
+  * token_embd : fp16 (hidden, vocab)
+  * lm_head    : fp16 (hidden, vocab)   (tied to token_embd when the GGUF has
+                 no separate output.weight, as in Qwen2.5)
+  * output_norm: fp32 (hidden,)
+
+Usage
+-----
+    python3 tools/orchestrator/build_frozen_gguf.py \
+        --gguf models/qwen2.5-3b-instruct-q4_k_m.gguf \
+        --out  eagle4/q3b_frozen_gguf.npz
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+
+import numpy as np
+
+try:
+    from gguf import GGUFReader, dequantize
+except ImportError:
+    sys.stderr.write("needs gguf: pip install gguf\n")
+    sys.exit(1)
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="build_frozen_gguf")
+    ap.add_argument("--gguf", required=True)
+    ap.add_argument("--out", required=True)
+    args = ap.parse_args()
+
+    r = GGUFReader(args.gguf)
+    tensors = {t.name: t for t in r.tensors}
+
+    def deq(name: str) -> np.ndarray:
+        t = tensors[name]
+        return dequantize(t.data, t.tensor_type).astype(np.float32)
+
+    if "token_embd.weight" not in tensors:
+        sys.stderr.write("token_embd.weight not found in GGUF\n")
+        return 1
+    # token_embd.weight is (vocab, hidden) in GGUF; frozen npz wants (hidden, vocab).
+    te = deq("token_embd.weight")            # (vocab, hidden)
+    tok_embd = te.T.copy().astype(np.float16)  # (hidden, vocab)
+
+    # lm_head: prefer a separate output.weight; else tie to token_embd.
+    if "output.weight" in tensors:
+        lm = deq("output.weight")            # (vocab, hidden)
+        lm_head = lm.T.copy().astype(np.float16)
+        tied = False
+    else:
+        lm_head = tok_embd.copy()
+        tied = True
+
+    if "output_norm.weight" not in tensors:
+        sys.stderr.write("output_norm.weight not found in GGUF\n")
+        return 1
+    output_norm = np.array(tensors["output_norm.weight"].data).astype(np.float32)
+
+    hidden, vocab = tok_embd.shape
+    np.savez(args.out, token_embd=tok_embd, lm_head=lm_head, output_norm=output_norm)
+    print(f"[build_frozen_gguf] wrote {args.out}")
+    print(f"  hidden={hidden} vocab={vocab} lm_head_tied={tied}")
+    print(f"  output_norm: mean={output_norm.mean():.4f} std={output_norm.std():.4f}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""gen_prompts — emit a diverse newline-delimited prompt corpus for local
+quantized-residual capture.
+
+Diversity (not literary quality) is what matters: we want the captured
+residuals to span the token distribution the head will face at inference —
+code, prose, reasoning, enumeration, Q&A, summarization. Templates × topics
+give a few hundred varied prompts deterministically.
+"""
+from __future__ import annotations
+
+import argparse
+import random
+
+TOPICS = [
+    "photosynthesis", "the French Revolution", "quantum entanglement",
+    "binary search trees", "the stock market", "machine learning",
+    "the water cycle", "black holes", "the immune system", "blockchain",
+    "climate change", "the Roman Empire", "neural networks", "DNA replication",
+    "the internet", "volcanoes", "compound interest", "the human brain",
+    "renewable energy", "the printing press", "antibiotics", "tectonic plates",
+    "supply and demand", "the Cold War", "genetic engineering", "tides",
+    "the electoral college", "vaccines", "cryptography", "the Big Bang",
+    "coral reefs", "inflation", "the nervous system", "solar panels",
+    "the Silk Road", "recursion", "evolution", "the greenhouse effect",
+    "democracy", "the speed of light", "fermentation", "gravity",
+    "the stock exchange", "photosynthetic bacteria", "the Industrial Revolution",
+    "operating systems", "the periodic table", "ocean currents", "memory in computers",
+    "the theory of relativity",
+]
+
+LANGS = ["Rust", "Python", "Go", "C", "JavaScript", "Haskell"]
+ALGOS = [
+    "a binary search tree", "quicksort", "a hash map", "Dijkstra's algorithm",
+    "a linked list", "merge sort", "a bloom filter", "an LRU cache",
+    "depth-first search", "a trie", "matrix multiplication", "a ring buffer",
+]
+PLACES = ["a lighthouse", "an old library", "a space station", "a mountain village",
+          "a submarine", "a desert outpost", "a train station", "a clockmaker's shop"]
+TEMPLATES = [
+    "Explain in detail how {topic} works.",
+    "Describe the key concepts behind {topic} for a beginner.",
+    "What are the main causes and effects of {topic}?",
+    "Summarize {topic} in a few clear paragraphs.",
+    "Compare and contrast two perspectives on {topic}.",
+    "Write a short story set in {place}.",
+    "Describe a character who lives near {place}.",
+    "Implement {algo} in {lang}, with commented code.",
+    "Write a {lang} function that demonstrates {algo} and explain it.",
+    "List five practical tips related to {topic}.",
+    "Give step-by-step instructions to understand {topic}.",
+    "Why is {topic} important, and what are common misconceptions?",
+    "Draft an email explaining {topic} to a colleague.",
+    "Pose three thoughtful questions about {topic} and answer them.",
+    "Explain {topic} using an everyday analogy.",
+]
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--n", type=int, default=400)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--out", required=True)
+    args = ap.parse_args()
+    rng = random.Random(args.seed)
+
+    seen = set()
+    out = []
+    attempts = 0
+    while len(out) < args.n and attempts < args.n * 20:
+        attempts += 1
+        t = rng.choice(TEMPLATES)
+        p = t.format(
+            topic=rng.choice(TOPICS),
+            place=rng.choice(PLACES),
+            algo=rng.choice(ALGOS),
+            lang=rng.choice(LANGS),
+        )
+        if p in seen:
+            continue
+        seen.add(p)
+        out.append(p)
+
+    with open(args.out, "w") as f:
+        f.write("\n".join(out) + "\n")
+    print(f"[gen_prompts] wrote {len(out)} prompts to {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
+#!/usr/bin/env python3
+"""measure_ffn_sparsity — Track B Step 2 GATE.
+
+Reads the FFN-sparsity capture (packed by pack_ffn.py) and measures the
+*oracle* skippable-block fraction per layer: keeping the top blocks by true
+activation magnitude, how many blocks can we drop while preserving the FFN
+output to a target recall? The oracle is an upper bound — a learned predictor
+(Step 3) is strictly worse — so if the oracle can't skip >50% of blocks at
+high recall, the whole track is dead and we halt before building kernels.
+
+A block's contribution to `ffn_down @ a` scales with its activation L2 norm
+`||a_block||_2` (captured as act_blockl2). Treating per-block contributions as
+~orthogonal (reasonable in high-dim), the relative L2 error of dropping a set
+S of blocks is sqrt(sum_{b in S} l2_b^2) / sqrt(sum_b l2_b^2). For a target
+recall r we drop the smallest-l2 blocks while that relative error stays
+<= (1 - r). We also report an L1 variant (triangle-inequality bound, more
+conservative) and the raw max-based fraction (the trainer's label signal) for
+comparison.
+
+Usage:
+    python3.12 tools/orchestrator/measure_ffn_sparsity.py \
+        --ffn-dir _capture/q3b_ffn_shards
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import struct
+import sys
+from pathlib import Path
+
+import numpy as np
+
+SENTINEL = 0xFFFFFFFF
+
+
+def deq(row, stem):
+    q = np.frombuffer(row[f"{stem}_q"], dtype=np.int8).astype(np.float32)
+    return q * float(row[f"{stem}_scale"])
+
+
+def load_layers_parquet(ffn_dir):
+    """{layer: (blockmax[N,nb], blockl2[N,nb])} from packed int8 parquet."""
+    import pyarrow.parquet as pq
+
+    shards = sorted(Path(ffn_dir).glob("shard_*.parquet"))
+    if not shards:
+        sys.stderr.write(f"no shards in {ffn_dir}\n")
+        sys.exit(1)
+    acc: dict[int, tuple[list, list]] = {}
+    for sh in shards:
+        t = pq.read_table(sh)
+        cols = t.column_names
+        for i in range(t.num_rows):
+            r = {c: t[c][i].as_py() for c in cols}
+            layer = int(r["layer"])
+            n_tok, _hidden, n_blocks = (int(x) for x in r["shape"])
+            mx = deq(r, "act_blockmax").reshape(n_tok, n_blocks)
+            l2 = deq(r, "act_blockl2").reshape(n_tok, n_blocks)
+            slot = acc.setdefault(layer, ([], []))
+            slot[0].append(mx)
+            slot[1].append(l2)
+    return {k: (np.concatenate(v[0]), np.concatenate(v[1])) for k, v in acc.items()}
+
+
+def load_layers_bin(path):
+    """{layer: (blockmax[N,nb], blockl2[N,nb])} from the raw f32 capture stream
+    (no int8 quantization — the trustworthy precision for the gate)."""
+    data = Path(path).read_bytes()
+    n = len(data)
+    off = 0
+    hidden = n_blocks = None
+    acc: dict[int, tuple[list, list]] = {}
+    while off + 8 <= n:
+        a, b = struct.unpack_from("<II", data, off)
+        if a == SENTINEL and b == SENTINEL:
+            if off + 16 > n:
+                break
+            _, _, hidden, n_blocks = struct.unpack_from("<IIII", data, off)
+            hidden, n_blocks = int(hidden), int(n_blocks)
+            off += 16
+            continue
+        if hidden is None:
+            raise ValueError(f"stream did not start with a sentinel at off={off}")
+        rec = 4 + hidden * 4 + 2 * n_blocks * 4
+        if off + rec > n:
+            break
+        (layer,) = struct.unpack_from("<I", data, off)
+        foff = off + 4 + hidden * 4
+        mx = np.frombuffer(data, np.float32, n_blocks, foff).copy()
+        l2 = np.frombuffer(data, np.float32, n_blocks, foff + n_blocks * 4).copy()
+        slot = acc.setdefault(int(layer), ([], []))
+        slot[0].append(mx)
+        slot[1].append(l2)
+        off += rec
+    return {k: (np.stack(v[0]), np.stack(v[1])) for k, v in acc.items()}
+
+
+def kept_fraction_l2(vals: np.ndarray, eps: float) -> np.ndarray:
+    """Per-row: fraction of blocks that must be KEPT so the relative L2 error
+    of dropping the rest is <= eps. vals: [N, nb] non-negative (l2 per block)."""
+    energy = vals ** 2
+    total = energy.sum(axis=1, keepdims=True)
+    total = np.maximum(total, 1e-30)
+    order = np.argsort(energy, axis=1)  # ascending: smallest first
+    sorted_e = np.take_along_axis(energy, order, axis=1)
+    cum_dropped = np.cumsum(sorted_e, axis=1)  # energy dropped if we skip the first k
+    budget = (eps ** 2) * total  # may drop up to this much energy
+    # number of smallest blocks we can drop = count where cum_dropped <= budget
+    n_drop = (cum_dropped <= budget).sum(axis=1)
+    nb = vals.shape[1]
+    return (nb - n_drop) / nb
+
+
+def kept_fraction_l1(vals: np.ndarray, eps: float) -> np.ndarray:
+    """Conservative triangle-inequality bound: drop smallest-magnitude blocks
+    while cumulative dropped magnitude <= eps * total magnitude."""
+    total = vals.sum(axis=1, keepdims=True)
+    total = np.maximum(total, 1e-30)
+    order = np.argsort(vals, axis=1)
+    sorted_v = np.take_along_axis(vals, order, axis=1)
+    cum_dropped = np.cumsum(sorted_v, axis=1)
+    budget = eps * total
+    n_drop = (cum_dropped <= budget).sum(axis=1)
+    nb = vals.shape[1]
+    return (nb - n_drop) / nb
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="measure_ffn_sparsity")
+    ap.add_argument("--ffn-dir", default=None, help="packed int8 parquet dir")
+    ap.add_argument("--bin", default=None, help="raw f32 capture .bin (preferred for the gate)")
+    ap.add_argument("--out", default=None, help="optional JSON report path")
+    ap.add_argument("--max-thresh", type=float, default=0.05,
+                    help="raw blockmax>thresh active fraction (trainer label) to report")
+    args = ap.parse_args()
+
+    if args.bin:
+        data = load_layers_bin(args.bin)
+        src = f"{args.bin} (raw f32)"
+    elif args.ffn_dir:
+        data = load_layers_parquet(args.ffn_dir)
+        src = f"{args.ffn_dir} (int8 parquet)"
+    else:
+        sys.stderr.write("provide --bin or --ffn-dir\n")
+        return 1
+    layers = sorted(data.keys())
+    print(f"source: {src}")
+
+    print(f"{'lyr':>3} {'N':>6} {'keepL2@99':>9} {'keepL2@99.9':>11} "
+          f"{'keepL1@99':>9} {'keepL1@99.9':>11} {'max>thr':>8}")
+    rows = {}
+    agg = {k: [] for k in ("l2_99", "l2_999", "l1_99", "l1_999", "maxthr")}
+    n_tok_total = 0
+    for layer in layers:
+        bmax, bl2 = data[layer]
+        if bl2 is None:
+            continue
+        N = bl2.shape[0]
+        n_tok_total = max(n_tok_total, N)
+        k_l2_99 = float(kept_fraction_l2(bl2, 0.01).mean())
+        k_l2_999 = float(kept_fraction_l2(bl2, 0.001).mean())
+        k_l1_99 = float(kept_fraction_l1(bl2, 0.01).mean())
+        k_l1_999 = float(kept_fraction_l1(bl2, 0.001).mean())
+        maxthr = float((bmax > args.max_thresh).mean())
+        rows[layer] = dict(N=N, keep_l2_99=k_l2_99, keep_l2_999=k_l2_999,
+                           keep_l1_99=k_l1_99, keep_l1_999=k_l1_999,
+                           max_active=maxthr)
+        agg["l2_99"].append(k_l2_99)
+        agg["l2_999"].append(k_l2_999)
+        agg["l1_99"].append(k_l1_99)
+        agg["l1_999"].append(k_l1_999)
+        agg["maxthr"].append(maxthr)
+        print(f"{layer:>3} {N:>6} {k_l2_99:>9.3f} {k_l2_999:>11.3f} "
+              f"{k_l1_99:>9.3f} {k_l1_999:>11.3f} {maxthr:>8.3f}")
+
+    def m(key):
+        return float(np.mean(agg[key])) if agg[key] else float("nan")
+
+    keep99 = m("l2_99")
+    keep999 = m("l2_999")
+    print("\n=== OVERALL (mean over layers) ===")
+    print(f"  oracle KEEP fraction @99% recall (L2):   {keep99:.3f}  "
+          f"-> skippable {1-keep99:.3f}")
+    print(f"  oracle KEEP fraction @99.9% recall (L2): {keep999:.3f}  "
+          f"-> skippable {1-keep999:.3f}")
+    print(f"  conservative KEEP @99% (L1):   {m('l1_99'):.3f} -> skippable {1-m('l1_99'):.3f}")
+    print(f"  conservative KEEP @99.9% (L1): {m('l1_999'):.3f} -> skippable {1-m('l1_999'):.3f}")
+    print(f"  raw blockmax>{args.max_thresh} active fraction: {m('maxthr'):.3f}")
+    print(f"\n  FFN is ~72% of bytes/token. At 99% recall, FFN-byte cut ~= "
+          f"{1-keep99:.3f} -> bytes/token cut ~= {0.72*(1-keep99):.3f}")
+    # GATE verdict
+    skip99 = 1 - keep99
+    print("\n=== GATE (handoff: >50% skippable at high recall = GO) ===")
+    if skip99 >= 0.50:
+        print(f"  GO: {skip99:.1%} of blocks skippable @99% recall (oracle). "
+              f"Worth training a predictor (Step 3) to approach this.")
+    elif skip99 >= 0.30:
+        print(f"  MARGINAL: only {skip99:.1%} skippable @99% recall (oracle). "
+              f"Below the 50% bar; ceiling lift is modest and a real predictor "
+              f"will be worse. Reset expectations before building kernels.")
+    else:
+        print(f"  NO-GO: only {skip99:.1%} skippable @99% recall even with an "
+              f"oracle selector. q3b FFN is not block-sparse enough; halt track.")
+
+    if args.out:
+        json.dump({"layers": rows, "overall": {
+            "keep_l2_99": keep99, "keep_l2_999": keep999,
+            "keep_l1_99": m("l1_99"), "keep_l1_999": m("l1_999"),
+            "max_active": m("maxthr"), "skippable_99": skip99,
+        }}, open(args.out, "w"), indent=2)
+        print(f"\nwrote {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""pack_corpus — convert dismantle's raw quantized-residual capture stream
+into the Eagle5 trainer's compact parquet shards.
+
+dismantle's `generate` (with DISMANTLE_QWEN_EAGLE5_CAPTURE=1 and
+DISMANTLE_QWEN_CAPTURE_CORPUS_PATH=<file>) appends a little-endian binary
+stream of the residuals the *quantized* (Q4_K_M) runtime actually serves.
+This is the key fix for the fp16→Q4_K_M distribution shift: the head trains
+on the same residuals it will see at inference instead of the fp16 capture
+the cloud `mega_calibrate` produced.
+
+Binary stream layout (all little-endian)
+----------------------------------------
+Per decoded sequence, in order:
+  * sentinel       : u32 0xFFFFFFFF, u32 0xFFFFFFFF, u32 hidden
+  * then per step  : u32 prev_token, u32 next_token,
+                     f32 residual[hidden], f32 intermediate[hidden]
+
+`residual[i]` is the layer-(n-k) residual produced by the forward that
+consumed `prev_token`; `next_token` is the greedy token that forward
+produced. Because decode is greedy, next_token[i] == prev_token[i+1], so a
+sequence's token list is simply [prev_token for each step] and the training
+target for residual[i] is token[i+1] — the model's REAL next token.
+
+Output parquet schema (matches eagle5_train_pytorch.py § Data contract)
+-----------------------------------------------------------------------
+Each row = one sequence:
+  * tokens             : bytes  (int32 packed, len n_tok)
+  * residual_q         : bytes  (int8  packed, n_tok*hidden)
+  * residual_scale     : f32    (single global scale)
+  * residual_shape     : list[int]  [n_tok, hidden]
+  * intermediate_q / intermediate_scale / intermediate_shape : same
+
+Usage
+-----
+    python3 tools/orchestrator/pack_corpus.py \
+        --in _capture/q7b_residuals.bin \
+        --out-dir _capture/q7b_shards \
+        --rows-per-shard 64
+
+Then point the trainer at --corpus-dir _capture/q7b_shards.
+"""
+from __future__ import annotations
+
+import argparse
+import struct
+import sys
+from pathlib import Path
+
+import numpy as np
+
+try:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+except ImportError:
+    sys.stderr.write("pack_corpus needs pyarrow: pip install pyarrow\n")
+    sys.exit(1)
+
+SENTINEL = 0xFFFFFFFF
+MIN_TOKENS = 5  # trainer drops sequences shorter than this
+
+
+def quantize_int8(arr: np.ndarray) -> tuple[bytes, float]:
+    """Symmetric per-tensor int8 quant with a single global scale.
+
+    Mirrors the trainer's dequant: f32 = int8 * scale.
+    """
+    arr = np.ascontiguousarray(arr, dtype=np.float32)
+    amax = float(np.abs(arr).max()) if arr.size else 0.0
+    scale = (amax / 127.0) if amax > 0 else 1.0
+    q = np.clip(np.round(arr / scale), -127, 127).astype(np.int8)
+    return q.tobytes(), scale
+
+
+def iter_sequences(path: Path):
+    """Yield (tokens int32[n], residual f32[n,h], intermediate f32[n,h])."""
+    data = path.read_bytes()
+    n = len(data)
+    off = 0
+    hidden = None
+    cur_tokens: list[int] = []
+    cur_res: list[np.ndarray] = []
+    cur_int: list[np.ndarray] = []
+
+    def flush():
+        if hidden is None or len(cur_tokens) < MIN_TOKENS:
+            return None
+        toks = np.asarray(cur_tokens, dtype=np.int32)
+        res = np.stack(cur_res).astype(np.float32)
+        inter = np.stack(cur_int).astype(np.float32)
+        return toks, res, inter
+
+    while off + 12 <= n:
+        a, b, h = struct.unpack_from("<III", data, off)
+        if a == SENTINEL and b == SENTINEL:
+            # Sequence boundary: emit the one we were building, start fresh.
+            seq = flush()
+            if seq is not None:
+                yield seq
+            hidden = h
+            cur_tokens, cur_res, cur_int = [], [], []
+            off += 12
+            continue
+        if hidden is None:
+            # Stream must start with a sentinel.
+            raise ValueError(f"corpus stream did not start with a sentinel at off={off}")
+        step_bytes = 8 + hidden * 4 * 2
+        if off + step_bytes > n:
+            break  # truncated trailing record (e.g. aborted run)
+        prev_id, _next_id = struct.unpack_from("<II", data, off)
+        foff = off + 8
+        res = np.frombuffer(data, dtype=np.float32, count=hidden, offset=foff).copy()
+        inter = np.frombuffer(
+            data, dtype=np.float32, count=hidden, offset=foff + hidden * 4
+        ).copy()
+        cur_tokens.append(prev_id)
+        cur_res.append(res)
+        cur_int.append(inter)
+        off += step_bytes
+
+    seq = flush()
+    if seq is not None:
+        yield seq
+
+
+def build_row(toks: np.ndarray, res: np.ndarray, inter: np.ndarray) -> dict:
+    res_q, res_scale = quantize_int8(res)
+    int_q, int_scale = quantize_int8(inter)
+    return {
+        "tokens": toks.tobytes(),
+        "residual_q": res_q,
+        "residual_scale": float(res_scale),
+        "residual_shape": [int(res.shape[0]), int(res.shape[1])],
+        "intermediate_q": int_q,
+        "intermediate_scale": float(int_scale),
+        "intermediate_shape": [int(inter.shape[0]), int(inter.shape[1])],
+    }
+
+
+SCHEMA = pa.schema([
+    ("tokens", pa.binary()),
+    ("residual_q", pa.binary()),
+    ("residual_scale", pa.float32()),
+    ("residual_shape", pa.list_(pa.int64())),
+    ("intermediate_q", pa.binary()),
+    ("intermediate_scale", pa.float32()),
+    ("intermediate_shape", pa.list_(pa.int64())),
+])
+
+
+def write_shard(rows: list[dict], out_dir: Path, idx: int) -> Path:
+    cols = {k: [r[k] for r in rows] for k in SCHEMA.names}
+    table = pa.table(cols, schema=SCHEMA)
+    out = out_dir / f"shard_{idx:05d}.parquet"
+    pq.write_table(table, out)
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="pack_corpus")
+    ap.add_argument("--in", dest="inp", required=True, help="raw capture .bin")
+    ap.add_argument("--out-dir", required=True, help="dir for shard_*.parquet")
+    ap.add_argument("--rows-per-shard", type=int, default=64)
+    args = ap.parse_args()
+
+    inp = Path(args.inp)
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    rows: list[dict] = []
+    shard_idx = 0
+    n_seq = n_steps = n_dropped = 0
+    hidden_seen = set()
+
+    for toks, res, inter in iter_sequences(inp):
+        if len(toks) < MIN_TOKENS:
+            n_dropped += 1
+            continue
+        n_seq += 1
+        n_steps += len(toks)
+        hidden_seen.add(res.shape[1])
+        rows.append(build_row(toks, res, inter))
+        if len(rows) >= args.rows_per_shard:
+            p = write_shard(rows, out_dir, shard_idx)
+            print(f"[pack] wrote {p} ({len(rows)} rows)")
+            rows = []
+            shard_idx += 1
+
+    if rows:
+        p = write_shard(rows, out_dir, shard_idx)
+        print(f"[pack] wrote {p} ({len(rows)} rows)")
+        shard_idx += 1
+
+    print(f"[pack] done: {n_seq} sequences, {n_steps} steps, "
+          f"{shard_idx} shards, hidden={sorted(hidden_seen)}, dropped={n_dropped}")
+    if n_seq == 0:
+        sys.stderr.write("[pack] WARNING: no sequences emitted — check capture flags\n")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""pack_ffn — convert dismantle's raw FFN-sparsity capture stream into the
+sparsity predictor trainer's int8 parquet shards.
+
+dismantle's `generate` (with DISMANTLE_QWEN_CAPTURE_FFN_PATH=<file>) appends a
+little-endian binary stream. At every transformer layer of every greedy decode
+step it records (a) `norm_in` = the `ffn_norm` RMSNorm output (the gate/up
+input, i.e. the predictor's input) and (b) per 256-channel block of the
+intermediate, `max|silu(gate)*up|` (the active-block label source). Capture runs
+on the non-TCB `forward_token` path so these are computed on-host.
+
+Binary stream layout (all little-endian)
+----------------------------------------
+Per decoded sequence, in order:
+  * sentinel : u32 0xFFFFFFFF, u32 0xFFFFFFFF, u32 hidden, u32 n_blocks
+  * then per (decode step, layer):
+        u32 layer, f32 norm_in[hidden],
+        f32 blockmax[n_blocks], f32 blockl2[n_blocks]
+Within a sequence the layers appear once per decode step in layer order, so
+grouping records by layer preserves token order per layer.
+
+Output parquet schema (matches colab/sparsity_predictor_train.py § load_layer,
+plus an extra act_blockl2 column for the Step-2 sparsity gate)
+------------------------------------------------------------------------------
+Each row = one (sequence, layer):
+  * layer              : int32
+  * norm_in_q          : bytes int8  (n_tok * hidden)
+  * norm_in_scale      : f32
+  * act_blockmax_q     : bytes int8  (n_tok * n_blocks)   max|silu*up| (trainer label)
+  * act_blockmax_scale : f32
+  * act_blockl2_q      : bytes int8  (n_tok * n_blocks)   ||silu*up||_2 (gate proxy)
+  * act_blockl2_scale  : f32
+  * shape              : list[int]   [n_tok, hidden, n_blocks]
+
+Usage
+-----
+    python3.12 tools/orchestrator/pack_ffn.py \
+        --in _capture/q3b_ffn.bin \
+        --out-dir _capture/q3b_ffn_shards \
+        --rows-per-shard 256
+"""
+from __future__ import annotations
+
+import argparse
+import struct
+import sys
+from pathlib import Path
+
+import numpy as np
+
+try:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+except ImportError:
+    sys.stderr.write("pack_ffn needs pyarrow: pip install pyarrow\n")
+    sys.exit(1)
+
+SENTINEL = 0xFFFFFFFF
+
+
+def quantize_int8(arr: np.ndarray) -> tuple[bytes, float]:
+    """Symmetric per-tensor int8 quant with a single global scale.
+
+    Mirrors the trainer's dequant: f32 = int8 * scale.
+    """
+    arr = np.ascontiguousarray(arr, dtype=np.float32)
+    amax = float(np.abs(arr).max()) if arr.size else 0.0
+    scale = (amax / 127.0) if amax > 0 else 1.0
+    q = np.clip(np.round(arr / scale), -127, 127).astype(np.int8)
+    return q.tobytes(), scale
+
+
+def iter_sequences(path: Path):
+    """Yield (hidden, n_blocks, {layer: (norm_in[n,h], blockmax[n,nb])}).
+
+    One dict per captured sequence; each layer's arrays are stacked in decode
+    order.
+    """
+    data = path.read_bytes()
+    n = len(data)
+    off = 0
+    hidden: int | None = None
+    n_blocks: int | None = None
+    # layer -> ([norm_in rows], [blockmax rows], [blockl2 rows])
+    cur: dict[int, tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray]]] = {}
+
+    def flush():
+        if hidden is None or not cur:
+            return None
+        out = {
+            layer: (
+                np.stack(norms).astype(np.float32),
+                np.stack(maxes).astype(np.float32),
+                np.stack(l2s).astype(np.float32),
+            )
+            for layer, (norms, maxes, l2s) in cur.items()
+        }
+        return hidden, n_blocks, out
+
+    while off + 8 <= n:
+        a, b = struct.unpack_from("<II", data, off)
+        if a == SENTINEL and b == SENTINEL:
+            if off + 16 > n:
+                break  # truncated sentinel
+            _, _, h, nb = struct.unpack_from("<IIII", data, off)
+            seq = flush()
+            if seq is not None:
+                yield seq
+            hidden, n_blocks = int(h), int(nb)
+            cur = {}
+            off += 16
+            continue
+        if hidden is None or n_blocks is None:
+            raise ValueError(f"ffn stream did not start with a sentinel at off={off}")
+        rec_bytes = 4 + hidden * 4 + 2 * n_blocks * 4
+        if off + rec_bytes > n:
+            break  # truncated trailing record (aborted run)
+        (layer,) = struct.unpack_from("<I", data, off)
+        foff = off + 4
+        norm = np.frombuffer(data, dtype=np.float32, count=hidden, offset=foff).copy()
+        bmax = np.frombuffer(
+            data, dtype=np.float32, count=n_blocks, offset=foff + hidden * 4
+        ).copy()
+        bl2 = np.frombuffer(
+            data, dtype=np.float32, count=n_blocks,
+            offset=foff + hidden * 4 + n_blocks * 4,
+        ).copy()
+        slot = cur.setdefault(int(layer), ([], [], []))
+        slot[0].append(norm)
+        slot[1].append(bmax)
+        slot[2].append(bl2)
+        off += rec_bytes
+
+    seq = flush()
+    if seq is not None:
+        yield seq
+
+
+def build_rows(hidden: int, n_blocks: int, layers: dict) -> list[dict]:
+    rows = []
+    for layer, (norm, bmax, bl2) in sorted(layers.items()):
+        n_tok = int(norm.shape[0])
+        norm_q, norm_scale = quantize_int8(norm)
+        bmax_q, bmax_scale = quantize_int8(bmax)
+        bl2_q, bl2_scale = quantize_int8(bl2)
+        rows.append(
+            {
+                "layer": np.int32(layer),
+                "norm_in_q": norm_q,
+                "norm_in_scale": float(norm_scale),
+                "act_blockmax_q": bmax_q,
+                "act_blockmax_scale": float(bmax_scale),
+                "act_blockl2_q": bl2_q,
+                "act_blockl2_scale": float(bl2_scale),
+                "shape": [n_tok, int(hidden), int(n_blocks)],
+            }
+        )
+    return rows
+
+
+SCHEMA = pa.schema([
+    ("layer", pa.int32()),
+    ("norm_in_q", pa.binary()),
+    ("norm_in_scale", pa.float32()),
+    ("act_blockmax_q", pa.binary()),
+    ("act_blockmax_scale", pa.float32()),
+    ("act_blockl2_q", pa.binary()),
+    ("act_blockl2_scale", pa.float32()),
+    ("shape", pa.list_(pa.int64())),
+])
+
+
+def write_shard(rows: list[dict], out_dir: Path, idx: int) -> Path:
+    cols = {k: [r[k] for r in rows] for k in SCHEMA.names}
+    table = pa.table(cols, schema=SCHEMA)
+    out = out_dir / f"shard_{idx:05d}.parquet"
+    pq.write_table(table, out)
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(prog="pack_ffn")
+    ap.add_argument("--in", dest="inp", required=True, help="raw capture .bin")
+    ap.add_argument("--out-dir", required=True, help="dir for shard_*.parquet")
+    ap.add_argument("--rows-per-shard", type=int, default=256)
+    args = ap.parse_args()
+
+    inp = Path(args.inp)
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    rows: list[dict] = []
+    shard_idx = 0
+    n_seq = n_rows = n_tok_total = 0
+    hidden_seen: set[int] = set()
+    nblk_seen: set[int] = set()
+
+    for hidden, n_blocks, layers in iter_sequences(inp):
+        n_seq += 1
+        hidden_seen.add(hidden)
+        nblk_seen.add(n_blocks)
+        seq_rows = build_rows(hidden, n_blocks, layers)
+        for r in seq_rows:
+            n_tok_total += int(r["shape"][0])
+        rows.extend(seq_rows)
+        n_rows += len(seq_rows)
+        while len(rows) >= args.rows_per_shard:
+            p = write_shard(rows[: args.rows_per_shard], out_dir, shard_idx)
+            print(f"[pack-ffn] wrote {p} ({args.rows_per_shard} rows)")
+            rows = rows[args.rows_per_shard :]
+            shard_idx += 1
+
+    if rows:
+        p = write_shard(rows, out_dir, shard_idx)
+        print(f"[pack-ffn] wrote {p} ({len(rows)} rows)")
+        shard_idx += 1
+
+    print(
+        f"[pack-ffn] done: {n_seq} sequences, {n_rows} layer-rows, "
+        f"{n_tok_total} layer-token samples, {shard_idx} shards, "
+        f"hidden={sorted(hidden_seen)}, n_blocks={sorted(nblk_seen)}"
+    )
+    if n_rows == 0:
+        sys.stderr.write("[pack-ffn] WARNING: no rows emitted — check capture flag\n")
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""stage_headbank_upload — organize locally-prepared Eagle5 inputs into a
+single Drive-upload bundle the corrected-headbank Colab expects.
+
+Produces `_headbank_upload/<slug>/`:
+  corpus_shards/shard_*.parquet   (from _capture/<slug>_corpus_shards)
+  frozen_gguf.npz                 (from frozen/<slug>_frozen_gguf.npz)
+
+Upload the whole `_headbank_upload/` folder to Drive and point the notebook's
+DRIVE_ROOT at it. Only the corpus (quantized residuals) truly must come from
+the local Metal runtime; the frozen npz is included so the Colab needs no GGUF.
+
+Usage:
+    python3 tools/orchestrator/stage_headbank_upload.py
+"""
+from __future__ import annotations
+
+import shutil
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SLUGS = ["q05b", "q1p5b", "q3b", "q7b"]
+
+
+def main() -> int:
+    out_root = ROOT / "_headbank_upload"
+    out_root.mkdir(exist_ok=True)
+    staged = []
+    for slug in SLUGS:
+        shards = ROOT / "_capture" / f"{slug}_corpus_shards"
+        frozen = ROOT / "frozen" / f"{slug}_frozen_gguf.npz"
+        if not shards.is_dir() or not any(shards.glob("shard_*.parquet")):
+            print(f"{slug:6s} SKIP — no corpus shards at {shards}")
+            continue
+        if not frozen.is_file():
+            print(f"{slug:6s} SKIP — no frozen npz at {frozen}")
+            continue
+        dst = out_root / slug
+        (dst / "corpus_shards").mkdir(parents=True, exist_ok=True)
+        for p in shards.glob("shard_*.parquet"):
+            shutil.copy2(p, dst / "corpus_shards" / p.name)
+        shutil.copy2(frozen, dst / "frozen_gguf.npz")
+        nshards = len(list((dst / "corpus_shards").glob("*.parquet")))
+        print(f"{slug:6s} staged {nshards} shards + frozen_gguf.npz")
+        staged.append(slug)
+    print(f"\nstaged {len(staged)} models -> {out_root}")
+    print("Upload this folder to Drive; set the notebook DRIVE_ROOT to it.")
+    return 0 if staged else 1
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(main())
+#!/usr/bin/env python3
+"""
+trace-analyze.py  --  summarize a dismantle --trace-json file.
+
+Usage:
+    python3 tools/trace-analyze.py /tmp/trace_safe_full.json
+    python3 tools/trace-analyze.py /tmp/trace_safe_full.json --top 15
+
+Outputs:
+  • Top N kernels by total_us (sorted desc)
+  • Per-kernel mean / p50 / p99 wall_us
+  • Per-layer total_us (identifies expensive layers)
+  • Summary counts: total dispatches, total dispatch wall, fraction of decode wall
+"""
+
+import argparse
+import json
+import sys
+
+
+def percentile(sorted_vals, p):
+    if not sorted_vals:
+        return 0
+    idx = int(len(sorted_vals) * p / 100)
+    return sorted_vals[min(idx, len(sorted_vals) - 1)]
+
+
+def fmt_us(us):
+    if us >= 1_000_000:
+        return f"{us / 1_000_000:.2f}s"
+    if us >= 1_000:
+        return f"{us / 1_000:.1f}ms"
+    return f"{us}µs"
+
+
+def analyze(path, top_n=10):
+    with open(path) as f:
+        data = json.load(f)
+
+    decode_tps = (
+        data.get("report", {})
+            .get("results", {})
+            .get("decode_tps", 0.0)
+    )
+    dispatch_total_us = data.get("dispatch_total_us", 0)
+    dispatch_pct = data.get("dispatch_wall_pct_of_decode", 0.0)
+
+    # Completion tokens from trial_stats
+    trial_stats = (
+        data.get("report", {})
+            .get("results", {})
+            .get("trial_stats", [{}])
+    )
+    tokens = trial_stats[0].get("completion_tokens", 1) if trial_stats else 1
+
+    print(f"=== {path} ===")
+    print(f"decode_tps:          {decode_tps:.3f}")
+    print(f"completion_tokens:   {tokens}")
+    print(f"total_dispatch_us:   {dispatch_total_us:,} ({fmt_us(dispatch_total_us)})")
+    print(f"total_dispatch_pct:  {dispatch_pct:.1f}% of decode wall")
+    if tokens > 0:
+        print(f"dispatch_us/token:   {dispatch_total_us // tokens:,} ({fmt_us(dispatch_total_us // tokens)})")
+
+    # ── Kernel summary ───────────────────────────────────────────────────────
+    kernel_summary = data.get("kernel_summary", [])
+    if not kernel_summary:
+        # recompute from raw samples if available
+        samples = data.get("dispatch_samples", [])
+        if samples:
+            from collections import defaultdict
+            by_k = defaultdict(list)
+            for s in samples:
+                by_k[s["kernel_name"]].append(s["wall_us"])
+            kernel_summary = []
+            for k, vals in by_k.items():
+                vals_sorted = sorted(vals)
+                kernel_summary.append({
+                    "kernel": k,
+                    "count": len(vals),
+                    "total_us": sum(vals),
+                    "mean_us": sum(vals) // len(vals),
+                    "p50_us": percentile(vals_sorted, 50),
+                    "p99_us": percentile(vals_sorted, 99),
+                })
+            kernel_summary.sort(key=lambda x: x["total_us"], reverse=True)
+
+    print(f"\n── Top {top_n} kernels by total_us ──")
+    header = f"{'kernel':<36} {'count':>8} {'total':>10} {'mean':>8} {'p50':>8} {'p99':>8}"
+    print(header)
+    print("-" * len(header))
+    total_shown = 0
+    for row in kernel_summary[:top_n]:
+        k = row.get("kernel") or row.get("kernel_name", "?")
+        cnt = row["count"]
+        tot = row["total_us"]
+        mean = row["mean_us"]
+        p50 = row.get("p50_us", 0)
+        p99 = row.get("p99_us", 0)
+        pct_of_dispatch = (tot / dispatch_total_us * 100) if dispatch_total_us > 0 else 0
+        total_shown += tot
+        print(f"{k:<36} {cnt:>8,} {fmt_us(tot):>10} {fmt_us(mean):>8} {fmt_us(p50):>8} {fmt_us(p99):>8}  ({pct_of_dispatch:.1f}%)")
+
+    # ── Layer summary ────────────────────────────────────────────────────────
+    layer_summary = data.get("layer_summary", [])
+    if layer_summary:
+        print(f"\n── Per-layer total_us (top 10 most expensive layers) ──")
+        by_total = sorted(layer_summary, key=lambda x: x["total_us"], reverse=True)
+        layer_header = f"{'layer':>6} {'total':>10}  dominant kernel"
+        print(layer_header)
+        print("-" * 50)
+        for row in by_total[:10]:
+            li = row["layer"]
+            tot = row["total_us"]
+            kernels = row.get("kernels", {})
+            dominant = max(kernels, key=kernels.get) if kernels else "?"
+            dom_pct = (kernels.get(dominant, 0) / tot * 100) if tot > 0 else 0
+            print(f"{li:>6} {fmt_us(tot):>10}  {dominant} ({dom_pct:.0f}%)")
+
+        # full layer traversal order
+        print(f"\n── Per-layer total_us (all layers, in order) ──")
+        ordered = sorted(layer_summary, key=lambda x: x["layer"])
+        for row in ordered:
+            li = row["layer"]
+            tot = row["total_us"]
+            per_tok = tot // tokens if tokens > 0 else tot
+            print(f"  layer {li:>2}: {fmt_us(tot):>10} total  ({fmt_us(per_tok)}/token)")
+
+    # ── Dispatch count summary ───────────────────────────────────────────────
+    total_samples = sum(r["count"] for r in kernel_summary)
+    dispatch_per_token = total_samples // tokens if tokens > 0 else total_samples
+    print(f"\n── Summary ──")
+    print(f"total_dispatch_count:      {total_samples:,}")
+    print(f"dispatch_count_per_token:  {dispatch_per_token}")
+    print(f"dispatch_wall_us/token:    {fmt_us(dispatch_total_us // tokens if tokens > 0 else dispatch_total_us)}")
+    print(f"dispatch_pct_of_decode:    {dispatch_pct:.1f}%")
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Analyze a dismantle --trace-json file")
+    parser.add_argument("trace", help="Path to trace-json file")
+    parser.add_argument("--top", type=int, default=10, help="Top N kernels to show (default 10)")
+    args = parser.parse_args()
+    analyze(args.trace, args.top)
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
+"""Analyze the captured calibration corpus into per-lever inputs.
+
+Optimized: skips unused columns, uses Arrow→numpy zero-copy where possible,
+vectorizes per-layer stats across the whole shard. ~10× faster than the
+naive to_pylist() version while producing bit-identical statistics.
+
+Inputs:  artifacts/calibration/v2_lite_corpus/shard_*.parquet
+Outputs (artifacts/calibration/analysis/):
+  - vocab_freq.json                token-id → count (vocab-prune input)
+  - per_layer_residual_stats.json  per-layer activation stats (mixed-precision)
+  - expert_load_per_layer.json     per-layer per-expert routing freq (eagle5/Q8-KV)
+  - summary.md                     human digest
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+import time
+from collections import Counter
+from pathlib import Path
+
+import numpy as np
+import pyarrow.parquet as pq
+
+
+# V2-Lite constants (match eagle4/capture.py).
+N_LAYERS = 27
+N_MOE_LAYERS = 26
+N_ROUTED_EXPERTS = 64
+TOP_K = 6
+HIDDEN = 2048
+VOCAB_SIZE = 102400
+
+# Columns we actually need. Dropping intermediate_per_layer + routing_topk_weight
+# (largest unused columns) cuts parquet read cost ~50%.
+NEEDED_COLS = ["tokens", "n_tokens", "residual_in_per_layer", "expert_idx_per_layer"]
+
+
+def _list3d_to_numpy(arrow_col, n_rows: int) -> np.ndarray | None:
+    """Convert a parquet column of shape [rows][layers][tokens][hidden] (ragged
+    inner dims allowed) into a contiguous (rows*layers*tokens*hidden) flat
+    numpy array per row. We unify by per-row processing for memory safety.
+
+    Returns None if the column isn't list-of-list-of-list.
+    """
+    # Arrow type: list<list<list<float>>>. We can flatten one level at a time.
+    if arrow_col.type.value_type is None:
+        return None
+    return None  # Caller does per-row extraction; this is a placeholder docstring.
+
+
+def _extract_residual_row_as_numpy(row_pylist) -> np.ndarray | None:
+    """Convert a single row's residual_in_per_layer (list-of-list-of-list)
+    into a contiguous float32 ndarray of shape (n_layers, n_tokens, hidden).
+    Returns None if empty.
+
+    The trick: build numpy directly from nested lists using np.asarray once
+    per row — pyarrow has already deserialized to Python lists. The wasteful
+    bit is to_pylist() up the chain; we minimize per-row work here.
+    """
+    if not row_pylist:
+        return None
+    arr = np.asarray(row_pylist, dtype=np.float32)
+    return arr  # (L, T, H)
+
+
+def analyze(corpus_dir: Path, out_dir: Path) -> None:
+    shards = sorted(corpus_dir.glob("shard_*.parquet"))
+    if not shards:
+        print(f"no shards in {corpus_dir}", file=sys.stderr)
+        sys.exit(2)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"reading {len(shards)} shards, columns={NEEDED_COLS}…", file=sys.stderr)
+    t0 = time.time()
+
+    # Accumulators.
+    vocab_counts: Counter[int] = Counter()
+    total_tokens = 0
+    total_sequences = 0
+
+    # Per-layer Welford-ish over residual activations. Vectorized sums.
+    layer_n = np.zeros(N_LAYERS, dtype=np.int64)
+    layer_sum = np.zeros(N_LAYERS, dtype=np.float64)
+    layer_sum_sq = np.zeros(N_LAYERS, dtype=np.float64)
+    layer_absmax = np.zeros(N_LAYERS, dtype=np.float64)
+    layer_abs_sum = np.zeros(N_LAYERS, dtype=np.float64)
+    # Reservoir of absolute values per layer (8192 cap).
+    RESERVOIR_CAP = 8192
+    rng = np.random.default_rng(0)
+    layer_reservoir: list[list[float]] = [[] for _ in range(N_LAYERS)]
+    layer_seen_for_reservoir = np.zeros(N_LAYERS, dtype=np.int64)
+
+    # Per-layer per-expert load.
+    expert_load = np.zeros((N_MOE_LAYERS, N_ROUTED_EXPERTS), dtype=np.int64)
+    expert_slots = np.zeros(N_MOE_LAYERS, dtype=np.int64)
+
+    for shard_idx, shard_path in enumerate(shards):
+        elapsed = time.time() - t0
+        rate = shard_idx / elapsed if elapsed > 0 and shard_idx > 0 else 0
+        eta = (len(shards) - shard_idx) / rate if rate > 0 else 0
+        print(
+            f"  shard {shard_idx+1}/{len(shards)}  "
+            f"(elapsed={elapsed:.0f}s, eta={eta:.0f}s, rate={rate:.2f} shards/s)",
+            file=sys.stderr, flush=True,
+        )
+
+        try:
+            tbl = pq.read_table(shard_path, columns=NEEDED_COLS)
+        except Exception as e:  # noqa: BLE001
+            print(f"  WARN: cannot read {shard_path.name}: {e}", file=sys.stderr)
+            continue
+
+        # --- Tokens / vocab ---
+        tokens_col = tbl["tokens"]
+        n_tok_col = tbl["n_tokens"].to_numpy(zero_copy_only=False)
+        # Iterate token rows via the Arrow list array — to_pylist on tokens
+        # is cheap because tokens are int32 and there's only one nesting level.
+        for tok_list, n_tok in zip(tokens_col.to_pylist(), n_tok_col):
+            n = int(n_tok)
+            total_sequences += 1
+            total_tokens += n
+            vocab_counts.update(tok_list[:n])
+
+        # --- Residual activations: ZERO-COPY flatten + vectorized stats ---
+        # Our corpus has uniform shape (n_layers=27, n_tokens=256, hidden=2048)
+        # per row, so the nested ListArray flattens cleanly to a contiguous
+        # float64 numpy array (parquet stored via .tolist() → doubles).
+        # Reshape once, then do all stats in vectorized numpy over the shard.
+        res_col = tbl["residual_in_per_layer"].combine_chunks()
+        n_rows = tbl.num_rows
+        try:
+            flat = res_col.values.values.values.to_numpy(zero_copy_only=True)
+        except Exception:
+            # Fall back: non-uniform inner sizes. Rare for our corpus.
+            flat = None
+        if flat is not None and flat.size == n_rows * N_LAYERS * 256 * HIDDEN:
+            arr = flat.reshape(n_rows, N_LAYERS, 256, HIDDEN)  # float64
+            # Vectorized per-layer accumulators across rows + tokens.
+            # Per-layer "flat" view: (n_rows * 256 * HIDDEN) values per layer.
+            per_layer = arr.transpose(1, 0, 2, 3).reshape(N_LAYERS, -1)  # (L, n_rows*T*H)
+            per_layer_abs = np.abs(per_layer)
+            layer_n += per_layer.shape[1]
+            layer_sum += per_layer.sum(axis=1)
+            layer_sum_sq += (per_layer ** 2).sum(axis=1)
+            layer_abs_sum += per_layer_abs.sum(axis=1)
+            layer_absmax = np.maximum(layer_absmax, per_layer_abs.max(axis=1))
+            # Reservoir sample: take 512 random abs values per layer per shard.
+            SAMPLES_PER_SHARD = 512
+            for li in range(N_LAYERS):
+                idx = rng.integers(0, per_layer_abs.shape[1], size=SAMPLES_PER_SHARD)
+                vals = per_layer_abs[li, idx]
+                layer_seen_for_reservoir[li] += SAMPLES_PER_SHARD
+                # Fill reservoir, then replace.
+                rsv = layer_reservoir[li]
+                for v in vals:
+                    if len(rsv) < RESERVOIR_CAP:
+                        rsv.append(float(v))
+                    else:
+                        j = int(rng.integers(0, layer_seen_for_reservoir[li]))
+                        if j < RESERVOIR_CAP:
+                            rsv[j] = float(v)
+            del arr, per_layer, per_layer_abs, flat
+        else:
+            print(f"  WARN: residual shape unexpected in {shard_path.name} — skipping stats",
+                  file=sys.stderr)
+
+        # --- Expert routing ---
+        ei_col = tbl["expert_idx_per_layer"]
+        for row_idx in range(tbl.num_rows):
+            row = ei_col[row_idx].as_py()
+            if not row:
+                continue
+            for li, layer_data in enumerate(row):
+                if li >= N_MOE_LAYERS:
+                    continue
+                if not layer_data:
+                    continue
+                arr = np.asarray(layer_data, dtype=np.int32).ravel()
+                valid = (arr >= 0) & (arr < N_ROUTED_EXPERTS)
+                arr = arr[valid]
+                if arr.size == 0:
+                    continue
+                expert_slots[li] += arr.size
+                counts = np.bincount(arr, minlength=N_ROUTED_EXPERTS)[:N_ROUTED_EXPERTS]
+                expert_load[li] += counts
+
+    total_elapsed = time.time() - t0
+    print(f"aggregation done in {total_elapsed:.0f}s — writing outputs…", file=sys.stderr)
+
+    # ---- vocab_freq.json ----
+    sorted_items = sorted(vocab_counts.items(), key=lambda kv: -kv[1])
+    vocab_payload = {
+        "vocab_size": VOCAB_SIZE,
+        "unique_tokens_seen": len(vocab_counts),
+        "total_tokens": total_tokens,
+        "coverage_at_topk": {},
+        "topk_freq": [{"token_id": int(t), "count": int(c)} for t, c in sorted_items[:5000]],
+    }
+    cumulative = 0
+    milestones = [1000, 2000, 5000, 10000, 20000, 50000]
+    next_idx = 0
+    for i, (_, c) in enumerate(sorted_items):
+        cumulative += c
+        if next_idx < len(milestones) and i + 1 >= milestones[next_idx]:
+            vocab_payload["coverage_at_topk"][str(milestones[next_idx])] = (
+                cumulative / total_tokens if total_tokens else 0.0
+            )
+            next_idx += 1
+    vp = out_dir / "vocab_freq.json"
+    with vp.open("w") as f:
+        json.dump(vocab_payload, f, indent=2)
+    print(f"  wrote {vp}", file=sys.stderr)
+
+    # ---- per_layer_residual_stats.json ----
+    layer_stats = []
+    for li in range(N_LAYERS):
+        n = int(layer_n[li])
+        if n == 0:
+            layer_stats.append({"layer": li, "n_values": 0})
+            continue
+        mean = layer_sum[li] / n
+        var = max(0.0, layer_sum_sq[li] / n - mean * mean)
+        std = math.sqrt(var)
+        mean_abs = layer_abs_sum[li] / n
+        absmax = layer_absmax[li]
+        rsv = sorted(layer_reservoir[li])
+        def pct(p):
+            if not rsv: return None
+            k = max(0, min(len(rsv) - 1, int(p / 100 * (len(rsv) - 1))))
+            return float(rsv[k])
+        layer_stats.append({
+            "layer": li,
+            "n_values": n,
+            "mean": float(mean),
+            "std": float(std),
+            "mean_abs": float(mean_abs),
+            "abs_max": float(absmax),
+            "abs_p50": pct(50),
+            "abs_p90": pct(90),
+            "abs_p99": pct(99),
+            "abs_p999": pct(99.9),
+            "suggested_int8_scale": float(absmax) / 127.0 if absmax > 0 else None,
+        })
+    rp = out_dir / "per_layer_residual_stats.json"
+    with rp.open("w") as f:
+        json.dump({"layers": layer_stats, "n_layers": N_LAYERS, "hidden": HIDDEN}, f, indent=2)
+    print(f"  wrote {rp}", file=sys.stderr)
+
+    # ---- expert_load_per_layer.json ----
+    exp_payload = {
+        "n_moe_layers": N_MOE_LAYERS,
+        "n_routed_experts": N_ROUTED_EXPERTS,
+        "top_k": TOP_K,
+        "per_layer": [],
+    }
+    for li in range(N_MOE_LAYERS):
+        slots = int(expert_slots[li])
+        if slots == 0:
+            exp_payload["per_layer"].append({"layer": li, "slots": 0})
+            continue
+        loads = expert_load[li].astype(np.float64)
+        freq = (loads / slots).tolist()
+        p = loads / loads.sum()
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ent = -np.nansum(np.where(p > 0, p * np.log(p), 0))
+        max_ent = math.log(N_ROUTED_EXPERTS)
+        balance = float(ent / max_ent) if max_ent > 0 else 0.0
+        sorted_idx = np.argsort(loads)
+        cold = sorted_idx[:10].tolist()
+        hot = sorted_idx[-10:][::-1].tolist()
+        exp_payload["per_layer"].append({
+            "layer": li,
+            "slots": slots,
+            "balance_score": balance,
+            "frequencies": freq,
+            "hot_experts": [int(x) for x in hot],
+            "cold_experts": [int(x) for x in cold],
+        })
+    ep = out_dir / "expert_load_per_layer.json"
+    with ep.open("w") as f:
+        json.dump(exp_payload, f, indent=2)
+    print(f"  wrote {ep}", file=sys.stderr)
+
+    # ---- summary.md ----
+    md = []
+    md.append("# Calibration corpus analysis\n")
+    md.append(f"- Shards processed: **{len(shards)}**")
+    md.append(f"- Total sequences: **{total_sequences}**")
+    md.append(f"- Total tokens: **{total_tokens}**")
+    md.append(f"- Unique token ids seen: **{len(vocab_counts)}** of {VOCAB_SIZE} "
+              f"({100*len(vocab_counts)/VOCAB_SIZE:.1f}%)")
+    md.append(f"- Analysis wall time: {total_elapsed:.0f}s")
+    md.append("")
+    md.append("## Vocab-prune inputs")
+    md.append("Coverage of corpus by top-N most-frequent tokens:")
+    for k in sorted(int(x) for x in vocab_payload["coverage_at_topk"].keys()):
+        cov = vocab_payload["coverage_at_topk"][str(k)]
+        md.append(f"- top-{k:>5}: {100*cov:.2f}% of tokens")
+    md.append("")
+    md.append("**Recommendation:** prune to whichever top-N covers ≥99.5% of corpus tokens.")
+    md.append("")
+    md.append("## Mixed-precision quant inputs")
+    md.append("Per-layer residual activation stats (sorted by abs-max desc):")
+    md.append("")
+    md.append("| layer | mean_abs | abs_p99 | abs_max | int8_scale |")
+    md.append("|------:|---------:|--------:|--------:|-----------:|")
+    sorted_layers = sorted(
+        [s for s in layer_stats if s.get("n_values", 0) > 0],
+        key=lambda s: -s["abs_max"],
+    )
+    for s in sorted_layers:
+        md.append(
+            f"| {s['layer']:>5} | {s['mean_abs']:.4f} | "
+            f"{s['abs_p99']:.4f} | {s['abs_max']:.4f} | "
+            f"{s['suggested_int8_scale']:.6f} |"
+        )
+    md.append("")
+    md.append("Layers with smallest abs_max are best q4 candidates; "
+              "largest abs_max need q6/q8 headroom.")
+    md.append("")
+    md.append("## MoE routing balance (eagle5 / Q8-KV input)")
+    md.append("Per-layer balance score (1.0 = uniform expert use, lower = concentrated):")
+    md.append("")
+    md.append("| MoE layer | balance | hottest expert | hottest freq |")
+    md.append("|----------:|--------:|---------------:|-------------:|")
+    for p in exp_payload["per_layer"]:
+        if p["slots"] == 0:
+            continue
+        hot = p["hot_experts"][0]
+        hot_freq = p["frequencies"][hot]
+        md.append(f"| {p['layer']:>9} | {p['balance_score']:.3f} | {hot:>14} | {hot_freq:.4f} |")
+    md_path = out_dir / "summary.md"
+    md_path.write_text("\n".join(md) + "\n")
+    print(f"  wrote {md_path}", file=sys.stderr)
+
+    print(f"\ndone in {total_elapsed:.0f}s.", file=sys.stderr)
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--corpus-dir", type=Path,
+                   default=Path("artifacts/calibration/v2_lite_corpus"))
+    p.add_argument("--out-dir", type=Path,
+                   default=Path("artifacts/calibration/analysis"))
+    args = p.parse_args()
+    analyze(args.corpus_dir, args.out_dir)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""AWQ smoothing-factor calculator (heuristic path).
+
+Consumes the per-site activation aggregates produced by
+``colab/mega_calibrate.py`` (``per_site_activation_stats.npz``) and emits a JSON
+artifact of per-channel smoothing factors for use at model load time by
+dismantle's Rust loader. The output schema is ``awq-smoothing-v1``.
+
+Reference: Lin et al. 2023, "AWQ: Activation-aware Weight Quantization for LLM
+Compression and Acceleration" (arXiv:2306.00978).
+
+For each linear with input activation ``X`` and weight ``W``:
+
+  1. ``s_x = mean(|X|, dim=(0,1))``  — per-channel activation magnitude.
+     (This is the ``layer_{L}_{site}_mean_abs`` array we already captured.)
+  2. Find a per-channel exponent ``s ∈ [0, 1]`` minimizing
+     ``|| W @ X − (W * s_x^s) @ (X / s_x^s) ||`` under quantization of the
+     smoothed weight.
+  3. Smoothing factor ``f = s_x ** s``. At runtime: ``X' = X / f``,
+     ``W' = W * f``. Math is invariant in fp; the trick is that ``W'`` is now
+     easier to int-quantize because outliers moved off ``X`` and onto ``W``.
+
+THIS SCRIPT TAKES THE HEURISTIC PATH:
+  We do NOT perform the per-channel grid search over ``s`` because that
+  requires the actual GGUF-quantized weights and a quantize+matmul loop. That
+  step is heavy and model-aware. Instead we use the AWQ paper's typical
+  default ``f = max(s_x ** alpha, epsilon)`` with ``alpha = 0.5``. This is the
+  "AWQ-lite" / heuristic regime documented in the paper's ablation. Quality is
+  typically within ~0.1-0.3 perplexity of full-search AWQ on Qwen-class models.
+
+  TODO (future work): port the model-aware search step. It would need to:
+    * Load Qwen-3B fp16 weights from GGUF (or HF).
+    * For each (layer, site), grid-search ``s ∈ linspace(0, 1, 20)``.
+    * For each candidate ``s``: build ``W' = W * s_x^s``, quantize ``W'`` to
+      int8 (or Q4_K group-wise), recompute ``W'_q @ (X_sample / s_x^s)``
+      against ``W @ X_sample`` on a held-out calibration batch, pick the
+      ``s`` minimizing reconstruction MSE.
+    * That requires either a Python forward pass with the real weights or a
+      Rust-side calibration entry point. Too heavy for this scaffold.
+
+CLI:
+  python tools/training/awq_calibrate.py \\
+      --stats artifacts/calibration/qwen3b_corpus/per_site_activation_stats.npz \\
+      --out   profiles/qwen3b_awq_smoothing.json \\
+      --alpha 0.5
+
+CPU only. numpy + stdlib.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List, Tuple
+
+import numpy as np
+
+
+SITE_NAMES: Tuple[str, ...] = (
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj",
+)
+
+
+def _parse_layer_site(key: str) -> Tuple[int, str] | None:
+    """Parse ``layer_{L}_{site}_mean_abs`` → (L, site).
+
+    Returns ``None`` if the key doesn't fit the expected pattern.
+    """
+    if not key.startswith("layer_") or not key.endswith("_mean_abs"):
+        return None
+    # Strip prefix/suffix: layer_{L}_{site}_mean_abs
+    body = key[len("layer_"):-len("_mean_abs")]
+    # body looks like "{L}_{site}", but site may itself contain underscores
+    # (e.g. q_proj, gate_proj, down_proj).
+    head, _, tail = body.partition("_")
+    if not head.isdigit() or not tail:
+        return None
+    try:
+        layer = int(head)
+    except ValueError:
+        return None
+    if tail not in SITE_NAMES:
+        return None
+    return layer, tail
+
+
+def compute_smoothing_factor(
+    mean_abs: np.ndarray,
+    alpha: float,
+    epsilon: float,
+) -> np.ndarray:
+    """Heuristic AWQ smoothing factor.
+
+    ``f = max(mean_abs ** alpha, epsilon)`` clamped to be strictly positive.
+    Output dtype is float32. Shape matches input (per-channel, length=in_dim).
+    """
+    if mean_abs.ndim != 1:
+        raise ValueError(
+            f"expected 1-D per-channel mean_abs, got shape {mean_abs.shape}"
+        )
+    x = np.asarray(mean_abs, dtype=np.float64)
+    # Clip pre-pow so a never-active channel (mean_abs ≈ 0) doesn't collapse
+    # to 0 (which would div-by-zero at runtime) — keep it at epsilon^(1/alpha)
+    # equivalent, but simpler to clamp after.
+    x = np.maximum(x, 0.0)
+    if alpha == 0.0:
+        # f = 1.0 everywhere — degenerate to "no smoothing".
+        f = np.ones_like(x, dtype=np.float64)
+    else:
+        f = np.power(x, alpha)
+    f = np.maximum(f, epsilon)
+    return f.astype(np.float32)
+
+
+def _write_json_atomic(path: Path, payload: dict) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True))
+    os.replace(tmp, path)
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(
+        description="Compute heuristic AWQ smoothing factors from "
+                    "mega_calibrate.py per-site activation stats."
+    )
+    p.add_argument(
+        "--stats",
+        type=Path,
+        default=Path("artifacts/calibration/qwen3b_corpus/"
+                     "per_site_activation_stats.npz"),
+        help="Input .npz from mega_calibrate.py.",
+    )
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=Path("profiles/qwen3b_awq_smoothing.json"),
+        help="Output JSON path.",
+    )
+    p.add_argument(
+        "--alpha",
+        type=float,
+        default=0.5,
+        help="AWQ smoothing exponent in [0.0, 1.0]. Paper default 0.5.",
+    )
+    p.add_argument(
+        "--model",
+        type=str,
+        default="Qwen/Qwen2.5-3B-Instruct",
+        help="Model id (metadata only; not loaded).",
+    )
+    p.add_argument(
+        "--epsilon",
+        type=float,
+        default=1e-5,
+        help="Floor on smoothing factor to avoid div-by-zero at runtime on "
+             "never-active channels.",
+    )
+    args = p.parse_args()
+
+    if not (0.0 <= args.alpha <= 1.0):
+        print(
+            f"[awq] ERROR: --alpha {args.alpha} out of range [0.0, 1.0]",
+            file=sys.stderr,
+        )
+        return 2
+    if args.epsilon <= 0.0:
+        print(
+            f"[awq] ERROR: --epsilon {args.epsilon} must be > 0",
+            file=sys.stderr,
+        )
+        return 2
+
+    if not args.stats.exists():
+        print(
+            f"[awq] ERROR: stats file not found: {args.stats}",
+            file=sys.stderr,
+        )
+        return 1
+
+    print(
+        "[awq] WARNING: this is the HEURISTIC AWQ path (f = mean_abs ** "
+        f"alpha, alpha={args.alpha}). Full per-channel search over the "
+        "quantization-error landscape is NOT performed — see the script "
+        "docstring TODO.",
+        file=sys.stderr,
+    )
+
+    print(f"[awq] loading {args.stats}", file=sys.stderr)
+    with np.load(args.stats) as z:
+        keys = list(z.files)
+        n_layers = (
+            int(np.asarray(z["n_layers"]).item())
+            if "n_layers" in z.files else 0
+        )
+        sequences_written = (
+            int(np.asarray(z["sequences_written"]).item())
+            if "sequences_written" in z.files else 0
+        )
+        # Pull only the per-site mean_abs arrays. We deliberately ignore
+        # _max_abs / _sum_abs / _count here — heuristic AWQ only needs mean.
+        per_site_mean: Dict[Tuple[int, str], np.ndarray] = {}
+        for key in keys:
+            parsed = _parse_layer_site(key)
+            if parsed is None:
+                continue
+            layer, site = parsed
+            arr = np.asarray(z[key], dtype=np.float32)
+            per_site_mean[(layer, site)] = arr
+
+    if not per_site_mean:
+        print(
+            f"[awq] ERROR: no layer_*_{{site}}_mean_abs arrays found in "
+            f"{args.stats}; keys present: {keys[:10]}{'...' if len(keys) > 10 else ''}",
+            file=sys.stderr,
+        )
+        return 1
+
+    # Sanity: every (layer, site) pair should have the same in_dim across
+    # the 4 attention sites (q/k/v/o all act on hidden_dim). MLP sites act on
+    # hidden or intermediate; just record what we see, don't reject.
+    smoothing_factors: Dict[str, List[float]] = {}
+    outlier_per_layer: Dict[int, int] = {}
+    factor_min = float("inf")
+    factor_max = float("-inf")
+    factor_sum = 0.0
+    factor_count = 0
+
+    # Iterate in a stable order (layer asc, then site in SITE_NAMES order)
+    layers_present = sorted({l for (l, _) in per_site_mean.keys()})
+    for layer in layers_present:
+        outlier_per_layer[layer] = 0
+        # Collect all factors in this layer for median-based outlier count
+        layer_factors: List[np.ndarray] = []
+        for site in SITE_NAMES:
+            key = (layer, site)
+            if key not in per_site_mean:
+                continue
+            mean_abs = per_site_mean[key]
+            f = compute_smoothing_factor(mean_abs, args.alpha, args.epsilon)
+            smoothing_factors[f"layer_{layer}_{site}"] = f.tolist()
+            layer_factors.append(f)
+            factor_min = min(factor_min, float(f.min()))
+            factor_max = max(factor_max, float(f.max()))
+            factor_sum += float(f.sum())
+            factor_count += int(f.size)
+        if layer_factors:
+            all_f = np.concatenate(layer_factors)
+            med = float(np.median(all_f))
+            if med > 0.0:
+                outlier_per_layer[layer] = int(np.sum(all_f > 10.0 * med))
+
+    if factor_count == 0:
+        print(
+            "[awq] ERROR: parsed mean_abs arrays but produced zero factors",
+            file=sys.stderr,
+        )
+        return 1
+
+    mean_factor = factor_sum / float(factor_count)
+    inferred_n_layers = max(n_layers, max(layers_present) + 1)
+
+    payload = {
+        "schema": "awq-smoothing-v1",
+        "model": args.model,
+        "n_layers": int(inferred_n_layers),
+        "alpha": float(args.alpha),
+        "method": "heuristic",
+        "sequences_calibrated": int(sequences_written),
+        "smoothing_factors": smoothing_factors,
+        "stats": {
+            "max_factor": factor_max,
+            "min_factor": factor_min,
+            "mean_factor": mean_factor,
+            "outlier_channels_per_layer": [
+                outlier_per_layer.get(l, 0) for l in range(inferred_n_layers)
+            ],
+        },
+    }
+
+    _write_json_atomic(args.out, payload)
+
+    total_sites = len(smoothing_factors)
+    print(
+        f"[awq] computed {total_sites} (layer, site) factors across "
+        f"{len(layers_present)} layers; mean factor={mean_factor:.4f} "
+        f"min={factor_min:.4g} max={factor_max:.4g}; "
+        f"outliers (>10× layer-median): "
+        f"total={sum(outlier_per_layer.values())} "
+        f"per_layer={[outlier_per_layer.get(l, 0) for l in range(inferred_n_layers)]}",
+        file=sys.stderr,
+    )
+    print(
+        f"[awq] sequences_calibrated={sequences_written} "
+        f"n_layers={inferred_n_layers} alpha={args.alpha} → {args.out}",
+        file=sys.stderr,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""Build the V2-Lite calibration corpus.
+
+Runs DeepSeek-V2-Lite-Chat forward over a chat-style corpus and captures the
+per-token, per-layer intermediates needed by Phase 1 levers in the dismantle
+execution plan:
+
+- mixed-precision quant calibration (per-tensor sensitivity, GPTQ/AWQ)
+- eagle5 activation-sparsity predictor training
+- quant-quality regression eval
+- vocab-prune calibration (top-K vocab over chat-decode tokens)
+
+One run, offline. Output lands in artifacts/calibration/v2_lite_corpus/ as
+int8-quantized parquet shards. Idempotent per-shard — crashed runs resume.
+
+Backend: HuggingFace transformers + MPS. See tools/training/README.md for
+why this and not MLX/llama-cpp/dismantle's own engine.
+
+Usage:
+    python3 tools/training/build_corpus.py \\
+        --model deepseek-ai/DeepSeek-V2-Lite-Chat \\
+        --dataset HuggingFaceH4/ultrachat_200k \\
+        --max-sequences 10000 \\
+        --out artifacts/calibration/v2_lite_corpus
+
+Plan: dismantle-execution-plan-enchanted-salamander.md, task #7.
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import json
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Iterator
+
+# Heavy imports are guarded so `--help` doesn't pay for them.
+def _require(*mods: str) -> None:
+    import importlib.util
+    missing = [m for m in mods if importlib.util.find_spec(m) is None]
+    if missing:
+        sys.stderr.write(
+            "error: missing python deps: " + ", ".join(missing) + "\n"
+            "       pip install -r tools/training/requirements.txt\n"
+        )
+        sys.exit(2)
+
+
+@dataclasses.dataclass
+class Args:
+    model: str
+    dataset: str
+    dataset_split: str
+    max_sequences: int
+    max_tokens_per_seq: int
+    shard_size: int
+    out: Path
+    device: str
+    dtype: str
+    quantize_intermediates: str
+    skip_existing: bool
+    capture: tuple[str, ...]
+    batch_size: int
+    skip_rows: int
+    load_4bit: bool
+    cuda_max_vram_gb: float | None
+    no_trust_remote_code: bool
+
+
+def parse_args() -> Args:
+    p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    p.add_argument("--model", default="deepseek-ai/DeepSeek-V2-Lite-Chat")
+    p.add_argument("--dataset", default="HuggingFaceH4/ultrachat_200k")
+    p.add_argument("--dataset-split", default="train_sft")
+    p.add_argument("--max-sequences", type=int, default=10_000)
+    p.add_argument("--max-tokens-per-seq", type=int, default=2048)
+    p.add_argument("--shard-size", type=int, default=128,
+                   help="sequences per parquet shard")
+    p.add_argument("--out", type=Path,
+                   default=Path("artifacts/calibration/v2_lite_corpus"))
+    p.add_argument("--device", default="mps",
+                   choices=["mps", "cpu", "cuda"],
+                   help="MPS is the default on M3 Pro; CUDA for cross-machine runs")
+    p.add_argument("--load-4bit", action="store_true", default=False,
+                   help="quantize model to 4-bit at load via bitsandbytes "
+                        "nf4 (requires CUDA + bitsandbytes). Brings DeepSeek-"
+                        "V2-Lite from 32 GB fp16 → 8 GB nf4 so it fits on a "
+                        "T4 (16 GB) without offload. CUDA-only.")
+    p.add_argument("--cuda-max-vram-gb", type=float, default=None,
+                   help="cap CUDA memory at this many GiB; spillover goes to "
+                        "CPU via accelerate. Use when T4 (14.5 GB usable) is "
+                        "almost-but-not-quite full after model load; pass "
+                        "12-13 to leave headroom for activations.")
+    p.add_argument("--no-trust-remote-code", action="store_true", default=False,
+                   help="disable trust_remote_code in from_pretrained. Forces "
+                        "transformers to use its NATIVE DeepSeek-V2 loader "
+                        "instead of the remote modeling_deepseek.py on HF "
+                        "Hub. The remote file expects per-expert split "
+                        "tensors but the checkpoint uses a fused per-block "
+                        "format, leaving experts UNINITIALIZED. Required for "
+                        "correct V2-Lite load on transformers v4.45+.")
+    p.add_argument("--dtype", default="float16",
+                   choices=["float16", "bfloat16", "float32"])
+    p.add_argument("--quantize-intermediates", default="int8",
+                   choices=["int8", "none"],
+                   help="int8 cuts shard size 4x with negligible calibration drift")
+    p.add_argument("--skip-existing", action="store_true", default=True,
+                   help="skip shards that already exist on disk (resume default)")
+    p.add_argument("--skip-rows", type=int, default=0,
+                   help="skip the first N rows of the source dataset before sampling; "
+                        "pair with the watchdog so resumption walks forward instead of "
+                        "re-sampling row 0 each restart (see wall-clock audit 2026-05-22)")
+    p.add_argument("--capture", default="all",
+                   help="comma-separated subset of: residual_in,expert_idx,"
+                        "routing_logits,intermediate,h_high,output_logits,all")
+    p.add_argument("--batch-size", type=int, default=1,
+                   help="sequences per forward pass. >1 amortizes disk-offload "
+                        "expert streaming across the batch")
+    a = p.parse_args()
+    capture = (
+        # "all" intentionally omits output_logits + h_high — both are huge
+        # (vocab × tokens, hidden × tokens) and only needed for vocab-prune,
+        # which uses a small dedicated subset. Pass --capture explicitly to
+        # include them.
+        ("residual_in", "expert_idx", "routing_logits", "intermediate")
+        if a.capture == "all"
+        else tuple(s.strip() for s in a.capture.split(",") if s.strip())
+    )
+    return Args(
+        model=a.model,
+        dataset=a.dataset,
+        dataset_split=a.dataset_split,
+        max_sequences=a.max_sequences,
+        max_tokens_per_seq=a.max_tokens_per_seq,
+        shard_size=a.shard_size,
+        out=a.out,
+        device=a.device,
+        dtype=a.dtype,
+        quantize_intermediates=a.quantize_intermediates,
+        skip_existing=a.skip_existing,
+        capture=capture,
+        batch_size=a.batch_size,
+        skip_rows=a.skip_rows,
+        load_4bit=a.load_4bit,
+        cuda_max_vram_gb=a.cuda_max_vram_gb,
+        no_trust_remote_code=a.no_trust_remote_code,
+    )
+
+
+def iter_chat_sequences(
+    dataset_name: str,
+    split: str,
+    limit: int,
+    skip_rows: int = 0,
+) -> Iterator[str]:
+    """Yield rendered chat strings up to `limit`, skipping the first
+    `skip_rows` of the underlying dataset.
+
+    Wall-clock optimization #5 (2026-05-22): the autonomous corpus
+    watchdog at `tools/training/run_corpus_autonomous.sh` historically
+    re-started this iterator at row 0 on every crash + restart, which
+    produced ~60% duplicate sequences across the 4,512-row 2026-05-21
+    corpus. Future captures should pass `--skip-rows N` where N is
+    `heartbeat['rows_consumed']` so resumption walks forward instead of
+    re-sampling the same prefix. See `feedback_wall_clock_audit.md`.
+    """
+    from datasets import load_dataset  # type: ignore[import-not-found]
+
+    ds = load_dataset(dataset_name, split=split, streaming=True)
+    yielded = 0
+    skipped = 0
+    for row in ds:
+        if skipped < skip_rows:
+            skipped += 1
+            continue
+        if yielded >= limit:
+            return
+        # ultrachat_200k schema: row["messages"] = list[{role, content}]
+        messages = row.get("messages") or row.get("conversations") or []
+        if not messages:
+            continue
+        # Render as a single string. The actual chat-template should be
+        # applied per-tokenizer downstream — here we want raw text variety,
+        # not chat-completion targets.
+        parts = []
+        for m in messages:
+            role = m.get("role", "")
+            content = m.get("content", "")
+            if content:
+                parts.append(f"{role}: {content}")
+        if parts:
+            yield "\n".join(parts)
+            yielded += 1
+
+
+def quantize_int8(arr):
+    """Symmetric per-tensor int8 quantization. Returns (q, scale)."""
+    import numpy as np
+    max_abs = float(np.abs(arr).max())
+    if max_abs == 0.0:
+        return np.zeros_like(arr, dtype=np.int8), 0.0
+    scale = max_abs / 127.0
+    q = np.clip(np.round(arr / scale), -127, 127).astype(np.int8)
+    return q, scale
+
+
+def capture_one_sequence(
+    text: str,
+    model,
+    tokenizer,
+    cap_set: set[str],
+    max_tokens: int,
+    device: str,
+):
+    """Run one sequence forward and return per-token, per-layer dicts."""
+    import torch  # type: ignore[import-not-found]
+
+    enc = tokenizer(text, return_tensors="pt", truncation=True,
+                    max_length=max_tokens, add_special_tokens=True)
+    input_ids = enc["input_ids"].to(device)
+    attention_mask = enc["attention_mask"].to(device)
+
+    # output_hidden_states gives us residual_in / h_high at layer boundaries.
+    # output_router_logits gives routing_logits + expert_idx.
+    # For "intermediate" (post-SiLU gate-up) we register forward hooks on
+    # the expert FFN modules. See the model's modeling_deepseek.py for the
+    # exact attribute path; this scaffold uses a generic name fallback.
+    captured_intermediates: list[dict] = []
+    hooks = []
+
+    # See capture_batch for the async-hook rationale: store device tensors
+    # in the hook, defer .cpu().numpy() to a single post-forward sweep.
+    def _make_hook(layer_idx: int):
+        def _hook(_module, _inp, out):
+            if isinstance(out, tuple):
+                arrs = [o.detach() for o in out if hasattr(o, "detach")]
+                payload = arrs[0] if len(arrs) == 1 else arrs
+            else:
+                payload = out.detach() if hasattr(out, "detach") else out
+            captured_intermediates.append({"layer": layer_idx, "raw_t": payload})
+        return _hook
+
+    if "intermediate" in cap_set:
+        for li, layer in enumerate(getattr(model, "model", model).layers):
+            mlp = getattr(layer, "mlp", None)
+            if mlp is not None and hasattr(mlp, "experts"):
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
+
+    captured_gates: list[dict] = []
+    want_routing = ("routing_logits" in cap_set or "expert_idx" in cap_set)
+    if want_routing:
+        def _make_gate_hook(layer_idx: int):
+            def _gate_hook(_module, _inp, out):
+                if isinstance(out, tuple) and len(out) >= 2:
+                    captured_gates.append({
+                        "layer": layer_idx,
+                        "topk_idx_t": out[0].detach(),
+                        "topk_weight_t": out[1].detach(),
+                    })
+            return _gate_hook
+        for li, layer in enumerate(getattr(model, "model", model).layers):
+            mlp = getattr(layer, "mlp", None)
+            if mlp is not None and hasattr(mlp, "gate") and hasattr(mlp, "experts"):
+                hooks.append(mlp.gate.register_forward_hook(_make_gate_hook(li)))
+
+    with torch.inference_mode():
+        out = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=("residual_in" in cap_set or "h_high" in cap_set),
+            use_cache=False,
+            return_dict=True,
+        )
+
+    for h in hooks:
+        h.remove()
+
+    # Post-forward batched transfer.
+    for g in captured_gates:
+        g["topk_idx"] = g.pop("topk_idx_t").cpu().numpy()
+        g["topk_weight"] = g.pop("topk_weight_t").float().cpu().numpy()
+    for it in captured_intermediates:
+        rt = it.pop("raw_t")
+        if isinstance(rt, list):
+            it["raw"] = [(x.float().cpu().numpy() if hasattr(x, "detach") else x)
+                         for x in rt]
+        else:
+            it["raw"] = (rt.float().cpu().numpy() if hasattr(rt, "detach") else rt)
+
+    # Convert to numpy for parquet write-out. Quantize per --quantize.
+    import numpy as np
+    sample = {
+        "tokens": input_ids.cpu().numpy().astype(np.int32).squeeze(0),
+        "n_tokens": int(input_ids.shape[1]),
+    }
+
+    if "output_logits" in cap_set and hasattr(out, "logits"):
+        sample["output_logits"] = out.logits.detach().cpu().numpy().squeeze(0)
+
+    if hasattr(out, "hidden_states") and out.hidden_states is not None:
+        if "residual_in" in cap_set:
+            sample["residual_in_per_layer"] = [
+                h.detach().cpu().numpy().squeeze(0) for h in out.hidden_states[:-1]
+            ]
+        if "h_high" in cap_set:
+            sample["h_high"] = out.hidden_states[-1].detach().cpu().numpy().squeeze(0)
+
+    if captured_gates:
+        if "expert_idx" in cap_set:
+            sample["expert_idx_per_layer"] = [g["topk_idx"] for g in captured_gates]
+        if "routing_logits" in cap_set:
+            # MoEGate exposes only post-topk weights (n_tokens, top_k), not full
+            # per-expert scores. Store the topk weights aligned with expert_idx.
+            sample["routing_topk_weight_per_layer"] = [
+                g["topk_weight"] for g in captured_gates
+            ]
+
+    if captured_intermediates and "intermediate" in cap_set:
+        sample["intermediate_per_layer"] = captured_intermediates
+
+    return sample
+
+
+def capture_batch(
+    texts: list[str],
+    model,
+    tokenizer,
+    cap_set: set[str],
+    max_tokens: int,
+    device: str,
+) -> list[dict]:
+    """Batched forward — runs one model() call across N sequences then demuxes
+    per-sample arrays. Amortizes disk-offloaded expert streaming across the
+    batch. Quality-equivalent to capture_one_sequence; only the wall-clock cost
+    of the streaming reads is shared.
+    """
+    import torch  # type: ignore[import-not-found]
+    import numpy as np
+
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    enc = tokenizer(texts, return_tensors="pt", truncation=True,
+                    max_length=max_tokens, padding=True, add_special_tokens=True)
+    input_ids = enc["input_ids"].to(device)
+    attention_mask = enc["attention_mask"].to(device)
+    B, S = input_ids.shape
+    seq_lens = attention_mask.sum(dim=1).cpu().tolist()
+
+    captured_gates: list[dict] = []
+    captured_intermediates: list[dict] = []
+    hooks = []
+
+    # ASYNC HOOKS: store device tensors only during forward; defer the
+    # MPS→CPU→numpy transfer until after model() returns. With 27 layers ×
+    # 2 hook types, the prior code created 50+ synchronous transfer barriers
+    # inside the forward pass, blocking MPS pipelining. Now we batch all
+    # transfers post-forward in one sweep.
+    want_routing = ("routing_logits" in cap_set or "expert_idx" in cap_set)
+    if want_routing:
+        def _make_gate_hook(layer_idx: int):
+            def _gate_hook(_module, _inp, out):
+                if isinstance(out, tuple) and len(out) >= 2:
+                    captured_gates.append({
+                        "layer": layer_idx,
+                        "topk_idx_t": out[0].detach(),
+                        "topk_weight_t": out[1].detach(),
+                    })
+            return _gate_hook
+        for li, layer in enumerate(getattr(model, "model", model).layers):
+            mlp = getattr(layer, "mlp", None)
+            if mlp is not None and hasattr(mlp, "gate") and hasattr(mlp, "experts"):
+                hooks.append(mlp.gate.register_forward_hook(_make_gate_hook(li)))
+
+    if "intermediate" in cap_set:
+        def _make_hook(layer_idx: int):
+            def _hook(_module, _inp, out):
+                if isinstance(out, tuple):
+                    arrs = [o.detach() for o in out if hasattr(o, "detach")]
+                    payload = arrs[0] if len(arrs) == 1 else arrs
+                else:
+                    payload = out.detach() if hasattr(out, "detach") else out
+                captured_intermediates.append({"layer": layer_idx, "raw_t": payload})
+            return _hook
+        for li, layer in enumerate(getattr(model, "model", model).layers):
+            mlp = getattr(layer, "mlp", None)
+            if mlp is not None and hasattr(mlp, "experts"):
+                # transformers v4 native DeepseekV2Experts is a FUSED module
+                # (single nn.Module containing routing + expert FF), not a
+                # list of per-expert modules. Hook the whole experts block;
+                # the output is the routed/aggregated intermediate activation.
+                hooks.append(mlp.experts.register_forward_hook(_make_hook(li)))
+
+    with torch.inference_mode():
+        out = model(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=("residual_in" in cap_set or "h_high" in cap_set),
+            use_cache=False,
+            return_dict=True,
+        )
+
+    for h in hooks:
+        h.remove()
+
+    # Batch-resolve all deferred device→numpy transfers in one post-forward
+    # sweep. Order doesn't matter for correctness; what matters is that the
+    # MPS pipeline isn't stalled mid-forward.
+    for g in captured_gates:
+        g["topk_idx"] = g.pop("topk_idx_t").cpu().numpy()
+        g["topk_weight"] = g.pop("topk_weight_t").float().cpu().numpy()
+    for it in captured_intermediates:
+        rt = it.pop("raw_t")
+        if isinstance(rt, list):
+            it["raw"] = [(x.float().cpu().numpy() if hasattr(x, "detach") else x)
+                         for x in rt]
+        else:
+            it["raw"] = (rt.float().cpu().numpy() if hasattr(rt, "detach") else rt)
+
+    # Demux per-sample.
+    samples: list[dict] = []
+    input_ids_np = input_ids.detach().cpu().numpy().astype(np.int32)
+    hidden_per_layer = None
+    if hasattr(out, "hidden_states") and out.hidden_states is not None:
+        hidden_per_layer = [h.detach().cpu().numpy() for h in out.hidden_states]
+
+    for b in range(B):
+        L = int(seq_lens[b])
+        sample: dict = {
+            "tokens": input_ids_np[b, :L],
+            "n_tokens": L,
+        }
+        if "output_logits" in cap_set and hasattr(out, "logits"):
+            sample["output_logits"] = out.logits[b, :L, :].detach().cpu().numpy()
+        if hidden_per_layer is not None:
+            if "residual_in" in cap_set:
+                sample["residual_in_per_layer"] = [
+                    h[b, :L, :] for h in hidden_per_layer[:-1]
+                ]
+            if "h_high" in cap_set:
+                sample["h_high"] = hidden_per_layer[-1][b, :L, :]
+        if captured_gates:
+            # MoEGate output shape is [B*S, top_k] — reshape to [B, S, K] then
+            # slice per-sample to true length.
+            if "expert_idx" in cap_set:
+                sample["expert_idx_per_layer"] = []
+            if "routing_logits" in cap_set:
+                sample["routing_topk_weight_per_layer"] = []
+            for g in captured_gates:
+                idx = g["topk_idx"]
+                wt = g["topk_weight"]
+                if idx.ndim == 2 and idx.shape[0] == B * S:
+                    idx_bs = idx.reshape(B, S, -1)[b, :L, :]
+                    wt_bs = wt.reshape(B, S, -1)[b, :L, :]
+                else:
+                    # Already-shaped or unexpected — fall back to first-N take.
+                    idx_bs = idx[:L]
+                    wt_bs = wt[:L]
+                if "expert_idx" in cap_set:
+                    sample["expert_idx_per_layer"].append(idx_bs)
+                if "routing_logits" in cap_set:
+                    sample["routing_topk_weight_per_layer"].append(wt_bs)
+        # Intermediate is best-effort (one expert per MoE layer); attribute the
+        # batch-level capture to sample 0 only to avoid duplicating storage.
+        if b == 0 and captured_intermediates and "intermediate" in cap_set:
+            sample["intermediate_per_layer"] = captured_intermediates
+        samples.append(sample)
+
+    return samples
+
+
+def write_shard(samples: list[dict], path: Path) -> None:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    # Parquet schemas tolerate ragged arrays via list-of-list columns.
+    # The exact column set adapts to whatever was actually captured.
+    tbl = pa.Table.from_pylist([_flatten_for_parquet(s) for s in samples])
+    pq.write_table(tbl, path, compression="zstd")
+
+
+def _flatten_for_parquet(sample: dict) -> dict:
+    """Convert numpy + nested structures into parquet-safe py types."""
+    import numpy as np
+
+    def _conv(v):
+        if isinstance(v, np.ndarray):
+            return v.tolist()
+        if isinstance(v, dict):
+            return {k: _conv(x) for k, x in v.items()}
+        if isinstance(v, list):
+            return [_conv(x) for x in v]
+        if isinstance(v, tuple):
+            return [_conv(x) for x in v]
+        if hasattr(v, "detach"):
+            return v.detach().float().cpu().numpy().tolist()
+        return v
+
+    return {k: _conv(v) for k, v in sample.items()}
+
+
+def main() -> int:
+    args = parse_args()
+    _require("torch", "transformers", "datasets", "pyarrow", "numpy", "tqdm")
+
+    import torch  # type: ignore[import-not-found]
+    from transformers import AutoModelForCausalLM, AutoTokenizer  # type: ignore[import-not-found]
+    from tqdm import tqdm  # type: ignore[import-not-found]
+
+    if args.device == "mps" and not torch.backends.mps.is_available():
+        print("warning: --device mps but MPS not available; falling back to cpu",
+              file=sys.stderr)
+        args.device = "cpu"
+
+    args.out.mkdir(parents=True, exist_ok=True)
+    manifest_path = args.out / "manifest.json"
+    manifest = {
+        "model": args.model,
+        "dataset": args.dataset,
+        "dataset_split": args.dataset_split,
+        "max_sequences": args.max_sequences,
+        "max_tokens_per_seq": args.max_tokens_per_seq,
+        "shard_size": args.shard_size,
+        "dtype": args.dtype,
+        "quantize_intermediates": args.quantize_intermediates,
+        "capture": list(args.capture),
+        "started": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    with manifest_path.open("w") as f:
+        json.dump(manifest, f, indent=2)
+
+    cap_set = set(args.capture)
+    dtype_map = {
+        "float16": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "float32": torch.float32,
+    }
+
+    trust_rc = not args.no_trust_remote_code
+    if not trust_rc:
+        print("trust_remote_code=False — using transformers NATIVE loader",
+              file=sys.stderr)
+    print(f"loading {args.model} …", file=sys.stderr)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=trust_rc)
+    offload_folder = args.out / "offload"
+    offload_folder.mkdir(parents=True, exist_ok=True)
+    if args.device == "mps":
+        max_memory = {"mps": "3GiB", "cpu": "11GiB"}
+    elif args.device == "cuda":
+        if args.cuda_max_vram_gb is not None:
+            max_memory = {0: f"{args.cuda_max_vram_gb:.2f}GiB",
+                          "cpu": "32GiB"}
+            print(f"capping CUDA at {args.cuda_max_vram_gb:.2f} GiB; "
+                  f"spillover → CPU", file=sys.stderr)
+        else:
+            max_memory = None
+    else:
+        max_memory = {"cpu": "12GiB"}
+
+    # 4-bit loading via bitsandbytes nf4 — for low-VRAM GPUs like Colab T4
+    # (16 GB). Brings DeepSeek-V2-Lite from ~32 GB fp16 → ~8 GB nf4 so it
+    # fits entirely on-device without offload.
+    quantization_config = None
+    if args.load_4bit:
+        if args.device != "cuda":
+            print(f"warn: --load-4bit requires --device cuda; got {args.device}",
+                  file=sys.stderr)
+        try:
+            from transformers import BitsAndBytesConfig  # type: ignore[import-not-found]
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=dtype_map[args.dtype],
+                bnb_4bit_use_double_quant=True,
+                # CRITICAL: without this, bnb 4-bit IGNORES the max_memory
+                # device_map="auto" cap and stuffs everything on GPU 0,
+                # OOMing on T4 (14.5 GB usable, model + bnb overhead =
+                # 14.55 GB needed). With this flag, accelerate spills the
+                # overflow to CPU (as fp32 since CPU can't run 4-bit ops),
+                # respecting max_memory.
+                llm_int8_enable_fp32_cpu_offload=True,
+            )
+            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype}, "
+                  f"CPU-offload enabled)", file=sys.stderr)
+        except ImportError:
+            print("error: --load-4bit requires bitsandbytes — `pip install bitsandbytes`",
+                  file=sys.stderr)
+            return 2
+
+    model_kwargs = dict(
+        torch_dtype=dtype_map[args.dtype],
+        trust_remote_code=trust_rc,
+        device_map="auto",
+        max_memory=max_memory,
+        offload_folder=str(offload_folder),
+        offload_buffers=True,
+        low_cpu_mem_usage=True,
+        # Fused memory-efficient attention via PyTorch SDPA. Without this,
+        # HF native attention at seq_len=4096 batch=32 allocates an O(S²)
+        # attention matrix (~16 GB at fp16) per layer → 20× slower than
+        # peak FLOPs. SDPA is fused and O(S) memory.
+        attn_implementation="sdpa",
+    )
+    if quantization_config is not None:
+        model_kwargs["quantization_config"] = quantization_config
+        # When 4-bit, transformers ignores torch_dtype for the linear
+        # weights; the compute_dtype on the bnb_config governs.
+        del model_kwargs["torch_dtype"]
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        **model_kwargs,
+    ).eval()
+    if hasattr(model.config, "output_router_logits"):
+        model.config.output_router_logits = True
+    try:
+        input_device = next(iter(model.hf_device_map.values()))
+        print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
+              file=sys.stderr)
+    except (AttributeError, Exception):
+        # Single-device load (e.g., 102 GB GPU fits whole model on cuda:0):
+        # transformers doesn't set hf_device_map when no offload was needed.
+        input_device = args.device
+        print(f"hf_device_map: not set (model is single-device on {input_device})",
+              file=sys.stderr)
+    print(f"inputs will go to: {input_device}", file=sys.stderr)
+    args.device = str(input_device)
+
+    print(f"streaming {args.dataset} [{args.dataset_split}] …", file=sys.stderr)
+    seq_iter = iter_chat_sequences(
+        args.dataset,
+        args.dataset_split,
+        args.max_sequences,
+        skip_rows=args.skip_rows,
+    )
+
+    shard_buf: list[dict] = []
+    shard_idx = 0
+    yielded = 0
+    # Pre-advance shard_idx past any existing shards (resume-from-skip).
+    if args.skip_existing:
+        while (args.out / f"shard_{shard_idx:04d}.parquet").exists():
+            shard_idx += 1
+            yielded += args.shard_size
+    pbar = tqdm(total=args.max_sequences, desc="sequences", initial=yielded)
+
+    batch_buf: list[str] = []
+
+    def _drain_batch():
+        nonlocal shard_buf, shard_idx, yielded
+        if not batch_buf:
+            return
+        try:
+            if args.batch_size > 1:
+                samples = capture_batch(
+                    batch_buf, model, tokenizer, cap_set,
+                    args.max_tokens_per_seq, args.device,
+                )
+            else:
+                samples = [capture_one_sequence(
+                    batch_buf[0], model, tokenizer, cap_set,
+                    args.max_tokens_per_seq, args.device,
+                )]
+        except Exception as e:  # noqa: BLE001
+            print(f"\nwarn: batch skipped ({type(e).__name__}: {e})",
+                  file=sys.stderr)
+            batch_buf.clear()
+            return
+        for sample in samples:
+            shard_buf.append(sample)
+            yielded += 1
+            pbar.update(1)
+            if len(shard_buf) >= args.shard_size:
+                shard_path = args.out / f"shard_{shard_idx:04d}.parquet"
+                write_shard(shard_buf, shard_path)
+                print(f"\nwrote {shard_path} ({len(shard_buf)} seqs)",
+                      file=sys.stderr)
+                shard_buf = []
+                shard_idx += 1
+        batch_buf.clear()
+
+    for text in seq_iter:
+        batch_buf.append(text)
+        if len(batch_buf) >= args.batch_size:
+            _drain_batch()
+    _drain_batch()  # final partial batch
+
+    if shard_buf:
+        shard_path = args.out / f"shard_{shard_idx:04d}.parquet"
+        write_shard(shard_buf, shard_path)
+        print(f"wrote final {shard_path} ({len(shard_buf)} seqs)", file=sys.stderr)
+
+    manifest["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    manifest["sequences_written"] = yielded
+    with manifest_path.open("w") as f:
+        json.dump(manifest, f, indent=2)
+
+    print(f"\ndone. {yielded} sequences across {shard_idx + 1} shards in {args.out}",
+          file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""Build a slim derived corpus that keeps only what eagle5_train.py reads.
+
+Reads `artifacts/calibration/v2_lite_corpus/shard_*.parquet` and writes
+`artifacts/calibration/v2_lite_corpus_min/shard_*.parquet` with the same
+filename mapping, same row counts, same `tokens`/`n_tokens` columns, and
+the heavyweight per-layer arrays trimmed to just the capture layer.
+
+Disk math (V2-Lite, capture_layer=25):
+  Original shard ≈ 870 MB (27 layers × residual + 26 MoE layers × intermediate)
+  Minimal shard ≈ 45 MB  (only layer-25 residual + MoE-layer-24 intermediate)
+  → ~95% reduction, ~4.5 GB minimal corpus vs 80 GB original.
+
+The output column shapes mirror the originals so eagle5_train.py
+(and eagle5_tau_eval.py) work unchanged: indices outside the capture
+layer are empty lists, which the trainer never reads.
+
+Usage:
+  python3 tools/training/build_minimal_corpus.py
+  python3 tools/training/build_minimal_corpus.py --capture-layer 25 --n-moe-first-dense 1
+
+Idempotent: skips shards whose output already exists.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+
+N_LAYERS = 27       # V2-Lite total transformer blocks
+N_MOE_LAYERS = 26   # MoE-bearing blocks (layer 0 is dense)
+
+
+def extract_one_shard(src: Path, dst: Path, capture_layers: list[int], n_moe_first_dense: int) -> tuple[int, int, int]:
+    """Returns (rows, src_bytes, dst_bytes).
+
+    capture_layers: list of V2-Lite block indices to KEEP. Others stored
+    as empty lists. The corresponding MoE intermediates (layer-N - n_dense)
+    are auto-derived.
+    """
+    moe_idxs = [li - n_moe_first_dense for li in capture_layers
+                if li - n_moe_first_dense >= 0]
+    keep_layers = set(capture_layers)
+    keep_moe = set(moe_idxs)
+
+    tbl = pq.read_table(src)
+    rows = tbl.num_rows
+
+    out_cols: dict[str, list] = {
+        "tokens": tbl["tokens"].to_pylist(),
+        "n_tokens": tbl["n_tokens"].to_pylist(),
+    }
+
+    # Extract residual_in_per_layer for ALL capture_layers, pad others.
+    if "residual_in_per_layer" in tbl.column_names:
+        res_col = tbl["residual_in_per_layer"].to_pylist()
+        slim_res = []
+        for row in res_col:
+            if row is None:
+                slim_res.append([[] for _ in range(N_LAYERS)])
+                continue
+            padded = [[] for _ in range(N_LAYERS)]
+            for li in keep_layers:
+                if li < len(row):
+                    padded[li] = row[li]
+            slim_res.append(padded)
+        out_cols["residual_in_per_layer"] = slim_res
+
+    # Extract intermediate_per_layer for matching MoE indices, pad others.
+    if "intermediate_per_layer" in tbl.column_names:
+        inter_col = tbl["intermediate_per_layer"].to_pylist()
+        slim_inter = []
+        for row in inter_col:
+            if row is None:
+                slim_inter.append([{"layer": -1, "raw": []} for _ in range(N_MOE_LAYERS)])
+                continue
+            padded = [{"layer": -1, "raw": []} for _ in range(N_MOE_LAYERS)]
+            for moe_idx in keep_moe:
+                if moe_idx < len(row):
+                    padded[moe_idx] = row[moe_idx]
+            slim_inter.append(padded)
+        out_cols["intermediate_per_layer"] = slim_inter
+
+    # Keep the small routing columns — they're useful for future levers and
+    # cost almost nothing on disk.
+    for col_name in ("expert_idx_per_layer", "routing_topk_weight_per_layer"):
+        if col_name in tbl.column_names:
+            out_cols[col_name] = tbl[col_name].to_pylist()
+
+    # Write.
+    out_tbl = pa.Table.from_pydict(out_cols)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    pq.write_table(out_tbl, dst, compression="zstd")
+
+    return rows, src.stat().st_size, dst.stat().st_size
+
+
+def _worker(args_tuple):
+    """ProcessPool worker — does one shard end-to-end."""
+    src, dst, capture_layers, n_moe_first_dense = args_tuple
+    if dst.exists():
+        sz = dst.stat().st_size
+        return (str(src.name), 0, src.stat().st_size, sz, "skipped")
+    try:
+        rows, sb, db = extract_one_shard(src, dst, capture_layers, n_moe_first_dense)
+        return (str(src.name), rows, sb, db, "ok")
+    except Exception as e:  # noqa: BLE001
+        return (str(src.name), 0, 0, 0, f"error: {e}")
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--src-dir", type=Path,
+                   default=Path("artifacts/calibration/v2_lite_corpus"))
+    p.add_argument("--dst-dir", type=Path,
+                   default=Path("artifacts/calibration/v2_lite_corpus_min"))
+    p.add_argument("--capture-layers", type=str, default="13,25",
+                   help="comma-separated V2-Lite block indices whose residual + "
+                        "intermediate to keep. Default 13,25 covers eagle5 v2 "
+                        "(layer 25) AND eagle5 v3 alt-config (layer 13).")
+    p.add_argument("--n-moe-first-dense", type=int, default=1,
+                   help="number of dense (non-MoE) layers before the first MoE block; "
+                        "V2-Lite has 1 dense layer at index 0")
+    p.add_argument("--skip-existing", action="store_true", default=True,
+                   help="skip output shards that already exist")
+    p.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 2),
+                   help="parallel shard extractors (defaults to CPU count - 2)")
+    args = p.parse_args()
+
+    shards = sorted(args.src_dir.glob("shard_*.parquet"))
+    if not shards:
+        print(f"no shards in {args.src_dir}", file=sys.stderr)
+        return 2
+
+    args.dst_dir.mkdir(parents=True, exist_ok=True)
+    total_src = 0
+    total_dst = 0
+    total_rows = 0
+    completed = 0
+    t0 = time.time()
+
+    print(f"extracting {len(shards)} shards with {args.workers} workers…",
+          file=sys.stderr)
+
+    capture_layers = [int(x) for x in args.capture_layers.split(",") if x.strip()]
+    print(f"keeping layers {capture_layers} + MoE indices "
+          f"{[x - args.n_moe_first_dense for x in capture_layers if x >= args.n_moe_first_dense]}…",
+          file=sys.stderr)
+    work = [(s, args.dst_dir / s.name, capture_layers, args.n_moe_first_dense)
+            for s in shards]
+
+    with ProcessPoolExecutor(max_workers=args.workers) as ex:
+        for name, rows, sb, db, status in ex.map(_worker, work):
+            completed += 1
+            total_src += sb
+            total_dst += db
+            total_rows += rows
+            elapsed = time.time() - t0
+            rate = completed / elapsed if elapsed > 0 else 0
+            eta = (len(shards) - completed) / rate if rate > 0 else 0
+            print(f"  [{completed}/{len(shards)}] {name}: {rows} rows, "
+                  f"{sb/1e6:.0f}MB → {db/1e6:.1f}MB ({status}, "
+                  f"elapsed={elapsed:.0f}s, eta={eta:.0f}s)",
+                  file=sys.stderr)
+
+    total_min = max(time.time() - t0, 1) / 60
+    print(f"\ndone in {total_min:.1f} min. {len(shards)} shards.",
+          file=sys.stderr)
+    print(f"  source size:  {total_src/1e9:.1f} GB",
+          file=sys.stderr)
+    print(f"  minimal size: {total_dst/1e9:.2f} GB  "
+          f"({100*total_dst/total_src:.1f}% of original)",
+          file=sys.stderr)
+    print(f"\nIf eagle5_train + tau_eval succeed against the new dir, you can "
+          f"safely `rm -rf {args.src_dir}` to reclaim ~{(total_src-total_dst)/1e9:.0f} GB.",
+          file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""Extract the Qwen-3B-Instruct "frozen baseline" .npz for eagle5_train.py.
+
+Analog of `eagle4/eagle4.py frozen` (which produces `eagle4/v2lite_frozen.npz`
+for DeepSeek-V2-Lite), but for Qwen2.5-3B-Instruct.
+
+The output schema is what `tools/training/eagle5_train.py :: build_head()`
+loads via `np.load(frozen_npz)` and accesses by these exact keys (see
+eagle5_train.py:138-150):
+
+    token_embd   : float16, shape (hidden_dim, vocab_size) = (2048, 151936)
+    lm_head      : float16, shape (hidden_dim, vocab_size) = (2048, 151936)
+    output_norm  : float32, shape (hidden_dim,)            = (2048,)
+
+Note the (hidden, vocab) layout — eagle5_train builds `embed_table` via
+`mx.transpose(self._token_embd, (1, 0))` (eagle5_train.py:119) and uses
+`draft_hidden @ self._lm_head` (eagle5_train.py:126). This matches
+eagle4's frozen-export convention (eagle4.py:434-435).
+
+Qwen2.5-3B-Instruct specifics
+-----------------------------
+- hidden_dim:        2048
+- vocab_size:        151936
+- n_layers:          36   (GGUF metadata key `qwen2.block_count`)
+- intermediate_size: 11008
+- rms_norm_eps:      1e-6
+- Embedding is TIED to the LM head: the GGUF only contains
+  `token_embd.weight` (Q6_K in Q4_K_M quant) and there is NO
+  separate `output.weight`. We dequantize once and write it under
+  both keys so eagle5_train doesn't need to know about tying.
+
+Dependencies
+------------
+    pip install gguf numpy
+
+The `gguf` Python package ships with a built-in `dequantize` that handles
+Q6_K (used for `token_embd.weight` in Qwen-3B-Q4_K_M). Output is fp32 from
+gguf; we downcast to fp16 to match eagle4's convention and halve the
+on-disk size (~620 MB → ~310 MB for the embed/lm_head tables alone, then
+2× for the duplicated lm_head copy).
+
+Usage
+-----
+    python3 tools/training/build_qwen3b_frozen.py
+    # or with custom paths:
+    python3 tools/training/build_qwen3b_frozen.py \\
+        --gguf models/qwen2.5-3b-instruct-q4_k_m.gguf \\
+        --out  eagle4/qwen3b_frozen.npz
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+
+try:
+    import gguf
+except ImportError:
+    print(
+        "ERROR: gguf python package not installed. Install via `pip install gguf`.\n"
+        "(eagle4/.venv already has it; activate that venv or pip-install into "
+        "the venv you're running eagle5_train.py from.)",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+# Qwen2.5-3B-Instruct constants. Kept here for sanity-check assertions
+# against the GGUF metadata so we fail loudly on the wrong file rather
+# than silently exporting a mismatched frozen.npz.
+QWEN3B_HIDDEN_DIM = 2048
+QWEN3B_VOCAB_SIZE = 151936
+QWEN3B_N_LAYERS = 36
+QWEN3B_RMS_EPS = 1e-6
+QWEN3B_INTERMEDIATE = 11008
+
+
+def _gguf_meta(reader: gguf.GGUFReader, key: str):
+    """Return the first scalar value for a GGUF metadata key, or None."""
+    field = reader.fields.get(key)
+    if field is None:
+        return None
+    if not field.data:
+        return None
+    return field.parts[field.data[0]]
+
+
+def _find_tensor(reader: gguf.GGUFReader, name: str):
+    for t in reader.tensors:
+        if t.name == name:
+            return t
+    return None
+
+
+def _dequantize_tensor(t) -> np.ndarray:
+    """Dequantize a GGUF tensor to fp32 using gguf.quants.dequantize().
+
+    Works for Q6_K, Q4_K, F32, F16, etc. Returns numpy fp32 in the
+    tensor's logical (un-byte-packed) shape.
+    """
+    raw = t.data  # np.ndarray of uint8 (or float32 for F32 tensors)
+    qtype = t.tensor_type
+    logical_shape = tuple(int(x) for x in t.shape)
+    if qtype in (gguf.GGMLQuantizationType.F32, gguf.GGMLQuantizationType.F16):
+        # Already non-quantized; just view as the right dtype + reshape.
+        if qtype == gguf.GGMLQuantizationType.F32:
+            arr = raw.view(np.float32)
+        else:
+            arr = raw.view(np.float16).astype(np.float32)
+        return arr.reshape(logical_shape)
+    # Quantized path — gguf.quants.dequantize handles Q4_K, Q6_K, Q5_K, Q8_0, ...
+    arr = gguf.quants.dequantize(raw, qtype)
+    return arr.reshape(logical_shape).astype(np.float32, copy=False)
+
+
+def extract_frozen(gguf_path: Path, out_path: Path) -> None:
+    if not gguf_path.exists():
+        raise SystemExit(f"GGUF not found: {gguf_path}")
+
+    print(f"[frozen] opening {gguf_path}", flush=True)
+    reader = gguf.GGUFReader(str(gguf_path), "r")
+
+    # --- Sanity-check metadata against hardcoded Qwen-3B specs ---------
+    hidden = _gguf_meta(reader, "qwen2.embedding_length")
+    n_layers = _gguf_meta(reader, "qwen2.block_count")
+    if hidden is not None and int(hidden) != QWEN3B_HIDDEN_DIM:
+        raise SystemExit(
+            f"hidden_dim mismatch: GGUF says {int(hidden)}, expected "
+            f"{QWEN3B_HIDDEN_DIM} for Qwen-3B-Instruct. Wrong GGUF?"
+        )
+    if n_layers is not None and int(n_layers) != QWEN3B_N_LAYERS:
+        print(
+            f"[frozen] WARNING: block_count={int(n_layers)} != "
+            f"{QWEN3B_N_LAYERS}; proceeding but you may have the wrong "
+            f"GGUF for the Qwen-3B-Instruct preset.",
+            flush=True,
+        )
+
+    # --- Locate the three tensors we need ------------------------------
+    t_embed = _find_tensor(reader, "token_embd.weight")
+    t_norm = _find_tensor(reader, "output_norm.weight")
+    # Qwen-3B ties lm_head to embed: there is NO output.weight in the GGUF.
+    # We will reuse the dequantized embed for both keys.
+    t_lm_head = _find_tensor(reader, "output.weight")  # may be None
+    if t_embed is None:
+        raise SystemExit(
+            "token_embd.weight not found in GGUF. Tensor list head: "
+            f"{[x.name for x in reader.tensors[:8]]}"
+        )
+    if t_norm is None:
+        raise SystemExit("output_norm.weight not found in GGUF.")
+
+    tied = t_lm_head is None
+    if tied:
+        print(
+            "[frozen] no output.weight in GGUF → lm_head is tied to "
+            "token_embd (expected for Qwen2.5-3B-Instruct).",
+            flush=True,
+        )
+    else:
+        print(
+            "[frozen] found explicit output.weight; lm_head is UNTIED. "
+            "Exporting separate token_embd and lm_head from GGUF.",
+            flush=True,
+        )
+
+    # --- Dequantize ---------------------------------------------------
+    t0 = time.time()
+    print(
+        f"[frozen] dequantizing token_embd.weight "
+        f"({t_embed.tensor_type.name} {list(t_embed.shape)})...",
+        flush=True,
+    )
+    embed = _dequantize_tensor(t_embed)  # fp32, shape (hidden, vocab)
+    print(f"[frozen]   → {embed.dtype} {embed.shape}  ({time.time()-t0:.1f}s)", flush=True)
+
+    if tied:
+        lm = embed  # same buffer; the np.savez call will write it under both keys
+    else:
+        t1 = time.time()
+        print(
+            f"[frozen] dequantizing output.weight "
+            f"({t_lm_head.tensor_type.name} {list(t_lm_head.shape)})...",
+            flush=True,
+        )
+        lm = _dequantize_tensor(t_lm_head)
+        print(f"[frozen]   → {lm.dtype} {lm.shape}  ({time.time()-t1:.1f}s)", flush=True)
+
+    print(f"[frozen] reading output_norm.weight ({t_norm.tensor_type.name})", flush=True)
+    norm = _dequantize_tensor(t_norm)  # fp32 already
+
+    # --- Shape sanity-checks against eagle5_train's expectations ------
+    # eagle5_train uses `mx.transpose(token_embd, (1, 0))` then indexes
+    # `embed_table[prev_tok]`, so token_embd must be (hidden, vocab).
+    # That matches the GGUF tensor's logical shape directly — no
+    # transpose needed (unlike from a HF/safetensors checkpoint).
+    if embed.shape != (QWEN3B_HIDDEN_DIM, QWEN3B_VOCAB_SIZE):
+        raise SystemExit(
+            f"unexpected token_embd shape {embed.shape}; expected "
+            f"({QWEN3B_HIDDEN_DIM}, {QWEN3B_VOCAB_SIZE}). Refusing to "
+            f"write a frozen .npz that eagle5_train.py won't load."
+        )
+    if lm.shape != (QWEN3B_HIDDEN_DIM, QWEN3B_VOCAB_SIZE):
+        raise SystemExit(f"unexpected lm_head shape {lm.shape}")
+    if norm.shape != (QWEN3B_HIDDEN_DIM,):
+        raise SystemExit(f"unexpected output_norm shape {norm.shape}")
+
+    # --- Downcast to eagle4's storage convention ----------------------
+    # eagle4/v2lite_frozen.npz uses fp16 for the two big tables and
+    # fp32 for the norm vector. Match that so eagle5_train's expectations
+    # don't shift and the on-disk footprint stays comparable.
+    embed_fp16 = embed.astype(np.float16, copy=False)
+    lm_fp16 = lm.astype(np.float16, copy=False) if not tied else embed_fp16
+    norm_fp32 = norm.astype(np.float32, copy=False)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"[frozen] writing → {out_path}", flush=True)
+    np.savez(
+        out_path,
+        token_embd=embed_fp16,
+        lm_head=lm_fp16,
+        output_norm=norm_fp32,
+    )
+
+    # --- Summary ------------------------------------------------------
+    total_mb = (
+        embed_fp16.nbytes
+        + (0 if tied else lm_fp16.nbytes)
+        + norm_fp32.nbytes
+    ) / 1e6
+    on_disk_mb = out_path.stat().st_size / 1e6
+    print("[frozen] DONE", flush=True)
+    print(f"  token_embd  : {embed_fp16.dtype} {embed_fp16.shape}  ({embed_fp16.nbytes/1e6:.1f} MB)")
+    print(f"  lm_head     : {lm_fp16.dtype} {lm_fp16.shape}  ({lm_fp16.nbytes/1e6:.1f} MB)"
+          f"{'  [tied to token_embd; np.savez writes a copy]' if tied else ''}")
+    print(f"  output_norm : {norm_fp32.dtype} {norm_fp32.shape}  ({norm_fp32.nbytes/1e6:.3f} MB)")
+    print(f"  logical mem : {total_mb:.1f} MB (in-RAM peak during training)")
+    print(f"  on-disk     : {on_disk_mb:.1f} MB (np.savez uncompressed)")
+    print(
+        f"  schema      : matches eagle4/v2lite_frozen.npz "
+        f"(keys=['token_embd','lm_head','output_norm']); "
+        f"eagle5_train.py:build_head will load it as-is."
+    )
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(prog="build_qwen3b_frozen")
+    p.add_argument(
+        "--gguf",
+        type=Path,
+        default=Path("models/qwen2.5-3b-instruct-q4_k_m.gguf"),
+        help="path to Qwen-3B-Instruct GGUF (Q4_K_M is the supported preset)",
+    )
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=Path("eagle4/qwen3b_frozen.npz"),
+        help="output .npz path (eagle5_train --frozen consumes this)",
+    )
+    args = p.parse_args()
+    extract_frozen(args.gguf, args.out)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#!/usr/bin/env python3
+"""Wall-clock optimization #4 (2026-05-22): automated diagnosis of the
+spec-decode K=1 tax that gates eagle5 v2 training.
+
+Per memory `path_to_100_repath.md`:
+    eagle4 / sequential / K=1   =  18.01 tps  (vs off 26.87 → −33%)
+    eagle4 / parallel-k / K=4   =   7.52 tps  (−72%)
+
+The K=1 path SHOULD be bit-identical to off-mode (the chain seed runs
+the full forward; the verifier is the same kernel as off-mode greedy)
+but pays an 8.9-tps tax. This script automates the diagnosis: bench
+off-mode, eagle4 K=1, eagle4 K=4 across both metal and cpu spec-decode
+backends, parses per-step traces, and classifies the tax as:
+
+    structural        — overhead is in the chain seed / capture buffer;
+                        can't be removed without a backend rewrite.
+                        EAGLE5 v2 TRAINING WILL BE WALL-CLOCK WASTED
+                        UNTIL THIS IS FIXED.
+    overhead-fixable  — overhead is in CPU encode / sync; spec-decode
+                        runtime patches can recover most of the tax.
+                        Eagle5 training in parallel with runtime work
+                        is fine.
+    acceptance-capped — chain-K=4 acceptance is below the threshold
+                        where any draft model wins. Eagle5 v2 with a
+                        better-trained head MIGHT lift acceptance;
+                        train, eval τ, then decide.
+
+Exit codes:
+    0 — overhead-fixable OR acceptance-capped: safe to start eagle5 training
+    1 — structural: do NOT start training; fix runtime first
+    2 — couldn't run diagnostic (binary missing, model missing, etc.)
+
+Usage:
+    python3 tools/training/diagnose_spec_decode_k1.py \\
+        --weights models/deepseek-v2-lite-q4.gguf \\
+        --profile profiles/deepseek-v2-lite-q4.m3pro18.json \\
+        --tokens  32 \\
+        --trials  3
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+
+def _run_bench(
+    bin_path: Path,
+    weights: Path,
+    profile: Path,
+    speculate: str | None,
+    verify_window: int,
+    tokens: int,
+    env_extra: dict | None = None,
+) -> dict:
+    """Run a single dismantle bench trial; return parsed JSON result."""
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+        out_json = Path(f.name)
+    cmd = [
+        str(bin_path), "bench",
+        "--backend", "dismantle",
+        "--suite",   "decode",
+        "--weights", str(weights),
+        "--trials",  "1",
+        "--max-new-tokens", str(tokens),
+        "--kernel-profile", str(profile),
+        "--json", str(out_json),
+    ]
+    if speculate is not None:
+        cmd += ["--speculate", speculate, "--verify-window", str(verify_window)]
+    env = os.environ.copy()
+    env["DISMANTLE_SPEC_LOG"] = "1"
+    if env_extra:
+        env.update(env_extra)
+    try:
+        subprocess.run(
+            cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=600, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        return {"error": f"bench failed (exit {e.returncode})"}
+    except subprocess.TimeoutExpired:
+        return {"error": "bench timed out"}
+    try:
+        data = json.loads(out_json.read_text())
+    finally:
+        out_json.unlink(missing_ok=True)
+    trial = data.get("results", {}).get("trial_stats", [{}])[0]
+    return {
+        "decode_tps":      trial.get("decode_tps", 0.0),
+        "decode_ms":       trial.get("decode_ms", 0.0),
+        "draft_accepted":  trial.get("draft_accepted", 0),
+        "draft_rejected":  trial.get("draft_rejected", 0),
+    }
+
+
+def _median(xs: list[float]) -> float:
+    xs = sorted(xs)
+    n = len(xs)
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
+
+
+def diagnose(args) -> int:
+    bin_path = Path(args.bin)
+    if not bin_path.exists():
+        print(f"ERROR: {bin_path} missing. Run `cargo build --release -p dismantle` first.",
+              file=sys.stderr)
+        return 2
+    if not args.weights.exists():
+        print(f"ERROR: weights {args.weights} missing.", file=sys.stderr)
+        return 2
+    if not args.profile.exists():
+        print(f"ERROR: profile {args.profile} missing.", file=sys.stderr)
+        return 2
+
+    print(f"=== spec-decode K=1 diagnostic: {args.trials} trials × {args.tokens} tokens ===")
+    print()
+
+    configs = [
+        ("off          ", None,           4),
+        ("eagle4 K=1   ", "exact-shared", 1),
+        ("eagle4 K=4   ", "exact-shared", 4),
+        ("ngram  K=4   ", "ngram",        4),
+    ]
+    results: dict[str, dict] = {}
+    for label, 

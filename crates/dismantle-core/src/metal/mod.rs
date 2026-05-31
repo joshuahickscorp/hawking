@@ -12,6 +12,7 @@ pub const SHADER_ATTN: &str = include_str!("../../shaders/attn.metal");
 pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
+pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than separate compile units; lets common helpers be shared.
@@ -24,6 +25,7 @@ pub fn all_shader_sources() -> String {
         SHADER_SAMPLE,
         SHADER_MATMUL,
         SHADER_MHA,
+        SHADER_MEGAKERNEL,
     ]
     .join("\n\n")
 }
@@ -438,9 +440,17 @@ mod imp {
             "moe_batched_gemm_q5_0_indexed_v2t" => "moe_batched_gemm_q5_0_indexed_v2t",
             "moe_batched_gemm_q6_k_indexed_v2t" => "moe_batched_gemm_q6_k_indexed_v2t",
             "gemm_q3_k_fused_v2" => "gemm_q3_k_fused_v2",
+            "gemm_q3_k_fused_2r" => "gemm_q3_k_fused_2r",
+            "gemm_q3_k_v4_predec" => "gemm_q3_k_v4_predec",
             "gemm_q6_k_fused_v2" => "gemm_q6_k_fused_v2",
             "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
+            "gemm_q4_k_v4_predec" => "gemm_q4_k_v4_predec",
+            "gemm_q4_k_v4_predec_2r" => "gemm_q4_k_v4_predec_2r",
+            "gemm_q4_k_v4_predec_2r_f16s" => "gemm_q4_k_v4_predec_2r_f16s",
+            "gemm_q4_k_v4_predec_4r" => "gemm_q4_k_v4_predec_4r",
+            "gemm_q4_k_v4_predec_pair" => "gemm_q4_k_v4_predec_pair",
+            "gemm_q4_k_v4_predec_pair_f16s" => "gemm_q4_k_v4_predec_pair_f16s",
             "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
             "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
             "gemv_f16_f16in" => "gemv_f16_f16in",
@@ -461,6 +471,28 @@ mod imp {
             "gemm_q4_k_a8_v3_8r" => "gemm_q4_k_a8_v3_8r",
             "add_rmsnorm_fused_q8" => "add_rmsnorm_fused_q8",
             "add_rmsnorm_fused_q8_scaled" => "add_rmsnorm_fused_q8_scaled",
+            // 0.4 (2026-05-30): close the remaining unmapped 'other' bucket so
+            // every dispatched kernel is attributed and traces pass the §1 gate
+            // (INV2: other-share must be < 5%). Covers decode-path attention +
+            // residual/util kernels plus the prefill/batched, W4A8-per-channel,
+            // Q4K_FAST, and megakernel/POC kernels (named now so they attribute
+            // correctly the moment they're wired in, never silently as 'other').
+            "mha_decode_f32" => "mha_decode_f32",
+            "mha_decode_f32_batched" => "mha_decode_f32_batched",
+            "add_inplace_broadcast" => "add_inplace_broadcast",
+            "memcpy_f32_off" => "memcpy_f32_off",
+            "add_rmsnorm_fused_batched" => "add_rmsnorm_fused_batched",
+            "gemm_q4_k_m_batched_v2" => "gemm_q4_k_m_batched_v2",
+            "gemm_q4_k_m_batched_v3" => "gemm_q4_k_m_batched_v3",
+            "gemm_q4_k_m_batched_v3w" => "gemm_q4_k_m_batched_v3w",
+            "gemm_q4_k_m_batched_v3w_predec" => "gemm_q4_k_m_batched_v3w_predec",
+            "gemm_q4k_fast_v1" => "gemm_q4k_fast_v1",
+            "gemm_q4_k_a8_v3_8r_per_channel" => "gemm_q4_k_a8_v3_8r_per_channel",
+            "quantize_f32_to_int8_per_channel" => "quantize_f32_to_int8_per_channel",
+            "qwen3b_megakernel_2layer" => "qwen3b_megakernel_2layer",
+            "qwen3b_megakernel_nlayer" => "qwen3b_megakernel_nlayer",
+            "gpu_address_probe" => "gpu_address_probe",
+            "use_resource_poc_add" => "use_resource_poc_add",
             _ => "other",
         }
     }

@@ -1,0 +1,427 @@
+{
+  "oracle": "vocab_coverage_norm_bound_certificate",
+  "verdict": "NO-GO",
+  "greenlight_rule": "GO iff a small H (<= 4096) certifies >=80% of steps at a physically-reachable alignment, i.e. the optimistic cos threshold (max_out_of_H_norm / max_row_norm) is < 0.9 so cos in [0.9,1] clears it.",
+  "best_certified_operating_point": {
+    "rate": 0.0,
+    "H": null,
+    "cos": null,
+    "scenario": null,
+    "reachable": false
+  },
+  "go_reachable_certifying_small_H": [],
+  "rationale": "The norm-bound certificate cannot certify a small frequency-hot set at any PHYSICALLY-REACHABLE alignment. Reason (measured, not implementation-dependent): the hot set is chosen by token FREQUENCY, but the largest-norm lm_head rows are NOT the frequent tokens, so max_{v not in H}||w_v|| stays ~= the global max row norm even for H in the tens of thousands. The certificate needs cos(w_c,h) > max_{v not in H}||w_v|| / ||w_c||; even in the OPTIMISTIC case (||w_c|| = global max row norm) the smallest hot set demands cos(w_c,h) > 1.000 -- and the REALISTIC case (||w_c|| = median norm, since the winner is a frequent ordinary token) makes the threshold >= 1.0 (unreachable, cos<=1). Generic decode hidden states do not align with a max-norm row at cos~1. The FULL-RANK (rank99=97% of dim, max/median row-norm spread 1.46x) head (svd_lmhead.json) is exactly the regime where this Cauchy-Schwarz upper bound is too loose to certify.",
+  "kill_protocol": {
+    "classification": "Type-1",
+    "type1_reality": "The norm-bound certificate cannot certify a small frequency-hot set at any PHYSICALLY-REACHABLE alignment. Reason (measured, not implementation-dependent): the hot set is chosen by token FREQUENCY, but the largest-norm lm_head rows are NOT the frequent tokens, so max_{v not in H}||w_v|| stays ~= the global max row norm even for H in the tens of thousands. The certificate needs cos(w_c,h) > max_{v not in H}||w_v|| / ||w_c||; even in the OPTIMISTIC case (||w_c|| = global max row norm) the smallest hot set demands cos(w_c,h) > 1.000 -- and the REALISTIC case (||w_c|| = median norm, since the winner is a frequent ordinary token) makes the threshold >= 1.0 (unreachable, cos<=1). Generic decode hidden states do not align with a max-norm row at cos~1. The FULL-RANK (rank99=97% of dim, max/median row-norm spread 1.46x) head (svd_lmhead.json) is exactly the regime where this Cauchy-Schwarz upper bound is too loose to certify.",
+    "type2_reframe": {
+      "named_alternative": "Tighter exact certificate that does NOT rely on the scalar Cauchy-Schwarz row-norm bound: (i) a per-coordinate / interval bound using sign-aligned partial sums of w_v against h (elementwise max contribution), or (ii) a partitioned-vocab block-max bound where each contiguous row block stores max_j |w_v[j]| per coordinate so out-of-H blocks get a tighter per-block ceiling than a single global row-norm, or (iii) a data-aware screen that orders the vocab by argmax frequency from a REAL decode (usage_capture) rather than input-token frequency, tightening H so the frequent-argmax set and the high-norm set overlap more.",
+      "cheap_oracle": "Each reframe has a cheap offline NumPy oracle: (i)/(ii) recompute the certified-rate sweep with the tighter ceiling (block-max matrices are a reshape + max over the SAME dequantized W already loaded here -- a few lines added to this script); (iii) re-run coverage with REAL argmax ids from usage_capture (the side-observer the design proposes) instead of llama-tokenize input ids, then re-run THIS certificate sweep against that H.",
+      "status": "Reframes (i)/(ii) are Type-2-ALIVE only with the named block-max oracle: a per-coordinate bound CAN be much tighter than the scalar row-norm bound when h has a few dominant coordinates, but on a similar-row-norm / cond~45 head the gain is uncertain and must be MEASURED before any wiring. Reframe (iii) needs a GPU decode (usage_capture) to produce real argmax ids -- out of scope for this CPU oracle, deferred to that instrument. None resurrect the lever on vibes; each is dead until its oracle clears."
+    }
+  },
+  "coverage": {
+    "total_token_occurrences": 434032,
+    "distinct_tokens_seen": 7553,
+    "vocab_full": 151936,
+    "fraction_vocab_ever_seen": 0.049712,
+    "hot_set_size_for_coverage": {
+      "H_for_0.9900": 5585,
+      "H_for_0.9950": 6186,
+      "H_for_0.9990": 7119,
+      "H_for_0.9999": 7510
+    },
+    "coverage_at_fixed_H": {
+      "256": 0.5602397979872452,
+      "512": 0.6693423526375936,
+      "1024": 0.7852370332141408,
+      "2048": 0.8878700188004571,
+      "4096": 0.9640948132856564,
+      "8192": 1.0,
+      "16384": 1.0,
+      "32768": 1.0
+    },
+    "corpus_glob": "/tmp/git_sessions_all/*.jsonl",
+    "documents": 89,
+    "documents_tokenized_ok": 89,
+    "documents_tokenized_fail": 0,
+    "tokenizer": "llama-tokenize",
+    "max_token_id_seen": 147202,
+    "LABEL": "ESTIMATE: input-token-frequency proxy for argmax/output frequency. Real argmax usage needs a GPU decode (not run)."
+  },
+  "certificate": {
+    "full_max_row_norm": 1.6258,
+    "median_row_norm": 1.1132,
+    "p99_row_norm": 1.3475,
+    "row_norm_min": 0.3795,
+    "row_norm_spread_max_over_median": 1.4605,
+    "cos_sweep": [
+      0.3,
+      0.5,
+      0.7,
+      0.8,
+      0.9,
+      0.95,
+      0.99,
+      1.0
+    ],
+    "note_units": "Certificate fires iff cos(w_c,h) > max_out_of_H_norm / ||w_c||. cos in [-1,1]; an argmax winner has cos>0. Scale-free: depends only on the norm RATIO, not the absolute row-norm magnitude. ||w_c|| modeled as max (optimistic) and median (realistic).",
+    "per_H": [
+      {
+        "H": 256,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 512,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 1024,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 2048,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 4096,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 8192,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 16384,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      },
+      {
+        "H": 32768,
+        "max_out_of_H_row_norm": 1.6258,
+        "optimistic_wc_max": {
+          "cos_threshold_to_certify": 1.0,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        },
+        "realistic_wc_median": {
+          "cos_threshold_to_certify": 1.4605,
+          "certified_at_cos": {
+            "cos=0.3": 0.0,
+            "cos=0.5": 0.0,
+            "cos=0.7": 0.0,
+            "cos=0.8": 0.0,
+            "cos=0.9": 0.0,
+            "cos=0.95": 0.0,
+            "cos=0.99": 0.0,
+            "cos=1": 0.0
+          },
+          "frac_swept_cos_certifying": 0.0,
+          "reachable": false
+        }
+      }
+    ],
+    "norm_freq_disjointness": {
+      "top_norm_token_ids": [
+        38301,
+        18826,
+        97322,
+        111889,
+        79176,
+        72363,
+        17044,
+        47378,
+        91771,
+        78427,
+        52323,
+        57472,
+        8842,
+        80131,
+        76470,
+        58144,
+        117970,
+        54627,
+        33550,
+        51651
+      ],
+      "top_norm_values": [
+        1.6258,
+        1.6239,
+        1.5769,
+        1.5571,
+        1.524,
+        1.5199,
+        1.5154,
+        1.5109,
+        1.5064,
+        1.5063,
+        1.4965,
+        1.4916,
+        1.4883,
+        1.4844,
+        1.4821,
+        1.4796,
+        1.4767,
+        1.4764,
+        1.4719,
+        1.4719
+      ],
+      "top_norm_freq_rank": [
+        66461,
+        48075,
+        146372,
+        138357,
+        124110,
+        30467,
+        42376,
+        22327,
+        123438,
+        124257,
+        10378,
+        10727,
+        58128,
+        124959,
+        126177,
+        35457,
+        87904,
+        14956,
+        62788,
+        9341
+      ],
+      "note": "freq_rank 0 = most frequent. If these are large (rare), the high-norm rows are NOT frequency-hot, so a frequency-chosen H never includes them and max_out_of_H_norm stays at the global max -- the structural reason the certificate cannot fire."
+    },
+    "tensor": "token_embd.weight",
+    "qtype": "Q6_K",
+    "tied_embedding": true,
+    "shape_vocab_hidden": [
+      151936,
+      2048
+    ],
+    "LABEL": "ESTIMATE: ||h|| and l_c are MODELED via the alignment cos(w_c,h) sweep, not GPU-measured. The certified rate is a function of cos(w_c,h) vs (max_out_of_H_norm/||w_c||)."
+  },
+  "caveats": [
+    "LABEL ESTIMATE (a): input-token frequency != argmax frequency.",
+    "LABEL ESTIMATE (b): ||h|| and l_c modeled/swept, not GPU-measured.",
+    "lm_head is ~4-10% of bytes/token; ceiling is small even if GO.",
+    "Certificate strength bounded by Cauchy-Schwarz; tighter bounds (block-max / per-coord) are the only Type-2 escape and need their own oracle."
+  ]
+}

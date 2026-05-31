@@ -145,7 +145,7 @@ fn batched_tcb_argmax_parity_k1_through_k8() {
 #[test]
 fn spec_batched_verify_exact_mode() {
     let Some(mut ref_engine) = load_engine_with_profile(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine_with_profile(SpeculateMode::NGram) else { return };
+    let Some(mut spec_engine) = load_engine_with_profile(SpeculateMode::ExactShared) else { return };
 
     // Repetitive prompt: n-gram acceptance rate is very high.
     {

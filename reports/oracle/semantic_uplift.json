@@ -1,0 +1,2126 @@
+{
+  "oracle": "prefix_cache_semantic_uplift",
+  "lever": "\u00a71.6 L1.2 semantic cache \u2014 incremental reuse over exact tier",
+  "tokenizer": "llama-tokenize",
+  "used_fallback_tokenizer": false,
+  "n_sessions": 14,
+  "n_sessions_measured": 14,
+  "tau_sem_swept": [
+    0.95,
+    0.9,
+    0.8,
+    0.7
+  ],
+  "min_reuse_tokens_swept": [
+    16,
+    32,
+    64
+  ],
+  "gate": {
+    "uplift_pts": 10.0,
+    "verify_confirm_rate": 0.95
+  },
+  "aggregate": {
+    "by_tau": {
+      "0.95": {
+        "by_min_reuse": {
+          "16": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 13
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 59,
+            "total_semantic_candidate_requests": 59
+          },
+          "32": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 13
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 59,
+            "total_semantic_candidate_requests": 59
+          },
+          "64": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 0.5,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 0.9519,
+              "n": 13
+            },
+            "verify_confirm_rate_weighted": 0.9661,
+            "total_confirmed_hits": 57,
+            "total_semantic_candidate_requests": 59
+          }
+        }
+      },
+      "0.9": {
+        "by_min_reuse": {
+          "16": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 63,
+            "total_semantic_candidate_requests": 63
+          },
+          "32": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 63,
+            "total_semantic_candidate_requests": 63
+          },
+          "64": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4829,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 0.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 0.8849,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 0.9524,
+            "total_confirmed_hits": 60,
+            "total_semantic_candidate_requests": 63
+          }
+        }
+      },
+      "0.8": {
+        "by_min_reuse": {
+          "16": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 71,
+            "total_semantic_candidate_requests": 71
+          },
+          "32": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 71,
+            "total_semantic_candidate_requests": 71
+          },
+          "64": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 0.0,
+              "median": 0.9445,
+              "max": 1.0,
+              "mean": 0.8033,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 0.8873,
+            "total_confirmed_hits": 63,
+            "total_semantic_candidate_requests": 71
+          }
+        }
+      },
+      "0.7": {
+        "by_min_reuse": {
+          "16": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 71,
+            "total_semantic_candidate_requests": 71
+          },
+          "32": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 1.0,
+              "median": 1.0,
+              "max": 1.0,
+              "mean": 1.0,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 1.0,
+            "total_confirmed_hits": 71,
+            "total_semantic_candidate_requests": 71
+          },
+          "64": {
+            "incremental_reuse_pts_spread": {
+              "min": 0.0,
+              "median": 0.0,
+              "max": 13.23,
+              "mean": 1.4836,
+              "n": 14
+            },
+            "augmented_reuse_frac_spread": {
+              "min": 0.0306,
+              "median": 0.4573,
+              "max": 0.8283,
+              "mean": 0.4459,
+              "n": 14
+            },
+            "verify_confirm_rate_spread": {
+              "min": 0.0,
+              "median": 0.9445,
+              "max": 1.0,
+              "mean": 0.8033,
+              "n": 14
+            },
+            "verify_confirm_rate_weighted": 0.8873,
+            "total_confirmed_hits": 63,
+            "total_semantic_candidate_requests": 71
+          }
+        }
+      }
+    },
+    "exact_only_reuse_frac_spread": {
+      "min": 0.0094,
+      "median": 0.4524,
+      "max": 0.8282,
+      "mean": 0.4311,
+      "n": 14
+    }
+  },
+  "best_cell": {
+    "tau_sem": 0.8,
+    "min_reuse_tokens": 16,
+    "mean_incremental_pts": 1.4836,
+    "median_incremental_pts": 0.0,
+    "max_incremental_pts": 13.23,
+    "verify_confirm_rate_weighted": 1.0,
+    "passes_gate": false
+  },
+  "verdict": "NO-GO",
+  "per_session": [
+    {
+      "n_requests": 9,
+      "total_prompt_tokens": 29774,
+      "exact_only_reuse_tokens": 18620,
+      "exact_only_reuse_frac": 0.6254,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 18620,
+              "augmented_reuse_frac": 0.6254,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "b2_session_00.jsonl"
+    },
+    {
+      "n_requests": 10,
+      "total_prompt_tokens": 70862,
+      "exact_only_reuse_tokens": 30955,
+      "exact_only_reuse_frac": 0.4368,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 7,
+              "verify_confirm_rate": 0.875
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 0.8889
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 0.8889
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 30955,
+              "augmented_reuse_frac": 0.4368,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 0.8889
+            }
+          }
+        }
+      },
+      "session": "b2_session_01.jsonl"
+    },
+    {
+      "n_requests": 8,
+      "total_prompt_tokens": 32396,
+      "exact_only_reuse_tokens": 15161,
+      "exact_only_reuse_frac": 0.468,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 6,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 6,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 7,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 7,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 7,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 0.8571
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 7,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 7,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 7,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 17583,
+              "augmented_reuse_frac": 0.5428,
+              "incremental_reuse_frac": 0.0748,
+              "incremental_reuse_pts": 7.48,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 0.8571
+            }
+          }
+        }
+      },
+      "session": "b2_session_02.jsonl"
+    },
+    {
+      "n_requests": 4,
+      "total_prompt_tokens": 10049,
+      "exact_only_reuse_tokens": 3217,
+      "exact_only_reuse_frac": 0.3201,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 3,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 3,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 3217,
+              "augmented_reuse_frac": 0.3201,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "b2_session_03.jsonl"
+    },
+    {
+      "n_requests": 9,
+      "total_prompt_tokens": 86275,
+      "exact_only_reuse_tokens": 41210,
+      "exact_only_reuse_frac": 0.4777,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 8,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 41210,
+              "augmented_reuse_frac": 0.4777,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 8,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "b2_session_04.jsonl"
+    },
+    {
+      "n_requests": 6,
+      "total_prompt_tokens": 9717,
+      "exact_only_reuse_tokens": 8048,
+      "exact_only_reuse_frac": 0.8282,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 8049,
+              "augmented_reuse_frac": 0.8283,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "b2_session_05.jsonl"
+    },
+    {
+      "n_requests": 10,
+      "total_prompt_tokens": 49061,
+      "exact_only_reuse_tokens": 35082,
+      "exact_only_reuse_frac": 0.7151,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 9,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 35092,
+              "augmented_reuse_frac": 0.7153,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 9,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "session_00.jsonl"
+    },
+    {
+      "n_requests": 6,
+      "total_prompt_tokens": 22265,
+      "exact_only_reuse_tokens": 5645,
+      "exact_only_reuse_frac": 0.2535,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 4,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 4,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 5645,
+              "augmented_reuse_frac": 0.2535,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        }
+      },
+      "session": "session_01.jsonl"
+    },
+    {
+      "n_requests": 7,
+      "total_prompt_tokens": 44783,
+      "exact_only_reuse_tokens": 6549,
+      "exact_only_reuse_frac": 0.1462,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 3,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 4,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 6549,
+              "augmented_reuse_frac": 0.1462,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 4,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 6,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 0.8333
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 6,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 6,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 6552,
+              "augmented_reuse_frac": 0.1463,
+              "incremental_reuse_frac": 0.0001,
+              "incremental_reuse_pts": 0.01,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 0.8333
+            }
+          }
+        }
+      },
+      "session": "session_02.jsonl"
+    },
+    {
+      "n_requests": 5,
+      "total_prompt_tokens": 4175,
+      "exact_only_reuse_tokens": 2780,
+      "exact_only_reuse_frac": 0.6659,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 3,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 0.6667
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 3,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 3,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 2781,
+              "augmented_reuse_frac": 0.6661,
+              "incremental_reuse_frac": 0.0002,
+              "incremental_reuse_pts": 0.02,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 0.6667
+            }
+          }
+        }
+      },
+      "session": "session_03.jsonl"
+    },
+    {
+      "n_requests": 3,
+      "total_prompt_tokens": 19624,
+      "exact_only_reuse_tokens": 600,
+      "exact_only_reuse_frac": 0.0306,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 2,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 2,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 600,
+              "augmented_reuse_frac": 0.0306,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 0.5
+            }
+          }
+        }
+      },
+      "session": "session_04.jsonl"
+    },
+    {
+      "n_requests": 2,
+      "total_prompt_tokens": 139,
+      "exact_only_reuse_tokens": 59,
+      "exact_only_reuse_frac": 0.4245,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 0,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 59,
+              "augmented_reuse_frac": 0.4245,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 0,
+              "verify_confirm_rate": 0.0
+            }
+          }
+        }
+      },
+      "session": "session_05.jsonl"
+    },
+    {
+      "n_requests": 3,
+      "total_prompt_tokens": 11291,
+      "exact_only_reuse_tokens": 106,
+      "exact_only_reuse_frac": 0.0094,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 1,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 1600,
+              "augmented_reuse_frac": 0.1417,
+              "incremental_reuse_frac": 0.1323,
+              "incremental_reuse_pts": 13.23,
+              "confirmed_semantic_hits": 1,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "session_06.jsonl"
+    },
+    {
+      "n_requests": 7,
+      "total_prompt_tokens": 43621,
+      "exact_only_reuse_tokens": 27628,
+      "exact_only_reuse_frac": 0.6334,
+      "by_tau": {
+        "0.95": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.9": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.8": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        },
+        "0.7": {
+          "n_semantic_candidate_requests": 5,
+          "by_min_reuse": {
+            "16": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "32": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            },
+            "64": {
+              "augmented_reuse_tokens": 27628,
+              "augmented_reuse_frac": 0.6334,
+              "incremental_reuse_frac": 0.0,
+              "incremental_reuse_pts": 0.0,
+              "confirmed_semantic_hits": 5,
+              "verify_confirm_rate": 1.0
+            }
+          }
+        }
+      },
+      "session": "session_07.jsonl"
+    }
+  ],
+  "note": "incremental_reuse = (best-prior semantic reuse frac) - (exact-consecutive reuse frac). Exact-consecutive = common_prefix_len(req[i-1],req[i]) (the SHIPPED default-on cache). Semantic = longest exact common prefix vs ANY prior j with embed-cosine>=tau_sem, credited only when that prefix >= MIN_REUSE_TOKENS (the verify gate). verify_confirm_rate = of requests with a semantic candidate, fraction whose best exact prefix >= MIN_REUSE_TOKENS. GO if mean incremental >= 10 pts at a tau with weighted verify-confirm >= 95%. ESTIMATE: git-history proxy for a real user; the production number comes from real session logs.",
+  "source": "sessions-glob:/tmp/git_sessions_all/*.jsonl (14 files)"
+}

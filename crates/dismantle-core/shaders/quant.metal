@@ -379,6 +379,163 @@ kernel void gemm_q3_k_fused_v2(
     }
 }
 
+// ── gemm_q3_k_fused_2r ───────────────────────────────────────────────────────
+// 2-rows-per-simdgroup FUSED Q3_K GEMV (byte-cut speed lever, 2026-05-31).
+// Identical INLINE 6-bit scale decode + math as gemm_q3_k_fused_v2 (NO predec —
+// predec ADDS scale bytes and breaks the byte-cut), but each simdgroup computes
+// TWO output rows of the SAME matrix with two independent accumulator chains,
+// sharing the single `x` load. The two chains give the compiler 2 in-flight
+// weight-load streams per thread, hiding DRAM latency — the structure that makes
+// gemm_q4_k_v4_predec_2r run ~56% peak. 16 rows/TG (8 simdgroups x 2 rows).
+//
+// BIT-IDENTICAL per-row to gemm_q3_k_fused_v2: each accumulator replays the
+// exact same per-element `d*scale*q * xv` FMA in the same order; only the row
+// pairing and shared `x` differ. `d` is read once per row per block (was once
+// per element via q3_k_value); the value is identical so the product is too.
+//
+// Grid: (ceil(rows/16)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q3_k_fused_2r(
+    device const uchar* w_q3   [[buffer(0)]],   // (rows, cols) Q3_K, 110 B/block
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant ArgbufRowsCols& args [[buffer(3)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= args.rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < args.rows;
+    // Alias row1 to row0 when past the end so loads stay in-bounds; p1 is never
+    // written. Production shapes are rows%16==0 so has1 holds.
+    uint r1 = has1 ? row1 : row0;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 110ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 110ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 110ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 110ul;
+        // `d` read once per row per block (identical to q3_k_value's per-element
+        // read — same f16 → float value).
+        float d0 = q3_k_fp16_at(w_q3, bo0 + 108ul);
+        float d1 = q3_k_fp16_at(w_q3, bo1 + 108ul);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            // Shared element index decode (same for both rows).
+            uint half_idx = elem >> 7;
+            uint local    = elem & 127u;
+            uint group16  = local >> 4;
+            uint j        = group16 >> 1;
+            uint second   = group16 & 1u;
+            uint lane     = local & 15u;
+            uint q_idx    = half_idx * 32u + second * 16u + lane;
+            uint h_idx    = second * 16u + lane;
+            uint shift    = j * 2u;
+            uint high_mask = 1u << (half_idx * 4u + j);
+            uint scale_idx = half_idx * 8u + group16;
+
+            // Shared activation load.
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+
+            // Row 0.
+            int q0 = (int)(((uint)w_q3[bo0 + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                   - (((uint)w_q3[bo0 + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+            int s0 = q3_k_scale(w_q3, bo0, scale_idx);
+            p0 += (d0 * (float)s0 * (float)q0) * xv;
+
+            // Row 1.
+            int q1 = (int)(((uint)w_q3[bo1 + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                   - (((uint)w_q3[bo1 + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+            int s1 = q3_k_scale(w_q3, bo1, scale_idx);
+            p1 += (d1 * (float)s1 * (float)q1) * xv;
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) y[row1] = p1;
+    }
+}
+
+// ── gemm_q3_k_v4_predec ──────────────────────────────────────────────────────
+// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3). This
+// is the fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
+// otherwise runs the generic dequant path (~19 dec_tps vs ~32 on the Q4_K fast
+// stack). Same 256-thread / 8-row-per-TG geometry and identical math as
+// gemm_q3_k_fused_v2, but the 16 per-sub-block `d * scale[i]` f32 values are
+// read from a parallel pre-decoded buffer (matches `predecode_q3_k_scale_table`
+// in Rust) instead of unpacking the packed 6-bit scales + super-block `d` on
+// every call. Q3_K is symmetric (no min term), so the table is 16 f32/block
+// (vs Q4_K v4_predec's 8 ds/dm pairs = 16 f32/block).
+//
+// Pre-decoded scale layout (one f32 per 16-element sub-block, 16 sub-blocks):
+//   scales[block_idx * 16 + sub] = (f32)d * (f32)scale[sub]
+//
+// Numerically equivalent to gemm_q3_k_fused_v2 within fp16 tolerance (atol 1e-3;
+// measured ~1 ULP / ~1e-4). NOT bit-identical: predec loads a pre-rounded
+// `d*scale` from the table, whereas the fused kernel computes `d*scale*q` inline
+// and the Metal compiler may FMA-contract it without that intermediate f32 round.
+// The pre-decode is the optimization; the 1-ULP delta is inherent to it, not a bug.
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q3_k_v4_predec(
+    device const uchar* w_q3    [[buffer(0)]],   // (rows, cols) Q3_K, 110 B/block
+    device const float* scales  [[buffer(1)]],   // (rows * blocks_per_row * 16) f32
+    device const float* x       [[buffer(2)]],   // (cols,)
+    device       float* y       [[buffer(3)]],   // (rows,)
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row   = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 110ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 110ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem     = k * 32u + simd_lane;
+            uint half_idx = elem >> 7;        // 0..1: which 128-element half
+            uint local    = elem & 127u;
+            uint group16  = local >> 4u;      // 0..7: 16-element sub-block in half
+            uint j        = group16 >> 1u;    // 0..3
+            uint second   = group16 & 1u;
+            uint lane     = local & 15u;
+
+            uint q_idx     = half_idx * 32u + second * 16u + lane;
+            uint h_idx     = second * 16u + lane;
+            uint shift     = j * 2u;
+            uint high_mask = 1u << (half_idx * 4u + j);
+            int q = (int)(((uint)w_q3[bo + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                  - (((uint)w_q3[bo + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+
+            float dl = scales[so + (uint64_t)(half_idx * 8u + group16)];
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+            partial += dl * (float)q * xv;
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_simdmat ──────────────────────────────────────────────────────
 // Wedge K — improved Q4_K_M GEMV. Three improvements over gemm_q4_k_m_fused_v2:
 //
@@ -1616,6 +1773,95 @@ kernel void gemm_q4_k_m_batched_v3w(
     }
 }
 
+// Batched Q4_K GEMM with PRE-DECODED sub-block scales (v3w + v4_predec merge).
+// Identical to gemm_q4_k_m_batched_v3w except the per-element Q4_K header decode
+// (d/dmin half-floats + 6-bit s/m unpack) is replaced by a lookup into the
+// pre-decoded `scales` table (ds=d*s_byte, dm=dmin*m_byte per sub-block, 16
+// floats/block, same layout as gemm_q4_k_v4_predec). Weight NIBBLES are still
+// read from w_q4. This brings the single-path predec win (+~40%) to the batched
+// decode/verify path. Build `scales` once via predecode_q4_k_scale_table.
+kernel void gemm_q4_k_m_batched_v3w_predec(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* scales [[buffer(1)]],
+    device const float* x_batch[[buffer(2)]],
+    device       float* y_batch[[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    uint B = min(args.batch, 8u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial_lo = float4(0.0f);
+    float4 partial_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint x_off_base = blk * 256u;
+        for (uint b = 0; b < B; ++b) {
+            x_tile[b * 256u + tid] = x_batch[b * args.cols + x_off_base + tid];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off  + (uint64_t)blk * 144ul;
+            uint64_t so = row_scale_off + (uint64_t)blk * 16ul;
+            float ds[8], dm[8];
+            for (uint sub = 0; sub < 8u; ++sub) {
+                ds[sub] = scales[so + (uint64_t)(sub * 2u)];
+                dm[sub] = scales[so + (uint64_t)(sub * 2u + 1u)];
+            }
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem  = k * 32u + simd_lane;
+                uint sub   = elem >> 5;
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                float w_val = ds[sub] * (float)nib - dm[sub];
+                if (B >= 1u) partial_lo.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial_lo.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial_lo.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial_lo.w += w_val * x_tile[3u * 256u + elem];
+                if (B >= 5u) partial_hi.x += w_val * x_tile[4u * 256u + elem];
+                if (B >= 6u) partial_hi.y += w_val * x_tile[5u * 256u + elem];
+                if (B >= 7u) partial_hi.z += w_val * x_tile[6u * 256u + elem];
+                if (B >= 8u) partial_hi.w += w_val * x_tile[7u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (!row_valid) return;
+
+    partial_lo.x = simd_sum(partial_lo.x);
+    if (B >= 2u) partial_lo.y = simd_sum(partial_lo.y);
+    if (B >= 3u) partial_lo.z = simd_sum(partial_lo.z);
+    if (B >= 4u) partial_lo.w = simd_sum(partial_lo.w);
+    if (B >= 5u) partial_hi.x = simd_sum(partial_hi.x);
+    if (B >= 6u) partial_hi.y = simd_sum(partial_hi.y);
+    if (B >= 7u) partial_hi.z = simd_sum(partial_hi.z);
+    if (B >= 8u) partial_hi.w = simd_sum(partial_hi.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + base_row] = partial_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + base_row] = partial_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + base_row] = partial_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + base_row] = partial_hi.w;
+    }
+}
+
 // P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
 // moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
 // Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one
@@ -1752,4 +1998,363 @@ kernel void gemm_q4_k_v4_predec(
 
     partial = simd_sum(partial);
     if (simd_lane == 0u) y[base_row] = partial;
+}
+
+// ── gemm_q4_k_v4_predec_pair ─────────────────────────────────────────────────
+// Fused gate+up decode GEMV (path-to-50, 2026-05-30). Same v4_predec math and
+// geometry, but ONE dispatch computes TWO outputs (gate, up) that share the
+// same input activation `x`. The FFN gate and up projections are independent
+// GEMVs reading the identical post-norm activation; fusing them halves the FFN
+// projection dispatch count (2/layer -> 1/layer = -36 dispatches/token) and
+// loads `x` once per simdgroup. Weights/scales for gate and up are read from
+// their own buffers/offsets, so per-row arithmetic is bit-identical to two
+// separate gemm_q4_k_v4_predec calls.
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial_g = 0.0f;
+    float partial_u = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        float dsg[8], dmg[8], dsu[8], dmu[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            dsg[sub] = g_scales[so + (uint64_t)(sub * 2u)];
+            dmg[sub] = g_scales[so + (uint64_t)(sub * 2u + 1u)];
+            dsu[sub] = u_scales[so + (uint64_t)(sub * 2u)];
+            dmu[sub] = u_scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        // x is shared between gate and up -- load it once.
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qbg = wg_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_g += (dsg[k0] * (float)(qbg & 0x0Fu) - dmg[k0]) * xl[k0];
+            partial_g += (dsg[k1] * (float)(qbg >> 4u)   - dmg[k1]) * xl[k1];
+            uchar qbu = wu_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_u += (dsu[k0] * (float)(qbu & 0x0Fu) - dmu[k0]) * xl[k0];
+            partial_u += (dsu[k1] * (float)(qbu >> 4u)   - dmu[k1]) * xl[k1];
+        }
+    }
+
+    partial_g = simd_sum(partial_g);
+    partial_u = simd_sum(partial_u);
+    if (simd_lane == 0u) {
+        yg[base_row] = partial_g;
+        yu[base_row] = partial_u;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_pair_f16s ────────────────────────────────────────────
+// f16-scales variant of _pair (A6.5, 2026-05-31). Identical fused gate+up math
+// + geometry + FMA order, but BOTH the gate (`g_scales`) and up (`u_scales`)
+// pre-decoded sub-block scale tables are read as `half` (2 B) instead of f32
+// (4 B), then widened to float in register. The _pair kernel is 46.6% of decode
+// and bandwidth-bound (A4/A5/A6); the f16 scales cut the scale-table traffic
+// 192→160 B/block (−17%) on BOTH weight reads in the fused dispatch — the half
+// of decode A3's non-pair f16s could not touch. NOT bit-identical (f16 scale
+// rounding ~5e-4 relative) — gate at rel-L2 < 1e-2. Opt-in via
+// DISMANTLE_QWEN_PREDEC_F16SCALES=1. Tables built by
+// kernels::predecode_q4_k_scale_table_f16 (16 halfs/block, same element layout).
+// Grid/threadgroup identical to _pair: (ceil(rows/8)*256,1,1) / (256,1,1).
+kernel void gemm_q4_k_v4_predec_pair_f16s(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const half*  g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const half*  u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial_g = 0.0f;
+    float partial_u = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        float dsg[8], dmg[8], dsu[8], dmu[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            dsg[sub] = (float)g_scales[so + (uint64_t)(sub * 2u)];
+            dmg[sub] = (float)g_scales[so + (uint64_t)(sub * 2u + 1u)];
+            dsu[sub] = (float)u_scales[so + (uint64_t)(sub * 2u)];
+            dmu[sub] = (float)u_scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        // x is shared between gate and up -- load it once.
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qbg = wg_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_g += (dsg[k0] * (float)(qbg & 0x0Fu) - dmg[k0]) * xl[k0];
+            partial_g += (dsg[k1] * (float)(qbg >> 4u)   - dmg[k1]) * xl[k1];
+            uchar qbu = wu_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_u += (dsu[k0] * (float)(qbu & 0x0Fu) - dmu[k0]) * xl[k0];
+            partial_u += (dsu[k1] * (float)(qbu >> 4u)   - dmu[k1]) * xl[k1];
+        }
+    }
+
+    partial_g = simd_sum(partial_g);
+    partial_u = simd_sum(partial_u);
+    if (simd_lane == 0u) {
+        yg[base_row] = partial_g;
+        yu[base_row] = partial_u;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_2r ───────────────────────────────────────────────────
+// 2-rows-per-simdgroup predec GEMV (path-to-50, 2026-05-30). Identical math to
+// gemm_q4_k_v4_predec, but each simdgroup computes TWO output rows of the SAME
+// matrix with two independent accumulator chains, sharing the single `x` load.
+// The two chains give the compiler 2 in-flight weight-load streams per thread,
+// hiding DRAM latency the same way the gate+up pair kernel did — but for any
+// single GEMV (q/o/ffn_down). 16 rows/TG (8 simdgroups x 2 rows).
+//
+// Grid: (ceil(rows/16)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_2r(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    // When row1 is past the end, alias it to row0 so the inner loop reads valid
+    // memory (no OOB); its result p1 is simply never written. Avoids a per-block
+    // branch on the hot path. For all production shapes rows%16==0 so has1 holds.
+    uint r1 = has1 ? row1 : row0;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds0[s] = scales[so0 + (uint64_t)(s * 2u)];
+            dm0[s] = scales[so0 + (uint64_t)(s * 2u + 1u)];
+            ds1[s] = scales[so1 + (uint64_t)(s * 2u)];
+            dm1[s] = scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+
+        // x shared across both rows — load once.
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds0[k0] * (float)(q0 & 0x0Fu) - dm0[k0]) * xl[k0];
+            p0 += (ds0[k1] * (float)(q0 >> 4u)   - dm0[k1]) * xl[k1];
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (ds1[k0] * (float)(q1 & 0x0Fu) - dm1[k0]) * xl[k0];
+            p1 += (ds1[k1] * (float)(q1 >> 4u)   - dm1[k1]) * xl[k1];
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) y[row1] = p1;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_2r_f16s ──────────────────────────────────────────────
+// f16-scales variant of _2r (Stage 2, 2026-05-30). Identical math + 2-row ILP,
+// but the pre-decoded sub-block scales are read as `half` (2 B) instead of f32
+// (4 B), cutting predec bytes/block 192→160 (−17%) on the bandwidth-bound Q4_K
+// GEMV (the profiling-confirmed 76%-of-time wall). Scales widen to float in
+// register. NOT bit-identical (f16 scale rounding) — gate at atol 1e-3 fp16.
+// Opt-in via DISMANTLE_QWEN_PREDEC_F16SCALES=1. Scale table built by
+// kernels::predecode_q4_k_scale_table_f16 (16 halfs/block, same element layout).
+// Grid/threadgroup identical to _2r: (ceil(rows/16)*256,1,1) / (256,1,1).
+kernel void gemm_q4_k_v4_predec_2r_f16s(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const half*  scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds0[s] = (float)scales[so0 + (uint64_t)(s * 2u)];
+            dm0[s] = (float)scales[so0 + (uint64_t)(s * 2u + 1u)];
+            ds1[s] = (float)scales[so1 + (uint64_t)(s * 2u)];
+            dm1[s] = (float)scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds0[k0] * (float)(q0 & 0x0Fu) - dm0[k0]) * xl[k0];
+            p0 += (ds0[k1] * (float)(q0 >> 4u)   - dm0[k1]) * xl[k1];
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (ds1[k0] * (float)(q1 & 0x0Fu) - dm1[k0]) * xl[k0];
+            p1 += (ds1[k1] * (float)(q1 >> 4u)   - dm1[k1]) * xl[k1];
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) y[row1] = p1;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_4r ───────────────────────────────────────────────────
+// 4-rows-per-simdgroup predec GEMV (Stage 2, 2026-05-30). Direct extension of
+// _2r: each simdgroup computes FOUR output rows of the same matrix with four
+// independent accumulator chains sharing one `x` load — 4 in-flight weight-load
+// streams per thread to hide DRAM latency further on decode (M=1). Identical
+// per-row math => bit-identical. 32 rows/TG (8 simdgroups x 4 rows). Opt-in via
+// DISMANTLE_QWEN_PREDEC_4R=1; bench decides vs _2r (register pressure may bite).
+//
+// Grid: (ceil(rows/32)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_4r(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 32u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u, row2 = row0 + 16u, row3 = row0 + 24u;
+    bool has1 = row1 < rows, has2 = row2 < rows, has3 = row3 < rows;
+    // Alias missing rows to row0 so inner reads stay in-bounds; results unwritten.
+    uint r1 = has1 ? row1 : row0;
+    uint r2 = has2 ? row2 : row0;
+    uint r3 = has3 ? row3 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb2 = (uint64_t)r2 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs2 = (uint64_t)r2 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb3 = (uint64_t)r3 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs3 = (uint64_t)r3 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f, p1 = 0.0f, p2 = 0.0f, p3 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+        uint64_t bo2 = rb2 + (uint64_t)b * 144ul, so2 = rs2 + (uint64_t)b * 16ul;
+        uint64_t bo3 = rb3 + (uint64_t)b * 144ul, so3 = rs3 + (uint64_t)b * 16ul;
+
+        // x shared across all four rows — load once.
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (scales[so0 + (uint64_t)(k0 * 2u)] * (float)(q0 & 0x0Fu) - scales[so0 + (uint64_t)(k0 * 2u + 1u)]) * x0;
+            p0 += (scales[so0 + (uint64_t)(k1 * 2u)] * (float)(q0 >> 4u)   - scales[so0 + (uint64_t)(k1 * 2u + 1u)]) * x1;
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (scales[so1 + (uint64_t)(k0 * 2u)] * (float)(q1 & 0x0Fu) - scales[so1 + (uint64_t)(k0 * 2u + 1u)]) * x0;
+            p1 += (scales[so1 + (uint64_t)(k1 * 2u)] * (float)(q1 >> 4u)   - scales[so1 + (uint64_t)(k1 * 2u + 1u)]) * x1;
+            uchar q2 = w_q4[bo2 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p2 += (scales[so2 + (uint64_t)(k0 * 2u)] * (float)(q2 & 0x0Fu) - scales[so2 + (uint64_t)(k0 * 2u + 1u)]) * x0;
+            p2 += (scales[so2 + (uint64_t)(k1 * 2u)] * (float)(q2 >> 4u)   - scales[so2 + (uint64_t)(k1 * 2u + 1u)]) * x1;
+            uchar q3 = w_q4[bo3 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p3 += (scales[so3 + (uint64_t)(k0 * 2u)] * (float)(q3 & 0x0Fu) - scales[so3 + (uint64_t)(k0 * 2u + 1u)]) * x0;
+            p3 += (scales[so3 + (uint64_t)(k1 * 2u)] * (float)(q3 >> 4u)   - scales[so3 + (uint64_t)(k1 * 2u + 1u)]) * x1;
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) { p1 = simd_sum(p1); if (simd_lane == 0u) y[row1] = p1; }
+    if (has2) { p2 = simd_sum(p2); if (simd_lane == 0u) y[row2] = p2; }
+    if (has3) { p3 = simd_sum(p3); if (simd_lane == 0u) y[row3] = p3; }
 }
