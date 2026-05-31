@@ -2464,6 +2464,8 @@ impl QwenDense {
         }
         let kv_off = self.kv.seq_len * stride;
         let mha_seq_len = self.kv.seq_len + 1;
+        // For the L1.1 attention-mass oracle accumulator sizing (default-off).
+        let n_layers_total = cfg.n_layers;
 
         for li in 0..cfg.n_layers {
             let mut x_norm = vec![0.0f32; h];
@@ -2542,6 +2544,25 @@ impl QwenDense {
                 mha_seq_len,
                 &mut attn_out,
             )?;
+
+            // L1.1 ORACLE (default-off, `DISMANTLE_QWEN_ATTN_CAPTURE=1`):
+            // observe the post-softmax attention this query placed over the
+            // cached positions, for the attention-mass concentration verdict.
+            // Recomputes the same softmax `mha_decode_step` discards — pure
+            // side-observer, no production-path effect. See
+            // `crate::stateful::attn_capture`.
+            if crate::stateful::attn_capture::enabled() {
+                let per_head = crate::attn::mha_decode_step_weights(
+                    &q_full,
+                    keys,
+                    n_heads,
+                    n_kv_heads,
+                    head_dim,
+                    mha_seq_len,
+                );
+                let refs: Vec<&[f32]> = per_head.iter().map(|v| v.as_slice()).collect();
+                crate::stateful::attn_capture::record_layer(li, n_layers_total, &refs);
+            }
 
             // O projection.
             let mut o = vec![0.0f32; h];

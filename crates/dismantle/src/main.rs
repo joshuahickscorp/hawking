@@ -1126,6 +1126,10 @@ fn generate_main(
         };
         engine.generate(req, &mut sink)?;
     }
+    // L1.1 attention-mass oracle (default-off): dump the per-layer
+    // concentration curve accumulated during prefill. No-op unless
+    // DISMANTLE_QWEN_ATTN_CAPTURE=1.
+    dismantle_core::stateful::attn_capture::flush();
     Ok(())
 }
 
