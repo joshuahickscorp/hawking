@@ -204,4 +204,21 @@ Deferred/attended (not auto-pullable): §7.6 distillation (different model), §8
 - **Lane 2 (Q3 2r kernel): HALT** — byte-cut not speed-viable (see P4 update). `c1f5275` on main (its worktree isolation FELL BACK — see lesson).
 - **Lane 1+3 (prefix-cache cap/default-on) + benches:** in flight.
 - **LESSON — worktree race:** launching TWO `isolation:worktree` agents off the SAME branch simultaneously is racy — git can't put two worktrees on one branch, so one (Lane 2) fell back to the MAIN tree and committed to `codex/maximal-spec-colab` directly. **Launch worktree agents one at a time** (or off distinct bases). The cron's "one source-agent at a time" rule already avoids this.
+
+---
+
+## Handoff #1 — branch review findings (2026-05-31) + revised plan
+
+A parallel read-only session reviewed the haul commits (`plans/handoff_branch_review_2026_05_31.md`). **Load-bearing guarantees HOLD** (f16s flag-off-unchanged; prefix-cache bit-identical reuse, verified line-by-line). **Verdict: f16s NO-GO for default-on; prefix-cache GO-WITH-FIXES.**
+
+- **[HIGH] Disk-tier prefill cache persists STALE KV on the TCB path.** `qwen_dense.rs:1519` `cache.store(key, &self.kv)` runs with NO `mirror_arena_kv_into_self` and BEFORE the RAM mirror (:1535). On TCB, prefill K/V live only in the GPU arena → the disk entry stores stale/zeroed KV → **silent corruption on a later-process disk hit** (reachable: `DISMANTLE_PREFIX_CACHE_DIR` + TCB). Pre-existing (not B1).
+- **[HIGH, blocks default-on] RAM cache UNBOUNDED.** `PrefixCacheBudget::default` = None/None → no eviction → OOM risk. `evict_to` is correct, just unarmed. (= exactly the Lane B re-do's job.)
+- **[MED] f16s routes the LM HEAD → argmax-sensitive.** Kernels sound (flag-off byte-identical; FMA order == f32 pair; production `narrow` == parity-test `predecode_q4_k_scale_table_f16`; ragged guards OK). But not bit-identical (rel-L2 2.5e-4), and f16 rounding on the LM-head logits can flip a near-tie argmax — a 2-prompt drift check wouldn't catch it.
+- **[LOW]** RAM collision guard is length-only (rests on SHA-256; comment overstates). Add a `debug_assert_eq!` on (n_layers,n_kv_heads,head_dim,max_seq) vs arena in `mirror_arena_kv_into_self`.
+- **P2 CLEAN** (e0fdf80 was the lone struct/set_bytes mismatch; all other wrappers correct). **P3 security CLEAN** (RAM cache in-process; new `unsafe` bounds-correct).
+
+**Revised action items (queued; GPU/tree busy with Lane C):**
+1. **Lane B re-do** = cap the RAM cache (ship a non-None default budget) + LOW hardening (debug_assert, fix the collision comment) → RAM `DISMANTLE_QWEN_PREFIX_CACHE` **default-on** (review's GO, post-cap).
+2. **NEW [HIGH] fix:** hoist `mirror_arena_kv_into_self` above the `:1519` disk store (or gate the disk store off on TCB). Gate: a disk hit reproduces no-cache output bit-identical.
+3. **f16s default-on REFINEMENT:** keep the **LM head on the f32 predec path** (argmax-exact) and f16s ONLY the FFN pair (where the +6-9% lives) → broad drift sweep → re-eval default-on. Until then f16s stays opt-in.
 - **⚠ pre-existing (flag for morning):** `tests/v1_1_phase5A_batched_forward_parity.rs` fails to compile at HEAD (stale `SpeculateMode::NGram`, from old commit 822e779 — NOT from this haul). Isolated to that one test binary; lib + all haul tests compile fine.
