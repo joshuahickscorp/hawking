@@ -446,6 +446,7 @@ mod imp {
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
             "gemm_q4_k_v4_predec" => "gemm_q4_k_v4_predec",
             "gemm_q4_k_v4_predec_2r" => "gemm_q4_k_v4_predec_2r",
+            "gemm_q4_k_v4_predec_2r_f16s" => "gemm_q4_k_v4_predec_2r_f16s",
             "gemm_q4_k_v4_predec_4r" => "gemm_q4_k_v4_predec_4r",
             "gemm_q4_k_v4_predec_pair" => "gemm_q4_k_v4_predec_pair",
             "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",

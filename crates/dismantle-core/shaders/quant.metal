@@ -2055,6 +2055,75 @@ kernel void gemm_q4_k_v4_predec_2r(
     }
 }
 
+// ── gemm_q4_k_v4_predec_2r_f16s ──────────────────────────────────────────────
+// f16-scales variant of _2r (Stage 2, 2026-05-30). Identical math + 2-row ILP,
+// but the pre-decoded sub-block scales are read as `half` (2 B) instead of f32
+// (4 B), cutting predec bytes/block 192→160 (−17%) on the bandwidth-bound Q4_K
+// GEMV (the profiling-confirmed 76%-of-time wall). Scales widen to float in
+// register. NOT bit-identical (f16 scale rounding) — gate at atol 1e-3 fp16.
+// Opt-in via DISMANTLE_QWEN_PREDEC_F16SCALES=1. Scale table built by
+// kernels::predecode_q4_k_scale_table_f16 (16 halfs/block, same element layout).
+// Grid/threadgroup identical to _2r: (ceil(rows/16)*256,1,1) / (256,1,1).
+kernel void gemm_q4_k_v4_predec_2r_f16s(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const half*  scales  [[buffer(1)]],
+    device const float* x       [[buffer(2)]],
+    device       float* y       [[buffer(3)]],
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds0[s] = (float)scales[so0 + (uint64_t)(s * 2u)];
+            dm0[s] = (float)scales[so0 + (uint64_t)(s * 2u + 1u)];
+            ds1[s] = (float)scales[so1 + (uint64_t)(s * 2u)];
+            dm1[s] = (float)scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds0[k0] * (float)(q0 & 0x0Fu) - dm0[k0]) * xl[k0];
+            p0 += (ds0[k1] * (float)(q0 >> 4u)   - dm0[k1]) * xl[k1];
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (ds1[k0] * (float)(q1 & 0x0Fu) - dm1[k0]) * xl[k0];
+            p1 += (ds1[k1] * (float)(q1 >> 4u)   - dm1[k1]) * xl[k1];
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) y[row1] = p1;
+    }
+}
+
 // ── gemm_q4_k_v4_predec_4r ───────────────────────────────────────────────────
 // 4-rows-per-simdgroup predec GEMV (Stage 2, 2026-05-30). Direct extension of
 // _2r: each simdgroup computes FOUR output rows of the same matrix with four
