@@ -393,10 +393,11 @@ kernel void gemm_q3_k_fused_v2(
 // Pre-decoded scale layout (one f32 per 16-element sub-block, 16 sub-blocks):
 //   scales[block_idx * 16 + sub] = (f32)d * (f32)scale[sub]
 //
-// Bit-identical to gemm_q3_k_fused_v2: q3_k_value computes (d*scale)*q in f32,
-// and the host pre-decoder computes the same (d*scale) f32 product, so reading
-// `dl = scales[...]` then `dl*(float)q*xv` preserves the multiply grouping
-// exactly (IEEE-754 f32 multiply is deterministic).
+// Numerically equivalent to gemm_q3_k_fused_v2 within fp16 tolerance (atol 1e-3;
+// measured ~1 ULP / ~1e-4). NOT bit-identical: predec loads a pre-rounded
+// `d*scale` from the table, whereas the fused kernel computes `d*scale*q` inline
+// and the Metal compiler may FMA-contract it without that intermediate f32 round.
+// The pre-decode is the optimization; the 1-ULP delta is inherent to it, not a bug.
 //
 // Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
 kernel void gemm_q3_k_v4_predec(
