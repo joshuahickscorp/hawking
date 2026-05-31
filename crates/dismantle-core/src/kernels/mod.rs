@@ -1205,6 +1205,100 @@ mod metal_dispatch {
         )
     }
 
+    /// Q4_K decode GEMV with pre-decoded sub-block scales stored as **f16**
+    /// (Stage-2 bandwidth lever, `_2r_f16s`).
+    ///
+    /// Identical 2-row-ILP math + geometry to the default `_2r` predec kernel,
+    /// but the pre-decoded `(ds, dm)` pairs are read as `half` (2 B) instead of
+    /// f32 (4 B), cutting the predec scale table 192→160 B/block (−17%) on the
+    /// bandwidth-bound Q4_K GEMV (the profiling-confirmed ~76%-of-decode-time
+    /// wall). Scales widen to f32 in register.
+    ///
+    /// **NOT bit-identical** to the f32 predec path — the f16 scale rounding
+    /// perturbs each `(d*scale)` by ~half-mantissa (≈5e-4 relative), so this is
+    /// gated on a quality check (relative parity), not exact equality. Build the
+    /// table via [`predecode_q4_k_scale_table_f16`] (16 halfs/block); expected
+    /// `scales_buf` length is `rows * (cols / 256) * 16 * sizeof(f16)`.
+    ///
+    /// **Private API entry point** — not yet wired into the production forward
+    /// pass; production opt-in is `DISMANTLE_QWEN_PREDEC_F16SCALES=1`, gated on
+    /// the on-GPU relative-parity + paired bench (must clear the quality bar
+    /// before the bandwidth win is bankable).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_2r_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        // f16 scale table: 16 halfs/block, sizeof(f16) = 2 bytes.
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16; // 8 simdgroups × 2 rows (2r geometry)
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3).
     ///
     /// The fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
