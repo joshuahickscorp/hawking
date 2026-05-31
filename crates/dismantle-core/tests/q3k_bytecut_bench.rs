@@ -24,10 +24,27 @@
 //!      208 B/block.
 //!
 //! NOT a correctness gate (parity lives in q3k_predec_parity.rs /
-//! q4k_predec_parity.rs). This ignores numerical output and only measures
-//! dispatch wall time + the actual bytes/block read + achieved GB/s. GPU-gated.
-//! Marked #[ignore] so it never runs in the default suite — run explicitly with
-//! `--ignored --nocapture`.
+//! q4k_predec_parity.rs / q3k_fused_2r_parity.rs). This ignores numerical
+//! output and only measures dispatch wall time + the actual bytes/block read +
+//! achieved GB/s. GPU-gated. Marked #[ignore] so it never runs in the default
+//! suite — run explicitly with `--ignored --nocapture`.
+//!
+//! 2026-05-31 — added a 4th kernel, gemm_q3_k_fused_2r (the FUSED Q3_K given
+//! the 2-row-ILP / 2-accumulator / shared-`x` structure of
+//! gemm_q4_k_v4_predec_2r), to test whether the byte-cut-TRUE (fewest-byte)
+//! Q3_K becomes speed-viable. FINDING: it does NOT. Across the three shapes the
+//! fused/fused_2r Q3_K run at only 7–21 GB/s while Q4_predec runs at 18–50 GB/s
+//! on a ~150 GB/s machine — the Q3_K GEMV is NOT bandwidth-bound, it is
+//! compute-bound on the inline 6-bit scale decode (q3_k_scale: branchy
+//! low-nibble select + high-2-bit shift/mask + (-32), per element). 2-row ILP
+//! attacks DRAM load latency, which is the WRONG bottleneck; it helps only the
+//! 2048x2048 shape (+~8%) and REGRESSES the wide ffn shapes (−5% to −30%, from
+//! register pressure of the doubled accumulator state). fused_2r stays −32% to
+//! −55% slower than Q4_predec. The only competitive Q3_K kernel is predec
+//! (which hoists the decode out), but predec ADDS 64 B/block of scales —
+//! anti-byte-cut. Conclusion: the Q3_K byte-cut is NOT speed-viable via a
+//! row-ILP fused kernel; it would need a cheaper-decode Q3_K layout (out of
+//! scope here).
 
 #![cfg(target_os = "macos")]
 
@@ -154,6 +171,12 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
             .expect("q3_k fused encode");
     });
 
+    // 1b. Q3_K fused 2r: 110 B weights, no scale table, 2-row ILP (16 rows/TG).
+    let us_q3_fused_2r = time_dispatch("Q3_K fused 2r", |tcb| {
+        kernels::gemv_q3_k_fused_2r_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf)
+            .expect("q3_k fused 2r encode");
+    });
+
     // 2. Q3_K predec: 110 B weights + 16 f32 scales.
     let us_q3_predec = time_dispatch("Q3_K predec", |tcb| {
         kernels::gemv_q3_k_v4_predec_pinned_tcb(
@@ -177,7 +200,7 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     let y_bytes = (rows * 4) as f64;
     let scale_f32_per_block = 16 * 4; // 16 f32 pre-decoded scales = 64 B
 
-    let bpb_q3_fused = 110.0; // weights only
+    let bpb_q3_fused = 110.0; // weights only (fused + fused_2r read identical bytes)
     let bpb_q3_predec = 110.0 + scale_f32_per_block as f64; // 174 B
     let bpb_q4_predec = 144.0 + scale_f32_per_block as f64; // 208 B
 
@@ -186,40 +209,53 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     let bytes_q4_predec = blocks as f64 * bpb_q4_predec + x_bytes + y_bytes;
 
     eprintln!(
-        "  bytes/block (weights+scales): Q3 fused={:.0}  Q3 predec={:.0}  Q4 predec={:.0}",
-        bpb_q3_fused, bpb_q3_predec, bpb_q4_predec
+        "  bytes/block (weights+scales): Q3 fused={:.0}  Q3 fused_2r={:.0}  Q3 predec={:.0}  Q4 predec={:.0}",
+        bpb_q3_fused, bpb_q3_fused, bpb_q3_predec, bpb_q4_predec
     );
     eprintln!(
-        "  total KiB/call:               Q3 fused={:.0}  Q3 predec={:.0}  Q4 predec={:.0}",
+        "  total KiB/call:               Q3 fused={:.0}  Q3 fused_2r={:.0}  Q3 predec={:.0}  Q4 predec={:.0}",
+        bytes_q3_fused / 1024.0,
         bytes_q3_fused / 1024.0,
         bytes_q3_predec / 1024.0,
         bytes_q4_predec / 1024.0
     );
     eprintln!(
-        "  GB/s:                         Q3 fused={:.1}  Q3 predec={:.1}  Q4 predec={:.1}",
+        "  GB/s:                         Q3 fused={:.1}  Q3 fused_2r={:.1}  Q3 predec={:.1}  Q4 predec={:.1}",
         gbps(bytes_q3_fused, us_q3_fused),
+        gbps(bytes_q3_fused, us_q3_fused_2r),
         gbps(bytes_q3_predec, us_q3_predec),
         gbps(bytes_q4_predec, us_q4_predec)
     );
 
-    // Verdict (a): which Q3_K kernel is faster.
-    let (q3_winner, q3_us) = if us_q3_fused <= us_q3_predec {
-        ("fused", us_q3_fused)
-    } else {
-        ("predec", us_q3_predec)
-    };
-    let q3_intra = (us_q3_predec - us_q3_fused) / us_q3_fused * 100.0; // + => fused faster
+    // Verdict (a): fastest Q3_K kernel of the three.
+    let mut q3_winner = "fused";
+    let mut q3_us = us_q3_fused;
+    if us_q3_fused_2r < q3_us {
+        q3_winner = "fused_2r";
+        q3_us = us_q3_fused_2r;
+    }
+    if us_q3_predec < q3_us {
+        q3_winner = "predec";
+        q3_us = us_q3_predec;
+    }
+    // Intra-Q3: how much faster is fused_2r than the old fused_v2.
+    let r2_vs_fused = (us_q3_fused - us_q3_fused_2r) / us_q3_fused * 100.0; // + => 2r faster
     // Verdict (b): does the fastest Q3_K beat Q4_K predec (the byte-cut premise)?
     let bytecut = (us_q4_predec - q3_us) / us_q4_predec * 100.0; // + => Q3 faster (byte-cut holds)
+    // Verdict (c): does fused_2r alone beat Q4_predec (the byte-cut-TRUE kernel)?
+    let r2_vs_q4 = (us_q4_predec - us_q3_fused_2r) / us_q4_predec * 100.0; // + => Q3 fused_2r faster
 
     eprintln!(
-        "  >>> {tag}: Q3_fused={us_q3_fused:.3}  Q3_predec={us_q3_predec:.3}  Q4_predec={us_q4_predec:.3} µs"
+        "  >>> {tag}: Q3_fused={us_q3_fused:.3}  Q3_fused_2r={us_q3_fused_2r:.3}  Q3_predec={us_q3_predec:.3}  Q4_predec={us_q4_predec:.3} µs"
     );
     eprintln!(
-        "  >>> (a) faster Q3_K = {q3_winner} (predec is {q3_intra:+.2}% vs fused; + => fused wins)"
+        "  >>> (a) fastest Q3_K = {q3_winner} ({q3_us:.3} µs); fused_2r is {r2_vs_fused:+.2}% vs fused_v2 (+ => 2r faster)"
     );
     eprintln!(
         "  >>> (b) byte-cut: fastest Q3_K ({q3_winner}) vs Q4_predec = {bytecut:+.2}% (+ => Q3 faster = byte-cut speed holds)"
+    );
+    eprintln!(
+        "  >>> (c) byte-cut-TRUE kernel: Q3 fused_2r vs Q4_predec = {r2_vs_q4:+.2}% (+ => fewest-byte Q3 wins on speed)"
     );
 }
 
