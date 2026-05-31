@@ -163,6 +163,18 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 A10 access-order weight-layout repack (Q4_K predec GEMV)
+
+**Status:** killed 2026-05-31 — **Type-1**, built + measured + reverted (tree clean at HEAD).
+**Type-1 or Type-2:** Type-1 (Apple-GPU memory-model fact).
+**Evidence:** Built `repack_q4_k_pair_access_order` (permute the 128-B qs plane so each thread's 4 nibble bytes are contiguous at `16+lane*4+pi` instead of stride-32 `16+pi*32+lane`) + matching `gemm_q4_k_v4_predec_pair_ao` + parity/bench (`q4k_ao_repack_bench.rs`). On the dominant 11008×2048 FFN gate+up shape: the **bit-identical** scalar-load variant runs **−16.8%** (49.7 vs 58.0 GB/s) — per-thread contiguity de-coalesces the simdgroup (32 lanes per `pi` now span the whole plane instead of 32 contiguous bytes = 1 transaction). The stride-32 original is *already* the optimally-coalesced layout (confirms A5).
+**Reframe considered:** vectorized `uint` 4-byte load on the repacked layout (the only formulation that uses the contiguity). Dies twice: (a) NOT bit-identical — ~1 ULP FMA-recontraction drift (−71.67029 vs −71.67032) → fails the A10 hard gate; (b) no BW gain (48 GB/s < 58-64 GB/s baseline; 5-run sweep {−32,+16,+28,−23,+19}% = pure Claude.app GPU contamination, no signal). No formulation gets a wider per-thread transaction while keeping BOTH bit-identity AND simdgroup coalescing.
+**Killing memory:** [[a4-per-kernel-decode-profile]], A5/A6 (BW-bound, loads already coalesced).
+**Design note:** `reports/a10_layout_repack_design.md`.
+**Resurrection check:** do NOT re-test (Type-1). The live BW levers are scale-byte volume (A6.5 f16-scales, shipped) and lower weight precision (A8 Q3_K, footprint-only until a Q3_K predec/2r rewrite) — separate non-bit-identical levers, each needs its own quality oracle, NOT a resurrection of this kill.
+
+---
+
 ## 🪦 Q8-KV layer-differential precision
 
 **Status:** killed 2026-05-21 by uniform routing
