@@ -18,6 +18,14 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Cross-layer weight delta-encoding (Bible §8.1 L1.3)
+
+**Status:** killed 2026-05-30 by offline weight analysis (before any kernel)
+**Evidence:** `reports/oracle_interlayer_delta.md` + `tools/bench/oracle_interlayer_delta.py`. Across all 7 tensor types at layer pairs 0→1 / 17→18 / 34→35 of Qwen2.5-3B: cosine(W[L],W[L+1]) ≈ 0 (mean +0.0003, |max| 0.007 — layers essentially orthogonal); delta std / orig std = **1.61** (up to 2.9 on FFN) so the delta is ANTI-compressible (quantizing D at equal error costs MORE bits, not fewer); delta top-64 SVD energy = 0.23 (full-rank); optimal affine W[L+1]≈α·W[L]+D gives **α*≈0** (a learned gain buys nothing). 0/7 tensor types beat native Q4_K bits. Textbook well-trained transformer (each layer a distinct transform). Peak RSS 1.59 GB.
+**Resurrection check:** only on a model with deliberately tied/correlated layers, or one TRAINED for cross-layer structure (Bible §8.1 L5.1 "heal the model into the engine"). Post-hoc extraction on stock Qwen is dead.
+
+---
+
 ## 🪦 Eagle5 v1 (routing-mask predictor)
 
 **Status:** killed 2026-05-21 by corpus analysis
@@ -43,6 +51,7 @@ Ordered alphabetically by lever name.
 **Evidence:** `reports/ffn_sparsity_track_b_gate.md` + `reports/ffn_sparsity_gate.json`. 800 real decode tokens × 36 layers (`_capture/q3b_ffn.bin`). Oracle (best-case) skippable 256-blocks at 99% FFN-output recall = **0.2%** (0.1% bytes/token); even at quality-destroying 90% recall = 4.2%. Handoff projected ~65%. Root cause is NOT lack of sparsity: participation ratio (L2/max)² = **5.6 active channels/256-block (~2.2%)** — q3b IS neuron-sparse like ReLU Deja-Vu models — but the ~5 active neurons/block are **scattered**, so every 256-block has a few and none is droppable. Granularity mismatch: sparsity is neuron-fine, byte-skipping needs block-contiguous.
 **Killing memory:** [[ffn_block_sparsity_dead_2026_05_30]]
 **Resurrection check:** Only at FINER granularity, and only as attended R&D: (1) neuron-granularity re-capture → test PowerInfer static hot/cold split (current capture stored per-block reductions only, can't measure per-neuron frequency); (2) offline co-activation permutation to cluster co-firing neurons into contiguous blocks (risk: co-activation is input-dependent → low yield); (3) sparse Q4_K layout for neuron gather/scatter (Q4_K 256-super-block makes single-column gather non-aligned/random-access — historically not BW-favorable on Apple Silicon). Block-256 predictor itself stays dead. Capture tooling (`--capture-ffn`, `pack_ffn.py`, `measure_ffn_sparsity.py`) is kept for any of these.
+**Update 2026-05-30 (L2.2 oracle, `reports/oracle_coactivation_permute.md` + `tools/bench/oracle_coactivation_permute.py`):** paths (1) and (2) are now TESTED and DEAD. Per-neuron activations were reconstructed from the GGUF gate/up weights (bit-exact, rel-L2 1.7e-7 vs the captured block reductions): 99% FFN-output energy needs **39–53% of all 11008 neurons/token with 0 permanently cold** (no static hot/cold split → path 1 dead), and best-case offline **co-activation permutation** lifts skippable blocks @99% recall to only **1.5%/0.8%/0.3%** at block {32/64/128} (vs ~30% bar) because the top-200 hot neurons reshuffle every token (~22–25% Jaccard) so no STATIC permutation can pack them (→ path 2 dead). Only resurrection path left is **trained-for** sparsity (Bible §8.1 L5.1), not post-hoc extraction.
 
 ---
 
@@ -62,6 +71,22 @@ Ordered alphabetically by lever name.
 **Killing memory:** [[v230-icb-dead]]
 **Resurrection check:** if dispatch count per token grows substantially (e.g. via per-expert serial dispatch or new fused-kernel restructuring), re-measure CPU encode budget. If it crosses 1 ms / token, the lever becomes plausible again.
 **Pre-flight gate:** always run `DISMANTLE_TCB_TRACE=cpu` and check p50 weighted per-kernel encode sum vs Off-mode wall before proposing an ICB / megakernel / pipeline-replay lever.
+
+---
+
+## 🪦 Low-rank + compressible residual codec (Bible §8.1 L1.4)
+
+**Status:** killed 2026-05-30 by offline byte-budget oracle (before any kernel)
+**Evidence:** `reports/oracle_lowrank_codebook.md` + `tools/bench/oracle_lowrank_codebook.py`. Qwen2.5-3B weights are not low-rank: top-64 SVD captures only **3–9%** (FFN) to **~26%** (attn) of Frobenius energy; residual std stays **~90–99%** of the original (median 0.95). Since SVD removes no structure, residual@2–3b ≈ raw-quant@2–3b, so the f16 U,V are **pure dead overhead → strictly worse than plain low-bit quant**. (The raw byte ratio looked like a win only because it stored the residual at <4.5b — illusory.) Build at most one byte-cut codec; this isn't it.
+**Resurrection check:** only on a model trained to be low-rank (L5.1). The surviving byte-cut codec is **QTIP** (lookup-free bitshift trellis) — a real byte cut AND gather-free; advance it to the GPU/quality lane.
+
+---
+
+## 🪦 Learned per-model codebook (Bible §8.1 L1.5)
+
+**Status:** killed 2026-05-30 at the Apple-GPU feasibility gate (before quality eval)
+**Evidence:** `reports/oracle_lowrank_codebook.md`. A raw k-means codebook is an index→value table = per-element **RANDOM LUT gather** — exactly the IQ-quant pattern Apple GPUs punish (no hardware gather), even with a 16/256-entry threadgroup-resident table; k=256 is 8-bit (no compression). A 1-D learned grid's MSE is worse per-bit than fixed grids (1.87× Q4_0, 32.8× Q8_0) because it lacks per-block scales. The binding constraint is **decode feasibility, not quality** — killed before any KL/PPL eval, per the Bible's "kill it at the feasibility gate" rule.
+**Resurrection check:** only a LOOKUP-FREE learned code (QTIP's bitshift trellis — codes are computed, not gathered). A gather-based codebook stays dead on Apple Silicon.
 
 ---
 
