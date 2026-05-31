@@ -70,6 +70,46 @@ pub fn mha_decode_step(
     Ok(())
 }
 
+/// Recompute the per-head post-softmax attention distributions for one
+/// decode/prefill query, matching [`mha_decode_step`]'s arithmetic exactly.
+///
+/// **Oracle-only.** This is *not* on any production path — it is called by
+/// the L1.1 attention-mass capture instrument
+/// ([`crate::stateful::attn_capture`]) only when
+/// `DISMANTLE_QWEN_ATTN_CAPTURE=1`, to observe the same softmax weights
+/// `mha_decode_step` materializes internally and discards. Returns a
+/// `Vec` of `n_heads` distributions, each length `seq_len`, in
+/// retained-position order (index 0 == oldest cached position).
+pub fn mha_decode_step_weights(
+    q: &[f32],
+    k_cache: &[f32],
+    n_heads: usize,
+    n_kv_heads: usize,
+    head_dim: usize,
+    seq_len: usize,
+) -> Vec<Vec<f32>> {
+    let group_size = n_heads / n_kv_heads;
+    let scale = 1.0 / (head_dim as f32).sqrt();
+    let mut out = Vec::with_capacity(n_heads);
+    for h in 0..n_heads {
+        let kv_h = h / group_size;
+        let q_head = &q[h * head_dim..(h + 1) * head_dim];
+        let mut scores = vec![0.0f32; seq_len];
+        for t in 0..seq_len {
+            let off = t * (n_kv_heads * head_dim) + kv_h * head_dim;
+            let k = &k_cache[off..off + head_dim];
+            let mut s = 0.0f32;
+            for i in 0..head_dim {
+                s += q_head[i] * k[i];
+            }
+            scores[t] = s * scale;
+        }
+        softmax_inplace(&mut scores);
+        out.push(scores);
+    }
+    out
+}
+
 /// Gemma-2 variant of [`mha_decode_step`] with a configurable attention
 /// `scale` and optional attention-logit soft-capping.
 ///
@@ -295,6 +335,52 @@ mod tests {
                 let o = out[h * head_dim + d];
                 assert!(o >= lo - 1e-4 && o <= hi + 1e-4, "out {o} not in [{lo},{hi}]");
             }
+        }
+    }
+
+    /// The L1.1 oracle's `mha_decode_step_weights` must reproduce exactly
+    /// the post-softmax weights `mha_decode_step` uses internally: applying
+    /// them to V by hand must reconstruct `mha_decode_step`'s output
+    /// bit-for-bit. (Same scale, same softmax, same arithmetic order.)
+    #[test]
+    fn weights_reconstruct_mha_output() {
+        let (n_heads, n_kv_heads, head_dim, seq_len) = (4, 2, 8, 7);
+        let q = rng_vec(n_heads * head_dim, 11);
+        let k = rng_vec(seq_len * n_kv_heads * head_dim, 12);
+        let v = rng_vec(seq_len * n_kv_heads * head_dim, 13);
+
+        let mut out_ref = vec![0.0f32; n_heads * head_dim];
+        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
+
+        let w = mha_decode_step_weights(&q, &k, n_heads, n_kv_heads, head_dim, seq_len);
+        assert_eq!(w.len(), n_heads);
+        let group_size = n_heads / n_kv_heads;
+        let mut out_w = vec![0.0f32; n_heads * head_dim];
+        for h in 0..n_heads {
+            assert_eq!(w[h].len(), seq_len);
+            // weights are a probability distribution
+            let sum: f32 = w[h].iter().sum();
+            assert!((sum - 1.0).abs() < 1e-5, "head {h} weights sum {sum}");
+            let kv_h = h / group_size;
+            let out_head = &mut out_w[h * head_dim..(h + 1) * head_dim];
+            for t in 0..seq_len {
+                let off = t * (n_kv_heads * head_dim) + kv_h * head_dim;
+                let val = &v[off..off + head_dim];
+                let ww = w[h][t];
+                for i in 0..head_dim {
+                    out_head[i] += ww * val[i];
+                }
+            }
+        }
+        // Same arithmetic order as mha_decode_step's Phase 4 → bit-identical.
+        for i in 0..out_ref.len() {
+            assert_eq!(
+                out_ref[i].to_bits(),
+                out_w[i].to_bits(),
+                "i={i}: mha={} weights-applied={}",
+                out_ref[i],
+                out_w[i]
+            );
         }
     }
 }
