@@ -379,6 +379,75 @@ kernel void gemm_q3_k_fused_v2(
     }
 }
 
+// ── gemm_q3_k_v4_predec ──────────────────────────────────────────────────────
+// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3). This
+// is the fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
+// otherwise runs the generic dequant path (~19 dec_tps vs ~32 on the Q4_K fast
+// stack). Same 256-thread / 8-row-per-TG geometry and identical math as
+// gemm_q3_k_fused_v2, but the 16 per-sub-block `d * scale[i]` f32 values are
+// read from a parallel pre-decoded buffer (matches `predecode_q3_k_scale_table`
+// in Rust) instead of unpacking the packed 6-bit scales + super-block `d` on
+// every call. Q3_K is symmetric (no min term), so the table is 16 f32/block
+// (vs Q4_K v4_predec's 8 ds/dm pairs = 16 f32/block).
+//
+// Pre-decoded scale layout (one f32 per 16-element sub-block, 16 sub-blocks):
+//   scales[block_idx * 16 + sub] = (f32)d * (f32)scale[sub]
+//
+// Bit-identical to gemm_q3_k_fused_v2: q3_k_value computes (d*scale)*q in f32,
+// and the host pre-decoder computes the same (d*scale) f32 product, so reading
+// `dl = scales[...]` then `dl*(float)q*xv` preserves the multiply grouping
+// exactly (IEEE-754 f32 multiply is deterministic).
+//
+// Grid: (ceil(rows/8)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q3_k_v4_predec(
+    device const uchar* w_q3    [[buffer(0)]],   // (rows, cols) Q3_K, 110 B/block
+    device const float* scales  [[buffer(1)]],   // (rows * blocks_per_row * 16) f32
+    device const float* x       [[buffer(2)]],   // (cols,)
+    device       float* y       [[buffer(3)]],   // (rows,)
+    constant     uint&  rows    [[buffer(4)]],
+    constant     uint&  cols    [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row   = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 110ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 110ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem     = k * 32u + simd_lane;
+            uint half_idx = elem >> 7;        // 0..1: which 128-element half
+            uint local    = elem & 127u;
+            uint group16  = local >> 4u;      // 0..7: 16-element sub-block in half
+            uint j        = group16 >> 1u;    // 0..3
+            uint second   = group16 & 1u;
+            uint lane     = local & 15u;
+
+            uint q_idx     = half_idx * 32u + second * 16u + lane;
+            uint h_idx     = second * 16u + lane;
+            uint shift     = j * 2u;
+            uint high_mask = 1u << (half_idx * 4u + j);
+            int q = (int)(((uint)w_q3[bo + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                  - (((uint)w_q3[bo + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+
+            float dl = scales[so + (uint64_t)(half_idx * 8u + group16)];
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+            partial += dl * (float)q * xv;
+        }
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) y[base_row] = partial;
+}
+
 // ── gemm_q4_k_m_simdmat ──────────────────────────────────────────────────────
 // Wedge K — improved Q4_K_M GEMV. Three improvements over gemm_q4_k_m_fused_v2:
 //
