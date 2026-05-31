@@ -194,4 +194,14 @@ Grounded in the finding: **decode kernel-microopt is exhausted** (GEMV at the HW
 - **P5. §8 L3.1 online vocab/draft specialization.** Prune the output head to the vocab actually in use + tune the draft on accept/reject history — compounding user-specific, exact (certifiable vocab screen). Local runtime; needs accumulated usage. **[Lower — the moat++, data-dependent]**
 
 Deferred/attended (not auto-pullable): §7.6 distillation (different model), §8 L3.3 on-device LoRA (heavy training), the A10 layout (Type-1 dead), §7.5 host loop (recorded Type-1, revisit at 100+ tps).
+
+**P4 UPDATE (Lane 2 result):** the Q3 byte-cut SPEED reframe is **FALSIFIED**. Lane 2 built `gemm_q3_k_fused_2r` (committed `c1f5275`, recorded-dead/unwired) and measured: 2r helps only the square shape (+8%), regresses wide FFN (−5 to −30%), and stays −32 to −55% slower than Q4-predec. Root cause: **Q3_K GEMV is COMPUTE-bound on the inline 6-bit scale decode** (7-21 GB/s on a 150 GB/s machine), NOT bandwidth-bound — so row-ILP (hides DRAM latency) targets the wrong bottleneck. ⇒ P4 (sub-3-bit speed) is blocked by the SAME root cause. A real Q3/sub-3-bit speed win needs a **cheaper-decode layout** (not row-ILP / not predec which adds scale bytes) — research-y, out of scope. Byte-cut value stays **footprint-only (−11%)**.
+
+---
+
+## Parallel-lanes run (post-closeout) + lessons
+
+- **Lane 2 (Q3 2r kernel): HALT** — byte-cut not speed-viable (see P4 update). `c1f5275` on main (its worktree isolation FELL BACK — see lesson).
+- **Lane 1+3 (prefix-cache cap/default-on) + benches:** in flight.
+- **LESSON — worktree race:** launching TWO `isolation:worktree` agents off the SAME branch simultaneously is racy — git can't put two worktrees on one branch, so one (Lane 2) fell back to the MAIN tree and committed to `codex/maximal-spec-colab` directly. **Launch worktree agents one at a time** (or off distinct bases). The cron's "one source-agent at a time" rule already avoids this.
 - **⚠ pre-existing (flag for morning):** `tests/v1_1_phase5A_batched_forward_parity.rs` fails to compile at HEAD (stale `SpeculateMode::NGram`, from old commit 822e779 — NOT from this haul). Isolated to that one test binary; lib + all haul tests compile fine.
