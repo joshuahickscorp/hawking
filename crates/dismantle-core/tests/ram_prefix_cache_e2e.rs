@@ -104,7 +104,9 @@ fn ram_cache_hit_is_bit_identical() {
     let prompt2 = format!("{PREAMBLE}{TURN2_TAIL}");
 
     // --- Reference: cache OFF. Fresh engine, request 2 cold. ---
-    std::env::remove_var("DISMANTLE_QWEN_PREFIX_CACHE");
+    // The RAM cache is DEFAULT-ON (opt-out), so OFF means the explicit
+    // disable token, not `remove_var` (which now leaves it on).
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
     let (ref_ids, off_ms) = {
         let mut e = make_engine(&weights);
@@ -121,7 +123,7 @@ fn ram_cache_hit_is_bit_identical() {
         let _ = gen_on(e.as_mut(), &prompt1); // populates the RAM prefix cache
         gen_on(e.as_mut(), &prompt2) // turn 2 extends turn 1 → HIT
     };
-    std::env::remove_var("DISMANTLE_QWEN_PREFIX_CACHE");
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
 
     assert_eq!(hit_ids.len(), MAX_NEW_TOKENS);
     // THE GATE: bit-identical reuse.
@@ -164,7 +166,8 @@ fn ram_cache_miss_is_bit_identical() {
     let prompt_b = format!("Bananas are yellow. {TURN1_TAIL}");
 
     // Reference: cache OFF, same persistent engine, same 2-request order.
-    std::env::remove_var("DISMANTLE_QWEN_PREFIX_CACHE");
+    // DEFAULT-ON (opt-out) ⇒ OFF is the explicit disable token.
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
     let ref_ids = {
         let mut e = make_engine(&weights);
@@ -180,7 +183,7 @@ fn ram_cache_miss_is_bit_identical() {
         let _ = gen_on(e.as_mut(), &prompt_a); // unrelated prefix in cache
         gen_on(e.as_mut(), &prompt_b).0 // no shared prefix → miss
     };
-    std::env::remove_var("DISMANTLE_QWEN_PREFIX_CACHE");
+    std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
 
     assert_eq!(
         ref_ids, miss_ids,
