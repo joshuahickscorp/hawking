@@ -164,6 +164,17 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Q3_K sub-Q4 decode byte-cut (f16-predec-Q3 / cheaper-decode-Q3)
+
+**Status:** NO-GO 2026-05-31, **clean-room confirmed** — Type-1 (reality-dead)
+**Evidence:** clean `q3k_bytecut_bench` (Claude quit, `tools/bench/clean_room_batch.sh` §A): f32-predec-Q3 best-shape **33.3 GB/s = 22% of 150 GB/s peak** (vs the ~50% GO bar). Decisive tell: Q3_K is **slower in absolute µs** than Q4_predec on all 3 shapes (−37 to −43%) despite ~half the bytes — so the Q3_K GEMV is **compute/residual-bound on the inline 6-bit scale + hmask decode, NOT bandwidth-bound.** Fewer bytes buy no speed when the kernel isn't on the bus. Confirms c1f5275's 2-row-ILP finding (7–21 GB/s) at a clean absolute number.
+**Type:** Type-1 — a measured property of the Q3_K format (hmask/index residual + per-element scale decode). The f16-predec-Q3 128-B repack (`plans/cheaper_decode_q3_design_2026_05_31.md`) shaves a few more bytes but cannot flip a compute-bound kernel to BW-bound. The footprint cut (~−27/−38% bytes) is real but RAM-only, not tps.
+**Type-2 reframe (the live one):** **QTIP** gather-free trellis (`plans/qtip_bytecut_design_2026_05_31.md`) — a DIFFERENT mechanism (arithmetic-coded, no hmask residual, no LUT), alive behind its own quality + decode-cost oracles. Now the **single** sub-Q4 byte-cut bet.
+**Killing memory:** [[moat-status-forward-path-2026-05-31]]
+**Resurrection check:** do NOT wire f16-predec-Q3 for tps. The byte-cut axis routes through QTIP only; Q3_K stays footprint-only if RAM ever becomes the binding constraint.
+
+---
+
 ## 🪦 Q4_K batched MMA (simdgroup-matrix) on rows ≤ cols shapes
 
 **Status:** killed 2026-05-31 by paired microbench (Type-1 occupancy) — PARTIAL kill; the rows>cols variant is GO (shape-gated, integration deferred — see handoff)
