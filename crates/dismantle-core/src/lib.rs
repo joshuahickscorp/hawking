@@ -14,6 +14,7 @@ pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
 pub mod speculate;
+pub mod stateful;
 pub mod tokenizer;
 pub mod vocab_prune;
 
