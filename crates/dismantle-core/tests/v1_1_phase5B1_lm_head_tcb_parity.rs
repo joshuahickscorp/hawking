@@ -106,7 +106,7 @@ fn lm_head_fold_is_deterministic() {
 #[test]
 fn spec_exact_mode_with_lm_head_fold() {
     let Some(mut ref_engine)  = load_engine(SpeculateMode::Off)   else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::NGram) else { return };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
 
     // Repetitive prompt (high n-gram acceptance).
     {

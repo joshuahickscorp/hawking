@@ -69,7 +69,7 @@ fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, ma
 #[test]
 fn repetitive_prompt_spec_matches_greedy() {
     let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::NGram) else { return };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
 
     let prompt = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 20);
@@ -85,7 +85,7 @@ fn repetitive_prompt_spec_matches_greedy() {
 #[test]
 fn natural_prompt_spec_matches_greedy() {
     let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::NGram) else { return };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
 
     let prompt = "Explain how speculative decoding works in language models:";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 15);
