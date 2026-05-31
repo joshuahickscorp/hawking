@@ -355,6 +355,17 @@ pub struct QwenDense {
     /// for the hot path. See `memory/HANDOFF_track_B_ffn_sparsity.md`.
     #[cfg(target_os = "macos")]
     pub(crate) ffn_capture: std::sync::Mutex<Option<FfnCaptureWriter>>,
+
+    /// B1 (2026-05-31): in-RAM, session-scoped prefix cache (Bible §8
+    /// L1.2, the stateful moat). Retains the post-prefill KV of each
+    /// request so the *next* request in the same process that shares a
+    /// token prefix skips re-prefilling it — zero disk I/O, in front of
+    /// the on-disk `PrefillDiskCache` tier. A matched prefix is
+    /// **bit-identical reuse** (the KV for `tokens[0..n)` is a pure
+    /// function of model+tokenizer+tokens). Gated DEFAULT-OFF behind
+    /// `DISMANTLE_QWEN_PREFIX_CACHE=1`; `None` when the flag is unset so
+    /// the production decode path is byte-for-byte unchanged.
+    pub(crate) ram_prefix_cache: Option<crate::stateful::InMemoryPrefixCache>,
 }
 
 /// Track B: contiguous intermediate channels per "block" for the FFN
@@ -1282,6 +1293,9 @@ impl Engine for QwenDense {
             eagle5_capture_layer: eagle5_capture_layer_resolved,
             #[cfg(target_os = "macos")]
             ffn_capture: std::sync::Mutex::new(None),
+            // B1: prefix cache is built lazily on first `generate` when the
+            // flag is set (keeps construction free when the flag is off).
+            ram_prefix_cache: None,
         })
     }
 
@@ -1344,14 +1358,63 @@ impl Engine for QwenDense {
         let prefill_start = Instant::now();
         let mut prefill_aborted = false;
 
-        // Track B — Prefix-cache wire-up. When `DISMANTLE_PREFIX_CACHE_DIR`
+        // B1 (2026-05-31) — In-RAM prefix cache (Bible §8 L1.2, the
+        // stateful moat). DEFAULT-OFF behind `DISMANTLE_QWEN_PREFIX_CACHE`.
+        // Sits *in front of* the on-disk tier below: a hot-session request
+        // that shares a prefix with an earlier one in this process reuses
+        // its retained KV with zero disk I/O. A matched prefix is
+        // bit-identical reuse (KV for tokens[0..n) is a pure function of
+        // model+tokenizer+tokens), so greedy output is unchanged.
+        let ram_cache_on = crate::env_on("DISMANTLE_QWEN_PREFIX_CACHE");
+        if ram_cache_on && self.ram_prefix_cache.is_none() {
+            self.ram_prefix_cache = Some(crate::stateful::InMemoryPrefixCache::new());
+        }
+        let tokenizer_sig = tokenizer_signature(&self.tokenizer);
+        let ram_key = if ram_cache_on {
+            Some(crate::stateful::PrefixKey::from_model_and_prompt(
+                &self.model_id,
+                &tokenizer_sig,
+                &prompt_ids,
+            ))
+        } else {
+            None
+        };
+        let mut ram_prefill_skipped = 0usize;
+        if let (Some(key), true) = (ram_key.as_ref(), ram_cache_on) {
+            // Take the cache out so we can borrow `self.kv` mutably for the
+            // restore (the cache is `&mut self.ram_prefix_cache`).
+            if let Some(mut cache) = self.ram_prefix_cache.take() {
+                if let Some(m) = cache.lookup_counting(key, &prompt_ids) {
+                    let n = m.matched_len;
+                    // Restore the matched prefix's KV bytes into self.kv,
+                    // exactly as the disk tier's restore_hit_into_kv does.
+                    cache.restore_into(key, &prompt_ids, n, &mut self.kv)?;
+                    ram_prefill_skipped = n;
+                    // The TCB decode arena (if already built from a prior
+                    // request in this session) caches K/V in GPU buffers and
+                    // only bridges the CPU prefix on a *fresh* arena. Drop it
+                    // so the next forward rebuilds + re-bridges the restored
+                    // prefix — keeps the GPU path byte-identical to a cold
+                    // process. Cheap: re-alloc happens once per request, and
+                    // the win is the skipped prefill forwards.
+                    self.dense_arena = None;
+                }
+                self.ram_prefix_cache = Some(cache);
+            }
+        }
+
+        // Track B — On-disk prefix cache. When `DISMANTLE_PREFIX_CACHE_DIR`
         // is set, look up the longest cached prefix of `prompt_ids` and
         // skip re-prefilling it. The lookup deliberately never matches the
         // full prompt (the cache module bails one token short) so we
         // always have at least one token to prefill — keeps the decode
-        // loop's `last_id = prompt_ids.last()` path intact.
-        let prefix_cache = crate::cache::prefill_disk::PrefillDiskCache::open_from_env()?;
-        let tokenizer_sig = tokenizer_signature(&self.tokenizer);
+        // loop's `last_id = prompt_ids.last()` path intact. Only consulted
+        // when the in-RAM tier above did not already cover the prefix.
+        let prefix_cache = if ram_prefill_skipped > 0 {
+            None
+        } else {
+            crate::cache::prefill_disk::PrefillDiskCache::open_from_env()?
+        };
         let cache_key_full = if prefix_cache.is_some() {
             Some(crate::cache::prefill_disk::PrefillKey::from_model_and_prompt(
                 &self.model_id,
@@ -1361,7 +1424,7 @@ impl Engine for QwenDense {
         } else {
             None
         };
-        let prefill_skipped = if let Some(cache) = prefix_cache.as_ref() {
+        let disk_prefill_skipped = if let Some(cache) = prefix_cache.as_ref() {
             let key = cache_key_full.as_ref().unwrap();
             match cache.lookup_longest_prefix(
                 &key.model_hash,
@@ -1378,6 +1441,11 @@ impl Engine for QwenDense {
         } else {
             0
         };
+
+        // The RAM tier and disk tier are mutually exclusive per request
+        // (disk is only consulted when the RAM tier missed), so the total
+        // skipped-prefix length is their sum (one of which is always 0).
+        let prefill_skipped = ram_prefill_skipped + disk_prefill_skipped;
 
         let use_tcb_prefill = crate::env_on("DISMANTLE_QWEN_TCB");
         // P3 — batched prefill: chunk prompt into B≤8 token windows and
@@ -1451,6 +1519,26 @@ impl Engine for QwenDense {
                 if let Err(e) = cache.store(key, &self.kv) {
                     eprintln!("dismantle: prefix cache store failed: {e}");
                 }
+            }
+        }
+
+        // B1 — In-RAM prefix cache store. At this point the full prompt's
+        // post-prefill KV exists (seq_len == prompt_len). On the non-TCB
+        // `forward_token` path it lives in `self.kv.keys/values`. On the
+        // TCB path the K/V live in the GPU decode arena (`forward_token_
+        // greedy_tcb` never writes them into `self.kv`), so mirror the
+        // arena back into `self.kv` first — only then is the CPU snapshot
+        // the true prefill KV. (The disk-tier store above has the same
+        // dependency; it is correct only on the non-TCB path today.)
+        if !prefill_aborted && ram_cache_on {
+            #[cfg(target_os = "macos")]
+            self.mirror_arena_kv_into_self(prompt_len);
+            if let (Some(mut cache), Some(key)) =
+                (self.ram_prefix_cache.take(), ram_key.clone())
+            {
+                debug_assert_eq!(self.kv.seq_len, prompt_len);
+                let _ = cache.insert_from_kv(key, &self.kv);
+                self.ram_prefix_cache = Some(cache);
             }
         }
         if prefill_aborted {
@@ -2889,6 +2977,48 @@ impl QwenDense {
             4 * n_layers,
         );
         Ok(())
+    }
+
+    /// B1 (2026-05-31): copy the GPU decode arena's K/V cache for the
+    /// first `n_tokens` positions back into the CPU `self.kv.keys/values`.
+    /// The inverse of the prefill bridge in `forward_token_greedy_tcb`
+    /// (~line 3220): the TCB path produces K/V into the arena and never
+    /// touches `self.kv.keys/values`, so the in-RAM prefix cache (which
+    /// snapshots `self.kv`) needs this mirror to capture the *true*
+    /// prefill KV. No-op when there is no arena (the non-TCB
+    /// `forward_token` path keeps `self.kv` authoritative throughout).
+    /// Layer-major f32 layout matches the arena bridge + the disk tier.
+    #[cfg(target_os = "macos")]
+    fn mirror_arena_kv_into_self(&mut self, n_tokens: usize) {
+        let Some(arena) = self.dense_arena.as_ref() else {
+            return;
+        };
+        if n_tokens == 0 {
+            return;
+        }
+        let kv_stride = self.kv.n_kv_heads * self.kv.head_dim;
+        let want = n_tokens * kv_stride;
+        let layer_stride_elems = self.kv.max_seq * kv_stride;
+        let k_src = arena.k_cache_buf.contents() as *const f32;
+        let v_src = arena.v_cache_buf.contents() as *const f32;
+        for li in 0..self.kv.n_layers {
+            let layer_off = li * layer_stride_elems;
+            // Safety: arena buffers are f32 of size n_layers*max_seq*kv_dim
+            // (allocated in DenseDecodeArena::new); `want <= max_seq*stride`
+            // since n_tokens <= max_seq. self.kv.keys[li] has max_seq*stride.
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    k_src.add(layer_off),
+                    self.kv.keys[li].as_mut_ptr(),
+                    want,
+                );
+                std::ptr::copy_nonoverlapping(
+                    v_src.add(layer_off),
+                    self.kv.values[li].as_mut_ptr(),
+                    want,
+                );
+            }
+        }
     }
 
     /// P1f: full-Metal decode forward. Encodes the entire per-layer
