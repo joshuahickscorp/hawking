@@ -23,6 +23,16 @@ Ordered alphabetically by lever name.
 **Status:** killed 2026-05-30 by offline weight analysis (before any kernel)
 **Evidence:** `reports/oracle_interlayer_delta.md` + `tools/bench/oracle_interlayer_delta.py`. Across all 7 tensor types at layer pairs 0→1 / 17→18 / 34→35 of Qwen2.5-3B: cosine(W[L],W[L+1]) ≈ 0 (mean +0.0003, |max| 0.007 — layers essentially orthogonal); delta std / orig std = **1.61** (up to 2.9 on FFN) so the delta is ANTI-compressible (quantizing D at equal error costs MORE bits, not fewer); delta top-64 SVD energy = 0.23 (full-rank); optimal affine W[L+1]≈α·W[L]+D gives **α*≈0** (a learned gain buys nothing). 0/7 tensor types beat native Q4_K bits. Textbook well-trained transformer (each layer a distinct transform). Peak RSS 1.59 GB.
 **Resurrection check:** only on a model with deliberately tied/correlated layers, or one TRAINED for cross-layer structure (Bible §8.1 L5.1 "heal the model into the engine"). Post-hoc extraction on stock Qwen is dead.
+**Update 2026-05-31:** the data-aware (activation-weighted) cross-layer reframe was TESTED (`reports/oracle_dataaware_lowrank.md`): data-weighted cross-layer cosine ≈ 0 → NO-GO too. Both weight-space and data-space cross-layer reference are dead. (Same oracle settled L1.4 — see below.)
+
+---
+
+## 🪦 EAGLE-3 trained draft head (Eagle5 v3, axis-3 speculation)
+
+**Status:** NO-GO concluded 2026-05-31 — doubly confirmed (offline held-out + on-device)
+**Evidence:** Retrained num_blocks=2 head on a bigger/diverse 40-shard Q4_K_M capture, evaluated HELD-OUT (`~/Downloads/eagle3_train_result.json`): **τ=0.877** (gate 2.5), per-pos accept [0.523, 0.195, 0.097, 0.062]. The corpus fix DID improve generalization (held-out depth-1 33%→52%) but nowhere near useful. On-device paired bench (`eagle5_paired_bench.sh`, new head, Qwen-3B + locked env, code prompt): baseline **36.9 dec_tps**; spec K=2/4/8 = **14.9 / 11.1 / 7.6** (0.40×/0.30×/0.21× — net-negative, worse with larger K). On-device depth-1 accept **6.5%** vs PyTorch held-out 52% (~8× gap ⇒ a residual head↔runtime forward mismatch remains — but it's MOOT: even at the 52% offline ceiling, τ=0.88 is sub-gate). The **free n-gram draft (τ=1.43) beats the trained head (0.877)** on code.
+**Killing memories:** [[phase-a-oracles-2026-05-30]]; handoff `plans/eagle_forward_parity_handoff.md`.
+**Resurrection check:** do NOT re-train the EAGLE head expecting a win without an oracle first showing achievable τ≥2.5 on the target workload. The trained-head path is net-negative on Qwen-3B + code; n-gram lookahead (also sub-gate, τ=1.43) is the only spec option worth keeping warm. The forward-parity gap (6.5% device vs 52% offline) is real but not worth chasing while the offline ceiling itself fails the gate.
 
 ---
 
