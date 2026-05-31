@@ -726,6 +726,33 @@ _validate_frozen(FROZEN)
 print(f"corpus: {len(shards)} shards under {CORPUS_DIR}", flush=True)
 print(f"frozen: {FROZEN} ({FROZEN.stat().st_size / 1e6:.0f} MB)", flush=True)
 
+# --- Held-out split: train on most shards, eval τ on a DISJOINT held-out set ---
+# The runtime-fix agent proved the head scores ~90% depth-0 in-sample on its
+# training corpus but only ~33% on fresh captures — it OVERFITS. Evaluating τ on
+# the training corpus measures memorization, not generalization. So we hold out
+# the last ~20% of shards (whole sequences, no leakage) and gate τ on THOSE.
+import shutil as _shutil
+HELD_FRAC = float(os.environ.get("EAGLE5_HELDOUT_FRAC", "0.2"))
+TRAIN_CORPUS = ART / "corpus_train"
+EVAL_CORPUS = ART / "corpus_heldout"
+_shards_sorted = sorted(shards)
+_n_held = max(1, int(len(_shards_sorted) * HELD_FRAC))
+_held = _shards_sorted[-_n_held:]
+_train = _shards_sorted[:-_n_held]
+if not _train:  # corpus too small to split — fall back to in-sample with a loud warning
+    print("[prep] WARN: corpus too small to hold out; τ will be IN-SAMPLE (overfit risk).", flush=True)
+    TRAIN_CORPUS = EVAL_CORPUS = CORPUS_DIR
+else:
+    for _d in (TRAIN_CORPUS, EVAL_CORPUS):
+        _shutil.rmtree(_d, ignore_errors=True)
+        _d.mkdir(parents=True)
+    for _i, _s in enumerate(_train):
+        (TRAIN_CORPUS / f"shard_{_i:05d}.parquet").symlink_to(_s.resolve())
+    for _i, _s in enumerate(_held):
+        (EVAL_CORPUS / f"shard_{_i:05d}.parquet").symlink_to(_s.resolve())
+    print(f"[prep] held-out split: {len(_train)} train shards / {len(_held)} held-out "
+          f"shards — τ gate now measures GENERALIZATION, not memorization.", flush=True)
+
 # Qwen-3B preset. Chained-hidden rollout is the key runtime-speedup driver;
 # multi-depth targets (1..4) protect shallow-depth accuracy. batch_size scales
 # with VRAM. These flags mirror eagle5_train_pytorch.py's argparse exactly.
@@ -767,7 +794,7 @@ LATEST = CKPT_DIR / "latest.npz"
 
 train_cmd = [
     sys.executable, "-u", "colab/eagle5_train_pytorch.py",
-    "--corpus-dir", str(CORPUS_DIR),
+    "--corpus-dir", str(TRAIN_CORPUS),
     "--frozen", str(FROZEN),
     "--ckpt-dir", str(CKPT_DIR),
     "--device", "cuda",
@@ -808,7 +835,7 @@ eval_cmd = [
     sys.executable, "-u", "colab/eagle5_tau_eval_pytorch.py",
     "--ckpt", str(HEAD),
     "--frozen", str(FROZEN),
-    "--corpus", str(CORPUS_DIR),
+    "--corpus", str(EVAL_CORPUS),
     "--out", str(TAU_OUT),
     "--depth", str(DEPTH),
     "--target-mode", "corpus",   # accept vs the model's REAL next token (ground truth)
