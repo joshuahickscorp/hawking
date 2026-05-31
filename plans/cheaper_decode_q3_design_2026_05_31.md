@@ -1,5 +1,15 @@
 # Cheaper-decode Q3_K design — 2026-05-31 (DESIGN ONLY, no code/commits)
 
+> **⛔ STATUS 2026-05-31 — NO-GO (clean-room confirmed). DO NOT BUILD.** The free
+> pre-build oracle (clean `q3k_bytecut_bench`, Claude quit, `clean_room_batch.sh`
+> §A) read f32-predec-Q3 at **33.3 GB/s = 22% of peak**, and Q3_K is *slower in
+> absolute µs* than Q4_predec on all shapes despite ~half the bytes — the Q3_K
+> GEMV is compute/residual-bound, NOT bandwidth-bound, so the f16-predec-Q3 128-B
+> repack designed below cannot flip it to a tps win (it shaves bytes off a kernel
+> that isn't on the bus). The byte-cut axis routes through **QTIP**
+> (`plans/qtip_bytecut_design_2026_05_31.md`) only; Q3_K stays footprint-only.
+> Kill: `reports/dead_levers.md` "Q3_K sub-Q4 decode byte-cut".
+
 > **Scope.** A design doc, not an implementation. It evaluates a *speed-viable*
 > Q3_K-class byte-cut for the dense decode GEMV (M=1) on Qwen2.5-3B / M3 Pro.
 > Per bible §3.0, the decode-kernel-microopt track is exhausted (the Q4_K predec
