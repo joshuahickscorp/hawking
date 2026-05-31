@@ -1623,6 +1623,28 @@ impl Engine for QwenDense {
         let use_eagle5_batched = crate::env_on("DISMANTLE_QWEN_EAGLE5_BATCHED")
             && use_eagle5;
 
+        // L3.1 §2.1b — per-user n-gram draft (DISMANTLE_QWEN_USER_DRAFT).
+        // DEFAULT-OFF, opt-in. A draft SOURCE for a propose→batched-verify→
+        // accept loop that reuses the landed lossless verify primitive
+        // (forward_tokens_verify) UNCHANGED, so every emitted token is the
+        // verifier's token and output is BIT-IDENTICAL to plain greedy — the
+        // draft only affects speed. Independent of eagle5 (no trained head;
+        // EAGLE-3 is NO-GO). Requires the TCB pipeline (greedy temp=0) for the
+        // verify GEMM + greedy bonus forward, and that no eagle5 head is in
+        // play (the two spec paths are mutually exclusive). Per-user draft K is
+        // DISMANTLE_QWEN_USER_DRAFT_K (default 4, capped at 8 — the batched
+        // verify primitive's max batch).
+        let use_user_draft = use_tcb
+            && !use_eagle5
+            && req.sampling.temperature == 0.0
+            && crate::env_on("DISMANTLE_QWEN_USER_DRAFT");
+        let user_draft_k: usize = std::env::var("DISMANTLE_QWEN_USER_DRAFT_K")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&k| k >= 1)
+            .unwrap_or(4)
+            .min(8);
+
         #[cfg(target_os = "macos")]
         if use_eagle5 {
             // One-time: build the head's vocab-pruned LM head so the propose
@@ -2203,6 +2225,171 @@ impl Engine for QwenDense {
                     lens_total,
                     100.0 * lens_hits as f32 / lens_total as f32,
                 );
+            }
+        } else if use_user_draft {
+            // ── L3.1 §2.1b — per-user n-gram draft, propose→batched-verify.
+            //
+            // LOSSLESS by construction: this mirrors the eagle5 verify-FIRST
+            // accept loop exactly, but the draft source is a `UserNgramDraft`
+            // (a CPU n-gram automaton, no head) instead of the trained head.
+            // The verifier (`forward_tokens_verify`) emits, so the token stream
+            // is BIT-IDENTICAL to plain greedy — drafts only change how many
+            // tokens are emitted per verify forward, never which tokens.
+            //
+            // Per cycle:
+            //   Stage 1: bonus = forward(last_id, pos)  → the true next token
+            //            (== plain-greedy token); grows the index; emitted.
+            //   Stage 2: draft = index.propose([prev,bonus], k)  → CPU lookup.
+            //   Stage 3: verify [bonus, draft[..k-1]] in ONE batched forward;
+            //            accept the longest agreeing prefix; correction on the
+            //            first mismatch. KV bookkeeping identical to e5_loop.
+            let mut draft_index =
+                crate::speculate::user_ngram::UserNgramDraft::new();
+            // Warm-start from the prompt (the user's immediate history) so the
+            // index has context from token one — the same in-prompt signal PLD
+            // uses, plus the user's emitted stream as it grows.
+            draft_index.warm_start(&prompt_ids);
+            // `last_emit` is the most-recent *emitted* token; it drives the
+            // 2-gram propose context together with the bonus. Seeded with the
+            // last prompt token (the token whose continuation we decode first).
+            let mut last_emit: u32 = last_id;
+            let mut pos = prompt_len;
+
+            'ud_loop: while produced < req.max_new_tokens {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+
+                // Stage 1: bonus forward = the true next token AND advances KV.
+                // The 2-gram context for this cycle's propose is the previous
+                // emitted token (`last_emit`) paired with `bonus`.
+                let ctx_prev = last_emit;
+                let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
+                self.sampler.record(bonus);
+                crate::stateful::usage_capture::record_argmax(bonus);
+                let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
+                sink(StreamEvent::Token { id: bonus, text });
+                produced += 1;
+                // Grow the index with the emitted bonus token.
+                draft_index.note_token(bonus);
+                last_emit = bonus;
+                if Some(bonus) == eos {
+                    reason = StopReason::Eos;
+                    break 'ud_loop;
+                }
+                if produced >= req.max_new_tokens {
+                    break 'ud_loop;
+                }
+                let bonus_pos = pos + 1;
+                last_id = bonus;
+
+                // Stage 2: propose from the user index for the [ctx_prev, bonus]
+                // context. Cap K by the remaining budget and the verify
+                // primitive's max batch (8).
+                let remaining = req.max_new_tokens - produced;
+                let k_avail = user_draft_k.min(remaining).min(8);
+                if k_avail == 0 {
+                    pos = bonus_pos;
+                    continue;
+                }
+                let ctx_buf: [u32; 2] = [ctx_prev, bonus];
+                let draft = draft_index.propose(&ctx_buf, k_avail);
+                let draft_len = draft.len();
+                if draft_len == 0 {
+                    // No prediction → next cycle's stage-1 forward emits the
+                    // next token (still exact, just no speculation this step).
+                    pos = bonus_pos;
+                    continue;
+                }
+
+                // Stage 3: batched verify. preds[i] = model argmax after
+                // consuming verify_tokens[i] at bonus_pos+i. verify_tokens =
+                // [bonus, draft[0..draft_len-1]]. Accept draft[i] while
+                // preds[i] == draft[i]; first mismatch is the correction.
+                let mut vtoks = Vec::with_capacity(draft_len);
+                vtoks.push(bonus);
+                if draft_len > 1 {
+                    vtoks.extend_from_slice(&draft[..draft_len - 1]);
+                }
+                let vpos: Vec<usize> =
+                    (0..draft_len).map(|j| bonus_pos + j).collect();
+                let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                let mut first_reject = draft_len;
+                let mut correction: Option<u32> = None;
+                for i in 0..draft_len {
+                    if preds[i] != draft[i] {
+                        first_reject = i;
+                        correction = Some(preds[i]);
+                        break;
+                    }
+                }
+                stats.draft_accepted += first_reject;
+                stats.draft_rejected += draft_len - first_reject;
+                // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
+                crate::stateful::usage_capture::record_draft(
+                    (ctx_prev, bonus),
+                    draft.first().copied().or(correction),
+                    first_reject,
+                    draft_len - first_reject,
+                );
+
+                // Emit accepted drafts. Each is a model-verified token, so the
+                // stream stays bit-identical to plain greedy.
+                let mut stop = false;
+                for k in 0..first_reject {
+                    let id = draft[k];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    crate::stateful::usage_capture::record_argmax(id);
+                    draft_index.note_token(id);
+                    last_emit = id;
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        stop = true;
+                        break;
+                    }
+                    if produced >= req.max_new_tokens {
+                        stop = true;
+                        break;
+                    }
+                }
+                if stop {
+                    break 'ud_loop;
+                }
+
+                // Emit correction (if any) and advance state. KV bookkeeping is
+                // identical to the eagle5 batched path: on a reject at i, the
+                // verify wrote KV through bonus_pos+i, the correction sits at
+                // bonus_pos+i+1 (not yet written); on full accept, KV is valid
+                // through bonus_pos+draft_len.
+                if let Some(corr) = correction {
+                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                    sink(StreamEvent::Token { id: corr, text });
+                    self.sampler.record(corr);
+                    crate::stateful::usage_capture::record_argmax(corr);
+                    draft_index.note_token(corr);
+                    last_emit = corr;
+                    produced += 1;
+                    last_id = corr;
+                    pos = bonus_pos + first_reject + 1;
+                    self.kv.seq_len = pos;
+                    if Some(corr) == eos {
+                        reason = StopReason::Eos;
+                        break 'ud_loop;
+                    }
+                } else {
+                    last_id = draft[draft_len - 1];
+                    pos = bonus_pos + draft_len;
+                }
+
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break 'ud_loop;
+                }
             }
         } else {
             // Quantized-residual corpus capture (DISMANTLE_QWEN_CAPTURE_CORPUS_PATH).
