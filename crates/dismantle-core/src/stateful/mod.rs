@@ -38,6 +38,7 @@
 //! a hit, eventually zero-copy). They share key derivation (the rolling
 //! prefix hash) so a KV block is addressable identically in both.
 
+pub mod attn_capture;
 pub mod prefix_cache;
 pub mod working_set;
 

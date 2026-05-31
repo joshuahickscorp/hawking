@@ -84,6 +84,16 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 KV working-set eviction (StreamingLLM/H2O/SnapKV) (Bible §8.1 L1.1)
+
+**Status:** NO-GO 2026-05-31 by the attention-mass concentration oracle (before any eviction wiring). **Type-1** kill on Qwen2.5-3B + code context.
+**Evidence:** `reports/b2_kv_working_set_oracle.md` + `tools/bench/oracle_attn_mass.py` + capture `reports/bench/attn_capture.json`. Built a default-off attention-capture instrument (`crate::stateful::attn_capture`, fed from `forward_token`'s CPU reference attention; recompute is bit-identical to `mha_decode_step`, unit-tested). Ran a real ~586-token code prompt, 917 query samples per layer, all 36 layers. **Attention mass is broadly spread, not concentrated:** holding ≥99% mass needs **78–92% of the cached positions** (median 0.80, worst layer 0.92) — a "bounded working set" would be ~539 of 586 positions, i.e. nearly the whole cache. The StreamingLLM **sinks+recent** structure does NOT hold on this model: sinks(span 4)+recent(span 128) covers only **18–73%** of mass per layer (worst layer 0.18). Per-layer behavior is heterogeneous (some layers sink-heavy e.g. L5 sink-mass 0.44; some recent-heavy e.g. L1 recent-128 0.79) so no single bounded policy clears every layer simultaneously — and the budget must hold on the hardest layer. Concentration verdict thresholds (GO: worst-layer frac99 < 0.25 AND sinks+recent ≥ 0.97) both fail by a wide margin.
+**Reframe considered:** H2O (cumulative-mass heavy-hitters instead of positional sinks+recent). Also dies: if 99% mass needs ~80–92% of positions, the "heavy hitter" set is itself ~80–92% of the cache regardless of *how* you pick it — the diffuseness is a property of the distribution, not the selection rule. SnapKV (pooled-window importance) has the same problem.
+**Resurrection check (named oracle):** re-run `tools/bench/oracle_attn_mass.py` on **genuinely longer** captures (16K–32K ctx) — sink/recent structure is documented to sharpen with length, and 586 tokens may understate the long-context case. Also re-test on **non-code** workloads (prose, multi-turn chat) and a **larger Qwen** (7B/14B) where the literature found StreamingLLM holds. Build the eviction bodies only if a longer/other-domain capture flips worst-layer frac99 below ~0.25. The `LosslessPolicy` escape hatch ships regardless (no-op, needs no oracle). Do not re-test the 586-token-code regime — its death is a fact about that distribution.
+**Lesson:** the StreamingLLM/H2O "attention is sparse" finding is model+context-specific; it was NOT assumed for Qwen2.5-3B and the measurement says it does not transfer at short-to-mid code context. Same discipline as block-256 FFN sparsity.
+
+---
+
 ## 🪦 Low-rank + compressible residual codec (Bible §8.1 L1.4)
 
 **Status:** killed 2026-05-30 by offline byte-budget oracle (before any kernel)
