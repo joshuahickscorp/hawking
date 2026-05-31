@@ -1359,13 +1359,16 @@ impl Engine for QwenDense {
         let mut prefill_aborted = false;
 
         // B1 (2026-05-31) — In-RAM prefix cache (Bible §8 L1.2, the
-        // stateful moat). DEFAULT-OFF behind `DISMANTLE_QWEN_PREFIX_CACHE`.
-        // Sits *in front of* the on-disk tier below: a hot-session request
-        // that shares a prefix with an earlier one in this process reuses
-        // its retained KV with zero disk I/O. A matched prefix is
-        // bit-identical reuse (KV for tokens[0..n) is a pure function of
-        // model+tokenizer+tokens), so greedy output is unchanged.
-        let ram_cache_on = crate::env_on("DISMANTLE_QWEN_PREFIX_CACHE");
+        // stateful moat). DEFAULT-ON (opt-OUT) behind
+        // `DISMANTLE_QWEN_PREFIX_CACHE`: set it to `0`/`false`/`off`/`no`
+        // to disable. Sits *in front of* the on-disk tier below: a
+        // hot-session request that shares a prefix with an earlier one in
+        // this process reuses its retained KV with zero disk I/O. A
+        // matched prefix is bit-identical reuse (KV for tokens[0..n) is a
+        // pure function of model+tokenizer+tokens), so greedy output is
+        // unchanged. Bounded by `PrefixCacheBudget::default()` (~3 GiB,
+        // LRU eviction) so it cannot grow unbounded / OOM the box.
+        let ram_cache_on = crate::env_opt_out("DISMANTLE_QWEN_PREFIX_CACHE");
         if ram_cache_on && self.ram_prefix_cache.is_none() {
             self.ram_prefix_cache = Some(crate::stateful::InMemoryPrefixCache::new());
         }
@@ -1508,12 +1511,31 @@ impl Engine for QwenDense {
         }
         stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
 
+        // CRITICAL ordering — mirror the GPU arena KV into `self.kv` BEFORE
+        // either cache store. On the TCB prefill path the per-token K/V live
+        // only in the GPU decode arena; `forward_token_greedy_tcb` advances
+        // `self.kv.seq_len` but never writes `self.kv.keys/values`, so a
+        // store reading `&self.kv` here would persist STALE bytes (a later
+        // process disk-hit would then serve corrupt KV → silent wrong
+        // output). Mirroring first makes `self.kv` the true post-prefill KV
+        // for BOTH the disk and RAM tiers. On the non-TCB `forward_token`
+        // path `self.dense_arena` is `None`, so this is a no-op and `self.kv`
+        // stays authoritative (it was written in-place during prefill).
+        let any_cache_store = !prefill_aborted
+            && (ram_cache_on
+                || (prefix_cache.is_some() && cache_key_full.is_some()));
+        if any_cache_store {
+            #[cfg(target_os = "macos")]
+            self.mirror_arena_kv_into_self(prompt_len);
+        }
+
         // Store the post-prefill KV snapshot for the *full* prompt so a
         // subsequent turn whose prompt extends this one can reload it.
         // Only stores on a clean (non-aborted) prefill where we actually
         // produced a new entry (skip if we already had the full prefix —
         // but the lookup guarantees skipped < prompt_len, so the new key
-        // is always strictly longer than what we loaded).
+        // is always strictly longer than what we loaded). `self.kv` was
+        // mirrored above, so this is the true KV on the TCB path too.
         if !prefill_aborted {
             if let (Some(cache), Some(key)) = (prefix_cache.as_ref(), cache_key_full.as_ref()) {
                 if let Err(e) = cache.store(key, &self.kv) {
@@ -1523,16 +1545,10 @@ impl Engine for QwenDense {
         }
 
         // B1 — In-RAM prefix cache store. At this point the full prompt's
-        // post-prefill KV exists (seq_len == prompt_len). On the non-TCB
-        // `forward_token` path it lives in `self.kv.keys/values`. On the
-        // TCB path the K/V live in the GPU decode arena (`forward_token_
-        // greedy_tcb` never writes them into `self.kv`), so mirror the
-        // arena back into `self.kv` first — only then is the CPU snapshot
-        // the true prefill KV. (The disk-tier store above has the same
-        // dependency; it is correct only on the non-TCB path today.)
+        // post-prefill KV exists in `self.kv` (seq_len == prompt_len, bytes
+        // mirrored above), so the snapshot is the true prefill KV on both
+        // the non-TCB and TCB paths.
         if !prefill_aborted && ram_cache_on {
-            #[cfg(target_os = "macos")]
-            self.mirror_arena_kv_into_self(prompt_len);
             if let (Some(mut cache), Some(key)) =
                 (self.ram_prefix_cache.take(), ram_key.clone())
             {

@@ -147,15 +147,39 @@ pub enum InsertOutcome {
     RejectedOverBudget,
 }
 
+/// Default byte cap for the in-RAM prefix cache: ~3 GiB of retained KV.
+/// On an 18 GB M3 Pro this is the headroom that survives alongside the
+/// ~2 GB resident model + working set, so the cache can never grow
+/// unbounded and OOM the box. Eviction (LRU-by-last-hit) keeps total
+/// retained bytes at or under this; a single prefix larger than the cap
+/// is rejected up front.
+pub const DEFAULT_MAX_BYTES: u64 = 3 * 1024 * 1024 * 1024;
+
 /// Budget for the in-RAM prefix cache. Either bound may be `None`
 /// (unbounded on that axis). Eviction is LRU by last-hit — the same
 /// policy class as the disk tier's mtime LRU.
-#[derive(Debug, Clone, Copy, Default)]
+///
+/// The [`Default`] is **bounded**, not unbounded: `max_bytes` is
+/// [`DEFAULT_MAX_BYTES`] (~3 GiB) so [`InMemoryPrefixCache::new`] /
+/// [`InMemoryPrefixCache::default`] can never grow without limit. Pass
+/// an explicit `{ max_bytes: None, .. }` via
+/// [`InMemoryPrefixCache::with_budget`] only when an unbounded axis is
+/// genuinely wanted (e.g. a test that controls insert volume itself).
+#[derive(Debug, Clone, Copy)]
 pub struct PrefixCacheBudget {
     /// Cap on total retained KV bytes across all entries.
     pub max_bytes: Option<u64>,
     /// Cap on the number of retained prefix entries.
     pub max_entries: Option<usize>,
+}
+
+impl Default for PrefixCacheBudget {
+    fn default() -> Self {
+        Self {
+            max_bytes: Some(DEFAULT_MAX_BYTES),
+            max_entries: None,
+        }
+    }
 }
 
 /// Diagnostic counters for the prefix cache. Populated by the body; the
@@ -272,7 +296,11 @@ impl CacheEntry {
 }
 
 impl InMemoryPrefixCache {
-    /// Create an unbounded in-RAM prefix cache.
+    /// Create an in-RAM prefix cache with the bounded default budget
+    /// ([`PrefixCacheBudget::default`] — a ~3 GiB byte cap, no entry cap).
+    /// Eviction (LRU-by-last-hit) runs on every insert, so the cache can
+    /// never grow past the cap. Use [`with_budget`](Self::with_budget) to
+    /// override (including an explicitly-unbounded budget for tests).
     pub fn new() -> Self {
         Self {
             budget: PrefixCacheBudget::default(),
@@ -864,6 +892,71 @@ mod tests {
         }
         assert!(c.stats().retained_bytes <= 200, "byte budget enforced");
         assert!(c.stats().retained_bytes > 0);
+    }
+
+    #[test]
+    fn default_budget_is_bounded() {
+        // The shipped default must NOT be unbounded — that was the
+        // OOM hazard blocking default-on. Both `new()` and `default()`
+        // must carry the byte cap.
+        assert_eq!(
+            InMemoryPrefixCache::new().budget().max_bytes,
+            Some(DEFAULT_MAX_BYTES),
+            "new() must be byte-bounded by default"
+        );
+        assert_eq!(
+            PrefixCacheBudget::default().max_bytes,
+            Some(DEFAULT_MAX_BYTES),
+            "PrefixCacheBudget::default() must carry the byte cap"
+        );
+        assert!(DEFAULT_MAX_BYTES > 0);
+    }
+
+    #[test]
+    fn insert_past_byte_cap_evicts_oldest_keeps_newest() {
+        // Fix #1's gate: inserting past the byte cap evicts the OLDEST
+        // entry (LRU), the NEWEST survives, and retained bytes stay ≤ cap.
+        // Each 3-token entry here: 1 layer * (k+v) * 3 tok * (1*4 dim) * 4 B
+        // = 96 bytes. A 250 B cap holds 2 entries (192 B); the 3rd insert
+        // must evict the 1st.
+        let cap = 250u64;
+        let mut c = InMemoryPrefixCache::with_budget(PrefixCacheBudget {
+            max_bytes: Some(cap),
+            max_entries: None,
+        });
+        let p0: Vec<u32> = vec![0, 1, 2];
+        let p1: Vec<u32> = vec![10, 11, 12];
+        let p2: Vec<u32> = vec![20, 21, 22];
+        let k0 = PrefixKey::from_model_and_prompt("m", b"t", &p0);
+        let k1 = PrefixKey::from_model_and_prompt("m", b"t", &p1);
+        let k2 = PrefixKey::from_model_and_prompt("m", b"t", &p2);
+        c.insert_from_kv(k0.clone(), &cold_prefill(&p0, 1, 1, 4));
+        c.insert_from_kv(k1.clone(), &cold_prefill(&p1, 1, 1, 4));
+        // Third insert pushes past the cap → oldest (p0) must be evicted.
+        c.insert_from_kv(k2.clone(), &cold_prefill(&p2, 1, 1, 4));
+
+        assert!(
+            c.stats().retained_bytes <= cap,
+            "retained bytes {} must stay ≤ cap {cap}",
+            c.stats().retained_bytes
+        );
+        assert!(c.stats().evictions >= 1, "the oldest entry must be evicted");
+
+        // The OLDEST (p0) is gone; the NEWEST (p2) survives. We probe via
+        // a strict-prefix lookup (query = entry tokens + 1 sentinel).
+        let mut q0 = p0.clone();
+        q0.push(99);
+        assert!(
+            c.lookup(&PrefixKey::from_model_and_prompt("m", b"t", &q0), &q0)
+                .is_none(),
+            "oldest entry must have been evicted"
+        );
+        let mut q2 = p2.clone();
+        q2.push(99);
+        let m2 = c
+            .lookup(&PrefixKey::from_model_and_prompt("m", b"t", &q2), &q2)
+            .expect("newest entry must survive");
+        assert_eq!(m2.matched_len, 3, "newest entry's full prefix survives");
     }
 
     #[test]

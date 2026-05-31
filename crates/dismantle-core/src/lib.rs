@@ -33,6 +33,21 @@ pub fn env_on(name: &str) -> bool {
     std::env::var(name).map(|v| v == "1").unwrap_or(false)
 }
 
+/// `true` unless env var `name` is explicitly set to a disable token
+/// (`0`, `false`, `off`, `no`, case-insensitive). The opt-OUT counterpart
+/// to [`env_on`]: a default-ON lever stays on when the var is unset, and
+/// is disabled only by an explicit disable token. Any other value (e.g.
+/// `1`, `true`) leaves it on.
+pub fn env_opt_out(name: &str) -> bool {
+    match std::env::var(name) {
+        Ok(v) => !matches!(
+            v.trim().to_ascii_lowercase().as_str(),
+            "0" | "false" | "off" | "no"
+        ),
+        Err(_) => true,
+    }
+}
+
 /// Parse env var `name` as usize, falling back to `default` when unset
 /// or unparseable.
 pub fn env_usize(name: &str, default: usize) -> usize {
