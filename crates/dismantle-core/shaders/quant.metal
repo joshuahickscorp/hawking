@@ -379,6 +379,93 @@ kernel void gemm_q3_k_fused_v2(
     }
 }
 
+// ── gemm_q3_k_fused_2r ───────────────────────────────────────────────────────
+// 2-rows-per-simdgroup FUSED Q3_K GEMV (byte-cut speed lever, 2026-05-31).
+// Identical INLINE 6-bit scale decode + math as gemm_q3_k_fused_v2 (NO predec —
+// predec ADDS scale bytes and breaks the byte-cut), but each simdgroup computes
+// TWO output rows of the SAME matrix with two independent accumulator chains,
+// sharing the single `x` load. The two chains give the compiler 2 in-flight
+// weight-load streams per thread, hiding DRAM latency — the structure that makes
+// gemm_q4_k_v4_predec_2r run ~56% peak. 16 rows/TG (8 simdgroups x 2 rows).
+//
+// BIT-IDENTICAL per-row to gemm_q3_k_fused_v2: each accumulator replays the
+// exact same per-element `d*scale*q * xv` FMA in the same order; only the row
+// pairing and shared `x` differ. `d` is read once per row per block (was once
+// per element via q3_k_value); the value is identical so the product is too.
+//
+// Grid: (ceil(rows/16)*256, 1, 1)   threadgroup: (256, 1, 1)
+kernel void gemm_q3_k_fused_2r(
+    device const uchar* w_q3   [[buffer(0)]],   // (rows, cols) Q3_K, 110 B/block
+    device const float* x      [[buffer(1)]],   // (cols,)
+    device       float* y      [[buffer(2)]],   // (rows,)
+    constant ArgbufRowsCols& args [[buffer(3)]],
+    uint                tid          [[thread_position_in_threadgroup]],
+    uint                gid          [[threadgroup_position_in_grid]],
+    uint                simd_lane    [[thread_index_in_simdgroup]],
+    uint                simd_id      [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= args.rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < args.rows;
+    // Alias row1 to row0 when past the end so loads stay in-bounds; p1 is never
+    // written. Production shapes are rows%16==0 so has1 holds.
+    uint r1 = has1 ? row1 : row0;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 110ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 110ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 110ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 110ul;
+        // `d` read once per row per block (identical to q3_k_value's per-element
+        // read — same f16 → float value).
+        float d0 = q3_k_fp16_at(w_q3, bo0 + 108ul);
+        float d1 = q3_k_fp16_at(w_q3, bo1 + 108ul);
+
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem = k * 32u + simd_lane;
+            // Shared element index decode (same for both rows).
+            uint half_idx = elem >> 7;
+            uint local    = elem & 127u;
+            uint group16  = local >> 4;
+            uint j        = group16 >> 1;
+            uint second   = group16 & 1u;
+            uint lane     = local & 15u;
+            uint q_idx    = half_idx * 32u + second * 16u + lane;
+            uint h_idx    = second * 16u + lane;
+            uint shift    = j * 2u;
+            uint high_mask = 1u << (half_idx * 4u + j);
+            uint scale_idx = half_idx * 8u + group16;
+
+            // Shared activation load.
+            float xv = x[(uint64_t)b * 256ul + (uint64_t)elem];
+
+            // Row 0.
+            int q0 = (int)(((uint)w_q3[bo0 + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                   - (((uint)w_q3[bo0 + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+            int s0 = q3_k_scale(w_q3, bo0, scale_idx);
+            p0 += (d0 * (float)s0 * (float)q0) * xv;
+
+            // Row 1.
+            int q1 = (int)(((uint)w_q3[bo1 + 32ul + (uint64_t)q_idx] >> shift) & 0x03u)
+                   - (((uint)w_q3[bo1 + (uint64_t)h_idx] & high_mask) != 0u ? 0 : 4);
+            int s1 = q3_k_scale(w_q3, bo1, scale_idx);
+            p1 += (d1 * (float)s1 * (float)q1) * xv;
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) y[row1] = p1;
+    }
+}
+
 // ── gemm_q3_k_v4_predec ──────────────────────────────────────────────────────
 // Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3). This
 // is the fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
