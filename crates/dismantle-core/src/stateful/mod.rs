@@ -40,6 +40,7 @@
 
 pub mod attn_capture;
 pub mod prefix_cache;
+pub mod usage_capture;
 pub mod working_set;
 
 // Re-export the primary entry points so callers can `use
