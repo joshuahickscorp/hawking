@@ -180,4 +180,18 @@ then C1 (with the clean baseline captured by A1's before/after bench).
 3. Energy baseline: `brew install macmon && tools/bench/measure_joules.sh --tokens 256 --f16s`.
 4. Pre-existing issues (NOT from this haul): `tests/v1_1_phase5A_batched_forward_parity.rs` stale `SpeculateMode::NGram` compile error (commit 822e779); the on-disk prefill cache has the same TCB-arena stale-KV latent bug B1 fixed for the RAM tier.
 5. Discard the obsolete A3 patch (A6.5 supersedes it).
+
+---
+
+## Phase 2 — next-lever queue (post the parallel lanes; the cron/chain pulls from here)
+
+Grounded in the finding: **decode kernel-microopt is exhausted** (GEMV at the HW optimum), so the live frontiers are **fewer bytes**, **prefill/TTFT**, **stateful**, and the **one spec survivor**. Prioritized; each is a local agent-task with a gate. One source-agent at a time (worktrees for parallel); GPU work serializes.
+
+- **P1. Prefill MMA → TTFT (silicon #8 port).** A7 confirmed simdgroup-MMA is dead for decode (M=1) but LIVE for **prefill (M>1)**. Port `silicon-builds/dismantle-q4k-mma` into the prefill path. Gate: bit-identical prefill + TTFT win on a COLD prompt (complements B1's cache-HIT prefill cut). GPU. **[High — clear regime fit, A7-flagged]**
+- **P2. n-gram batched-verify-with-logits.** The n-gram lookahead is green but perf-parity (serial verify, τ=1.43 — the only spec survivor). Unlock = verify K draft tokens in ONE batched forward with logits. Gate: bit-identical greedy + dec_tps win on copy-heavy code. GPU. **[Medium — sub-gate τ, but batched-verify could bank a small code-workload win]**
+- **P3. Long-context fused quantized-KV attention.** Read 4/8-bit KV inline (no FP16 buffer, mlx-qsdpa pattern) → cut KV bandwidth + memory at long ctx. **Gated on Lane C's B2 long-ctx result** (if attention concentrates at >16K, this + eviction unlock 200K+ ctx). Gate: parity atol-1e-3 + KV-byte cut at >16K. GPU. **[Medium — long-file-context capability]**
+- **P4. Sub-3-bit byte-cut (QTIP-class) — CHAINED on Lane 2.** If Lane 2's 2r fused Q3_K makes the byte-cut speed-viable, the next step is sub-3-bit (QTIP lookup-free trellis — the surviving codec): more footprint cut, now with speed. Local quant (llama.cpp) + the Q3-class kernel. Gate: PPL quality + dec_tps. **[Medium — depends on Lane 2 PASS]**
+- **P5. §8 L3.1 online vocab/draft specialization.** Prune the output head to the vocab actually in use + tune the draft on accept/reject history — compounding user-specific, exact (certifiable vocab screen). Local runtime; needs accumulated usage. **[Lower — the moat++, data-dependent]**
+
+Deferred/attended (not auto-pullable): §7.6 distillation (different model), §8 L3.3 on-device LoRA (heavy training), the A10 layout (Type-1 dead), §7.5 host loop (recorded Type-1, revisit at 100+ tps).
 - **⚠ pre-existing (flag for morning):** `tests/v1_1_phase5A_batched_forward_parity.rs` fails to compile at HEAD (stale `SpeculateMode::NGram`, from old commit 822e779 — NOT from this haul). Isolated to that one test binary; lib + all haul tests compile fine.
