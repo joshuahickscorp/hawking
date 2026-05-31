@@ -2218,6 +2218,13 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
+        // gemm_q3_k_fused_v2 reads ONE `ArgbufRowsCols` struct at buffer(3), not
+        // two separate uints — pack it like gemv_q3_k_pinned does. (Writing two
+        // set_bytes at 3/4 left args.cols=0 → blocks_per_row=0 → all-zero output.)
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
         tcb.dispatch_threads(
@@ -2230,13 +2237,8 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(out_buf), 0);
                 enc.set_bytes(
                     3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
+                    std::mem::size_of::<ArgbufRowsCols>() as u64,
+                    &args as *const ArgbufRowsCols as *const _,
                 );
             },
         )
