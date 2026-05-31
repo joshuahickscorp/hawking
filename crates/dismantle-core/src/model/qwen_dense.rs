@@ -1731,6 +1731,7 @@ impl Engine for QwenDense {
                 {
                     let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
                     self.sampler.record(carried_true);
+                    crate::stateful::usage_capture::record_argmax(carried_true);
                     sink(StreamEvent::Token { id: carried_true, text });
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.note_token(carried_true);
@@ -1776,12 +1777,22 @@ impl Engine for QwenDense {
                     // was already emitted (invariant), so we never re-emit it.
                     stats.draft_accepted += na;
                     stats.draft_rejected += (k - 1) - na;
+                    // L3.1 §2.2 usage_capture: this cycle's draft was proposed
+                    // under the 2-gram (anchor_tok, carried_true); na accepted,
+                    // (k-1)-na rejected; the verifier emitted preds[0] next.
+                    crate::stateful::usage_capture::record_draft(
+                        (anchor_tok, carried_true),
+                        preds.first().copied(),
+                        na,
+                        (k - 1) - na,
+                    );
                     eagle5_cycle += 1;
                     let mut stop = false;
                     for j in 0..=na {
                         let id = preds[j];
                         let text = self.tokenizer.decode_one(id).unwrap_or_default();
                         self.sampler.record(id);
+                        crate::stateful::usage_capture::record_argmax(id);
                         sink(StreamEvent::Token { id, text });
                         if let Some(head) = self.eagle5_head.as_mut() {
                             head.note_token(id);
@@ -1827,6 +1838,7 @@ impl Engine for QwenDense {
                 stats.metal_buffers_created = bc;
                 stats.metal_bytes_allocated = ba;
                 stats.metal_commits = cm;
+                crate::stateful::usage_capture::flush();
                 sink(StreamEvent::Done {
                     reason,
                     stats: stats.clone(),
@@ -1868,6 +1880,7 @@ impl Engine for QwenDense {
                 let head_start = last_id;
                 let bonus = self.forward_token_greedy_tcb(last_id, pos)?;
                 self.sampler.record(bonus);
+                crate::stateful::usage_capture::record_argmax(bonus);
                 let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
                 sink(StreamEvent::Token { id: bonus, text });
                 if let Some(head) = self.eagle5_head.as_mut() {
@@ -2066,6 +2079,17 @@ impl Engine for QwenDense {
                 }
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
+                // L3.1 §2.2 usage_capture: this cycle's draft was proposed
+                // under the 2-gram (head_start, bonus); first_reject accepted,
+                // draft_len-first_reject rejected; the next emitted token is the
+                // first accepted draft (or the correction on a head-of-window
+                // reject).
+                crate::stateful::usage_capture::record_draft(
+                    (head_start, bonus),
+                    draft.first().copied().or(correction),
+                    first_reject,
+                    draft_len - first_reject,
+                );
                 if let Some(trace) = eagle5_accept_trace.as_mut() {
                     let draft_tokens: Vec<String> = draft
                         .iter()
@@ -2107,6 +2131,7 @@ impl Engine for QwenDense {
                     let text = self.tokenizer.decode_one(id).unwrap_or_default();
                     sink(StreamEvent::Token { id, text });
                     self.sampler.record(id);
+                    crate::stateful::usage_capture::record_argmax(id);
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.note_token(id);
                     }
@@ -2125,6 +2150,7 @@ impl Engine for QwenDense {
                     let text = self.tokenizer.decode_one(corr).unwrap_or_default();
                     sink(StreamEvent::Token { id: corr, text });
                     self.sampler.record(corr);
+                    crate::stateful::usage_capture::record_argmax(corr);
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.note_token(corr);
                     }
@@ -2291,6 +2317,9 @@ impl Engine for QwenDense {
                     }
                 }
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                // L3.1 §2.2 usage_capture: observe the emitted argmax id (no-op
+                // unless DISMANTLE_QWEN_USAGE_CAPTURE=1; never changes output).
+                crate::stateful::usage_capture::record_argmax(next_id);
                 sink(StreamEvent::Token { id: next_id, text });
                 produced += 1;
                 if Some(next_id) == eos {
@@ -2325,6 +2354,7 @@ impl Engine for QwenDense {
                 break;
             }
             self.sampler.record(next_id);
+            crate::stateful::usage_capture::record_argmax(next_id);
             let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
             sink(StreamEvent::Token { id: next_id, text });
             produced += 1;
@@ -2349,6 +2379,9 @@ impl Engine for QwenDense {
         stats.metal_buffers_created = buffers_created;
         stats.metal_bytes_allocated = bytes_allocated;
         stats.metal_commits = commits;
+        // L3.1 §2.2 usage_capture: flush the per-run histogram + draft ledger
+        // (no-op unless DISMANTLE_QWEN_USAGE_CAPTURE=1).
+        crate::stateful::usage_capture::flush();
         sink(StreamEvent::Done {
             reason,
             stats: stats.clone(),
