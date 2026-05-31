@@ -1483,6 +1483,107 @@ mod metal_dispatch {
         )
     }
 
+    /// f16-scales twin of [`gemv_q4_k_v4_predec_pair_pinned_tcb`] (A6.5,
+    /// 2026-05-31). Same fused gate+up dispatch (ONE call computes both
+    /// `g_out` and `u_out` from the shared `x_buf`), but BOTH scale tables are
+    /// read as `half` (2 B/elem) and widened to float in-register, cutting the
+    /// scale-table traffic 192→160 B/block (−17%) on the dominant
+    /// (`_pair` = 46.6% of decode, bandwidth-bound) FFN gate+up GEMV.
+    ///
+    /// NOT bit-identical to the f32 pair (f16 scale rounding ~5e-4 relative);
+    /// gated on rel-L2 < 1e-2 parity + paired bench, opt-in via
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1`. Build each table once at load via
+    /// [`predecode_q4_k_scale_table_f16`] (16 halfs/block); expected
+    /// `*_scales_buf` length is `rows * (cols / 256) * 16 * sizeof(f16)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        // f16 scale table: 16 halfs/block, sizeof(f16) = 2 bytes (vs the f32
+        // pair's 64 B/block); this is the byte-cut the f16s pair is for.
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 8;
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), g_offset as u64);
+                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+                enc.set_buffer(2, Some(model_buf), u_offset as u64);
+                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+                enc.set_buffer(4, Some(x_buf), 0);
+                enc.set_buffer(5, Some(g_out_buf), 0);
+                enc.set_buffer(6, Some(u_out_buf), 0);
+                enc.set_bytes(
+                    7,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    8,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Q4K_FAST v1 — Q4_K with sub-block-contiguous re-layout.
     ///
     /// Weight buffer layout: 160 bytes per 256-element block. Per sub-block

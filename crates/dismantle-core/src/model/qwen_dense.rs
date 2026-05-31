@@ -131,6 +131,11 @@ pub struct QwenLayerPinned {
     /// GEMM in `forward_tokens_batch_tcb` so the requantized ffn_down
     /// site skips per-call header repacking like the mmap-backed sites.
     pub ffn_down_q4k_predec: Option<crate::metal::PinnedBuffer>,
+    /// A6.5 (2026-05-31): f16-scales twin of `ffn_down_q4k_predec`. Built
+    /// lazily by `ensure_q4k_predec_cache_f16` from the f32 table; consumed
+    /// by `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` when
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade).
+    pub ffn_down_q4k_predec_f16: Option<crate::metal::PinnedBuffer>,
     pub attn_norm: Option<crate::metal::PinnedBuffer>,
     pub ffn_norm: Option<crate::metal::PinnedBuffer>,
     pub q_bias: Option<crate::metal::PinnedBuffer>,
@@ -228,6 +233,13 @@ pub struct QwenDense {
     /// Q4_K-pruned.
     pub lm_head_pruned_predec: Option<crate::metal::PinnedBuffer>,
 
+    /// A6.5 (2026-05-31): f16-scales twin of `lm_head_pruned_predec`. Half-
+    /// width (16 halfs/block vs 16 f32) pre-decoded scale table consumed by
+    /// `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` when
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade).
+    /// Built lazily by `ensure_q4k_predec_cache_f16` from the f32 table.
+    pub lm_head_pruned_predec_f16: Option<crate::metal::PinnedBuffer>,
+
 
     /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
     /// tables, keyed by GGUF mmap offset. Populated by
@@ -236,6 +248,17 @@ pub struct QwenDense {
     /// `None` = feature off, no memory cost.
     #[cfg(target_os = "macos")]
     pub(crate) q4k_predec_cache:
+        Option<std::collections::HashMap<usize, crate::metal::PinnedBuffer>>,
+
+    /// A6.5 (2026-05-31): f16-scales twin of `q4k_predec_cache`, keyed by the
+    /// same GGUF mmap offset. Half-width (2 B/elem vs 4 B) pre-decoded scale
+    /// tables consumed by `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` AND
+    /// `gemv_q4_k_v4_predec_pair_f16s_pinned_tcb` when
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade — f16
+    /// scale rounding perturbs logits ~5e-4 relative). Built lazily by
+    /// `ensure_q4k_predec_cache_f16` from the f32 cache; `None` = flag off.
+    #[cfg(target_os = "macos")]
+    pub(crate) q4k_predec_cache_f16:
         Option<std::collections::HashMap<usize, crate::metal::PinnedBuffer>>,
 
     /// Item 3 wire-up: lazy-loaded Q4K_FAST sidecar (whole file pinned)
@@ -1231,8 +1254,11 @@ impl Engine for QwenDense {
             vocab_pruned_is_q4k,
             vocab_prune_remap,
             lm_head_pruned_predec,
+            lm_head_pruned_predec_f16: None,
             #[cfg(target_os = "macos")]
             q4k_predec_cache: None,
+            #[cfg(target_os = "macos")]
+            q4k_predec_cache_f16: None,
             #[cfg(target_os = "macos")]
             q4k_fast_buf: None,
             #[cfg(target_os = "macos")]
@@ -2531,6 +2557,71 @@ impl QwenDense {
         Ok(())
     }
 
+    /// A6.5 (2026-05-31): build the f16-scales twin of every f32 pre-decoded
+    /// scale table consumed by the predec sites — the single-GEMV sites
+    /// (q/o/ffn_down/LM-head) served by `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb`
+    /// AND the fused gate+up `_pair` site served by
+    /// `gemv_q4_k_v4_predec_pair_f16s_pinned_tcb`. Half-width (2 B/elem vs 4 B)
+    /// scale tables, cutting the predec scale traffic ~17% across ~89% of decode
+    /// on the bandwidth-bound Q4_K GEMV.
+    ///
+    /// Lazily derived from the already-built f32 tables by narrowing each
+    /// `(ds, dm)` f32 pair to `half::f16` — exactly what
+    /// `predecode_q4_k_scale_table_f16` produces. Called once on first
+    /// forward when `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality
+    /// trade: the f16 scale rounding perturbs logits ~5e-4 relative; gated on
+    /// a quality check, NOT bit-identical).
+    #[cfg(target_os = "macos")]
+    fn ensure_q4k_predec_cache_f16(&mut self) -> Result<()> {
+        if self.q4k_predec_cache_f16.is_some() {
+            return Ok(());
+        }
+        // The f32 tables are the source of truth; ensure they exist first.
+        if self.q4k_predec_cache.is_none() {
+            self.ensure_q4k_predec_cache()?;
+        }
+        // Clone the (Arc-backed) context so the multi-field `self` mutations
+        // below don't conflict with an immutable borrow of `self.metal_ctx`.
+        let ctx = match self.metal_ctx.as_ref() {
+            Some(c) => c.clone(),
+            None => return Ok(()),
+        };
+        // Narrow a pinned f32 scale buffer to a freshly pinned f16 buffer
+        // (StorageModeShared → host-readable on unified memory).
+        let narrow = |f32_buf: &crate::metal::PinnedBuffer| -> crate::metal::PinnedBuffer {
+            let n = (f32_buf.length() as usize) / std::mem::size_of::<f32>();
+            let src = unsafe {
+                std::slice::from_raw_parts(f32_buf.contents() as *const f32, n)
+            };
+            let f16: Vec<u8> = src
+                .iter()
+                .flat_map(|&v| half::f16::from_f32(v).to_bits().to_le_bytes())
+                .collect();
+            ctx.new_buffer_with_bytes(&f16)
+        };
+        // 1) Offset-keyed mmap projection cache (q/o + native-Q4_K ffn_down +
+        //    the fused FFN gate/up pair, which look up by the same offset key).
+        let mut cache_f16 = std::collections::HashMap::new();
+        if let Some(f32_cache) = self.q4k_predec_cache.as_ref() {
+            for (&off, f32_buf) in f32_cache.iter() {
+                cache_f16.insert(off, narrow(f32_buf));
+            }
+        }
+        self.q4k_predec_cache_f16 = Some(cache_f16);
+        // 2) Pruned Q4_K LM-head scale table.
+        if let Some(f32_buf) = self.lm_head_pruned_predec.as_ref() {
+            self.lm_head_pruned_predec_f16 = Some(narrow(f32_buf));
+        }
+        // 3) Per-layer requant'd ffn_down scale tables (DISMANTLE_QWEN_FFN_DOWN_Q4K).
+        for li in 0..self.layers.len() {
+            if let Some(f32_buf) = self.layers[li].pinned.ffn_down_q4k_predec.as_ref() {
+                let f16_buf = narrow(f32_buf);
+                self.layers[li].pinned.ffn_down_q4k_predec_f16 = Some(f16_buf);
+            }
+        }
+        Ok(())
+    }
+
     /// Item 3 wire-up: lazy-load the Q4K_FAST sidecar and build the
     /// per-tensor offset map. Sidecar path is `<gguf>.dismantle` or
     /// `models/<basename>-q4k_fast.dismantle`. Pins the sidecar body
@@ -2837,6 +2928,22 @@ impl QwenDense {
         if predec_active && self.q4k_predec_cache.is_none() {
             self.ensure_q4k_predec_cache()?;
         }
+        // A6.5 (2026-05-31): f16-scales predec variant. DEFAULT-OFF — this is a
+        // quality trade (f16 scale rounding perturbs logits ~5e-4 relative,
+        // NOT bit-identical), opt in via DISMANTLE_QWEN_PREDEC_F16SCALES=1.
+        // Routes BOTH the single-GEMV predec sites (q/o/ffn_down/LM-head) through
+        // `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` AND the dominant fused FFN
+        // gate+up `_pair` site (46.6% of decode) through
+        // `gemv_q4_k_v4_predec_pair_f16s_pinned_tcb`, cutting the predec scale
+        // table 192→160 B/block (~17% less scale traffic) across ~89% of decode
+        // on the bandwidth-bound Q4_K GEMV. Requires the f32 predec path.
+        let predec_f16scales_active = predec_active
+            && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES")
+                .map(|v| v != "0")
+                .unwrap_or(false);
+        if predec_f16scales_active && self.q4k_predec_cache_f16.is_none() {
+            self.ensure_q4k_predec_cache_f16()?;
+        }
         // Item 3: optional Q4K_FAST sidecar swap. When env is set AND
         // the sidecar exists, every Q4_K projection routes through the
         // custom sub-block-contiguous kernel.
@@ -2892,6 +2999,21 @@ impl QwenDense {
         // quality risk, so it wins on overlap).
         let predec_cache_ref = if predec_active {
             self.q4k_predec_cache.as_ref()
+        } else {
+            None
+        };
+        // A6.5: parallel f16-scales cache ref. Only Some when the opt-in flag
+        // is set; the predec sites (single GEMV + fused gate/up pair) prefer
+        // this over the f32 cache.
+        let predec_cache_f16_ref = if predec_f16scales_active {
+            self.q4k_predec_cache_f16.as_ref()
+        } else {
+            None
+        };
+        // A6.5: f16-scales LM-head table ref (Some only when the flag is set
+        // AND the f16 LM-head table was built).
+        let lmhead_predec_f16_ref = if predec_f16scales_active && lmhead_predec_active {
+            self.lm_head_pruned_predec_f16.as_ref()
         } else {
             None
         };
@@ -3220,6 +3342,27 @@ impl QwenDense {
                                     $x_sc,
                                     $out,
                                 )?;
+                            } else if let Some(scales_f16) = predec_cache_f16_ref
+                                .as_ref()
+                                .and_then(|m| m.get(&$tref.offset))
+                            {
+                                // A6.5 wire-up: f16-scales predec variant
+                                // (opt-in DISMANTLE_QWEN_PREDEC_F16SCALES).
+                                // Same 2r geometry but reads half-width
+                                // (ds, dm) f16 pairs — ~17% less scale
+                                // traffic. Quality trade (NOT bit-identical).
+                                kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales_f16,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    $x,
+                                    $out,
+                                )?;
                             } else if let Some(scales_buf) = predec_cache_ref
                                 .as_ref()
                                 .and_then(|m| m.get(&$tref.offset))
@@ -3348,26 +3491,55 @@ impl QwenDense {
                     })
                     .unwrap_or(false);
             if did_fuse_kv {
-                let cache = predec_cache_ref.expect("checked is_some via map");
-                let k_scales = &cache[&layer.k_proj.offset];
-                let v_scales = &cache[&layer.v_proj.offset];
-                kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
-                    &mut tcb,
-                    mmap_buf,
-                    layer.k_proj.offset,
-                    layer.k_proj.byte_size,
-                    k_scales,
-                    0,
-                    layer.v_proj.offset,
-                    layer.v_proj.byte_size,
-                    v_scales,
-                    0,
-                    kv_dim,
-                    h,
-                    &arena.x_norm_buf,
-                    &arena.k_token_buf,
-                    &arena.v_token_buf,
-                )?;
+                // A6.5: f16-scales fused k+v pair when the flag is set (k/v are
+                // tiny rows so the win is small, but it keeps _pair coverage
+                // uniform). Same offset keys in both caches.
+                let f16_pair = predec_cache_f16_ref.and_then(|m| {
+                    match (m.get(&layer.k_proj.offset), m.get(&layer.v_proj.offset)) {
+                        (Some(k), Some(v)) => Some((k, v)),
+                        _ => None,
+                    }
+                });
+                if let Some((k_scales_f16, v_scales_f16)) = f16_pair {
+                    kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.k_proj.offset,
+                        layer.k_proj.byte_size,
+                        k_scales_f16,
+                        0,
+                        layer.v_proj.offset,
+                        layer.v_proj.byte_size,
+                        v_scales_f16,
+                        0,
+                        kv_dim,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                    )?;
+                } else {
+                    let cache = predec_cache_ref.expect("checked is_some via map");
+                    let k_scales = &cache[&layer.k_proj.offset];
+                    let v_scales = &cache[&layer.v_proj.offset];
+                    kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.k_proj.offset,
+                        layer.k_proj.byte_size,
+                        k_scales,
+                        0,
+                        layer.v_proj.offset,
+                        layer.v_proj.byte_size,
+                        v_scales,
+                        0,
+                        kv_dim,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                    )?;
+                }
             } else {
                 gemv_proj!(
                     w4a8_qproj,
@@ -3565,26 +3737,56 @@ impl QwenDense {
                     })
                     .unwrap_or(false);
             if did_fuse_gateup {
-                let cache = predec_cache_ref.expect("checked is_some via map");
-                let g_scales = &cache[&layer.ffn_gate.offset];
-                let u_scales = &cache[&layer.ffn_up.offset];
-                kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
-                    &mut tcb,
-                    mmap_buf,
-                    layer.ffn_gate.offset,
-                    layer.ffn_gate.byte_size,
-                    g_scales,
-                    0,
-                    layer.ffn_up.offset,
-                    layer.ffn_up.byte_size,
-                    u_scales,
-                    0,
-                    intermediate,
-                    h,
-                    &arena.x_norm_buf,
-                    &arena.ffn_gate_buf,
-                    &arena.ffn_up_buf,
-                )?;
+                // A6.5: prefer the f16-scales fused pair (the dominant
+                // 46.6%-of-decode GEMV) when DISMANTLE_QWEN_PREDEC_F16SCALES
+                // is set; the f16 cache is keyed by the same offsets as the
+                // f32 cache (built from it), so both lookups succeed together.
+                let f16_pair = predec_cache_f16_ref.and_then(|m| {
+                    match (m.get(&layer.ffn_gate.offset), m.get(&layer.ffn_up.offset)) {
+                        (Some(g), Some(u)) => Some((g, u)),
+                        _ => None,
+                    }
+                });
+                if let Some((g_scales_f16, u_scales_f16)) = f16_pair {
+                    kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.ffn_gate.offset,
+                        layer.ffn_gate.byte_size,
+                        g_scales_f16,
+                        0,
+                        layer.ffn_up.offset,
+                        layer.ffn_up.byte_size,
+                        u_scales_f16,
+                        0,
+                        intermediate,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.ffn_gate_buf,
+                        &arena.ffn_up_buf,
+                    )?;
+                } else {
+                    let cache = predec_cache_ref.expect("checked is_some via map");
+                    let g_scales = &cache[&layer.ffn_gate.offset];
+                    let u_scales = &cache[&layer.ffn_up.offset];
+                    kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.ffn_gate.offset,
+                        layer.ffn_gate.byte_size,
+                        g_scales,
+                        0,
+                        layer.ffn_up.offset,
+                        layer.ffn_up.byte_size,
+                        u_scales,
+                        0,
+                        intermediate,
+                        h,
+                        &arena.x_norm_buf,
+                        &arena.ffn_gate_buf,
+                        &arena.ffn_up_buf,
+                    )?;
+                }
             } else {
                 gemv_proj!(
                     w4a8_ffn_gate,
@@ -3659,6 +3861,24 @@ impl QwenDense {
                         ffn_scales,
                         &arena.ffn_down_buf,
                     )?;
+                } else if let Some(scales_f16) = (ffn_down_predec
+                    && predec_f16scales_active)
+                    .then(|| layer.pinned.ffn_down_q4k_predec_f16.as_ref())
+                    .flatten()
+                {
+                    // A6.5: f16-scales ffn_down predec (requant'd path).
+                    kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        scales_f16,
+                        0,
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf,
+                        &arena.ffn_down_buf,
+                    )?;
                 } else if let Some(predec_scales) = ffn_down_predec
                     .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
                     .flatten()
@@ -3702,7 +3922,20 @@ impl QwenDense {
                         )?;
                     }
                     GgmlType::Q4_K => {
-                        if let Some(predec_scales) = ffn_down_predec
+                        if let Some(scales_f16) = (ffn_down_predec
+                            && predec_f16scales_active)
+                            .then(|| predec_cache_f16_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                            .flatten()
+                        {
+                            // A6.5: f16-scales ffn_down predec (native-Q4_K path).
+                            kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                                &mut tcb, mmap_buf,
+                                layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                scales_f16, 0,
+                                h, intermediate,
+                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                            )?;
+                        } else if let Some(predec_scales) = ffn_down_predec
                             .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
                             .flatten()
                         {
@@ -3890,6 +4123,21 @@ impl QwenDense {
                         h,
                         x_int8,
                         x_scales,
+                        &arena.logits_buf,
+                    )?;
+                } else if let Some(scales_f16) = lmhead_predec_f16_ref {
+                    // A6.5: f16-scales LM-head GEMV (opt-in
+                    // DISMANTLE_QWEN_PREDEC_F16SCALES; quality trade).
+                    kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                        &mut tcb,
+                        pruned_buf,
+                        0,
+                        pn * row_bytes,
+                        scales_f16,
+                        0,
+                        pn,
+                        h,
+                        &arena.x_norm_buf,
                         &arena.logits_buf,
                     )?;
                 } else if let Some(predec_scales) = lmhead_predec_active
