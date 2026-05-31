@@ -31,59 +31,153 @@ then C1 (with the clean baseline captured by A1's before/after bench).
 
 ## Lane A — kernel / tps (serial, GPU)
 
-- [ ] **A1. Clean baseline + LM-head→predec.** Route the LM head through the
-  predec GEMV; hoist nothing yet. Gate: bit-identical greedy; paired bench.
-  Build-off: a *clean* absolute dec_tps anchor + the first +tps. (exact, High)
-- [ ] **A2. Hoist audit.** Eliminate redundant per-token recompute (scale
-  decodes, repeated norms) the §6 fusion left behind. Gate: bit-identical;
-  bench. Build-off: cheaper per-token before the big kernel work. (exact, M-H)
-- [ ] **A3. Wire f16s scales into decode + paired bench.** `_2r_f16s` is parity-
-  validated (rel-L2 2.6e-4) + microbenched +5–12% (dispatch-bound). Wire the
-  load-time f16 table behind `DISMANTLE_QWEN_PREDEC_F16SCALES`, paired-bench
-  steady-state. Gate: rel-L2 quality + net dec_tps win. (Stage-2 BW #1, M)
-- [ ] **A4. MST/xctrace per-kernel profile.** `mst_export.sh`→`mst_analyze.py`
-  on a real `.trace`; name the dominant decode stall. No code change — this
-  *targets* A5–A7 so they don't guess (the `_4r` lesson). Build-off: gates the
-  next three. (profiling, High value)
-- [ ] **A5. Vectorized nibble unpack (uint4 loads)** in the predec GEMV, aimed
-  at A4's stall. Gate: bit-identical; bench. (exact, M)
-- [ ] **A6. Threadgroup / occupancy tuning** of the predec GEMV (rows/TG, simd
-  width), bench-driven from A4. Gate: bit-identical; bench. (exact, M)
-- [ ] **A7. MLX-class simdgroup-matrix decode GEMV.** Prototype from
-  `silicon-builds/dismantle-q4k-mma`; the big ceiling (~41%→60–80% peak BW).
-  Gate: parity (atol 1e-3) + paired bench. Halt-and-log if it doesn't clear —
-  hard/multi-session. (Stage-2 ceiling, hard)
-- [ ] **A8. Q3_K predec wired into the dense path + Q3_K_M bench.** Kernel is
-  validated (max_abs 1.5e-5). Requant Qwen-3B → Q3_K_M locally (llama.cpp;
-  pessimistic-from-Q4 — flag it), run it on the predec path, measure dec_tps +
-  local PPL. The byte-cut *speed* test the kernel unblocks. (byte-cut, M)
-- [ ] **A9. §7.5 host loop = GPU-busy.** Zero-alloc persistent decode loop +
-  GPU-side sampling + tightest CB reuse; drive `host_wall − Σgpu_us → 0`. Gate:
-  bit-identical; bench. (exact floor, M-H)
-- [ ] **A10. §7.1 access-order weight layout / coalesced repack.** Reorder
-  weight bytes to decode access order; validate via busy-time BW. Gate:
-  bit-identical; bench. (exact BW, M)
+- [x] **A1. Clean baseline + LM-head→predec.** DONE — PASS. Bit-identical
+  32-tok; paired dec_tps **30.94 → 31.55 (+2.0%)**; clean baseline anchor ≈31
+  (the 36.9 was contaminated). Flag `DISMANTLE_QWEN_LMHEAD_PREDEC` default-on.
+  Committed.
+- [x] **A2. Hoist audit.** DONE — NO-CHANGE. Path already tight: zero per-token
+  weight allocs/dequants/predecode in `forward_token_greedy_tcb`; all
+  token-invariant work hoisted to load (predec tables, requant, PSOs). Only
+  leftover = RoPE `pow` (not bit-identical to hoist + sub-noise 0.2–2.4%).
+  Note for **A9:** `KernelArgBuffer::new` allocs per dispatch — real host churn,
+  not token-invariant (carries `pos`) → buffer-pool refactor belongs in A9.
+- [x] **A3. Wire f16s scales into decode + paired bench.** DONE — NO-GO
+  (marginal, Type-2). Quality perfect (**0/96 token drift**, 73/73 tests) but
+  dec_tps only **+2.5% median (noise floor)** — the dominant fused gate+up pairs
+  stay f32 (no f16s *pair* kernel), so too little scale traffic is cut. Validated
+  wiring saved → `reports/overnight_patches/a3_f16s_decode_wiring.patch`; tree
+  reverted to A1. **Revisit only after an f16s _pair_ kernel exists**, then
+  re-apply the patch.
+- [x] **A4. Per-kernel decode profile.** DONE (committed report). MST couldn't
+  attribute (Claude.app compositor owned the GPU intervals) → §1-clean gpu_prod
+  fallback. **predec GEMVs = 89.4% of decode**; dominant = `predec_pair` (fused
+  gate+up) **46.6% @ ~56% peak BW (~1.6-1.8× headroom)**; `predec_2r` 42.8%.
+  → A5/A6 target `_pair` first. Also explains A3 (f16s never touched `_pair`).
+- [x] **A5. Vectorized nibble unpack (uint4).** DONE — NO-CHANGE, **Type-1
+  kill**. The byte loads are already coalesced at *simdgroup* granularity (32
+  lanes → 32 contiguous bytes = one transaction); per-thread they're stride-32,
+  so a `uint4` can't apply without reordering the bit-identical FMA chain. Death
+  is an Apple-GPU memory-model fact (do not re-test). Redirect: the 56%-peak
+  stall is occupancy / scale-read / x-traffic, not load width → **A6 + A10**.
+- [x] **A6. Threadgroup / occupancy tuning.** DONE — NO-CHANGE, **Type-1
+  (BW-bound, not occupancy-bound)**. `_pair` is oversubscribed (76 TGs/core vs
+  ~24-32 ceiling), no idle cores, no shmem/barrier lever. tg128 +0.9% (noise),
+  tg384 −0.2% — below gate. Reverted clean. → the BW gap is layout (A10) +
+  scale-byte volume (A6.5 below), not geometry.
+- [ ] **A6.5 (INSERTED, profile-driven). f16s _pair_ kernel + full f16s wiring.**
+  A4 says `_pair` (46.6%) dominates; A5/A6 say it's BW-bound; A3 showed f16s is
+  quality-clean (0/96 drift) but marginal because `_pair` stayed f32. Build
+  `gemm_q4_k_v4_predec_pair_f16s` (clone `_pair`, f16 scales — mirror how
+  `_2r_f16s` cloned `_2r`), wire BOTH pair + non-pair predec through f16s under
+  `DISMANTLE_QWEN_PREDEC_F16SCALES` (re-use the A3 patch for the non-pair half),
+  so f16s now covers ~89% of decode. Gate: rel-L2 quality + token-drift small +
+  dec_tps win ≥ +3%. (Stage-2 BW, the real f16s test, M-H)
+  → **DONE — PASS (committed). +6.1%/+8.9% (two runs), 0/32 drift on code AND
+  prose, rel-L2 2.5e-4, 4 parity + 73 lib tests green. DEFAULT-OFF opt-in
+  (`DISMANTLE_QWEN_PREDEC_F16SCALES=1`). Flip default-on only after a broad
+  N-prompt drift sweep. The night's headline win.**
+- [x] **A7. MLX-class simdgroup-matrix decode GEMV.** DONE — NO-GO / **Type-1
+  (decode)**. `dismantle-q4k-mma` is M>1/prefill (8×8 MMA tile, its VERDICT.md:
+  "dead for decode GEMV N=1"). Decode is BW-bound (MMA cuts compute, moves no
+  bytes off the bus) + M=1 underfills the units 7/8. No decode oracle → stays
+  dead. **Prefill MMA (silicon #8) is a SEPARATE live lever** (Stage-5 TTFT),
+  not decode. No change. (assessed in 66s, no wasted build)
+- [ ] **A8. Q3_K kernel microbench (byte-cut speed premise).** RESCOPED for
+  unattended safety — a full Q3_K dense-path is too big to wire overnight.
+  Instead microbench the Q3_K GEMV options on Qwen shapes: **Q3_K fused (110
+  B/block)** vs **Q3_K predec (160 B/block — predec ADDS f32 scale bytes)** vs
+  **Q4_K predec (192 B/block)**. Answers: (a) which Q3_K kernel is fastest
+  (predec's compute-saving vs fused's fewer bytes), (b) does Q3 (fewer bytes)
+  beat Q4 in GEMV time = the byte-cut speed premise. No model serving / no
+  dense-path wiring. (byte-cut characterization, M)
+  → **DONE (oracle committed).** Q3_K FUSED is the right byte-cut kernel (fewer
+  bytes; the committed Q3_K *predec* adds 64 B/block for no gain). **Byte-cut
+  SPEED premise FAILS today: Type-2** — fastest Q3_K is 22-43% SLOWER than
+  Q4_K-predec because the Q3_K kernels run at 6-33 GB/s (NOT BW-bound; lack the
+  2r/pinned fast path). Named oracle = re-run this bench after a Q3_K GEMV is
+  rewritten to the Q4_K-predec standard. Byte-cut value = footprint (−11%), not
+  speed, until then.
+- [~] **A9. §7.5 host loop = GPU-busy.** SKIPPED (Kill Protocol — recorded
+  Type-1). Host CPU-encode overhead is a recorded kill (`cpu_gpu_pipelining`,
+  `icb`: ≤0.5-0.9% of wall, ceiling +0.14 tps); the A2-flagged `KernelArgBuffer`
+  per-dispatch alloc is a subset of that already-measured envelope. Don't
+  re-test a recorded Type-1 kill. Revisit only at 100+ tps where host overhead
+  becomes a real fraction (bible §7.5).
+- [x] **A10. §7.1 access-order weight layout / coalesced repack.** DONE —
+  HALT-WITH-DESIGN, **Type-1 (built+measured, not inferred).** Bit-identical
+  per-thread-contiguous repack = **−16.8%** (de-coalesces the simdgroup;
+  stride-32 is already the HW optimum); vectorized variant not bit-identical +
+  no gain. Confirms A5 empirically. Design note + kill recorded; tree reverted.
+  **→ kernel-microopt BW track EXHAUSTED** (A5/A6/A7/A10 Type-1; A6.5 the only
+  win). Decode GEMV is at the memory-model optimum; more tps needs fewer bytes
+  (Q3, A8) or spec/stateful axes.
 
 ## Lane B — runtime / capability (parallel)
 
-- [ ] **B1. Prefix-cache BUILD (§8 L1.2, the moat).** Implement the
-  `PrefixCache` stub bodies (KV-block retention keyed by prefix hash), wire into
-  the decode entry **behind a default-off flag**, validate bit-identical reuse
-  on a multi-turn session, measure prefill-skip. Gate: bit-identical reuse +
-  prefill-time saved. (build/moat, High)
-- [ ] **B2. KV-working-set (§8 L1.1).** First a LOCAL attention-mass oracle
-  (capture attention on a long-context prompt → fraction of tokens holding 99%
-  mass per layer). If concentrated → build the eviction policy (StreamingLLM/
-  H2O/SnapKV via the stub trait), bounded working set, lossless escape hatch.
-  Gate: oracle GO, then quality-vs-context-length curve. (build, M; oracle-first)
+- [x] **B1. Prefix-cache BUILD (§8 L1.2, the moat).** DONE — **PASS
+  (committed).** `InMemoryPrefixCache` (longest-strict-prefix, exact KV
+  snapshot/restore, LRU) behind `DISMANTLE_QWEN_PREFIX_CACHE` (default-off).
+  **Bit-identical reuse on real Qwen-3B (TCB path), re-verified green (58s);
+  prefill 5551→892 ms (~84% cut)**, 81 lib tests pass. Fixed a TCB-arena stale-KV
+  subtlety (note: the disk cache has the same latent bug). Opt-in until a
+  PrefixCacheBudget byte cap is wired (then default-on is plausible — exact
+  reuse). The differentiated capability, landed.
+- [x] **B2. KV-working-set (§8 L1.1).** DONE — NO-GO mid-ctx, **Type-2
+  (regime-limited).** Built the attention-capture instrument (committed,
+  default-off, bit-identical) — the design's missing prereq. Finding (586-tok
+  code): attention DIFFUSE — 99% mass needs 78-92% of positions; sinks+recent
+  covers only 18-73%. StreamingLLM/H2O/SnapKV all die here. **Type-2 reframe =
+  LONG context (>16K)** where eviction literature's sparsity sharpens — unrun
+  (the built instrument is the named oracle; re-run at 16-32K / prose / larger
+  Qwen). Eviction NOT built (halt-with-design).
 
 ## Lane C — measurement (cheap, anytime)
 
-- [ ] **C1. Energy / joules-per-token (§8 L4.2).** Instrument with
-  `powermetrics`/`macmon`; establish a joules-per-token baseline + report it
-  alongside dec_tps. The branded axis nobody flies. (measurement, High)
+- [x] **C1. Energy / joules-per-token (§8 L4.2).** DONE — HALT-WITH-FINDING
+  (tooling, not a kill). No sudo-free power source unattended (`macmon` not
+  installed; `powermetrics` needs sudo; IOReport not loadable; battery = whole-
+  machine AC). Built turnkey `tools/bench/measure_joules.sh` (committed,
+  sudo-refusing, `--f16s` compares A6.5). **Morning 1-liner:**
+  `brew install macmon && tools/bench/measure_joules.sh --tokens 256 --f16s`.
 
 ---
 
 ## Progress log (main session updates as steps land)
-- _run started 2026-05-31; kicked off A1 (GPU) + B1 (runtime) + C1 (cheap)._
+- _run started 2026-05-31, consecutive (one agent at a time)._
+- **A1 PASS** — LM-head→predec, bit-identical, 30.94→31.55 dec_tps (+2.0%); clean baseline ≈31. Committed. → launching A2.
+- **A2 NO-CHANGE** — decode path already tight (all token-invariant work hoisted); RoPE-pow leftover not worth parity risk. No commit. → launching A3.
+- **A3 NO-GO** (marginal) — f16s decode-wiring +2.5% median (noise floor), 0/96 token drift; dominated by f32 fused pairs. Patch saved, tree reverted to A1. → launching A4.
+- **A4 PASS** (profile) — predec GEMVs 89.4% of decode; `predec_pair` 46.6% @ 56% peak BW = the stall. Report committed. → launching A5 (uint4 unpack on `_pair`).
+- **A5 NO-CHANGE** (Type-1) — loads already simdgroup-coalesced; uint4 inapplicable + would break bit-identical. Stall is occupancy/scale/x, not load width. No commit. → launching A6 (occupancy).
+- **A6 NO-CHANGE** (Type-1, BW-bound) — `_pair` oversubscribed, no occupancy lever; geometry sweeps noise. → BW gap is layout/scale-volume. **Inserted A6.5** (f16s _pair_ kernel) as the profile-indicated next build. → launching A6.5.
+- **A6.5 PASS (committed)** — f16s pair kernel, **+6-9% decode** opt-in, 0/32 drift code+prose, default-off. THE win of the night (profile arc A3→A4→A5→A6→A6.5). → launching A7.
+- **A7 NO-GO** (Type-1, decode) — MMA is a compute lever; decode is BW-bound + M=1 underfills (silicon's own VERDICT.md agrees). Prefill MMA = separate lever. No change, 66s. → launching A8 (Q3_K kernel microbench, rescoped).
+- **A8 DONE** (oracle committed) — byte-cut SPEED Type-2-dead (Q3_K 22-43% slower than Q4_K-predec; Q3_K kernels not BW-bound, lack 2r/pinned). FUSED is the right Q3 kernel. Footprint lever (−11%) alive. → A9 skipped, launching A10.
+- **A9 SKIPPED** (Kill Protocol) — host-loop = recorded Type-1 kill (CPU-encode ≤0.5% wall); don't re-test; revisit at 100+ tps.
+- **A10 HALT-WITH-DESIGN** (Type-1, built+measured) — bit-identical repack −16.8% (de-coalesces); kernel at HW optimum. Kill + design committed. **Kernel-BW track exhausted (A6.5 the lone win).** → launching B1 (prefix-cache moat).
+- **B1 PASS (committed)** — prefix-cache moat: **bit-identical KV reuse (real Qwen-3B, re-verified), ~84% prefill cut**, default-off opt-in. The differentiated capability. → launching B2 (KV-working-set oracle).
+- **B2 NO-GO mid-ctx (Type-2)** — built+committed the attn-capture instrument (default-off, bit-identical); attention diffuse at 586 tok (99% mass needs 78-92% of positions). Long-context (>16K) reframe unrun; instrument is the named oracle. → launching C1 (energy).
+- **C1 HALT-WITH-FINDING** — no sudo-free power source unattended; built turnkey measure_joules.sh (committed). One-command attended recipe recorded. **QUEUE COMPLETE.**
+
+---
+
+## CLOSEOUT (2026-05-31, queue complete)
+
+**3 real wins committed** (all gated, all LOCAL/unpushed):
+- **A1** LM-head→predec: +2.0%, **bit-identical**, default-on. Clean baseline ≈31 dec_tps (the 36.9 was contaminated).
+- **A6.5** f16s-scales covering the FFN gate+up pair: **+6-9%**, 0/32 drift (code+prose), opt-in `DISMANTLE_QWEN_PREDEC_F16SCALES` (default-off; default-on after a corpus drift sweep).
+- **B1** in-RAM prefix cache (the moat): **bit-identical KV reuse, ~84% prefill cut**, opt-in `DISMANTLE_QWEN_PREFIX_CACHE` (default-off; default-on after a byte-budget cap).
+
+**Tooling/oracles committed:** A4 per-kernel profile; A8 Q3_K byte-cut microbench; B2 attention-capture instrument; C1 joules harness.
+
+**Honest kills (the discipline working):** kernel-microopt BW track EXHAUSTED — A5 uint4 (Type-1, coalesced), A6 occupancy (Type-1, BW-bound), A7 MMA (Type-1, compute lever vs BW-bound+M=1), A10 layout (Type-1, built+measured −16.8%). A6.5 was the lone BW win → **the Q4_K predec decode GEMV is at the Apple-GPU memory-model optimum.** A2 no-change (path already tight). A9 skipped (recorded Type-1 host kill). A3 f16s-non-pair NO-GO (superseded by A6.5 — its patch `reports/overnight_patches/a3_f16s_decode_wiring.patch` is now OBSOLETE, discard).
+
+**Type-2 reframes (alive, named oracle each):** byte-cut SPEED (A8 — needs a 2r/pinned Q3_K kernel; re-run q3k_bytecut_bench); KV-working-set (B2 — re-run the attn-capture instrument at 16-32K / prose / larger Qwen).
+
+**MORNING TO-DO:**
+1. Review + **push** ~15 local commits (`git log origin/codex/maximal-spec-colab..HEAD`).
+2. Decide default-on for A6.5 (drift sweep) + B1 (budget cap) — both exact/clean, just need the safety wiring.
+3. Energy baseline: `brew install macmon && tools/bench/measure_joules.sh --tokens 256 --f16s`.
+4. Pre-existing issues (NOT from this haul): `tests/v1_1_phase5A_batched_forward_parity.rs` stale `SpeculateMode::NGram` compile error (commit 822e779); the on-disk prefill cache has the same TCB-arena stale-KV latent bug B1 fixed for the RAM tier.
+5. Discard the obsolete A3 patch (A6.5 supersedes it).
+- **⚠ pre-existing (flag for morning):** `tests/v1_1_phase5A_batched_forward_parity.rs` fails to compile at HEAD (stale `SpeculateMode::NGram`, from old commit 822e779 — NOT from this haul). Isolated to that one test binary; lib + all haul tests compile fine.
