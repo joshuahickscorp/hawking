@@ -164,6 +164,16 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Q4_K batched MMA (simdgroup-matrix) on rows ≤ cols shapes
+
+**Status:** killed 2026-05-31 by paired microbench (Type-1 occupancy) — PARTIAL kill; the rows>cols variant is GO (shape-gated, integration deferred — see handoff)
+**Evidence:** P1 prefill-MMA (`gemm_q4_k_m_batched_v3w_mma`, one-simdgroup/8-rows tile). Paired N=8 GEMM microbench vs v3w, parity-green (atol 8e-5→1.26e-4 fp16, token-identical): tall ffn gate/up (11008×2048, rows>cols) = **+22–24%** WIN; ffn_down (2048×11008) = **−8.8%**; attn q/o (2048×2048) = **−10–16%** LOSE. On rows≤cols the ceil(rows/8)-threadgroup geometry underfills the M3 Pro — a measured hardware-occupancy property, not an impl weakness. So MMA is shape-gated to rows>cols.
+**Type:** Type-1 for rows≤cols (occupancy reality — square/wide attn + ffn_down). Type-2 reframe: a **multi-simdgroup-per-TG** tile would fill on small-rows shapes — alive only behind an offline occupancy oracle (TG count vs M3 Pro core count at those dims). Separately, the GO tall-shape MMA is **dormant in the shipped (predec-on) batched path** and needs a **predec-MMA twin** + batched predec scale-table coverage to fire.
+**Killing memory:** [[moat-status-forward-path-2026-05-31]]; handoff `plans/p1_prefill_mma_integration_handoff_2026_05_31.md`; branch `worktree-agent-a08c1cb44eb3d4e47` (`c9b1c07`).
+**Resurrection check:** do NOT wire MMA into attn/ffn_down (rows≤cols) without the multi-simdgroup tile + its occupancy oracle. The tall-shape MMA is GO but needs the predec-MMA twin to help the shipped path (which uses predec, not v3w).
+
+---
+
 ## 🪦 Q5_0 simd_shuffle byte broadcast (audit fix #1)
 
 **Status:** killed 2026-05-14 by -3.5% regression
@@ -194,6 +204,16 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Semantic cache (Bible §8.1 L1.2 extension) — PARKED, not reality-dead
+
+**Status:** NO-GO 2026-05-31 on the git-history proxy — **Type-2 (parked behind a named, built oracle)**
+**Evidence:** `reports/oracle/semantic_uplift.json` + `reports/oracle_semantic_uplift.md` (`oracle_prefix_cache.py` incremental-reuse mode). Incremental reuse OVER the shipped default-on exact prefix cache = **+1.48 pts mean / +0.00 median / +13.2 max** across 14 sessions, vs the ~10-pt gate. 12/14 sessions = +0.00 (the exact tier already harvests every consecutive shared prefix); retrieval precise (100% verify-confirm at τ_sem=0.80, MIN_REUSE=16). The kill is opportunity, not recall.
+**Type:** Type-2. The mechanism provably works (2 return-to-prior-file sessions at +13.2/+7.5); it died on the proxy's consecutive-edit *workload shape*, not on reality. The +0.00 median is also positive evidence the shipped exact prefix cache is doing its job.
+**Killing memory:** [[moat-status-forward-path-2026-05-31]]
+**Resurrection check:** re-run the SAME oracle (`oracle_prefix_cache.py`, ~13 s, no GPU) on REAL file-interleaved session logs. GO there ⇒ build `InMemorySemanticIndex` per `plans/stateful_moat_continuation_design_2026_05_31.md` §1.5 (build plan executes unchanged). Do NOT build on the proxy number; do NOT bury as reality-dead.
+
+---
+
 ## 🪦 Speculative-decode ExactShared as-is
 
 **Status:** regression confirmed 2026-05-11, structurally infeasible without batched verify or 10-20 ms draft
@@ -210,6 +230,17 @@ Ordered alphabetically by lever name.
 **Killing memory:** [[v110-path30-findings]]
 **Resurrection check:** the kernel is in tree; useful if LM-head cost share ever rises (e.g. after a much larger vocab change). Today it's parked.
 **Lesson:** never invest in a lever before measuring its cost share. Run per-kernel time breakdown first (per `reports/per_kernel_time_2026-05-20.md`).
+
+---
+
+## 🪦 Usage-frequency vocab screen w/ norm-bound certificate (Bible §8.1 L3.1)
+
+**Status:** NO-GO 2026-05-31 by offline oracle — **Type-1 (reality-dead)**
+**Evidence:** `reports/oracle/vocab_coverage.json` + `reports/oracle_vocab_coverage.md` (`oracle_vocab_coverage.py`, real GGUF lm_head dequant). Certified-fast-path rate = **0%** across the full ‖h‖/ℓ_c sweep and across H=256→32768. The norm-bound certificate (out-of-H token v provably-not-argmax iff ‖w_v‖·‖h‖ < ℓ_c) needs cos(w_c,h) > **1.0–1.46** to fire — unreachable (cos ≤ 1). Coverage is fine (H=7,119 covers 99.9% of occurrences) — NOT the blocker. Smoking gun: the 10 highest-norm lm_head rows are RARE tokens (corpus freq 0, freq-rank 22k–146k), so a frequency hot set never includes them → max out-of-H norm pinned at the global max → the Cauchy-Schwarz bound is structurally too loose.
+**Type:** Type-1 — a measured head property (similar row norms, cond≈45 full-rank, + norm/frequency anti-correlation). Distinct mechanism from the dead SVD screen, dies the same way. lm_head is only ~4–10% of bytes/token → small ceiling regardless.
+**Type-2 reframes (dead-until-their-oracle, NOT resurrected on vibes):** block-max / per-coordinate certificate (tighter than scalar Cauchy-Schwarz); data-aware real-argmax hot set (capture the true argmax stream via `usage_capture` instead of input-token frequency). Each alive only behind its own cheap offline oracle.
+**Killing memory:** [[moat-status-forward-path-2026-05-31]]; sibling SVD-screen kill [[kill-protocol-reframe-audit-2026-05-30]].
+**Resurrection check:** do NOT build the scalar-norm-bound screen. A reframe ships only after its named oracle clears (a tighter certificate certifies ≥80%, OR the data-aware hot set with REAL argmax frequencies changes the coverage picture).
 
 ---
 
