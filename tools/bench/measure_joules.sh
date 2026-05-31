@@ -134,7 +134,8 @@ try:
   d=json.load(sys.stdin)
 except Exception:
   sys.exit(0)
-print(f"{(d.get(\"gpu_power\",0) or 0):.4f}")' )
+gp=d.get("gpu_power",0) or 0
+print(f"{gp:.4f}")' )
     [[ -n "$pkg" ]] && echo "$pkg" >> "$1"
     [[ -n "$gpu" ]] && echo "$gpu" >> "$2"
   done
