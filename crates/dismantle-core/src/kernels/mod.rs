@@ -1205,6 +1205,98 @@ mod metal_dispatch {
         )
     }
 
+    /// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3).
+    ///
+    /// The fast Q3_K GEMV the oracle byte-cut win was blocked on: a Q3_K model
+    /// otherwise runs the generic dequant path (~19 dec_tps vs ~32 on the Q4_K
+    /// fast stack, because predec/2r are Q4_K-specific). Same 8-rows-per-TG
+    /// geometry as `gemm_q3_k_fused_v2` but reads the 16 per-sub-block
+    /// `d * scale[i]` f32 values per block from a parallel pre-decoded table
+    /// (`scales_buf`) instead of unpacking the packed 6-bit scales + super-block
+    /// `d` inline every call. Bit-identical to `gemm_q3_k_fused_v2`.
+    ///
+    /// Build the table once at load time via
+    /// [`crate::quant::predecode_q3_k_scale_table`] and pin it. Q3_K is
+    /// symmetric (no min term): the table is `rows * (cols / 256) * 16` f32.
+    /// Q3_K block is 110 bytes (vs Q4_K's 144).
+    ///
+    /// **Private API entry point** — not yet wired into the production forward
+    /// pass (dismantle's dense path serves Q4_K_M today); that's the byte-cut
+    /// consolidation step, gated on the on-GPU parity + paired bench.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q3_k_v4_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q3_k_v4_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(110))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
+            },
+        )
+    }
+
     /// Fused gate+up predec GEMV: ONE dispatch computes both `g_out` and
     /// `u_out` from the shared activation `x_buf`. Bit-identical to two
     /// separate `gemv_q4_k_v4_predec_pinned_tcb` calls. Halves the FFN
