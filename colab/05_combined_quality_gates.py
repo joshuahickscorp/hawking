@@ -14,16 +14,16 @@
 #    Cornell-RelaxML QTIP codec (RHT+trellis, fit from f16) beat Q4_K_M on
 #    weight-RMSE + logits + PPL? → `qtip_3bit_results.json`
 #
-# Gate 2 runs FIRST (so you get that verdict in ~20-30 min even if the QTIP
-# codec is slow/finicky), Gate 1 after. Each gate is independently guarded — a
-# failure in one still produces the other's verdict + downloads its JSON. The
-# QTIP codec auto-saves to / restores from Google Drive so a disconnect never
-# costs the ~20-40 min quant. Both gates compare against the SAME shipped gold
-# Q4_K_M (the incumbent we'd replace).
+# Gate 2 runs FIRST (so you get that verdict before any QTIP research-stack
+# trouble). Fresh QTIP is now opt-in: by default this notebook restores a cached
+# QTIP HF model from Drive if one exists, otherwise it records a
+# NEEDS-MEASUREMENT without launching the expensive upstream codec. Set
+# `ALLOW_FRESH_QTIP_CODEC=True` only when you deliberately want to spend CUs on
+# the trellis path. Both gates compare against the SAME shipped gold Q4_K_M.
 
 # %%
 # --- 0. Config + GPU + the baked-in QTIP decision constants ------------------
-import json, os, re, subprocess, sys, time, shutil
+import hashlib, json, os, re, subprocess, sys, time, shutil
 from pathlib import Path
 
 import torch
@@ -32,9 +32,16 @@ _gpu = torch.cuda.get_device_name(0)
 _vram = torch.cuda.get_device_properties(0).total_memory / 1e9
 print("GPU:", _gpu, f"{_vram:.0f} GB")
 
+# CU guardrails. These are the knobs to touch before re-running cells.
+ALLOW_FRESH_QTIP_CODEC = False       # set True only for a deliberate QTIP spend
+USE_DRIVE_QTIP_CACHE = True
+IMATRIX_CHUNKS = 64                  # old: 80; balanced signal/cost
+PPL_CHUNKS = 40                      # old: 50; cached after first successful run
+LOGIT_TOKENS = 192                   # old: 256; cached after first successful run
+
 MODEL_ID = "Qwen/Qwen2.5-3B-Instruct"
 BITS = 3                              # QTIP stored bits/weight target
-RUN_REAL_QTIP = _vram >= 24           # need L4/A100-class for the real QTIP codec
+RUN_REAL_QTIP = ALLOW_FRESH_QTIP_CODEC and _vram >= 24
 # QTIP gate lines (reports/oracle_qtip_quality.md):
 PROXY_BITS_NEEDED = 1.20
 GATE_BITS_NEEDED = 0.0                # GO: measured bits_needed <= 0
@@ -44,6 +51,8 @@ RHT_BLOCK = 256; QK = 256; SEED = 0
 results_qtip = {
     "model": MODEL_ID, "bits": BITS, "gpu": _gpu, "vram_gb": round(_vram, 1),
     "run_real_qtip": RUN_REAL_QTIP, "proxy_bits_needed": PROXY_BITS_NEEDED,
+    "fresh_qtip_opt_in": ALLOW_FRESH_QTIP_CODEC,
+    "drive_cache_enabled": USE_DRIVE_QTIP_CACHE,
     "gate": {"bits_needed_le": GATE_BITS_NEEDED, "ppl_ratio_le": GATE_PPL_RATIO,
              "logit": "cos>=Q4K & argmax>=Q4K & KL<=Q4K, on code"},
     "verdict": "PENDING",
@@ -55,7 +64,8 @@ results_im = {
              "ppl": "ppl(mix) <= ppl(q4k)"},
     "gib": {}, "ppl": {}, "logit": {}, "notes": [], "verdict": "PENDING",
 }
-print("RUN_REAL_QTIP =", RUN_REAL_QTIP)
+print("RUN_REAL_QTIP =", RUN_REAL_QTIP, "| fresh opt-in =", ALLOW_FRESH_QTIP_CODEC)
+print("chunks:", {"imatrix": IMATRIX_CHUNKS, "ppl": PPL_CHUNKS, "logit_tokens": LOGIT_TOKENS})
 
 # %%
 # --- 1. Build llama.cpp once (gold Q4_K_M quantizer + imatrix + perplexity) ---
@@ -65,7 +75,8 @@ subprocess.run([sys.executable, "-m", "pip", "install", "-q",
 import numpy as np
 
 REPO = "/content/llama.cpp"; BIN = f"{REPO}/build/bin"
-if not Path(BIN, "llama-quantize").exists():
+LLAMA_TOOLS = ("llama-quantize", "llama-perplexity", "llama-imatrix")
+if not all(Path(BIN, tool).exists() for tool in LLAMA_TOOLS):
     if not Path(REPO).exists():
         subprocess.run(["git", "clone", "--depth", "1",
                         "https://github.com/ggml-org/llama.cpp", REPO], check=True)
@@ -74,14 +85,22 @@ if not Path(BIN, "llama-quantize").exists():
     subprocess.run(["cmake", "-S", REPO, "-B", f"{REPO}/build",
                     "-DLLAMA_CURL=OFF", "-DCMAKE_BUILD_TYPE=Release", "-DGGML_CUDA=ON",
                     "-DCMAKE_CUDA_ARCHITECTURES=native"], check=True)
-    subprocess.run(["cmake", "--build", f"{REPO}/build", "-j", "--config", "Release"], check=True)
-for tool in ("llama-quantize", "llama-perplexity", "llama-imatrix"):
+    jobs = str(os.cpu_count() or 2)
+    targeted = ["cmake", "--build", f"{REPO}/build", "--config", "Release",
+                "--target", *LLAMA_TOOLS, "-j", jobs]
+    r = subprocess.run(targeted, capture_output=True, text=True)
+    if r.returncode != 0:
+        print("[warn] targeted llama.cpp build failed; falling back to full build")
+        print((r.stderr or r.stdout)[-1600:])
+        subprocess.run(["cmake", "--build", f"{REPO}/build", "-j", jobs,
+                        "--config", "Release"], check=True)
+for tool in LLAMA_TOOLS:
     assert Path(BIN, tool).exists(), f"build missing {tool}"
 print("llama.cpp built:", BIN)
 
 # %%
 # --- 2. Fetch near-lossless source + corpora + the SHARED gold Q4_K_M --------
-from huggingface_hub import list_repo_files, hf_hub_download, snapshot_download
+from huggingface_hub import list_repo_files, hf_hub_download
 import urllib.request
 
 REPOS = ["Qwen/Qwen2.5-3B-Instruct-GGUF", "bartowski/Qwen2.5-3B-Instruct-GGUF"]
@@ -110,13 +129,41 @@ for name in ("calib_trim.txt", "ppl_trim.txt"):
         urllib.request.urlretrieve(f"{RAW}/{name}", f"/content/{name}")
 CALIB, EVAL = "/content/calib_trim.txt", "/content/ppl_trim.txt"
 
+WORK = Path("/content/quality_gate_cache"); WORK.mkdir(parents=True, exist_ok=True)
+PPL_CACHE = WORK / "ppl_cache.json"
+LOGIT_CACHE = WORK / "logits"; LOGIT_CACHE.mkdir(parents=True, exist_ok=True)
+GGUF_MIN_BYTES = 200 * 1024**2
+
+def _good_file(p, min_bytes=1):
+    p = Path(p)
+    return p.is_file() and p.stat().st_size >= min_bytes
+
+def _drop_bad_file(p, min_bytes=1):
+    p = Path(p)
+    if p.exists() and not _good_file(p, min_bytes):
+        print("[warn] removing partial artifact:", p, p.stat().st_size, "bytes")
+        p.unlink()
+
+def _cache_key(path, *extra):
+    p = Path(path)
+    raw = f"{p.name}:{p.stat().st_size if p.exists() else 0}:{':'.join(map(str, extra))}"
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:16]
+
+def _read_json_cache(path):
+    try:
+        return json.loads(Path(path).read_text()) if Path(path).exists() else {}
+    except Exception as e:
+        print("[warn] ignoring corrupt cache:", path, repr(e)[:120])
+        return {}
+
 # SHARED gold Q4_K_M (the shipped incumbent both gates compare against),
 # quantized from the near-lossless source (from-f16-class, never from-Q4).
 Q4KM_GGUF = "/content/qwen3b-q4_k_m.gguf"
-if not Path(Q4KM_GGUF).exists():
+_drop_bad_file(Q4KM_GGUF, GGUF_MIN_BYTES)
+if not _good_file(Q4KM_GGUF, GGUF_MIN_BYTES):
     r = subprocess.run([f"{BIN}/llama-quantize", "--allow-requantize",
                         SRC_GGUF, Q4KM_GGUF, "Q4_K_M"], capture_output=True, text=True)
-    assert Path(Q4KM_GGUF).exists(), r.stderr[-1000:]
+    assert _good_file(Q4KM_GGUF, GGUF_MIN_BYTES), r.stderr[-1000:]
 def _gib(p): return round(os.path.getsize(p) / 1024**3, 4)
 print("gold Q4_K_M:", Q4KM_GGUF, f"({_gib(Q4KM_GGUF)} GiB)")
 
@@ -125,7 +172,7 @@ def _softmax(x):
     x = x - x.max(-1, keepdims=True); e = np.exp(x); return e / e.sum(-1, keepdims=True)
 def _cos(a, b):
     a = a.astype(np.float64); b = b.astype(np.float64)
-    num = (a * b).sum(-1); den = np.linalg.norm(a, -1) * np.linalg.norm(b, -1)
+    num = (a * b).sum(-1); den = np.linalg.norm(a, axis=-1) * np.linalg.norm(b, axis=-1)
     return float(np.mean(num / np.maximum(den, 1e-12)))
 def _kl(p_logits, q_logits):
     p = _softmax(p_logits.astype(np.float64)); q = _softmax(q_logits.astype(np.float64))
@@ -134,15 +181,33 @@ def _argmax_agree(a, b):
     return float(np.mean(a.argmax(-1) == b.argmax(-1)))
 def _ppl(gguf):
     try:
+        key = _cache_key(gguf, "ppl", PPL_CHUNKS)
+        cache = _read_json_cache(PPL_CACHE)
+        if key in cache:
+            return cache[key]
         r = subprocess.run([f"{BIN}/llama-perplexity", "-m", gguf, "-f", EVAL,
-                            "--chunks", "50", "-ngl", "99"], capture_output=True, text=True)
+                            "--chunks", str(PPL_CHUNKS), "-ngl", "99"],
+                           capture_output=True, text=True)
         m = re.findall(r"Final estimate:\s*PPL\s*=\s*([0-9.]+)", r.stderr + r.stdout)
-        return float(m[-1]) if m else None
+        val = float(m[-1]) if m else None
+        if val is not None:
+            cache[key] = val
+            PPL_CACHE.write_text(json.dumps(cache, indent=2))
+        elif r.returncode != 0:
+            print("[ppl failed rc]", r.returncode, (r.stderr or r.stdout)[-800:])
+        return val
     except Exception as e:
         print("ppl failed", gguf, e); return None
-def _gguf_logits(gguf, n=256):
+def _gguf_logits(gguf, n=LOGIT_TOKENS):
     """Next-token logits for the first n eval tokens via llama-cpp-python."""
     from llama_cpp import Llama
+    cache = LOGIT_CACHE / f"{Path(gguf).stem}-{_cache_key(gguf, 'logits', n)}.npy"
+    if cache.exists():
+        try:
+            return np.load(cache)
+        except Exception as e:
+            print("[warn] ignoring corrupt logits cache:", cache, repr(e)[:120])
+            cache.unlink(missing_ok=True)
     txt = Path(EVAL).read_text(errors="ignore")[:4000]
     llm = Llama(model_path=gguf, n_ctx=max(n + 8, 512), logits_all=True,
                 n_gpu_layers=-1, verbose=False)
@@ -150,6 +215,7 @@ def _gguf_logits(gguf, n=256):
     llm.reset(); llm.eval(toks)
     sc = np.array(llm.scores[:len(toks)], dtype=np.float32)
     del llm
+    np.save(cache, sc)
     return sc
 
 # %%
@@ -161,40 +227,45 @@ def _gguf_logits(gguf, n=256):
 try:
     subprocess.run([sys.executable, "-m", "pip", "install", "-q", "llama-cpp-python"], check=False)
     IM = "/content/code.imatrix"
-    if not Path(IM).exists():
+    _drop_bad_file(IM, 1024)
+    if not _good_file(IM, 1024):
         r = subprocess.run([f"{BIN}/llama-imatrix", "-m", SRC_GGUF, "-f", CALIB,
-                            "-o", IM, "--chunks", "80", "-ngl", "99"], capture_output=True, text=True)
-        assert Path(IM).exists(), r.stderr[-1200:]
+                            "-o", IM, "--chunks", str(IMATRIX_CHUNKS), "-ngl", "99"],
+                           capture_output=True, text=True)
+        assert _good_file(IM, 1024), r.stderr[-1200:]
     MIX = "/content/qwen3b-mixed.gguf"
+    _drop_bad_file(MIX, GGUF_MIN_BYTES)
     results_im["gib"]["q4km"] = _gib(Q4KM_GGUF)
     help_txt = (subprocess.run([f"{BIN}/llama-quantize", "--help"], capture_output=True, text=True).stdout
                 + subprocess.run([f"{BIN}/llama-quantize"], capture_output=True, text=True).stderr)
     has_override = "--tensor-type" in help_txt
-    if has_override and not Path(MIX).exists():
+    if has_override and not _good_file(MIX, GGUF_MIN_BYTES):
         r = subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM,
                             "--tensor-type", "ffn_down=Q3_K", "--tensor-type", "ffn_up=Q3_K",
                             SRC_GGUF, MIX, "Q4_K_M"], capture_output=True, text=True)
-        if not Path(MIX).exists():
+        if not _good_file(MIX, GGUF_MIN_BYTES):
+            Path(MIX).unlink(missing_ok=True)
             has_override = False; results_im["notes"].append("override failed; uniform Q3_K_M+imatrix fallback")
-    if not has_override and not Path(MIX).exists():
+    if not has_override and not _good_file(MIX, GGUF_MIN_BYTES):
         subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM, SRC_GGUF, MIX, "Q3_K_M"],
                        capture_output=True, text=True)
         results_im["notes"].append("mixed = uniform Q3_K_M+imatrix (no --tensor-type in this build)")
-    assert Path(MIX).exists(), "mixed GGUF not produced"
+    assert _good_file(MIX, GGUF_MIN_BYTES), "mixed GGUF not produced"
     results_im["gib"]["mixed"] = _gib(MIX)
     results_im["mixed_under_budget"] = results_im["gib"]["mixed"] <= results_im["gib"]["q4km"]
 
     # Uniform Q3_K_M+imatrix — a third data point that subsumes the old
     # 01_bytecut PPL gate (does plain 3-bit GGUF-native stay near Q4_K_M?).
     Q3KM = "/content/qwen3b-q3_k_m.gguf"
-    if not Path(Q3KM).exists():
+    _drop_bad_file(Q3KM, GGUF_MIN_BYTES)
+    if not _good_file(Q3KM, GGUF_MIN_BYTES):
         subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM, SRC_GGUF, Q3KM, "Q3_K_M"],
                        capture_output=True, text=True)
-    if Path(Q3KM).exists():
+    if _good_file(Q3KM, GGUF_MIN_BYTES):
         results_im["gib"]["q3km_uniform"] = _gib(Q3KM)
     for tag, g in (("ref", SRC_GGUF), ("q4km", Q4KM_GGUF), ("mixed", MIX),
                    ("q3km_uniform", Q3KM)):
-        if Path(g).exists():
+        if _good_file(g, GGUF_MIN_BYTES):
             results_im["ppl"][tag] = _ppl(g)
     try:
         ref = _gguf_logits(SRC_GGUF); q4k = _gguf_logits(Q4KM_GGUF); mix = _gguf_logits(MIX)
@@ -293,18 +364,31 @@ HF_DIR = Path("/content/qwen3b-qtip-3bit-hf")
 HESS = Path("/content/hessians_code"); CKPT = Path("/content/qwen3b-qtip-3bit")
 results_qtip["real_qtip_ran"] = False
 CACHE = None
+
+def _nonempty_dir(p):
+    p = Path(p)
+    return p.is_dir() and any(p.iterdir())
+
+def _valid_hf_model(p):
+    p = Path(p)
+    weights = list(p.glob("*.safetensors")) + list(p.glob("pytorch_model*.bin"))
+    return p.is_dir() and (p / "config.json").exists() and bool(weights)
+
 try:
     from google.colab import drive
-    drive.mount("/content/drive")
-    CACHE = Path("/content/drive/MyDrive/qtip_gate_cache"); CACHE.mkdir(parents=True, exist_ok=True)
-    for art in (HF_DIR, CKPT, HESS):
-        c = CACHE / art.name
-        if not art.exists() and c.exists():
-            (shutil.copytree if c.is_dir() else shutil.copy2)(c, art); print("restored:", art.name)
+    if USE_DRIVE_QTIP_CACHE:
+        drive.mount("/content/drive", force_remount=False)
+        CACHE = Path("/content/drive/MyDrive/qtip_gate_cache"); CACHE.mkdir(parents=True, exist_ok=True)
+        for art in (HF_DIR, CKPT, HESS):
+            c = CACHE / art.name
+            wanted = _valid_hf_model(c) if art == HF_DIR else _nonempty_dir(c)
+            present = _valid_hf_model(art) if art == HF_DIR else _nonempty_dir(art)
+            if not present and wanted:
+                shutil.copytree(c, art, dirs_exist_ok=True); print("restored:", art.name)
 except Exception as e:
     print("[Drive cache unavailable]", repr(e)[:160])
 
-if HF_DIR.is_dir():
+if _valid_hf_model(HF_DIR):
     results_qtip["real_qtip_ran"] = True; print("QTIP HF model present -> skip codec")
 elif RUN_REAL_QTIP:
     if not Path("QTIP").is_dir():
@@ -315,9 +399,18 @@ elif RUN_REAL_QTIP:
         "grep -rl 'import flash_attn' QTIP 2>/dev/null | xargs -r sed -i "
         "'s/^import flash_attn.*/flash_attn = None  # disabled on Blackwell/'"], check=False)
     subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", "QTIP/requirements.txt"], check=False)
-    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "glog", "primefac"], check=False)
-    kbuild = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-e", "QTIP/qtip-kernels"],
-                            capture_output=True, text=True)
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q",
+                    "glog", "primefac", "fast-hadamard-transform"], check=False)
+    dep = subprocess.run([sys.executable, "-c", "import fast_hadamard_transform"],
+                         capture_output=True, text=True)
+    results_qtip["fast_hadamard_transform_import_rc"] = dep.returncode
+    if dep.returncode != 0:
+        results_qtip.setdefault("qtip_errs", {})["fast_hadamard_transform"] = (dep.stderr or dep.stdout)[-1200:]
+        print("[warn] fast_hadamard_transform still missing; QTIP codec skipped")
+        kbuild = subprocess.CompletedProcess([], 1, "", "fast_hadamard_transform missing")
+    else:
+        kbuild = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-e", "QTIP/qtip-kernels"],
+                                capture_output=True, text=True)
     results_qtip["qtip_kernels_build_rc"] = kbuild.returncode
     if kbuild.returncode != 0:
         print("[warn] qtip-kernels build failed -> bracket only:", kbuild.stderr[-500:])
@@ -344,7 +437,7 @@ elif RUN_REAL_QTIP:
                           "--hf_output_path", str(HF_DIR))
             results_qtip["hfize_rc"] = rc_hf
         os.chdir("..")
-        results_qtip["real_qtip_ran"] = (rc_h == 0 and rc_q == 0 and rc_hf == 0 and HF_DIR.is_dir())
+        results_qtip["real_qtip_ran"] = (rc_h == 0 and rc_q == 0 and rc_hf == 0 and _valid_hf_model(HF_DIR))
         if results_qtip["real_qtip_ran"] and CACHE is not None:
             try:
                 for art in (HF_DIR, CKPT, HESS):
@@ -354,7 +447,7 @@ elif RUN_REAL_QTIP:
                 print("[Drive save failed]", repr(e)[:160])
     print("real QTIP HF model ready:", results_qtip["real_qtip_ran"])
 else:
-    print("RUN_REAL_QTIP=False -> bracket only; QTIP verdict NEEDS-MEASUREMENT.")
+    print("Fresh QTIP disabled -> cache/bracket only; QTIP verdict NEEDS-MEASUREMENT unless cache restored.")
 
 # %%
 # --- GATE 1: QTIP LEG 1 (weight-RMSE) + LEG 2 (logits) + LEG 3 (PPL) + VERDICT-
@@ -375,70 +468,113 @@ try:
         "model.layers.17.mlp.up_proj.weight": "blk.17.ffn_up.weight",
         "model.layers.35.self_attn.q_proj.weight": "blk.35.attn_q.weight",
         "model.layers.35.mlp.down_proj.weight": "blk.35.ffn_down.weight"}
-    snap = snapshot_download(MODEL_ID, allow_patterns=["*.safetensors", "*.json"])
-    def _open_f16(name):
-        for st in Path(snap).glob("*.safetensors"):
-            with safe_open(str(st), framework="pt") as f:   # framework=pt: bf16-safe (numpy can't)
+    HF_SHAPE = {
+        "model.layers.0.self_attn.q_proj.weight": (2048, 2048),
+        "model.layers.0.mlp.gate_proj.weight": (11008, 2048),
+        "model.layers.0.mlp.down_proj.weight": (2048, 11008),
+        "model.layers.17.self_attn.o_proj.weight": (2048, 2048),
+        "model.layers.17.mlp.up_proj.weight": (11008, 2048),
+        "model.layers.35.self_attn.q_proj.weight": (2048, 2048),
+        "model.layers.35.mlp.down_proj.weight": (2048, 11008),
+    }
+
+    def _reader_map(path):
+        return {t.name: t for t in GGUFReader(path).tensors}
+
+    def _deq_flat(by_name, gguf_name):
+        t = by_name.get(gguf_name)
+        if t is None:
+            return None, None
+        raw = np.array(t.data)
+        try:
+            arr = dequantize(raw, t.tensor_type)
+        except Exception:
+            arr = raw
+        return arr.astype(np.float32).ravel(), getattr(t.tensor_type, "name", str(t.tensor_type))
+
+    def _shape_candidates(flat, shape):
+        if flat is None or flat.size != int(np.prod(shape)):
+            return []
+        out = [flat.reshape(shape)]
+        if shape[0] != shape[1]:
+            out.append(flat.reshape(shape[::-1]).T)
+        return out
+
+    def _best_oriented_pair(src_flat, q4_flat, shape):
+        best = None
+        for src in _shape_candidates(src_flat, shape):
+            for q4 in _shape_candidates(q4_flat, shape):
+                score = rel_rmse(q4, src)
+                if best is None or score < best[2]:
+                    best = (src, q4, score)
+        return best
+
+    def _open_qtip_tensor(name):
+        if not _valid_hf_model(HF_DIR):
+            return None
+        for st in Path(HF_DIR).glob("*.safetensors"):
+            with safe_open(str(st), framework="pt") as f:
                 if name in f.keys():
                     return f.get_tensor(name).to(torch.float32).cpu().numpy()
         return None
+
+    srcby = _reader_map(SRC_GGUF)
     q4by = {t.name: t for t in GGUFReader(Q4KM_GGUF).tensors}
-    def _deq_flat(g):
-        t = q4by.get(g)
-        return (None, None) if t is None else (
-            dequantize(np.array(t.data), t.tensor_type).astype(np.float32).ravel(), t.tensor_type.name)
     rmse_rows = []
     for hf in HF_SAMPLE:
-        Wf16 = _open_f16(hf); flat, disk = _deq_flat(GGUF_OF[hf])
-        if Wf16 is None or flat is None or flat.size != Wf16.size or Wf16.shape[1] % QK:
+        shape = HF_SHAPE[hf]
+        src_flat, source_disk = _deq_flat(srcby, GGUF_OF[hf])
+        q4_flat, disk = _deq_flat(q4by, GGUF_OF[hf])
+        pair = _best_oriented_pair(src_flat, q4_flat, shape)
+        if pair is None or shape[1] % QK:
             print("[skip]", hf); continue
-        ca = flat.reshape(Wf16.shape); cb = flat.reshape(Wf16.shape[::-1]).T  # GGUF<->HF transpose
-        Wq4 = ca if rel_rmse(ca, Wf16) <= rel_rmse(cb, Wf16) else cb
-        lo, _, qtb = qtip_bracket(Wf16, BITS, BITS); hi, _, _ = qtip_bracket(Wf16, BITS, BITS + 1)
-        row = dict(name=hf, disk=disk, q4k_rmse=rel_rmse(Wq4, Wf16),
-                   qtip_bracket_lower=rel_rmse(lo, Wf16), qtip_bracket_upper=rel_rmse(hi, Wf16),
+        Wref, Wq4, orient_rmse = pair
+        lo, _, qtb = qtip_bracket(Wref, BITS, BITS); hi, _, _ = qtip_bracket(Wref, BITS, BITS + 1)
+        row = dict(name=hf, disk=disk, source_disk=source_disk, shape=list(shape),
+                   q4k_rmse=rel_rmse(Wq4, Wref), orientation_rmse=orient_rmse,
+                   qtip_bracket_lower=rel_rmse(lo, Wref), qtip_bracket_upper=rel_rmse(hi, Wref),
                    qtip_block_bytes=qtb, q4k_block_bytes=144.0)
         if results_qtip.get("real_qtip_ran"):
-            Wqt = None
-            for st in Path(HF_DIR).glob("*.safetensors"):
-                with safe_open(str(st), framework="pt") as f:
-                    if hf in f.keys():
-                        Wqt = f.get_tensor(hf).to(torch.float32).cpu().numpy(); break
-            if Wqt is not None and Wqt.shape == Wf16.shape:
-                row["qtip_real_rmse"] = rel_rmse(Wqt, Wf16)
+            Wqt = _open_qtip_tensor(hf)
+            if Wqt is not None and Wqt.shape == Wref.shape:
+                row["qtip_real_rmse"] = rel_rmse(Wqt, Wref)
             del Wqt
-        rmse_rows.append(row); del Wf16, flat, lo, hi; gc.collect()
+        rmse_rows.append(row); del Wref, Wq4, src_flat, q4_flat, lo, hi; gc.collect()
     results_qtip["rmse_per_tensor"] = rmse_rows
     med = lambda k: float(np.median([r[k] for r in rmse_rows if k in r])) if rmse_rows else float("nan")
     m_q4 = med("q4k_rmse"); results_qtip["median_q4k_rmse"] = m_q4
+    results_qtip["median_qtip_bracket"] = [med("qtip_bracket_lower"), med("qtip_bracket_upper")]
     bn = lambda r: float(np.log2(r / m_q4)) if (r > 0 and m_q4 > 0) else float("nan")
     results_qtip["bits_needed_bracket"] = [bn(med("qtip_bracket_lower")), bn(med("qtip_bracket_upper"))]
     if results_qtip.get("real_qtip_ran") and all("qtip_real_rmse" in r for r in rmse_rows):
         results_qtip["bits_needed_real"] = bn(med("qtip_real_rmse"))
 
-    # LEG 2 logits + LEG 3 PPL (f16 via transformers, Q4_K_M/QTIP).
-    tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
-    code_eval = Path(EVAL).read_text(encoding="utf-8", errors="replace")
-    ids = tok(code_eval, return_tensors="pt", add_special_tokens=False).input_ids[:, :1024]
-    @torch.inference_mode()
-    def _next(model):
-        return model(ids.to(model.device)).logits[0].float().cpu().numpy()[:-1]
-    m_f16 = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.float16,
-                                                 device_map="cuda", trust_remote_code=True)
-    L_f16 = _next(m_f16); del m_f16; torch.cuda.empty_cache()
-    L_q4 = _gguf_logits(Q4KM_GGUF, n=ids.shape[1])[:L_f16.shape[0]]
-    V = min(L_f16.shape[1], L_q4.shape[1]); L_f16c = L_f16[:, :V]; L_q4 = L_q4[:, :V]
-    logit = {"cos_q4k": _cos(L_q4, L_f16c), "kl_q4k": _kl(L_f16c, L_q4), "argmax_q4k": _argmax_agree(L_f16c, L_q4)}
+    # LEG 2 logits + LEG 3 PPL. If real QTIP did not produce an HF model, do
+    # not spend more CUs on non-decisive logits/PPL; the imatrix cell already
+    # measured the shared GGUF baseline.
     if results_qtip.get("real_qtip_ran"):
+        tok = AutoTokenizer.from_pretrained(MODEL_ID, trust_remote_code=True)
+        code_eval = Path(EVAL).read_text(encoding="utf-8", errors="replace")
+        ids = tok(code_eval, return_tensors="pt", add_special_tokens=False).input_ids[:, :LOGIT_TOKENS]
+        @torch.inference_mode()
+        def _next(model):
+            return model(ids.to(model.device)).logits[0].float().cpu().numpy()[:-1]
+        L_ref = _gguf_logits(SRC_GGUF, n=ids.shape[1])
+        L_q4 = _gguf_logits(Q4KM_GGUF, n=ids.shape[1])
         m_qt = AutoModelForCausalLM.from_pretrained(str(HF_DIR), torch_dtype=torch.float16, device_map="cuda")
-        L_qt = _next(m_qt)[:, :V]; del m_qt; torch.cuda.empty_cache()
-        logit.update(cos_qtip=_cos(L_qt, L_f16c), kl_qtip=_kl(L_f16c, L_qt), argmax_qtip=_argmax_agree(L_f16c, L_qt))
-    results_qtip["logit"] = logit
-    for _n in ("L_f16", "L_f16c", "L_q4", "L_qt"): globals().pop(_n, None)
-    gc.collect(); torch.cuda.empty_cache()
+        L_qt = _next(m_qt); del m_qt; torch.cuda.empty_cache()
+        T = min(len(L_ref), len(L_q4), len(L_qt))
+        V = min(L_ref.shape[1], L_q4.shape[1], L_qt.shape[1])
+        L_refc = L_ref[:T, :V]; L_q4 = L_q4[:T, :V]; L_qt = L_qt[:T, :V]
+        results_qtip["logit"] = {
+            "cos_q4k": _cos(L_q4, L_refc), "kl_q4k": _kl(L_refc, L_q4),
+            "argmax_q4k": _argmax_agree(L_refc, L_q4),
+            "cos_qtip": _cos(L_qt, L_refc), "kl_qtip": _kl(L_refc, L_qt),
+            "argmax_qtip": _argmax_agree(L_refc, L_qt), "tokens": int(T)}
+        for _n in ("L_ref", "L_refc", "L_q4", "L_qt"): globals().pop(_n, None)
+        gc.collect(); torch.cuda.empty_cache()
 
-    results_qtip["ppl_q4k"] = _ppl(Q4KM_GGUF); results_qtip["ppl_f16"] = _ppl(SRC_GGUF)
-    if results_qtip.get("real_qtip_ran"):
+        results_qtip["ppl_q4k"] = _ppl(Q4KM_GGUF); results_qtip["ppl_f16"] = _ppl(SRC_GGUF)
         @torch.inference_mode()
         def _hfppl(model, text, max_len=2048, stride=512, max_eval=16384):
             iid = tok(text, return_tensors="pt", add_special_tokens=False).input_ids[:, :max_eval].to(model.device)
@@ -451,6 +587,9 @@ try:
             return float(torch.exp(torch.stack(nlls).sum() / n))
         m_qt = AutoModelForCausalLM.from_pretrained(str(HF_DIR), torch_dtype=torch.float16, device_map="cuda")
         results_qtip["ppl_qtip"] = _hfppl(m_qt, code_eval); del m_qt; torch.cuda.empty_cache()
+    else:
+        results_qtip["logit"] = {"skipped": "real QTIP HF model absent"}
+        results_qtip["ppl_note"] = "skipped because real QTIP HF model absent"
 
     lg = results_qtip.get("logit", {})
     leg1 = (results_qtip["bits_needed_real"] <= GATE_BITS_NEEDED) if "bits_needed_real" in results_qtip else None
@@ -465,7 +604,11 @@ try:
             results_qtip["kill_type"] = "Type-1 (quality): real QTIP-3 from f16 does not match Q4_K_M on code"
     else:
         results_qtip["verdict"] = "NEEDS-MEASUREMENT"
-        results_qtip["decisive_gate"] = "real QTIP codec did not run; bracket alone cannot pass/kill (Type-2)."
+        results_qtip["decisive_gate"] = (
+            "fresh QTIP disabled to save compute; set ALLOW_FRESH_QTIP_CODEC=True for a deliberate spend."
+            if not ALLOW_FRESH_QTIP_CODEC else
+            "real QTIP codec did not produce a valid HF model; see qtip_errs/qtip rc fields."
+        )
 except Exception as e:
     results_qtip["verdict"] = "ERROR"; results_qtip["error"] = repr(e)[:400]
     print("[GATE 1 QTIP ERROR]", repr(e)[:400])
@@ -482,6 +625,6 @@ except Exception: pass
 # - `imatrix_mixprec_results.json` (Gate 2) and `qtip_3bit_results.json` (Gate 1)
 #   auto-download at the end of their cells.
 # - **GO / NO-GO / NEEDS-MEASUREMENT** per gate; each is independently guarded so
-#   one failing still yields the other. The QTIP codec is cached to Drive
-#   (`MyDrive/qtip_gate_cache`) — a disconnect resumes instantly.
+#   one failing still yields the other. Fresh QTIP is opt-in; cached QTIP HF
+#   artifacts restore from `MyDrive/qtip_gate_cache` when available.
 # - Send both JSONs back to resume Phase 3 (act on verdicts → consolidate → wipe).
