@@ -1773,6 +1773,211 @@ kernel void gemm_q4_k_m_batched_v3w(
     }
 }
 
+// P1 — Q4_K batched-prefill GEMM via hardware simdgroup-matrix (MMA).
+//
+// Same Q4_K dequant→threadgroup staging contract as gemm_q4_k_m_batched_v3w,
+// but the scalar-FMA inner product + simd_sum reduction is replaced by Apple
+// Silicon's simdgroup_matrix<float,8,8> multiply-accumulate. This is the
+// in-tree port of silicon-builds/dismantle-q4k-mma `gemm_q4k_mma` (+15% at
+// N=8 in the standalone microbench). One simdgroup (32 threads) per
+// threadgroup computes one 8(rows)×8(N) output tile; K is stepped in 32-wide
+// sub-blocks (4 depth-8 MMA steps per Q4_K sub-block, 32 steps per 256 block).
+//
+// Geometry (differs from v3w, which packs 8 simdgroups/256-thread TG):
+//   Grid:        (ceil(rows/8)*32, 1, 1)
+//   Threadgroup: (32, 1, 1)              — one simdgroup
+//   8 rows/TG. N = batch (1..=8); columns N..8 of the tile are zero-padded.
+// Shmem layout (float, 576 slots = 2.25 KB):
+//   Ws[ 0  .. 256): weight tile W[8 rows][32 K]   (ld = 32)
+//   Xs[256 .. 512): activation X[32 K][8 N]       (ld = 8)
+//   Os[512 .. 576): result tile C[8 rows][8 N]    (ld = 8)
+// Output layout matches v3w: y_batch[n*rows + (row0+m)] = C[m][n].
+kernel void gemm_q4_k_m_batched_v3w_mma(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* x_batch[[buffer(1)]],
+    device       float* y_batch[[buffer(2)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(3)]],
+    threadgroup float* shmem   [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]])
+{
+    uint row0 = gid * 8u;
+    if (row0 >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint B = min(args.batch, 8u);
+
+    threadgroup float* Ws = shmem;          // [256] = 8 rows x 32 K
+    threadgroup float* Xs = shmem + 256u;   // [256] = 32 K x 8 N
+    threadgroup float* Os = shmem + 512u;   // [64]  = 8 rows x 8 N
+
+    // Zero-init accumulator via shmem (lanes write 64 slots: tid and tid+32).
+    Os[tid]       = 0.0f;
+    Os[tid + 32u] = 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    simdgroup_matrix<float, 8, 8> acc;
+    simdgroup_load(acc, Os, 8, ulong2(0, 0));
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t row_blk_off = (uint64_t)blk * 144ul;
+        // BK=32 sub-block step: 8 steps cover the 256-wide Q4_K block.
+        for (uint kt = 0; kt < 8u; ++kt) {
+            // ── Dequant weight tile Ws[8 rows][32 K] ──────────────────────
+            // 32 threads × 8 elems = 256 slots. Each thread fills column
+            // `tid` (the K offset within the 32-wide step) for all 8 rows.
+            uint kk_local = tid;              // 0..31 — K offset in this step
+            uint kk = kt * 32u + kk_local;    // 0..255 — element in block
+            uint sub   = kk >> 5u;            // 0..7
+            uint pair  = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = kk & 31u;
+            for (uint m = 0u; m < 8u; ++m) {
+                uint row = row0 + m;
+                if (row >= args.rows) { Ws[m * 32u + kk_local] = 0.0f; continue; }
+                uint64_t bo = ((uint64_t)row * (uint64_t)blocks_per_row) * 144ul
+                            + row_blk_off;
+                ushort d_bits    = (ushort)w_q4[bo]     | ((ushort)w_q4[bo + 1] << 8);
+                ushort dmin_bits = (ushort)w_q4[bo + 2] | ((ushort)w_q4[bo + 3] << 8);
+                float d    = (float)as_type<half>(d_bits);
+                float dmin = (float)as_type<half>(dmin_bits);
+                uchar s_byte, m_byte;
+                if (sub < 4u) {
+                    s_byte = w_q4[bo + 4u + sub]      & 0x3F;
+                    m_byte = w_q4[bo + 4u + 4u + sub] & 0x3F;
+                } else {
+                    uint j = sub - 4u;
+                    s_byte = (w_q4[bo + 4u + 8u + j] & 0x0F)
+                           | ((w_q4[bo + 4u + j]      >> 6) << 4);
+                    m_byte = (w_q4[bo + 4u + 8u + j] >> 4)
+                           | ((w_q4[bo + 4u + 4u + j] >> 6) << 4);
+                }
+                uchar q  = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                Ws[m * 32u + kk_local] = d * (float)s_byte * (float)nib
+                                       - dmin * (float)m_byte;
+            }
+            // ── Stage activation tile Xs[32 K][8 N] ───────────────────────
+            // Thread `tid` owns K-row `tid`; fill all 8 N columns (pad >=B).
+            uint x_k = kt * 32u + tid;        // 0..255 — element in block
+            for (uint n = 0u; n < 8u; ++n) {
+                Xs[kk_local * 8u + n] = (n < B)
+                    ? x_batch[(uint64_t)n * (uint64_t)args.cols
+                              + (uint64_t)blk * 256ul + (uint64_t)x_k]
+                    : 0.0f;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // ── 4 depth-8 MMA steps across the 32-wide K sub-block ────────
+            for (uint d8 = 0u; d8 < 32u; d8 += 8u) {
+                simdgroup_matrix<float, 8, 8> wm, xm;
+                simdgroup_load(wm, Ws + d8, 32, ulong2(0, 0));      // W[:, d8:d8+8], ld=32
+                simdgroup_load(xm, Xs + d8 * 8u, 8, ulong2(0, 0));  // X[d8:d8+8, :], ld=8
+                simdgroup_multiply_accumulate(acc, wm, xm, acc);
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    // ── Write results: C[m][n] → y_batch[n*rows + row0+m] ─────────────────
+    simdgroup_store(acc, Os, 8, ulong2(0, 0));
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint e = 0u; e < 2u; ++e) {
+        uint slot = tid + e * 32u;   // 0..63
+        uint m = slot >> 3u;          // row 0..7
+        uint n = slot & 7u;           // N   0..7
+        uint row = row0 + m;
+        if (n < B && row < args.rows) {
+            y_batch[(uint64_t)n * (uint64_t)args.rows + (uint64_t)row] = Os[slot];
+        }
+    }
+}
+
+// P1 — predec twin of gemm_q4_k_m_batched_v3w_mma. Reads pre-decoded
+// (ds, dm) sub-block scale pairs (16 f32/block) instead of decoding the
+// Q4_K header per element, mirroring gemm_q4_k_m_batched_v3w_predec. Weight
+// NIBBLES are still read from w_q4; only the per-sub-block scale decode is
+// hoisted. Same MMA staging/geometry as gemm_q4_k_m_batched_v3w_mma.
+kernel void gemm_q4_k_m_batched_v3w_mma_predec(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* scales [[buffer(1)]],
+    device const float* x_batch[[buffer(2)]],
+    device       float* y_batch[[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    threadgroup float* shmem   [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]])
+{
+    uint row0 = gid * 8u;
+    if (row0 >= args.rows) return;
+
+    uint blocks_per_row = args.cols / 256u;
+    uint B = min(args.batch, 8u);
+
+    threadgroup float* Ws = shmem;          // [256] = 8 rows x 32 K
+    threadgroup float* Xs = shmem + 256u;   // [256] = 32 K x 8 N
+    threadgroup float* Os = shmem + 512u;   // [64]  = 8 rows x 8 N
+
+    Os[tid]       = 0.0f;
+    Os[tid + 32u] = 0.0f;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    simdgroup_matrix<float, 8, 8> acc;
+    simdgroup_load(acc, Os, 8, ulong2(0, 0));
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t row_blk_off = (uint64_t)blk * 144ul;
+        uint64_t scale_blk_off = (uint64_t)blk * 16ul;
+        for (uint kt = 0; kt < 8u; ++kt) {
+            uint kk_local = tid;              // 0..31
+            uint kk = kt * 32u + kk_local;    // 0..255
+            uint sub   = kk >> 5u;            // 0..7
+            uint pair  = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = kk & 31u;
+            for (uint m = 0u; m < 8u; ++m) {
+                uint row = row0 + m;
+                if (row >= args.rows) { Ws[m * 32u + kk_local] = 0.0f; continue; }
+                uint64_t bo = ((uint64_t)row * (uint64_t)blocks_per_row) * 144ul
+                            + row_blk_off;
+                uint64_t so = ((uint64_t)row * (uint64_t)blocks_per_row) * 16ul
+                            + scale_blk_off;
+                float ds = scales[so + (uint64_t)(sub * 2u)];
+                float dm = scales[so + (uint64_t)(sub * 2u + 1u)];
+                uchar q  = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                Ws[m * 32u + kk_local] = ds * (float)nib - dm;
+            }
+            uint x_k = kt * 32u + tid;
+            for (uint n = 0u; n < 8u; ++n) {
+                Xs[kk_local * 8u + n] = (n < B)
+                    ? x_batch[(uint64_t)n * (uint64_t)args.cols
+                              + (uint64_t)blk * 256ul + (uint64_t)x_k]
+                    : 0.0f;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            for (uint d8 = 0u; d8 < 32u; d8 += 8u) {
+                simdgroup_matrix<float, 8, 8> wm, xm;
+                simdgroup_load(wm, Ws + d8, 32, ulong2(0, 0));
+                simdgroup_load(xm, Xs + d8 * 8u, 8, ulong2(0, 0));
+                simdgroup_multiply_accumulate(acc, wm, xm, acc);
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+
+    simdgroup_store(acc, Os, 8, ulong2(0, 0));
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint e = 0u; e < 2u; ++e) {
+        uint slot = tid + e * 32u;
+        uint m = slot >> 3u;
+        uint n = slot & 7u;
+        uint row = row0 + m;
+        if (n < B && row < args.rows) {
+            y_batch[(uint64_t)n * (uint64_t)args.rows + (uint64_t)row] = Os[slot];
+        }
+    }
+}
+
 // Batched Q4_K GEMM with PRE-DECODED sub-block scales (v3w + v4_predec merge).
 // Identical to gemm_q4_k_m_batched_v3w except the per-element Q4_K header decode
 // (d/dmin half-floats + 6-bit s/m unpack) is replaced by a lookup into the

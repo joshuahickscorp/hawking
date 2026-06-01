@@ -1093,6 +1093,8 @@ impl Engine for QwenDense {
                     "gemm_q4_k_m_v3_8r",
                     "gemm_q6_k_fused_v2",
                     "gemm_q4_k_m_batched_v3w",
+                    "gemm_q4_k_m_batched_v3w_mma",
+                    "gemm_q4_k_m_batched_v3w_mma_predec",
                     "gemv_f16",
                     "rmsnorm_f32",
                     "rmsnorm_metal_buf",
@@ -4885,6 +4887,14 @@ impl QwenDense {
         let eps = cfg.rms_norm_eps;
         let theta = cfg.rope_theta;
 
+        // P1-A: simdgroup-matrix prefill GEMM swap, opt-in via
+        // DISMANTLE_QWEN_Q4K_MMA. Only the rows>cols batched GEMMs (ffn
+        // gate/up) take the MMA path; q/k/v/o (square/short) + ffn_down (wide)
+        // stay on the tuned v3w/predec kernel (MMA loses there — Type-1
+        // occupancy, dead_levers.md "Q4_K batched MMA"). Read once here, used
+        // in the batched_proj! macro below.
+        let mma_on = crate::env_on("DISMANTLE_QWEN_Q4K_MMA");
+
         let p0 = positions[0];
         if self.kv.seq_len != p0 {
             return Err(Error::Model(format!(
@@ -5007,9 +5017,25 @@ impl QwenDense {
                         if let Some(scales) =
                             predec_cache.and_then(|c| c.get(&$tref.offset))
                         {
-                            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                            // P1-A: rows>cols (ffn gate/up) → predec-MMA twin
+                            // (Option B, the shipped win). Other shapes keep the
+                            // tuned predec kernel (MMA loses on square/wide).
+                            if mma_on && $rows > $cols {
+                                kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            } else {
+                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            }
+                        } else if mma_on && $rows > $cols {
+                            // Option A: predec-off parity anchor for rows>cols.
+                            kernels::gemm_q4_k_m_batched_v3w_mma_pinned_tcb(
                                 &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                $rows, $cols, b, $x_batch, $out_batch,
                             )?;
                         } else {
                             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
