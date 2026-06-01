@@ -1,0 +1,18 @@
+{
+  "ckpt": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/checkpoints/q7b_b1_tiny_b1_h8_ff20_lr0002_seed2/head_final.safetensors",
+  "corpus": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/corpus",
+  "frozen": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/frozen.npz",
+  "max_depth": 24,
+  "policies": {
+    "best_deployable": {
+      "accepted_draft_tokens_per_verify": 21.041666666666668,
+      "base_tps": 35.0,
+      "efficiency": 0.8,
+      "kind": "fixed_k",
+      "max_depth": 24,
+      "projected_dec_tps": 617.1666666666667
+    }
+  },
+  "schema": "eagle5-frontier-policy-v1",
+  "windows": 24000
+}

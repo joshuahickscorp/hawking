@@ -1,0 +1,26 @@
+{
+  "big_gpu": true,
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "leaderboard_path": "/content/drive/MyDrive/dismantle/maximal_spec_500u/leaderboard.json",
+  "locked_qwen_env": {
+    "DISMANTLE_QWEN_FFN_DOWN_Q4K": "1",
+    "DISMANTLE_QWEN_Q4K_LMHEAD": "1",
+    "DISMANTLE_QWEN_Q4K_PREDEC": "1",
+    "DISMANTLE_QWEN_TCB": "1",
+    "DISMANTLE_QWEN_VOCAB_PRUNE": "32000"
+  },
+  "repo_sha": "cadef09",
+  "schema": "dismantle-maximal-spec-500u-summary-v1",
+  "targets": {
+    "q1p5": {
+      "winner": {
+        "accepted_draft_tokens_per_verify": 23.603666666666665,
+        "offline_projected_tps": 1869.8786666666667,
+        "policy_kind": "fixed_k",
+        "tag": "q1p5_b1_fast_b1_h16_ff40_s16_lr3e-4_rd000_cw12_seed0",
+        "tau": 7.993875
+      }
+    }
+  },
+  "vram_gb": 101.974081536
+}

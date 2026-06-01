@@ -1,0 +1,28 @@
+{
+  "ckpt": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/checkpoints/q7b_b1_tiny_b1_h8_ff20_lr0002_seed2/head_final.safetensors",
+  "corpus": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/corpus",
+  "depth": 8,
+  "depth1_accept_rate": 0.9765833333333334,
+  "frozen": "/content/drive/MyDrive/dismantle/headbank_500u_v2/q7b/frozen.npz",
+  "full_accept_rate": 0.9660833333333333,
+  "per_pos_accept_rate": [
+    0.9765833333333334,
+    0.9735416666666666,
+    0.9715416666666666,
+    0.9701666666666666,
+    0.969,
+    0.9678333333333333,
+    0.96675,
+    0.9660833333333333
+  ],
+  "projection": {
+    "base_tps": 35.0,
+    "formula": "base_tps * (1 + tau) * w4a8_multiplier * spec_efficiency",
+    "projected_dec_tps": 245.322,
+    "spec_efficiency": 0.8,
+    "w4a8_multiplier": 1.0
+  },
+  "schema": "eagle5-tau-pytorch-v1",
+  "tau": 7.7615,
+  "windows": 24000
+}
