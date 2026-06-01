@@ -369,6 +369,34 @@ mod metal_dispatch {
     use crate::{Error, Result};
     use half::f16;
 
+    /// Extension trait that collapses the verbose
+    /// `set_bytes(i, size_of::<T>() as u64, &v as *const T as *const _)`
+    /// scalar-binding idiom to a single call. `#[inline(always)]` makes this
+    /// identical codegen to the inline form -- a pure LOC/readability
+    /// consolidation with no behavioral or performance change.
+    trait SetScalar {
+        fn set_u32(&self, index: u64, value: u32);
+        fn set_f32(&self, index: u64, value: f32);
+    }
+    impl SetScalar for ::metal::ComputeCommandEncoderRef {
+        #[inline(always)]
+        fn set_u32(&self, index: u64, value: u32) {
+            self.set_bytes(
+                index,
+                std::mem::size_of::<u32>() as u64,
+                &value as *const u32 as *const _,
+            );
+        }
+        #[inline(always)]
+        fn set_f32(&self, index: u64, value: f32) {
+            self.set_bytes(
+                index,
+                std::mem::size_of::<f32>() as u64,
+                &value as *const f32 as *const _,
+            );
+        }
+    }
+
     // Reduction kernels in this module are written for tg_size=256 (the
     // shader's stride>>=1 pairwise reduction requires a power of two).
     const TG_SIZE: u32 = 256;
@@ -458,16 +486,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )?;
@@ -943,16 +963,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )
     }
@@ -1007,16 +1019,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )
     }
@@ -1191,16 +1195,8 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
                 enc.set_buffer(2, Some(x_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
             },
         )
     }
@@ -1285,16 +1281,8 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
                 enc.set_buffer(2, Some(x_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
             },
         )
     }
@@ -1377,16 +1365,8 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
                 enc.set_buffer(2, Some(x_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
             },
         )
     }
@@ -1469,16 +1449,8 @@ mod metal_dispatch {
                 enc.set_buffer(4, Some(x_buf), 0);
                 enc.set_buffer(5, Some(g_out_buf), 0);
                 enc.set_buffer(6, Some(u_out_buf), 0);
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    8,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
             },
         )
     }
@@ -1570,16 +1542,8 @@ mod metal_dispatch {
                 enc.set_buffer(4, Some(x_buf), 0);
                 enc.set_buffer(5, Some(g_out_buf), 0);
                 enc.set_buffer(6, Some(u_out_buf), 0);
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    8,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
             },
         )
     }
@@ -1650,16 +1614,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )
     }
@@ -1726,16 +1682,8 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(x_int8_buf), 0);
                 enc.set_buffer(2, Some(x_scales_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
             },
         )
     }
@@ -1805,16 +1753,8 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(x_int8_buf), 0);
                 enc.set_buffer(2, Some(x_scales_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
             },
         )
     }
@@ -1986,11 +1926,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(x_buf), 0);
                 enc.set_buffer(1, Some(scales_buf), 0);
                 enc.set_buffer(2, Some(x_int8_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, n_u32);
             },
         )
     }
@@ -2169,16 +2105,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )
     }
@@ -2537,16 +2465,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -2796,16 +2716,8 @@ mod metal_dispatch {
             enc.set_buffer(0, Some(&x_buf), 0);
             enc.set_buffer(1, Some(&w_buf), 0);
             enc.set_buffer(2, Some(&out_buf), 0);
-            enc.set_bytes(
-                3,
-                std::mem::size_of::<u32>() as u64,
-                &hidden_u32 as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                4,
-                std::mem::size_of::<f32>() as u64,
-                &eps_f32 as *const f32 as *const _,
-            );
+            enc.set_u32(3, hidden_u32);
+            enc.set_f32(4, eps_f32);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })?;
 
@@ -2872,16 +2784,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )?;
@@ -2942,16 +2846,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )?;
@@ -3011,16 +2907,8 @@ mod metal_dispatch {
                     enc.set_buffer(0, Some(w_buf), 0);
                     enc.set_buffer(1, Some(&x_buf), 0);
                     enc.set_buffer(2, Some(&logits_buf), 0);
-                    enc.set_bytes(
-                        3,
-                        std::mem::size_of::<u32>() as u64,
-                        &rows_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        4,
-                        std::mem::size_of::<u32>() as u64,
-                        &cols_u32 as *const u32 as *const _,
-                    );
+                    enc.set_u32(3, rows_u32);
+                    enc.set_u32(4, cols_u32);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )?;
@@ -3029,11 +2917,7 @@ mod metal_dispatch {
             batch.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
                 enc.set_buffer(0, Some(&logits_buf), 0);
                 enc.set_buffer(1, Some(&token_buf), 0);
-                enc.set_bytes(
-                    2,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(2, rows_u32);
                 enc.set_threadgroup_memory_length(0, 256 * std::mem::size_of::<f32>() as u64);
                 enc.set_threadgroup_memory_length(1, 256 * std::mem::size_of::<u32>() as u64);
             })?;
@@ -3509,41 +3393,13 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&k_pe_buf), 0);
                 enc.set_buffer(3, Some(kv_b_proj), 0);
                 enc.set_buffer(4, Some(&out_buf), 0);
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_heads_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    6,
-                    std::mem::size_of::<u32>() as u64,
-                    &qk_nope_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &qk_rope_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    8,
-                    std::mem::size_of::<u32>() as u64,
-                    &v_head_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    9,
-                    std::mem::size_of::<u32>() as u64,
-                    &kv_lora_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    10,
-                    std::mem::size_of::<u32>() as u64,
-                    &seq_len_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    11,
-                    std::mem::size_of::<f32>() as u64,
-                    &scale as *const f32 as *const _,
-                );
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, qk_nope_u32);
+                enc.set_u32(7, qk_rope_u32);
+                enc.set_u32(8, v_head_u32);
+                enc.set_u32(9, kv_lora_u32);
+                enc.set_u32(10, seq_len_u32);
+                enc.set_f32(11, scale);
                 enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                 enc.set_threadgroup_memory_length(1, scores_bytes);
                 enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
@@ -3657,13 +3513,13 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&k_pe_buf), 0);
                 enc.set_buffer(3, Some(kv_b_proj), 0);
                 enc.set_buffer(4, Some(&out_buf), 0);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
-                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
-                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
-                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
-                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
-                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, qk_nope_u32);
+                enc.set_u32(7, qk_rope_u32);
+                enc.set_u32(8, v_head_u32);
+                enc.set_u32(9, kv_lora_u32);
+                enc.set_u32(10, seq_len_u32);
+                enc.set_f32(11, scale);
                 enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                 enc.set_threadgroup_memory_length(1, scores_bytes);
                 enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
@@ -3868,41 +3724,13 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(&k_pe_buf), 0);
                 enc.set_buffer(3, Some(kv_b_proj), 0);
                 enc.set_buffer(4, Some(&out_buf), 0);
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_heads_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    6,
-                    std::mem::size_of::<u32>() as u64,
-                    &qk_nope_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &qk_rope_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    8,
-                    std::mem::size_of::<u32>() as u64,
-                    &v_head_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    9,
-                    std::mem::size_of::<u32>() as u64,
-                    &kv_lora_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    10,
-                    std::mem::size_of::<u32>() as u64,
-                    &seq_len_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    11,
-                    std::mem::size_of::<f32>() as u64,
-                    &scale as *const f32 as *const _,
-                );
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, qk_nope_u32);
+                enc.set_u32(7, qk_rope_u32);
+                enc.set_u32(8, v_head_u32);
+                enc.set_u32(9, kv_lora_u32);
+                enc.set_u32(10, seq_len_u32);
+                enc.set_f32(11, scale);
                 enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                 enc.set_threadgroup_memory_length(1, acc_bytes);
                 enc.set_threadgroup_memory_length(2, scores_tile_bytes);
@@ -4011,41 +3839,13 @@ mod metal_dispatch {
                     enc.set_buffer(2, Some(&k_pe_buf), 0);
                     enc.set_buffer(3, Some(kv_b_proj), 0);
                     enc.set_buffer(4, Some(&attn_out_buf), 0);
-                    enc.set_bytes(
-                        5,
-                        std::mem::size_of::<u32>() as u64,
-                        &n_heads_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        6,
-                        std::mem::size_of::<u32>() as u64,
-                        &qk_nope_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        7,
-                        std::mem::size_of::<u32>() as u64,
-                        &qk_rope_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        8,
-                        std::mem::size_of::<u32>() as u64,
-                        &v_head_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        9,
-                        std::mem::size_of::<u32>() as u64,
-                        &kv_lora_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        10,
-                        std::mem::size_of::<u32>() as u64,
-                        &seq_len_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        11,
-                        std::mem::size_of::<f32>() as u64,
-                        &scale as *const f32 as *const _,
-                    );
+                    enc.set_u32(5, n_heads_u32);
+                    enc.set_u32(6, qk_nope_u32);
+                    enc.set_u32(7, qk_rope_u32);
+                    enc.set_u32(8, v_head_u32);
+                    enc.set_u32(9, kv_lora_u32);
+                    enc.set_u32(10, seq_len_u32);
+                    enc.set_f32(11, scale);
                     enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                     enc.set_threadgroup_memory_length(1, scores_bytes);
                     enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
@@ -4062,16 +3862,8 @@ mod metal_dispatch {
                     enc.set_buffer(0, Some(o_proj), 0);
                     enc.set_buffer(1, Some(&attn_out_buf), 0);
                     enc.set_buffer(2, Some(&out_buf), 0);
-                    enc.set_bytes(
-                        3,
-                        std::mem::size_of::<u32>() as u64,
-                        &hidden_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        4,
-                        std::mem::size_of::<u32>() as u64,
-                        &o_proj_cols_u32 as *const u32 as *const _,
-                    );
+                    enc.set_u32(3, hidden_u32);
+                    enc.set_u32(4, o_proj_cols_u32);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )?;
@@ -4144,41 +3936,13 @@ mod metal_dispatch {
                     enc.set_buffer(2, Some(&arena.k_pe), 0);
                     enc.set_buffer(3, Some(kv_b_proj), 0);
                     enc.set_buffer(4, Some(&arena.attn_out), 0);
-                    enc.set_bytes(
-                        5,
-                        std::mem::size_of::<u32>() as u64,
-                        &n_heads_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        6,
-                        std::mem::size_of::<u32>() as u64,
-                        &qk_nope_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        7,
-                        std::mem::size_of::<u32>() as u64,
-                        &qk_rope_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        8,
-                        std::mem::size_of::<u32>() as u64,
-                        &v_head_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        9,
-                        std::mem::size_of::<u32>() as u64,
-                        &kv_lora_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        10,
-                        std::mem::size_of::<u32>() as u64,
-                        &seq_len_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        11,
-                        std::mem::size_of::<f32>() as u64,
-                        &scale as *const f32 as *const _,
-                    );
+                    enc.set_u32(5, n_heads_u32);
+                    enc.set_u32(6, qk_nope_u32);
+                    enc.set_u32(7, qk_rope_u32);
+                    enc.set_u32(8, v_head_u32);
+                    enc.set_u32(9, kv_lora_u32);
+                    enc.set_u32(10, seq_len_u32);
+                    enc.set_f32(11, scale);
                     enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                     enc.set_threadgroup_memory_length(1, scores_bytes);
                     enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
@@ -4193,16 +3957,8 @@ mod metal_dispatch {
                     enc.set_buffer(0, Some(o_proj), 0);
                     enc.set_buffer(1, Some(&arena.attn_out), 0);
                     enc.set_buffer(2, Some(&arena.out), 0);
-                    enc.set_bytes(
-                        3,
-                        std::mem::size_of::<u32>() as u64,
-                        &hidden_u32 as *const u32 as *const _,
-                    );
-                    enc.set_bytes(
-                        4,
-                        std::mem::size_of::<u32>() as u64,
-                        &o_proj_cols_u32 as *const u32 as *const _,
-                    );
+                    enc.set_u32(3, hidden_u32);
+                    enc.set_u32(4, o_proj_cols_u32);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )?;
@@ -4324,9 +4080,9 @@ mod metal_dispatch {
                     enc.set_buffer(3, Some(&out_buf),       0);
                     enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
                     enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
-                    enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-                    enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
-                    enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                    enc.set_u32(6, routes_u32);
+                    enc.set_u32(7, rows_u32);
+                    enc.set_u32(8, cols_u32);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )
@@ -4373,9 +4129,9 @@ mod metal_dispatch {
                     enc.set_buffer(3, Some(&out_buf),        0);
                     enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
                     enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
-                    enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-                    enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
-                    enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                    enc.set_u32(6, routes_u32);
+                    enc.set_u32(7, rows_u32);
+                    enc.set_u32(8, cols_u32);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )
@@ -4536,21 +4292,9 @@ mod metal_dispatch {
                     std::mem::size_of::<u64>() as u64,
                     &base_offset_u64 as *const u64 as *const _,
                 );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &routes_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    6,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    7,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(5, routes_u32);
+                enc.set_u32(6, rows_u32);
+                enc.set_u32(7, cols_u32);
                 if !is_v2_family || is_v2t {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 }
@@ -4574,11 +4318,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(gate_buf), 0);
                 enc.set_buffer(1, Some(up_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, n_u32);
             },
         )
     }
@@ -4605,21 +4345,9 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(weights), 0);
                 enc.set_buffer(2, Some(shared_out), 0);
                 enc.set_buffer(3, Some(out), 0);
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &hidden_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &routes_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    6,
-                    std::mem::size_of::<u32>() as u64,
-                    &has_shared_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(4, hidden_u32);
+                enc.set_u32(5, routes_u32);
+                enc.set_u32(6, has_shared_u32);
             },
         )
     }
@@ -4690,16 +4418,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )?;
@@ -4981,16 +4701,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )?;
 
@@ -5055,16 +4767,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )?;
 
@@ -5130,16 +4834,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )?;
 
@@ -5205,16 +4901,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )?;
 
@@ -5366,11 +5054,7 @@ mod metal_dispatch {
             |enc| {
                 enc.set_buffer(0, Some(a_buf), 0);
                 enc.set_buffer(1, Some(b_buf), 0);
-                enc.set_bytes(
-                    2,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(2, n_u32);
             },
         )
     }
@@ -5400,16 +5084,8 @@ mod metal_dispatch {
             enc.set_buffer(0, Some(x_buf), 0);
             enc.set_buffer(1, Some(weight_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_bytes(
-                3,
-                std::mem::size_of::<u32>() as u64,
-                &hidden_u32 as *const u32 as *const _,
-            );
-            enc.set_bytes(
-                4,
-                std::mem::size_of::<f32>() as u64,
-                &eps as *const f32 as *const _,
-            );
+            enc.set_u32(3, hidden_u32);
+            enc.set_f32(4, eps);
             enc.set_threadgroup_memory_length(0, shmem_bytes);
         })
     }
@@ -5603,11 +5279,7 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(gate_buf), 0);
                 enc.set_buffer(1, Some(up_buf), 0);
                 enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, n_u32);
             },
         )
     }
@@ -5644,16 +5316,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -5681,16 +5345,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -5745,16 +5401,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -5797,16 +5445,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -5929,10 +5569,10 @@ mod metal_dispatch {
         let tg = TG_SIZE.min(half_dim.max(1));
         tcb.dispatch_threads("rope_slice_f32_inplace", (half_dim, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(buf), 0);
-            enc.set_bytes(1, std::mem::size_of::<u32>() as u64, &offset_u32 as *const u32 as *const _);
-            enc.set_bytes(2, std::mem::size_of::<u32>() as u64, &head_dim_u32 as *const u32 as *const _);
-            enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &pos as *const u32 as *const _);
-            enc.set_bytes(4, std::mem::size_of::<f32>() as u64, &base as *const f32 as *const _);
+            enc.set_u32(1, offset_u32);
+            enc.set_u32(2, head_dim_u32);
+            enc.set_u32(3, pos);
+            enc.set_f32(4, base);
         })
     }
 
@@ -6121,13 +5761,13 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(k_pe), 0);
                 enc.set_buffer(3, Some(kv_b_proj), 0);
                 enc.set_buffer(4, Some(&arena.attn_out), 0);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &n_heads_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &qk_nope_u32 as *const u32 as *const _);
-                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &qk_rope_u32 as *const u32 as *const _);
-                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &v_head_u32 as *const u32 as *const _);
-                enc.set_bytes(9, std::mem::size_of::<u32>() as u64, &kv_lora_u32 as *const u32 as *const _);
-                enc.set_bytes(10, std::mem::size_of::<u32>() as u64, &seq_len_u32 as *const u32 as *const _);
-                enc.set_bytes(11, std::mem::size_of::<f32>() as u64, &scale as *const f32 as *const _);
+                enc.set_u32(5, n_heads_u32);
+                enc.set_u32(6, qk_nope_u32);
+                enc.set_u32(7, qk_rope_u32);
+                enc.set_u32(8, v_head_u32);
+                enc.set_u32(9, kv_lora_u32);
+                enc.set_u32(10, seq_len_u32);
+                enc.set_f32(11, scale);
                 enc.set_threadgroup_memory_length(0, q_nope_proj_bytes);
                 enc.set_threadgroup_memory_length(1, scores_bytes);
                 enc.set_threadgroup_memory_length(2, q_nope_proj_bytes);
@@ -6241,9 +5881,9 @@ mod metal_dispatch {
                 enc.set_buffer(2, Some(x_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
                 enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &base_offset_u64 as *const u64 as *const _);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_u32(5, routes_u32);
+                enc.set_u32(6, rows_u32);
+                enc.set_u32(7, cols_u32);
                 if !is_v2_family || is_v2t || use_q8_w2 || use_q8_w4 {
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 }
@@ -6363,9 +6003,9 @@ mod metal_dispatch {
                 enc.set_buffer(3, Some(act_buf),       0);
                 enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
                 enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
-                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                enc.set_u32(6, routes_u32);
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -6406,9 +6046,9 @@ mod metal_dispatch {
                 enc.set_buffer(3, Some(act_buf),        0);
                 enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
                 enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &routes_u32 as *const u32 as *const _);
-                enc.set_bytes(7, std::mem::size_of::<u32>() as u64, &rows_u32   as *const u32 as *const _);
-                enc.set_bytes(8, std::mem::size_of::<u32>() as u64, &cols_u32   as *const u32 as *const _);
+                enc.set_u32(6, routes_u32);
+                enc.set_u32(7, rows_u32);
+                enc.set_u32(8, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -6828,16 +6468,8 @@ mod metal_dispatch {
             |enc| {
                 enc.set_buffer(0, Some(embed_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_bytes(
-                    2,
-                    std::mem::size_of::<u32>() as u64,
-                    &hidden_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &token as *const u32 as *const _,
-                );
+                enc.set_u32(2, hidden_u32);
+                enc.set_u32(3, token);
             },
         )
     }
@@ -6865,16 +6497,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -6895,11 +6519,7 @@ mod metal_dispatch {
         tcb.dispatch_threads("sample_argmax_f32", (256, 1, 1), (256, 1, 1), |enc| {
             enc.set_buffer(0, Some(logits_buf), 0);
             enc.set_buffer(1, Some(token_buf), 0);
-            enc.set_bytes(
-                2,
-                std::mem::size_of::<u32>() as u64,
-                &vocab_u32 as *const u32 as *const _,
-            );
+            enc.set_u32(2, vocab_u32);
             enc.set_threadgroup_memory_length(0, shmem_f);
             enc.set_threadgroup_memory_length(1, shmem_u);
         })
@@ -6935,22 +6555,10 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(weight_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<f32>() as u64,
-                    &eps as *const f32 as *const _,
-                );
+                enc.set_f32(3, eps);
                 enc.set_buffer(4, Some(out_buf), 0);
-                enc.set_bytes(
-                    5,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    6,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(5, rows_u32);
+                enc.set_u32(6, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -6979,10 +6587,10 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(weight_buf), 0);
-                enc.set_bytes(3, std::mem::size_of::<f32>() as u64, &eps as *const f32 as *const _);
+                enc.set_f32(3, eps);
                 enc.set_buffer(4, Some(out_buf), 0);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_u32(5, rows_u32);
+                enc.set_u32(6, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -7019,10 +6627,10 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(weight_buf), 0);
-                enc.set_bytes(3, std::mem::size_of::<f32>() as u64, &eps as *const f32 as *const _);
+                enc.set_f32(3, eps);
                 enc.set_buffer(4, Some(out_buf), 0);
-                enc.set_bytes(5, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(6, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_u32(5, rows_u32);
+                enc.set_u32(6, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
                 enc.set_threadgroup_memory_length(1, xw_cache_bytes);
             },
@@ -7062,16 +6670,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, scratch_bytes);
             },
         )
@@ -7111,16 +6711,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -7181,16 +6773,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), 0);
                 enc.set_buffer(2, Some(y_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4,
-                    std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
@@ -7223,16 +6807,8 @@ mod metal_dispatch {
             |enc| {
                 enc.set_buffer(0, Some(embed_buf), 0);
                 enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_bytes(
-                    2,
-                    std::mem::size_of::<u32>() as u64,
-                    &hidden_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<u32>() as u64,
-                    &token as *const u32 as *const _,
-                );
+                enc.set_u32(2, hidden_u32);
+                enc.set_u32(3, token);
             },
         )
     }
@@ -7310,11 +6886,7 @@ mod metal_dispatch {
             |enc| {
                 enc.set_buffer(0, Some(a_buf), a_off_bytes as u64);
                 enc.set_buffer(1, Some(b_buf), 0);
-                enc.set_bytes(
-                    2,
-                    std::mem::size_of::<u32>() as u64,
-                    &n_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(2, n_u32);
             },
         )
     }
@@ -7473,14 +7045,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(model_buf), w_offset as u64);
                 enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
                 enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
-                enc.set_bytes(
-                    3, std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4, std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
             },
         )
     }
@@ -7555,14 +7121,8 @@ mod metal_dispatch {
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
                 enc.set_buffer(2, Some(y_buf), y_off_bytes as u64);
-                enc.set_bytes(
-                    3, std::mem::size_of::<u32>() as u64,
-                    &rows_u32 as *const u32 as *const _,
-                );
-                enc.set_bytes(
-                    4, std::mem::size_of::<u32>() as u64,
-                    &cols_u32 as *const u32 as *const _,
-                );
+                enc.set_u32(3, rows_u32);
+                enc.set_u32(4, cols_u32);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
