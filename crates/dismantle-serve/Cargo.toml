@@ -20,3 +20,10 @@ serde_json = { workspace = true }
 tracing = { workspace = true }
 parking_lot = { workspace = true }
 crossbeam-channel = { workspace = true }
+
+[dev-dependencies]
+# All three are already in the workspace lockfile via axum's tree, so this
+# exposes them to the integration test without pulling new crates.
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+bytes = "1"
