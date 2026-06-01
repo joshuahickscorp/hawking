@@ -240,16 +240,16 @@ try:
                 + subprocess.run([f"{BIN}/llama-quantize"], capture_output=True, text=True).stderr)
     has_override = "--tensor-type" in help_txt
     if has_override and not _good_file(MIX, GGUF_MIN_BYTES):
-        r = subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM,
+        r = subprocess.run([f"{BIN}/llama-quantize", "--allow-requantize", "--imatrix", IM,
                             "--tensor-type", "ffn_down=Q3_K", "--tensor-type", "ffn_up=Q3_K",
                             SRC_GGUF, MIX, "Q4_K_M"], capture_output=True, text=True)
         if not _good_file(MIX, GGUF_MIN_BYTES):
             Path(MIX).unlink(missing_ok=True)
             has_override = False; results_im["notes"].append("override failed; uniform Q3_K_M+imatrix fallback")
     if not has_override and not _good_file(MIX, GGUF_MIN_BYTES):
-        subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM, SRC_GGUF, MIX, "Q3_K_M"],
+        subprocess.run([f"{BIN}/llama-quantize", "--allow-requantize", "--imatrix", IM, SRC_GGUF, MIX, "Q3_K_M"],
                        capture_output=True, text=True)
-        results_im["notes"].append("mixed = uniform Q3_K_M+imatrix (no --tensor-type in this build)")
+        results_im["notes"].append("mixed = uniform Q3_K_M+imatrix (Q4/Q3 --tensor-type override unavailable/failed)")
     assert _good_file(MIX, GGUF_MIN_BYTES), "mixed GGUF not produced"
     results_im["gib"]["mixed"] = _gib(MIX)
     results_im["mixed_under_budget"] = results_im["gib"]["mixed"] <= results_im["gib"]["q4km"]
@@ -259,7 +259,7 @@ try:
     Q3KM = "/content/qwen3b-q3_k_m.gguf"
     _drop_bad_file(Q3KM, GGUF_MIN_BYTES)
     if not _good_file(Q3KM, GGUF_MIN_BYTES):
-        subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM, SRC_GGUF, Q3KM, "Q3_K_M"],
+        subprocess.run([f"{BIN}/llama-quantize", "--allow-requantize", "--imatrix", IM, SRC_GGUF, Q3KM, "Q3_K_M"],
                        capture_output=True, text=True)
     if _good_file(Q3KM, GGUF_MIN_BYTES):
         results_im["gib"]["q3km_uniform"] = _gib(Q3KM)
