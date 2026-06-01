@@ -20,15 +20,11 @@
 use dismantle_core::kernels::{self, predecode_q4_k_scale_table_f16};
 use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 use half::f16;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
+mod common;
+use common::*;
 
 /// Realistic Q4_K weights (144 B/block): small fp16 d/dmin, random sub-block
 /// 6-bit indices and 4-bit quants. Same generator as q4k_predec_f16s_parity.rs.
@@ -54,20 +50,11 @@ fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
 }
 
-fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
-    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
-}
-
 /// Pin a Vec<f16> as raw little-endian bytes (no bytemuck Pod dependency on
 /// half::f16); the f16s kernel reads the scale buffers as `device const half*`.
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
     let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
     ctx.new_buffer_with_bytes(&bytes)
-}
-
-fn read_f32_buf(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
-    let ptr = buf.contents() as *const f32;
-    unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
 }
 
 fn rel_l2(reference: &[f32], test: &[f32]) -> (f64, f32, f64) {

@@ -18,10 +18,11 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::MetalContext;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
+
+mod common;
+use common::*;
 
 /// fp16 absolute tolerance — about 1 part in 1024 (fp16 mantissa is
 /// 10 bits + 1 implicit). Allows reduction-order sensitivity.
@@ -33,22 +34,10 @@ pub const ATOL: f32 = 1e-3;
 /// 4 parity tests in the same binary, so they share this Lazy.
 /// `MetalContext` is Clone (Arc-backed) so individual test bodies can
 /// hold a `&'static MetalContext` directly.
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device on M3 Pro"));
-    &CTX
-}
 
 fn fixed_input(n: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
     (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
 }
 
 // ---------------------------------------------------------------------

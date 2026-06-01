@@ -12,34 +12,12 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::MetalContext;
 use half::f16;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
-const ATOL: f32 = 1e-3;
-
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> = Lazy::new(|| {
-        MetalContext::new().expect("Metal device required for v1.2.0-2 parity test")
-    });
-    &CTX
-}
-
-fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
-    let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..n)
-        .map(|_| rng.gen_range(-1.0_f32..1.0_f32))
-        .collect()
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
-}
+mod common;
+use common::*;
 
 /// Build a synthetic fused Q4_K_M weight tensor for `n_experts` consecutive
 /// matrices of shape (rows, blocks_per_row * 144 bytes).
