@@ -195,6 +195,16 @@ Ordered alphabetically by lever name.
 
 ---
 
+## 🪦 Decode-kernel micro-opt: vectorized uint4 unpack (A5) + threadgroup/occupancy tuning (A6)
+
+**Status:** killed 2026-05-31 — **Type-1** (both), NO-CHANGE, reverted clean. Part of the overnight kernel haul that closed the decode-GEMV micro-opt track (closeout `3cb5944`; profile `f2a6a4f`).
+**Type-1 or Type-2:** Type-1 (Apple-GPU memory-model facts, not impl weakness).
+**Evidence:** `plans/overnight_build_queue_2026_05_31.md` §A (A5, A6). **A5 (vectorized `uint4` nibble unpack on `_pair`):** the predec GEMV loads are *already* simdgroup-coalesced, so a wider `uint4` load buys no bandwidth AND cannot apply without reordering the bit-identical FMA chain (would break greedy parity). The stall is occupancy / scale-read / x-traffic, not load width. No commit. **A6 (threadgroup / occupancy tuning):** `_pair` is already oversubscribed (~76 TGs/core) so there is no occupancy lever; threadgroup-size sweeps were noise (tg384 −0.2%, below gate). Reverted clean. The A4 profile (`f2a6a4f`) localizes the stall: `predec_pair` is 46.6% of decode at ~56% of peak BW — the gap is scale-byte volume (addressed by the A6.5 f16-scales win, `0899137`) + layout (A10, also Type-1 dead), NOT load width or geometry.
+**Killing memory:** [[overnight-haul-2026-05-31]]; sibling decode-kernel kills A7 (Q4_K batched MMA) + A10 (access-order layout), this section.
+**Resurrection check:** do NOT re-test (Type-1). Arc conclusion: the Q4_K predec decode GEMV is at the Apple-GPU memory-model optimum for batch=1 (M=1) decode. Remaining dense-tps headroom is fewer bytes (QTIP) or the spec / stateful axes, NOT decode-kernel micro-opt. A6.5 (f16-scales, `0899137`, opt-in) was the lone bandwidth win of the track.
+
+---
+
 ## 🪦 A10 access-order weight-layout repack (Q4_K predec GEMV)
 
 **Status:** killed 2026-05-31 — **Type-1**, built + measured + reverted (tree clean at HEAD).
