@@ -1644,6 +1644,14 @@ impl Engine for QwenDense {
             .filter(|&k| k >= 1)
             .unwrap_or(4)
             .min(8);
+        // PROPOSE-FIRST opt-in for the user-ngram draft
+        // (DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST). Sibling to the bonus-first
+        // 'ud_loop below; selects the 1-verify-forward/cycle restructure (the
+        // n-gram analog of the eagle5 'pf_loop) instead of the 2-forward/cycle
+        // bonus-first loop. Only meaningful when the draft itself is enabled.
+        // The bonus-first loop stays the bit-identical reference for the gate.
+        let user_draft_propose_first =
+            use_user_draft && crate::env_on("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST");
 
         #[cfg(target_os = "macos")]
         if use_eagle5 {
@@ -2225,6 +2233,162 @@ impl Engine for QwenDense {
                     lens_total,
                     100.0 * lens_hits as f32 / lens_total as f32,
                 );
+            }
+        } else if user_draft_propose_first {
+            // ── L3.1 §2.1b — per-user n-gram draft, PROPOSE-FIRST variant
+            // (DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST). The 1-verify-forward/
+            // cycle restructure: the n-gram analog of the eagle5 'pf_loop
+            // (the propose-first loop above), MINUS the head-specific machinery
+            // (no read_res / anchor_res / propose_rollout_chained — the n-gram
+            // is a CPU lookup with no hidden state, so no residual capture and
+            // no bootstrap-with-capture is needed).
+            //
+            // Per cycle the bonus-first 'ud_loop below pays TWO target forwards
+            // (a Stage-1 bonus forward + a Stage-3 verify forward); this loop
+            // pays ONE — the single verify forward does double duty. Its
+            // vtoks[0] is `carried_true` (the true next token, carried from the
+            // previous cycle's correction, emitted last cycle), and preds[0] of
+            // the SAME forward is this cycle's true successor. The carried-true
+            // invariant (never re-emitted) is what removes the second forward.
+            // The win is largest at low acceptance (where the wasted second
+            // forward dominates). See reports/move2_user_draft_diagnosis.md §3-4.
+            //
+            // LOSSLESS by construction, BIT-IDENTICAL to the bonus-first loop:
+            // every emitted token is a verifier (`forward_tokens_verify`) token,
+            // exactly as in 'ud_loop. Propose-first changes only how many target
+            // forwards schedule per emitted token, never which tokens are
+            // emitted. The bonus-first 'ud_loop remains the parity reference.
+            let mut draft_index =
+                crate::speculate::user_ngram::UserNgramDraft::new();
+            // Warm-start from the prompt (same in-prompt signal as 'ud_loop).
+            draft_index.warm_start(&prompt_ids);
+            // Lookahead count per cycle. The verify batch is `carried_true` +
+            // up to `k_la` lookahead drafts, and forward_tokens_verify caps the
+            // batch at 8 (the `1..=8` guard), so cap lookahead at 7 to keep
+            // vtoks.len() <= 8. (The eagle5 'pf_loop verifies k tokens =
+            // carried_true + k-1 lookahead for the same reason.)
+            let k_la = user_draft_k.min(7);
+
+            // ── Bootstrap: ONE forward of the last prompt token yields the
+            // first true next token (carried_true). Unlike the eagle5 bootstrap
+            // there is no residual to read — the n-gram needs none. This is the
+            // single non-amortized forward; every steady cycle below is 1 fwd.
+            let mut anchor_tok = last_id;
+            let mut anchor_pos = prompt_len;
+            let mut carried_true = self.forward_token_greedy_tcb(anchor_tok, anchor_pos)?;
+            {
+                let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
+                self.sampler.record(carried_true);
+                crate::stateful::usage_capture::record_argmax(carried_true);
+                sink(StreamEvent::Token { id: carried_true, text });
+                draft_index.note_token(carried_true);
+                produced += 1;
+            }
+            if Some(carried_true) == eos {
+                reason = StopReason::Eos;
+            }
+
+            'udpf_loop: while produced < req.max_new_tokens
+                && matches!(reason, StopReason::MaxTokens)
+            {
+                if abort_set(&req) {
+                    reason = StopReason::Aborted;
+                    break;
+                }
+                let step_start = Instant::now();
+
+                // Propose lookahead from the 2-gram (anchor_tok, carried_true).
+                // These are the predicted successors of carried_true onward —
+                // i.e. the eagle5 `drafts[1..]` lookahead, the bonus-first
+                // `draft[..]`. The n-gram may return FEWER than requested
+                // (chaining stops on a miss); a length-0 result degenerates to a
+                // plain 1-token decode through the same verify primitive below.
+                let ctx_buf: [u32; 2] = [anchor_tok, carried_true];
+                let lookahead = draft_index.propose(&ctx_buf, k_la);
+                let dlen = lookahead.len();
+
+                // ONE batched verify forward: [carried_true, lookahead[0..dlen]]
+                // at positions [anchor_pos+1 .. anchor_pos+1+dlen]. preds[j] is
+                // the model's true token after consuming vtoks[j]; preds[0] is
+                // the true successor of carried_true. The batch is dlen+1 <= 8.
+                let mut vtoks = Vec::with_capacity(dlen + 1);
+                vtoks.push(carried_true);
+                vtoks.extend_from_slice(&lookahead);
+                let vpos: Vec<usize> =
+                    (0..vtoks.len()).map(|j| anchor_pos + 1 + j).collect();
+                let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+
+                // Accept lookahead[j] while it matches preds[j]. `na` is the
+                // accepted lookahead count (0..=dlen); preds[na] is the
+                // correction / next carried_true (always valid: na <= dlen and
+                // preds has dlen+1 entries — the extra verify slot is what lets
+                // one forward both verify AND produce the next carry, exactly as
+                // the eagle5 'pf_loop does).
+                let mut na = dlen;
+                for j in 0..dlen {
+                    if lookahead[j] != preds[j] {
+                        na = j;
+                        break;
+                    }
+                }
+                stats.draft_accepted += na;
+                stats.draft_rejected += dlen - na;
+                // L3.1 §2.2 usage_capture: draft proposed under (anchor_tok,
+                // carried_true); na accepted, dlen-na rejected; verifier emits
+                // preds[0] next.
+                crate::stateful::usage_capture::record_draft(
+                    (anchor_tok, carried_true),
+                    preds.first().copied(),
+                    na,
+                    dlen - na,
+                );
+
+                // Emit the verified-new tokens preds[0..=na] (na accepted
+                // lookahead, equal to the drafts by construction, + 1
+                // correction). carried_true was emitted last cycle (invariant),
+                // so it is never re-emitted — the stream stays bit-identical to
+                // the bonus-first loop.
+                let mut stop = false;
+                for j in 0..=na {
+                    let id = preds[j];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    crate::stateful::usage_capture::record_argmax(id);
+                    draft_index.note_token(id);
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        stop = true;
+                        break;
+                    }
+                    if produced >= req.max_new_tokens {
+                        stop = true;
+                        break;
+                    }
+                }
+                if stop {
+                    break 'udpf_loop;
+                }
+
+                // Advance the anchor to the last correctly-processed position
+                // (anchor_pos+1+na, the slot vtoks[na] was consumed at) and the
+                // KV through it. The new 2-gram context is (vtoks[na],
+                // preds[na]) = (token at the new anchor_pos, its true
+                // successor). Mirror of the eagle5 'pf_loop advance, minus the
+                // residual carry.
+                anchor_tok = if na == 0 { carried_true } else { lookahead[na - 1] };
+                anchor_pos = anchor_pos + 1 + na;
+                carried_true = preds[na];
+                // KV: valid through anchor_pos (last accepted). Next cycle's
+                // verify writes from anchor_pos+1 (where carried_true lives, not
+                // yet committed).
+                self.kv.seq_len = anchor_pos + 1;
+
+                if stall_active && step_start.elapsed() > stall_limit {
+                    reason = StopReason::Aborted;
+                    break 'udpf_loop;
+                }
             }
         } else if use_user_draft {
             // ── L3.1 §2.1b — per-user n-gram draft, propose→batched-verify.
