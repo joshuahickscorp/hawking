@@ -1,6 +1,7 @@
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
+use super::arch_config::ArchReader;
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace, silu_mul,
@@ -33,26 +34,20 @@ pub struct QwenConfig {
 
 impl QwenConfig {
     fn from_gguf(g: &GgufFile) -> Result<Self> {
+        // P1-D1: shared required/default core reads via ArchReader. The
+        // cross-prefix vocab fallback (qwen2 → llama) + the per-arch defaults
+        // below stay arch-specific. `get_u32` is retained for the vocab match.
+        let r = ArchReader::new(g, "qwen2");
         let get_u32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_u32());
-        let get_f32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_f32());
 
-        let n_layers = get_u32("qwen2.block_count")
-            .ok_or_else(|| Error::Model("missing qwen2.block_count".into()))?
-            as usize;
-        let hidden = get_u32("qwen2.embedding_length")
-            .ok_or_else(|| Error::Model("missing qwen2.embedding_length".into()))?
-            as usize;
-        let n_heads = get_u32("qwen2.attention.head_count")
-            .ok_or_else(|| Error::Model("missing qwen2.attention.head_count".into()))?
-            as usize;
-        let n_kv_heads =
-            get_u32("qwen2.attention.head_count_kv").unwrap_or(n_heads as u32) as usize;
+        let n_layers = r.req_usize("block_count")?;
+        let hidden = r.req_usize("embedding_length")?;
+        let n_heads = r.req_usize("attention.head_count")?;
+        let n_kv_heads = r.opt_usize("attention.head_count_kv", n_heads);
         // Qwen2 GGUFs don't carry head_dim explicitly; derive from
         // hidden/n_heads (matches all published Qwen2/2.5 variants).
         let head_dim = hidden / n_heads;
-        let intermediate = get_u32("qwen2.feed_forward_length")
-            .ok_or_else(|| Error::Model("missing qwen2.feed_forward_length".into()))?
-            as usize;
+        let intermediate = r.req_usize("feed_forward_length")?;
         // Qwen2 GGUFs frequently omit `qwen2.vocab_size`; derive it from
         // the embedding-table tensor dims as a fallback.
         let vocab_size = match get_u32("qwen2.vocab_size").or_else(|| get_u32("llama.vocab_size")) {
@@ -79,9 +74,9 @@ impl QwenConfig {
             head_dim,
             intermediate,
             vocab_size,
-            rope_theta: get_f32("qwen2.rope.freq_base").unwrap_or(1_000_000.0),
-            rms_norm_eps: get_f32("qwen2.attention.layer_norm_rms_epsilon").unwrap_or(1e-6),
-            max_seq_len: get_u32("qwen2.context_length").unwrap_or(32768) as usize,
+            rope_theta: r.opt_f32("rope.freq_base", 1_000_000.0),
+            rms_norm_eps: r.opt_f32("attention.layer_norm_rms_epsilon", 1e-6),
+            max_seq_len: r.opt_usize("context_length", 32768),
         })
     }
 }
