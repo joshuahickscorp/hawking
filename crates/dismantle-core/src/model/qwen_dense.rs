@@ -827,7 +827,15 @@ impl Engine for QwenDense {
             vocab_prune_remap,
             lm_head_pruned_predec,
         ) = if let Some(ctx) = metal_ctx.as_ref() {
-                let mmap_buf = ctx.new_buffer_with_bytes(&gguf.mmap[..]);
+                // P1-B (zero-copy loader, silicon #13): view the mmap'd GGUF
+                // as a no-copy MTLBuffer instead of copying the full ~1.93 GB
+                // into a StorageModeShared buffer. Saves ~1.9 GB RSS and
+                // ~324 ms TTFT, bit-identical (the GPU reads the same
+                // page-cache bytes the copy path would have memcpy'd). Sound
+                // because `self.gguf` (field at qwen_dense.rs:157) owns the
+                // mmap for the model's whole lifetime, so this buffer never
+                // outlives its backing pages. Mirrors deepseek_v2.rs:754.
+                let mmap_buf = unsafe { ctx.new_buffer_no_copy(&gguf.mmap[..]) };
                 // `embed_lookup_f32` is misnamed: the kernel signature
                 // reads the embed table as `device const half*`. Pin the
                 // f16 bytes directly (no dequant).
