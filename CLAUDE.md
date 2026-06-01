@@ -1,230 +1,171 @@
 # CLAUDE.md — agent operating contract for dismantle
 
-You are the autonomous agent executing dismantle hauls. Read this
-**before** every haul and obey it without deviation. The contract is
-short on purpose; the spec, manifest, and brief carry the rest.
+You are an agent working in the dismantle repo (a pure-Rust + Metal
+inference engine for Apple Silicon — see [README.md](README.md) and
+[ARCHITECTURE.md](ARCHITECTURE.md)). Read this before you start and
+obey it. It is short on purpose; the plans, the kill-ledger, and the
+bench harness carry the rest.
 
 ## Identity & authorship
 
-All commits made during a haul are authored by Joshua Hicks via
-inline git options:
+All commits are authored by Joshua Hicks via inline git options:
 
 ```
 git -c user.name='Joshua Hicks' -c user.email='joshuahicksboba@gmail.com' commit -m "..."
 ```
 
-**Never** run `git config` to set the identity globally. The
-inline-only rule keeps the user's machine config untouched and makes
-authorship intentional per commit.
+**Never** run `git config` to set identity globally — the inline-only
+rule keeps the machine config untouched and makes authorship
+intentional per commit. **Never** add any AI/Claude attribution: no
+`Co-Authored-By: Claude`, no "Generated with Claude Code" footer, no
+mention in PR bodies. The commit message ends after its content.
 
-## Scope rule
+**Commits stay local.** Do not push to remote unless the user asks.
 
-The manifest (`_phaseN_haul_manifest.md`) is the **authoritative
-scope**. Do not implement, refactor, or "improve" anything outside
-the items it lists. If you notice a bug or smell mid-haul, log it
-in the active blocked-doc-or-closeout for the next attended session
-to triage. Do not fix it in this haul.
+## Scope discipline
 
-## Halt rule (the most important rule)
+Do one change at a time. Do not implement, refactor, or "improve"
+anything outside the active task. If you notice a bug or a smell
+mid-task, log it in the active report/closeout (or surface it to the
+user) for a separate pass — do not fix it inline. Phase 0 taught us
+that mid-flight scope creep ("while I'm here, fix the tokenizer too")
+is how a 1-hour task becomes a 12-hour debugging spiral.
 
-When an item fails — whether by validator non-zero exit, evidence
-attestation false, memory-pressure persistent, or RSS sentinel
-firing — you:
+## Correctness gate (parity-first)
 
-1. Write the blocked-doc stub (the runner does this for you with the
-   manifest's `_phaseN_haul_attemptN_blocked.md` path) and fill in
-   root cause + what attended work unblocks + followups.
-2. Stop work on that item.
-3. Apply the halt-budget rule from the spec:
-   - **G1.1 (Metal scaffold) — 1 halt ends the haul.**
-   - **G1.2 / G1.3 / G1.4 (GEMV ports) — 2 halts in this group ends
-     the haul.** First halt: continue to next independent item.
-4. Do **not** "peel-onion" fix the underlying issue. That's the
-   next attended session's job. Halts surface gaps; they don't
-   mid-flight repair them.
+A source change to a kernel or a decode path is not done until its
+parity test is green. The parity tests live in
+`crates/dismantle-core/tests/*.rs` (e.g.
+`crates/dismantle-core/tests/phase1_kernel_parity.rs`,
+`q4k_batched_mma_parity.rs`, `prefix_cache_parity.rs`); the
+HTTP/server tests live in
+`crates/dismantle-serve/tests/http_integration.rs`. Golden baselines
+(kernel + token hashes) live in `tests/golden/*.hashes`.
 
-## Evidence rule
+- **Numerical parity:** Metal kernel vs CPU reference checks `atol=1e-3`
+  fp16 on a fixed-seed input. That is the floor — fp16 quant noise is
+  ~1e-3; real bugs produce diffs orders of magnitude larger. A
+  reduction-reorder kernel (e.g. MMA) may add `rtol=1e-4` on top, never
+  loosen `atol`.
+- **Token-output parity:** first 3 greedy (temp=0) token IDs must match
+  the locked baseline. Greedy is deterministic; 3 is sufficient.
+- **Bit-identity:** a lever claimed "bit-identical" must produce
+  byte-identical decoded output (b3sum) vs the feature-off path on a
+  real model — verify it, don't assert it. `dismantle batch-hash` runs
+  many prompts through one model load for this.
 
-Every gate writes three JSON files to
-`tools/haul/_evidence/$GATE/`:
+**Correctness before performance, always.** A faster kernel that fails
+parity is a regression, not a win. When a worktree agent reports
+"parity passed," re-run the parity/bit-identity check yourself in the
+target branch before trusting it.
 
-- `pre.json` — captured by `run-gates.sh` before validator runs.
-- `post.json` — captured after validator runs.
-- `verify.json` — captured from a clean independent re-run of the
-  validator. Contains `attestation: true|false`. **If attestation
-  is false, the gate fails regardless of post.json's exit_code.**
+## Kill Protocol (mandatory before any NO-GO)
 
-Without all three files green, the gate has not passed. No exceptions.
-
-## Kill Protocol rule
-
-Before marking any lever **NO-GO** (in `reports/dead_levers.md`, a
-blocked-doc, or a closeout), the kill MUST record three things:
+Before marking any lever **NO-GO** (in the kill-ledger, a report, or a
+closeout), record three things:
 
 1. **Type-1 or Type-2.** *Type-1* = died on a measured property of
-   reality that no implementation cleverness changes (a delta with
-   higher variance than the original; an FFN active set that is
-   ~half the neurons; no hardware gather on Apple Silicon).
-   *Type-2* = died only in the **form** tested, where a different
-   formulation attacks the same goal (data-free vs **data-aware**,
-   gather vs **gather-free**, extracted-post-hoc vs **trained-for**).
-2. **The reframe considered.** Name the specific alternative
-   formulation explicitly — even if only to reject it.
-3. **Why the reframe also dies, OR a pointer to its oracle.** A
-   Type-2 reframe is "alive" **only** with a named, cheap
-   (offline / CPU NumPy-scale) oracle that could kill it.
+   reality no implementation cleverness changes (bandwidth ceiling, no
+   hardware gather on Apple Silicon, uniform sensitivity). *Type-2* =
+   died only in the **form** tested, where a different formulation
+   attacks the same goal (data-free vs data-aware, gather vs
+   gather-free, extracted-post-hoc vs trained-for).
+2. **The reframe considered** — name the specific alternative
+   formulation, even if only to reject it.
+3. **Why the reframe also dies, OR a pointer to its oracle.** A Type-2
+   reframe is "alive" only with a named, cheap (offline / CPU
+   NumPy-scale) oracle that could kill it.
 
-Hard rules:
-- **Never resurrect on vibes.** No nameable kill-oracle → the lever
-  stays dead.
-- **Never re-test a recorded Type-1 kill.** Its death is a fact
-  about reality, not about our effort.
-- **Accept Type-1 deaths.** Do not manufacture a reframe to avoid a
-  kill. The point is to catch the *rare* genuine Type-2, not to pad
-  the ledger — "all of these are genuinely Type-1" is a correct and
-  common answer.
+Hard rules: never resurrect on vibes (no nameable kill-oracle → stays
+dead); never re-test a recorded Type-1 kill (its death is a fact about
+reality); accept Type-1 deaths — do not manufacture a reframe to avoid
+a kill.
 
-The worked example (the four Phase-A kills, classified and
-retro-filled) lives in `plans/throughput_bible_2026_05_30.md`
-§8.3.1 "Kill Protocol".
+The protocol + worked example is `plans/bible_archive.md` §8.3.1. The
+**canonical kill-ledger** — every dead lever with its
+classification, evidence, and resurrection check — is
+`reports/dead_levers.md`. Read a lever's resurrection check before
+re-spawning it; update the ledger when a new lever dies.
 
-## Memory-coexist rule (Phase 1 specific)
+## Bench discipline (contamination is real)
 
-dismantle hauls may run concurrently with another GPU/RAM-heavy
-process (slm training, etc.). Historical co-existence rules live in
-`docs/archive/phase-history/_phase1-spec.md § Co-existence mode`:
+A running Claude session inflates `dec_tps` 4–5×. So:
 
-- **Probe before every item:** call `tools/haul/coexist.sh probe`.
-  Exit 0 = safe; 1 = degraded (sleep 30s × up to 5 times before
-  halting); 2 = critical (wait 5 min for recovery, else halt with
-  `reason: memory_pressure_critical`).
-- **Active modulation while a gate runs:** `tools/haul/coexist.sh
-  watch` (started automatically by `coexist.sh launch`) polls the
-  probe every 10s and SIGSTOP/SIGCONTs the active gate's process tree
-  on degraded/safe transitions, so dismantle yields CPU/GPU back to
-  slm during pressure spikes without losing state. Pause/resume
-  timeline lands in `_evidence/<gate>/throttle.log`.
-- **Cooperative scheduling:** every dismantle subprocess in this
-  haul is launched with `nice -n 19 taskpolicy -b ./target/release/dismantle ...`.
-  This marks dismantle as background QoS so the foreground process
-  (slm) gets first dibs on CPU and Metal resources.
-- **RSS sentinel:** if any dismantle process hits > 5 GB RSS, that's
-  a regression (Phase 0 baseline ~2 GB). Halt the item, write
-  blocked doc with `reason: rss_ceiling`.
-- **Synthetic-first validation:** prefer `tests/correctness/phase1_kernel_parity.rs`
-  (synthetic small fixed inputs, no model load) over integration
-  smoke (model load + generate). Run the integration smoke only if
-  `coexist.sh probe` returns 0; record `PASS-PARITY-ONLY` if skipped.
-- **Inter-item cool-down:** `run-gates.sh` sleeps 30s between items.
-  Don't shortcut this.
-- **Reduced token validation:** 3 tokens, not 5, when running token
-  regression. Greedy temp=0 is deterministic; 3 is sufficient.
+- **Absolute throughput numbers require a clean room.** Quit Claude and
+  run `tools/bench/clean_room_batch.sh` (or `clean_room_queue.sh` for
+  the deferred-absolute queue). The honest Qwen2.5-3B-Q4_K_M anchor is
+  **~31 dec_tps** on M3 Pro; treat anything far above that as
+  contamination.
+- **Paired A/B deltas are contamination-robust** — the inflation
+  cancels in the relative number, so a paired lever bench
+  (`tools/bench/paired_lever.sh`, `coexist_bench.sh`) is valid with
+  Claude open. Don't ask the user to quit for a relative gate.
+- **Validate via parity + kernel-count ratios**, not raw tps, when in
+  doubt. Report the full spread (range, not just the mean) and tag each
+  number proxy/estimate vs measured.
 
-## Verification rule
+## Coexistence (when another GPU/RAM-heavy process is running)
 
-Numerical-correctness gates (Metal kernel parity vs CPU reference)
-check `atol=1e-3` fp16 on a fixed-seed input. Tighter than that is
-not required (fp16 quantization noise is around 1e-3). Looser is
-forbidden — the parity regime is tight enough that real bugs
-produce diffs orders of magnitude beyond 1e-3.
+dismantle may run alongside other heavy work (model training, etc.).
 
-Token-output gates check first **3** token IDs match the locked
-baseline at `tests/golden/_phase1_token_baseline.hashes`. Mismatch = halt.
+- **Cooperative scheduling:** launch dismantle subprocesses with
+  `nice -n 19 taskpolicy -b ./target/release/dismantle ...` (background
+  QoS, so the foreground process gets first dibs on CPU/Metal).
+- **RSS sentinel:** a dismantle process over ~5 GB RSS is a regression
+  (Qwen-3B steady state is ~0.8–2 GB; the zero-copy loader keeps it
+  near model size). Stop and investigate.
+- **Don't run heavy-RAM Python** (training, large corpus jobs) as part
+  of an autonomous pass without the user's say-so.
 
-Smoke gates check non-empty UTF-8 stdout from `dismantle generate`
-with exit code 0. Empty stdout or non-zero exit = halt.
+## Build hygiene
 
-## Time rule
+A change that touches source:
 
-Per-item soft ceiling: **60 min** (45 implementation + 15
-validation). Haul hard ceiling: **4 hr**. On hard ceiling, halt
-cleanly with `reason: ceiling`. The blocked doc lists what was in
-flight when the ceiling fired; the next attended session re-scopes.
+1. `cargo build --release --workspace` before any validation. If it
+   fails, stop — do not run validators on a broken build.
+2. `cargo test --workspace --lib` after the change (currently ~94
+   dismantle-core / 9 dismantle-serve / 5 dismantle-bench lib tests;
+   they must stay green).
+3. The change's own parity/integration test (see Correctness gate).
+4. Commit only the files the task prescribes — no sweep-commits.
 
-## Build hygiene rule
+## Commits
 
-Every haul item that touches source code:
+Each logical change is one commit with a clear, human subject (no AI
+attribution, per Identity). No squashing/rebasing of already-landed
+work mid-pass — the git log is the audit trail. Cargo.toml dependency
+additions need the user's approval (don't pull in large new deps
+autonomously).
 
-1. Runs `cargo build --release --workspace` before validation. If
-   it fails, halt; do not run validators on a broken build.
-2. Runs `cargo test --workspace --lib` after the impl change. The
-   pre-existing 15 tests must still all pass.
-3. Runs the gate's own validator (e.g. parity test).
-4. Commits **only the files prescribed by the manifest item**. No
-   sweep-commits.
+## Repo workflow notes
 
-## Single-purpose commit rule
+- The old `tools/haul/` runner (manifests, evidence-triples, halt-budget
+  gates) is **retired**. The live workflow is the bench/oracle harness
+  in `tools/bench/*` plus the parity tests in
+  `crates/dismantle-core/tests/`.
+- `reports/`, `colab/`, `silicon-builds/`, `models/`, `.claude/` are
+  **gitignored**. Working notes and oracle outputs live in `reports/`
+  on disk; when a report is meant to ship as a durable record (e.g. the
+  kill-ledger), `git add -f` it deliberately.
+- Plans live in `plans/`; the operative decode strategy is
+  `plans/bible_active.md` (lean) with `plans/bible_archive.md` as the
+  fence store. Memories (cross-session facts) are in the agent memory
+  dir, indexed by `MEMORY.md`.
 
-Each item lands in **exactly one commit** with the manifest-
-prescribed subject (e.g., `phase 1: G1.1 Metal scaffold + rmsnorm
-round-trip`). On halt, write a halt commit with subject
-`phase 1: HALT — G1.X: <root cause>` and body explaining what was
-attempted. No squashing, no rebasing during a haul. The git log
-is the audit trail.
+## On halt
 
-## What the agent does autonomously
-
-- Read the manifest + brief + spec.
-- Execute manifest items in order.
-- Run cargo build / cargo test and parse outputs.
-- Generate baseline hashes via `tools/haul/capture-baseline.sh`.
-- Write evidence JSON triples (pre/post/verify) for each gate.
-- Apply patches if the manifest prescribes them.
-- Author commits with the inline-git-identity rule.
-- On halt: write the blocked doc with root-cause analysis.
-- On haul completion: write `_phaseN_closeout.md` summarizing
-  outcomes per gate.
-
-## What the agent does NOT do autonomously
-
-- Modify the spec, manifest, brief, CLAUDE.md, or ROADMAP.md
-  mid-haul. Those are attended-session products.
-- "Just one more fix" beyond what's in the active item.
-- Skip `nice -n 19 taskpolicy -b` on dismantle subprocesses.
-- Continue past the halt-budget threshold.
-- Run model training or any heavy-RAM Python work.
-- Commit large new dependencies (Cargo.toml additions need attended
-  approval).
-- Push to remote. Commits stay local; user decides when to push.
-
-## Reproducibility
-
-Every commit landed during a haul carries a baseline anchor: the
-relevant entry in `tests/golden/_phase1_kernel_baseline.hashes` and/or
-`tests/golden/_phase1_token_baseline.hashes` is regenerated and committed with
-the kernel change. Future hauls verify against those baselines so
-regressions are caught at the parity test layer before reaching
-integration.
-
-## Tone of artifacts
-
-Blocked docs and closeouts go straight to the point. Format:
-
-```
-# Phase 1 haul attempt N — [BLOCKED|CLOSEOUT]
-**Halted at:** <iso8601>
-**Halted on:** <gate-id>
-## Root cause
-<one paragraph>
-## What ran
-<bullet list with hashes>
-## What attended work unblocks
-<one paragraph + concrete files to inspect>
-## Followups
-<list>
-```
-
-No prose padding, no apologetic tone, no "we should consider…". The
-audit trail is for the next session to act on, not to read.
+If a task can't complete cleanly (a gate fails, a precondition is
+missing, the build breaks and the fix is out of scope), **halt and
+write it up** — a short blocked-doc / closeout with root cause, what
+ran (with hashes/commits), what unblocks it, and followups. A clean
+logged halt is a success. Do not "peel-onion" fix the underlying issue
+mid-pass; that surfaces a gap for the next attended session, it does
+not repair it now.
 
 ## On disagreement with this contract
 
-If a haul situation seems to require breaking a rule (e.g., "the
-fix is one line, why not just do it?"), the answer is always: write
-a blocked doc with the rule violation as a *proposed* unblock. The
-next attended session reviews and either adopts the change into the
-contract or rejects it. The contract evolves through explicit
-attended changes, never through autonomous "just this once"
-exceptions. Phase 0 of dismantle taught us that mid-flight scope
-creep (e.g., "while I'm here, fix the tokenizer too") is how 4-hour
-hauls become 12-hour debugging spirals.
+If a situation seems to require breaking a rule ("the fix is one line,
+why not just do it?"), the answer is: write it up as a *proposed*
+change for the user to adopt or reject. The contract evolves through
+explicit attended changes, never through autonomous "just this once"
+exceptions.
