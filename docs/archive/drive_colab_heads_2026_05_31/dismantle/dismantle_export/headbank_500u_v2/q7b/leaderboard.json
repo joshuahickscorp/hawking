@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "accepted_draft_tokens_per_verify": 21.041666666666668,
+      "offline_projected_tps": 617.1666666666667,
+      "policy_kind": "fixed_k",
+      "tag": "q7b_b1_tiny_b1_h8_ff20_lr0002_seed2",
+      "target": "q7b",
+      "tau": 7.7615
+    }
+  ],
+  "schema": "dismantle-headbank-leaderboard-v1"
+}

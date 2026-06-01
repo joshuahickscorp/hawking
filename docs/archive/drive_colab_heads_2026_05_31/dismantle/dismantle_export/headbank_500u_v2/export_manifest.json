@@ -1,0 +1,9 @@
+{
+  "copy_errors": {},
+  "created_at_unix": 1780016852,
+  "export_root": "/content/drive/MyDrive/dismantle/dismantle_export/headbank_500u_v2",
+  "lab_root": "/content/drive/MyDrive/dismantle/headbank_500u_v2",
+  "missing": {},
+  "repo_sha": "ef688f6",
+  "schema": "dismantle-headbank-export-v1"
+}
