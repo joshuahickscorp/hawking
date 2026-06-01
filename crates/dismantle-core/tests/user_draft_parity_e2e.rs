@@ -60,10 +60,14 @@ fn make_engine(weights: &PathBuf) -> Box<dyn dismantle_core::Engine> {
     dismantle_core::model::load_engine(weights, cfg).expect("load engine")
 }
 
-fn gen_on(engine: &mut dyn dismantle_core::Engine, prompt: &str) -> (Vec<u32>, usize) {
+fn gen_on_n(
+    engine: &mut dyn dismantle_core::Engine,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> (Vec<u32>, usize) {
     let req = dismantle_core::GenerateRequest {
         prompt: prompt.into(),
-        max_new_tokens: MAX_NEW_TOKENS,
+        max_new_tokens,
         sampling: dismantle_core::SamplingParams {
             temperature: 0.0,
             seed: Some(42),
@@ -84,6 +88,10 @@ fn gen_on(engine: &mut dyn dismantle_core::Engine, prompt: &str) -> (Vec<u32>, u
         })
         .expect("generate");
     (ids, accepted)
+}
+
+fn gen_on(engine: &mut dyn dismantle_core::Engine, prompt: &str) -> (Vec<u32>, usize) {
+    gen_on_n(engine, prompt, MAX_NEW_TOKENS)
 }
 
 /// THE GATE: `DISMANTLE_QWEN_USER_DRAFT=1` greedy output must be
@@ -211,4 +219,184 @@ fn user_draft_bit_identical_fast_pruned_q4k() {
     eprintln!("draft ON : {draft_ids:?}  (draft_accepted={accepted})");
     eprintln!("bit-identical: YES");
     eprintln!("=======================================================\n");
+}
+
+// ── Env helpers for the full shipped fast-decode recipe. The production
+// decode path (tools/bench/clean_room_batch.sh) runs VOCAB_PRUNE + Q4K_LMHEAD
+// + FFN_DOWN_Q4K + Q4K_PREDEC; the two gates above cover only the first two.
+// Set/clear them together so they never leak into a sibling serialized test.
+fn set_full_fast_env() {
+    std::env::set_var("DISMANTLE_QWEN_VOCAB_PRUNE", "32000");
+    std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");
+    std::env::set_var("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1");
+    std::env::set_var("DISMANTLE_QWEN_Q4K_PREDEC", "1");
+}
+fn clear_full_fast_env() {
+    std::env::remove_var("DISMANTLE_QWEN_VOCAB_PRUNE");
+    std::env::remove_var("DISMANTLE_QWEN_Q4K_LMHEAD");
+    std::env::remove_var("DISMANTLE_QWEN_FFN_DOWN_Q4K");
+    std::env::remove_var("DISMANTLE_QWEN_Q4K_PREDEC");
+}
+
+/// (a) THE GATE on the **full shipped fast-decode env** — the recipe the
+/// production CLI / clean-room bench actually runs (VOCAB_PRUNE + Q4K_LMHEAD +
+/// FFN_DOWN_Q4K + Q4K_PREDEC), which the two gates above do NOT cover. This is
+/// the env the failing CLI run in reports/move2_user_draft_diagnosis.md used
+/// (with the draft silently OFF because the flag was unset).
+///
+/// Draft ON must be byte-identical to draft OFF under this env. We do NOT
+/// assert `draft_accepted > 0`: FFN_DOWN_Q4K perturbs the verifier's logits and
+/// can legitimately lower acceptance (measured 7 → 3, contaminated), so the
+/// accept count is REPORTED, not gated — the gate here is correctness, not
+/// speed (diagnosis §5 test 1).
+#[test]
+fn user_draft_bit_identical_full_fast_env() {
+    let Some(weights) = weights_path() else {
+        return;
+    };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+
+    set_full_fast_env();
+
+    // --- Reference: draft OFF (full fast decode). ---
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
+    let (ref_ids, _) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
+
+    // --- Draft ON (full fast decode). ---
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "1");
+    let (draft_ids, accepted) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
+
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
+    clear_full_fast_env();
+
+    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
+    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        &ref_ids[..3],
+        &draft_ids[..3],
+        "GATE FAILED (first 3 tokens, full fast env): user-draft changed greedy output.\n \
+         off={:?}\n  on={:?}",
+        &ref_ids[..3],
+        &draft_ids[..3],
+    );
+    assert_eq!(
+        ref_ids, draft_ids,
+        "GATE FAILED (16 tokens, full fast env): user-draft changed greedy output.\n \
+         off={ref_ids:?}\n  on={draft_ids:?}"
+    );
+
+    eprintln!("\n=== user-draft parity gate (FULL fast env) ===");
+    eprintln!("draft OFF: {ref_ids:?}");
+    eprintln!("draft ON : {draft_ids:?}  (draft_accepted={accepted}, reported not gated)");
+    eprintln!("bit-identical: YES");
+    eprintln!("==============================================\n");
+}
+
+/// Shared body for (b): propose-first vs bonus-first must emit the SAME tokens.
+/// Both are bit-identical to plain greedy by construction; comparing them to
+/// EACH OTHER pins that the propose-first restructure changed only the
+/// forward-count schedule, not which tokens are emitted. `pruned` selects the
+/// GPU fast verify path (VOCAB_PRUNE + Q4K_LMHEAD) vs the CPU fp16 fallback, so
+/// the new loop is exercised on both. Returns (bonus_first_ids, accepted)
+/// alongside the asserted-equal propose_first_ids for the caller to log.
+fn propose_first_matches_bonus_first(weights: &PathBuf, pruned: bool, n: usize) -> (Vec<u32>, Vec<u32>, usize, usize) {
+    if pruned {
+        std::env::set_var("DISMANTLE_QWEN_VOCAB_PRUNE", "32000");
+        std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");
+    }
+    // Both arms enable the draft; they differ only in the loop variant.
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "1");
+
+    // --- Reference: bonus-first ('ud_loop), propose-first OFF. ---
+    std::env::remove_var("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST");
+    let (bonus_ids, bonus_acc) = {
+        let mut e = make_engine(weights);
+        gen_on_n(e.as_mut(), PROMPT, n)
+    };
+
+    // --- Propose-first ('udpf_loop), propose-first ON. ---
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST", "1");
+    let (pf_ids, pf_acc) = {
+        let mut e = make_engine(weights);
+        gen_on_n(e.as_mut(), PROMPT, n)
+    };
+
+    // Restore.
+    std::env::remove_var("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST");
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
+    if pruned {
+        std::env::remove_var("DISMANTLE_QWEN_VOCAB_PRUNE");
+        std::env::remove_var("DISMANTLE_QWEN_Q4K_LMHEAD");
+    }
+
+    assert_eq!(bonus_ids.len(), n, "bonus-first produced wrong token count");
+    assert_eq!(pf_ids.len(), n, "propose-first produced wrong token count");
+    assert_eq!(
+        bonus_ids, pf_ids,
+        "GATE FAILED (propose-first vs bonus-first, pruned={pruned}, n={n}): the \
+         propose-first loop changed the emitted token stream.\n \
+         bonus-first={bonus_ids:?}\n propose-first={pf_ids:?}"
+    );
+    (bonus_ids, pf_ids, bonus_acc, pf_acc)
+}
+
+/// (b/default) Propose-first ≡ bonus-first on the DEFAULT (CPU fp16 fallback)
+/// verify path. Diagnosis §5 test 2.
+#[test]
+fn user_draft_propose_first_bit_identical_default() {
+    let Some(weights) = weights_path() else {
+        return;
+    };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    let (bonus_ids, pf_ids, bonus_acc, pf_acc) =
+        propose_first_matches_bonus_first(&weights, false, MAX_NEW_TOKENS);
+    eprintln!("\n=== propose-first vs bonus-first (default cfg, 16 tok) ===");
+    eprintln!("bonus-first : {bonus_ids:?}  (draft_accepted={bonus_acc})");
+    eprintln!("propose-first: {pf_ids:?}  (draft_accepted={pf_acc})");
+    eprintln!("token-identical: YES");
+    eprintln!("=========================================================\n");
+}
+
+/// (b/pruned) Propose-first ≡ bonus-first on the GPU pruned-Q4K fast verify
+/// path (the one production decode runs). Diagnosis §5 test 2.
+#[test]
+fn user_draft_propose_first_bit_identical_pruned_q4k() {
+    let Some(weights) = weights_path() else {
+        return;
+    };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    let (bonus_ids, pf_ids, bonus_acc, pf_acc) =
+        propose_first_matches_bonus_first(&weights, true, MAX_NEW_TOKENS);
+    eprintln!("\n=== propose-first vs bonus-first (pruned-Q4K cfg, 16 tok) ===");
+    eprintln!("bonus-first : {bonus_ids:?}  (draft_accepted={bonus_acc})");
+    eprintln!("propose-first: {pf_ids:?}  (draft_accepted={pf_acc})");
+    eprintln!("token-identical: YES");
+    eprintln!("============================================================\n");
+}
+
+/// (c) A 64-token lossless run (propose-first vs bonus-first, pruned-Q4K fast
+/// verify). A 16-token window can miss a KV-rewind off-by-one in the new loop's
+/// accept/advance bookkeeping (the highest-risk part of the port — the eagle5
+/// 'pf_loop advance analog); 64 tokens exercises many more accept/reject
+/// boundaries and KV rewinds. Diagnosis §5 test 3.
+#[test]
+fn user_draft_propose_first_lossless_long() {
+    let Some(weights) = weights_path() else {
+        return;
+    };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    let (bonus_ids, pf_ids, bonus_acc, pf_acc) =
+        propose_first_matches_bonus_first(&weights, true, 64);
+    eprintln!("\n=== propose-first vs bonus-first (pruned-Q4K cfg, 64 tok) ===");
+    eprintln!("bonus-first  draft_accepted={bonus_acc}");
+    eprintln!("propose-first draft_accepted={pf_acc}");
+    eprintln!("token-identical (64 tok): YES");
+    eprintln!("len bonus={} pf={}", bonus_ids.len(), pf_ids.len());
+    eprintln!("============================================================\n");
 }
