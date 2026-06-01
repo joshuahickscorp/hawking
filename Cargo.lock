@@ -528,14 +528,17 @@ version = "0.2.2"
 dependencies = [
  "anyhow",
  "axum",
+ "bytes",
  "crossbeam-channel",
  "dismantle-core",
  "futures",
+ "http-body-util",
  "parking_lot",
  "serde",
  "serde_json",
  "tokio",
  "tokio-stream",
+ "tower",
  "tracing",
 ]
 
