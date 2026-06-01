@@ -584,6 +584,69 @@ mod imp {
             )
         }
 
+        /// P1-E: largest buffer this device should be asked to allocate. We
+        /// CANNOT post-check a nil MTLBuffer: metal-rs 0.29's `new_buffer`
+        /// asserts non-null (panics/aborts) the instant `newBufferWithLength:`
+        /// returns nil, before any length check runs. So the checked allocators
+        /// reject over-sized requests UP FRONT. `max_buffer_length()` is not
+        /// usable (metal 0.29 hardcodes it to 1 GB on macOS≥12, which would
+        /// reject valid >1 GB allocs); `recommendedMaxWorkingSetSize` is the
+        /// real per-device unified-memory ceiling (falls back to 1 TB if the
+        /// device reports 0). This guards the dominant OOM cause — a model too
+        /// large for the device. A transient OOM *within* the ceiling would
+        /// still abort inside metal-rs; a fully fallible alloc needs the
+        /// objc2-metal binding (followup), not in scope here.
+        fn alloc_ceiling(&self) -> u64 {
+            let ws = self.inner.device.recommended_max_working_set_size();
+            if ws > 0 {
+                ws
+            } else {
+                1u64 << 40 // 1 TB fallback if the device reports no working set
+            }
+        }
+
+        /// P1-E: fallible buffer allocation — returns `Err` (instead of a panic
+        /// or a nil buffer that crashes a later dispatch) when `len` exceeds the
+        /// device ceiling. Use at input/driver-facing load-path sites where the
+        /// size is user/model-driven (embed / lm-head / large weights).
+        pub fn new_buffer_checked(&self, len: usize) -> Result<Buffer> {
+            let ceiling = self.alloc_ceiling();
+            if len as u64 > ceiling {
+                return Err(Error::Metal(format!(
+                    "MTLBuffer allocation of {len} B exceeds device working-set ceiling {ceiling} B"
+                )));
+            }
+            if self.trace_dispatch {
+                self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                self.stats.bytes_allocated.fetch_add(len, Ordering::Relaxed);
+            }
+            Ok(self
+                .inner
+                .device
+                .new_buffer(len as u64, MTLResourceOptions::StorageModeShared))
+        }
+
+        /// P1-E: fallible counterpart of [`Self::new_buffer_with_bytes`] — same
+        /// over-size guard as [`Self::new_buffer_checked`].
+        pub fn new_buffer_with_bytes_checked(&self, bytes: &[u8]) -> Result<Buffer> {
+            let ceiling = self.alloc_ceiling();
+            if bytes.len() as u64 > ceiling {
+                return Err(Error::Metal(format!(
+                    "MTLBuffer allocation of {} B exceeds device working-set ceiling {ceiling} B",
+                    bytes.len()
+                )));
+            }
+            if self.trace_dispatch {
+                self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
+                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+            }
+            Ok(self.inner.device.new_buffer_with_data(
+                bytes.as_ptr() as *const _,
+                bytes.len() as u64,
+                MTLResourceOptions::StorageModeShared,
+            ))
+        }
+
         /// Write `bytes` into an existing shared buffer. The buffer must
         /// have been allocated with `new_buffer` and have capacity ≥ `bytes.len()`.
         /// On unified-memory Apple Silicon this is a plain `memcpy` -- no GPU
