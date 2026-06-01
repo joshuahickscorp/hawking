@@ -1,9 +1,11 @@
 # %% [markdown]
-# # Combined sub-Q4 quality gates — ONE run, BOTH verdicts
+# # THE master sub-Q4 quality-gate notebook — ONE run, all verdicts
 #
-# Folds the two decisive Colab gates into a single "Run all" so the expensive
-# setup (build llama.cpp + download Qwen2.5-3B + build the gold Q4_K_M) happens
-# **once** instead of twice:
+# Supersedes running 01 (Q3 byte-cut) / 03 (QTIP) / 04 (imatrix) separately.
+# Folds every sub-Q4 weight-quant quality gate into one "Run all" so the
+# expensive setup (build llama.cpp + download Qwen2.5-3B + build the gold
+# Q4_K_M) happens **once**. The AWQ W4A8 gate (awq_w4a8_validate.py) stays a
+# separate PyTorch run (it needs the 22 MB smoothing JSON, not on the remote).
 #
 # 1. **Gate 2 — imatrix mixed-precision** (fast, reliable, pure llama.cpp): does
 #    an imatrix-guided mixed-prec GGUF (~3.82 eff bits) beat the shipped
@@ -67,8 +69,11 @@ if not Path(BIN, "llama-quantize").exists():
     if not Path(REPO).exists():
         subprocess.run(["git", "clone", "--depth", "1",
                         "https://github.com/ggml-org/llama.cpp", REPO], check=True)
+    # CMAKE_CUDA_ARCHITECTURES=native compiles only for THIS GPU's arch instead
+    # of every architecture -> roughly halves the CUDA build time.
     subprocess.run(["cmake", "-S", REPO, "-B", f"{REPO}/build",
-                    "-DLLAMA_CURL=OFF", "-DCMAKE_BUILD_TYPE=Release", "-DGGML_CUDA=ON"], check=True)
+                    "-DLLAMA_CURL=OFF", "-DCMAKE_BUILD_TYPE=Release", "-DGGML_CUDA=ON",
+                    "-DCMAKE_CUDA_ARCHITECTURES=native"], check=True)
     subprocess.run(["cmake", "--build", f"{REPO}/build", "-j", "--config", "Release"], check=True)
 for tool in ("llama-quantize", "llama-perplexity", "llama-imatrix"):
     assert Path(BIN, tool).exists(), f"build missing {tool}"
@@ -179,8 +184,18 @@ try:
     results_im["gib"]["mixed"] = _gib(MIX)
     results_im["mixed_under_budget"] = results_im["gib"]["mixed"] <= results_im["gib"]["q4km"]
 
-    for tag, g in (("ref", SRC_GGUF), ("q4km", Q4KM_GGUF), ("mixed", MIX)):
-        results_im["ppl"][tag] = _ppl(g)
+    # Uniform Q3_K_M+imatrix — a third data point that subsumes the old
+    # 01_bytecut PPL gate (does plain 3-bit GGUF-native stay near Q4_K_M?).
+    Q3KM = "/content/qwen3b-q3_k_m.gguf"
+    if not Path(Q3KM).exists():
+        subprocess.run([f"{BIN}/llama-quantize", "--imatrix", IM, SRC_GGUF, Q3KM, "Q3_K_M"],
+                       capture_output=True, text=True)
+    if Path(Q3KM).exists():
+        results_im["gib"]["q3km_uniform"] = _gib(Q3KM)
+    for tag, g in (("ref", SRC_GGUF), ("q4km", Q4KM_GGUF), ("mixed", MIX),
+                   ("q3km_uniform", Q3KM)):
+        if Path(g).exists():
+            results_im["ppl"][tag] = _ppl(g)
     try:
         ref = _gguf_logits(SRC_GGUF); q4k = _gguf_logits(Q4KM_GGUF); mix = _gguf_logits(MIX)
         T = min(len(ref), len(q4k), len(mix)); ref, q4k, mix = ref[:T], q4k[:T], mix[:T]
