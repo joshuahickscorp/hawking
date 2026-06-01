@@ -44,6 +44,7 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
+use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct Gemma2Config {
@@ -145,13 +146,6 @@ impl Gemma2Config {
     }
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct TensorRef {
-    pub offset: usize,
-    pub byte_size: usize,
-    pub dtype: GgmlType,
-    pub n_elems: usize,
-}
 
 pub struct Gemma2Layer {
     /// Sandwich norms (all already +1.0 at load for the (1+w) convention).
@@ -185,45 +179,19 @@ pub struct Gemma2 {
 }
 
 impl Gemma2 {
-    fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f32(info, bytes)
-    }
 
     /// Gemma RMSNorm weights are stored centered at 0; the effective
     /// scale is `(1 + w)`. Fold the +1.0 in at load so the standard
     /// rmsnorm kernel applies the right gain.
     fn dequant_norm_plus_one(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let mut w = Self::dequant_f32(g, name)?;
+        let mut w = dequant_f32(g, name)?;
         for v in w.iter_mut() {
             *v += 1.0;
         }
         Ok(w)
     }
 
-    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f16(info, bytes)
-    }
 
-    fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let n_elems: usize = info.dims.iter().product::<u64>() as usize;
-        Ok(TensorRef {
-            offset: info.data_offset as usize,
-            byte_size: info.byte_size as usize,
-            dtype: info.dtype,
-            n_elems,
-        })
-    }
 
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
         if buf.len() != t.n_elems {
@@ -417,7 +385,7 @@ impl Engine for Gemma2 {
             Tokenizer::from_gguf(&gguf)?
         };
 
-        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
+        let embed = dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = Self::dequant_norm_plus_one(&gguf, "output_norm.weight")?;
 
         let mut layers = Vec::with_capacity(cfg.n_layers);
@@ -431,13 +399,13 @@ impl Engine for Gemma2 {
                 )?,
                 ffn_norm: Self::dequant_norm_plus_one(&gguf, &lp("ffn_norm.weight"))?,
                 post_ffw_norm: Self::dequant_norm_plus_one(&gguf, &lp("post_ffw_norm.weight"))?,
-                q_proj: Self::tensor_ref(&gguf, &lp("attn_q.weight"))?,
-                k_proj: Self::tensor_ref(&gguf, &lp("attn_k.weight"))?,
-                v_proj: Self::tensor_ref(&gguf, &lp("attn_v.weight"))?,
-                o_proj: Self::tensor_ref(&gguf, &lp("attn_output.weight"))?,
-                ffn_gate: Self::tensor_ref(&gguf, &lp("ffn_gate.weight"))?,
-                ffn_up: Self::tensor_ref(&gguf, &lp("ffn_up.weight"))?,
-                ffn_down: Self::tensor_ref(&gguf, &lp("ffn_down.weight"))?,
+                q_proj: tensor_ref(&gguf, &lp("attn_q.weight"))?,
+                k_proj: tensor_ref(&gguf, &lp("attn_k.weight"))?,
+                v_proj: tensor_ref(&gguf, &lp("attn_v.weight"))?,
+                o_proj: tensor_ref(&gguf, &lp("attn_output.weight"))?,
+                ffn_gate: tensor_ref(&gguf, &lp("ffn_gate.weight"))?,
+                ffn_up: tensor_ref(&gguf, &lp("ffn_up.weight"))?,
+                ffn_down: tensor_ref(&gguf, &lp("ffn_down.weight"))?,
             });
         }
 

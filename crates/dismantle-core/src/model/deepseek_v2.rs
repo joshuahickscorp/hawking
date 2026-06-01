@@ -14,6 +14,7 @@ use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use super::weights::{TensorRef, tensor_ref, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct DeepSeekConfig {
@@ -199,15 +200,6 @@ pub struct DeepSeekV2 {
     pub pruned_vocab: Option<crate::vocab_prune::PrunedVocab>,
 }
 
-/// Pointer into the mmap'd GGUF for one tensor. Cheap to clone; the
-/// dequant happens on demand into a caller-owned buffer.
-#[derive(Debug, Clone)]
-pub struct TensorRef {
-    pub offset: usize,
-    pub byte_size: usize,
-    pub dtype: GgmlType,
-    pub n_elems: usize,
-}
 
 pub struct Layer {
     pub attn_norm: Vec<f32>,
@@ -413,28 +405,9 @@ impl DeepSeekV2 {
         }
     }
 
-    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f16(info, bytes)
-    }
 
     /// Build a `TensorRef` for a single (non-fused) tensor -- the
     /// returned ref points into the GGUF mmap.
-    fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let n_elems: usize = info.dims.iter().product::<u64>() as usize;
-        Ok(TensorRef {
-            offset: info.data_offset as usize,
-            byte_size: info.byte_size as usize,
-            dtype: info.dtype,
-            n_elems,
-        })
-    }
 
     /// Slice a 3D fused-expert tensor (`blk.{li}.ffn_*_exps.weight`)
     /// into per-expert refs without copying. Each expert occupies a
@@ -517,10 +490,10 @@ impl Engine for DeepSeekV2 {
             Tokenizer::from_gguf(&gguf)?
         };
 
-        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
+        let embed = dequant_f16(&gguf, "token_embd.weight")?;
         let final_norm = Self::dequant(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
-            let mut head = Self::dequant_f16(&gguf, "output.weight")?;
+            let mut head = dequant_f16(&gguf, "output.weight")?;
             // path-to-50 lever 1: gather the kept rows so the GEMV + argmax
             // run over a vocab pruned to corpus-supported tokens. DeepSeek-V2
             // has an explicit `output.weight` (not tied to the input embed);
@@ -582,9 +555,9 @@ impl Engine for DeepSeekV2 {
                 let gate_logits_w = Self::dequant(&gguf, &lp("ffn_gate_inp.weight"))?;
 
                 let routed_fused = MoEFusedTensors {
-                    gate_w: Self::tensor_ref(&gguf, &lp("ffn_gate_exps.weight"))?,
-                    up_w: Self::tensor_ref(&gguf, &lp("ffn_up_exps.weight"))?,
-                    down_w: Self::tensor_ref(&gguf, &lp("ffn_down_exps.weight"))?,
+                    gate_w: tensor_ref(&gguf, &lp("ffn_gate_exps.weight"))?,
+                    up_w: tensor_ref(&gguf, &lp("ffn_up_exps.weight"))?,
+                    down_w: tensor_ref(&gguf, &lp("ffn_down_exps.weight"))?,
                 };
                 let gate_exps = Self::fused_expert_refs(
                     &gguf,
@@ -618,9 +591,9 @@ impl Engine for DeepSeekV2 {
                 // Length-1 vec; same dispatch path as routed.
                 let (shared_fused, shared) = if cfg.n_shared_experts > 0 {
                     let fused = MoEFusedTensors {
-                        gate_w: Self::tensor_ref(&gguf, &lp("ffn_gate_shexp.weight"))?,
-                        up_w: Self::tensor_ref(&gguf, &lp("ffn_up_shexp.weight"))?,
-                        down_w: Self::tensor_ref(&gguf, &lp("ffn_down_shexp.weight"))?,
+                        gate_w: tensor_ref(&gguf, &lp("ffn_gate_shexp.weight"))?,
+                        up_w: tensor_ref(&gguf, &lp("ffn_up_shexp.weight"))?,
+                        down_w: tensor_ref(&gguf, &lp("ffn_down_shexp.weight"))?,
                     };
                     (
                         Some(fused.clone()),

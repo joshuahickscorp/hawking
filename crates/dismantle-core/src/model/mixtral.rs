@@ -18,6 +18,7 @@ use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use super::weights::{dequant_f32, dequant_f16};
 
 const WEIGHT_CHUNK_STRIDE: usize = 128 * 1024 * 1024;
 const WEIGHT_CHUNK_OVERLAP: usize = 64 * 1024 * 1024;
@@ -228,21 +229,7 @@ impl MixtralEngine {
             .collect()
     }
 
-    fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f32(info, bytes)
-    }
 
-    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f16(info, bytes)
-    }
 
     fn dequant_f32_expected(
         g: &GgufFile,
@@ -362,10 +349,10 @@ impl Engine for MixtralEngine {
         let cfg = MixtralConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("mixtral-8x7b").to_string();
         let tokenizer = Self::load_tokenizer_preview(weights, &gguf)?;
-        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
-        let final_norm = Self::dequant_f32(&gguf, "output_norm.weight")?;
+        let embed = dequant_f16(&gguf, "token_embd.weight")?;
+        let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
-            Some(Self::dequant_f16(&gguf, "output.weight")?)
+            Some(dequant_f16(&gguf, "output.weight")?)
         } else {
             None
         };
@@ -378,8 +365,8 @@ impl Engine for MixtralEngine {
         let mut layers = Vec::with_capacity(cfg.n_layers);
         for li in 0..cfg.n_layers {
             let lp = |suf: &str| format!("blk.{li}.{suf}");
-            let attn_norm = Self::dequant_f32(&gguf, &lp("attn_norm.weight"))?;
-            let ffn_norm = Self::dequant_f32(&gguf, &lp("ffn_norm.weight"))?;
+            let attn_norm = dequant_f32(&gguf, &lp("attn_norm.weight"))?;
+            let ffn_norm = dequant_f32(&gguf, &lp("ffn_norm.weight"))?;
             let attn_q =
                 Self::tensor_ref_k_quant(&gguf, &lp("attn_q.weight"), cfg.hidden, cfg.hidden)?;
             let attn_output =

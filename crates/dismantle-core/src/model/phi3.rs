@@ -39,6 +39,7 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
+use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f32_opt, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct Phi3Config {
@@ -116,13 +117,6 @@ impl Phi3Config {
     }
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct TensorRef {
-    pub offset: usize,
-    pub byte_size: usize,
-    pub dtype: GgmlType,
-    pub n_elems: usize,
-}
 
 pub struct Phi3Layer {
     pub attn_norm: Vec<f32>,
@@ -161,42 +155,9 @@ pub struct Phi3 {
 }
 
 impl Phi3 {
-    fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f32(info, bytes)
-    }
 
-    fn dequant_f32_opt(g: &GgufFile, name: &str) -> Result<Option<Vec<f32>>> {
-        if g.tensor(name).is_some() {
-            Ok(Some(Self::dequant_f32(g, name)?))
-        } else {
-            Ok(None)
-        }
-    }
 
-    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f16(info, bytes)
-    }
 
-    fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let n_elems: usize = info.dims.iter().product::<u64>() as usize;
-        Ok(TensorRef {
-            offset: info.data_offset as usize,
-            byte_size: info.byte_size as usize,
-            dtype: info.dtype,
-            n_elems,
-        })
-    }
 
     /// Carve a row-range out of a (rows, cols) weight `t` into a new
     /// `TensorRef` pointing into the same mmap. Valid because every GGML
@@ -413,10 +374,10 @@ impl Engine for Phi3 {
             Tokenizer::from_gguf(&gguf)?
         };
 
-        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
-        let final_norm = Self::dequant_f32(&gguf, "output_norm.weight")?;
+        let embed = dequant_f16(&gguf, "token_embd.weight")?;
+        let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
-            Some(Self::dequant_f16(&gguf, "output.weight")?)
+            Some(dequant_f16(&gguf, "output.weight")?)
         } else {
             None
         };
@@ -429,26 +390,26 @@ impl Engine for Phi3 {
             let lp = |suf: &str| format!("blk.{li}.{suf}");
 
             // Fused QKV → Q[0,q_dim) K[q_dim,q_dim+kv_dim) V[..]. cols=hidden.
-            let qkv = Self::tensor_ref(&gguf, &lp("attn_qkv.weight"))?;
+            let qkv = tensor_ref(&gguf, &lp("attn_qkv.weight"))?;
             let q_proj = Self::sub_rows(&qkv, cfg.hidden, 0, q_dim)?;
             let k_proj = Self::sub_rows(&qkv, cfg.hidden, q_dim, kv_dim)?;
             let v_proj = Self::sub_rows(&qkv, cfg.hidden, q_dim + kv_dim, kv_dim)?;
 
             // Fused gate+up → gate[0,mid) up[mid,2*mid). cols=hidden.
-            let gate_up = Self::tensor_ref(&gguf, &lp("ffn_up.weight"))?;
+            let gate_up = tensor_ref(&gguf, &lp("ffn_up.weight"))?;
             let ffn_gate = Self::sub_rows(&gate_up, cfg.hidden, 0, cfg.intermediate)?;
             let ffn_up = Self::sub_rows(&gate_up, cfg.hidden, cfg.intermediate, cfg.intermediate)?;
 
             layers.push(Phi3Layer {
-                attn_norm: Self::dequant_f32(&gguf, &lp("attn_norm.weight"))?,
-                ffn_norm: Self::dequant_f32(&gguf, &lp("ffn_norm.weight"))?,
+                attn_norm: dequant_f32(&gguf, &lp("attn_norm.weight"))?,
+                ffn_norm: dequant_f32(&gguf, &lp("ffn_norm.weight"))?,
                 q_proj,
                 k_proj,
                 v_proj,
-                o_proj: Self::tensor_ref(&gguf, &lp("attn_output.weight"))?,
+                o_proj: tensor_ref(&gguf, &lp("attn_output.weight"))?,
                 ffn_gate,
                 ffn_up,
-                ffn_down: Self::tensor_ref(&gguf, &lp("ffn_down.weight"))?,
+                ffn_down: tensor_ref(&gguf, &lp("ffn_down.weight"))?,
             });
         }
 
@@ -467,8 +428,8 @@ impl Engine for Phi3 {
             .map(|v| v as usize)
             .unwrap_or(max_seq);
         let use_long = max_seq > orig_ctx;
-        let short_f = Self::dequant_f32_opt(&gguf, "rope_factors_short.weight")?;
-        let long_f = Self::dequant_f32_opt(&gguf, "rope_factors_long.weight")?;
+        let short_f = dequant_f32_opt(&gguf, "rope_factors_short.weight")?;
+        let long_f = dequant_f32_opt(&gguf, "rope_factors_long.weight")?;
         let has_factors = short_f.is_some() || long_f.is_some();
         let rope_ext_factors = if use_long {
             long_f.or(short_f)
