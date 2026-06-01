@@ -1,0 +1,26 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "bits": 3,
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "vram_gb": 102.0,
+  "run_real_qtip": false,
+  "proxy_bits_needed": 1.2,
+  "fresh_qtip_opt_in": false,
+  "drive_cache_enabled": true,
+  "gate": {
+    "bits_needed_le": 0.0,
+    "ppl_ratio_le": 1.1,
+    "logit": "cos>=Q4K & argmax>=Q4K & KL<=Q4K, on code"
+  },
+  "verdict": "NEEDS-MEASUREMENT",
+  "source_gguf": "Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q8_0.gguf",
+  "real_qtip_ran": false,
+  "median_q4k_rmse": 0.07161670106637882,
+  "median_qtip_bracket": [0.18497234753105035, 0.09702465692885087],
+  "bits_needed_bracket": [1.368941641587013, 0.4380553625204095],
+  "logit": {"skipped": "real QTIP HF model absent"},
+  "ppl_note": "skipped because real QTIP HF model absent",
+  "legs": {"weight_rmse_le0": null, "logit_ge_q4k": null, "ppl_le_gate": null},
+  "decisive_gate": "fresh QTIP disabled to save compute; set ALLOW_FRESH_QTIP_CODEC=True for a deliberate spend.",
+  "_handoff_note": "LEG1 transpose fix verified (q4k_rmse ~0.07 Q4_K / ~0.018 Q6_K, sane). bits_needed_bracket BOTH POSITIVE (+1.37 lower, +0.44 upper) => even best-case QTIP-3bit is ~0.44 bits short of Q4_K_M weight quality; agrees with the proxy ~1.20. => leaning NO-GO. Decisive real codec (Cornell-RelaxML trellis) NOT run (ALLOW_FRESH_QTIP_CODEC=False, deliberate CU save). Per kill-protocol the bracket alone cannot RECORD a kill (Type-2); to record a decisive Type-1 kill, set ALLOW_FRESH_QTIP_CODEC=True + re-run (~20-40min)."
+}
