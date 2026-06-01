@@ -568,3 +568,93 @@ The expected shape on a well-trained *stock* model: most post-hoc structural lev
 The System-Level Shift is real, and it is the right bet — not because it is a paradigm shift for inference engines writ large (the brain-grade version of that is hardware you don't build), but because the **stateful/adaptive/specialized dimension is empty**, and owning it is a defended product position that the general engines gave up by design. dismantle reaches "all" by being **fast enough** (the tps lane → parity) and then being the **only local engine that treats the model as alive** — managing context as a working set, reusing computation across a session, molding to its user privately, doing less work like a brain, and sipping power as a measured, branded virtue. Keep the engine; reframe what it is *for*. Every lever above earns its place by an oracle, not by enthusiasm — and the strong ones (caching, KV working-set, on-device personalization, speculation) are strong enough that they don't need the hype.
 
 *Companion docs: `plans/throughput_bible_2026_05_30.md` (the physics + kernel ceiling, incl. §7 the physical floor), `plans/roadmap_2026_05_30.md` (in-flight). This plan is the systems + product axis orthogonal to raw tps.*
+
+---
+
+## §9 — The Breadth Axis (model coverage, layout, and the deferred native format)
+
+*Companion section to the Throughput Bible. The bible's other axes ask "how fast / how alive can this engine be." This axis asks "how does dismantle avoid being stuck on one model — and is there a native file format worth building?" It exists because single-model specialization is fragile (the model obsolesces; users want choice), but unbounded breadth turns dismantle into a worse general engine. Same discipline as the rest of the bible: every lever carries mechanism, benefit, exact-vs-quality-trade, effort tier, confidence, sequencing gate, and an honest throughput verdict. The load-bearing correction is stated once up front and enforced throughout: **a file format does not fix tps; only fewer bytes/token or cheaper decode does. The format's real throughput contribution is the bounded "last-mile" layout win (§7), not a new tier of speed.***
+
+---
+
+### 9.0 — The framing (read before trusting any "format fixes tps" intuition)
+
+Throughput at batch=1 decode is set by exactly two things: **how many bytes cross the memory bus per token**, and **how cheaply the kernel decodes them.** Storage layout that never changes either of those is free to redesign and will not move tps. So the test for *any* breadth/format idea is one question: **does this change the bytes that flow, or the decode cost of those bytes?**
+
+- If **yes** → it is a real throughput lever (and it belongs in the byte-cut axis, or the bounded layout lever below).
+- If **no** → it is ergonomics, consolidation, or coverage. Valuable, but it will not add tps by existing.
+
+By that test:
+- **A new container holding the same quantized weights → zero tps change** (same bytes flow). This is the trap: do not build a format expecting speed; the speed was never in the container.
+- **A weights-on-disk layout that matches the kernel's exact access order → real but bounded tps** (raises *achieved* bandwidth toward the memory-controller ceiling; this is the §7 "last mile," single-digit-to-low-double-digit %, exact, no quality cost). And crucially this is a **repack pass**, available *without* inventing a format.
+- **A better quantization or trained-in structure → real tps** — but that is QTIP / co-design (the byte-cut and L5.1 axes), and it can ride in *any* container. The format does not create it.
+
+The measured ground truth this rests on: decode is at the Apple-GPU memory-model optimum (~31 tps, kernels closed), the ceiling is the M3's 150 GB/s and the read-once nature of batch=1 decode, and the prior layout attempt (A10) measured **−16.8%** because a layout helps *only* when it matches the kernel exactly. So: **the missing throughput is not trapped in GGUF.** It is the bus and the workload. The format makes you use the bus you have slightly better and holds your specialization elegantly; it does not hand you a bus you do not have.
+
+**Therefore this axis is, in priority order:** (1) architecture-family breadth — the high-value, do-first expansion that ends single-model fragility *without* a new format; (2) the access-order layout repack — a real, bounded, exact tps lever that lives in §7 and needs no format; (3) the native format — a deferred **capstone** that consolidates the engine's specialization (codebook, LoRA deltas, calibration, cache state) and bakes in the layout win, explicitly **not** a tps unlock, built last once its payload exists.
+
+---
+
+### 9.1 — Architecture-family generalization (the breadth move — do this first, after the live bible work)
+
+- **Mechanism:** generalize dismantle from "Qwen2.5-3B specifically" to "any dense Llama-family transformer." Qwen2.5, Llama, Mistral, Gemma, Phi and most of what matters are the same architectural shape (dense decoder, RMSNorm, RoPE, SwiGLU/GeGLU FFN, GQA/MHA attention). The work is **parameterizing what currently may be hardcoded** — hidden dim, layer count, head counts (Q/KV for GQA), vocab size, intermediate dim, RoPE base/scaling, norm variant (RMSNorm vs LayerNorm), activation (SiLU vs GELU), tie-vs-untied embeddings — and reading them from the model's existing GGUF metadata. The kernels already perform the operations; this exposes the dimensions instead of baking them in.
+- **Benefit:** ends single-model fragility and delivers **breadth-of-models for free within the family** — a user can run Llama-8B or Mistral-7B instead of Qwen-3B on the *same* kernels, *same* stateful machinery (prefix cache, draft tuning), *same* (eventual) format. Critically, **the whole moat applies to every model in the family equally** — personalization on a *menu* of models beats personalization on one. This is "widen the specialization to the architecture, stay specialized in the philosophy."
+- **Exact?** E (no numerical change to any single model's output; this is parameterization, not approximation). Each newly-supported model still passes the bit-identity / parity gate against a reference.
+- **Effort tier:** **MODERATE, mostly DETERMINISTIC** (not research-gated like the kernels were). Weeks, not months. The risks are integration breadth (each architectural knob is a code path to test), not unknown physics. Bigger models (7–8B) also pull more bytes/token, so re-confirm the bus math per model — a 7B at Q4 is ~2× the bytes of the 3B, so its dense tps will be proportionally lower; that is expected, not a regression.
+- **Confidence:** **H** that it works (the operations exist; this is plumbing). M on how many architectural variants are clean vs. fiddly (GQA group counts, RoPE scaling schemes, and tied-embedding handling are the usual sharp edges).
+- **Sequencing gate:** AFTER the live bible work (batched-verify spec unblock, QTIP quality oracle, anchor/consistency pass). It does not block on them, but it should not pre-empt them — they are the throughput-defining moves; this is the coverage move.
+- **Throughput verdict:** NEUTRAL per-model (it does not speed up any single model; it adds *which* models you can run). The stateful/personalization wins then apply across all of them.
+- **Validation oracle (cheap, before broad rollout):** pick ONE second model in the family (e.g. Llama-3.x-8B or Mistral-7B GGUF), wire the parameterized loader, and confirm (a) it loads from GGUF metadata with no hardcoded-dim failures, (b) it passes greedy parity against a reference (llama.cpp output on the same prompt/seed), (c) the existing prefix-cache and draft-tuning machinery attach unchanged. If those three hold on the second model, the family generalization is sound; expand the supported list incrementally, parity-gating each.
+- **Where:** M3 (engine — loader + kernel parameterization + per-model parity).
+
+#### 9.1.a — Scope discipline (what breadth is NOT)
+Breadth is **architecture-family**, not "run everything." The moment dismantle tries to support every model and format llama.cpp does, it becomes a worse llama.cpp — generality is *their* moat, not yours. Explicitly out of scope unless a later strategic decision reopens them: non-dense architectures (MoE routing, Mamba/SSM, encoder-decoder), exotic quant formats outside what the byte-cut axis builds, and non-Apple hardware. The rule: **widen to the architecture you are already good at; do not widen to a worse version of the general engine.**
+
+---
+
+### 9.2 — Access-order layout repack (a real, bounded tps lever — lives in §7, needs no format)
+
+- **Mechanism:** lay the weights on disk (or in a one-time repacked artifact) in the **exact order the decode kernels stream them**, with alignment and grouping tuned to the Apple GPU's coalescing and the M3's DRAM row-buffer behavior, so the memory controller is not fighting the access pattern. Raises *achieved* bandwidth toward the ~85–90% practical ceiling.
+- **Benefit:** a genuine throughput win at the layout level — exactly the "last mile of the bus" from §7. Closes part of the gap between current achieved bandwidth (~56% of peak per A4) and the practical ceiling.
+- **Exact?** E (pure data movement; bit-identical).
+- **Effort tier:** SMALL-to-MODERATE. The prior attempt (A10) is **not dead — it measured −16.8% because the layout did not match the kernel exactly.** A layout helps only when it is co-designed with the precise kernel access pattern; the lever is "get the match right," not "try layout." So the work is: profile the exact streaming order of the current predec GEMVs, repack to match, re-measure.
+- **Confidence:** M (the mechanism is real and documented in §7; the magnitude on Apple's specific controller is "measure, don't quote" — could be a few %, could be ~10%, and A10 shows it can go *negative* if mismatched).
+- **Sequencing gate:** independent — can be tried any time as a repack pass. **Does NOT require the native format** (it is a repack of the weights you already load). It will later be *baked into* the format (§9.3), but it is available first as a standalone repack.
+- **Throughput verdict:** **GENUINE but BOUNDED** — single-digit-to-low-double-digit %, exact, no quality cost. This is the *entire* legitimate "format fixes tps" claim, and it is the last 10%, not the missing 50%.
+- **Validation oracle:** the §1 busy-time-bandwidth meter with/without the reordered layout, parity-gated. Positive Δ achieved-GB/s ⇒ keep; A10's −16.8% is the cautionary baseline for a mismatched layout.
+- **Where:** M3 (offline repack + bench). Cross-reference: this is the §7.1.a lever (layout = access order); recorded here because it is the *only* part of "a native format" that touches throughput.
+
+---
+
+### 9.3 — The native dismantle format (DEFERRED CAPSTONE — consolidation + bounded layout, NOT a tps unlock)
+
+- **What it actually is:** a versioned, dismantle-native artifact that holds, as **one living per-user file**, what GGUF structurally cannot: the quantized weights **+** a learned per-model codebook (if QTIP/codebook lands) **+** a low-rank/residual split (if co-design produces one) **+** the user's personalization LoRA deltas **+** the user-calibrated importance/quant map **+** prefix-cache / KV state metadata — with the access-order layout (§9.2) baked in.
+- **Benefit (stated honestly, by category):**
+  - **Consolidation / ergonomics (the real reason to build it):** GGUF is a *general, static* container — it has nowhere to put dismantle's specialization, so today that specialization is bolted on via sidecars and runtime state. A native format makes the engine's "alive" artifacts (codebook, LoRA, calibration, cache) **first-class and versioned together**, instead of duct-taped. This is the philosophy-aligned win: the format treats the model as a living, personalized, structured artifact because that is what dismantle treats it as.
+  - **Bounded throughput (via §9.2 only):** baking the access-order layout in gives the §7 last-mile win as a property of the file. This is the *single-digit-ish* layout gain, nothing more.
+  - **What it does NOT do:** it does not make Q4_K weights smaller (only a better *quant* does — QTIP, which rides in any container), it does not break past the memory-controller ceiling, and it does not change that batch=1 decode reads each weight once. **The format is layout + container, not new physics.**
+- **The honest proof that it is not a tps unlock:** the planned **GGUF→dismantle converter** (below) is *lossless*. If conversion is lossless, the dismantle file contains no *information* GGUF lacks — it is the same weights in a better arrangement plus room for your extras. A lossless converter being *possible* is the proof that the format is re-layout + payload-attachment, not magic decompression. Throughput from a container that holds the same information is a category error.
+- **GGUF→dismantle converter (the adoption bridge — build WITH the format):** a one-command `dismantle convert model.gguf → model.dismantle` that re-lays-out the weights (the §9.2 win) and attaches/initializes the specialization payload. **Rationale (correct, per the founder's instinct):** users with large GGUF libraries are wary of change and will not re-download; a frictionless converter lets them opt in, keep their models, and adopt incrementally. It is also a de-risking demo of the whole format (round-trip GGUF→dismantle→parity proves the format holds the weights faithfully).
+- **Exact?** E for the weight/layout content (lossless round-trip, parity-gated); the personalization payload is Q (by design — it is the adaptation).
+- **Effort tier:** **LARGE** — a format is a spec + writer + reader + converter + versioning + migration tooling, and **formats are forever** (you maintain it and its migrations indefinitely). But it is *engineering, not research* — estimable, not physics-uncertain. Plan a multi-week-to-month v1.
+- **Confidence:** H that it is buildable; the open question is *worth-it timing*, not feasibility.
+- **Sequencing gate (critical — do NOT build early):** **build it LAST, once its payload exists.** Today, half the intended contents are unproven — QTIP's codebook is pending its quality oracle, low-rank died on the stock model (alive only via co-design L5.1), personalization is the untested bet. **A format is the crystallization of decisions not yet made.** Building it now means designing a container for contents that may not exist; building it after QTIP / co-design / personalization resolve makes it the natural, consolidating home for confirmed wins. **Gate: native format begins only after (a) the byte-cut path is settled (QTIP GO/NO-GO), (b) the personalization oracle has reported, and (c) co-design (L5.1) is at least scoped.** Until then, sidecars + the standalone §9.2 repack carry the load.
+- **Throughput verdict:** NEUTRAL-plus-bounded — the only tps it adds is the §9.2 layout win it bakes in; everything else it does is consolidation and ergonomics. **Do not attribute future tps hopes to the format; attribute them to QTIP and co-design, which the format merely stores.**
+- **Where:** spec + tooling (M3 for the engine-side reader/writer; converter is CPU).
+
+---
+
+### 9.4 — Sequencing within the Breadth axis (relative to the rest of the bible)
+
+1. **Finish the live bible work first** (batched-verify spec unblock, QTIP quality oracle, anchor reconciliation + the §6/roadmap consistency pass + ~50-goalpost decision). The Breadth axis is the post-reevaluation expansion, not a detour from the throughput-defining moves.
+2. **Then §9.1 — architecture-family generalization.** The high-value breadth move: ends single-model fragility, multiplies the moat across a menu of models, moderate/deterministic effort, needs no format. Validate on one second model, then expand parity-gated.
+3. **§9.2 — access-order layout repack** can be slotted opportunistically any time (it is a §7 lever); it is the only throughput-bearing piece of the format story and it stands alone as a repack.
+4. **§9.3 — native format LAST**, gated on QTIP + personalization + co-design resolving, built as the consolidating capstone (with the GGUF converter as the adoption bridge), explicitly framed as layout + container, not a tps unlock.
+
+---
+
+### 9.5 — The one correction to carry forward
+
+**Better resource use at the format level is real, but it is the last 10%, not the missing 50%.** The missing throughput is not trapped in GGUF — it is the M3's 150 GB/s bus and the read-once nature of batch=1 decode. The only levers that genuinely move tps are **fewer bytes** (QTIP, co-design) and **more tokens per byte** (speculation). A native format (a) widens nothing by itself — breadth comes from §9.1 architecture generalization, and (b) speeds up only by the bounded §9.2 layout amount it bakes in. Build the format for what it actually does — **consolidation, ergonomics, a frictionless GGUF on-ramp, and the last-mile layout win** — and it is genuinely worth building, *later*. Build it expecting it to fix tps, and it will disappoint you for a reason that was never its fault.
+
+*Companion docs: the Throughput Bible §0–§8 (physics, kernel ceiling, stateful shift), §7 (physical floor incl. the layout lever this section cross-references), and the roadmap. This §9 is the breadth + coverage axis, queued behind the live throughput work.*
