@@ -60,7 +60,6 @@ const RMS_EPS: f32 = 1e-6;
 /// does saturating clamp for safety but a real out-of-range value
 /// indicates a bug upstream.
 #[allow(clippy::too_many_arguments)]
-#[allow(clippy::too_many_arguments)]
 pub fn forward_single_step(
     config: &TrainedConfig,
     in_proj: &[f32],
