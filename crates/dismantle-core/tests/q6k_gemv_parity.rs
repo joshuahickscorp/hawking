@@ -13,38 +13,11 @@
 //! is chosen small enough that accumulated errors stay below 5e-2.
 
 use dismantle_core::kernels;
-use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
+use dismantle_core::metal::TokenCommandBuffer;
 use dismantle_core::quant;
-use once_cell::sync::Lazy;
-use rand::Rng;
-use rand_pcg::Pcg64Mcg;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
-
-fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
-    let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
-}
-
-fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
-    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
-}
-
-fn read_f32_buf(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
-    let ptr = buf.contents() as *const f32;
-    unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
-}
+mod common;
+use common::*;
 
 #[test]
 fn q6k_gemv_matches_cpu_reference() {

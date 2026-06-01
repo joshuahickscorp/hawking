@@ -26,6 +26,9 @@ use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
 use dismantle_core::{Engine, EngineConfig};
 use half::f16;
 
+mod common;
+use common::*;
+
 const TOKEN: u32 = 42;
 const POS: usize = 0;
 const LAST_LAYER: usize = 1;
@@ -42,7 +45,6 @@ const INTERMEDIATE: usize = 11008;
 const RMS_EPS: f32 = 1e-6;
 const ROPE_THETA: f32 = 1_000_000.0;
 
-const ATOL: f32 = 1e-3;
 /// Relative tolerance for fp16 stores. The shader stores intermediates
 /// (Q, K, V, attn_out, residual, …) as f16; the CPU reference is f32.
 /// f16 carries ~10 mantissa bits → ~1e-3 RELATIVE precision, so for a

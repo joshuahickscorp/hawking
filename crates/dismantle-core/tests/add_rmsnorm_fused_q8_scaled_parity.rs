@@ -8,20 +8,12 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use once_cell::sync::Lazy;
+use dismantle_core::metal::{PinnedBuffer, TokenCommandBuffer};
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
-
-fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
-    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
-}
+mod common;
+use common::*;
 
 fn read_f32(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
     let ptr = buf.contents() as *const f32;

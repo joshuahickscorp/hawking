@@ -49,19 +49,15 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
+use dismantle_core::metal::TokenCommandBuffer;
 use dismantle_core::quant::predecode_q3_k_scale_table;
 use half::f16;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 use std::time::Instant;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
+mod common;
+use common::*;
 
 /// Synthetic Q3_K weights, 110 B/block (matches q3k_predec_parity.rs). Bytes
 /// 0..108 (hmask + qs + packed 6-bit scales) arbitrary; 108..110 a small +fp16 d.
@@ -101,10 +97,6 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
     (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
-}
-
-fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
-    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
 }
 
 const WARMUP: usize = 30;
