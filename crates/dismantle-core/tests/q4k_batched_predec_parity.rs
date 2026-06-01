@@ -9,14 +9,11 @@
 use dismantle_core::kernels;
 use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 use half::f16;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> = Lazy::new(|| MetalContext::new().expect("Metal device"));
-    &CTX
-}
+mod common;
+use common::*;
 
 fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
     let n_blocks = rows * (cols / 256);

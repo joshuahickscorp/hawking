@@ -4,15 +4,9 @@
 
 use dismantle_core::kernels;
 use dismantle_core::metal::{MetalContext, PinnedBuffer};
-use once_cell::sync::Lazy;
 
-const ATOL: f32 = 1e-3;
-
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
+mod common;
+use common::*;
 
 fn synthetic_input(cols: usize) -> Vec<f32> {
     (0..cols)
@@ -38,13 +32,6 @@ fn synthetic_q4_k_bytes(n_blocks: usize) -> Vec<u8> {
 
 fn pin(ctx: &MetalContext, bytes: &[u8]) -> PinnedBuffer {
     ctx.new_buffer_with_bytes(bytes)
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
 }
 
 fn assert_llama_port_matches_v2(rows: usize, cols: usize, label: &str) {

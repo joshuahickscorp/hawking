@@ -15,29 +15,11 @@
 // v_head=128, kv_lora=512.
 
 use dismantle_core::kernels;
-use dismantle_core::metal::{MetalContext, PinnedBuffer};
+use dismantle_core::metal::PinnedBuffer;
 use dismantle_core::quant::{quantize_q8_0, Q8_0_BLOCK_BYTES, Q8_0_BLOCK_ELEMS};
-use once_cell::sync::Lazy;
-use rand::Rng;
-use rand_pcg::Pcg64Mcg;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
-
-fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
-    let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
-}
+mod common;
+use common::*;
 
 // ── kv_append_q8_0_f32 GPU vs CPU ───────────────────────────────────────────
 

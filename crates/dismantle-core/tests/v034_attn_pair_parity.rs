@@ -14,23 +14,9 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::MetalContext;
-use once_cell::sync::Lazy;
-use rand::Rng;
-use rand_pcg::Pcg64Mcg;
 
-const ATOL: f32 = 1e-3;
-
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device on M3 Pro"));
-    &CTX
-}
-
-fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
-    let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
-}
+mod common;
+use common::*;
 
 fn attn_pair_check(rows_a: usize, rows_b: usize, cols: usize) {
     let x = fixed_f32(cols, 0xA1B2C3D4);

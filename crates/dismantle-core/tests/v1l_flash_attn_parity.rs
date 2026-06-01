@@ -4,28 +4,10 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
-use dismantle_core::metal::{MetalContext, PinnedBuffer};
-use once_cell::sync::Lazy;
-use rand::Rng;
-use rand_pcg::Pcg64Mcg;
+use dismantle_core::metal::PinnedBuffer;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
-
-fn fixed_f32(n: usize, seed: u64) -> Vec<f32> {
-    let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..n).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
-}
-
-fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter()
-        .zip(b.iter())
-        .map(|(&x, &y)| (x - y).abs())
-        .fold(0.0_f32, f32::max)
-}
+mod common;
+use common::*;
 
 fn run_parity(
     label: &str,

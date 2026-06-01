@@ -18,16 +18,12 @@
 use dismantle_core::kernels::{self, predecode_q4_k_scale_table_f16};
 use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
 use half::f16;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
 use std::time::Instant;
 
-fn ctx() -> &'static MetalContext {
-    static CTX: Lazy<MetalContext> =
-        Lazy::new(|| MetalContext::new().expect("Metal device required"));
-    &CTX
-}
+mod common;
+use common::*;
 
 /// Realistic Q4_K weights (144 B/block) — identical generator to the parity test.
 fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
@@ -50,10 +46,6 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
     (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
-}
-
-fn new_f32_buf(ctx: &MetalContext, data: &[f32]) -> PinnedBuffer {
-    ctx.new_buffer_with_bytes(bytemuck::cast_slice(data))
 }
 
 /// Pin a Vec<f16> as raw little-endian bytes — the f16s kernel reads buffer(1)
