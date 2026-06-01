@@ -1,0 +1,5 @@
+{
+  "tau": 1.9442083333333333,
+  "windows": 30000,
+  "schema": "eagle5-tau-pytorch-v1"
+}

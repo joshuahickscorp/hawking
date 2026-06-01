@@ -100,16 +100,41 @@ across `b1/b2 × e12/e14` configs per bucket.
 
 ---
 
+## Also found: 40.75 GB of loose training checkpoints in My Drive root
+
+A root scan (`parentId = '0AMLONUeOjcquUk9PVA'`) found **113 loose training files
+dumped directly in My Drive root** — 5 separate Eagle-5 head runs from 2026-05-26
+(the day before the organized exports), never foldered:
+
+| Kind | Count | Size |
+|---|---|---|
+| `step_*.npz` (periodic training state) | 93 | 32.94 GB |
+| `head_final.safetensors` | 5 | 5.76 GB |
+| `latest.npz` | 6 | 2.05 GB |
+| `log.jsonl` + `tau.json` | 9 | negligible |
+| **Total** | **113** | **40.75 GB** |
+
+All disposable: `step_*.npz` are periodic optimizer/state checkpoints, and the 5
+`head_final.safetensors` are byte-size matches for heads later organized into the
+dismantle folders (superseded duplicates). Everything **else** loose in root is
+personal/academic (course notes, assignments, CVs, affidavits, PDFs, a video) and
+is preserved, as are the unrelated project folders (`TradingModels`, `demucs`,
+`gravel`, `apartments`, `BHM_highlight_videos`, `Colab Notebooks`).
+
 ## Cleanup decision (2026-05-31)
 
-Colab work paused for the foreseeable future. Decision: **download the curated
-winners (`final_push/best_heads` + `final_push/frozen_cache`, ≈ 11.7 GB) to
-local disk via the Drive app, then delete all three Drive folders (≈ 74.7 GB).**
-The q3b head was already local. The 37 GB raw `sweep`, the two older export
-generations (`dismantle/`, `dismantle_headbank_corrected/`), and the per-bucket
-weights are reproducible-by-re-running-Colab and were not worth the Drive
-storage while paused.
+Colab work paused for the foreseeable future. **Everything dismantle/training goes
+from Drive (~115 GB); a single keeper tar is pulled local first.** Two notebooks
+in this dir drive it:
 
-> Note: `dsv2` head (1.69 GB, `headbank_500u_v2/dsv2/`) was unique to the
-> oldest folder — if dsv2 spec-decode is ever revisited, that head is gone and
-> must be retrained.
+1. **`consolidate_drive_dismantle.ipynb`** — tars the keep-set
+   (`final_push/best_heads` + `final_push/frozen_cache` + the unique `dsv2` head,
+   ≈ 13 GB) into one `.tar` in Drive with a sha256, for a one-file download. The
+   q3b head was already local; `dsv2` is folded into the tar so it survives.
+2. **`clear_drive_dismantle_and_root.ipynb`** — after the tar is downloaded +
+   verified, trashes (via Drive-API `trashed=true`, recoverable ~30 days) the
+   3 dismantle folders (74.7 GB) **and** the 113 loose root checkpoints (40.75 GB),
+   including the 5 superseded root heads. Guarded by a `CONFIRM` flag + dry-run.
+
+Net: ~115 GB reclaimed from Drive, ~13 GB keeper tar preserved locally, all
+personal docs + other projects untouched.
