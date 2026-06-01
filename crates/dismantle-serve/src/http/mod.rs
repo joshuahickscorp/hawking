@@ -6,10 +6,12 @@
 //!   GET  /metrics               (Prometheus textfile)
 
 use axum::{
+    body::Bytes,
     extract::State,
+    http::StatusCode,
     response::{
         sse::{Event, KeepAlive, Sse},
-        IntoResponse,
+        IntoResponse, Response,
     },
     routing::{get, post},
     Json, Router,
@@ -21,6 +23,86 @@ use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio_stream::wrappers::ReceiverStream;
+
+/// Structured, OpenAI-compatible error.
+///
+/// Serializes to `{"error": {"message": ..., "type": ..., "code": ...}}` and
+/// carries a stable HTTP status. The `code` field is a machine-readable,
+/// stable token (see the constants below); the `type` field mirrors OpenAI's
+/// coarse error families (`invalid_request_error`, `internal_error`).
+#[derive(Debug, Clone)]
+pub struct ApiError {
+    status: StatusCode,
+    message: String,
+    error_type: &'static str,
+    code: &'static str,
+}
+
+impl ApiError {
+    /// Body could not be parsed as the expected JSON shape (syntax error,
+    /// wrong types, or a missing required field that serde rejects).
+    pub fn invalid_json(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::BAD_REQUEST,
+            message: message.into(),
+            error_type: "invalid_request_error",
+            code: "invalid_json",
+        }
+    }
+
+    /// A required parameter was syntactically present but semantically empty
+    /// (e.g. `messages: []` or an empty `prompt`).
+    pub fn missing_parameter(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::BAD_REQUEST,
+            message: message.into(),
+            error_type: "invalid_request_error",
+            code: "missing_required_parameter",
+        }
+    }
+
+    /// Generation failed inside the engine, or the worker task panicked.
+    pub fn internal(message: impl Into<String>) -> Self {
+        Self {
+            status: StatusCode::INTERNAL_SERVER_ERROR,
+            message: message.into(),
+            error_type: "internal_error",
+            code: "internal_error",
+        }
+    }
+
+    fn to_body(&self) -> serde_json::Value {
+        serde_json::json!({
+            "error": {
+                "message": self.message,
+                "type": self.error_type,
+                "code": self.code,
+            }
+        })
+    }
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        (self.status, Json(self.to_body())).into_response()
+    }
+}
+
+impl std::fmt::Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ({}): {}", self.code, self.status, self.message)
+    }
+}
+
+impl std::error::Error for ApiError {}
+
+/// Parse a request body into `T`, mapping any serde failure to a structured
+/// [`ApiError`] with the `invalid_json` code. Centralizes the malformed-input
+/// path so every route reports errors with the same machine-readable shape.
+fn parse_json<T: serde::de::DeserializeOwned>(body: &Bytes) -> Result<T, ApiError> {
+    serde_json::from_slice::<T>(body)
+        .map_err(|e| ApiError::invalid_json(format!("invalid request body: {e}")))
+}
 
 #[derive(Clone)]
 pub struct AppState {
@@ -114,10 +196,15 @@ struct CompletionReq {
     stream: bool,
 }
 
-async fn chat_completions(
-    State(s): State<AppState>,
-    Json(req): Json<ChatReq>,
-) -> impl IntoResponse {
+async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
+    let req: ChatReq = match parse_json(&body) {
+        Ok(req) => req,
+        Err(e) => return e.into_response(),
+    };
+    if req.messages.is_empty() {
+        return ApiError::missing_parameter("'messages' must contain at least one message")
+            .into_response();
+    }
     let prompt = render_chat(&req.messages, &s.model_arch);
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
@@ -143,10 +230,14 @@ async fn chat_completions(
     }
 }
 
-async fn completions(
-    State(s): State<AppState>,
-    Json(req): Json<CompletionReq>,
-) -> impl IntoResponse {
+async fn completions(State(s): State<AppState>, body: Bytes) -> Response {
+    let req: CompletionReq = match parse_json(&body) {
+        Ok(req) => req,
+        Err(e) => return e.into_response(),
+    };
+    if req.prompt.is_empty() {
+        return ApiError::missing_parameter("'prompt' must not be empty").into_response();
+    }
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
         top_k: 40,
@@ -250,8 +341,8 @@ async fn json_full_response(
     state: AppState,
     req: GenerateRequest,
     chat: bool,
-) -> Json<serde_json::Value> {
-    let res = tokio::task::spawn_blocking(move || -> serde_json::Value {
+) -> Result<Json<serde_json::Value>, ApiError> {
+    let res = tokio::task::spawn_blocking(move || -> Result<serde_json::Value, String> {
         let mut engine = state.engine.lock();
         let mut text = String::new();
         let mut sink = |ev: StreamEvent| {
@@ -259,8 +350,10 @@ async fn json_full_response(
                 text.push_str(&t);
             }
         };
-        let _ = engine.generate(req, &mut sink);
-        if chat {
+        engine
+            .generate(req, &mut sink)
+            .map_err(|e| format!("generation failed: {e}"))?;
+        let body = if chat {
             serde_json::json!({
                 "object": "chat.completion",
                 "choices": [{"index": 0, "message": {"role": "assistant", "content": text}}]
@@ -270,9 +363,11 @@ async fn json_full_response(
                 "object": "text_completion",
                 "choices": [{"index": 0, "text": text}]
             })
-        }
+        };
+        Ok(body)
     })
     .await
-    .unwrap_or(serde_json::json!({"error": "task panicked"}));
-    Json(res)
+    .map_err(|_| ApiError::internal("generation task panicked"))?
+    .map_err(ApiError::internal)?;
+    Ok(Json(res))
 }
