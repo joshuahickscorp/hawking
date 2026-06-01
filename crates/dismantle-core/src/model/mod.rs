@@ -5,6 +5,7 @@
 
 pub mod deepseek_v2;
 pub mod expert_cache;
+pub mod weights;
 pub mod gemma2;
 pub mod llama;
 pub mod mixtral;
