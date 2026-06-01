@@ -39,6 +39,7 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
+use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct LlamaConfig {
@@ -169,16 +170,6 @@ impl LlamaConfig {
     }
 }
 
-/// Pointer into the mmap'd GGUF for one tensor. Module-local mirror of
-/// the same idiom used by `qwen_dense` and `deepseek_v2` so we don't
-/// re-export the type just for cross-module use.
-#[derive(Debug, Clone)]
-pub(crate) struct TensorRef {
-    pub offset: usize,
-    pub byte_size: usize,
-    pub dtype: GgmlType,
-    pub n_elems: usize,
-}
 
 pub struct LlamaLayer {
     /// Per-layer norms (eager fp32, small).
@@ -225,34 +216,8 @@ pub struct LlamaDense {
 }
 
 impl LlamaDense {
-    fn dequant_f32(g: &GgufFile, name: &str) -> Result<Vec<f32>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f32(info, bytes)
-    }
 
-    fn dequant_f16(g: &GgufFile, name: &str) -> Result<Vec<f16>> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let bytes = g.tensor_bytes(name).unwrap();
-        quant::dequant_to_f16(info, bytes)
-    }
 
-    fn tensor_ref(g: &GgufFile, name: &str) -> Result<TensorRef> {
-        let info = g
-            .tensor(name)
-            .ok_or_else(|| Error::Model(format!("missing tensor `{name}`")))?;
-        let n_elems: usize = info.dims.iter().product::<u64>() as usize;
-        Ok(TensorRef {
-            offset: info.data_offset as usize,
-            byte_size: info.byte_size as usize,
-            dtype: info.dtype,
-            n_elems,
-        })
-    }
 
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
         if buf.len() != t.n_elems {
@@ -456,10 +421,10 @@ impl Engine for LlamaDense {
             Tokenizer::from_gguf(&gguf)?
         };
 
-        let embed = Self::dequant_f16(&gguf, "token_embd.weight")?;
-        let final_norm = Self::dequant_f32(&gguf, "output_norm.weight")?;
+        let embed = dequant_f16(&gguf, "token_embd.weight")?;
+        let final_norm = dequant_f32(&gguf, "output_norm.weight")?;
         let lm_head = if gguf.tensor("output.weight").is_some() {
-            Some(Self::dequant_f16(&gguf, "output.weight")?)
+            Some(dequant_f16(&gguf, "output.weight")?)
         } else {
             None
         };
@@ -468,15 +433,15 @@ impl Engine for LlamaDense {
         for li in 0..cfg.n_layers {
             let lp = |suf: &str| format!("blk.{li}.{suf}");
             layers.push(LlamaLayer {
-                attn_norm: Self::dequant_f32(&gguf, &lp("attn_norm.weight"))?,
-                ffn_norm: Self::dequant_f32(&gguf, &lp("ffn_norm.weight"))?,
-                q_proj: Self::tensor_ref(&gguf, &lp("attn_q.weight"))?,
-                k_proj: Self::tensor_ref(&gguf, &lp("attn_k.weight"))?,
-                v_proj: Self::tensor_ref(&gguf, &lp("attn_v.weight"))?,
-                o_proj: Self::tensor_ref(&gguf, &lp("attn_output.weight"))?,
-                ffn_gate: Self::tensor_ref(&gguf, &lp("ffn_gate.weight"))?,
-                ffn_up: Self::tensor_ref(&gguf, &lp("ffn_up.weight"))?,
-                ffn_down: Self::tensor_ref(&gguf, &lp("ffn_down.weight"))?,
+                attn_norm: dequant_f32(&gguf, &lp("attn_norm.weight"))?,
+                ffn_norm: dequant_f32(&gguf, &lp("ffn_norm.weight"))?,
+                q_proj: tensor_ref(&gguf, &lp("attn_q.weight"))?,
+                k_proj: tensor_ref(&gguf, &lp("attn_k.weight"))?,
+                v_proj: tensor_ref(&gguf, &lp("attn_v.weight"))?,
+                o_proj: tensor_ref(&gguf, &lp("attn_output.weight"))?,
+                ffn_gate: tensor_ref(&gguf, &lp("ffn_gate.weight"))?,
+                ffn_up: tensor_ref(&gguf, &lp("ffn_up.weight"))?,
+                ffn_down: tensor_ref(&gguf, &lp("ffn_down.weight"))?,
             });
         }
 
