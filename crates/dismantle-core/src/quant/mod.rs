@@ -108,6 +108,34 @@ fn copy_bf16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     Ok(())
 }
 
+/// Validate a dequant target and return its block count: `out` must be a whole
+/// number of blocks and `bytes` must hold at least that many block-bytes.
+/// Consolidates the identical guard prologue across the `dequant_q*` family;
+/// error strings are byte-identical to the inlined originals.
+#[inline]
+fn block_count(
+    tag: &str,
+    out_len: usize,
+    bytes_len: usize,
+    block_elems: usize,
+    block_bytes: usize,
+) -> Result<usize> {
+    if out_len % block_elems != 0 {
+        return Err(Error::Kernel(format!(
+            "{tag}: out len not multiple of {block_elems}"
+        )));
+    }
+    let nb = out_len / block_elems;
+    if bytes_len < nb * block_bytes {
+        return Err(Error::Kernel(format!(
+            "{tag}: have {}B need {}B",
+            bytes_len,
+            nb * block_bytes
+        )));
+    }
+    Ok(nb)
+}
+
 // ---------- Q8_0 ---------------------------------------------------------
 //
 // Block layout: { f16 d; int8 qs[32] }   total 34 bytes per 32 elems.
@@ -115,17 +143,7 @@ fn copy_bf16(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn dequant_q8_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 34;
     const BLOCK_ELEMS: usize = 32;
-    if out.len() % BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel("q8_0: out len not multiple of 32".into()));
-    }
-    let nb = out.len() / BLOCK_ELEMS;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q8_0: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q8_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -331,17 +349,7 @@ pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
 fn dequant_q4_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 18;
     const BLOCK_ELEMS: usize = 32;
-    if out.len() % BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel("q4_0: out len not multiple of 32".into()));
-    }
-    let nb = out.len() / BLOCK_ELEMS;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q4_0: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q4_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -366,17 +374,7 @@ fn dequant_q4_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn dequant_q4_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 20;
     const BLOCK_ELEMS: usize = 32;
-    if out.len() % BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel("q4_1: out len not multiple of 32".into()));
-    }
-    let nb = out.len() / BLOCK_ELEMS;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q4_1: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q4_1", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -408,17 +406,7 @@ fn dequant_q4_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn dequant_q5_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 22;
     const BLOCK_ELEMS: usize = 32;
-    if out.len() % BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel("q5_0: out len not multiple of 32".into()));
-    }
-    let nb = out.len() / BLOCK_ELEMS;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q5_0: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q5_0", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -449,17 +437,7 @@ fn dequant_q5_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 fn dequant_q5_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 24;
     const BLOCK_ELEMS: usize = 32;
-    if out.len() % BLOCK_ELEMS != 0 {
-        return Err(Error::Kernel("q5_1: out len not multiple of 32".into()));
-    }
-    let nb = out.len() / BLOCK_ELEMS;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q5_1: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q5_1", out.len(), bytes.len(), BLOCK_ELEMS, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -499,17 +477,7 @@ fn dequant_q5_1(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 
 fn dequant_q4_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 144;
-    if out.len() % Q_K != 0 {
-        return Err(Error::Kernel("q4_k: out len not multiple of 256".into()));
-    }
-    let nb = out.len() / Q_K;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q4_k: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q4_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -565,17 +533,7 @@ fn dequant_q4_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 //   x     = d * scale * q
 pub fn dequant_q3_k_into(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 110;
-    if out.len() % Q_K != 0 {
-        return Err(Error::Kernel("q3_k: out len not multiple of 256".into()));
-    }
-    let nb = out.len() / Q_K;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q3_k: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q3_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
 
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
@@ -698,17 +656,7 @@ fn decode_q_k_scale_min(src: &[u8], scales: &mut [u8; 8], mins: &mut [u8; 8]) {
 
 fn dequant_q5_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 176;
-    if out.len() % Q_K != 0 {
-        return Err(Error::Kernel("q5_k: out len not multiple of 256".into()));
-    }
-    let nb = out.len() / Q_K;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q5_k: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q5_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let d =
@@ -759,17 +707,7 @@ fn dequant_q5_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
 
 fn dequant_q6_k(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     const BLOCK_BYTES: usize = 210;
-    if out.len() % Q_K != 0 {
-        return Err(Error::Kernel("q6_k: out len not multiple of 256".into()));
-    }
-    let nb = out.len() / Q_K;
-    if bytes.len() < nb * BLOCK_BYTES {
-        return Err(Error::Kernel(format!(
-            "q6_k: have {}B need {}B",
-            bytes.len(),
-            nb * BLOCK_BYTES
-        )));
-    }
+    let nb = block_count("q6_k", out.len(), bytes.len(), Q_K, BLOCK_BYTES)?;
     for b in 0..nb {
         let off = b * BLOCK_BYTES;
         let ql = &bytes[off..off + 128];
