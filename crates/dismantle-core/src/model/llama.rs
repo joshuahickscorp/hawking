@@ -39,6 +39,7 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
+use super::arch_config::ArchReader;
 use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f16};
 
 #[derive(Debug, Clone)]
@@ -75,26 +76,19 @@ impl LlamaConfig {
         let get_u32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_u32());
         let get_f32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_f32());
         let get_str = |k: &str| g.metadata.get(k).and_then(|v| v.as_str());
+        // P1-D1: shared core reads via ArchReader; the vocab fallback,
+        // rope-scaling and sliding-window extras below keep the closures.
+        let r = ArchReader::new(g, "llama");
 
-        let n_layers = get_u32("llama.block_count")
-            .ok_or_else(|| Error::Model("missing llama.block_count".into()))?
-            as usize;
-        let hidden = get_u32("llama.embedding_length")
-            .ok_or_else(|| Error::Model("missing llama.embedding_length".into()))?
-            as usize;
-        let n_heads = get_u32("llama.attention.head_count")
-            .ok_or_else(|| Error::Model("missing llama.attention.head_count".into()))?
-            as usize;
-        let n_kv_heads = get_u32("llama.attention.head_count_kv").unwrap_or(n_heads as u32) as usize;
+        let n_layers = r.req_usize("block_count")?;
+        let hidden = r.req_usize("embedding_length")?;
+        let n_heads = r.req_usize("attention.head_count")?;
+        let n_kv_heads = r.opt_usize("attention.head_count_kv", n_heads);
         // Some Llama GGUFs ship an explicit head_dim (e.g. Llama-3.2 1B
         // where hidden=2048 but head_dim=64 with 32 heads); fall back to
         // hidden/n_heads when absent.
-        let head_dim = get_u32("llama.attention.key_length")
-            .map(|v| v as usize)
-            .unwrap_or(hidden / n_heads);
-        let intermediate = get_u32("llama.feed_forward_length")
-            .ok_or_else(|| Error::Model("missing llama.feed_forward_length".into()))?
-            as usize;
+        let head_dim = r.opt_usize("attention.key_length", hidden / n_heads);
+        let intermediate = r.req_usize("feed_forward_length")?;
         let vocab_size = match get_u32("llama.vocab_size") {
             Some(v) => v as usize,
             None => {
@@ -109,9 +103,9 @@ impl LlamaConfig {
                 dims.iter().copied().max().unwrap_or(0) as usize
             }
         };
-        let rope_theta = get_f32("llama.rope.freq_base").unwrap_or(500_000.0);
-        let rms_norm_eps = get_f32("llama.attention.layer_norm_rms_epsilon").unwrap_or(1e-5);
-        let max_seq_len = get_u32("llama.context_length").unwrap_or(8192) as usize;
+        let rope_theta = r.opt_f32("rope.freq_base", 500_000.0);
+        let rms_norm_eps = r.opt_f32("attention.layer_norm_rms_epsilon", 1e-5);
+        let max_seq_len = r.opt_usize("context_length", 8192);
 
         // Sliding-window attention: Mistral-7B-v0.1 windows attention at
         // `llama.attention.sliding_window`; v0.2/v0.3 (our target) and

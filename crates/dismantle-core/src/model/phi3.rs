@@ -39,6 +39,7 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
+use super::arch_config::ArchReader;
 use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f32_opt, dequant_f16};
 
 #[derive(Debug, Clone)]
@@ -58,25 +59,16 @@ pub struct Phi3Config {
 impl Phi3Config {
     pub fn from_gguf(g: &GgufFile) -> Result<Self> {
         let get_u32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_u32());
-        let get_f32 = |k: &str| g.metadata.get(k).and_then(|v| v.as_f32());
+        // P1-D1: shared core reads via ArchReader; the vocab fallback +
+        // sliding-window check below keep `get_u32`.
+        let r = ArchReader::new(g, "phi3");
 
-        let n_layers = get_u32("phi3.block_count")
-            .ok_or_else(|| Error::Model("missing phi3.block_count".into()))?
-            as usize;
-        let hidden = get_u32("phi3.embedding_length")
-            .ok_or_else(|| Error::Model("missing phi3.embedding_length".into()))?
-            as usize;
-        let n_heads = get_u32("phi3.attention.head_count")
-            .ok_or_else(|| Error::Model("missing phi3.attention.head_count".into()))?
-            as usize;
-        let n_kv_heads =
-            get_u32("phi3.attention.head_count_kv").unwrap_or(n_heads as u32) as usize;
-        let head_dim = get_u32("phi3.attention.key_length")
-            .map(|v| v as usize)
-            .unwrap_or(hidden / n_heads);
-        let intermediate = get_u32("phi3.feed_forward_length")
-            .ok_or_else(|| Error::Model("missing phi3.feed_forward_length".into()))?
-            as usize;
+        let n_layers = r.req_usize("block_count")?;
+        let hidden = r.req_usize("embedding_length")?;
+        let n_heads = r.req_usize("attention.head_count")?;
+        let n_kv_heads = r.opt_usize("attention.head_count_kv", n_heads);
+        let head_dim = r.opt_usize("attention.key_length", hidden / n_heads);
+        let intermediate = r.req_usize("feed_forward_length")?;
         let vocab_size = match get_u32("phi3.vocab_size") {
             Some(v) => v as usize,
             None => {
@@ -89,9 +81,9 @@ impl Phi3Config {
                 dims.iter().copied().max().unwrap_or(0) as usize
             }
         };
-        let rope_theta = get_f32("phi3.rope.freq_base").unwrap_or(10_000.0);
-        let rms_norm_eps = get_f32("phi3.attention.layer_norm_rms_epsilon").unwrap_or(1e-5);
-        let max_seq_len = get_u32("phi3.context_length").unwrap_or(4096) as usize;
+        let rope_theta = r.opt_f32("rope.freq_base", 10_000.0);
+        let rms_norm_eps = r.opt_f32("attention.layer_norm_rms_epsilon", 1e-5);
+        let max_seq_len = r.opt_usize("context_length", 4096);
 
         if let Some(win) = get_u32("phi3.attention.sliding_window") {
             if (win as usize) < max_seq_len {
