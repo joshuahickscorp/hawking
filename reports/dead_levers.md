@@ -96,9 +96,10 @@ Ordered alphabetically by lever name.
 
 ## 🪦 Low-rank + compressible residual codec (Bible §8.1 L1.4)
 
-**Status:** killed 2026-05-30 by offline byte-budget oracle (before any kernel)
+**Status:** NO-GO — killed 2026-05-30 (data-free SVD, before any kernel) + **data-aware reframe RAN and confirmed dead 2026-05-31** (→ now **Type-1**; see Update below)
 **Evidence:** `reports/oracle_lowrank_codebook.md` + `tools/bench/oracle_lowrank_codebook.py`. Qwen2.5-3B weights are not low-rank: top-64 SVD captures only **3–9%** (FFN) to **~26%** (attn) of Frobenius energy; residual std stays **~90–99%** of the original (median 0.95). Since SVD removes no structure, residual@2–3b ≈ raw-quant@2–3b, so the f16 U,V are **pure dead overhead → strictly worse than plain low-bit quant**. (The raw byte ratio looked like a win only because it stored the residual at <4.5b — illusory.) Build at most one byte-cut codec; this isn't it.
 **Resurrection check:** only on a model trained to be low-rank (L5.1). The surviving byte-cut codec is **QTIP** (lookup-free bitshift trellis) — a real byte cut AND gather-free; advance it to the GPU/quality lane.
+**Update 2026-05-31 — data-aware reframe RAN and DIED → now Type-1:** the activation-aware SVD reframe (the named Type-2 escape; ASVD/SVD-LLM on `W·C^{1/2}`) was tested (`reports/oracle_dataaware_lowrank.md` + `tools/bench/oracle_dataaware_lowrank.py`, 36 layers × {ffn_gate, ffn_up}, 800 tok/layer, 70/30 held-out). NO-GO: data-norm E64≈0.990 is an **in-sample artifact** — captured activations are effectively rank-≤64 (participation 3.1/2048, rank99% 63), so `data-E64≈1.0` holds for any weight and saves no WEIGHT bytes; held-out error blows up (0.139 vs 0.079 in-sample); 1/72 FFN tensors beat Q4_K bytes at the 0.02 gate. Lower-bound caveat (target W = dequantized Q4_K) noted, but the NO-GO is decisive. Both data-free (2026-05-30) and data-aware forms are dead → QTIP is the surviving byte-cut codec. (Re-confirmed in `reports/kill_ledger_reconciliation.md`.)
 
 ---
 
