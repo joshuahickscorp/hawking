@@ -110,6 +110,22 @@ enum Cmd {
         /// Overrides --prompt when present.
         #[arg(long)]
         prompts_file: Option<PathBuf>,
+        /// L3.1 §2.1b — enable the per-user n-gram speculative draft (the
+        /// propose→batched-verify→accept loop). Equivalent to setting
+        /// DISMANTLE_QWEN_USER_DRAFT=1. Greedy (temp=0) + TCB only; lossless
+        /// by construction (output is bit-identical to plain greedy). Without
+        /// this flag the draft path is never entered (the failing CLI run in
+        /// reports/move2_user_draft_diagnosis.md decoded with draft_accepted=0
+        /// because the flag was unset).
+        #[arg(long, default_value_t = false)]
+        user_draft: bool,
+        /// Select the PROPOSE-FIRST user-draft loop (1 verify forward/cycle)
+        /// instead of the default bonus-first loop (2 forwards/cycle).
+        /// Equivalent to also setting DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST=1.
+        /// Only meaningful together with --user-draft; bit-identical to the
+        /// bonus-first loop (changes only forward-count scheduling).
+        #[arg(long, default_value_t = false)]
+        user_draft_propose_first: bool,
     },
     /// Run a benchmark suite.
     Bench {
@@ -319,6 +335,8 @@ fn main() -> Result<()> {
             eagle5_head,
             eagle5_accept_trace,
             prompts_file,
+            user_draft,
+            user_draft_propose_first,
         } => generate_main(
             weights,
             prompt,
@@ -339,6 +357,8 @@ fn main() -> Result<()> {
             eagle5_head,
             eagle5_accept_trace,
             prompts_file,
+            user_draft,
+            user_draft_propose_first,
         ),
         Cmd::Bench {
             weights,
@@ -985,6 +1005,8 @@ fn generate_main(
     eagle5_head: Option<PathBuf>,
     eagle5_accept_trace: Option<PathBuf>,
     prompts_file: Option<PathBuf>,
+    user_draft: bool,
+    user_draft_propose_first: bool,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -1019,6 +1041,17 @@ fn generate_main(
     let speculate_mode = SpeculateMode::from_cli(speculate.as_deref(), false)?;
     if let Some(path) = eagle5_accept_trace.as_ref() {
         std::env::set_var("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE", path);
+    }
+    // L3.1 §2.1b — expose the user-ngram draft (and its propose-first variant)
+    // on the CLI by setting the env the core reads via `env_on`. Without this
+    // wiring the draft is unreachable from `dismantle generate` (the gap
+    // diagnosed in reports/move2_user_draft_diagnosis.md). propose-first
+    // implies the draft is on.
+    if user_draft || user_draft_propose_first {
+        std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "1");
+    }
+    if user_draft_propose_first {
+        std::env::set_var("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST", "1");
     }
     let profile = match kernel_profile.as_ref() {
         Some(path) => Some(KernelProfile::load(path)?),
