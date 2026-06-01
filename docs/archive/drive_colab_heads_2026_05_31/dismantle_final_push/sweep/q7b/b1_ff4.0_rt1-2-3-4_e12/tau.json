@@ -1,0 +1,24 @@
+{
+  "ckpt": "/content/drive/MyDrive/dismantle_final_push/sweep/q7b/b1_ff4.0_rt1-2-3-4_e12/latest.npz",
+  "corpus": "/content/headbank_inputs/q7b/corpus_shards",
+  "depth": 4,
+  "depth1_accept_rate": 0.89875,
+  "frozen": "/content/headbank_inputs/q7b/frozen_gguf.npz",
+  "full_accept_rate": 0.009,
+  "per_pos_accept_rate": [
+    0.89875,
+    0.289,
+    0.05775,
+    0.009
+  ],
+  "projection": {
+    "base_tps": 26.6,
+    "formula": "base_tps * (1 + tau) * w4a8_multiplier * spec_efficiency",
+    "projected_dec_tps": 63.71780625000001,
+    "spec_efficiency": 0.85,
+    "w4a8_multiplier": 1.25
+  },
+  "schema": "eagle5-tau-pytorch-v1",
+  "tau": 1.2545,
+  "windows": 4000
+}

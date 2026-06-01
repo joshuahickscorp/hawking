@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "accepted_draft_tokens_per_verify": 11.20416927619218,
+      "offline_projected_tps": 292.9000626286124,
+      "policy_kind": "fixed_k",
+      "tag": "dsv2_b3_compact_b3_h16_ff40_lr0002_seed0",
+      "target": "dsv2",
+      "tau": 5.735
+    }
+  ],
+  "schema": "dismantle-headbank-leaderboard-v1"
+}
