@@ -3,10 +3,12 @@
 ## One-line summary
 
 dismantle is a Rust workspace that compiles to a single CLI binary
-(`dismantle`) wrapping a Metal-native Mixture-of-Experts inference
-engine for Apple Silicon. It loads GGUF model files, executes the
-forward pass via custom Metal kernels, and exposes both an
-OpenAI-compatible HTTP server and a benchmark harness.
+(`dismantle`) wrapping a Metal-native inference engine for Apple
+Silicon that runs **both dense and Mixture-of-Experts** transformers.
+It loads GGUF model files, detects the architecture from metadata,
+executes the forward pass via custom Metal kernels, and exposes both
+an OpenAI-compatible HTTP server and a benchmark harness. The primary
+tuned target is Qwen2.5-3B-Instruct Q4_K_M (dense).
 
 ## The three layers
 
@@ -28,9 +30,11 @@ OpenAI-compatible HTTP server and a benchmark harness.
 │  │                model, gguf, tokenizer, cache,            │  │
 │  │                speculate})                               │  │
 │  │ • Composes runtime kernels into a forward pass.          │  │
-│  │ • Knows DeepSeek-V2-Lite + Qwen3-MoE shapes.             │  │
+│  │ • Dense: Qwen2.5, Llama 3.x/Mistral, Gemma2, Phi-3.      │  │
+│  │ • MoE:   DeepSeek-V2-Lite, Mixtral, Qwen3-MoE.           │  │
+│  │ • Shared GGUF arch-config reader (arch_config.rs).       │  │
 │  │ • Owns KV cache (in-mem + on-disk prefill cache).        │  │
-│  │ • Owns the speculative shared-expert draft loop.         │  │
+│  │ • Owns the n-gram + EAGLE speculative draft loops.       │  │
 │  └────────────────────────┬─────────────────────────────────┘  │
 │                           │                                    │
 │  ┌────────────────────────▼─────────────────────────────────┐  │
@@ -57,10 +61,16 @@ OpenAI-compatible HTTP server and a benchmark harness.
   trait. The bench binary uses the same trait, no HTTP. There is one
   inference path; the server is decorative.
 
-**No dense-fallback path in core.** dismantle is a MoE engine. Models
-with dense layers (DeepSeek-V2-Lite's first transformer block)
-execute through the same MoE kernel with a single-expert config.
-There is no `if dense else moe` branch.
+**Dense and MoE are both first-class.** The model layer dispatches on
+the GGUF-detected architecture (`model/mod.rs`) to a per-family
+forward pass: dense families (Qwen2.5, Llama 3.x, Gemma2, Phi-3) run
+the tuned Q4_K GEMV decode core; MoE families (DeepSeek-V2-Lite,
+Mixtral, Qwen3-MoE) run grouped-expert GEMM with memory-conscious
+dispatch. Within a MoE model, dense blocks (e.g. DeepSeek-V2-Lite's
+first transformer block) still execute through the MoE kernel with a
+single-expert config. The duplicated GGUF-metadata reads are factored
+into a shared `ArchReader` (`model/arch_config.rs`); each family keeps
+its own `*Config` + vocab + per-arch extras.
 
 **MIT-licensed Rust, Metal source under the same.** Both Rust crates
 and `.metal` source are MIT-licensed and live in the same workspace.
@@ -88,7 +98,9 @@ dismantle/
 │   │   │   ├── sample/           # GPU top-K / top-P / temp / mask  (wedge 3)
 │   │   │   ├── speculate/        # shared-expert draft path        (wedge 4)
 │   │   │   ├── cache/            # KV cache + on-disk prefill cache (wedge 5)
-│   │   │   ├── model/            # DeepSeek-V2 + Qwen-MoE forward
+│   │   │   ├── model/            # per-family forward passes + arch_config (ArchReader)
+│   │   │   │                     #   dense: qwen_dense, llama, gemma2, phi3
+│   │   │   │                     #   MoE:   deepseek_v2, mixtral, qwen_moe
 │   │   │   ├── gguf/             # GGUF v3 reader
 │   │   │   └── tokenizer/        # wrapper over `tokenizers` crate
 │   │   └── shaders/              # .metal source, embedded at build
@@ -103,8 +115,10 @@ dismantle/
 
 ## Invariants
 
-1. **No dense-fallback path in core.** MoE is the only path. Dense
-   layers go through the MoE kernel with a single-expert config.
+1. **Dense and MoE are both first-class.** `model/mod.rs` dispatches
+   on the GGUF-detected architecture; dense families run the tuned
+   Q4_K GEMV core, MoE families the grouped-expert GEMM. Dense blocks
+   inside a MoE model use the MoE kernel with a single-expert config.
 2. **Every kernel feature ships with a `dismantle bench` mode that
    demonstrates the win against a feature-disabled baseline.** No
    wedge ships without a number; every README claim is reproducible
@@ -160,7 +174,7 @@ dismantle/
 | `dismantle-core::moe` | Gate + dispatch + grouped GEMM + gather | `metal`, `kernels`, `quant` |
 | `dismantle-core::attn` | MLA + MHA | `metal`, `kernels`, `quant` |
 | `dismantle-core::cache` | KV cache, on-disk prefill cache | (pure logic) |
-| `dismantle-core::speculate` | Shared-expert draft + verify | `moe`, `attn`, `cache` |
+| `dismantle-core::speculate` | n-gram + EAGLE draft + verify | `moe`, `attn`, `cache` |
 | `dismantle-core::gguf` | GGUF v3 reader | (mmap) |
 | `dismantle-core::tokenizer` | Tokenize / detokenize | `tokenizers` crate |
 | `dismantle-core::model` | Per-architecture forward passes | everything above |

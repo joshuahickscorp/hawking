@@ -1,0 +1,45 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "vram_gb": 102.0,
+  "gate": {
+    "recon_floor": "mixed_bytes <= uniform_Q4_K_M bytes",
+    "logit": "cos(mix,ref) >= cos(q4k,ref) AND argmax >= AND KL <=",
+    "ppl": "ppl(mix) <= ppl(q4k)"
+  },
+  "gib": {
+    "q4km": 1.9604,
+    "mixed": 1.6622,
+    "q3km_uniform": 1.6058
+  },
+  "ppl": {
+    "ref": 4.5055,
+    "q4km": 4.5938,
+    "mixed": 4.6823,
+    "q3km_uniform": 4.7167
+  },
+  "logit": {
+    "cos_mix_ref": 0.9827486368537975,
+    "cos_q4k_ref": 0.992974923555033,
+    "kl_ref_mix": 0.052670596185266295,
+    "kl_ref_q4k": 0.02192374320842877,
+    "argmax_mix_ref": 0.9114583333333334,
+    "argmax_q4k_ref": 0.921875,
+    "tokens": 192
+  },
+  "notes": [
+    "override failed; uniform Q3_K_M+imatrix fallback",
+    "mixed = uniform Q3_K_M+imatrix (no --tensor-type in this build)"
+  ],
+  "verdict": "NO-GO",
+  "source_gguf": "Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q8_0.gguf",
+  "error": "AssertionError('mixed GGUF not produced')",
+  "mixed_under_budget": true,
+  "kill_type": "Type-1: non-uniform allocation does not beat uniform Q4_K on logits",
+  "legs": {
+    "recon": true,
+    "ppl": false,
+    "logit_ran": true,
+    "logit": false
+  }
+}
