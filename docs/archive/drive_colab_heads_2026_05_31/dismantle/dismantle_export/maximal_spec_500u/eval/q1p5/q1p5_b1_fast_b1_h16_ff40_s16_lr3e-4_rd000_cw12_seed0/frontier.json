@@ -3,27 +3,4 @@
   "corpus": "/content/drive/MyDrive/dismantle/maximal_spec_500u/corpora/q1p5_corpus",
   "frozen": "/content/q1p5_frozen.npz",
   "max_depth": 24,
-  "policies": {
-    "best_deployable": {
-      "accepted_draft_tokens_per_verify": 23.603666666666665,
-      "base_tps": 95.0,
-      "efficiency": 0.8,
-      "kind": "fixed_k",
-      "max_depth": 24,
-      "projected_dec_tps": 1869.8786666666667,
-      "tokens_per_verify": 24.603666666666665,
-      "w4a8_multiplier": 1.0
-    },
-    "best_overall": {
-      "accepted_draft_tokens_per_verify": 23.603666666666665,
-      "base_tps": 95.0,
-      "kind": "fixed_k",
-      "max_depth": 24,
-      "projected_dec_tps": 1869.8786666666667
-    },
-    "fixed_k_top5": [{"accepted_draft_tokens_per_verify": 23.603666666666665, "base_tps": 95.0, "efficiency": 0.8, "full_accept_rate": 0.9715416666666666, "kind": "fixed_k", "max_depth": 24, "projected_dec_tps": 1869.8786666666667, "tokens_per_verify": 24.603666666666665}],
-    "residual_delta_probe": {"kind": "residual_delta_simulator_probe", "cosine_mean": 0.66474848985672}
-  },
-  "schema": "eagle5-frontier-policy-v1",
-  "windows": 24000
-}
+  "policies": {"best_deployable": {"accepted_draft_tokens_per_verify": 23.603666666666665, "base_tps": 95.0, "efficiency": 0.8, "kind": "fixed_k", "max_depth": 24, "projected_dec_tps": 1869.8786666666667, "full_accept_rate": 0.9715416666666666}}, "schema": "eagle5-frontier-policy-v1", "windows": 24000}
