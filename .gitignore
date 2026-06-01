@@ -91,3 +91,6 @@ eagle4/
 *.parquet
 crates/dismantle-core/reports/
 *.bak
+
+# Training notebooks (provenance kept on disk, not shipped)
+/colab/
