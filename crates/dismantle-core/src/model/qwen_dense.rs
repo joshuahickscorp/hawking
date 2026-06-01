@@ -839,12 +839,17 @@ impl Engine for QwenDense {
                 // `embed_lookup_f32` is misnamed: the kernel signature
                 // reads the embed table as `device const half*`. Pin the
                 // f16 bytes directly (no dequant).
-                let eb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed));
+                // P1-E: embed table is the largest model-driven GPU alloc once
+                // the weights are zero-copy (P1-B). Use the fallible allocator
+                // so an over-large model on a small device fails to load with a
+                // graceful Err instead of crashing on a nil MTLBuffer.
+                let eb = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?;
                 let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
                 // LM head -- explicit tensor if present, else tied to embed (f16).
                 let lhb = match lm_head.as_ref() {
-                    Some(w) => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(w)),
-                    None => ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed)),
+                    // P1-E: lm-head is the other large model-driven alloc.
+                    Some(w) => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(w))?,
+                    None => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?,
                 };
                 // Optional one-time Q4_K quantization of the LM-head matrix.
                 // Activated by DISMANTLE_QWEN_Q4K_LMHEAD=1; trades one-time
