@@ -136,3 +136,79 @@ fn user_draft_is_bit_identical() {
     eprintln!("bit-identical: YES");
     eprintln!("==============================\n");
 }
+
+/// THE GATE on the **fast pruned-Q4K verify path** (the one production decode
+/// actually runs, and the one the sibling gate above does NOT cover).
+///
+/// With the shipped vocab-pruned Q4_K LM head active (`DISMANTLE_QWEN_VOCAB_PRUNE`
+/// + `DISMANTLE_QWEN_Q4K_LMHEAD`), `forward_tokens_verify` takes its GPU fast path
+/// — ONE `gemm_q4_k_m_batched_v3w` over the pruned head + a CPU argmax over the
+/// pruned logits — instead of the CPU fp16 full-vocab fallback. Commit `010827b`
+/// introduced that path as bit-identical to greedy "vs the CPU fp16 full-vocab
+/// path which diverged", but nothing gated it: the clean-room fast-decode env
+/// (`tools/bench/clean_room_batch.sh`) sets `_Q4K_LMHEAD`, while the sibling gate
+/// runs the plain f16 head. This closes that coverage gap.
+///
+/// Output must be byte-identical to draft-OFF on the same pruned-Q4K decode, and
+/// the draft must actually fire (`draft_accepted > 0`) so the fast verify path is
+/// genuinely exercised — otherwise a silent no-op draft would pass vacuously.
+#[test]
+fn user_draft_bit_identical_fast_pruned_q4k() {
+    let Some(weights) = weights_path() else {
+        return;
+    };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+
+    // Activate the shipped pruned-Q4K LM head so the verify takes its GPU fast
+    // path (`vocab_pruned_is_q4k == true`). Restored after so env does not leak
+    // into the sibling (CPU-fallback) gate, whatever order the two run in.
+    std::env::set_var("DISMANTLE_QWEN_VOCAB_PRUNE", "32000");
+    std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");
+
+    // --- Reference: draft OFF (still on the pruned-Q4K decode). ---
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
+    let (ref_ids, _) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
+
+    // --- Draft ON → GPU pruned-Q4K batched verify. ---
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "1");
+    let (draft_ids, accepted) = {
+        let mut e = make_engine(&weights);
+        gen_on(e.as_mut(), PROMPT)
+    };
+
+    std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
+    std::env::remove_var("DISMANTLE_QWEN_VOCAB_PRUNE");
+    std::env::remove_var("DISMANTLE_QWEN_Q4K_LMHEAD");
+
+    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
+    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        &ref_ids[..3],
+        &draft_ids[..3],
+        "GATE FAILED (first 3 tokens, fast pruned-Q4K verify): user-draft changed greedy output.\n \
+         off={:?}\n  on={:?}",
+        &ref_ids[..3],
+        &draft_ids[..3],
+    );
+    assert_eq!(
+        ref_ids, draft_ids,
+        "GATE FAILED (16 tokens, fast pruned-Q4K verify): user-draft changed greedy output.\n \
+         off={ref_ids:?}\n  on={draft_ids:?}"
+    );
+    // The fast verify path must actually have run, or the gate is vacuous.
+    assert!(
+        accepted > 0,
+        "fast pruned-Q4K verify not exercised: draft_accepted=0 (the n-gram never \
+         proposed an accepted token, so forward_tokens_verify's GPU path never ran). \
+         Check the repetitive PROMPT and the VOCAB_PRUNE/Q4K_LMHEAD env."
+    );
+
+    eprintln!("\n=== user-draft parity gate (FAST pruned-Q4K verify) ===");
+    eprintln!("draft OFF: {ref_ids:?}");
+    eprintln!("draft ON : {draft_ids:?}  (draft_accepted={accepted})");
+    eprintln!("bit-identical: YES");
+    eprintln!("=======================================================\n");
+}
