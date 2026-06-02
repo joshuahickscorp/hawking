@@ -196,8 +196,13 @@ def run_server(prompts, lever_on):
     reqs = "".join(
         json.dumps({"id": f"p{i:03d}", "prompt": p, "max_tokens": tokens}) + "\n"
         for i, p in enumerate(prompts))
+    sys.stderr.write(
+        f"  [running {len(prompts)} prompts, lever={'ON' if lever_on else 'OFF'} — "
+        f"NO live output until this whole arm completes; long-ctx (2.8K-token prefix) "
+        f"is slow and 4-5x slower again with Claude open. Quit Claude or use --short-only.]\n")
+    sys.stderr.flush()
     proc = subprocess.run(cmd, input=reqs, env=env,
-                          capture_output=True, text=True, timeout=3600)
+                          capture_output=True, text=True, timeout=1800)
     texts, ntok, errs = {}, {}, {}
     for line in proc.stdout.splitlines():
         line = line.strip()
