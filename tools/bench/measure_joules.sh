@@ -187,8 +187,17 @@ run_one() {  # $1 = label, $2 = extra-env (e.g. "DISMANTLE_QWEN_PREDEC_F16SCALES
     --prompt "$PROMPT" --max-new-tokens "$TOKENS" --temperature 0 --seed 0 \
     > "$statf" 2>&1
 
-  # stop the sampler
-  kill "$sampler_pid" 2>/dev/null; wait "$sampler_pid" 2>/dev/null
+  # stop the sampler — kill children first (macmon pipe / sudo powermetrics)
+  # so they don't outlive their parent and orphan. pkill -P sends SIGTERM to
+  # all direct children of the subshell; the subshell itself (while-read) is
+  # then killed and reaped. Without this, macmon pipe survives as an orphan
+  # because bash's last-pipeline-component rule makes the while-read run IN
+  # the subshell (PID=$sampler_pid), leaving macmon as its child — kill
+  # $sampler_pid kills the reader but macmon has no pending write so it
+  # doesn't die on SIGPIPE.
+  pkill -P "$sampler_pid" 2>/dev/null || true
+  kill "$sampler_pid" 2>/dev/null
+  wait "$sampler_pid" 2>/dev/null || true
 
   # parse the stats line
   local statline dec_ms dec_tps comp_tok
