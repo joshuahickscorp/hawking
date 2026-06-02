@@ -1418,7 +1418,12 @@ impl Engine for QwenDense {
         // skipped-prefix length is their sum (one of which is always 0).
         let prefill_skipped = ram_prefill_skipped + disk_prefill_skipped;
 
-        let use_tcb_prefill = crate::env_on("DISMANTLE_QWEN_TCB");
+        // Couple prefill to the same greedy/temp==0 condition as decode so the
+        // two always agree on TCB-vs-CPU. A temp>0 request stays fully on the
+        // CPU/hybrid path; this avoids a TCB-prefill + CPU-decode mixed mode
+        // that would desync the KV mirror. Opt out with DISMANTLE_QWEN_TCB=0.
+        let use_tcb_prefill = req.sampling.temperature == 0.0
+            && crate::env_opt_out("DISMANTLE_QWEN_TCB");
         // P3 — batched prefill: chunk prompt into B≤8 token windows and
         // process each through `forward_tokens_batch_tcb`. Each weight
         // is read once per chunk (instead of once per token), amortizing
@@ -1540,12 +1545,12 @@ impl Engine for QwenDense {
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
 
-        // P1f: opt-in full-Metal TCB path. Greedy (argmax) only -- the
-        // GPU sample kernel implements pure argmax, so any non-greedy
-        // sampling must take the CPU/Metal-hybrid `forward_token` path
-        // (full logits → CPU sampler).
-        let use_tcb = crate::env_on("DISMANTLE_QWEN_TCB")
-            && req.sampling.temperature == 0.0;
+        // P1f: full-Metal TCB path, DEFAULT-ON for greedy (temp==0). The GPU
+        // sample kernel implements pure argmax, so any non-greedy sampling
+        // takes the CPU/Metal-hybrid `forward_token` path (full logits → CPU
+        // sampler). Opt out with DISMANTLE_QWEN_TCB=0 (escape hatch / A-B bench).
+        let use_tcb = req.sampling.temperature == 0.0
+            && crate::env_opt_out("DISMANTLE_QWEN_TCB");
 
 
         // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
