@@ -1343,12 +1343,17 @@ fn batch_hash_main(
     }
 
     // Header + lines, matching expand-baseline.sh's output format.
+    let model_name = weights
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("?");
     let header = format!(
         "# Phase 1 token-output baseline -- captured by `dismantle batch-hash`\n\
          # Format: <prompt-id> <max-new-tokens> <hash-hex> <prompt-text>\n\
          # algo: blake3\n\
-         # Generation: temp=0 greedy, max_new_tokens={}, model=DeepSeek-V2-Lite-Chat-Q4_K_M\n",
-        tokens
+         # Generation: temp=0 greedy, max_new_tokens={}, model={}\n",
+        tokens,
+        model_name
     );
     let body = output_lines.join("\n") + "\n";
     let blob = format!("{header}{body}");
