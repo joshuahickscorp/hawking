@@ -84,6 +84,21 @@ silicon-audit and Colab-verdict sections follow.
 
 ---
 
+## 🪦 Phase 2.2 trivial-op dispatch fusion (rmsnorm/add/rope/memcpy merges) — dead-for-tps
+
+**Status:** dead-for-tps 2026-06-02 — **Type-2** (the lone bit-identical fusion is real but sub-noise; the non-noise fusions are Type-1 dead or break bit-identity). Closes Phase 2.2 as a tps lever.
+**Charge:** the 0.2 trace shows ~324 trivial-op dispatches/tok (rmsnorm 72 already-fused + add 108 + rope 72 + memcpy 72) = ~53% of the 616 dispatch COUNT but only ~9% of GPU time. Find the highest-leverage BIT-IDENTICAL fusion. (Wave-2 `dispatch-fusion` evaluated all three.)
+**Verdict:**
+- **(a) rope-q + rope-k single dispatch:** removes ~36 encode-latency dispatches/tok but ZERO DRAM round-trips (both ropes already in-place); needs a new two-buffer kernel that is not trivially bit-identical → the already-dead **host-per-dispatch-overhead Type-1 family** (CPU encode 0.51% of wall; the gap closes via faster GEMV, not fewer dispatches). DEAD.
+- **(c) add+rope / add+memcpy epilogue fold:** the fused-arithmetic store (`shmem[0]+bias`) is the A10/A5-b FMA-recontraction 1-ULP trap; fails the bit-identical golden gate by construction. DEAD-by-gate.
+- **(b) KV-append memcpy elision (`DISMANTLE_QWEN_KV_DIRECT`):** the ONLY bit-identical real-round-trip kill — the fused k+v `_pair` GEMV writes directly into the KV-cache seq slot (output bound at byte offset = pure pointer arithmetic), bias-add + rope-k in-place via the existing `_off` wrappers, eliding the two `memcpy_f32_off_tcb`. Proven bit-identical. But the two KV-append memcpys are **0.83% GPU-time ≈ 0.6% wall** → inside the ±3% paired-bench inconclusive floor (0.1 calibration).
+**Why dead:** decode is 86.7% GEMV-bound (the two predec GEMVs at ~52% of peak); the trivial-op surface is ~9% GPU and most of THAT is irreducible in-register compute (rope rotation, bias add, norm all still execute) — only the DRAM round-trips + encode latency are removable, and they are too small. Dispatch-reduction routes to **GEMV bandwidth efficiency** — itself the recorded A5/A6/A10 **Type-1** wall — and bytes route to QTIP (also Type-1 dead). Net: short-ctx dense tps is structurally tapped; gains route to spec/stateful/long-ctx, not fusion.
+**Draft (not landed):** the bit-identical KV_DIRECT lever was BUILT (draft in `reports/wave2_result.json`, stream `dispatch-fusion`) but **NOT landed** — below the ship gate, hot-path churn unjustified for ≤0.83%, and the diff had hunk-span defects. Ready to flip in at zero quality cost if a future profile ever prices the memcpy above the gate.
+**Resurrection check:** revisit ONLY if a future kernel restructuring pushes dispatch count per token far higher (CPU encode crossing ~1 ms/token at ≫616 dispatches/tok — it does not today) OR KV-cache geometry grows the per-slot relocation by orders of magnitude.
+**Cross-ref:** the **Host-side per-dispatch overhead** Type-1 family (ICB/concurrent-encoder/PSO/megakernel-for-COUNT); KV_DIRECT is the round-trip-elimination sub-form it does not cover, in the same sub-gate territory for the same GEMV-bound root reason.
+
+---
+
 ## 🪦 ICB (Indirect Command Buffer)
 
 **Status:** killed 2026-05-14 by 0.51% CPU-encode budget
