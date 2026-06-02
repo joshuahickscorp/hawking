@@ -481,6 +481,7 @@ mod imp {
             "mha_decode_f32_batched" => "mha_decode_f32_batched",
             "mha_decode_f16kv" => "mha_decode_f16kv",
             "mha_decode_f16kv_batched" => "mha_decode_f16kv_batched",
+            "mha_decode_flash_f32" => "mha_decode_flash_f32",
             "add_inplace_broadcast" => "add_inplace_broadcast",
             "memcpy_f32_off" => "memcpy_f32_off",
             "memcpy_f32_to_f16_off" => "memcpy_f32_to_f16_off",
