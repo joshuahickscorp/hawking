@@ -98,6 +98,8 @@ classification + resurrection oracles in `reports/dead_levers.md`.
 ## Requirements
 
 - Apple Silicon Mac (M1, M2, M3, or M4)
+  (Off-macOS: the pure-Rust CPU reference path compiles; see `DISMANTLE_FORCE_CPU` below.
+  A non-macOS toolchain is required to verify the build — not available in the CI sandbox.)
 - Rust stable
 - ~4 GB free RAM for Qwen2.5-3B Q4_K_M (model + KV cache)
 - ~12 GB free RAM for DeepSeek-V2-Lite Q4_K_M; ~14 GB + 16 GB disk for Mixtral 8×7B
@@ -168,6 +170,61 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 `/v1/completions` (legacy) is also served; both stream via SSE. Errors return the
 OpenAI `{error:{message,type,code}}` shape. See [docs/serve.md](docs/serve.md).
+
+## Named lever bundles — `--profile fast`
+
+The `--profile` flag (global; place before or after the subcommand) applies a
+named set of opt-in levers in one shot. Only one bundle is currently defined:
+
+| Profile | What it sets | Trade-off |
+|---|---|---|
+| `fast` | `DISMANTLE_QWEN_VOCAB_PRUNE=32000` + Q4K LM-head + Q4K FFN-down + predec + **f16-scales** | +7.4% paired dec_tps on Qwen2.5-3B-Q4_K_M (contaminated-but-paired; clean-room absolute queued); mild quality trade (f16 scale rounding; output is **not** bit-identical to the default) |
+
+```sh
+dismantle generate --profile fast \
+  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
+  --prompt "Write a Rust function that reverses a linked list." \
+  --max-new-tokens 256
+```
+
+Omitting `--profile` leaves every lever at its default: the decode output is
+**bit-identical** across runs. Explicitly-set `DISMANTLE_QWEN_*` env vars always
+take precedence over the bundle.
+
+The `fast` bundle activates the f16-scales predec variant
+(`DISMANTLE_QWEN_PREDEC_F16SCALES=1`): the pre-decoded Q4_K sub-block scale
+tables are stored as f16 instead of f32 (160 B/block vs 192 B/block, ~17% less
+scale traffic across ~89% of decode). This is the only lever in the bundle that
+is not already default-on.
+
+## CPU reach path — `DISMANTLE_FORCE_CPU=1` / `EngineConfig.force_cpu`
+
+A pure-Rust CPU reference backend is wired and exercised in CI (Phase 3.3).
+On macOS, set `DISMANTLE_FORCE_CPU=1` to force the engine to load with no Metal
+context — the same state it enters off-macOS where Metal is absent:
+
+```sh
+DISMANTLE_FORCE_CPU=1 dismantle generate \
+  --weights models/qwen2.5-0.5b-instruct-q4_k_m.gguf \
+  --prompt "The capital of France is"
+```
+
+**Parity (macOS cross-check):** CPU `forward_token` vs Metal `forward_token_greedy_tcb`
+on Qwen2.5-0.5B-Q4_K_M — the asserted **gate is the first-3 greedy token IDs
+identical**; **12/12 leading tokens were observed identical** in CI (test
+`cpu_backend_parity.rs`). The CPU path pre-dequantizes Q4_K to f32 and runs a
+scalar `gemv_f32`; Metal runs the predec fused-FMA GEMV — both agree at the
+fp16 floor (atol ≈ 1e-3). Perf is not the bar: CPU decode is ~100× slower than
+Metal and that is expected.
+
+**Off-macOS build:** the `metal`/`MTLDevice` deps are already macOS-gated in
+`Cargo.toml`; the CPU primitives compile unconditionally. Off-macOS verification
+requires a non-macOS Rust toolchain (`aarch64-unknown-linux-*` or similar) —
+this was not verifiable in the macOS-only CI sandbox. The programmatic knob
+is `EngineConfig::force_cpu = true`; the env var is the CLI equivalent.
+
+MoE CPU decode (DeepSeek-V2-Lite, Mixtral) is **not** in scope for Phase 3.3;
+`route_experts` returns `Ok(None)` off-macOS. Scope is dense models only.
 
 ## Reproduce the perf numbers
 
