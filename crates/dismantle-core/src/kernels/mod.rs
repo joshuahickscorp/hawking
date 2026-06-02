@@ -5834,6 +5834,86 @@ mod metal_dispatch {
         )
     }
 
+    /// Phase 2.3 — encode `mha_decode_flash_f32` (GQA online-softmax flash
+    /// decode) into the per-token TCB. Drop-in numerical equivalent of
+    /// [`Self::mha_decode_f32_tcb`] with the SAME arg list, the SAME 5-field
+    /// `ArgbufMhaDecode`, and the SAME buffer bindings — only the dispatched
+    /// kernel and the threadgroup-memory layout differ. The flash kernel does
+    /// not materialize `scores[seq_len]`; its threadgroup memory is constant
+    /// (`head_dim + FLASH_TG + 8` floats), so it removes the ~7800-token shmem
+    /// cap that `mha_decode_f32` hits at the 32 KB ceiling. Default-off behind
+    /// `DISMANTLE_QWEN_FLASH_ATTN`; not bit-identical to the materialize path
+    /// (online softmax reorders the sum tile-wise — a reduction reorder).
+    ///
+    /// `FLASH_TG = 128` is load-bearing: it is exactly 4 simdgroups (the
+    /// kernel's `state[4..7]` reduction assumes `FLASH_NSG = 4`) and matches
+    /// Qwen2.5-3B `head_dim = 128` for full Phase-4 occupancy.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_flash_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_flash_f32_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, seq_len as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_kv_heads as u32);
+        ab.set_u32(3, group_size);
+        ab.set_f32(4, scale);
+
+        // FLASH_TG=128 = 4 simdgroups; matches Qwen-3B head_dim (128).
+        // Threadgroup memory is constant (ctx-independent): no O(seq) scores.
+        const FLASH_TG: u32 = 128;
+        let f32_sz = std::mem::size_of::<f32>() as u64;
+        // slot 0: acc[head_dim]
+        let acc_bytes = head_dim as u64 * f32_sz;
+        // slot 1: scores_tile[FLASH_TG]
+        let scores_tile_bytes = FLASH_TG as u64 * f32_sz;
+        // slot 2: state[8] = {m_run, l_run, corr, m_bc, simd0..3_max}
+        let state_bytes = 8u64 * f32_sz;
+
+        tcb.dispatch_threads(
+            "mha_decode_flash_f32",
+            (n_heads as u32 * FLASH_TG, 1, 1),
+            (FLASH_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_threadgroup_memory_length(0, acc_bytes);
+                enc.set_threadgroup_memory_length(1, scores_tile_bytes);
+                enc.set_threadgroup_memory_length(2, state_bytes);
+            },
+        )
+    }
+
     /// P1f: encode `memcpy_f32_off` — copy `n` f32 elements from
     /// `src[src_off..]` into `dst[dst_off..]`. Used by the dense (GQA)
     /// KV append path to write the per-token K/V slice into the

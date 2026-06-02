@@ -6,7 +6,7 @@
   "model_arch": "qwen2",
   "tensor_layout_hash": "46a61a049d19cca43d3279ec",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "8af17951c7a504d76510bbea",
+  "shader_hash": "b68451dc755988dc0d9998d1",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",

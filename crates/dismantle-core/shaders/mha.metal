@@ -112,6 +112,139 @@ kernel void mha_decode_f32(
     }
 }
 
+// ── mha_decode_flash_f32 ──────────────────────────────────────────────────
+// Phase 2.3 — GQA flash-style decode attention (online softmax).
+//
+// Drop-in numerical equivalent of mha_decode_f32 (:34) that does NOT
+// materialize scores[seq_len] in threadgroup memory. Instead it streams
+// K/V once in tiles of FLASH_TG tokens, carrying a running max (state[0])
+// and running sum (state[1]) and rescaling the value accumulator by
+// exp(m_old - m_new) per tile (Flash-Attention-v2 online softmax for a
+// single-token decode). Threadgroup memory is CONSTANT and
+// context-independent — (head_dim + FLASH_TG + 8) floats — so it removes
+// the ~7800-token shmem cap that mha_decode_f32 hits at the 32 KB ceiling
+// (see :23). This is a GQA re-skin of flash_attn_decode_kernel
+// (attn.metal:536) with the MLA latent projection stripped: the score is
+// the raw dot(q_h, K[t, kv_h]) and the accumulator is V-weighted over
+// head_dim. The online-softmax state[0..7] block is byte-for-byte the MLA
+// reference's.
+//
+// Grid: (n_heads * FLASH_TG, 1, 1)   TG: (FLASH_TG, 1, 1)   one TG / head.
+// FLASH_TG = 128 = 4 simdgroups × 32 threads; head_dim=128 (Qwen2.5-3B)
+// gives full Phase-4 occupancy AND exactly 4 simdgroups for the state[4..7]
+// reduction. GQA kv head: kv_h = h / group_size (as in mha_decode_f32:50).
+//
+// Buffers: identical ArgbufMhaDecode + (q, k_cache, v_cache, out) surface
+// as mha_decode_f32 — only the threadgroup-memory layout differs.
+//
+// Threadgroup memory slots (host sets sizes at dispatch):
+//   slot 0 — acc:         head_dim floats   (running value accumulator)
+//   slot 1 — scores_tile: FLASH_TG floats   (current tile's scaled scores)
+//   slot 2 — state[8]:    {m_run, l_run, corr, m_bc, simd[0..3]_max}
+
+#ifndef MHA_FLASH_TG
+#define MHA_FLASH_TG  128u
+#endif
+#ifndef MHA_FLASH_NSG
+#define MHA_FLASH_NSG 4u
+#endif
+
+kernel void mha_decode_flash_f32(
+    constant ArgbufMhaDecode& args   [[buffer(0)]],
+    device const float*       q      [[buffer(1)]],
+    device const float*       k_cache[[buffer(2)]],
+    device const float*       v_cache[[buffer(3)]],
+    device       float*       out    [[buffer(4)]],
+    threadgroup  float*       acc         [[threadgroup(0)]],
+    threadgroup  float*       scores_tile [[threadgroup(1)]],
+    threadgroup  float*       state       [[threadgroup(2)]],
+    uint tid       [[thread_position_in_threadgroup]],
+    uint tg_id     [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    const uint h      = tg_id;
+    const uint H_DIM  = args.head_dim;
+    const uint SEQ    = args.seq_len;
+    const uint NKV    = args.n_kv_heads;
+    const uint GROUP  = args.group_size;
+    const uint kv_h   = h / GROUP;
+    const float scale = args.scale;
+
+    device const float* q_h = q + h * H_DIM;
+
+    // Init: acc = 0, running max = -inf, running sum = 0.
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) acc[i] = 0.0f;
+    if (tid == 0u) { state[0] = -INFINITY; state[1] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint n_tiles = (SEQ + MHA_FLASH_TG - 1u) / MHA_FLASH_TG;
+
+    for (uint tile = 0u; tile < n_tiles; ++tile) {
+        const uint t_base = tile * MHA_FLASH_TG;
+        const uint t_len  = min(MHA_FLASH_TG, SEQ - t_base);
+        const uint t      = t_base + tid;
+
+        // 1. Score for this thread's token (one token per thread).
+        //    Padding lanes (tid >= t_len) keep -INFINITY so simd_max over a
+        //    full 32-lane simdgroup is correct and they contribute no mass.
+        float s_local = -INFINITY;
+        if (tid < t_len) {
+            device const float* kt = k_cache + (t * NKV + kv_h) * H_DIM;
+            float s = 0.0f;
+            for (uint i = 0u; i < H_DIM; ++i) s += q_h[i] * kt[i];
+            s_local = s * scale;
+        }
+        scores_tile[tid] = s_local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 2. Parallel tile max via simdgroup reduction (4 simdgroups).
+        float simd_mx = simd_max(s_local);
+        if (simd_lane == 0u) state[4u + simd_id] = simd_mx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 3. Thread 0: online-softmax state update (byte-for-byte the MLA
+        //    reference, attn.metal:640-652).
+        if (tid == 0u) {
+            float tile_max = max(max(state[4], state[5]), max(state[6], state[7]));
+            float m_old    = state[0];
+            float m_new    = max(m_old, tile_max);
+            float corr     = exp(m_old - m_new);
+            float tile_sum = 0.0f;
+            for (uint ti = 0u; ti < t_len; ++ti)
+                tile_sum += exp(scores_tile[ti] - m_new);
+            state[0] = m_new;
+            state[1] = state[1] * corr + tile_sum;
+            state[2] = corr;
+            state[3] = m_new;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // 4. Rescale acc by the correction, then accumulate this tile's
+        //    V-weighted contributions. Each thread owns a head_dim slice.
+        const float corr_bc = state[2];
+        const float m_bc    = state[3];
+        for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+            float a = acc[i] * corr_bc;
+            for (uint ti = 0u; ti < t_len; ++ti) {
+                float w = exp(scores_tile[ti] - m_bc);
+                device const float* vt =
+                    v_cache + ((t_base + ti) * NKV + kv_h) * H_DIM;
+                a += w * vt[i];
+            }
+            acc[i] = a;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // Normalize by the running sum and write out.
+    const float inv_l = 1.0f / state[1];
+    device float* out_h = out + h * H_DIM;
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+        out_h[i] = acc[i] * inv_l;
+    }
+}
+
 // P3 — Batched MHA decode: B query tokens at consecutive positions
 // [p0..p0+B) share the K/V cache. Each TG handles one (head, batch_elem)
 // pair via a 2D grid (n_heads, B). Per-batch seq_len is computed as
