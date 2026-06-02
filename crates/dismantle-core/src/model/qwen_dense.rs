@@ -3403,6 +3403,27 @@ impl QwenDense {
         let kv_stride = self.kv.n_kv_heads * self.kv.head_dim;
         let want = n_tokens * kv_stride;
         let layer_stride_elems = self.kv.max_seq * kv_stride;
+        // Phase 2.1-a: when f16-KV is on the GPU cache holds half K/V, so
+        // convert per-element back to f32 (a raw byte copy would bit-
+        // reinterpret half as f32 — the recorded Wave-1 corruption bug).
+        if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+            let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+            let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+            let k_src = kf16.contents() as *const f16;
+            let v_src = vf16.contents() as *const f16;
+            for li in 0..self.kv.n_layers {
+                let layer_off = li * layer_stride_elems;
+                unsafe {
+                    let kdst = self.kv.keys[li].as_mut_ptr();
+                    let vdst = self.kv.values[li].as_mut_ptr();
+                    for j in 0..want {
+                        *kdst.add(j) = (*k_src.add(layer_off + j)).to_f32();
+                        *vdst.add(j) = (*v_src.add(layer_off + j)).to_f32();
+                    }
+                }
+            }
+            return;
+        }
         let k_src = arena.k_cache_buf.contents() as *const f32;
         let v_src = arena.v_cache_buf.contents() as *const f32;
         for li in 0..self.kv.n_layers {
@@ -3509,6 +3530,23 @@ impl QwenDense {
             return Err(Error::Model(
                 "DISMANTLE_QWEN_AWQ=1 requires DISMANTLE_QWEN_W4A8=1".into(),
             ));
+        }
+        // Phase 2.1-a: DISMANTLE_QWEN_F16_KV is mutually exclusive with both
+        // W4A8 (half K/V x int8-activation GEMV is unanalyzed) and FLASH_ATTN
+        // (f16 online-softmax flash is a separate unproven combo). Refuse
+        // rather than emit un-vetted logits; f16-KV composes only with the
+        // plain Q4_K (predec/fast) decode path.
+        if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+            if w4a8_active_early {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_W4A8=1 (unanalyzed); unset one".into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_FLASH_ATTN") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_FLASH_ATTN=1 (unanalyzed); unset one".into(),
+                ));
+            }
         }
         if awq_active_early && predec_active {
             return Err(Error::Model(
@@ -3666,29 +3704,50 @@ impl QwenDense {
                 vocab,
                 max_seq,
             ));
+            // Phase 2.1-a: allocate the f16 KV cache INSIDE the fresh-arena
+            // block so the half buffers exist before the CPU seed below
+            // borrows them immutably (Wave-1 deferred this and unwrap()-panicked).
+            if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+                self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
+            }
         }
         if fresh_arena && seq_slot > 0 {
             let arena = self.dense_arena.as_ref().unwrap();
             let kv_stride = n_kv_heads * head_dim;
             let prefill_elems = seq_slot * kv_stride;
             let layer_stride_elems = max_seq * kv_stride;
+            let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
             for li in 0..cfg.n_layers {
                 let layer_off_elems = li * layer_stride_elems;
                 let k_src = &self.kv.keys[li][..prefill_elems];
                 let v_src = &self.kv.values[li][..prefill_elems];
-                let k_dst = arena.k_cache_buf.contents() as *mut f32;
-                let v_dst = arena.v_cache_buf.contents() as *mut f32;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(
-                        k_src.as_ptr(),
-                        k_dst.add(layer_off_elems),
-                        prefill_elems,
-                    );
-                    std::ptr::copy_nonoverlapping(
-                        v_src.as_ptr(),
-                        v_dst.add(layer_off_elems),
-                        prefill_elems,
-                    );
+                if f16_kv {
+                    // f16 cache was allocated in the fresh-arena block above.
+                    let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+                    let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+                    let k_dst = kf16.contents() as *mut f16;
+                    let v_dst = vf16.contents() as *mut f16;
+                    unsafe {
+                        for j in 0..prefill_elems {
+                            *k_dst.add(layer_off_elems + j) = f16::from_f32(k_src[j]);
+                            *v_dst.add(layer_off_elems + j) = f16::from_f32(v_src[j]);
+                        }
+                    }
+                } else {
+                    let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                    let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                    unsafe {
+                        std::ptr::copy_nonoverlapping(
+                            k_src.as_ptr(),
+                            k_dst.add(layer_off_elems),
+                            prefill_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            v_src.as_ptr(),
+                            v_dst.add(layer_off_elems),
+                            prefill_elems,
+                        );
+                    }
                 }
             }
         }
@@ -3768,8 +3827,15 @@ impl QwenDense {
         // unset the dispatch is the unchanged mha_decode_f32_tcb, so the
         // golden decode hash is unaffected.
         let flash_attn = crate::env_on("DISMANTLE_QWEN_FLASH_ATTN");
+        let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
+        }
+        // Phase 2.1-a: ensure the f16 cache exists even when the first TCB
+        // call had seq_slot==0 (no fresh-arena seed). Idempotent — a no-op
+        // after the fresh-arena hoist above.
+        if f16_kv {
+            self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
         // Pre-bind the W4A8 scratch buffers (None when flag is off) so the
@@ -4148,26 +4214,62 @@ impl QwenDense {
             // ── KV append into per-layer slice of k/v_cache buffer ───
             let layer_kv_off_elems = li * max_seq * kv_dim;
             let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.k_token_buf,
-                &arena.k_cache_buf,
-                0,
-                slot_kv_off_elems,
-                kv_dim,
-            )?;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.v_token_buf,
-                &arena.v_cache_buf,
-                0,
-                slot_kv_off_elems,
-                kv_dim,
-            )?;
+            if f16_kv {
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+            } else {
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf,
+                    &arena.k_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf,
+                    &arena.v_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+            }
 
             // ── MHA decode (GQA) ─────────────────────────────────────
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            if flash_attn {
+            if f16_kv {
+                // f16 cache uses the HALF-stride byte offset (NOT the f32
+                // layer_kv_off_bytes). Q and attn_out stay f32.
+                let f16_off = arena.kv_f16_layer_byte_offset(li);
+                kernels::mha_decode_f16kv_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            } else if flash_attn {
                 kernels::mha_decode_flash_f32_tcb(
                     &mut tcb,
                     &arena.q_buf,
@@ -4933,6 +5035,16 @@ impl QwenDense {
         // occupancy, dead_levers.md "Q4_K batched MMA"). Read once here, used
         // in the batched_proj! macro below.
         let mma_on = crate::env_on("DISMANTLE_QWEN_Q4K_MMA");
+        // Phase 2.1-a: f16-KV for the batched-prefill producer. Same flag as
+        // the single-decode consumer so both target the SAME half cache.
+        // Mutually exclusive with W4A8 (unanalyzed); no flash variant exists
+        // for the batched MHA, so no flash guard is needed here.
+        let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
+        if f16_kv && crate::env_on("DISMANTLE_QWEN_W4A8") {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_W4A8=1 (unanalyzed); unset one".into(),
+            ));
+        }
 
         let p0 = positions[0];
         if self.kv.seq_len != p0 {
@@ -4966,6 +5078,11 @@ impl QwenDense {
                 cfg.vocab_size,
                 max_seq,
             ));
+            // Phase 2.1-a: same early-ensure hoist as the single-decode path
+            // so the half buffers exist before the CPU seed borrows them.
+            if f16_kv {
+                self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
+            }
         }
         if fresh_arena && p0 > 0 {
             let arena = self.dense_arena.as_ref().unwrap();
@@ -4976,17 +5093,33 @@ impl QwenDense {
                 let layer_off_elems = li * layer_stride_elems;
                 let k_src = &self.kv.keys[li][..prefill_elems];
                 let v_src = &self.kv.values[li][..prefill_elems];
-                let k_dst = arena.k_cache_buf.contents() as *mut f32;
-                let v_dst = arena.v_cache_buf.contents() as *mut f32;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(
-                        k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
-                    );
-                    std::ptr::copy_nonoverlapping(
-                        v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
-                    );
+                if f16_kv {
+                    let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+                    let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+                    let k_dst = kf16.contents() as *mut f16;
+                    let v_dst = vf16.contents() as *mut f16;
+                    unsafe {
+                        for j in 0..prefill_elems {
+                            *k_dst.add(layer_off_elems + j) = f16::from_f32(k_src[j]);
+                            *v_dst.add(layer_off_elems + j) = f16::from_f32(v_src[j]);
+                        }
+                    }
+                } else {
+                    let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                    let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                    unsafe {
+                        std::ptr::copy_nonoverlapping(
+                            k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
+                        );
+                    }
                 }
             }
+        }
+        if f16_kv {
+            self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
         if b > arena.max_batch {
@@ -5174,36 +5307,68 @@ impl QwenDense {
             // memcpy of B*kv_dim floats replaces 2B sequential calls.
             let layer_kv_off_elems = li * max_seq * kv_dim;
             let slot_kv_off_elems = layer_kv_off_elems + p0 * kv_dim;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.k_token_buf_batch,
-                &arena.k_cache_buf,
-                0,
-                slot_kv_off_elems,
-                b * kv_dim,
-            )?;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.v_token_buf_batch,
-                &arena.v_cache_buf,
-                0,
-                slot_kv_off_elems,
-                b * kv_dim,
-            )?;
+            if f16_kv {
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+            } else {
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    &arena.k_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    &arena.v_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+            }
 
             // ── MHA decode: one dispatch over (n_heads, B) TGs.
             // Each batch element gets its own causal seq_len = p0+b+1.
             // Saves B-1 dispatches per layer (n_heads × B TGs in one
             // launch vs B separate launches of n_heads TGs).
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            kernels::mha_decode_f32_batched_tcb(
-                &mut tcb,
-                &arena.q_buf_batch,
-                &arena.k_cache_buf, layer_kv_off_bytes,
-                &arena.v_cache_buf, layer_kv_off_bytes,
-                &arena.attn_out_buf_batch,
-                p0, b, head_dim, n_heads, n_kv_heads,
-            )?;
+            if f16_kv {
+                // f16 batched MHA: HALF-stride byte offset; Q/out stay f32.
+                let f16_off = arena.kv_f16_layer_byte_offset(li);
+                kernels::mha_decode_f16kv_batched_tcb(
+                    &mut tcb,
+                    &arena.q_buf_batch,
+                    arena.k_cache_f16_buf.as_ref().unwrap(), f16_off,
+                    arena.v_cache_f16_buf.as_ref().unwrap(), f16_off,
+                    &arena.attn_out_buf_batch,
+                    p0, b, head_dim, n_heads, n_kv_heads,
+                )?;
+            } else {
+                kernels::mha_decode_f32_batched_tcb(
+                    &mut tcb,
+                    &arena.q_buf_batch,
+                    &arena.k_cache_buf, layer_kv_off_bytes,
+                    &arena.v_cache_buf, layer_kv_off_bytes,
+                    &arena.attn_out_buf_batch,
+                    p0, b, head_dim, n_heads, n_kv_heads,
+                )?;
+            }
 
             // ── O projection (batched) ───────────────────────────
             batched_proj!(
