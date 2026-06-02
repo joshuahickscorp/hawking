@@ -51,15 +51,27 @@ tuned target is Qwen2.5-3B-Instruct Q4_K_M (dense).
 
 **Three-layer separation** keeps each concern testable in isolation:
 
-- The **runtime** is pure Metal — exercisable with synthetic
+- The **runtime** is Metal on macOS — exercisable with synthetic
   tensors. Every kernel benchmark `dismantle bench` publishes is
-  produced here, with the model and server layers disabled.
+  produced here, with the model and server layers disabled. Off-macOS
+  (or when `DISMANTLE_FORCE_CPU=1` / `EngineConfig::force_cpu` is set),
+  the `*_dispatch` helpers fall through to pure-Rust CPU primitives in
+  `kernels/mod.rs` (scalar f32 `gemv`, `rmsnorm`, `rope_inplace`, …);
+  the model layer is unchanged.
 - The **model layer** is the glue between kernels and architectures.
   It manipulates the runtime through a small set of typed kernel
   APIs; it never opens an `MTLCommandBuffer` directly.
 - The **server layer** is a thin axum surface over an `Engine`
   trait. The bench binary uses the same trait, no HTTP. There is one
   inference path; the server is decorative.
+
+**CPU reach path (Phase 3.3).** `EngineConfig::force_cpu = true` (or env
+`DISMANTLE_FORCE_CPU=1`) loads the engine with `metal_ctx = None`, exercising
+the same pure-Rust path the engine takes off-macOS. Cross-checked on
+Qwen2.5-0.5B-Q4_K_M: the asserted gate is first-3 greedy token IDs identical
+(12/12 leading tokens observed identical). Scope is dense models; MoE CPU
+decode is a separate follow-up. Off-macOS build verification requires a
+non-macOS toolchain (unverified in the macOS CI sandbox).
 
 **Dense and MoE are both first-class.** The model layer dispatches on
 the GGUF-detected architecture (`model/mod.rs`) to a per-family
@@ -134,6 +146,10 @@ dismantle/
    bench`, `dismantle generate`, and `dismantle serve`. Numbers
    produced under bench match numbers produced under serve at the
    same batch size.
+7. **New levers are default-off.** A new feature must not change the
+   default golden decode hash. Opt-in via env var or `EngineConfig`
+   field. Applies to `--profile fast` (f16-scales quality trade) and
+   `DISMANTLE_FORCE_CPU` (CPU reach path, perf not the bar).
 
 ## How requests flow
 
