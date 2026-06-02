@@ -1114,6 +1114,9 @@ fn generate_main(
         vocab_prune_path,
         quant_tier_map_path,
         eagle5_head_path: eagle5_head,
+        // CLI force-cpu is via the DISMANTLE_FORCE_CPU env var (checked at load);
+        // the config field is the programmatic knob (tests / embedders).
+        force_cpu: false,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
 
