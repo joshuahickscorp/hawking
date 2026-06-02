@@ -3734,6 +3734,40 @@ impl QwenDense {
             if crate::env_on("DISMANTLE_QWEN_F16_KV") {
                 self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
             }
+            // Wave-6 residency lever (DISMANTLE_QWEN_RESIDENCY=1, DEFAULT-OFF):
+            // pin the decode working set resident on the command queue once,
+            // here on the first decode token where BOTH the weights mmap buffer
+            // and the freshly-built arena exist. `request_residency` is a no-op
+            // when the flag is unset, so the golden greedy-64 hash is unchanged.
+            // Set = weights mmap (the ~1.6 GB bandwidth-bound read) + the pinned
+            // model buffers + every persistent single-token decode arena buffer.
+            // Errors here are non-fatal to correctness (residency is a perf
+            // hint), but surface them so a bad selector is loud, not silent.
+            {
+                let arena = self.dense_arena.as_ref().unwrap();
+                let resident: [&crate::metal::PinnedBuffer; 19] = [
+                    mmap_buf,
+                    embed_buf,
+                    final_norm_buf,
+                    lm_head_buf,
+                    &arena.q_buf,
+                    &arena.k_token_buf,
+                    &arena.v_token_buf,
+                    &arena.k_cache_buf,
+                    &arena.v_cache_buf,
+                    &arena.attn_out_buf,
+                    &arena.x_buf,
+                    &arena.x_norm_buf,
+                    &arena.ffn_gate_buf,
+                    &arena.ffn_up_buf,
+                    &arena.ffn_act_buf,
+                    &arena.ffn_down_buf,
+                    &arena.o_proj_out_buf,
+                    &arena.logits_buf,
+                    &arena.token_buf,
+                ];
+                ctx.request_residency(&resident)?;
+            }
         }
         if fresh_arena && seq_slot > 0 {
             let arena = self.dense_arena.as_ref().unwrap();
