@@ -10,8 +10,50 @@ use std::time::Instant;
 #[derive(Parser, Debug)]
 #[command(name = "dismantle", about = "Apple Silicon MoE inference", version)]
 struct Cli {
+    /// Apply a named lever bundle (global; works after the subcommand). Currently
+    /// only "fast" = the validated both-metrics fast-path: vocab-prune-32k + Q4K
+    /// LM-head + Q4K FFN-down + predec + f16-scales. Opt-in; the default decode
+    /// stays bit-identical. f16-scales / vocab-prune are mild quality trades.
+    /// Explicitly-set DISMANTLE_QWEN_* env vars always take precedence.
+    #[arg(long, global = true)]
+    profile: Option<String>,
     #[command(subcommand)]
     cmd: Cmd,
+}
+
+/// Apply a named lever bundle by setting the corresponding DISMANTLE_QWEN_* env
+/// vars *only if the user has not already set them* (explicit env always wins).
+/// No `--profile` ⇒ no change ⇒ the default decode stays bit-identical. The
+/// `fast` bundle opts into the both-metrics-optimal fast-path validated in the
+/// paradigm Phase 1 work (f16-scales: +7.4% paired dec_tps, mild quality trade;
+/// the other levers were already the locked bench fast-path).
+fn apply_profile(profile: &Option<String>) {
+    let Some(name) = profile.as_deref() else {
+        return;
+    };
+    match name {
+        "fast" => {
+            for (k, v) in [
+                ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"),
+                ("DISMANTLE_QWEN_Q4K_LMHEAD", "1"),
+                ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),
+                ("DISMANTLE_QWEN_Q4K_PREDEC", "1"),
+                ("DISMANTLE_QWEN_PREDEC_F16SCALES", "1"),
+            ] {
+                if std::env::var_os(k).is_none() {
+                    std::env::set_var(k, v);
+                }
+            }
+            eprintln!(
+                "[dismantle] --profile fast: vocab-prune-32k + Q4K LM-head + Q4K \
+                 FFN-down + predec + f16-scales (mild quality trade; omit \
+                 --profile for the bit-identical default)"
+            );
+        }
+        other => eprintln!(
+            "[dismantle] warning: unknown --profile '{other}' (known: fast); ignoring"
+        ),
+    }
 }
 
 #[derive(Subcommand, Debug)]
@@ -290,6 +332,7 @@ fn main() -> Result<()> {
         .init();
 
     let cli = Cli::parse();
+    apply_profile(&cli.profile);
     match cli.cmd {
         Cmd::Serve {
             weights,
