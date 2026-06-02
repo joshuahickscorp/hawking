@@ -1,4 +1,16 @@
 use crate::attn::mha_decode_step;
+// Phase-3 compute seam (Wave-5a): bring the platform-neutral op traits into
+// scope so the `DISMANTLE_BACKEND_SEAM`-gated add routing below can resolve
+// `MetalBackend::add` as an inherent-trait method. WITHOUT this `use`, the
+// call `backend.add(..)` fails to compile with E0599 ("method `add` not
+// found") because Rust only finds a trait method when its trait is in scope.
+// `Backend` supplies the associated `Recorder`/`Buffer` types that
+// `MetalRecorder`/`PinnedBuffer` satisfy; `BackendElementwise` supplies the
+// 4-arg `add(rec, a, b, n)` verb. Both names reference the `#[cfg]`-free
+// traits in `backend/mod.rs`, so this import is platform-neutral and does
+// not perturb non-macOS builds. The concrete `MetalBackend`/`MetalRecorder`
+// are named by fully-qualified path at the call site (no extra `use`).
+use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
 use super::arch_config::ArchReader;
@@ -3646,6 +3658,18 @@ impl QwenDense {
             .metal_ctx
             .as_ref()
             .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: no metal_ctx".into()))?;
+        // Wave-5a decode-routing proof: route the ELEMENTWISE ADD family (the
+        // Qwen2 q/k/v bias residual adds below) through the Phase-3 backend
+        // seam (`MetalBackend::add` -> BackendElementwise::add) instead of the
+        // raw `kernels::add_inplace_metal_tcb`. DEFAULT-OFF: `env_on` is true
+        // only when DISMANTLE_BACKEND_SEAM == "1". When unset, `use_seam` is
+        // false, the three sites run the byte-for-byte original kernel call,
+        // and the golden greedy-64 hash (b480cc10faf9a8ec) is UNCHANGED. When
+        // set, the add routes through MetalBackend, which forwards to the SAME
+        // `kernels::add_inplace_metal_tcb` with the SAME (a, b, n) recorded into
+        // the SAME per-token command buffer => still bit-identical. Scope is
+        // the ONE add family; rope/embed/gemv/rmsnorm stay on their raw calls.
+        let use_seam = crate::env_on("DISMANTLE_BACKEND_SEAM");
         let mmap_buf = self
             .weights_mmap_buf
             .as_ref()
@@ -4177,14 +4201,46 @@ impl QwenDense {
             }
 
             // ── Biases (Qwen2 carries q/k/v biases) ──────────────────
+            // Wave-5a: when `use_seam` (DISMANTLE_BACKEND_SEAM=1, default-off)
+            // each in-place residual add `a[i] += b[i]` routes through the
+            // Phase-3 seam: build a cheap MetalBackend (Arc-clone of ctx), move
+            // the live per-token `tcb` into a MetalRecorder by value, call the
+            // COLLAPSED 4-arg `BackendElementwise::add(&mut rec, a, b, n)`
+            // (which forwards to the SAME kernels::add_inplace_metal_tcb), then
+            // move the TCB back out (`tcb = rec.tcb`) — legal because
+            // MetalRecorder has no Drop. `add` never commits/flushes, so the
+            // backend's own cloned ctx is never used to mint a TCB and the
+            // single-command-buffer-per-token invariant holds. The else arm is
+            // the byte-for-byte original call => golden unchanged when off.
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.q_buf, qb, q_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
+                }
             }
             if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.k_token_buf, kb, kv_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
+                }
             }
             if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.v_token_buf, vb, kv_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                }
             }
 
             // ── RoPE on full head_dim for every Q and K head ─────────
