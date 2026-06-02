@@ -96,7 +96,12 @@ else
 fi
 
 # Gate 3: no slm (co-existence partner — its load contaminates absolute numbers).
-SLM_PIDS="$(pgrep -i slm 2>/dev/null | grep -v aslmanager || true)"
+# Exact process-name match: `pgrep -i slm` returns PIDs only, so the old
+# `| grep -v aslmanager` never filtered (PIDs aren't names) and the macOS daemon
+# `aslmanager` (Apple System Log manager) false-FAILed the gate. `-x` matches the
+# executable name exactly, so it catches a process literally named `slm` and
+# never `aslmanager`/`asl*`/anything-containing-slm.
+SLM_PIDS="$(pgrep -xi slm 2>/dev/null || true)"
 if [[ -n "$SLM_PIDS" ]]; then
   echo "  [GATE slm]         FAIL — slm is running (pids: $SLM_PIDS). Exit slm, then re-run." >&2
   PREFLIGHT_FAIL=1
