@@ -49,6 +49,13 @@
 
 use crate::Result;
 
+/// Concrete macOS Metal backend implementing every op trait below.
+/// Gated so the platform-neutral trait defs in this module continue to
+/// compile on every target while the Metal-only impl is built only on
+/// macOS.
+#[cfg(target_os = "macos")]
+mod metal;
+
 /// The set of primitive compute verbs a [`Backend`] may implement.
 ///
 /// Used by [`Backend::supports`] for capability queries (e.g. a CPU
