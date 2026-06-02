@@ -53,8 +53,21 @@ use crate::Result;
 /// Gated so the platform-neutral trait defs in this module continue to
 /// compile on every target while the Metal-only impl is built only on
 /// macOS.
+///
+/// `pub` (was private in 3.1) so the Phase-3.2 [`router`] sibling and the
+/// decode call site (`crate::model::qwen_dense`) can name `MetalBackend` /
+/// `MetalRecorder`. The module stays macOS-gated, so non-macOS targets
+/// still never see a Metal symbol.
 #[cfg(target_os = "macos")]
-mod metal;
+pub mod metal;
+
+/// Phase 3.2 per-op compute router with CPU fallback (macOS-only; it names
+/// the concrete Metal backend). `Router { primary: MetalBackend, forced:
+/// Option<Op> }` routes each fallback-capable op (rmsnorm, rope) to the
+/// primary unless `DISMANTLE_FORCE_CPU_OP` forces it onto the CPU
+/// primitive. DEFAULT-UNSET ⇒ pure Metal ⇒ golden hash unchanged.
+#[cfg(target_os = "macos")]
+pub mod router;
 
 /// The set of primitive compute verbs a [`Backend`] may implement.
 ///
