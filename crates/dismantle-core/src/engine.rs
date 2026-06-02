@@ -44,6 +44,14 @@ pub struct EngineConfig {
     /// rate requires a trained checkpoint produced by
     /// `tools/training/eagle5_train.py`.
     pub eagle5_head_path: Option<std::path::PathBuf>,
+    /// Portability/reach knob (Phase 3.3): when `true` (or env
+    /// `DISMANTLE_FORCE_CPU=1`), the engine loads with NO Metal context
+    /// (`metal_ctx = None`), forcing the pure-Rust CPU reference path
+    /// (`forward_token` + scalar dequant GEMV). This is how the CPU "backend"
+    /// is exercised on macOS for the CPU-vs-Metal parity cross-check, and is
+    /// the same path the engine takes off-macOS where Metal is absent. Perf is
+    /// not the bar here — correctness/reach is. Default `false` (Metal when available).
+    pub force_cpu: bool,
 }
 
 impl Default for EngineConfig {
@@ -62,6 +70,7 @@ impl Default for EngineConfig {
             vocab_prune_path: None,
             quant_tier_map_path: None,
             eagle5_head_path: None,
+            force_cpu: false,
         }
     }
 }
