@@ -213,6 +213,17 @@ silicon-audit and Colab-verdict sections follow.
 
 ---
 
+## 🪦 f16 activations — f16-x into the predec GEMV (Phase 2.1-b)
+
+**Status:** dead-for-tps 2026-06-02 — **Type-1 (measured)**. Closes the activation-precision axis for the GEMV.
+**Charge:** halve the x-activation traffic into the dominant predec GEMV (load x as f16 instead of f32) — the one in-kernel BW sub-lever the 2.1 scout left open, gated on a microbench showing x-traffic is a measurable GEMV sub-term *after* f16-scales.
+**Evidence (oracle, Wave-4c f16x-probe):** built `gemm_q4_k_v4_predec_pair_f16x` — an exact clone of the shipped f16-scales fused gate+up GEMV (`_pair_f16s`) with the ONLY change being the x stream loaded as `half` (2 B) and widened to float in-register so the FMA chain is byte-identical — plus a paired bench vs `_pair_f16s`. On the dominant **11008×2048** FFN gate+up shape: **f16x 519.685 µs vs f16s 519.303 µs = −0.07% (noise); GB/s 59.8 vs 59.9.** The bench prints the root cause: **x is 0.0263% of the f16s read traffic; halving it removes 0.0132% of bytes.** The activation is re-streamed per output tile but is dwarfed by the weight (1152 B/block-row) + f16 scale streams — the GEMV is weight+scale-bound, not x-bound.
+**Type:** **Type-1** — a measured property of the GEMV byte budget (x ≈ 0.026% of traffic at 11008×2048). Confirms the **Decode-kernel micro-opt A5/A6/A10** reconciliation ("a half-precision x stream is killed by byte arithmetic; x ≈ 0.03% of `_pair` traffic"). Halving 0.026% of bytes cannot move the bus — not an impl weakness.
+**Resurrection check:** do NOT re-test on the predec GEMV. The only regime where x-traffic could matter is cols ≫ weight bytes (a very wide, very short matrix) — which the Qwen decode GEMVs are not. The probe kernel + bench were **reverted** (the measurement lives here; a structural 0.026% won't change with kernel cleverness, so no in-tree oracle is kept). With the byte-cut axis (QTIP) and now the activation-precision axis (f16-x) both Type-1 dead, the GEMV is at its byte optimum. The live activation-precision lever is **f16-KV** (the *cache*, not x) — shipped (`ed6925e`/`1fa6941`).
+**Killing memory:** [[overnight-haul-2026-05-31]] (the A5/A6/A10 reconciliation that predicted this).
+
+---
+
 ## 🪦 Q4_K batched MMA (simdgroup-matrix) on rows ≤ cols shapes
 
 **Status:** killed 2026-05-31 by paired microbench (Type-1 occupancy) — PARTIAL kill; the rows>cols variant is GO (shape-gated, integration deferred — see handoff)
