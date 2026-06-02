@@ -51,6 +51,8 @@ SOURCE="auto"
 SAMPLE_MS=200
 TRACE_MODE="cpu"       # cpu | gpu_prod (see CAVEATS)
 TRACE_TOKENS=64        # short trace run; fractions stabilize quickly
+ZEUS=0                 # --zeus: ALSO emit MEASURED per-domain mJ/tok (zeus-apple-silicon).
+                       # Default OFF -> golden proxy output unchanged.
 
 die() { printf 'error: %s\n' "$*" >&2; exit 64; }
 while [[ $# -gt 0 ]]; do
@@ -61,6 +63,7 @@ while [[ $# -gt 0 ]]; do
     --sample-ms)   SAMPLE_MS="$2"; shift 2;;
     --trace-mode)  TRACE_MODE="$2"; shift 2;;
     --trace-tokens) TRACE_TOKENS="$2"; shift 2;;
+    --zeus)        ZEUS=1; shift;;
     -h|--help)     sed -n '2,50p' "$0"; exit 0;;
     *) die "unknown arg: $1";;
   esac
@@ -338,6 +341,22 @@ print()
 print("  Proxy: J/tok_phase = J/tok_total * (cpu_encode_us_phase / cpu_encode_us_total)")
 print("  For direct GPU-time fractions: --trace-mode gpu_prod (caution: slower bench pass)")
 PYEOF2
+
+# ---------------------------------------------------------------------------
+# STEP 4 (opt-in, --zeus): MEASURED per-domain energy via zeus-apple-silicon.
+# Replaces the Step-3 cpu-encode PROXY with a real IOReport "Energy Model"
+# reading (GPU-mJ + DRAM-mJ per token), sudo-free. Default OFF so the golden
+# proxy output above is byte-identical without the flag. Runs its OWN locked-
+# fast-path decode (same BASE_ENV) wrapped in a zeus begin/end window.
+# ---------------------------------------------------------------------------
+if [[ "$ZEUS" == 1 ]]; then
+  echo ""
+  echo "--- Step 4: MEASURED per-domain mJ/tok (zeus-apple-silicon, IOReport Energy Model) ---"
+  ZPY="${ZEUS_PYTHON:-/usr/bin/python3}"
+  if ! "$ZPY" tools/bench/zeus_joules.py --tokens "$TOKENS" --prompt "$PROMPT"; then
+    echo "  NOTE: zeus measured-energy step failed (see recipe above). Proxy result stands." >&2
+  fi
+fi
 
 echo ""
 echo "done."
