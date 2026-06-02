@@ -796,7 +796,15 @@ impl Engine for QwenDense {
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
         mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
-        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        // Phase 3.3 portability/reach: `force_cpu` (config or DISMANTLE_FORCE_CPU=1)
+        // loads with NO Metal context, forcing the pure-Rust CPU reference path.
+        // This is the same state the engine is in off-macOS (no Metal) and is how
+        // the CPU "backend" is exercised for the CPU-vs-Metal parity cross-check.
+        let metal_ctx = if config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU") {
+            None
+        } else {
+            MetalContext::new_with_trace(config.trace_dispatch).ok()
+        };
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -1423,6 +1431,7 @@ impl Engine for QwenDense {
         // CPU/hybrid path; this avoids a TCB-prefill + CPU-decode mixed mode
         // that would desync the KV mirror. Opt out with DISMANTLE_QWEN_TCB=0.
         let use_tcb_prefill = req.sampling.temperature == 0.0
+            && self.metal_ctx.is_some()
             && crate::env_opt_out("DISMANTLE_QWEN_TCB");
         // P3 — batched prefill: chunk prompt into B≤8 token windows and
         // process each through `forward_tokens_batch_tcb`. Each weight
@@ -1550,6 +1559,7 @@ impl Engine for QwenDense {
         // takes the CPU/Metal-hybrid `forward_token` path (full logits → CPU
         // sampler). Opt out with DISMANTLE_QWEN_TCB=0 (escape hatch / A-B bench).
         let use_tcb = req.sampling.temperature == 0.0
+            && self.metal_ctx.is_some()
             && crate::env_opt_out("DISMANTLE_QWEN_TCB");
 
 
