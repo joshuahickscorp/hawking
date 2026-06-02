@@ -1,79 +1,82 @@
 #!/usr/bin/env bash
 # =============================================================================
-# tools/bench/final_analysis.sh — ONE turnkey clean-room final analysis.
+# tools/bench/final_analysis.sh — ONE command for the lever analysis.
 #
-#   ⚠⚠⚠  RUN THIS WITH CLAUDE CODE FULLY QUIT.  ⚠⚠⚠
+# DEFAULT MODE is CONTAMINATION-ROBUST — it works with Claude OPEN, because it
+# only uses paired/relative metrics (A/B ratios + back-to-back J/tok), where the
+# ~4-5x session inflation CANCELS. No Claude-quit required, no long-context
+# hang. This is the mode to use day-to-day.
 #
-# Prints ABSOLUTE metrics (dec_tps, J/tok, quality) for the paradigm-shift
-# build. A running Claude/agent session inflates throughput ~4-5x, so these
-# numbers are only meaningful on a clean machine. (Paired A/B via ab_lever.sh
-# is contamination-robust and can run anytime; this batch is the absolute one.)
+#   tools/bench/final_analysis.sh            # robust (Claude open OK) — DEFAULT
+#   tools/bench/final_analysis.sh --clean    # ALSO run absolute anchor (QUIT Claude)
 #
-# Runs, in sequence (~15-25 min total):
-#   1. ABSOLUTE ANCHOR  — clean decode tps + J/tok + the Q3 §A byte-cut proxy
-#   2. f16-KV ENERGY    — J/tok baseline vs DISMANTLE_QWEN_F16_KV=1 @1024 tok
-#                         (the one genuinely open question: is f16-KV a real
-#                          energy lever, or footprint-only? lower J/tok = real)
-#   3. QUALITY          — f16-scales (--profile fast) + f16-KV token/logit drift
+# DEFAULT runs (~6-12 min):
+#   A. --profile fast  paired A/B           (the banked tps win; short ctx)
+#   B. f16-KV          relative J/tok @1024  (energy question: lower-on = energy lever)
+#   C. f16-KV + flash  paired A/B --long-ctx (long-context tps behaviour)
+#   D. quality (SHORT) f16-scales + f16-KV   (token drift; no slow long tier)
 #
-# Usage:
-#   tools/bench/final_analysis.sh            # the full analysis
-#   tools/bench/final_analysis.sh --quick    # skip §3 quality (faster)
+# --clean additionally runs tools/bench/clean_room_batch.sh (absolute tps/J/tok
+#   + Q3 §A) — meaningless unless Claude is fully QUIT; it self-gates and will
+#   refuse if Claude.app is running.
 #
-# Everything is tee'd to reports/bench/final_analysis_<ts>.log and a best-effort
-# summary is printed at the end. JSON artifacts land in reports/{bench,quality}/.
+# Everything tee's to reports/bench/final_analysis_<ts>.log.
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-QUICK=0
-[[ "${1:-}" == "--quick" ]] && QUICK=1
+CLEAN=0
+[[ "${1:-}" == "--clean" ]] && CLEAN=1
 
 TS=$(date +%Y%m%dT%H%M%S)
 LOG="reports/bench/final_analysis_${TS}.log"
 mkdir -p reports/bench reports/quality
-# Tee all output (stdout+stderr) to the log.
 exec > >(tee "$LOG") 2>&1
-
 banner() { printf '\n\n=================== %s ===================\n' "$1"; }
 
 echo "dismantle final analysis — $(date)"
 echo "branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null) @ $(git rev-parse --short HEAD 2>/dev/null)"
+echo "mode:   $([[ $CLEAN == 1 ]] && echo 'CLEAN (absolute — QUIT Claude!)' || echo 'ROBUST (paired/relative — Claude open OK)')"
 echo "log:    $LOG"
-echo "NOTE:   absolute metrics — only valid with Claude Code QUIT."
 
-banner "0/3  build (idempotent; fast if already built)"
+banner "build (idempotent)"
 cargo build --release --workspace 2>&1 | tail -2
 
-banner "1/3  ABSOLUTE ANCHOR  (clean decode tps + J/tok + Q3 §A proxy)"
-tools/bench/clean_room_batch.sh || echo "[warn] clean_room_batch.sh returned non-zero (read its output above)"
-
-banner "2/3  f16-KV ENERGY QUESTION  (J/tok, baseline vs f16-KV @1024 tok)"
-echo "------ baseline (f16-KV OFF) ------"
-tools/bench/phase_joules.sh --tokens 1024 || echo "[warn] phase_joules baseline returned non-zero"
-echo "------ f16-KV ON (DISMANTLE_QWEN_F16_KV=1) ------"
-DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --tokens 1024 || echo "[warn] phase_joules f16-KV returned non-zero"
-
-if [[ "$QUICK" == 0 ]]; then
-  banner "3/3  QUALITY  (f16-scales / --profile fast, and f16-KV)"
-  tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_PREDEC_F16SCALES --label f16scales || echo "[warn] quality f16scales non-zero"
-  tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_F16_KV --label f16kv --long || echo "[warn] quality f16kv non-zero"
-else
-  echo; echo "(--quick: skipped §3 quality)"
+if [[ "$CLEAN" == 1 ]]; then
+  banner "0  ABSOLUTE ANCHOR  (clean_room_batch — needs Claude QUIT)"
+  tools/bench/clean_room_batch.sh || echo "[note] clean_room_batch self-gated or non-zero (read above)"
 fi
 
-sleep 1   # let tee flush before we grep the log for the summary
-banner "SUMMARY  (best-effort — full numbers in the sections above)"
-echo "--- throughput / energy ---"
-grep -hiE "dec_tps|decode_tps|tokens_per_sec|J/tok|joules|GB/s|W GPU|W pkg|peak|0\.[0-9]+ J" "$LOG" \
-  | grep -viE "warning|note:|help:|^#" | sort -u | head -40 || true
-echo "--- quality verdicts ---"
-grep -hiE "PASS|FAIL|identical|cosine|drift|verdict" "$LOG" \
-  | grep -viE "warning|note:|help:" | head -25 || true
+banner "A  --profile fast  paired A/B  (the banked tps win)"
+tools/bench/ab_lever.sh --cli-b "--profile fast" || echo "[note] ab_lever profile-fast non-zero"
 
+banner "B  f16-KV ENERGY  relative J/tok @1024  (off vs on, back-to-back)"
+echo "------ baseline (f16-KV OFF) ------"
+tools/bench/phase_joules.sh --tokens 1024 || echo "[note] phase_joules baseline non-zero"
+echo "------ f16-KV ON ------"
+DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --tokens 1024 || echo "[note] phase_joules f16-KV non-zero"
+
+banner "C  f16-KV + flash  paired A/B --long-ctx  (long-context tps)"
+tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV   --long-ctx || echo "[note] ab_lever f16-KV non-zero"
+tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_FLASH_ATTN --long-ctx || echo "[note] ab_lever flash non-zero"
+
+banner "D  QUALITY (SHORT tier — fast, no long hang)"
+tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_PREDEC_F16SCALES --label f16scales --short-only || echo "[note] quality f16scales returned non-zero (FAIL/WARN is data, not an error)"
+tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_F16_KV --label f16kv --short-only || echo "[note] quality f16kv returned non-zero"
+
+sleep 1
+banner "SUMMARY (best-effort — full numbers in the sections above)"
+echo "--- tps ratios / J/tok ---"
+grep -hiE "B/A=|J/token|J/tok|dec_tps|GPU power|inconclusive|gain|regression" "$LOG" \
+  | grep -viE "warning|note:|help:|^#|echo" | head -40 || true
+echo "--- quality ---"
+grep -hiE "token_identical|corpus_drift|TIER VERDICT|OVERALL|identical\)" "$LOG" \
+  | grep -viE "warning|note:" | head -20 || true
 echo
-echo "DONE.  full log: $LOG"
-echo "JSON:  reports/quality/oracle_f16scales.json  reports/quality/oracle_f16kv.json  reports/bench/*.json"
-echo "KEY READ — §2: is f16-KV's J/tok LOWER with the flag on?"
-echo "   lower  -> f16-KV is a real ENERGY lever (footprint + energy)"
-echo "   higher -> footprint-only (the f16 dequant compute eats the DRAM saving)"
+echo "DONE. log: $LOG"
+echo "READS:"
+echo "  A  --profile fast B/A   -> the banked tps win (expect ~+5%)"
+echo "  B  f16-KV J/tok on<off? -> energy lever; on>=off -> footprint-only (current: footprint-only)"
+echo "  C  f16-KV/flash B/A     -> long-ctx tps (expect f16-KV neutral/neg; flash neutral)"
+echo "  D  drift%               -> --profile fast / f16-KV quality cost (logit-cosine needs a logit-export feature)"
+[[ "$CLEAN" == 0 ]] && echo "  (run with --clean + Claude QUIT for absolute tps/J/tok)"
