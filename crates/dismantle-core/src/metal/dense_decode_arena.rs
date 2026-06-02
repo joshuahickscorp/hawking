@@ -11,6 +11,15 @@ mod arena_imp {
         pub v_token_buf: PinnedBuffer,
         pub k_cache_buf: PinnedBuffer,
         pub v_cache_buf: PinnedBuffer,
+        // f16 KV cache (DISMANTLE_QWEN_F16_KV=1). Lazy-init via
+        // `ensure_f16_kv` — None until the flag is observed, then allocated
+        // once at half the f32 cache footprint. When ON these become the
+        // single source of truth for K/V; the f32 buffers above stay
+        // allocated but unread (kept so the flag-OFF path is byte-identical
+        // and so arena construction need not know the flag). Layout mirrors
+        // the f32 cache: layer-major, n_layers * max_seq * kv_dim halfs.
+        pub k_cache_f16_buf: Option<PinnedBuffer>,
+        pub v_cache_f16_buf: Option<PinnedBuffer>,
         pub attn_out_buf: PinnedBuffer,
         pub x_buf: PinnedBuffer,
         pub x_norm_buf: PinnedBuffer,
@@ -112,6 +121,10 @@ mod arena_imp {
                 v_token_buf: ctx.new_buffer(kv_dim * f32_bytes),
                 k_cache_buf: ctx.new_buffer(total_kv_bytes),
                 v_cache_buf: ctx.new_buffer(total_kv_bytes),
+                // f16 KV — lazily allocated by `ensure_f16_kv` only when
+                // DISMANTLE_QWEN_F16_KV=1; None keeps the OFF path byte-identical.
+                k_cache_f16_buf: None,
+                v_cache_f16_buf: None,
                 attn_out_buf: ctx.new_buffer(q_dim * f32_bytes),
                 x_buf: ctx.new_buffer(hidden * f32_bytes),
                 x_norm_buf: ctx.new_buffer(hidden * f32_bytes),
@@ -158,6 +171,14 @@ mod arena_imp {
             layer * self.max_seq * self.n_kv_heads * self.head_dim * std::mem::size_of::<f32>()
         }
 
+        /// f16 counterpart of [`kv_layer_byte_offset`]: byte offset of
+        /// `layer`'s window in the f16 KV cache. Identical element math, half
+        /// the element size — callers pass this as k_off_bytes / v_off_bytes
+        /// to `mha_decode_f16kv_tcb` / `mha_decode_f16kv_batched_tcb`.
+        pub fn kv_f16_layer_byte_offset(&self, layer: usize) -> usize {
+            layer * self.max_seq * self.n_kv_heads * self.head_dim * std::mem::size_of::<half::f16>()
+        }
+
         /// Lazy-init the W4A8 scratch buffers. Called once on the first
         /// forward pass when `DISMANTLE_QWEN_W4A8=1`. No-op on subsequent
         /// calls. Total footprint at Qwen-3B: ~16 KB (negligible vs the
@@ -177,6 +198,23 @@ mod arena_imp {
             self.attn_out_scales = Some(ctx.new_buffer(q_blocks * f32_bytes));
             self.ffn_act_int8 = Some(ctx.new_buffer(self.intermediate));
             self.ffn_act_scales = Some(ctx.new_buffer(ffn_blocks * f32_bytes));
+        }
+
+        /// Lazy-init the f16 KV cache buffers. Called once on the first
+        /// forward pass when `DISMANTLE_QWEN_F16_KV=1`. No-op on subsequent
+        /// calls. Footprint = 2 * n_layers * max_seq * kv_dim * 2 bytes
+        /// (half the f32 cache). The f32 `k_cache_buf` / `v_cache_buf`
+        /// remain allocated but unread while the flag is on.
+        pub fn ensure_f16_kv(&mut self, ctx: &MetalContext) {
+            if self.k_cache_f16_buf.is_some() {
+                return;
+            }
+            let kv_dim = self.n_kv_heads * self.head_dim;
+            let f16_bytes = std::mem::size_of::<half::f16>();
+            let total_kv_f16_bytes =
+                self.n_layers * self.max_seq * kv_dim * f16_bytes;
+            self.k_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
+            self.v_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
         }
     }
 }
