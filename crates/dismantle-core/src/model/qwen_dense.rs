@@ -3760,6 +3760,14 @@ impl QwenDense {
         // first-8 greedy match clear the ship rule. See
         // ~/.claude/plans/closing-the-2-4-virtual-phoenix.md.
         let qkv_concurrent = crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
+        // Phase 2.3: GQA flash-style decode attention (online softmax).
+        // When set, the GQA attention dispatch uses mha_decode_flash_f32
+        // (constant threadgroup memory, no scores[seq_len]) instead of
+        // mha_decode_f32 — removing the ~7800-token shmem cap. DEFAULT-OFF
+        // (not bit-identical: online softmax reorders the sum). With it
+        // unset the dispatch is the unchanged mha_decode_f32_tcb, so the
+        // golden decode hash is unaffected.
+        let flash_attn = crate::env_on("DISMANTLE_QWEN_FLASH_ATTN");
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
         }
@@ -4159,19 +4167,35 @@ impl QwenDense {
 
             // ── MHA decode (GQA) ─────────────────────────────────────
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            kernels::mha_decode_f32_tcb(
-                &mut tcb,
-                &arena.q_buf,
-                &arena.k_cache_buf,
-                layer_kv_off_bytes,
-                &arena.v_cache_buf,
-                layer_kv_off_bytes,
-                &arena.attn_out_buf,
-                mha_seq_len,
-                head_dim,
-                n_heads,
-                n_kv_heads,
-            )?;
+            if flash_attn {
+                kernels::mha_decode_flash_f32_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    &arena.k_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.v_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            } else {
+                kernels::mha_decode_f32_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    &arena.k_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.v_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            }
 
             // ── O projection ─────────────────────────────────────────
             // attn_out is the output of mha_decode (f32). When W4A8 active,
