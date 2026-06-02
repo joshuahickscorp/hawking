@@ -423,6 +423,22 @@ kernel void memcpy_f32_off(
     dst[args.dst_off + id] = src[args.src_off + id];
 }
 
+// f32->f16 KV-append (Phase 2.1-a). Clone of memcpy_f32_off that writes the
+// per-token f32 K/V slice into a `half` cache at `dst_off` (ELEMENT units —
+// dst_off indexes half elements, identical convention to memcpy_f32_off).
+// Reuses ArgbufMemcpyF32 (declared above). half(x) round-to-nearest-even
+// matches Rust half::f16::from_f32 (the parity test asserts bit-equality).
+// Default-off lever (reached only when DISMANTLE_QWEN_F16_KV=1).
+kernel void memcpy_f32_to_f16_off(
+    device const float*           src  [[buffer(0)]],
+    device       half*            dst  [[buffer(1)]],
+    constant ArgbufMemcpyF32&     args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst[args.dst_off + id] = half(src[args.src_off + id]);
+}
+
 kernel void rope_inplace(
     device       half* x        [[buffer(0)]],
     constant     uint& head_dim [[buffer(1)]],

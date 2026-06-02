@@ -5868,6 +5868,166 @@ mod metal_dispatch {
         )
     }
 
+    /// f16-KV variant of [`mha_decode_f32_tcb`] (Phase 2.1-a). Identical
+    /// args/geometry; the dispatched kernel reads k/v as `half`. `k_off_bytes`/
+    /// `v_off_bytes` are BYTE offsets into the *half* cache — the caller
+    /// computes them with `size_of::<half::f16>()` (= 2), e.g. via
+    /// `DenseDecodeArena::kv_f16_layer_byte_offset`. Q stays f32, out stays
+    /// f32. Default-off lever (DISMANTLE_QWEN_F16_KV). No commit.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f16kv_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        seq_len: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f16kv_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, seq_len as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_kv_heads as u32);
+        ab.set_u32(3, group_size);
+        ab.set_f32(4, scale);
+
+        const TG_SIZE: u32 = 128;
+        let shmem_bytes =
+            ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f16kv",
+            (n_heads as u32 * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// f16-KV variant of [`mha_decode_f32_batched_tcb`] (Phase 2.1-a). The
+    /// batched-prefill producer for the f16 cache; same geometry, half k/v.
+    /// `k_off_bytes`/`v_off_bytes` are BYTE offsets into the *half* cache.
+    /// Q/out stay f32. Default-off lever. No commit.
+    #[allow(clippy::too_many_arguments)]
+    pub fn mha_decode_f16kv_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        p0: usize,
+        batch: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f16kv_batched_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+        let max_seq_len = p0 + batch; // largest batch's seq_len
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, p0 as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, n_heads as u32);
+        ab.set_u32(3, n_kv_heads as u32);
+        ab.set_u32(4, group_size);
+        ab.set_f32(5, scale);
+
+        const TG_SIZE_MHA: u32 = 128;
+        let shmem_bytes =
+            ((max_seq_len + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f16kv_batched",
+            (n_heads as u32 * TG_SIZE_MHA, batch as u32, 1),
+            (TG_SIZE_MHA, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
+    /// f32->f16 KV-append: clone of [`memcpy_f32_off_tcb`] writing f32 `src`
+    /// into a `half` `dst` at ELEMENT offset `dst_off` (dst_off indexes half
+    /// elements, identical convention to memcpy_f32_off_tcb). Uses the
+    /// module-level `TG_SIZE` like its sibling. Default-off lever. No commit.
+    pub fn memcpy_f32_to_f16_off_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst: &PinnedBuffer,
+        src_off: usize,
+        dst_off: usize,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, src_off as u32);
+        ab.set_u32(2, dst_off as u32);
+        let n_u32 = n as u32;
+        let n_tg = n_u32.div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "memcpy_f32_to_f16_off",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src), 0);
+                enc.set_buffer(1, Some(dst), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// Encode mla_decode_kernel + o_proj gemv into external TCB.
     /// Reads arena.q / c_kv / k_pe; writes arena.attn_out / arena.out.
     /// c_kv and k_pe are passed explicitly so callers can use persistent GPU
