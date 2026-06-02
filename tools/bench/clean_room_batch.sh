@@ -51,7 +51,8 @@ BIN="${BIN:-./target/release/dismantle}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-256}"          # decode length for sections B + C
-PROMPT="${PROMPT:-fn fibonacci(n: u64) -> u64 {}"
+PROMPT_DEFAULT='fn fibonacci(n: u64) -> u64 {'
+PROMPT="${PROMPT:-$PROMPT_DEFAULT}"
 PEAK_GBPS="${PEAK_GBPS:-150}"    # M3 Pro memory bandwidth peak (bible §0)
 ANCHOR_HIGH="${ANCHOR_HIGH:-39}" # older clean anchor (bible §3 envelope)
 ANCHOR_LOW="${ANCHOR_LOW:-31}"   # most-recent clean anchor (A1/A4, bible §3.0)
@@ -130,13 +131,18 @@ echo "    (B) decode-tps anchor recon  -> clean dec_tps vs anchors ~${ANCHOR_HIG
 echo "    (C) energy baseline          -> joules/token via measure_joules.sh (macmon)"
 echo ""
 
+if [[ "$GATES_ONLY" == 1 ]]; then
+  if [[ "$PREFLIGHT_FAIL" == 1 ]]; then
+    echo "  --gates-only: printed the pre-flight failures and plan. Not running benches."
+    echo "  Re-run without the flag only after the FAIL gates pass."
+  else
+    echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (Claude quit)."
+  fi
+  exit 0
+fi
 if [[ "$PREFLIGHT_FAIL" == 1 ]]; then
   echo "  PRE-FLIGHT FAILED — fix the FAIL gates above and re-run. (Absolutes would be garbage.)" >&2
   exit 1
-fi
-if [[ "$GATES_ONLY" == 1 ]]; then
-  echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (Claude quit)."
-  exit 0
 fi
 echo "  PRE-FLIGHT PASSED — running the clean-room batch."
 echo ""
