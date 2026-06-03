@@ -53,6 +53,16 @@ pub struct DispatchSample {
     pub layer_hint: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_us: Option<u64>,
+    /// Raw GPU-clock start/end timestamps (ns) for this dispatch, from the
+    /// timestamp counter set. Populated ONLY by `DISMANTLE_TCB_TRACE=gpu_prod`
+    /// (single-CB production path); `None` everywhere else. Carrying the raw
+    /// endpoints — not just their difference — lets an offline parser compute
+    /// the PRODUCTION inter-dispatch gap (start[i+1] - end[i]) without
+    /// Instruments. Off by default ⇒ parity-neutral (skipped when `None`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -307,6 +317,8 @@ mod imp {
                         wall_us: p.cpu_us,
                         layer_hint: p.layer_hint,
                         gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                     })
                     .collect();
             }
@@ -338,20 +350,26 @@ mod imp {
                 .map(|p| {
                     let i0 = p.pair_index * 2;
                     let i1 = i0 + 1;
-                    let gpu_us = if i1 < timestamps.len()
+                    let valid = i1 < timestamps.len()
                         && timestamps[i0] != ERR
                         && timestamps[i1] != ERR
-                        && timestamps[i1] >= timestamps[i0]
-                    {
-                        Some((timestamps[i1] - timestamps[i0]) / 1000)
+                        && timestamps[i1] >= timestamps[i0];
+                    let (gpu_us, gpu_start_ns, gpu_end_ns) = if valid {
+                        (
+                            Some((timestamps[i1] - timestamps[i0]) / 1000),
+                            Some(timestamps[i0]),
+                            Some(timestamps[i1]),
+                        )
                     } else {
-                        None
+                        (None, None, None)
                     };
                     super::DispatchSample {
                         kernel_name: p.kernel_name,
                         wall_us: p.cpu_us,
                         layer_hint: p.layer_hint,
                         gpu_us,
+                        gpu_start_ns,
+                        gpu_end_ns,
                     }
                 })
                 .collect()
@@ -384,6 +402,8 @@ mod imp {
                 wall_us,
                 layer_hint,
                 gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
             });
         }
 
@@ -1100,6 +1120,8 @@ mod imp {
                         wall_us: t0.elapsed().as_micros() as u64,
                         layer_hint: super::current_layer(),
                         gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                     });
                 }
                 return Ok(());
@@ -1135,6 +1157,8 @@ mod imp {
                     wall_us: t0.elapsed().as_micros() as u64,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                 });
             }
             Ok(())
@@ -1207,6 +1231,8 @@ mod imp {
                     wall_us: cpu_us,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                 });
             }
             Ok(())
@@ -1246,6 +1272,8 @@ mod imp {
                 wall_us: cpu_us,
                 layer_hint: super::current_layer(),
                 gpu_us: Some(gpu_us),
+                gpu_start_ns: None,
+                gpu_end_ns: None,
             });
             Ok(())
         }
