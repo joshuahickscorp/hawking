@@ -31,6 +31,7 @@
 # Usage:
 #   tools/bench/phase_joules.sh                       # 256 tok attribution
 #   tools/bench/phase_joules.sh --tokens 512
+#   tools/bench/phase_joules.sh --domains             # + per-domain GPU/DRAM J/tok (macmon, no dep)
 #   tools/bench/phase_joules.sh --trace-mode gpu_prod  # real GPU fractions
 #   tools/bench/phase_joules.sh --source powermetrics  # force power source
 #   DISMANTLE_QWEN_PREDEC_F16SCALES=1 tools/bench/phase_joules.sh
@@ -53,6 +54,8 @@ TRACE_MODE="cpu"       # cpu | gpu_prod (see CAVEATS)
 TRACE_TOKENS=64        # short trace run; fractions stabilize quickly
 ZEUS=0                 # --zeus: ALSO emit MEASURED per-domain mJ/tok (zeus-apple-silicon).
                        # Default OFF -> golden proxy output unchanged.
+DOMAINS=0              # --domains: ALSO emit per-domain GPU + DRAM J/tok from macmon
+                       # (ram_power, sudo-free, no dep). Default OFF -> proxy output unchanged.
 
 die() { printf 'error: %s\n' "$*" >&2; exit 64; }
 while [[ $# -gt 0 ]]; do
@@ -64,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     --trace-mode)  TRACE_MODE="$2"; shift 2;;
     --trace-tokens) TRACE_TOKENS="$2"; shift 2;;
     --zeus)        ZEUS=1; shift;;
+    --domains)     DOMAINS=1; shift;;
     -h|--help)     sed -n '2,50p' "$0"; exit 0;;
     *) die "unknown arg: $1";;
   esac
@@ -113,9 +117,9 @@ echo "base env     : (locked fast-path) TCB+vocab32k+Q4K-lmhead+FFN-down-Q4K+pre
 # ---------------------------------------------------------------------------
 # Power samplers (same as measure_joules.sh, with pkill-P orphan fix applied)
 # ---------------------------------------------------------------------------
-sample_macmon() {
+sample_macmon() {  # $1=pkg-W file  $2=gpu-W file  $3=dram-W file (optional)
   macmon pipe -i "$SAMPLE_MS" 2>/dev/null | while IFS= read -r line; do
-    pkg=$(/usr/bin/python3 -c 'import sys,json
+    /usr/bin/python3 -c 'import sys,json
 try:
   d=json.load(sys.stdin)
 except Exception:
@@ -123,16 +127,14 @@ except Exception:
 allp=d.get("all_power")
 if allp is None:
   allp=sum(d.get(k,0) or 0 for k in ("cpu_power","gpu_power","ane_power"))
-print(f"{allp:.4f}")' <<< "$line")
-    gpu=$(/usr/bin/python3 -c 'import sys,json
-try:
-  d=json.load(sys.stdin)
-except Exception:
-  sys.exit(0)
-gp=d.get("gpu_power",0) or 0
-print(f"{gp:.4f}")' <<< "$line")
-    [[ -n "$pkg" ]] && printf '%s\n' "$pkg" >> "$1"
-    [[ -n "$gpu" ]] && printf '%s\n' "$gpu" >> "$2"
+gpu=d.get("gpu_power",0) or 0
+dram=d.get("ram_power",0) or 0
+print(f"{allp:.4f}\t{gpu:.4f}\t{dram:.4f}")' <<< "$line" | {
+      IFS=$'\t' read -r p g r
+      [[ -n "$p" ]] && printf '%s\n' "$p" >> "$1"
+      [[ -n "$g" ]] && printf '%s\n' "$g" >> "$2"
+      [[ -n "${3:-}" && -n "$r" ]] && printf '%s\n' "$r" >> "$3"
+    }
   done
 }
 
@@ -273,11 +275,11 @@ printf '  Trivial-ops fraction: %.4f  (%s%%\n' "$F_TRIVIAL" "$(pct "$F_TRIVIAL")
 echo ""
 echo "--- Step 2: energy pass (${TOKENS} tokens, no trace, production path) ---"
 
-wfile="$(mktemp)"; gfile="$(mktemp)"; statf="$(mktemp)"
-: > "$wfile"; : > "$gfile"
+wfile="$(mktemp)"; gfile="$(mktemp)"; dfile="$(mktemp)"; statf="$(mktemp)"
+: > "$wfile"; : > "$gfile"; : > "$dfile"
 
 if [[ "$SRC" == "macmon" ]]; then
-  sample_macmon "$wfile" "$gfile" &
+  sample_macmon "$wfile" "$gfile" "$dfile" &
 else
   sample_powermetrics "$wfile" "$gfile" &
 fi
@@ -306,10 +308,13 @@ comp_tok=$(printf '%s' "$statline"| grep -oE 'completion=[0-9]+' | grep -oE '[0-
 decode_wall_s=$(awk -v m="$dec_ms" 'BEGIN{printf "%.4f", m/1000}')
 avg_pkg=$(mean_of "$wfile")
 avg_gpu=$(mean_of "$gfile")
+avg_dram=$(mean_of "$dfile")
 joules=$(awk -v w="$avg_pkg" -v s="$decode_wall_s" 'BEGIN{printf "%.4f", w*s}')
 jtok=$(awk -v j="$joules" -v t="$comp_tok" 'BEGIN{ if(t>0) printf "%.4f", j/t; else print "0"}')
+gpu_jtok=$(awk -v w="$avg_gpu" -v s="$decode_wall_s" -v t="$comp_tok" 'BEGIN{ if(t>0) printf "%.4f", w*s/t; else print "0"}')
+dram_jtok=$(awk -v w="$avg_dram" -v s="$decode_wall_s" -v t="$comp_tok" 'BEGIN{ if(t>0) printf "%.4f", w*s/t; else print "0"}')
 
-rm -f "$wfile" "$gfile" "$statf"
+rm -f "$wfile" "$gfile" "$dfile" "$statf"
 
 printf '  dec_tps        : %s\n' "${dec_tps:-?}"
 printf '  tokens         : %s\n' "$comp_tok"
@@ -318,6 +323,20 @@ printf '  avg pkg power  : %s W  (CPU+GPU+ANE)\n' "$avg_pkg"
 printf '  avg GPU power  : %s W\n' "$avg_gpu"
 printf '  decode energy  : %s J\n' "$joules"
 printf '  >> J/token     : %s  <<\n' "$jtok"
+
+if [[ "$DOMAINS" == 1 ]]; then
+  if [[ "$SRC" == "macmon" ]]; then
+    printf '  avg DRAM power : %s W  (ram_power, external-DRAM domain)\n' "$avg_dram"
+    printf '  --- MEASURED per-domain J/tok (macmon IOReport power x wall / tokens) ---\n'
+    printf '    GPU   : %s J/tok\n' "$gpu_jtok"
+    printf '    DRAM  : %s J/tok\n' "$dram_jtok"
+    printf '    NOTE  : MODEL-ESTIMATE (~1 mJ res); GPU-SRAM not exposed on M3 Pro;\n'
+    printf '            power averaged over the whole decode window — use --tokens 512+\n'
+    printf '            and a clean room (Claude quit) for a publishable absolute number.\n'
+  else
+    printf '  --domains: DRAM domain only available via macmon (current source: %s); skipped.\n' "$SRC"
+  fi
+fi
 
 # ---------------------------------------------------------------------------
 # STEP 3: Phase attribution — multiply total J/tok by phase fractions.
