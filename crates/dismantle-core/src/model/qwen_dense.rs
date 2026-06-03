@@ -132,7 +132,7 @@ pub struct QwenLayerPinned {
     /// A6.5 (2026-05-31): f16-scales twin of `ffn_down_q4k_predec`. Built
     /// lazily by `ensure_q4k_predec_cache_f16` from the f32 table; consumed
     /// by `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` when
-    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-on 2026-06-03; opt out `DISMANTLE_QWEN_PREDEC_F32SCALES=1`).
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade).
     pub ffn_down_q4k_predec_f16: Option<crate::metal::PinnedBuffer>,
     pub attn_norm: Option<crate::metal::PinnedBuffer>,
     pub ffn_norm: Option<crate::metal::PinnedBuffer>,
@@ -234,7 +234,7 @@ pub struct QwenDense {
     /// A6.5 (2026-05-31): f16-scales twin of `lm_head_pruned_predec`. Half-
     /// width (16 halfs/block vs 16 f32) pre-decoded scale table consumed by
     /// `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` when
-    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-on 2026-06-03; opt out `DISMANTLE_QWEN_PREDEC_F32SCALES=1`).
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade).
     /// Built lazily by `ensure_q4k_predec_cache_f16` from the f32 table.
     pub lm_head_pruned_predec_f16: Option<crate::metal::PinnedBuffer>,
 
@@ -252,8 +252,7 @@ pub struct QwenDense {
     /// same GGUF mmap offset. Half-width (2 B/elem vs 4 B) pre-decoded scale
     /// tables consumed by `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` AND
     /// `gemv_q4_k_v4_predec_pair_f16s_pinned_tcb` when
-    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-on; opt out
-    /// `DISMANTLE_QWEN_PREDEC_F32SCALES=1`; quality-equivalent — f16
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality trade — f16
     /// scale rounding perturbs logits ~5e-4 relative). Built lazily by
     /// `ensure_q4k_predec_cache_f16` from the f32 cache; `None` = flag off.
     #[cfg(target_os = "macos")]
@@ -3073,8 +3072,8 @@ impl QwenDense {
     /// Lazily derived from the already-built f32 tables by narrowing each
     /// `(ds, dm)` f32 pair to `half::f16` — exactly what
     /// `predecode_q4_k_scale_table_f16` produces. Called once on first
-    /// forward by default (opt out `DISMANTLE_QWEN_PREDEC_F32SCALES=1`; quality-
-    /// equivalent: the f16 scale rounding perturbs logits ~5e-4 relative; gated on
+    /// forward when `DISMANTLE_QWEN_PREDEC_F16SCALES=1` (default-off, quality
+    /// trade: the f16 scale rounding perturbs logits ~5e-4 relative; gated on
     /// a quality check, NOT bit-identical).
     #[cfg(target_os = "macos")]
     fn ensure_q4k_predec_cache_f16(&mut self) -> Result<()> {
@@ -3496,25 +3495,19 @@ impl QwenDense {
         if predec_active && self.q4k_predec_cache.is_none() {
             self.ensure_q4k_predec_cache()?;
         }
-        // A6.5 (f16-scales predec variant) is the DEFAULT decode path as of
-        // 2026-06-03: the measured +9.3% tps / −1.4% J/tok both-axes win. It is
-        // quality-EQUIVALENT, not bit-identical (f16 scale rounding perturbs
-        // logits ~5e-4 relative) — quality-gated via tools/bench/quality_oracle.sh.
+        // A6.5 (2026-05-31): f16-scales predec variant. DEFAULT-OFF — this is a
+        // quality trade (f16 scale rounding perturbs logits ~5e-4 relative,
+        // NOT bit-identical), opt in via DISMANTLE_QWEN_PREDEC_F16SCALES=1.
         // Routes BOTH the single-GEMV predec sites (q/o/ffn_down/LM-head) through
         // `gemv_q4_k_v4_predec_2r_f16s_pinned_tcb` AND the dominant fused FFN
         // gate+up `_pair` site (46.6% of decode) through
         // `gemv_q4_k_v4_predec_pair_f16s_pinned_tcb`, cutting the predec scale
         // table 192→160 B/block (~17% less scale traffic) across ~89% of decode
         // on the bandwidth-bound Q4_K GEMV. Requires the f32 predec path.
-        // Opt OUT to the bit-identical f32-scales path with
-        // DISMANTLE_QWEN_PREDEC_F32SCALES=1 (or `--profile deterministic`); the
-        // legacy DISMANTLE_QWEN_PREDEC_F16SCALES=0 also forces it off. Opt-out
-        // wins if both are set (determinism is the safe default choice).
         let predec_f16scales_active = predec_active
-            && !crate::env_on("DISMANTLE_QWEN_PREDEC_F32SCALES")
             && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES")
                 .map(|v| v != "0")
-                .unwrap_or(true);
+                .unwrap_or(false);
         if predec_f16scales_active && self.q4k_predec_cache_f16.is_none() {
             self.ensure_q4k_predec_cache_f16()?;
         }

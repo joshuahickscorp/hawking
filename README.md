@@ -88,11 +88,9 @@ Three levers that survive clean measurement:
 
 The rest is recorded in `reports/dead_levers.md`.
 
-## Named profiles — `--profile fast` / `--profile deterministic`
+## Named profiles — `--profile fast`
 
-Default decode uses **f16-scales predec** (a measured +9.3% tps / −1.4% J/tok both-axes win; quality-equivalent, **not** bit-identical to the pre-2026-06-03 default — f16 scale rounding perturbs logits ~5e-4 relative). `--profile deterministic` (or `DISMANTLE_QWEN_PREDEC_F32SCALES=1`) restores the bit-identical f32-scales path.
-
-`--profile fast` additionally sets `DISMANTLE_QWEN_VOCAB_PRUNE=32000` + Q4K LM-head + Q4K FFN-down on top of the default predec + f16-scales. Explicit `DISMANTLE_QWEN_*` env vars take precedence over the bundle.
+`--profile fast` sets `DISMANTLE_QWEN_VOCAB_PRUNE=32000` + Q4K LM-head + Q4K FFN-down + predec + f16-scales. Delivers +7.4% paired dec_tps on Qwen2.5-3B-Q4_K_M; output is **not** bit-identical to default (f16 scale rounding). Explicit `DISMANTLE_QWEN_*` env vars take precedence over the bundle.
 
 ## CPU reference path — `DISMANTLE_FORCE_CPU=1`
 

@@ -46,24 +46,12 @@ fn apply_profile(profile: &Option<String>) {
             }
             eprintln!(
                 "[dismantle] --profile fast: vocab-prune-32k + Q4K LM-head + Q4K \
-                 FFN-down + predec + f16-scales (f16-scales is now the default; \
-                 this profile adds vocab-prune + Q4K LM-head/FFN-down)"
-            );
-        }
-        "deterministic" => {
-            // Opt back to the bit-identical f32-scales predec path (the
-            // pre-2026-06-03 default). f16-scales is otherwise default-on.
-            if std::env::var_os("DISMANTLE_QWEN_PREDEC_F32SCALES").is_none() {
-                std::env::set_var("DISMANTLE_QWEN_PREDEC_F32SCALES", "1");
-            }
-            eprintln!(
-                "[dismantle] --profile deterministic: f32-scales predec \
-                 (bit-identical to the pre-2026-06-03 default)"
+                 FFN-down + predec + f16-scales (mild quality trade; omit \
+                 --profile for the bit-identical default)"
             );
         }
         other => eprintln!(
-            "[dismantle] warning: unknown --profile '{other}' (known: fast, \
-             deterministic); ignoring"
+            "[dismantle] warning: unknown --profile '{other}' (known: fast); ignoring"
         ),
     }
 }
