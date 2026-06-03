@@ -349,6 +349,111 @@ kernel void mha_decode_f32_batched(
     }
 }
 
+// ── mha_decode_f32_batched_multiseq (continuous-batching decode) ────────────
+// B INDEPENDENT sequences in ONE dispatch. Unlike mha_decode_f32_batched (which
+// is B tokens of ONE sequence sharing a single growing K/V window), here each
+// batch element `bi` is its own sequence with:
+//   - its own position positions[bi]  => SEQ_bi = positions[bi] + 1
+//   - its own slot-strided K/V region at element offset bi * kv_slot_stride
+// Grid (n_heads*TG, B, 1); q/out laid out (B, n_heads, head_dim). shmem is sized
+// to the LARGEST SEQ in the batch; each TG uses only its own SEQ_bi. The four
+// softmax phases are byte-identical to mha_decode_f32_batched — only the K/V
+// base (per-slot) and SEQ (per-slot position) differ.
+struct ArgbufMhaDecodeMultiseq {
+    uint head_dim;
+    uint n_heads;
+    uint n_kv_heads;
+    uint group_size;
+    uint kv_slot_stride;   // elements between consecutive slots' K (and V) regions
+    float scale;
+};
+
+kernel void mha_decode_f32_batched_multiseq(
+    constant ArgbufMhaDecodeMultiseq& args [[buffer(0)]],
+    device const float*       q         [[buffer(1)]],
+    device const float*       k_cache   [[buffer(2)]],
+    device const float*       v_cache   [[buffer(3)]],
+    device       float*       out       [[buffer(4)]],
+    device const uint*        positions [[buffer(5)]],
+    threadgroup  float*       shmem     [[threadgroup(0)]],
+    uint3 tg_id     [[threadgroup_position_in_grid]],
+    uint3 tid_in_tg [[thread_position_in_threadgroup]],
+    uint3 tg_dim    [[threads_per_threadgroup]])
+{
+    const uint tid       = tid_in_tg.x;
+    const uint tg_size   = tg_dim.x;
+    const uint h         = tg_id.x;
+    const uint batch_id  = tg_id.y;
+    const uint H_DIM     = args.head_dim;
+    const uint SEQ       = positions[batch_id] + 1u;
+    const uint NKV       = args.n_kv_heads;
+    const uint GROUP     = args.group_size;
+    const uint NHEADS    = args.n_heads;
+    const uint kv_h      = h / GROUP;
+    const float scale    = args.scale;
+
+    // Per-slot K/V base: each sequence's cache is its own slot-strided region.
+    device const float* k_slot = k_cache + batch_id * args.kv_slot_stride;
+    device const float* v_slot = v_cache + batch_id * args.kv_slot_stride;
+
+    threadgroup float* scores = shmem;
+    threadgroup float* red    = shmem + SEQ;
+
+    device const float* q_h = q + (batch_id * NHEADS + h) * H_DIM;
+
+    // Phase 1: scores[t] = dot(q_h, K_slot[t, kv_h]) * scale
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        device const float* kt = k_slot + (t * NKV + kv_h) * H_DIM;
+        float acc = 0.0f;
+        for (uint i = 0; i < H_DIM; ++i) {
+            acc += q_h[i] * kt[i];
+        }
+        scores[t] = acc * scale;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 2: tree-reduce max.
+    float local_max = -INFINITY;
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        local_max = max(local_max, scores[t]);
+    }
+    red[tid] = local_max;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) red[tid] = max(red[tid], red[tid + stride]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_score = red[0];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 3: exp + reduce sum.
+    float local_sum = 0.0f;
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        float e = exp(scores[t] - max_score);
+        scores[t] = e;
+        local_sum += e;
+    }
+    red[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_sum = 1.0f / red[0];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 4: out[batch, h, i] = inv_sum * sum_t(scores[t] * V_slot[t, kv_h, i])
+    device float* out_h = out + (batch_id * NHEADS + h) * H_DIM;
+    for (uint i = tid; i < H_DIM; i += tg_size) {
+        float acc = 0.0f;
+        for (uint t = 0; t < SEQ; ++t) {
+            device const float* vt = v_slot + (t * NKV + kv_h) * H_DIM;
+            acc += scores[t] * vt[i];
+        }
+        out_h[i] = acc * inv_sum;
+    }
+}
+
 // ── f16-KV decode (Phase 2.1-a) ─────────────────────────────────────────────
 // Byte-for-byte clone of mha_decode_f32 EXCEPT k_cache/v_cache are `half*` and
 // each cached element is widened to float inside the dot loops. Q stays f32

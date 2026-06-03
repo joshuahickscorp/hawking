@@ -7586,6 +7586,75 @@ mod metal_dispatch {
         )
     }
 
+    /// Continuous-batching multi-seq decode: B INDEPENDENT sequences in one
+    /// dispatch. Each batch element `bi` has its own position (`positions[bi]`,
+    /// a u32 buffer of length `batch`) and its own slot-strided K/V region at
+    /// element offset `bi * kv_slot_stride_elems`. `max_seq` (= max position + 1)
+    /// sizes the shared scores shmem. See `mha_decode_f32_batched_multiseq` in
+    /// shaders/mha.metal. The softmax math is byte-identical to
+    /// `mha_decode_f32_batched_tcb`; only the per-slot K/V base + per-slot SEQ
+    /// differ.
+    pub fn mha_decode_f32_batched_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        k_off_bytes: usize,
+        v_cache: &PinnedBuffer,
+        v_off_bytes: usize,
+        out: &PinnedBuffer,
+        positions: &PinnedBuffer,
+        max_seq: usize,
+        kv_slot_stride_elems: usize,
+        batch: usize,
+        head_dim: usize,
+        n_heads: usize,
+        n_kv_heads: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        if n_kv_heads == 0 || n_heads % n_kv_heads != 0 {
+            return Err(Error::Metal(format!(
+                "mha_decode_f32_batched_multiseq_tcb: n_heads ({n_heads}) must be a multiple of n_kv_heads ({n_kv_heads})"
+            )));
+        }
+        let group_size = (n_heads / n_kv_heads) as u32;
+        let scale = 1.0_f32 / (head_dim as f32).sqrt();
+
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, head_dim as u32);
+        ab.set_u32(1, n_heads as u32);
+        ab.set_u32(2, n_kv_heads as u32);
+        ab.set_u32(3, group_size);
+        ab.set_u32(4, kv_slot_stride_elems as u32);
+        ab.set_f32(5, scale);
+
+        const TG_SIZE_MHA: u32 = 128;
+        let shmem_bytes =
+            ((max_seq + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+
+        tcb.dispatch_threads(
+            "mha_decode_f32_batched_multiseq",
+            (n_heads as u32 * TG_SIZE_MHA, batch as u32, 1),
+            (TG_SIZE_MHA, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(ab.handle()), 0);
+                enc.set_buffer(1, Some(q), 0);
+                enc.set_buffer(2, Some(k_cache), k_off_bytes as u64);
+                enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
+                enc.set_buffer(4, Some(out), 0);
+                enc.set_buffer(5, Some(positions), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     pub fn add_rmsnorm_fused_batched_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         x_buf: &PinnedBuffer,
