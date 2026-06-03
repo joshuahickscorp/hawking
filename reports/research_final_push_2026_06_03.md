@@ -183,13 +183,23 @@ loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-mea
 
 The swarm's read-only audit corrected **three of five** briefs against the live tree.
 
-- **① f16-scales default — LANDED `b417495`.** Gate flipped (`unwrap_or(false)`→`true`)
-  + named opt-out `DISMANTLE_QWEN_PREDEC_F32SCALES=1` / `--profile deterministic`.
-  Verified: build + 94 core/9 serve lib tests + `q4k_predec_f16s_parity` /
-  `_pair_f16s_parity` / `q4k_predec_parity` green; `batch-hash` byte-identical
-  across {default, F16SCALES=1, F32SCALES=1, F16SCALES=0} (0 quality divergence);
-  paired ABBA **B/A=0.917 (−8.3% for the f32 opt-out ⇒ ~+9% for the f16 default)**.
-  *Absolute +9.3% / −1.4% J-tok still pending a clean-room confirmation.*
+- **① f16-scales default — TRIED then REVERTED `e613dde` (FAILED the quality gate).**
+  The flip (`b417495`) built clean, passed kernel parity (`q4k_predec_f16s_parity`
+  rel-L2 < 1e-2) + 94/9 lib tests, and paired ABBA confirmed the tps win
+  (**B/A=0.917, ~+9%**). BUT the corpus quality oracle (`quality_oracle.sh`, 24
+  diverse prompts × 48 tok, f16-default vs f32-opt-out) measured **token-identical
+  0.792 (gate ≥ 0.90) and corpus drift 11.46% (gate ≤ 5%)** — 5/24 prompts diverge,
+  up to 35% prose / 18% math (high-entropy; code/lists/sql stay identical). This is
+  the known f16-rounding signature (cf. q4k_fast_divergence, w4a8_corpus_quality) —
+  exactly why f16-scales shipped as an opt-in "mild quality trade," not a default.
+  **Correctness gates before performance**, so the default stays bit-identical
+  f32-scales; f16-scales remains opt-in via `--profile fast` for code-shaped
+  workloads (where divergence ≈ 0). **Lesson:** the research's "industry ships
+  quality-equivalent" principle is real, but the dismantle-specific oracle is the
+  binding gate — and it says f16-scales is NOT within this repo's equivalence bar.
+  Oracle JSON: `reports/quality/oracle_f32scales_optout.json`.
+  *Re-attempt only with a quality fix (e.g. per-block f16 scale + f32 dmin, or a
+  selective-precision scheme that keeps the high-entropy logits f32).*
 - **④ per-domain energy instrument — LANDED `a90fe80`.** `phase_joules.sh --domains`
   emits GPU + DRAM J/tok from macmon `ram_power` (no dep, sudo-free), gated so
   default output is byte-identical. Smoke-test (Claude open): GPU 0.080 / DRAM
