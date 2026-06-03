@@ -180,6 +180,11 @@ pub struct QwenDense {
     /// `forward_token_greedy_tcb` call so models that only use the
     /// CPU/Metal-hybrid `forward_token` path don't pay for it.
     pub dense_arena: Option<crate::metal::DenseDecodeArena>,
+    /// Slot-strided arena for continuous-batching multi-seq decode (B
+    /// INDEPENDENT sequences). Separate from `dense_arena` because its KV
+    /// cache is sized B*max_seq_per_slot (slot-strided), not one sequence's
+    /// max_seq. Lazily (re)allocated by `forward_tokens_multiseq`.
+    pub multiseq_arena: Option<crate::metal::DenseDecodeArena>,
 
     /// P1f: pinned whole-mmap buffer holding all Q4_K_M weight bytes.
     /// `gemv_q4_k_m_v2_pinned_tcb` reads a (offset, byte_size) window
@@ -1243,6 +1248,7 @@ impl Engine for QwenDense {
             _weights_path: weights.to_owned(),
             metal_ctx,
             dense_arena: None,
+            multiseq_arena: None,
             weights_mmap_buf,
             embed_buf,
             final_norm_buf,
@@ -5564,6 +5570,375 @@ impl QwenDense {
         self.kv.seq_len += b;
 
         Ok(())
+    }
+
+    /// Continuous-batching DECODE stack: B INDEPENDENT sequences in one TCB.
+    /// Unlike `forward_tokens_batch_tcb` (B tokens of ONE sequence, contiguous
+    /// positions, single shared KV window), each slot `bi` here is its own
+    /// sequence with its own `positions[bi]` and its own slot-strided KV region
+    /// (`bi * max_seq_per_slot * kv_dim` within each layer window). The caller
+    /// provides a slot-strided arena (`max_seq = B*max_seq_per_slot`,
+    /// `max_batch = B`) and reads `arena.x_norm_buf_batch` afterward for the
+    /// per-slot LM head. DEFAULT path only (no f16-KV / MMA / W4A8 in v1). The
+    /// arena's KV cache persists across calls so the prefix grows per decode
+    /// step. Reuses the v3w batched GEMM (weight read once across B columns)
+    /// and the new `mha_decode_f32_batched_multiseq` kernel.
+    #[cfg(target_os = "macos")]
+    fn forward_tokens_multiseq_stack_tcb(
+        &self,
+        arena: &crate::metal::DenseDecodeArena,
+        tokens: &[u32],
+        positions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<()> {
+        use crate::kernels;
+        use crate::metal::TokenCommandBuffer;
+
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(());
+        }
+        if positions.len() != b {
+            return Err(Error::Model(format!(
+                "multiseq_stack: tokens={} positions={}",
+                b,
+                positions.len()
+            )));
+        }
+        if b > arena.max_batch {
+            return Err(Error::Model(format!(
+                "multiseq_stack: B={} > arena.max_batch={}",
+                b, arena.max_batch
+            )));
+        }
+        if arena.max_seq < b * max_seq_per_slot {
+            return Err(Error::Model(format!(
+                "multiseq_stack: arena.max_seq={} < B*max_seq_per_slot={}",
+                arena.max_seq,
+                b * max_seq_per_slot
+            )));
+        }
+        for (i, &p) in positions.iter().enumerate() {
+            if p >= max_seq_per_slot {
+                return Err(Error::Model(format!(
+                    "multiseq_stack: positions[{}]={} >= max_seq_per_slot={}",
+                    i, p, max_seq_per_slot
+                )));
+            }
+        }
+
+        let ctx = self
+            .metal_ctx
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: no metal_ctx".into()))?;
+        let mmap_buf = self
+            .weights_mmap_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: weights not pinned".into()))?;
+        let embed_buf = self
+            .embed_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: embed not pinned".into()))?;
+        let final_norm_buf = self
+            .final_norm_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: final_norm not pinned".into()))?;
+
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+        let intermediate = cfg.intermediate;
+        let eps = cfg.rms_norm_eps;
+        let theta = cfg.rope_theta;
+
+        let f32_bytes = std::mem::size_of::<f32>();
+        let h_bytes = h * f32_bytes;
+        let q_dim_bytes = q_dim * f32_bytes;
+        let kv_dim_bytes = kv_dim * f32_bytes;
+        let int_bytes = intermediate * f32_bytes;
+
+        // Slot-strided KV geometry.
+        let slot_stride_elems = max_seq_per_slot * kv_dim; // one slot's per-layer KV region
+        let layer_kv_stride_elems = arena.max_seq * kv_dim; // = B*max_seq_per_slot*kv_dim
+
+        // u32 positions buffer for the multi-seq MHA + its shmem sizing.
+        let mha_max_seq = positions.iter().copied().max().unwrap_or(0) + 1;
+        let pos_bytes: Vec<u8> = positions
+            .iter()
+            .flat_map(|&p| (p as u32).to_le_bytes())
+            .collect();
+        let pos_buf = ctx.new_buffer_with_bytes(&pos_bytes);
+
+        let predec_cache = self.q4k_predec_cache.as_ref();
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // Batched projection (default path: Q4_K v3w predec/plain, Q6_K / f16
+        // fallback). Copied from forward_tokens_batch_tcb (no MMA branch).
+        macro_rules! batched_proj {
+            ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
+             $x_batch:expr, $x_stride:expr,
+             $out_batch:expr, $out_stride:expr) => {{
+                match $tref.dtype {
+                    GgmlType::Q4_K => {
+                        if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
+                            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                            )?;
+                        } else {
+                            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols, b, $x_batch, $out_batch,
+                            )?;
+                        }
+                    }
+                    GgmlType::Q6_K => {
+                        for bi in 0..b {
+                            kernels::gemv_q6_k_pinned_off_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                    _ => {
+                        let buf_f16 = $pinned_f16.ok_or_else(|| {
+                            Error::Metal("multiseq batched_proj: no f16 fallback".into())
+                        })?;
+                        for bi in 0..b {
+                            kernels::gemv_f16_metal_buf_off_tcb(
+                                &mut tcb, buf_f16, $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                }
+            }};
+        }
+
+        // Embed B tokens.
+        for (bi, &tok) in tokens.iter().enumerate() {
+            kernels::embed_lookup_metal_f32_off_tcb(
+                &mut tcb, embed_buf, tok, h, &arena.x_buf_batch, bi * h_bytes,
+            )?;
+        }
+        // Layer-0 pre-norm (per slot).
+        let layer0_attn_norm = self.layers[0]
+            .pinned
+            .attn_norm
+            .as_ref()
+            .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
+        for bi in 0..b {
+            kernels::rmsnorm_metal_buf_off_tcb(
+                &mut tcb, &arena.x_buf_batch, bi * h_bytes,
+                layer0_attn_norm, eps, h, &arena.x_norm_buf_batch, bi * h_bytes,
+            )?;
+        }
+
+        for li in 0..cfg.n_layers {
+            let layer = &self.layers[li];
+
+            batched_proj!(layer.q_proj, layer.pinned.q_proj_f16.as_ref(), q_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.q_buf_batch, q_dim_bytes);
+            batched_proj!(layer.k_proj, layer.pinned.k_proj_f16.as_ref(), kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.k_token_buf_batch, kv_dim_bytes);
+            batched_proj!(layer.v_proj, layer.pinned.v_proj_f16.as_ref(), kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.v_token_buf_batch, kv_dim_bytes);
+
+            if let Some(qb) = layer.pinned.q_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.q_buf_batch, qb, q_dim, b)?;
+            }
+            if let Some(kb) = layer.pinned.k_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.k_token_buf_batch, kb, kv_dim, b)?;
+            }
+            if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b)?;
+            }
+
+            // RoPE per slot at its OWN position.
+            for bi in 0..b {
+                let pos = positions[bi] as u32;
+                kernels::rope_q_f32_inplace_off_tcb(
+                    &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes,
+                    n_heads, head_dim, 0, head_dim, pos, theta,
+                )?;
+                kernels::rope_q_f32_inplace_off_tcb(
+                    &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes,
+                    n_kv_heads, head_dim, 0, head_dim, pos, theta,
+                )?;
+            }
+
+            // Per-slot KV append: each slot writes to its OWN region at its
+            // OWN position (scattered, B small) -- NOT one contiguous memcpy.
+            let layer_off_elems = li * layer_kv_stride_elems;
+            for bi in 0..b {
+                let dst_off = layer_off_elems + bi * slot_stride_elems + positions[bi] * kv_dim;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb, &arena.k_token_buf_batch, &arena.k_cache_buf,
+                    bi * kv_dim, dst_off, kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb, &arena.v_token_buf_batch, &arena.v_cache_buf,
+                    bi * kv_dim, dst_off, kv_dim,
+                )?;
+            }
+
+            // Multi-seq MHA: per-slot positions + per-slot KV base.
+            let layer_kv_off_bytes = layer_off_elems * f32_bytes;
+            kernels::mha_decode_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.q_buf_batch,
+                &arena.k_cache_buf, layer_kv_off_bytes,
+                &arena.v_cache_buf, layer_kv_off_bytes,
+                &arena.attn_out_buf_batch, &pos_buf, mha_max_seq, slot_stride_elems,
+                b, head_dim, n_heads, n_kv_heads,
+            )?;
+
+            // O projection.
+            batched_proj!(layer.o_proj, layer.pinned.o_proj_f16.as_ref(), h, q_dim,
+                &arena.attn_out_buf_batch, q_dim_bytes, &arena.o_proj_out_buf_batch, h_bytes);
+
+            // Fused (x += o_proj_out) + ffn_norm.
+            let ffn_norm_pin = layer
+                .pinned
+                .ffn_norm
+                .as_ref()
+                .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb, &arena.x_buf_batch, &arena.o_proj_out_buf_batch,
+                ffn_norm_pin, &arena.x_norm_buf_batch, eps, h, b,
+            )?;
+
+            // FFN gate / up / silu_mul / down.
+            batched_proj!(layer.ffn_gate, layer.pinned.ffn_gate_f16.as_ref(), intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_gate_buf_batch, int_bytes);
+            batched_proj!(layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(), intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_up_buf_batch, int_bytes);
+            kernels::silu_mul_tcb(
+                &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                &arena.ffn_act_buf_batch, intermediate * b,
+            )?;
+            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
+                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                } else {
+                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                }
+            } else {
+                batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
+                    &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
+            }
+
+            // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
+            let next_norm = if li + 1 < cfg.n_layers {
+                self.layers[li + 1]
+                    .pinned
+                    .attn_norm
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("attn_norm not pinned".into()))?
+            } else {
+                final_norm_buf
+            };
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb, &arena.x_buf_batch, &arena.ffn_down_buf_batch,
+                next_norm, &arena.x_norm_buf_batch, eps, h, b,
+            )?;
+        }
+
+        tcb.commit_and_wait()?;
+        Ok(())
+    }
+
+    /// Continuous-batching multi-seq decode: B INDEPENDENT sequences, one
+    /// greedy token each. (Re)allocates the slot-strided `multiseq_arena` if
+    /// needed (KV persists across calls so the prefix grows per step), runs the
+    /// stack, then a per-slot CPU full-vocab LM head → argmax (the same pattern
+    /// as `forward_tokens_batched_with_logits`). Returns B next-token ids.
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<Vec<u32>> {
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(Vec::new());
+        }
+        let need_new = match &self.multiseq_arena {
+            Some(a) => a.max_batch < b || a.max_seq < b * max_seq_per_slot,
+            None => true,
+        };
+        if need_new {
+            let arena = {
+                let ctx = self
+                    .metal_ctx
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("forward_tokens_multiseq: no metal_ctx".into()))?;
+                let cfg = &self.config;
+                crate::metal::DenseDecodeArena::new_with_batch(
+                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                    b * max_seq_per_slot, b,
+                )
+            };
+            self.multiseq_arena = Some(arena);
+        }
+
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, max_seq_per_slot)?;
+
+        // Per-slot CPU full-vocab LM head → argmax.
+        let h = self.config.hidden;
+        let vocab = self.config.vocab_size;
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
+        // SAFETY: x_norm_buf_batch is sized max_batch*h*4 bytes; b*h <= that.
+        let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, b * h) };
+        let lm_head_src: &[f16] = match self.lm_head.as_ref() {
+            Some(w) => w.as_slice(),
+            None => self.embed.as_slice(),
+        };
+        if lm_head_src.len() != vocab * h {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: lm_head size mismatch ({} vs {}*{})",
+                lm_head_src.len(),
+                vocab,
+                h
+            )));
+        }
+        let mut out = Vec::with_capacity(b);
+        for k in 0..b {
+            let logits = crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+                lm_head_src,
+                &x_norm_all[k * h..(k + 1) * h],
+                vocab,
+                h,
+            );
+            let mut best = 0u32;
+            let mut best_v = f32::NEG_INFINITY;
+            for (i, &v) in logits.iter().enumerate() {
+                if v > best_v {
+                    best_v = v;
+                    best = i as u32;
+                }
+            }
+            out.push(best);
+        }
+        Ok(out)
     }
 
     /// Batched-verify-with-logits — spec-decode's per-cycle workhorse.
