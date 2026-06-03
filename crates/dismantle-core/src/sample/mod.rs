@@ -1,12 +1,8 @@
-//! On-GPU sampling — wedge 3 (Phase 2.5).
+//! Sampling: top-K, top-P, temperature, repetition penalty.
 //!
-//! Phase 0 ships a CPU reference; the Metal kernels in
-//! `shaders/sample.metal` arrive in Phase 2.5 and hold the same Rust
-//! signatures, so the model layer is unchanged when we swap.
-//!
-//! Once Metal kernels land, logits never leave the GPU; only the
-//! sampled token id crosses the bus. Eliminates the per-token CPU↔GPU
-//! sync that dominates llama.cpp's decode loop above ~50 tok/s.
+//! CPU reference path is used when Metal is absent or `DISMANTLE_FORCE_CPU=1`.
+//! The Metal path (shaders/sample.metal) keeps logits on-GPU; only the sampled
+//! token ID crosses the bus, eliminating per-token CPU↔GPU sync.
 
 use crate::engine::SamplingParams;
 use rand::Rng;
