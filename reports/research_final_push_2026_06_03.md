@@ -1,0 +1,226 @@
+# Final-push research + ranked build plan (2026-06-03)
+
+> Durable record of the deep-research pass (`wf_89411d2c-fac`, 112 agents, 29
+> sources, 135 claims → 25 adversarially verified 3-vote → 21 confirmed / 4
+> killed) on the five catch-up levers + moat scout, **cross-checked against the
+> live `paradigm/exec` tree**. North-star metrics: tokens/sec ↑, joules/token ↓.
+> Anchor: M3 Pro 18 GB (~150 GB/s), Qwen2.5-3B-Instruct Q4_K_M, ~30.5 dec_tps /
+> ~0.197 J/tok clean; llama.cpp ~49 tps same machine (1.6× gap).
+>
+> Where a source's numbers are from other hardware (CUDA 4090/5090, M2 Ultra
+> 800 GB/s), it is tagged — those magnitudes DO NOT transfer to M3 Pro. The
+> Type-1 kills in `reports/dead_levers.md` were fed to the research so it would
+> not re-propose dead axes; none were.
+
+## TL;DR — the reframe
+
+**Most of the "final push" is wiring + measurement, not greenfield building.**
+The competitive headline is unchanged (on raw batch-1 decode tps dismantle is
+~0.62× llama.cpp and third behind MLX), but every major building block the
+research points at **already exists in the tree** — so the effort estimates
+collapse:
+
+| Lever | Research said | Verified repo state | Real work |
+|---|---|---|---|
+| **① f16-scales default** | flip a default | `DISMANTLE_QWEN_PREDEC_F16SCALES` flag exists, default-off ([qwen_dense.rs:3507](../crates/dismantle-core/src/model/qwen_dense.rs)) | **one-flag flip** + re-baseline |
+| **② fusion** (HEADLINE) | port llama PR #16220 | `add_rmsnorm_fused` exists ([common.metal:144](../crates/dismantle-core/shaders/common.metal)) but wired **only into deepseek**, not Qwen | wire into Qwen loop (opt-in first) |
+| **③ GPU sampling** | build argmax kernel | `sample_argmax_f32` + `_tcb` + fused `gemv_f16_argmax_metal_pinned` all exist ([kernels/mod.rs:3013](../crates/dismantle-core/src/kernels/mod.rs)) | wire + verify bit-identical greedy |
+| **⑤ flash / f16-KV** | write flash kernel | `mha_decode_flash_f32` exists ([mha.metal:152](../crates/dismantle-core/shaders/mha.metal)), default-off | default for long-ctx only |
+| **⑥ CPU backend** | introduce seam | seam **landed**, Burn-shaped op-traits ([backend/metal.rs:153](../crates/dismantle-core/src/backend/metal.rs)); CPU ref path exists (`DISMANTLE_FORCE_CPU=1`) | add a CpuBackend **rung** |
+
+The genuinely new build work is exactly two things: **(②) fuse the Qwen decode
+loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-measure.
+
+## Per-lever verified survey
+
+### Lever 1 — close the 1.6× gap (runtime / GPU-saturation) — **HEADLINE**
+- **Batch-1 token-gen is memory-bandwidth-bound, so kernel *fusion* is the
+  dominant tps lever** (cuts both memory traffic AND launch overhead). Primary:
+  llama.cpp [discussion #17621](https://github.com/ggml-org/llama.cpp/discussions/17621)
+  (collaborator am17an): *"TG is memory-bound … fusing kernels reduces memory
+  traffic and kernel launch time."* **[CUDA-backend; the source itself warns the
+  win shrinks at low bandwidth — M3 Pro is 6–7× lower BW than the 4090/5090 it
+  was measured on, so the Metal magnitude is UNKNOWN until traced locally.]**
+- **The copyable Metal mechanism:** llama.cpp Metal
+  [PR #16220](https://github.com/ggml-org/llama.cpp/pull/16220) (ggerganov,
+  verified by reading the merged diff) fuses `NORM/RMS_NORM + MUL + ADD` into a
+  **single** dispatch via a compile-time `template<typename T, short F>`
+  (F=1/2/3 = norm / norm+mul / norm+mul+add); the graph compiler pattern-matches
+  the chain onto `kernel_norm_mul_add_f32` etc. "No new math" — mean/var/scale
+  byte-identical, fusion is a templated write-back tail. (Nuance: the RMS_NORM
+  variant pre-existed; #16220's novelty is unifying NORM with it.)
+- **Op-chain map to fuse** (#17621): `MUL_MAT` following an `ADD`; and the gated
+  activation `σ(W_gate·X)⊙W_up·X` reusing the X activation; `RMS_NORM` following
+  a `MUL` and optionally an `ADD`.
+- **MTLResidencySet** (llama PR #11427, macOS ≥15): rule out — dismantle's A/B
+  was neutral and residency is Type-1-dead on unified memory.
+
+### Lever 2 — portability / compute-backend seam
+- **CubeCL** = single-source `#[cube]` JIT to 6 targets (CUDA/HIP/Metal/Vulkan/
+  WebGPU/CPU), shape-adaptive heuristics ([burn.dev matmul blog](https://burn.dev/blog/sota-multiplatform-matmul/)).
+  **Metal support is ALPHA** (documented M3 shared-memory bug `burn#4530`:
+  40960 B requested vs Metal's 32768 B cap). **The claim that CubeCL's Metal
+  backend is *materially weaker* due to less plane control was REFUTED (1-2)** —
+  so do NOT assume a portability perf-discount; it's unquantified.
+- **Burn's seam shape** ([Backend trait](https://burn.dev/docs/burn/tensor/backend/trait.Backend.html),
+  v0.21): one supertrait bundling **7 op-traits** (Float/Bool/Int TensorOps,
+  ModuleOps, ActivationOps, **QTensorOps**, TransactionOps). **Not dyn-compatible
+  → monomorphized** (static generic, zero vtable cost, viral generics). Candle/
+  mistral.rs use an enum-`Device` instead (dynamic, simpler, small cost).
+- **Pattern to copy (resolves portability-vs-speed):** llama.cpp keeps
+  **per-backend specialized kernels behind ONE seam + automatic CPU fallback**
+  (`ggml_backend_sched`). Keep hand-tuned Metal as the Apple fast-path; generic
+  CPU fallback makes a partial backend shippable day one.
+- **Effort-per-rung: still unquantified** (both research passes failed; the one
+  attempt to quantify the CubeCL-Metal gap was refuted). Needs a CPU-rung spike.
+
+### Lever 3 — f16/bf16 activations + f16 KV + flash-decode
+- **Confirmed: flash + f16/quantized-KV is an attention/long-context lever, NOT
+  a short-context batch-1 tps win.** llama.cpp [PR #9735](https://github.com/ggml-org/llama.cpp/pull/9735)
+  (Metal, Phi3-3B-Q4_K_M — same class as Qwen-3B): tg128 **30.97 → 31.00 t/s**
+  (flat; 30.84 with q8_0 KV). Matches dismantle's prior internal "f16-KV is
+  footprint-not-tps."
+- **MLX precedent** [`mlx-qsdpa`](https://github.com/Thump604/mlx-qsdpa): fused
+  inline-dequant quantized-KV flash, online-softmax, single dispatch, no score
+  materialization — wins only at long context (1.71× @128K, **0.77× REGRESSION
+  @4K**, 1.04× @1K). **[M2 Ultra 800 GB/s — does NOT transfer to M3 Pro; small
+  unreplicated repo, directional only.]**
+- **Value for dismantle = footprint / 32K-context headroom, not the gap.**
+
+### Lever 4 — flip the f16-scales default off bit-identity
+- **Shipping a quality-equivalent (not bit-identical) default kernel is the
+  industry norm, not a quality risk.** Three independent authoritative sources:
+  - NVIDIA TensorRT ([docs](https://docs.nvidia.com/deeplearning/tensorrt/10.12.0/inference-library/work-quantized-types.html)):
+    *"results will not be bitwise identical … bit-level accuracy is rarely
+    possible … (a·s)+(b·s) → (a+b)·s is a valid optimization."*
+  - Google LiteRT/TFLite 8-bit [spec](https://ai.google.dev/edge/litert/conversion/tensorflow/quantization/quantization_spec):
+    explicitly accepts non-bit-exact implementations within per-op tolerances.
+  - FP non-associativity makes bit-identity generally unattainable (settled).
+- dismantle's strict bit-identity gate on the default is **self-imposed**;
+  llama.cpp/MLX gate nothing on bit-identity-to-reference. **Scoping caveat:**
+  TensorRT's statement is about op-*reordering*; f16-scales additionally changes
+  dequant scale *precision* (f16 vs pre-expanded f32) — slightly beyond reorder,
+  so the local quality oracle must still confirm. Keep bit-identity as an
+  **opt-in product feature** (see moat), not the default gate.
+
+### Lever 5 — on-GPU sampling
+- Literature came back **thin** — must be measured locally. Industry does on-GPU
+  sampling to avoid the logit D2H copy; the per-token cost at vocab ~152K and the
+  greedy-argmax tie-break determinism question are local microbench items.
+
+### Moat scout
+- **Energy IS measurable from user-space without sudo** — the moat opening.
+  `zeus-apple-silicon` reads per-domain **GPU / GPU-SRAM / external-DRAM / ANE**
+  energy in mJ via IOReport's "Energy Model" channel; `macmon` proves it's
+  **Rust-bindable, no sudo**. **Method constraint:** values are MODEL-ESTIMATES
+  (~1 mJ resolution); windows <10 ms are noise — aggregate over hundreds-to-
+  thousands of tokens and divide, never per-token.
+- **NO user-space GPU DVFS** (Asahi AGX docs: clocks are firmware/ASC-gated).
+  So the only energy lever is **workload-shaping / race-to-idle** — which *is*
+  Lever 1 (fusion → fewer GPU-active ms → lower J/tok). The two metrics couple.
+- **Honesty correction:** "Apple decode-energy literature is empty" is going
+  **stale** — mid-2026 papers now measure it (arXiv 2605.00519 "Silicon
+  Showdown" on M3 Pro/Ultra; arXiv 2512.03024). The defensible moat narrows to:
+  *no engine ships **in-process** per-domain J/tok instrumentation + opt-in
+  bit-identical deterministic inference as product features.* Still real.
+- **Rust-native:** Cloudflare's Infire ([blog](https://blog.cloudflare.com/cloudflares-most-efficient-ai-inference-engine/))
+  validates the *thesis* (Rust to escape Python) — **[but H100, batched serving,
+  vs Python overhead, NOT Apple batch-1 and NOT vs C++ llama.cpp].** The honest
+  Rust edge: zero-Python single-binary distribution, embeddability, memory
+  safety, WASM/edge + the energy instrument + opt-in determinism + the existing
+  stateful prefix-cache (~84% prefill elision). Not a speed edge.
+- **ANE** stays dead for decode. Nothing changed.
+
+## Ranked build plan (certainty-per-effort, cheapest-oracle-first)
+
+| # | Lever | Payoff | Effort | Risk | Gate / oracle |
+|---|---|---|---|---|---|
+| **①** | f16-scales default | **+9.3% tps, −1.4% J/tok** (measured) | XS (flag flip + re-baseline) | low — industry norm | `quality_oracle.sh` (Claude-open OK) → flip |
+| **②** | fuse Qwen NORM+MUL+ADD | high, **unquantified @150 GB/s** | M | med (parity per kernel) | **Metal System Trace** (clean room) BEFORE default-on; build opt-in now |
+| **③** | GPU greedy argmax | unknown — measure D2H+argmax cost | S (kernel exists) | low-med (tie-break determinism) | paired microbench; bit-identical greedy |
+| **④** | in-process per-domain J/tok | publishable moat; couples to ② | S-M | low (estimate caveat) | wrap clean-room run, sanity vs 0.197 J/tok |
+| **⑤** | flash + f16-KV default | **not tps** — footprint/long-ctx | M (kernel exists) | low | long-context A/B (not short) |
+| **⑥** | CPU backend rung | structural; **zero tps** | L (rung, seam landed) | med (perf gap unquantified) | spike ONE rung, measure LOC first |
+
+## Metal System Trace protocol (Lever 2 gate)
+
+1. **Quit Claude** (contamination 4–5×). Fixed prompt, temp=0, fixed seed,
+   ~256-token decode, identical Qwen2.5-3B-Q4_K_M for both engines.
+2. Instruments → **Metal System Trace**. Attach separately to (a) `dismantle`
+   release binary, (b) `llama-cli` Metal build. Capture GPU track (command-buffer
+   boundaries, per-dispatch compute intervals) + CPU encode track.
+3. **Per steady-state decode token, extract:** (i) dispatch **count** (dismantle
+   ~180 vs llama — the delta is the fusion opportunity); (ii) GPU-busy fraction
+   (~76% → ~24% idle vs theirs); (iii) inter-dispatch **gap distribution** (one
+   big stall or many small gaps?); (iv) commit→GPU-start latency.
+4. **Attribution:** many small gaps + high count → **fusion (②) is the lever,
+   port #16220**. One large per-token commit/wait bubble → the lever is
+   **command-buffer structure** (persistent/compiled CB, `MTLIndirectCommandBuffer`
+   for the repeated decode step), not fusion. Longer GPU intervals per-FLOP than
+   llama → kernel-level (but Q4_K GEMV is Type-1-optimal, so unlikely).
+
+## What the literature CANNOT answer → measure on our M3 Pro
+- (a) The actual Metal fusion payoff magnitude at 150 GB/s (all quantified wins
+  are CUDA/high-BW). → System Trace + fused-kernel paired A/B.
+- (b) The ~24%-idle attribution (dispatch-count vs commit/wait vs scheduling). →
+  the Instruments trace is the only settling measurement.
+- (c) Per-token logit D2H + CPU-argmax cost at vocab 152K / pruned 32K. → paired
+  microbench of the existing GPU-argmax kernel.
+- (d) Per-domain GPU-vs-DRAM J/tok for dismantle's decode loop. → IOReport
+  aggregate over a long clean-room run. **This is the energy moat.**
+- (e) f16-scales quality-equivalence at long context on Qwen-3B specifically. →
+  local quality oracle.
+
+## Refuted at verification — do NOT rely on
+- CubeCL-Metal-is-materially-weaker (1-2) → don't assume a portability discount.
+- CUB GPU-sort slower-but-memory-win (1-2).
+- TokenPowerBench has zero Apple coverage (0-3) → Apple energy papers DO exist.
+- macpow gives direct energy deltas (1-2) → it's model-estimate; prefer zeus.
+
+---
+
+## Implementation status (2026-06-03 pass — Wave-1 swarm `wf_5d69b392` + serial apply)
+
+The swarm's read-only audit corrected **three of five** briefs against the live tree.
+
+- **① f16-scales default — LANDED `b417495`.** Gate flipped (`unwrap_or(false)`→`true`)
+  + named opt-out `DISMANTLE_QWEN_PREDEC_F32SCALES=1` / `--profile deterministic`.
+  Verified: build + 94 core/9 serve lib tests + `q4k_predec_f16s_parity` /
+  `_pair_f16s_parity` / `q4k_predec_parity` green; `batch-hash` byte-identical
+  across {default, F16SCALES=1, F32SCALES=1, F16SCALES=0} (0 quality divergence);
+  paired ABBA **B/A=0.917 (−8.3% for the f32 opt-out ⇒ ~+9% for the f16 default)**.
+  *Absolute +9.3% / −1.4% J-tok still pending a clean-room confirmation.*
+- **④ per-domain energy instrument — LANDED `a90fe80`.** `phase_joules.sh --domains`
+  emits GPU + DRAM J/tok from macmon `ram_power` (no dep, sudo-free), gated so
+  default output is byte-identical. Smoke-test (Claude open): GPU 0.080 / DRAM
+  0.042 J/tok populate; ratio ~1.9:1 is the contamination-robust signal.
+  GPU-SRAM not exposed on M3 Pro. *Absolute split needs a clean room.*
+- **③ GPU sampling — ALREADY SHIPPED (no-op).** The default greedy TCB path already
+  runs GPU argmax (`sample_argmax_f32_tcb`, qwen_dense.rs:4933/5011) and reads back
+  4 bytes; CPU argmax is temp>0 only. Tie-break already matches (lowest index,
+  sample.metal:47/69). The brief conflated the CPU-hybrid `forward_token` path
+  with the default. No work.
+- **② fusion — KILLED/LOGGED (Type-1 on this path).** The Qwen hot path *already*
+  fuses both add+RMSNorm sites and gate+up (and tail-hoists ~73 dispatches/tok);
+  the llama.cpp PR #16220 port has no standalone MUL/ADD node to absorb. Logged in
+  `reports/dead_levers.md` (Phase 2.2 entry, 2026-06-03 update) with the silu+down
+  Type-2-tiny reframe + its `ab_lever.sh` oracle. **Not built** (exhausted regime).
+  **Strategic upshot:** fusion is spent → the 1.6× gap is NOT dispatch-count; the
+  Metal System Trace is now the *sole* path to it.
+- **⑥ CPU-backend rung — SPEC + LOC measured (build deferred).** The oracle asked
+  for the LOC first; it is: **~340 LOC** for a compile-stub `ComputeBackend` rung
+  (`backend/cpu.rs`: `CpuBuffer`/`CpuRecorder` + 10 op-traits, real add/silu/rmsnorm/
+  rope/F16+F32-gemv/mha/kv/embed/argmax, `Err`-stub q8-norms/quant/Mla/Moe), or
+  **~135 LOC** for the cheapest single-op (elementwise-add) spike echoing the
+  Metal seam-add proof. The CPU *compute* is already parity-green (`forward_token`
+  + `cpu_backend_parity.rs` 12/12). Critical seam facts: `trait Backend: Sized` +
+  GAT `Recorder<'a>` ⇒ **not object-safe** (no `Box<dyn Backend>`); `Router` is
+  **dormant** (not wired into decode). So landing the *type* is clean, but routing
+  real decode through it is a separate, larger change — deferred (zero-tps,
+  structural). Build it when the portability rung is the active goal.
+
+**Still gated on you / the clean room:** (a) the **Metal System Trace** diff
+(needs Claude quit + Instruments + a `llama-cli` Metal build) — now the decisive
+next step for the 1.6× gap; (b) clean-room **absolute** re-confirmation of ①'s
++9.3% tps / −1.4% J/tok and ④'s per-domain split (`tools/bench/clean_room_batch.sh`,
+`phase_joules.sh --domains --tokens 512`, Claude quit).
