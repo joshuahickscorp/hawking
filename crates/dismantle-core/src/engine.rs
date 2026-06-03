@@ -252,6 +252,22 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_for_test(tokens, positions)
     }
 
+    /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
+    /// slots at DIVERGENT positions — each its own sequence/prefix — returning N
+    /// per-slot logit vectors the scheduler samples from. This is DISTINCT from
+    /// `forward_tokens_batched`, which is B tokens of ONE sequence at contiguous
+    /// positions (prefill/verify). The default is a correctness-preserving
+    /// per-slot fallback; QwenDense overrides it with the GPU multi-seq path
+    /// (weight read once across slots via the v3w GEMM + the multi-seq MHA +
+    /// per-slot slot-strided KV).
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
     /// Phase 2 Wedge 2a -- multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.

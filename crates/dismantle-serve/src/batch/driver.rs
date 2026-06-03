@@ -45,7 +45,11 @@ impl BatchDriver {
 
         let tokens: Vec<u32> = batch.iter().map(|step| step.token).collect();
         let positions: Vec<usize> = batch.iter().map(|step| step.position).collect();
-        let mut logits = engine.forward_tokens_batched(&tokens, &positions)?;
+        // Continuous-batching DECODE: the batch holds N INDEPENDENT slots at
+        // divergent positions, so route through the multi-seq seam (QwenDense
+        // overrides it with the GPU weight-amortizing path) — NOT
+        // forward_tokens_batched, which is one-sequence prefill/verify.
+        let mut logits = engine.forward_multiseq_batched(&tokens, &positions)?;
         let eos_id = engine.eos_id_for_batch();
         let decoded = self
             .scheduler

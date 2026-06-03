@@ -2765,6 +2765,29 @@ impl Engine for QwenDense {
         self.forward_tokens_for_test(tokens, positions)
     }
 
+    /// Continuous-batching DECODE seam (overrides the serial default): real GPU
+    /// multi-seq decode of B INDEPENDENT slots at divergent positions, weight
+    /// read once across slots. On macOS routes to `forward_tokens_multiseq_logits`;
+    /// off-macOS falls back to the per-slot loop.
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        #[cfg(target_os = "macos")]
+        {
+            // Bounded per-slot context for the v1 serve path; KV memory at the
+            // arena's max_batch scales with this (2048 keeps B=8 under the RSS
+            // sentinel). Requests longer than this error in the stack.
+            const MULTISEQ_CTX: usize = 2048;
+            return self.forward_tokens_multiseq_logits(tokens, positions, MULTISEQ_CTX);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            self.forward_tokens_for_test(tokens, positions)
+        }
+    }
+
     fn forward_tokens_for_test(
         &mut self,
         tokens: &[u32],
@@ -5868,12 +5891,19 @@ impl QwenDense {
     /// stack, then a per-slot CPU full-vocab LM head → argmax (the same pattern
     /// as `forward_tokens_batched_with_logits`). Returns B next-token ids.
     #[cfg(target_os = "macos")]
-    pub fn forward_tokens_multiseq(
+    /// Multi-seq decode returning per-slot full-vocab LOGITS — the serving seam
+    /// the scheduler samples from. (Re)allocates the slot-strided `multiseq_arena`
+    /// (KV persists across steps so each slot's prefix grows), runs the stack,
+    /// then a per-slot CPU full-vocab LM head. (The per-slot CPU LM head is the
+    /// one un-amortized cost; a GPU-batched LM head + GPU argmax is the follow-up
+    /// to lift aggregate tps past the measured ~2.57x.)
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq_logits(
         &mut self,
         tokens: &[u32],
         positions: &[usize],
         max_seq_per_slot: usize,
-    ) -> Result<Vec<u32>> {
+    ) -> Result<Vec<Vec<f32>>> {
         let b = tokens.len();
         if b == 0 {
             return Ok(Vec::new());
@@ -5901,7 +5931,6 @@ impl QwenDense {
         let arena = self.multiseq_arena.as_ref().unwrap();
         self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, max_seq_per_slot)?;
 
-        // Per-slot CPU full-vocab LM head → argmax.
         let h = self.config.hidden;
         let vocab = self.config.vocab_size;
         let arena = self.multiseq_arena.as_ref().unwrap();
@@ -5922,23 +5951,40 @@ impl QwenDense {
         }
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
-            let logits = crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+            out.push(crate::speculate::eagle5_forward::matmul_no_bias_f16w(
                 lm_head_src,
                 &x_norm_all[k * h..(k + 1) * h],
                 vocab,
                 h,
-            );
-            let mut best = 0u32;
-            let mut best_v = f32::NEG_INFINITY;
-            for (i, &v) in logits.iter().enumerate() {
-                if v > best_v {
-                    best_v = v;
-                    best = i as u32;
-                }
-            }
-            out.push(best);
+            ));
         }
         Ok(out)
+    }
+
+    /// Multi-seq decode → per-slot greedy argmax token. Thin wrapper over
+    /// `forward_tokens_multiseq_logits` (used by the parity + aggregate tests).
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<Vec<u32>> {
+        let logits = self.forward_tokens_multiseq_logits(tokens, positions, max_seq_per_slot)?;
+        Ok(logits
+            .iter()
+            .map(|l| {
+                let mut best = 0u32;
+                let mut best_v = f32::NEG_INFINITY;
+                for (i, &v) in l.iter().enumerate() {
+                    if v > best_v {
+                        best_v = v;
+                        best = i as u32;
+                    }
+                }
+                best
+            })
+            .collect())
     }
 
     /// Batched-verify-with-logits — spec-decode's per-cycle workhorse.
