@@ -270,6 +270,26 @@ median_of() {
 # reference; we want its MAXIMUM throughput, not a co-existence-throttled value.
 #
 # --seed 0 for reproducibility (greedy by default at --temp 0).
+#
+# WARM-UP (UNTIMED): the first invocation downloads the ~1.7GB MLX model and
+# JIT-compiles the Metal kernels. If that happens INSIDE a timed trial, the
+# per-trial alarm (600s) can fire mid-download under Claude contamination — the
+# kill leaves HF's partial blob corrupt, the next trial restarts from zero, and
+# the run never converges. So do the download/compile here, with NO timer.
+printf '[MLX warm-up — first run downloads ~1.7GB + compiles kernels, UNTIMED]\n'
+mlx_warm="/tmp/mlx_ab_warmup.txt"
+if "$MLX_BIN" --model "$MLX_MODEL_ID" --prompt "$PROMPT" --max-tokens 4 \
+     --temp 0 --seed 0 >"$mlx_warm" 2>&1; then
+  printf '  warm-up OK — model cached, kernels compiled.\n'
+else
+  printf '  warm-up FAILED (exit %d) — likely a model-download/network problem.\n' "$?" >&2
+  printf '  --- last 6 lines ---\n' >&2; tail -6 "$mlx_warm" >&2
+  printf '  Pre-download once with a stable connection, then re-run:\n' >&2
+  printf '    %s download --repo-id %s\n' "$(dirname "$MLX_BIN")/hf" "$MLX_MODEL_ID" >&2
+  printf '    (or:  %s -c "from huggingface_hub import snapshot_download as d; d(%s)")\n' \
+    "$PY312" "'$MLX_MODEL_ID'" >&2
+fi
+printf '\n'
 printf '[MLX trials]\n'
 MLX_TPS_LIST=""
 for i in $(seq 1 "$MLX_TRIALS"); do
