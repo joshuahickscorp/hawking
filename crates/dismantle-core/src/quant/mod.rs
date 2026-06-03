@@ -1,12 +1,8 @@
 //! Quantization formats: Q3_K, Q4_K_M, Q5_K_M, Q8_0, plus dequant helpers.
 //!
-//! Phase 0 ships CPU dequant; that's what the reference path uses to
-//! materialize fp32 weights from the GGUF mmap on demand.
-//!
-//! Phase 1 (wedge 2): the dequant is fused inside the FMA loop in
-//! threadgroup memory — DRAM only ships 4-bit weights, ~2× effective
-//! weight bandwidth. The .metal kernel sources for that wedge live in
-//! `shaders/quant.metal`.
+//! CPU dequant materializes fp32 weights from the GGUF mmap on demand (reference path).
+//! The Metal fast path fuses dequant inside the FMA loop in threadgroup memory so DRAM
+//! only ships 4-bit weights. Metal kernel sources live in `shaders/quant.metal`.
 
 use crate::gguf::{GgmlType, TensorInfo};
 use crate::{Error, Result};
