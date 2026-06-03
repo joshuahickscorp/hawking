@@ -231,6 +231,53 @@ The swarm's read-only audit corrected **three of five** briefs against the live 
 
 **Still gated on you / the clean room:** (a) the **Metal System Trace** diff
 (needs Claude quit + Instruments + a `llama-cli` Metal build) — now the decisive
-next step for the 1.6× gap; (b) clean-room **absolute** re-confirmation of ①'s
-+9.3% tps / −1.4% J/tok and ④'s per-domain split (`tools/bench/clean_room_batch.sh`,
-`phase_joules.sh --domains --tokens 512`, Claude quit).
+next step for the 1.6× gap; (b) clean-room **absolute** re-confirmation of ④'s
+per-domain split (`phase_joules.sh --domains --tokens 512`, Claude quit).
+
+---
+
+## Throughput investigation (2026-06-03 follow-up) — "harness the CPU?" + maximize throughput
+
+Two investigation waves (`wf_b6d6913b` survey + `wf_10625e6d` build) + an empirical close.
+
+- **CPU-harness for tps — NO-GO Type-1 (empirically closed).** On the one shared
+  ~150 GB/s unified bus, single-stream decode time = bytes/token ÷ bandwidth —
+  neither term changes by *who* reads; the GEMV runs ~56% of peak with **0.0 ms
+  inter-dispatch idle**, so a concurrent CPU read contends, not adds. Aggregate:
+  CPU decode measured **0.06 dec_tps** (`DISMANTLE_FORCE_CPU=1`, Qwen-3B) — it
+  re-dequantizes Q4_K→f32 every token (~28.9 GB/token, **15× worse bytes/token**
+  than the GPU). llama.cpp `-ngl` split is a memory-fit workaround, not a
+  throughput win (web-confirmed). Logged: `dead_levers.md` (CPU+GPU pipelining,
+  2026-06-03 update).
+- **Continuous batching — GO, the real aggregate prize; effort L→M.** `batch_ceiling.py`
+  predicts realistic **~3.5–5.6× aggregate at B=8** (KV doesn't re-saturate until
+  B≈26–102 — GQA n_kv=2 makes KV ~1–4% of the read). The shipped **v3w B=8 GEMM**
+  (`gemm_q4_k_m_batched_v3w`, quant.metal:1683) already reads each weight once and
+  applies to B columns — sequence-agnostic, exactly what multi-stream decode needs.
+  The serve scheduler/driver/sampler control plane is built but unwired. **Remaining
+  build (M, its own attended task):** (1) per-slot KV cache (slot-strided, ~0.6 GB
+  @ B=8, no paging needed for prototype); (2) ONE new kernel `mha_decode_f32_batched_multiseq`
+  (per-slot position array + per-slot KV base — a modest edit of `mha_decode_f32_batched`);
+  (3) per-slot KV append; (4) a real `Engine::forward_tokens_batched` for Qwen + serve
+  wiring. Parity: each batched column == the same prompt decoded one-at-a-time (b3sum).
+  Build against f32 KV first.
+- **f16-scales recovery — NO-GO Type-1 (offline oracle).** `oracle_f16scales_precision.py`
+  over all 216 Q4_K tensors: f16 rounding error is **uniform** (ds ~55% / dm ~45% of
+  variance, independent; 1.29× layer spread). Asymmetric f32-dmin removes only ~26%
+  of drift (→ ~8.5%, still > 5% gate); no hot subset for selective precision. f16-scales
+  stays opt-in. (The one unexplored path is a *different* representation — bf16 scales,
+  or f16 + f32 correction — a new lever, not a reframe. Separately, the gate-realism
+  question — is greedy-token-identity over-strict? — remains open behind a `--dump-logits`
+  build.)
+- **Metal Trace harness — LANDED `91e3446`.** `tools/bench/mst_diff.sh` + `mst_gap.py`
+  (CPU-validated) + `ProdCbGpu` raw-timestamp capture. Ready to run Claude-quit; decides
+  whether llama's `mul_mv` sustains higher GiB/s/call (the sole single-stream reframe;
+  adverse prior). The `gpu_start_ns/gpu_end_ns` capture also gives the production
+  inter-dispatch gap without Instruments.
+
+**The honest throughput map:** single-stream batch-1 is structurally tapped (every
+axis Type-1 dead except the adverse llama-GEMV-technique reframe, which the Trace
+harness now gates). The one large live lever is **GPU continuous batching for
+aggregate/serving tps** (~3.5–5.6× at B=8), and its hard part (the weight-amortizing
+GEMM) already ships as v3w — the remaining work is the multi-seq KV/attention layer,
+an M-effort attended build.
