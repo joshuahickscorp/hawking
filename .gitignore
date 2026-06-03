@@ -94,3 +94,6 @@ crates/dismantle-core/reports/
 
 # Training notebooks (provenance kept on disk, not shipped)
 /colab/
+
+# Agent operating contract — kept on disk, not shipped
+/CLAUDE.md
