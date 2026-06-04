@@ -85,6 +85,21 @@ fi
 echo "OK: Claude.app not detected. Proceeding."
 echo "log: $LOG"
 
+# Self-heal a stale kernel profile: a shader change invalidates the committed
+# shader_hash, so every generate-based section (anchor/energy) hard-refuses with
+# a "shader hash mismatch". autotune is DETERMINISTIC + ~instant, so always
+# regenerate to match the current shader build before the sections run.
+QBIN="${BIN:-./target/release/dismantle}"
+QWEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
+QPROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
+if [[ -x "$QBIN" && -f "$QWEIGHTS" ]]; then
+  if "$QBIN" autotune --weights "$QWEIGHTS" --out "$QPROFILE" >/dev/null 2>&1; then
+    echo "OK: kernel profile refreshed for the current shaders ($QPROFILE)"
+  else
+    echo "WARN: autotune failed — generate-based sections may hit a stale shader-hash error"
+  fi
+fi
+
 # --- Section: anchor ----------------------------------------------------------
 if want anchor; then
   banner "1  ANCHOR — absolute tps + J/tok + Q3 §A (clean_room_batch.sh)"

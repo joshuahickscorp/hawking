@@ -134,7 +134,9 @@ hr "STAGE 1: dismantle MST capture (DISMANTLE_TCB_TRACE=gpu_prod)"
 # We trace `dismantle bench --suite decode`; the locked env + gpu_prod tracer
 # label every compute encoder so the XML kernel-name column carries the real
 # names (gemm_q4_k_v4_predec_pair, etc.). nice+taskpolicy keep it cooperative.
-DM_CMD=(env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench
+# xctrace --launch needs an ABSOLUTE first executable (no PATH lookup), so lead
+# with /usr/bin/env — it sets BASE_ENV and PATH-resolves nice/taskpolicy/$BIN.
+DM_CMD=(/usr/bin/env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench
         --backend dismantle --suite decode
         --weights "$WEIGHTS" --kernel-profile "$PROFILE"
         --trials 1 --max-new-tokens "$TOKENS")
@@ -151,7 +153,7 @@ hr "STAGE 2: llama-cli MST capture"
 # -ngl 99: all layers on GPU (Metal). -n TOKENS, --temp 0 greedy, --seed.
 # -no-cnv: raw completion (no chat template) to mirror the bench decode loop.
 # -p: same prompt string. Metal is the default backend in Homebrew llama.cpp.
-LL_CMD=(nice -n 19 taskpolicy -b "$LLAMA"
+LL_CMD=(/usr/bin/env nice -n 19 taskpolicy -b "$LLAMA"
         -m "$WEIGHTS" -p "$PROMPT" -n "$TOKENS"
         --temp 0 --seed "$SEED" -ngl 99 -no-cnv)
 note "command: ${LL_CMD[*]}"
