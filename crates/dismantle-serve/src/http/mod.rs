@@ -16,13 +16,20 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use crate::batch::driver::BatchDriver;
 use dismantle_core::{Engine, GenerateRequest, SamplingParams, StreamEvent};
 use futures::stream::Stream;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::sync::Arc;
+use tokio::sync::mpsc as async_mpsc;
 use tokio_stream::wrappers::ReceiverStream;
+
+/// Per-slot token channel item: `Ok(text)` for each generated token,
+/// `Err(())` to signal stream end (EOS, max_tokens reached, or error).
+type SlotToken = Result<String, ()>;
 
 /// Structured, OpenAI-compatible error.
 ///
@@ -107,7 +114,14 @@ fn parse_json<T: serde::de::DeserializeOwned>(body: &Bytes) -> Result<T, ApiErro
 #[derive(Clone)]
 pub struct AppState {
     pub engine: Arc<Mutex<Box<dyn Engine>>>,
+    /// Continuous-batching driver — shared with the background decode loop.
+    /// HTTP handlers take this lock briefly for admit only.
+    pub driver: Arc<Mutex<BatchDriver>>,
+    /// Per-slot SSE token senders. The background loop writes here;
+    /// `sse_response` reads. Keyed by stable slot_id.
+    pub slot_senders: Arc<Mutex<HashMap<u32, async_mpsc::Sender<SlotToken>>>>,
     pub model_arch: String,
+    pub max_batch: usize,
 }
 
 pub fn router(state: AppState) -> Router {
@@ -310,31 +324,64 @@ fn sse_response(
     req: GenerateRequest,
     chat: bool,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let (tx, rx) = tokio::sync::mpsc::channel::<Result<Event, Infallible>>(64);
-    tokio::task::spawn_blocking(move || {
-        let mut engine = state.engine.lock();
-        let mut sink = |ev: StreamEvent| match ev {
-            StreamEvent::Token { text, .. } => {
-                let chunk = if chat {
-                    serde_json::json!({
-                        "choices": [{"delta": {"content": text}, "index": 0}],
-                        "object": "chat.completion.chunk",
-                    })
-                } else {
-                    serde_json::json!({
-                        "choices": [{"text": text, "index": 0}],
-                        "object": "text_completion",
-                    })
-                };
-                let _ = tx.blocking_send(Ok(Event::default().data(chunk.to_string())));
+    // SSE → client channel (receives formatted SSE events).
+    let (sse_tx, sse_rx) = tokio::sync::mpsc::channel::<Result<Event, Infallible>>(256);
+    // Token channel: the background decode loop sends raw text fragments here.
+    let (tok_tx, mut tok_rx) = async_mpsc::channel::<SlotToken>(256);
+
+    // Admit the request under a short lock (tokenize + slot assignment only).
+    // The engine lock is held only for the encoding step, not for generation.
+    let slot_id_opt = {
+        let engine = state.engine.lock();
+        let mut driver = state.driver.lock();
+        driver.admit(&**engine, req).ok().flatten()
+    };
+
+    let Some(slot_id) = slot_id_opt else {
+        // No free slot — send a single error event and close.
+        let sse_tx2 = sse_tx.clone();
+        tokio::spawn(async move {
+            let body = serde_json::json!({
+                "error": {"message": "server busy — no batch slot available",
+                          "type": "server_error", "code": "slot_exhausted"}
+            });
+            let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
+        });
+        return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+    };
+
+    // Register this slot's sender so the decode loop can push tokens.
+    state.slot_senders.lock().insert(slot_id, tok_tx);
+
+    // Forward raw token strings from the per-slot channel to SSE events.
+    tokio::spawn(async move {
+        while let Some(item) = tok_rx.recv().await {
+            match item {
+                Ok(text) => {
+                    let chunk = if chat {
+                        serde_json::json!({
+                            "choices": [{"delta": {"content": text}, "index": 0}],
+                            "object": "chat.completion.chunk",
+                        })
+                    } else {
+                        serde_json::json!({
+                            "choices": [{"text": text, "index": 0}],
+                            "object": "text_completion",
+                        })
+                    };
+                    if sse_tx.send(Ok(Event::default().data(chunk.to_string()))).await.is_err() {
+                        break;
+                    }
+                }
+                Err(()) => {
+                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
+                    break;
+                }
             }
-            StreamEvent::Done { .. } => {
-                let _ = tx.blocking_send(Ok(Event::default().data("[DONE]")));
-            }
-        };
-        let _ = engine.generate(req, &mut sink);
+        }
     });
-    Sse::new(ReceiverStream::new(rx)).keep_alive(KeepAlive::default())
+
+    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
 }
 
 async fn json_full_response(
