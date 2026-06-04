@@ -495,3 +495,45 @@ exposes the CPU LM head as the dominant bottleneck — a ratio artifact, NOT a r
 (`DISMANTLE_QWEN_Q4K_LMHEAD=1`); the default stays flag-OFF (bit-identical anchor). The
 clean room pins the ABSOLUTE aggregate tokens/sec — but the *increase* is already measured
 here (contamination-robust). It is a real, large increase to be measured, not a diagnostic.
+
+## CLEAN-ROOM RESULTS (2026-06-04, Claude.app quit; M3 Pro / macOS 26.5; HEAD `f7ab8c0`)
+
+First clean run of `FAST=1 clean_bench_queue.sh`. `dec_tps 32.65` confirms the room was clean.
+
+**Anchor (§B): single-stream decode = 32.65 dec_tps** (128 tok, greedy) — tracks the ~31 recent
+anchor (+5.3%), not ~39 (−16.3%). R1/R2/R3 don't touch single-stream (expected). Q3 byte-cut (§A)
+**NO-GO** reconfirmed: f32-predec-Q3 = 34.5 GB/s = 23% of peak → QTIP is the only byte-cut path.
+
+**Energy (§2): clean per-domain baseline (256 tok) = 0.1956 J/tok — GPU 0.1773 / DRAM 0.0848**
+(≈2.1:1). The moat number. CAVEAT: the f16-KV pass ran 512 tok (0.2423 J/tok) vs the 256-tok
+baseline → the compare is CONFOUNDED by thermal ramp (longer run → higher avg power → higher
+J/tok), so "f16-KV worse" is NOT a valid read; re-run both at the SAME N. (Also §C at 128 tok =
+0.1566 under-reports vs 256-tok 0.1956 — J/tok rises with run length until thermal equilibrium;
+≥256 is the faithful floor, 512+ for a publishable steady-state.)
+
+**Aggregate (§4) — the payoff, CLEAN:**
+
+| B | flag-OFF tps / scaling | R1-ON tps / scaling | R1 delta (clean) |
+|---|---|---|---|
+| 1 | 7.79 / 1.00× | 9.54 / 1.00× | ×1.23 |
+| 4 | 15.91 / 2.04× | 30.98 / 3.25× | ×1.95 |
+| 8 | 19.12 / **2.45×** | **47.96 / 5.02×** | **×2.51** |
+
+- **R1+R2+R3 (flag-ON) B=8 = 47.96 tok/s, 5.02× scaling** — inside batch_ceiling's 3.5–5.6×.
+- **R1 clean delta = ×2.51 at B=8, NOT the ×5.66 the Claude-open preview showed.** The preview
+  overstated R1: Claude's CPU contention slowed the CPU-LM-head (flag-OFF) arm ~3× while barely
+  touching the GPU (flag-ON) arm, so the paired delta did NOT cancel. **LESSON: paired A/B deltas
+  are contamination-robust ONLY when both arms share a bottleneck class (both GPU or both CPU);
+  R1 flag-ON/OFF crosses CPU↔GPU, so it MUST be measured clean.** (Within-config scaling: flag-ON
+  4.91→5.02× was robust ✓; flag-OFF 1.57→2.45× was not — same cause.)
+- **Honest serving win:** multiseq B=8 flag-ON (47.96) vs running the fast single-stream path
+  sequentially (32.65) = **1.47× more aggregate throughput** (trading per-stream latency: 6.0 vs
+  32.65 tps/stream). The 5.02× is scaling vs the *unoptimized* multiseq-B=1 (9.54), itself 3.4×
+  below the single-stream path (32.65) — closing that B=1 gap (fused single-path kernels + the
+  deferred per-step batches inside multiseq) is the NEXT aggregate lever; it lifts the whole curve.
+
+**Trace (§3) FAILED — tooling, not dismantle.** `xctrace record` exits non-zero through the
+`env+nice+taskpolicy` wrapper on macOS 26.5 even though the bench it launches succeeds (reproduced
+standalone: exit 0, valid stats, dispatch_count 7392/8tok). Fix: make the dismantle capture
+non-fatal + verify the `.trace` file exists (mirror the llama P3 non-fatal pattern), and/or drop
+the wrapper under `xctrace --launch`. Needs a clean window to validate.
