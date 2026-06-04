@@ -180,10 +180,14 @@ pub struct QwenDense {
     /// `forward_token_greedy_tcb` call so models that only use the
     /// CPU/Metal-hybrid `forward_token` path don't pay for it.
     pub dense_arena: Option<crate::metal::DenseDecodeArena>,
-    /// Slot-strided arena for continuous-batching multi-seq decode (B
-    /// INDEPENDENT sequences). Separate from `dense_arena` because its KV
-    /// cache is sized B*max_seq_per_slot (slot-strided), not one sequence's
-    /// max_seq. Lazily (re)allocated by `forward_tokens_multiseq`.
+    /// Slot-strided arena for continuous-batching multi-seq decode (up to
+    /// MAX_MULTISEQ_SLOTS=8 INDEPENDENT sequences). Separate from `dense_arena`
+    /// because its KV cache is slot-strided: MAX_MULTISEQ_SLOTS independent
+    /// regions, each MAX_MULTISEQ_CTX=2048 positions deep. Allocated ONCE on
+    /// the first call to `forward_tokens_multiseq_logits` and NEVER reallocated —
+    /// any realloc zeroes all Metal buffers and wipes ALL in-flight KV caches.
+    /// Slot KV is addressed by stable `regions[bi]` (a slot ID in
+    /// 0..MAX_MULTISEQ_SLOTS), not by compacted batch index.
     pub multiseq_arena: Option<crate::metal::DenseDecodeArena>,
 
     /// P1f: pinned whole-mmap buffer holding all Q4_K_M weight bytes.
@@ -2788,6 +2792,108 @@ impl Engine for QwenDense {
         {
             let _ = regions;
             self.forward_tokens_for_test(tokens, positions)
+        }
+    }
+
+    fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
+        #[cfg(target_os = "macos")]
+        {
+            use crate::metal::DenseDecodeArena;
+
+            if prompt_ids.is_empty() {
+                return Err(crate::Error::Model("prefill_slot: empty prompt".into()));
+            }
+            const MAX_MULTISEQ_SLOTS: usize = 8;
+            const MAX_MULTISEQ_CTX: usize = 2048;
+            if slot_id >= MAX_MULTISEQ_SLOTS {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slot: slot_id={slot_id} >= MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
+                )));
+            }
+            let prompt_len = prompt_ids.len();
+            if prompt_len > MAX_MULTISEQ_CTX {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slot: prompt_len={prompt_len} > MAX_MULTISEQ_CTX={MAX_MULTISEQ_CTX}"
+                )));
+            }
+
+            // ── Step 1: run batched prefill into dense_arena ─────────────────
+            // Save and reset single-seq KV state so forward_tokens_batch_tcb
+            // writes from position 0.
+            let saved_seq_len = self.kv.seq_len;
+            self.kv.seq_len = 0;
+            self.dense_arena = None;  // triggers lazy re-allocation at pos=0
+
+            const B_MAX: usize = 8;
+            let positions: Vec<usize> = (0..prompt_len).collect();
+            let mut i = 0;
+            let last_token = loop {
+                let end = (i + B_MAX).min(prompt_len);
+                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
+                if end == prompt_len { break prompt_ids[prompt_len - 1]; }
+                i = end;
+            };
+            // After the loop, dense_arena.k_cache_buf / v_cache_buf hold KV for
+            // positions 0..prompt_len-1. kv.seq_len == prompt_len.
+
+            // ── Step 2: ensure multiseq_arena is allocated ───────────────────
+            // (CB-1 fix: allocated once at max capacity, never reallocated.)
+            if self.multiseq_arena.is_none() {
+                let ctx = self.metal_ctx.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot: no metal_ctx".into()))?;
+                let cfg = &self.config;
+                self.multiseq_arena = Some(DenseDecodeArena::new_with_batch(
+                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                ));
+            }
+
+            // ── Step 3: copy KV from dense_arena into this slot's region ─────
+            // dense_arena layout  : k[l * dense_max_seq * kv_dim + p * kv_dim]
+            // multiseq_arena layout: k[l * multi_max_seq * kv_dim
+            //                          + slot_id * MAX_MULTISEQ_CTX * kv_dim
+            //                          + p * kv_dim]
+            {
+                let cfg = &self.config;
+                let kv_dim = cfg.n_kv_heads * cfg.head_dim;
+                let dense_arena = self.dense_arena.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot: dense_arena missing".into()))?;
+                let multi_arena = self.multiseq_arena.as_ref().unwrap();
+                let dense_layer_stride = dense_arena.max_seq * kv_dim;
+                let multi_layer_stride = multi_arena.max_seq * kv_dim;
+                let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
+                let copy_elems = prompt_len * kv_dim;
+
+                // SAFETY: PinnedBuffer is Metal unified memory — CPU-accessible
+                // on Apple Silicon. The two arenas are distinct allocations with
+                // non-overlapping slot regions. No GPU kernels run concurrently
+                // (this is called under the engine mutex, serially with decode).
+                unsafe {
+                    let src_k = dense_arena.k_cache_buf.contents() as *const f32;
+                    let src_v = dense_arena.v_cache_buf.contents() as *const f32;
+                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
+                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
+                    for li in 0..cfg.n_layers {
+                        let src_off = li * dense_layer_stride;
+                        let dst_off = li * multi_layer_stride + slot_base;
+                        std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k.add(dst_off), copy_elems);
+                        std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v.add(dst_off), copy_elems);
+                    }
+                }
+            }
+
+            // ── Step 4: restore single-seq state ─────────────────────────────
+            // Leave dense_arena=None so the next B=1 generate() call rebuilds
+            // from the restored kv.seq_len without stale data.
+            self.kv.seq_len = saved_seq_len;
+            self.dense_arena = None;
+
+            return Ok(last_token);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            Err(crate::Error::Unimplemented("prefill_slot (non-macOS)"))
         }
     }
 
@@ -5957,11 +6063,17 @@ impl QwenDense {
             return Ok(Vec::new());
         }
         // Fixed-capacity slot-strided arena: MAX_MULTISEQ_SLOTS independent KV
+        // regions, each MAX_MULTISEQ_CTX positions deep. Allocated ONCE — never
+        // reallocated. The old guard `a.max_seq < MAX_MULTISEQ_SLOTS *
+        // max_seq_per_slot` triggered realloc when max_seq_per_slot grew between
+        // calls (e.g. parity test used 16, serve path uses 2048), zeroing all
+        // in-flight KV. Fixed by allocating at the hard ceiling on first use.
         // regions, allocated ONCE and NEVER reallocated on batch-size growth.
         // A realloc-on-growth would return zeroed buffers and wipe ALL in-flight
         // slots' KV (the catastrophic bug the review found); regions (stable slot
         // ids) index into the fixed regions, so B can shrink/grow freely.
         const MAX_MULTISEQ_SLOTS: usize = 8;
+        const MAX_MULTISEQ_CTX: usize = 2048;
         if b > MAX_MULTISEQ_SLOTS {
             return Err(Error::Model(format!(
                 "forward_tokens_multiseq: B={b} > MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
@@ -5973,25 +6085,24 @@ impl QwenDense {
                 regions.len()
             )));
         }
-        // (Re)allocate ONLY when absent or the per-slot context grew — never on B.
-        let need_new = match &self.multiseq_arena {
-            Some(a) => a.max_seq < MAX_MULTISEQ_SLOTS * max_seq_per_slot,
-            None => true,
-        };
-        if need_new {
-            let arena = {
-                let ctx = self
-                    .metal_ctx
-                    .as_ref()
-                    .ok_or_else(|| Error::Metal("forward_tokens_multiseq: no metal_ctx".into()))?;
-                let cfg = &self.config;
-                crate::metal::DenseDecodeArena::new_with_batch(
-                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
-                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                    MAX_MULTISEQ_SLOTS * max_seq_per_slot, MAX_MULTISEQ_SLOTS,
-                )
-            };
-            self.multiseq_arena = Some(arena);
+        if max_seq_per_slot > MAX_MULTISEQ_CTX {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: max_seq_per_slot={max_seq_per_slot} > MAX_MULTISEQ_CTX={MAX_MULTISEQ_CTX}"
+            )));
+        }
+        // Allocate ONCE at MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX. Never reallocate:
+        // any realloc returns fresh zeroed Metal buffers, wiping all in-flight KV.
+        if self.multiseq_arena.is_none() {
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_multiseq: no metal_ctx".into()))?;
+            let cfg = &self.config;
+            self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
+                ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+            ));
         }
 
         let arena = self.multiseq_arena.as_ref().unwrap();

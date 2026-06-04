@@ -252,6 +252,18 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_for_test(tokens, positions)
     }
 
+    /// Continuous-batching PREFILL seam: run `prompt_ids` through the full
+    /// transformer forward and plant the resulting per-layer KV into the
+    /// slot-strided `multiseq_arena` at stable region `slot_id`. Returns the
+    /// argmax token from the final prompt position (the first token to decode).
+    /// Caller must invoke `scheduler.mark_prefill_complete(slot_id)` on success.
+    ///
+    /// Default: unimplemented. QwenDense overrides with the GPU decode-from-0
+    /// path (forward_tokens_batch_tcb + KV copy into multiseq slot region).
+    fn prefill_slot(&mut self, _slot_id: usize, _prompt_ids: &[u32]) -> Result<u32> {
+        Err(crate::Error::Unimplemented("prefill_slot"))
+    }
+
     /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
     /// slots at DIVERGENT positions — each its own sequence/prefix — returning N
     /// per-slot logit vectors the scheduler samples from. This is DISTINCT from
