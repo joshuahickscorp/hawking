@@ -281,3 +281,68 @@ harness now gates). The one large live lever is **GPU continuous batching for
 aggregate/serving tps** (~3.5–5.6× at B=8), and its hard part (the weight-amortizing
 GEMM) already ships as v3w — the remaining work is the multi-seq KV/attention layer,
 an M-effort attended build.
+
+---
+
+## Review wave (2026-06-03) — pre-push findings + forward specs (`wf_d81c7e7a`)
+
+A read-only review/spec swarm over the 14-commit continuous-batching build. **The
+shipped DECODE code is VERIFIED-OK** for what it's tested on (the multi-seq MHA
+softmax + per-slot indexing, the divergent-position KV-offset arithmetic in the full
+forward, per-slot append — all confirmed correct by trace). **The continuous-batch
+path has ZERO non-test callers — the HTTP server still does one-request-per-mutex
+`engine.generate`** — so the findings below are **latent** (not corrupting anything
+today) and detonate only when the path is wired to serving (the deferred HTTP-loop
+work). The review caught them *before* that wire-up.
+
+### Serving-path blockers (fix as part of the HTTP-loop build, NOT shipped bugs)
+1. **No prefill — the multi-seq path is decode-only** (one KV append/slot/call). A
+   served request would decode against an empty KV prefix. Needs a multi-seq prefill
+   (or decode-from-0 per request). CONFIRMED-BUG for serving.
+2. **Arena indexed by compacted batch-position, not stable slot-id.** Two detonations:
+   (a) slot evicts → ready-set compaction shifts indices → a slot reads *another
+   slot's* KV (cross-contamination); (b) B grows → `forward_tokens_multiseq_logits`
+   reallocs `multiseq_arena` → fresh zeroed buffers → **all in-flight KV wiped**.
+   Fix: thread a stable `slot_id`/region through `forward_multiseq_batched`, allocate
+   the arena **once at `max_batch` (never realloc on growth)**, zero-on-release.
+   "F0.3 interim" (fixed-`max_batch` arena) is **S** and unblocks everything.
+3. **`MULTISEQ_CTX=2048` cap** is silent-until-error + uncoordinated with the
+   scheduler (RSS at B×2048 per-slot full KV). Paged KV removes it.
+4. **Test gap:** the equivalence test only covers *lockstep positions + constant B*.
+   Needs a **divergent-position + varying-B + slot-churn** parity test (admit 4,
+   evict one at EOS, admit a 5th; each survivor's tokens == its solo decode). This is
+   the test that would catch #1 and #2.
+
+### Aggregate-tps optimization (2.42–2.57× → ~3.5–5.6×), ranked
+- **RANK 1 (M) — GPU-batched LM head** (the dominant un-amortized cost: B sequential
+  CPU full-vocab matmuls, ~622 MB f16 read ×B). **No batched f16 GEMM exists in-tree**
+  → either Q4_K-requant the LM head (reuse `Q4K_LMHEAD`, opt-in to keep the anchor
+  parity test green) or build one. Template: `forward_tokens_verify` FAST path
+  (`gemm_q4_k_m_batched_v3w` over the pruned Q4_K head). Biggest single jump.
+- **RANK 2 (S–M) — batch the per-slot embed + layer-0 rmsnorm + RoPE** (4B → 4
+  dispatches/step). Bit-identical refactor.
+- **RANK 3 (M) — single batched KV-append kernel** (2B → 1; removes ~574
+  dispatches/step at B=8). Bit-identical.
+- **RANK 4 (L) — multi-seq prefill + arena lifecycle** = serving prerequisite (#1/#2),
+  not a perf lever. Already-batched (verified, no work): biases, v3w projections, silu_mul.
+
+### Paged-KV + concurrent-HTTP serving spec
+- **Paged KV** (lifts the 2048 cap + cuts RAM): shared page pool + per-slot block
+  tables; the bulk of the effort is the MHA-kernel rewrite (block-table indirection
+  replacing the fixed `kv_slot_stride`). Bounded if ctx ≤ ~6K (materialized scores).
+- **HTTP loop:** built = slot manager + `decode_ready_once` + per-slot `Sampler`
+  (verified-OK, seeded per slot); missing = the admission loop, per-slot SSE
+  streaming, and the mutex→loop change. Depends on F0.3 (fixed-arena) first.
+
+### Bench-harness audit (so the next clean window isn't wasted)
+- **P0 (do FIRST in the clean window):** `mst_gap.py` STAGE 3/4 is **untested against
+  a REAL Instruments export** (only synthetic XML; zero fixtures). Capture one tiny
+  `TOKENS=8` MST, run `mst_export.sh` + `mst_gap.py` on it, confirm the parse —
+  *before* spending the expensive 2-engine 256-tok capture. Schema (not numbers) is
+  what's at risk, so this can be done attended/short.
+- **P1 — FIXED (`da4acb4`):** fail-loud on no-measurement + queue failure-signature scan.
+- **P3 — `mst_diff.sh` STAGE 2 llama-flag fragility** (`-no-cnv`/`--seed` drift): make
+  the llama capture non-fatal (probe `--help`) so a flag drift doesn't waste the
+  already-paid dismantle trace.
+- **P4 — macmon `--domains` `ram_power` absence** → prints `0.0000` silently; preflight
+  the field + print "DRAM unavailable" honestly.
