@@ -5609,21 +5609,42 @@ impl QwenDense {
     /// arena's KV cache persists across calls so the prefix grows per decode
     /// step. Reuses the v3w batched GEMM (weight read once across B columns)
     /// and the new `mha_decode_f32_batched_multiseq` kernel.
+    //
+    // C1 (single-TCB tail): this NO LONGER commits. It returns the LIVE
+    // TokenCommandBuffer (layers + final norm encoded, x_norm_buf_batch about to
+    // be written by the trailing fused add+rmsnorm) so the caller can append the
+    // LM-head GEMM into the SAME command buffer and `commit_and_wait` ONCE —
+    // killing the second submit+fence round-trip the R1 LM head used to incur.
+    // The returned tcb borrows ONLY `&self` (via metal_ctx); the arena/pos/region
+    // buffers it encodes are retained by Metal in the command buffer at encode
+    // time, so they need not outlive this call from Rust's borrow view. Mirrors
+    // how `forward_token_greedy_tcb` keeps one tcb alive end-to-end (line ~5045).
+    // The SOLE caller is `forward_tokens_multiseq_logits`, which MUST commit the
+    // returned tcb (or append the LM head first, then commit) before reading any
+    // GPU output — a dropped tcb commits via the Drop impl, but the result is
+    // read only after an explicit commit_and_wait.
     #[cfg(target_os = "macos")]
-    fn forward_tokens_multiseq_stack_tcb(
-        &self,
+    fn forward_tokens_multiseq_stack_tcb<'a>(
+        &'a self,
         arena: &crate::metal::DenseDecodeArena,
         tokens: &[u32],
         positions: &[usize],
         regions: &[usize],
         max_seq_per_slot: usize,
-    ) -> Result<()> {
+    ) -> Result<crate::metal::TokenCommandBuffer<'a>> {
         use crate::kernels;
         use crate::metal::TokenCommandBuffer;
 
         let b = tokens.len();
         if b == 0 {
-            return Ok(());
+            // Unreachable: the sole caller (forward_tokens_multiseq_logits) guards
+            // b==0 first. But the stack now returns a live TCB (C1), so hand back
+            // an empty one for type-correctness rather than ().
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("multiseq_stack: no metal_ctx".into()))?;
+            return Ok(TokenCommandBuffer::new(ctx));
         }
         if positions.len() != b {
             return Err(Error::Model(format!(
@@ -5905,8 +5926,10 @@ impl QwenDense {
             )?;
         }
 
-        tcb.commit_and_wait()?;
-        Ok(())
+        // C1: do NOT commit here — hand the live tcb back so the LM-head GEMM
+        // appends into this same command buffer and a single commit_and_wait in
+        // the caller covers layers + LM head (one round-trip instead of two).
+        Ok(tcb)
     }
 
     /// Continuous-batching multi-seq decode: B INDEPENDENT sequences, one
@@ -5972,11 +5995,75 @@ impl QwenDense {
         }
 
         let arena = self.multiseq_arena.as_ref().unwrap();
-        self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, regions, max_seq_per_slot)?;
+        // C1: the stack no longer commits — it returns the LIVE tcb (layers +
+        // final norm encoded). We append the LM-head GEMM into this SAME tcb when
+        // R1 is ON, or commit it as-is on the CPU-fallback path. Either way there
+        // is ONE commit_and_wait per decode step, not two.
+        let mut tcb =
+            self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, regions, max_seq_per_slot)?;
 
         let h = self.config.hidden;
         let vocab = self.config.vocab_size;
         let arena = self.multiseq_arena.as_ref().unwrap();
+        // R1: opt-in GPU-batched Q4_K LM head. When DISMANTLE_QWEN_Q4K_LMHEAD=1
+        // (the SAME flag/buffer the verify FAST path uses) and the FULL-vocab
+        // Q4_K head is resident, run ONE batched v3w Q4_K GEMM over all B slots
+        // (weight read once, broadcast across B columns) instead of B sequential
+        // CPU full-vocab f16 matmuls. This reuses the EXACT wrapper
+        // forward_tokens_verify uses (gemm_q4_k_m_batched_v3w_pinned_tcb) and the
+        // SAME x_norm_buf_batch the stack just wrote. C1 appends that GEMM into
+        // the stack's OWN tcb (no second TokenCommandBuffer, no second
+        // commit_and_wait), so layers + LM head ride a single GPU submit/fence —
+        // bit-identical to the prior two-commit path (same dispatches, same
+        // order, fewer fences). Output stays full-vocab (length=vocab) — NO
+        // prune/remap — so the returned logits are the same length and meaning as
+        // the CPU path (forward_tokens_multiseq argmaxes the index directly as a
+        // token id). When the flag is OFF (or the head/shape/B is out of range)
+        // we commit the stack tcb and take the unchanged per-slot CPU branch
+        // below, byte-identical to today (multiseq_decode_parity / churn anchors).
+        let want_gpu_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
+            && self.lm_head_q4k_buf.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b);
+        if want_gpu_lmhead {
+            let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                Error::Metal("forward_tokens_multiseq: no metal_ctx for GPU LM head".into())
+            })?;
+            let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
+            let blocks_per_row = h / 256;
+            let w_bytes = vocab * blocks_per_row * 144;
+            // B*vocab f32 logits scratch (mirrors the verify FAST path's b*pruned).
+            // Retained by Metal in `tcb` at encode time, so it stays valid through
+            // the single commit_and_wait below even though it is a local binding.
+            let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
+            // C1: append into the stack's tcb (NOT a fresh one).
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb,
+                lhq,
+                0,
+                w_bytes,
+                vocab,
+                h,
+                b,
+                &arena.x_norm_buf_batch,
+                &logits_buf,
+            )?;
+            // ONE round-trip: layers + LM head in a single submit/fence.
+            tcb.commit_and_wait()?;
+            // Read B full-vocab rows out of the shared-memory logits buffer.
+            let lp = logits_buf.contents() as *const f32;
+            let mut out = Vec::with_capacity(b);
+            for i in 0..b {
+                let row = unsafe { std::slice::from_raw_parts(lp.add(i * vocab), vocab) };
+                out.push(row.to_vec());
+            }
+            return Ok(out);
+        }
+        // CPU fallback (R1 OFF): the stack tcb was NOT committed by the stack, so
+        // commit+wait it here BEFORE reading x_norm_buf_batch from shared memory
+        // (this is exactly where the stack used to commit). Then run the unchanged
+        // per-slot CPU full-vocab f16 LM head — byte-identical to the prior path.
+        tcb.commit_and_wait()?;
         let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
         // SAFETY: x_norm_buf_batch is sized max_batch*h*4 bytes; b*h <= that.
         let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, b * h) };
@@ -5991,55 +6078,6 @@ impl QwenDense {
                 vocab,
                 h
             )));
-        }
-        // R1: opt-in GPU-batched Q4_K LM head. When DISMANTLE_QWEN_Q4K_LMHEAD=1
-        // (the SAME flag/buffer the verify FAST path uses) and the FULL-vocab
-        // Q4_K head is resident, run ONE batched v3w Q4_K GEMM over all B slots
-        // (weight read once, broadcast across B columns) instead of B sequential
-        // CPU full-vocab f16 matmuls. This reuses the EXACT wrapper
-        // forward_tokens_verify uses (gemm_q4_k_m_batched_v3w_pinned_tcb) and the
-        // SAME x_norm_buf_batch the stack just wrote; only the weight (full-vocab
-        // Q4_K head, rows=vocab) and a [B,vocab] f32 scratch differ. Output stays
-        // full-vocab (length=vocab) — NO prune/remap — so the returned logits are
-        // the same length and meaning as the CPU path (forward_tokens_multiseq
-        // argmaxes the index directly as a token id). When the flag is OFF (or the
-        // head/shape/B is out of range) we take the unchanged per-slot CPU branch
-        // below, byte-identical to today (multiseq_decode_parity / churn anchors).
-        let want_gpu_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
-            && self.lm_head_q4k_buf.is_some()
-            && h % 256 == 0
-            && (1..=8).contains(&b);
-        if want_gpu_lmhead {
-            use crate::metal::TokenCommandBuffer;
-            let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
-                Error::Metal("forward_tokens_multiseq: no metal_ctx for GPU LM head".into())
-            })?;
-            let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
-            let blocks_per_row = h / 256;
-            let w_bytes = vocab * blocks_per_row * 144;
-            // B*vocab f32 logits scratch (mirrors the verify FAST path's b*pruned).
-            let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
-            let mut tcb = TokenCommandBuffer::new(ctx);
-            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb,
-                lhq,
-                0,
-                w_bytes,
-                vocab,
-                h,
-                b,
-                &arena.x_norm_buf_batch,
-                &logits_buf,
-            )?;
-            tcb.commit_and_wait()?;
-            // Read B full-vocab rows out of the shared-memory logits buffer.
-            let lp = logits_buf.contents() as *const f32;
-            let mut out = Vec::with_capacity(b);
-            for i in 0..b {
-                let row = unsafe { std::slice::from_raw_parts(lp.add(i * vocab), vocab) };
-                out.push(row.to_vec());
-            }
-            return Ok(out);
         }
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
