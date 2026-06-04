@@ -7313,6 +7313,53 @@ mod metal_dispatch {
         })
     }
 
+    /// R2 — batched RoPE over B multi-seq slots, each at its own `positions[bi]`.
+    /// One dispatch replaces the per-slot `rope_q_f32_inplace_off_tcb` loop
+    /// (2B → 2 per layer). Bit-identical (rope is elementwise). `x_buf` is laid
+    /// out [B, slot_stride] f32; call once for Q (n_heads, slot_stride=q_dim) and
+    /// once for K (n_kv_heads, slot_stride=kv_dim). `positions` is a u32 buffer
+    /// (B entries). Full-head rope (qk_nope_dim = 0), matching the dense path.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_f32_batched_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,
+        positions: &PinnedBuffer,
+        n_heads: usize,
+        head_dim: usize,
+        slot_stride_elems: usize,
+        b: usize,
+        base: f32,
+    ) -> Result<()> {
+        let pairs_per_head = (head_dim / 2) as u32;
+        let total = (b as u32) * (n_heads as u32) * pairs_per_head;
+        if total == 0 {
+            return Ok(());
+        }
+        let n_tg = total.div_ceil(TG_SIZE);
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, n_heads as u32);
+        ab.set_u32(1, head_dim as u32);
+        ab.set_u32(2, slot_stride_elems as u32);
+        ab.set_u32(3, b as u32);
+        ab.set_f32(4, base);
+        tcb.dispatch_threads(
+            "rope_f32_batched_multiseq",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(ab.handle()), 0);
+                enc.set_buffer(2, Some(positions), 0);
+            },
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn mha_decode_f32_off_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
