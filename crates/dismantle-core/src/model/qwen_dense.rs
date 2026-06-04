@@ -5996,6 +5996,55 @@ impl QwenDense {
                 h
             )));
         }
+        // R1: opt-in GPU-batched Q4_K LM head. When DISMANTLE_QWEN_Q4K_LMHEAD=1
+        // (the SAME flag/buffer the verify FAST path uses) and the FULL-vocab
+        // Q4_K head is resident, run ONE batched v3w Q4_K GEMM over all B slots
+        // (weight read once, broadcast across B columns) instead of B sequential
+        // CPU full-vocab f16 matmuls. This reuses the EXACT wrapper
+        // forward_tokens_verify uses (gemm_q4_k_m_batched_v3w_pinned_tcb) and the
+        // SAME x_norm_buf_batch the stack just wrote; only the weight (full-vocab
+        // Q4_K head, rows=vocab) and a [B,vocab] f32 scratch differ. Output stays
+        // full-vocab (length=vocab) — NO prune/remap — so the returned logits are
+        // the same length and meaning as the CPU path (forward_tokens_multiseq
+        // argmaxes the index directly as a token id). When the flag is OFF (or the
+        // head/shape/B is out of range) we take the unchanged per-slot CPU branch
+        // below, byte-identical to today (multiseq_decode_parity / churn anchors).
+        let want_gpu_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
+            && self.lm_head_q4k_buf.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b);
+        if want_gpu_lmhead {
+            use crate::metal::TokenCommandBuffer;
+            let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                Error::Metal("forward_tokens_multiseq: no metal_ctx for GPU LM head".into())
+            })?;
+            let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
+            let blocks_per_row = h / 256;
+            let w_bytes = vocab * blocks_per_row * 144;
+            // B*vocab f32 logits scratch (mirrors the verify FAST path's b*pruned).
+            let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
+            let mut tcb = TokenCommandBuffer::new(ctx);
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb,
+                lhq,
+                0,
+                w_bytes,
+                vocab,
+                h,
+                b,
+                &arena.x_norm_buf_batch,
+                &logits_buf,
+            )?;
+            tcb.commit_and_wait()?;
+            // Read B full-vocab rows out of the shared-memory logits buffer.
+            let lp = logits_buf.contents() as *const f32;
+            let mut out = Vec::with_capacity(b);
+            for i in 0..b {
+                let row = unsafe { std::slice::from_raw_parts(lp.add(i * vocab), vocab) };
+                out.push(row.to_vec());
+            }
+            return Ok(out);
+        }
         let mut out = Vec::with_capacity(b);
         for k in 0..b {
             out.push(crate::speculate::eagle5_forward::matmul_no_bias_f16w(
