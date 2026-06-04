@@ -346,3 +346,27 @@ work). The review caught them *before* that wire-up.
   already-paid dismantle trace.
 - **P4 — macmon `--domains` `ram_power` absence** → prints `0.0000` silently; preflight
   the field + print "DRAM unavailable" honestly.
+
+### Fixed 2026-06-04 ("go fix all" — all BUGS fixed; feature-builds remain)
+**All bug-fixes from the review are landed + validated:**
+- **#2 arena/slot-id — FIXED `f02101e`** (the catastrophic one). KV is now keyed by a
+  STABLE per-slot region (the slot id), not the compacted dispatch index: the MHA
+  kernel takes a `regions[]` buffer, the append writes to `regions[bi]`, and the arena
+  is fixed-capacity (8 regions, allocated once, NEVER reallocated on B-growth — kills
+  the realloc-wipe). The driver passes `regions = slot ids`. Both detonations (evict
+  cross-contamination + grow-wipe) are closed.
+- **Test gap — FIXED** `tests/multiseq_churn_parity.rs`: reproduces a slot-1 eviction +
+  index compaction; survivors stay byte-identical to their solo decode. Passes.
+- **Bench P1 — FIXED `da4acb4`** (fail-loud + queue signature-scan); **P3/P4 — FIXED
+  `c65b870`** (llama capture non-fatal → dismantle-only; honest "DRAM unavailable").
+
+**Still FEATURE-BUILDS (not bug-fixes — own focused sessions, each parity-gated):**
+- **#1 multi-seq prefill** — the path is still decode-only; a served prompt needs its
+  KV prefilled. Prereq for the HTTP loop. (L)
+- **#3 paged-KV** — lift the `MULTISEQ_CTX=2048` cap + cut per-slot RAM (MHA-kernel
+  block-table rewrite). (L)
+- **HTTP concurrent-batch loop** — admission + per-slot SSE + mutex→loop. (M–L)
+- **Aggregate-opt R1–R3** — GPU-batched LM head (R1, M, the big lift) + batch the
+  per-slot dispatches (R2/R3) to push 2.42× → ~3.5×. (optimization)
+- **P0 mst_gap real-export parse** — validate on a tiny captured trace first (clean
+  window). (pre-check)
