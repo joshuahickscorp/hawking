@@ -439,6 +439,38 @@ kernel void memcpy_f32_to_f16_off(
     dst[args.dst_off + id] = half(src[args.src_off + id]);
 }
 
+// R3 — batched KV scatter-append over B multi-seq decode slots. Each slot writes
+// its kv_dim K and V elements into its OWN stable region (regions[bi]) at its OWN
+// position (positions[bi]) within layer `layer_off`, in ONE dispatch (K+V) instead
+// of 2B memcpys. Byte-identical to the per-slot memcpy_f32_off loop (pure copy):
+//   dst_elem = layer_off + regions[bi]*slot_stride + positions[bi]*kv_dim + i
+struct ArgbufKvScatter {
+    uint kv_dim;
+    uint b;
+    uint slot_stride;  // max_seq_per_slot * kv_dim (one slot's per-layer region)
+    uint layer_off;    // li * (max_batch * max_seq_per_slot * kv_dim)
+};
+
+kernel void kv_scatter_append_multiseq(
+    device const float* src_k      [[buffer(0)]],
+    device const float* src_v      [[buffer(1)]],
+    device       float* k_cache    [[buffer(2)]],
+    device       float* v_cache    [[buffer(3)]],
+    constant ArgbufKvScatter& args [[buffer(4)]],
+    device const uint*  regions    [[buffer(5)]],
+    device const uint*  positions  [[buffer(6)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = args.b * args.kv_dim;
+    if (id >= total) return;
+    uint bi = id / args.kv_dim;
+    uint i  = id - bi * args.kv_dim;
+    uint dst = args.layer_off + regions[bi] * args.slot_stride + positions[bi] * args.kv_dim + i;
+    uint src = bi * args.kv_dim + i;
+    k_cache[dst] = src_k[src];
+    v_cache[dst] = src_v[src];
+}
+
 kernel void rope_inplace(
     device       half* x        [[buffer(0)]],
     constant     uint& head_dim [[buffer(1)]],

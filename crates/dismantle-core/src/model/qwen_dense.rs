@@ -5824,20 +5824,17 @@ impl QwenDense {
                 n_kv_heads, head_dim, kv_dim, b, theta,
             )?;
 
-            // Per-slot KV append: each slot writes to its OWN region at its
-            // OWN position (scattered, B small) -- NOT one contiguous memcpy.
+            // Per-slot KV append, batched: each slot writes its K and V into its
+            // OWN stable region (regions[bi]) at its OWN position in ONE scatter
+            // dispatch instead of 2B memcpys. Byte-identical (pure copy).
             let layer_off_elems = li * layer_kv_stride_elems;
-            for bi in 0..b {
-                let dst_off = layer_off_elems + regions[bi] * slot_stride_elems + positions[bi] * kv_dim;
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb, &arena.k_token_buf_batch, &arena.k_cache_buf,
-                    bi * kv_dim, dst_off, kv_dim,
-                )?;
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb, &arena.v_token_buf_batch, &arena.v_cache_buf,
-                    bi * kv_dim, dst_off, kv_dim,
-                )?;
-            }
+            kernels::kv_scatter_append_multiseq_tcb(
+                &mut tcb,
+                &arena.k_token_buf_batch, &arena.v_token_buf_batch,
+                &arena.k_cache_buf, &arena.v_cache_buf,
+                &region_buf, &pos_buf,
+                kv_dim, b, slot_stride_elems, layer_off_elems,
+            )?;
 
             // Multi-seq MHA: per-slot positions + per-slot KV base.
             let layer_kv_off_bytes = layer_off_elems * f32_bytes;
