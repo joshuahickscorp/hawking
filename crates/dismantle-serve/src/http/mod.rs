@@ -17,12 +17,13 @@ use axum::{
     Json, Router,
 };
 use crate::batch::driver::BatchDriver;
-use dismantle_core::{Engine, GenerateRequest, SamplingParams, StreamEvent};
+use dismantle_core::{Engine, GenerateRequest, SamplingParams};
 use futures::stream::Stream;
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::convert::Infallible;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use tokio::sync::mpsc as async_mpsc;
 use tokio_stream::wrappers::ReceiverStream;
@@ -120,8 +121,14 @@ pub struct AppState {
     /// Per-slot SSE token senders. The background loop writes here;
     /// `sse_response` reads. Keyed by stable slot_id.
     pub slot_senders: Arc<Mutex<HashMap<u32, async_mpsc::Sender<SlotToken>>>>,
+    /// Requests waiting for a free batch slot. Bounded at `max_batch * 8`.
+    /// Tuple: (request, token_sender, is_chat_format).
+    pub wait_queue: Arc<Mutex<VecDeque<(GenerateRequest, async_mpsc::Sender<SlotToken>, bool)>>>,
     pub model_arch: String,
     pub max_batch: usize,
+    pub requests_admitted: Arc<AtomicU64>,
+    pub tokens_generated: Arc<AtomicU64>,
+    pub requests_queued: Arc<AtomicU64>,
 }
 
 pub fn router(state: AppState) -> Router {
@@ -138,9 +145,25 @@ async fn healthz() -> &'static str {
     "ok"
 }
 
-async fn metrics() -> &'static str {
-    // Real metrics arrive in Phase 5.
-    "# dismantle_metrics 1\n"
+async fn metrics(State(s): State<AppState>) -> String {
+    let admitted = s.requests_admitted.load(Ordering::Relaxed);
+    let tokens = s.tokens_generated.load(Ordering::Relaxed);
+    let active = s.driver.lock().scheduler.active_count();
+    let queued = s.wait_queue.lock().len();
+    format!(
+        "# HELP dismantle_requests_admitted_total Requests successfully admitted to a batch slot\n\
+         # TYPE dismantle_requests_admitted_total counter\n\
+         dismantle_requests_admitted_total {admitted}\n\
+         # HELP dismantle_tokens_generated_total Tokens generated across all slots\n\
+         # TYPE dismantle_tokens_generated_total counter\n\
+         dismantle_tokens_generated_total {tokens}\n\
+         # HELP dismantle_active_slots Current number of active decode slots\n\
+         # TYPE dismantle_active_slots gauge\n\
+         dismantle_active_slots {active}\n\
+         # HELP dismantle_queued_requests Requests waiting for a free slot\n\
+         # TYPE dismantle_queued_requests gauge\n\
+         dismantle_queued_requests {queued}\n"
+    )
 }
 
 #[derive(Serialize)]
@@ -334,24 +357,33 @@ fn sse_response(
     let slot_id_opt = {
         let engine = state.engine.lock();
         let mut driver = state.driver.lock();
-        driver.admit(&**engine, req).ok().flatten()
+        driver.admit(&**engine, req.clone()).ok().flatten()
     };
 
-    let Some(slot_id) = slot_id_opt else {
-        // No free slot — send a single error event and close.
-        let sse_tx2 = sse_tx.clone();
-        tokio::spawn(async move {
-            let body = serde_json::json!({
-                "error": {"message": "server busy — no batch slot available",
-                          "type": "server_error", "code": "slot_exhausted"}
+    if let Some(slot_id) = slot_id_opt {
+        // Slot available immediately — register sender and start serving.
+        state.requests_admitted.fetch_add(1, Ordering::Relaxed);
+        state.slot_senders.lock().insert(slot_id, tok_tx);
+    } else {
+        // No free slot — queue the request for deferred admission.
+        let queue_cap = state.max_batch * 8;
+        if state.wait_queue.lock().len() >= queue_cap {
+            // Queue is also full — error immediately.
+            let sse_tx2 = sse_tx.clone();
+            tokio::spawn(async move {
+                let body = serde_json::json!({
+                    "error": {"message": "server busy — no batch slot available",
+                              "type": "server_error", "code": "slot_exhausted"}
+                });
+                let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
             });
-            let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
-        });
-        return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+        }
+        state.requests_queued.fetch_add(1, Ordering::Relaxed);
+        state.wait_queue.lock().push_back((req, tok_tx, chat));
+        // The SSE forwarder below is still spawned and will stream tokens once
+        // the request is admitted from the queue when a slot frees.
     };
-
-    // Register this slot's sender so the decode loop can push tokens.
-    state.slot_senders.lock().insert(slot_id, tok_tx);
 
     // Forward raw token strings from the per-slot channel to SSE events.
     tokio::spawn(async move {
@@ -389,17 +421,46 @@ async fn json_full_response(
     req: GenerateRequest,
     chat: bool,
 ) -> Result<Json<serde_json::Value>, ApiError> {
-    let res = tokio::task::spawn_blocking(move || -> Result<serde_json::Value, String> {
-        let mut engine = state.engine.lock();
-        let mut text = String::new();
-        let mut sink = |ev: StreamEvent| {
-            if let StreamEvent::Token { text: t, .. } = ev {
-                text.push_str(&t);
+    // Admit under a short lock (tokenize + slot assignment only) — does NOT hold
+    // the engine mutex for the full generation.
+    let slot_id = {
+        let engine = state.engine.lock();
+        let mut driver = state.driver.lock();
+        driver
+            .admit(&**engine, req)
+            .map_err(|e| ApiError::internal(format!("admit failed: {e}")))?
+            .ok_or_else(|| ApiError::internal("server busy — no batch slot available"))?
+    };
+
+    // std::sync::mpsc (not tokio) because we block-wait inside spawn_blocking.
+    let (tok_tx, tok_rx) = std::sync::mpsc::channel::<SlotToken>();
+    // The background loop expects a tokio::sync::mpsc::Sender; wrap via an async
+    // bridge: allocate a small tokio channel, spawn a task that forwards into our
+    // std channel.
+    let (async_tx, mut async_rx) = async_mpsc::channel::<SlotToken>(256);
+    state.slot_senders.lock().insert(slot_id, async_tx);
+
+    // Bridge task: forward from the tokio channel into the std channel.
+    let tok_tx2 = tok_tx.clone();
+    tokio::spawn(async move {
+        while let Some(item) = async_rx.recv().await {
+            // If the receiver side (spawn_blocking below) is gone, stop forwarding.
+            if tok_tx2.send(item).is_err() {
+                break;
             }
-        };
-        engine
-            .generate(req, &mut sink)
-            .map_err(|e| format!("generation failed: {e}"))?;
+        }
+    });
+    drop(tok_tx); // only tok_tx2 (owned by the bridge) keeps the sender alive
+
+    // Block-wait in a dedicated thread so we don't hold any mutex.
+    let res = tokio::task::spawn_blocking(move || -> Result<serde_json::Value, String> {
+        let mut text = String::new();
+        for item in tok_rx {
+            match item {
+                Ok(t) => text.push_str(&t),
+                Err(()) => break, // EOS sentinel
+            }
+        }
         let body = if chat {
             serde_json::json!({
                 "object": "chat.completion",

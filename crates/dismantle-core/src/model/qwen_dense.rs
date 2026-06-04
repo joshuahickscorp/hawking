@@ -183,7 +183,7 @@ pub struct QwenDense {
     /// Slot-strided arena for continuous-batching multi-seq decode (up to
     /// MAX_MULTISEQ_SLOTS=8 INDEPENDENT sequences). Separate from `dense_arena`
     /// because its KV cache is slot-strided: MAX_MULTISEQ_SLOTS independent
-    /// regions, each MAX_MULTISEQ_CTX=2048 positions deep. Allocated ONCE on
+    /// regions, each MAX_MULTISEQ_CTX=4096 positions deep. Allocated ONCE on
     /// the first call to `forward_tokens_multiseq_logits` and NEVER reallocated —
     /// any realloc zeroes all Metal buffers and wipes ALL in-flight KV caches.
     /// Slot KV is addressed by stable `regions[bi]` (a slot ID in
@@ -2785,7 +2785,7 @@ impl Engine for QwenDense {
             // arena's max_batch scales with this (2048 keeps B=8 under the RSS
             // sentinel). Requests longer than this error in the stack. `regions`
             // are the STABLE slot ids each batch element's KV lives at.
-            const MULTISEQ_CTX: usize = 2048;
+            const MULTISEQ_CTX: usize = 4096;
             return self.forward_tokens_multiseq_logits(tokens, positions, regions, MULTISEQ_CTX);
         }
         #[cfg(not(target_os = "macos"))]
@@ -2804,7 +2804,7 @@ impl Engine for QwenDense {
                 return Err(crate::Error::Model("prefill_slot: empty prompt".into()));
             }
             const MAX_MULTISEQ_SLOTS: usize = 8;
-            const MAX_MULTISEQ_CTX: usize = 2048;
+            const MAX_MULTISEQ_CTX: usize = 4096;
             if slot_id >= MAX_MULTISEQ_SLOTS {
                 return Err(crate::Error::Model(format!(
                     "prefill_slot: slot_id={slot_id} >= MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
@@ -6073,7 +6073,7 @@ impl QwenDense {
         // slots' KV (the catastrophic bug the review found); regions (stable slot
         // ids) index into the fixed regions, so B can shrink/grow freely.
         const MAX_MULTISEQ_SLOTS: usize = 8;
-        const MAX_MULTISEQ_CTX: usize = 2048;
+        const MAX_MULTISEQ_CTX: usize = 4096;
         if b > MAX_MULTISEQ_SLOTS {
             return Err(Error::Model(format!(
                 "forward_tokens_multiseq: B={b} > MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
