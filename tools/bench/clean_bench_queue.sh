@@ -69,14 +69,19 @@ want() {  # want <section> -> 0 if it should run
 if [[ -n "${FAST:-}" ]]; then
   ANCHOR_TOKENS="${ANCHOR_TOKENS:-128}"
   ENERGY_TOKENS="${ENERGY_TOKENS:-256}"
-  ENERGY_TOKENS_F16KV="${ENERGY_TOKENS_F16KV:-512}"
   TRACE_TOKENS="${TRACE_TOKENS:-64}"
 else
   ANCHOR_TOKENS="${ANCHOR_TOKENS:-256}"
   ENERGY_TOKENS="${ENERGY_TOKENS:-512}"
-  ENERGY_TOKENS_F16KV="${ENERGY_TOKENS_F16KV:-1024}"
   TRACE_TOKENS="${TRACE_TOKENS:-256}"
 fi
+# f16-KV energy MUST run at the SAME token count as the baseline, or the J/tok
+# comparison is confounded by thermal ramp (a longer run -> higher avg power ->
+# higher J/tok regardless of the KV-bytes lever — the 256-vs-512 confound seen
+# in the 2026-06-04 clean run). Default to baseline-N so "f16-KV < baseline =>
+# energy lever" is a valid verdict; override knowingly for a depth (not directly
+# comparable) run.
+ENERGY_TOKENS_F16KV="${ENERGY_TOKENS_F16KV:-$ENERGY_TOKENS}"
 
 TS="$(date +%Y%m%dT%H%M%S)"
 LOG="reports/bench/clean_bench_queue_${TS}.log"
