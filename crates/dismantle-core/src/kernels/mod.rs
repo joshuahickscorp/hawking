@@ -7603,6 +7603,7 @@ mod metal_dispatch {
         v_off_bytes: usize,
         out: &PinnedBuffer,
         positions: &PinnedBuffer,
+        regions: &PinnedBuffer,
         max_seq: usize,
         kv_slot_stride_elems: usize,
         batch: usize,
@@ -7650,6 +7651,7 @@ mod metal_dispatch {
                 enc.set_buffer(3, Some(v_cache), v_off_bytes as u64);
                 enc.set_buffer(4, Some(out), 0);
                 enc.set_buffer(5, Some(positions), 0);
+                enc.set_buffer(6, Some(regions), 0);
                 enc.set_threadgroup_memory_length(0, shmem_bytes);
             },
         )
