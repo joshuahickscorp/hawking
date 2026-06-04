@@ -470,3 +470,28 @@ bench showing per-step dispatch overhead matters.
 contamination-robust, Claude-open OK) to confirm R1+R2+R3 moved 2.42× toward the ~3.5×
 ceiling; then the clean-room absolutes. Commits `8aba79e` (R1) + `88a00ef` (R2) +
 `113a9a8` (R3), local, 23 ahead.
+
+### Aggregate preview (2026-06-04, Claude-OPEN — ratios/delta valid, absolute inflated) `6137883`
+
+The aggregate bench now runs flag-OFF + R1-ON and prints the R1 delta. Contamination-
+robust preview (the ~4–5× inflation cancels in ratios/deltas):
+
+| B | flag-OFF agg scaling | R1-ON agg scaling | R1 delta (ON/OFF) |
+|---|---|---|---|
+| 1 | 1.00× | 1.00× | ×1.81 |
+| 4 | 1.28× | 3.15× | ×4.47 |
+| 8 | **1.57×** | **4.91×** | **×5.66** |
+
+**R1 (GPU-batched Q4_K LM head) is the DOMINANT aggregate lever.** flag-OFF, the 8
+sequential CPU full-vocab f16 matmuls dominate the B=8 step (per-step ~1239 ms), capping
+aggregate scaling at 1.57×. flag-ON, one weight-amortizing Q4_K GEMM replaces them
+(per-step ~219 ms — ×5.66 faster), and B=8 aggregate scaling jumps to **4.91×**, inside
+batch_ceiling.py's 3.5–5.6× window. R2+R3 (baked into both configs) cut the GPU-stack
+dispatch overhead; their effect shows in the absolute per-step time, and they actually
+*lower* the flag-OFF ratio (1.57× vs the historical 2.57×) because a faster GPU stack
+exposes the CPU LM head as the dominant bottleneck — a ratio artifact, NOT a regression.
+
+**Implication:** the aggregate/serving win REQUIRES R1 flag-ON
+(`DISMANTLE_QWEN_Q4K_LMHEAD=1`); the default stays flag-OFF (bit-identical anchor). The
+clean room pins the ABSOLUTE aggregate tokens/sec — but the *increase* is already measured
+here (contamination-robust). It is a real, large increase to be measured, not a diagnostic.
