@@ -16,6 +16,9 @@
 #   tools/bench/clean_bench_queue.sh --only anchor,energy
 #   tools/bench/clean_bench_queue.sh --skip trace    # everything except the MST diff
 #   tools/bench/clean_bench_queue.sh --list          # show sections + exit
+#   FAST=1 tools/bench/clean_bench_queue.sh           # faithful-minimal tokens (low time)
+#   ANCHOR_TOKENS=128 ENERGY_TOKENS=256 TRACE_TOKENS=64 tools/bench/clean_bench_queue.sh
+#   (token floors: anchor 128 tps, energy 256 J/tok, trace 64 MST; FAST sets all four)
 #
 # SECTIONS (default = all, in this order):
 #   anchor   clean_room_batch.sh — absolute decode tps + J/tok + Q3 §A byte-cut
@@ -55,6 +58,25 @@ want() {  # want <section> -> 0 if it should run
   if [[ -n "$SKIP" ]]; then [[ ",$SKIP," != *",$s,"* ]]; return; fi
   return 0
 }
+
+# Token-length knobs — faithful-minimal floors keep fidelity while cutting clean-
+# room time. FAST=1 applies the shortened set; any individual var overrides either
+# way. Floors chosen per-metric:
+#   anchor decode-tps : steady-state, <1% variance by ~128 tok.
+#   energy J/tok      : macmon ~1 mJ resolution -> aggregate over HUNDREDS; 256 floor.
+#   trace MST         : per-dispatch timing is identical per token; 64 steady tok
+#                       = ~7k dispatch samples (the slowest section, biggest save).
+if [[ -n "${FAST:-}" ]]; then
+  ANCHOR_TOKENS="${ANCHOR_TOKENS:-128}"
+  ENERGY_TOKENS="${ENERGY_TOKENS:-256}"
+  ENERGY_TOKENS_F16KV="${ENERGY_TOKENS_F16KV:-512}"
+  TRACE_TOKENS="${TRACE_TOKENS:-64}"
+else
+  ANCHOR_TOKENS="${ANCHOR_TOKENS:-256}"
+  ENERGY_TOKENS="${ENERGY_TOKENS:-512}"
+  ENERGY_TOKENS_F16KV="${ENERGY_TOKENS_F16KV:-1024}"
+  TRACE_TOKENS="${TRACE_TOKENS:-256}"
+fi
 
 TS="$(date +%Y%m%dT%H%M%S)"
 LOG="reports/bench/clean_bench_queue_${TS}.log"
@@ -106,18 +128,18 @@ fi
 # --- Section: anchor ----------------------------------------------------------
 if want anchor; then
   banner "1  ANCHOR — absolute tps + J/tok + Q3 §A (clean_room_batch.sh)"
-  if tools/bench/clean_room_batch.sh; then RESULTS+=("anchor: OK"); else RESULTS+=("anchor: non-zero (read above)"); fi
+  if TOKENS="$ANCHOR_TOKENS" tools/bench/clean_room_batch.sh; then RESULTS+=("anchor: OK (${ANCHOR_TOKENS} tok)"); else RESULTS+=("anchor: non-zero (read above)"); fi
 fi
 
 # --- Section: energy (per-domain, baseline + f16-KV) --------------------------
 if want energy; then
   banner "2  ENERGY — per-domain GPU/DRAM J/tok (phase_joules --domains)"
-  echo "--- 2a baseline ---"
-  tools/bench/phase_joules.sh --domains --tokens 512 \
-    && RESULTS+=("energy/baseline: OK") || RESULTS+=("energy/baseline: non-zero")
-  echo "--- 2b f16-KV (does halving KV bytes win on ENERGY at depth?) ---"
-  DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --domains --tokens 1024 \
-    && RESULTS+=("energy/f16kv: OK") || RESULTS+=("energy/f16kv: non-zero")
+  echo "--- 2a baseline (${ENERGY_TOKENS} tok) ---"
+  tools/bench/phase_joules.sh --domains --tokens "$ENERGY_TOKENS" \
+    && RESULTS+=("energy/baseline: OK (${ENERGY_TOKENS} tok)") || RESULTS+=("energy/baseline: non-zero")
+  echo "--- 2b f16-KV (${ENERGY_TOKENS_F16KV} tok; does halving KV bytes win on ENERGY at depth?) ---"
+  DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --domains --tokens "$ENERGY_TOKENS_F16KV" \
+    && RESULTS+=("energy/f16kv: OK (${ENERGY_TOKENS_F16KV} tok)") || RESULTS+=("energy/f16kv: non-zero")
   echo "COMPARE: f16-KV total J/tok < baseline => real energy lever; >= => footprint-only."
 fi
 
@@ -125,7 +147,7 @@ fi
 if want trace; then
   banner "3  FRONTIER — Metal System Trace diff vs llama.cpp (mst_diff.sh)"
   if [[ -x tools/bench/mst_diff.sh ]]; then
-    tools/bench/mst_diff.sh && RESULTS+=("trace: OK (see reports/mst_diff_*.md)") \
+    TOKENS="$TRACE_TOKENS" tools/bench/mst_diff.sh && RESULTS+=("trace: OK (${TRACE_TOKENS} tok; see reports/mst_diff_*.md)") \
       || RESULTS+=("trace: non-zero (read above)")
   else
     echo "SKIP: tools/bench/mst_diff.sh not executable."
