@@ -5948,6 +5948,54 @@ mod metal_dispatch {
         )
     }
 
+    /// R3 — batched KV scatter-append over B multi-seq slots. ONE dispatch (K+V)
+    /// replaces the per-slot `memcpy_f32_off_tcb` loop (2B → 1 per layer). Each
+    /// slot bi copies kv_dim K and V elems from src[bi*kv_dim] into its STABLE
+    /// region (regions[bi]) at positions[bi] within layer `layer_off_elems`.
+    /// Byte-identical (pure copy). `regions`/`positions` are u32 buffers (B each).
+    #[allow(clippy::too_many_arguments)]
+    pub fn kv_scatter_append_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src_k: &PinnedBuffer,
+        src_v: &PinnedBuffer,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+        regions: &PinnedBuffer,
+        positions: &PinnedBuffer,
+        kv_dim: usize,
+        b: usize,
+        slot_stride_elems: usize,
+        layer_off_elems: usize,
+    ) -> Result<()> {
+        let total = (b as u32) * (kv_dim as u32);
+        if total == 0 {
+            return Ok(());
+        }
+        let n_tg = total.div_ceil(TG_SIZE);
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, kv_dim as u32);
+        ab.set_u32(1, b as u32);
+        ab.set_u32(2, slot_stride_elems as u32);
+        ab.set_u32(3, layer_off_elems as u32);
+        tcb.dispatch_threads(
+            "kv_scatter_append_multiseq",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(src_k), 0);
+                enc.set_buffer(1, Some(src_v), 0);
+                enc.set_buffer(2, Some(k_cache), 0);
+                enc.set_buffer(3, Some(v_cache), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_buffer(5, Some(regions), 0);
+                enc.set_buffer(6, Some(positions), 0);
+            },
+        )
+    }
+
     /// f16-KV variant of [`mha_decode_f32_tcb`] (Phase 2.1-a). Identical
     /// args/geometry; the dispatched kernel reads k/v as `half`. `k_off_bytes`/
     /// `v_off_bytes` are BYTE offsets into the *half* cache — the caller
