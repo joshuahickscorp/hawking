@@ -296,8 +296,13 @@ stop_sampler "$sampler_pid"
 # Parse stats line.
 statline=$(grep -E '\[stats\]' "$statf" | tail -1)
 if [[ -z "$statline" ]]; then
-  echo "  WARN: no [stats] line found. Raw tail:" >&2
+  # FAIL LOUD — decode produced no measurement (e.g. stale-profile shader-hash,
+  # OOM, or a model error). Returning 0.0000 J/tok as a fake-pass is what burned
+  # the first clean-room window; exit nonzero so the queue marks this FAIL.
+  echo "  FAIL: no [stats] line — decode produced no measurement. Raw tail:" >&2
   tail -3 "$statf" >&2
+  rm -f "$wfile" "$gfile" "$dfile" "$statf"
+  exit 1
 fi
 dec_ms=$(printf '%s' "$statline"  | grep -oE 'decode_ms=[0-9.]+' | grep -oE '[0-9.]+')
 dec_tps=$(printf '%s' "$statline" | grep -oE 'dec_tps=[0-9.]+'   | grep -oE '[0-9.]+')

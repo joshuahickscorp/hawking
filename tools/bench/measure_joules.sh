@@ -203,8 +203,11 @@ run_one() {  # $1 = label, $2 = extra-env (e.g. "DISMANTLE_QWEN_PREDEC_F16SCALES
   local statline dec_ms dec_tps comp_tok
   statline=$(grep -E '\[stats\]' "$statf" | tail -1)
   if [[ -z "$statline" ]]; then
-    echo "  [$label] WARN: no [stats] line found. Raw tail:" >&2
+    # FAIL LOUD — no decode happened (stale-profile hash, OOM, model error).
+    # Don't emit a fake 0.0000 J/tok 'pass'; fail so the caller/queue sees it.
+    echo "  [$label] FAIL: no [stats] line — decode produced no measurement. Raw tail:" >&2
     tail -3 "$statf" >&2
+    exit 1
   fi
   dec_ms=$(printf '%s' "$statline"  | grep -oE 'decode_ms=[0-9.]+'  | grep -oE '[0-9.]+')
   dec_tps=$(printf '%s' "$statline" | grep -oE 'dec_tps=[0-9.]+'    | grep -oE '[0-9.]+')
