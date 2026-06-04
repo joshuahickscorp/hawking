@@ -148,6 +148,21 @@ fi
 # --- Summary ------------------------------------------------------------------
 banner "SUMMARY"
 for r in "${RESULTS[@]}"; do printf '  - %s\n' "$r"; done
+
+# Catch the fake-pass class: a sub-script can exit 0 yet have logged a
+# no-measurement signature (the first clean run reported sections "OK" while
+# logging 0.0000 J/tok + a shader-hash mismatch). Scan the whole log and flag
+# loudly so a masked failure is never silent — review these before trusting any 'OK'.
+sigfile="$(mktemp)"
+grep -nE 'kernel profile shader hash mismatch|no \[stats\] line|J/token *: *0\.0000|dec_tps *: *\?|Recording failed|Path not found|FAIL:' "$LOG" > "$sigfile" 2>/dev/null || true
+if [[ -s "$sigfile" ]]; then
+  echo ""
+  echo "  ##  FAILURE SIGNATURES DETECTED IN LOG — a section above may be a FALSE 'OK':"
+  sed -n '1,20p' "$sigfile" | sed 's/^/      /'
+  echo "      (review these lines before trusting any 'OK' result)"
+fi
+rm -f "$sigfile"
+
 echo ""
 echo "full log: $LOG"
 echo "done."
