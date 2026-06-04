@@ -141,10 +141,18 @@ DM_CMD=(/usr/bin/env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench
         --weights "$WEIGHTS" --kernel-profile "$PROFILE"
         --trials 1 --max-new-tokens "$TOKENS")
 note "command: ${DM_CMD[*]}"
+# macOS 26.x xctrace can return a non-zero exit through the env+nice+taskpolicy
+# launch chain EVEN WHEN the trace bundle is captured fine (confirmed: the bench
+# it launches exits 0 with valid stats, and the .trace bundle is fully populated).
+# The real success signal is "did the bundle get written?", not xctrace's code.
 xcrun xctrace record --template "Metal System Trace" --output "$DM_TRACE" \
     --launch -- "${DM_CMD[@]}" \
-    || die "dismantle MST record failed (see above)."
-note "[ok] dismantle trace: $DM_TRACE"
+    || note "[warn] xctrace returned non-zero (macOS 26.x launch-chain quirk) — checking for the bundle anyway."
+if [[ -d "$DM_TRACE" ]]; then
+    note "[ok] dismantle trace: $DM_TRACE"
+else
+    die "dismantle MST record failed — no trace bundle at $DM_TRACE (see above)."
+fi
 
 # ===========================================================================
 # STAGE 2 — llama-cli MST capture (same model/prompt/seed/temp0/256 tok)
