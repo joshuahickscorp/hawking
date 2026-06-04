@@ -537,3 +537,40 @@ J/tok), so "f16-KV worse" is NOT a valid read; re-run both at the SAME N. (Also 
 standalone: exit 0, valid stats, dispatch_count 7392/8tok). Fix: make the dismantle capture
 non-fatal + verify the `.trace` file exists (mirror the llama P3 non-fatal pattern), and/or drop
 the wrapper under `xctrace --launch`. Needs a clean window to validate.
+
+## Aggregate-max wave + C1 (2026-06-04) — the profile is the verdict; C1 landed; v3w is the 80%
+
+Wave `wf_60586084` (12 agents) profiled the multiseq-B=1 gap + designed 4 levers. The PROFILE is
+the headline (evidence: B-scaling fit `per_step_ms = 96 + 8.8*B`, predec ON/OFF null result, CPU
+microbenches — all cross-consistent to 105ms):
+- **~80% of the 105 ms multiseq-B=1 is the layer projection GEMMs running `gemm_q4_k_m_batched_v3w`
+  at low B** — under-occupied (8 rows/TG, no 2-row-ILP), **DRAM-latency-bound NOT bandwidth-bound**
+  (predec ON/OFF identical at B=1, vs single-stream's +45% without predec). gate+up also unfused
+  (+36 GEMMs/tok). This pass is **B-independent** (the weight read) → it caps B=8 too → **the
+  aggregate lever.**
+- LM-head 2nd commit ~9%; per-seq marginal ~8% (the good amortizing part → B=8 scales 5x); per-step
+  embed/layer0 ~3-4%; CPU argmax+to_vec **<0.5%**. So it's ~99% GPU-kernel-efficiency, ~1% CPU —
+  argmax/copy is NOT the problem.
+
+**LANDED: C1 single-TCB tail `8eaf627`** — the stack returns the live TCB; the R1 LM-head GEMM
+appends into it → ONE commit/step (was 2). Bit-identical (anchors byte-identical, new test green,
+94/9/5 lib). ~5-10 ms/step removed; per-step so it compounds into the aggregate.
+
+**Marginal (profile-confirmed, NOT applied — low ROI):** A3 batch embed/layer0 (~0 ms B=1, 1-3 ms
+B=8; ship-verdict, bit-identical, available on request); batched GPU argmax (<0.5% B=1; fix-then-ship);
+A7 hoist allocs (~0.5 ms; design incomplete).
+
+**THE BIG LEVER (the 80%, which the wave's design agent FAILED to produce): v3w projection-GEMM
+efficiency at low B.** Two routes, each a focused parity-gated pass:
+- **(a) MMA swap** — reuse the existing parity-tested `gemm_q4_k_m_batched_v3w_mma` in the multiseq
+  stack. Easier, but MMA underfills at low B (may regress B=1) AND is numerically ≠ the single-stream
+  gemv (reduction-reorder, atol 1e-3) → the `multiseq_decode_parity` ANCHOR (B=1 multiseq == single-
+  stream) could flip an argmax → needs the anchor relaxed + a paired clean measure to confirm the B=8
+  gain. Uncertain.
+- **(b) v3w kernel rewrite** — port the tuned single-token gemv's 16-rows/TG + 2-row-ILP DRAM-latency-
+  hiding into `gemm_q4_k_m_batched_v3w[_predec]`. The real fix: lifts the weight-read efficiency at
+  ALL B → shrinks the 96 ms fixed pass → lifts the B=8 aggregate directly (47.96 → potentially ~80+).
+  A real Metal-shader pass, gated by `q4k_batched_gemm_parity` + the multiseq anchors.
+
+This is the genuine path past the 47.96/5.02× baseline. It deserves its own focused session, not a
+rushed end-of-turn change (route (a) risks the anchor; route (b) is multi-step shader tuning).
