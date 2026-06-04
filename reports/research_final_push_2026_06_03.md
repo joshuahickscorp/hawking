@@ -432,3 +432,41 @@ known-stable tri-seed.
 **Next (each its own parity-gated pass):** R2 (batch per-slot embed/layer0-norm/RoPE,
 4B→4 dispatches) + R3 (single batched KV-append, 2B→1), then re-measure aggregate (was
 2.42×; R1+R2+R3 target ~3.5×) in a clean-ish window.
+
+---
+
+## R2 + R3 (batch the per-layer per-slot dispatches) — APPLIED + VALIDATED + COMMITTED (2026-06-04)
+
+The two remaining aggregate-opt build levers ("top 2"), each a bit-identical refactor,
+parity-gated + committed:
+
+- **R2 — batched RoPE `88a00ef`.** New kernel `rope_f32_batched_multiseq` (common.metal)
+  + wrapper replaces the per-slot `rope_q_f32_inplace` loop (2B dispatches/layer → 2),
+  reading a per-slot `positions[]` buffer. RoPE is elementwise → BIT-IDENTICAL. Parity
+  `rope_batched_multiseq_parity`: max_abs_diff == 0 vs the per-slot loop for the Q width,
+  the K width (GQA), and B=1.
+- **R3 — batched KV scatter-append `113a9a8`.** New kernel `kv_scatter_append_multiseq`
+  (common.metal) + wrapper replaces the per-slot `memcpy_f32_off` loop (2B/layer → 1,
+  K+V together), reading per-slot `regions[]`/`positions[]`. Pure copy → BYTE-IDENTICAL.
+  Preserves the stable-slot-region keying. Parity `kv_scatter_append_multiseq_parity`:
+  K+V caches identical vs the per-slot loop with churned (non-identity) regions, divergent
+  positions, and a non-zero layer offset.
+
+At B=8 over 36 layers, R2+R3 together drop ~2000 sequential per-slot dispatches/step
+(2×576 RoPE + 576 append → ~144). Each validated: release build clean; the new-kernel
+parity tests pass bit-identically; the integrated `multiseq_decode_parity` +
+`multiseq_churn_parity` stay byte-identical; the R1 Q4_K LM-head gate (2/2) + 94/9/5 lib
+tests stay green.
+
+**Stack state:** every PER-LAYER per-slot loop on the Qwen-Q4_K hot path is now batched
+(projections / biases / silu_mul / FFN / MHA / add_rmsnorm were already batched; RoPE +
+KV-append now too). The ONLY per-slot loops left are the two PER-STEP ones — embed
+(B/step) and layer-0 pre-rmsnorm (B/step) — together ~14 dispatches/step at B=8, ~0.7% of
+what R2+R3 removed. Deferred as a negligible micro-opt that should itself be gated on the
+bench showing per-step dispatch overhead matters.
+
+**Only benching left (the axis is build-complete):** re-measure the B=8 aggregate
+(`batch_aggregate_bench.sh` / `multiseq_aggregate_bench`, paired flag-ON vs flag-OFF —
+contamination-robust, Claude-open OK) to confirm R1+R2+R3 moved 2.42× toward the ~3.5×
+ceiling; then the clean-room absolutes. Commits `8aba79e` (R1) + `88a00ef` (R2) +
+`113a9a8` (R3), local, 23 ahead.
