@@ -157,10 +157,11 @@ LL_CMD=(/usr/bin/env nice -n 19 taskpolicy -b "$LLAMA"
         -m "$WEIGHTS" -p "$PROMPT" -n "$TOKENS"
         --temp 0 --seed "$SEED" -ngl 99 -no-cnv)
 note "command: ${LL_CMD[*]}"
+LL_OK=1
 xcrun xctrace record --template "Metal System Trace" --output "$LL_TRACE" \
     --launch -- "${LL_CMD[@]}" \
-    || die "llama-cli MST record failed (see above)."
-note "[ok] llama trace: $LL_TRACE"
+    || { note "[warn] llama-cli MST record failed (llama-cli flag drift? see above). Proceeding DISMANTLE-ONLY so the expensive dismantle trace is not wasted."; LL_OK=0; }
+[[ "$LL_OK" == 1 ]] && note "[ok] llama trace: $LL_TRACE"
 
 # ===========================================================================
 # STAGE 3 — export both via mst_export.sh, locate the GPU-interval table
@@ -187,11 +188,18 @@ export_and_pick() {
 }
 
 DM_XML="$(export_and_pick "$DM_TRACE" dismantle)"
-LL_XML="$(export_and_pick "$LL_TRACE" llama)"
 [[ -n "$DM_XML" && -f "$DM_XML" ]] || die "no dismantle GPU-interval XML exported (inspect $TDIR/dismantle_export/toc.xml)."
-[[ -n "$LL_XML" && -f "$LL_XML" ]] || die "no llama GPU-interval XML exported (inspect $TDIR/llama_export/toc.xml)."
 note "[ok] dismantle XML: $DM_XML"
-note "[ok] llama XML    : $LL_XML"
+LL_XML=""
+if [[ "$LL_OK" == 1 ]]; then
+  LL_XML="$(export_and_pick "$LL_TRACE" llama)"
+  if [[ -n "$LL_XML" && -f "$LL_XML" ]]; then
+    note "[ok] llama XML    : $LL_XML"
+  else
+    note "[warn] no llama GPU-interval XML exported (inspect $TDIR/llama_export/toc.xml); DISMANTLE-ONLY."
+    LL_XML=""
+  fi
+fi
 note ""
 note "[hint] if the diff's columns look wrong, inspect them:"
 note "       $PY $GAP_PY --inspect $DM_XML"
@@ -202,10 +210,15 @@ note "       $PY $GAP_PY --inspect $LL_XML"
 # ===========================================================================
 hr "STAGE 4: per-kernel diff + report"
 
-DIFF_TXT="$($PY "$GAP_PY" --dismantle "$DM_XML" --llama "$LL_XML" \
-            --tokens "$TOKENS" --gemv-match "$GEMV_MATCH" 2>&1)"
-DIFF_JSON="$($PY "$GAP_PY" --dismantle "$DM_XML" --llama "$LL_XML" \
-            --tokens "$TOKENS" --gemv-match "$GEMV_MATCH" --json 2>/dev/null || echo '{}')"
+if [[ -n "$LL_XML" && -f "$LL_XML" ]]; then
+  DIFF_TXT="$($PY "$GAP_PY" --dismantle "$DM_XML" --llama "$LL_XML" \
+              --tokens "$TOKENS" --gemv-match "$GEMV_MATCH" 2>&1)"
+  DIFF_JSON="$($PY "$GAP_PY" --dismantle "$DM_XML" --llama "$LL_XML" \
+              --tokens "$TOKENS" --gemv-match "$GEMV_MATCH" --json 2>/dev/null || echo '{}')"
+else
+  DIFF_TXT="DISMANTLE-ONLY (llama capture/export unavailable). The dismantle trace is saved at $DM_TRACE — open it in Instruments, or re-run mst_diff.sh for the llama diff. Per-kernel dismantle GPU-us: $PY $GAP_PY --inspect $DM_XML"
+  DIFF_JSON='{}'
+fi
 
 # The report is plain markdown; the human reads it Claude-quit and pastes the
 # verdict line into the kill-ledger / closeout.
