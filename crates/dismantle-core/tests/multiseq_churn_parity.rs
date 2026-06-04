@@ -117,3 +117,58 @@ fn multiseq_survives_slot_eviction() {
         "slot2 (after slot1 eviction + index compaction) != solo decode — KV CROSS-CONTAMINATION"
     );
 }
+
+/// Verify that calling `forward_tokens_multiseq_logits` first with a SMALL
+/// `max_seq_per_slot` and then a LARGER one does NOT reallocate the arena and
+/// does NOT wipe slot 0's accumulated KV.
+///
+/// Pre-fix bug: the guard `a.max_seq < MAX_MULTISEQ_SLOTS * max_seq_per_slot`
+/// fired when max_seq_per_slot grew between calls (parity test used 16, serve
+/// path uses 2048), producing a fresh zeroed arena and a divergent second token.
+/// Post-fix: arena allocates once at MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX
+/// (8 × 2048) and never reallocates.
+#[test]
+fn multiseq_arena_no_realloc_on_ctx_change() {
+    let mut engine = match load() {
+        Some(e) => e,
+        None => return,
+    };
+
+    let seed = 9707u32;
+    let region = 0usize;
+    let small = 16usize;
+    let large = 2048usize;
+
+    // Solo reference at large max_seq for both steps.
+    engine.multiseq_arena = None;
+    let solo_s0 = engine
+        .forward_tokens_multiseq_logits(&[seed], &[0], &[region], large)
+        .expect("solo s0");
+    let solo_tok0 = argmax(&solo_s0[0]);
+    let solo_s1 = engine
+        .forward_tokens_multiseq_logits(&[solo_tok0], &[1], &[region], large)
+        .expect("solo s1");
+    let solo_tok1 = argmax(&solo_s1[0]);
+
+    // Realloc-trigger run: step 1 with small, step 2 with large — NO arena reset.
+    engine.multiseq_arena = None;
+    let trig_s0 = engine
+        .forward_tokens_multiseq_logits(&[seed], &[0], &[region], small)
+        .expect("trigger s0 (small)");
+    let trig_tok0 = argmax(&trig_s0[0]);
+    let trig_s1 = engine
+        .forward_tokens_multiseq_logits(&[trig_tok0], &[1], &[region], large)
+        .expect("trigger s1 (large)");
+    let trig_tok1 = argmax(&trig_s1[0]);
+
+    println!("[no-realloc] solo: {solo_tok0},{solo_tok1}  trigger: {trig_tok0},{trig_tok1}");
+    assert_eq!(
+        solo_tok0, trig_tok0,
+        "step-0 token differs — KV layout is max_seq_per_slot-dependent at step 0"
+    );
+    assert_eq!(
+        solo_tok1, trig_tok1,
+        "arena reallocated on max_seq_per_slot change — slot KV wiped: \
+         pre-fix realloc bug reproduced (solo={solo_tok1}, trigger={trig_tok1})"
+    );
+}
