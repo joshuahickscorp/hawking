@@ -5812,18 +5812,17 @@ impl QwenDense {
                 kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b)?;
             }
 
-            // RoPE per slot at its OWN position.
-            for bi in 0..b {
-                let pos = positions[bi] as u32;
-                kernels::rope_q_f32_inplace_off_tcb(
-                    &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes,
-                    n_heads, head_dim, 0, head_dim, pos, theta,
-                )?;
-                kernels::rope_q_f32_inplace_off_tcb(
-                    &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes,
-                    n_kv_heads, head_dim, 0, head_dim, pos, theta,
-                )?;
-            }
+            // RoPE per slot at its OWN position (positions[] buffer), batched:
+            // ONE dispatch each for Q and K replaces the 2B per-slot rope calls.
+            // Bit-identical — rope is elementwise, so batching changes no element.
+            kernels::rope_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.q_buf_batch, &pos_buf,
+                n_heads, head_dim, q_dim, b, theta,
+            )?;
+            kernels::rope_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.k_token_buf_batch, &pos_buf,
+                n_kv_heads, head_dim, kv_dim, b, theta,
+            )?;
 
             // Per-slot KV append: each slot writes to its OWN region at its
             // OWN position (scattered, B small) -- NOT one contiguous memcpy.

@@ -500,6 +500,46 @@ kernel void rope_slice_f32_inplace(
     x[off + 1u] = x0 * s + x1 * c;
 }
 
+// R2 — batched RoPE over B multi-seq decode slots, each at its OWN position
+// (positions[bi]). Bit-identical to running rope_q_f32_inplace per slot: the
+// rotation is elementwise (no reduction), so batching over B changes no element.
+// `x` is laid out [B, n_heads*head_dim] with `slot_stride` elements per slot.
+// Called once for Q (n_heads, slot_stride=q_dim) and once for K (n_kv_heads,
+// slot_stride=kv_dim). qk_nope_dim is 0 here (full-head rope, the dense path).
+struct ArgbufRopeMultiseq {
+    uint  n_heads;
+    uint  head_dim;     // full head (= qk_rope_dim); qk_nope_dim is 0
+    uint  slot_stride;  // elements per slot (q_dim for Q, kv_dim for K)
+    uint  b;
+    float base;
+};
+
+kernel void rope_f32_batched_multiseq(
+    device       float* x             [[buffer(0)]],
+    constant ArgbufRopeMultiseq& args [[buffer(1)]],
+    device const uint*  positions     [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint per_slot = args.n_heads * pairs_per_head;
+    uint total = args.b * per_slot;
+    if (id >= total) return;
+
+    uint bi   = id / per_slot;
+    uint rem  = id - bi * per_slot;
+    uint head = rem / pairs_per_head;
+    uint pair = rem - head * pairs_per_head;
+    uint off  = bi * args.slot_stride + head * args.head_dim + 2u * pair;
+
+    float theta = (float)positions[bi] / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = x[off];
+    float x1 = x[off + 1u];
+    x[off]      = x0 * c - x1 * s;
+    x[off + 1u] = x0 * s + x1 * c;
+}
+
 // v1.0.0-D — embed lookup writing f32 residual stream.
 // Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
 kernel void embed_lookup_f32(
