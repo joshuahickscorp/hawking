@@ -45,11 +45,15 @@ impl BatchDriver {
 
         let tokens: Vec<u32> = batch.iter().map(|step| step.token).collect();
         let positions: Vec<usize> = batch.iter().map(|step| step.position).collect();
+        // STABLE KV region per slot = the slot id (0..max_batch_size, reused on
+        // release), NOT the compacted batch index — so a slot keeps its KV as the
+        // ready set churns. The multi-seq path keys KV by this region.
+        let regions: Vec<usize> = batch.iter().map(|step| step.slot_id as usize).collect();
         // Continuous-batching DECODE: the batch holds N INDEPENDENT slots at
         // divergent positions, so route through the multi-seq seam (QwenDense
         // overrides it with the GPU weight-amortizing path) — NOT
         // forward_tokens_batched, which is one-sequence prefill/verify.
-        let mut logits = engine.forward_multiseq_batched(&tokens, &positions)?;
+        let mut logits = engine.forward_multiseq_batched(&tokens, &positions, &regions)?;
         let eos_id = engine.eos_id_for_batch();
         let decoded = self
             .scheduler

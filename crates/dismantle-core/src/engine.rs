@@ -264,7 +264,9 @@ pub trait Engine: Send + Sync {
         &mut self,
         tokens: &[u32],
         positions: &[usize],
+        regions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
+        let _ = regions;
         self.forward_tokens_for_test(tokens, positions)
     }
 

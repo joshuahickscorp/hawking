@@ -67,11 +67,14 @@ fn run_multiseq(label: &str, positions: &[u32], max_seq: usize, atol: f32) {
     let k_buf = new_f32_buf(ctx, &k);
     let v_buf = new_f32_buf(ctx, &v);
     let pos_buf = u32_buf(ctx, positions);
+    // region == batch index here (each slot's KV is at its own bi*stride region).
+    let region_ids: Vec<u32> = (0..b as u32).collect();
+    let region_buf = u32_buf(ctx, &region_ids);
     let out_buf = ctx.new_buffer(b * q_dim * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_batched_multiseq_tcb(
-            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, &pos_buf, max_seq,
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, &pos_buf, &region_buf, max_seq,
             stride, b, HEAD_DIM, N_HEADS, N_KV_HEADS,
         )
         .expect("multiseq encode");

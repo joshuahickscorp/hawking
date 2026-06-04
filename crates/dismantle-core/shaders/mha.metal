@@ -375,6 +375,7 @@ kernel void mha_decode_f32_batched_multiseq(
     device const float*       v_cache   [[buffer(3)]],
     device       float*       out       [[buffer(4)]],
     device const uint*        positions [[buffer(5)]],
+    device const uint*        regions   [[buffer(6)]],
     threadgroup  float*       shmem     [[threadgroup(0)]],
     uint3 tg_id     [[threadgroup_position_in_grid]],
     uint3 tid_in_tg [[thread_position_in_threadgroup]],
@@ -392,9 +393,12 @@ kernel void mha_decode_f32_batched_multiseq(
     const uint kv_h      = h / GROUP;
     const float scale    = args.scale;
 
-    // Per-slot K/V base: each sequence's cache is its own slot-strided region.
-    device const float* k_slot = k_cache + batch_id * args.kv_slot_stride;
-    device const float* v_slot = v_cache + batch_id * args.kv_slot_stride;
+    // Per-slot K/V base: each sequence's cache lives at its STABLE region
+    // (regions[batch_id]), NOT the compacted dispatch index — so a slot keeps
+    // its KV history even as the active/ready set shrinks/grows between steps.
+    const uint region = regions[batch_id];
+    device const float* k_slot = k_cache + region * args.kv_slot_stride;
+    device const float* v_slot = v_cache + region * args.kv_slot_stride;
 
     threadgroup float* scores = shmem;
     threadgroup float* red    = shmem + SEQ;
