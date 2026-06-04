@@ -2773,17 +2773,20 @@ impl Engine for QwenDense {
         &mut self,
         tokens: &[u32],
         positions: &[usize],
+        regions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
         #[cfg(target_os = "macos")]
         {
             // Bounded per-slot context for the v1 serve path; KV memory at the
             // arena's max_batch scales with this (2048 keeps B=8 under the RSS
-            // sentinel). Requests longer than this error in the stack.
+            // sentinel). Requests longer than this error in the stack. `regions`
+            // are the STABLE slot ids each batch element's KV lives at.
             const MULTISEQ_CTX: usize = 2048;
-            return self.forward_tokens_multiseq_logits(tokens, positions, MULTISEQ_CTX);
+            return self.forward_tokens_multiseq_logits(tokens, positions, regions, MULTISEQ_CTX);
         }
         #[cfg(not(target_os = "macos"))]
         {
+            let _ = regions;
             self.forward_tokens_for_test(tokens, positions)
         }
     }
@@ -5612,6 +5615,7 @@ impl QwenDense {
         arena: &crate::metal::DenseDecodeArena,
         tokens: &[u32],
         positions: &[usize],
+        regions: &[usize],
         max_seq_per_slot: usize,
     ) -> Result<()> {
         use crate::kernels;
@@ -5634,12 +5638,31 @@ impl QwenDense {
                 b, arena.max_batch
             )));
         }
-        if arena.max_seq < b * max_seq_per_slot {
+        if regions.len() != b {
             return Err(Error::Model(format!(
-                "multiseq_stack: arena.max_seq={} < B*max_seq_per_slot={}",
-                arena.max_seq,
-                b * max_seq_per_slot
+                "multiseq_stack: regions={} != tokens={}",
+                regions.len(),
+                b
             )));
+        }
+        // Slot-strided KV: the arena holds `max_batch` independent regions, each
+        // with room for `max_seq_per_slot` positions. KV is keyed by STABLE
+        // region (regions[bi]), NOT the compacted dispatch index, so a slot's
+        // history survives the active/ready set shrinking or growing between steps.
+        if arena.max_seq < arena.max_batch * max_seq_per_slot {
+            return Err(Error::Model(format!(
+                "multiseq_stack: arena.max_seq={} < max_batch*max_seq_per_slot={}",
+                arena.max_seq,
+                arena.max_batch * max_seq_per_slot
+            )));
+        }
+        for (i, &r) in regions.iter().enumerate() {
+            if r >= arena.max_batch {
+                return Err(Error::Model(format!(
+                    "multiseq_stack: regions[{}]={} >= arena.max_batch={}",
+                    i, r, arena.max_batch
+                )));
+            }
         }
         for (i, &p) in positions.iter().enumerate() {
             if p >= max_seq_per_slot {
@@ -5695,6 +5718,11 @@ impl QwenDense {
             .flat_map(|&p| (p as u32).to_le_bytes())
             .collect();
         let pos_buf = ctx.new_buffer_with_bytes(&pos_bytes);
+        let region_bytes: Vec<u8> = regions
+            .iter()
+            .flat_map(|&r| (r as u32).to_le_bytes())
+            .collect();
+        let region_buf = ctx.new_buffer_with_bytes(&region_bytes);
 
         let predec_cache = self.q4k_predec_cache.as_ref();
         let mut tcb = TokenCommandBuffer::new(ctx);
@@ -5801,7 +5829,7 @@ impl QwenDense {
             // OWN position (scattered, B small) -- NOT one contiguous memcpy.
             let layer_off_elems = li * layer_kv_stride_elems;
             for bi in 0..b {
-                let dst_off = layer_off_elems + bi * slot_stride_elems + positions[bi] * kv_dim;
+                let dst_off = layer_off_elems + regions[bi] * slot_stride_elems + positions[bi] * kv_dim;
                 kernels::memcpy_f32_off_tcb(
                     &mut tcb, &arena.k_token_buf_batch, &arena.k_cache_buf,
                     bi * kv_dim, dst_off, kv_dim,
@@ -5818,7 +5846,7 @@ impl QwenDense {
                 &mut tcb, &arena.q_buf_batch,
                 &arena.k_cache_buf, layer_kv_off_bytes,
                 &arena.v_cache_buf, layer_kv_off_bytes,
-                &arena.attn_out_buf_batch, &pos_buf, mha_max_seq, slot_stride_elems,
+                &arena.attn_out_buf_batch, &pos_buf, &region_buf, mha_max_seq, slot_stride_elems,
                 b, head_dim, n_heads, n_kv_heads,
             )?;
 
@@ -5902,14 +5930,33 @@ impl QwenDense {
         &mut self,
         tokens: &[u32],
         positions: &[usize],
+        regions: &[usize],
         max_seq_per_slot: usize,
     ) -> Result<Vec<Vec<f32>>> {
         let b = tokens.len();
         if b == 0 {
             return Ok(Vec::new());
         }
+        // Fixed-capacity slot-strided arena: MAX_MULTISEQ_SLOTS independent KV
+        // regions, allocated ONCE and NEVER reallocated on batch-size growth.
+        // A realloc-on-growth would return zeroed buffers and wipe ALL in-flight
+        // slots' KV (the catastrophic bug the review found); regions (stable slot
+        // ids) index into the fixed regions, so B can shrink/grow freely.
+        const MAX_MULTISEQ_SLOTS: usize = 8;
+        if b > MAX_MULTISEQ_SLOTS {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: B={b} > MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
+            )));
+        }
+        if regions.len() != b {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: regions={} != tokens={b}",
+                regions.len()
+            )));
+        }
+        // (Re)allocate ONLY when absent or the per-slot context grew — never on B.
         let need_new = match &self.multiseq_arena {
-            Some(a) => a.max_batch < b || a.max_seq < b * max_seq_per_slot,
+            Some(a) => a.max_seq < MAX_MULTISEQ_SLOTS * max_seq_per_slot,
             None => true,
         };
         if need_new {
@@ -5922,14 +5969,14 @@ impl QwenDense {
                 crate::metal::DenseDecodeArena::new_with_batch(
                     ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
                     cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                    b * max_seq_per_slot, b,
+                    MAX_MULTISEQ_SLOTS * max_seq_per_slot, MAX_MULTISEQ_SLOTS,
                 )
             };
             self.multiseq_arena = Some(arena);
         }
 
         let arena = self.multiseq_arena.as_ref().unwrap();
-        self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, max_seq_per_slot)?;
+        self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, regions, max_seq_per_slot)?;
 
         let h = self.config.hidden;
         let vocab = self.config.vocab_size;
@@ -5970,7 +6017,11 @@ impl QwenDense {
         positions: &[usize],
         max_seq_per_slot: usize,
     ) -> Result<Vec<u32>> {
-        let logits = self.forward_tokens_multiseq_logits(tokens, positions, max_seq_per_slot)?;
+        // The argmax wrapper (parity + aggregate tests) decodes B contiguous
+        // sequences, so region == batch index (0..b) — a stable identity.
+        let regions: Vec<usize> = (0..tokens.len()).collect();
+        let logits =
+            self.forward_tokens_multiseq_logits(tokens, positions, &regions, max_seq_per_slot)?;
         Ok(logits
             .iter()
             .map(|l| {
