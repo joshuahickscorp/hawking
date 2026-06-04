@@ -370,3 +370,65 @@ work). The review caught them *before* that wire-up.
   per-slot dispatches (R2/R3) to push 2.42× → ~3.5×. (optimization)
 - **P0 mst_gap real-export parse** — validate on a tiny captured trace first (clean
   window). (pre-check)
+
+---
+
+## R1 (GPU-batched LM head) — APPLIED + VALIDATED + COMMITTED `8aba79e` (2026-06-04)
+
+**What:** the aggregate-opt RANK-1 lever — replace the B sequential CPU full-vocab f16
+matmuls in `forward_tokens_multiseq_logits` (qwen_dense.rs) with ONE GPU-batched Q4_K
+GEMM over all B slots (weight read once, broadcast across B columns). Opt-in behind
+`DISMANTLE_QWEN_Q4K_LMHEAD=1` — the SAME flag/buffer the verify FAST path uses.
+
+**Approach (reuse, NO new kernel):** the flag-ON branch calls the identical
+`gemm_q4_k_m_batched_v3w_pinned_tcb` that `forward_tokens_verify` (qwen_dense.rs:6187)
+drives, over the SAME `arena.x_norm_buf_batch` the multiseq stack just wrote ([B,h]
+row-major f32 = the v3w x layout, no transpose), into a fresh `ctx.new_buffer(B*vocab*4)`,
+then slices B full-vocab rows. **Prune-trap correction (the wave caught it):** the
+multiseq contract returns FULL-vocab logits and `forward_tokens_multiseq` argmaxes the
+index DIRECTLY as a token id (no remap), so the GPU path uses the FULL-vocab
+`self.lm_head_q4k_buf` (rows=vocab) — NOT the pruned head verify uses. Using the pruned
+head would shorten the return vectors and emit pruned indices as token ids. Gate mirrors
+verify: `env_on && lm_head_q4k_buf.is_some() && h%256==0 && B∈1..=8`; any miss falls
+through to the unchanged CPU else-branch.
+
+**Default stays byte-identical:** the edit only PREPENDS the guarded branch + early
+return; the CPU per-slot loop is untouched as the flag-OFF else. The anchors
+(multiseq_decode_parity, multiseq_churn_parity) `remove_var` the flag → always hit the
+CPU path → stay green.
+
+**Built via wave `wf_99664804`** (9 agents: 5 grounded reads → 1 synthesis → 3
+adversarial-review lenses; all 3 returned ship / zero bugs / applies-cleanly /
+default-bit-identical). **Re-verified independently** against the live tree before
+applying (never trust the agent's "passed"): old_code anchor unique; `lm_head_q4k_buf:
+Option<PinnedBuffer>` (qwen_dense.rs:207); single-token path (5022-5031) proves the
+full-vocab reuse + byte formula `vocab*(h/256)*144`; v3w call+commit pattern (verify
+6187-6191); `new_buffer→Buffer ≡ PinnedBuffer` (metal/mod.rs:381 alias) so the scratch
+buffer type-checks; `x_norm_buf_batch` is a PinnedBuffer; borrow check = all immutable
+self-borrows (mirrors verify). Both edited files PARSE-clean (rustfmt edition 2021) — a
+syntax backstop, NOT a type/borrow check.
+
+**STATE: VALIDATED + COMMITTED `8aba79e` (engine, 2 files +237).** The CPU wave cleared and
+the deferred build + parity all ran green (Claude open — parity is contamination-robust):
+- `cargo build --release --workspace` — Finished 45.83s, EXIT 0, no new warnings from the edit.
+- `cargo test --release --workspace --lib` — 5 + 94 + 9 pass, 0 failed.
+- `multiseq_decode_parity` + `multiseq_churn_parity` (flag-OFF anchors) — pass (6.99s / 8.31s);
+  the default path is byte-identical (the edit only prepends a guarded branch + early return).
+- `multiseq_q4k_lmhead_parity -- --ignored --test-threads=1` (flag-ON R1 gate) — 2/2 pass (9.81s):
+  B=4 batched argmax == solo over 4 lockstep steps AND at divergent positions incl. pos 2047;
+  full-vocab length asserted. The tie-flip open-risk did NOT materialize (v3w computes each
+  column's reduction independently → batched==solo is bit-identical).
+Files: `crates/dismantle-core/src/model/qwen_dense.rs` (the branch in `forward_tokens_multiseq_logits`)
++ NEW `crates/dismantle-core/tests/multiseq_q4k_lmhead_parity.rs`.
+
+**Open risks carried:** (1) flag-ON logits are quant-noise-different from flag-OFF f16
+(~1e-3) — the gate is batched-vs-solo argmax (BOTH flag-ON), NOT ON-vs-OFF bit-equality;
+the OFF default stays the golden f16 path. (2) the added 4th seed (151643) / divergent
+slots could in principle tie-flip an argmax under near-ties; but v3w computes each
+column's reduction independently, so batched==solo is bit-identical per the existing
+multiseq_decode_parity precedent — no flakiness expected; if it shows, drop to the
+known-stable tri-seed.
+
+**Next (each its own parity-gated pass):** R2 (batch per-slot embed/layer0-norm/RoPE,
+4B→4 dispatches) + R3 (single batched KV-append, 2B→1), then re-measure aggregate (was
+2.42×; R1+R2+R3 target ~3.5×) in a clean-ish window.
