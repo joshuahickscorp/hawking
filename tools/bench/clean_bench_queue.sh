@@ -26,8 +26,11 @@
 #   trace    mst_diff.sh — Metal System Trace per-kernel GPU-us/call diff of
 #            dismantle vs llama-cli (the SOLE remaining single-stream-tps decider:
 #            does llama's mul_mv sustain higher GiB/s per call?).
-#   batch    continuous-batching AGGREGATE tps (B=1 vs B=8) — runs only once the
-#            multi-seq decode path is built+parity-green; otherwise prints PENDING.
+#   batch    continuous-batching AGGREGATE tps (B=1/4/8) for BOTH the default
+#            (flag-OFF: per-slot CPU LM head; reflects R2 batched-RoPE + R3
+#            batched-KV-append) and R1 ON (DISMANTLE_QWEN_Q4K_LMHEAD=1: GPU-batched
+#            Q4_K LM head) — prints absolute aggregate tps + the contamination-
+#            robust R1 flag delta. Runs once the multi-seq path is built; else PENDING.
 #
 # Everything tee's to reports/bench/clean_bench_queue_<ts>.log.
 # =============================================================================
@@ -132,7 +135,7 @@ fi
 
 # --- Section: batch (continuous-batching aggregate tps) -----------------------
 if want batch; then
-  banner "4  AGGREGATE — continuous-batching tps (B=1 vs B=8)"
+  banner "4  AGGREGATE — continuous-batching tps (B=1/4/8; flag-OFF + R1 ON; R2+R3 baked in)"
   # Filled in once the multi-seq decode path lands. The build adds the bench
   # invocation here (placeholder guard so the queue runs cleanly until then).
   if [[ -f tools/bench/batch_aggregate_bench.sh ]]; then
