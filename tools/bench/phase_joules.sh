@@ -331,10 +331,16 @@ printf '  >> J/token     : %s  <<\n' "$jtok"
 
 if [[ "$DOMAINS" == 1 ]]; then
   if [[ "$SRC" == "macmon" ]]; then
-    printf '  avg DRAM power : %s W  (ram_power, external-DRAM domain)\n' "$avg_dram"
     printf '  --- MEASURED per-domain J/tok (macmon IOReport power x wall / tokens) ---\n'
     printf '    GPU   : %s J/tok\n' "$gpu_jtok"
-    printf '    DRAM  : %s J/tok\n' "$dram_jtok"
+    # macmon ram_power is absent on some versions/chips -> avg_dram==0. Print the
+    # truth, not a fake 0.0000 DRAM J/tok (P4, bench-harness audit).
+    if awk -v d="$avg_dram" 'BEGIN{exit !(d+0>0)}'; then
+      printf '  avg DRAM power : %s W  (ram_power, external-DRAM domain)\n' "$avg_dram"
+      printf '    DRAM  : %s J/tok\n' "$dram_jtok"
+    else
+      printf '    DRAM  : unavailable (macmon ram_power absent in this version/chip)\n'
+    fi
     printf '    NOTE  : MODEL-ESTIMATE (~1 mJ res); GPU-SRAM not exposed on M3 Pro;\n'
     printf '            power averaged over the whole decode window — use --tokens 512+\n'
     printf '            and a clean room (Claude quit) for a publishable absolute number.\n'
