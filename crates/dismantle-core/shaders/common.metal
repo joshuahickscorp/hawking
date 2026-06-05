@@ -636,6 +636,61 @@ kernel void rope_qk_f32_batched_multiseq(
     }
 }
 
+// Track 3.2 — Batched embed lookup: B tokens in one dispatch.
+// Grid: (B * hidden, 1, 1). Saves B-1 dispatches vs the per-slot loop.
+// tokens: GPU buffer of B u32 token ids (packed, no stride).
+// out: (B, hidden) f32, row-major, slot-contiguous.
+kernel void embed_lookup_f32_batched(
+    device const half*  embed   [[buffer(0)]],  // (vocab, hidden) f16
+    device const uint*  tokens  [[buffer(1)]],  // (B,) token ids
+    device       float* out     [[buffer(2)]],  // (B, hidden) f32
+    constant     uint&  hidden  [[buffer(3)]],
+    constant     uint&  b       [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = b * hidden;
+    if (id >= total) return;
+    uint slot = id / hidden;
+    uint elem = id - slot * hidden;
+    uint tok  = tokens[slot];
+    out[slot * hidden + elem] = (float)embed[(uint64_t)tok * (uint64_t)hidden + elem];
+}
+
+// Track 3.2 — Batched cold rmsnorm: B rows in one dispatch.
+// Grid: (TG_SIZE * B, 1, 1). One TG per slot.
+// Unlike add_rmsnorm_fused_batched, does NOT add a delta to x.
+// Used for the layer-0 pre-norm where x is the embed output (no residual).
+kernel void rmsnorm_f32_batched(
+    device const float*     x      [[buffer(0)]],  // (B, hidden) input
+    device const float*     weight [[buffer(1)]],  // (hidden,) scale
+    device       float*     out    [[buffer(2)]],  // (B, hidden) output
+    constant ArgbufRmsnorm& args   [[buffer(3)]],
+    threadgroup  float*     shmem  [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    uint row_off              = tg_id * args.hidden;
+    device const float* x_row = x   + row_off;
+    device       float* o_row = out + row_off;
+
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x_row[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv = 1.0f / sqrt(shmem[0] / (float)args.hidden + args.eps);
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        o_row[i] = x_row[i] * inv * weight[i];
+    }
+}
+
 // v1.0.0-D — embed lookup writing f32 residual stream.
 // Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
 kernel void embed_lookup_f32(
