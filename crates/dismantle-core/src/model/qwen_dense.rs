@@ -3632,6 +3632,30 @@ impl QwenDense {
             Some(c) => c,
             None => return Ok(()),
         };
+
+        // Track 4.2: try to load predec scales from .dismantle sidecar first.
+        // This skips the ~200ms compute pass when the sidecar is fresh.
+        let sidecar_path = crate::sidecar::sidecar_path_for(&self._weights_path);
+        if sidecar_path.exists() {
+            match crate::sidecar::read_predec_entries(&sidecar_path) {
+                Ok((header, entries)) if header.contents.q4k_predec_scales => {
+                    let mut cache = std::collections::HashMap::new();
+                    for (offset, scales) in entries {
+                        let bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+                        let buf = ctx.new_buffer_with_bytes(bytes);
+                        cache.insert(offset, buf);
+                    }
+                    self.q4k_predec_cache = Some(cache);
+                    return Ok(());
+                }
+                Ok(_) => { /* sidecar exists but no predec scales — fall through */ }
+                Err(e) => {
+                    eprintln!("sidecar: failed to load predec from {:?}: {e}", sidecar_path);
+                    // Fall through to recompute.
+                }
+            }
+        }
+
         let mut cache = std::collections::HashMap::new();
         let mut insert_q4k = |tref: &TensorRef,
                               ctx: &crate::metal::MetalContext,
