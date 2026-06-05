@@ -2848,6 +2848,70 @@ impl Engine for QwenDense {
         }
     }
 
+    fn copy_kv_prefix_to_slot(
+        &mut self,
+        src_slot: usize,
+        dst_slot: usize,
+        prefix_len: usize,
+    ) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            let arena = self.multiseq_arena.as_ref().ok_or_else(|| {
+                crate::Error::Model("copy_kv_prefix_to_slot: multiseq_arena not initialized".into())
+            })?;
+            if prefix_len == 0 {
+                return Ok(());
+            }
+            if src_slot >= arena.max_batch || dst_slot >= arena.max_batch {
+                return Err(crate::Error::Model(format!(
+                    "copy_kv_prefix_to_slot: slot ids {src_slot}/{dst_slot} >= max_batch {}",
+                    arena.max_batch
+                )));
+            }
+            let cfg = &self.config;
+            let kv_dim = cfg.n_kv_heads * cfg.head_dim;
+            // Per-layer KV stride: max_batch × max_seq_per_slot × kv_dim elements.
+            // Slot kv region starts at slot * (max_seq / max_batch) * kv_dim elements
+            // into each layer's region. The arena uses:
+            //   k_cache_buf[layer * max_seq * kv_dim + region * slot_stride * kv_dim
+            //               + pos * kv_dim .. +(kv_dim)]
+            // where slot_stride = max_seq / max_batch = MAX_MULTISEQ_CTX (4096).
+            let slot_stride = arena.max_seq / arena.max_batch; // positions per slot
+            let layer_stride = arena.max_seq * kv_dim; // total elements per layer
+            let copy_elems = prefix_len * kv_dim; // elements to copy per slot per layer
+
+            if prefix_len > slot_stride {
+                return Err(crate::Error::Model(format!(
+                    "copy_kv_prefix_to_slot: prefix_len {prefix_len} > slot_stride {slot_stride}"
+                )));
+            }
+
+            let f32_bytes = std::mem::size_of::<f32>();
+            for layer in 0..cfg.n_layers {
+                let src_off = (layer * layer_stride + src_slot * slot_stride * kv_dim) * f32_bytes;
+                let dst_off = (layer * layer_stride + dst_slot * slot_stride * kv_dim) * f32_bytes;
+                let copy_bytes = copy_elems * f32_bytes;
+
+                // SAFETY: PinnedBuffer is MTLStorageModeShared — CPU-accessible.
+                // src and dst are in different slots (non-overlapping regions).
+                unsafe {
+                    let k_src = (arena.k_cache_buf.contents() as *const u8).add(src_off);
+                    let k_dst = (arena.k_cache_buf.contents() as *mut u8).add(dst_off);
+                    std::ptr::copy_nonoverlapping(k_src, k_dst, copy_bytes);
+
+                    let v_src = (arena.v_cache_buf.contents() as *const u8).add(src_off);
+                    let v_dst = (arena.v_cache_buf.contents() as *mut u8).add(dst_off);
+                    std::ptr::copy_nonoverlapping(v_src, v_dst, copy_bytes);
+                }
+            }
+            Ok(())
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            Err(crate::Error::Unimplemented("copy_kv_prefix_to_slot (off-macOS)"))
+        }
+    }
+
     fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
         #[cfg(target_os = "macos")]
         {
