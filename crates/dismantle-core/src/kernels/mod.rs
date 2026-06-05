@@ -7607,6 +7607,62 @@ mod metal_dispatch {
         })
     }
 
+    /// Track 3.2: batched embed lookup — B tokens in one dispatch.
+    /// Saves B-1 dispatches vs the per-slot `embed_lookup_metal_f32_off_tcb` loop.
+    pub fn embed_lookup_f32_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,  // (vocab, hidden) f16
+        tokens_buf: &PinnedBuffer, // (B,) u32 token ids
+        out_buf: &PinnedBuffer,    // (B, hidden) f32
+        hidden: usize,
+        b: usize,
+    ) -> Result<()> {
+        if b == 0 {
+            return Ok(());
+        }
+        let total = (b * hidden) as u32;
+        let tg = TG_SIZE.min(total);
+        tcb.dispatch_threads("embed_lookup_f32_batched", (total, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(embed_buf), 0);
+            enc.set_buffer(1, Some(tokens_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, hidden as u32);
+            enc.set_u32(4, b as u32);
+        })
+    }
+
+    /// Track 3.2: batched cold rmsnorm — B rows in one dispatch, no residual add.
+    /// Saves B-1 dispatches vs the per-slot `rmsnorm_metal_buf_off_tcb` loop.
+    pub fn rmsnorm_f32_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x_buf: &PinnedBuffer,      // (B, hidden) f32 input
+        weight_buf: &PinnedBuffer, // (hidden,) f32 scale
+        out_buf: &PinnedBuffer,    // (B, hidden) f32 output
+        eps: f32,
+        hidden: usize,
+        b: usize,
+    ) -> Result<()> {
+        if b == 0 {
+            return Ok(());
+        }
+        let shmem = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden as u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "rmsnorm_f32_batched",
+            (TG_SIZE * b as u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
     pub fn rmsnorm_metal_buf_off_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         x_buf: &PinnedBuffer,
