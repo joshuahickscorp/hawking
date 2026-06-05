@@ -148,8 +148,11 @@ async fn healthz() -> &'static str {
 async fn metrics(State(s): State<AppState>) -> String {
     let admitted = s.requests_admitted.load(Ordering::Relaxed);
     let tokens = s.tokens_generated.load(Ordering::Relaxed);
-    let active = s.driver.lock().scheduler.active_count();
+    let driver = s.driver.lock();
+    let active = driver.scheduler.active_count();
     let queued = s.wait_queue.lock().len();
+    let lane = driver.lane_stats.clone();
+    drop(driver);
     format!(
         "# HELP dismantle_requests_admitted_total Requests successfully admitted to a batch slot\n\
          # TYPE dismantle_requests_admitted_total counter\n\
@@ -162,7 +165,17 @@ async fn metrics(State(s): State<AppState>) -> String {
          dismantle_active_slots {active}\n\
          # HELP dismantle_queued_requests Requests waiting for a free slot\n\
          # TYPE dismantle_queued_requests gauge\n\
-         dismantle_queued_requests {queued}\n"
+         dismantle_queued_requests {queued}\n\
+         # HELP dismantle_greedy_decode_steps_total Decode steps routed through the token-only greedy lane\n\
+         # TYPE dismantle_greedy_decode_steps_total counter\n\
+         dismantle_greedy_decode_steps_total {}\n\
+         # HELP dismantle_logits_decode_steps_total Decode steps that materialized full logits\n\
+         # TYPE dismantle_logits_decode_steps_total counter\n\
+         dismantle_logits_decode_steps_total {}\n\
+         # HELP dismantle_gpu_readback_bytes_total Cumulative GPU→CPU readback bytes\n\
+         # TYPE dismantle_gpu_readback_bytes_total counter\n\
+         dismantle_gpu_readback_bytes_total {}\n",
+        lane.greedy_steps, lane.logits_steps, lane.readback_bytes,
     )
 }
 
