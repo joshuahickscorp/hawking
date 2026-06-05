@@ -2897,6 +2897,87 @@ impl Engine for QwenDense {
         }
     }
 
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            use crate::metal::DenseDecodeArena;
+
+            if slots.is_empty() {
+                return Ok(());
+            }
+            const MAX_MULTISEQ_SLOTS: usize = 8;
+            const MAX_MULTISEQ_CTX: usize = 4096;
+            if slots.len() > MAX_MULTISEQ_SLOTS {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slots_parallel: {} slots > {MAX_MULTISEQ_SLOTS}",
+                    slots.len()
+                )));
+            }
+            let max_prompt_len = slots.iter().map(|(_, ids)| ids.len()).max().unwrap_or(0);
+            if max_prompt_len == 0 {
+                return Ok(());
+            }
+            if max_prompt_len > MAX_MULTISEQ_CTX {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slots_parallel: prompt_len={max_prompt_len} > {MAX_MULTISEQ_CTX}"
+                )));
+            }
+
+            // Allocate multiseq_arena once (same geometry as forward_tokens_multiseq_logits).
+            // Must happen before the immutable borrow loop below.
+            if self.multiseq_arena.is_none() {
+                let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                    crate::Error::Metal("prefill_slots_parallel: no metal_ctx".into())
+                })?;
+                let cfg = &self.config;
+                self.multiseq_arena = Some(DenseDecodeArena::new_with_batch(
+                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                ));
+            }
+            if self.q4k_predec_cache.is_none() {
+                self.ensure_q4k_predec_cache()?;
+            }
+
+            // Position-by-position parallel prefill.
+            // At step p, gather active slots (prompt_len > p), run one batched
+            // transformer pass writing KV to each slot's multiseq_arena region.
+            // No LM head needed — we only need the KV cache populated.
+            // Weights are read once per position across all B active slots,
+            // not once per slot (the key cost reduction over serial prefill_slot).
+            for p in 0..max_prompt_len {
+                let mut tokens_p = Vec::new();
+                let mut positions_p = Vec::new();
+                let mut regions_p = Vec::new();
+                for &(slot_id, prompt_ids) in slots.iter() {
+                    if p < prompt_ids.len() {
+                        tokens_p.push(prompt_ids[p]);
+                        positions_p.push(p);
+                        regions_p.push(slot_id);
+                    }
+                }
+                if tokens_p.is_empty() {
+                    break;
+                }
+                let arena = self.multiseq_arena.as_ref().unwrap();
+                let tcb = self.forward_tokens_multiseq_stack_tcb(
+                    arena, &tokens_p, &positions_p, &regions_p, MAX_MULTISEQ_CTX,
+                )?;
+                tcb.commit_and_wait()?;
+            }
+
+            return Ok(());
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            for &(slot_id, prompt_ids) in slots.iter() {
+                self.prefill_slot(slot_id, prompt_ids)?;
+            }
+            Ok(())
+        }
+    }
+
     fn forward_tokens_for_test(
         &mut self,
         tokens: &[u32],
