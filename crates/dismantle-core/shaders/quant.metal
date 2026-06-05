@@ -3006,3 +3006,248 @@ kernel void gemm_q4_k_v4_predec_4r(
     if (has2) { p2 = simd_sum(p2); if (simd_lane == 0u) y[row2] = p2; }
     if (has3) { p3 = simd_sum(p3); if (simd_lane == 0u) y[row3] = p3; }
 }
+
+// ── gemm_q6_k_fused_v2_swiglu ─────────────────────────────────────────────────
+// Track 3.5 — SwiGLU-fused Q6_K GEMV.  Identical to gemm_q6_k_fused_v2 but
+// the activation x[i] is replaced by silu(gate[i]) * up[i] inline, eliminating
+// the separate silu_mul dispatch.  Saves 1 dispatch/layer × n_layers.
+//
+// Buffer layout:
+//   0: w_q6    (uchar*, Q6_K packed weight bytes, rows * blocks * 210 B)
+//   1: gate    (float*, intermediate-length gate projection output)
+//   2: up      (float*, intermediate-length up   projection output)
+//   3: y       (float*, hidden-length output)
+//   4: rows    (uint, number of output rows)
+//   5: cols    (uint, number of input columns, must be multiple of 256)
+//
+// Grid / threadgroup: same as gemm_q6_k_fused_v2 — (ceil(rows/8)*256,1,1) / (256,1,1)
+kernel void gemm_q6_k_fused_v2_swiglu(
+    device const uchar* w_q6  [[buffer(0)]],
+    device const float* gate  [[buffer(1)]],
+    device const float* up    [[buffer(2)]],
+    device       float* y     [[buffer(3)]],
+    constant     uint&  rows  [[buffer(4)]],
+    constant     uint&  cols  [[buffer(5)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 210ul;
+
+    uint half_idx          = simd_lane >> 4u;
+    uint group             = (simd_lane >> 2u) & 3u;
+    uint l_base            = (simd_lane & 3u) * 8u;
+    uint scale_l_off       = l_base >> 4u;
+    uint scale_byte_off    = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off      = (group & 1u) * 32u;
+    bool group_high_nibble = (group >= 2u);
+    uint qh_shift          = group * 2u;
+    uint tid_base          = half_idx * 128u + group * 32u + l_base;
+
+    float partial = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off + (uint64_t)b * 210ul;
+        ushort d_bits = (ushort)w_q6[bo + 208u] | ((ushort)w_q6[bo + 209u] << 8);
+        float d = (float)as_type<half>(d_bits);
+        int scale = (int)(signed char)w_q6[bo + (uint64_t)scale_byte_off];
+        float dscale = d * (float)scale;
+
+        uint64_t ql_base = bo + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base = bo + 128ul + (uint64_t)half_idx * 32ul;
+
+        float lane_acc = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l = l_base + k;
+            uchar qlb = w_q6[ql_base + (uint64_t)l];
+            uint qlow = group_high_nibble
+                      ? ((uint)(qlb >> 4) & 0x0Fu)
+                      : ((uint)qlb & 0x0Fu);
+            uchar qhb = w_q6[qh_base + (uint64_t)l];
+            uint qhigh = ((uint)qhb >> qh_shift) & 0x03u;
+            int qi = (int)(qlow | (qhigh << 4)) - 32;
+            uint xi_idx = b * 256u + tid_base + k;
+            float g = gate[xi_idx];
+            float xi = (g / (1.0f + exp(-g))) * up[xi_idx];
+            lane_acc += (float)qi * xi;
+        }
+        partial += dscale * lane_acc;
+    }
+
+    partial = simd_sum(partial);
+    if (simd_lane == 0u) {
+        y[base_row] = partial;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_swiglu ───────────────────────────────────────────────
+// Track 3.5 — SwiGLU-fused Q4_K predec GEMV, 1-row-per-simdgroup base variant.
+// Same as gemm_q4_k_v4_predec but x[i] → silu(gate[i])*up[i].
+// Buffer layout:
+//   0: w_q4   1: scales  2: gate  3: up  4: y  5: rows  6: cols
+// Grid: (ceil(rows/8)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_swiglu(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* gate    [[buffer(2)]],
+    device const float* up      [[buffer(3)]],
+    device       float* y       [[buffer(4)]],
+    constant     uint&  rows    [[buffer(5)]],
+    constant     uint&  cols    [[buffer(6)]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 8u + simd_id;
+    if (row0 >= rows) return;
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul;
+        uint64_t so0 = rs0 + (uint64_t)b * 16ul;
+        float ds[8], dm[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds[s] = scales[so0 + (uint64_t)(s * 2u)];
+            dm[s] = scales[so0 + (uint64_t)(s * 2u + 1u)];
+        }
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uint idx0 = b * 256u + k0 * 32u + simd_lane;
+            uint idx1 = b * 256u + k1 * 32u + simd_lane;
+            float g0 = gate[idx0]; float x0 = (g0 / (1.0f + exp(-g0))) * up[idx0];
+            float g1 = gate[idx1]; float x1 = (g1 / (1.0f + exp(-g1))) * up[idx1];
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds[k0] * (float)(q0 & 0x0Fu) - dm[k0]) * x0;
+            p0 += (ds[k1] * (float)(q0 >> 4u)   - dm[k1]) * x1;
+        }
+    }
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+}
+
+// ── gemm_q4_k_v4_predec_2r_swiglu ────────────────────────────────────────────
+// Track 3.5 — SwiGLU-fused Q4_K predec GEMV, 2-rows-per-simdgroup (default).
+// Same as gemm_q4_k_v4_predec_2r but x[i] → silu(gate[i])*up[i].
+// Buffer layout: 0:w_q4  1:scales  2:gate  3:up  4:y  5:rows  6:cols
+// Grid: (ceil(rows/16)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_2r_swiglu(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* gate    [[buffer(2)]],
+    device const float* up      [[buffer(3)]],
+    device       float* y       [[buffer(4)]],
+    constant     uint&  rows    [[buffer(5)]],
+    constant     uint&  cols    [[buffer(6)]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1  * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1  * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f, p1 = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds0[s] = scales[so0 + (uint64_t)(s * 2u)];
+            dm0[s] = scales[so0 + (uint64_t)(s * 2u + 1u)];
+            ds1[s] = scales[so1 + (uint64_t)(s * 2u)];
+            dm1[s] = scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uint idx0 = b * 256u + k0 * 32u + simd_lane;
+            uint idx1 = b * 256u + k1 * 32u + simd_lane;
+            float g0 = gate[idx0]; float x0 = (g0 / (1.0f + exp(-g0))) * up[idx0];
+            float g1 = gate[idx1]; float x1 = (g1 / (1.0f + exp(-g1))) * up[idx1];
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds0[k0] * (float)(q0 & 0x0Fu) - dm0[k0]) * x0;
+            p0 += (ds0[k1] * (float)(q0 >> 4u)   - dm0[k1]) * x1;
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (ds1[k0] * (float)(q1 & 0x0Fu) - dm1[k0]) * x0;
+            p1 += (ds1[k1] * (float)(q1 >> 4u)   - dm1[k1]) * x1;
+        }
+    }
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) { p1 = simd_sum(p1); if (simd_lane == 0u) y[row1] = p1; }
+}
+
+// ── gemm_q4_k_v4_predec_4r_swiglu ────────────────────────────────────────────
+// Track 3.5 — SwiGLU-fused Q4_K predec GEMV, 4-rows-per-simdgroup (opt-in).
+// Same as gemm_q4_k_v4_predec_4r but x[i] → silu(gate[i])*up[i].
+// Buffer layout: 0:w_q4  1:scales  2:gate  3:up  4:y  5:rows  6:cols
+// Grid: (ceil(rows/32)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_4r_swiglu(
+    device const uchar* w_q4    [[buffer(0)]],
+    device const float* scales  [[buffer(1)]],
+    device const float* gate    [[buffer(2)]],
+    device const float* up      [[buffer(3)]],
+    device       float* y       [[buffer(4)]],
+    constant     uint&  rows    [[buffer(5)]],
+    constant     uint&  cols    [[buffer(6)]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 32u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u, row2 = row0 + 16u, row3 = row0 + 24u;
+    bool has1 = row1 < rows, has2 = row2 < rows, has3 = row3 < rows;
+    uint r1 = has1 ? row1 : row0, r2 = has2 ? row2 : row0, r3 = has3 ? row3 : row0;
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1  * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1  * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb2 = (uint64_t)r2  * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs2 = (uint64_t)r2  * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb3 = (uint64_t)r3  * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs3 = (uint64_t)r3  * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f, p1 = 0.0f, p2 = 0.0f, p3 = 0.0f;
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b*144ul, so0 = rs0 + (uint64_t)b*16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b*144ul, so1 = rs1 + (uint64_t)b*16ul;
+        uint64_t bo2 = rb2 + (uint64_t)b*144ul, so2 = rs2 + (uint64_t)b*16ul;
+        uint64_t bo3 = rb3 + (uint64_t)b*144ul, so3 = rs3 + (uint64_t)b*16ul;
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uint idx0 = b * 256u + k0 * 32u + simd_lane;
+            uint idx1 = b * 256u + k1 * 32u + simd_lane;
+            float g0 = gate[idx0]; float x0 = (g0 / (1.0f + exp(-g0))) * up[idx0];
+            float g1 = gate[idx1]; float x1 = (g1 / (1.0f + exp(-g1))) * up[idx1];
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            p0 += (scales[so0+(uint64_t)(k0*2u)] * (float)(q0&0x0Fu) - scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            p0 += (scales[so0+(uint64_t)(k1*2u)] * (float)(q0>>4u)   - scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            p1 += (scales[so1+(uint64_t)(k0*2u)] * (float)(q1&0x0Fu) - scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            p1 += (scales[so1+(uint64_t)(k1*2u)] * (float)(q1>>4u)   - scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar q2 = w_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            p2 += (scales[so2+(uint64_t)(k0*2u)] * (float)(q2&0x0Fu) - scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            p2 += (scales[so2+(uint64_t)(k1*2u)] * (float)(q2>>4u)   - scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar q3 = w_q4[bo3 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            p3 += (scales[so3+(uint64_t)(k0*2u)] * (float)(q3&0x0Fu) - scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            p3 += (scales[so3+(uint64_t)(k1*2u)] * (float)(q3>>4u)   - scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) y[row0] = p0;
+    if (has1) { p1 = simd_sum(p1); if (simd_lane == 0u) y[row1] = p1; }
+    if (has2) { p2 = simd_sum(p2); if (simd_lane == 0u) y[row2] = p2; }
+    if (has3) { p3 = simd_sum(p3); if (simd_lane == 0u) y[row3] = p3; }
+}

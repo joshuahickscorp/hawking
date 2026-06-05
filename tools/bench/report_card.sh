@@ -71,10 +71,17 @@ GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 # ── State for active server PIDs (cleaned on exit) ───────────────────────────
 SERVE_PID=""
 LLAMA_SERVE_PID=""
+SAMP_PIDS=()
 
 cleanup() {
     [[ -n "$SERVE_PID" ]] && { kill "$SERVE_PID" 2>/dev/null || true; wait "$SERVE_PID" 2>/dev/null || true; }
     [[ -n "$LLAMA_SERVE_PID" ]] && { kill "$LLAMA_SERVE_PID" 2>/dev/null || true; wait "$LLAMA_SERVE_PID" 2>/dev/null || true; }
+    for _sp in "${SAMP_PIDS[@]:-}"; do
+        [[ -n "$_sp" ]] || continue
+        pkill -P "$_sp" 2>/dev/null || true
+        kill "$_sp" 2>/dev/null || true
+        wait "$_sp" 2>/dev/null || true
+    done
     rm -rf "$TMPD"
 }
 trap cleanup EXIT
@@ -175,13 +182,13 @@ run_dismantle_generate() {
     [[ -f "$PROFILE" ]] && kprofile_arg=(--kernel-profile "$PROFILE")
 
     printf '\n[%s]\n' "$lane"
-    sample_macmon "$pkgf" "$gpuf" & local smp=$!
+    sample_macmon "$pkgf" "$gpuf" & local smp=$!; SAMP_PIDS+=("$smp")
     local t0 t1
     t0=$(date +%s.%N)
     run_with_timeout "$RUN_TIMEOUT_SEC" \
         "${NICE[@]}" "$DBIN" generate \
-            "${profile_arg[@]}" \
-            --weights "$GGUF" "${kprofile_arg[@]}" \
+            ${profile_arg[@]+"${profile_arg[@]}"} \
+            --weights "$GGUF" ${kprofile_arg[@]+"${kprofile_arg[@]}"} \
             --prompt "$PROMPT" --max-new-tokens "$TOKENS" \
             --temperature 0 --seed 0 --max-stall-ms 30000 \
         </dev/null > "$out" 2>&1
@@ -322,7 +329,7 @@ run_serve_full_logits() {
 
     local pkgf="$TMPD/${lane}_pkg" gpuf="$TMPD/${lane}_gpu"
     : > "$pkgf"; : > "$gpuf"
-    sample_macmon "$pkgf" "$gpuf" & local smp=$!
+    sample_macmon "$pkgf" "$gpuf" & local smp=$!; SAMP_PIDS+=("$smp")
 
     local t0 t1
     t0=$(date +%s.%N)
@@ -385,14 +392,14 @@ run_serve_greedy() {
 
     local pkgf="$TMPD/${lane}_pkg" gpuf="$TMPD/${lane}_gpu"
     : > "$pkgf"; : > "$gpuf"
-    sample_macmon "$pkgf" "$gpuf" & local smp=$!
+    sample_macmon "$pkgf" "$gpuf" & local smp=$!; SAMP_PIDS+=("$smp")
 
     # Fire B concurrent requests for B=8; single for B=1
     local t0 t1 total_toks=0
     local logs=() pids=()
     for slot in $(seq 0 $(( bsize - 1 ))); do
-        logs+=("$TMPD/${lane}_run_s${slot}.log")
-        : > "${logs[-1]}"
+        local _lf="$TMPD/${lane}_run_s${slot}.log"
+        logs+=("$_lf"); : > "$_lf"
     done
 
     t0=$(date +%s.%N)
@@ -480,13 +487,13 @@ run_llama_cli() {
 
     local pkgf="$TMPD/${lane}_pkg" gpuf="$TMPD/${lane}_gpu" out="$TMPD/${lane}.log"
     : > "$pkgf"; : > "$gpuf"
-    sample_macmon "$pkgf" "$gpuf" & local smp=$!
+    sample_macmon "$pkgf" "$gpuf" & local smp=$!; SAMP_PIDS+=("$smp")
     local t0 t1
     t0=$(date +%s.%N)
     run_with_timeout "$RUN_TIMEOUT_SEC" \
         "${NICE[@]}" "$bin" \
             -m "$GGUF" -p "$PROMPT" -n "$TOKENS" \
-            --temp 0 --seed 0 -ngl 99 "${mode_args[@]}" \
+            --temp 0 --seed 0 -ngl 99 ${mode_args[@]+"${mode_args[@]}"} \
             --no-display-prompt --no-warmup --perf \
         </dev/null > "$out" 2>&1
     local rc=$?
@@ -554,11 +561,11 @@ run_llama_server_b8() {
     : > "$pkgf"; : > "$gpuf"
     local logs=() pids=()
     for slot in $(seq 0 7); do
-        logs+=("$TMPD/${lane}_run_s${slot}.log")
-        : > "${logs[-1]}"
+        local _lf="$TMPD/${lane}_run_s${slot}.log"
+        logs+=("$_lf"); : > "$_lf"
     done
 
-    sample_macmon "$pkgf" "$gpuf" & local smp=$!
+    sample_macmon "$pkgf" "$gpuf" & local smp=$!; SAMP_PIDS+=("$smp")
     local t0 t1 total_toks=0
     t0=$(date +%s.%N)
     for slot in $(seq 0 7); do fire_sse "$url" "${logs[$slot]}" & pids+=("$!"); done
