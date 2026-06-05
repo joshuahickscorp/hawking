@@ -6024,8 +6024,22 @@ impl QwenDense {
                                     scales, 0, $rows, $cols,
                                     $x_batch, $out_batch,
                                 )?;
-                            } else {
+                            } else if b <= 4 {
+                                // v4r: barrier-free, 16 rows/TG, direct device x reads.
+                                // Wins at B=2..4 where 16-barrier-per-projection cost
+                                // exceeds the extra x-read latency (x is L2-cached, ~15
+                                // cycles/read; shmem is ~1 cycle but gated behind 2
+                                // TG barriers per block = 16 barriers/projection call).
+                                // At B>4 the strided x reads (B×256×4B per block, cols-
+                                // strided) cost more than the barriers → use v3w there.
                                 kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            } else {
+                                // B=5..8: v3w wins (shmem staging amortizes x reads,
+                                // barrier cost < strided device-memory x-read cost).
+                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                                     scales, 0, $rows, $cols, b, $x_batch, $out_batch,
                                 )?;
