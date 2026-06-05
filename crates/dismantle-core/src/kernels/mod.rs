@@ -752,6 +752,79 @@ mod metal_dispatch {
         )
     }
 
+    /// Barrier-free drop-in replacement for `gemm_q4_k_m_batched_v3w_predec_pinned_tcb`.
+    ///
+    /// The v3w_predec kernel stages B activation vectors in threadgroup shmem
+    /// behind two barriers per block (16 barriers/projection for hidden=2048).
+    /// This kernel reads x directly from device memory — zero shmem, zero
+    /// barriers — and processes 16 rows/TG via 2-row ILP (was 8 rows/TG).
+    ///
+    /// Same buffer layout and I/O contract as v3w_predec. Bit-identical
+    /// output when reduction order is preserved (validated by parity test).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v4r_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(2..=8).contains(&batch) {
+            return Err(Error::Kernel(format!("{KERNEL}: batch must be 2..=8 ({batch})")));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        if scales_buf.length() < scales_need {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+            )));
+        }
+        let x_bytes = batch * cols * std::mem::size_of::<f32>();
+        let y_bytes = batch * rows * std::mem::size_of::<f32>();
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
+        }
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        ab.set_u32(2, batch as u32);
+        const V4R_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        // No threadgroup memory — barrier-free kernel.
+        tcb.dispatch_threads(
+            KERNEL,
+            (n_tg * V4R_TG, 1, 1),
+            (V4R_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_batch_buf), 0);
+                enc.set_buffer(3, Some(y_batch_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// P1 — simdgroup-matrix (MMA) twin of `gemm_q4_k_m_batched_v3w_pinned_tcb`.
     /// Same Q4_K dequant→threadgroup staging + identical I/O contract, but the
     /// inner product runs on hardware `simdgroup_matrix<float,8,8>` tiles.

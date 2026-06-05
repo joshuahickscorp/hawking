@@ -6025,7 +6025,7 @@ impl QwenDense {
                                     $x_batch, $out_batch,
                                 )?;
                             } else {
-                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                                     scales, 0, $rows, $cols, b, $x_batch, $out_batch,
                                 )?;

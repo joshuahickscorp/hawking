@@ -2067,6 +2067,144 @@ kernel void gemm_q4_k_m_batched_v3w_predec(
     }
 }
 
+// ── gemm_q4_k_m_batched_v4r_predec ──────────────────────────────────────────
+// Barrier-free drop-in replacement for gemm_q4_k_m_batched_v3w_predec.
+//
+// v3w_predec uses threadgroup shmem to stage B activation vectors before the
+// weight loop, requiring two threadgroup_barrier() calls per block (one after
+// load, one before the next block reuses the tile). For blocks_per_row=8
+// (hidden=2048) this is 16 barriers per projection call — the primary
+// performance bottleneck at B=2..8.
+//
+// v4r_predec reads x directly from device memory (no shmem staging, zero
+// barriers) and processes 16 rows per TG via 2-row ILP (two rows per
+// simdgroup instead of one). Same Q4_K decode + predec scale contract.
+//
+// Geometry: 256 threads/TG, 8 simdgroups × 32 threads, 2 rows per simdgroup.
+// Grid: (ceil(rows/16) × 256, 1, 1) with TG=(256,1,1). No threadgroup memory.
+// Buffer layout: identical to v3w_predec (slots 0-4).
+//
+// Bit-identical to v3w_predec when both accumulate in the same per-element
+// FMA order (verified by gemm_q4k_batched_parity test).
+kernel void gemm_q4_k_m_batched_v4r_predec(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* scales [[buffer(1)]],
+    device const float* x_batch[[buffer(2)]],
+    device       float* y_batch[[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // 2-row ILP: each simdgroup handles row0 and row1 = row0 + 8.
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= args.rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < args.rows;
+    // When row1 is out of bounds alias to row0 so weight reads stay in-bounds;
+    // p1 accumulators are discarded in that case (never written to y_batch).
+    uint r1 = has1 ? row1 : row0;
+
+    uint B = min(args.batch, 8u);
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t rbo0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rso0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rbo1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rso1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float4 p0_lo = float4(0.0f), p0_hi = float4(0.0f);
+    float4 p1_lo = float4(0.0f), p1_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t bo0 = rbo0 + (uint64_t)blk * 144ul;
+        uint64_t so0 = rso0 + (uint64_t)blk * 16ul;
+        uint64_t bo1 = rbo1 + (uint64_t)blk * 144ul;
+        uint64_t so1 = rso1 + (uint64_t)blk * 16ul;
+
+        // Pre-decoded scales: 8 (d, m) pairs per block = 16 floats.
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds0[sub] = scales[so0 + (uint64_t)(sub * 2u)];
+            dm0[sub] = scales[so0 + (uint64_t)(sub * 2u + 1u)];
+            ds1[sub] = scales[so1 + (uint64_t)(sub * 2u)];
+            dm1[sub] = scales[so1 + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        // 8 weight elements per lane (256 elems / 32 lanes).
+        // Decode pattern mirrors v3w_predec exactly: each (pair, i) byte
+        // packs the lo nibble for sub=pair*2 and hi for sub=pair*2+1.
+        // x is read directly from device memory — no shmem, no barriers.
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem  = k * 32u + simd_lane;
+            uint sub   = elem >> 5u;
+            uint pair  = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = elem & 31u;
+            uchar q0   = w_q4[bo0 + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uchar q1   = w_q4[bo1 + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uint  nib0 = upper ? ((uint)(q0 >> 4) & 0x0Fu) : ((uint)q0 & 0x0Fu);
+            uint  nib1 = upper ? ((uint)(q1 >> 4) & 0x0Fu) : ((uint)q1 & 0x0Fu);
+            float wv0  = ds0[sub] * (float)nib0 - dm0[sub];
+            float wv1  = ds1[sub] * (float)nib1 - dm1[sub];
+
+            // x element: device read, no staging.
+            uint64_t x_col = (uint64_t)blk * 256ul + (uint64_t)elem;
+            if (B >= 1u) { float x = x_batch[0u * args.cols + x_col]; p0_lo.x += wv0*x; p1_lo.x += wv1*x; }
+            if (B >= 2u) { float x = x_batch[1u * args.cols + x_col]; p0_lo.y += wv0*x; p1_lo.y += wv1*x; }
+            if (B >= 3u) { float x = x_batch[2u * args.cols + x_col]; p0_lo.z += wv0*x; p1_lo.z += wv1*x; }
+            if (B >= 4u) { float x = x_batch[3u * args.cols + x_col]; p0_lo.w += wv0*x; p1_lo.w += wv1*x; }
+            if (B >= 5u) { float x = x_batch[4u * args.cols + x_col]; p0_hi.x += wv0*x; p1_hi.x += wv1*x; }
+            if (B >= 6u) { float x = x_batch[5u * args.cols + x_col]; p0_hi.y += wv0*x; p1_hi.y += wv1*x; }
+            if (B >= 7u) { float x = x_batch[6u * args.cols + x_col]; p0_hi.z += wv0*x; p1_hi.z += wv1*x; }
+            if (B >= 8u) { float x = x_batch[7u * args.cols + x_col]; p0_hi.w += wv0*x; p1_hi.w += wv1*x; }
+        }
+    }
+
+    // Reduce across the 32-thread simdgroup (per batch slot).
+    p0_lo.x = simd_sum(p0_lo.x);
+    if (B >= 2u) p0_lo.y = simd_sum(p0_lo.y);
+    if (B >= 3u) p0_lo.z = simd_sum(p0_lo.z);
+    if (B >= 4u) p0_lo.w = simd_sum(p0_lo.w);
+    if (B >= 5u) p0_hi.x = simd_sum(p0_hi.x);
+    if (B >= 6u) p0_hi.y = simd_sum(p0_hi.y);
+    if (B >= 7u) p0_hi.z = simd_sum(p0_hi.z);
+    if (B >= 8u) p0_hi.w = simd_sum(p0_hi.w);
+    if (has1) {
+        p1_lo.x = simd_sum(p1_lo.x);
+        if (B >= 2u) p1_lo.y = simd_sum(p1_lo.y);
+        if (B >= 3u) p1_lo.z = simd_sum(p1_lo.z);
+        if (B >= 4u) p1_lo.w = simd_sum(p1_lo.w);
+        if (B >= 5u) p1_hi.x = simd_sum(p1_hi.x);
+        if (B >= 6u) p1_hi.y = simd_sum(p1_hi.y);
+        if (B >= 7u) p1_hi.z = simd_sum(p1_hi.z);
+        if (B >= 8u) p1_hi.w = simd_sum(p1_hi.w);
+    }
+
+    if (simd_lane != 0u) return;
+
+    // Write row0.
+    if (B >= 1u) y_batch[0u * args.rows + row0] = p0_lo.x;
+    if (B >= 2u) y_batch[1u * args.rows + row0] = p0_lo.y;
+    if (B >= 3u) y_batch[2u * args.rows + row0] = p0_lo.z;
+    if (B >= 4u) y_batch[3u * args.rows + row0] = p0_lo.w;
+    if (B >= 5u) y_batch[4u * args.rows + row0] = p0_hi.x;
+    if (B >= 6u) y_batch[5u * args.rows + row0] = p0_hi.y;
+    if (B >= 7u) y_batch[6u * args.rows + row0] = p0_hi.z;
+    if (B >= 8u) y_batch[7u * args.rows + row0] = p0_hi.w;
+
+    // Write row1 (only when in bounds).
+    if (has1) {
+        if (B >= 1u) y_batch[0u * args.rows + row1] = p1_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + row1] = p1_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + row1] = p1_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + row1] = p1_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + row1] = p1_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + row1] = p1_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + row1] = p1_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + row1] = p1_hi.w;
+    }
+}
+
 // P2 — Q6_K-weight × fp32-vec → fp32 GEMV (single-matrix). Adapted from
 // moe_batched_gemm_q6_k_indexed_v2t with the route/batch layer stripped.
 // Matches gemm_q4_k_m_fused_v2 dispatch shape: TG=256, 8 rows/TG, one
