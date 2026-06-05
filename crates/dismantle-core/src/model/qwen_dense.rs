@@ -6200,6 +6200,9 @@ impl QwenDense {
             .flat_map(|&r| (r as u32).to_le_bytes())
             .collect();
         let region_buf = ctx.new_buffer_with_bytes(&region_bytes);
+        // Track 3.2: token id buffer for batched embed lookup.
+        let tok_bytes: Vec<u8> = tokens.iter().flat_map(|&t| t.to_le_bytes()).collect();
+        let tok_buf = ctx.new_buffer_with_bytes(&tok_bytes);
 
         let predec_cache = self.q4k_predec_cache.as_ref();
         let mut tcb = TokenCommandBuffer::new(ctx);
@@ -6277,24 +6280,20 @@ impl QwenDense {
             }};
         }
 
-        // Embed B tokens.
-        for (bi, &tok) in tokens.iter().enumerate() {
-            kernels::embed_lookup_metal_f32_off_tcb(
-                &mut tcb, embed_buf, tok, h, &arena.x_buf_batch, bi * h_bytes,
-            )?;
-        }
-        // Layer-0 pre-norm (per slot).
+        // Track 3.2: batched embed + layer-0 rmsnorm — 2 dispatches regardless of B
+        // (was 2*B per-slot loops). At B=8 saves 14 dispatches; B=1 no change.
+        kernels::embed_lookup_f32_batched_tcb(
+            &mut tcb, embed_buf, &tok_buf, &arena.x_buf_batch, h, b,
+        )?;
         let layer0_attn_norm = self.layers[0]
             .pinned
             .attn_norm
             .as_ref()
             .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
-        for bi in 0..b {
-            kernels::rmsnorm_metal_buf_off_tcb(
-                &mut tcb, &arena.x_buf_batch, bi * h_bytes,
-                layer0_attn_norm, eps, h, &arena.x_norm_buf_batch, bi * h_bytes,
-            )?;
-        }
+        kernels::rmsnorm_f32_batched_tcb(
+            &mut tcb, &arena.x_buf_batch, layer0_attn_norm,
+            &arena.x_norm_buf_batch, eps, h, b,
+        )?;
 
         for li in 0..cfg.n_layers {
             let layer = &self.layers[li];
