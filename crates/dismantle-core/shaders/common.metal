@@ -572,6 +572,70 @@ kernel void rope_f32_batched_multiseq(
     x[off + 1u] = x0 * s + x1 * c;
 }
 
+// Fused Q+K RoPE for multiseq batched decode (Track 3.4).
+// Replaces two separate rope_f32_batched_multiseq dispatches per layer with one,
+// saving 1 dispatch/layer × n_layers = 28 dispatches on Qwen-3B.
+//
+// Grid: (b * (n_q_heads + n_k_heads) * head_dim/2, 1, 1).
+// Threads with id < b*n_q_heads*(head_dim/2) process Q; the rest process K.
+// Q and K have different slot strides (q_dim vs kv_dim for GQA) but share
+// the same rope base and positions buffer.
+struct ArgbufRopeQKMultiseq {
+    uint  n_q_heads;     // Q heads (n_heads)
+    uint  n_k_heads;     // K heads (n_kv_heads; may differ for GQA)
+    uint  head_dim;
+    uint  q_slot_stride; // elements per Q slot = n_q_heads * head_dim
+    uint  k_slot_stride; // elements per K slot = n_k_heads * head_dim
+    uint  b;
+    float base;
+};
+kernel void rope_qk_f32_batched_multiseq(
+    device       float* q             [[buffer(0)]],  // (B, q_slot_stride)
+    device       float* k             [[buffer(1)]],  // (B, k_slot_stride)
+    constant ArgbufRopeQKMultiseq& args [[buffer(2)]],
+    device const uint*  positions     [[buffer(3)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_per_slot = args.n_q_heads * pairs_per_head;
+    uint k_per_slot = args.n_k_heads * pairs_per_head;
+    uint q_total    = args.b * q_per_slot;
+    uint total      = q_total + args.b * k_per_slot;
+    if (id >= total) return;
+
+    uint pair, off;
+    float theta_denom;
+    device float* buf;
+
+    if (id < q_total) {
+        uint bi   = id / q_per_slot;
+        uint rem  = id - bi * q_per_slot;
+        uint head = rem / pairs_per_head;
+        pair      = rem - head * pairs_per_head;
+        off       = bi * args.q_slot_stride + head * args.head_dim + 2u * pair;
+        buf       = q;
+        theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float theta = (float)positions[bi] / theta_denom;
+        float c = cos(theta); float s = sin(theta);
+        float x0 = buf[off]; float x1 = buf[off + 1u];
+        buf[off]      = x0 * c - x1 * s;
+        buf[off + 1u] = x0 * s + x1 * c;
+    } else {
+        uint kid  = id - q_total;
+        uint bi   = kid / k_per_slot;
+        uint rem  = kid - bi * k_per_slot;
+        uint head = rem / pairs_per_head;
+        pair      = rem - head * pairs_per_head;
+        off       = bi * args.k_slot_stride + head * args.head_dim + 2u * pair;
+        theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float theta = (float)positions[bi] / theta_denom;
+        float c = cos(theta); float s = sin(theta);
+        float x0 = k[off]; float x1 = k[off + 1u];
+        k[off]      = x0 * c - x1 * s;
+        k[off + 1u] = x0 * s + x1 * c;
+    }
+}
+
 // v1.0.0-D — embed lookup writing f32 residual stream.
 // Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
 kernel void embed_lookup_f32(
