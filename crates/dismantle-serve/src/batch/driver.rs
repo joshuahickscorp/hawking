@@ -17,14 +17,27 @@ pub struct DecodeOutput {
     pub finished: bool,
 }
 
+/// Decode-lane stats accumulated across all steps. Exposed via /metrics.
+#[derive(Debug, Default, Clone)]
+pub struct LaneStats {
+    /// Steps routed through the greedy token-only path (B×4 byte readback).
+    pub greedy_steps: u64,
+    /// Steps routed through the full-logits path (B×vocab×4 byte readback).
+    pub logits_steps: u64,
+    /// Cumulative bytes read back from GPU this session.
+    pub readback_bytes: u64,
+}
+
 pub struct BatchDriver {
     pub scheduler: Scheduler,
+    pub lane_stats: LaneStats,
 }
 
 impl BatchDriver {
     pub fn new(max_batch_size: usize) -> Self {
         Self {
             scheduler: Scheduler::new(max_batch_size),
+            lane_stats: LaneStats::default(),
         }
     }
 
@@ -49,15 +62,44 @@ impl BatchDriver {
         // release), NOT the compacted batch index — so a slot keeps its KV as the
         // ready set churns. The multi-seq path keys KV by this region.
         let regions: Vec<usize> = batch.iter().map(|step| step.slot_id as usize).collect();
-        // Continuous-batching DECODE: the batch holds N INDEPENDENT slots at
-        // divergent positions, so route through the multi-seq seam (QwenDense
-        // overrides it with the GPU weight-amortizing path) — NOT
-        // forward_tokens_batched, which is one-sequence prefill/verify.
+
+        // Greedy lane: all slots are temperature=0 with no repetition penalty
+        // override → route to token-only path (B×4 byte readback, no logits).
+        let all_greedy = batch.iter().all(|step| {
+            self.scheduler
+                .slots
+                .iter()
+                .find(|s| s.id == step.slot_id)
+                .and_then(|s| s.req.as_ref())
+                .map(|r| r.sampling.temperature <= 0.0 && r.sampling.repetition_penalty <= 1.0)
+                .unwrap_or(false)
+        });
+
+        let b = batch.len();
+        if all_greedy {
+            let token_ids =
+                engine.forward_multiseq_greedy_tokens(&tokens, &positions, &regions)?;
+            let eos_id = engine.eos_id_for_batch();
+            let decoded = self
+                .scheduler
+                .apply_decode_tokens(&batch, token_ids, eos_id)?;
+            self.lane_stats.greedy_steps += 1;
+            self.lane_stats.readback_bytes += (b * std::mem::size_of::<u32>()) as u64;
+            return decoded
+                .into_iter()
+                .map(|token| decode_output(engine, token))
+                .collect();
+        }
+
+        // Full-logits lane (sampling, logprobs, or repetition penalty requests).
         let mut logits = engine.forward_multiseq_batched(&tokens, &positions, &regions)?;
+        let vocab = logits.first().map(|l| l.len()).unwrap_or(0);
         let eos_id = engine.eos_id_for_batch();
         let decoded = self
             .scheduler
             .apply_decode_logits(&batch, &mut logits, eos_id)?;
+        self.lane_stats.logits_steps += 1;
+        self.lane_stats.readback_bytes += (b * vocab * std::mem::size_of::<f32>()) as u64;
 
         decoded
             .into_iter()

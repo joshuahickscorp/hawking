@@ -199,6 +199,39 @@ impl Scheduler {
         }
         Ok(out)
     }
+
+    /// Greedy token-only variant: token ids arrive pre-sampled (from GPU argmax),
+    /// no logits involved. Slot validity checks mirror apply_decode_logits.
+    pub fn apply_decode_tokens(
+        &mut self,
+        batch: &[DecodeStep],
+        token_ids: Vec<u32>,
+        eos_id: Option<u32>,
+    ) -> Result<Vec<DecodedToken>> {
+        if batch.len() != token_ids.len() {
+            return Err(anyhow!(
+                "decode tokens shape mismatch: batch={} tokens={}",
+                batch.len(),
+                token_ids.len()
+            ));
+        }
+        let mut out = Vec::with_capacity(batch.len());
+        for (step, token) in batch.iter().zip(token_ids.into_iter()) {
+            let slot = self
+                .slot_mut(step.slot_id)
+                .ok_or_else(|| anyhow!("decode result for unknown slot {}", step.slot_id))?;
+            if slot.decode_step() != Some(*step) {
+                return Err(anyhow!(
+                    "stale decode result for slot {}: expected {:?}, got {:?}",
+                    step.slot_id,
+                    slot.decode_step(),
+                    step
+                ));
+            }
+            out.push(slot.apply_decoded_token(token, eos_id));
+        }
+        Ok(out)
+    }
 }
 
 #[cfg(test)]
