@@ -28,6 +28,23 @@ pub struct ServeOptions {
 pub async fn run(opts: ServeOptions) -> Result<()> {
     use dismantle_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
 
+    // ── Serve-mode optimisation defaults ─────────────────────────────────────
+    // These are the same knobs that `dismantle generate --kernel-profile` uses.
+    // Each can be overridden by the caller's environment (set var before invoking
+    // the server). We only set them when the variable is absent so that explicit
+    // DISMANTLE_QWEN_*=0 opt-outs are honoured.
+    for (var, val) in [
+        ("DISMANTLE_QWEN_Q4K_PREDEC",   "1"),  // pre-decoded scales → fast GEMV
+        ("DISMANTLE_QWEN_Q4K_LMHEAD",   "1"),  // GPU Q4K LM-head (vs CPU f16)
+        ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"), // prune to 32K most-frequent tokens
+        ("DISMANTLE_QWEN_TCB",          "1"),  // token command buffers
+        ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),  // FFN down Q4K path
+    ] {
+        if std::env::var_os(var).is_none() {
+            std::env::set_var(var, val);
+        }
+    }
+
     let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
         .map_err(|e| anyhow::anyhow!("{e}"))?;
     let kernel_profile = match opts.kernel_profile.as_ref() {
