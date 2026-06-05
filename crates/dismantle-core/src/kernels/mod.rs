@@ -2,7 +2,6 @@ use half::f16;
 
 pub mod megakernel;
 
-
 /// RMS-normalize a row in-place.
 ///
 /// `out = (x / rms(x)) * weight` where `rms(x) = sqrt(mean(x^2) + eps)`.
@@ -126,12 +125,7 @@ pub struct Llama3RopeScaling {
 /// - wavelen < high_wavelen  → freq unchanged   (high-freq pairs stay)
 /// - wavelen > low_wavelen   → freq / factor     (long-context tail)
 /// - in between              → smooth linear interpolation between the two
-pub fn rope_inplace_scaled(
-    x: &mut [f32],
-    pos: u32,
-    base: f32,
-    scaling: Option<Llama3RopeScaling>,
-) {
+pub fn rope_inplace_scaled(x: &mut [f32], pos: u32, base: f32, scaling: Option<Llama3RopeScaling>) {
     let Some(s) = scaling else {
         // Delegate so the Qwen2 / DeepSeek-V2 unscaled paths stay
         // bit-identical to the baselines captured against `rope_inplace`.
@@ -152,8 +146,7 @@ pub fn rope_inplace_scaled(
         } else if wavelen > low_wavelen {
             freq / s.factor
         } else {
-            let smooth = (s.original_max_position_embeddings as f32 / wavelen
-                - s.low_freq_factor)
+            let smooth = (s.original_max_position_embeddings as f32 / wavelen - s.low_freq_factor)
                 / (s.high_freq_factor - s.low_freq_factor);
             (1.0 - smooth) * (freq / s.factor) + smooth * freq
         };
@@ -180,19 +173,12 @@ pub fn rope_inplace_scaled(
 ///
 /// `ext_factors.len()` must equal `head_dim/2`. With all factors == 1.0
 /// and `mscale == 1.0` this is plain NEOX RoPE.
-pub fn rope_inplace_longrope(
-    x: &mut [f32],
-    pos: u32,
-    base: f32,
-    ext_factors: &[f32],
-    mscale: f32,
-) {
+pub fn rope_inplace_longrope(x: &mut [f32], pos: u32, base: f32, ext_factors: &[f32], mscale: f32) {
     let head_dim = x.len();
     let half = head_dim / 2;
     debug_assert_eq!(ext_factors.len(), half);
     for i in 0..half {
-        let inv_freq =
-            1.0 / (ext_factors[i] * base.powf(2.0 * i as f32 / head_dim as f32));
+        let inv_freq = 1.0 / (ext_factors[i] * base.powf(2.0 * i as f32 / head_dim as f32));
         let theta = pos as f32 * inv_freq;
         let (sin, cos) = theta.sin_cos();
         let sin = sin * mscale;
@@ -233,7 +219,6 @@ pub fn embed_lookup(embed: &[f16], hidden: usize, token_id: u32, out: &mut [f32]
         out[i] = embed[row + i].to_f32();
     }
 }
-
 
 /// Row-major GEMV: `out = W @ x`, where `W` is (rows, cols) and `x` is (cols,).
 /// Phase 0 reference; replaced by Metal in Phase 1+.
@@ -360,12 +345,13 @@ pub fn topk_softmax_batch(
     }
 }
 
-
 #[cfg(target_os = "macos")]
-
 #[cfg(target_os = "macos")]
 mod metal_dispatch {
-    use crate::metal::{ArgLayout, CommandBatch, DecodeArena, KernelArgBuffer, MetalContext, PinnedBuffer, TokenCommandBuffer};
+    use crate::metal::{
+        ArgLayout, CommandBatch, DecodeArena, KernelArgBuffer, MetalContext, PinnedBuffer,
+        TokenCommandBuffer,
+    };
     use crate::{Error, Result};
     use half::f16;
 
@@ -594,17 +580,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
     }
 
     /// P3 v3w — Batched Q4_K_M GEMM widened to B in 1..=8. Same shmem
@@ -649,7 +630,10 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb buffer sizes: x={} need={} y={} need={}",
-                x_batch_buf.length(), x_bytes, y_batch_buf.length(), y_bytes,
+                x_batch_buf.length(),
+                x_bytes,
+                y_batch_buf.length(),
+                y_bytes,
             )));
         }
         let rows_u32 = rows as u32;
@@ -659,25 +643,18 @@ mod metal_dispatch {
         const ROWS_PER_TG: u32 = 8;
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
         let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_batch_buf), 0);
-                enc.set_buffer(2, Some(y_batch_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_batch_buf), 0);
+            enc.set_buffer(2, Some(y_batch_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// Batched Q4_K GEMM with PRE-DECODED sub-block scales — same as
@@ -706,7 +683,9 @@ mod metal_dispatch {
             return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
         }
         if !(1..=8).contains(&batch) {
-            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 1..=8 ({batch})"
+            )));
         }
         let blocks_per_row = cols / 256;
         let expected_bytes = rows * blocks_per_row * 144;
@@ -715,10 +694,13 @@ mod metal_dispatch {
                 "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
             )));
         }
-        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        let scales_need =
+            (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
         if scales_buf.length() < scales_need {
             return Err(Error::Kernel(format!(
-                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+                "{KERNEL}: scales buf {} < need {}",
+                scales_buf.length(),
+                scales_need
             )));
         }
         let x_bytes = batch * cols * std::mem::size_of::<f32>();
@@ -726,10 +708,8 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
         }
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows as u32);
         ab.set_u32(1, cols as u32);
         ab.set_u32(2, batch as u32);
@@ -737,19 +717,84 @@ mod metal_dispatch {
         const ROWS_PER_TG: u32 = 8;
         let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
         let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
-                enc.set_buffer(2, Some(x_batch_buf), 0);
-                enc.set_buffer(3, Some(y_batch_buf), 0);
-                enc.set_buffer(4, Some(ab.handle()), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// B=1..16 extension of `gemm_q4_k_m_batched_v3w_predec_pinned_tcb`.
+    ///
+    /// Uses two additional float4 accumulators (partial_lo2, partial_hi2) for
+    /// slots 8..15. Threadgroup shmem scales to B*256*4 bytes (16 KiB at B=16,
+    /// within the M3 Pro 32 KiB limit). All other dispatch geometry is identical
+    /// to the original v3w_predec kernel. Intentionally dead code until
+    /// MAX_MULTISEQ_SLOTS is raised beyond 8.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v3w_predec_b16_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        x_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v3w_predec_b16";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(1..=16).contains(&batch) {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 1..=16 ({batch})"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let scales_need =
+            (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        if scales_buf.length() < scales_need {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales buf {} < need {}",
+                scales_buf.length(),
+                scales_need
+            )));
+        }
+        let x_bytes = batch * cols * std::mem::size_of::<f32>();
+        let y_bytes = batch * rows * std::mem::size_of::<f32>();
+        if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
+            return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
+        }
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows as u32);
+        ab.set_u32(1, cols as u32);
+        ab.set_u32(2, batch as u32);
+        const V3_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// Barrier-free drop-in replacement for `gemm_q4_k_m_batched_v3w_predec_pinned_tcb`.
@@ -780,7 +825,9 @@ mod metal_dispatch {
             return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
         }
         if !(2..=8).contains(&batch) {
-            return Err(Error::Kernel(format!("{KERNEL}: batch must be 2..=8 ({batch})")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 2..=8 ({batch})"
+            )));
         }
         let blocks_per_row = cols / 256;
         let expected_bytes = rows * blocks_per_row * 144;
@@ -789,10 +836,13 @@ mod metal_dispatch {
                 "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
             )));
         }
-        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        let scales_need =
+            (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
         if scales_buf.length() < scales_need {
             return Err(Error::Kernel(format!(
-                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+                "{KERNEL}: scales buf {} < need {}",
+                scales_buf.length(),
+                scales_need
             )));
         }
         let x_bytes = batch * cols * std::mem::size_of::<f32>();
@@ -800,10 +850,8 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
         }
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows as u32);
         ab.set_u32(1, cols as u32);
         ab.set_u32(2, batch as u32);
@@ -811,18 +859,13 @@ mod metal_dispatch {
         const ROWS_PER_TG: u32 = 16;
         let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
         // No threadgroup memory — barrier-free kernel.
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V4R_TG, 1, 1),
-            (V4R_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
-                enc.set_buffer(2, Some(x_batch_buf), 0);
-                enc.set_buffer(3, Some(y_batch_buf), 0);
-                enc.set_buffer(4, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V4R_TG, 1, 1), (V4R_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
     }
 
     /// P1 — simdgroup-matrix (MMA) twin of `gemm_q4_k_m_batched_v3w_pinned_tcb`.
@@ -870,7 +913,10 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb buffer sizes: x={} need={} y={} need={}",
-                x_batch_buf.length(), x_bytes, y_batch_buf.length(), y_bytes,
+                x_batch_buf.length(),
+                x_bytes,
+                y_batch_buf.length(),
+                y_bytes,
             )));
         }
         let rows_u32 = rows as u32;
@@ -882,25 +928,18 @@ mod metal_dispatch {
         const ROWS_PER_TG: u32 = 8;
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
         let shmem_bytes = (576 * std::mem::size_of::<f32>()) as u64;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * MMA_TG, 1, 1),
-            (MMA_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_batch_buf), 0);
-                enc.set_buffer(2, Some(y_batch_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * MMA_TG, 1, 1), (MMA_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_batch_buf), 0);
+            enc.set_buffer(2, Some(y_batch_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// P1 — predec MMA twin: `gemm_q4_k_m_batched_v3w_predec_pinned_tcb` with the
@@ -927,7 +966,9 @@ mod metal_dispatch {
             return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
         }
         if !(1..=8).contains(&batch) {
-            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 1..=8 ({batch})"
+            )));
         }
         let blocks_per_row = cols / 256;
         let expected_bytes = rows * blocks_per_row * 144;
@@ -936,10 +977,13 @@ mod metal_dispatch {
                 "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
             )));
         }
-        let scales_need = (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
+        let scales_need =
+            (scales_offset + rows * blocks_per_row * 16 * std::mem::size_of::<f32>()) as u64;
         if scales_buf.length() < scales_need {
             return Err(Error::Kernel(format!(
-                "{KERNEL}: scales buf {} < need {}", scales_buf.length(), scales_need
+                "{KERNEL}: scales buf {} < need {}",
+                scales_buf.length(),
+                scales_need
             )));
         }
         let x_bytes = batch * cols * std::mem::size_of::<f32>();
@@ -947,10 +991,8 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!("{KERNEL}: x/y buffer too small")));
         }
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows as u32);
         ab.set_u32(1, cols as u32);
         ab.set_u32(2, batch as u32);
@@ -958,19 +1000,14 @@ mod metal_dispatch {
         const ROWS_PER_TG: u32 = 8;
         let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
         let shmem_bytes = (576 * std::mem::size_of::<f32>()) as u64;
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * MMA_TG, 1, 1),
-            (MMA_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
-                enc.set_buffer(2, Some(x_batch_buf), 0);
-                enc.set_buffer(3, Some(y_batch_buf), 0);
-                enc.set_buffer(4, Some(ab.handle()), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * MMA_TG, 1, 1), (MMA_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// P3 v3 — Batched Q4_K_M GEMM with cooperative shmem activation
@@ -1017,7 +1054,10 @@ mod metal_dispatch {
         if x_batch_buf.length() < x_bytes as u64 || y_batch_buf.length() < y_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb buffer sizes: x={} need={} y={} need={}",
-                x_batch_buf.length(), x_bytes, y_batch_buf.length(), y_bytes,
+                x_batch_buf.length(),
+                x_bytes,
+                y_batch_buf.length(),
+                y_bytes,
             )));
         }
         let rows_u32 = rows as u32;
@@ -1028,25 +1068,18 @@ mod metal_dispatch {
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
         // shmem: B × 256 floats. At B=4 → 4 KiB.
         let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_batch_buf), 0);
-                enc.set_buffer(2, Some(y_batch_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_batch_buf), 0);
+            enc.set_buffer(2, Some(y_batch_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// P3 — Batched Q4_K_M GEMM: one weight applied to B activation
@@ -1113,24 +1146,17 @@ mod metal_dispatch {
         const V2_TG: u32 = 256;
         const ROWS_PER_TG: u32 = 8;
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_batch_buf), 0);
-                enc.set_buffer(2, Some(y_batch_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_batch_buf), 0);
+            enc.set_buffer(2, Some(y_batch_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
     }
 
     /// P2 — Wedge K Q4_K GEMV (scale + activation preload, paired-nibble
@@ -1176,18 +1202,13 @@ mod metal_dispatch {
         const SM_TG: u32 = 128;
         const SM_ROWS: u32 = 4;
         let n_tg = rows_u32.div_ceil(SM_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * SM_TG, 1, 1),
-            (SM_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * SM_TG, 1, 1), (SM_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })
     }
 
     /// P2 — Wedge K-pattern Q4_K GEMV in v3 8-rows-per-TG geometry.
@@ -1232,18 +1253,13 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })
     }
 
     /// Pre-decode the 8 sub-block (scale, min) f32 pairs for every Q4_K block
@@ -1265,9 +1281,12 @@ mod metal_dispatch {
     /// weight buffer. Total table size = `(w_q4_bytes.len() / 144) * 64`
     /// bytes (= 0.444× the Q4_K weight size).
     pub fn predecode_q4_k_scale_table(w_q4_bytes: &[u8]) -> Vec<f32> {
-        debug_assert_eq!(w_q4_bytes.len() % 144, 0,
+        debug_assert_eq!(
+            w_q4_bytes.len() % 144,
+            0,
             "predecode_q4_k_scale_table: byte len {} not a multiple of 144",
-            w_q4_bytes.len());
+            w_q4_bytes.len()
+        );
         let n_blocks = w_q4_bytes.len() / 144;
         let mut out = vec![0.0f32; n_blocks * 16];
         for b in 0..n_blocks {
@@ -1288,14 +1307,14 @@ mod metal_dispatch {
             }
             for j in 0..4 {
                 let b12 = w_q4_bytes[bo + 12 + j];
-                let b4  = w_q4_bytes[bo + 4 + j];
-                let b8  = w_q4_bytes[bo + 8 + j];
+                let b4 = w_q4_bytes[bo + 4 + j];
+                let b8 = w_q4_bytes[bo + 8 + j];
                 sb[4 + j] = (b12 & 0x0F) | ((b4 >> 6) << 4);
-                mb[4 + j] = (b12 >> 4)   | ((b8 >> 6) << 4);
+                mb[4 + j] = (b12 >> 4) | ((b8 >> 6) << 4);
             }
             let so = b * 16;
             for sub in 0..8 {
-                out[so + sub * 2]     = d    * (sb[sub] as f32);
+                out[so + sub * 2] = d * (sb[sub] as f32);
                 out[so + sub * 2 + 1] = dmin * (mb[sub] as f32);
             }
         }
@@ -1493,19 +1512,14 @@ mod metal_dispatch {
         const TG: u32 = 256;
         const ROWS_PER_TG: u32 = 16; // 8 simdgroups × 2 rows (2r geometry)
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
-                enc.set_buffer(2, Some(x_buf), 0);
-                enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_u32(4, rows_u32);
-                enc.set_u32(5, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
     }
 
     /// Q3_K decode GEMV with pre-decoded sub-block scales (byte-cut Stage 3).
@@ -1577,19 +1591,14 @@ mod metal_dispatch {
         const TG: u32 = 256;
         const ROWS_PER_TG: u32 = 8;
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
-                enc.set_buffer(2, Some(x_buf), 0);
-                enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_u32(4, rows_u32);
-                enc.set_u32(5, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
     }
 
     /// Fused gate+up predec GEMV: ONE dispatch computes both `g_out` and
@@ -1658,22 +1667,17 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), g_offset as u64);
-                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
-                enc.set_buffer(2, Some(model_buf), u_offset as u64);
-                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
-                enc.set_buffer(4, Some(x_buf), 0);
-                enc.set_buffer(5, Some(g_out_buf), 0);
-                enc.set_buffer(6, Some(u_out_buf), 0);
-                enc.set_u32(7, rows_u32);
-                enc.set_u32(8, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), g_offset as u64);
+            enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+            enc.set_buffer(2, Some(model_buf), u_offset as u64);
+            enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+            enc.set_buffer(4, Some(x_buf), 0);
+            enc.set_buffer(5, Some(g_out_buf), 0);
+            enc.set_buffer(6, Some(u_out_buf), 0);
+            enc.set_u32(7, rows_u32);
+            enc.set_u32(8, cols_u32);
+        })
     }
 
     /// f16-scales twin of [`gemv_q4_k_v4_predec_pair_pinned_tcb`] (A6.5,
@@ -1751,22 +1755,17 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), g_offset as u64);
-                enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
-                enc.set_buffer(2, Some(model_buf), u_offset as u64);
-                enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
-                enc.set_buffer(4, Some(x_buf), 0);
-                enc.set_buffer(5, Some(g_out_buf), 0);
-                enc.set_buffer(6, Some(u_out_buf), 0);
-                enc.set_u32(7, rows_u32);
-                enc.set_u32(8, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), g_offset as u64);
+            enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+            enc.set_buffer(2, Some(model_buf), u_offset as u64);
+            enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+            enc.set_buffer(4, Some(x_buf), 0);
+            enc.set_buffer(5, Some(g_out_buf), 0);
+            enc.set_buffer(6, Some(u_out_buf), 0);
+            enc.set_u32(7, rows_u32);
+            enc.set_u32(8, cols_u32);
+        })
     }
 
     /// Q4K_FAST v1 — Q4_K with sub-block-contiguous re-layout.
@@ -1827,18 +1826,13 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })
     }
 
     /// W4A8 prototype — Q4_K weight × int8 activation GEMV at v3_8r geometry.
@@ -1880,13 +1874,15 @@ mod metal_dispatch {
         if x_int8_buf.length() < x_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb x_int8 buffer too small: got {} need {}",
-                x_int8_buf.length(), x_bytes,
+                x_int8_buf.length(),
+                x_bytes,
             )));
         }
         if x_scales_buf.length() < scales_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb x_scales buffer too small: got {} need {}",
-                x_scales_buf.length(), scales_bytes,
+                x_scales_buf.length(),
+                scales_bytes,
             )));
         }
         let rows_u32 = rows as u32;
@@ -1894,19 +1890,14 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_int8_buf), 0);
-                enc.set_buffer(2, Some(x_scales_buf), 0);
-                enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_u32(4, rows_u32);
-                enc.set_u32(5, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_int8_buf), 0);
+            enc.set_buffer(2, Some(x_scales_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
     }
 
     /// W4A8 per-channel — Q4_K weight × int8 activation GEMV at v3_8r geometry,
@@ -1951,13 +1942,15 @@ mod metal_dispatch {
         if x_int8_buf.length() < x_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb x_int8 buffer too small: got {} need {}",
-                x_int8_buf.length(), x_bytes,
+                x_int8_buf.length(),
+                x_bytes,
             )));
         }
         if x_scales_buf.length() < scales_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned_tcb x_scales buffer too small: got {} need {}",
-                x_scales_buf.length(), scales_bytes,
+                x_scales_buf.length(),
+                scales_bytes,
             )));
         }
         let rows_u32 = rows as u32;
@@ -1965,19 +1958,14 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_int8_buf), 0);
-                enc.set_buffer(2, Some(x_scales_buf), 0);
-                enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_u32(4, rows_u32);
-                enc.set_u32(5, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_int8_buf), 0);
+            enc.set_buffer(2, Some(x_scales_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
     }
 
     /// GPU-side per-block int8 quantization of a length-`n` f32 activation
@@ -2003,13 +1991,15 @@ mod metal_dispatch {
         if x_buf.length() < (n * std::mem::size_of::<f32>()) as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_buf too small: got {} need {}",
-                x_buf.length(), n * std::mem::size_of::<f32>(),
+                x_buf.length(),
+                n * std::mem::size_of::<f32>(),
             )));
         }
         if x_int8_buf.length() < n as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
-                x_int8_buf.length(), n,
+                x_int8_buf.length(),
+                n,
             )));
         }
         let n_blocks = n / 256;
@@ -2017,23 +2007,19 @@ mod metal_dispatch {
         if x_scales_buf.length() < scales_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_scales_buf too small: got {} need {}",
-                x_scales_buf.length(), scales_bytes,
+                x_scales_buf.length(),
+                scales_bytes,
             )));
         }
         const TG: u32 = 256;
         let grid_x = n as u32;
         let shmem_bytes = (TG as usize * std::mem::size_of::<f32>()) as u64;
-        tcb.dispatch_threads(
-            KERNEL,
-            (grid_x, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(x_buf), 0);
-                enc.set_buffer(1, Some(x_int8_buf), 0);
-                enc.set_buffer(2, Some(x_scales_buf), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (grid_x, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(x_int8_buf), 0);
+            enc.set_buffer(2, Some(x_scales_buf), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// AWQ Option B: GPU-side fused activation-divide + per-block int8
@@ -2060,19 +2046,22 @@ mod metal_dispatch {
         if x_buf.length() < f32_bytes {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_buf too small: got {} need {}",
-                x_buf.length(), f32_bytes,
+                x_buf.length(),
+                f32_bytes,
             )));
         }
         if s_buf.length() < f32_bytes {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb s_buf too small: got {} need {}",
-                s_buf.length(), f32_bytes,
+                s_buf.length(),
+                f32_bytes,
             )));
         }
         if x_int8_buf.length() < n as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
-                x_int8_buf.length(), n,
+                x_int8_buf.length(),
+                n,
             )));
         }
         let n_blocks = n / 256;
@@ -2080,24 +2069,20 @@ mod metal_dispatch {
         if x_scales_buf.length() < scales_bytes as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_scales_buf too small: got {} need {}",
-                x_scales_buf.length(), scales_bytes,
+                x_scales_buf.length(),
+                scales_bytes,
             )));
         }
         const TG: u32 = 256;
         let grid_x = n as u32;
         let shmem_bytes = (TG as usize * std::mem::size_of::<f32>()) as u64;
-        tcb.dispatch_threads(
-            KERNEL,
-            (grid_x, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(x_buf), 0);
-                enc.set_buffer(1, Some(s_buf), 0);
-                enc.set_buffer(2, Some(x_int8_buf), 0);
-                enc.set_buffer(3, Some(x_scales_buf), 0);
-                enc.set_threadgroup_memory_length(0, shmem_bytes);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (grid_x, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(s_buf), 0);
+            enc.set_buffer(2, Some(x_int8_buf), 0);
+            enc.set_buffer(3, Some(x_scales_buf), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
     }
 
     /// GPU-side per-CHANNEL int8 quantization. Pairs with the per-channel
@@ -2121,35 +2106,33 @@ mod metal_dispatch {
         if x_buf.length() < (n * std::mem::size_of::<f32>()) as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_buf too small: got {} need {}",
-                x_buf.length(), n * std::mem::size_of::<f32>(),
+                x_buf.length(),
+                n * std::mem::size_of::<f32>(),
             )));
         }
         if scales_buf.length() < (n * std::mem::size_of::<f32>()) as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb scales_buf too small: got {} need {}",
-                scales_buf.length(), n * std::mem::size_of::<f32>(),
+                scales_buf.length(),
+                n * std::mem::size_of::<f32>(),
             )));
         }
         if x_int8_buf.length() < n as u64 {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_tcb x_int8_buf too small: got {} need {}",
-                x_int8_buf.length(), n,
+                x_int8_buf.length(),
+                n,
             )));
         }
         const TG: u32 = 256;
         let grid_x = (n as u32).next_multiple_of(TG);
         let n_u32 = n as u32;
-        tcb.dispatch_threads(
-            KERNEL,
-            (grid_x, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(x_buf), 0);
-                enc.set_buffer(1, Some(scales_buf), 0);
-                enc.set_buffer(2, Some(x_int8_buf), 0);
-                enc.set_u32(3, n_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (grid_x, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(x_buf), 0);
+            enc.set_buffer(1, Some(scales_buf), 0);
+            enc.set_buffer(2, Some(x_int8_buf), 0);
+            enc.set_u32(3, n_u32);
+        })
     }
 
     /// CPU-side per-block int8 quantization of a length-cols f32 activation
@@ -2167,7 +2150,9 @@ mod metal_dispatch {
             let mut max_abs = 0.0f32;
             for &v in &x[lo..hi] {
                 let a = v.abs();
-                if a > max_abs { max_abs = a; }
+                if a > max_abs {
+                    max_abs = a;
+                }
             }
             let scale = if max_abs > 0.0 { max_abs / 127.0 } else { 1.0 };
             let inv_scale = 1.0 / scale;
@@ -2209,7 +2194,9 @@ mod metal_dispatch {
                 let inv_s = if sv > 1e-12 { 1.0 / sv } else { 0.0 };
                 let scaled = x[i] * inv_s;
                 let a = scaled.abs();
-                if a > max_abs { max_abs = a; }
+                if a > max_abs {
+                    max_abs = a;
+                }
             }
             let scale = if max_abs > 0.0 { max_abs / 127.0 } else { 1.0 };
             let inv_scale = 1.0 / scale;
@@ -2271,7 +2258,11 @@ mod metal_dispatch {
         x.iter()
             .map(|&v| {
                 let a = v.abs();
-                if a > 0.0 { a / 127.0 } else { 1.0 }
+                if a > 0.0 {
+                    a / 127.0
+                } else {
+                    1.0
+                }
             })
             .collect()
     }
@@ -2318,18 +2309,13 @@ mod metal_dispatch {
         const TG: u32 = 64;
         const ROWS_PER_TG: u32 = 8;
         let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })
     }
 
     /// P2 — Q6_K-weight × fp32-vec → fp32 GEMV against pinned model
@@ -2380,17 +2366,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
     }
 
     /// Q3_K-weight × fp32-vec → fp32 GEMV, dispatching `gemm_q3_k_fused_v2`
@@ -2477,21 +2458,16 @@ mod metal_dispatch {
         };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<ArgbufRowsCols>() as u64,
-                    &args as *const ArgbufRowsCols as *const _,
-                );
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+        })
     }
 
     /// 2-row-ILP FUSED Q3_K GEMV — dispatches `gemm_q3_k_fused_2r`. Same buffer
@@ -2555,21 +2531,16 @@ mod metal_dispatch {
         const TG: u32 = 256;
         // 16 rows/TG (8 simdgroups x 2 rows).
         let n_tg = rows_u32.div_ceil(16);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<ArgbufRowsCols>() as u64,
-                    &args as *const ArgbufRowsCols as *const _,
-                );
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+        })
     }
 
     /// Wedge K -- simdmat-optimised pinned-buffer Q4_K_M GEMV. Same signature
@@ -2588,16 +2559,7 @@ mod metal_dispatch {
         x: &[f32],
         out: &mut [f32],
     ) -> Result<()> {
-        dispatch_q4_k_m_simdmat_pinned(
-            ctx,
-            model_buf,
-            w_offset,
-            w_byte_size,
-            rows,
-            cols,
-            x,
-            out,
-        )
+        dispatch_q4_k_m_simdmat_pinned(ctx, model_buf, w_offset, w_byte_size, rows, cols, x, out)
     }
 
     /// Approach 1 Iter 1 -- 256 threads, 8 rows/TG, 8 simdgroups.
@@ -2707,7 +2669,10 @@ mod metal_dispatch {
     ) -> Result<()> {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
         batch.dispatch_threads(
             "gemv_f32_attn",
@@ -2796,7 +2761,11 @@ mod metal_dispatch {
         if x.len() != cols || out_a.len() != rows || out_b.len() != rows {
             return Err(Error::Kernel(format!(
                 "gemm_q4_k_m_fused_simd pair shape: x={} cols={} out_a={} out_b={} rows={}",
-                x.len(), cols, out_a.len(), out_b.len(), rows
+                x.len(),
+                cols,
+                out_a.len(),
+                out_b.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
@@ -2804,13 +2773,15 @@ mod metal_dispatch {
         if w_a_bytes.len() != expected_bytes {
             return Err(Error::Kernel(format!(
                 "gemm_q4_k_m_fused_simd pair w_a bytes: got {} expected {}",
-                w_a_bytes.len(), expected_bytes
+                w_a_bytes.len(),
+                expected_bytes
             )));
         }
         if w_b_bytes.len() != expected_bytes {
             return Err(Error::Kernel(format!(
                 "gemm_q4_k_m_fused_simd pair w_b bytes: got {} expected {}",
-                w_b_bytes.len(), expected_bytes
+                w_b_bytes.len(),
+                expected_bytes
             )));
         }
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
@@ -2851,19 +2822,26 @@ mod metal_dispatch {
         if x.len() != cols || a.len() != rows {
             return Err(Error::Kernel(format!(
                 "gemm_q4_k_m_fused_simd pair+silu shape: x={} cols={} a={} rows={}",
-                x.len(), cols, a.len(), rows
+                x.len(),
+                cols,
+                a.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
         let expected_bytes = rows * blocks_per_row * 144;
         if w_gate_bytes.len() != expected_bytes {
             return Err(Error::Kernel(format!(
-                "pair+silu w_gate bytes: got {} expected {}", w_gate_bytes.len(), expected_bytes
+                "pair+silu w_gate bytes: got {} expected {}",
+                w_gate_bytes.len(),
+                expected_bytes
             )));
         }
         if w_up_bytes.len() != expected_bytes {
             return Err(Error::Kernel(format!(
-                "pair+silu w_up bytes: got {} expected {}", w_up_bytes.len(), expected_bytes
+                "pair+silu w_up bytes: got {} expected {}",
+                w_up_bytes.len(),
+                expected_bytes
             )));
         }
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
@@ -2878,7 +2856,7 @@ mod metal_dispatch {
         // silu_mul reads them.
         ctx.dispatch_batch(|batch| {
             encode_gemv_q4_k_m_simd(batch, &w_gate_buf, rows, cols, &x_buf, &g_buf)?;
-            encode_gemv_q4_k_m_simd(batch, &w_up_buf,  rows, cols, &x_buf, &u_buf)?;
+            encode_gemv_q4_k_m_simd(batch, &w_up_buf, rows, cols, &x_buf, &u_buf)?;
             encode_silu_mul(batch, &g_buf, &u_buf, &a_buf, rows)
         })?;
         let ptr = a_buf.contents() as *const f32;
@@ -3206,14 +3184,16 @@ mod metal_dispatch {
         if w_a_buf.length() < expected_a {
             return Err(Error::Kernel(format!(
                 "dispatch_gemv_f32_attn_pinned_pair w_a too small: got {} expected {}",
-                w_a_buf.length(), expected_a
+                w_a_buf.length(),
+                expected_a
             )));
         }
         let expected_b = (rows_b * cols * std::mem::size_of::<f32>()) as u64;
         if w_b_buf.length() < expected_b {
             return Err(Error::Kernel(format!(
                 "dispatch_gemv_f32_attn_pinned_pair w_b too small: got {} expected {}",
-                w_b_buf.length(), expected_b
+                w_b_buf.length(),
+                expected_b
             )));
         }
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
@@ -3820,7 +3800,11 @@ mod metal_dispatch {
         let dst_pe_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(dst_k_pe));
 
         // Argbuf: { seq_slot, kv_lora_rank, qk_rope_head_dim } as 3 packed u32s.
-        let args: [u32; 3] = [seq_slot as u32, kv_lora_rank as u32, qk_rope_head_dim as u32];
+        let args: [u32; 3] = [
+            seq_slot as u32,
+            kv_lora_rank as u32,
+            qk_rope_head_dim as u32,
+        ];
 
         let absmax_bytes = 32u64 * std::mem::size_of::<f32>() as u64;
         ctx.dispatch_threads(
@@ -3832,7 +3816,11 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(&src_kv_a_buf), 0);
                 enc.set_buffer(2, Some(&dst_c_buf), 0);
                 enc.set_buffer(3, Some(&dst_pe_buf), 0);
-                enc.set_bytes(4, std::mem::size_of::<[u32; 3]>() as u64, args.as_ptr() as *const _);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<[u32; 3]>() as u64,
+                    args.as_ptr() as *const _,
+                );
                 enc.set_threadgroup_memory_length(0, absmax_bytes);
             },
         )?;
@@ -4242,8 +4230,7 @@ mod metal_dispatch {
         out: &mut [f32],
     ) -> Result<()> {
         let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
-        let route_ids_buf =
-            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
         let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         ctx.dispatch_batch(|batch| {
@@ -4277,17 +4264,17 @@ mod metal_dispatch {
         cols: usize,
         out: &mut [f32],
     ) -> Result<()> {
-        let model_buf    = ctx.new_buffer_with_bytes(w_all_bytes);
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
         let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
-        let x_buf        = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
-        let out_buf      = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         let gate_offset_u64 = gate_offset as u64;
-        let up_offset_u64   = up_offset   as u64;
-        let routes_u32  = routes as u32;
-        let rows_u32    = rows   as u32;
-        let cols_u32    = cols   as u32;
-        let tg_size     = TG_SIZE as u32;
-        let n_tg_x      = (rows_u32 + 7) / 8;
+        let up_offset_u64 = up_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
         let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
         ctx.dispatch_batch(|batch| {
             batch.dispatch_threads(
@@ -4295,12 +4282,20 @@ mod metal_dispatch {
                 (n_tg_x * tg_size, routes_u32, 1),
                 (tg_size, 1, 1),
                 |enc| {
-                    enc.set_buffer(0, Some(&model_buf),    0);
+                    enc.set_buffer(0, Some(&model_buf), 0);
                     enc.set_buffer(1, Some(&route_ids_buf), 0);
-                    enc.set_buffer(2, Some(&x_buf),         0);
-                    enc.set_buffer(3, Some(&out_buf),       0);
-                    enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
-                    enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                    enc.set_buffer(2, Some(&x_buf), 0);
+                    enc.set_buffer(3, Some(&out_buf), 0);
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<u64>() as u64,
+                        &gate_offset_u64 as *const u64 as *const _,
+                    );
+                    enc.set_bytes(
+                        5,
+                        std::mem::size_of::<u64>() as u64,
+                        &up_offset_u64 as *const u64 as *const _,
+                    );
                     enc.set_u32(6, routes_u32);
                     enc.set_u32(7, rows_u32);
                     enc.set_u32(8, cols_u32);
@@ -4326,17 +4321,17 @@ mod metal_dispatch {
         cols: usize,
         out: &mut [f32],
     ) -> Result<()> {
-        let model_buf     = ctx.new_buffer_with_bytes(w_all_bytes);
+        let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
         let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
-        let x_buf         = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
-        let out_buf       = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+        let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         let gate_offset_u64 = gate_offset as u64;
-        let up_offset_u64   = up_offset   as u64;
-        let routes_u32  = routes as u32;
-        let rows_u32    = rows   as u32;
-        let cols_u32    = cols   as u32;
-        let tg_size     = TG_SIZE as u32;
-        let n_tg_x      = (rows_u32 + 7) / 8;
+        let up_offset_u64 = up_offset as u64;
+        let routes_u32 = routes as u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
         let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
         ctx.dispatch_batch(|batch| {
             batch.dispatch_threads(
@@ -4344,12 +4339,20 @@ mod metal_dispatch {
                 (n_tg_x * tg_size, routes_u32, 1),
                 (tg_size, 1, 1),
                 |enc| {
-                    enc.set_buffer(0, Some(&model_buf),     0);
+                    enc.set_buffer(0, Some(&model_buf), 0);
                     enc.set_buffer(1, Some(&route_ids_buf), 0);
-                    enc.set_buffer(2, Some(&x_buf),          0);
-                    enc.set_buffer(3, Some(&out_buf),        0);
-                    enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
-                    enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                    enc.set_buffer(2, Some(&x_buf), 0);
+                    enc.set_buffer(3, Some(&out_buf), 0);
+                    enc.set_bytes(
+                        4,
+                        std::mem::size_of::<u64>() as u64,
+                        &gate_offset_u64 as *const u64 as *const _,
+                    );
+                    enc.set_bytes(
+                        5,
+                        std::mem::size_of::<u64>() as u64,
+                        &up_offset_u64 as *const u64 as *const _,
+                    );
                     enc.set_u32(6, routes_u32);
                     enc.set_u32(7, rows_u32);
                     enc.set_u32(8, cols_u32);
@@ -4373,8 +4376,7 @@ mod metal_dispatch {
         out: &mut [f32],
     ) -> Result<()> {
         let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
-        let route_ids_buf =
-            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
         let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         ctx.dispatch_batch(|batch| {
@@ -4413,8 +4415,7 @@ mod metal_dispatch {
             "moe_batched_gemm_q4_indexed"
         };
         let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
-        let route_ids_buf =
-            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
         let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         ctx.dispatch_batch(|batch| {
@@ -4448,8 +4449,7 @@ mod metal_dispatch {
         out: &mut [f32],
     ) -> Result<()> {
         let model_buf = ctx.new_buffer_with_bytes(w_all_bytes);
-        let route_ids_buf =
-            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
+        let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<u32, u8>(route_ids));
         let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
         let out_buf = ctx.new_buffer(out.len() * std::mem::size_of::<f32>());
         ctx.dispatch_batch(|batch| {
@@ -4490,7 +4490,11 @@ mod metal_dispatch {
         let tg_size = TG_SIZE as u32;
         let is_v2t = kernel_name.ends_with("_v2t");
         let is_v2_family = kernel_name.ends_with("_v2") || kernel_name.ends_with("_v2s") || is_v2t;
-        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let n_tg_x = if is_v2_family {
+            (rows_u32 + 7) / 8
+        } else {
+            rows_u32
+        };
         let shmem_bytes = if is_v2t {
             (cols as u64) * std::mem::size_of::<f32>() as u64
         } else if is_v2_family {
@@ -4693,26 +4697,24 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
-        ctx.dispatch_threads(
-            kernel_name,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&w_buf), 0);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<ArgbufRowsCols>() as u64,
-                    &args as *const ArgbufRowsCols as *const _,
-                );
-                // NO set_threadgroup_memory_length -- kernel uses none.
-            },
-        )?;
+        ctx.dispatch_threads(kernel_name, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(&w_buf), 0);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+            // NO set_threadgroup_memory_length -- kernel uses none.
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -4768,26 +4770,24 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
-        ctx.dispatch_threads(
-            kernel_name,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<ArgbufRowsCols>() as u64,
-                    &args as *const ArgbufRowsCols as *const _,
-                );
-                // NO set_threadgroup_memory_length -- kernel uses none.
-            },
-        )?;
+        ctx.dispatch_threads(kernel_name, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+            // NO set_threadgroup_memory_length -- kernel uses none.
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -4840,25 +4840,23 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const V2_TG: u32 = 256;
         let n_tg = (rows_u32 + 7) / 8;
 
-        ctx.dispatch_threads(
-            kernel_name,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(
-                    3,
-                    std::mem::size_of::<ArgbufRowsCols>() as u64,
-                    &args as *const ArgbufRowsCols as *const _,
-                );
-            },
-        )?;
+        ctx.dispatch_threads(kernel_name, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_bytes(
+                3,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -4888,7 +4886,10 @@ mod metal_dispatch {
         if x.len() != cols || out.len() != rows {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
-                x.len(), cols, out.len(), rows
+                x.len(),
+                cols,
+                out.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
@@ -4910,22 +4911,17 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        const SM_TG: u32 = 128;  // 4 simdgroups × 32 threads
-        const SM_ROWS: u32 = 4;  // 1 simdgroup per row, 4 rows per TG
+        const SM_TG: u32 = 128; // 4 simdgroups × 32 threads
+        const SM_ROWS: u32 = 4; // 1 simdgroup per row, 4 rows per TG
         let n_tg = (rows_u32 + SM_ROWS - 1) / SM_ROWS;
 
-        ctx.dispatch_threads(
-            KERNEL,
-            (n_tg * SM_TG, 1, 1),
-            (SM_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )?;
+        ctx.dispatch_threads(KERNEL, (n_tg * SM_TG, 1, 1), (SM_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -4954,7 +4950,10 @@ mod metal_dispatch {
         if x.len() != cols || out.len() != rows {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
-                x.len(), cols, out.len(), rows
+                x.len(),
+                cols,
+                out.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
@@ -4980,18 +4979,13 @@ mod metal_dispatch {
         const V3_ROWS: u32 = 8;
         let n_tg = (rows_u32 + V3_ROWS - 1) / V3_ROWS;
 
-        ctx.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )?;
+        ctx.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -5021,7 +5015,10 @@ mod metal_dispatch {
         if x.len() != cols || out.len() != rows {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
-                x.len(), cols, out.len(), rows
+                x.len(),
+                cols,
+                out.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
@@ -5047,18 +5044,13 @@ mod metal_dispatch {
         const DUAL_ROWS: u32 = 8;
         let n_tg = (rows_u32 + DUAL_ROWS - 1) / DUAL_ROWS;
 
-        ctx.dispatch_threads(
-            KERNEL,
-            (n_tg * DUAL_TG, 1, 1),
-            (DUAL_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )?;
+        ctx.dispatch_threads(KERNEL, (n_tg * DUAL_TG, 1, 1), (DUAL_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -5088,7 +5080,10 @@ mod metal_dispatch {
         if x.len() != cols || out.len() != rows {
             return Err(Error::Kernel(format!(
                 "{KERNEL}_pinned shape: x={} cols={} out={} rows={}",
-                x.len(), cols, out.len(), rows
+                x.len(),
+                cols,
+                out.len(),
+                rows
             )));
         }
         let blocks_per_row = cols / 256;
@@ -5110,22 +5105,17 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        const LLAMA_TG: u32 = 64;   // 2 simdgroups × 32 threads
-        const LLAMA_ROWS: u32 = 8;  // 2 simdgroups × 4 rows each
+        const LLAMA_TG: u32 = 64; // 2 simdgroups × 32 threads
+        const LLAMA_ROWS: u32 = 8; // 2 simdgroups × 4 rows each
         let n_tg = (rows_u32 + LLAMA_ROWS - 1) / LLAMA_ROWS;
 
-        ctx.dispatch_threads(
-            KERNEL,
-            (n_tg * LLAMA_TG, 1, 1),
-            (LLAMA_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(&x_buf), 0);
-                enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )?;
+        ctx.dispatch_threads(KERNEL, (n_tg * LLAMA_TG, 1, 1), (LLAMA_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(&x_buf), 0);
+            enc.set_buffer(2, Some(&out_buf), 0);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })?;
 
         let out_ptr = out_buf.contents() as *const f32;
         let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, rows) };
@@ -5168,7 +5158,10 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
         ctx.dispatch_threads(
@@ -5231,7 +5224,10 @@ mod metal_dispatch {
 
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
         ctx.dispatch_threads(
@@ -5454,7 +5450,8 @@ mod metal_dispatch {
         if s_buf.length() < f32_bytes {
             return Err(Error::Kernel(format!(
                 "add_rmsnorm_fused_q8_scaled_tcb s_buf too small: got {} need {}",
-                s_buf.length(), f32_bytes,
+                s_buf.length(),
+                f32_bytes,
             )));
         }
         let hidden_u32 = hidden as u32;
@@ -5492,17 +5489,12 @@ mod metal_dispatch {
     ) -> Result<()> {
         let n_u32 = n as u32;
         let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
-        ctx.dispatch_threads(
-            "silu_mul",
-            (n_tg * TG_SIZE, 1, 1),
-            (TG_SIZE, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(gate_buf), 0);
-                enc.set_buffer(1, Some(up_buf), 0);
-                enc.set_buffer(2, Some(out_buf), 0);
-                enc.set_u32(3, n_u32);
-            },
-        )
+        ctx.dispatch_threads("silu_mul", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
+            enc.set_buffer(0, Some(gate_buf), 0);
+            enc.set_buffer(1, Some(up_buf), 0);
+            enc.set_buffer(2, Some(out_buf), 0);
+            enc.set_u32(3, n_u32);
+        })
     }
 
     // add_inplace_metal_buf: SKIPPED -- existing `add_inplace_metal` already
@@ -5522,7 +5514,8 @@ mod metal_dispatch {
         if w.len() != rows * cols {
             return Err(Error::Kernel(format!(
                 "gemv_f32_attn_metal_buf weight len mismatch: got {} expected {}",
-                w.len(), rows * cols
+                w.len(),
+                rows * cols
             )));
         }
         let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
@@ -5607,7 +5600,8 @@ mod metal_dispatch {
         if w.len() != rows * cols {
             return Err(Error::Kernel(format!(
                 "gemv_f32_moe_metal_buf weight len mismatch: got {} expected {}",
-                w.len(), rows * cols
+                w.len(),
+                rows * cols
             )));
         }
         let w_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
@@ -5651,7 +5645,8 @@ mod metal_dispatch {
         if w_q4_bytes.len() != expected_bytes {
             return Err(Error::Kernel(format!(
                 "moe_grouped_gemm_q4_metal_buf weight bytes: got {} expected {}",
-                w_q4_bytes.len(), expected_bytes
+                w_q4_bytes.len(),
+                expected_bytes
             )));
         }
         let w_buf = ctx.new_buffer_with_bytes(w_q4_bytes);
@@ -5759,20 +5754,32 @@ mod metal_dispatch {
         let qk_rope_u32 = qk_rope_head_dim as u32;
         let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
         let tg = TG_SIZE.min(total_pairs.max(1));
-        let mut ab = KernelArgBuffer::new(tcb.ctx, &[
-            ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-            ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
-        ])?;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
         ab.set_u32(0, n_heads_u32);
         ab.set_u32(1, q_head_u32);
         ab.set_u32(2, qk_nope_u32);
         ab.set_u32(3, qk_rope_u32);
         ab.set_u32(4, pos);
         ab.set_f32(5, base);
-        tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(q_buf), 0);
-            enc.set_buffer(1, Some(ab.handle()), 0);
-        })
+        tcb.dispatch_threads(
+            "rope_q_f32_inplace",
+            (total_pairs, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(ab.handle()), 0);
+            },
+        )
     }
 
     /// Apply f32 RoPE in-place to a contiguous slice inside a larger f32 buffer.
@@ -5788,13 +5795,18 @@ mod metal_dispatch {
         let head_dim_u32 = head_dim as u32;
         let half_dim = head_dim_u32 / 2;
         let tg = TG_SIZE.min(half_dim.max(1));
-        tcb.dispatch_threads("rope_slice_f32_inplace", (half_dim, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(buf), 0);
-            enc.set_u32(1, offset_u32);
-            enc.set_u32(2, head_dim_u32);
-            enc.set_u32(3, pos);
-            enc.set_f32(4, base);
-        })
+        tcb.dispatch_threads(
+            "rope_slice_f32_inplace",
+            (half_dim, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(buf), 0);
+                enc.set_u32(1, offset_u32);
+                enc.set_u32(2, head_dim_u32);
+                enc.set_u32(3, pos);
+                enc.set_f32(4, base);
+            },
+        )
     }
 
     /// Append one KV entry to persistent GPU KV buffers (GPU-resident KV cache).
@@ -5817,7 +5829,8 @@ mod metal_dispatch {
         let kv_lora_u32 = kv_lora_rank as u32;
         let rope_u32 = qk_rope_head_dim as u32;
         let n_threads = kv_lora_rank.max(qk_rope_head_dim) as u32;
-        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, seq_slot_u32);
         ab.set_u32(1, kv_lora_u32);
         ab.set_u32(2, rope_u32);
@@ -5889,8 +5902,7 @@ mod metal_dispatch {
         // TG=128 matches Qwen-3B head_dim (128), so Phase 4 (per-output-element
         // accumulation) achieves full TG occupancy.
         const TG_SIZE: u32 = 128;
-        let shmem_bytes =
-            ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
+        let shmem_bytes = ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
 
         tcb.dispatch_threads(
             "mha_decode_f32",
@@ -6000,10 +6012,8 @@ mod metal_dispatch {
         dst_off: usize,
         n: usize,
     ) -> Result<()> {
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, n as u32);
         ab.set_u32(1, src_off as u32);
         ab.set_u32(2, dst_off as u32);
@@ -6047,7 +6057,12 @@ mod metal_dispatch {
         let n_tg = total.div_ceil(TG_SIZE);
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+            ],
         )?;
         ab.set_u32(0, kv_dim as u32);
         ab.set_u32(1, b as u32);
@@ -6114,8 +6129,7 @@ mod metal_dispatch {
         ab.set_f32(4, scale);
 
         const TG_SIZE: u32 = 128;
-        let shmem_bytes =
-            ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
+        let shmem_bytes = ((seq_len + TG_SIZE as usize) * std::mem::size_of::<f32>()) as u64;
 
         tcb.dispatch_threads(
             "mha_decode_f16kv",
@@ -6166,8 +6180,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
             ],
         )?;
         ab.set_u32(0, p0 as u32);
@@ -6208,10 +6226,8 @@ mod metal_dispatch {
         dst_off: usize,
         n: usize,
     ) -> Result<()> {
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, n as u32);
         ab.set_u32(1, src_off as u32);
         ab.set_u32(2, dst_off as u32);
@@ -6285,7 +6301,12 @@ mod metal_dispatch {
         // o_proj pinned as f16; use gemv_f16_simdmat (half w × float x → float y).
         // Cols = n_heads × v_head_dim = 2048 and rows = hidden = 2048 (both % 8 == 0).
         gemv_f16_simdmat_tcb(
-            tcb, o_proj, hidden, n_heads * v_head_dim, &arena.attn_out, &arena.out,
+            tcb,
+            o_proj,
+            hidden,
+            n_heads * v_head_dim,
+            &arena.attn_out,
+            &arena.out,
         )
     }
 
@@ -6389,7 +6410,11 @@ mod metal_dispatch {
                 enc.set_buffer(1, Some(route_ids_buf), 0);
                 enc.set_buffer(2, Some(x_buf), 0);
                 enc.set_buffer(3, Some(out_buf), 0);
-                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &base_offset_u64 as *const u64 as *const _);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u64>() as u64,
+                    &base_offset_u64 as *const u64 as *const _,
+                );
                 enc.set_u32(5, routes_u32);
                 enc.set_u32(6, rows_u32);
                 enc.set_u32(7, cols_u32);
@@ -6419,15 +6444,17 @@ mod metal_dispatch {
         cols: usize,
     ) -> Result<()> {
         let base_offset_u64 = base_offset as u64;
-        let routes_one      = 1u32;
-        let rows_u32        = rows as u32;
-        let cols_u32        = cols as u32;
-        let tg_size         = TG_SIZE as u32;
-        let is_v2t      = kernel_name.ends_with("_v2t");
-        let is_v2_family = kernel_name.ends_with("_v2")
-            || kernel_name.ends_with("_v2s")
-            || is_v2t;
-        let n_tg_x = if is_v2_family { (rows_u32 + 7) / 8 } else { rows_u32 };
+        let routes_one = 1u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let is_v2t = kernel_name.ends_with("_v2t");
+        let is_v2_family = kernel_name.ends_with("_v2") || kernel_name.ends_with("_v2s") || is_v2t;
+        let n_tg_x = if is_v2_family {
+            (rows_u32 + 7) / 8
+        } else {
+            rows_u32
+        };
         let shmem_bytes = if is_v2t {
             (cols as u64) * std::mem::size_of::<f32>() as u64
         } else if is_v2_family {
@@ -6438,21 +6465,21 @@ mod metal_dispatch {
         for route_i in 0..routes {
             let ids_off = (route_i * std::mem::size_of::<u32>()) as u64;
             // x is route-major: offset x_buf so x[0*cols..] = original x[route_i*cols..].
-            let x_off   = (route_i * cols * std::mem::size_of::<f32>()) as u64;
+            let x_off = (route_i * cols * std::mem::size_of::<f32>()) as u64;
             let out_off = (route_i * rows * std::mem::size_of::<f32>()) as u64;
             tcb.dispatch_threads(
                 kernel_name,
                 (n_tg_x * tg_size, 1, 1),
                 (tg_size, 1, 1),
                 |enc| {
-                    enc.set_buffer(0, Some(model_buf),     0);
+                    enc.set_buffer(0, Some(model_buf), 0);
                     enc.set_buffer(1, Some(route_ids_buf), ids_off);
-                    enc.set_buffer(2, Some(x_buf),         x_off);
-                    enc.set_buffer(3, Some(out_buf),       out_off);
+                    enc.set_buffer(2, Some(x_buf), x_off);
+                    enc.set_buffer(3, Some(out_buf), out_off);
                     enc.set_bytes(4, 8, &base_offset_u64 as *const u64 as *const _);
                     enc.set_bytes(5, 4, &routes_one as *const u32 as *const _);
-                    enc.set_bytes(6, 4, &rows_u32   as *const u32 as *const _);
-                    enc.set_bytes(7, 4, &cols_u32   as *const u32 as *const _);
+                    enc.set_bytes(6, 4, &rows_u32 as *const u32 as *const _);
+                    enc.set_bytes(7, 4, &cols_u32 as *const u32 as *const _);
                     if !is_v2_family || is_v2t {
                         enc.set_threadgroup_memory_length(0, shmem_bytes);
                     }
@@ -6472,12 +6499,17 @@ mod metal_dispatch {
         let n_u32 = n as u32;
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32])?;
         ab.set_u32(0, n_u32);
-        tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(gate_buf), 0);
-            enc.set_buffer(1, Some(up_buf), 0);
-            enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_buffer(3, Some(ab.handle()), 0);
-        })
+        tcb.dispatch_threads(
+            "moe_batched_silu_mul",
+            (n_u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), 0);
+                enc.set_buffer(1, Some(up_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -6494,24 +6526,32 @@ mod metal_dispatch {
         cols: usize,
     ) -> Result<()> {
         let gate_offset_u64 = gate_offset as u64;
-        let up_offset_u64   = up_offset   as u64;
+        let up_offset_u64 = up_offset as u64;
         let routes_u32 = routes as u32;
-        let rows_u32   = rows   as u32;
-        let cols_u32   = cols   as u32;
-        let tg_size    = TG_SIZE as u32;
-        let n_tg_x     = (rows_u32 + 7) / 8;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
         let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
         tcb.dispatch_threads(
             "moe_batched_gemm_q4_indexed_v2t_gu",
             (n_tg_x * tg_size, routes_u32, 1),
             (tg_size, 1, 1),
             |enc| {
-                enc.set_buffer(0, Some(model_buf),    0);
+                enc.set_buffer(0, Some(model_buf), 0);
                 enc.set_buffer(1, Some(route_ids_buf), 0);
-                enc.set_buffer(2, Some(x_buf),         0);
-                enc.set_buffer(3, Some(act_buf),       0);
-                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
-                enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(act_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u64>() as u64,
+                    &gate_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u64>() as u64,
+                    &up_offset_u64 as *const u64 as *const _,
+                );
                 enc.set_u32(6, routes_u32);
                 enc.set_u32(7, rows_u32);
                 enc.set_u32(8, cols_u32);
@@ -6537,24 +6577,32 @@ mod metal_dispatch {
         cols: usize,
     ) -> Result<()> {
         let gate_offset_u64 = gate_offset as u64;
-        let up_offset_u64   = up_offset   as u64;
+        let up_offset_u64 = up_offset as u64;
         let routes_u32 = routes as u32;
-        let rows_u32   = rows   as u32;
-        let cols_u32   = cols   as u32;
-        let tg_size    = TG_SIZE as u32;
-        let n_tg_x     = (rows_u32 + 7) / 8;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
         let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
         tcb.dispatch_threads(
             "moe_batched_gemm_q4_indexed_v2t_gu_v2",
             (n_tg_x * tg_size, routes_u32, 1),
             (tg_size, 1, 1),
             |enc| {
-                enc.set_buffer(0, Some(model_buf),     0);
+                enc.set_buffer(0, Some(model_buf), 0);
                 enc.set_buffer(1, Some(route_ids_buf), 0);
-                enc.set_buffer(2, Some(x_buf),         0);
-                enc.set_buffer(3, Some(act_buf),        0);
-                enc.set_bytes(4, std::mem::size_of::<u64>() as u64, &gate_offset_u64 as *const u64 as *const _);
-                enc.set_bytes(5, std::mem::size_of::<u64>() as u64, &up_offset_u64   as *const u64 as *const _);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(act_buf), 0);
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u64>() as u64,
+                    &gate_offset_u64 as *const u64 as *const _,
+                );
+                enc.set_bytes(
+                    5,
+                    std::mem::size_of::<u64>() as u64,
+                    &up_offset_u64 as *const u64 as *const _,
+                );
                 enc.set_u32(6, routes_u32);
                 enc.set_u32(7, rows_u32);
                 enc.set_u32(8, cols_u32);
@@ -6581,13 +6629,13 @@ mod metal_dispatch {
         cols: usize,
     ) -> Result<()> {
         let gate_offset_u64 = gate_offset as u64;
-        let up_offset_u64   = up_offset   as u64;
-        let routes_one      = 1u32;
-        let rows_u32        = rows as u32;
-        let cols_u32        = cols as u32;
-        let tg_size         = TG_SIZE as u32;
-        let n_tg_x          = (rows_u32 + 7) / 8;
-        let shmem_bytes     = (cols as u64) * std::mem::size_of::<f32>() as u64;
+        let up_offset_u64 = up_offset as u64;
+        let routes_one = 1u32;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let tg_size = TG_SIZE as u32;
+        let n_tg_x = (rows_u32 + 7) / 8;
+        let shmem_bytes = (cols as u64) * std::mem::size_of::<f32>() as u64;
         for route_i in 0..routes {
             // Offset route_ids so route_ids[0] = expert for this route.
             let ids_off = (route_i * std::mem::size_of::<u32>()) as u64;
@@ -6599,15 +6647,15 @@ mod metal_dispatch {
                 (n_tg_x * tg_size, 1, 1),
                 (tg_size, 1, 1),
                 |enc| {
-                    enc.set_buffer(0, Some(model_buf),     0);
+                    enc.set_buffer(0, Some(model_buf), 0);
                     enc.set_buffer(1, Some(route_ids_buf), ids_off);
-                    enc.set_buffer(2, Some(x_buf),         0);
-                    enc.set_buffer(3, Some(act_buf),       act_off);
+                    enc.set_buffer(2, Some(x_buf), 0);
+                    enc.set_buffer(3, Some(act_buf), act_off);
                     enc.set_bytes(4, 8, &gate_offset_u64 as *const u64 as *const _);
-                    enc.set_bytes(5, 8, &up_offset_u64   as *const u64 as *const _);
+                    enc.set_bytes(5, 8, &up_offset_u64 as *const u64 as *const _);
                     enc.set_bytes(6, 4, &routes_one as *const u32 as *const _);
-                    enc.set_bytes(7, 4, &rows_u32   as *const u32 as *const _);
-                    enc.set_bytes(8, 4, &cols_u32   as *const u32 as *const _);
+                    enc.set_bytes(7, 4, &rows_u32 as *const u32 as *const _);
+                    enc.set_bytes(8, 4, &cols_u32 as *const u32 as *const _);
                     enc.set_threadgroup_memory_length(0, shmem_bytes);
                 },
             )?;
@@ -6628,17 +6676,23 @@ mod metal_dispatch {
         let hidden_u32 = hidden as u32;
         let routes_u32 = routes as u32;
         let has_shared_u32 = u32::from(has_shared);
-        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, hidden_u32);
         ab.set_u32(1, routes_u32);
         ab.set_u32(2, has_shared_u32);
-        tcb.dispatch_threads("moe_route_accumulate", (hidden_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(routed_out), 0);
-            enc.set_buffer(1, Some(weights), 0);
-            enc.set_buffer(2, Some(shared_out), 0);
-            enc.set_buffer(3, Some(out), 0);
-            enc.set_buffer(4, Some(ab.handle()), 0);
-        })
+        tcb.dispatch_threads(
+            "moe_route_accumulate",
+            (hidden_u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(routed_out), 0);
+                enc.set_buffer(1, Some(weights), 0);
+                enc.set_buffer(2, Some(shared_out), 0);
+                enc.set_buffer(3, Some(out), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
     }
 
     pub fn moe_topk_gate_tcb(
@@ -6694,29 +6748,69 @@ mod metal_dispatch {
 
         if q4k_schedule == "v2t_gu_v2" {
             encode_batched_gemv_fused_gu_v2_tcb(
-                tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
-                shared_gate_offset, shared_up_offset, 1, shared_mid, hidden,
+                tcb,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_act,
+                shared_gate_offset,
+                shared_up_offset,
+                1,
+                shared_mid,
+                hidden,
             )?;
         } else if q4k_schedule == "v2t_gu" || q4k_schedule == "v2t_gu_serial" {
             encode_batched_gemv_fused_gu_tcb(
-                tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
-                shared_gate_offset, shared_up_offset, 1, shared_mid, hidden,
+                tcb,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_act,
+                shared_gate_offset,
+                shared_up_offset,
+                1,
+                shared_mid,
+                hidden,
             )?;
         } else {
             encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                shared_gate_out, shared_gate_offset, 1, shared_mid, hidden,
+                tcb,
+                q4k_indexed_kernel,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_gate_out,
+                shared_gate_offset,
+                1,
+                shared_mid,
+                hidden,
             )?;
             encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                shared_up_out, shared_up_offset, 1, shared_mid, hidden,
+                tcb,
+                q4k_indexed_kernel,
+                model_buf,
+                shared_route_ids_buf,
+                x_buf,
+                shared_up_out,
+                shared_up_offset,
+                1,
+                shared_mid,
+                hidden,
             )?;
             silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
         }
 
         encode_batched_gemv_indexed_tcb(
-            tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
-            shared_act, out_buf, shared_down_offset, 1, hidden, shared_mid,
+            tcb,
+            shared_down_kernel,
+            model_buf,
+            shared_route_ids_buf,
+            shared_act,
+            out_buf,
+            shared_down_offset,
+            1,
+            hidden,
+            shared_mid,
         )
     }
 
@@ -6752,7 +6846,9 @@ mod metal_dispatch {
         shared_out: &PinnedBuffer,
     ) -> Result<()> {
         if routes == 0 {
-            return Err(Error::Kernel("encode_moe_block_batched_indexed_tcb_with_scratch: no routes".into()));
+            return Err(Error::Kernel(
+                "encode_moe_block_batched_indexed_tcb_with_scratch: no routes".into(),
+            ));
         }
 
         let has_shared = shared_gate_offset.is_some()
@@ -6765,51 +6861,113 @@ mod metal_dispatch {
             "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q4_indexed_v2t",
             _ => "moe_batched_gemm_q4_indexed",
         };
-        let use_fused_gu_v2  = q4k_schedule == "v2t_gu_v2";
-        let use_fused_gu     = q4k_schedule == "v2t_gu";
+        let use_fused_gu_v2 = q4k_schedule == "v2t_gu_v2";
+        let use_fused_gu = q4k_schedule == "v2t_gu";
         // Serial: dispatch one expert at a time so each expert's weight slab (~3 MB
         // gate+up) is a single sequential stream. Eliminates 6-stream L2 thrashing.
         // Effective only when combined with a single command buffer (Pillar 2).
-        let use_serial_gu    = q4k_schedule == "v2t_gu_serial";
+        let use_serial_gu = q4k_schedule == "v2t_gu_serial";
 
         if use_serial_gu {
             encode_batched_gemv_fused_gu_serial_tcb(
-                tcb, model_buf, route_ids_buf, x_buf, routed_act,
-                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+                tcb,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_act,
+                routed_gate_offset,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
             )?;
         } else if use_fused_gu_v2 {
             encode_batched_gemv_fused_gu_v2_tcb(
-                tcb, model_buf, route_ids_buf, x_buf, routed_act,
-                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+                tcb,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_act,
+                routed_gate_offset,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
             )?;
         } else if use_fused_gu {
             encode_batched_gemv_fused_gu_tcb(
-                tcb, model_buf, route_ids_buf, x_buf, routed_act,
-                routed_gate_offset, routed_up_offset, routes, routed_mid, hidden,
+                tcb,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_act,
+                routed_gate_offset,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
             )?;
         } else {
             encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
-                routed_gate_out, routed_gate_offset, routes, routed_mid, hidden,
+                tcb,
+                q4k_indexed_kernel,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_gate_out,
+                routed_gate_offset,
+                routes,
+                routed_mid,
+                hidden,
             )?;
             encode_batched_gemv_indexed_tcb(
-                tcb, q4k_indexed_kernel, model_buf, route_ids_buf, x_buf,
-                routed_up_out, routed_up_offset, routes, routed_mid, hidden,
+                tcb,
+                q4k_indexed_kernel,
+                model_buf,
+                route_ids_buf,
+                x_buf,
+                routed_up_out,
+                routed_up_offset,
+                routes,
+                routed_mid,
+                hidden,
             )?;
-            silu_mul_tcb(tcb, routed_gate_out, routed_up_out, routed_act, routes * routed_mid)?;
+            silu_mul_tcb(
+                tcb,
+                routed_gate_out,
+                routed_up_out,
+                routed_act,
+                routes * routed_mid,
+            )?;
         }
 
         // Down projection: also serial when using v2t_gu_serial to fix the same
         // L2 thrashing on the down-projection weight slabs.
         if use_serial_gu {
             encode_batched_gemv_indexed_serial_tcb(
-                tcb, routed_down_kernel, model_buf, route_ids_buf,
-                routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
+                tcb,
+                routed_down_kernel,
+                model_buf,
+                route_ids_buf,
+                routed_act,
+                routed_out,
+                routed_down_offset,
+                routes,
+                hidden,
+                routed_mid,
             )?;
         } else {
             encode_batched_gemv_indexed_tcb(
-                tcb, routed_down_kernel, model_buf, route_ids_buf,
-                routed_act, routed_out, routed_down_offset, routes, hidden, routed_mid,
+                tcb,
+                routed_down_kernel,
+                model_buf,
+                route_ids_buf,
+                routed_act,
+                routed_out,
+                routed_down_offset,
+                routes,
+                hidden,
+                routed_mid,
             )?;
         }
 
@@ -6820,34 +6978,80 @@ mod metal_dispatch {
             // appropriate fused_gu variant when any gu schedule is selected.
             if use_fused_gu_v2 {
                 encode_batched_gemv_fused_gu_v2_tcb(
-                    tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
-                    gate_off, up_off, 1, shared_mid, hidden,
+                    tcb,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_act,
+                    gate_off,
+                    up_off,
+                    1,
+                    shared_mid,
+                    hidden,
                 )?;
             } else if use_fused_gu || use_serial_gu {
                 encode_batched_gemv_fused_gu_tcb(
-                    tcb, model_buf, shared_route_ids_buf, x_buf, shared_act,
-                    gate_off, up_off, 1, shared_mid, hidden,
+                    tcb,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_act,
+                    gate_off,
+                    up_off,
+                    1,
+                    shared_mid,
+                    hidden,
                 )?;
             } else {
                 encode_batched_gemv_indexed_tcb(
-                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                    shared_gate_out, gate_off, 1, shared_mid, hidden,
+                    tcb,
+                    q4k_indexed_kernel,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_gate_out,
+                    gate_off,
+                    1,
+                    shared_mid,
+                    hidden,
                 )?;
                 encode_batched_gemv_indexed_tcb(
-                    tcb, q4k_indexed_kernel, model_buf, shared_route_ids_buf, x_buf,
-                    shared_up_out, up_off, 1, shared_mid, hidden,
+                    tcb,
+                    q4k_indexed_kernel,
+                    model_buf,
+                    shared_route_ids_buf,
+                    x_buf,
+                    shared_up_out,
+                    up_off,
+                    1,
+                    shared_mid,
+                    hidden,
                 )?;
                 silu_mul_tcb(tcb, shared_gate_out, shared_up_out, shared_act, shared_mid)?;
             }
             encode_batched_gemv_indexed_tcb(
-                tcb, shared_down_kernel, model_buf, shared_route_ids_buf,
-                shared_act, shared_out, down_off, 1, hidden, shared_mid,
+                tcb,
+                shared_down_kernel,
+                model_buf,
+                shared_route_ids_buf,
+                shared_act,
+                shared_out,
+                down_off,
+                1,
+                hidden,
+                shared_mid,
             )?;
         }
 
         encode_route_accumulate_tcb(
-            tcb, routed_out, route_weights_buf, shared_out, out_buf,
-            hidden, routes, has_shared,
+            tcb,
+            routed_out,
+            route_weights_buf,
+            shared_out,
+            out_buf,
+            hidden,
+            routes,
+            has_shared,
         )
     }
 
@@ -6885,14 +7089,34 @@ mod metal_dispatch {
         let shared_out = ctx.new_buffer(hidden * std::mem::size_of::<f32>());
 
         encode_moe_block_batched_indexed_tcb_with_scratch(
-            tcb, model_buf,
-            routed_gate_offset, routed_up_offset, routed_down_offset,
-            route_ids_buf, route_weights_buf, routes, shared_route_ids_buf,
-            shared_gate_offset, shared_up_offset, shared_down_offset,
-            hidden, routed_mid, shared_mid, q4k_schedule,
-            routed_down_kernel, shared_down_kernel, x_buf, out_buf,
-            &routed_gate_out, &routed_up_out, &routed_act, &routed_out,
-            &shared_gate_out, &shared_up_out, &shared_act, &shared_out,
+            tcb,
+            model_buf,
+            routed_gate_offset,
+            routed_up_offset,
+            routed_down_offset,
+            route_ids_buf,
+            route_weights_buf,
+            routes,
+            shared_route_ids_buf,
+            shared_gate_offset,
+            shared_up_offset,
+            shared_down_offset,
+            hidden,
+            routed_mid,
+            shared_mid,
+            q4k_schedule,
+            routed_down_kernel,
+            shared_down_kernel,
+            x_buf,
+            out_buf,
+            &routed_gate_out,
+            &routed_up_out,
+            &routed_act,
+            &routed_out,
+            &shared_gate_out,
+            &shared_up_out,
+            &shared_act,
+            &shared_out,
         )?;
 
         Ok(vec![
@@ -6935,7 +7159,9 @@ mod metal_dispatch {
     ) -> Result<()> {
         let routes = route_ids.len();
         if routes == 0 {
-            return Err(Error::Kernel("moe_block_batched_indexed_tcb: no routes".into()));
+            return Err(Error::Kernel(
+                "moe_block_batched_indexed_tcb: no routes".into(),
+            ));
         }
 
         let route_ids_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(route_ids));
@@ -6945,12 +7171,27 @@ mod metal_dispatch {
 
         let mut tcb = TokenCommandBuffer::new(ctx);
         let _temp_buffers = encode_moe_block_batched_indexed_tcb(
-            &mut tcb, ctx, model_buf,
-            routed_gate_offset, routed_up_offset, routed_down_offset,
-            &route_ids_buf, &route_weights_buf, routes, &shared_route_ids_buf,
-            shared_gate_offset, shared_up_offset, shared_down_offset,
-            hidden, routed_mid, shared_mid, q4k_schedule,
-            routed_down_kernel, shared_down_kernel, x_buf, out_buf,
+            &mut tcb,
+            ctx,
+            model_buf,
+            routed_gate_offset,
+            routed_up_offset,
+            routed_down_offset,
+            &route_ids_buf,
+            &route_weights_buf,
+            routes,
+            &shared_route_ids_buf,
+            shared_gate_offset,
+            shared_up_offset,
+            shared_down_offset,
+            hidden,
+            routed_mid,
+            shared_mid,
+            q4k_schedule,
+            routed_down_kernel,
+            shared_down_kernel,
+            x_buf,
+            out_buf,
         )?;
         tcb.commit_and_wait()?;
         // temp buffers dropped here, after GPU is done
@@ -6970,17 +7211,12 @@ mod metal_dispatch {
     ) -> Result<()> {
         let hidden_u32 = hidden as u32;
         let tg = TG_SIZE.min(hidden_u32);
-        tcb.dispatch_threads(
-            "embed_lookup_f32",
-            (hidden_u32, 1, 1),
-            (tg, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(embed_buf), 0);
-                enc.set_buffer(1, Some(x_buf), 0);
-                enc.set_u32(2, hidden_u32);
-                enc.set_u32(3, token);
-            },
-        )
+        tcb.dispatch_threads("embed_lookup_f32", (hidden_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(embed_buf), 0);
+            enc.set_buffer(1, Some(x_buf), 0);
+            enc.set_u32(2, hidden_u32);
+            enc.set_u32(3, token);
+        })
     }
 
     // ── v1.0.0-E: GPU argmax sampling dispatchers ────────────────────────────
@@ -7229,7 +7465,6 @@ mod metal_dispatch {
 
     // ── end v1.1.0-X ─────────────────────────────────────────────────────────
 
-
     // ── Phase 5C.2: f32→f16 norm output + f16-activation LM head ─────────────
 
     /// f32 residual → f16 normed activation (Phase 5C.2).
@@ -7250,13 +7485,18 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
         ab.set_u32(0, hidden_u32);
         ab.set_f32(1, eps);
-        tcb.dispatch_threads("rmsnorm_f32_to_f16", (TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(x_buf), 0);
-            enc.set_buffer(1, Some(weight_buf), 0);
-            enc.set_buffer(2, Some(ab.handle()), 0);
-            enc.set_buffer(3, Some(out_buf), 0);
-            enc.set_threadgroup_memory_length(0, shmem_bytes);
-        })
+        tcb.dispatch_threads(
+            "rmsnorm_f32_to_f16",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
     }
 
     /// f16-weight × f16-activation GEMV → f32 output (Phase 5C.2).
@@ -7309,17 +7549,12 @@ mod metal_dispatch {
     ) -> Result<()> {
         let hidden_u32 = hidden as u32;
         let tg = TG_SIZE.min(hidden_u32);
-        tcb.dispatch_threads(
-            "embed_lookup_f32",
-            (hidden_u32, 1, 1),
-            (tg, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(embed_buf), 0);
-                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_u32(2, hidden_u32);
-                enc.set_u32(3, token);
-            },
-        )
+        tcb.dispatch_threads("embed_lookup_f32", (hidden_u32, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(embed_buf), 0);
+            enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+            enc.set_u32(2, hidden_u32);
+            enc.set_u32(3, token);
+        })
     }
 
     pub fn rmsnorm_metal_buf_off_tcb(
@@ -7418,20 +7653,32 @@ mod metal_dispatch {
         let qk_rope_u32 = qk_rope_head_dim as u32;
         let total_pairs = n_heads_u32 * (qk_rope_u32 / 2);
         let tg = TG_SIZE.min(total_pairs.max(1));
-        let mut ab = KernelArgBuffer::new(tcb.ctx, &[
-            ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-            ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
-        ])?;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
         ab.set_u32(0, n_heads_u32);
         ab.set_u32(1, q_head_u32);
         ab.set_u32(2, qk_nope_u32);
         ab.set_u32(3, qk_rope_u32);
         ab.set_u32(4, pos);
         ab.set_f32(5, base);
-        tcb.dispatch_threads("rope_q_f32_inplace", (total_pairs, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(q_buf), q_off_bytes as u64);
-            enc.set_buffer(1, Some(ab.handle()), 0);
-        })
+        tcb.dispatch_threads(
+            "rope_q_f32_inplace",
+            (total_pairs, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), q_off_bytes as u64);
+                enc.set_buffer(1, Some(ab.handle()), 0);
+            },
+        )
     }
 
     /// R2 — batched RoPE over B multi-seq slots, each at its own `positions[bi]`.
@@ -7460,8 +7707,11 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::F32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
             ],
         )?;
         ab.set_u32(0, n_heads as u32);
@@ -7508,8 +7758,11 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::F32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
             ],
         )?;
         ab.set_u32(0, seq_len as u32);
@@ -7519,8 +7772,7 @@ mod metal_dispatch {
         ab.set_f32(4, scale);
 
         const TG_SIZE_MHA: u32 = 128;
-        let shmem_bytes =
-            ((seq_len + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+        let shmem_bytes = ((seq_len + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
 
         tcb.dispatch_threads(
             "mha_decode_f32",
@@ -7551,12 +7803,17 @@ mod metal_dispatch {
         let n_u32 = n as u32;
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32])?;
         ab.set_u32(0, n_u32);
-        tcb.dispatch_threads("moe_batched_silu_mul", (n_u32, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(gate_buf), gate_off_bytes as u64);
-            enc.set_buffer(1, Some(up_buf), up_off_bytes as u64);
-            enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
-            enc.set_buffer(3, Some(ab.handle()), 0);
-        })
+        tcb.dispatch_threads(
+            "moe_batched_silu_mul",
+            (n_u32, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_buf), gate_off_bytes as u64);
+                enc.set_buffer(1, Some(up_buf), up_off_bytes as u64);
+                enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+            },
+        )
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -7593,18 +7850,13 @@ mod metal_dispatch {
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 8;
         let n_tg = rows_u32.div_ceil(V3_ROWS);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V3_TG, 1, 1),
-            (V3_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
-                enc.set_u32(3, rows_u32);
-                enc.set_u32(4, cols_u32);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+            enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+            enc.set_u32(3, rows_u32);
+            enc.set_u32(4, cols_u32);
+        })
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -7643,17 +7895,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
-        tcb.dispatch_threads(
-            KERNEL,
-            (n_tg * V2_TG, 1, 1),
-            (V2_TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(model_buf), w_offset as u64);
-                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
-                enc.set_buffer(3, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+            enc.set_buffer(2, Some(out_buf), out_off_bytes as u64);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
     }
 
     pub fn gemv_f16_metal_buf_off_tcb(
@@ -7724,8 +7971,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
             ],
         )?;
         ab.set_u32(0, p0 as u32);
@@ -7793,8 +8044,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::F32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
             ],
         )?;
         ab.set_u32(0, head_dim as u32);
@@ -7805,8 +8060,7 @@ mod metal_dispatch {
         ab.set_f32(5, scale);
 
         const TG_SIZE_MHA: u32 = 128;
-        let shmem_bytes =
-            ((max_seq + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
+        let shmem_bytes = ((max_seq + TG_SIZE_MHA as usize) * std::mem::size_of::<f32>()) as u64;
 
         tcb.dispatch_threads(
             "mha_decode_f32_batched_multiseq",
@@ -7887,7 +8141,6 @@ mod metal_dispatch {
         )
     }
 }
-
 
 #[cfg(target_os = "macos")]
 pub use metal_dispatch::*;
@@ -7986,8 +8239,7 @@ mod tests {
         gelu_mul(&gate, &up, &mut out);
         // Reference gelu_tanh computed independently.
         let gelu = |x: f32| {
-            let inner = (2.0f32 / std::f32::consts::PI).sqrt()
-                * (x + 0.044715 * x * x * x);
+            let inner = (2.0f32 / std::f32::consts::PI).sqrt() * (x + 0.044715 * x * x * x);
             0.5 * x * (1.0 + inner.tanh())
         };
         for i in 0..4 {
@@ -8116,6 +8368,9 @@ mod tests {
             }
         }
         // Confirm the test actually exercised all three regimes.
-        assert!(saw_unscaled && saw_scaled && saw_smooth, "test did not cover all three regimes");
+        assert!(
+            saw_unscaled && saw_scaled && saw_smooth,
+            "test did not cover all three regimes"
+        );
     }
 }
