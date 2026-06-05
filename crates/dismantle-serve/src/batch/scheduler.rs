@@ -11,6 +11,73 @@ use crate::batch::{DecodeStep, DecodedToken, Slot, SlotState};
 use anyhow::{anyhow, Result};
 use dismantle_core::GenerateRequest;
 
+/// Track 5.1 — prefix reuse detection.
+///
+/// For each active slot, store a 64-bit hash of its prompt token sequence.
+/// On admit, check for any active slot whose prefix matches the new request's
+/// prefix at length L. When a match is found the caller can skip prefill for
+/// the matching prefix and plant the existing KV into the new slot directly.
+///
+/// This is the data-plane scaffold; the actual KV-copy path lives in the engine.
+/// The scheduler exposes `find_prefix_match` to the serve layer.
+#[derive(Debug, Default)]
+pub struct PrefixIndex {
+    /// Map: slot_id → (hash, prefix_len). Updated on every admit.
+    entries: Vec<(u32, u64, usize)>, // (slot_id, prefix_hash, len)
+}
+
+/// Hash a token sequence with FNV-1a. Fast, no dep.
+fn hash_tokens(tokens: &[u32]) -> u64 {
+    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+    for &t in tokens {
+        let bytes = t.to_le_bytes();
+        for b in bytes {
+            h ^= b as u64;
+            h = h.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+    h
+}
+
+impl PrefixIndex {
+    pub fn upsert(&mut self, slot_id: u32, prompt_ids: &[u32]) {
+        let h = hash_tokens(prompt_ids);
+        if let Some(e) = self.entries.iter_mut().find(|e| e.0 == slot_id) {
+            e.1 = h;
+            e.2 = prompt_ids.len();
+        } else {
+            self.entries.push((slot_id, h, prompt_ids.len()));
+        }
+    }
+
+    pub fn remove(&mut self, slot_id: u32) {
+        self.entries.retain(|e| e.0 != slot_id);
+    }
+
+    /// Find the longest prefix match for `tokens` among active entries.
+    /// Returns `(slot_id, shared_len)` of the best match, or `None`.
+    /// Only considers prefixes of length ≥ `min_len`.
+    pub fn find_prefix_match(&self, tokens: &[u32], min_len: usize) -> Option<(u32, usize)> {
+        let mut best: Option<(u32, usize)> = None;
+        for &(slot_id, stored_hash, stored_len) in &self.entries {
+            if stored_len < min_len {
+                continue;
+            }
+            let overlap = stored_len.min(tokens.len());
+            if overlap < min_len {
+                continue;
+            }
+            let request_prefix_hash = hash_tokens(&tokens[..overlap]);
+            if stored_hash == request_prefix_hash {
+                if best.map(|(_, bl)| overlap > bl).unwrap_or(true) {
+                    best = Some((slot_id, overlap));
+                }
+            }
+        }
+        best
+    }
+}
+
 /// Bucket index for prompt-length batching (bucket edges: 0-16, 17-64,
 /// 65-256, 257-1024, 1025+). Adjacent slots in the same bucket have
 /// prompt lengths within ~4× of each other.
@@ -28,6 +95,8 @@ fn prompt_length_bucket(len: usize) -> usize {
 pub struct Scheduler {
     pub slots: Vec<Slot>,
     pub max_batch_size: usize,
+    /// Track 5.1: prefix hash index for KV reuse detection.
+    pub prefix_index: PrefixIndex,
 }
 
 impl Scheduler {
@@ -38,6 +107,7 @@ impl Scheduler {
         Self {
             slots,
             max_batch_size,
+            prefix_index: PrefixIndex::default(),
         }
     }
 
@@ -46,8 +116,9 @@ impl Scheduler {
     }
 
     pub fn admit(&mut self, req: GenerateRequest, prompt_ids: Vec<u32>) -> Option<u32> {
-        let slot = self.idle_slot()?;
-        let id = slot.id;
+        let id = self.slots.iter().find(|s| s.state == SlotState::Idle)?.id;
+        self.prefix_index.upsert(id, &prompt_ids);
+        let slot = self.slots.iter_mut().find(|s| s.id == id)?;
         slot.assign(req, prompt_ids);
         Some(id)
     }
@@ -68,6 +139,7 @@ impl Scheduler {
             return false;
         };
         slot.release();
+        self.prefix_index.remove(id);
         true
     }
 
