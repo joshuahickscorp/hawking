@@ -3,4 +3,381 @@
   "corpus": "/content/drive/MyDrive/dismantle/maximal_spec_500u/corpora/q1p5_corpus",
   "frozen": "/content/q1p5_frozen.npz",
   "max_depth": 24,
-  "policies": {"best_deployable": {"accepted_draft_tokens_per_verify": 23.603666666666665, "base_tps": 95.0, "efficiency": 0.8, "kind": "fixed_k", "max_depth": 24, "projected_dec_tps": 1869.8786666666667, "full_accept_rate": 0.9715416666666666}}, "schema": "eagle5-frontier-policy-v1", "windows": 24000}
+  "policies": {
+    "best_deployable": {
+      "accepted_draft_tokens_per_verify": 23.603666666666665,
+      "base_tps": 95.0,
+      "efficiency": 0.8,
+      "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+      "full_accept_rate": 0.9715416666666666,
+      "kind": "fixed_k",
+      "max_depth": 24,
+      "projected_dec_tps": 1869.8786666666667,
+      "tokens_per_verify": 24.603666666666665,
+      "w4a8_multiplier": 1.0
+    },
+    "best_overall": {
+      "accepted_draft_tokens_per_verify": 23.603666666666665,
+      "base_tps": 95.0,
+      "efficiency": 0.8,
+      "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+      "full_accept_rate": 0.9715416666666666,
+      "kind": "fixed_k",
+      "max_depth": 24,
+      "projected_dec_tps": 1869.8786666666667,
+      "tokens_per_verify": 24.603666666666665,
+      "w4a8_multiplier": 1.0
+    },
+    "draft_lattice_top5": [
+      {
+        "accepted_draft_tokens_per_verify": 23.612833333333334,
+        "base_tps": 95.0,
+        "branch_width": 2,
+        "efficiency": 0.7360000000000001,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_path_coverage": 0.9722916666666667,
+        "kind": "draft_lattice_oracle",
+        "max_depth": 24,
+        "note": "Upper bound: target token is somewhere in the tiny draft lattice, not necessarily selected by current runtime.",
+        "projected_dec_tps": 1720.929306666667,
+        "tokens_per_verify": 24.612833333333334,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.624416666666665,
+        "base_tps": 95.0,
+        "branch_width": 3,
+        "efficiency": 0.672,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_path_coverage": 0.972875,
+        "kind": "draft_lattice_oracle",
+        "max_depth": 24,
+        "note": "Upper bound: target token is somewhere in the tiny draft lattice, not necessarily selected by current runtime.",
+        "projected_dec_tps": 1572.0227599999998,
+        "tokens_per_verify": 24.624416666666665,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.624416666666665,
+        "base_tps": 95.0,
+        "branch_width": 4,
+        "efficiency": 0.6080000000000001,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_path_coverage": 0.972875,
+        "kind": "draft_lattice_oracle",
+        "max_depth": 24,
+        "note": "Upper bound: target token is somewhere in the tiny draft lattice, not necessarily selected by current runtime.",
+        "projected_dec_tps": 1422.3063066666666,
+        "tokens_per_verify": 24.624416666666665,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 15.808416666666666,
+        "base_tps": 95.0,
+        "branch_width": 2,
+        "efficiency": 0.7360000000000001,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_path_coverage": 0.9799166666666667,
+        "kind": "draft_lattice_oracle",
+        "max_depth": 16,
+        "note": "Upper bound: target token is somewhere in the tiny draft lattice, not necessarily selected by current runtime.",
+        "projected_dec_tps": 1175.2444933333334,
+        "tokens_per_verify": 16.808416666666666,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.627791666666667,
+        "base_tps": 95.0,
+        "branch_width": 8,
+        "efficiency": 0.496,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_path_coverage": 0.973125,
+        "kind": "draft_lattice_oracle",
+        "max_depth": 24,
+        "note": "Upper bound: target token is somewhere in the tiny draft lattice, not necessarily selected by current runtime.",
+        "projected_dec_tps": 1160.4615433333333,
+        "tokens_per_verify": 24.627791666666667,
+        "w4a8_multiplier": 1.0
+      }
+    ],
+    "entropy_routed_top5": [
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "base_margin_threshold": 0.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.35,
+        "efficiency": 0.792,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "entropy_margin_routed_variable_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1851.1548,
+        "route_rate": 1.0,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "base_margin_threshold": 0.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.4,
+        "efficiency": 0.792,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "entropy_margin_routed_variable_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1851.1548,
+        "route_rate": 1.0,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "base_margin_threshold": 0.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.45,
+        "efficiency": 0.792,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "entropy_margin_routed_variable_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1851.1548,
+        "route_rate": 1.0,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "base_margin_threshold": 0.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.5,
+        "efficiency": 0.792,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "entropy_margin_routed_variable_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1851.1548,
+        "route_rate": 1.0,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "base_margin_threshold": 0.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.55,
+        "efficiency": 0.792,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "entropy_margin_routed_variable_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1851.1548,
+        "route_rate": 1.0,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      }
+    ],
+    "fixed_k_top5": [
+      {
+        "accepted_draft_tokens_per_verify": 23.603666666666665,
+        "base_tps": 95.0,
+        "efficiency": 0.8,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_accept_rate": 0.9715416666666666,
+        "kind": "fixed_k",
+        "max_depth": 24,
+        "projected_dec_tps": 1869.8786666666667,
+        "tokens_per_verify": 24.603666666666665,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 15.804875,
+        "base_tps": 95.0,
+        "efficiency": 0.8,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_accept_rate": 0.9795416666666666,
+        "kind": "fixed_k",
+        "max_depth": 16,
+        "projected_dec_tps": 1277.1705000000002,
+        "tokens_per_verify": 16.804875,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 11.880583333333334,
+        "base_tps": 95.0,
+        "efficiency": 0.8,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_accept_rate": 0.9838333333333333,
+        "kind": "fixed_k",
+        "max_depth": 12,
+        "projected_dec_tps": 978.9243333333334,
+        "tokens_per_verify": 12.880583333333334,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 7.939541666666667,
+        "base_tps": 95.0,
+        "efficiency": 0.8,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_accept_rate": 0.9877083333333333,
+        "kind": "fixed_k",
+        "max_depth": 8,
+        "projected_dec_tps": 679.4051666666668,
+        "tokens_per_verify": 8.939541666666667,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 5.9630833333333335,
+        "base_tps": 95.0,
+        "efficiency": 0.8,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "full_accept_rate": 0.9909583333333334,
+        "kind": "fixed_k",
+        "max_depth": 6,
+        "projected_dec_tps": 529.19433333333334,
+        "tokens_per_verify": 6.9630833333333335,
+        "w4a8_multiplier": 1.0
+      }
+    ],
+    "residual_delta_probe": {
+      "cosine_mean": 0.66474848985672,
+      "cosine_p10": 0.0005128970951773226,
+      "cosine_p50": 0.8091943264007568,
+      "kind": "residual_delta_simulator_probe",
+      "note": "Higher means draft_hidden is already close to the next residual state. Residual-delta-loss variants should improve this."
+    },
+    "variable_k_top5": [
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "attempt_rate": 1.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.35,
+        "efficiency": 0.784,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "variable_k_confidence",
+        "max_depth": 24,
+        "planned_draft_tokens_mean": 23.999666666666666,
+        "projected_dec_tps": 1832.4562666666666,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "attempt_rate": 1.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.4,
+        "efficiency": 0.784,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "variable_k_confidence",
+        "max_depth": 24,
+        "planned_draft_tokens_mean": 23.999666666666666,
+        "projected_dec_tps": 1832.4562666666666,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "attempt_rate": 1.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.45,
+        "efficiency": 0.784,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "variable_k_confidence",
+        "max_depth": 24,
+        "planned_draft_tokens_mean": 23.999666666666666,
+        "projected_dec_tps": 1832.4562666666666,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "attempt_rate": 1.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.5,
+        "efficiency": 0.784,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "variable_k_confidence",
+        "max_depth": 24,
+        "planned_draft_tokens_mean": 23.999666666666666,
+        "projected_dec_tps": 1832.4562666666666,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      },
+      {
+        "accepted_draft_tokens_per_verify": 23.60333333333333,
+        "attempt_rate": 1.0,
+        "base_tps": 95.0,
+        "confidence_threshold": 0.55,
+        "efficiency": 0.784,
+        "formula": "base_tps * (1 + accepted_draft_tokens) * w4a8_multiplier * efficiency",
+        "kind": "variable_k_confidence",
+        "max_depth": 24,
+        "planned_draft_tokens_mean": 23.999666666666666,
+        "projected_dec_tps": 1832.4562666666666,
+        "tokens_per_verify": 24.60333333333333,
+        "w4a8_multiplier": 1.0
+      }
+    ]
+  },
+  "runtime_hints": {
+    "draft_lattice": {
+      "env": {
+        "DISMANTLE_EAGLE5_LATTICE_K": "24",
+        "DISMANTLE_EAGLE5_LATTICE_WIDTH": "2"
+      }
+    },
+    "entropy_routing": {
+      "env": {
+        "DISMANTLE_EAGLE5_ENTROPY_ROUTE": "1",
+        "DISMANTLE_EAGLE5_MARGIN_THRESH": "0.000"
+      }
+    },
+    "variable_k": {
+      "env": {
+        "DISMANTLE_EAGLE5_CONF_THRESH": "0.350",
+        "DISMANTLE_EAGLE5_MAX_K": "24",
+        "DISMANTLE_EAGLE5_VARIABLE_K": "1"
+      }
+    }
+  },
+  "schema": "eagle5-frontier-policy-v1",
+  "search": {
+    "conf_thresholds": [
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "depths": [
+      2,
+      4,
+      6,
+      8,
+      12,
+      16,
+      24
+    ],
+    "lattice_widths": [
+      2,
+      3,
+      4,
+      6,
+      8
+    ],
+    "margin_thresholds": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0
+    ]
+  },
+  "windows": 24000
+}

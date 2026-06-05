@@ -27,6 +27,7 @@
 #   WEIGHTS             gguf path, used with --start-server
 #   PROFILE             kernel profile json, used with --start-server (optional)
 #   LLAMA_BASELINE_TPS  reference single-stream tps for ratio column (default: 55)
+#   REQUEST_TIMEOUT_SEC per-stream wall-time cap (default: 600)
 #
 # CONTAMINATION NOTE:
 #   B>1/B=1 scaling ratio and vs-llama ratio are contamination-robust (relative;
@@ -44,6 +45,7 @@ BATCH_SIZES="${BATCH_SIZES:-1 2 4 8}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-}"
 LLAMA_BASELINE_TPS="${LLAMA_BASELINE_TPS:-55}"
+REQUEST_TIMEOUT_SEC="${REQUEST_TIMEOUT_SEC:-600}"
 DBIN="${DBIN:-./target/release/dismantle}"
 START_SERVER=0
 SERVER_PID=""
@@ -105,22 +107,47 @@ fi
 # ── Fire one SSE request into $1 ─────────────────────────────────────────────
 fire() {
     local logf="$1"
-    local prompt_json
+    local prompt_json curl_pid start_s now_s elapsed seen stat
     prompt_json=$(printf '%s' "$PROMPT" | \
         python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" 2>/dev/null \
         || printf '"%s"' "$PROMPT")
+    : > "$logf"
     curl --no-buffer --silent -X POST "${SERVE_URL}/v1/completions" \
         -H "Content-Type: application/json" \
         -d "{\"prompt\":${prompt_json},\"max_tokens\":${TOKENS},\"stream\":true,\"temperature\":0,\"seed\":0}" \
-        > "$logf" 2>&1
+        > "$logf" 2>&1 &
+    curl_pid=$!
+    start_s=$(date +%s)
+
+    while :; do
+        grep -q '^data: \[DONE\]' "$logf" 2>/dev/null && break
+
+        seen=$(count_toks "$logf")
+        [[ "$seen" -ge "$TOKENS" ]] && break
+
+        stat=$(ps -o stat= -p "$curl_pid" 2>/dev/null || true)
+        [[ -z "$stat" || "$stat" == *Z* ]] && break
+
+        now_s=$(date +%s)
+        elapsed=$(( now_s - start_s ))
+        if [[ "$REQUEST_TIMEOUT_SEC" -gt 0 && "$elapsed" -ge "$REQUEST_TIMEOUT_SEC" ]]; then
+            printf '\nbench: request timeout after %ss (saw %s/%s token events)\n' \
+                "$REQUEST_TIMEOUT_SEC" "$seen" "$TOKENS" >> "$logf"
+            break
+        fi
+
+        sleep 0.05
+    done
+
+    if ps -p "$curl_pid" >/dev/null 2>&1; then
+        kill "$curl_pid" 2>/dev/null || true
+    fi
+    wait "$curl_pid" 2>/dev/null || true
 }
 
 # ── Count tokens from an SSE log ─────────────────────────────────────────────
 count_toks() {
-    local raw done_n
-    raw=$(grep -c '^data: ' "$1" 2>/dev/null || echo 0)
-    done_n=$(grep -c '^data: \[DONE\]' "$1" 2>/dev/null || echo 0)
-    echo $(( raw - done_n ))
+    awk '/^data: / && $0 != "data: [DONE]" { n++ } END { print n + 0 }' "$1" 2>/dev/null || echo 0
 }
 
 # ── Warmup ────────────────────────────────────────────────────────────────────
@@ -143,13 +170,20 @@ for B in $BATCH_SIZES; do
 
     LOGS=()
     for slot in $(seq 0 $(( B - 1 ))); do
-        LOGS+=("$TMPDIR_BENCH/req_B${B}_S${slot}.log")
-        : > "${LOGS[-1]}"
+        logf="$TMPDIR_BENCH/req_B${B}_S${slot}.log"
+        LOGS+=("$logf")
+        : > "$logf"
     done
 
+    PIDS=()
     T0=$(date +%s.%N)
-    for slot in $(seq 0 $(( B - 1 ))); do fire "${LOGS[$slot]}" & done
-    wait
+    for slot in $(seq 0 $(( B - 1 ))); do
+        fire "${LOGS[$slot]}" &
+        PIDS+=("$!")
+    done
+    for pid in "${PIDS[@]}"; do
+        wait "$pid" || true
+    done
     T1=$(date +%s.%N)
 
     TOTAL=0
@@ -171,7 +205,8 @@ printf '\n'
 printf '%.0s=' {1..70}; echo
 printf 'dismantle serve — aggregate decode throughput\n'
 printf 'prompt: %.60s...\n' "$PROMPT"
-printf 'tokens/slot: %s   warmup: %s/B   llama_baseline: ~%s tps\n\n' "$TOKENS" "$WARMUP" "$LLAMA_BASELINE_TPS"
+printf 'tokens/slot: %s   warmup: %s/B   llama_baseline: ~%s tps   request_timeout: %ss\n\n' \
+    "$TOKENS" "$WARMUP" "$LLAMA_BASELINE_TPS" "$REQUEST_TIMEOUT_SEC"
 printf '%-4s  %12s  %8s  %10s  %13s  %12s\n' B total_toks wall_s agg_tps per_slot_tps vs_llama
 printf '%.0s-' {1..70}; echo
 for row in "${RESULTS[@]}"; do
