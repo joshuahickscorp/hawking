@@ -29,6 +29,11 @@ pub struct Slot {
     pub last_token: Option<u32>,
     pub position: usize,
     pub max_new_tokens: usize,
+    /// Track 5.2: if >0, the first `prefix_skip` tokens of prompt_ids were already
+    /// KV-copied from another slot. The prefill path should call
+    /// prefill_slot_from_pos(slot_id, prompt_ids, prefix_skip) instead of
+    /// prefill_slot(slot_id, prompt_ids) to skip re-computing those positions.
+    pub prefix_skip: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,6 +62,7 @@ impl Slot {
             last_token: None,
             position: 0,
             max_new_tokens: 0,
+            prefix_skip: 0,
         }
     }
 

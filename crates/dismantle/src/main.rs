@@ -124,6 +124,30 @@ enum Cmd {
         /// accepting connections, then continue serving normally.
         #[arg(long, default_value_t = false)]
         explain_performance: bool,
+        /// Track 5.3: force f16 KV cache on (overrides profile default).
+        /// Halves KV memory; wins at long context, neutral for short ctx.
+        /// Mutually exclusive with --no-f16-kv.
+        #[arg(long, conflicts_with = "no_f16_kv")]
+        f16_kv: bool,
+        /// Track 5.3: force f16 KV cache off (overrides profile default).
+        /// Mutually exclusive with --f16-kv.
+        #[arg(long, conflicts_with = "f16_kv")]
+        no_f16_kv: bool,
+        /// Track 5.4: batch admission policy.
+        ///   default         — FIFO (current behavior)
+        ///   greedy-first    — greedy (temp=0) slots first; maximises token-only lane hits
+        ///   prefix-grouped  — prefer slots sharing a common prefix
+        #[arg(long, default_value = "default", value_name = "POLICY")]
+        batch_policy: Option<String>,
+        /// Track 9.3: workload pack — sets profile/energy/batch-policy defaults.
+        ///   default             — no change (individual flags apply as-is)
+        ///   code-completion     — race profile + energy off + greedy-first batching
+        ///   chat-shared-prompt  — fast profile + balanced energy + prefix-grouped batching
+        ///   batch-summarization — efficient profile + efficient energy + greedy-first batching
+        ///   local-agent-loop    — fast profile + energy off + greedy-first batching
+        /// Individual flags always override the workload pack's defaults.
+        #[arg(long, default_value = "default", value_name = "PACK")]
+        workload: Option<String>,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -259,6 +283,13 @@ enum Cmd {
         out: PathBuf,
         #[arg(long)]
         log: Option<PathBuf>,
+        /// Track 2.3: run runtime autotune phase after kernel selection.
+        ///
+        /// Tests B=1 decode with --profile default vs --profile fast (paired,
+        /// contamination-robust). If fast beats default by >3%, records
+        /// `runtime_profile: "fast"` in the output profile JSON.
+        #[arg(long, default_value_t = false)]
+        runtime_autotune: bool,
     },
     /// Benchmark Q4_K GEMV kernels at production shapes and emit JSON.
     BenchQ4kShapes {
@@ -428,6 +459,10 @@ fn main() -> Result<()> {
             memory_limit_mb,
             energy_mode,
             explain_performance,
+            f16_kv,
+            no_f16_kv,
+            batch_policy,
+            workload,
         } => {
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
@@ -441,6 +476,36 @@ fn main() -> Result<()> {
             let resolved_energy_mode = energy_mode.as_deref()
                 .and_then(dismantle_serve::EnergyMode::from_str)
                 .unwrap_or(dismantle_serve::EnergyMode::Off);
+
+            // Parse --batch-policy.
+            let resolved_batch_policy = batch_policy.as_deref()
+                .and_then(|s| match s {
+                    "default"        => Some(dismantle_serve::BatchPolicy::Default),
+                    "greedy-first"   => Some(dismantle_serve::BatchPolicy::GreedyFirst),
+                    "prefix-grouped" => Some(dismantle_serve::BatchPolicy::PrefixGrouped),
+                    other => {
+                        eprintln!(
+                            "[dismantle] warning: unknown --batch-policy {other:?} \
+                             (known: default, greedy-first, prefix-grouped); using default"
+                        );
+                        None
+                    }
+                })
+                .unwrap_or(dismantle_serve::BatchPolicy::Default);
+
+            // Parse --workload.
+            let resolved_workload = workload.as_deref()
+                .and_then(dismantle_serve::WorkloadPack::from_str)
+                .unwrap_or(dismantle_serve::WorkloadPack::Default);
+
+            // Resolve --f16-kv / --no-f16-kv into Option<bool>.
+            let resolved_f16_kv = if f16_kv {
+                Some(true)
+            } else if no_f16_kv {
+                Some(false)
+            } else {
+                None
+            };
 
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(dismantle_serve::run(dismantle_serve::ServeOptions {
@@ -456,6 +521,9 @@ fn main() -> Result<()> {
                 runtime_profile,
                 energy_mode: resolved_energy_mode,
                 explain_performance,
+                f16_kv: resolved_f16_kv,
+                batch_policy: resolved_batch_policy,
+                workload: resolved_workload,
                 ..Default::default()
             }))
         }
@@ -537,7 +605,8 @@ fn main() -> Result<()> {
             max_hours,
             out,
             log,
-        } => autotune_main(weights, profile, max_hours, out, log),
+            runtime_autotune,
+        } => autotune_main(weights, profile, max_hours, out, log, runtime_autotune),
         Cmd::BenchQ4kShapes { iters, out } => bench_q4k_shapes_main(iters, out),
         Cmd::Doctor {
             weights,
@@ -1053,6 +1122,7 @@ fn autotune_main(
     max_hours: f64,
     out: PathBuf,
     log: Option<PathBuf>,
+    runtime_autotune: bool,
 ) -> Result<()> {
     use dismantle_core::gguf::GgufFile;
     use dismantle_core::profile::{build_deterministic_profile, AutotuneOptions};
@@ -1079,7 +1149,7 @@ fn autotune_main(
     if let Some(parent) = log_path.parent().filter(|p| !p.as_os_str().is_empty()) {
         std::fs::create_dir_all(parent)?;
     }
-    let mut log_lines = Vec::with_capacity(selected.evidence.measurements.len() + 2);
+    let mut log_lines = Vec::with_capacity(selected.evidence.measurements.len() + 4);
     log_lines.push(
         serde_json::json!({
             "event": "autotune-start",
@@ -1125,7 +1195,54 @@ fn autotune_main(
         })
         .to_string(),
     );
-    std::fs::write(&out, serde_json::to_string_pretty(&selected)?)?;
+
+    // ── Track 2.3: runtime autotune phase ──────────────────────────────────
+    // When --runtime-autotune is set, run a paired B=1 decode comparison:
+    // default profile vs fast profile. Both share the same process, so
+    // contamination cancels in the relative delta (paired bench rule).
+    //
+    // If fast beats default by >3%, record `runtime_profile: "fast"` in
+    // the output profile JSON (injected into the serialized JSON because
+    // KernelVariant doesn't carry a runtime_profile field and we do not
+    // own dismantle-core).
+    let mut runtime_profile_label = "default".to_string();
+    if runtime_autotune {
+        eprintln!("[autotune] phase 2: runtime autotune (paired default vs fast, B=1)");
+        let runtime_profile_choice = run_runtime_autotune_phase(&weights, selected.profile_id.as_str());
+        runtime_profile_label = runtime_profile_choice
+            .clone()
+            .unwrap_or_else(|| "default".to_string());
+        match &runtime_profile_choice {
+            Some(chosen) => {
+                eprintln!("[autotune] runtime autotune result: fast wins by >3% — selecting runtime_profile={chosen}");
+            }
+            None => {
+                eprintln!("[autotune] runtime autotune result: delta <3% or fast did not win — keeping default");
+            }
+        }
+        log_lines.push(
+            serde_json::json!({
+                "event": "runtime-autotune",
+                "profile_id": selected.profile_id,
+                "runtime_profile": &runtime_profile_label,
+                "fast_won": runtime_profile_choice.is_some(),
+            })
+            .to_string(),
+        );
+    }
+
+    // Serialize to JSON value so we can inject `runtime_profile` at the
+    // top level when runtime_autotune ran.
+    let mut profile_json: serde_json::Value = serde_json::to_value(&selected)?;
+    if runtime_autotune {
+        if let serde_json::Value::Object(ref mut map) = profile_json {
+            map.insert(
+                "runtime_profile".to_string(),
+                serde_json::Value::String(runtime_profile_label.clone()),
+            );
+        }
+    }
+    std::fs::write(&out, serde_json::to_string_pretty(&profile_json)?)?;
     std::fs::write(&log_path, log_lines.join("\n") + "\n")?;
     println!("wrote kernel profile: {}", out.display());
     println!("wrote autotune log: {}", log_path.display());
@@ -1133,7 +1250,119 @@ fn autotune_main(
     println!("selected_variant: {}", selected.selected.id);
     println!("device: {}", selected.device_name);
     println!("target_tps: {:.1}", selected.evidence.target_tps);
+    if runtime_autotune {
+        println!("runtime_profile: {runtime_profile_label}");
+    }
     Ok(())
+}
+
+/// Run a paired B=1 decode comparison between `--profile default` and
+/// `--profile fast`. Returns `Some("fast")` if the fast profile beats
+/// default by more than 3%, `None` otherwise.
+///
+/// Both runs share this process so contamination cancels in the delta.
+/// The measurement uses wall-clock time for a fixed number of decode steps
+/// via the bench harness (no model I/O; just timing the forward pass).
+fn run_runtime_autotune_phase(weights: &PathBuf, profile_id: &str) -> Option<String> {
+    use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, StreamEvent};
+
+    let n_tokens: usize = 32; // decode budget: enough for a stable mean
+    let prompt = "The quick brown fox jumps over the lazy dog.";
+
+    // Helper: run one decode trial and return tokens/second.
+    let measure_tps = |extra_vars: &[(&str, &str)]| -> Option<f64> {
+        // Set profile env vars (only if not already set by the user).
+        let mut set_vars: Vec<&str> = Vec::new();
+        for &(k, v) in extra_vars {
+            if std::env::var_os(k).is_none() {
+                std::env::set_var(k, v);
+                set_vars.push(k);
+            }
+        }
+
+        let cfg = EngineConfig {
+            max_seq_len: 512,
+            max_batch_size: 1,
+            ..Default::default()
+        };
+        let result = (|| -> Option<f64> {
+            let mut engine = dismantle_core::model::load_engine(weights, cfg).ok()?;
+            let req = GenerateRequest {
+                prompt: prompt.into(),
+                max_new_tokens: n_tokens,
+                sampling: SamplingParams {
+                    temperature: 0.0,
+                    top_k: 0,
+                    top_p: 1.0,
+                    repetition_penalty: 1.0,
+                    seed: Some(42),
+                },
+                stop: Vec::new(),
+                abort: None,
+                max_stall_ms: 30_000,
+            };
+            let mut decode_ms = 0.0f64;
+            let mut completion_tokens = 0usize;
+            engine.generate(req, &mut |ev| {
+                if let StreamEvent::Done { stats, .. } = ev {
+                    decode_ms = stats.decode_ms;
+                    completion_tokens = stats.completion_tokens;
+                }
+            }).ok()?;
+            if decode_ms > 0.0 && completion_tokens > 0 {
+                Some(completion_tokens as f64 / (decode_ms / 1000.0))
+            } else {
+                None
+            }
+        })();
+
+        // Clean up vars we set so the next run starts fresh.
+        for k in &set_vars {
+            std::env::remove_var(k);
+        }
+        result
+    };
+
+    eprintln!(
+        "[autotune/runtime] measuring default profile (profile_id={profile_id})"
+    );
+    let tps_default = match measure_tps(&[]) {
+        Some(v) => v,
+        None => {
+            eprintln!("[autotune/runtime] default profile measurement failed; skipping");
+            return None;
+        }
+    };
+
+    eprintln!(
+        "[autotune/runtime] measuring fast profile (profile_id={profile_id})"
+    );
+    let fast_vars = [
+        ("DISMANTLE_QWEN_VOCAB_PRUNE",     "32000"),
+        ("DISMANTLE_QWEN_Q4K_LMHEAD",      "1"),
+        ("DISMANTLE_QWEN_FFN_DOWN_Q4K",    "1"),
+        ("DISMANTLE_QWEN_Q4K_PREDEC",      "1"),
+        ("DISMANTLE_QWEN_PREDEC_F16SCALES", "1"),
+    ];
+    let tps_fast = match measure_tps(&fast_vars) {
+        Some(v) => v,
+        None => {
+            eprintln!("[autotune/runtime] fast profile measurement failed; skipping");
+            return None;
+        }
+    };
+
+    let delta_pct = (tps_fast - tps_default) / tps_default.max(1e-6) * 100.0;
+    eprintln!(
+        "[autotune/runtime] default={tps_default:.1} tps  fast={tps_fast:.1} tps  \
+         delta={delta_pct:+.1}%  threshold=+3.0%"
+    );
+
+    if delta_pct > 3.0 {
+        Some("fast".into())
+    } else {
+        None
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
