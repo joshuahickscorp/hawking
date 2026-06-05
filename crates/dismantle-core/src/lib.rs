@@ -17,6 +17,7 @@ pub mod sample;
 pub mod speculate;
 pub mod stateful;
 pub mod tokenizer;
+pub mod sidecar;
 pub mod vocab_prune;
 
 mod error;
