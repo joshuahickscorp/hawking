@@ -5437,6 +5437,10 @@ impl QwenDense {
                 self.kv.seq_len, b, self.kv.max_seq
             )));
         }
+        if b == 1 {
+            let _ = self.forward_token_greedy_tcb(tokens[0], positions[0])?;
+            return Ok(());
+        }
         let max_seq = self.kv.max_seq;
 
         // Lazy-init arena. Bridge CPU prefill KV state into GPU arena
@@ -6191,7 +6195,20 @@ impl QwenDense {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
                 if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    if b <= 4 {
+                    if b == 1 {
+                        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            scales,
+                            0,
+                            h,
+                            intermediate,
+                            &arena.ffn_act_buf_batch,
+                            &arena.ffn_down_buf_batch,
+                        )?;
+                    } else if b <= 4 {
                         kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
                             &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
                             &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
