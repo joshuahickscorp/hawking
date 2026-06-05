@@ -2067,6 +2067,117 @@ kernel void gemm_q4_k_m_batched_v3w_predec(
     }
 }
 
+// Extends gemm_q4_k_m_batched_v3w_predec to B=1..16. Adds two more float4
+// accumulators (partial_lo2, partial_hi2) for slots 8..15.
+// Shmem: B*256*sizeof(float), up to 16 KiB at B=16 (within M3 Pro 32 KiB limit).
+kernel void gemm_q4_k_m_batched_v3w_predec_b16(
+    device const uchar* w_q4   [[buffer(0)]],
+    device const float* scales [[buffer(1)]],
+    device const float* x_batch[[buffer(2)]],
+    device       float* y_batch[[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    uint B = min(args.batch, 16u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial_lo = float4(0.0f);
+    float4 partial_hi = float4(0.0f);
+    float4 partial_lo2 = float4(0.0f);
+    float4 partial_hi2 = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint x_off_base = blk * 256u;
+        for (uint b = 0; b < B; ++b) {
+            x_tile[b * 256u + tid] = x_batch[b * args.cols + x_off_base + tid];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off  + (uint64_t)blk * 144ul;
+            uint64_t so = row_scale_off + (uint64_t)blk * 16ul;
+            float ds[8], dm[8];
+            for (uint sub = 0; sub < 8u; ++sub) {
+                ds[sub] = scales[so + (uint64_t)(sub * 2u)];
+                dm[sub] = scales[so + (uint64_t)(sub * 2u + 1u)];
+            }
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem  = k * 32u + simd_lane;
+                uint sub   = elem >> 5;
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                float w_val = ds[sub] * (float)nib - dm[sub];
+                if (B >= 1u) partial_lo.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial_lo.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial_lo.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial_lo.w += w_val * x_tile[3u * 256u + elem];
+                if (B >= 5u) partial_hi.x += w_val * x_tile[4u * 256u + elem];
+                if (B >= 6u) partial_hi.y += w_val * x_tile[5u * 256u + elem];
+                if (B >= 7u) partial_hi.z += w_val * x_tile[6u * 256u + elem];
+                if (B >= 8u) partial_hi.w += w_val * x_tile[7u * 256u + elem];
+                if (B >= 9u)  partial_lo2.x += w_val * x_tile[8u  * 256u + elem];
+                if (B >= 10u) partial_lo2.y += w_val * x_tile[9u  * 256u + elem];
+                if (B >= 11u) partial_lo2.z += w_val * x_tile[10u * 256u + elem];
+                if (B >= 12u) partial_lo2.w += w_val * x_tile[11u * 256u + elem];
+                if (B >= 13u) partial_hi2.x += w_val * x_tile[12u * 256u + elem];
+                if (B >= 14u) partial_hi2.y += w_val * x_tile[13u * 256u + elem];
+                if (B >= 15u) partial_hi2.z += w_val * x_tile[14u * 256u + elem];
+                if (B >= 16u) partial_hi2.w += w_val * x_tile[15u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (!row_valid) return;
+
+    partial_lo.x = simd_sum(partial_lo.x);
+    if (B >= 2u) partial_lo.y = simd_sum(partial_lo.y);
+    if (B >= 3u) partial_lo.z = simd_sum(partial_lo.z);
+    if (B >= 4u) partial_lo.w = simd_sum(partial_lo.w);
+    if (B >= 5u) partial_hi.x = simd_sum(partial_hi.x);
+    if (B >= 6u) partial_hi.y = simd_sum(partial_hi.y);
+    if (B >= 7u) partial_hi.z = simd_sum(partial_hi.z);
+    if (B >= 8u) partial_hi.w = simd_sum(partial_hi.w);
+    if (B >= 9u)  partial_lo2.x = simd_sum(partial_lo2.x);
+    if (B >= 10u) partial_lo2.y = simd_sum(partial_lo2.y);
+    if (B >= 11u) partial_lo2.z = simd_sum(partial_lo2.z);
+    if (B >= 12u) partial_lo2.w = simd_sum(partial_lo2.w);
+    if (B >= 13u) partial_hi2.x = simd_sum(partial_hi2.x);
+    if (B >= 14u) partial_hi2.y = simd_sum(partial_hi2.y);
+    if (B >= 15u) partial_hi2.z = simd_sum(partial_hi2.z);
+    if (B >= 16u) partial_hi2.w = simd_sum(partial_hi2.w);
+
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + base_row] = partial_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + base_row] = partial_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + base_row] = partial_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + base_row] = partial_hi.w;
+        if (B >= 9u)  y_batch[8u  * args.rows + base_row] = partial_lo2.x;
+        if (B >= 10u) y_batch[9u  * args.rows + base_row] = partial_lo2.y;
+        if (B >= 11u) y_batch[10u * args.rows + base_row] = partial_lo2.z;
+        if (B >= 12u) y_batch[11u * args.rows + base_row] = partial_lo2.w;
+        if (B >= 13u) y_batch[12u * args.rows + base_row] = partial_hi2.x;
+        if (B >= 14u) y_batch[13u * args.rows + base_row] = partial_hi2.y;
+        if (B >= 15u) y_batch[14u * args.rows + base_row] = partial_hi2.z;
+        if (B >= 16u) y_batch[15u * args.rows + base_row] = partial_hi2.w;
+    }
+}
+
 // ── gemm_q4_k_m_batched_v4r_predec ──────────────────────────────────────────
 // Barrier-free drop-in replacement for gemm_q4_k_m_batched_v3w_predec.
 //
