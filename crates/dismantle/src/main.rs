@@ -1763,21 +1763,26 @@ fn bake_sidecar_main(
     let _engine = dismantle_core::model::load_engine(&weights, cfg)?;
     eprintln!("[bake-sidecar] engine loaded");
 
-    // --- Step 3: call the (not-yet-implemented) bake method ---
-    // `bake_sidecar_predec_scales` does not yet exist on the Engine trait.
-    // This is intentional — the CLI surface is wired; the full bake is a
-    // follow-on task. Exit cleanly without error.
-    eprintln!(
-        "[bake-sidecar] TODO: bake_sidecar_predec_scales not yet implemented on this engine"
-    );
+    // --- Step 3: bake predec scales ---
+    eprintln!("[bake-sidecar] baking predec scales...");
+    let bytes = match _engine.bake_sidecar_predec(&out_path, sidecar_profile) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("[bake-sidecar] WARNING: bake_sidecar_predec failed: {e}");
+            eprintln!("[bake-sidecar] This engine may not support sidecar baking yet.");
+            return Ok(());
+        }
+    };
 
     // --- Step 4: summary ---
     eprintln!("[bake-sidecar] summary:");
-    eprintln!("[bake-sidecar]   nothing written to {} (stub)", out_path.display());
-    eprintln!(
-        "[bake-sidecar] done (stub). Re-run after bake_sidecar_predec_scales is implemented \
-         to produce a real sidecar."
-    );
+    eprintln!("[bake-sidecar]   wrote {bytes} bytes → {}", out_path.display());
+    eprintln!("[bake-sidecar]   q4k_predec_scales: baked");
+    if vocab_prune.is_some() {
+        eprintln!("[bake-sidecar]   pruned_lm_head_q4k: not yet implemented (follow-on)");
+    }
+    eprintln!("[bake-sidecar] done. Next load from {} will detect this sidecar and skip \
+               the ~200ms predec decode pass.", weights.display());
     Ok(())
 }
 

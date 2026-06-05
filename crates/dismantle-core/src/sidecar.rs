@@ -175,3 +175,82 @@ pub fn check_sidecar_compatibility(
 pub fn sidecar_path_for(gguf_path: &std::path::Path) -> std::path::PathBuf {
     gguf_path.with_extension("dismantle")
 }
+
+/// Binary sidecar file format (v1):
+///
+/// ```text
+/// [8]  magic: b"DSMTL\x01\x00\x00"
+/// [4]  header_len: u32 LE  — length of the JSON header in bytes
+/// [N]  header_json: UTF-8 JSON (SidecarHeader)
+/// repeated:
+///   [8]  tensor_offset: u64 LE   — offset in source GGUF mmap
+///   [4]  n_f32: u32 LE            — number of f32 scale values
+///   [n_f32*4]  scales: f32 LE     — predecoded scale table
+/// ```
+///
+/// The entry list length is implicit — read until EOF.
+pub struct SidecarWriter {
+    pub path: std::path::PathBuf,
+    pub predec_entries: Vec<(u64, Vec<f32>)>, // (tensor_offset, scales)
+    pub header: SidecarHeader,
+}
+
+impl SidecarWriter {
+    pub fn write(&self) -> crate::Result<usize> {
+        use std::io::Write;
+        let header_json = serde_json::to_string(&self.header)
+            .map_err(|e| crate::Error::Model(format!("sidecar: header serialize: {e}")))?;
+        let header_bytes = header_json.as_bytes();
+        let header_len = header_bytes.len() as u32;
+
+        let file = std::fs::File::create(&self.path)
+            .map_err(|e| crate::Error::Model(format!("sidecar: create {:?}: {e}", self.path)))?;
+        let mut w = std::io::BufWriter::new(file);
+
+        w.write_all(SIDECAR_MAGIC)
+            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+        w.write_all(&header_len.to_le_bytes())
+            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+        w.write_all(header_bytes)
+            .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+
+        let mut total_bytes = 8 + 4 + header_bytes.len();
+        for (offset, scales) in &self.predec_entries {
+            w.write_all(&offset.to_le_bytes())
+                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            let n = scales.len() as u32;
+            w.write_all(&n.to_le_bytes())
+                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            let bytes = bytemuck::cast_slice::<f32, u8>(scales);
+            w.write_all(bytes)
+                .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
+            total_bytes += 8 + 4 + bytes.len();
+        }
+        w.flush().map_err(|e| crate::Error::Model(format!("sidecar flush: {e}")))?;
+        Ok(total_bytes)
+    }
+}
+
+/// Read and validate a sidecar file.
+pub fn read_sidecar_header(path: &std::path::Path) -> crate::Result<SidecarHeader> {
+    use std::io::Read;
+    let mut f = std::fs::File::open(path)
+        .map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
+    let mut magic = [0u8; 8];
+    f.read_exact(&mut magic)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
+    if &magic != SIDECAR_MAGIC {
+        return Err(crate::Error::Model(format!(
+            "sidecar: bad magic in {:?}", path
+        )));
+    }
+    let mut len_buf = [0u8; 4];
+    f.read_exact(&mut len_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
+    let header_len = u32::from_le_bytes(len_buf) as usize;
+    let mut json_buf = vec![0u8; header_len];
+    f.read_exact(&mut json_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
+    serde_json::from_slice::<SidecarHeader>(&json_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))
+}
