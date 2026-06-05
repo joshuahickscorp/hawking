@@ -2900,8 +2900,6 @@ impl Engine for QwenDense {
     fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
-            use crate::metal::DenseDecodeArena;
-
             if slots.is_empty() {
                 return Ok(());
             }
@@ -2923,34 +2921,105 @@ impl Engine for QwenDense {
                 )));
             }
 
-            // Allocate multiseq_arena once (same geometry as forward_tokens_multiseq_logits).
-            // Must happen before the immutable borrow loop below.
-            if self.multiseq_arena.is_none() {
-                let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
-                    crate::Error::Metal("prefill_slots_parallel: no metal_ctx".into())
-                })?;
-                let cfg = &self.config;
-                self.multiseq_arena = Some(DenseDecodeArena::new_with_batch(
-                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
-                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
-                ));
+            // ── Hybrid prefill strategy ──────────────────────────────────────
+            //
+            // The efficient single-seq path (`prefill_slot`) uses
+            // `forward_tokens_batch_tcb` with B_MAX=8 tokens per GPU pass:
+            //   ceil(prompt_len / 8) weight reads per slot.
+            //
+            // The position-by-position path reads weights once per position:
+            //   max_prompt_len weight reads total (shared across B slots).
+            //
+            // Cross-over: position-by-position beats serial when
+            //   max_prompt_len < B × ceil(max_prompt_len / 8)
+            //   i.e. B > 8  (which never happens at max_batch = 8)
+            // So serial prefill_slot is always equal or better for B ≤ 8
+            // EXCEPT for the shared-prefix case below.
+            //
+            // Shared-prefix optimisation:
+            //   When slots share a common prefix (e.g. system prompt), prefill
+            //   the prefix ONCE for slot 0 via the efficient B_MAX=8 path, then
+            //   CPU-memcpy the prefix KV into every other slot's arena region.
+            //   Cost: ceil(prefix_len / 8) instead of B × ceil(prefix_len / 8).
+            //   For B=8 with a 200-token system prompt: 25 steps → 25 steps
+            //   (amortized 1/8 per slot, and copy is near-free on unified memory).
+
+            // Step A: longest common prefix length.
+            let prefix_len = {
+                let first_prompt = slots[0].1;
+                let mut len = first_prompt.len();
+                for &(_, prompt_ids) in slots.iter().skip(1) {
+                    let common = first_prompt.iter()
+                        .zip(prompt_ids.iter())
+                        .take(len)
+                        .take_while(|(a, b)| a == b)
+                        .count();
+                    len = common.min(prompt_ids.len()).min(first_prompt.len());
+                }
+                len
+            };
+
+            if prefix_len == 0 {
+                // No shared prefix: serial prefill_slot per slot.
+                // B_MAX=8 efficient: ceil(L/8) weight reads per slot.
+                // Strictly better than position-by-position for all B ≤ 8.
+                for &(slot_id, prompt_ids) in slots.iter() {
+                    self.prefill_slot(slot_id, prompt_ids)?;
+                }
+                return Ok(());
             }
+
+            // Shared prefix (prefix_len >= 1):
+
+            // Step B: prefill slot 0's full prompt via the efficient B_MAX=8 path.
+            // `prefill_slot` uses forward_tokens_batch_tcb internally and writes
+            // KV into multiseq_arena[slot0] for positions 0..slot0_prompt.len()-1.
+            let (slot0_id, slot0_prompt) = slots[0];
+            self.prefill_slot(slot0_id, slot0_prompt)?;
+            // multiseq_arena is now allocated (prefill_slot ensures it).
+
+            // Step C: CPU-copy prefix KV from slot 0 to every other slot's region.
+            // Layout: k[layer * multi_layer_stride + slot * MAX_MULTISEQ_CTX * kv_dim + pos * kv_dim]
+            // SAFETY: Metal unified memory, CPU-accessible on Apple Silicon.
+            // Slot regions are non-overlapping. No concurrent GPU access (engine mutex).
+            {
+                let cfg = &self.config;
+                let kv_dim = cfg.n_kv_heads * cfg.head_dim;
+                let multi_arena = self.multiseq_arena.as_ref().unwrap();
+                let multi_layer_stride = multi_arena.max_seq * kv_dim;
+                let copy_elems = prefix_len * kv_dim;
+                let slot0_base = slot0_id * MAX_MULTISEQ_CTX * kv_dim;
+                unsafe {
+                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
+                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
+                    for &(slot_s, _) in slots.iter().skip(1) {
+                        let slot_s_base = slot_s * MAX_MULTISEQ_CTX * kv_dim;
+                        for li in 0..cfg.n_layers {
+                            let src_off = li * multi_layer_stride + slot0_base;
+                            let dst_off = li * multi_layer_stride + slot_s_base;
+                            std::ptr::copy_nonoverlapping(
+                                dst_k.add(src_off), dst_k.add(dst_off), copy_elems,
+                            );
+                            std::ptr::copy_nonoverlapping(
+                                dst_v.add(src_off), dst_v.add(dst_off), copy_elems,
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Step D: suffix-only parallel prefill for slots[1..] only.
+            // Slot 0 is already fully prefilled. For each other slot, run its
+            // suffix (positions prefix_len..prompt_len) through the multiseq
+            // stack (which sees the prefix KV via the copy above).
             if self.q4k_predec_cache.is_none() {
                 self.ensure_q4k_predec_cache()?;
             }
-
-            // Position-by-position parallel prefill.
-            // At step p, gather active slots (prompt_len > p), run one batched
-            // transformer pass writing KV to each slot's multiseq_arena region.
-            // No LM head needed — we only need the KV cache populated.
-            // Weights are read once per position across all B active slots,
-            // not once per slot (the key cost reduction over serial prefill_slot).
-            for p in 0..max_prompt_len {
+            for p in prefix_len..max_prompt_len {
                 let mut tokens_p = Vec::new();
                 let mut positions_p = Vec::new();
                 let mut regions_p = Vec::new();
-                for &(slot_id, prompt_ids) in slots.iter() {
+                for &(slot_id, prompt_ids) in slots.iter().skip(1) {
                     if p < prompt_ids.len() {
                         tokens_p.push(prompt_ids[p]);
                         positions_p.push(p);

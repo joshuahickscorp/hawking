@@ -103,10 +103,10 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // tokenization) can land before we hold the lock for the full
                 // prefill duration. 5ms << typical prefill time (~200ms+) and
                 // allows co-arriving requests to be batched together.
-                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots(max_batch);
+                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
                 if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch {
                     std::thread::sleep(std::time::Duration::from_millis(5));
-                    prefilling = state2.driver.lock().scheduler.prefill_slots(max_batch);
+                    prefilling = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
                 }
                 if !prefilling.is_empty() {
                     let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
