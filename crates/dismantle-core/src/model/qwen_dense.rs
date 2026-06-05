@@ -3634,24 +3634,38 @@ impl QwenDense {
         };
 
         // Track 4.2: try to load predec scales from .dismantle sidecar first.
-        // This skips the ~200ms compute pass when the sidecar is fresh.
+        // Validates the GGUF hash before using cached scales.
         let sidecar_path = crate::sidecar::sidecar_path_for(&self._weights_path);
         if sidecar_path.exists() {
             match crate::sidecar::read_predec_entries(&sidecar_path) {
                 Ok((header, entries)) if header.contents.q4k_predec_scales => {
-                    let mut cache = std::collections::HashMap::new();
-                    for (offset, scales) in entries {
-                        let bytes = bytemuck::cast_slice::<f32, u8>(&scales);
-                        let buf = ctx.new_buffer_with_bytes(bytes);
-                        cache.insert(offset, buf);
+                    // Validate GGUF hash so stale sidecars are rejected.
+                    let gguf_hash = {
+                        use sha2::{Digest, Sha256};
+                        let mut h = Sha256::new();
+                        h.update(&self.gguf.mmap[..]);
+                        h.finalize().iter().map(|b| format!("{b:02x}")).collect::<String>()
+                    };
+                    let compat = crate::sidecar::check_sidecar_compatibility(
+                        &header, &gguf_hash, "",
+                    );
+                    if compat.is_fatal() {
+                        eprintln!("sidecar: {:?}: hash mismatch — recomputing predec scales", sidecar_path);
+                        // Fall through to recompute.
+                    } else {
+                        let mut cache = std::collections::HashMap::new();
+                        for (offset, scales) in entries {
+                            let bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+                            let buf = ctx.new_buffer_with_bytes(bytes);
+                            cache.insert(offset, buf);
+                        }
+                        self.q4k_predec_cache = Some(cache);
+                        return Ok(());
                     }
-                    self.q4k_predec_cache = Some(cache);
-                    return Ok(());
                 }
                 Ok(_) => { /* sidecar exists but no predec scales — fall through */ }
                 Err(e) => {
                     eprintln!("sidecar: failed to load predec from {:?}: {e}", sidecar_path);
-                    // Fall through to recompute.
                 }
             }
         }
@@ -6587,47 +6601,59 @@ impl QwenDense {
                 &arena.x_norm_buf_batch, h_bytes, &arena.ffn_gate_buf_batch, int_bytes);
             batched_proj!(layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(), intermediate, h,
                 &arena.x_norm_buf_batch, h_bytes, &arena.ffn_up_buf_batch, int_bytes);
-            kernels::silu_mul_tcb(
-                &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
-                &arena.ffn_act_buf_batch, intermediate * b,
-            )?;
-            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+            // Track 3.5 — SwiGLU-fused ffn_down: for Q4K predec paths (B≥2),
+            // inline silu(gate)*up into the ffn_down GEMM, eliminating the
+            // separate silu_mul dispatch. Saves 1 dispatch/layer × n_layers.
+            // B=1 uses the GEMV path which doesn't have a swiglu variant yet
+            // → keep the separate silu_mul + GEMV for that case.
+            let ffn_swiglu_fused = b >= 2
+                && layer.pinned.ffn_down_q4k.is_some()
+                && layer.pinned.ffn_down_q4k_predec.is_some();
+
+            if ffn_swiglu_fused {
+                let q4k_buf = layer.pinned.ffn_down_q4k.as_ref().unwrap();
+                let scales = layer.pinned.ffn_down_q4k_predec.as_ref().unwrap();
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
-                if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    if b == 1 {
+                if b <= 4 {
+                    kernels::gemm_q4_k_m_batched_v4r_predec_swiglu_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                        &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                        &arena.ffn_down_buf_batch,
+                    )?;
+                } else {
+                    kernels::gemm_q4_k_m_batched_v3w_predec_swiglu_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                        &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                        &arena.ffn_down_buf_batch,
+                    )?;
+                }
+            } else {
+                // Non-swiglu path (B=1, no Q4K predec, or non-Q4K ffn_down):
+                // keep the original silu_mul + separate ffn_down.
+                kernels::silu_mul_tcb(
+                    &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                    &arena.ffn_act_buf_batch, intermediate * b,
+                )?;
+                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                    let blocks_per_row = intermediate / 256;
+                    let row_bytes = blocks_per_row * 144;
+                    if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
+                        // B=1 or fallback
                         kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                            &mut tcb,
-                            q4k_buf,
-                            0,
-                            h * row_bytes,
-                            scales,
-                            0,
-                            h,
-                            intermediate,
-                            &arena.ffn_act_buf_batch,
-                            &arena.ffn_down_buf_batch,
-                        )?;
-                    } else if b <= 4 {
-                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate,
                             &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
                         )?;
                     } else {
-                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                        kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
                             &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
                         )?;
                     }
                 } else {
-                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                    )?;
+                    batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
+                        &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
                 }
-            } else {
-                batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
-                    &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
             }
 
             // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
