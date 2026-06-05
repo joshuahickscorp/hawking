@@ -5,6 +5,7 @@
 
 pub mod batch;
 pub mod http;
+pub mod spec_gov;
 
 use anyhow::Result;
 use std::net::SocketAddr;
@@ -120,6 +121,10 @@ pub struct ServeOptions {
     pub energy_mode: EnergyMode,
     /// When true, print a human-readable performance summary at startup.
     pub explain_performance: bool,
+    /// Track 6.3: spec governor rolling-window size (default 20).
+    pub spec_window: usize,
+    /// Track 6.3: minimum acceptance rate to keep spec enabled (default 0.35).
+    pub spec_min_accept_rate: f32,
 }
 
 impl Default for ServeOptions {
@@ -137,6 +142,8 @@ impl Default for ServeOptions {
             runtime_profile: RuntimeProfile::Default,
             energy_mode: EnergyMode::Off,
             explain_performance: false,
+            spec_window: 20,
+            spec_min_accept_rate: 0.35,
         }
     }
 }
@@ -392,6 +399,40 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                 };
                                 if let Some(sid) = new_slot {
                                     state2.requests_admitted.fetch_add(1, Ordering::Relaxed);
+                                    // Track 5.2: prefix-reuse detection. After admission the
+                                    // new slot is already in the prefix_index; search for a
+                                    // different slot whose KV we can copy into this one.
+                                    {
+                                        let prompt_ids = state2.driver.lock()
+                                            .scheduler.slots.iter()
+                                            .find(|s| s.id == sid)
+                                            .map(|s| s.prompt_ids.clone())
+                                            .unwrap_or_default();
+                                        if !prompt_ids.is_empty() {
+                                            let prefix_match = state2.driver.lock()
+                                                .scheduler.prefix_index
+                                                .find_prefix_match_excluding(&prompt_ids, 8, sid);
+                                            if let Some((src_slot, shared_len)) = prefix_match {
+                                                tracing::debug!(
+                                                    "[prefix-reuse] request matched slot {} at prefix_len={}",
+                                                    src_slot, shared_len
+                                                );
+                                                let copy_result = state2.engine.lock()
+                                                    .copy_kv_prefix_to_slot(
+                                                        src_slot as usize,
+                                                        sid as usize,
+                                                        shared_len,
+                                                    );
+                                                if copy_result.is_ok() {
+                                                    state2.driver.lock()
+                                                        .lane_stats.prefix_reuse_count += 1;
+                                                }
+                                                // If copy_kv_prefix_to_slot returns Err (e.g.
+                                                // Unimplemented), silently skip — normal prefill
+                                                // will proceed from position 0.
+                                            }
+                                        }
+                                    }
                                     state2.slot_senders.lock().insert(sid, waiter_tx);
                                 }
                                 // If admit fails (should not — slot was just freed),
