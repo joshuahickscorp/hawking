@@ -7,6 +7,8 @@ pub mod batch;
 pub mod http;
 pub mod spec_gov;
 
+pub use batch::scheduler::BatchPolicy;
+
 use anyhow::Result;
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -104,6 +106,90 @@ impl std::fmt::Display for EnergyMode {
     }
 }
 
+/// Track 9.3 — workload packs.
+///
+/// A workload pack sets sensible defaults for a class of serving workload.
+/// Individual flags (`--profile`, `--energy-mode`, `--batch-policy`,
+/// `--f16-kv`) always override the pack's defaults.
+///
+/// `Default`            — no change; individual flags apply as-is.
+/// `CodeCompletion`     — Race profile + energy off + GreedyFirst batching.
+/// `ChatSharedPrompt`   — Fast profile + Balanced energy + PrefixGrouped batching.
+/// `BatchSummarization` — Efficient profile + Efficient energy + GreedyFirst batching.
+/// `LocalAgentLoop`     — Fast profile + energy off + GreedyFirst batching.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum WorkloadPack {
+    #[default]
+    Default,
+    CodeCompletion,
+    ChatSharedPrompt,
+    BatchSummarization,
+    LocalAgentLoop,
+}
+
+impl WorkloadPack {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "default"             => Some(Self::Default),
+            "code-completion"     => Some(Self::CodeCompletion),
+            "chat-shared-prompt"  => Some(Self::ChatSharedPrompt),
+            "batch-summarization" => Some(Self::BatchSummarization),
+            "local-agent-loop"    => Some(Self::LocalAgentLoop),
+            _                     => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Default            => "default",
+            Self::CodeCompletion     => "code-completion",
+            Self::ChatSharedPrompt   => "chat-shared-prompt",
+            Self::BatchSummarization => "batch-summarization",
+            Self::LocalAgentLoop     => "local-agent-loop",
+        }
+    }
+
+    /// Return the (profile, energy, batch_policy) defaults for this pack.
+    ///
+    /// Callers apply these ONLY when the corresponding flag was not explicitly
+    /// set — pack defaults lose to explicit flags.
+    pub fn defaults(&self) -> (RuntimeProfile, EnergyMode, BatchPolicy) {
+        match self {
+            Self::Default => (
+                RuntimeProfile::Default,
+                EnergyMode::Off,
+                BatchPolicy::Default,
+            ),
+            Self::CodeCompletion => (
+                RuntimeProfile::Race,
+                EnergyMode::Off,
+                BatchPolicy::GreedyFirst,
+            ),
+            Self::ChatSharedPrompt => (
+                RuntimeProfile::Fast,
+                EnergyMode::Balanced,
+                BatchPolicy::PrefixGrouped,
+            ),
+            Self::BatchSummarization => (
+                RuntimeProfile::Efficient,
+                EnergyMode::Efficient,
+                BatchPolicy::GreedyFirst,
+            ),
+            Self::LocalAgentLoop => (
+                RuntimeProfile::Fast,
+                EnergyMode::Off,
+                BatchPolicy::GreedyFirst,
+            ),
+        }
+    }
+}
+
+impl std::fmt::Display for WorkloadPack {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ServeOptions {
     pub weights: PathBuf,
@@ -125,6 +211,17 @@ pub struct ServeOptions {
     pub spec_window: usize,
     /// Track 6.3: minimum acceptance rate to keep spec enabled (default 0.35).
     pub spec_min_accept_rate: f32,
+    /// Track 5.3: f16 KV cache override.
+    ///
+    /// `None`       — defer to profile/workload default.
+    /// `Some(true)` — force DISMANTLE_QWEN_F16_KV=1 (halves KV footprint;
+    ///                wins at long context, footprint-neutral for short ctx).
+    /// `Some(false)` — explicitly disable (leave env var unset).
+    pub f16_kv: Option<bool>,
+    /// Track 5.4: batch admission policy.
+    pub batch_policy: BatchPolicy,
+    /// Track 9.3: workload pack (sets profile/energy/policy defaults).
+    pub workload: WorkloadPack,
 }
 
 impl Default for ServeOptions {
@@ -144,12 +241,43 @@ impl Default for ServeOptions {
             explain_performance: false,
             spec_window: 20,
             spec_min_accept_rate: 0.35,
+            f16_kv: None,
+            batch_policy: BatchPolicy::Default,
+            workload: WorkloadPack::Default,
         }
     }
 }
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
     use dismantle_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
+
+    // ── Track 9.3: apply workload-pack defaults ───────────────────────────────
+    // Pack defaults are applied FIRST so that explicit per-flag values (profile,
+    // energy_mode, batch_policy, f16_kv) set later always win over them.
+    // The pack only influences fields that are still at their zero-values
+    // (Default/Off/None) — this is expressed by the caller setting fields to
+    // non-default values to override. Because opts is already parsed before
+    // run() is called, we derive an "effective" set here and shadow opts.
+    let (effective_profile, effective_energy, effective_batch_policy) = {
+        let (pack_profile, pack_energy, pack_policy) = opts.workload.defaults();
+        // Explicit flags win: use opts value when it is non-Default/non-Off/non-None.
+        let profile = if opts.runtime_profile != RuntimeProfile::Default {
+            opts.runtime_profile.clone()
+        } else {
+            pack_profile
+        };
+        let energy = if opts.energy_mode != EnergyMode::Off {
+            opts.energy_mode.clone()
+        } else {
+            pack_energy
+        };
+        let policy = if opts.batch_policy != BatchPolicy::Default {
+            opts.batch_policy.clone()
+        } else {
+            pack_policy
+        };
+        (profile, energy, policy)
+    };
 
     // ── Serve-mode optimisation defaults ─────────────────────────────────────
     // These are the same knobs that `dismantle generate --kernel-profile` uses.
@@ -172,7 +300,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // Fast / Race / Efficient: opt into the both-metrics-optimal fast-path.
     // Exact: clear quality-trade vars so the path is bit-identical.
     // All of these respect explicit DISMANTLE_QWEN_*=0 opt-outs set before launch.
-    match &opts.runtime_profile {
+    match &effective_profile {
         RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient => {
             for (k, v) in [
                 ("DISMANTLE_QWEN_Q4K_LMHEAD",       "1"),
@@ -185,7 +313,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                     std::env::set_var(k, v);
                 }
             }
-            if opts.runtime_profile == RuntimeProfile::Efficient {
+            if effective_profile == RuntimeProfile::Efficient {
                 if std::env::var_os("DISMANTLE_ENERGY_EFFICIENT").is_none() {
                     std::env::set_var("DISMANTLE_ENERGY_EFFICIENT", "1");
                 }
@@ -209,6 +337,29 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         RuntimeProfile::Default => {}
     }
 
+    // ── Track 5.3: f16 KV cache env var ─────────────────────────────────────
+    // Race and Efficient profiles enable f16 KV by default: halves KV memory
+    // and frees bandwidth for long-context workloads. Fast/Exact/Default leave
+    // it off to preserve bit-identity with the exact path.
+    //
+    // The per-field override (`opts.f16_kv`) wins over the profile default:
+    //   Some(true)  → force on regardless of profile
+    //   Some(false) → force off regardless of profile
+    //   None        → use the profile/workload default
+    {
+        let profile_wants_f16_kv = matches!(
+            effective_profile,
+            RuntimeProfile::Race | RuntimeProfile::Efficient
+        );
+        let enable = match opts.f16_kv {
+            Some(v)  => v,
+            None     => profile_wants_f16_kv,
+        };
+        if enable && std::env::var_os("DISMANTLE_QWEN_F16_KV").is_none() {
+            std::env::set_var("DISMANTLE_QWEN_F16_KV", "1");
+        }
+    }
+
     let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
         .map_err(|e| anyhow::anyhow!("{e}"))?;
     let kernel_profile = match opts.kernel_profile.as_ref() {
@@ -219,7 +370,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
     // but valuable for the race/efficient profile throughput maximization.
     let concurrent_qkv = matches!(
-        opts.runtime_profile,
+        effective_profile,
         RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient
     ) || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV").map(|v| v == "1").unwrap_or(false);
 
@@ -246,9 +397,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
 
     // ── --explain-performance startup summary ─────────────────────────────
     if opts.explain_performance {
-        let token_only_active = opts.runtime_profile == RuntimeProfile::Fast
-            || opts.runtime_profile == RuntimeProfile::Race
-            || opts.runtime_profile == RuntimeProfile::Efficient
+        let token_only_active = effective_profile == RuntimeProfile::Fast
+            || effective_profile == RuntimeProfile::Race
+            || effective_profile == RuntimeProfile::Efficient
             || std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD").map(|v| v == "1").unwrap_or(false);
         let token_only_str = if token_only_active {
             "active (Q4K LM head loaded)"
@@ -259,28 +410,40 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
             .as_ref()
             .map(|p| p.display().to_string())
             .unwrap_or_else(|| "none".to_string());
-        let gather_ms = opts.energy_mode.gather_window_ms();
+        let gather_ms = effective_energy.gather_window_ms();
+        let f16_kv_active = std::env::var_os("DISMANTLE_QWEN_F16_KV")
+            .map(|v| v == "1")
+            .unwrap_or(false);
         let full_logits_mb = max_batch as f64 * 151936.0 * 4.0 / 1_048_576.0;
         let greedy_bytes = max_batch * 4;
         eprintln!(
             "dismantle serve — performance summary\n\
              \x20 model:              {model_id}\n\
-             \x20 profile:            {}\n\
+             \x20 profile:            {effective_profile}\n\
+             \x20 workload pack:      {}\n\
              \x20 hardware-profile:   {hw_profile_str}\n\
              \x20 token-only lane:    {token_only_str}\n\
-             \x20 energy mode:        {}\n\
+             \x20 f16 KV cache:       {f16_kv_active}\n\
+             \x20 batch policy:       {effective_batch_policy:?}\n\
+             \x20 energy mode:        {effective_energy}\n\
              \x20 gather window:      {gather_ms} ms\n\
              \x20 expected lanes:     greedy → token-only, sampled → full logits\n\
              \x20 full-logits cost:   B×vocab×4 bytes per step (~{full_logits_mb:.1} MB at B={max_batch}, Qwen)\n\
              \x20 greedy-lane cost:   B×4 bytes per step ({greedy_bytes} bytes at B={max_batch})",
-            opts.runtime_profile,
-            opts.energy_mode,
+            opts.workload,
         );
     }
 
+    // Build the BatchDriver and install the effective batch policy.
+    let batch_driver = {
+        let mut d = batch::driver::BatchDriver::new(max_batch);
+        d.scheduler.policy = effective_batch_policy.clone();
+        d
+    };
+
     let state = http::AppState {
         engine: Arc::new(parking_lot::Mutex::new(engine)),
-        driver: Arc::new(parking_lot::Mutex::new(batch::driver::BatchDriver::new(max_batch))),
+        driver: Arc::new(parking_lot::Mutex::new(batch_driver)),
         slot_senders: Arc::new(parking_lot::Mutex::new(std::collections::HashMap::new())),
         wait_queue: Arc::new(parking_lot::Mutex::new(std::collections::VecDeque::new())),
         model_arch,
@@ -295,7 +458,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // one decode step across all ready slots, Phase C streams tokens to SSE.
     // All GPU kernel dispatches happen here under the engine lock; HTTP
     // handlers only hold the lock briefly for the admit tokenization step.
-    let gather_window_ms = opts.energy_mode.gather_window_ms();
+    let gather_window_ms = effective_energy.gather_window_ms();
     {
         let state2 = state.clone();
         tokio::task::spawn_blocking(move || {
@@ -335,7 +498,19 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                         let mut engine = state2.engine.lock();
                         if slot_refs.len() == 1 {
                             let (slot_id, prompt_ids) = slot_refs[0];
-                            engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
+                            let skip = state2.driver.lock().scheduler.slots
+                                .iter().find(|s| s.id == slot_id as u32)
+                                .map(|s| s.prefix_skip).unwrap_or(0);
+                            if skip > 0 {
+                                // Reset prefix_skip before calling so retries don't re-skip.
+                                if let Some(s) = state2.driver.lock().scheduler.slots
+                                    .iter_mut().find(|s| s.id == slot_id as u32) {
+                                    s.prefix_skip = 0;
+                                }
+                                engine.prefill_slot_from_pos(slot_id, prompt_ids, skip).map(|_| ())
+                            } else {
+                                engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
+                            }
                         } else {
                             engine.prefill_slots_parallel(&slot_refs)
                         }
@@ -424,8 +599,14 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                                         shared_len,
                                                     );
                                                 if copy_result.is_ok() {
-                                                    state2.driver.lock()
-                                                        .lane_stats.prefix_reuse_count += 1;
+                                                    let mut driver = state2.driver.lock();
+                                                    driver.lane_stats.prefix_reuse_count += 1;
+                                                    // Record prefix_skip so the prefill path can
+                                                    // call prefill_slot_from_pos instead of full prefill.
+                                                    if let Some(slot) = driver.scheduler.slots
+                                                        .iter_mut().find(|s| s.id == sid) {
+                                                        slot.prefix_skip = shared_len;
+                                                    }
                                                 }
                                                 // If copy_kv_prefix_to_slot returns Err (e.g.
                                                 // Unimplemented), silently skip — normal prefill

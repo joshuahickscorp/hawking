@@ -11,6 +11,27 @@ use crate::batch::{DecodeStep, DecodedToken, Slot, SlotState};
 use anyhow::{anyhow, Result};
 use dismantle_core::GenerateRequest;
 
+/// Track 5.4 — batch admission policy.
+///
+/// Controls how `ready_decode_indices` orders and selects slots.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum BatchPolicy {
+    /// Admit any ready slots up to max_batch (current behavior).
+    #[default]
+    Default,
+    /// Prefer greedy (temperature=0) slots over sampling slots.
+    ///
+    /// Sorting greedy slots first maximises the probability that
+    /// `decode_ready_once`'s `all_greedy` check succeeds, routing the step
+    /// to the efficient token-only lane (B×4 byte readback, no logits).
+    GreedyFirst,
+    /// Fill batch with slots that share a common prefix (for amortised prefill).
+    ///
+    /// When multiple slots have matching prompt prefixes, grouping them lets a
+    /// single prefill pass cover the shared prefix once, then branch.
+    PrefixGrouped,
+}
+
 /// Track 5.1 — prefix reuse detection.
 ///
 /// For each active slot, store a 64-bit hash of its prompt token sequence.
@@ -131,6 +152,8 @@ pub struct Scheduler {
     pub max_batch_size: usize,
     /// Track 5.1: prefix hash index for KV reuse detection.
     pub prefix_index: PrefixIndex,
+    /// Track 5.4: batch admission policy (default = FIFO).
+    pub policy: BatchPolicy,
 }
 
 impl Scheduler {
@@ -142,6 +165,7 @@ impl Scheduler {
             slots,
             max_batch_size,
             prefix_index: PrefixIndex::default(),
+            policy: BatchPolicy::Default,
         }
     }
 
@@ -178,13 +202,46 @@ impl Scheduler {
     }
 
     pub fn ready_decode_indices(&self, max: usize) -> Vec<usize> {
-        self.slots
-            .iter()
-            .enumerate()
-            .filter(|(_, slot)| slot.is_ready_to_decode())
-            .take(max.min(self.max_batch_size))
-            .map(|(idx, _)| idx)
-            .collect()
+        let cap = max.min(self.max_batch_size);
+        match self.policy {
+            BatchPolicy::Default | BatchPolicy::PrefixGrouped => {
+                // Default: FIFO order by slot index.
+                self.slots
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, slot)| slot.is_ready_to_decode())
+                    .take(cap)
+                    .map(|(idx, _)| idx)
+                    .collect()
+            }
+            BatchPolicy::GreedyFirst => {
+                // Sort ready slots: greedy (temp=0, no rep-penalty) first,
+                // then sampling slots. Within each group, preserve slot-index order.
+                let mut greedy: Vec<usize> = Vec::new();
+                let mut sampled: Vec<usize> = Vec::new();
+                for (idx, slot) in self.slots.iter().enumerate() {
+                    if !slot.is_ready_to_decode() {
+                        continue;
+                    }
+                    let is_greedy = slot
+                        .req
+                        .as_ref()
+                        .map(|r| {
+                            r.sampling.temperature <= 0.0
+                                && r.sampling.repetition_penalty <= 1.0
+                        })
+                        .unwrap_or(false);
+                    if is_greedy {
+                        greedy.push(idx);
+                    } else {
+                        sampled.push(idx);
+                    }
+                }
+                greedy.extend(sampled);
+                greedy.truncate(cap);
+                greedy
+            }
+        }
     }
 
     pub fn ready_decode_slots(&self, max: usize) -> Vec<u32> {
