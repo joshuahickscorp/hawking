@@ -208,6 +208,14 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+    // concurrent_qkv: ON for fast/race/efficient — overlaps Q/K/V projections
+    // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
+    // but valuable for the race/efficient profile throughput maximization.
+    let concurrent_qkv = matches!(
+        opts.runtime_profile,
+        RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient
+    ) || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV").map(|v| v == "1").unwrap_or(false);
+
     let cfg = EngineConfig {
         max_seq_len: 4096,
         max_batch_size: opts.max_batch_size,
@@ -219,6 +227,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         trace_dispatch: false,
         max_routed_expert_ram_mb: opts.max_routed_expert_ram_mb,
         memory_limit_mb: opts.memory_limit_mb,
+        concurrent_qkv,
         ..Default::default()
     };
 
