@@ -2795,6 +2795,38 @@ impl Engine for QwenDense {
         }
     }
 
+    fn forward_multiseq_greedy_tokens(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<u32>> {
+        #[cfg(target_os = "macos")]
+        {
+            const MULTISEQ_CTX: usize = 4096;
+            return self.forward_tokens_multiseq_greedy(tokens, positions, regions, MULTISEQ_CTX);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = regions;
+            // Off-macOS: delegate to default (full logits + CPU argmax).
+            let logits = self.forward_tokens_for_test(tokens, positions)?;
+            Ok(logits
+                .into_iter()
+                .map(|l| {
+                    l.iter()
+                        .copied()
+                        .enumerate()
+                        .max_by(|a, b| {
+                            a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less)
+                        })
+                        .map(|(i, _)| i as u32)
+                        .unwrap_or(0)
+                })
+                .collect())
+        }
+    }
+
     fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
         #[cfg(target_os = "macos")]
         {
@@ -6417,6 +6449,137 @@ impl QwenDense {
             ));
         }
         Ok(out)
+    }
+
+    /// Greedy token-only multiseq: same stack as forward_tokens_multiseq_logits
+    /// but appends Q4K LM head + batched GPU argmax in the same TCB, then reads
+    /// back only B×u32 token ids (not B×vocab×f32 logits).
+    ///
+    /// Requires `lm_head_q4k_buf` to be loaded (DISMANTLE_QWEN_Q4K_LMHEAD or
+    /// the serve optimization defaults). Falls back to full-logits + CPU argmax
+    /// if the Q4K head is absent or the shape conditions are not met.
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq_greedy(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<Vec<u32>> {
+        let b = tokens.len();
+        let h = self.config.hidden;
+        let vocab = self.config.vocab_size;
+
+        // Require Q4K LM head and shape preconditions for the on-GPU path.
+        // Fall back to full-logits + CPU argmax when any condition fails.
+        let use_gpu_path = self.lm_head_q4k_buf.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b)
+            && b > 0;
+
+        if !use_gpu_path {
+            let logits =
+                self.forward_tokens_multiseq_logits(tokens, positions, regions, max_seq_per_slot)?;
+            return Ok(logits
+                .into_iter()
+                .map(|l| {
+                    l.iter()
+                        .copied()
+                        .enumerate()
+                        .max_by(|a, b| {
+                            a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less)
+                        })
+                        .map(|(i, _)| i as u32)
+                        .unwrap_or(0)
+                })
+                .collect());
+        }
+
+        // ── shared setup (mirrors forward_tokens_multiseq_logits) ────────────
+        const MAX_MULTISEQ_SLOTS: usize = 8;
+        const MAX_MULTISEQ_CTX: usize = 4096;
+        if regions.len() != b {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq_greedy: regions={} != tokens={b}",
+                regions.len()
+            )));
+        }
+        if max_seq_per_slot > MAX_MULTISEQ_CTX {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq_greedy: max_seq_per_slot={max_seq_per_slot} > {MAX_MULTISEQ_CTX}"
+            )));
+        }
+        if self.multiseq_arena.is_none() {
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_multiseq_greedy: no metal_ctx".into()))?;
+            let cfg = &self.config;
+            self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
+                ctx,
+                cfg.n_layers,
+                cfg.n_heads,
+                cfg.n_kv_heads,
+                cfg.head_dim,
+                cfg.hidden,
+                cfg.intermediate,
+                cfg.vocab_size,
+                MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX,
+                MAX_MULTISEQ_SLOTS,
+            ));
+        }
+        if self.q4k_predec_cache.is_none() {
+            self.ensure_q4k_predec_cache()?;
+        }
+
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        let mut tcb = self.forward_tokens_multiseq_stack_tcb(
+            arena,
+            tokens,
+            positions,
+            regions,
+            max_seq_per_slot,
+        )?;
+
+        // ── Q4K LM head (same as GPU path in forward_tokens_multiseq_logits) ─
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
+        let blocks_per_row = h / 256;
+        let w_bytes = vocab * blocks_per_row * 144;
+        let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_multiseq_greedy: no metal_ctx for LM head".into())
+        })?;
+        let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
+        crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+            &mut tcb,
+            lhq,
+            0,
+            w_bytes,
+            vocab,
+            h,
+            b,
+            &arena.x_norm_buf_batch,
+            &logits_buf,
+        )?;
+
+        // ── Batched GPU argmax → arena.token_batch_buf ────────────────────────
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        crate::kernels::sample_argmax_f32_batched_tcb(
+            &mut tcb,
+            &logits_buf,
+            &arena.token_batch_buf,
+            vocab,
+            b,
+        )?;
+
+        // ONE commit: stack + LM head + argmax all in one command buffer.
+        tcb.commit_and_wait()?;
+
+        // Read back only B×u32 (32 bytes at B=8 vs 4.6 MB for full logits).
+        let tp = arena.token_batch_buf.contents() as *const u32;
+        // SAFETY: token_batch_buf is sized max_batch*4 bytes; b <= max_batch.
+        let token_ids = unsafe { std::slice::from_raw_parts(tp, b) }.to_vec();
+        Ok(token_ids)
     }
 
     /// Multi-seq decode → per-slot greedy argmax token. Thin wrapper over
