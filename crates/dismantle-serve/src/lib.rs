@@ -96,7 +96,18 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // a single prefill_slots_parallel call so weights are read
                 // once per position across all B slots rather than once per
                 // slot (serial). On any error, release every slot in the batch.
-                let prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots(max_batch);
+                //
+                // Gather window: when max_batch > 1 and the first Prefilling
+                // slot arrives, sleep briefly WITHOUT the engine lock so that
+                // concurrent HTTP admits (which also need engine.lock() for
+                // tokenization) can land before we hold the lock for the full
+                // prefill duration. 5ms << typical prefill time (~200ms+) and
+                // allows co-arriving requests to be batched together.
+                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots(max_batch);
+                if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch {
+                    std::thread::sleep(std::time::Duration::from_millis(5));
+                    prefilling = state2.driver.lock().scheduler.prefill_slots(max_batch);
+                }
                 if !prefilling.is_empty() {
                     let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
                         let ids = state2.driver.lock().scheduler.slots
