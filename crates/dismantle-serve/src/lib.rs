@@ -120,7 +120,16 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                     let slot_refs: Vec<(usize, &[u32])> = slots_data.iter()
                         .map(|(s, ids)| (*s, ids.as_slice()))
                         .collect();
-                    match state2.engine.lock().prefill_slots_parallel(&slot_refs) {
+                    let prefill_result = {
+                        let mut engine = state2.engine.lock();
+                        if slot_refs.len() == 1 {
+                            let (slot_id, prompt_ids) = slot_refs[0];
+                            engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
+                        } else {
+                            engine.prefill_slots_parallel(&slot_refs)
+                        }
+                    };
+                    match prefill_result {
                         Ok(()) => {
                             for &slot_id in &prefilling {
                                 state2.driver.lock().scheduler.mark_prefill_complete(slot_id);
