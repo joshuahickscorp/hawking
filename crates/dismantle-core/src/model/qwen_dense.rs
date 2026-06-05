@@ -6167,33 +6167,14 @@ impl QwenDense {
             // B*vocab f32 logits scratch. Retained by Metal in `tcb` at encode time.
             let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
             // C1: append into the stack's tcb (NOT a fresh one).
-            if b == 1 {
-                // B=1 fast path: predec GEMV (~56% peak BW) instead of v3w GEMM
-                // (~13% peak BW at M=1). Predec scales for the LM head are in the
-                // predec cache (populated by ensure_q4k_predec_cache above).
-                // lhq is the separately-pinned Q4K LM head buffer; its predec
-                // scales live in self.lm_head_pruned_predec (built at load time
-                // alongside the pruned/quantised head). Fall through to v3w if
-                // no predec scales exist (e.g. model loaded without vocab-prune).
-                if let Some(lh_scales) = self.lm_head_pruned_predec.as_ref() {
-                    crate::kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                        &mut tcb, lhq, 0, w_bytes,
-                        lh_scales, 0,
-                        vocab, h,
-                        &arena.x_norm_buf_batch, &logits_buf,
-                    )?;
-                } else {
-                    crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                        &mut tcb, lhq, 0, w_bytes, vocab, h, b,
-                        &arena.x_norm_buf_batch, &logits_buf,
-                    )?;
-                }
-            } else {
-                crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                    &mut tcb, lhq, 0, w_bytes, vocab, h, b,
-                    &arena.x_norm_buf_batch, &logits_buf,
-                )?;
-            }
+            // Use v3w for all B. lhq is the full-vocab Q4K head (151936 rows);
+            // lm_head_pruned_predec has scales only for the 32K pruned head —
+            // wrong dimensions for a predec GEMV over the full-vocab head.
+            // GPU v3w beats CPU f16 at every batch size, which is the real gain.
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb, lhq, 0, w_bytes, vocab, h, b,
+                &arena.x_norm_buf_batch, &logits_buf,
+            )?;
             // ONE round-trip: layers + LM head in a single submit/fence.
             tcb.commit_and_wait()?;
             // Read B full-vocab rows out of the shared-memory logits buffer.
