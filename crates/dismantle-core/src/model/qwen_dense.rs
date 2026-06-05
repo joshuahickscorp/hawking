@@ -5863,10 +5863,23 @@ impl QwenDense {
                 match $tref.dtype {
                     GgmlType::Q4_K => {
                         if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
-                            kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                scales, 0, $rows, $cols, b, $x_batch, $out_batch,
-                            )?;
+                            if b == 1 {
+                                // B=1 fast path: use the GEMV-specialised predec kernel
+                                // (gemm_q4_k_v4_predec_2r, ~56% peak BW) instead of the
+                                // v3w GEMM kernel (~13% peak BW at M=1). At B=1 the
+                                // activations start at offset 0 in the batch buffer, so
+                                // passing $x_batch / $out_batch directly is correct.
+                                kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols,
+                                    $x_batch, $out_batch,
+                                )?;
+                            } else {
+                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            }
                         } else {
                             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                                 &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
@@ -6105,6 +6118,14 @@ impl QwenDense {
             ));
         }
 
+        // Populate pre-decoded scale tables so the B=1 fast path in
+        // forward_tokens_multiseq_stack_tcb can dispatch gemv_q4_k_v4_predec
+        // (~56% peak BW) instead of v3w (~13% peak BW at M=1).
+        // Mirrors the call in forward_token_greedy_tcb; idempotent after first call.
+        if self.q4k_predec_cache.is_none() {
+            self.ensure_q4k_predec_cache()?;
+        }
+
         let arena = self.multiseq_arena.as_ref().unwrap();
         // C1: the stack no longer commits — it returns the LIVE tcb (layers +
         // final norm encoded). We append the LM-head GEMM into this SAME tcb when
@@ -6143,22 +6164,36 @@ impl QwenDense {
             let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
             let blocks_per_row = h / 256;
             let w_bytes = vocab * blocks_per_row * 144;
-            // B*vocab f32 logits scratch (mirrors the verify FAST path's b*pruned).
-            // Retained by Metal in `tcb` at encode time, so it stays valid through
-            // the single commit_and_wait below even though it is a local binding.
+            // B*vocab f32 logits scratch. Retained by Metal in `tcb` at encode time.
             let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
             // C1: append into the stack's tcb (NOT a fresh one).
-            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb,
-                lhq,
-                0,
-                w_bytes,
-                vocab,
-                h,
-                b,
-                &arena.x_norm_buf_batch,
-                &logits_buf,
-            )?;
+            if b == 1 {
+                // B=1 fast path: predec GEMV (~56% peak BW) instead of v3w GEMM
+                // (~13% peak BW at M=1). Predec scales for the LM head are in the
+                // predec cache (populated by ensure_q4k_predec_cache above).
+                // lhq is the separately-pinned Q4K LM head buffer; its predec
+                // scales live in self.lm_head_pruned_predec (built at load time
+                // alongside the pruned/quantised head). Fall through to v3w if
+                // no predec scales exist (e.g. model loaded without vocab-prune).
+                if let Some(lh_scales) = self.lm_head_pruned_predec.as_ref() {
+                    crate::kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                        &mut tcb, lhq, 0, w_bytes,
+                        lh_scales, 0,
+                        vocab, h,
+                        &arena.x_norm_buf_batch, &logits_buf,
+                    )?;
+                } else {
+                    crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, lhq, 0, w_bytes, vocab, h, b,
+                        &arena.x_norm_buf_batch, &logits_buf,
+                    )?;
+                }
+            } else {
+                crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                    &mut tcb, lhq, 0, w_bytes, vocab, h, b,
+                    &arena.x_norm_buf_batch, &logits_buf,
+                )?;
+            }
             // ONE round-trip: layers + LM head in a single submit/fence.
             tcb.commit_and_wait()?;
             // Read B full-vocab rows out of the shared-memory logits buffer.
