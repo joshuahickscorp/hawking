@@ -365,6 +365,44 @@ enum Cmd {
         #[arg(long, default_value_t = false)]
         no_history: bool,
     },
+    /// Bake a `.dismantle` sidecar file from a GGUF model.
+    ///
+    /// The sidecar encodes pre-processed, Metal-friendly weight representations
+    /// (Q4_K predecoded scale tables, pruned LM-head, etc.) so that subsequent
+    /// `generate` / `serve` invocations load them directly rather than recomputing
+    /// them at startup.
+    ///
+    /// NOTE: the full bake implementation is a follow-on task. This subcommand
+    /// prints a plan and exits cleanly — no output file is written yet.
+    BakeSidecar {
+        /// Source GGUF file to bake from (required).
+        #[arg(long)]
+        weights: PathBuf,
+        /// Output `.dismantle` sidecar path. Defaults to the same directory as
+        /// --weights with the `.dismantle` extension.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Runtime profile to bake for. Determines which levers are active.
+        ///   fast      — predec scales + Q4K LM-head (default)
+        ///   race      — same as fast; signals max-throughput, quality trades OK
+        ///   efficient — same as fast + energy-efficient mode
+        ///   exact     — bit-identical conservative path (no quality trades)
+        #[arg(long, default_value = "fast", value_name = "PROFILE")]
+        profile: String,
+        /// Optional hardware kernel-autotune JSON produced by `dismantle autotune`.
+        /// When provided, its kernel-routing table is embedded in the sidecar.
+        #[arg(long, value_name = "PATH")]
+        kernel_profile: Option<PathBuf>,
+        /// Optional corpus vocab-whitelist JSON for the pruned LM-head path
+        /// (produced by `tools/training/analyze_corpus.py`). When provided,
+        /// a pruned-LM-head Q4K blob is included in the sidecar.
+        #[arg(long, value_name = "PATH")]
+        vocab_prune: Option<PathBuf>,
+        /// Number of prompts to use for the top-1 token-agreement quality check
+        /// run after baking. 0 skips the quality eval.
+        #[arg(long, default_value_t = 50, value_name = "N")]
+        quality_eval_count: usize,
+    },
 }
 
 fn main() -> Result<()> {
@@ -418,6 +456,7 @@ fn main() -> Result<()> {
                 runtime_profile,
                 energy_mode: resolved_energy_mode,
                 explain_performance,
+                ..Default::default()
             }))
         }
         Cmd::Generate {
@@ -568,6 +607,14 @@ fn main() -> Result<()> {
             iterations,
             no_history,
         }),
+        Cmd::BakeSidecar {
+            weights,
+            out,
+            profile,
+            kernel_profile,
+            vocab_prune,
+            quality_eval_count,
+        } => bake_sidecar_main(weights, out, profile, kernel_profile, vocab_prune, quality_eval_count),
     }
 }
 
@@ -1424,6 +1471,84 @@ fn batch_hash_main(
         Some(p) => std::fs::write(&p, &blob)?,
         None => print!("{blob}"),
     }
+    Ok(())
+}
+
+fn bake_sidecar_main(
+    weights: PathBuf,
+    out: Option<PathBuf>,
+    profile: String,
+    kernel_profile: Option<PathBuf>,
+    vocab_prune: Option<PathBuf>,
+    quality_eval_count: usize,
+) -> Result<()> {
+    use dismantle_core::sidecar::{sidecar_path_for, SidecarProfile};
+    use dismantle_core::{profile::KernelProfile, EngineConfig};
+
+    // Resolve the output path: default to same dir as weights, .dismantle ext.
+    let out_path = out.unwrap_or_else(|| sidecar_path_for(&weights));
+
+    // Parse and validate the profile name.
+    let sidecar_profile = match profile.as_str() {
+        "fast"      => SidecarProfile::Fast,
+        "race"      => SidecarProfile::Race,
+        "efficient" => SidecarProfile::Efficient,
+        "exact"     => SidecarProfile::Exact,
+        other => anyhow::bail!(
+            "unknown --profile {other:?} (known: fast, race, efficient, exact)"
+        ),
+    };
+
+    // --- Step 1: print the planned bake steps ---
+    eprintln!("[bake-sidecar] weights:        {}", weights.display());
+    eprintln!("[bake-sidecar] out:            {}", out_path.display());
+    eprintln!("[bake-sidecar] profile:        {profile}");
+    eprintln!("[bake-sidecar] planned steps:");
+    eprintln!("[bake-sidecar]   q4k_predec_scales = true");
+    if vocab_prune.is_some() {
+        eprintln!("[bake-sidecar]   pruned_lm_head_q4k = true  (vocab-prune: {})",
+            vocab_prune.as_ref().unwrap().display());
+    } else {
+        eprintln!("[bake-sidecar]   pruned_lm_head_q4k = false  (no --vocab-prune given)");
+    }
+    if let Some(kp) = kernel_profile.as_ref() {
+        eprintln!("[bake-sidecar]   kernel_profile = {}", kp.display());
+    }
+    if quality_eval_count > 0 {
+        eprintln!("[bake-sidecar]   quality_eval: {quality_eval_count} prompts (top-1 agreement)");
+    } else {
+        eprintln!("[bake-sidecar]   quality_eval: skipped (--quality-eval-count 0)");
+    }
+    eprintln!("[bake-sidecar] bake_profile:  {sidecar_profile:?}");
+
+    // --- Step 2: load the engine (same as `generate` does) ---
+    let kprofile = match kernel_profile.as_ref() {
+        Some(path) => Some(KernelProfile::load(path)?),
+        None => None,
+    };
+    let cfg = EngineConfig {
+        kernel_profile: kprofile,
+        ..Default::default()
+    };
+    eprintln!("[bake-sidecar] loading engine from {} ...", weights.display());
+    let _engine = dismantle_core::model::load_engine(&weights, cfg)?;
+    eprintln!("[bake-sidecar] engine loaded");
+
+    // --- Step 3: call the (not-yet-implemented) bake method ---
+    // `bake_sidecar_predec_scales` does not yet exist on the Engine trait.
+    // This is intentional — the CLI surface is wired; the full bake is a
+    // follow-on task. Exit cleanly without error.
+    eprintln!(
+        "[bake-sidecar] TODO: bake_sidecar_predec_scales not yet implemented on this engine"
+    );
+
+    // --- Step 4: summary ---
+    eprintln!("[bake-sidecar] summary:");
+    eprintln!("[bake-sidecar]   nothing written to {} (stub)", out_path.display());
+    eprintln!(
+        "[bake-sidecar] done (stub). Re-run after bake_sidecar_predec_scales is implemented \
+         to produce a real sidecar."
+    );
     Ok(())
 }
 
