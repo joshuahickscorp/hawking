@@ -123,7 +123,7 @@ fn make_q4k_weights(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) 
     let blocks_per_row = cols / 256;
     let block_bytes = 144;
     let total_bytes = rows * blocks_per_row * block_bytes;
-    let w: Vec<u8> = (0..total_bytes).map(|i| ((i as u32).wrapping_mul(6364136223846793005u32).wrapping_add(seed)) as u8).collect();
+    let w: Vec<u8> = (0..total_bytes).map(|i| ((i as u32).wrapping_mul(2246822519u32).wrapping_add(seed)) as u8).collect();
     // Predec scale table: 16 f32 per block (8 d,m pairs)
     let n_scales = rows * blocks_per_row * 16;
     let s: Vec<f32> = (0..n_scales).map(|i| {
