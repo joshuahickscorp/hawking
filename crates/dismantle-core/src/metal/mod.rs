@@ -1001,6 +1001,12 @@ mod imp {
         /// dispatches (no overlapping read-write or write-write buffer
         /// ranges between any two dispatches in the group).
         concurrent_encoder: Option<ComputeCommandEncoder>,
+        /// Track 3.1 / Track 5.1: running count of Metal compute dispatches
+        /// encoded into this TCB. Incremented unconditionally (no trace_dispatch
+        /// guard) since it's a plain usize add on the hot path — zero cost
+        /// compared to the GPU work being encoded. Read back via
+        /// `dispatch_count()` after encoding, before `commit_and_wait`.
+        pub dispatch_count: usize,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -1019,7 +1025,14 @@ mod imp {
                 tcb_samples: Vec::new(),
                 prod_cb_tracer,
                 concurrent_encoder: None,
+                dispatch_count: 0,
             }
+        }
+
+        /// Return the number of compute dispatches encoded so far.
+        /// Valid both before and after `commit_and_wait`.
+        pub fn dispatch_count(&self) -> usize {
+            self.dispatch_count
         }
 
         /// P0.1 spike (Q/K/V concurrent-encoder).
@@ -1093,6 +1106,8 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
+            self.dispatch_count += 1;
             // P0.1: if a concurrent group is active, record into its shared
             // encoder. Only set under Off/CpuEncode modes by
             // `begin_concurrent_group`, so the Split/Prod branches below
@@ -1437,6 +1452,7 @@ mod imp {
     /// Non-macOS stub for TokenCommandBuffer. Never constructed off-macOS.
     pub struct TokenCommandBuffer<'ctx> {
         _ctx: std::marker::PhantomData<&'ctx ()>,
+        pub dispatch_count: usize,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -1452,6 +1468,10 @@ mod imp {
             _encode: impl FnOnce(()),
         ) -> Result<()> {
             Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn dispatch_count(&self) -> usize {
+            0
         }
 
         pub fn commit_and_wait(self) -> Result<()> {
