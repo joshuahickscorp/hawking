@@ -423,6 +423,54 @@ kernel void memcpy_f32_off(
     dst[args.dst_off + id] = src[args.src_off + id];
 }
 
+// f32->f16 KV-append (Phase 2.1-a). Clone of memcpy_f32_off that writes the
+// per-token f32 K/V slice into a `half` cache at `dst_off` (ELEMENT units —
+// dst_off indexes half elements, identical convention to memcpy_f32_off).
+// Reuses ArgbufMemcpyF32 (declared above). half(x) round-to-nearest-even
+// matches Rust half::f16::from_f32 (the parity test asserts bit-equality).
+// Default-off lever (reached only when DISMANTLE_QWEN_F16_KV=1).
+kernel void memcpy_f32_to_f16_off(
+    device const float*           src  [[buffer(0)]],
+    device       half*            dst  [[buffer(1)]],
+    constant ArgbufMemcpyF32&     args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst[args.dst_off + id] = half(src[args.src_off + id]);
+}
+
+// R3 — batched KV scatter-append over B multi-seq decode slots. Each slot writes
+// its kv_dim K and V elements into its OWN stable region (regions[bi]) at its OWN
+// position (positions[bi]) within layer `layer_off`, in ONE dispatch (K+V) instead
+// of 2B memcpys. Byte-identical to the per-slot memcpy_f32_off loop (pure copy):
+//   dst_elem = layer_off + regions[bi]*slot_stride + positions[bi]*kv_dim + i
+struct ArgbufKvScatter {
+    uint kv_dim;
+    uint b;
+    uint slot_stride;  // max_seq_per_slot * kv_dim (one slot's per-layer region)
+    uint layer_off;    // li * (max_batch * max_seq_per_slot * kv_dim)
+};
+
+kernel void kv_scatter_append_multiseq(
+    device const float* src_k      [[buffer(0)]],
+    device const float* src_v      [[buffer(1)]],
+    device       float* k_cache    [[buffer(2)]],
+    device       float* v_cache    [[buffer(3)]],
+    constant ArgbufKvScatter& args [[buffer(4)]],
+    device const uint*  regions    [[buffer(5)]],
+    device const uint*  positions  [[buffer(6)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = args.b * args.kv_dim;
+    if (id >= total) return;
+    uint bi = id / args.kv_dim;
+    uint i  = id - bi * args.kv_dim;
+    uint dst = args.layer_off + regions[bi] * args.slot_stride + positions[bi] * args.kv_dim + i;
+    uint src = bi * args.kv_dim + i;
+    k_cache[dst] = src_k[src];
+    v_cache[dst] = src_v[src];
+}
+
 kernel void rope_inplace(
     device       half* x        [[buffer(0)]],
     constant     uint& head_dim [[buffer(1)]],
@@ -476,6 +524,46 @@ kernel void rope_slice_f32_inplace(
     uint off = offset + 2u * id;
 
     float theta = (float)pos / pow(base, 2.0f * float(id) / float(head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = x[off];
+    float x1 = x[off + 1u];
+    x[off]      = x0 * c - x1 * s;
+    x[off + 1u] = x0 * s + x1 * c;
+}
+
+// R2 — batched RoPE over B multi-seq decode slots, each at its OWN position
+// (positions[bi]). Bit-identical to running rope_q_f32_inplace per slot: the
+// rotation is elementwise (no reduction), so batching over B changes no element.
+// `x` is laid out [B, n_heads*head_dim] with `slot_stride` elements per slot.
+// Called once for Q (n_heads, slot_stride=q_dim) and once for K (n_kv_heads,
+// slot_stride=kv_dim). qk_nope_dim is 0 here (full-head rope, the dense path).
+struct ArgbufRopeMultiseq {
+    uint  n_heads;
+    uint  head_dim;     // full head (= qk_rope_dim); qk_nope_dim is 0
+    uint  slot_stride;  // elements per slot (q_dim for Q, kv_dim for K)
+    uint  b;
+    float base;
+};
+
+kernel void rope_f32_batched_multiseq(
+    device       float* x             [[buffer(0)]],
+    constant ArgbufRopeMultiseq& args [[buffer(1)]],
+    device const uint*  positions     [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint per_slot = args.n_heads * pairs_per_head;
+    uint total = args.b * per_slot;
+    if (id >= total) return;
+
+    uint bi   = id / per_slot;
+    uint rem  = id - bi * per_slot;
+    uint head = rem / pairs_per_head;
+    uint pair = rem - head * pairs_per_head;
+    uint off  = bi * args.slot_stride + head * args.head_dim + 2u * pair;
+
+    float theta = (float)positions[bi] / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
     float c = cos(theta);
     float s = sin(theta);
     float x0 = x[off];

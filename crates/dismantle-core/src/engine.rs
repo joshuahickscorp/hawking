@@ -44,6 +44,14 @@ pub struct EngineConfig {
     /// rate requires a trained checkpoint produced by
     /// `tools/training/eagle5_train.py`.
     pub eagle5_head_path: Option<std::path::PathBuf>,
+    /// Portability/reach knob (Phase 3.3): when `true` (or env
+    /// `DISMANTLE_FORCE_CPU=1`), the engine loads with NO Metal context
+    /// (`metal_ctx = None`), forcing the pure-Rust CPU reference path
+    /// (`forward_token` + scalar dequant GEMV). This is how the CPU "backend"
+    /// is exercised on macOS for the CPU-vs-Metal parity cross-check, and is
+    /// the same path the engine takes off-macOS where Metal is absent. Perf is
+    /// not the bar here — correctness/reach is. Default `false` (Metal when available).
+    pub force_cpu: bool,
 }
 
 impl Default for EngineConfig {
@@ -62,6 +70,7 @@ impl Default for EngineConfig {
             vocab_prune_path: None,
             quant_tier_map_path: None,
             eagle5_head_path: None,
+            force_cpu: false,
         }
     }
 }
@@ -240,6 +249,51 @@ pub trait Engine: Send + Sync {
         tokens: &[u32],
         positions: &[usize],
     ) -> Result<Vec<Vec<f32>>> {
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
+    /// Continuous-batching PREFILL seam: run `prompt_ids` through the full
+    /// transformer forward and plant the resulting per-layer KV into the
+    /// slot-strided `multiseq_arena` at stable region `slot_id`. Returns the
+    /// argmax token from the final prompt position (the first token to decode).
+    /// Caller must invoke `scheduler.mark_prefill_complete(slot_id)` on success.
+    ///
+    /// Default: unimplemented. QwenDense overrides with the GPU decode-from-0
+    /// path (forward_tokens_batch_tcb + KV copy into multiseq slot region).
+    fn prefill_slot(&mut self, _slot_id: usize, _prompt_ids: &[u32]) -> Result<u32> {
+        Err(crate::Error::Unimplemented("prefill_slot"))
+    }
+
+    /// Continuous-batching PARALLEL PREFILL: process all slots' prompts in one
+    /// pass — one GPU dispatch per token position across all B slots — instead
+    /// of B sequential `prefill_slot` calls. Weights are read once per position
+    /// step and applied to all B active slots, amortising the ~4.8s sequential
+    /// prefill cost at B=8 down to a single batched pass.
+    ///
+    /// Default: serial fallback via `prefill_slot` (correct, slower). QwenDense
+    /// overrides with the position-by-position multiseq stack path.
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
+        for &(slot_id, ref prompt_ids) in slots {
+            self.prefill_slot(slot_id, prompt_ids)?;
+        }
+        Ok(())
+    }
+
+    /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
+    /// slots at DIVERGENT positions — each its own sequence/prefix — returning N
+    /// per-slot logit vectors the scheduler samples from. This is DISTINCT from
+    /// `forward_tokens_batched`, which is B tokens of ONE sequence at contiguous
+    /// positions (prefill/verify). The default is a correctness-preserving
+    /// per-slot fallback; QwenDense overrides it with the GPU multi-seq path
+    /// (weight read once across slots via the v3w GEMM + the multi-seq MHA +
+    /// per-slot slot-strided KV).
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        let _ = regions;
         self.forward_tokens_for_test(tokens, positions)
     }
 

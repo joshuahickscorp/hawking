@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 pub mod attn;
+pub mod backend;
 pub mod cache;
 pub mod gguf;
 pub mod kernel_bench;

@@ -11,6 +11,20 @@ use crate::batch::{DecodeStep, DecodedToken, Slot, SlotState};
 use anyhow::{anyhow, Result};
 use dismantle_core::GenerateRequest;
 
+/// Bucket index for prompt-length batching (bucket edges: 0-16, 17-64,
+/// 65-256, 257-1024, 1025+). Adjacent slots in the same bucket have
+/// prompt lengths within ~4× of each other.
+#[inline]
+fn prompt_length_bucket(len: usize) -> usize {
+    match len {
+        0..=16     => 0,
+        17..=64    => 1,
+        65..=256   => 2,
+        257..=1024 => 3,
+        _          => 4,
+    }
+}
+
 pub struct Scheduler {
     pub slots: Vec<Slot>,
     pub max_batch_size: usize,
@@ -88,6 +102,48 @@ impl Scheduler {
         self.prefill_indices(max)
             .into_iter()
             .map(|idx| self.slots[idx].id)
+            .collect()
+    }
+
+    /// Bucketed variant: pick at most `max` Prefilling slots from the single
+    /// prompt-length bucket with the most queued work. Slots in a bucket have
+    /// similar prompt lengths, so the parallel-prefill position loop exits at
+    /// the right depth rather than being dragged by a long outlier.
+    ///
+    /// Tie-break: prefer the larger bucket index (longer prompts get
+    /// batched together since they have the highest prefill cost).
+    /// Degenerates to `prefill_slots` when all slots are in the same bucket.
+    ///
+    /// Bucket edges: [0,16] [17,64] [65,256] [257,1024] [1025+]
+    pub fn prefill_slots_bucketed(&self, max: usize) -> Vec<u32> {
+        let candidates: Vec<(usize, usize, u32)> = self
+            .slots
+            .iter()
+            .enumerate()
+            .filter(|(_, s)| s.state == SlotState::Prefilling)
+            .map(|(idx, s)| (prompt_length_bucket(s.prompt_ids.len()), idx, s.id))
+            .collect();
+        if candidates.is_empty() {
+            return Vec::new();
+        }
+        let mut bucket_counts = [0usize; 5];
+        for &(b, _, _) in &candidates {
+            bucket_counts[b] += 1;
+        }
+        // Compare by (count, bucket_index) so ties resolve toward larger bucket
+        // (longer prompts). max_by is used instead of max_by_key so the
+        // comparator can inspect both count and index simultaneously.
+        let best_bucket = bucket_counts
+            .iter()
+            .enumerate()
+            .max_by(|&(b1, &c1), &(b2, &c2)| c1.cmp(&c2).then(b1.cmp(&b2)))
+            .map(|(b, _)| b)
+            .unwrap_or(0);
+        candidates
+            .into_iter()
+            .filter(|&(b, _, _)| b == best_bucket)
+            .take(max.min(self.max_batch_size))
+            .map(|(_, _, id)| id)
             .collect()
     }
 
@@ -285,5 +341,47 @@ mod tests {
         assert_eq!(scheduler.prefill_slots(8), vec![1]);
         assert_eq!(scheduler.ready_decode_slots(8), vec![0]);
         assert!(!scheduler.mark_prefill_complete(first));
+    }
+
+    #[test]
+    fn bucketed_prefill_selects_homogeneous_bucket() {
+        // 4 short slots (bucket 0) + 1 long slot (bucket 3).
+        // Bucketed selector must pick the 4-slot bucket.
+        let mut scheduler = Scheduler::new(8);
+        for _ in 0..4 {
+            scheduler.admit(req(4), (0..8u32).collect()).expect("admit short");
+        }
+        scheduler.admit(req(4), (0..512u32).collect()).expect("admit long");
+
+        let chosen = scheduler.prefill_slots_bucketed(8);
+        assert_eq!(chosen.len(), 4, "should pick all 4 short-prompt slots");
+        assert!(!chosen.contains(&4), "long slot must not be in the chosen batch");
+    }
+
+    #[test]
+    fn bucketed_prefill_tie_break_favours_longer_bucket() {
+        // 2 short (bucket 0) vs 2 long (bucket 3) — tie; long wins.
+        let mut scheduler = Scheduler::new(8);
+        for _ in 0..2 {
+            scheduler.admit(req(4), (0..8u32).collect()).expect("admit short");
+        }
+        for _ in 0..2 {
+            scheduler.admit(req(4), (0..512u32).collect()).expect("admit long");
+        }
+        let chosen = scheduler.prefill_slots_bucketed(8);
+        assert_eq!(chosen.len(), 2);
+        assert!(chosen.iter().all(|&id| id >= 2), "tie should choose long bucket");
+    }
+
+    #[test]
+    fn bucketed_prefill_homogeneous_queue_matches_plain() {
+        let mut scheduler = Scheduler::new(4);
+        for _ in 0..4 {
+            scheduler.admit(req(4), (0..32u32).collect()).expect("admit");
+        }
+        assert_eq!(
+            scheduler.prefill_slots_bucketed(4),
+            scheduler.prefill_slots(4),
+        );
     }
 }

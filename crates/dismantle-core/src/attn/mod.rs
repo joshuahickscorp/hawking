@@ -1,13 +1,11 @@
-//! Attention kernels.
+//! Attention kernels: standard MHA (Qwen, Llama, etc.) and Multi-head Latent Attention
+//! (DeepSeek-V2-Lite, V2, V3). MLA carries a compressed KV cache that decompresses on read.
 //!
-//! Two flavors: standard MHA (Qwen-MoE) and Multi-head Latent
-//! Attention (DeepSeek-V2-Lite, V2, V3). MLA carries a compressed KV
-//! cache that decompresses on read — no public Metal MLA kernel
-//! exists; we write one in Phase 3.
-//!
-//! Phase 0 ships a CPU reference so the model produces coherent text
-//! before any Metal attention work. The Phase 3 Metal kernels live in
-//! `shaders/attn.metal`.
+//! `mha_decode_step` is the CPU reference used by the non-TCB fallback (temp>0 sampling,
+//! `DISMANTLE_FORCE_CPU=1`) and the `DISMANTLE_QWEN_ATTN_CAPTURE=1` oracle.
+//! The default fast path (`forward_token_greedy_tcb`) dispatches the GPU kernel
+//! `mha_decode_f32` via `kernels::mha_decode_f32_tcb`.
+//! Metal sources: `shaders/mha.metal` (MHA), `shaders/attn.metal` (MLA flash-decode).
 
 use crate::kernels::{logit_softcap_inplace, softmax_inplace};
 use crate::Result;
