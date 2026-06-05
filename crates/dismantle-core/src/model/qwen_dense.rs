@@ -5575,6 +5575,11 @@ impl QwenDense {
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                                     scales, 0, $rows, $cols, b, $x_batch, $out_batch,
                                 )?;
+                            } else if b <= 4 {
+                                kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
                             } else {
                                 kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
@@ -5802,11 +5807,19 @@ impl QwenDense {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
                 if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes,
-                        scales, 0, h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                    )?;
+                    if b <= 4 {
+                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes,
+                            scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    } else {
+                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes,
+                            scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    }
                 } else {
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                         &mut tcb, q4k_buf, 0, h * row_bytes,
@@ -6178,10 +6191,17 @@ impl QwenDense {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
                 if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                    )?;
+                    if b <= 4 {
+                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    } else {
+                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    }
                 } else {
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                         &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
