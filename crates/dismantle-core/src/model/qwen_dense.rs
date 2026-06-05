@@ -2912,6 +2912,119 @@ impl Engine for QwenDense {
         }
     }
 
+    fn prefill_slot_from_pos(
+        &mut self,
+        slot_id: usize,
+        prompt_ids: &[u32],
+        start_pos: usize,
+    ) -> Result<u32> {
+        if start_pos == 0 {
+            return self.prefill_slot(slot_id, prompt_ids);
+        }
+        #[cfg(target_os = "macos")]
+        {
+            let prompt_len = prompt_ids.len();
+            if start_pos >= prompt_len {
+                return self.prefill_slot(slot_id, prompt_ids);
+            }
+            const MAX_MULTISEQ_SLOTS: usize = 8;
+            const MAX_MULTISEQ_CTX: usize = 4096;
+            if slot_id >= MAX_MULTISEQ_SLOTS || prompt_len > MAX_MULTISEQ_CTX {
+                return self.prefill_slot(slot_id, prompt_ids);
+            }
+            if self.multiseq_arena.is_none() {
+                return self.prefill_slot(slot_id, prompt_ids);
+            }
+
+            // Extract config values before any mutable borrows.
+            let (n_layers, n_heads, n_kv_heads, head_dim, hidden, intermediate, vocab_size, kv_dim) = {
+                let cfg = &self.config;
+                (cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                 cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                 cfg.n_kv_heads * cfg.head_dim)
+            };
+            let (multi_layer_stride, multi_max_seq) = {
+                let a = self.multiseq_arena.as_ref().unwrap();
+                (a.max_seq * kv_dim, a.max_seq)
+            };
+            let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
+            let prefix_elems = start_pos * kv_dim;
+            let _ = multi_max_seq;
+
+            // ── Step 1: seed self.kv from multiseq prefix ────────────────────
+            // forward_tokens_batch_tcb has `fresh_arena && p0 > 0` logic that
+            // copies self.kv.keys → dense_arena on the first chunk. By loading
+            // the prefix KV into self.kv first, we get a free warm start.
+            // SAFETY: PinnedBuffer is MTLStorageModeShared — CPU-accessible.
+            unsafe {
+                let src_k = self.multiseq_arena.as_ref().unwrap().k_cache_buf.contents() as *const f32;
+                let src_v = self.multiseq_arena.as_ref().unwrap().v_cache_buf.contents() as *const f32;
+                for li in 0..n_layers {
+                    let src_off = li * multi_layer_stride + slot_base;
+                    let dst_k = self.kv.keys[li].as_mut_ptr();
+                    let dst_v = self.kv.values[li].as_mut_ptr();
+                    std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k, prefix_elems);
+                    std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v, prefix_elems);
+                }
+            }
+
+            // ── Step 2: run forward only on the tail tokens ──────────────────
+            let saved_seq_len = self.kv.seq_len;
+            self.kv.seq_len = start_pos;   // p0 > 0 seeds dense_arena on first chunk
+            self.dense_arena = None;
+
+            const B_MAX: usize = 8;
+            let positions: Vec<usize> = (0..prompt_len).collect();
+            let mut i = start_pos;
+            let last_token = loop {
+                let end = (i + B_MAX).min(prompt_len);
+                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
+                if end == prompt_len { break prompt_ids[prompt_len - 1]; }
+                i = end;
+            };
+            // dense_arena now has complete KV for positions 0..prompt_len.
+
+            // ── Step 3: ensure multiseq_arena + copy dense → slot ────────────
+            if self.multiseq_arena.is_none() {
+                let ctx = self.metal_ctx.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot_from_pos: no metal_ctx".into()))?;
+                self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
+                    ctx, n_layers, n_heads, n_kv_heads, head_dim,
+                    hidden, intermediate, vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                ));
+            }
+            {
+                let dense_arena = self.dense_arena.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot_from_pos: dense_arena missing".into()))?;
+                let multi_arena = self.multiseq_arena.as_ref().unwrap();
+                let dense_layer_stride = dense_arena.max_seq * kv_dim;
+                let multi_layer_stride = multi_arena.max_seq * kv_dim;
+                let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
+                let copy_elems = prompt_len * kv_dim;
+                unsafe {
+                    let src_k = dense_arena.k_cache_buf.contents() as *const f32;
+                    let src_v = dense_arena.v_cache_buf.contents() as *const f32;
+                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
+                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
+                    for li in 0..n_layers {
+                        let src_off = li * dense_layer_stride;
+                        let dst_off = li * multi_layer_stride + slot_base;
+                        std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k.add(dst_off), copy_elems);
+                        std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v.add(dst_off), copy_elems);
+                    }
+                }
+            }
+            self.kv.seq_len = saved_seq_len;
+            self.dense_arena = None;
+            return Ok(last_token);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            self.prefill_slot(slot_id, prompt_ids)
+        }
+    }
+
     fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
         #[cfg(target_os = "macos")]
         {
