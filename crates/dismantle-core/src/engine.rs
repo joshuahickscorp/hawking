@@ -350,6 +350,25 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
+    /// Track 5.1 — Copy the KV state for the first `prefix_len` positions
+    /// from `src_slot` to `dst_slot` in the multiseq arena. Both slots must be
+    /// valid, allocated slot ids (0..max_batch_size). After a successful copy,
+    /// `dst_slot` has byte-identical KV for positions 0..prefix_len and the
+    /// caller may begin prefilling from position `prefix_len` onward.
+    ///
+    /// For `PinnedBuffer` (MTLStorageModeShared), this is a CPU memcpy —
+    /// no GPU dispatch, no TCB commit needed.
+    ///
+    /// Default: `Err(Unimplemented)`. QwenDense overrides.
+    fn copy_kv_prefix_to_slot(
+        &mut self,
+        _src_slot: usize,
+        _dst_slot: usize,
+        _prefix_len: usize,
+    ) -> Result<()> {
+        Err(crate::Error::Unimplemented("copy_kv_prefix_to_slot"))
+    }
+
     /// Greedy token-only multiseq decode: B token ids without materializing
     /// B×vocab logits on the CPU. Only valid for temperature=0 (greedy).
     ///
