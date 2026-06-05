@@ -330,6 +330,33 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
+    /// Greedy token-only multiseq decode: B token ids without materializing
+    /// B×vocab logits on the CPU. Only valid for temperature=0 (greedy).
+    ///
+    /// QwenDense overrides: appends Q4K LM head + batched GPU argmax into the
+    /// stack's TCB, commits once, reads back B×4 bytes instead of B×vocab×4.
+    ///
+    /// Default: delegates to forward_multiseq_batched + per-slot CPU argmax.
+    fn forward_multiseq_greedy_tokens(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<u32>> {
+        let logits = self.forward_multiseq_batched(tokens, positions, regions)?;
+        Ok(logits
+            .into_iter()
+            .map(|l| {
+                l.iter()
+                    .copied()
+                    .enumerate()
+                    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
+                    .map(|(i, _)| i as u32)
+                    .unwrap_or(0)
+            })
+            .collect())
+    }
+
     /// Phase A parity helper -- reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}

@@ -30,6 +30,9 @@ mod arena_imp {
         pub o_proj_out_buf: PinnedBuffer,
         pub logits_buf: PinnedBuffer,
         pub token_buf: PinnedBuffer,
+        // Greedy token-only lane: B u32 token ids from batched GPU argmax.
+        // Sized for max_batch; never reallocated.
+        pub token_batch_buf: PinnedBuffer,
 
         // W4A8 scratch (DISMANTLE_QWEN_W4A8=1). Lazy-init via `ensure_w4a8`
         // — None until the flag is observed, then allocated once. Sized
@@ -135,6 +138,7 @@ mod arena_imp {
                 o_proj_out_buf: ctx.new_buffer(hidden * f32_bytes),
                 logits_buf: ctx.new_buffer(vocab_size * f32_bytes),
                 token_buf: ctx.new_buffer(std::mem::size_of::<u32>()),
+                token_batch_buf: ctx.new_buffer(b * std::mem::size_of::<u32>()),
 
                 max_batch: b,
                 q_buf_batch: ctx.new_buffer(b * q_dim * f32_bytes),
