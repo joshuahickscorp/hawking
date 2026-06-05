@@ -5204,157 +5204,208 @@ impl QwenDense {
                     &arena.ffn_up_buf
                 );
             }
-            kernels::silu_mul_tcb(
-                &mut tcb,
-                &arena.ffn_gate_buf,
-                &arena.ffn_up_buf,
-                &arena.ffn_act_buf,
-                intermediate,
-            )?;
-            // Quantize ffn_act for the upcoming ffn_down (when both W4A8
-            // and the ffn_down_q4k requant buffer are active). Under AWQ,
-            // divide by down_proj smoothing (length=intermediate) since
-            // ffn_act (= silu(gate) * up) is down_proj's input.
-            if w4a8_ffn_down && layer.pinned.ffn_down_q4k.is_some() {
-                if awq_active {
-                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
-                        &mut tcb,
-                        &arena.ffn_act_buf,
-                        &awq_silu_mul.unwrap()[li],
-                        ffn_int8,
-                        ffn_scales,
-                        intermediate,
-                    )?;
+            // Track 3.5 — SwiGLU fusion: inline silu(gate)*up into the ffn_down
+            // GEMV, saving 1 dispatch/layer × n_layers.  Possible when:
+            //   (a) W4A8 is NOT active (W4A8 needs an intermediate int8 step)
+            //   (b) the weight format has a swiglu kernel (Q6_K default, Q4K predec)
+            // Falls back to the separate silu_mul + ffn_down path otherwise.
+            let ffn_swiglu_fused = if !w4a8_ffn_down {
+                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                    // Requant'd Q4_K ffn_down (DISMANTLE_QWEN_FFN_DOWN_Q4K=1).
+                    // Only fuse when the predec table is present (f32 variant;
+                    // f16s predec swiglu kernel not yet added — falls through).
+                    let blocks_per_row = intermediate / 256;
+                    let row_bytes = blocks_per_row * 144;
+                    if let Some(predec_scales) = ffn_down_predec
+                        .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
+                        .flatten()
+                    {
+                        kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes,
+                            predec_scales, 0, h, intermediate,
+                            &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                            &arena.ffn_down_buf,
+                        )?;
+                        true
+                    } else {
+                        false // no predec table — fall through to silu_mul path
+                    }
                 } else {
-                    kernels::quantize_f32_to_int8_per_block_tcb(
-                        &mut tcb,
-                        &arena.ffn_act_buf,
-                        ffn_int8,
-                        ffn_scales,
-                        intermediate,
-                    )?;
-                }
-            }
-            // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
-            // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
-            // f16 fallback / native Q6_K path. ~31% BW saving on the
-            // single largest weight per layer.
-            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
-                let blocks_per_row = intermediate / 256;
-                let row_bytes = blocks_per_row * 144;
-                if w4a8_ffn_down {
-                    kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
-                        &mut tcb,
-                        q4k_buf,
-                        0,
-                        h * row_bytes,
-                        h,
-                        intermediate,
-                        ffn_int8,
-                        ffn_scales,
-                        &arena.ffn_down_buf,
-                    )?;
-                } else if let Some(scales_f16) = (ffn_down_predec
-                    && predec_f16scales_active)
-                    .then(|| layer.pinned.ffn_down_q4k_predec_f16.as_ref())
-                    .flatten()
-                {
-                    // A6.5: f16-scales ffn_down predec (requant'd path).
-                    kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-                        &mut tcb,
-                        q4k_buf,
-                        0,
-                        h * row_bytes,
-                        scales_f16,
-                        0,
-                        h,
-                        intermediate,
-                        &arena.ffn_act_buf,
-                        &arena.ffn_down_buf,
-                    )?;
-                } else if let Some(predec_scales) = ffn_down_predec
-                    .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
-                    .flatten()
-                {
-                    kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                        &mut tcb,
-                        q4k_buf,
-                        0,
-                        h * row_bytes,
-                        predec_scales,
-                        0,
-                        h,
-                        intermediate,
-                        &arena.ffn_act_buf,
-                        &arena.ffn_down_buf,
-                    )?;
-                } else {
-                    kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                        &mut tcb,
-                        q4k_buf,
-                        0,
-                        h * row_bytes,
-                        h,
-                        intermediate,
-                        &arena.ffn_act_buf,
-                        &arena.ffn_down_buf,
-                    )?;
+                    // Native weight (no requant buffer). Try swiglu by dtype.
+                    match layer.ffn_down.dtype {
+                        GgmlType::Q6_K => {
+                            // Default Q4_K_M path: ffn_down is Q6_K.
+                            kernels::gemv_q6_k_swiglu_pinned_tcb(
+                                &mut tcb, mmap_buf,
+                                layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                h, intermediate,
+                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &arena.ffn_down_buf,
+                            )?;
+                            true
+                        }
+                        GgmlType::Q4_K => {
+                            // Native Q4_K ffn_down with predec cache.
+                            if let Some(predec_scales) = ffn_down_predec
+                                .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                                .flatten()
+                            {
+                                kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+                                    &mut tcb, mmap_buf,
+                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                    predec_scales, 0, h, intermediate,
+                                    &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                    &arena.ffn_down_buf,
+                                )?;
+                                true
+                            } else {
+                                false // no predec — fall through to silu_mul + v3_8r
+                            }
+                        }
+                        _ => false, // f16 fallback — no swiglu kernel
+                    }
                 }
             } else {
-                // ffn_down WITHOUT requant (Q6_K or fallback). Inline so
-                // we don't pass w4a8_ffn_down into the macro at all; the
-                // bisect found that any non-false $site_w4a8 here was
-                // somehow contaminating the f32 result.
-                match layer.ffn_down.dtype {
-                    GgmlType::Q6_K => {
-                        kernels::gemv_q6_k_pinned_tcb(
-                            &mut tcb, mmap_buf,
-                            layer.ffn_down.offset, layer.ffn_down.byte_size,
-                            h, intermediate,
-                            &arena.ffn_act_buf, &arena.ffn_down_buf,
+                false // W4A8 active — needs intermediate int8 quantization step
+            };
+
+            if !ffn_swiglu_fused {
+                kernels::silu_mul_tcb(
+                    &mut tcb,
+                    &arena.ffn_gate_buf,
+                    &arena.ffn_up_buf,
+                    &arena.ffn_act_buf,
+                    intermediate,
+                )?;
+                // Quantize ffn_act for the upcoming ffn_down (when both W4A8
+                // and the ffn_down_q4k requant buffer are active). Under AWQ,
+                // divide by down_proj smoothing (length=intermediate) since
+                // ffn_act (= silu(gate) * up) is down_proj's input.
+                if w4a8_ffn_down && layer.pinned.ffn_down_q4k.is_some() {
+                    if awq_active {
+                        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                            &mut tcb,
+                            &arena.ffn_act_buf,
+                            &awq_silu_mul.unwrap()[li],
+                            ffn_int8,
+                            ffn_scales,
+                            intermediate,
+                        )?;
+                    } else {
+                        kernels::quantize_f32_to_int8_per_block_tcb(
+                            &mut tcb,
+                            &arena.ffn_act_buf,
+                            ffn_int8,
+                            ffn_scales,
+                            intermediate,
                         )?;
                     }
-                    GgmlType::Q4_K => {
-                        if let Some(scales_f16) = (ffn_down_predec
-                            && predec_f16scales_active)
-                            .then(|| predec_cache_f16_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
-                            .flatten()
-                        {
-                            // A6.5: f16-scales ffn_down predec (native-Q4_K path).
-                            kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-                                &mut tcb, mmap_buf,
-                                layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                scales_f16, 0,
-                                h, intermediate,
-                                &arena.ffn_act_buf, &arena.ffn_down_buf,
-                            )?;
-                        } else if let Some(predec_scales) = ffn_down_predec
-                            .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
-                            .flatten()
-                        {
-                            kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                                &mut tcb, mmap_buf,
-                                layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                predec_scales, 0,
-                                h, intermediate,
-                                &arena.ffn_act_buf, &arena.ffn_down_buf,
-                            )?;
-                        } else {
-                            kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                }
+                // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
+                // via DISMANTLE_QWEN_FFN_DOWN_Q4K=1), prefer it over the
+                // f16 fallback / native Q6_K path. ~31% BW saving on the
+                // single largest weight per layer.
+                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                    let blocks_per_row = intermediate / 256;
+                    let row_bytes = blocks_per_row * 144;
+                    if w4a8_ffn_down {
+                        kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            h,
+                            intermediate,
+                            ffn_int8,
+                            ffn_scales,
+                            &arena.ffn_down_buf,
+                        )?;
+                    } else if let Some(scales_f16) = (ffn_down_predec
+                        && predec_f16scales_active)
+                        .then(|| layer.pinned.ffn_down_q4k_predec_f16.as_ref())
+                        .flatten()
+                    {
+                        // A6.5: f16-scales ffn_down predec (requant'd path).
+                        kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            scales_f16,
+                            0,
+                            h,
+                            intermediate,
+                            &arena.ffn_act_buf,
+                            &arena.ffn_down_buf,
+                        )?;
+                    } else {
+                        kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            h,
+                            intermediate,
+                            &arena.ffn_act_buf,
+                            &arena.ffn_down_buf,
+                        )?;
+                    }
+                } else {
+                    // ffn_down WITHOUT requant (Q6_K or fallback). Inline so
+                    // we don't pass w4a8_ffn_down into the macro at all; the
+                    // bisect found that any non-false $site_w4a8 here was
+                    // somehow contaminating the f32 result.
+                    match layer.ffn_down.dtype {
+                        GgmlType::Q6_K => {
+                            kernels::gemv_q6_k_pinned_tcb(
                                 &mut tcb, mmap_buf,
                                 layer.ffn_down.offset, layer.ffn_down.byte_size,
                                 h, intermediate,
                                 &arena.ffn_act_buf, &arena.ffn_down_buf,
                             )?;
                         }
-                    }
-                    _ => {
-                        let f16b = layer.pinned.ffn_down_f16.as_ref()
-                            .ok_or_else(|| Error::Metal("ffn_down dtype needs f16 fallback".into()))?;
-                        kernels::gemv_f16_metal_buf_tcb(
-                            &mut tcb, f16b, h, intermediate,
-                            &arena.ffn_act_buf, &arena.ffn_down_buf,
-                        )?;
+                        GgmlType::Q4_K => {
+                            if let Some(scales_f16) = (ffn_down_predec
+                                && predec_f16scales_active)
+                                .then(|| predec_cache_f16_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                                .flatten()
+                            {
+                                // A6.5: f16-scales ffn_down predec (native-Q4_K path).
+                                kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                                    &mut tcb, mmap_buf,
+                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                    scales_f16, 0,
+                                    h, intermediate,
+                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                )?;
+                            } else if let Some(predec_scales) = ffn_down_predec
+                                .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                                .flatten()
+                            {
+                                kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf,
+                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                    predec_scales, 0,
+                                    h, intermediate,
+                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                )?;
+                            } else {
+                                kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
+                                    &mut tcb, mmap_buf,
+                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
+                                    h, intermediate,
+                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                )?;
+                            }
+                        }
+                        _ => {
+                            let f16b = layer.pinned.ffn_down_f16.as_ref()
+                                .ok_or_else(|| Error::Metal("ffn_down dtype needs f16 fallback".into()))?;
+                            kernels::gemv_f16_metal_buf_tcb(
+                                &mut tcb, f16b, h, intermediate,
+                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                            )?;
+                        }
                     }
                 }
             }
@@ -6299,7 +6350,11 @@ impl QwenDense {
     //
     //  Track 3.4 SHIPPED: fused rope_qk (-1/layer × 28 = -28 dispatches)
     //    Updated at B=1: ~394 - 28 = 366 dispatches → still above 350 but moving
-    //    Next: fuse silu_mul into ffn_gate output (-28) → 338 < 350 Phase 1 target
+    //
+    //  Track 3.5 SHIPPED: SwiGLU-fused ffn_down (-1/layer × 28 = -28 dispatches)
+    //    B=1 default (Q6_K ffn_down): inline silu(gate)*up in gemm_q6_k_fused_v2_swiglu
+    //    B=1 fast (Q4K predec ffn_down): inline in gemm_q4_k_v4_predec_{1r,2r,4r}_swiglu
+    //    Updated at B=1: ~366 - 28 = 338 dispatches → below 350 Phase 1 target ✓
     //
     //  Embed+norm batching fusion opportunity (if implemented):
     //    Reducing 2*B → 2 dispatches (one batched embed + one batched rmsnorm)
