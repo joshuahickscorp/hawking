@@ -2067,6 +2067,93 @@ kernel void gemm_q4_k_m_batched_v3w_predec(
     }
 }
 
+// Track 3.5 — SwiGLU-fused v3w_predec: replaces (silu_mul + ffn_down) with ONE dispatch.
+// Identical to gemm_q4_k_m_batched_v3w_predec except buffer(2)/buffer(5) are the raw
+// gate and up activation buffers; x_tile is filled with silu(gate)*up inline.
+// Saves 1 dispatch/layer × n_layers = 28 dispatches on Qwen-3B.
+// gate_batch and up_batch must both be (B, cols) contiguous f32 row-major.
+kernel void gemm_q4_k_m_batched_v3w_predec_swiglu(
+    device const uchar* w_q4      [[buffer(0)]],
+    device const float* scales    [[buffer(1)]],
+    device const float* gate_batch[[buffer(2)]],
+    device       float* y_batch   [[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    device const float* up_batch  [[buffer(5)]],
+    threadgroup float* x_tile  [[threadgroup(0)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    uint B = min(args.batch, 8u);
+    bool row_valid = base_row < args.rows;
+
+    float4 partial_lo = float4(0.0f);
+    float4 partial_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint x_off_base = blk * 256u;
+        for (uint b = 0; b < B; ++b) {
+            uint idx = b * args.cols + x_off_base + tid;
+            float g = gate_batch[idx];
+            x_tile[b * 256u + tid] = (g / (1.0f + exp(-g))) * up_batch[idx];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (row_valid) {
+            uint64_t bo = row_byte_off  + (uint64_t)blk * 144ul;
+            uint64_t so = row_scale_off + (uint64_t)blk * 16ul;
+            float ds[8], dm[8];
+            for (uint sub = 0; sub < 8u; ++sub) {
+                ds[sub] = scales[so + (uint64_t)(sub * 2u)];
+                dm[sub] = scales[so + (uint64_t)(sub * 2u + 1u)];
+            }
+            for (uint k = 0; k < 8u; ++k) {
+                uint elem  = k * 32u + simd_lane;
+                uint sub   = elem >> 5;
+                uint pair  = sub >> 1;
+                bool upper = (sub & 1u) != 0u;
+                uint i     = elem & 31u;
+                uchar q    = w_q4[bo + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+                uint nib   = upper ? ((uint)(q >> 4) & 0x0Fu) : ((uint)q & 0x0Fu);
+                float w_val = ds[sub] * (float)nib - dm[sub];
+                if (B >= 1u) partial_lo.x += w_val * x_tile[0u * 256u + elem];
+                if (B >= 2u) partial_lo.y += w_val * x_tile[1u * 256u + elem];
+                if (B >= 3u) partial_lo.z += w_val * x_tile[2u * 256u + elem];
+                if (B >= 4u) partial_lo.w += w_val * x_tile[3u * 256u + elem];
+                if (B >= 5u) partial_hi.x += w_val * x_tile[4u * 256u + elem];
+                if (B >= 6u) partial_hi.y += w_val * x_tile[5u * 256u + elem];
+                if (B >= 7u) partial_hi.z += w_val * x_tile[6u * 256u + elem];
+                if (B >= 8u) partial_hi.w += w_val * x_tile[7u * 256u + elem];
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (!row_valid) return;
+    partial_lo.x = simd_sum(partial_lo.x);
+    if (B >= 2u) partial_lo.y = simd_sum(partial_lo.y);
+    if (B >= 3u) partial_lo.z = simd_sum(partial_lo.z);
+    if (B >= 4u) partial_lo.w = simd_sum(partial_lo.w);
+    if (B >= 5u) partial_hi.x = simd_sum(partial_hi.x);
+    if (B >= 6u) partial_hi.y = simd_sum(partial_hi.y);
+    if (B >= 7u) partial_hi.z = simd_sum(partial_hi.z);
+    if (B >= 8u) partial_hi.w = simd_sum(partial_hi.w);
+    if (simd_lane == 0u) {
+        if (B >= 1u) y_batch[0u * args.rows + base_row] = partial_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + base_row] = partial_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + base_row] = partial_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + base_row] = partial_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + base_row] = partial_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + base_row] = partial_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + base_row] = partial_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + base_row] = partial_hi.w;
+    }
+}
+
 // Extends gemm_q4_k_m_batched_v3w_predec to B=1..16. Adds two more float4
 // accumulators (partial_lo2, partial_hi2) for slots 8..15.
 // Shmem: B*256*sizeof(float), up to 16 KiB at B=16 (within M3 Pro 32 KiB limit).
@@ -2304,6 +2391,113 @@ kernel void gemm_q4_k_m_batched_v4r_predec(
     if (B >= 8u) y_batch[7u * args.rows + row0] = p0_hi.w;
 
     // Write row1 (only when in bounds).
+    if (has1) {
+        if (B >= 1u) y_batch[0u * args.rows + row1] = p1_lo.x;
+        if (B >= 2u) y_batch[1u * args.rows + row1] = p1_lo.y;
+        if (B >= 3u) y_batch[2u * args.rows + row1] = p1_lo.z;
+        if (B >= 4u) y_batch[3u * args.rows + row1] = p1_lo.w;
+        if (B >= 5u) y_batch[4u * args.rows + row1] = p1_hi.x;
+        if (B >= 6u) y_batch[5u * args.rows + row1] = p1_hi.y;
+        if (B >= 7u) y_batch[6u * args.rows + row1] = p1_hi.z;
+        if (B >= 8u) y_batch[7u * args.rows + row1] = p1_hi.w;
+    }
+}
+
+// Track 3.5 — SwiGLU-fused v4r_predec: replaces (silu_mul + ffn_down) with ONE dispatch.
+// Like gemm_q4_k_m_batched_v4r_predec but reads gate+up from device memory and applies
+// silu(gate)*up inline at each element. Saves 1 dispatch/layer.
+kernel void gemm_q4_k_m_batched_v4r_predec_swiglu(
+    device const uchar* w_q4      [[buffer(0)]],
+    device const float* scales    [[buffer(1)]],
+    device const float* gate_batch[[buffer(2)]],
+    device       float* y_batch   [[buffer(3)]],
+    constant ArgbufBatchedRowsCols& args [[buffer(4)]],
+    device const float* up_batch  [[buffer(5)]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= args.rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < args.rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint B = min(args.batch, 8u);
+    uint blocks_per_row = args.cols / 256u;
+    uint64_t rbo0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rso0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rbo1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rso1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float4 p0_lo = float4(0.0f), p0_hi = float4(0.0f);
+    float4 p1_lo = float4(0.0f), p1_hi = float4(0.0f);
+
+    for (uint blk = 0; blk < blocks_per_row; ++blk) {
+        uint64_t bo0 = rbo0 + (uint64_t)blk * 144ul;
+        uint64_t so0 = rso0 + (uint64_t)blk * 16ul;
+        uint64_t bo1 = rbo1 + (uint64_t)blk * 144ul;
+        uint64_t so1 = rso1 + (uint64_t)blk * 16ul;
+
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            ds0[sub] = scales[so0 + (uint64_t)(sub * 2u)];
+            dm0[sub] = scales[so0 + (uint64_t)(sub * 2u + 1u)];
+            ds1[sub] = scales[so1 + (uint64_t)(sub * 2u)];
+            dm1[sub] = scales[so1 + (uint64_t)(sub * 2u + 1u)];
+        }
+        for (uint k = 0; k < 8u; ++k) {
+            uint elem  = k * 32u + simd_lane;
+            uint sub   = elem >> 5u;
+            uint pair  = sub >> 1u;
+            bool upper = (sub & 1u) != 0u;
+            uint i     = elem & 31u;
+            uchar q0   = w_q4[bo0 + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uchar q1   = w_q4[bo1 + 16ul + (uint64_t)pair * 32ul + (uint64_t)i];
+            uint  nib0 = upper ? ((uint)(q0 >> 4) & 0x0Fu) : ((uint)q0 & 0x0Fu);
+            uint  nib1 = upper ? ((uint)(q1 >> 4) & 0x0Fu) : ((uint)q1 & 0x0Fu);
+            float wv0  = ds0[sub] * (float)nib0 - dm0[sub];
+            float wv1  = ds1[sub] * (float)nib1 - dm1[sub];
+
+            uint64_t x_col = (uint64_t)blk * 256ul + (uint64_t)elem;
+            // SwiGLU: compute silu(gate)*up inline instead of reading pre-computed act.
+            if (B >= 1u) { float g=gate_batch[0u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[0u*args.cols+x_col]; p0_lo.x+=wv0*x; p1_lo.x+=wv1*x; }
+            if (B >= 2u) { float g=gate_batch[1u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[1u*args.cols+x_col]; p0_lo.y+=wv0*x; p1_lo.y+=wv1*x; }
+            if (B >= 3u) { float g=gate_batch[2u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[2u*args.cols+x_col]; p0_lo.z+=wv0*x; p1_lo.z+=wv1*x; }
+            if (B >= 4u) { float g=gate_batch[3u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[3u*args.cols+x_col]; p0_lo.w+=wv0*x; p1_lo.w+=wv1*x; }
+            if (B >= 5u) { float g=gate_batch[4u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[4u*args.cols+x_col]; p0_hi.x+=wv0*x; p1_hi.x+=wv1*x; }
+            if (B >= 6u) { float g=gate_batch[5u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[5u*args.cols+x_col]; p0_hi.y+=wv0*x; p1_hi.y+=wv1*x; }
+            if (B >= 7u) { float g=gate_batch[6u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[6u*args.cols+x_col]; p0_hi.z+=wv0*x; p1_hi.z+=wv1*x; }
+            if (B >= 8u) { float g=gate_batch[7u*args.cols+x_col]; float x=(g/(1.0f+exp(-g)))*up_batch[7u*args.cols+x_col]; p0_hi.w+=wv0*x; p1_hi.w+=wv1*x; }
+        }
+    }
+    p0_lo.x = simd_sum(p0_lo.x);
+    if (B >= 2u) p0_lo.y = simd_sum(p0_lo.y);
+    if (B >= 3u) p0_lo.z = simd_sum(p0_lo.z);
+    if (B >= 4u) p0_lo.w = simd_sum(p0_lo.w);
+    if (B >= 5u) p0_hi.x = simd_sum(p0_hi.x);
+    if (B >= 6u) p0_hi.y = simd_sum(p0_hi.y);
+    if (B >= 7u) p0_hi.z = simd_sum(p0_hi.z);
+    if (B >= 8u) p0_hi.w = simd_sum(p0_hi.w);
+    if (has1) {
+        p1_lo.x = simd_sum(p1_lo.x);
+        if (B >= 2u) p1_lo.y = simd_sum(p1_lo.y);
+        if (B >= 3u) p1_lo.z = simd_sum(p1_lo.z);
+        if (B >= 4u) p1_lo.w = simd_sum(p1_lo.w);
+        if (B >= 5u) p1_hi.x = simd_sum(p1_hi.x);
+        if (B >= 6u) p1_hi.y = simd_sum(p1_hi.y);
+        if (B >= 7u) p1_hi.z = simd_sum(p1_hi.z);
+        if (B >= 8u) p1_hi.w = simd_sum(p1_hi.w);
+    }
+    if (simd_lane != 0u) return;
+    if (B >= 1u) y_batch[0u * args.rows + row0] = p0_lo.x;
+    if (B >= 2u) y_batch[1u * args.rows + row0] = p0_lo.y;
+    if (B >= 3u) y_batch[2u * args.rows + row0] = p0_lo.z;
+    if (B >= 4u) y_batch[3u * args.rows + row0] = p0_lo.w;
+    if (B >= 5u) y_batch[4u * args.rows + row0] = p0_hi.x;
+    if (B >= 6u) y_batch[5u * args.rows + row0] = p0_hi.y;
+    if (B >= 7u) y_batch[6u * args.rows + row0] = p0_hi.z;
+    if (B >= 8u) y_batch[7u * args.rows + row0] = p0_hi.w;
     if (has1) {
         if (B >= 1u) y_batch[0u * args.rows + row1] = p1_lo.x;
         if (B >= 2u) y_batch[1u * args.rows + row1] = p1_lo.y;

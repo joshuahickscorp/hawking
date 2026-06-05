@@ -942,6 +942,119 @@ mod metal_dispatch {
         })
     }
 
+    /// Track 3.5 — SwiGLU-fused ffn_down via v3w_predec (B=5..8).
+    /// Replaces the (ffn_gate GEMM + ffn_up GEMM + silu_mul + ffn_down GEMM)
+    /// sequence with (ffn_gate GEMM + ffn_up GEMM + ffn_down_swiglu GEMM).
+    /// Saves 1 dispatch/layer by inlining silu(gate)*up into x_tile loading.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v3w_predec_swiglu_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        gate_batch_buf: &PinnedBuffer,  // (batch, cols) f32 gate activations
+        up_batch_buf: &PinnedBuffer,    // (batch, cols) f32 up activations
+        y_batch_buf: &PinnedBuffer,     // (batch, rows) f32 ffn_down output
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v3w_predec_swiglu";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(1..=8).contains(&batch) {
+            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let batch_u32 = batch as u32;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        ab.set_u32(2, batch_u32);
+        const V3_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 8;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        let shmem_bytes = (batch * 256 * std::mem::size_of::<f32>()) as u64;
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(gate_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+            enc.set_buffer(5, Some(up_batch_buf), 0);
+            enc.set_threadgroup_memory_length(0, shmem_bytes);
+        })
+    }
+
+    /// Track 3.5 — SwiGLU-fused ffn_down via v4r_predec (B=2..4).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemm_q4_k_m_batched_v4r_predec_swiglu_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        gate_batch_buf: &PinnedBuffer,
+        up_batch_buf: &PinnedBuffer,
+        y_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_m_batched_v4r_predec_swiglu";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
+        }
+        if !(2..=8).contains(&batch) {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 2..=8 ({batch})"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows * blocks_per_row * 144;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: w bytes {w_byte_size} != {expected_bytes}"
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let batch_u32 = batch as u32;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        ab.set_u32(2, batch_u32);
+        const V4_TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16;
+        let n_tg = (rows as u32).div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * V4_TG, 1, 1), (V4_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(gate_batch_buf), 0);
+            enc.set_buffer(3, Some(y_batch_buf), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+            enc.set_buffer(5, Some(up_batch_buf), 0);
+        })
+    }
+
     /// P1 — predec MMA twin: `gemm_q4_k_m_batched_v3w_predec_pinned_tcb` with the
     /// simdgroup-matrix inner product. Reads pre-decoded (ds,dm) scales at buffer
     /// slot 1 (x/y/args shift to 2/3/4). Same MMA geometry (32 threads/TG, 8
