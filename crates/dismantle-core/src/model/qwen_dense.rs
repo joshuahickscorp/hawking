@@ -6005,6 +6005,10 @@ impl QwenDense {
     //    At B=8: ~408 dispatches
     //    kv-fuse path: 2*B + 28 * 13 = 2*B + 364 (at B=1: ~366)
     //
+    //  Track 3.4 SHIPPED: fused rope_qk (-1/layer × 28 = -28 dispatches)
+    //    Updated at B=1: ~394 - 28 = 366 dispatches → still above 350 but moving
+    //    Next: fuse silu_mul into ffn_gate output (-28) → 338 < 350 Phase 1 target
+    //
     //  Embed+norm batching fusion opportunity (if implemented):
     //    Reducing 2*B → 2 dispatches (one batched embed + one batched rmsnorm)
     //    would save 2*(B-1) dispatches — at B=8 that's -14 dispatches, marginal.
@@ -6248,16 +6252,20 @@ impl QwenDense {
                 kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b)?;
             }
 
-            // RoPE per slot at its OWN position (positions[] buffer), batched:
-            // ONE dispatch each for Q and K replaces the 2B per-slot rope calls.
-            // Bit-identical — rope is elementwise, so batching changes no element.
-            kernels::rope_f32_batched_multiseq_tcb(
-                &mut tcb, &arena.q_buf_batch, &pos_buf,
-                n_heads, head_dim, q_dim, b, theta,
-            )?;
-            kernels::rope_f32_batched_multiseq_tcb(
-                &mut tcb, &arena.k_token_buf_batch, &pos_buf,
-                n_kv_heads, head_dim, kv_dim, b, theta,
+            // Fused Q+K RoPE: ONE dispatch/layer instead of two (Track 3.4).
+            // Saves 28 dispatches on Qwen-3B. Bit-identical — rope is elementwise.
+            kernels::rope_qk_f32_batched_multiseq_tcb(
+                &mut tcb,
+                &arena.q_buf_batch,
+                &arena.k_token_buf_batch,
+                &pos_buf,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                q_dim,
+                kv_dim,
+                b,
+                theta,
             )?;
 
             // Per-slot KV append, batched: each slot writes its K and V into its

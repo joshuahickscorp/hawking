@@ -7781,6 +7781,58 @@ mod metal_dispatch {
         )
     }
 
+    /// Fused Q+K RoPE (Track 3.4): one dispatch/layer instead of two.
+    /// Saves 28 dispatches on Qwen-3B (1/layer × 28 layers).
+    /// Bit-identical to calling rope_f32_batched_multiseq_tcb twice.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_qk_f32_batched_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        positions: &PinnedBuffer,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        q_slot_stride: usize,
+        k_slot_stride: usize,
+        b: usize,
+        base: f32,
+    ) -> Result<()> {
+        let pairs_per_head = head_dim / 2;
+        let total = b * (n_q_heads + n_k_heads) * pairs_per_head;
+        if total == 0 {
+            return Ok(());
+        }
+        // ArgbufRopeQKMultiseq: n_q_heads, n_k_heads, head_dim, q_slot_stride, k_slot_stride, b, base
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::F32,
+            ],
+        )?;
+        ab.set_u32(0, n_q_heads as u32);
+        ab.set_u32(1, n_k_heads as u32);
+        ab.set_u32(2, head_dim as u32);
+        ab.set_u32(3, q_slot_stride as u32);
+        ab.set_u32(4, k_slot_stride as u32);
+        ab.set_u32(5, b as u32);
+        ab.set_f32(6, base);
+        let n_tg = (total as u32).div_ceil(TG_SIZE);
+        tcb.dispatch_threads(
+            "rope_qk_f32_batched_multiseq",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(ab.handle()), 0);
+                enc.set_buffer(3, Some(positions), 0);
+            },
+        )
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn mha_decode_f32_off_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
