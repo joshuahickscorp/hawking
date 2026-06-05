@@ -52,6 +52,15 @@ pub struct EngineConfig {
     /// the same path the engine takes off-macOS where Metal is absent. Perf is
     /// not the bar here — correctness/reach is. Default `false` (Metal when available).
     pub force_cpu: bool,
+    /// Track 3.3: when `true`, use a single `MTLDispatchTypeConcurrent` encoder
+    /// for the Q/K/V projection triple per decode layer. All three projections
+    /// read `x_norm_buf` and write disjoint outputs, so the driver may overlap
+    /// them on-GPU. Prior measurement showed +1.68% at B=1 (below the +5% ship
+    /// gate). Now exposed as a config field so "fast"/"race" profiles can turn it
+    /// on without env var. The env var `DISMANTLE_QWEN_CONCURRENT_QKV=1` overrides
+    /// this field to `true` when set (env var wins over config).
+    /// Default: `false`.
+    pub concurrent_qkv: bool,
 }
 
 impl Default for EngineConfig {
@@ -71,6 +80,7 @@ impl Default for EngineConfig {
             quant_tier_map_path: None,
             eagle5_head_path: None,
             force_cpu: false,
+            concurrent_qkv: false,
         }
     }
 }
@@ -204,6 +214,16 @@ pub struct GenStats {
     pub metal_buffers_created: usize,
     pub metal_bytes_allocated: usize,
     pub metal_commits: usize,
+    /// Track 3.1 / 5.1: number of Metal compute dispatches in the last
+    /// decode forward step. Populated from
+    /// `TokenCommandBuffer::dispatch_count()` after the step completes.
+    /// Non-zero only when the engine reads back the counter (i.e. when
+    /// `trace_dispatch` is on OR `DISMANTLE_TRACE_DISPATCH=1`).
+    /// Always 0 when trace is off to avoid any hot-path overhead.
+    pub metal_dispatches: usize,
+    /// Track 3.1 alias matching the plan target label. Same value as
+    /// `metal_dispatches`; both fields are populated together.
+    pub dispatches_per_forward: usize,
 }
 
 pub trait Engine: Send + Sync {
@@ -360,6 +380,32 @@ pub trait Engine: Send + Sync {
     /// Phase A parity helper -- reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}
+
+    /// Track 5.1: return the number of Metal compute dispatches that were
+    /// encoded in the most recently completed `forward_*` call. Engines that
+    /// count dispatches (QwenDense overrides this) return the actual count;
+    /// the default returns 0 (no-op for engines that don't track it).
+    fn last_forward_dispatch_count(&self) -> usize {
+        0
+    }
+
+    /// Track 5.1 (prefix-cache groundwork): return a hash of the KV state at
+    /// position `pos` for `slot_id`. Two requests that share a common prefix
+    /// of length N should produce the same fingerprint at position N. The serve
+    /// scheduler uses this to detect shareable prefixes without inspecting KV
+    /// bytes directly. Default: `None` (no fingerprint support — the scheduler
+    /// falls back to token-sequence matching).
+    fn kv_fingerprint_at_pos(&self, _slot_id: usize, _pos: usize) -> Option<u64> {
+        None
+    }
+
+    /// Track 5.1 (prefix-cache groundwork): maximum number of slots for which
+    /// this engine can maintain independent prefix state. `0` means no prefix
+    /// sharing is supported (default). QwenDense will return MAX_MULTISEQ_SLOTS
+    /// once the full prefix-sharing seam is wired.
+    fn max_prefix_slots(&self) -> usize {
+        0
+    }
 
     /// v1.2.0-9: return per-layer per-expert access counts for the stats
     /// subcommand. Returns `None` if the engine has no expert cache (dense

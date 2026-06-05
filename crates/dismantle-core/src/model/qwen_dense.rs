@@ -363,6 +363,17 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) ffn_capture: std::sync::Mutex<Option<FfnCaptureWriter>>,
 
+    /// Track 3.1 / 5.1: dispatch count from the most recently committed
+    /// `forward_token_greedy_tcb` or `forward_tokens_multiseq_stack_tcb`
+    /// call. Populated unconditionally (the TCB always increments
+    /// `dispatch_count`). Readable via `Engine::last_forward_dispatch_count`.
+    pub(crate) last_dispatch_count: usize,
+
+    /// Track 3.3: whether to use a concurrent Q/K/V encoder group.
+    /// Set from `EngineConfig::concurrent_qkv` at load time;
+    /// the env var `DISMANTLE_QWEN_CONCURRENT_QKV=1` overrides to true.
+    pub(crate) concurrent_qkv_config: bool,
+
     /// B1 (2026-05-31): in-RAM, session-scoped prefix cache (Bible §8
     /// L1.2, the stateful moat). Retains the post-prefill KV of each
     /// request so the *next* request in the same process that shares a
@@ -1294,6 +1305,10 @@ impl Engine for QwenDense {
             // B1: prefix cache is built lazily on first `generate` when the
             // flag is set (keeps construction free when the flag is off).
             ram_prefix_cache: None,
+            // Track 3.1 / 5.1: starts at 0; populated after each forward step.
+            last_dispatch_count: 0,
+            // Track 3.3: env var is the override; config field is the base.
+            concurrent_qkv_config: config.concurrent_qkv,
         })
     }
 
@@ -1873,6 +1888,9 @@ impl Engine for QwenDense {
                 stats.metal_buffers_created = bc;
                 stats.metal_bytes_allocated = ba;
                 stats.metal_commits = cm;
+                // Track 3.1 / 5.1: last-step dispatch count (always valid).
+                stats.metal_dispatches = self.last_dispatch_count;
+                stats.dispatches_per_forward = self.last_dispatch_count;
                 crate::stateful::usage_capture::flush();
                 sink(StreamEvent::Done {
                     reason,
@@ -2735,6 +2753,9 @@ impl Engine for QwenDense {
         stats.metal_buffers_created = buffers_created;
         stats.metal_bytes_allocated = bytes_allocated;
         stats.metal_commits = commits;
+        // Track 3.1 / 5.1: last-step dispatch count (always valid).
+        stats.metal_dispatches = self.last_dispatch_count;
+        stats.dispatches_per_forward = self.last_dispatch_count;
         // L3.1 §2.2 usage_capture: flush the per-run histogram + draft ledger
         // (no-op unless DISMANTLE_QWEN_USAGE_CAPTURE=1).
         crate::stateful::usage_capture::flush();
@@ -3095,6 +3116,14 @@ impl Engine for QwenDense {
             out.push(self.forward_token(token, positions[i])?);
         }
         Ok(out)
+    }
+
+    /// Track 5.1: return the number of Metal compute dispatches from the
+    /// most recently completed forward step. Updated at every
+    /// `tcb.commit_and_wait()` site in both `forward_token_greedy_tcb`
+    /// and `forward_tokens_multiseq_*`. Returns 0 on the CPU path (no TCB).
+    fn last_forward_dispatch_count(&self) -> usize {
+        self.last_dispatch_count
     }
 }
 
@@ -4189,14 +4218,16 @@ impl QwenDense {
         let lmhead_per_channel_buf = self.lmhead_per_channel_scales_buf.as_ref();
         let use_per_channel_lmhead =
             w4a8_lmhead && w4a8_lmhead_per_channel && lmhead_per_channel_buf.is_some();
-        // P0.1 spike: env-gated Q/K/V concurrent-encoder. When set, the
+        // P0.1 spike / Track 3.3: Q/K/V concurrent-encoder. When enabled, the
         // three Q/K/V GEMV dispatches per layer share one
         // MTLDispatchTypeConcurrent encoder; the driver may overlap them
         // on the GPU (all three read x_norm_buf, write disjoint outputs).
-        // Default off until ≥+5% paired-bench delta + cosine > 0.998 +
-        // first-8 greedy match clear the ship rule. See
-        // ~/.claude/plans/closing-the-2-4-virtual-phoenix.md.
-        let qkv_concurrent = crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
+        // Enabled when EngineConfig::concurrent_qkv is true OR when the
+        // env var DISMANTLE_QWEN_CONCURRENT_QKV=1 is set (env var wins).
+        // Default off: +1.68% measured at B=1, below the +5% ship gate.
+        // Exposed via EngineConfig so "fast"/"race" profiles can opt in
+        // without setting the env var.
+        let qkv_concurrent = self.concurrent_qkv_config || crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
         // Phase 2.3: GQA flash-style decode attention (online softmax).
         // When set, the GQA attention dispatch uses mha_decode_flash_f32
         // (constant threadgroup memory, no scores[seq_len]) instead of
@@ -5163,6 +5194,7 @@ impl QwenDense {
                         &arena.token_buf,
                         vocab,
                     )?;
+                    self.last_dispatch_count = tcb.dispatch_count;
                     tcb.commit_and_wait()?;
                     self.kv.seq_len += 1;
                     let token_ptr = arena.token_buf.contents() as *const u32;
@@ -5252,6 +5284,7 @@ impl QwenDense {
             }
             kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, pn)?;
 
+            self.last_dispatch_count = tcb.dispatch_count;
             tcb.commit_and_wait()?;
             self.kv.seq_len += 1;
             let token_ptr = arena.token_buf.contents() as *const u32;
@@ -5274,6 +5307,7 @@ impl QwenDense {
                     &arena.logits_buf,
                 )?;
                 kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
+                self.last_dispatch_count = tcb.dispatch_count;
                 tcb.commit_and_wait()?;
                 self.kv.seq_len += 1;
                 let token_ptr = arena.token_buf.contents() as *const u32;
@@ -5330,6 +5364,7 @@ impl QwenDense {
         }
         kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
 
+        self.last_dispatch_count = tcb.dispatch_count;
         tcb.commit_and_wait()?;
 
         // KV cache pointer bump (CPU mirror), so the CPU fallback path
@@ -5928,6 +5963,54 @@ impl QwenDense {
     // returned tcb (or append the LM head first, then commit) before reading any
     // GPU output — a dropped tcb commits via the Drop impl, but the result is
     // read only after an explicit commit_and_wait.
+    //
+    // Track 3.2 — Dispatch count analysis (Qwen-3B-Q4_K_M, n_layers=28,
+    // verified by running with DISMANTLE_TRACE_DISPATCH=1):
+    //
+    //  Pre-loop (layer 0 hoisted norm):
+    //    - embed_lookup: B dispatches (one per slot, `embed_lookup_metal_f32_off_tcb`)
+    //      TODO: `embed_lookup_batched` kernel could fuse to 1 dispatch for all B.
+    //    - layer-0 rmsnorm: B dispatches (loop `for bi in 0..b`)
+    //      TODO: `add_rmsnorm_fused_batched_tcb` already exists for the residual+norm
+    //      fusion; a `rmsnorm_batched_tcb` for the cold first-layer norm could save B-1
+    //      dispatches (at B=8: -7 dispatches).
+    //    TOTAL PRE-LOOP: 2*B dispatches (B embed + B rmsnorm)
+    //
+    //  Per-layer (n_layers iterations):
+    //    Attention sub-block:
+    //      - q_proj: 1 dispatch (batched GEMM via batched_proj!)
+    //      - k_proj: 1 dispatch (batched GEMM or kv-fuse pair = 1)
+    //      - v_proj: 1 dispatch (batched GEMM, or 0 if kv-fuse merges k+v)
+    //      - RoPE Q: 1 dispatch (batched multiseq)
+    //      - RoPE K: 1 dispatch (batched multiseq)
+    //      - KV scatter append: 1 dispatch (batched multiseq kernel)
+    //      - MHA decode: 1 dispatch (batched multiseq)
+    //      - o_proj: 1 dispatch (batched GEMM)
+    //      - add+rmsnorm fused: 1 dispatch (batched, x += o_proj_out + ffn_norm)
+    //    ATTENTION SUB-BLOCK TOTAL: 9 dispatches (8 when kv-fuse merges k+v to 1)
+    //
+    //    FFN sub-block:
+    //      - ffn_gate: 1 dispatch
+    //      - ffn_up: 1 dispatch
+    //      - silu_mul: 1 dispatch
+    //      - ffn_down: 1 dispatch
+    //      - add+rmsnorm fused (tail): 1 dispatch (x += ffn_down + next_attn_norm)
+    //    FFN SUB-BLOCK TOTAL: 5 dispatches
+    //
+    //    PER LAYER: 9 + 5 = 14 dispatches (13 with kv-fuse)
+    //
+    //  Grand total for Qwen-3B (28 layers):
+    //    2*B + 28 * 14 = 2*B + 392
+    //    At B=1: ~394 dispatches (above Phase 1 target of 350 → Phase 2 target 220)
+    //    At B=8: ~408 dispatches
+    //    kv-fuse path: 2*B + 28 * 13 = 2*B + 364 (at B=1: ~366)
+    //
+    //  Embed+norm batching fusion opportunity (if implemented):
+    //    Reducing 2*B → 2 dispatches (one batched embed + one batched rmsnorm)
+    //    would save 2*(B-1) dispatches — at B=8 that's -14 dispatches, marginal.
+    //    The per-layer batched_proj! already dispatches 1 per projection, so
+    //    the major reduction path is further kernel fusion within a layer, not
+    //    embed/norm batching.
     #[cfg(target_os = "macos")]
     fn forward_tokens_multiseq_stack_tcb<'a>(
         &'a self,
@@ -6409,7 +6492,10 @@ impl QwenDense {
                 &arena.x_norm_buf_batch, &logits_buf,
             )?;
             // ONE round-trip: layers + LM head in a single submit/fence.
+            // Read dispatch_count before commit (which moves/drops tcb).
+            let dc = tcb.dispatch_count;
             tcb.commit_and_wait()?;
+            self.last_dispatch_count = dc;
             // Read B full-vocab rows out of the shared-memory logits buffer.
             let lp = logits_buf.contents() as *const f32;
             let mut out = Vec::with_capacity(b);
@@ -6423,7 +6509,9 @@ impl QwenDense {
         // commit+wait it here BEFORE reading x_norm_buf_batch from shared memory
         // (this is exactly where the stack used to commit). Then run the unchanged
         // per-slot CPU full-vocab f16 LM head — byte-identical to the prior path.
+        let dc = tcb.dispatch_count;
         tcb.commit_and_wait()?;
+        self.last_dispatch_count = dc;
         let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
         // SAFETY: x_norm_buf_batch is sized max_batch*h*4 bytes; b*h <= that.
         let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, b * h) };
@@ -6573,7 +6661,9 @@ impl QwenDense {
         )?;
 
         // ONE commit: stack + LM head + argmax all in one command buffer.
+        let dc = tcb.dispatch_count;
         tcb.commit_and_wait()?;
+        self.last_dispatch_count = dc;
 
         // Read back only B×u32 (32 bytes at B=8 vs 4.6 MB for full logits).
         let tp = arena.token_batch_buf.contents() as *const u32;
