@@ -643,11 +643,34 @@ impl Engine for DeepSeekV2 {
         // pinned. Profiles still control via `mla_schedule`; `"legacy-materialized"`
         // (or any non-`"metal-mla"` value) opts out and keeps the materialized
         // KvCache as the only cache.
-        let mla_metal = config
-            .kernel_profile
-            .as_ref()
-            .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
-            .unwrap_or(true);
+        // Phase 3.3 reach: the compressed-MLA cache is only consumable by the
+        // Metal MLA kernels. When no Metal context will be present -- off-macOS
+        // (no Metal) or on-macOS under force_cpu (Edit A above sets
+        // metal_ctx=None) -- there is no consumer, so keep `mla_c_kv` empty and
+        // let `attention()` take the materialized-KV CPU path (kv_b_proj expand
+        // + mha_decode_step). If `mla_c_kv` were non-empty WITHOUT a Metal ctx,
+        // `attention()` would hard-error at the `mla_decode: Metal context
+        // unavailable` branch. `cpu_only` is exactly the condition under which
+        // Edit A yields metal_ctx.is_none(), so this gate is equivalent to
+        // `<profile-based> && metal_ctx.is_some()` (and metal_ctx is always None
+        // off-macOS, where the non-macOS arm forces false).
+        let cpu_only = config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU");
+        let mla_metal = {
+            #[cfg(target_os = "macos")]
+            {
+                !cpu_only
+                    && config
+                        .kernel_profile
+                        .as_ref()
+                        .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
+                        .unwrap_or(true)
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = cpu_only;
+                false
+            }
+        };
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -665,7 +688,17 @@ impl Engine for DeepSeekV2 {
         // Metal context: built once per model, owned for the model's
         // lifetime. Errors here (no GPU, shader compile failure) are
         // soft -- `None` falls back to CPU kernels in every dispatcher.
-        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        //
+        // Phase 3.3 portability/reach: `force_cpu` (config or
+        // DISMANTLE_FORCE_CPU=1) loads with NO Metal context, forcing the
+        // pure-Rust CPU reference path. This is the same state the engine is
+        // in off-macOS (no Metal) and is how the CPU "backend" is exercised
+        // for the CPU-vs-Metal parity cross-check. Mirrors qwen_dense.rs.
+        let metal_ctx = if config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU") {
+            None
+        } else {
+            MetalContext::new_with_trace(config.trace_dispatch).ok()
+        };
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -3052,11 +3085,59 @@ impl DeepSeekV2 {
             }
         }
 
-        // Wedge C is the only supported decode path for V2-Lite. If its
-        // preconditions don't hold (Metal context + decode arena + pinned
+        // Phase 3.3 reach: pure-Rust CPU decode path. Taken when no Metal
+        // context is present -- i.e. off-macOS, or on-macOS under force_cpu
+        // (DISMANTLE_FORCE_CPU=1, via Edit A). This is the per-layer driver
+        // that was retired from the GPU build in v2.2.0-cleanup-16; it is
+        // required for MoE models (deepseek_v2) to decode on CPU. It mirrors
+        // `forward_token_shared_only` exactly but calls the full `ffn()`
+        // (routed + shared experts) instead of `ffn_shared_only`. Every verb
+        // it touches has a CPU fallback (rmsnorm_dispatch, gemv_f32_attn /
+        // gemv_f32_moe / moe_expert_*_matmul dispatchers all branch to CPU
+        // when metal_ctx is None), so attention's materialized-KV path
+        // (mla_c_kv kept empty by load, Edit B) and the MoE expert GEMVs
+        // (dequant_ref_into -> gemv_f32 -> silu_mul) run pure-Rust. Returns the
+        // final-normed residual; the caller applies the LM head (forward_token
+        // via gemv_f16_dispatch).
+        if self.metal_ctx.is_none() {
+            let _ = read_back; // CPU path always returns x_norm; LM-head fold is Metal-only.
+            let mut x = vec![0.0f32; h];
+            embed_lookup(&self.embed, h, token, &mut x);
+
+            for li in 0..self.config.n_layers {
+                crate::metal::set_current_layer(Some(li as u32));
+
+                let mut x_norm = vec![0.0f32; h];
+                self.rmsnorm_dispatch(
+                    &x,
+                    &self.layers[li].attn_norm,
+                    self.config.rms_norm_eps,
+                    &mut x_norm,
+                )?;
+                let attn_out = self.attention(li, pos, &x_norm)?;
+                add_inplace(&mut x, &attn_out);
+
+                self.rmsnorm_dispatch(
+                    &x.clone(),
+                    &self.layers[li].ffn_norm,
+                    self.config.rms_norm_eps,
+                    &mut x_norm,
+                )?;
+                let ffn_out = self.ffn(li, &x_norm)?;
+                add_inplace(&mut x, &ffn_out);
+            }
+            crate::metal::set_current_layer(None);
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
+            return Ok((Some(x_norm), None));
+        }
+
+        // Wedge C is the only supported decode path for V2-Lite when Metal is
+        // present. If its preconditions don't hold (decode arena + pinned
         // norms + MLA cache + GPU-resident KV mirrors + TCB-attention-ready
         // layers), surface a clear error rather than silently routing through
-        // a CPU/Wedge-B fallback. The legacy fallbacks were retired in
+        // a CPU/Wedge-B fallback. The legacy GPU fallbacks were retired in
         // v2.2.0-cleanup-16 after a runtime-panic audit proved them dead
         // under the shipped production profile.
         let _ = token;

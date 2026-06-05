@@ -9,6 +9,7 @@ pub mod http;
 use anyhow::Result;
 use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -26,6 +27,23 @@ pub struct ServeOptions {
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
     use dismantle_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
+
+    // ── Serve-mode optimisation defaults ─────────────────────────────────────
+    // These are the same knobs that `dismantle generate --kernel-profile` uses.
+    // Each can be overridden by the caller's environment (set var before invoking
+    // the server). We only set them when the variable is absent so that explicit
+    // DISMANTLE_QWEN_*=0 opt-outs are honoured.
+    for (var, val) in [
+        ("DISMANTLE_QWEN_Q4K_PREDEC",   "1"),  // pre-decoded scales → fast GEMV
+        ("DISMANTLE_QWEN_Q4K_LMHEAD",   "1"),  // GPU Q4K LM-head (vs CPU f16)
+        ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"), // prune to 32K most-frequent tokens
+        ("DISMANTLE_QWEN_TCB",          "1"),  // token command buffers
+        ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),  // FFN down Q4K path
+    ] {
+        if std::env::var_os(var).is_none() {
+            std::env::set_var(var, val);
+        }
+    }
 
     let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
         .map_err(|e| anyhow::anyhow!("{e}"))?;
@@ -50,10 +68,139 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)
         .map_err(|e| anyhow::anyhow!("load engine: {e}"))?;
     let model_arch = engine.model_arch().to_string();
+    let max_batch = opts.max_batch_size;
+
     let state = http::AppState {
         engine: Arc::new(parking_lot::Mutex::new(engine)),
+        driver: Arc::new(parking_lot::Mutex::new(batch::driver::BatchDriver::new(max_batch))),
+        slot_senders: Arc::new(parking_lot::Mutex::new(std::collections::HashMap::new())),
+        wait_queue: Arc::new(parking_lot::Mutex::new(std::collections::VecDeque::new())),
         model_arch,
+        max_batch,
+        requests_admitted: Arc::new(AtomicU64::new(0)),
+        tokens_generated: Arc::new(AtomicU64::new(0)),
+        requests_queued: Arc::new(AtomicU64::new(0)),
     };
+
+    // ── Background continuous-batching loop ───────────────────────────────
+    // Single blocking thread: Phase A prefills pending slots, Phase B runs
+    // one decode step across all ready slots, Phase C streams tokens to SSE.
+    // All GPU kernel dispatches happen here under the engine lock; HTTP
+    // handlers only hold the lock briefly for the admit tokenization step.
+    {
+        let state2 = state.clone();
+        tokio::task::spawn_blocking(move || {
+            loop {
+                // ── Phase A: parallel-prefill all pending slots ───────────
+                // Collect all Prefilling slots and their prompts, then issue
+                // a single prefill_slots_parallel call so weights are read
+                // once per position across all B slots rather than once per
+                // slot (serial). On any error, release every slot in the batch.
+                //
+                // Gather window: when max_batch > 1 and the first Prefilling
+                // slot arrives, sleep briefly WITHOUT the engine lock so that
+                // concurrent HTTP admits (which also need engine.lock() for
+                // tokenization) can land before we hold the lock for the full
+                // prefill duration. 5ms << typical prefill time (~200ms+) and
+                // allows co-arriving requests to be batched together.
+                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
+                if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch {
+                    std::thread::sleep(std::time::Duration::from_millis(5));
+                    prefilling = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
+                }
+                if !prefilling.is_empty() {
+                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
+                        let ids = state2.driver.lock().scheduler.slots
+                            .iter()
+                            .find(|s| s.id == id)
+                            .map(|s| s.prompt_ids.clone())
+                            .unwrap_or_default();
+                        if ids.is_empty() { None } else { Some((id as usize, ids)) }
+                    }).collect();
+                    let slot_refs: Vec<(usize, &[u32])> = slots_data.iter()
+                        .map(|(s, ids)| (*s, ids.as_slice()))
+                        .collect();
+                    let prefill_result = {
+                        let mut engine = state2.engine.lock();
+                        if slot_refs.len() == 1 {
+                            let (slot_id, prompt_ids) = slot_refs[0];
+                            engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
+                        } else {
+                            engine.prefill_slots_parallel(&slot_refs)
+                        }
+                    };
+                    match prefill_result {
+                        Ok(()) => {
+                            for &slot_id in &prefilling {
+                                state2.driver.lock().scheduler.mark_prefill_complete(slot_id);
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!(err = %e, "prefill_slots_parallel failed");
+                            for &slot_id in &prefilling {
+                                let tx = state2.slot_senders.lock().remove(&slot_id);
+                                if let Some(tx) = tx { let _ = tx.blocking_send(Err(())); }
+                                state2.driver.lock().scheduler.release_slot(slot_id);
+                            }
+                        }
+                    }
+                }
+
+                // ── Phase B: one decode step across all ready slots ───────
+                let outputs = {
+                    let mut engine = state2.engine.lock();
+                    let mut driver = state2.driver.lock();
+                    driver.decode_ready_once(&mut **engine, max_batch)
+                };
+                let outputs = match outputs {
+                    Ok(v) => v,
+                    Err(e) => {
+                        tracing::error!(err = %e, "decode_ready_once failed");
+                        std::thread::sleep(std::time::Duration::from_millis(1));
+                        continue;
+                    }
+                };
+                if outputs.is_empty() {
+                    std::thread::sleep(std::time::Duration::from_millis(1));
+                    continue;
+                }
+
+                // ── Phase C: stream tokens + release finished slots ───────
+                for out in outputs {
+                    let tx = state2.slot_senders.lock().get(&out.slot_id).cloned();
+                    if let Some(tx) = tx {
+                        let send_ok = tx.blocking_send(Ok(out.text)).is_ok();
+                        if send_ok {
+                            state2.tokens_generated.fetch_add(1, Ordering::Relaxed);
+                        }
+                        if out.finished || !send_ok {
+                            // Release on normal EOS *or* client disconnect.
+                            state2.slot_senders.lock().remove(&out.slot_id);
+                            state2.driver.lock().scheduler.release_slot(out.slot_id);
+
+                            // Drain one waiter into the newly-freed slot.
+                            let waiter = state2.wait_queue.lock().pop_front();
+                            if let Some((waiter_req, waiter_tx, _chat)) = waiter {
+                                let new_slot = {
+                                    let engine = state2.engine.lock();
+                                    let mut driver = state2.driver.lock();
+                                    driver.admit(&**engine, waiter_req).ok().flatten()
+                                };
+                                if let Some(sid) = new_slot {
+                                    state2.requests_admitted.fetch_add(1, Ordering::Relaxed);
+                                    state2.slot_senders.lock().insert(sid, waiter_tx);
+                                }
+                                // If admit fails (should not — slot was just freed),
+                                // waiter_tx is dropped, which sends Err(()) on the
+                                // tokio receiver, closing the SSE stream gracefully.
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     let app = http::router(state);
     tracing::info!(addr = %opts.addr, "dismantle-serve listening");
     let listener = tokio::net::TcpListener::bind(opts.addr).await?;

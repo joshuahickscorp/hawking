@@ -1,7 +1,7 @@
 //! Per-architecture forward passes.
 //!
 //! Each module implements [`crate::Engine`] for one model family.
-//! Phase 0 ships DeepSeek-V2-Lite; Phase 3 adds Qwen3-MoE.
+//! Architecture is detected from GGUF metadata and dispatched by `load_engine`.
 
 pub mod arch_config;
 pub mod deepseek_v2;

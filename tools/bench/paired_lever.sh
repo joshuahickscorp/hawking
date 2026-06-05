@@ -102,7 +102,7 @@ if [[ "$MODE" == bench || "$MODE" == all ]]; then
       run "$c" bench --backend dismantle --suite decode --weights "$WEIGHTS" \
         --trials 1 --max-new-tokens "$TOKENS" --kernel-profile "$PROFILE" \
         --json "$j" >/dev/null 2>&1
-      v=$(jq -r '.results.trial_stats[0].decode_tps // "0"' "$j" 2>/dev/null)
+      v=$(jq -r '(.results.decode_tps // .results.trial_stats[0].decode_tps // 0)' "$j" 2>/dev/null)
       eval "TPS_$c=\"\$TPS_$c $v\""
     done
   done
