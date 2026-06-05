@@ -998,3 +998,78 @@ kernel void use_resource_poc_add(
     if (tid >= args.n) return;
     out[tid] = args.a[tid] + args.b[tid];
 }
+
+// ── rope_qk_f32_b1_bias ───────────────────────────────────────────────────────
+// Track 3.6 — B=1 fused Q+K RoPE with in-place bias addition.
+//
+// Replaces FOUR dispatches per layer in forward_token_greedy_tcb:
+//   add_inplace(q_buf, q_bias)   ← Q bias
+//   rope_q_f32_inplace(q_buf)    ← Q rope
+//   add_inplace(k_buf, k_bias)   ← K bias
+//   rope_q_f32_inplace(k_buf)    ← K rope
+// with ONE dispatch, saving 3 dispatches/layer × n_layers = 84 on Qwen-3B.
+//
+// The bias is added BEFORE rotation (as in the original sequence). Each thread
+// handles ONE complex pair (2 float elements) for one head of Q or K.
+//
+// Buffer layout:
+//   0: q      (float*, n_q_heads * head_dim, in-place)
+//   1: k      (float*, n_k_heads * head_dim, in-place)
+//   2: q_bias (float*, n_q_heads * head_dim, or NULL-equivalent if no bias)
+//   3: k_bias (float*, n_k_heads * head_dim, or NULL-equivalent if no bias)
+//   4: args   (ArgbufRopeQKB1Bias)
+//
+// Grid: (n_q_heads * head_dim/2 + n_k_heads * head_dim/2, 1, 1)
+// Threads id < n_q_heads * (head_dim/2) handle Q; the rest handle K.
+struct ArgbufRopeQKB1Bias {
+    uint  n_q_heads;
+    uint  n_k_heads;
+    uint  head_dim;
+    uint  pos;
+    float base;
+    uint  has_q_bias; // 1 if q_bias is valid, 0 otherwise
+    uint  has_k_bias; // 1 if k_bias is valid, 0 otherwise
+};
+
+kernel void rope_qk_f32_b1_bias(
+    device       float* q    [[buffer(0)]],
+    device       float* k    [[buffer(1)]],
+    device const float* qb   [[buffer(2)]],
+    device const float* kb   [[buffer(3)]],
+    constant ArgbufRopeQKB1Bias& args [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_total = args.n_q_heads * pairs_per_head;
+    uint total   = q_total + args.n_k_heads * pairs_per_head;
+    if (id >= total) return;
+
+    device float* buf;
+    device const float* bias;
+    uint head, pair, off;
+    bool use_bias;
+
+    if (id < q_total) {
+        head     = id / pairs_per_head;
+        pair     = id - head * pairs_per_head;
+        off      = head * args.head_dim + 2u * pair;
+        buf      = q + off;
+        bias     = qb + off;
+        use_bias = args.has_q_bias != 0u;
+    } else {
+        uint kid = id - q_total;
+        head     = kid / pairs_per_head;
+        pair     = kid - head * pairs_per_head;
+        off      = head * args.head_dim + 2u * pair;
+        buf      = k + off;
+        bias     = kb + off;
+        use_bias = args.has_k_bias != 0u;
+    }
+
+    float x0 = buf[0] + (use_bias ? bias[0] : 0.0f);
+    float x1 = buf[1] + (use_bias ? bias[1] : 0.0f);
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+    float c = cos(theta), s = sin(theta);
+    buf[0] = x0 * c - x1 * s;
+    buf[1] = x0 * s + x1 * c;
+}

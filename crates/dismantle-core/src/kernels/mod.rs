@@ -6055,6 +6055,73 @@ mod metal_dispatch {
         )
     }
 
+    /// Track 3.6 — B=1 fused Q+K RoPE with optional bias addition.
+    ///
+    /// Replaces four dispatches per layer in `forward_token_greedy_tcb`
+    /// (add_inplace q_bias, rope_q, add_inplace k_bias, rope_k) with ONE.
+    /// Saves 3 dispatches/layer × n_layers (= 84 on Qwen-3B).
+    ///
+    /// `q_bias_buf` / `k_bias_buf` are read only when the corresponding
+    /// `has_q_bias` / `has_k_bias` flag is set (pass any valid buffer when
+    /// the flag is 0 — the kernel will not read it).
+    ///
+    /// Grid: `(n_q_heads + n_k_heads) × (head_dim/2)` threads.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_qk_f32_b1_bias_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        base: f32,
+    ) -> Result<()> {
+        let pairs_per_head = (head_dim / 2) as u32;
+        let q_total = n_q_heads as u32 * pairs_per_head;
+        let total   = q_total + n_k_heads as u32 * pairs_per_head;
+        let tg = TG_SIZE.min(total.max(1));
+        let has_q = if q_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let has_k = if k_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, // n_q_heads
+                ArgLayout::U32, // n_k_heads
+                ArgLayout::U32, // head_dim
+                ArgLayout::U32, // pos
+                ArgLayout::F32, // base
+                ArgLayout::U32, // has_q_bias
+                ArgLayout::U32, // has_k_bias
+            ],
+        )?;
+        ab.set_u32(0, n_q_heads as u32);
+        ab.set_u32(1, n_k_heads as u32);
+        ab.set_u32(2, head_dim as u32);
+        ab.set_u32(3, pos);
+        ab.set_f32(4, base);
+        ab.set_u32(5, has_q);
+        ab.set_u32(6, has_k);
+        // Use q_buf as a dummy for missing bias buffers (kernel won't read it
+        // when has_q/k_bias=0).
+        let qb = q_bias_buf.unwrap_or(q_buf);
+        let kb = k_bias_buf.unwrap_or(k_buf);
+        tcb.dispatch_threads(
+            "rope_qk_f32_b1_bias",
+            (total, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_buf), 0);
+                enc.set_buffer(2, Some(qb), 0);
+                enc.set_buffer(3, Some(kb), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// Apply f32 RoPE in-place to a contiguous slice inside a larger f32 buffer.
     pub fn rope_slice_f32_inplace_tcb(
         tcb: &mut TokenCommandBuffer<'_>,

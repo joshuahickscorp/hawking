@@ -4877,72 +4877,59 @@ impl QwenDense {
                 tcb.end_concurrent_group()?;
             }
 
-            // ── Biases (Qwen2 carries q/k/v biases) ──────────────────
-            // Wave-5a: when `use_seam` (DISMANTLE_BACKEND_SEAM=1, default-off)
-            // each in-place residual add `a[i] += b[i]` routes through the
-            // Phase-3 seam: build a cheap MetalBackend (Arc-clone of ctx), move
-            // the live per-token `tcb` into a MetalRecorder by value, call the
-            // COLLAPSED 4-arg `BackendElementwise::add(&mut rec, a, b, n)`
-            // (which forwards to the SAME kernels::add_inplace_metal_tcb), then
-            // move the TCB back out (`tcb = rec.tcb`) — legal because
-            // MetalRecorder has no Drop. `add` never commits/flushes, so the
-            // backend's own cloned ctx is never used to mint a TCB and the
-            // single-command-buffer-per-token invariant holds. The else arm is
-            // the byte-for-byte original call => golden unchanged when off.
-            if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                if use_seam {
+            // ── Biases + RoPE (Q and K) ───────────────────────────────
+            // Track 3.6: fuse Q bias-add + Q RoPE + K bias-add + K RoPE into
+            // ONE dispatch via rope_qk_f32_b1_bias. Saves 3 dispatches/layer
+            // × n_layers = 84 on Qwen-3B in the default (non-seam) path.
+            // V bias has no associated RoPE and stays separate.
+            //
+            // Fallback: when DISMANTLE_BACKEND_SEAM=1 (default-off), keep the
+            // original per-bias seam path + separate rope calls.
+            if use_seam {
+                // Original seam path — bit-identical, kept for seam coverage.
+                if let Some(qb) = layer.pinned.q_bias.as_ref() {
                     let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
                     let mut rec = crate::backend::metal::MetalRecorder { tcb };
                     backend.add(&mut rec, &arena.q_buf, qb, q_dim)?;
                     tcb = rec.tcb;
-                } else {
-                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
                 }
-            }
-            if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                if use_seam {
+                if let Some(kb) = layer.pinned.k_bias.as_ref() {
                     let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
                     let mut rec = crate::backend::metal::MetalRecorder { tcb };
                     backend.add(&mut rec, &arena.k_token_buf, kb, kv_dim)?;
                     tcb = rec.tcb;
-                } else {
-                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
                 }
-            }
-            if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                if use_seam {
+                if let Some(vb) = layer.pinned.v_bias.as_ref() {
                     let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
                     let mut rec = crate::backend::metal::MetalRecorder { tcb };
                     backend.add(&mut rec, &arena.v_token_buf, vb, kv_dim)?;
                     tcb = rec.tcb;
-                } else {
+                }
+                kernels::rope_q_f32_inplace_tcb(
+                    &mut tcb, &arena.q_buf, n_heads, head_dim, 0, head_dim, pos_u32, theta,
+                )?;
+                kernels::rope_q_f32_inplace_tcb(
+                    &mut tcb, &arena.k_token_buf, n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
+                )?;
+            } else {
+                // Fused path (default): Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
+                kernels::rope_qk_f32_b1_bias_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    &arena.k_token_buf,
+                    layer.pinned.q_bias.as_ref(),
+                    layer.pinned.k_bias.as_ref(),
+                    n_heads,
+                    n_kv_heads,
+                    head_dim,
+                    pos_u32,
+                    theta,
+                )?;
+                // V bias: no associated RoPE, stays as a separate dispatch.
+                if let Some(vb) = layer.pinned.v_bias.as_ref() {
                     kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
                 }
             }
-
-            // ── RoPE on full head_dim for every Q and K head ─────────
-            // rope_q_f32_inplace with qk_nope_dim=0 ⇒ rotates the entire
-            // head; matches Qwen's standard interleaved RoPE.
-            kernels::rope_q_f32_inplace_tcb(
-                &mut tcb,
-                &arena.q_buf,
-                n_heads,
-                head_dim,
-                0,
-                head_dim,
-                pos_u32,
-                theta,
-            )?;
-            kernels::rope_q_f32_inplace_tcb(
-                &mut tcb,
-                &arena.k_token_buf,
-                n_kv_heads,
-                head_dim,
-                0,
-                head_dim,
-                pos_u32,
-                theta,
-            )?;
 
             // ── KV append into per-layer slice of k/v_cache buffer ───
             let layer_kv_off_elems = li * max_seq * kv_dim;
