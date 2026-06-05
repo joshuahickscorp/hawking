@@ -91,24 +91,37 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         let state2 = state.clone();
         tokio::task::spawn_blocking(move || {
             loop {
-                // ── Phase A: prefill all slots in Prefilling state ────────
+                // ── Phase A: parallel-prefill all pending slots ───────────
+                // Collect all Prefilling slots and their prompts, then issue
+                // a single prefill_slots_parallel call so weights are read
+                // once per position across all B slots rather than once per
+                // slot (serial). On any error, release every slot in the batch.
                 let prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots(max_batch);
-                for slot_id in prefilling {
-                    let prompt_ids = state2.driver.lock().scheduler.slots
-                        .iter()
-                        .find(|s| s.id == slot_id)
-                        .map(|s| s.prompt_ids.clone())
-                        .unwrap_or_default();
-                    if prompt_ids.is_empty() { continue; }
-                    match state2.engine.lock().prefill_slot(slot_id as usize, &prompt_ids) {
-                        Ok(_last_tok) => {
-                            state2.driver.lock().scheduler.mark_prefill_complete(slot_id);
+                if !prefilling.is_empty() {
+                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
+                        let ids = state2.driver.lock().scheduler.slots
+                            .iter()
+                            .find(|s| s.id == id)
+                            .map(|s| s.prompt_ids.clone())
+                            .unwrap_or_default();
+                        if ids.is_empty() { None } else { Some((id as usize, ids)) }
+                    }).collect();
+                    let slot_refs: Vec<(usize, &[u32])> = slots_data.iter()
+                        .map(|(s, ids)| (*s, ids.as_slice()))
+                        .collect();
+                    match state2.engine.lock().prefill_slots_parallel(&slot_refs) {
+                        Ok(()) => {
+                            for &slot_id in &prefilling {
+                                state2.driver.lock().scheduler.mark_prefill_complete(slot_id);
+                            }
                         }
                         Err(e) => {
-                            tracing::warn!(slot = slot_id, err = %e, "prefill_slot failed");
-                            let tx = state2.slot_senders.lock().remove(&slot_id);
-                            if let Some(tx) = tx { let _ = tx.blocking_send(Err(())); }
-                            state2.driver.lock().scheduler.release_slot(slot_id);
+                            tracing::warn!(err = %e, "prefill_slots_parallel failed");
+                            for &slot_id in &prefilling {
+                                let tx = state2.slot_senders.lock().remove(&slot_id);
+                                if let Some(tx) = tx { let _ = tx.blocking_send(Err(())); }
+                                state2.driver.lock().scheduler.release_slot(slot_id);
+                            }
                         }
                     }
                 }

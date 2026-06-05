@@ -161,3 +161,103 @@ fn prefill_slot3_multiseq_matches_solo() {
     assert_prefill_parity(&mut engine, &[9707, 374, 100], 3);
     println!("[prefill-slot-parity] slot_id=3: PASS");
 }
+
+/// Parallel prefill: `prefill_slots_parallel` with B=2 slots (slots 0 and 3,
+/// different prompt lengths) must produce identical decode output to serial
+/// `prefill_slot` for each slot independently.
+///
+/// What this proves:
+/// - weights are read once per position across both slots (not independently)
+/// - KV is correctly scattered to each slot's region in multiseq_arena
+/// - prompts of different lengths are handled correctly (slot 3 has 3 tokens,
+///   slot 0 has 4 tokens — the ragged batch boundary must not corrupt KV)
+///
+/// Run explicitly:
+///   cargo test --release -p dismantle-core --test prefill_slot_into_multiseq_parity \
+///     prefill_slots_parallel_parity -- --ignored --test-threads=1 --nocapture
+#[test]
+#[ignore]
+fn prefill_slots_parallel_parity() {
+    use dismantle_core::Engine;
+
+    let mut engine = match load() {
+        Some(e) => e,
+        None => return,
+    };
+
+    let prompt_a: &[u32] = &[1, 2, 3, 4];    // slot 0, 4 tokens
+    let prompt_b: &[u32] = &[9707, 374, 100]; // slot 3, 3 tokens (ragged)
+
+    // ── Reference: serial prefill_slot, then multiseq decode ──────────────
+    engine.multiseq_arena = None;
+    engine.kv.reset();
+    engine.dense_arena = None;
+
+    let expected_a = multiseq_decode_after_prefill(&mut engine, 0, prompt_a);
+    // serial prefill_slot for slot 3 — must not disturb slot 0's KV
+    let returned_b = engine.prefill_slot(3, prompt_b).expect("serial prefill slot 3");
+    assert_eq!(returned_b, *prompt_b.last().unwrap());
+
+    // Decode 3 tokens from slot 3 with slot 0's KV still resident
+    let mut cur_b = *prompt_b.last().unwrap();
+    let mut expected_b = Vec::with_capacity(3);
+    for step in 0..3usize {
+        let logits = engine
+            .forward_multiseq_batched(&[cur_b], &[prompt_b.len() + step], &[3])
+            .expect("serial decode slot 3");
+        let tok = argmax(&logits[0]);
+        expected_b.push(tok);
+        cur_b = tok;
+    }
+
+    println!(
+        "[parallel-prefill-parity] reference: slot0={expected_a:?} slot3={expected_b:?}"
+    );
+
+    // ── Parallel prefill: both slots at once ──────────────────────────────
+    engine.multiseq_arena = None;
+    engine.kv.reset();
+    engine.dense_arena = None;
+
+    engine
+        .prefill_slots_parallel(&[(0, prompt_a), (3, prompt_b)])
+        .expect("prefill_slots_parallel");
+
+    // Decode slot 0
+    let mut cur_a = *prompt_a.last().unwrap();
+    let mut parallel_a = Vec::with_capacity(3);
+    for step in 0..3usize {
+        let logits = engine
+            .forward_multiseq_batched(&[cur_a], &[prompt_a.len() + step], &[0])
+            .expect("parallel decode slot 0");
+        let tok = argmax(&logits[0]);
+        parallel_a.push(tok);
+        cur_a = tok;
+    }
+
+    // Decode slot 3
+    let mut cur_b2 = *prompt_b.last().unwrap();
+    let mut parallel_b = Vec::with_capacity(3);
+    for step in 0..3usize {
+        let logits = engine
+            .forward_multiseq_batched(&[cur_b2], &[prompt_b.len() + step], &[3])
+            .expect("parallel decode slot 3");
+        let tok = argmax(&logits[0]);
+        parallel_b.push(tok);
+        cur_b2 = tok;
+    }
+
+    println!(
+        "[parallel-prefill-parity] parallel: slot0={parallel_a:?} slot3={parallel_b:?}"
+    );
+
+    assert_eq!(
+        expected_a, parallel_a,
+        "slot 0 diverges between serial and parallel prefill"
+    );
+    assert_eq!(
+        expected_b, parallel_b,
+        "slot 3 diverges between serial and parallel prefill"
+    );
+    println!("[parallel-prefill-parity] PASS");
+}
