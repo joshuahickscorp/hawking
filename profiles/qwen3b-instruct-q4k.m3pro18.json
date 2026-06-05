@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "profile_id": "kp-ef30ad6d396b992c54834d1a",
+  "profile_id": "kp-ed1272c4cb7aeb85467ebcb5",
   "profile_name": "m3-pro-18gb",
   "model_id": "Qwen2.5 3B Instruct",
   "model_arch": "qwen2",
   "tensor_layout_hash": "46a61a049d19cca43d3279ec",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "0b9ed2ef22ef790921c42012",
+  "shader_hash": "f1c86f972f570b0184e45279",
   "selected": {
     "id": "metal-default",
     "moe_schedule": "indexed-no-pack-one-cb",
@@ -17,8 +17,8 @@
     "deterministic_rank": 1,
     "gemm_q4_k_schedule": "per_shape",
     "gemm_q4_k_schedule_per_shape": {
-      "1024x4096": "v3_dual",
-      "4096x1024": "v3_dual",
+      "1024x4096": "llama_port",
+      "4096x1024": "llama_port",
       "4096x4096": "v3_dual"
     },
     "attn_block_schedule": "mla",
@@ -29,7 +29,7 @@
   },
   "evidence": {
     "profile": "m3-pro-18gb",
-    "max_hours": 1.0,
+    "max_hours": 8.0,
     "prompt_count": 50,
     "token_lengths": [
       16,

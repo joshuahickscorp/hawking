@@ -1,4 +1,16 @@
 use crate::attn::mha_decode_step;
+// Phase-3 compute seam (Wave-5a): bring the platform-neutral op traits into
+// scope so the `DISMANTLE_BACKEND_SEAM`-gated add routing below can resolve
+// `MetalBackend::add` as an inherent-trait method. WITHOUT this `use`, the
+// call `backend.add(..)` fails to compile with E0599 ("method `add` not
+// found") because Rust only finds a trait method when its trait is in scope.
+// `Backend` supplies the associated `Recorder`/`Buffer` types that
+// `MetalRecorder`/`PinnedBuffer` satisfy; `BackendElementwise` supplies the
+// 4-arg `add(rec, a, b, n)` verb. Both names reference the `#[cfg]`-free
+// traits in `backend/mod.rs`, so this import is platform-neutral and does
+// not perturb non-macOS builds. The concrete `MetalBackend`/`MetalRecorder`
+// are named by fully-qualified path at the call site (no extra `use`).
+use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
 use super::arch_config::ArchReader;
@@ -168,6 +180,15 @@ pub struct QwenDense {
     /// `forward_token_greedy_tcb` call so models that only use the
     /// CPU/Metal-hybrid `forward_token` path don't pay for it.
     pub dense_arena: Option<crate::metal::DenseDecodeArena>,
+    /// Slot-strided arena for continuous-batching multi-seq decode (up to
+    /// MAX_MULTISEQ_SLOTS=8 INDEPENDENT sequences). Separate from `dense_arena`
+    /// because its KV cache is slot-strided: MAX_MULTISEQ_SLOTS independent
+    /// regions, each MAX_MULTISEQ_CTX=4096 positions deep. Allocated ONCE on
+    /// the first call to `forward_tokens_multiseq_logits` and NEVER reallocated —
+    /// any realloc zeroes all Metal buffers and wipes ALL in-flight KV caches.
+    /// Slot KV is addressed by stable `regions[bi]` (a slot ID in
+    /// 0..MAX_MULTISEQ_SLOTS), not by compacted batch index.
+    pub multiseq_arena: Option<crate::metal::DenseDecodeArena>,
 
     /// P1f: pinned whole-mmap buffer holding all Q4_K_M weight bytes.
     /// `gemv_q4_k_m_v2_pinned_tcb` reads a (offset, byte_size) window
@@ -796,7 +817,15 @@ impl Engine for QwenDense {
         let kv = KvCache::new(cfg.n_layers, max_seq, cfg.n_kv_heads, cfg.head_dim);
         let sampler = Sampler::new(0);
         mark(&mut stage_marks, "weight_extract+layers+kv", &mut t);
-        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        // Phase 3.3 portability/reach: `force_cpu` (config or DISMANTLE_FORCE_CPU=1)
+        // loads with NO Metal context, forcing the pure-Rust CPU reference path.
+        // This is the same state the engine is in off-macOS (no Metal) and is how
+        // the CPU "backend" is exercised for the CPU-vs-Metal parity cross-check.
+        let metal_ctx = if config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU") {
+            None
+        } else {
+            MetalContext::new_with_trace(config.trace_dispatch).ok()
+        };
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -1223,6 +1252,7 @@ impl Engine for QwenDense {
             _weights_path: weights.to_owned(),
             metal_ctx,
             dense_arena: None,
+            multiseq_arena: None,
             weights_mmap_buf,
             embed_buf,
             final_norm_buf,
@@ -1418,7 +1448,13 @@ impl Engine for QwenDense {
         // skipped-prefix length is their sum (one of which is always 0).
         let prefill_skipped = ram_prefill_skipped + disk_prefill_skipped;
 
-        let use_tcb_prefill = crate::env_on("DISMANTLE_QWEN_TCB");
+        // Couple prefill to the same greedy/temp==0 condition as decode so the
+        // two always agree on TCB-vs-CPU. A temp>0 request stays fully on the
+        // CPU/hybrid path; this avoids a TCB-prefill + CPU-decode mixed mode
+        // that would desync the KV mirror. Opt out with DISMANTLE_QWEN_TCB=0.
+        let use_tcb_prefill = req.sampling.temperature == 0.0
+            && self.metal_ctx.is_some()
+            && crate::env_opt_out("DISMANTLE_QWEN_TCB");
         // P3 — batched prefill: chunk prompt into B≤8 token windows and
         // process each through `forward_tokens_batch_tcb`. Each weight
         // is read once per chunk (instead of once per token), amortizing
@@ -1540,12 +1576,13 @@ impl Engine for QwenDense {
         let mut reason = StopReason::MaxTokens;
         let eos = self.tokenizer.eos_id();
 
-        // P1f: opt-in full-Metal TCB path. Greedy (argmax) only -- the
-        // GPU sample kernel implements pure argmax, so any non-greedy
-        // sampling must take the CPU/Metal-hybrid `forward_token` path
-        // (full logits → CPU sampler).
-        let use_tcb = crate::env_on("DISMANTLE_QWEN_TCB")
-            && req.sampling.temperature == 0.0;
+        // P1f: full-Metal TCB path, DEFAULT-ON for greedy (temp==0). The GPU
+        // sample kernel implements pure argmax, so any non-greedy sampling
+        // takes the CPU/Metal-hybrid `forward_token` path (full logits → CPU
+        // sampler). Opt out with DISMANTLE_QWEN_TCB=0 (escape hatch / A-B bench).
+        let use_tcb = req.sampling.temperature == 0.0
+            && self.metal_ctx.is_some()
+            && crate::env_opt_out("DISMANTLE_QWEN_TCB");
 
 
         // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
@@ -2732,6 +2769,284 @@ impl Engine for QwenDense {
         self.forward_tokens_for_test(tokens, positions)
     }
 
+    /// Continuous-batching DECODE seam (overrides the serial default): real GPU
+    /// multi-seq decode of B INDEPENDENT slots at divergent positions, weight
+    /// read once across slots. On macOS routes to `forward_tokens_multiseq_logits`;
+    /// off-macOS falls back to the per-slot loop.
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        #[cfg(target_os = "macos")]
+        {
+            // Bounded per-slot context for the v1 serve path; KV memory at the
+            // arena's max_batch scales with this (2048 keeps B=8 under the RSS
+            // sentinel). Requests longer than this error in the stack. `regions`
+            // are the STABLE slot ids each batch element's KV lives at.
+            const MULTISEQ_CTX: usize = 4096;
+            return self.forward_tokens_multiseq_logits(tokens, positions, regions, MULTISEQ_CTX);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = regions;
+            self.forward_tokens_for_test(tokens, positions)
+        }
+    }
+
+    fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
+        #[cfg(target_os = "macos")]
+        {
+            use crate::metal::DenseDecodeArena;
+
+            if prompt_ids.is_empty() {
+                return Err(crate::Error::Model("prefill_slot: empty prompt".into()));
+            }
+            const MAX_MULTISEQ_SLOTS: usize = 8;
+            const MAX_MULTISEQ_CTX: usize = 4096;
+            if slot_id >= MAX_MULTISEQ_SLOTS {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slot: slot_id={slot_id} >= MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
+                )));
+            }
+            let prompt_len = prompt_ids.len();
+            if prompt_len > MAX_MULTISEQ_CTX {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slot: prompt_len={prompt_len} > MAX_MULTISEQ_CTX={MAX_MULTISEQ_CTX}"
+                )));
+            }
+
+            // ── Step 1: run batched prefill into dense_arena ─────────────────
+            // Save and reset single-seq KV state so forward_tokens_batch_tcb
+            // writes from position 0.
+            let saved_seq_len = self.kv.seq_len;
+            self.kv.seq_len = 0;
+            self.dense_arena = None;  // triggers lazy re-allocation at pos=0
+
+            const B_MAX: usize = 8;
+            let positions: Vec<usize> = (0..prompt_len).collect();
+            let mut i = 0;
+            let last_token = loop {
+                let end = (i + B_MAX).min(prompt_len);
+                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
+                if end == prompt_len { break prompt_ids[prompt_len - 1]; }
+                i = end;
+            };
+            // After the loop, dense_arena.k_cache_buf / v_cache_buf hold KV for
+            // positions 0..prompt_len-1. kv.seq_len == prompt_len.
+
+            // ── Step 2: ensure multiseq_arena is allocated ───────────────────
+            // (CB-1 fix: allocated once at max capacity, never reallocated.)
+            if self.multiseq_arena.is_none() {
+                let ctx = self.metal_ctx.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot: no metal_ctx".into()))?;
+                let cfg = &self.config;
+                self.multiseq_arena = Some(DenseDecodeArena::new_with_batch(
+                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                ));
+            }
+
+            // ── Step 3: copy KV from dense_arena into this slot's region ─────
+            // dense_arena layout  : k[l * dense_max_seq * kv_dim + p * kv_dim]
+            // multiseq_arena layout: k[l * multi_max_seq * kv_dim
+            //                          + slot_id * MAX_MULTISEQ_CTX * kv_dim
+            //                          + p * kv_dim]
+            {
+                let cfg = &self.config;
+                let kv_dim = cfg.n_kv_heads * cfg.head_dim;
+                let dense_arena = self.dense_arena.as_ref()
+                    .ok_or_else(|| crate::Error::Metal("prefill_slot: dense_arena missing".into()))?;
+                let multi_arena = self.multiseq_arena.as_ref().unwrap();
+                let dense_layer_stride = dense_arena.max_seq * kv_dim;
+                let multi_layer_stride = multi_arena.max_seq * kv_dim;
+                let slot_base = slot_id * MAX_MULTISEQ_CTX * kv_dim;
+                let copy_elems = prompt_len * kv_dim;
+
+                // SAFETY: PinnedBuffer is Metal unified memory — CPU-accessible
+                // on Apple Silicon. The two arenas are distinct allocations with
+                // non-overlapping slot regions. No GPU kernels run concurrently
+                // (this is called under the engine mutex, serially with decode).
+                unsafe {
+                    let src_k = dense_arena.k_cache_buf.contents() as *const f32;
+                    let src_v = dense_arena.v_cache_buf.contents() as *const f32;
+                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
+                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
+                    for li in 0..cfg.n_layers {
+                        let src_off = li * dense_layer_stride;
+                        let dst_off = li * multi_layer_stride + slot_base;
+                        std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k.add(dst_off), copy_elems);
+                        std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v.add(dst_off), copy_elems);
+                    }
+                }
+            }
+
+            // ── Step 4: restore single-seq state ─────────────────────────────
+            // Leave dense_arena=None so the next B=1 generate() call rebuilds
+            // from the restored kv.seq_len without stale data.
+            self.kv.seq_len = saved_seq_len;
+            self.dense_arena = None;
+
+            return Ok(last_token);
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            Err(crate::Error::Unimplemented("prefill_slot (non-macOS)"))
+        }
+    }
+
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            if slots.is_empty() {
+                return Ok(());
+            }
+            const MAX_MULTISEQ_SLOTS: usize = 8;
+            const MAX_MULTISEQ_CTX: usize = 4096;
+            if slots.len() > MAX_MULTISEQ_SLOTS {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slots_parallel: {} slots > {MAX_MULTISEQ_SLOTS}",
+                    slots.len()
+                )));
+            }
+            let max_prompt_len = slots.iter().map(|(_, ids)| ids.len()).max().unwrap_or(0);
+            if max_prompt_len == 0 {
+                return Ok(());
+            }
+            if max_prompt_len > MAX_MULTISEQ_CTX {
+                return Err(crate::Error::Model(format!(
+                    "prefill_slots_parallel: prompt_len={max_prompt_len} > {MAX_MULTISEQ_CTX}"
+                )));
+            }
+
+            // ── Hybrid prefill strategy ──────────────────────────────────────
+            //
+            // The efficient single-seq path (`prefill_slot`) uses
+            // `forward_tokens_batch_tcb` with B_MAX=8 tokens per GPU pass:
+            //   ceil(prompt_len / 8) weight reads per slot.
+            //
+            // The position-by-position path reads weights once per position:
+            //   max_prompt_len weight reads total (shared across B slots).
+            //
+            // Cross-over: position-by-position beats serial when
+            //   max_prompt_len < B × ceil(max_prompt_len / 8)
+            //   i.e. B > 8  (which never happens at max_batch = 8)
+            // So serial prefill_slot is always equal or better for B ≤ 8
+            // EXCEPT for the shared-prefix case below.
+            //
+            // Shared-prefix optimisation:
+            //   When slots share a common prefix (e.g. system prompt), prefill
+            //   the prefix ONCE for slot 0 via the efficient B_MAX=8 path, then
+            //   CPU-memcpy the prefix KV into every other slot's arena region.
+            //   Cost: ceil(prefix_len / 8) instead of B × ceil(prefix_len / 8).
+            //   For B=8 with a 200-token system prompt: 25 steps → 25 steps
+            //   (amortized 1/8 per slot, and copy is near-free on unified memory).
+
+            // Step A: longest common prefix length.
+            let prefix_len = {
+                let first_prompt = slots[0].1;
+                let mut len = first_prompt.len();
+                for &(_, prompt_ids) in slots.iter().skip(1) {
+                    let common = first_prompt.iter()
+                        .zip(prompt_ids.iter())
+                        .take(len)
+                        .take_while(|(a, b)| a == b)
+                        .count();
+                    len = common.min(prompt_ids.len()).min(first_prompt.len());
+                }
+                len
+            };
+
+            if prefix_len == 0 {
+                // No shared prefix: serial prefill_slot per slot.
+                // B_MAX=8 efficient: ceil(L/8) weight reads per slot.
+                // Strictly better than position-by-position for all B ≤ 8.
+                for &(slot_id, prompt_ids) in slots.iter() {
+                    self.prefill_slot(slot_id, prompt_ids)?;
+                }
+                return Ok(());
+            }
+
+            // Shared prefix (prefix_len >= 1):
+
+            // Step B: prefill slot 0's full prompt via the efficient B_MAX=8 path.
+            // `prefill_slot` uses forward_tokens_batch_tcb internally and writes
+            // KV into multiseq_arena[slot0] for positions 0..slot0_prompt.len()-1.
+            let (slot0_id, slot0_prompt) = slots[0];
+            self.prefill_slot(slot0_id, slot0_prompt)?;
+            // multiseq_arena is now allocated (prefill_slot ensures it).
+
+            // Step C: CPU-copy prefix KV from slot 0 to every other slot's region.
+            // Layout: k[layer * multi_layer_stride + slot * MAX_MULTISEQ_CTX * kv_dim + pos * kv_dim]
+            // SAFETY: Metal unified memory, CPU-accessible on Apple Silicon.
+            // Slot regions are non-overlapping. No concurrent GPU access (engine mutex).
+            {
+                let cfg = &self.config;
+                let kv_dim = cfg.n_kv_heads * cfg.head_dim;
+                let multi_arena = self.multiseq_arena.as_ref().unwrap();
+                let multi_layer_stride = multi_arena.max_seq * kv_dim;
+                let copy_elems = prefix_len * kv_dim;
+                let slot0_base = slot0_id * MAX_MULTISEQ_CTX * kv_dim;
+                unsafe {
+                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
+                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
+                    for &(slot_s, _) in slots.iter().skip(1) {
+                        let slot_s_base = slot_s * MAX_MULTISEQ_CTX * kv_dim;
+                        for li in 0..cfg.n_layers {
+                            let src_off = li * multi_layer_stride + slot0_base;
+                            let dst_off = li * multi_layer_stride + slot_s_base;
+                            std::ptr::copy_nonoverlapping(
+                                dst_k.add(src_off), dst_k.add(dst_off), copy_elems,
+                            );
+                            std::ptr::copy_nonoverlapping(
+                                dst_v.add(src_off), dst_v.add(dst_off), copy_elems,
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Step D: suffix-only parallel prefill for slots[1..] only.
+            // Slot 0 is already fully prefilled. For each other slot, run its
+            // suffix (positions prefix_len..prompt_len) through the multiseq
+            // stack (which sees the prefix KV via the copy above).
+            if self.q4k_predec_cache.is_none() {
+                self.ensure_q4k_predec_cache()?;
+            }
+            for p in prefix_len..max_prompt_len {
+                let mut tokens_p = Vec::new();
+                let mut positions_p = Vec::new();
+                let mut regions_p = Vec::new();
+                for &(slot_id, prompt_ids) in slots.iter().skip(1) {
+                    if p < prompt_ids.len() {
+                        tokens_p.push(prompt_ids[p]);
+                        positions_p.push(p);
+                        regions_p.push(slot_id);
+                    }
+                }
+                if tokens_p.is_empty() {
+                    break;
+                }
+                let arena = self.multiseq_arena.as_ref().unwrap();
+                let tcb = self.forward_tokens_multiseq_stack_tcb(
+                    arena, &tokens_p, &positions_p, &regions_p, MAX_MULTISEQ_CTX,
+                )?;
+                tcb.commit_and_wait()?;
+            }
+
+            return Ok(());
+        }
+        #[cfg(not(target_os = "macos"))]
+        {
+            for &(slot_id, prompt_ids) in slots.iter() {
+                self.prefill_slot(slot_id, prompt_ids)?;
+            }
+            Ok(())
+        }
+    }
+
     fn forward_tokens_for_test(
         &mut self,
         tokens: &[u32],
@@ -3388,6 +3703,27 @@ impl QwenDense {
         let kv_stride = self.kv.n_kv_heads * self.kv.head_dim;
         let want = n_tokens * kv_stride;
         let layer_stride_elems = self.kv.max_seq * kv_stride;
+        // Phase 2.1-a: when f16-KV is on the GPU cache holds half K/V, so
+        // convert per-element back to f32 (a raw byte copy would bit-
+        // reinterpret half as f32 — the recorded Wave-1 corruption bug).
+        if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+            let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+            let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+            let k_src = kf16.contents() as *const f16;
+            let v_src = vf16.contents() as *const f16;
+            for li in 0..self.kv.n_layers {
+                let layer_off = li * layer_stride_elems;
+                unsafe {
+                    let kdst = self.kv.keys[li].as_mut_ptr();
+                    let vdst = self.kv.values[li].as_mut_ptr();
+                    for j in 0..want {
+                        *kdst.add(j) = (*k_src.add(layer_off + j)).to_f32();
+                        *vdst.add(j) = (*v_src.add(layer_off + j)).to_f32();
+                    }
+                }
+            }
+            return;
+        }
         let k_src = arena.k_cache_buf.contents() as *const f32;
         let v_src = arena.v_cache_buf.contents() as *const f32;
         for li in 0..self.kv.n_layers {
@@ -3495,6 +3831,23 @@ impl QwenDense {
                 "DISMANTLE_QWEN_AWQ=1 requires DISMANTLE_QWEN_W4A8=1".into(),
             ));
         }
+        // Phase 2.1-a: DISMANTLE_QWEN_F16_KV is mutually exclusive with both
+        // W4A8 (half K/V x int8-activation GEMV is unanalyzed) and FLASH_ATTN
+        // (f16 online-softmax flash is a separate unproven combo). Refuse
+        // rather than emit un-vetted logits; f16-KV composes only with the
+        // plain Q4_K (predec/fast) decode path.
+        if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+            if w4a8_active_early {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_W4A8=1 (unanalyzed); unset one".into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_FLASH_ATTN") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_FLASH_ATTN=1 (unanalyzed); unset one".into(),
+                ));
+            }
+        }
         if awq_active_early && predec_active {
             return Err(Error::Model(
                 "DISMANTLE_QWEN_AWQ=1 is incompatible with DISMANTLE_QWEN_Q4K_PREDEC=1; \
@@ -3593,6 +3946,18 @@ impl QwenDense {
             .metal_ctx
             .as_ref()
             .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: no metal_ctx".into()))?;
+        // Wave-5a decode-routing proof: route the ELEMENTWISE ADD family (the
+        // Qwen2 q/k/v bias residual adds below) through the Phase-3 backend
+        // seam (`MetalBackend::add` -> BackendElementwise::add) instead of the
+        // raw `kernels::add_inplace_metal_tcb`. DEFAULT-OFF: `env_on` is true
+        // only when DISMANTLE_BACKEND_SEAM == "1". When unset, `use_seam` is
+        // false, the three sites run the byte-for-byte original kernel call,
+        // and the golden greedy-64 hash (b480cc10faf9a8ec) is UNCHANGED. When
+        // set, the add routes through MetalBackend, which forwards to the SAME
+        // `kernels::add_inplace_metal_tcb` with the SAME (a, b, n) recorded into
+        // the SAME per-token command buffer => still bit-identical. Scope is
+        // the ONE add family; rope/embed/gemv/rmsnorm stay on their raw calls.
+        let use_seam = crate::env_on("DISMANTLE_BACKEND_SEAM");
         let mmap_buf = self
             .weights_mmap_buf
             .as_ref()
@@ -3651,29 +4016,84 @@ impl QwenDense {
                 vocab,
                 max_seq,
             ));
+            // Phase 2.1-a: allocate the f16 KV cache INSIDE the fresh-arena
+            // block so the half buffers exist before the CPU seed below
+            // borrows them immutably (Wave-1 deferred this and unwrap()-panicked).
+            if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+                self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
+            }
+            // Wave-6 residency lever (DISMANTLE_QWEN_RESIDENCY=1, DEFAULT-OFF):
+            // pin the decode working set resident on the command queue once,
+            // here on the first decode token where BOTH the weights mmap buffer
+            // and the freshly-built arena exist. `request_residency` is a no-op
+            // when the flag is unset, so the golden greedy-64 hash is unchanged.
+            // Set = weights mmap (the ~1.6 GB bandwidth-bound read) + the pinned
+            // model buffers + every persistent single-token decode arena buffer.
+            // Errors here are non-fatal to correctness (residency is a perf
+            // hint), but surface them so a bad selector is loud, not silent.
+            {
+                let arena = self.dense_arena.as_ref().unwrap();
+                let resident: [&crate::metal::PinnedBuffer; 19] = [
+                    mmap_buf,
+                    embed_buf,
+                    final_norm_buf,
+                    lm_head_buf,
+                    &arena.q_buf,
+                    &arena.k_token_buf,
+                    &arena.v_token_buf,
+                    &arena.k_cache_buf,
+                    &arena.v_cache_buf,
+                    &arena.attn_out_buf,
+                    &arena.x_buf,
+                    &arena.x_norm_buf,
+                    &arena.ffn_gate_buf,
+                    &arena.ffn_up_buf,
+                    &arena.ffn_act_buf,
+                    &arena.ffn_down_buf,
+                    &arena.o_proj_out_buf,
+                    &arena.logits_buf,
+                    &arena.token_buf,
+                ];
+                ctx.request_residency(&resident)?;
+            }
         }
         if fresh_arena && seq_slot > 0 {
             let arena = self.dense_arena.as_ref().unwrap();
             let kv_stride = n_kv_heads * head_dim;
             let prefill_elems = seq_slot * kv_stride;
             let layer_stride_elems = max_seq * kv_stride;
+            let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
             for li in 0..cfg.n_layers {
                 let layer_off_elems = li * layer_stride_elems;
                 let k_src = &self.kv.keys[li][..prefill_elems];
                 let v_src = &self.kv.values[li][..prefill_elems];
-                let k_dst = arena.k_cache_buf.contents() as *mut f32;
-                let v_dst = arena.v_cache_buf.contents() as *mut f32;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(
-                        k_src.as_ptr(),
-                        k_dst.add(layer_off_elems),
-                        prefill_elems,
-                    );
-                    std::ptr::copy_nonoverlapping(
-                        v_src.as_ptr(),
-                        v_dst.add(layer_off_elems),
-                        prefill_elems,
-                    );
+                if f16_kv {
+                    // f16 cache was allocated in the fresh-arena block above.
+                    let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+                    let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+                    let k_dst = kf16.contents() as *mut f16;
+                    let v_dst = vf16.contents() as *mut f16;
+                    unsafe {
+                        for j in 0..prefill_elems {
+                            *k_dst.add(layer_off_elems + j) = f16::from_f32(k_src[j]);
+                            *v_dst.add(layer_off_elems + j) = f16::from_f32(v_src[j]);
+                        }
+                    }
+                } else {
+                    let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                    let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                    unsafe {
+                        std::ptr::copy_nonoverlapping(
+                            k_src.as_ptr(),
+                            k_dst.add(layer_off_elems),
+                            prefill_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            v_src.as_ptr(),
+                            v_dst.add(layer_off_elems),
+                            prefill_elems,
+                        );
+                    }
                 }
             }
         }
@@ -3745,8 +4165,23 @@ impl QwenDense {
         // first-8 greedy match clear the ship rule. See
         // ~/.claude/plans/closing-the-2-4-virtual-phoenix.md.
         let qkv_concurrent = crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
+        // Phase 2.3: GQA flash-style decode attention (online softmax).
+        // When set, the GQA attention dispatch uses mha_decode_flash_f32
+        // (constant threadgroup memory, no scores[seq_len]) instead of
+        // mha_decode_f32 — removing the ~7800-token shmem cap. DEFAULT-OFF
+        // (not bit-identical: online softmax reorders the sum). With it
+        // unset the dispatch is the unchanged mha_decode_f32_tcb, so the
+        // golden decode hash is unaffected.
+        let flash_attn = crate::env_on("DISMANTLE_QWEN_FLASH_ATTN");
+        let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
+        }
+        // Phase 2.1-a: ensure the f16 cache exists even when the first TCB
+        // call had seq_slot==0 (no fresh-arena seed). Idempotent — a no-op
+        // after the fresh-arena hoist above.
+        if f16_kv {
+            self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
         // Pre-bind the W4A8 scratch buffers (None when flag is off) so the
@@ -4088,14 +4523,46 @@ impl QwenDense {
             }
 
             // ── Biases (Qwen2 carries q/k/v biases) ──────────────────
+            // Wave-5a: when `use_seam` (DISMANTLE_BACKEND_SEAM=1, default-off)
+            // each in-place residual add `a[i] += b[i]` routes through the
+            // Phase-3 seam: build a cheap MetalBackend (Arc-clone of ctx), move
+            // the live per-token `tcb` into a MetalRecorder by value, call the
+            // COLLAPSED 4-arg `BackendElementwise::add(&mut rec, a, b, n)`
+            // (which forwards to the SAME kernels::add_inplace_metal_tcb), then
+            // move the TCB back out (`tcb = rec.tcb`) — legal because
+            // MetalRecorder has no Drop. `add` never commits/flushes, so the
+            // backend's own cloned ctx is never used to mint a TCB and the
+            // single-command-buffer-per-token invariant holds. The else arm is
+            // the byte-for-byte original call => golden unchanged when off.
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.q_buf, qb, q_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.q_buf, qb, q_dim)?;
+                }
             }
             if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.k_token_buf, kb, kv_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.k_token_buf, kb, kv_dim)?;
+                }
             }
             if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                if use_seam {
+                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                    backend.add(&mut rec, &arena.v_token_buf, vb, kv_dim)?;
+                    tcb = rec.tcb;
+                } else {
+                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                }
             }
 
             // ── RoPE on full head_dim for every Q and K head ─────────
@@ -4125,38 +4592,90 @@ impl QwenDense {
             // ── KV append into per-layer slice of k/v_cache buffer ───
             let layer_kv_off_elems = li * max_seq * kv_dim;
             let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.k_token_buf,
-                &arena.k_cache_buf,
-                0,
-                slot_kv_off_elems,
-                kv_dim,
-            )?;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.v_token_buf,
-                &arena.v_cache_buf,
-                0,
-                slot_kv_off_elems,
-                kv_dim,
-            )?;
+            if f16_kv {
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+            } else {
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf,
+                    &arena.k_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf,
+                    &arena.v_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    kv_dim,
+                )?;
+            }
 
             // ── MHA decode (GQA) ─────────────────────────────────────
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            kernels::mha_decode_f32_tcb(
-                &mut tcb,
-                &arena.q_buf,
-                &arena.k_cache_buf,
-                layer_kv_off_bytes,
-                &arena.v_cache_buf,
-                layer_kv_off_bytes,
-                &arena.attn_out_buf,
-                mha_seq_len,
-                head_dim,
-                n_heads,
-                n_kv_heads,
-            )?;
+            if f16_kv {
+                // f16 cache uses the HALF-stride byte offset (NOT the f32
+                // layer_kv_off_bytes). Q and attn_out stay f32.
+                let f16_off = arena.kv_f16_layer_byte_offset(li);
+                kernels::mha_decode_f16kv_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            } else if flash_attn {
+                kernels::mha_decode_flash_f32_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    &arena.k_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.v_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            } else {
+                kernels::mha_decode_f32_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    &arena.k_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.v_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            }
 
             // ── O projection ─────────────────────────────────────────
             // attn_out is the output of mha_decode (f32). When W4A8 active,
@@ -4894,6 +5413,16 @@ impl QwenDense {
         // occupancy, dead_levers.md "Q4_K batched MMA"). Read once here, used
         // in the batched_proj! macro below.
         let mma_on = crate::env_on("DISMANTLE_QWEN_Q4K_MMA");
+        // Phase 2.1-a: f16-KV for the batched-prefill producer. Same flag as
+        // the single-decode consumer so both target the SAME half cache.
+        // Mutually exclusive with W4A8 (unanalyzed); no flash variant exists
+        // for the batched MHA, so no flash guard is needed here.
+        let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
+        if f16_kv && crate::env_on("DISMANTLE_QWEN_W4A8") {
+            return Err(Error::Model(
+                "DISMANTLE_QWEN_F16_KV=1 is incompatible with DISMANTLE_QWEN_W4A8=1 (unanalyzed); unset one".into(),
+            ));
+        }
 
         let p0 = positions[0];
         if self.kv.seq_len != p0 {
@@ -4907,6 +5436,10 @@ impl QwenDense {
                 "forward_tokens_batch_tcb: kv overflow ({} + {} > {})",
                 self.kv.seq_len, b, self.kv.max_seq
             )));
+        }
+        if b == 1 {
+            let _ = self.forward_token_greedy_tcb(tokens[0], positions[0])?;
+            return Ok(());
         }
         let max_seq = self.kv.max_seq;
 
@@ -4927,6 +5460,11 @@ impl QwenDense {
                 cfg.vocab_size,
                 max_seq,
             ));
+            // Phase 2.1-a: same early-ensure hoist as the single-decode path
+            // so the half buffers exist before the CPU seed borrows them.
+            if f16_kv {
+                self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
+            }
         }
         if fresh_arena && p0 > 0 {
             let arena = self.dense_arena.as_ref().unwrap();
@@ -4937,17 +5475,33 @@ impl QwenDense {
                 let layer_off_elems = li * layer_stride_elems;
                 let k_src = &self.kv.keys[li][..prefill_elems];
                 let v_src = &self.kv.values[li][..prefill_elems];
-                let k_dst = arena.k_cache_buf.contents() as *mut f32;
-                let v_dst = arena.v_cache_buf.contents() as *mut f32;
-                unsafe {
-                    std::ptr::copy_nonoverlapping(
-                        k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
-                    );
-                    std::ptr::copy_nonoverlapping(
-                        v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
-                    );
+                if f16_kv {
+                    let kf16 = arena.k_cache_f16_buf.as_ref().unwrap();
+                    let vf16 = arena.v_cache_f16_buf.as_ref().unwrap();
+                    let k_dst = kf16.contents() as *mut f16;
+                    let v_dst = vf16.contents() as *mut f16;
+                    unsafe {
+                        for j in 0..prefill_elems {
+                            *k_dst.add(layer_off_elems + j) = f16::from_f32(k_src[j]);
+                            *v_dst.add(layer_off_elems + j) = f16::from_f32(v_src[j]);
+                        }
+                    }
+                } else {
+                    let k_dst = arena.k_cache_buf.contents() as *mut f32;
+                    let v_dst = arena.v_cache_buf.contents() as *mut f32;
+                    unsafe {
+                        std::ptr::copy_nonoverlapping(
+                            k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
+                        );
+                    }
                 }
             }
+        }
+        if f16_kv {
+            self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
         if b > arena.max_batch {
@@ -5022,6 +5576,11 @@ impl QwenDense {
                             // tuned predec kernel (MMA loses on square/wide).
                             if mma_on && $rows > $cols {
                                 kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            } else if b <= 4 {
+                                kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                                     scales, 0, $rows, $cols, b, $x_batch, $out_batch,
                                 )?;
@@ -5135,36 +5694,68 @@ impl QwenDense {
             // memcpy of B*kv_dim floats replaces 2B sequential calls.
             let layer_kv_off_elems = li * max_seq * kv_dim;
             let slot_kv_off_elems = layer_kv_off_elems + p0 * kv_dim;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.k_token_buf_batch,
-                &arena.k_cache_buf,
-                0,
-                slot_kv_off_elems,
-                b * kv_dim,
-            )?;
-            kernels::memcpy_f32_off_tcb(
-                &mut tcb,
-                &arena.v_token_buf_batch,
-                &arena.v_cache_buf,
-                0,
-                slot_kv_off_elems,
-                b * kv_dim,
-            )?;
+            if f16_kv {
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+                kernels::memcpy_f32_to_f16_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+            } else {
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    &arena.k_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+                kernels::memcpy_f32_off_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    &arena.v_cache_buf,
+                    0,
+                    slot_kv_off_elems,
+                    b * kv_dim,
+                )?;
+            }
 
             // ── MHA decode: one dispatch over (n_heads, B) TGs.
             // Each batch element gets its own causal seq_len = p0+b+1.
             // Saves B-1 dispatches per layer (n_heads × B TGs in one
             // launch vs B separate launches of n_heads TGs).
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            kernels::mha_decode_f32_batched_tcb(
-                &mut tcb,
-                &arena.q_buf_batch,
-                &arena.k_cache_buf, layer_kv_off_bytes,
-                &arena.v_cache_buf, layer_kv_off_bytes,
-                &arena.attn_out_buf_batch,
-                p0, b, head_dim, n_heads, n_kv_heads,
-            )?;
+            if f16_kv {
+                // f16 batched MHA: HALF-stride byte offset; Q/out stay f32.
+                let f16_off = arena.kv_f16_layer_byte_offset(li);
+                kernels::mha_decode_f16kv_batched_tcb(
+                    &mut tcb,
+                    &arena.q_buf_batch,
+                    arena.k_cache_f16_buf.as_ref().unwrap(), f16_off,
+                    arena.v_cache_f16_buf.as_ref().unwrap(), f16_off,
+                    &arena.attn_out_buf_batch,
+                    p0, b, head_dim, n_heads, n_kv_heads,
+                )?;
+            } else {
+                kernels::mha_decode_f32_batched_tcb(
+                    &mut tcb,
+                    &arena.q_buf_batch,
+                    &arena.k_cache_buf, layer_kv_off_bytes,
+                    &arena.v_cache_buf, layer_kv_off_bytes,
+                    &arena.attn_out_buf_batch,
+                    p0, b, head_dim, n_heads, n_kv_heads,
+                )?;
+            }
 
             // ── O projection (batched) ───────────────────────────
             batched_proj!(
@@ -5220,11 +5811,19 @@ impl QwenDense {
                 let blocks_per_row = intermediate / 256;
                 let row_bytes = blocks_per_row * 144;
                 if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes,
-                        scales, 0, h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                    )?;
+                    if b <= 4 {
+                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes,
+                            scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    } else {
+                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes,
+                            scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    }
                 } else {
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
                         &mut tcb, q4k_buf, 0, h * row_bytes,
@@ -5270,6 +5869,584 @@ impl QwenDense {
         self.kv.seq_len += b;
 
         Ok(())
+    }
+
+    /// Continuous-batching DECODE stack: B INDEPENDENT sequences in one TCB.
+    /// Unlike `forward_tokens_batch_tcb` (B tokens of ONE sequence, contiguous
+    /// positions, single shared KV window), each slot `bi` here is its own
+    /// sequence with its own `positions[bi]` and its own slot-strided KV region
+    /// (`bi * max_seq_per_slot * kv_dim` within each layer window). The caller
+    /// provides a slot-strided arena (`max_seq = B*max_seq_per_slot`,
+    /// `max_batch = B`) and reads `arena.x_norm_buf_batch` afterward for the
+    /// per-slot LM head. DEFAULT path only (no f16-KV / MMA / W4A8 in v1). The
+    /// arena's KV cache persists across calls so the prefix grows per decode
+    /// step. Reuses the v3w batched GEMM (weight read once across B columns)
+    /// and the new `mha_decode_f32_batched_multiseq` kernel.
+    //
+    // C1 (single-TCB tail): this NO LONGER commits. It returns the LIVE
+    // TokenCommandBuffer (layers + final norm encoded, x_norm_buf_batch about to
+    // be written by the trailing fused add+rmsnorm) so the caller can append the
+    // LM-head GEMM into the SAME command buffer and `commit_and_wait` ONCE —
+    // killing the second submit+fence round-trip the R1 LM head used to incur.
+    // The returned tcb borrows ONLY `&self` (via metal_ctx); the arena/pos/region
+    // buffers it encodes are retained by Metal in the command buffer at encode
+    // time, so they need not outlive this call from Rust's borrow view. Mirrors
+    // how `forward_token_greedy_tcb` keeps one tcb alive end-to-end (line ~5045).
+    // The SOLE caller is `forward_tokens_multiseq_logits`, which MUST commit the
+    // returned tcb (or append the LM head first, then commit) before reading any
+    // GPU output — a dropped tcb commits via the Drop impl, but the result is
+    // read only after an explicit commit_and_wait.
+    #[cfg(target_os = "macos")]
+    fn forward_tokens_multiseq_stack_tcb<'a>(
+        &'a self,
+        arena: &crate::metal::DenseDecodeArena,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<crate::metal::TokenCommandBuffer<'a>> {
+        use crate::kernels;
+        use crate::metal::TokenCommandBuffer;
+
+        let b = tokens.len();
+        if b == 0 {
+            // Unreachable: the sole caller (forward_tokens_multiseq_logits) guards
+            // b==0 first. But the stack now returns a live TCB (C1), so hand back
+            // an empty one for type-correctness rather than ().
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("multiseq_stack: no metal_ctx".into()))?;
+            return Ok(TokenCommandBuffer::new(ctx));
+        }
+        if positions.len() != b {
+            return Err(Error::Model(format!(
+                "multiseq_stack: tokens={} positions={}",
+                b,
+                positions.len()
+            )));
+        }
+        if b > arena.max_batch {
+            return Err(Error::Model(format!(
+                "multiseq_stack: B={} > arena.max_batch={}",
+                b, arena.max_batch
+            )));
+        }
+        if regions.len() != b {
+            return Err(Error::Model(format!(
+                "multiseq_stack: regions={} != tokens={}",
+                regions.len(),
+                b
+            )));
+        }
+        // Slot-strided KV: the arena holds `max_batch` independent regions, each
+        // with room for `max_seq_per_slot` positions. KV is keyed by STABLE
+        // region (regions[bi]), NOT the compacted dispatch index, so a slot's
+        // history survives the active/ready set shrinking or growing between steps.
+        if arena.max_seq < arena.max_batch * max_seq_per_slot {
+            return Err(Error::Model(format!(
+                "multiseq_stack: arena.max_seq={} < max_batch*max_seq_per_slot={}",
+                arena.max_seq,
+                arena.max_batch * max_seq_per_slot
+            )));
+        }
+        for (i, &r) in regions.iter().enumerate() {
+            if r >= arena.max_batch {
+                return Err(Error::Model(format!(
+                    "multiseq_stack: regions[{}]={} >= arena.max_batch={}",
+                    i, r, arena.max_batch
+                )));
+            }
+        }
+        for (i, &p) in positions.iter().enumerate() {
+            if p >= max_seq_per_slot {
+                return Err(Error::Model(format!(
+                    "multiseq_stack: positions[{}]={} >= max_seq_per_slot={}",
+                    i, p, max_seq_per_slot
+                )));
+            }
+        }
+
+        let ctx = self
+            .metal_ctx
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: no metal_ctx".into()))?;
+        let mmap_buf = self
+            .weights_mmap_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: weights not pinned".into()))?;
+        let embed_buf = self
+            .embed_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: embed not pinned".into()))?;
+        let final_norm_buf = self
+            .final_norm_buf
+            .as_ref()
+            .ok_or_else(|| Error::Metal("multiseq_stack: final_norm not pinned".into()))?;
+
+        let cfg = &self.config;
+        let h = cfg.hidden;
+        let head_dim = cfg.head_dim;
+        let n_heads = cfg.n_heads;
+        let n_kv_heads = cfg.n_kv_heads;
+        let q_dim = n_heads * head_dim;
+        let kv_dim = n_kv_heads * head_dim;
+        let intermediate = cfg.intermediate;
+        let eps = cfg.rms_norm_eps;
+        let theta = cfg.rope_theta;
+
+        let f32_bytes = std::mem::size_of::<f32>();
+        let h_bytes = h * f32_bytes;
+        let q_dim_bytes = q_dim * f32_bytes;
+        let kv_dim_bytes = kv_dim * f32_bytes;
+        let int_bytes = intermediate * f32_bytes;
+
+        // Slot-strided KV geometry.
+        let slot_stride_elems = max_seq_per_slot * kv_dim; // one slot's per-layer KV region
+        let layer_kv_stride_elems = arena.max_seq * kv_dim; // = B*max_seq_per_slot*kv_dim
+
+        // u32 positions buffer for the multi-seq MHA + its shmem sizing.
+        let mha_max_seq = positions.iter().copied().max().unwrap_or(0) + 1;
+        let pos_bytes: Vec<u8> = positions
+            .iter()
+            .flat_map(|&p| (p as u32).to_le_bytes())
+            .collect();
+        let pos_buf = ctx.new_buffer_with_bytes(&pos_bytes);
+        let region_bytes: Vec<u8> = regions
+            .iter()
+            .flat_map(|&r| (r as u32).to_le_bytes())
+            .collect();
+        let region_buf = ctx.new_buffer_with_bytes(&region_bytes);
+
+        let predec_cache = self.q4k_predec_cache.as_ref();
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // Batched projection (default path: Q4_K v3w predec/plain, Q6_K / f16
+        // fallback). Copied from forward_tokens_batch_tcb (no MMA branch).
+        macro_rules! batched_proj {
+            ($tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
+             $x_batch:expr, $x_stride:expr,
+             $out_batch:expr, $out_stride:expr) => {{
+                match $tref.dtype {
+                    GgmlType::Q4_K => {
+                        if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
+                            if b == 1 {
+                                // B=1 fast path: use the GEMV-specialised predec kernel
+                                // (gemm_q4_k_v4_predec_2r, ~56% peak BW) instead of the
+                                // v3w GEMM kernel (~13% peak BW at M=1). At B=1 the
+                                // activations start at offset 0 in the batch buffer, so
+                                // passing $x_batch / $out_batch directly is correct.
+                                kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols,
+                                    $x_batch, $out_batch,
+                                )?;
+                            } else if b <= 4 {
+                                // v4r: barrier-free, 16 rows/TG, direct device x reads.
+                                // Wins at B=2..4 where 16-barrier-per-projection cost
+                                // exceeds the extra x-read latency (x is L2-cached, ~15
+                                // cycles/read; shmem is ~1 cycle but gated behind 2
+                                // TG barriers per block = 16 barriers/projection call).
+                                // At B>4 the strided x reads (B×256×4B per block, cols-
+                                // strided) cost more than the barriers → use v3w there.
+                                kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            } else {
+                                // B=5..8: v3w wins (shmem staging amortizes x reads,
+                                // barrier cost < strided device-memory x-read cost).
+                                kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                )?;
+                            }
+                        } else {
+                            kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols, b, $x_batch, $out_batch,
+                            )?;
+                        }
+                    }
+                    GgmlType::Q6_K => {
+                        for bi in 0..b {
+                            kernels::gemv_q6_k_pinned_off_tcb(
+                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
+                                $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                    _ => {
+                        let buf_f16 = $pinned_f16.ok_or_else(|| {
+                            Error::Metal("multiseq batched_proj: no f16 fallback".into())
+                        })?;
+                        for bi in 0..b {
+                            kernels::gemv_f16_metal_buf_off_tcb(
+                                &mut tcb, buf_f16, $rows, $cols,
+                                $x_batch, bi * $x_stride,
+                                $out_batch, bi * $out_stride,
+                            )?;
+                        }
+                    }
+                }
+            }};
+        }
+
+        // Embed B tokens.
+        for (bi, &tok) in tokens.iter().enumerate() {
+            kernels::embed_lookup_metal_f32_off_tcb(
+                &mut tcb, embed_buf, tok, h, &arena.x_buf_batch, bi * h_bytes,
+            )?;
+        }
+        // Layer-0 pre-norm (per slot).
+        let layer0_attn_norm = self.layers[0]
+            .pinned
+            .attn_norm
+            .as_ref()
+            .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
+        for bi in 0..b {
+            kernels::rmsnorm_metal_buf_off_tcb(
+                &mut tcb, &arena.x_buf_batch, bi * h_bytes,
+                layer0_attn_norm, eps, h, &arena.x_norm_buf_batch, bi * h_bytes,
+            )?;
+        }
+
+        for li in 0..cfg.n_layers {
+            let layer = &self.layers[li];
+
+            batched_proj!(layer.q_proj, layer.pinned.q_proj_f16.as_ref(), q_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.q_buf_batch, q_dim_bytes);
+            batched_proj!(layer.k_proj, layer.pinned.k_proj_f16.as_ref(), kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.k_token_buf_batch, kv_dim_bytes);
+            batched_proj!(layer.v_proj, layer.pinned.v_proj_f16.as_ref(), kv_dim, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.v_token_buf_batch, kv_dim_bytes);
+
+            if let Some(qb) = layer.pinned.q_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.q_buf_batch, qb, q_dim, b)?;
+            }
+            if let Some(kb) = layer.pinned.k_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.k_token_buf_batch, kb, kv_dim, b)?;
+            }
+            if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b)?;
+            }
+
+            // RoPE per slot at its OWN position (positions[] buffer), batched:
+            // ONE dispatch each for Q and K replaces the 2B per-slot rope calls.
+            // Bit-identical — rope is elementwise, so batching changes no element.
+            kernels::rope_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.q_buf_batch, &pos_buf,
+                n_heads, head_dim, q_dim, b, theta,
+            )?;
+            kernels::rope_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.k_token_buf_batch, &pos_buf,
+                n_kv_heads, head_dim, kv_dim, b, theta,
+            )?;
+
+            // Per-slot KV append, batched: each slot writes its K and V into its
+            // OWN stable region (regions[bi]) at its OWN position in ONE scatter
+            // dispatch instead of 2B memcpys. Byte-identical (pure copy).
+            let layer_off_elems = li * layer_kv_stride_elems;
+            kernels::kv_scatter_append_multiseq_tcb(
+                &mut tcb,
+                &arena.k_token_buf_batch, &arena.v_token_buf_batch,
+                &arena.k_cache_buf, &arena.v_cache_buf,
+                &region_buf, &pos_buf,
+                kv_dim, b, slot_stride_elems, layer_off_elems,
+            )?;
+
+            // Multi-seq MHA: per-slot positions + per-slot KV base.
+            let layer_kv_off_bytes = layer_off_elems * f32_bytes;
+            kernels::mha_decode_f32_batched_multiseq_tcb(
+                &mut tcb, &arena.q_buf_batch,
+                &arena.k_cache_buf, layer_kv_off_bytes,
+                &arena.v_cache_buf, layer_kv_off_bytes,
+                &arena.attn_out_buf_batch, &pos_buf, &region_buf, mha_max_seq, slot_stride_elems,
+                b, head_dim, n_heads, n_kv_heads,
+            )?;
+
+            // O projection.
+            batched_proj!(layer.o_proj, layer.pinned.o_proj_f16.as_ref(), h, q_dim,
+                &arena.attn_out_buf_batch, q_dim_bytes, &arena.o_proj_out_buf_batch, h_bytes);
+
+            // Fused (x += o_proj_out) + ffn_norm.
+            let ffn_norm_pin = layer
+                .pinned
+                .ffn_norm
+                .as_ref()
+                .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb, &arena.x_buf_batch, &arena.o_proj_out_buf_batch,
+                ffn_norm_pin, &arena.x_norm_buf_batch, eps, h, b,
+            )?;
+
+            // FFN gate / up / silu_mul / down.
+            batched_proj!(layer.ffn_gate, layer.pinned.ffn_gate_f16.as_ref(), intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_gate_buf_batch, int_bytes);
+            batched_proj!(layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(), intermediate, h,
+                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_up_buf_batch, int_bytes);
+            kernels::silu_mul_tcb(
+                &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                &arena.ffn_act_buf_batch, intermediate * b,
+            )?;
+            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
+                    if b == 1 {
+                        kernels::gemv_q4_k_v4_predec_pinned_tcb(
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            scales,
+                            0,
+                            h,
+                            intermediate,
+                            &arena.ffn_act_buf_batch,
+                            &arena.ffn_down_buf_batch,
+                        )?;
+                    } else if b <= 4 {
+                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    } else {
+                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
+                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
+                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        )?;
+                    }
+                } else {
+                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                }
+            } else {
+                batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
+                    &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
+            }
+
+            // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
+            let next_norm = if li + 1 < cfg.n_layers {
+                self.layers[li + 1]
+                    .pinned
+                    .attn_norm
+                    .as_ref()
+                    .ok_or_else(|| Error::Metal("attn_norm not pinned".into()))?
+            } else {
+                final_norm_buf
+            };
+            kernels::add_rmsnorm_fused_batched_tcb(
+                &mut tcb, &arena.x_buf_batch, &arena.ffn_down_buf_batch,
+                next_norm, &arena.x_norm_buf_batch, eps, h, b,
+            )?;
+        }
+
+        // C1: do NOT commit here — hand the live tcb back so the LM-head GEMM
+        // appends into this same command buffer and a single commit_and_wait in
+        // the caller covers layers + LM head (one round-trip instead of two).
+        Ok(tcb)
+    }
+
+    /// Continuous-batching multi-seq decode: B INDEPENDENT sequences, one
+    /// greedy token each. (Re)allocates the slot-strided `multiseq_arena` if
+    /// needed (KV persists across calls so the prefix grows per step), runs the
+    /// stack, then a per-slot CPU full-vocab LM head → argmax (the same pattern
+    /// as `forward_tokens_batched_with_logits`). Returns B next-token ids.
+    #[cfg(target_os = "macos")]
+    /// Multi-seq decode returning per-slot full-vocab LOGITS — the serving seam
+    /// the scheduler samples from. (Re)allocates the slot-strided `multiseq_arena`
+    /// (KV persists across steps so each slot's prefix grows), runs the stack,
+    /// then a per-slot CPU full-vocab LM head. (The per-slot CPU LM head is the
+    /// one un-amortized cost; a GPU-batched LM head + GPU argmax is the follow-up
+    /// to lift aggregate tps past the measured ~2.57x.)
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq_logits(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<Vec<Vec<f32>>> {
+        let b = tokens.len();
+        if b == 0 {
+            return Ok(Vec::new());
+        }
+        // Fixed-capacity slot-strided arena: MAX_MULTISEQ_SLOTS independent KV
+        // regions, each MAX_MULTISEQ_CTX positions deep. Allocated ONCE — never
+        // reallocated. The old guard `a.max_seq < MAX_MULTISEQ_SLOTS *
+        // max_seq_per_slot` triggered realloc when max_seq_per_slot grew between
+        // calls (e.g. parity test used 16, serve path uses 2048), zeroing all
+        // in-flight KV. Fixed by allocating at the hard ceiling on first use.
+        // regions, allocated ONCE and NEVER reallocated on batch-size growth.
+        // A realloc-on-growth would return zeroed buffers and wipe ALL in-flight
+        // slots' KV (the catastrophic bug the review found); regions (stable slot
+        // ids) index into the fixed regions, so B can shrink/grow freely.
+        const MAX_MULTISEQ_SLOTS: usize = 8;
+        const MAX_MULTISEQ_CTX: usize = 4096;
+        if b > MAX_MULTISEQ_SLOTS {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: B={b} > MAX_MULTISEQ_SLOTS={MAX_MULTISEQ_SLOTS}"
+            )));
+        }
+        if regions.len() != b {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: regions={} != tokens={b}",
+                regions.len()
+            )));
+        }
+        if max_seq_per_slot > MAX_MULTISEQ_CTX {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: max_seq_per_slot={max_seq_per_slot} > MAX_MULTISEQ_CTX={MAX_MULTISEQ_CTX}"
+            )));
+        }
+        // Allocate ONCE at MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX. Never reallocate:
+        // any realloc returns fresh zeroed Metal buffers, wiping all in-flight KV.
+        if self.multiseq_arena.is_none() {
+            let ctx = self
+                .metal_ctx
+                .as_ref()
+                .ok_or_else(|| Error::Metal("forward_tokens_multiseq: no metal_ctx".into()))?;
+            let cfg = &self.config;
+            self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
+                ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
+                cfg.hidden, cfg.intermediate, cfg.vocab_size,
+                MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+            ));
+        }
+
+        // Populate pre-decoded scale tables so the B=1 fast path in
+        // forward_tokens_multiseq_stack_tcb can dispatch gemv_q4_k_v4_predec
+        // (~56% peak BW) instead of v3w (~13% peak BW at M=1).
+        // Mirrors the call in forward_token_greedy_tcb; idempotent after first call.
+        if self.q4k_predec_cache.is_none() {
+            self.ensure_q4k_predec_cache()?;
+        }
+
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        // C1: the stack no longer commits — it returns the LIVE tcb (layers +
+        // final norm encoded). We append the LM-head GEMM into this SAME tcb when
+        // R1 is ON, or commit it as-is on the CPU-fallback path. Either way there
+        // is ONE commit_and_wait per decode step, not two.
+        let mut tcb =
+            self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, regions, max_seq_per_slot)?;
+
+        let h = self.config.hidden;
+        let vocab = self.config.vocab_size;
+        let arena = self.multiseq_arena.as_ref().unwrap();
+        // R1: opt-in GPU-batched Q4_K LM head. When DISMANTLE_QWEN_Q4K_LMHEAD=1
+        // (the SAME flag/buffer the verify FAST path uses) and the FULL-vocab
+        // Q4_K head is resident, run ONE batched v3w Q4_K GEMM over all B slots
+        // (weight read once, broadcast across B columns) instead of B sequential
+        // CPU full-vocab f16 matmuls. This reuses the EXACT wrapper
+        // forward_tokens_verify uses (gemm_q4_k_m_batched_v3w_pinned_tcb) and the
+        // SAME x_norm_buf_batch the stack just wrote. C1 appends that GEMM into
+        // the stack's OWN tcb (no second TokenCommandBuffer, no second
+        // commit_and_wait), so layers + LM head ride a single GPU submit/fence —
+        // bit-identical to the prior two-commit path (same dispatches, same
+        // order, fewer fences). Output stays full-vocab (length=vocab) — NO
+        // prune/remap — so the returned logits are the same length and meaning as
+        // the CPU path (forward_tokens_multiseq argmaxes the index directly as a
+        // token id). When the flag is OFF (or the head/shape/B is out of range)
+        // we commit the stack tcb and take the unchanged per-slot CPU branch
+        // below, byte-identical to today (multiseq_decode_parity / churn anchors).
+        let want_gpu_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
+            && self.lm_head_q4k_buf.is_some()
+            && h % 256 == 0
+            && (1..=8).contains(&b);
+        if want_gpu_lmhead {
+            let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                Error::Metal("forward_tokens_multiseq: no metal_ctx for GPU LM head".into())
+            })?;
+            let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
+            let blocks_per_row = h / 256;
+            let w_bytes = vocab * blocks_per_row * 144;
+            // B*vocab f32 logits scratch. Retained by Metal in `tcb` at encode time.
+            let logits_buf = ctx.new_buffer(b * vocab * std::mem::size_of::<f32>());
+            // C1: append into the stack's tcb (NOT a fresh one).
+            // Use v3w for all B. lhq is the full-vocab Q4K head (151936 rows);
+            // lm_head_pruned_predec has scales only for the 32K pruned head —
+            // wrong dimensions for a predec GEMV over the full-vocab head.
+            // GPU v3w beats CPU f16 at every batch size, which is the real gain.
+            crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                &mut tcb, lhq, 0, w_bytes, vocab, h, b,
+                &arena.x_norm_buf_batch, &logits_buf,
+            )?;
+            // ONE round-trip: layers + LM head in a single submit/fence.
+            tcb.commit_and_wait()?;
+            // Read B full-vocab rows out of the shared-memory logits buffer.
+            let lp = logits_buf.contents() as *const f32;
+            let mut out = Vec::with_capacity(b);
+            for i in 0..b {
+                let row = unsafe { std::slice::from_raw_parts(lp.add(i * vocab), vocab) };
+                out.push(row.to_vec());
+            }
+            return Ok(out);
+        }
+        // CPU fallback (R1 OFF): the stack tcb was NOT committed by the stack, so
+        // commit+wait it here BEFORE reading x_norm_buf_batch from shared memory
+        // (this is exactly where the stack used to commit). Then run the unchanged
+        // per-slot CPU full-vocab f16 LM head — byte-identical to the prior path.
+        tcb.commit_and_wait()?;
+        let x_norm_ptr = arena.x_norm_buf_batch.contents() as *const f32;
+        // SAFETY: x_norm_buf_batch is sized max_batch*h*4 bytes; b*h <= that.
+        let x_norm_all: &[f32] = unsafe { std::slice::from_raw_parts(x_norm_ptr, b * h) };
+        let lm_head_src: &[f16] = match self.lm_head.as_ref() {
+            Some(w) => w.as_slice(),
+            None => self.embed.as_slice(),
+        };
+        if lm_head_src.len() != vocab * h {
+            return Err(Error::Model(format!(
+                "forward_tokens_multiseq: lm_head size mismatch ({} vs {}*{})",
+                lm_head_src.len(),
+                vocab,
+                h
+            )));
+        }
+        let mut out = Vec::with_capacity(b);
+        for k in 0..b {
+            out.push(crate::speculate::eagle5_forward::matmul_no_bias_f16w(
+                lm_head_src,
+                &x_norm_all[k * h..(k + 1) * h],
+                vocab,
+                h,
+            ));
+        }
+        Ok(out)
+    }
+
+    /// Multi-seq decode → per-slot greedy argmax token. Thin wrapper over
+    /// `forward_tokens_multiseq_logits` (used by the parity + aggregate tests).
+    #[cfg(target_os = "macos")]
+    pub fn forward_tokens_multiseq(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        max_seq_per_slot: usize,
+    ) -> Result<Vec<u32>> {
+        // The argmax wrapper (parity + aggregate tests) decodes B contiguous
+        // sequences, so region == batch index (0..b) — a stable identity.
+        let regions: Vec<usize> = (0..tokens.len()).collect();
+        let logits =
+            self.forward_tokens_multiseq_logits(tokens, positions, &regions, max_seq_per_slot)?;
+        Ok(logits
+            .iter()
+            .map(|l| {
+                let mut best = 0u32;
+                let mut best_v = f32::NEG_INFINITY;
+                for (i, &v) in l.iter().enumerate() {
+                    if v > best_v {
+                        best_v = v;
+                        best = i as u32;
+                    }
+                }
+                best
+            })
+            .collect())
     }
 
     /// Batched-verify-with-logits — spec-decode's per-cycle workhorse.
