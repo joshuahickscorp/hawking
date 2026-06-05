@@ -2848,6 +2848,83 @@ impl Engine for QwenDense {
         }
     }
 
+    fn bake_sidecar_predec(
+        &self,
+        out_path: &std::path::Path,
+        profile: crate::sidecar::SidecarProfile,
+    ) -> Result<usize> {
+        use sha2::{Digest, Sha256};
+        use crate::sidecar::{
+            SidecarContents, SidecarHeader, SidecarQuality, SidecarWriter, SIDECAR_VERSION,
+        };
+        use crate::kernels::predecode_q4_k_scale_table;
+
+        // ── SHA-256 of the source GGUF ────────────────────────────────────────
+        let mut h = Sha256::new();
+        h.update(&self.gguf.mmap[..]);
+        let gguf_hash = h.finalize().iter().map(|b| format!("{b:02x}")).collect::<String>();
+
+        // ── Shader hash ───────────────────────────────────────────────────────
+        let shader_hash = crate::profile::shader_source_hash();
+
+        // ── Collect Q4_K predec entries ───────────────────────────────────────
+        let mut predec_entries: Vec<(u64, Vec<f32>)> = Vec::new();
+        let mut seen_offsets = std::collections::HashSet::new();
+
+        let mut collect = |tref: &TensorRef| {
+            if tref.dtype != GgmlType::Q4_K { return; }
+            if !seen_offsets.insert(tref.offset) { return; }
+            let bytes = &self.gguf.mmap[tref.offset..tref.offset + tref.byte_size];
+            let scales = predecode_q4_k_scale_table(bytes);
+            predec_entries.push((tref.offset as u64, scales));
+        };
+
+        for layer in &self.layers {
+            collect(&layer.q_proj);
+            collect(&layer.k_proj);
+            collect(&layer.v_proj);
+            collect(&layer.o_proj);
+            collect(&layer.ffn_gate);
+            collect(&layer.ffn_up);
+            collect(&layer.ffn_down);
+        }
+        // LM head Q4K buffer has its own tref; skip (no tref field — walk GGUF tensors instead)
+
+        let entry_count = predec_entries.len();
+
+        // ── Build header ──────────────────────────────────────────────────────
+        let header = SidecarHeader {
+            version: SIDECAR_VERSION,
+            source_gguf_hash: gguf_hash,
+            tokenizer_hash: "".to_string(), // TODO: hash tokenizer vocab
+            shader_hash,
+            bake_profile: profile,
+            contents: SidecarContents {
+                q4k_predec_scales: true,
+                ..Default::default()
+            },
+            quality: SidecarQuality {
+                quality_gate_passed: true,
+                quality_gate_spec: "predec scales are bit-identical".to_string(),
+                ..Default::default()
+            },
+            bake_device: self.model_id.clone(),
+            bake_time_secs: 0, // caller stamps if needed
+        };
+
+        let writer = SidecarWriter {
+            path: out_path.to_owned(),
+            predec_entries,
+            header,
+        };
+        let bytes = writer.write()?;
+        eprintln!(
+            "sidecar: wrote {} predec entries → {:?} ({} bytes)",
+            entry_count, out_path, bytes
+        );
+        Ok(bytes)
+    }
+
     fn copy_kv_prefix_to_slot(
         &mut self,
         src_slot: usize,

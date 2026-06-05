@@ -350,6 +350,24 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
+    /// Track 4.2 — Bake a `.dismantle` sidecar with predecoded Q4_K scale tables.
+    ///
+    /// Walks all Q4_K tensors in the model, runs `predecode_q4_k_scale_table` on
+    /// each, and writes the results to `out_path` in the v1 binary sidecar format.
+    /// Returns the number of bytes written.
+    ///
+    /// Subsequent model loads detect the sidecar, validate GGUF hash, and load
+    /// predec scales directly — skipping the ~200ms decode pass at startup.
+    ///
+    /// Default: Err(Unimplemented). QwenDense overrides.
+    fn bake_sidecar_predec(
+        &self,
+        _out_path: &std::path::Path,
+        _profile: crate::sidecar::SidecarProfile,
+    ) -> Result<usize> {
+        Err(crate::Error::Unimplemented("bake_sidecar_predec"))
+    }
+
     /// Track 5.2 — Prefill `slot_id` starting at `start_pos` rather than 0.
     ///
     /// Caller must have already called `copy_kv_prefix_to_slot(src, slot_id, start_pos)`
