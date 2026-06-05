@@ -7270,6 +7270,56 @@ mod metal_dispatch {
         })
     }
 
+    /// Batched greedy argmax: one thread group (256 threads) per slot.
+    /// `logits_buf` is `(batch, vocab)` row-major f32.
+    /// `tokens_buf` receives `batch` u32 token ids.
+    /// Grid: (batch * 256, 1, 1). Thread groups: (256, 1, 1).
+    pub fn sample_argmax_f32_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        logits_buf: &PinnedBuffer,
+        tokens_buf: &PinnedBuffer,
+        vocab: usize,
+        batch: usize,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        let need_logits = (batch * vocab * std::mem::size_of::<f32>()) as u64;
+        let need_tokens = (batch * std::mem::size_of::<u32>()) as u64;
+        if logits_buf.length() < need_logits {
+            return Err(Error::Kernel(format!(
+                "sample_argmax_f32_batched: logits buf {} < need {}",
+                logits_buf.length(),
+                need_logits
+            )));
+        }
+        if tokens_buf.length() < need_tokens {
+            return Err(Error::Kernel(format!(
+                "sample_argmax_f32_batched: tokens buf {} < need {}",
+                tokens_buf.length(),
+                need_tokens
+            )));
+        }
+        let vocab_u32 = vocab as u32;
+        let batch_u32 = batch as u32;
+        const TG: u32 = 256;
+        let shmem_f = TG as u64 * std::mem::size_of::<f32>() as u64;
+        let shmem_u = TG as u64 * std::mem::size_of::<u32>() as u64;
+        tcb.dispatch_threads(
+            "sample_argmax_f32_batched",
+            (batch as u32 * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(logits_buf), 0);
+                enc.set_buffer(1, Some(tokens_buf), 0);
+                enc.set_u32(2, vocab_u32);
+                enc.set_u32(3, batch_u32);
+                enc.set_threadgroup_memory_length(0, shmem_f);
+                enc.set_threadgroup_memory_length(1, shmem_u);
+            },
+        )
+    }
+
     // ── end v1.0.0-E ─────────────────────────────────────────────────────────
 
     // ── v1.0.0-G: rmsnorm-gemv fusion TCB dispatchers ────────────────────────

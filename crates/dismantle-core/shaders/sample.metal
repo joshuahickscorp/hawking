@@ -73,6 +73,43 @@ kernel void sample_argmax_f32(
     if (tid == 0) token[0] = shmem_i[0];
 }
 
+// Batched greedy argmax: one thread group per slot, 256 threads each.
+// Grid: (B * 256, 1, 1). Thread groups: (256, 1, 1).
+// Shmem: 256 floats + 256 uints per TG (2 KB per slot).
+// Tie-breaking: lower index wins (matches single-slot sample_argmax_f32).
+kernel void sample_argmax_f32_batched(
+    device const float* logits  [[buffer(0)]],   // (B, vocab) row-major
+    device       uint*  tokens  [[buffer(1)]],   // (B,) output token ids
+    constant     uint&  n       [[buffer(2)]],   // vocab size
+    constant     uint&  batch   [[buffer(3)]],   // B
+    threadgroup  float* shmem_v [[threadgroup(0)]],
+    threadgroup  uint*  shmem_i [[threadgroup(1)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]],
+    uint tg_id   [[threadgroup_position_in_grid]])
+{
+    uint slot = tg_id;
+    if (slot >= batch) return;
+    device const float* row = logits + (uint64_t)slot * n;
+    if (n == 0) { if (tid == 0) tokens[slot] = 0; return; }
+    float local_v = -INFINITY; uint local_i = 0;
+    for (uint i = tid; i < n; i += tg_size) {
+        float v = row[i];
+        if (v > local_v) { local_v = v; local_i = i; }
+    }
+    shmem_v[tid] = local_v; shmem_i[tid] = local_i;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) {
+            float vb = shmem_v[tid + stride]; uint ib = shmem_i[tid + stride];
+            float va = shmem_v[tid]; uint ia = shmem_i[tid];
+            if (vb > va || (vb == va && ib < ia)) { shmem_v[tid] = vb; shmem_i[tid] = ib; }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) tokens[slot] = shmem_i[0];
+}
+
 // v0.5.7-D — parallel top-K selection.
 // Finds the K largest logits and writes their values and indices to output buffers.
 // K must be ≤ 64. Uses K rounds of parallel argmax; each round excludes
