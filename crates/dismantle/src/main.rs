@@ -396,6 +396,22 @@ enum Cmd {
         #[arg(long, default_value_t = false)]
         no_history: bool,
     },
+    /// Verify model file integrity: compute SHA-256, print size, check sidecar.
+    ///
+    /// Usage:
+    ///   dismantle verify --weights <path> [--expected-sha256 <hex>]
+    ///
+    /// Prints the file path, byte size, and SHA-256 hash. When --expected-sha256
+    /// is supplied, compares and prints PASS or FAIL. Also reports whether the
+    /// matching `.dismantle` sidecar file is present.
+    Verify {
+        #[arg(long)]
+        weights: PathBuf,
+        /// Expected SHA-256 hex string (64 lower-case hex chars). When supplied,
+        /// the computed hash is compared and PASS / FAIL is printed.
+        #[arg(long)]
+        expected_sha256: Option<String>,
+    },
     /// Bake a `.dismantle` sidecar file from a GGUF model.
     ///
     /// The sidecar encodes pre-processed, Metal-friendly weight representations
@@ -684,6 +700,7 @@ fn main() -> Result<()> {
             vocab_prune,
             quality_eval_count,
         } => bake_sidecar_main(weights, out, profile, kernel_profile, vocab_prune, quality_eval_count),
+        Cmd::Verify { weights, expected_sha256 } => verify_main(weights, expected_sha256),
     }
 }
 
@@ -1800,5 +1817,51 @@ fn version_main(weights: Option<PathBuf>) -> Result<()> {
             Err(e) => eprintln!("could not read weights: {e}"),
         }
     }
+    Ok(())
+}
+
+fn verify_main(weights: PathBuf, expected_sha256: Option<String>) -> Result<()> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+
+    // Open and read the file in chunks to avoid a single large allocation.
+    let mut f = std::fs::File::open(&weights)
+        .map_err(|e| anyhow::anyhow!("open {}: {e}", weights.display()))?;
+    let file_size = f.metadata()?.len();
+
+    let mut hasher = Sha256::new();
+    let mut buf = vec![0u8; 65536];
+    loop {
+        let n = f.read(&mut buf)?;
+        if n == 0 { break; }
+        hasher.update(&buf[..n]);
+    }
+    let hash_bytes = hasher.finalize();
+    // Format as 64 lower-case hex chars.
+    let hash_hex: String = hash_bytes.iter().map(|b| format!("{b:02x}")).collect();
+
+    println!("file: {}", weights.display());
+    println!("size: {file_size} bytes");
+    println!("SHA-256: {hash_hex}");
+
+    if let Some(expected) = expected_sha256.as_deref() {
+        let expected_lower = expected.to_lowercase();
+        if hash_hex == expected_lower {
+            println!("hash check: PASS");
+        } else {
+            println!("hash check: FAIL");
+            println!("  expected: {expected_lower}");
+            println!("  actual:   {hash_hex}");
+        }
+    }
+
+    // Check for sidecar.
+    let sidecar = dismantle_core::sidecar::sidecar_path_for(&weights);
+    if sidecar.exists() {
+        println!("sidecar: {} (present)", sidecar.display());
+    } else {
+        println!("sidecar: not found");
+    }
+
     Ok(())
 }

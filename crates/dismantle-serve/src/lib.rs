@@ -494,25 +494,71 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                     let slot_refs: Vec<(usize, &[u32])> = slots_data.iter()
                         .map(|(s, ids)| (*s, ids.as_slice()))
                         .collect();
+                    // Snapshot prefix_skip for every slot in this batch before
+                    // touching any slot state, so we can partition without holding
+                    // both the driver and engine locks simultaneously.
+                    let skip_map: Vec<(usize, usize)> = slot_refs.iter().map(|(slot_id, _)| {
+                        let skip = state2.driver.lock().scheduler.slots
+                            .iter().find(|s| s.id == *slot_id as u32)
+                            .map(|s| s.prefix_skip).unwrap_or(0);
+                        (*slot_id, skip)
+                    }).collect();
+
+                    // Reset all non-zero prefix_skip values upfront so retries
+                    // don't re-skip regardless of which path runs below.
+                    for &(slot_id, skip) in &skip_map {
+                        if skip > 0 {
+                            if let Some(s) = state2.driver.lock().scheduler.slots
+                                .iter_mut().find(|s| s.id == slot_id as u32) {
+                                s.prefix_skip = 0;
+                            }
+                        }
+                    }
+
                     let prefill_result = {
                         let mut engine = state2.engine.lock();
                         if slot_refs.len() == 1 {
                             let (slot_id, prompt_ids) = slot_refs[0];
-                            let skip = state2.driver.lock().scheduler.slots
-                                .iter().find(|s| s.id == slot_id as u32)
-                                .map(|s| s.prefix_skip).unwrap_or(0);
+                            let skip = skip_map.iter().find(|(id, _)| *id == slot_id)
+                                .map(|(_, s)| *s).unwrap_or(0);
                             if skip > 0 {
-                                // Reset prefix_skip before calling so retries don't re-skip.
-                                if let Some(s) = state2.driver.lock().scheduler.slots
-                                    .iter_mut().find(|s| s.id == slot_id as u32) {
-                                    s.prefix_skip = 0;
-                                }
                                 engine.prefill_slot_from_pos(slot_id, prompt_ids, skip).map(|_| ())
                             } else {
                                 engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
                             }
                         } else {
-                            engine.prefill_slots_parallel(&slot_refs)
+                            // Track 5.2: partition into slots that have a prefix_skip
+                            // (handle individually with prefill_slot_from_pos) and those
+                            // that don't (run in parallel).
+                            let with_skip: Vec<(usize, &[u32], usize)> = slot_refs.iter()
+                                .filter_map(|(slot_id, prompt_ids)| {
+                                    let skip = skip_map.iter()
+                                        .find(|(id, _)| id == slot_id)
+                                        .map(|(_, s)| *s)
+                                        .unwrap_or(0);
+                                    if skip > 0 { Some((*slot_id, *prompt_ids, skip)) } else { None }
+                                })
+                                .collect();
+                            let without_skip: Vec<(usize, &[u32])> = slot_refs.iter()
+                                .filter(|(slot_id, _)| {
+                                    skip_map.iter().find(|(id, _)| id == slot_id)
+                                        .map(|(_, s)| *s).unwrap_or(0) == 0
+                                })
+                                .map(|(slot_id, prompt_ids)| (*slot_id, *prompt_ids))
+                                .collect();
+
+                            // Sequentially prefill the skip slots.
+                            let mut result: Result<(), dismantle_core::Error> = Ok(());
+                            for (slot_id, prompt_ids, skip) in with_skip {
+                                if result.is_ok() {
+                                    result = engine.prefill_slot_from_pos(slot_id, prompt_ids, skip).map(|_| ());
+                                }
+                            }
+                            // Parallel-prefill the remaining slots (only if no error so far).
+                            if result.is_ok() && !without_skip.is_empty() {
+                                result = engine.prefill_slots_parallel(&without_skip);
+                            }
+                            result
                         }
                     };
                     match prefill_result {
