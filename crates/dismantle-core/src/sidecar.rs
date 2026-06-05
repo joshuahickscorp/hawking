@@ -231,6 +231,55 @@ impl SidecarWriter {
     }
 }
 
+/// Read all predec entries from a sidecar file.
+/// Returns `(header, Vec<(tensor_offset, scales_f32)>)`.
+pub fn read_predec_entries(
+    path: &std::path::Path,
+) -> crate::Result<(SidecarHeader, Vec<(usize, Vec<f32>)>)> {
+    use std::io::Read;
+    let mut f = std::fs::File::open(path)
+        .map_err(|e| crate::Error::Model(format!("sidecar: open {:?}: {e}", path)))?;
+    let mut magic = [0u8; 8];
+    f.read_exact(&mut magic)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
+    if &magic != SIDECAR_MAGIC {
+        return Err(crate::Error::Model(format!("sidecar: bad magic in {:?}", path)));
+    }
+    let mut len_buf = [0u8; 4];
+    f.read_exact(&mut len_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read header_len: {e}")))?;
+    let header_len = u32::from_le_bytes(len_buf) as usize;
+    let mut json_buf = vec![0u8; header_len];
+    f.read_exact(&mut json_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: read header json: {e}")))?;
+    let header: SidecarHeader = serde_json::from_slice(&json_buf)
+        .map_err(|e| crate::Error::Model(format!("sidecar: parse header: {e}")))?;
+
+    let mut entries = Vec::new();
+    loop {
+        let mut offset_buf = [0u8; 8];
+        match f.read_exact(&mut offset_buf) {
+            Ok(()) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
+            Err(e) => return Err(crate::Error::Model(format!("sidecar: read entry: {e}"))),
+        }
+        let offset = u64::from_le_bytes(offset_buf) as usize;
+        let mut n_buf = [0u8; 4];
+        f.read_exact(&mut n_buf)
+            .map_err(|e| crate::Error::Model(format!("sidecar: read entry n: {e}")))?;
+        let n = u32::from_le_bytes(n_buf) as usize;
+        let mut bytes = vec![0u8; n * std::mem::size_of::<f32>()];
+        f.read_exact(&mut bytes)
+            .map_err(|e| crate::Error::Model(format!("sidecar: read entry scales: {e}")))?;
+        let scales: Vec<f32> = bytes
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+            .collect();
+        entries.push((offset, scales));
+    }
+    Ok((header, entries))
+}
+
 /// Read and validate a sidecar file.
 pub fn read_sidecar_header(path: &std::path::Path) -> crate::Result<SidecarHeader> {
     use std::io::Read;
