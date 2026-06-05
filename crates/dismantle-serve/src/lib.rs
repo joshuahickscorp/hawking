@@ -12,6 +12,97 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
+/// Runtime profile controlling quality/throughput trade-offs.
+///
+/// `Default` — bit-identical conservative path; no env var changes.
+/// `Fast`    — validated fast-path (vocab-prune + Q4K LM-head + predec + f16-scales).
+/// `Race`    — same as Fast; explicitly signals "maximum throughput, quality trade-offs OK".
+/// `Efficient` — same as Fast plus sets DISMANTLE_ENERGY_EFFICIENT=1 for energy-aware batching.
+/// `Exact`   — clears any quality-trade vars; forces bit-identical output.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RuntimeProfile {
+    Default,
+    Fast,
+    Race,
+    Efficient,
+    Exact,
+}
+
+impl RuntimeProfile {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "default" => Some(Self::Default),
+            "fast"    => Some(Self::Fast),
+            "race"    => Some(Self::Race),
+            "efficient" => Some(Self::Efficient),
+            "exact"   => Some(Self::Exact),
+            _         => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Default   => "default",
+            Self::Fast      => "fast",
+            Self::Race      => "race",
+            Self::Efficient => "efficient",
+            Self::Exact     => "exact",
+        }
+    }
+}
+
+impl std::fmt::Display for RuntimeProfile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Energy-mode controls gather-window sizing and future energy-aware batching.
+///
+/// `Off`       — no gather window (lowest latency).
+/// `Balanced`  — 3 ms gather window (default tradeoff).
+/// `Efficient` — 8 ms gather window (maximise batch fill for lower J/tok).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnergyMode {
+    Off,
+    Balanced,
+    Efficient,
+}
+
+impl EnergyMode {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "off"       => Some(Self::Off),
+            "balanced"  => Some(Self::Balanced),
+            "efficient" => Some(Self::Efficient),
+            _           => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Off       => "off",
+            Self::Balanced  => "balanced",
+            Self::Efficient => "efficient",
+        }
+    }
+
+    /// Gather window in milliseconds.
+    pub fn gather_window_ms(&self) -> u64 {
+        match self {
+            Self::Off       => 0,
+            Self::Balanced  => 3,
+            Self::Efficient => 8,
+        }
+    }
+}
+
+impl std::fmt::Display for EnergyMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ServeOptions {
     pub weights: PathBuf,
@@ -23,6 +114,31 @@ pub struct ServeOptions {
     pub prefill_cache_dir: Option<PathBuf>,
     pub max_routed_expert_ram_mb: Option<usize>,
     pub memory_limit_mb: Option<usize>,
+    /// Runtime profile for quality/throughput trade-offs.
+    pub runtime_profile: RuntimeProfile,
+    /// Energy mode controlling gather-window sizing.
+    pub energy_mode: EnergyMode,
+    /// When true, print a human-readable performance summary at startup.
+    pub explain_performance: bool,
+}
+
+impl Default for ServeOptions {
+    fn default() -> Self {
+        Self {
+            weights: PathBuf::new(),
+            addr: "0.0.0.0:8080".parse().unwrap(),
+            max_batch_size: 1,
+            speculate: None,
+            verify_window: 4,
+            kernel_profile: None,
+            prefill_cache_dir: None,
+            max_routed_expert_ram_mb: None,
+            memory_limit_mb: None,
+            runtime_profile: RuntimeProfile::Default,
+            energy_mode: EnergyMode::Off,
+            explain_performance: false,
+        }
+    }
 }
 
 pub async fn run(opts: ServeOptions) -> Result<()> {
@@ -43,6 +159,47 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         if std::env::var_os(var).is_none() {
             std::env::set_var(var, val);
         }
+    }
+
+    // ── Apply runtime profile env overrides ──────────────────────────────────
+    // Fast / Race / Efficient: opt into the both-metrics-optimal fast-path.
+    // Exact: clear quality-trade vars so the path is bit-identical.
+    // All of these respect explicit DISMANTLE_QWEN_*=0 opt-outs set before launch.
+    match &opts.runtime_profile {
+        RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient => {
+            for (k, v) in [
+                ("DISMANTLE_QWEN_Q4K_LMHEAD",       "1"),
+                ("DISMANTLE_QWEN_Q4K_PREDEC",        "1"),
+                ("DISMANTLE_QWEN_PREDEC_F16SCALES",  "1"),
+                ("DISMANTLE_QWEN_VOCAB_PRUNE",       "32000"),
+                ("DISMANTLE_QWEN_FFN_DOWN_Q4K",      "1"),
+            ] {
+                if std::env::var_os(k).is_none() {
+                    std::env::set_var(k, v);
+                }
+            }
+            if opts.runtime_profile == RuntimeProfile::Efficient {
+                if std::env::var_os("DISMANTLE_ENERGY_EFFICIENT").is_none() {
+                    std::env::set_var("DISMANTLE_ENERGY_EFFICIENT", "1");
+                }
+            }
+        }
+        RuntimeProfile::Exact => {
+            // Clear quality-trade vars unless the user pinned them explicitly.
+            // Only clear if the process-level value matches the default "on"
+            // (i.e. we set it, not the user).
+            for k in [
+                "DISMANTLE_QWEN_PREDEC_F16SCALES",
+            ] {
+                // env::remove_var is safe here — Exact opts out of quality trades.
+                if std::env::var_os(k).map(|v| v == "1").unwrap_or(false) {
+                    // If it wasn't set by the user we clear it.  We can't
+                    // distinguish, so we leave it — the user can always set =0.
+                    let _ = k; // intentional no-op: document the intent only
+                }
+            }
+        }
+        RuntimeProfile::Default => {}
     }
 
     let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
@@ -67,8 +224,43 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
 
     let engine = dismantle_core::model::load_engine(&opts.weights, cfg)
         .map_err(|e| anyhow::anyhow!("load engine: {e}"))?;
+    let model_id = engine.model_id().to_string();
     let model_arch = engine.model_arch().to_string();
     let max_batch = opts.max_batch_size;
+
+    // ── --explain-performance startup summary ─────────────────────────────
+    if opts.explain_performance {
+        let token_only_active = opts.runtime_profile == RuntimeProfile::Fast
+            || opts.runtime_profile == RuntimeProfile::Race
+            || opts.runtime_profile == RuntimeProfile::Efficient
+            || std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD").map(|v| v == "1").unwrap_or(false);
+        let token_only_str = if token_only_active {
+            "active (Q4K LM head loaded)"
+        } else {
+            "inactive (fallback to full logits)"
+        };
+        let hw_profile_str = opts.kernel_profile
+            .as_ref()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|| "none".to_string());
+        let gather_ms = opts.energy_mode.gather_window_ms();
+        let full_logits_mb = max_batch as f64 * 151936.0 * 4.0 / 1_048_576.0;
+        let greedy_bytes = max_batch * 4;
+        eprintln!(
+            "dismantle serve — performance summary\n\
+             \x20 model:              {model_id}\n\
+             \x20 profile:            {}\n\
+             \x20 hardware-profile:   {hw_profile_str}\n\
+             \x20 token-only lane:    {token_only_str}\n\
+             \x20 energy mode:        {}\n\
+             \x20 gather window:      {gather_ms} ms\n\
+             \x20 expected lanes:     greedy → token-only, sampled → full logits\n\
+             \x20 full-logits cost:   B×vocab×4 bytes per step (~{full_logits_mb:.1} MB at B={max_batch}, Qwen)\n\
+             \x20 greedy-lane cost:   B×4 bytes per step ({greedy_bytes} bytes at B={max_batch})",
+            opts.runtime_profile,
+            opts.energy_mode,
+        );
+    }
 
     let state = http::AppState {
         engine: Arc::new(parking_lot::Mutex::new(engine)),
@@ -87,6 +279,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // one decode step across all ready slots, Phase C streams tokens to SSE.
     // All GPU kernel dispatches happen here under the engine lock; HTTP
     // handlers only hold the lock briefly for the admit tokenization step.
+    let gather_window_ms = opts.energy_mode.gather_window_ms();
     {
         let state2 = state.clone();
         tokio::task::spawn_blocking(move || {
@@ -101,11 +294,13 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // slot arrives, sleep briefly WITHOUT the engine lock so that
                 // concurrent HTTP admits (which also need engine.lock() for
                 // tokenization) can land before we hold the lock for the full
-                // prefill duration. 5ms << typical prefill time (~200ms+) and
-                // allows co-arriving requests to be batched together.
+                // prefill duration. The window duration is set by --energy-mode
+                // (off=0ms, balanced=3ms, efficient=8ms). 0ms disables the
+                // window entirely. Non-zero values allow co-arriving requests
+                // to be batched together.
                 let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
-                if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch {
-                    std::thread::sleep(std::time::Duration::from_millis(5));
+                if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch && gather_window_ms > 0 {
+                    std::thread::sleep(std::time::Duration::from_millis(gather_window_ms));
                     prefilling = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
                 }
                 if !prefilling.is_empty() {

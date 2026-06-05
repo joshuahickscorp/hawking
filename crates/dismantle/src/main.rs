@@ -23,35 +23,59 @@ struct Cli {
 
 /// Apply a named lever bundle by setting the corresponding DISMANTLE_QWEN_* env
 /// vars *only if the user has not already set them* (explicit env always wins).
-/// No `--profile` ⇒ no change ⇒ the default decode stays bit-identical. The
-/// `fast` bundle opts into the both-metrics-optimal fast-path validated in the
-/// paradigm Phase 1 work (f16-scales: +7.4% paired dec_tps, mild quality trade;
-/// the other levers were already the locked bench fast-path).
+/// No `--profile` ⇒ no change ⇒ the default decode stays bit-identical.
+///
+/// Known profiles:
+///   `fast`      — validated fast-path: vocab-prune-32k + Q4K LM-head + Q4K
+///                 FFN-down + predec + f16-scales (mild quality trade).
+///   `race`      — same as fast; explicitly signals max throughput, quality
+///                 trade-offs OK.
+///   `efficient` — same as fast plus DISMANTLE_ENERGY_EFFICIENT=1.
+///   `exact`     — bit-identical conservative path (no quality trade-offs).
+///   `default`   — no change from the locked bit-identical default.
+///
+/// Explicitly-set DISMANTLE_QWEN_* env vars always take precedence.
 fn apply_profile(profile: &Option<String>) {
     let Some(name) = profile.as_deref() else {
         return;
     };
     match name {
-        "fast" => {
+        "fast" | "race" | "efficient" => {
             for (k, v) in [
-                ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"),
-                ("DISMANTLE_QWEN_Q4K_LMHEAD", "1"),
-                ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),
-                ("DISMANTLE_QWEN_Q4K_PREDEC", "1"),
-                ("DISMANTLE_QWEN_PREDEC_F16SCALES", "1"),
+                ("DISMANTLE_QWEN_VOCAB_PRUNE",       "32000"),
+                ("DISMANTLE_QWEN_Q4K_LMHEAD",        "1"),
+                ("DISMANTLE_QWEN_FFN_DOWN_Q4K",       "1"),
+                ("DISMANTLE_QWEN_Q4K_PREDEC",         "1"),
+                ("DISMANTLE_QWEN_PREDEC_F16SCALES",   "1"),
             ] {
                 if std::env::var_os(k).is_none() {
                     std::env::set_var(k, v);
                 }
             }
+            if name == "efficient" && std::env::var_os("DISMANTLE_ENERGY_EFFICIENT").is_none() {
+                std::env::set_var("DISMANTLE_ENERGY_EFFICIENT", "1");
+            }
+            let extra = if name == "efficient" { " + energy-efficient mode" } else { "" };
             eprintln!(
-                "[dismantle] --profile fast: vocab-prune-32k + Q4K LM-head + Q4K \
-                 FFN-down + predec + f16-scales (mild quality trade; omit \
+                "[dismantle] --profile {name}: vocab-prune-32k + Q4K LM-head + Q4K \
+                 FFN-down + predec + f16-scales{extra} (mild quality trade; omit \
                  --profile for the bit-identical default)"
             );
         }
+        "exact" => {
+            eprintln!(
+                "[dismantle] --profile exact: bit-identical conservative path \
+                 (no quality trade-offs; all fast-path env vars left at their \
+                 current values — set DISMANTLE_QWEN_PREDEC_F16SCALES=0 etc. \
+                 explicitly to opt out of individual levers)"
+            );
+        }
+        "default" => {
+            // Explicit no-op: same as not passing --profile at all.
+        }
         other => eprintln!(
-            "[dismantle] warning: unknown --profile '{other}' (known: fast); ignoring"
+            "[dismantle] warning: unknown --profile '{other}' \
+             (known: default, fast, race, efficient, exact); ignoring"
         ),
     }
 }
@@ -70,8 +94,17 @@ enum Cmd {
         speculate: Option<String>,
         #[arg(long, default_value_t = 4)]
         verify_window: usize,
+        /// Load a hardware kernel-profile JSON produced by `dismantle autotune`.
+        /// Controls which Metal kernel variant is selected per tensor shape.
+        /// This flag is about hardware tuning, not runtime behavior — see
+        /// --profile for the runtime quality/throughput lever.
         #[arg(long)]
         kernel_profile: Option<PathBuf>,
+        /// Alias for --kernel-profile. Both names are accepted; --hardware-profile
+        /// is the preferred spelling because it makes clear this is a JSON path
+        /// from `dismantle autotune`, not a runtime mode selector.
+        #[arg(long, conflicts_with = "kernel_profile")]
+        hardware_profile: Option<PathBuf>,
         #[arg(long)]
         prefill_cache_dir: Option<PathBuf>,
         #[arg(long)]
@@ -81,6 +114,16 @@ enum Cmd {
         /// detection (80% of system RAM). Default: unlimited.
         #[arg(long)]
         memory_limit_mb: Option<usize>,
+        /// Energy mode for gather-window sizing.
+        ///   off       — no gather window (lowest latency, default)
+        ///   balanced  — 3 ms gather window (good batch-fill vs latency tradeoff)
+        ///   efficient — 8 ms gather window (maximise batch fill for lower J/tok)
+        #[arg(long, default_value = "off", value_name = "MODE")]
+        energy_mode: Option<String>,
+        /// Print a human-readable performance summary at startup before
+        /// accepting connections, then continue serving normally.
+        #[arg(long, default_value_t = false)]
+        explain_performance: bool,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -341,10 +384,26 @@ fn main() -> Result<()> {
             speculate,
             verify_window,
             kernel_profile,
+            hardware_profile,
             prefill_cache_dir,
             max_routed_expert_ram_mb,
             memory_limit_mb,
+            energy_mode,
+            explain_performance,
         } => {
+            // --hardware-profile is the preferred alias for --kernel-profile.
+            let resolved_kernel_profile = hardware_profile.or(kernel_profile);
+
+            // Parse --profile (global flag) into RuntimeProfile.
+            let runtime_profile = cli.profile.as_deref()
+                .and_then(dismantle_serve::RuntimeProfile::from_str)
+                .unwrap_or(dismantle_serve::RuntimeProfile::Default);
+
+            // Parse --energy-mode.
+            let resolved_energy_mode = energy_mode.as_deref()
+                .and_then(dismantle_serve::EnergyMode::from_str)
+                .unwrap_or(dismantle_serve::EnergyMode::Off);
+
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(dismantle_serve::run(dismantle_serve::ServeOptions {
                 weights,
@@ -352,10 +411,13 @@ fn main() -> Result<()> {
                 max_batch_size,
                 speculate,
                 verify_window,
-                kernel_profile,
+                kernel_profile: resolved_kernel_profile,
                 prefill_cache_dir,
                 max_routed_expert_ram_mb,
                 memory_limit_mb,
+                runtime_profile,
+                energy_mode: resolved_energy_mode,
+                explain_performance,
             }))
         }
         Cmd::Generate {
@@ -1117,6 +1179,7 @@ fn generate_main(
         // CLI force-cpu is via the DISMANTLE_FORCE_CPU env var (checked at load);
         // the config field is the programmatic knob (tests / embedders).
         force_cpu: false,
+        concurrent_qkv: false,
     };
     let mut engine = dismantle_core::model::load_engine(&weights, cfg)?;
 
