@@ -26,6 +26,9 @@ pub struct LaneStats {
     pub logits_steps: u64,
     /// Cumulative bytes read back from GPU this session.
     pub readback_bytes: u64,
+    /// Track 5.2: number of admissions where a KV prefix was successfully
+    /// copied from an existing slot (copy_kv_prefix_to_slot returned Ok).
+    pub prefix_reuse_count: u64,
 }
 
 pub struct BatchDriver {

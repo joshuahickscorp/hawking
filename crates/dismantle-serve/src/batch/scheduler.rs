@@ -54,6 +54,40 @@ impl PrefixIndex {
         self.entries.retain(|e| e.0 != slot_id);
     }
 
+    /// Find the longest prefix match for `tokens` among active entries,
+    /// excluding `exclude_slot`. Used after a new slot has been admitted
+    /// (and therefore already inserted into the index) to find a **different**
+    /// slot whose cached KV can be copied.
+    ///
+    /// Only considers prefixes of length ≥ `min_len`.
+    pub fn find_prefix_match_excluding(
+        &self,
+        tokens: &[u32],
+        min_len: usize,
+        exclude_slot: u32,
+    ) -> Option<(u32, usize)> {
+        let mut best: Option<(u32, usize)> = None;
+        for &(slot_id, stored_hash, stored_len) in &self.entries {
+            if slot_id == exclude_slot {
+                continue;
+            }
+            if stored_len < min_len {
+                continue;
+            }
+            let overlap = stored_len.min(tokens.len());
+            if overlap < min_len {
+                continue;
+            }
+            let request_prefix_hash = hash_tokens(&tokens[..overlap]);
+            if stored_hash == request_prefix_hash {
+                if best.map(|(_, bl)| overlap > bl).unwrap_or(true) {
+                    best = Some((slot_id, overlap));
+                }
+            }
+        }
+        best
+    }
+
     /// Find the longest prefix match for `tokens` among active entries.
     /// Returns `(slot_id, shared_len)` of the best match, or `None`.
     /// Only considers prefixes of length ≥ `min_len`.
