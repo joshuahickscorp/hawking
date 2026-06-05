@@ -175,8 +175,12 @@ async fn metrics(State(s): State<AppState>) -> String {
          dismantle_logits_decode_steps_total {}\n\
          # HELP dismantle_gpu_readback_bytes_total Cumulative GPU→CPU readback bytes\n\
          # TYPE dismantle_gpu_readback_bytes_total counter\n\
-         dismantle_gpu_readback_bytes_total {}\n",
+         dismantle_gpu_readback_bytes_total {}\n\
+         # HELP dismantle_prefix_reuse_total Admissions where KV prefix was copied from an existing slot\n\
+         # TYPE dismantle_prefix_reuse_total counter\n\
+         dismantle_prefix_reuse_total {}\n",
         lane.greedy_steps, lane.logits_steps, lane.readback_bytes,
+        lane.prefix_reuse_count,
     )
 }
 
