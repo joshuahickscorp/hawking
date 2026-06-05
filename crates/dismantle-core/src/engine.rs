@@ -350,6 +350,26 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
+    /// Track 5.2 — Prefill `slot_id` starting at `start_pos` rather than 0.
+    ///
+    /// Caller must have already called `copy_kv_prefix_to_slot(src, slot_id, start_pos)`
+    /// so the multiseq arena holds correct KV for positions 0..start_pos. This method
+    /// runs the model forward only for `prompt_ids[start_pos..]`, saving the cost of
+    /// re-prefilling the shared prefix.
+    ///
+    /// Returns the argmax token from the last prompt position.
+    ///
+    /// Default: falls back to `prefill_slot(slot_id, prompt_ids)` (correct, ignores start_pos).
+    fn prefill_slot_from_pos(
+        &mut self,
+        slot_id: usize,
+        prompt_ids: &[u32],
+        start_pos: usize,
+    ) -> Result<u32> {
+        let _ = start_pos;
+        self.prefill_slot(slot_id, prompt_ids)
+    }
+
     /// Track 5.1 — Copy the KV state for the first `prefix_len` positions
     /// from `src_slot` to `dst_slot` in the multiseq arena. Both slots must be
     /// valid, allocated slot ids (0..max_batch_size). After a successful copy,
