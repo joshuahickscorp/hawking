@@ -264,6 +264,21 @@ pub trait Engine: Send + Sync {
         Err(crate::Error::Unimplemented("prefill_slot"))
     }
 
+    /// Continuous-batching PARALLEL PREFILL: process all slots' prompts in one
+    /// pass — one GPU dispatch per token position across all B slots — instead
+    /// of B sequential `prefill_slot` calls. Weights are read once per position
+    /// step and applied to all B active slots, amortising the ~4.8s sequential
+    /// prefill cost at B=8 down to a single batched pass.
+    ///
+    /// Default: serial fallback via `prefill_slot` (correct, slower). QwenDense
+    /// overrides with the position-by-position multiseq stack path.
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
+        for &(slot_id, ref prompt_ids) in slots {
+            self.prefill_slot(slot_id, prompt_ids)?;
+        }
+        Ok(())
+    }
+
     /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
     /// slots at DIVERGENT positions — each its own sequence/prefix — returning N
     /// per-slot logit vectors the scheduler samples from. This is DISTINCT from
