@@ -1,55 +1,55 @@
 {
-  "schema_version": 1,
-  "profile_id": "kp-ed1272c4cb7aeb85467ebcb5",
-  "profile_name": "m3-pro-18gb",
-  "model_id": "Qwen2.5 3B Instruct",
-  "model_arch": "qwen2",
-  "tensor_layout_hash": "46a61a049d19cca43d3279ec",
   "device_name": "Apple M3 Pro",
-  "shader_hash": "f1c86f972f570b0184e45279",
-  "selected": {
-    "id": "metal-default",
-    "moe_schedule": "indexed-no-pack-one-cb",
-    "mla_schedule": "metal-mla",
-    "lm_head_schedule": "metal-argmax-token-only",
-    "command_buffering": "one-cb-per-block",
-    "gpu_buffer_reuse": "decode-arena",
-    "deterministic_rank": 1,
-    "gemm_q4_k_schedule": "per_shape",
-    "gemm_q4_k_schedule_per_shape": {
-      "1024x4096": "llama_port",
-      "4096x1024": "llama_port",
-      "4096x4096": "v3_dual"
-    },
-    "attn_block_schedule": "mla",
-    "x_norm_dtype": "f32",
-    "routed_down_schedule": "basic",
-    "shared_down_schedule": "basic",
-    "rmsnorm_attn_schedule": "basic"
-  },
   "evidence": {
-    "profile": "m3-pro-18gb",
-    "max_hours": 8.0,
-    "prompt_count": 50,
-    "token_lengths": [
-      16,
-      64,
-      256
-    ],
     "candidate_count": 1,
+    "max_hours": 2.0,
     "measurements": [
       {
-        "variant_id": "metal-default",
         "deterministic_rank": 1,
         "score": 164,
-        "status": "candidate"
+        "status": "candidate",
+        "variant_id": "metal-default"
       }
     ],
-    "target_tps": 60.0,
     "notes": [
       "deterministic lexicographic candidate order",
       "temperature=0 greedy validation corpus",
       "runtime ignores unsupported entries and falls back safely"
+    ],
+    "profile": "m3-pro-18gb",
+    "prompt_count": 50,
+    "target_tps": 60.0,
+    "token_lengths": [
+      16,
+      64,
+      256
     ]
-  }
+  },
+  "model_arch": "qwen2",
+  "model_id": "Qwen2.5 3B Instruct",
+  "profile_id": "kp-e6fc5b2256304fe1cceec2da",
+  "profile_name": "m3-pro-18gb",
+  "schema_version": 1,
+  "selected": {
+    "attn_block_schedule": "mla",
+    "command_buffering": "one-cb-per-block",
+    "deterministic_rank": 1,
+    "gemm_q4_k_schedule": "per_shape",
+    "gemm_q4_k_schedule_per_shape": {
+      "1024x4096": "v3_dual",
+      "4096x1024": "v3_dual",
+      "4096x4096": "v3_dual"
+    },
+    "gpu_buffer_reuse": "decode-arena",
+    "id": "metal-default",
+    "lm_head_schedule": "metal-argmax-token-only",
+    "mla_schedule": "metal-mla",
+    "moe_schedule": "indexed-no-pack-one-cb",
+    "rmsnorm_attn_schedule": "basic",
+    "routed_down_schedule": "basic",
+    "shared_down_schedule": "basic",
+    "x_norm_dtype": "f32"
+  },
+  "shader_hash": "cd0b2c5e92e467ba92283f71",
+  "tensor_layout_hash": "46a61a049d19cca43d3279ec"
 }

@@ -1554,6 +1554,106 @@ mod metal_dispatch {
         )
     }
 
+    /// Track 3.5 — SwiGLU-fused Q4_K predec GEMV (B=1).
+    ///
+    /// Fuses `silu(gate) * up` inline into the predec Q4_K GEMV, eliminating
+    /// the separate `silu_mul_tcb` dispatch. Dispatches `_2r_swiglu` (default),
+    /// `_4r_swiglu` (opt-in via `DISMANTLE_QWEN_PREDEC_4R=1`), or `_swiglu`
+    /// (1-row base, opt-out via `DISMANTLE_QWEN_PREDEC_2R=0`).
+    ///
+    /// Buffer layout (extra gate/up vs base predec):
+    ///   0: w_q4  1: scales  2: gate  3: up  4: y  5: rows  6: cols
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const BASE: &str = "gemm_q4_k_v4_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{BASE}_swiglu: cols % 256 != 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{BASE}_swiglu: byte overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{BASE}_swiglu: bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{BASE}_swiglu: oob {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{BASE}_swiglu: scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{BASE}_swiglu: scales oob {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        // Mirror the variant selection from gemv_q4_k_v4_predec_pinned_tcb.
+        let use_4r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        let use_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
+                    .map(|v| v != "0")
+                    .unwrap_or(true)
+            })
+        };
+        let (dispatch_kernel, rows_per_tg): (&str, u32) = if use_4r {
+            ("gemm_q4_k_v4_predec_4r_swiglu", 32)
+        } else if use_2r {
+            ("gemm_q4_k_v4_predec_2r_swiglu", 16)
+        } else {
+            ("gemm_q4_k_v4_predec_swiglu", 8)
+        };
+        let n_tg = rows_u32.div_ceil(rows_per_tg);
+        tcb.dispatch_threads(
+            dispatch_kernel,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(gate_buf), 0);
+                enc.set_buffer(3, Some(up_buf), 0);
+                enc.set_buffer(4, Some(out_buf), 0);
+                enc.set_u32(5, rows_u32);
+                enc.set_u32(6, cols_u32);
+            },
+        )
+    }
+
     /// Q4_K decode GEMV with pre-decoded sub-block scales stored as **f16**
     /// (Stage-2 bandwidth lever, `_2r_f16s`).
     ///
@@ -2484,6 +2584,66 @@ mod metal_dispatch {
             enc.set_buffer(1, Some(x_buf), 0);
             enc.set_buffer(2, Some(out_buf), 0);
             enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Track 3.5 — SwiGLU-fused Q6_K GEMV.
+    ///
+    /// Identical to [`gemv_q6_k_pinned_tcb`] but fuses `silu(gate) * up` inline as
+    /// the activation, eliminating the preceding `silu_mul_tcb` dispatch.
+    /// Saves 1 dispatch/layer × n_layers on the default Q4_K_M path where
+    /// `ffn_down` is Q6_K.
+    ///
+    /// Buffer layout in the kernel (differs from base):
+    ///   0: w_q6  1: gate  2: up  3: y  4: ArgbufRowsCols{rows, cols}
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_swiglu_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_fused_v2_swiglu";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: byte-size overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: weight bytes: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        let end = w_offset
+            .checked_add(w_byte_size)
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: offset overflow")))?;
+        if end > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: offset oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V2_TG: u32 = 256;
+        let n_tg = rows_u32.div_ceil(8);
+        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(gate_buf), 0);
+            enc.set_buffer(2, Some(up_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
         })
     }
 
