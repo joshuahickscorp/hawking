@@ -1,0 +1,177 @@
+//! Track 4.1 — `.dismantle` sidecar format v1.
+//!
+//! A sidecar is an optional companion file for a GGUF model that contains
+//! pre-processed, Metal-friendly representations of the weights. When present,
+//! the engine loads from the sidecar; on mismatch it falls back to the GGUF.
+//!
+//! # File layout
+//!
+//! `model.dismantle` lives next to `model.gguf`. On load, the engine checks
+//! `SidecarHeader::source_gguf_hash` against the GGUF file's SHA-256 to verify
+//! the sidecar matches. If the hash mismatches, the engine MUST abort rather than
+//! silently use stale data.
+//!
+//! # What goes in a sidecar
+//!
+//! See `SidecarContents` for the full list. The key items:
+//!
+//! - **Q4_K predecoded scales** — the `f32` scale table currently computed at
+//!   model load (`ensure_q4k_predec_cache`). Baking them saves the ~200ms
+//!   load-time decode pass.
+//!
+//! - **Pruned LM-head Q4K** — the 32K-vocab slice used by `--profile fast`.
+//!   Same bits as the in-process prune, but skips the prune pass on every load.
+//!
+//! - **Optional corpus whitelist/remap** — maps pruned token ids back to full
+//!   vocab ids for sampled (non-greedy) paths.
+//!
+//! - **Quality metadata** — model hash, tokenizer hash, top-1 agreement rate
+//!   against the full-vocab path, recorded at bake time.
+//!
+//! # Bake command
+//!
+//! ```
+//! dismantle bake-sidecar \
+//!   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
+//!   --out models/qwen2.5-3b-instruct-q4_k_m.dismantle \
+//!   --profile race
+//! ```
+//!
+//! The `bake-sidecar` subcommand is not yet wired in `main.rs` — this module
+//! provides the data types. The CLI hook is the next step.
+
+use serde::{Deserialize, Serialize};
+
+/// Magic bytes at the start of every `.dismantle` file.
+pub const SIDECAR_MAGIC: &[u8; 8] = b"DSMTL\x01\x00\x00";
+
+/// Current sidecar version. Increment when the binary layout changes.
+pub const SIDECAR_VERSION: u32 = 1;
+
+/// Minimum shared prefix length to attempt KV reuse.
+pub const PREFIX_REUSE_MIN_TOKENS: usize = 8;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SidecarHeader {
+    pub version: u32,
+    /// SHA-256 hex string of the source GGUF file's content.
+    pub source_gguf_hash: String,
+    /// xxhash64 hex string of the tokenizer vocab.
+    pub tokenizer_hash: String,
+    /// SHA-256 hex string of the compiled Metal shader library used to verify
+    /// kernel compatibility. Mismatches are non-fatal (sidecar data is valid)
+    /// but logged as a warning.
+    pub shader_hash: String,
+    /// Profile the sidecar was baked for.
+    pub bake_profile: SidecarProfile,
+    /// Tensors available in this sidecar file.
+    pub contents: SidecarContents,
+    /// Quality evidence collected at bake time.
+    pub quality: SidecarQuality,
+    /// Device the sidecar was baked on (informational).
+    pub bake_device: String,
+    /// UTC timestamp of bake (seconds since epoch).
+    pub bake_time_secs: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SidecarProfile {
+    /// Bit-identical conservative path.
+    Exact,
+    /// Validated fast-path (predec + Q4K head).
+    Fast,
+    /// Maximum throughput; quality-trade levers allowed after quality gate.
+    Race,
+    /// Minimize J/tok under throughput floor.
+    Efficient,
+}
+
+/// Which optional components are present in this sidecar.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SidecarContents {
+    /// Pre-decoded Q4_K scale tables (`ensure_q4k_predec_cache` output).
+    /// Layout: per-tensor, indexed by GGUF tensor offset.
+    pub q4k_predec_scales: bool,
+    /// Pruned LM-head Q4K at `vocab_prune_size` tokens.
+    pub pruned_lm_head_q4k: bool,
+    /// Corpus vocab whitelist JSON for the pruned LM-head remap path.
+    pub corpus_whitelist: bool,
+    /// Tensor offset table for fast direct access.
+    pub tensor_offset_table: bool,
+    /// Mixed-quant tier map (per-layer dtype overrides).
+    pub mixed_quant_tier_map: bool,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SidecarQuality {
+    /// Top-1 token agreement rate against the full-vocab Q4K path (0.0–1.0).
+    /// Measured over the bake corpus at temperature=0.
+    pub top1_agreement: Option<f32>,
+    /// Number of prompts used to measure top-1 agreement.
+    pub eval_prompt_count: Option<usize>,
+    /// Mean token length of the eval prompts.
+    pub eval_mean_tokens: Option<f32>,
+    /// Vocab prune size used for the pruned LM-head (0 if not pruned).
+    pub vocab_prune_size: usize,
+    /// Whether this sidecar passed the declared quality gate.
+    pub quality_gate_passed: bool,
+    /// Declared quality gate (e.g. "top1_agreement >= 0.95").
+    pub quality_gate_spec: String,
+}
+
+/// Result of `check_sidecar_compatibility`.
+#[derive(Debug)]
+pub enum SidecarCompat {
+    /// Sidecar is valid and compatible; load it.
+    Compatible,
+    /// GGUF hash mismatch — sidecar is stale. Must NOT load.
+    GgufHashMismatch { sidecar: String, actual: String },
+    /// Version too new for this binary to understand.
+    VersionTooNew { sidecar: u32, supported: u32 },
+    /// Shader hash mismatch — sidecar may still be loaded but expect slower paths.
+    ShaderHashMismatch { sidecar: String, actual: String },
+}
+
+impl SidecarCompat {
+    pub fn is_loadable(&self) -> bool {
+        matches!(self, Self::Compatible | Self::ShaderHashMismatch { .. })
+    }
+    pub fn is_fatal(&self) -> bool {
+        matches!(self, Self::GgufHashMismatch { .. } | Self::VersionTooNew { .. })
+    }
+}
+
+/// Check whether `header` is compatible with the currently loaded GGUF.
+pub fn check_sidecar_compatibility(
+    header: &SidecarHeader,
+    gguf_sha256_hex: &str,
+    shader_sha256_hex: &str,
+) -> SidecarCompat {
+    if header.version > SIDECAR_VERSION {
+        return SidecarCompat::VersionTooNew {
+            sidecar: header.version,
+            supported: SIDECAR_VERSION,
+        };
+    }
+    if header.source_gguf_hash != gguf_sha256_hex {
+        return SidecarCompat::GgufHashMismatch {
+            sidecar: header.source_gguf_hash.clone(),
+            actual: gguf_sha256_hex.to_string(),
+        };
+    }
+    if header.shader_hash != shader_sha256_hex {
+        return SidecarCompat::ShaderHashMismatch {
+            sidecar: header.shader_hash.clone(),
+            actual: shader_sha256_hex.to_string(),
+        };
+    }
+    SidecarCompat::Compatible
+}
+
+/// Derive the sidecar path from a GGUF path.
+///
+/// `models/qwen.gguf` → `models/qwen.dismantle`
+pub fn sidecar_path_for(gguf_path: &std::path::Path) -> std::path::PathBuf {
+    gguf_path.with_extension("dismantle")
+}
