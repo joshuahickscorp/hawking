@@ -4908,6 +4908,78 @@ impl QwenDense {
                     })
                     .unwrap_or(false);
             if qkv_triple {
+                // Track D3: prefer f16-scales kernels when predec_f16scales_active
+                // and all three f16 scale tables are populated for this layer.
+                let f16_triple = predec_cache_f16_ref.and_then(|m| {
+                    match (
+                        m.get(&layer.q_proj.offset),
+                        m.get(&layer.k_proj.offset),
+                        m.get(&layer.v_proj.offset),
+                    ) {
+                        (Some(q), Some(k), Some(v)) => Some((q, k, v)),
+                        _ => None,
+                    }
+                });
+                if let Some((q_sc_f16, k_sc_f16, v_sc_f16)) = f16_triple {
+                    // D3 path: f16 scale bandwidth — saves 1 MB/layer vs f32.
+                    if qkv_rope_append_4r {
+                        kernels::gemv_q4k_predec_qkv_rope_append_4r_f16s_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc_f16,
+                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc_f16,
+                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc_f16,
+                            q_dim, kv_dim, h,
+                            n_heads, n_kv_heads, head_dim,
+                            pos_u32, theta, slot_kv_off_elems,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            layer.pinned.q_bias.as_ref(),
+                            layer.pinned.k_bias.as_ref(),
+                            layer.pinned.v_bias.as_ref(),
+                            &arena.k_cache_buf,
+                            &arena.v_cache_buf,
+                        )?;
+                        qkv_postproc_fused = true;
+                    } else if qkv_rope_append {
+                        kernels::gemv_q4k_predec_qkv_rope_append_f16s_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc_f16,
+                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc_f16,
+                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc_f16,
+                            q_dim, kv_dim, h,
+                            n_heads, n_kv_heads, head_dim,
+                            pos_u32, theta, slot_kv_off_elems,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            layer.pinned.q_bias.as_ref(),
+                            layer.pinned.k_bias.as_ref(),
+                            layer.pinned.v_bias.as_ref(),
+                            &arena.k_cache_buf,
+                            &arena.v_cache_buf,
+                        )?;
+                        qkv_postproc_fused = true;
+                    } else {
+                        // triple path (no RoPE fuse): fall through to f32 triple below.
+                        let cache = predec_cache_ref.expect("checked is_some via map");
+                        let q_sc = &cache[&layer.q_proj.offset];
+                        let k_sc = &cache[&layer.k_proj.offset];
+                        let v_sc = &cache[&layer.v_proj.offset];
+                        kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
+                            q_dim, kv_dim, h,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    }
+                } else {
                 let cache = predec_cache_ref.expect("checked is_some via map");
                 let q_sc = &cache[&layer.q_proj.offset];
                 let k_sc = &cache[&layer.k_proj.offset];
@@ -4963,6 +5035,7 @@ impl QwenDense {
                         &arena.k_token_buf,
                         &arena.v_token_buf,
                     )?;
+                }
                 }
             } else if qkv_mixed_triple {
                 let cache = predec_cache_ref.expect("checked is_some via map");

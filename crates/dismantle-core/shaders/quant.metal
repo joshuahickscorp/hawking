@@ -3808,6 +3808,43 @@ static inline float q4k_predec_dot_row(
     return simd_sum(partial);
 }
 
+// Track D3 (2026-06-06): f16-scales variant of q4k_predec_dot_row.
+// Reads the predecoded sub-block scale table as half (2 B) instead of float
+// (4 B). For Q projection (2048 rows × 2048 cols = 8 blocks/row): saves
+// 2048 × 8 × 32 B = 512 KB per token. Widen to float in register.
+static inline float q4k_predec_dot_row_f16s(
+    device const uchar* w,
+    device const half*  sc,
+    device const float* x,
+    uint row,
+    uint cols,
+    uint simd_lane)
+{
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+        float ds[8], dm[8];
+        for (uint sub = 0u; sub < 8u; ++sub) {
+            ds[sub] = (float)sc[so + (uint64_t)(sub * 2u)];
+            dm[sub] = (float)sc[so + (uint64_t)(sub * 2u + 1u)];
+        }
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qb = w[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            float xi0 = x[(uint64_t)b * 256ul + (uint64_t)(k0 * 32u + simd_lane)];
+            float xi1 = x[(uint64_t)b * 256ul + (uint64_t)(k1 * 32u + simd_lane)];
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * xi0;
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * xi1;
+        }
+    }
+    return simd_sum(partial);
+}
+
 static inline float q6k_dot_row(
     device const uchar* w,
     device const float* x,
@@ -3992,6 +4029,134 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r(
         uint row0 = pair_idx * 2u;
         float pv0 = q4k_predec_dot_row(wv, v_sc, x, row0,      args.cols, simd_lane);
         float pv1 = q4k_predec_dot_row(wv, v_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            v_cache[args.kv_off + row0]      = pv0 + (args.has_v_bias != 0u ? v_bias[row0]      : 0.0f);
+            v_cache[args.kv_off + row0 + 1u] = pv1 + (args.has_v_bias != 0u ? v_bias[row0 + 1u] : 0.0f);
+        }
+    }
+}
+
+// Track D3 (2026-06-06): f16-scales variant of gemm_q4k_predec_qkv_rope_append.
+// Reads q_sc, k_sc, v_sc as half* instead of float* — halves scale bandwidth.
+// For Qwen-3B (Q=2048×2048, K/V=1024×2048): saves 512KB+256KB+256KB = 1MB/layer.
+// Same dispatch geometry as the 2r base kernel (320 TGs for Qwen-3B).
+kernel void gemm_q4k_predec_qkv_rope_append_f16s(
+    device const uchar* wq      [[buffer(0)]],
+    device const half*  q_sc    [[buffer(1)]],
+    device const uchar* wk      [[buffer(2)]],
+    device const half*  k_sc    [[buffer(3)]],
+    device const uchar* wv      [[buffer(4)]],
+    device const half*  v_sc    [[buffer(5)]],
+    device const float* x       [[buffer(6)]],
+    device       float* q_out   [[buffer(7)]],
+    device       float* k_cache [[buffer(8)]],
+    device       float* v_cache [[buffer(9)]],
+    device const float* q_bias  [[buffer(10)]],
+    device const float* k_bias  [[buffer(11)]],
+    device const float* v_bias  [[buffer(12)]],
+    constant ArgbufQkvRopeAppend& args [[buffer(13)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint q_pairs = args.q_rows / 2u;
+    uint k_pairs = args.kv_rows / 2u;
+    uint n_tg_q  = (q_pairs + 7u) / 8u;
+    uint n_tg_k  = (k_pairs + 7u) / 8u;
+    uint n_tg_v  = (args.kv_rows + 7u) / 8u;
+
+    if (gid < n_tg_q) {
+        uint pair_idx = gid * 8u + simd_id;
+        if (pair_idx >= q_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+        }
+    } else if (gid < n_tg_q + n_tg_k) {
+        uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
+        if (pair_idx >= k_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+        }
+    } else {
+        uint eff_gid = gid - (n_tg_q + n_tg_k);
+        if (eff_gid >= n_tg_v) return;
+        uint row = eff_gid * 8u + simd_id;
+        if (row >= args.kv_rows) return;
+        float pv = q4k_predec_dot_row_f16s(wv, v_sc, x, row, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            v_cache[args.kv_off + row] = pv + (args.has_v_bias != 0u ? v_bias[row] : 0.0f);
+        }
+    }
+}
+
+// Track D3 (2026-06-06): f16-scales variant of gemm_q4k_predec_qkv_rope_append_4r.
+// Same as _f16s above but 4r geometry: Q/K use 4 rows/simdgroup (2 RoPE pairs),
+// V uses 2 rows/simdgroup. 160 TGs vs 320 for Qwen-3B — combines C28+D3 savings.
+// Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (validated on Rust side).
+kernel void gemm_q4k_predec_qkv_rope_append_4r_f16s(
+    device const uchar* wq      [[buffer(0)]],
+    device const half*  q_sc    [[buffer(1)]],
+    device const uchar* wk      [[buffer(2)]],
+    device const half*  k_sc    [[buffer(3)]],
+    device const uchar* wv      [[buffer(4)]],
+    device const half*  v_sc    [[buffer(5)]],
+    device const float* x       [[buffer(6)]],
+    device       float* q_out   [[buffer(7)]],
+    device       float* k_cache [[buffer(8)]],
+    device       float* v_cache [[buffer(9)]],
+    device const float* q_bias  [[buffer(10)]],
+    device const float* k_bias  [[buffer(11)]],
+    device const float* v_bias  [[buffer(12)]],
+    constant ArgbufQkvRopeAppend& args [[buffer(13)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint q_quads = args.q_rows / 4u;
+    uint k_quads = args.kv_rows / 4u;
+    uint v_pairs = args.kv_rows / 2u;
+    uint n_tg_q  = (q_quads + 7u) / 8u;
+    uint n_tg_k  = (k_quads + 7u) / 8u;
+    uint n_tg_v  = (v_pairs + 7u) / 8u;
+
+    if (gid < n_tg_q) {
+        uint quad_idx = gid * 8u + simd_id;
+        if (quad_idx >= q_quads) return;
+        uint row0 = quad_idx * 4u;
+        float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0,      args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 2u, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 3u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0,      p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0 + 2u, p2, p3, args);
+        }
+    } else if (gid < n_tg_q + n_tg_k) {
+        uint quad_idx = (gid - n_tg_q) * 8u + simd_id;
+        if (quad_idx >= k_quads) return;
+        uint row0 = quad_idx * 4u;
+        float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0,      args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 2u, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 3u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0,      p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0 + 2u, p2, p3, args);
+        }
+    } else {
+        uint eff_gid = gid - (n_tg_q + n_tg_k);
+        if (eff_gid >= n_tg_v) return;
+        uint pair_idx = eff_gid * 8u + simd_id;
+        if (pair_idx >= v_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float pv0 = q4k_predec_dot_row_f16s(wv, v_sc, x, row0,      args.cols, simd_lane);
+        float pv1 = q4k_predec_dot_row_f16s(wv, v_sc, x, row0 + 1u, args.cols, simd_lane);
         if (simd_lane == 0u) {
             v_cache[args.kv_off + row0]      = pv0 + (args.has_v_bias != 0u ? v_bias[row0]      : 0.0f);
             v_cache[args.kv_off + row0 + 1u] = pv1 + (args.has_v_bias != 0u ? v_bias[row0 + 1u] : 0.0f);
