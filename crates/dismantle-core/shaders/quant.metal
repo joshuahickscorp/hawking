@@ -2998,6 +2998,108 @@ kernel void gemm_q4_k_v4_predec_pair_f16s(
     }
 }
 
+// ── gemm_q4_k_v4_predec_pair_4r_f16s ─────────────────────────────────────────
+// Track D4 (2026-06-06): combines pair_4r (32 rows/TG) with f16-scales bandwidth.
+// For gate+up (11008 rows × 2048 cols): 344 TGs vs 688 (4r) or 1376 (f16s 1r).
+// Scale reads are identical to pair_4r but g_scales/u_scales are half* →
+// half the scale bandwidth vs pair_4r_f32, same as pair_f16s but 4r geometry.
+// Grid: (ceil(rows/32)*256, 1, 1)   TG: (256, 1, 1)
+// NOT bit-identical to pair_4r (f16 scale rounding); gated at rel_L2 < 1e-2.
+kernel void gemm_q4_k_v4_predec_pair_4r_f16s(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const half*  g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const half*  u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 32u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u, row2 = row0 + 16u, row3 = row0 + 24u;
+    bool has1 = row1 < rows, has2 = row2 < rows, has3 = row3 < rows;
+    uint r1 = has1 ? row1 : row0;
+    uint r2 = has2 ? row2 : row0;
+    uint r3 = has3 ? row3 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb3 = (uint64_t)r3   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs3 = (uint64_t)r3   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.f, pg1 = 0.f, pg2 = 0.f, pg3 = 0.f;
+    float pu0 = 0.f, pu1 = 0.f, pu2 = 0.f, pu3 = 0.f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b*144ul, so0 = rs0 + (uint64_t)b*16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b*144ul, so1 = rs1 + (uint64_t)b*16ul;
+        uint64_t bo2 = rb2 + (uint64_t)b*144ul, so2 = rs2 + (uint64_t)b*16ul;
+        uint64_t bo3 = rb3 + (uint64_t)b*144ul, so3 = rs3 + (uint64_t)b*16ul;
+
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b*256ul + (uint64_t)(k*32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg0 += ((float)g_scales[so0+(uint64_t)(k0*2u)]   * (float)(qg0&0x0Fu) - (float)g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += ((float)g_scales[so0+(uint64_t)(k1*2u)]   * (float)(qg0>>4u)   - (float)g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu0 += ((float)u_scales[so0+(uint64_t)(k0*2u)]   * (float)(qu0&0x0Fu) - (float)u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += ((float)u_scales[so0+(uint64_t)(k1*2u)]   * (float)(qu0>>4u)   - (float)u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg1 += ((float)g_scales[so1+(uint64_t)(k0*2u)]   * (float)(qg1&0x0Fu) - (float)g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += ((float)g_scales[so1+(uint64_t)(k1*2u)]   * (float)(qg1>>4u)   - (float)g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu1 += ((float)u_scales[so1+(uint64_t)(k0*2u)]   * (float)(qu1&0x0Fu) - (float)u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += ((float)u_scales[so1+(uint64_t)(k1*2u)]   * (float)(qu1>>4u)   - (float)u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg2 = wg_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg2 += ((float)g_scales[so2+(uint64_t)(k0*2u)]   * (float)(qg2&0x0Fu) - (float)g_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pg2 += ((float)g_scales[so2+(uint64_t)(k1*2u)]   * (float)(qg2>>4u)   - (float)g_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu2 = wu_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu2 += ((float)u_scales[so2+(uint64_t)(k0*2u)]   * (float)(qu2&0x0Fu) - (float)u_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pu2 += ((float)u_scales[so2+(uint64_t)(k1*2u)]   * (float)(qu2>>4u)   - (float)u_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg3 = wg_q4[bo3 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg3 += ((float)g_scales[so3+(uint64_t)(k0*2u)]   * (float)(qg3&0x0Fu) - (float)g_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pg3 += ((float)g_scales[so3+(uint64_t)(k1*2u)]   * (float)(qg3>>4u)   - (float)g_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu3 = wu_q4[bo3 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu3 += ((float)u_scales[so3+(uint64_t)(k0*2u)]   * (float)(qu3&0x0Fu) - (float)u_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pu3 += ((float)u_scales[so3+(uint64_t)(k1*2u)]   * (float)(qu3>>4u)   - (float)u_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+    if (has2) {
+        pg2 = simd_sum(pg2); pu2 = simd_sum(pu2);
+        if (simd_lane == 0u) { yg[row2] = pg2; yu[row2] = pu2; }
+    }
+    if (has3) {
+        pg3 = simd_sum(pg3); pu3 = simd_sum(pu3);
+        if (simd_lane == 0u) { yg[row3] = pg3; yu[row3] = pu3; }
+    }
+}
+
 // ── gemm_q4_k_v4_predec_2r ───────────────────────────────────────────────────
 // 2-rows-per-simdgroup predec GEMV (path-to-50, 2026-05-30). Identical math to
 // gemm_q4_k_v4_predec, but each simdgroup computes TWO output rows of the SAME
