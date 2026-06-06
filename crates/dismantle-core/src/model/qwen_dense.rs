@@ -1131,6 +1131,7 @@ impl Engine for QwenDense {
                 // context don't fail.
                 const QWEN_TCB_KERNELS: &[&str] = &[
                     "gemm_q4_k_m_v3_8r",
+                    "gemm_q4_k_v4_predec_2r_add",
                     "gemm_q6_k_fused_v2",
                     "gemm_q4_k_m_batched_v3w",
                     "gemm_q4_k_m_batched_v3w_mma",
@@ -4531,6 +4532,29 @@ impl QwenDense {
         // golden decode hash is unaffected.
         let flash_attn = crate::env_on("DISMANTLE_QWEN_FLASH_ATTN");
         let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
+        // Track 3.14: fuse the Q4_K f32-predec o_proj GEMV with the residual
+        // add, then run the required vector-wide ffn_norm as the next dispatch.
+        // This is default-on only for the default 2r f32-predec path; W4A8,
+        // f16-scale predec, 4r, and 1r stay on the existing route.
+        let predec_4r_active = std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
+            .map(|v| v != "0")
+            .unwrap_or(false);
+        let predec_2r_active = std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
+            .map(|v| v != "0")
+            .unwrap_or(true);
+        let oproj_add_rmsnorm_fuse =
+            crate::env_opt_out("DISMANTLE_QWEN_OPROJ_ADD_RMSNORM_FUSE")
+                && predec_active
+                && predec_2r_active
+                && !predec_4r_active
+                && !predec_f16scales_active
+                && !w4a8_oproj;
+        // Track 3.12/3.13: fuse Q/K bias+RoPE and f32 KV-cache append into
+        // the QKV triple dispatch. The seam and f16-KV paths keep their
+        // existing explicit post-processing kernels.
+        let qkv_rope_append = crate::env_opt_out("DISMANTLE_QWEN_QKV_ROPE_APPEND")
+            && !use_seam
+            && !f16_kv;
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
         }
@@ -4762,6 +4786,9 @@ impl QwenDense {
 
             // Attn-norm already in arena.x_norm_buf (hoisted for layer 0,
             // produced by the previous layer's tail-fusion for layers 1+).
+            let layer_kv_off_elems = li * max_seq * kv_dim;
+            let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
+            let mut qkv_postproc_fused = false;
 
             // ── Q / K / V projections ────────────────────────────────
             // x_norm was quantized at the end of the previous iteration
@@ -4812,34 +4839,76 @@ impl QwenDense {
                 let q_sc = &cache[&layer.q_proj.offset];
                 let k_sc = &cache[&layer.k_proj.offset];
                 let v_sc = &cache[&layer.v_proj.offset];
-                kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
-                    &mut tcb,
-                    mmap_buf,
-                    layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                    layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                    layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
-                    q_dim, kv_dim, h,
-                    &arena.x_norm_buf,
-                    &arena.q_buf,
-                    &arena.k_token_buf,
-                    &arena.v_token_buf,
-                )?;
+                if qkv_rope_append {
+                    kernels::gemv_q4k_predec_qkv_rope_append_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
+                        q_dim, kv_dim, h,
+                        n_heads, n_kv_heads, head_dim,
+                        pos_u32, theta, slot_kv_off_elems,
+                        &arena.x_norm_buf,
+                        &arena.q_buf,
+                        layer.pinned.q_bias.as_ref(),
+                        layer.pinned.k_bias.as_ref(),
+                        layer.pinned.v_bias.as_ref(),
+                        &arena.k_cache_buf,
+                        &arena.v_cache_buf,
+                    )?;
+                    qkv_postproc_fused = true;
+                } else {
+                    kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
+                        q_dim, kv_dim, h,
+                        &arena.x_norm_buf,
+                        &arena.q_buf,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                    )?;
+                }
             } else if qkv_mixed_triple {
                 let cache = predec_cache_ref.expect("checked is_some via map");
                 let q_sc = &cache[&layer.q_proj.offset];
                 let k_sc = &cache[&layer.k_proj.offset];
-                kernels::gemv_q4k_q4k_q6k_triple_pinned_tcb(
-                    &mut tcb,
-                    mmap_buf,
-                    layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                    layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                    layer.v_proj.offset, layer.v_proj.byte_size,
-                    q_dim, kv_dim, h,
-                    &arena.x_norm_buf,
-                    &arena.q_buf,
-                    &arena.k_token_buf,
-                    &arena.v_token_buf,
-                )?;
+                if qkv_rope_append {
+                    kernels::gemv_q4k_q4k_q6k_rope_append_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                        layer.v_proj.offset, layer.v_proj.byte_size,
+                        q_dim, kv_dim, h,
+                        n_heads, n_kv_heads, head_dim,
+                        pos_u32, theta, slot_kv_off_elems,
+                        &arena.x_norm_buf,
+                        &arena.q_buf,
+                        layer.pinned.q_bias.as_ref(),
+                        layer.pinned.k_bias.as_ref(),
+                        layer.pinned.v_bias.as_ref(),
+                        &arena.k_cache_buf,
+                        &arena.v_cache_buf,
+                    )?;
+                    qkv_postproc_fused = true;
+                } else {
+                    kernels::gemv_q4k_q4k_q6k_triple_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                        layer.v_proj.offset, layer.v_proj.byte_size,
+                        q_dim, kv_dim, h,
+                        &arena.x_norm_buf,
+                        &arena.q_buf,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                    )?;
+                }
             } else {
                 // Q projection (always separate when not in qkv_triple path)
                 gemv_proj!(
@@ -4991,114 +5060,114 @@ impl QwenDense {
                 tcb.end_concurrent_group()?;
             }
 
-            // ── Biases + RoPE (Q and K) ───────────────────────────────
-            // Track 3.6: fuse Q bias-add + Q RoPE + K bias-add + K RoPE into
-            // ONE dispatch via rope_qk_f32_b1_bias. Saves 3 dispatches/layer
-            // × n_layers = 84 on Qwen-3B in the default (non-seam) path.
-            // V bias has no associated RoPE and stays separate.
-            //
-            // Fallback: when DISMANTLE_BACKEND_SEAM=1 (default-off), keep the
-            // original per-bias seam path + separate rope calls.
-            if use_seam {
-                // Original seam path — bit-identical, kept for seam coverage.
-                if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
-                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
-                    backend.add(&mut rec, &arena.q_buf, qb, q_dim)?;
-                    tcb = rec.tcb;
-                }
-                if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
-                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
-                    backend.add(&mut rec, &arena.k_token_buf, kb, kv_dim)?;
-                    tcb = rec.tcb;
-                }
-                if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                    let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
-                    let mut rec = crate::backend::metal::MetalRecorder { tcb };
-                    backend.add(&mut rec, &arena.v_token_buf, vb, kv_dim)?;
-                    tcb = rec.tcb;
-                }
-                kernels::rope_q_f32_inplace_tcb(
-                    &mut tcb, &arena.q_buf, n_heads, head_dim, 0, head_dim, pos_u32, theta,
-                )?;
-                kernels::rope_q_f32_inplace_tcb(
-                    &mut tcb, &arena.k_token_buf, n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
-                )?;
-            } else {
-                // Fused path (default): Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
-                kernels::rope_qk_f32_b1_bias_tcb(
-                    &mut tcb,
-                    &arena.q_buf,
-                    &arena.k_token_buf,
-                    layer.pinned.q_bias.as_ref(),
-                    layer.pinned.k_bias.as_ref(),
-                    n_heads,
-                    n_kv_heads,
-                    head_dim,
-                    pos_u32,
-                    theta,
-                )?;
-                // Track 3.7: V bias and KV append are fused below when
-                // !f16_kv. Only dispatch v_bias separately for f16_kv
-                // (no f16 variant of kv_append_vbias yet).
-                if f16_kv {
-                    if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                        kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+            if !qkv_postproc_fused {
+                // ── Biases + RoPE (Q and K) ───────────────────────────────
+                // Track 3.6: fuse Q bias-add + Q RoPE + K bias-add + K RoPE into
+                // ONE dispatch via rope_qk_f32_b1_bias. Saves 3 dispatches/layer
+                // × n_layers = 84 on Qwen-3B in the default (non-seam) path.
+                // V bias has no associated RoPE and stays separate.
+                //
+                // Fallback: when DISMANTLE_BACKEND_SEAM=1 (default-off), keep the
+                // original per-bias seam path + separate rope calls.
+                if use_seam {
+                    // Original seam path — bit-identical, kept for seam coverage.
+                    if let Some(qb) = layer.pinned.q_bias.as_ref() {
+                        let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                        let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                        backend.add(&mut rec, &arena.q_buf, qb, q_dim)?;
+                        tcb = rec.tcb;
                     }
+                    if let Some(kb) = layer.pinned.k_bias.as_ref() {
+                        let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                        let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                        backend.add(&mut rec, &arena.k_token_buf, kb, kv_dim)?;
+                        tcb = rec.tcb;
+                    }
+                    if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                        let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
+                        let mut rec = crate::backend::metal::MetalRecorder { tcb };
+                        backend.add(&mut rec, &arena.v_token_buf, vb, kv_dim)?;
+                        tcb = rec.tcb;
+                    }
+                    kernels::rope_q_f32_inplace_tcb(
+                        &mut tcb, &arena.q_buf, n_heads, head_dim, 0, head_dim, pos_u32, theta,
+                    )?;
+                    kernels::rope_q_f32_inplace_tcb(
+                        &mut tcb, &arena.k_token_buf, n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
+                    )?;
+                } else {
+                    // Fused path (default): Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
+                    kernels::rope_qk_f32_b1_bias_tcb(
+                        &mut tcb,
+                        &arena.q_buf,
+                        &arena.k_token_buf,
+                        layer.pinned.q_bias.as_ref(),
+                        layer.pinned.k_bias.as_ref(),
+                        n_heads,
+                        n_kv_heads,
+                        head_dim,
+                        pos_u32,
+                        theta,
+                    )?;
+                    // Track 3.7: V bias and KV append are fused below when
+                    // !f16_kv. Only dispatch v_bias separately for f16_kv
+                    // (no f16 variant of kv_append_vbias yet).
+                    if f16_kv {
+                        if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                            kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                        }
+                    }
+                    // (else: v_bias will be handled by kv_append_vbias_f32_tcb below)
                 }
-                // (else: v_bias will be handled by kv_append_vbias_f32_tcb below)
-            }
 
-            // ── KV append (+ V-bias for !use_seam && !f16_kv) ────────
-            // Track 3.7: fuse V-bias add + K-append + V-append into ONE
-            // dispatch for the default path, saving 2 dispatches/layer.
-            // Fallback to separate dispatches for f16_kv or seam paths.
-            let layer_kv_off_elems = li * max_seq * kv_dim;
-            let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
-            if f16_kv {
-                // f16 KV path: v_bias already added above (for !use_seam),
-                // or by the seam block. Append with f32→f16 conversion.
-                kernels::memcpy_f32_to_f16_off_tcb(
-                    &mut tcb,
-                    &arena.k_token_buf,
-                    arena.k_cache_f16_buf.as_ref().unwrap(),
-                    0,
-                    slot_kv_off_elems,
-                    kv_dim,
-                )?;
-                kernels::memcpy_f32_to_f16_off_tcb(
-                    &mut tcb,
-                    &arena.v_token_buf,
-                    arena.v_cache_f16_buf.as_ref().unwrap(),
-                    0,
-                    slot_kv_off_elems,
-                    kv_dim,
-                )?;
-            } else if use_seam {
-                // Seam path: v_bias was applied to v_token_buf in-place by the
-                // seam block above. Separate appends.
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
-                    0, slot_kv_off_elems, kv_dim,
-                )?;
-                kernels::memcpy_f32_off_tcb(
-                    &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
-                    0, slot_kv_off_elems, kv_dim,
-                )?;
-            } else {
-                // Default path (!use_seam && !f16_kv): fused.
-                // v_bias is applied inside the kernel (not pre-applied).
-                kernels::kv_append_vbias_f32_tcb(
-                    &mut tcb,
-                    &arena.k_token_buf,
-                    &arena.v_token_buf,
-                    layer.pinned.v_bias.as_ref(),
-                    &arena.k_cache_buf,
-                    &arena.v_cache_buf,
-                    kv_dim,
-                    slot_kv_off_elems,
-                )?;
+                // ── KV append (+ V-bias for !use_seam && !f16_kv) ────────
+                // Track 3.7: fuse V-bias add + K-append + V-append into ONE
+                // dispatch for the default path, saving 2 dispatches/layer.
+                // Fallback to separate dispatches for f16_kv or seam paths.
+                if f16_kv {
+                    // f16 KV path: v_bias already added above (for !use_seam),
+                    // or by the seam block. Append with f32→f16 conversion.
+                    kernels::memcpy_f32_to_f16_off_tcb(
+                        &mut tcb,
+                        &arena.k_token_buf,
+                        arena.k_cache_f16_buf.as_ref().unwrap(),
+                        0,
+                        slot_kv_off_elems,
+                        kv_dim,
+                    )?;
+                    kernels::memcpy_f32_to_f16_off_tcb(
+                        &mut tcb,
+                        &arena.v_token_buf,
+                        arena.v_cache_f16_buf.as_ref().unwrap(),
+                        0,
+                        slot_kv_off_elems,
+                        kv_dim,
+                    )?;
+                } else if use_seam {
+                    // Seam path: v_bias was applied to v_token_buf in-place by the
+                    // seam block above. Separate appends.
+                    kernels::memcpy_f32_off_tcb(
+                        &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
+                        0, slot_kv_off_elems, kv_dim,
+                    )?;
+                    kernels::memcpy_f32_off_tcb(
+                        &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
+                        0, slot_kv_off_elems, kv_dim,
+                    )?;
+                } else {
+                    // Default path (!use_seam && !f16_kv): fused.
+                    // v_bias is applied inside the kernel (not pre-applied).
+                    kernels::kv_append_vbias_f32_tcb(
+                        &mut tcb,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                        layer.pinned.v_bias.as_ref(),
+                        &arena.k_cache_buf,
+                        &arena.v_cache_buf,
+                        kv_dim,
+                        slot_kv_off_elems,
+                    )?;
+                }
             }
 
             // ── MHA decode (GQA) ─────────────────────────────────────
@@ -5150,87 +5219,112 @@ impl QwenDense {
                 )?;
             }
 
-            // ── O projection ─────────────────────────────────────────
-            // attn_out is the output of mha_decode (f32). When W4A8 active,
-            // quantize once before o_proj.
-            if w4a8_oproj {
-                if awq_active {
-                    kernels::quantize_f32_to_int8_per_block_scaled_tcb(
-                        &mut tcb,
-                        &arena.attn_out_buf,
-                        &awq_attn_out.unwrap()[li],
-                        attn_int8,
-                        attn_scales,
-                        q_dim,
-                    )?;
-                } else {
-                    kernels::quantize_f32_to_int8_per_block_tcb(
-                        &mut tcb,
-                        &arena.attn_out_buf,
-                        attn_int8,
-                        attn_scales,
-                        q_dim,
-                    )?;
-                }
-            }
-            gemv_proj!(
-                w4a8_oproj,
-                layer.o_proj,
-                layer.pinned.o_proj_f16.as_ref(),
-                h,
-                q_dim,
-                &arena.attn_out_buf,
-                attn_int8,
-                attn_scales,
-                &arena.o_proj_out_buf
-            );
-            // ── Fused (x += o_proj_out) + FFN norm ───────────────────
+            // ── O projection + residual/FFN norm tail ────────────────
             let ffn_norm_pin = layer
                 .pinned
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            // Fused add+rmsnorm+(optional)int8-quantize. When W4A8 is active
-            // this collapses the two dispatches into one and skips the
-            // x_norm DRAM round-trip. Under AWQ, the int8 phase divides by
-            // the gate_proj smoothing (== up_proj; gate/up share x_norm here).
-            if w4a8_active {
-                if awq_active {
-                    kernels::add_rmsnorm_fused_q8_scaled_tcb(
-                        &mut tcb,
-                        &arena.x_buf,
-                        &arena.o_proj_out_buf,
-                        ffn_norm_pin,
-                        &arena.x_norm_buf,
-                        x_int8,
-                        x_scales,
-                        &awq_ffn_act.unwrap()[li],
-                        eps,
-                        h,
-                    )?;
+            let oproj_predec_scales = if oproj_add_rmsnorm_fuse
+                && layer.o_proj.dtype == GgmlType::Q4_K
+                && q_dim % 256 == 0
+            {
+                predec_cache_ref.and_then(|m| m.get(&layer.o_proj.offset))
+            } else {
+                None
+            };
+            if let Some(oproj_scales) = oproj_predec_scales {
+                kernels::gemv_q4_k_v4_predec_2r_add_rmsnorm_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.o_proj.offset,
+                    layer.o_proj.byte_size,
+                    oproj_scales,
+                    0,
+                    h,
+                    q_dim,
+                    &arena.attn_out_buf,
+                    &arena.x_buf,
+                    ffn_norm_pin,
+                    &arena.x_norm_buf,
+                    eps,
+                )?;
+            } else {
+                // attn_out is the output of mha_decode (f32). When W4A8 active,
+                // quantize once before o_proj.
+                if w4a8_oproj {
+                    if awq_active {
+                        kernels::quantize_f32_to_int8_per_block_scaled_tcb(
+                            &mut tcb,
+                            &arena.attn_out_buf,
+                            &awq_attn_out.unwrap()[li],
+                            attn_int8,
+                            attn_scales,
+                            q_dim,
+                        )?;
+                    } else {
+                        kernels::quantize_f32_to_int8_per_block_tcb(
+                            &mut tcb,
+                            &arena.attn_out_buf,
+                            attn_int8,
+                            attn_scales,
+                            q_dim,
+                        )?;
+                    }
+                }
+                gemv_proj!(
+                    w4a8_oproj,
+                    layer.o_proj,
+                    layer.pinned.o_proj_f16.as_ref(),
+                    h,
+                    q_dim,
+                    &arena.attn_out_buf,
+                    attn_int8,
+                    attn_scales,
+                    &arena.o_proj_out_buf
+                );
+                // Fused add+rmsnorm+(optional)int8-quantize. When W4A8 is active
+                // this collapses the two dispatches into one and skips the
+                // x_norm DRAM round-trip. Under AWQ, the int8 phase divides by
+                // the gate_proj smoothing (== up_proj; gate/up share x_norm here).
+                if w4a8_active {
+                    if awq_active {
+                        kernels::add_rmsnorm_fused_q8_scaled_tcb(
+                            &mut tcb,
+                            &arena.x_buf,
+                            &arena.o_proj_out_buf,
+                            ffn_norm_pin,
+                            &arena.x_norm_buf,
+                            x_int8,
+                            x_scales,
+                            &awq_ffn_act.unwrap()[li],
+                            eps,
+                            h,
+                        )?;
+                    } else {
+                        kernels::add_rmsnorm_fused_q8_tcb(
+                            &mut tcb,
+                            &arena.x_buf,
+                            &arena.o_proj_out_buf,
+                            ffn_norm_pin,
+                            &arena.x_norm_buf,
+                            x_int8,
+                            x_scales,
+                            eps,
+                            h,
+                        )?;
+                    }
                 } else {
-                    kernels::add_rmsnorm_fused_q8_tcb(
+                    kernels::add_rmsnorm_fused_tcb(
                         &mut tcb,
                         &arena.x_buf,
                         &arena.o_proj_out_buf,
                         ffn_norm_pin,
                         &arena.x_norm_buf,
-                        x_int8,
-                        x_scales,
                         eps,
                         h,
                     )?;
                 }
-            } else {
-                kernels::add_rmsnorm_fused_tcb(
-                    &mut tcb,
-                    &arena.x_buf,
-                    &arena.o_proj_out_buf,
-                    ffn_norm_pin,
-                    &arena.x_norm_buf,
-                    eps,
-                    h,
-                )?;
             }
 
             // ── FFN gate / up / silu_mul / down ──────────────────────
@@ -6321,55 +6415,8 @@ impl QwenDense {
                 &arena.x_norm_buf_batch, h_bytes,
                 &arena.ffn_up_buf_batch, int_bytes
             );
-            // silu_mul is flat elementwise; (B, intermediate) buffers
-            // are contiguous so one dispatch with n=intermediate*B
-            // replaces B sequential calls — saves (B-1)*36 dispatches
-            // per chunk.
-            kernels::silu_mul_tcb(
-                &mut tcb,
-                &arena.ffn_gate_buf_batch,
-                &arena.ffn_up_buf_batch,
-                &arena.ffn_act_buf_batch,
-                intermediate * b,
-            )?;
-            // ffn_down: prefer requant'd Q4_K buffer if active (~31% BW
-            // saving on the largest weight per layer); else go through
-            // the standard projection dispatcher.
-            if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
-                let blocks_per_row = intermediate / 256;
-                let row_bytes = blocks_per_row * 144;
-                if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                    if b <= 4 {
-                        kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes,
-                            scales, 0, h, intermediate, b,
-                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                        )?;
-                    } else {
-                        kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes,
-                            scales, 0, h, intermediate, b,
-                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                        )?;
-                    }
-                } else {
-                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes,
-                        h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                    )?;
-                }
-            } else {
-                batched_proj!(
-                    layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(),
-                    h, intermediate,
-                    &arena.ffn_act_buf_batch, int_bytes,
-                    &arena.ffn_down_buf_batch, h_bytes
-                );
-            }
 
-            // ── Fused (x += ffn_down) + next-layer attn_norm
-            // (or final_norm on the last layer). Per batch element.
+            // ── Fused FFN tail: ffn_down_swiglu + add_rmsnorm_ffn.
             let next_norm = if li + 1 < cfg.n_layers {
                 self.layers[li + 1]
                     .pinned
@@ -6379,14 +6426,77 @@ impl QwenDense {
             } else {
                 final_norm_buf
             };
-            kernels::add_rmsnorm_fused_batched_tcb(
-                &mut tcb,
-                &arena.x_buf_batch,
-                &arena.ffn_down_buf_batch,
-                next_norm,
-                &arena.x_norm_buf_batch,
-                eps, h, b,
-            )?;
+
+            let did_fuse_ffn_tail = if let (Some(q4k_buf), Some(scales)) = (
+                layer.pinned.ffn_down_q4k.as_ref(),
+                layer.pinned.ffn_down_q4k_predec.as_ref(),
+            ) {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                kernels::ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb(
+                    &mut tcb,
+                    q4k_buf,
+                    0,
+                    h * row_bytes,
+                    scales,
+                    0,
+                    h,
+                    intermediate,
+                    b,
+                    &arena.ffn_gate_buf_batch,
+                    &arena.ffn_up_buf_batch,
+                    &arena.x_buf_batch,
+                    next_norm,
+                    &arena.x_norm_buf_batch,
+                    eps,
+                    &arena.ffn_down_buf_batch,
+                )?;
+                true
+            } else {
+                false
+            };
+
+            if !did_fuse_ffn_tail {
+                // silu_mul is flat elementwise; (B, intermediate) buffers
+                // are contiguous so one dispatch with n=intermediate*B
+                // replaces B sequential calls.
+                kernels::silu_mul_tcb(
+                    &mut tcb,
+                    &arena.ffn_gate_buf_batch,
+                    &arena.ffn_up_buf_batch,
+                    &arena.ffn_act_buf_batch,
+                    intermediate * b,
+                )?;
+                // ffn_down: prefer requant'd Q4_K buffer if active (~31% BW
+                // saving on the largest weight per layer); else go through
+                // the standard projection dispatcher.
+                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                    let blocks_per_row = intermediate / 256;
+                    let row_bytes = blocks_per_row * 144;
+                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes,
+                        h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                } else {
+                    batched_proj!(
+                        layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(),
+                        h, intermediate,
+                        &arena.ffn_act_buf_batch, int_bytes,
+                        &arena.ffn_down_buf_batch, h_bytes
+                    );
+                }
+                // ── Fused (x += ffn_down) + next-layer attn_norm
+                // (or final_norm on the last layer). Per batch element.
+                kernels::add_rmsnorm_fused_batched_tcb(
+                    &mut tcb,
+                    &arena.x_buf_batch,
+                    &arena.ffn_down_buf_batch,
+                    next_norm,
+                    &arena.x_norm_buf_batch,
+                    eps, h, b,
+                )?;
+            }
             let _ = kv_dim_bytes;
         }
 
@@ -6774,62 +6884,10 @@ impl QwenDense {
                 &arena.x_norm_buf_batch, h_bytes, &arena.ffn_gate_buf_batch, int_bytes);
             batched_proj!(layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(), intermediate, h,
                 &arena.x_norm_buf_batch, h_bytes, &arena.ffn_up_buf_batch, int_bytes);
-            // Track 3.5 — SwiGLU-fused ffn_down: for Q4K predec paths (B≥2),
-            // inline silu(gate)*up into the ffn_down GEMM, eliminating the
-            // separate silu_mul dispatch. Saves 1 dispatch/layer × n_layers.
-            // B=1 uses the GEMV path which doesn't have a swiglu variant yet
-            // → keep the separate silu_mul + GEMV for that case.
-            let ffn_swiglu_fused = b >= 2
-                && layer.pinned.ffn_down_q4k.is_some()
-                && layer.pinned.ffn_down_q4k_predec.is_some();
 
-            if ffn_swiglu_fused {
-                let q4k_buf = layer.pinned.ffn_down_q4k.as_ref().unwrap();
-                let scales = layer.pinned.ffn_down_q4k_predec.as_ref().unwrap();
-                let blocks_per_row = intermediate / 256;
-                let row_bytes = blocks_per_row * 144;
-                if b <= 4 {
-                    kernels::gemm_q4_k_m_batched_v4r_predec_swiglu_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
-                        &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
-                        &arena.ffn_down_buf_batch,
-                    )?;
-                } else {
-                    kernels::gemm_q4_k_m_batched_v3w_predec_swiglu_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate, b,
-                        &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
-                        &arena.ffn_down_buf_batch,
-                    )?;
-                }
-            } else {
-                // Non-swiglu path (B=1, no Q4K predec, or non-Q4K ffn_down):
-                // keep the original silu_mul + separate ffn_down.
-                kernels::silu_mul_tcb(
-                    &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
-                    &arena.ffn_act_buf_batch, intermediate * b,
-                )?;
-                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
-                    let blocks_per_row = intermediate / 256;
-                    let row_bytes = blocks_per_row * 144;
-                    if let Some(scales) = layer.pinned.ffn_down_q4k_predec.as_ref() {
-                        // B=1 or fallback
-                        kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes, scales, 0, h, intermediate,
-                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                        )?;
-                    } else {
-                        kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
-                            &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
-                        )?;
-                    }
-                } else {
-                    batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
-                        &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
-                }
-            }
-
-            // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
+            // Fused FFN tail: Q4_K predec ffn_down_swiglu followed by the
+            // existing batched add+rmsnorm_ffn tail. The B=1 case uses the
+            // single-token GEMV swiglu wrapper; B=2..8 use the batched wrappers.
             let next_norm = if li + 1 < cfg.n_layers {
                 self.layers[li + 1]
                     .pinned
@@ -6839,10 +6897,59 @@ impl QwenDense {
             } else {
                 final_norm_buf
             };
-            kernels::add_rmsnorm_fused_batched_tcb(
-                &mut tcb, &arena.x_buf_batch, &arena.ffn_down_buf_batch,
-                next_norm, &arena.x_norm_buf_batch, eps, h, b,
-            )?;
+            let ffn_tail_fused = if let (Some(q4k_buf), Some(scales)) = (
+                layer.pinned.ffn_down_q4k.as_ref(),
+                layer.pinned.ffn_down_q4k_predec.as_ref(),
+            ) {
+                let blocks_per_row = intermediate / 256;
+                let row_bytes = blocks_per_row * 144;
+                kernels::ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb(
+                    &mut tcb,
+                    q4k_buf,
+                    0,
+                    h * row_bytes,
+                    scales,
+                    0,
+                    h,
+                    intermediate,
+                    b,
+                    &arena.ffn_gate_buf_batch,
+                    &arena.ffn_up_buf_batch,
+                    &arena.x_buf_batch,
+                    next_norm,
+                    &arena.x_norm_buf_batch,
+                    eps,
+                    &arena.ffn_down_buf_batch,
+                )?;
+                true
+            } else {
+                false
+            };
+
+            if !ffn_tail_fused {
+                // Non-swiglu path (no Q4K predec, or non-Q4K ffn_down):
+                // keep the original silu_mul + separate ffn_down.
+                kernels::silu_mul_tcb(
+                    &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
+                    &arena.ffn_act_buf_batch, intermediate * b,
+                )?;
+                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                    let blocks_per_row = intermediate / 256;
+                    let row_bytes = blocks_per_row * 144;
+                    kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
+                        &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
+                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                    )?;
+                } else {
+                    batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
+                        &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
+                }
+                // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
+                kernels::add_rmsnorm_fused_batched_tcb(
+                    &mut tcb, &arena.x_buf_batch, &arena.ffn_down_buf_batch,
+                    next_norm, &arena.x_norm_buf_batch, eps, h, b,
+                )?;
+            }
         }
 
         // C1: do NOT commit here — hand the live tcb back so the LM-head GEMM

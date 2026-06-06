@@ -400,6 +400,24 @@ mod metal_dispatch {
         cols: u32,
     }
 
+    /// Matches `ArgbufQkvRopeAppend` in `shaders/quant.metal`.
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    struct ArgbufQkvRopeAppend {
+        q_rows: u32,
+        kv_rows: u32,
+        cols: u32,
+        n_q_heads: u32,
+        n_k_heads: u32,
+        head_dim: u32,
+        pos: u32,
+        kv_off: u32,
+        has_q_bias: u32,
+        has_k_bias: u32,
+        has_v_bias: u32,
+        base: f32,
+    }
+
     /// Q4_K_M-weight × fp32-vec → fp32 GEMV, dispatching the
     /// dense-path `gemm_q4_k_m_fused` kernel in `shaders/quant.metal`.
     /// Wedge 2 / H2.4 -- dequant is fused inside the FMA loop in
@@ -957,16 +975,18 @@ mod metal_dispatch {
         rows: usize,
         cols: usize,
         batch: usize,
-        gate_batch_buf: &PinnedBuffer,  // (batch, cols) f32 gate activations
-        up_batch_buf: &PinnedBuffer,    // (batch, cols) f32 up activations
-        y_batch_buf: &PinnedBuffer,     // (batch, rows) f32 ffn_down output
+        gate_batch_buf: &PinnedBuffer, // (batch, cols) f32 gate activations
+        up_batch_buf: &PinnedBuffer,   // (batch, cols) f32 up activations
+        y_batch_buf: &PinnedBuffer,    // (batch, rows) f32 ffn_down output
     ) -> Result<()> {
         const KERNEL: &str = "gemm_q4_k_m_batched_v3w_predec_swiglu";
         if cols % 256 != 0 {
             return Err(Error::Kernel(format!("{KERNEL}: cols % 256 != 0 ({cols})")));
         }
         if !(1..=8).contains(&batch) {
-            return Err(Error::Kernel(format!("{KERNEL}: batch must be 1..=8 ({batch})")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: batch must be 1..=8 ({batch})"
+            )));
         }
         let blocks_per_row = cols / 256;
         let expected_bytes = rows * blocks_per_row * 144;
@@ -978,10 +998,8 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let batch_u32 = batch as u32;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
@@ -1035,10 +1053,8 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         let batch_u32 = batch as u32;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, rows_u32);
         ab.set_u32(1, cols_u32);
         ab.set_u32(2, batch_u32);
@@ -1053,6 +1069,104 @@ mod metal_dispatch {
             enc.set_buffer(4, Some(ab.handle()), 0);
             enc.set_buffer(5, Some(up_batch_buf), 0);
         })
+    }
+
+    /// Track 3.15-style FFN tail helper for Q4_K predec batched paths.
+    ///
+    /// This intentionally composes two ordered dispatches:
+    ///
+    /// 1. `ffn_down = W_down * (silu(gate) * up)` via the existing Q4_K
+    ///    predec SwiGLU down kernels.
+    /// 2. `x += ffn_down; x_norm = rmsnorm(x, norm_weight)` via the existing
+    ///    batched add+rmsnorm kernel.
+    ///
+    /// A single Metal dispatch is not a safe small extension here: the current
+    /// down GEMV is row-parallel across threadgroups, while RMSNorm needs a
+    /// hidden-wide reduction after every row has been written.
+    #[allow(clippy::too_many_arguments)]
+    pub fn ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        batch: usize,
+        gate_batch_buf: &PinnedBuffer,
+        up_batch_buf: &PinnedBuffer,
+        residual_x_batch_buf: &PinnedBuffer,
+        norm_weight_buf: &PinnedBuffer,
+        x_norm_batch_buf: &PinnedBuffer,
+        eps: f32,
+        ffn_down_batch_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        if batch == 0 {
+            return Ok(());
+        }
+        if batch > 8 {
+            return Err(Error::Kernel(format!(
+                "ffn_down_swiglu_add_rmsnorm_ffn_q4k_predec_batched_tcb supports batch in 1..=8; got {batch}"
+            )));
+        }
+
+        if batch == 1 {
+            gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                gate_batch_buf,
+                up_batch_buf,
+                ffn_down_batch_buf,
+            )?;
+        } else if batch <= 4 {
+            gemm_q4_k_m_batched_v4r_predec_swiglu_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                batch,
+                gate_batch_buf,
+                up_batch_buf,
+                ffn_down_batch_buf,
+            )?;
+        } else {
+            gemm_q4_k_m_batched_v3w_predec_swiglu_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                batch,
+                gate_batch_buf,
+                up_batch_buf,
+                ffn_down_batch_buf,
+            )?;
+        }
+
+        add_rmsnorm_fused_batched_tcb(
+            tcb,
+            residual_x_batch_buf,
+            ffn_down_batch_buf,
+            norm_weight_buf,
+            x_norm_batch_buf,
+            eps,
+            rows,
+            batch,
+        )
     }
 
     /// P1 — predec MMA twin: `gemm_q4_k_m_batched_v3w_predec_pinned_tcb` with the
@@ -1552,6 +1666,129 @@ mod metal_dispatch {
                 enc.set_u32(5, cols_u32);
             },
         )
+    }
+
+    /// Track 3.14 tail fusion: Q4_K predec GEMV plus residual add.
+    ///
+    /// Dispatches `gemm_q4_k_v4_predec_2r_add`, which is the same 2-row-ILP
+    /// predec GEMV math as `gemm_q4_k_v4_predec_2r` but writes
+    /// `residual[row] += dot(row, x)` instead of materializing a temporary
+    /// output vector. Intended for the Qwen B=1 `o_proj -> residual` tail.
+    ///
+    /// The RMSNorm that follows still needs its own dispatch because it reduces
+    /// across the fully updated residual vector.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_2r_add_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_2r_add";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let input_bytes = cols
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb input overflow")))?;
+        if x_buf.length() < input_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb x buf too small: got {} need {input_bytes}",
+                x_buf.length()
+            )));
+        }
+        let residual_bytes = rows
+            .checked_mul(std::mem::size_of::<f32>())
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb residual overflow")))?;
+        if residual_buf.length() < residual_bytes as u64 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb residual buf too small: got {} need {residual_bytes}",
+                residual_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(residual_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
+    /// Track 3.14 o_proj tail helper: Q4_K predec 2r GEMV adds directly into
+    /// `residual_buf`, then `rmsnorm_f32` writes `x_norm_buf` from the updated
+    /// residual. Equivalent to `gemv_q4_k_v4_predec_pinned_tcb` into a temp
+    /// followed by `add_rmsnorm_fused_tcb`, for the f32-predec 2r path.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_2r_add_rmsnorm_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+        norm_weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        eps: f32,
+    ) -> Result<()> {
+        gemv_q4_k_v4_predec_2r_add_pinned_tcb(
+            tcb,
+            model_buf,
+            w_offset,
+            w_byte_size,
+            scales_buf,
+            scales_offset,
+            rows,
+            cols,
+            x_buf,
+            residual_buf,
+        )?;
+        rmsnorm_metal_buf_tcb(tcb, residual_buf, norm_weight_buf, eps, rows, x_norm_buf)
     }
 
     /// Track 3.5 — SwiGLU-fused Q4_K predec GEMV (B=1).
@@ -2697,7 +2934,10 @@ mod metal_dispatch {
         }
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
-        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        let args = ArgbufRowsCols {
+            rows: rows_u32,
+            cols: cols_u32,
+        };
         const TG: u32 = 256;
         let n_tg = rows_u32.div_ceil(8);
         tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
@@ -2741,15 +2981,23 @@ mod metal_dispatch {
             )));
         }
         let blocks_per_row = cols / 256;
-        let k_expected = rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+        let k_expected = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
-        let v_expected = rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(210))
+        let v_expected = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v overflow")))?;
         if k_byte_size != k_expected {
-            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_expected}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {k_expected}"
+            )));
         }
         if v_byte_size != v_expected {
-            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {v_expected}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {v_expected}"
+            )));
         }
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
@@ -2801,24 +3049,34 @@ mod metal_dispatch {
             )));
         }
         let blocks_per_row = cols / 256;
-        let q_exp = q_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q overflow")))?;
-        let k_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+        let k_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
         if q_byte_size != q_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}"
+            )));
         }
         if k_byte_size != k_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}"
+            )));
         }
         if v_byte_size != k_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {k_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {k_exp}"
+            )));
         }
         let q_rows_u32 = q_rows as u32;
         let kv_rows_u32 = kv_rows as u32;
         let cols_u32 = cols as u32;
         const TG: u32 = 256;
-        let n_tg_q  = q_rows_u32.div_ceil(8);
+        let n_tg_q = q_rows_u32.div_ceil(8);
         let n_tg_kv = kv_rows_u32.div_ceil(8);
         let total_tg = n_tg_q + 2 * n_tg_kv;
         tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
@@ -2870,26 +3128,38 @@ mod metal_dispatch {
             )));
         }
         let blocks_per_row = cols / 256;
-        let q_exp = q_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q overflow")))?;
-        let k_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+        let k_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
-        let v_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(210))
+        let v_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
             .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v overflow")))?;
         if q_byte_size != q_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}"
+            )));
         }
         if k_byte_size != k_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}"
+            )));
         }
         if v_byte_size != v_exp {
-            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {v_exp}")));
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {v_exp}"
+            )));
         }
         let q_rows_u32 = q_rows as u32;
         let kv_rows_u32 = kv_rows as u32;
         let cols_u32 = cols as u32;
         const TG: u32 = 256;
-        let n_tg_q  = q_rows_u32.div_ceil(8);
+        let n_tg_q = q_rows_u32.div_ceil(8);
         let n_tg_kv = kv_rows_u32.div_ceil(8);
         let total_tg = n_tg_q + 2 * n_tg_kv;
         tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
@@ -2905,6 +3175,261 @@ mod metal_dispatch {
             enc.set_u32(9, q_rows_u32);
             enc.set_u32(10, kv_rows_u32);
             enc.set_u32(11, cols_u32);
+        })
+    }
+
+    fn validate_qkv_rope_append_shape(
+        kernel: &str,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        kv_off: usize,
+    ) -> Result<()> {
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        if head_dim == 0 || head_dim % 2 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel}: head_dim must be non-zero and even; got {head_dim}"
+            )));
+        }
+        if q_rows != n_q_heads * head_dim {
+            return Err(Error::Kernel(format!(
+                "{kernel}: q_rows={q_rows} != n_q_heads({n_q_heads})*head_dim({head_dim})"
+            )));
+        }
+        if kv_rows != n_k_heads * head_dim {
+            return Err(Error::Kernel(format!(
+                "{kernel}: kv_rows={kv_rows} != n_k_heads({n_k_heads})*head_dim({head_dim})"
+            )));
+        }
+        if q_rows % 2 != 0 || kv_rows % 2 != 0 {
+            return Err(Error::Kernel(format!(
+                "{kernel}: q_rows and kv_rows must be even; got {q_rows}/{kv_rows}"
+            )));
+        }
+        if kv_off > u32::MAX as usize {
+            return Err(Error::Kernel(format!(
+                "{kernel}: kv_off={kv_off} exceeds u32 addressable elements"
+            )));
+        }
+        Ok(())
+    }
+
+    /// Track 3.12/3.13 — Q4K/Q4K/Q4K triple with inline Q/K bias+RoPE and
+    /// direct f32 KV-cache append (+ optional V bias).
+    ///
+    /// Replaces `gemv_q4k_predec_qkv_triple_pinned_tcb` +
+    /// `rope_qk_f32_b1_bias_tcb` + `kv_append_vbias_f32_tcb` with one dispatch.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_predec_qkv_rope_append_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        v_scales: &PinnedBuffer,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        rope_base: f32,
+        kv_off: usize,
+        x_buf: &PinnedBuffer,
+        q_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_predec_qkv_rope_append";
+        validate_qkv_rope_append_shape(
+            KERNEL, q_rows, kv_rows, cols, n_q_heads, n_k_heads, head_dim, kv_off,
+        )?;
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q byte overflow")))?;
+        let kv_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: kv byte overflow")))?;
+        if q_byte_size != q_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}"
+            )));
+        }
+        if k_byte_size != kv_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {kv_exp}"
+            )));
+        }
+        if v_byte_size != kv_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {kv_exp}"
+            )));
+        }
+        let args = ArgbufQkvRopeAppend {
+            q_rows: q_rows as u32,
+            kv_rows: kv_rows as u32,
+            cols: cols as u32,
+            n_q_heads: n_q_heads as u32,
+            n_k_heads: n_k_heads as u32,
+            head_dim: head_dim as u32,
+            pos,
+            kv_off: kv_off as u32,
+            has_q_bias: q_bias_buf.is_some() as u32,
+            has_k_bias: k_bias_buf.is_some() as u32,
+            has_v_bias: v_bias_buf.is_some() as u32,
+            base: rope_base,
+        };
+        let q_bias = q_bias_buf.unwrap_or(q_buf);
+        let k_bias = k_bias_buf.unwrap_or(q_buf);
+        let v_bias = v_bias_buf.unwrap_or(q_buf);
+        const TG: u32 = 256;
+        let q_pair_tg = ((q_rows / 2) as u32).div_ceil(8);
+        let k_pair_tg = ((kv_rows / 2) as u32).div_ceil(8);
+        let v_tg = (kv_rows as u32).div_ceil(8);
+        let total_tg = q_pair_tg + k_pair_tg + v_tg;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(v_scales), 0);
+            enc.set_buffer(6, Some(x_buf), 0);
+            enc.set_buffer(7, Some(q_buf), 0);
+            enc.set_buffer(8, Some(k_cache), 0);
+            enc.set_buffer(9, Some(v_cache), 0);
+            enc.set_buffer(10, Some(q_bias), 0);
+            enc.set_buffer(11, Some(k_bias), 0);
+            enc.set_buffer(12, Some(v_bias), 0);
+            enc.set_bytes(
+                13,
+                std::mem::size_of::<ArgbufQkvRopeAppend>() as u64,
+                &args as *const ArgbufQkvRopeAppend as *const _,
+            );
+        })
+    }
+
+    /// Track 3.12/3.13 mixed variant: Q/K are Q4_K predec, V is Q6_K.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_q4k_q6k_rope_append_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        rope_base: f32,
+        kv_off: usize,
+        x_buf: &PinnedBuffer,
+        q_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_q4k_q6k_rope_append";
+        validate_qkv_rope_append_shape(
+            KERNEL, q_rows, kv_rows, cols, n_q_heads, n_k_heads, head_dim, kv_off,
+        )?;
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q byte overflow")))?;
+        let k_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k byte overflow")))?;
+        let v_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v byte overflow")))?;
+        if q_byte_size != q_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}"
+            )));
+        }
+        if k_byte_size != k_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}"
+            )));
+        }
+        if v_byte_size != v_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {v_exp}"
+            )));
+        }
+        let args = ArgbufQkvRopeAppend {
+            q_rows: q_rows as u32,
+            kv_rows: kv_rows as u32,
+            cols: cols as u32,
+            n_q_heads: n_q_heads as u32,
+            n_k_heads: n_k_heads as u32,
+            head_dim: head_dim as u32,
+            pos,
+            kv_off: kv_off as u32,
+            has_q_bias: q_bias_buf.is_some() as u32,
+            has_k_bias: k_bias_buf.is_some() as u32,
+            has_v_bias: v_bias_buf.is_some() as u32,
+            base: rope_base,
+        };
+        let q_bias = q_bias_buf.unwrap_or(q_buf);
+        let k_bias = k_bias_buf.unwrap_or(q_buf);
+        let v_bias = v_bias_buf.unwrap_or(q_buf);
+        const TG: u32 = 256;
+        let q_pair_tg = ((q_rows / 2) as u32).div_ceil(8);
+        let k_pair_tg = ((kv_rows / 2) as u32).div_ceil(8);
+        let v_tg = (kv_rows as u32).div_ceil(8);
+        let total_tg = q_pair_tg + k_pair_tg + v_tg;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(x_buf), 0);
+            enc.set_buffer(6, Some(q_buf), 0);
+            enc.set_buffer(7, Some(k_cache), 0);
+            enc.set_buffer(8, Some(v_cache), 0);
+            enc.set_buffer(9, Some(q_bias), 0);
+            enc.set_buffer(10, Some(k_bias), 0);
+            enc.set_buffer(11, Some(v_bias), 0);
+            enc.set_bytes(
+                12,
+                std::mem::size_of::<ArgbufQkvRopeAppend>() as u64,
+                &args as *const ArgbufQkvRopeAppend as *const _,
+            );
         })
     }
 
@@ -6342,7 +6867,7 @@ mod metal_dispatch {
     ) -> Result<()> {
         let pairs_per_head = (head_dim / 2) as u32;
         let q_total = n_q_heads as u32 * pairs_per_head;
-        let total   = q_total + n_k_heads as u32 * pairs_per_head;
+        let total = q_total + n_k_heads as u32 * pairs_per_head;
         let tg = TG_SIZE.min(total.max(1));
         let has_q = if q_bias_buf.is_some() { 1u32 } else { 0u32 };
         let has_k = if k_bias_buf.is_some() { 1u32 } else { 0u32 };
@@ -6369,18 +6894,13 @@ mod metal_dispatch {
         // when has_q/k_bias=0).
         let qb = q_bias_buf.unwrap_or(q_buf);
         let kb = k_bias_buf.unwrap_or(k_buf);
-        tcb.dispatch_threads(
-            "rope_qk_f32_b1_bias",
-            (total, 1, 1),
-            (tg, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(q_buf), 0);
-                enc.set_buffer(1, Some(k_buf), 0);
-                enc.set_buffer(2, Some(qb), 0);
-                enc.set_buffer(3, Some(kb), 0);
-                enc.set_buffer(4, Some(ab.handle()), 0);
-            },
-        )
+        tcb.dispatch_threads("rope_qk_f32_b1_bias", (total, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(q_buf), 0);
+            enc.set_buffer(1, Some(k_buf), 0);
+            enc.set_buffer(2, Some(qb), 0);
+            enc.set_buffer(3, Some(kb), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
     }
 
     /// Apply f32 RoPE in-place to a contiguous slice inside a larger f32 buffer.
@@ -6621,15 +7141,13 @@ mod metal_dispatch {
         k_cache: &PinnedBuffer,
         v_cache: &PinnedBuffer,
         kv_dim: usize,
-        kv_off: usize,  // element offset into k_cache/v_cache
+        kv_off: usize, // element offset into k_cache/v_cache
     ) -> Result<()> {
         let kv_dim_u32 = kv_dim as u32;
         let kv_off_u32 = kv_off as u32;
         let has_v = if v_bias_buf.is_some() { 1u32 } else { 0u32 };
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, kv_dim_u32);
         ab.set_u32(1, kv_off_u32);
         ab.set_u32(2, has_v);
@@ -8269,13 +8787,18 @@ mod metal_dispatch {
         }
         let total = (b * hidden) as u32;
         let tg = TG_SIZE.min(total);
-        tcb.dispatch_threads("embed_lookup_f32_batched", (total, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(embed_buf), 0);
-            enc.set_buffer(1, Some(tokens_buf), 0);
-            enc.set_buffer(2, Some(out_buf), 0);
-            enc.set_u32(3, hidden as u32);
-            enc.set_u32(4, b as u32);
-        })
+        tcb.dispatch_threads(
+            "embed_lookup_f32_batched",
+            (total, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(tokens_buf), 0);
+                enc.set_buffer(2, Some(out_buf), 0);
+                enc.set_u32(3, hidden as u32);
+                enc.set_u32(4, b as u32);
+            },
+        )
     }
 
     /// Track 3.2: batched cold rmsnorm — B rows in one dispatch, no residual add.
@@ -8510,8 +9033,12 @@ mod metal_dispatch {
         let mut ab = KernelArgBuffer::new(
             tcb.ctx,
             &[
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
-                ArgLayout::U32, ArgLayout::U32, ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
                 ArgLayout::F32,
             ],
         )?;

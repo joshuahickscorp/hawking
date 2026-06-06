@@ -2862,6 +2862,80 @@ kernel void gemm_q4_k_v4_predec_2r(
     }
 }
 
+// ── gemm_q4_k_v4_predec_2r_add ──────────────────────────────────────────────
+// o_proj tail helper: same math and 2-row geometry as gemm_q4_k_v4_predec_2r,
+// but the completed GEMV row is added directly into the residual stream instead
+// of being materialized to a temporary y buffer. The following dispatch can run
+// rmsnorm_f32 on the updated residual, preserving the required vector-wide norm
+// synchronization while skipping the o_proj_out write/read round-trip.
+//
+// Bindings:
+//   0: w_q4      Q4_K bytes
+//   1: scales    predecoded f32 (ds, dm) pairs
+//   2: x         GEMV input activation (attn_out)
+//   3: residual  f32 IN/OUT; residual[row] += GEMV(row, x)
+//   4: rows
+//   5: cols
+kernel void gemm_q4_k_v4_predec_2r_add(
+    device const uchar* w_q4     [[buffer(0)]],
+    device const float* scales   [[buffer(1)]],
+    device const float* x        [[buffer(2)]],
+    device       float* residual [[buffer(3)]],
+    constant     uint&  rows     [[buffer(4)]],
+    constant     uint&  cols     [[buffer(5)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1 * (uint64_t)blocks_per_row * 16ul;
+    float p0 = 0.0f;
+    float p1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul, so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul, so1 = rs1 + (uint64_t)b * 16ul;
+
+        float ds0[8], dm0[8], ds1[8], dm1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            ds0[s] = scales[so0 + (uint64_t)(s * 2u)];
+            dm0[s] = scales[so0 + (uint64_t)(s * 2u + 1u)];
+            ds1[s] = scales[so1 + (uint64_t)(s * 2u)];
+            dm1[s] = scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar q0 = w_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p0 += (ds0[k0] * (float)(q0 & 0x0Fu) - dm0[k0]) * xl[k0];
+            p0 += (ds0[k1] * (float)(q0 >> 4u)   - dm0[k1]) * xl[k1];
+            uchar q1 = w_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            p1 += (ds1[k0] * (float)(q1 & 0x0Fu) - dm1[k0]) * xl[k0];
+            p1 += (ds1[k1] * (float)(q1 >> 4u)   - dm1[k1]) * xl[k1];
+        }
+    }
+
+    p0 = simd_sum(p0);
+    if (simd_lane == 0u) residual[row0] = residual[row0] + p0;
+    if (has1) {
+        p1 = simd_sum(p1);
+        if (simd_lane == 0u) residual[row1] = residual[row1] + p1;
+    }
+}
+
 // ── gemm_q4_k_v4_predec_2r_f16s ──────────────────────────────────────────────
 // f16-scales variant of _2r (Stage 2, 2026-05-30). Identical math + 2-row ILP,
 // but the pre-decoded sub-block scales are read as `half` (2 B) instead of f32
@@ -3394,6 +3468,222 @@ kernel void gemm_q4k_q4k_q6k_triple(
         }
         pv = simd_sum(pv);
         if (simd_lane == 0u) yv[base_row] = pv;
+    }
+}
+
+struct ArgbufQkvRopeAppend {
+    uint  q_rows;
+    uint  kv_rows;
+    uint  cols;
+    uint  n_q_heads;
+    uint  n_k_heads;
+    uint  head_dim;
+    uint  pos;
+    uint  kv_off;
+    uint  has_q_bias;
+    uint  has_k_bias;
+    uint  has_v_bias;
+    float base;
+};
+
+static inline float q4k_predec_dot_row(
+    device const uchar* w,
+    device const float* sc,
+    device const float* x,
+    uint row,
+    uint cols,
+    uint simd_lane)
+{
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)row * (uint64_t)blocks_per_row * 16ul;
+    float partial = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+        float ds[8], dm[8];
+        for (uint sub = 0u; sub < 8u; ++sub) {
+            ds[sub] = sc[so + (uint64_t)(sub * 2u)];
+            dm[sub] = sc[so + (uint64_t)(sub * 2u + 1u)];
+        }
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            uchar qb = w[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            float xi0 = x[(uint64_t)b * 256ul + (uint64_t)(k0 * 32u + simd_lane)];
+            float xi1 = x[(uint64_t)b * 256ul + (uint64_t)(k1 * 32u + simd_lane)];
+            partial += (ds[k0] * (float)(qb & 0x0Fu) - dm[k0]) * xi0;
+            partial += (ds[k1] * (float)(qb >> 4u)   - dm[k1]) * xi1;
+        }
+    }
+    return simd_sum(partial);
+}
+
+static inline float q6k_dot_row(
+    device const uchar* w,
+    device const float* x,
+    uint row,
+    uint cols,
+    uint simd_lane)
+{
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off   = (uint64_t)row * (uint64_t)blocks_per_row * 210ul;
+    uint half_idx           = simd_lane >> 4u;
+    uint group              = (simd_lane >> 2u) & 3u;
+    uint l_base             = (simd_lane & 3u) * 8u;
+    uint scale_l_off        = l_base >> 4u;
+    uint scale_byte_off     = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off       = (group & 1u) * 32u;
+    bool group_high_nibble  = (group >= 2u);
+    uint qh_shift           = group * 2u;
+    uint tid_base           = half_idx * 128u + group * 32u + l_base;
+    float partial = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo     = row_byte_off + (uint64_t)b * 210ul;
+        ushort d_bits   = (ushort)w[bo + 208u] | ((ushort)w[bo + 209u] << 8);
+        float dscale    = (float)as_type<half>(d_bits) *
+                          (float)(int)(signed char)w[bo + (uint64_t)scale_byte_off];
+        uint64_t ql     = bo + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh     = bo + 128ul + (uint64_t)half_idx * 32ul;
+        float acc = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l    = l_base + k;
+            float xi  = x[b * 256u + tid_base + k];
+            uchar qlb = w[ql + (uint64_t)l];
+            uint qlow = group_high_nibble ? ((uint)(qlb >> 4) & 0xFu) : ((uint)qlb & 0xFu);
+            uint qhi  = ((uint)w[qh + (uint64_t)l] >> qh_shift) & 0x3u;
+            acc      += (float)((int)(qlow | (qhi << 4)) - 32) * xi;
+        }
+        partial += dscale * acc;
+    }
+    return simd_sum(partial);
+}
+
+static inline void write_rope_pair(
+    device float* dst,
+    device const float* bias,
+    uint has_bias,
+    uint row0,
+    float v0,
+    float v1,
+    constant ArgbufQkvRopeAppend& args)
+{
+    float x0 = v0 + (has_bias != 0u ? bias[row0] : 0.0f);
+    float x1 = v1 + (has_bias != 0u ? bias[row0 + 1u] : 0.0f);
+    uint pair = (row0 % args.head_dim) / 2u;
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+    float c = cos(theta), s = sin(theta);
+    dst[row0]      = x0 * c - x1 * s;
+    dst[row0 + 1u] = x0 * s + x1 * c;
+}
+
+kernel void gemm_q4k_predec_qkv_rope_append(
+    device const uchar* wq      [[buffer(0)]],
+    device const float* q_sc    [[buffer(1)]],
+    device const uchar* wk      [[buffer(2)]],
+    device const float* k_sc    [[buffer(3)]],
+    device const uchar* wv      [[buffer(4)]],
+    device const float* v_sc    [[buffer(5)]],
+    device const float* x       [[buffer(6)]],
+    device       float* q_out   [[buffer(7)]],
+    device       float* k_cache [[buffer(8)]],
+    device       float* v_cache [[buffer(9)]],
+    device const float* q_bias  [[buffer(10)]],
+    device const float* k_bias  [[buffer(11)]],
+    device const float* v_bias  [[buffer(12)]],
+    constant ArgbufQkvRopeAppend& args [[buffer(13)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint q_pairs = args.q_rows / 2u;
+    uint k_pairs = args.kv_rows / 2u;
+    uint n_tg_q  = (q_pairs + 7u) / 8u;
+    uint n_tg_k  = (k_pairs + 7u) / 8u;
+    uint n_tg_v  = (args.kv_rows + 7u) / 8u;
+
+    if (gid < n_tg_q) {
+        uint pair_idx = gid * 8u + simd_id;
+        if (pair_idx >= q_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+        }
+    } else if (gid < n_tg_q + n_tg_k) {
+        uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
+        if (pair_idx >= k_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+        }
+    } else {
+        uint eff_gid = gid - (n_tg_q + n_tg_k);
+        if (eff_gid >= n_tg_v) return;
+        uint row = eff_gid * 8u + simd_id;
+        if (row >= args.kv_rows) return;
+        float pv = q4k_predec_dot_row(wv, v_sc, x, row, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            v_cache[args.kv_off + row] = pv + (args.has_v_bias != 0u ? v_bias[row] : 0.0f);
+        }
+    }
+}
+
+kernel void gemm_q4k_q4k_q6k_rope_append(
+    device const uchar* wq      [[buffer(0)]],
+    device const float* q_sc    [[buffer(1)]],
+    device const uchar* wk      [[buffer(2)]],
+    device const float* k_sc    [[buffer(3)]],
+    device const uchar* wv      [[buffer(4)]],
+    device const float* x       [[buffer(5)]],
+    device       float* q_out   [[buffer(6)]],
+    device       float* k_cache [[buffer(7)]],
+    device       float* v_cache [[buffer(8)]],
+    device const float* q_bias  [[buffer(9)]],
+    device const float* k_bias  [[buffer(10)]],
+    device const float* v_bias  [[buffer(11)]],
+    constant ArgbufQkvRopeAppend& args [[buffer(12)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint q_pairs = args.q_rows / 2u;
+    uint k_pairs = args.kv_rows / 2u;
+    uint n_tg_q  = (q_pairs + 7u) / 8u;
+    uint n_tg_k  = (k_pairs + 7u) / 8u;
+    uint n_tg_v  = (args.kv_rows + 7u) / 8u;
+
+    if (gid < n_tg_q) {
+        uint pair_idx = gid * 8u + simd_id;
+        if (pair_idx >= q_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+        }
+    } else if (gid < n_tg_q + n_tg_k) {
+        uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
+        if (pair_idx >= k_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+        }
+    } else {
+        uint eff_gid = gid - (n_tg_q + n_tg_k);
+        if (eff_gid >= n_tg_v) return;
+        uint row = eff_gid * 8u + simd_id;
+        if (row >= args.kv_rows) return;
+        float pv = q6k_dot_row(wv, x, row, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            v_cache[args.kv_off + row] = pv + (args.has_v_bias != 0u ? v_bias[row] : 0.0f);
+        }
     }
 }
 
