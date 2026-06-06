@@ -4754,11 +4754,24 @@ impl QwenDense {
                                 .as_ref()
                                 .and_then(|m| m.get(&$tref.offset))
                             {
-                                // A6.5 wire-up: f16-scales predec variant
-                                // (opt-in DISMANTLE_QWEN_PREDEC_F16SCALES).
-                                // Same 2r geometry but reads half-width
-                                // (ds, dm) f16 pairs — ~17% less scale
-                                // traffic. Quality trade (NOT bit-identical).
+                                // A6.5 / D5: f16-scales predec variant.
+                                // D5: prefer 4r (32 rows/TG) when PREDEC_4R set.
+                                // A6.5: 2r (16 rows/TG) otherwise.
+                                // Both read half-width scale pairs.
+                                if predec_4r_active {
+                                    kernels::gemv_q4_k_v4_predec_4r_f16s_pinned_tcb(
+                                        &mut tcb,
+                                        mmap_buf,
+                                        $tref.offset,
+                                        $tref.byte_size,
+                                        scales_f16,
+                                        0,
+                                        $rows,
+                                        $cols,
+                                        $x,
+                                        $out,
+                                    )?;
+                                } else {
                                 kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
                                     &mut tcb,
                                     mmap_buf,
@@ -4771,6 +4784,7 @@ impl QwenDense {
                                     $x,
                                     $out,
                                 )?;
+                                }
                             } else if let Some(scales_buf) = predec_cache_ref
                                 .as_ref()
                                 .and_then(|m| m.get(&$tref.offset))
@@ -5111,6 +5125,26 @@ impl QwenDense {
                         }
                     });
                     if let Some((k_scales_f16, v_scales_f16)) = f16_pair {
+                        // D4: prefer 4r_f16s when PAIR_4R is also set.
+                        if ffn_pair_4r {
+                            kernels::gemv_q4_k_v4_predec_pair_4r_f16s_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales_f16,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales_f16,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else {
                         kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
                             &mut tcb,
                             mmap_buf,
@@ -5128,6 +5162,7 @@ impl QwenDense {
                             &arena.k_token_buf,
                             &arena.v_token_buf,
                         )?;
+                        }
                     } else {
                         let cache = predec_cache_ref.expect("checked is_some via map");
                         let k_scales = &cache[&layer.k_proj.offset];
