@@ -4619,9 +4619,6 @@ impl QwenDense {
 
         let mut tcb = TokenCommandBuffer::new(ctx);
 
-        // x_buf <- embed[token]
-        kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, token, h, &arena.x_buf)?;
-
         let f32_bytes = std::mem::size_of::<f32>();
         let kv_dim_bytes = kv_dim * f32_bytes;
         let layer_kv_stride_bytes = max_seq * kv_dim_bytes;
@@ -4634,14 +4631,42 @@ impl QwenDense {
             .attn_norm
             .as_ref()
             .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
-        kernels::rmsnorm_metal_buf_tcb(
-            &mut tcb,
-            &arena.x_buf,
-            layer0_attn_norm,
-            eps,
-            h,
-            &arena.x_norm_buf,
-        )?;
+
+        // Track B7: fuse embed_lookup + layer0_attn_norm into ONE dispatch.
+        // Saves 1 dispatch (292→291). Only valid when hidden ≤ 4096 and w4a8
+        // is inactive (w4a8 needs x_buf populated before the quantize step).
+        // Default-ON; opt-out via DISMANTLE_QWEN_EMBED_RMSNORM_FUSE=0.
+        let embed_rmsnorm_fuse = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                !std::env::var_os("DISMANTLE_QWEN_EMBED_RMSNORM_FUSE")
+                    .map(|v| v == "0")
+                    .unwrap_or(false)
+            })
+        } && !w4a8_active;
+        if embed_rmsnorm_fuse {
+            kernels::embed_lookup_rmsnorm_f32_tcb(
+                &mut tcb,
+                embed_buf,
+                layer0_attn_norm,
+                token,
+                h,
+                eps,
+                &arena.x_buf,
+                &arena.x_norm_buf,
+            )?;
+        } else {
+            // Separate: x_buf <- embed[token], then x_norm_buf <- rmsnorm(x)
+            kernels::embed_lookup_metal_f32_tcb(&mut tcb, embed_buf, token, h, &arena.x_buf)?;
+            kernels::rmsnorm_metal_buf_tcb(
+                &mut tcb,
+                &arena.x_buf,
+                layer0_attn_norm,
+                eps,
+                h,
+                &arena.x_norm_buf,
+            )?;
+        }
         if w4a8_active {
             // Pre-loop x_norm quantize feeds layer 0's q/k/v projections.
             // Under AWQ, divide by layer-0 q_proj smoothing (== k/v_proj).
