@@ -2563,6 +2563,84 @@ mod metal_dispatch {
         })
     }
 
+    /// Track D4 — 4r geometry + f16-scales gate+up pair.
+    /// Combines pair_4r (32 rows/TG) with half* scale tables.
+    /// For gate+up (11008 rows × 2048 cols): 344 TGs vs 688 (4r f32) or 1376 (f16s 1r).
+    /// Grid: (ceil(rows/32)*256, 1, 1)  TG: (256,1,1).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_4r_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair_4r_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 32; // 4r × 8 simdgroups
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), g_offset as u64);
+            enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+            enc.set_buffer(2, Some(model_buf), u_offset as u64);
+            enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+            enc.set_buffer(4, Some(x_buf), 0);
+            enc.set_buffer(5, Some(g_out_buf), 0);
+            enc.set_buffer(6, Some(u_out_buf), 0);
+            enc.set_u32(7, rows_u32);
+            enc.set_u32(8, cols_u32);
+        })
+    }
+
     /// Q4K_FAST v1 — Q4_K with sub-block-contiguous re-layout.
     ///
     /// Weight buffer layout: 160 bytes per 256-element block. Per sub-block
