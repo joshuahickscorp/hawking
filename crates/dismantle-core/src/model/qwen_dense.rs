@@ -4988,23 +4988,47 @@ impl QwenDense {
                         let cache = predec_cache_ref.expect("checked is_some via map");
                         let k_scales = &cache[&layer.k_proj.offset];
                         let v_scales = &cache[&layer.v_proj.offset];
-                        kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
-                            &mut tcb,
-                            mmap_buf,
-                            layer.k_proj.offset,
-                            layer.k_proj.byte_size,
-                            k_scales,
-                            0,
-                            layer.v_proj.offset,
-                            layer.v_proj.byte_size,
-                            v_scales,
-                            0,
-                            kv_dim,
-                            h,
-                            &arena.x_norm_buf,
-                            &arena.k_token_buf,
-                            &arena.v_token_buf,
-                        )?;
+                        // Track B3: upgrade kv pair from 1r → 2r (same default as
+                        // gate+up Track A7).  kv_dim=1024, cols=h=2048 on Qwen-3B;
+                        // 2r halves TG count (64 vs 128) and doubles ILP.
+                        // Bit-identical to 1r; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
+                        if ffn_pair_2r {
+                            kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else {
+                            kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        }
                     }
                 } else {
                     // Track 3.8: Q6K+Q6K pair (models with all-Q6K k/v)
