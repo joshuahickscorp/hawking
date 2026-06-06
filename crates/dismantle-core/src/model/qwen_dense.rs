@@ -5588,6 +5588,27 @@ impl QwenDense {
                     }
                 });
                 if let Some((g_scales_f16, u_scales_f16)) = f16_pair {
+                    // Track D4: prefer 4r_f16s (32 rows/TG + half scale BW)
+                    // when DISMANTLE_QWEN_PAIR_4R is also set.
+                    if ffn_pair_4r {
+                        kernels::gemv_q4_k_v4_predec_pair_4r_f16s_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales_f16,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales_f16,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else {
                     kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
                         &mut tcb,
                         mmap_buf,
@@ -5605,6 +5626,7 @@ impl QwenDense {
                         &arena.ffn_gate_buf,
                         &arena.ffn_up_buf,
                     )?;
+                    }
                 } else {
                     let cache = predec_cache_ref.expect("checked is_some via map");
                     let g_scales = &cache[&layer.ffn_gate.offset];
