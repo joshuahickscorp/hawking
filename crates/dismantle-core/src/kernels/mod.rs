@@ -3523,8 +3523,83 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         const V2_TG: u32 = 256;
+        // Track D7: default to the 2r variant (16 rows/TG, 128 TGs for Qwen-3B
+        // ffn_down vs 256 for 1r). Opt-out: DISMANTLE_QWEN_Q6K_SWIGLU_2R=0.
+        let use_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                !std::env::var_os("DISMANTLE_QWEN_Q6K_SWIGLU_2R")
+                    .map(|v| v == "0")
+                    .unwrap_or(false)
+            })
+        };
+        let (dispatch_kernel, rows_per_tg): (&str, u32) = if use_2r {
+            ("gemm_q6_k_fused_v2_swiglu_2r", 16)
+        } else {
+            (KERNEL, 8)
+        };
+        let n_tg = rows_u32.div_ceil(rows_per_tg);
+        tcb.dispatch_threads(dispatch_kernel, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(gate_buf), 0);
+            enc.set_buffer(2, Some(up_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
+    /// Track D7 — Direct dispatch for 1r Q6K swiglu (parity reference).
+    /// Bypasses the OnceLock geometry selection; always uses the 1r kernel.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_swiglu_1r_direct_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_fused_v2_swiglu";
+        let blocks_per_row = cols / 256;
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
         let n_tg = rows_u32.div_ceil(8);
-        tcb.dispatch_threads(KERNEL, (n_tg * V2_TG, 1, 1), (V2_TG, 1, 1), |enc| {
+        let _ = blocks_per_row;
+        let _ = w_byte_size;
+        tcb.dispatch_threads(KERNEL, (n_tg * 256, 1, 1), (256, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(gate_buf), 0);
+            enc.set_buffer(2, Some(up_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
+    /// Track D7 — Direct dispatch for 2r Q6K swiglu (Track D7 kernel).
+    /// Bypasses the OnceLock geometry selection; always uses the 2r kernel.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_swiglu_2r_direct_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_fused_v2_swiglu_2r";
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let _ = w_byte_size;
+        let n_tg = rows_u32.div_ceil(16);
+        tcb.dispatch_threads(KERNEL, (n_tg * 256, 1, 1), (256, 1, 1), |enc| {
             enc.set_buffer(0, Some(model_buf), w_offset as u64);
             enc.set_buffer(1, Some(gate_buf), 0);
             enc.set_buffer(2, Some(up_buf), 0);

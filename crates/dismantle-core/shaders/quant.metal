@@ -4602,6 +4602,114 @@ kernel void gemm_q6_k_fused_v2_swiglu(
     }
 }
 
+// ── gemm_q6_k_fused_v2_swiglu_2r ─────────────────────────────────────────────
+// Track D7 — 2-rows-per-simdgroup upgrade of gemm_q6_k_fused_v2_swiglu.
+// For Qwen-3B ffn_down (rows=2048): 128 TGs vs 256 (1r). Both rows share the
+// SwiGLU activation reads (xi_idx = b*256+tid_base+k, independent of row) —
+// saving half the gate/up memory traffic — while reading separate Q6_K weight
+// bytes (bo0/bo1) and block d/scale values (dscale0/dscale1).
+//
+// Buffer layout: same as gemm_q6_k_fused_v2_swiglu
+//   0: w_q6    (uchar*, Q6_K packed, rows * blocks * 210 B)
+//   1: gate    (float*, intermediate)
+//   2: up      (float*, intermediate)
+//   3: y       (float*, hidden)
+//   4: rows    (uint)
+//   5: cols    (uint, multiple of 256)
+//
+// Grid: (ceil(rows/16)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q6_k_fused_v2_swiglu_2r(
+    device const uchar* w_q6  [[buffer(0)]],
+    device const float* gate  [[buffer(1)]],
+    device const float* up    [[buffer(2)]],
+    device       float* y     [[buffer(3)]],
+    constant     uint&  rows  [[buffer(4)]],
+    constant     uint&  cols  [[buffer(5)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row0 = gid * 16u + simd_id;
+    if (base_row0 >= rows) return;
+    uint base_row1 = base_row0 + 8u;
+    bool has1 = base_row1 < rows;
+    uint base_r1 = has1 ? base_row1 : base_row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off0 = (uint64_t)base_row0 * (uint64_t)blocks_per_row * 210ul;
+    uint64_t row_byte_off1 = (uint64_t)base_r1   * (uint64_t)blocks_per_row * 210ul;
+
+    // Thread-specific index constants (same for both rows).
+    uint half_idx          = simd_lane >> 4u;
+    uint group             = (simd_lane >> 2u) & 3u;
+    uint l_base            = (simd_lane & 3u) * 8u;
+    uint scale_l_off       = l_base >> 4u;
+    uint scale_byte_off    = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off      = (group & 1u) * 32u;
+    bool group_high_nibble = (group >= 2u);
+    uint qh_shift          = group * 2u;
+    uint tid_base          = half_idx * 128u + group * 32u + l_base;
+
+    float partial0 = 0.0f, partial1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = row_byte_off0 + (uint64_t)b * 210ul;
+        uint64_t bo1 = row_byte_off1 + (uint64_t)b * 210ul;
+
+        // Block-level d and per-group scale — row 0.
+        ushort d_bits0 = (ushort)w_q6[bo0 + 208u] | ((ushort)w_q6[bo0 + 209u] << 8);
+        float  d0      = (float)as_type<half>(d_bits0);
+        int    sc0     = (int)(signed char)w_q6[bo0 + (uint64_t)scale_byte_off];
+        float  ds0     = d0 * (float)sc0;
+
+        // Block-level d and per-group scale — row 1.
+        ushort d_bits1 = (ushort)w_q6[bo1 + 208u] | ((ushort)w_q6[bo1 + 209u] << 8);
+        float  d1      = (float)as_type<half>(d_bits1);
+        int    sc1     = (int)(signed char)w_q6[bo1 + (uint64_t)scale_byte_off];
+        float  ds1     = d1 * (float)sc1;
+
+        uint64_t ql_base0 = bo0 + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base0 = bo0 + 128ul + (uint64_t)half_idx * 32ul;
+        uint64_t ql_base1 = bo1 + (uint64_t)half_idx * 64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base1 = bo1 + 128ul + (uint64_t)half_idx * 32ul;
+
+        float lane_acc0 = 0.0f, lane_acc1 = 0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l = l_base + k;
+
+            // Row 0 weights.
+            uchar qlb0 = w_q6[ql_base0 + (uint64_t)l];
+            uint qlow0 = group_high_nibble ? ((uint)(qlb0 >> 4) & 0x0Fu) : ((uint)qlb0 & 0x0Fu);
+            uint qhigh0 = ((uint)w_q6[qh_base0 + (uint64_t)l] >> qh_shift) & 0x03u;
+            int qi0 = (int)(qlow0 | (qhigh0 << 4u)) - 32;
+
+            // Row 1 weights.
+            uchar qlb1 = w_q6[ql_base1 + (uint64_t)l];
+            uint qlow1 = group_high_nibble ? ((uint)(qlb1 >> 4) & 0x0Fu) : ((uint)qlb1 & 0x0Fu);
+            uint qhigh1 = ((uint)w_q6[qh_base1 + (uint64_t)l] >> qh_shift) & 0x03u;
+            int qi1 = (int)(qlow1 | (qhigh1 << 4u)) - 32;
+
+            // Shared activation (xi_idx does not depend on row).
+            uint xi_idx = b * 256u + tid_base + k;
+            float g = gate[xi_idx];
+            float xi = (g / (1.0f + exp(-g))) * up[xi_idx];
+
+            lane_acc0 += (float)qi0 * xi;
+            lane_acc1 += (float)qi1 * xi;
+        }
+        partial0 += ds0 * lane_acc0;
+        partial1 += ds1 * lane_acc1;
+    }
+
+    partial0 = simd_sum(partial0);
+    if (simd_lane == 0u) y[base_row0] = partial0;
+    if (has1) {
+        partial1 = simd_sum(partial1);
+        if (simd_lane == 0u) y[base_r1] = partial1;
+    }
+}
+
 // ── gemm_q4_k_v4_predec_swiglu ───────────────────────────────────────────────
 // Track 3.5 — SwiGLU-fused Q4_K predec GEMV, 1-row-per-simdgroup base variant.
 // Same as gemm_q4_k_v4_predec but x[i] → silu(gate[i])*up[i].
