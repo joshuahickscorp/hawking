@@ -704,6 +704,77 @@ kernel void embed_lookup_f32(
     out[id] = (float)embed[token * hidden + id];
 }
 
+// ── embed_lookup_rmsnorm_f32 ──────────────────────────────────────────────────
+// Track B7 — Fused embedding lookup + layer-0 RMSNorm. ONE dispatch replaces:
+//   embed_lookup_metal_f32_tcb(token → x)
+//   rmsnorm_metal_buf_tcb(x, weight → x_norm)
+//
+// Phase 1 loads embedding row → writes to x (device), accumulates partial squares.
+// After the shmem variance reduction, phase 2 re-reads x and writes x_norm.
+// The re-read is ~free on Apple Silicon (L1 cache hit from phase 1) and makes
+// the computation bit-identical to the two-dispatch reference (rmsnorm_f32 reads
+// from device memory too). The win is purely structural: one dispatch vs two.
+//
+// The shmem reduction uses mem_threadgroup only: within a single thread,
+// device writes before the barrier are sequentially visible to the same thread
+// after the barrier, so no mem_device barrier is needed.
+//
+// Buffer layout:
+//   0: embed   (half*, large embedding table)
+//   1: weight  (float*, RMSNorm scale weights)
+//   2: x       (float*, residual stream — write destination)
+//   3: x_norm  (float*, normalized output)
+//   4: args    (ArgbufEmbedRmsnorm { hidden, token, eps })
+//   threadgroup(0): shmem (tg_size × f32)
+//
+// Grid: (TG_SIZE, 1, 1) — same single-TG contract as rmsnorm_f32.
+struct ArgbufEmbedRmsnorm {
+    uint  hidden;
+    uint  token;
+    float eps;
+};
+
+kernel void embed_lookup_rmsnorm_f32(
+    device const half*  embed   [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    device       float* x       [[buffer(2)]],
+    device       float* x_norm  [[buffer(3)]],
+    constant ArgbufEmbedRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint         tid            [[thread_position_in_threadgroup]],
+    uint         tg_size        [[threads_per_threadgroup]])
+{
+    uint64_t embed_off = (uint64_t)args.token * (uint64_t)args.hidden;
+
+    // Phase 1: load embedding values → write x to device, accumulate squares.
+    // The partial-sum accumulation exactly mirrors rmsnorm_f32 (reads from device
+    // memory after write, same as `float v = x[i]; partial += v * v;`).
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = (float)embed[embed_off + i];
+        x[i] = v;
+        partial += v * v;
+    }
+
+    // Threadgroup shmem reduction for the variance.
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    // Mirror rmsnorm_f32 exactly: two-step sqrt+reciprocal, multiply order x*inv*w.
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: re-read x (same pattern as rmsnorm_f32) to produce bit-identical output.
+    // The x values are already in L1/shared cache from phase 1 on Apple Silicon, so this
+    // second read costs ~0 additional memory bandwidth vs a separate rmsnorm dispatch.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
+    }
+}
+
 // G1.2 — fp16-weight × fp32-vec → fp32 GEMV (LM-head shape).
 //
 // One workgroup per output row, tg_size threads per group, threadgroup
