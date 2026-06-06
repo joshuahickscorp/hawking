@@ -4499,13 +4499,14 @@ impl QwenDense {
             })
         };
         // Track B6: fuse rope_qk + kv_append into one dispatch, saving
-        // 1/layer × n_layers = 36 dispatches. Only valid for !use_seam &&
-        // !f16_kv. Opt-in via DISMANTLE_QWEN_ROPE_KV_FUSE=1 (bench first).
+        // 1/layer × n_layers = 36 dispatches (328→292). Only valid for
+        // !use_seam && !f16_kv. Bit-identical (5 shapes verified).
+        // DEFAULT-ON; opt-out via DISMANTLE_QWEN_ROPE_KV_FUSE=0.
         let rope_kv_fuse = {
             static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
             *E.get_or_init(|| {
-                std::env::var_os("DISMANTLE_QWEN_ROPE_KV_FUSE")
-                    .map(|v| v != "0")
+                !std::env::var_os("DISMANTLE_QWEN_ROPE_KV_FUSE")
+                    .map(|v| v == "0")
                     .unwrap_or(false)
             })
         };
