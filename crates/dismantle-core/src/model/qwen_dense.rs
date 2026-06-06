@@ -5628,11 +5628,36 @@ impl QwenDense {
             let ffn_swiglu_fused = if !w4a8_ffn_down {
                 if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                     // Requant'd Q4_K ffn_down (DISMANTLE_QWEN_FFN_DOWN_Q4K=1).
-                    // Only fuse when the predec table is present (f32 variant;
-                    // f16s predec swiglu kernel not yet added — falls through).
+                    // Track D1: prefer f16-scales swiglu when both predec_f16scales
+                    // is active and the f16 predec table is present. Falls through
+                    // to the f32 predec swiglu, then to the silu_mul path.
                     let blocks_per_row = intermediate / 256;
                     let row_bytes = blocks_per_row * 144;
-                    if let Some(predec_scales) = ffn_down_predec
+                    if predec_f16scales_active {
+                        if let Some(predec_f16) = layer.pinned.ffn_down_q4k_predec_f16.as_ref() {
+                            kernels::gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(
+                                &mut tcb, q4k_buf, 0, h * row_bytes,
+                                predec_f16, 0, h, intermediate,
+                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &arena.ffn_down_buf,
+                            )?;
+                            true
+                        } else if let Some(predec_scales) = ffn_down_predec
+                            .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
+                            .flatten()
+                        {
+                            // f16 cache not built yet — fall back to f32 predec swiglu.
+                            kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
+                                &mut tcb, q4k_buf, 0, h * row_bytes,
+                                predec_scales, 0, h, intermediate,
+                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &arena.ffn_down_buf,
+                            )?;
+                            true
+                        } else {
+                            false
+                        }
+                    } else if let Some(predec_scales) = ffn_down_predec
                         .then(|| layer.pinned.ffn_down_q4k_predec.as_ref())
                         .flatten()
                     {
