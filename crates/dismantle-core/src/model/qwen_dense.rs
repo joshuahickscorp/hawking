@@ -4487,6 +4487,17 @@ impl QwenDense {
                     .unwrap_or(false)
             })
         };
+        // Track B2: 4r gate+up pair — opt-in (DISMANTLE_QWEN_PAIR_4R=1).
+        // 8 accumulators, inline scale reads, 32 rows/TG vs 16 for 2r.
+        // Bit-identical to 2r; bench to confirm before defaulting.
+        let ffn_pair_4r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
         // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
         // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
@@ -5384,9 +5395,29 @@ impl QwenDense {
                     let cache = predec_cache_ref.expect("checked is_some via map");
                     let g_scales = &cache[&layer.ffn_gate.offset];
                     let u_scales = &cache[&layer.ffn_up.offset];
-                    // Track A7: prefer 2r pair (default) — amortises x-load
-                    // across 4 outputs; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
-                    if ffn_pair_2r {
+                    // Gate+up pair dispatch ladder (best to worst ILP):
+                    //   4r (opt-in, DISMANTLE_QWEN_PAIR_4R=1) — 8 accumulators, inline scales
+                    //   2r (default, Track A7) — 4 accumulators, preloaded scales
+                    //   1r (opt-out, DISMANTLE_QWEN_PAIR_1R=1) — 2 accumulators
+                    if ffn_pair_4r {
+                        kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else if ffn_pair_2r {
                         kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
                             &mut tcb,
                             mmap_buf,

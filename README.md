@@ -72,7 +72,7 @@ dismantle serve \
 
 | model | quant | dec_tps | notes |
 |---|---|---:|---|
-| Qwen2.5-3B-Instruct | Q4_K_M | ~31 | clean-room anchor (Claude.app quit), greedy temp=0 |
+| Qwen2.5-3B-Instruct | Q4_K_M | ~31 | clean-room anchor, greedy temp=0 |
 | DeepSeek-V2-Lite-Chat | Q4_K_M | ~17 | TRIALS=4 TOKENS=24, 95% CI [16.6, 18.0] |
 | Mixtral-8×7B-Instruct | Q3_K_M | ~0.1 | SSD-bandwidth-limited on 18 GB |
 
@@ -99,10 +99,10 @@ Forces the engine to load with no Metal context, exercising the same pure-Rust p
 ## Reproduce the perf numbers
 
 ```sh
-# Paired median + 95% CI (Claude.app can be running)
+# Paired median + 95% CI (shared background load is OK)
 TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh
 
-# Contamination-controlled absolute anchor (quit Claude.app first)
+# Contamination-controlled absolute anchor (close agent/GPU workloads first)
 bash tools/bench/clean_room_batch.sh
 ```
 
