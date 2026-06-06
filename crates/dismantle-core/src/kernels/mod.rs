@@ -1881,6 +1881,71 @@ mod metal_dispatch {
         rmsnorm_metal_buf_tcb(tcb, residual_buf, norm_weight_buf, eps, rows, x_norm_buf)
     }
 
+    /// Track D5 — 4r × f16-scales single GEMV.
+    /// Combines predec_4r geometry (32 rows/TG, inline scale reads) with half*
+    /// scale tables. For o_proj (2048 rows × 2048 cols): 64 TGs vs 128 (2r_f16s).
+    /// Active when DISMANTLE_QWEN_PREDEC_F16SCALES=1 AND DISMANTLE_QWEN_PREDEC_4R=1.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_4r_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_4r_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 32; // 8 simdgroups × 4 rows (4r geometry)
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(out_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
     /// Track 3.5 — SwiGLU-fused Q4_K predec GEMV (B=1).
     ///
     /// Fuses `silu(gate) * up` inline into the predec Q4_K GEMV, eliminating
