@@ -999,6 +999,47 @@ kernel void use_resource_poc_add(
     out[tid] = args.a[tid] + args.b[tid];
 }
 
+// ── kv_append_vbias_f32 ───────────────────────────────────────────────────────
+// Track 3.7 — Fused KV-cache append with V-bias addition.
+//
+// Replaces THREE dispatches per layer in forward_token_greedy_tcb:
+//   add_inplace(v_token_buf, v_bias)         ← V bias (no rope)
+//   memcpy_f32_off(k_token_buf → k_cache)   ← K cache append
+//   memcpy_f32_off(v_token_buf → v_cache)   ← V cache append
+// with ONE dispatch, saving 2 dispatches/layer × n_layers = 56 on Qwen-3B.
+//
+// K-token is written verbatim (K bias was already applied in rope_qk_b1_bias).
+// V-token has v_bias optionally added before writing to v_cache.
+//
+// Buffer layout:
+//   0: k_tok     (float*, kv_dim, input — K token vector, bias already applied)
+//   1: v_tok     (float*, kv_dim, input — V token vector, NO bias yet)
+//   2: v_bias    (float*, kv_dim, optional V bias — only read when has_v_bias=1)
+//   3: k_cache   (float*, large KV cache, output)
+//   4: v_cache   (float*, large KV cache, output)
+//   5: args      (ArgbufKvAppendVbias)
+//
+// Grid: (kv_dim, 1, 1)
+struct ArgbufKvAppendVbias {
+    uint kv_dim;
+    uint kv_off;      // element offset into k_cache and v_cache
+    uint has_v_bias;  // 1 if v_bias is valid, 0 otherwise
+};
+
+kernel void kv_append_vbias_f32(
+    device const float* k_tok   [[buffer(0)]],
+    device const float* v_tok   [[buffer(1)]],
+    device const float* v_bias  [[buffer(2)]],
+    device       float* k_cache [[buffer(3)]],
+    device       float* v_cache [[buffer(4)]],
+    constant ArgbufKvAppendVbias& args [[buffer(5)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.kv_dim) return;
+    k_cache[args.kv_off + id] = k_tok[id];
+    v_cache[args.kv_off + id] = v_tok[id] + (args.has_v_bias ? v_bias[id] : 0.0f);
+}
+
 // ── rope_qk_f32_b1_bias ───────────────────────────────────────────────────────
 // Track 3.6 — B=1 fused Q+K RoPE with in-place bias addition.
 //

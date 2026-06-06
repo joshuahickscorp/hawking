@@ -564,6 +564,7 @@ mod imp {
             "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
             "rmsnorm_gemv_f16w_attn_pinned_v2t" => "rmsnorm_gemv_f16w_attn_pinned_v2t",
             "rope_q_f32_inplace" => "rope_q_f32_inplace",
+            "kv_append_vbias_f32" => "kv_append_vbias_f32",
             "rope_qk_f32_b1_bias" => "rope_qk_f32_b1_bias",
             "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
             "embed_lookup_f32" => "embed_lookup_f32",
