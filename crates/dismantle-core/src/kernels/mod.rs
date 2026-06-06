@@ -1984,6 +1984,80 @@ mod metal_dispatch {
         )
     }
 
+    /// Track D1 — f16-scales SwiGLU-fused ffn_down (4r geometry).
+    ///
+    /// f16-scales variant of [`gemv_q4_k_v4_predec_swiglu_pinned_tcb`]. Reads
+    /// the predecoded scale table as `half` instead of `f32`, cutting the
+    /// scale-table bandwidth for ffn_down from 5.6 MB → 2.8 MB per token (Qwen-3B,
+    /// 2048 rows × 11008 cols). Uses 4r geometry (32 rows/TG). NOT bit-identical
+    /// (f16 scale rounding ≈5e-4 relative). Only active under
+    /// `DISMANTLE_QWEN_PREDEC_F16SCALES=1`.
+    ///
+    /// Scale table layout: `rows * (cols/256) * 16 * sizeof(half)` bytes.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        gate_buf: &PinnedBuffer,
+        up_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_f16s_4r_swiglu";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: cols % 256 != 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: byte overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: oob {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        // f16 scale table: 16 halfs/block = 32 bytes/block (vs 64 for f32).
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<half::f16>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales oob {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 32; // 8 simdgroups × 4 rows (4r geometry)
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(gate_buf), 0);
+            enc.set_buffer(3, Some(up_buf), 0);
+            enc.set_buffer(4, Some(out_buf), 0);
+            enc.set_u32(5, rows_u32);
+            enc.set_u32(6, cols_u32);
+        })
+    }
+
     /// Q4_K decode GEMV with pre-decoded sub-block scales stored as **f16**
     /// (Stage-2 bandwidth lever, `_2r_f16s`).
     ///
