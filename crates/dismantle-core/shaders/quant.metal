@@ -3922,6 +3922,83 @@ kernel void gemm_q4k_predec_qkv_rope_append(
     }
 }
 
+// Track C28: 4r variant of gemm_q4k_predec_qkv_rope_append.
+// Q: 4 rows/simdgroup (2 RoPE pairs) — 64 TGs for Qwen-3B vs 128
+// K: 4 rows/simdgroup (2 RoPE pairs) — 32 TGs vs 64
+// V: 2 rows/simdgroup (no RoPE)      — 64 TGs vs 128
+// Total: 160 TGs vs 320 TGs — same single dispatch, half the scheduling overhead.
+// Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (validated on Rust side).
+kernel void gemm_q4k_predec_qkv_rope_append_4r(
+    device const uchar* wq      [[buffer(0)]],
+    device const float* q_sc    [[buffer(1)]],
+    device const uchar* wk      [[buffer(2)]],
+    device const float* k_sc    [[buffer(3)]],
+    device const uchar* wv      [[buffer(4)]],
+    device const float* v_sc    [[buffer(5)]],
+    device const float* x       [[buffer(6)]],
+    device       float* q_out   [[buffer(7)]],
+    device       float* k_cache [[buffer(8)]],
+    device       float* v_cache [[buffer(9)]],
+    device const float* q_bias  [[buffer(10)]],
+    device const float* k_bias  [[buffer(11)]],
+    device const float* v_bias  [[buffer(12)]],
+    constant ArgbufQkvRopeAppend& args [[buffer(13)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // Q: 4r/simdgroup (2 RoPE pairs). 8 simdgroups/TG → 32 rows/TG.
+    // K: 4r/simdgroup (2 RoPE pairs). 8 simdgroups/TG → 32 rows/TG.
+    // V: 2r/simdgroup (no RoPE).      8 simdgroups/TG → 16 rows/TG.
+    uint q_quads = args.q_rows / 4u;   // number of 4-row quads in Q
+    uint k_quads = args.kv_rows / 4u;  // number of 4-row quads in K
+    uint v_pairs = args.kv_rows / 2u;  // number of 2-row pairs in V
+    uint n_tg_q  = (q_quads + 7u) / 8u;
+    uint n_tg_k  = (k_quads + 7u) / 8u;
+    uint n_tg_v  = (v_pairs + 7u) / 8u;
+
+    if (gid < n_tg_q) {
+        // Q section: each simdgroup handles a quad (4 rows = 2 RoPE pairs).
+        uint quad_idx = gid * 8u + simd_id;
+        if (quad_idx >= q_quads) return;
+        uint row0 = quad_idx * 4u;
+        float p0 = q4k_predec_dot_row(wq, q_sc, x, row0,      args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row(wq, q_sc, x, row0 + 2u, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row(wq, q_sc, x, row0 + 3u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0,      p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0 + 2u, p2, p3, args);
+        }
+    } else if (gid < n_tg_q + n_tg_k) {
+        // K section: each simdgroup handles a quad (4 rows = 2 RoPE pairs).
+        uint quad_idx = (gid - n_tg_q) * 8u + simd_id;
+        if (quad_idx >= k_quads) return;
+        uint row0 = quad_idx * 4u;
+        float p0 = q4k_predec_dot_row(wk, k_sc, x, row0,      args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row(wk, k_sc, x, row0 + 2u, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row(wk, k_sc, x, row0 + 3u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0,      p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0 + 2u, p2, p3, args);
+        }
+    } else {
+        // V section: 2r/simdgroup (append 2 rows per simdgroup, no RoPE).
+        uint eff_gid = gid - (n_tg_q + n_tg_k);
+        if (eff_gid >= n_tg_v) return;
+        uint pair_idx = eff_gid * 8u + simd_id;
+        if (pair_idx >= v_pairs) return;
+        uint row0 = pair_idx * 2u;
+        float pv0 = q4k_predec_dot_row(wv, v_sc, x, row0,      args.cols, simd_lane);
+        float pv1 = q4k_predec_dot_row(wv, v_sc, x, row0 + 1u, args.cols, simd_lane);
+        if (simd_lane == 0u) {
+            v_cache[args.kv_off + row0]      = pv0 + (args.has_v_bias != 0u ? v_bias[row0]      : 0.0f);
+            v_cache[args.kv_off + row0 + 1u] = pv1 + (args.has_v_bias != 0u ? v_bias[row0 + 1u] : 0.0f);
+        }
+    }
+}
+
 kernel void gemm_q4k_q4k_q6k_rope_append(
     device const uchar* wq      [[buffer(0)]],
     device const float* q_sc    [[buffer(1)]],
