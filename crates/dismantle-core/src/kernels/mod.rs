@@ -2647,6 +2647,267 @@ mod metal_dispatch {
         })
     }
 
+    /// Track 3.8 — Fused K+V Q6_K GEMV pair (`gemm_q6_k_kv_pair`).
+    ///
+    /// Computes both K and V projections in one dispatch, sharing the `x_norm`
+    /// read. Saves 1 dispatch/layer × n_layers (28 on Qwen-3B).
+    ///
+    /// Both K and V must be Q6_K and the same shape (`rows` × `cols`).
+    /// The caller binds the same pinned model buffer at two byte offsets.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q6_k_kv_pair_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        v_offset: usize,
+        v_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        yk_buf: &PinnedBuffer,
+        yv_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q6_k_kv_pair";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: byte-size overflow")))?;
+        for (label, off, sz) in [("k", k_offset, k_byte_size), ("v", v_offset, v_byte_size)] {
+            if sz != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL}: {label} weight bytes: got {sz} expected {expected_bytes}"
+                )));
+            }
+            let end = off
+                .checked_add(sz)
+                .ok_or_else(|| Error::Kernel(format!("{KERNEL}: {label} offset overflow")))?;
+            if end > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL}: {label} offset oob: {off}+{sz} > {}",
+                    model_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let args = ArgbufRowsCols { rows: rows_u32, cols: cols_u32 };
+        const TG: u32 = 256;
+        let n_tg = rows_u32.div_ceil(8);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), k_offset as u64);
+            enc.set_buffer(1, Some(model_buf), v_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(yk_buf), 0);
+            enc.set_buffer(4, Some(yv_buf), 0);
+            enc.set_bytes(
+                5,
+                std::mem::size_of::<ArgbufRowsCols>() as u64,
+                &args as *const ArgbufRowsCols as *const _,
+            );
+        })
+    }
+
+    /// Track 3.9 — Cross-dtype K+V pair: K=Q4_K (predec) + V=Q6_K (inline).
+    ///
+    /// One dispatch computes both K and V projections when they have different
+    /// quantization types (k_proj=Q4_K, v_proj=Q6_K). Saves 1 dispatch/layer.
+    /// Grid: 2 × ceil(kv_dim/8) × 256.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_predec_q6k_pair_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        yk_buf: &PinnedBuffer,
+        yv_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_predec_q6k_pair";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let k_expected = rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
+        let v_expected = rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v overflow")))?;
+        if k_byte_size != k_expected {
+            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_expected}")));
+        }
+        if v_byte_size != v_expected {
+            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {v_expected}")));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        let n_tg = rows_u32.div_ceil(8);
+        tcb.dispatch_threads(KERNEL, (2 * n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), k_offset as u64);
+            enc.set_buffer(1, Some(k_scales), 0);
+            enc.set_buffer(2, Some(model_buf), v_offset as u64);
+            enc.set_buffer(3, Some(x_buf), 0);
+            enc.set_buffer(4, Some(yk_buf), 0);
+            enc.set_buffer(5, Some(yv_buf), 0);
+            enc.set_u32(6, rows_u32);
+            enc.set_u32(7, cols_u32);
+        })
+    }
+
+    /// Track 3.10 — Fused Q+K+V Q4_K predec triple.
+    ///
+    /// All three projections use Q4_K predec format and share the dispatch overhead.
+    /// Replaces the separate Q dispatch + KV-pair dispatch (2 dispatches → 1).
+    /// Q has q_rows (q_dim), K and V each have kv_rows (kv_dim).
+    /// Grid: (ceil(q_rows/8) + 2*ceil(kv_rows/8)) × 256.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_predec_qkv_triple_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        v_scales: &PinnedBuffer,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        yq_buf: &PinnedBuffer,
+        yk_buf: &PinnedBuffer,
+        yv_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_predec_qkv_triple";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q overflow")))?;
+        let k_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
+        if q_byte_size != q_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}")));
+        }
+        if k_byte_size != k_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}")));
+        }
+        if v_byte_size != k_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {k_exp}")));
+        }
+        let q_rows_u32 = q_rows as u32;
+        let kv_rows_u32 = kv_rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        let n_tg_q  = q_rows_u32.div_ceil(8);
+        let n_tg_kv = kv_rows_u32.div_ceil(8);
+        let total_tg = n_tg_q + 2 * n_tg_kv;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(v_scales), 0);
+            enc.set_buffer(6, Some(x_buf), 0);
+            enc.set_buffer(7, Some(yq_buf), 0);
+            enc.set_buffer(8, Some(yk_buf), 0);
+            enc.set_buffer(9, Some(yv_buf), 0);
+            enc.set_u32(10, q_rows_u32);
+            enc.set_u32(11, kv_rows_u32);
+            enc.set_u32(12, cols_u32);
+        })
+    }
+
+    /// Track 3.11 — Mixed Q(Q4K predec)+K(Q4K predec)+V(Q6K) triple.
+    ///
+    /// For layers where q and k are Q4_K predec but v is Q6_K. All three in
+    /// one dispatch, saving 1 vs Q-separate + cross-dtype-pair.
+    /// Grid: (ceil(q_rows/8) + 2*ceil(kv_rows/8)) × 256.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_q4k_q6k_triple_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        yq_buf: &PinnedBuffer,
+        yk_buf: &PinnedBuffer,
+        yv_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_q4k_q6k_triple";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q overflow")))?;
+        let k_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: k overflow")))?;
+        let v_exp = kv_rows.checked_mul(blocks_per_row).and_then(|v| v.checked_mul(210))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: v overflow")))?;
+        if q_byte_size != q_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}")));
+        }
+        if k_byte_size != k_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: k bytes: got {k_byte_size} expected {k_exp}")));
+        }
+        if v_byte_size != v_exp {
+            return Err(Error::Kernel(format!("{KERNEL}: v bytes: got {v_byte_size} expected {v_exp}")));
+        }
+        let q_rows_u32 = q_rows as u32;
+        let kv_rows_u32 = kv_rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        let n_tg_q  = q_rows_u32.div_ceil(8);
+        let n_tg_kv = kv_rows_u32.div_ceil(8);
+        let total_tg = n_tg_q + 2 * n_tg_kv;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(x_buf), 0);
+            enc.set_buffer(6, Some(yq_buf), 0);
+            enc.set_buffer(7, Some(yk_buf), 0);
+            enc.set_buffer(8, Some(yv_buf), 0);
+            enc.set_u32(9, q_rows_u32);
+            enc.set_u32(10, kv_rows_u32);
+            enc.set_u32(11, cols_u32);
+        })
+    }
+
     /// Q3_K-weight × fp32-vec → fp32 GEMV, dispatching `gemm_q3_k_fused_v2`
     /// against a pinned model buffer.
     #[allow(clippy::too_many_arguments)]
