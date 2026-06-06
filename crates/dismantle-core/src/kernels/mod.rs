@@ -6343,6 +6343,52 @@ mod metal_dispatch {
     /// `src[src_off..]` into `dst[dst_off..]`. Used by the dense (GQA)
     /// KV append path to write the per-token K/V slice into the
     /// per-layer cache window at `(layer * max_seq + seq_slot) * kv_dim`.
+    /// Track 3.7 — Fused KV-cache append with optional V-bias addition.
+    ///
+    /// Replaces three dispatches per layer (v_bias add + k_append + v_append)
+    /// with ONE, saving 2 dispatches/layer × n_layers = 56 on Qwen-3B.
+    ///
+    /// `k_tok` is written verbatim (K bias was already handled by
+    /// `rope_qk_f32_b1_bias_tcb`). `v_tok` has `v_bias` added before writing.
+    /// Pass `v_bias_buf=None` when the model has no V bias.
+    #[allow(clippy::too_many_arguments)]
+    pub fn kv_append_vbias_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        k_tok: &PinnedBuffer,
+        v_tok: &PinnedBuffer,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+        kv_dim: usize,
+        kv_off: usize,  // element offset into k_cache/v_cache
+    ) -> Result<()> {
+        let kv_dim_u32 = kv_dim as u32;
+        let kv_off_u32 = kv_off as u32;
+        let has_v = if v_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
+        )?;
+        ab.set_u32(0, kv_dim_u32);
+        ab.set_u32(1, kv_off_u32);
+        ab.set_u32(2, has_v);
+        let vb = v_bias_buf.unwrap_or(v_tok); // dummy when has_v=0
+        let tg = TG_SIZE.min(kv_dim_u32.max(1));
+        tcb.dispatch_threads(
+            "kv_append_vbias_f32",
+            (kv_dim_u32, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(k_tok), 0);
+                enc.set_buffer(1, Some(v_tok), 0);
+                enc.set_buffer(2, Some(vb), 0);
+                enc.set_buffer(3, Some(k_cache), 0);
+                enc.set_buffer(4, Some(v_cache), 0);
+                enc.set_buffer(5, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// Both offsets are element units.
     pub fn memcpy_f32_off_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
