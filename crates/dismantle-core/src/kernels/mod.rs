@@ -1756,10 +1756,78 @@ mod metal_dispatch {
         })
     }
 
+    /// Track B4 — 4-row-per-simdgroup variant of `gemv_q4_k_v4_predec_2r_add`.
+    /// Opt-in via `DISMANTLE_QWEN_OPROJ_4R=1`.  Inline scale reads, 32 rows/TG,
+    /// 4 FMA chains → higher ILP vs 2r (preloaded, 16 rows/TG, 2 chains).
+    /// Bit-identical to 2r_add (same per-accumulator FMA order).
+    ///
+    /// Grid: `(ceil(rows/32) × 256, 1, 1)`  TG: `(256, 1, 1)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_4r_add_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_4r_add";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: cols % 256 != 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: oob {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: scales oob {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 32; // 8 simdgroups × 4 rows each
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(residual_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
     /// Track 3.14 o_proj tail helper: Q4_K predec 2r GEMV adds directly into
     /// `residual_buf`, then `rmsnorm_f32` writes `x_norm_buf` from the updated
     /// residual. Equivalent to `gemv_q4_k_v4_predec_pinned_tcb` into a temp
     /// followed by `add_rmsnorm_fused_tcb`, for the f32-predec 2r path.
+    /// When `DISMANTLE_QWEN_OPROJ_4R=1`, uses the 4r_add variant for better ILP.
     #[allow(clippy::too_many_arguments)]
     pub fn gemv_q4_k_v4_predec_2r_add_rmsnorm_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -1776,18 +1844,40 @@ mod metal_dispatch {
         x_norm_buf: &PinnedBuffer,
         eps: f32,
     ) -> Result<()> {
-        gemv_q4_k_v4_predec_2r_add_pinned_tcb(
-            tcb,
-            model_buf,
-            w_offset,
-            w_byte_size,
-            scales_buf,
-            scales_offset,
-            rows,
-            cols,
-            x_buf,
-            residual_buf,
-        )?;
+        // Track B4: opt-in via DISMANTLE_QWEN_OPROJ_4R=1
+        static USE_4R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+        let use_4r = *USE_4R.get_or_init(|| {
+            std::env::var_os("DISMANTLE_QWEN_OPROJ_4R")
+                .map(|v| v != "0")
+                .unwrap_or(false)
+        });
+        if use_4r {
+            gemv_q4_k_v4_predec_4r_add_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                x_buf,
+                residual_buf,
+            )?;
+        } else {
+            gemv_q4_k_v4_predec_2r_add_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                x_buf,
+                residual_buf,
+            )?;
+        }
         rmsnorm_metal_buf_tcb(tcb, residual_buf, norm_weight_buf, eps, rows, x_norm_buf)
     }
 
