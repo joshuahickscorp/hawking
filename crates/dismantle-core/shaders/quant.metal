@@ -2718,6 +2718,102 @@ kernel void gemm_q4_k_v4_predec_pair(
     }
 }
 
+// ── gemm_q4_k_v4_predec_pair_2r ──────────────────────────────────────────────
+// 2-row-per-simdgroup upgrade of gemm_q4_k_v4_predec_pair (Track A7, 2026-06-06).
+// Each simdgroup computes 2 rows of gate AND 2 rows of up from the shared x
+// activation vector.  vs the 1r pair:
+//   • x is amortised across 4 partial sums instead of 2 → 2× activation-load reuse
+//   • 4 accumulators (pg0, pg1, pu0, pu1) vs 2 → higher instruction-level parallelism
+//   • 16 rows/TG instead of 8 → ½ the launch overhead for the dominant 11008-row
+//     gate/up projections
+// Parity: bit-identical to the 1r pair (same FMA order per row).
+// Grid: (ceil(rows/16)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_2r(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // 2 rows per simdgroup: row0 and row1 = row0 + 8.
+    // 16 rows per TG (8 simdgroups × 2 rows each).
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0; // alias to row0 so inner reads stay in-bounds
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.0f, pg1 = 0.0f, pu0 = 0.0f, pu1 = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul;
+        uint64_t so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul;
+        uint64_t so1 = rs1 + (uint64_t)b * 16ul;
+
+        // Preload all scale pairs for both rows and both matrices.
+        // 8 arrays × 8 f32 = 64 regs — within M3 per-thread register budget.
+        float dsg0[8], dmg0[8], dsu0[8], dmu0[8];
+        float dsg1[8], dmg1[8], dsu1[8], dmu1[8];
+        for (uint s = 0; s < 8u; ++s) {
+            dsg0[s] = g_scales[so0 + (uint64_t)(s * 2u)];
+            dmg0[s] = g_scales[so0 + (uint64_t)(s * 2u + 1u)];
+            dsu0[s] = u_scales[so0 + (uint64_t)(s * 2u)];
+            dmu0[s] = u_scales[so0 + (uint64_t)(s * 2u + 1u)];
+            dsg1[s] = g_scales[so1 + (uint64_t)(s * 2u)];
+            dmg1[s] = g_scales[so1 + (uint64_t)(s * 2u + 1u)];
+            dsu1[s] = u_scales[so1 + (uint64_t)(s * 2u)];
+            dmu1[s] = u_scales[so1 + (uint64_t)(s * 2u + 1u)];
+        }
+
+        // Activation x shared across all 4 partial sums — load once per block.
+        float xl[8];
+        for (uint k = 0; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg0 += (dsg0[k0] * (float)(qg0 & 0x0Fu) - dmg0[k0]) * x0;
+            pg0 += (dsg0[k1] * (float)(qg0 >> 4u)   - dmg0[k1]) * x1;
+
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu0 += (dsu0[k0] * (float)(qu0 & 0x0Fu) - dmu0[k0]) * x0;
+            pu0 += (dsu0[k1] * (float)(qu0 >> 4u)   - dmu0[k1]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg1 += (dsg1[k0] * (float)(qg1 & 0x0Fu) - dmg1[k0]) * x0;
+            pg1 += (dsg1[k1] * (float)(qg1 >> 4u)   - dmg1[k1]) * x1;
+
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu1 += (dsu1[k0] * (float)(qu1 & 0x0Fu) - dmu1[k0]) * x0;
+            pu1 += (dsu1[k1] * (float)(qu1 >> 4u)   - dmu1[k1]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+}
+
 // ── gemm_q4_k_v4_predec_pair_f16s ────────────────────────────────────────────
 // f16-scales variant of _pair (A6.5, 2026-05-31). Identical fused gate+up math
 // + geometry + FMA order, but BOTH the gate (`g_scales`) and up (`u_scales`)

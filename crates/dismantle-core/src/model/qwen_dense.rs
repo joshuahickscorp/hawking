@@ -4477,6 +4477,16 @@ impl QwenDense {
             && predec_active
             && !w4a8_ffn_gate
             && !w4a8_ffn_up;
+        // Track A7: 2r gate+up pair — default-ON; opt out via
+        // DISMANTLE_QWEN_PAIR_1R=1 to fall back to the 1r pair kernel.
+        let ffn_pair_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                !std::env::var_os("DISMANTLE_QWEN_PAIR_1R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
         // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
         // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
@@ -5374,23 +5384,45 @@ impl QwenDense {
                     let cache = predec_cache_ref.expect("checked is_some via map");
                     let g_scales = &cache[&layer.ffn_gate.offset];
                     let u_scales = &cache[&layer.ffn_up.offset];
-                    kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.ffn_gate.offset,
-                        layer.ffn_gate.byte_size,
-                        g_scales,
-                        0,
-                        layer.ffn_up.offset,
-                        layer.ffn_up.byte_size,
-                        u_scales,
-                        0,
-                        intermediate,
-                        h,
-                        &arena.x_norm_buf,
-                        &arena.ffn_gate_buf,
-                        &arena.ffn_up_buf,
-                    )?;
+                    // Track A7: prefer 2r pair (default) — amortises x-load
+                    // across 4 outputs; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
+                    if ffn_pair_2r {
+                        kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else {
+                        kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    }
                 }
             } else {
                 gemv_proj!(

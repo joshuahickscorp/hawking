@@ -2130,6 +2130,96 @@ mod metal_dispatch {
         })
     }
 
+    /// Track A7 — 2-row-per-simdgroup upgrade of
+    /// [`gemv_q4_k_v4_predec_pair_pinned_tcb`] (2026-06-06).
+    ///
+    /// Each simdgroup computes **2 rows of gate AND 2 rows of up** from the
+    /// shared `x` activation, amortising the activation load across 4 partial
+    /// sums instead of 2.  vs the 1r pair:
+    ///
+    /// * Activation `x` reuse: shared across 4 outputs → ½ the x-bandwidth
+    ///   per output (dominant bandwidth term for gate/up with cols=11008).
+    /// * 4 accumulators (`pg0, pg1, pu0, pu1`) vs 2 → higher ILP.
+    /// * 16 rows/TG (vs 8) → ½ the launch overhead.
+    ///
+    /// **Bit-identical** to the 1r pair on all production shapes (same FMA
+    /// order per row). Default-ON; opt-out via `DISMANTLE_QWEN_PAIR_1R=1`.
+    ///
+    /// Grid: `(ceil(rows/16) × 256, 1, 1)`  TG: `(256, 1, 1)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair_2r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 16; // 16 rows/TG: 8 simdgroups × 2 rows each
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), g_offset as u64);
+            enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+            enc.set_buffer(2, Some(model_buf), u_offset as u64);
+            enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+            enc.set_buffer(4, Some(x_buf), 0);
+            enc.set_buffer(5, Some(g_out_buf), 0);
+            enc.set_buffer(6, Some(u_out_buf), 0);
+            enc.set_u32(7, rows_u32);
+            enc.set_u32(8, cols_u32);
+        })
+    }
+
     /// f16-scales twin of [`gemv_q4_k_v4_predec_pair_pinned_tcb`] (A6.5,
     /// 2026-05-31). Same fused gate+up dispatch (ONE call computes both
     /// `g_out` and `u_out` from the shared `x_buf`), but BOTH scale tables are
