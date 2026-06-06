@@ -4579,8 +4579,6 @@ impl QwenDense {
             crate::env_opt_out("DISMANTLE_QWEN_OPROJ_ADD_RMSNORM_FUSE")
                 && predec_active
                 && predec_2r_active
-                && !predec_4r_active
-                && !predec_f16scales_active
                 && !w4a8_oproj;
         // Track 3.12/3.13: fuse Q/K bias+RoPE and f32 KV-cache append into
         // the QKV triple dispatch. The seam and f16-KV paths keep their
@@ -5495,15 +5493,39 @@ impl QwenDense {
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            let oproj_predec_scales = if oproj_add_rmsnorm_fuse
+            let fuse_gate = oproj_add_rmsnorm_fuse
                 && layer.o_proj.dtype == GgmlType::Q4_K
-                && q_dim % 256 == 0
-            {
+                && q_dim % 256 == 0;
+            // D6: prefer f16 scales when fast profile is on; fall back to f32.
+            let oproj_scales_f16 = if fuse_gate && predec_f16scales_active {
+                predec_cache_f16_ref.and_then(|m| m.get(&layer.o_proj.offset))
+            } else {
+                None
+            };
+            let oproj_predec_scales = if fuse_gate && oproj_scales_f16.is_none() {
                 predec_cache_ref.and_then(|m| m.get(&layer.o_proj.offset))
             } else {
                 None
             };
-            if let Some(oproj_scales) = oproj_predec_scales {
+            if let Some(scales_f16) = oproj_scales_f16 {
+                // D6: fused GEMV + residual add + rmsnorm with f16 scale reads.
+                kernels::gemv_q4_k_v4_predec_add_rmsnorm_f16s_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.o_proj.offset,
+                    layer.o_proj.byte_size,
+                    scales_f16,
+                    0,
+                    h,
+                    q_dim,
+                    &arena.attn_out_buf,
+                    &arena.x_buf,
+                    ffn_norm_pin,
+                    &arena.x_norm_buf,
+                    eps,
+                    predec_4r_active,
+                )?;
+            } else if let Some(oproj_scales) = oproj_predec_scales {
                 kernels::gemv_q4_k_v4_predec_2r_add_rmsnorm_tcb(
                     &mut tcb,
                     mmap_buf,
@@ -6142,26 +6164,42 @@ impl QwenDense {
                         &arena.logits_buf,
                     )?;
                 } else if let Some(scales_f16) = lmhead_predec_f16_ref {
-                    // A6.5: f16-scales LM-head GEMV (opt-in
-                    // DISMANTLE_QWEN_PREDEC_F16SCALES; quality trade).
-                    kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-                        &mut tcb,
-                        pruned_buf,
-                        0,
-                        pn * row_bytes,
-                        scales_f16,
-                        0,
-                        pn,
-                        h,
-                        &arena.x_norm_buf,
-                        &arena.logits_buf,
-                    )?;
+                    // A6.5 / D5: f16-scales LM-head GEMV. When predec_4r_active,
+                    // use 4r geometry (32 rows/TG) → 1000 TGs vs 2000 for 32K head.
+                    if predec_4r_active {
+                        kernels::gemv_q4_k_v4_predec_4r_f16s_pinned_tcb(
+                            &mut tcb,
+                            pruned_buf,
+                            0,
+                            pn * row_bytes,
+                            scales_f16,
+                            0,
+                            pn,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.logits_buf,
+                        )?;
+                    } else {
+                        kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
+                            &mut tcb,
+                            pruned_buf,
+                            0,
+                            pn * row_bytes,
+                            scales_f16,
+                            0,
+                            pn,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.logits_buf,
+                        )?;
+                    }
                 } else if let Some(predec_scales) = lmhead_predec_active
                     .then(|| self.lm_head_pruned_predec.as_ref())
                     .flatten()
                 {
                     // A1: pre-decoded-scale LM-head GEMV (bit-identical to
                     // inline Q4_K; skips per-call Q4_K header repacking).
+                    // The wrapper internally selects 4r via PREDEC_4R env var.
                     kernels::gemv_q4_k_v4_predec_pinned_tcb(
                         &mut tcb,
                         pruned_buf,
