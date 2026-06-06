@@ -1823,6 +1823,116 @@ mod metal_dispatch {
         })
     }
 
+    /// Track D6 — f16-scales variant of `gemv_q4_k_v4_predec_2r_add`.
+    /// Same 2-row in-place residual-add geometry as `2r_add` but reads scales
+    /// as half* (2 B each). Enables oproj_add_rmsnorm_fuse when f16s active.
+    ///
+    /// Grid: `(ceil(rows/16) × 256, 1, 1)`  TG: `(256, 1, 1)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_2r_add_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_2r_add_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: cols % 256 != 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: oob {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 16;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(residual_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
+    /// Track D6 — f16-scales + 4r geometry variant of `gemv_q4_k_v4_predec_4r_add`.
+    /// Combines inline half→float scale casts (D6) with 32 rows/TG (half the TG
+    /// count of 2r_add_f16s). Active when PREDEC_F16SCALES=1 AND PREDEC_4R/OPROJ_4R.
+    ///
+    /// Grid: `(ceil(rows/32) × 256, 1, 1)`  TG: `(256, 1, 1)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_4r_add_f16s_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_4r_add_f16s";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: cols % 256 != 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: oob {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const TG: u32 = 256;
+        const ROWS_PER_TG: u32 = 32;
+        let n_tg = rows_u32.div_ceil(ROWS_PER_TG);
+        tcb.dispatch_threads(KERNEL, (n_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), w_offset as u64);
+            enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+            enc.set_buffer(2, Some(x_buf), 0);
+            enc.set_buffer(3, Some(residual_buf), 0);
+            enc.set_u32(4, rows_u32);
+            enc.set_u32(5, cols_u32);
+        })
+    }
+
     /// Track 3.14 o_proj tail helper: Q4_K predec 2r GEMV adds directly into
     /// `residual_buf`, then `rmsnorm_f32` writes `x_norm_buf` from the updated
     /// residual. Equivalent to `gemv_q4_k_v4_predec_pinned_tcb` into a temp
@@ -1871,6 +1981,58 @@ mod metal_dispatch {
                 w_offset,
                 w_byte_size,
                 scales_buf,
+                scales_offset,
+                rows,
+                cols,
+                x_buf,
+                residual_buf,
+            )?;
+        }
+        rmsnorm_metal_buf_tcb(tcb, residual_buf, norm_weight_buf, eps, rows, x_norm_buf)
+    }
+
+    /// Track D6 — f16-scales variant of `gemv_q4_k_v4_predec_2r_add_rmsnorm_tcb`.
+    /// Uses half* scale reads (2 B each) to halve scale bandwidth vs the f32 path.
+    /// When `DISMANTLE_QWEN_PREDEC_4R=1`, uses `4r_add_f16s` (32 rows/TG) for
+    /// additional TG-scheduling savings. Enables oproj_add_rmsnorm_fuse in fast
+    /// profile (`PREDEC_F16SCALES=1`).
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_add_rmsnorm_f16s_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_f16_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        residual_buf: &PinnedBuffer,
+        norm_weight_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+        eps: f32,
+        use_4r: bool,
+    ) -> Result<()> {
+        if use_4r {
+            gemv_q4_k_v4_predec_4r_add_f16s_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_f16_buf,
+                scales_offset,
+                rows,
+                cols,
+                x_buf,
+                residual_buf,
+            )?;
+        } else {
+            gemv_q4_k_v4_predec_2r_add_f16s_pinned_tcb(
+                tcb,
+                model_buf,
+                w_offset,
+                w_byte_size,
+                scales_f16_buf,
                 scales_offset,
                 rows,
                 cols,
