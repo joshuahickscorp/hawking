@@ -4925,16 +4925,26 @@ impl QwenDense {
                     pos_u32,
                     theta,
                 )?;
-                // V bias: no associated RoPE, stays as a separate dispatch.
-                if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                    kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                // Track 3.7: V bias and KV append are fused below when
+                // !f16_kv. Only dispatch v_bias separately for f16_kv
+                // (no f16 variant of kv_append_vbias yet).
+                if f16_kv {
+                    if let Some(vb) = layer.pinned.v_bias.as_ref() {
+                        kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                    }
                 }
+                // (else: v_bias will be handled by kv_append_vbias_f32_tcb below)
             }
 
-            // ── KV append into per-layer slice of k/v_cache buffer ───
+            // ── KV append (+ V-bias for !use_seam && !f16_kv) ────────
+            // Track 3.7: fuse V-bias add + K-append + V-append into ONE
+            // dispatch for the default path, saving 2 dispatches/layer.
+            // Fallback to separate dispatches for f16_kv or seam paths.
             let layer_kv_off_elems = li * max_seq * kv_dim;
             let slot_kv_off_elems = layer_kv_off_elems + seq_slot * kv_dim;
             if f16_kv {
+                // f16 KV path: v_bias already added above (for !use_seam),
+                // or by the seam block. Append with f32→f16 conversion.
                 kernels::memcpy_f32_to_f16_off_tcb(
                     &mut tcb,
                     &arena.k_token_buf,
@@ -4951,22 +4961,29 @@ impl QwenDense {
                     slot_kv_off_elems,
                     kv_dim,
                 )?;
-            } else {
+            } else if use_seam {
+                // Seam path: v_bias was applied to v_token_buf in-place by the
+                // seam block above. Separate appends.
                 kernels::memcpy_f32_off_tcb(
-                    &mut tcb,
-                    &arena.k_token_buf,
-                    &arena.k_cache_buf,
-                    0,
-                    slot_kv_off_elems,
-                    kv_dim,
+                    &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
+                    0, slot_kv_off_elems, kv_dim,
                 )?;
                 kernels::memcpy_f32_off_tcb(
+                    &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
+                    0, slot_kv_off_elems, kv_dim,
+                )?;
+            } else {
+                // Default path (!use_seam && !f16_kv): fused.
+                // v_bias is applied inside the kernel (not pre-applied).
+                kernels::kv_append_vbias_f32_tcb(
                     &mut tcb,
+                    &arena.k_token_buf,
                     &arena.v_token_buf,
+                    layer.pinned.v_bias.as_ref(),
+                    &arena.k_cache_buf,
                     &arena.v_cache_buf,
-                    0,
-                    slot_kv_off_elems,
                     kv_dim,
+                    slot_kv_off_elems,
                 )?;
             }
 

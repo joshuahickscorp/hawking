@@ -160,3 +160,4 @@ fn engine_trait_dispatch_matches_direct() {
     assert_eq!(direct, via_trait, "trait dispatch mismatch");
     eprintln!("engine trait dispatch parity OK: {:?}", direct);
 }
+

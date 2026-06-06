@@ -1546,13 +1546,14 @@ fn generate_main(
                     StopReason::Aborted => "aborted",
                 };
                 eprintln!(
-                    "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} draft_accepted={} draft_rejected={} profile={}",
+                    "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
                     reason_s,
                     stats.prompt_tokens,
                     stats.completion_tokens,
                     stats.prefill_ms,
                     stats.decode_ms,
                     dec,
+                    stats.dispatches_per_forward,
                     stats.draft_accepted,
                     stats.draft_rejected,
                     stats.profile_id.as_deref().unwrap_or("none")
