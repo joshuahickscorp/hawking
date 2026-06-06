@@ -4588,6 +4588,21 @@ impl QwenDense {
         let qkv_rope_append = crate::env_opt_out("DISMANTLE_QWEN_QKV_ROPE_APPEND")
             && !use_seam
             && !f16_kv;
+        // Track C28: 4r variant of qkv_rope_append — Q/K at 4r/simdgroup,
+        // V at 2r/simdgroup. Reduces TG count 320→160 for Qwen-3B.
+        // Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (checked at runtime).
+        // Opt-in: DISMANTLE_QWEN_QKV_ROPE_APPEND_4R=1.
+        let qkv_rope_append_4r = qkv_rope_append
+            && {
+                static QKV4R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+                *QKV4R.get_or_init(|| {
+                    std::env::var_os("DISMANTLE_QWEN_QKV_ROPE_APPEND_4R")
+                        .map(|v| v != "0")
+                        .unwrap_or(false)
+                })
+            }
+            && q_dim % 4 == 0
+            && kv_dim % 4 == 0;
         if w4a8_active {
             self.dense_arena.as_mut().unwrap().ensure_w4a8(ctx);
         }
@@ -4897,7 +4912,26 @@ impl QwenDense {
                 let q_sc = &cache[&layer.q_proj.offset];
                 let k_sc = &cache[&layer.k_proj.offset];
                 let v_sc = &cache[&layer.v_proj.offset];
-                if qkv_rope_append {
+                if qkv_rope_append_4r {
+                    kernels::gemv_q4k_predec_qkv_rope_append_4r_pinned_tcb(
+                        &mut tcb,
+                        mmap_buf,
+                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
+                        q_dim, kv_dim, h,
+                        n_heads, n_kv_heads, head_dim,
+                        pos_u32, theta, slot_kv_off_elems,
+                        &arena.x_norm_buf,
+                        &arena.q_buf,
+                        layer.pinned.q_bias.as_ref(),
+                        layer.pinned.k_bias.as_ref(),
+                        layer.pinned.v_bias.as_ref(),
+                        &arena.k_cache_buf,
+                        &arena.v_cache_buf,
+                    )?;
+                    qkv_postproc_fused = true;
+                } else if qkv_rope_append {
                     kernels::gemv_q4k_predec_qkv_rope_append_pinned_tcb(
                         &mut tcb,
                         mmap_buf,
@@ -5502,9 +5536,9 @@ impl QwenDense {
                     let cache = predec_cache_ref.expect("checked is_some via map");
                     let g_scales = &cache[&layer.ffn_gate.offset];
                     let u_scales = &cache[&layer.ffn_up.offset];
-                    // Gate+up pair dispatch ladder (best to worst ILP):
-                    //   4r (opt-in, DISMANTLE_QWEN_PAIR_4R=1) — 8 accumulators, inline scales
-                    //   2r (default, Track A7) — 4 accumulators, preloaded scales
+                    // Gate+up pair dispatch ladder:
+                    //   4r (opt-in, DISMANTLE_QWEN_PAIR_4R=1) — inline scales, 32 rows/TG
+                    //   2r (default, Track A7) — preloaded scales, 16 rows/TG
                     //   1r (opt-out, DISMANTLE_QWEN_PAIR_1R=1) — 2 accumulators
                     if ffn_pair_4r {
                         kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
