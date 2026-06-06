@@ -2814,6 +2814,119 @@ kernel void gemm_q4_k_v4_predec_pair_2r(
     }
 }
 
+// ── gemm_q4_k_v4_predec_pair_4r ──────────────────────────────────────────────
+// 4-row-per-simdgroup variant of the gate+up pair (Track B2, opt-in via
+// DISMANTLE_QWEN_PAIR_4R=1).  Uses inline scale access (no preload array) so
+// register pressure stays at ~20 floats vs 64 for the preloaded-2r approach,
+// giving the compiler room to hold all 8 accumulators simultaneously.
+// vs pair_2r:
+//   • 8 FMA chains (pg0-3, pu0-3) vs 4 → wider ILP window
+//   • 32 rows/TG instead of 16 → ½ the dispatch launch overhead
+//   • inline scale reads instead of preloaded → compiler hides loads in pipeline
+// Parity: bit-identical to pair_2r (same per-accumulator FMA order).
+// Grid: (ceil(rows/32)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_4r(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // 4 rows per simdgroup: row0, row0+8, row0+16, row0+24.
+    // 32 rows per TG (8 simdgroups × 4 rows each).
+    uint row0 = gid * 32u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u, row2 = row0 + 16u, row3 = row0 + 24u;
+    bool has1 = row1 < rows, has2 = row2 < rows, has3 = row3 < rows;
+    uint r1 = has1 ? row1 : row0;
+    uint r2 = has2 ? row2 : row0;
+    uint r3 = has3 ? row3 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb3 = (uint64_t)r3   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs3 = (uint64_t)r3   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.f, pg1 = 0.f, pg2 = 0.f, pg3 = 0.f;
+    float pu0 = 0.f, pu1 = 0.f, pu2 = 0.f, pu3 = 0.f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b*144ul, so0 = rs0 + (uint64_t)b*16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b*144ul, so1 = rs1 + (uint64_t)b*16ul;
+        uint64_t bo2 = rb2 + (uint64_t)b*144ul, so2 = rs2 + (uint64_t)b*16ul;
+        uint64_t bo3 = rb3 + (uint64_t)b*144ul, so3 = rs3 + (uint64_t)b*16ul;
+
+        // Activation x — preloaded once per block, shared across all 8 accumulators.
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b*256ul + (uint64_t)(k*32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            // Row 0 — gate then up (inline scale reads, same FMA order as pair_2r)
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg0 += (g_scales[so0+(uint64_t)(k0*2u)]   * (float)(qg0&0x0Fu) - g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += (g_scales[so0+(uint64_t)(k1*2u)]   * (float)(qg0>>4u)   - g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu0 += (u_scales[so0+(uint64_t)(k0*2u)]   * (float)(qu0&0x0Fu) - u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += (u_scales[so0+(uint64_t)(k1*2u)]   * (float)(qu0>>4u)   - u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            // Row 1
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg1 += (g_scales[so1+(uint64_t)(k0*2u)]   * (float)(qg1&0x0Fu) - g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += (g_scales[so1+(uint64_t)(k1*2u)]   * (float)(qg1>>4u)   - g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu1 += (u_scales[so1+(uint64_t)(k0*2u)]   * (float)(qu1&0x0Fu) - u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += (u_scales[so1+(uint64_t)(k1*2u)]   * (float)(qu1>>4u)   - u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            // Row 2
+            uchar qg2 = wg_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg2 += (g_scales[so2+(uint64_t)(k0*2u)]   * (float)(qg2&0x0Fu) - g_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pg2 += (g_scales[so2+(uint64_t)(k1*2u)]   * (float)(qg2>>4u)   - g_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu2 = wu_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu2 += (u_scales[so2+(uint64_t)(k0*2u)]   * (float)(qu2&0x0Fu) - u_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pu2 += (u_scales[so2+(uint64_t)(k1*2u)]   * (float)(qu2>>4u)   - u_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+
+            // Row 3
+            uchar qg3 = wg_q4[bo3 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg3 += (g_scales[so3+(uint64_t)(k0*2u)]   * (float)(qg3&0x0Fu) - g_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pg3 += (g_scales[so3+(uint64_t)(k1*2u)]   * (float)(qg3>>4u)   - g_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu3 = wu_q4[bo3 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu3 += (u_scales[so3+(uint64_t)(k0*2u)]   * (float)(qu3&0x0Fu) - u_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pu3 += (u_scales[so3+(uint64_t)(k1*2u)]   * (float)(qu3>>4u)   - u_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+    if (has2) {
+        pg2 = simd_sum(pg2); pu2 = simd_sum(pu2);
+        if (simd_lane == 0u) { yg[row2] = pg2; yu[row2] = pu2; }
+    }
+    if (has3) {
+        pg3 = simd_sum(pg3); pu3 = simd_sum(pu3);
+        if (simd_lane == 0u) { yg[row3] = pg3; yu[row3] = pu3; }
+    }
+}
+
 // ── gemm_q4_k_v4_predec_pair_f16s ────────────────────────────────────────────
 // f16-scales variant of _pair (A6.5, 2026-05-31). Identical fused gate+up math
 // + geometry + FMA order, but BOTH the gate (`g_scales`) and up (`u_scales`)

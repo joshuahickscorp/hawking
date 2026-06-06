@@ -141,6 +141,51 @@ fn run_pair_2r(
     (read_f32_buf(&yg_buf, rows), read_f32_buf(&yu_buf, rows))
 }
 
+fn run_pair_4r(
+    ctx: &MetalContext,
+    wg: &[u8],
+    wu: &[u8],
+    g_scales: &[f32],
+    u_scales: &[f32],
+    x: &[f32],
+    rows: usize,
+    cols: usize,
+) -> (Vec<f32>, Vec<f32>) {
+    let w_bytes = rows * (cols / 256) * 144;
+    let mut combined = Vec::with_capacity(wg.len() + wu.len());
+    combined.extend_from_slice(wg);
+    combined.extend_from_slice(wu);
+    let combined_buf = ctx.new_buffer_with_bytes(&combined);
+    let gs_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(g_scales));
+    let us_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(u_scales));
+    let x_buf = new_f32_buf(ctx, x);
+    let yg_buf = ctx.new_buffer(rows * 4);
+    let yu_buf = ctx.new_buffer(rows * 4);
+
+    let mut tcb = TokenCommandBuffer::new(ctx);
+    kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+        &mut tcb,
+        &combined_buf,
+        0,
+        w_bytes,
+        &gs_buf,
+        0,
+        w_bytes,
+        w_bytes,
+        &us_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &yg_buf,
+        &yu_buf,
+    )
+    .expect("4r pair dispatch");
+    tcb.commit_and_wait().expect("4r pair wait");
+
+    (read_f32_buf(&yg_buf, rows), read_f32_buf(&yu_buf, rows))
+}
+
 #[test]
 fn pair_2r_matches_pair_1r_multiple_shapes() {
     let ctx = ctx();
@@ -177,6 +222,50 @@ fn pair_2r_matches_pair_1r_multiple_shapes() {
         );
         eprintln!(
             "pair_2r rows={rows} cols={cols}: gate_diff={diff_g:.2e} up_diff={diff_u:.2e} OK"
+        );
+    }
+}
+
+/// Track B2: `gemm_q4_k_v4_predec_pair_4r` must be bit-identical to `pair_2r`
+/// (same per-accumulator FMA order, only scale access style differs: inline
+/// vs preloaded).  Also includes a boundary case where rows is not a multiple
+/// of 32 to exercise the `has1/has2/has3` out-of-bounds guards.
+#[test]
+fn pair_4r_matches_pair_2r_multiple_shapes() {
+    let ctx = ctx();
+
+    // (rows, cols, seed) — rows=48 tests non-multiple of 32 (last TG covers
+    // only 16 rows → has2/has3 are false for simd_id 2..7, verifying guards).
+    // rows=11008 approximates the production ffn gate/up shape on Qwen2.5-3B.
+    let cases: &[(usize, usize, u32)] = &[
+        (32, 256, 0xB201),
+        (48, 256, 0xB202), // non-multiple of 32: tests has1/has2/has3 boundary
+        (64, 512, 0xB203),
+        (128, 512, 0xB204),
+        (512, 2048, 0xB205),
+        (1024, 512, 0xB206),
+    ];
+
+    for &(rows, cols, seed) in cases {
+        let (wg, g_scales) = make_q4k_predec(rows, cols, seed);
+        let (wu, u_scales) = make_q4k_predec(rows, cols, seed ^ 0xDEAD);
+        let x = rand_vec(cols, seed ^ 0x5678);
+
+        let (ref_g, ref_u) = run_pair_2r(ctx, &wg, &wu, &g_scales, &u_scales, &x, rows, cols);
+        let (got_g, got_u) = run_pair_4r(ctx, &wg, &wu, &g_scales, &u_scales, &x, rows, cols);
+
+        let diff_g = max_abs_diff(&ref_g, &got_g);
+        let diff_u = max_abs_diff(&ref_u, &got_u);
+        assert_eq!(
+            diff_g, 0.0,
+            "rows={rows} cols={cols}: gate max_diff={diff_g:.2e} (must be 0)"
+        );
+        assert_eq!(
+            diff_u, 0.0,
+            "rows={rows} cols={cols}: up   max_diff={diff_u:.2e} (must be 0)"
+        );
+        eprintln!(
+            "pair_4r rows={rows} cols={cols}: gate_diff={diff_g:.2e} up_diff={diff_u:.2e} OK"
         );
     }
 }

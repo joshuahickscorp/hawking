@@ -1850,12 +1850,15 @@ mod metal_dispatch {
         let rows_u32 = rows as u32;
         let cols_u32 = cols as u32;
         const V3_TG: u32 = 256;
-        // Mirror the variant selection from gemv_q4_k_v4_predec_pinned_tcb.
+        // 4r is the default for swiglu (ffn_down) — 4 FMA chains vs 2 improves ILP
+        // at the cost of inline scale reads (no preload).  Set
+        // DISMANTLE_QWEN_SWIGLU_4R=0 to fall back to the preloaded-2r variant.
+        // The legacy DISMANTLE_QWEN_PREDEC_4R opt-in is superseded for this path.
         let use_4r = {
             static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
             *E.get_or_init(|| {
-                std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
-                    .map(|v| v != "0")
+                !std::env::var_os("DISMANTLE_QWEN_SWIGLU_4R")
+                    .map(|v| v == "0")
                     .unwrap_or(false)
             })
         };
@@ -2206,6 +2209,94 @@ mod metal_dispatch {
         let cols_u32 = cols as u32;
         const V3_TG: u32 = 256;
         const V3_ROWS: u32 = 16; // 16 rows/TG: 8 simdgroups × 2 rows each
+        let n_tg = rows_u32.div_ceil(V3_ROWS);
+        tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), g_offset as u64);
+            enc.set_buffer(1, Some(g_scales_buf), g_scales_offset as u64);
+            enc.set_buffer(2, Some(model_buf), u_offset as u64);
+            enc.set_buffer(3, Some(u_scales_buf), u_scales_offset as u64);
+            enc.set_buffer(4, Some(x_buf), 0);
+            enc.set_buffer(5, Some(g_out_buf), 0);
+            enc.set_buffer(6, Some(u_out_buf), 0);
+            enc.set_u32(7, rows_u32);
+            enc.set_u32(8, cols_u32);
+        })
+    }
+
+    /// 4-row-per-simdgroup variant of the gate+up pair (Track B2, opt-in via
+    /// `DISMANTLE_QWEN_PAIR_4R=1`).
+    ///
+    /// Uses inline scale access (no preload array) to keep per-thread register
+    /// pressure at ~20 floats, freeing the compiler to hold all 8 accumulators
+    /// simultaneously.  vs `_pair_2r`:
+    ///
+    /// * 8 FMA chains (`pg0-3, pu0-3`) vs 4 → wider ILP window.
+    /// * 32 rows/TG instead of 16 → ½ the dispatch launch overhead.
+    /// * Inline scale reads — compiler can pipeline loads behind FMAs.
+    ///
+    /// **Bit-identical** to pair_2r (same per-accumulator FMA order).
+    ///
+    /// Grid: `(ceil(rows/32) × 256, 1, 1)`  TG: `(256, 1, 1)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        g_offset: usize,
+        g_byte_size: usize,
+        g_scales_buf: &PinnedBuffer,
+        g_scales_offset: usize,
+        u_offset: usize,
+        u_byte_size: usize,
+        u_scales_buf: &PinnedBuffer,
+        u_scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        g_out_buf: &PinnedBuffer,
+        u_out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec_pair_4r";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL} requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} overflow")))?;
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL} scale overflow")))?;
+        for (tag, bytes, off, sc_buf, sc_off) in [
+            ("gate", g_byte_size, g_offset, g_scales_buf, g_scales_offset),
+            ("up", u_byte_size, u_offset, u_scales_buf, u_scales_offset),
+        ] {
+            if bytes != expected_bytes {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} bytes mismatch: got {bytes} expected {expected_bytes}"
+                )));
+            }
+            if off + bytes > model_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} oob: {off}+{bytes} > {}",
+                    model_buf.length()
+                )));
+            }
+            if sc_off + expected_scale_bytes > sc_buf.length() as usize {
+                return Err(Error::Kernel(format!(
+                    "{KERNEL} {tag} scales oob: {sc_off}+{expected_scale_bytes} > {}",
+                    sc_buf.length()
+                )));
+            }
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        const V3_ROWS: u32 = 32; // 32 rows/TG: 8 simdgroups × 4 rows each
         let n_tg = rows_u32.div_ceil(V3_ROWS);
         tcb.dispatch_threads(KERNEL, (n_tg * V3_TG, 1, 1), (V3_TG, 1, 1), |enc| {
             enc.set_buffer(0, Some(model_buf), g_offset as u64);
