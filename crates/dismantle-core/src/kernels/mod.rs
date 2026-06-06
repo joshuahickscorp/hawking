@@ -3599,6 +3599,117 @@ mod metal_dispatch {
         })
     }
 
+    /// Track C28 — 4r variant of gemv_q4k_predec_qkv_rope_append_pinned_tcb.
+    /// Q and K use 4 rows/simdgroup (2 RoPE pairs); V uses 2 rows/simdgroup.
+    /// Total TGs for Qwen-3B: 160 vs 320 — same 1 dispatch, half scheduling overhead.
+    /// Requires q_rows % 4 == 0 and kv_rows % 4 == 0.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4k_predec_qkv_rope_append_4r_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        q_offset: usize,
+        q_byte_size: usize,
+        q_scales: &PinnedBuffer,
+        k_offset: usize,
+        k_byte_size: usize,
+        k_scales: &PinnedBuffer,
+        v_offset: usize,
+        v_byte_size: usize,
+        v_scales: &PinnedBuffer,
+        q_rows: usize,
+        kv_rows: usize,
+        cols: usize,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        rope_base: f32,
+        kv_off: usize,
+        x_buf: &PinnedBuffer,
+        q_buf: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4k_predec_qkv_rope_append_4r";
+        validate_qkv_rope_append_shape(
+            KERNEL, q_rows, kv_rows, cols, n_q_heads, n_k_heads, head_dim, kv_off,
+        )?;
+        if q_rows % 4 != 0 || kv_rows % 4 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q_rows ({q_rows}) and kv_rows ({kv_rows}) must be divisible by 4"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let q_exp = q_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: q byte overflow")))?;
+        let kv_exp = kv_rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}: kv byte overflow")))?;
+        if q_byte_size != q_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: q bytes: got {q_byte_size} expected {q_exp}"
+            )));
+        }
+        if k_byte_size != kv_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: k bytes: got {k_byte_size} expected {kv_exp}"
+            )));
+        }
+        if v_byte_size != kv_exp {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}: v bytes: got {v_byte_size} expected {kv_exp}"
+            )));
+        }
+        let args = ArgbufQkvRopeAppend {
+            q_rows: q_rows as u32,
+            kv_rows: kv_rows as u32,
+            cols: cols as u32,
+            n_q_heads: n_q_heads as u32,
+            n_k_heads: n_k_heads as u32,
+            head_dim: head_dim as u32,
+            pos,
+            kv_off: kv_off as u32,
+            has_q_bias: q_bias_buf.is_some() as u32,
+            has_k_bias: k_bias_buf.is_some() as u32,
+            has_v_bias: v_bias_buf.is_some() as u32,
+            base: rope_base,
+        };
+        let q_bias = q_bias_buf.unwrap_or(q_buf);
+        let k_bias = k_bias_buf.unwrap_or(q_buf);
+        let v_bias = v_bias_buf.unwrap_or(q_buf);
+        const TG: u32 = 256;
+        let q_quad_tg = ((q_rows / 4) as u32).div_ceil(8);
+        let k_quad_tg = ((kv_rows / 4) as u32).div_ceil(8);
+        let v_pair_tg = ((kv_rows / 2) as u32).div_ceil(8);
+        let total_tg = q_quad_tg + k_quad_tg + v_pair_tg;
+        tcb.dispatch_threads(KERNEL, (total_tg * TG, 1, 1), (TG, 1, 1), |enc| {
+            enc.set_buffer(0, Some(model_buf), q_offset as u64);
+            enc.set_buffer(1, Some(q_scales), 0);
+            enc.set_buffer(2, Some(model_buf), k_offset as u64);
+            enc.set_buffer(3, Some(k_scales), 0);
+            enc.set_buffer(4, Some(model_buf), v_offset as u64);
+            enc.set_buffer(5, Some(v_scales), 0);
+            enc.set_buffer(6, Some(x_buf), 0);
+            enc.set_buffer(7, Some(q_buf), 0);
+            enc.set_buffer(8, Some(k_cache), 0);
+            enc.set_buffer(9, Some(v_cache), 0);
+            enc.set_buffer(10, Some(q_bias), 0);
+            enc.set_buffer(11, Some(k_bias), 0);
+            enc.set_buffer(12, Some(v_bias), 0);
+            enc.set_bytes(
+                13,
+                std::mem::size_of::<ArgbufQkvRopeAppend>() as u64,
+                &args as *const ArgbufQkvRopeAppend as *const _,
+            );
+        })
+    }
+
     /// Track 3.12/3.13 mixed variant: Q/K are Q4_K predec, V is Q6_K.
     #[allow(clippy::too_many_arguments)]
     pub fn gemv_q4k_q4k_q6k_rope_append_pinned_tcb(
