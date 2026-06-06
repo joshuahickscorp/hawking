@@ -4476,14 +4476,16 @@ impl QwenDense {
             && predec_active
             && !w4a8_ffn_gate
             && !w4a8_ffn_up;
-        // path-to-50 k+v fusion: k_proj and v_proj are Q4_K, same shape
+        // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
-        // into ONE predec_pair dispatch (bit-identical). BUT benched FLAT vs
-        // gate+up alone (31.51 → 31.46): k/v are tiny (256 rows) so removing
-        // their dispatch carries negligible drain. The fusion win scales with
-        // dispatch SIZE — big FFN gate+up pays off, tiny attn k+v does not.
-        // DEFAULT-OFF; opt in via DISMANTLE_QWEN_KV_FUSE=1. q stays separate.
-        let kv_fuse = crate::env_on("DISMANTLE_QWEN_KV_FUSE")
+        // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
+        // = 36 dispatches on Qwen2.5-3B. Was DEFAULT-OFF (bench was flat vs
+        // gate+up alone at 31 tps because k/v rows are tiny), but dispatch
+        // count reduction to <350 target requires it. Now DEFAULT-ON.
+        // Opt out via DISMANTLE_QWEN_KV_FUSE=0.
+        let kv_fuse = std::env::var_os("DISMANTLE_QWEN_KV_FUSE")
+            .map(|v| v != "0")
+            .unwrap_or(true)
             && predec_active
             && !w4a8_qproj;
         // path-to-50: route ffn_down through the predec kernel too. ffn_down is
@@ -4773,105 +4775,217 @@ impl QwenDense {
             if qkv_concurrent {
                 tcb.begin_concurrent_group()?;
             }
-            gemv_proj!(
-                w4a8_qproj,
-                layer.q_proj,
-                layer.pinned.q_proj_f16.as_ref(),
-                q_dim,
-                h,
-                &arena.x_norm_buf,
-                x_int8,
-                x_scales,
-                &arena.q_buf
-            );
-            // k_proj is Q4_K in Qwen-3B-Q4_K_M (verified via tensor dump);
-            // route it through W4A8 too. Rows are small (256) so the BW
-            // saving is proportionally small, but it costs nothing extra
-            // because x_norm is already quantized for q_proj.
-            // path-to-50 k+v fusion: same shape/dtype/input → ONE pair dispatch.
-            let did_fuse_kv = kv_fuse
+            // Track 3.10: Q+K+V predec triple — when all three are Q4_K with
+            // predec cache entries, fuse into a single dispatch (2→1 vs Q +
+            // K+V-pair). q_rows ≠ kv_rows in GQA so the triple kernel uses a
+            // segmented grid. Incompatible with qkv_concurrent.
+            let qkv_triple = !w4a8_qproj
+                && !qkv_concurrent
+                && layer.q_proj.dtype == GgmlType::Q4_K
                 && layer.k_proj.dtype == GgmlType::Q4_K
                 && layer.v_proj.dtype == GgmlType::Q4_K
                 && h % 256 == 0
                 && predec_cache_ref
                     .map(|m| {
-                        m.contains_key(&layer.k_proj.offset)
+                        m.contains_key(&layer.q_proj.offset)
+                            && m.contains_key(&layer.k_proj.offset)
                             && m.contains_key(&layer.v_proj.offset)
                     })
                     .unwrap_or(false);
-            if did_fuse_kv {
-                // A6.5: f16-scales fused k+v pair when the flag is set (k/v are
-                // tiny rows so the win is small, but it keeps _pair coverage
-                // uniform). Same offset keys in both caches.
-                let f16_pair = predec_cache_f16_ref.and_then(|m| {
-                    match (m.get(&layer.k_proj.offset), m.get(&layer.v_proj.offset)) {
-                        (Some(k), Some(v)) => Some((k, v)),
-                        _ => None,
-                    }
-                });
-                if let Some((k_scales_f16, v_scales_f16)) = f16_pair {
-                    kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.k_proj.offset,
-                        layer.k_proj.byte_size,
-                        k_scales_f16,
-                        0,
-                        layer.v_proj.offset,
-                        layer.v_proj.byte_size,
-                        v_scales_f16,
-                        0,
-                        kv_dim,
-                        h,
-                        &arena.x_norm_buf,
-                        &arena.k_token_buf,
-                        &arena.v_token_buf,
-                    )?;
-                } else {
-                    let cache = predec_cache_ref.expect("checked is_some via map");
-                    let k_scales = &cache[&layer.k_proj.offset];
-                    let v_scales = &cache[&layer.v_proj.offset];
-                    kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.k_proj.offset,
-                        layer.k_proj.byte_size,
-                        k_scales,
-                        0,
-                        layer.v_proj.offset,
-                        layer.v_proj.byte_size,
-                        v_scales,
-                        0,
-                        kv_dim,
-                        h,
-                        &arena.x_norm_buf,
-                        &arena.k_token_buf,
-                        &arena.v_token_buf,
-                    )?;
-                }
+            // Track 3.11: Q+K(Q4K predec)+V(Q6K) mixed triple — for layers
+            // where q/k are Q4_K predec but v is Q6_K. Saves 1 vs separate
+            // Q dispatch + cross-dtype K+V pair.
+            let qkv_mixed_triple = !w4a8_qproj
+                && !qkv_concurrent
+                && layer.q_proj.dtype == GgmlType::Q4_K
+                && layer.k_proj.dtype == GgmlType::Q4_K
+                && layer.v_proj.dtype == GgmlType::Q6_K
+                && h % 256 == 0
+                && predec_cache_ref
+                    .map(|m| {
+                        m.contains_key(&layer.q_proj.offset)
+                            && m.contains_key(&layer.k_proj.offset)
+                    })
+                    .unwrap_or(false);
+            if qkv_triple {
+                let cache = predec_cache_ref.expect("checked is_some via map");
+                let q_sc = &cache[&layer.q_proj.offset];
+                let k_sc = &cache[&layer.k_proj.offset];
+                let v_sc = &cache[&layer.v_proj.offset];
+                kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                    layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                    layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
+                    q_dim, kv_dim, h,
+                    &arena.x_norm_buf,
+                    &arena.q_buf,
+                    &arena.k_token_buf,
+                    &arena.v_token_buf,
+                )?;
+            } else if qkv_mixed_triple {
+                let cache = predec_cache_ref.expect("checked is_some via map");
+                let q_sc = &cache[&layer.q_proj.offset];
+                let k_sc = &cache[&layer.k_proj.offset];
+                kernels::gemv_q4k_q4k_q6k_triple_pinned_tcb(
+                    &mut tcb,
+                    mmap_buf,
+                    layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
+                    layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
+                    layer.v_proj.offset, layer.v_proj.byte_size,
+                    q_dim, kv_dim, h,
+                    &arena.x_norm_buf,
+                    &arena.q_buf,
+                    &arena.k_token_buf,
+                    &arena.v_token_buf,
+                )?;
             } else {
+                // Q projection (always separate when not in qkv_triple path)
                 gemv_proj!(
                     w4a8_qproj,
-                    layer.k_proj,
-                    layer.pinned.k_proj_f16.as_ref(),
-                    kv_dim,
+                    layer.q_proj,
+                    layer.pinned.q_proj_f16.as_ref(),
+                    q_dim,
                     h,
                     &arena.x_norm_buf,
                     x_int8,
                     x_scales,
-                    &arena.k_token_buf
+                    &arena.q_buf
                 );
-                gemv_proj!(
-                    false,
-                    layer.v_proj,
-                    layer.pinned.v_proj_f16.as_ref(),
-                    kv_dim,
-                    h,
-                    &arena.x_norm_buf,
-                    x_int8,
-                    x_scales,
-                    &arena.v_token_buf
-                );
+                // K+V projections — try fused paths by dtype combination:
+                //   Q4K+Q4K predec pair (Track 3.8 kv_fuse, default-on)
+                //   Q6K+Q6K pair (Track 3.8 — for models with Q6K k/v)
+                //   Q4K+Q6K cross-dtype pair (Track 3.9)
+                //   separate dispatches (fallback)
+                let did_fuse_kv = kv_fuse
+                    && layer.k_proj.dtype == GgmlType::Q4_K
+                    && layer.v_proj.dtype == GgmlType::Q4_K
+                    && h % 256 == 0
+                    && predec_cache_ref
+                        .map(|m| {
+                            m.contains_key(&layer.k_proj.offset)
+                                && m.contains_key(&layer.v_proj.offset)
+                        })
+                        .unwrap_or(false);
+                if did_fuse_kv {
+                    // A6.5: prefer f16-scales variant when available.
+                    let f16_pair = predec_cache_f16_ref.and_then(|m| {
+                        match (m.get(&layer.k_proj.offset), m.get(&layer.v_proj.offset)) {
+                            (Some(k), Some(v)) => Some((k, v)),
+                            _ => None,
+                        }
+                    });
+                    if let Some((k_scales_f16, v_scales_f16)) = f16_pair {
+                        kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_scales_f16,
+                            0,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_scales_f16,
+                            0,
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    } else {
+                        let cache = predec_cache_ref.expect("checked is_some via map");
+                        let k_scales = &cache[&layer.k_proj.offset];
+                        let v_scales = &cache[&layer.v_proj.offset];
+                        kernels::gemv_q4_k_v4_predec_pair_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_scales,
+                            0,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_scales,
+                            0,
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    }
+                } else {
+                    // Track 3.8: Q6K+Q6K pair (models with all-Q6K k/v)
+                    let q6k_kv_pair = !w4a8_qproj
+                        && layer.k_proj.dtype == GgmlType::Q6_K
+                        && layer.v_proj.dtype == GgmlType::Q6_K
+                        && h % 256 == 0;
+                    // Track 3.9: Q4K predec + Q6K cross-dtype pair
+                    let q4k_q6k_pair = !w4a8_qproj
+                        && layer.k_proj.dtype == GgmlType::Q4_K
+                        && layer.v_proj.dtype == GgmlType::Q6_K
+                        && h % 256 == 0
+                        && predec_cache_ref
+                            .map(|m| m.contains_key(&layer.k_proj.offset))
+                            .unwrap_or(false);
+                    if q6k_kv_pair {
+                        kernels::gemv_q6_k_kv_pair_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    } else if q4k_q6k_pair {
+                        let cache = predec_cache_ref.expect("checked is_some via map");
+                        let k_sc = &cache[&layer.k_proj.offset];
+                        kernels::gemv_q4k_predec_q6k_pair_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    } else {
+                        gemv_proj!(
+                            w4a8_qproj,
+                            layer.k_proj,
+                            layer.pinned.k_proj_f16.as_ref(),
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            x_int8,
+                            x_scales,
+                            &arena.k_token_buf
+                        );
+                        gemv_proj!(
+                            false,
+                            layer.v_proj,
+                            layer.pinned.v_proj_f16.as_ref(),
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            x_int8,
+                            x_scales,
+                            &arena.v_token_buf
+                        );
+                    }
+                }
             }
             if qkv_concurrent {
                 tcb.end_concurrent_group()?;
