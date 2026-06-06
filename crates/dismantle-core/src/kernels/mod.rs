@@ -8741,6 +8741,50 @@ mod metal_dispatch {
         })
     }
 
+    /// Track B7 — Fused embedding lookup + layer-0 RMSNorm (single dispatch).
+    ///
+    /// Replaces `embed_lookup_metal_f32_tcb(embed, token → x)` immediately
+    /// followed by `rmsnorm_metal_buf_tcb(x, weight, eps → x_norm)` with one
+    /// dispatch of `embed_lookup_rmsnorm_f32`. Saves 1 dispatch (292 → 291
+    /// at default settings). Default-ON; opt-out via
+    /// `DISMANTLE_QWEN_EMBED_RMSNORM_FUSE=0`.
+    ///
+    /// Phase 1 loads embed → x (device) and accumulates partial squares.
+    /// Phase 2 re-reads x (L1 cache hit on Apple Silicon) to write x_norm —
+    /// bit-identical to the two-dispatch reference. No hidden-size cap.
+    pub fn embed_lookup_rmsnorm_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        embed_buf: &PinnedBuffer,
+        weight_buf: &PinnedBuffer,
+        token: u32,
+        hidden: usize,
+        eps: f32,
+        x_buf: &PinnedBuffer,
+        x_norm_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
+        )?;
+        ab.set_u32(0, hidden as u32);
+        ab.set_u32(1, token);
+        ab.set_f32(2, eps);
+        tcb.dispatch_threads(
+            "embed_lookup_rmsnorm_f32",
+            (TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(embed_buf), 0);
+                enc.set_buffer(1, Some(weight_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_buffer(3, Some(x_norm_buf), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )
+    }
+
     // ── v1.0.0-E: GPU argmax sampling dispatchers ────────────────────────────
 
     /// LM-head GEMV via TCB: w_buf (rows×cols f16) × x_buf (cols f32) → y_buf (rows f32).
