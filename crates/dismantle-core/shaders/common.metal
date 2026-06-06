@@ -1114,3 +1114,92 @@ kernel void rope_qk_f32_b1_bias(
     buf[0] = x0 * c - x1 * s;
     buf[1] = x0 * s + x1 * c;
 }
+
+// ── rope_qk_kv_append_vbias_f32 ───────────────────────────────────────────────
+// Track B6 — Fuses rope_qk_f32_b1_bias + kv_append_vbias_f32 into ONE dispatch.
+//
+// Saves 1 dispatch/layer × n_layers = 36 on Qwen-3B vs the two-dispatch path.
+//
+// Thread partition (id ∈ [0, total)):
+//   [0,               q_pairs):           Q: bias + RoPE, write q_buf in-place
+//   [q_pairs,         q_pairs+k_pairs):   K: bias + RoPE k_tok, write k_cache
+//   [q_pairs+k_pairs, q_pairs+k_pairs+kv_dim): V: add v_bias, write v_cache
+//
+// Note: k_tok is READ-ONLY in this kernel (the rotated K is written directly to
+// k_cache; k_token_buf is left in pre-rope state, which is fine since nothing
+// reads it after this dispatch).
+//
+// Buffer layout:
+//   0: q_buf    (float*, n_q_heads*head_dim, in-place Q rope destination)
+//   1: k_tok    (float*, kv_dim, read-only; pre-rope K token)
+//   2: v_tok    (float*, kv_dim, read-only)
+//   3: q_bias   (float*, n_q_heads*head_dim, or unused when has_q_bias=0)
+//   4: k_bias   (float*, kv_dim, or unused when has_k_bias=0)
+//   5: v_bias   (float*, kv_dim, or unused when has_v_bias=0)
+//   6: k_cache  (float*, large KV cache, write only)
+//   7: v_cache  (float*, large KV cache, write only)
+//   8: args     (ArgbufRopeQKKVAppend)
+//
+// Grid: (n_q_heads*head_dim/2 + n_k_heads*head_dim/2 + kv_dim, 1, 1)
+struct ArgbufRopeQKKVAppend {
+    uint  n_q_heads;
+    uint  n_k_heads;
+    uint  head_dim;
+    uint  pos;
+    float base;
+    uint  has_q_bias;
+    uint  has_k_bias;
+    uint  has_v_bias;
+    uint  kv_dim;    // n_k_heads * head_dim
+    uint  kv_off;    // element offset into k_cache / v_cache
+};
+
+kernel void rope_qk_kv_append_vbias_f32(
+    device       float* q_buf   [[buffer(0)]],
+    device const float* k_tok   [[buffer(1)]],
+    device const float* v_tok   [[buffer(2)]],
+    device const float* q_bias  [[buffer(3)]],
+    device const float* k_bias  [[buffer(4)]],
+    device const float* v_bias  [[buffer(5)]],
+    device       float* k_cache [[buffer(6)]],
+    device       float* v_cache [[buffer(7)]],
+    constant ArgbufRopeQKKVAppend& args [[buffer(8)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_pairs  = args.n_q_heads * pairs_per_head;
+    uint k_pairs  = args.n_k_heads * pairs_per_head;
+    uint q_end    = q_pairs;
+    uint k_end    = q_pairs + k_pairs;
+    uint v_end    = k_end + args.kv_dim;
+    if (id >= v_end) return;
+
+    if (id < q_end) {
+        // ── Q: bias + RoPE, in-place write to q_buf ─────────────────────────
+        uint head = id / pairs_per_head;
+        uint pair = id - head * pairs_per_head;
+        uint off  = head * args.head_dim + 2u * pair;
+        float x0 = q_buf[off]   + (args.has_q_bias ? q_bias[off]   : 0.0f);
+        float x1 = q_buf[off+1] + (args.has_q_bias ? q_bias[off+1] : 0.0f);
+        float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float c = cos(theta), s = sin(theta);
+        q_buf[off]   = x0 * c - x1 * s;
+        q_buf[off+1] = x0 * s + x1 * c;
+    } else if (id < k_end) {
+        // ── K: bias + RoPE k_tok, write directly to k_cache ─────────────────
+        uint kid  = id - q_end;
+        uint head = kid / pairs_per_head;
+        uint pair = kid - head * pairs_per_head;
+        uint off  = head * args.head_dim + 2u * pair;
+        float x0 = k_tok[off]   + (args.has_k_bias ? k_bias[off]   : 0.0f);
+        float x1 = k_tok[off+1] + (args.has_k_bias ? k_bias[off+1] : 0.0f);
+        float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float c = cos(theta), s = sin(theta);
+        k_cache[args.kv_off + off]   = x0 * c - x1 * s;
+        k_cache[args.kv_off + off+1] = x0 * s + x1 * c;
+    } else {
+        // ── V: add optional bias, write to v_cache ───────────────────────────
+        uint vid = id - k_end;
+        v_cache[args.kv_off + vid] = v_tok[vid] + (args.has_v_bias ? v_bias[vid] : 0.0f);
+    }
+}

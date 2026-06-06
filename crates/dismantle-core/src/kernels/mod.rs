@@ -7439,6 +7439,92 @@ mod metal_dispatch {
         )
     }
 
+    /// Track B6 — Fused RoPE(Q+K) + KV-cache append (+ V-bias), one dispatch.
+    ///
+    /// Combines `rope_qk_f32_b1_bias_tcb` + `kv_append_vbias_f32_tcb` into a
+    /// single kernel call, saving 1 dispatch/layer (36 on Qwen-3B 36-layer).
+    ///
+    /// Thread partition (grid = q_pairs + k_pairs + kv_dim):
+    /// - Q rope+bias section: threads [0, q_pairs) → in-place q_buf update
+    /// - K rope+bias section: threads [q_pairs, q_pairs+k_pairs) → k_tok read-only,
+    ///   rotated result written to k_cache[kv_off..]. k_tok left in pre-rope state.
+    /// - V section: threads [q_pairs+k_pairs, +kv_dim) → v_tok+v_bias → v_cache[kv_off..]
+    ///
+    /// Opt-in via `DISMANTLE_QWEN_ROPE_KV_FUSE=1` (default off; bench first).
+    #[allow(clippy::too_many_arguments)]
+    pub fn rope_qk_kv_append_vbias_f32_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        q_buf: &PinnedBuffer,
+        k_tok: &PinnedBuffer,
+        v_tok: &PinnedBuffer,
+        q_bias_buf: Option<&PinnedBuffer>,
+        k_bias_buf: Option<&PinnedBuffer>,
+        v_bias_buf: Option<&PinnedBuffer>,
+        k_cache: &PinnedBuffer,
+        v_cache: &PinnedBuffer,
+        n_q_heads: usize,
+        n_k_heads: usize,
+        head_dim: usize,
+        pos: u32,
+        base: f32,
+        kv_dim: usize,
+        kv_off: usize, // element offset into k_cache / v_cache
+    ) -> Result<()> {
+        let pairs_per_head = (head_dim / 2) as u32;
+        let q_pairs = n_q_heads as u32 * pairs_per_head;
+        let k_pairs = n_k_heads as u32 * pairs_per_head;
+        let total = q_pairs + k_pairs + kv_dim as u32;
+        let tg = TG_SIZE.min(total.max(1));
+        let has_q = if q_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let has_k = if k_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let has_v = if v_bias_buf.is_some() { 1u32 } else { 0u32 };
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32, // n_q_heads
+                ArgLayout::U32, // n_k_heads
+                ArgLayout::U32, // head_dim
+                ArgLayout::U32, // pos
+                ArgLayout::F32, // base
+                ArgLayout::U32, // has_q_bias
+                ArgLayout::U32, // has_k_bias
+                ArgLayout::U32, // has_v_bias
+                ArgLayout::U32, // kv_dim
+                ArgLayout::U32, // kv_off
+            ],
+        )?;
+        ab.set_u32(0, n_q_heads as u32);
+        ab.set_u32(1, n_k_heads as u32);
+        ab.set_u32(2, head_dim as u32);
+        ab.set_u32(3, pos);
+        ab.set_f32(4, base);
+        ab.set_u32(5, has_q);
+        ab.set_u32(6, has_k);
+        ab.set_u32(7, has_v);
+        ab.set_u32(8, kv_dim as u32);
+        ab.set_u32(9, kv_off as u32);
+        // Dummy buffers for unused bias slots (kernel won't read them).
+        let qb = q_bias_buf.unwrap_or(q_buf);
+        let kb = k_bias_buf.unwrap_or(k_tok);
+        let vb = v_bias_buf.unwrap_or(v_tok);
+        tcb.dispatch_threads(
+            "rope_qk_kv_append_vbias_f32",
+            (total, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(q_buf), 0);
+                enc.set_buffer(1, Some(k_tok), 0);
+                enc.set_buffer(2, Some(v_tok), 0);
+                enc.set_buffer(3, Some(qb), 0);
+                enc.set_buffer(4, Some(kb), 0);
+                enc.set_buffer(5, Some(vb), 0);
+                enc.set_buffer(6, Some(k_cache), 0);
+                enc.set_buffer(7, Some(v_cache), 0);
+                enc.set_buffer(8, Some(ab.handle()), 0);
+            },
+        )
+    }
+
     /// Both offsets are element units.
     pub fn memcpy_f32_off_tcb(
         tcb: &mut TokenCommandBuffer<'_>,

@@ -4498,6 +4498,17 @@ impl QwenDense {
                     .unwrap_or(false)
             })
         };
+        // Track B6: fuse rope_qk + kv_append into one dispatch, saving
+        // 1/layer × n_layers = 36 dispatches. Only valid for !use_seam &&
+        // !f16_kv. Opt-in via DISMANTLE_QWEN_ROPE_KV_FUSE=1 (bench first).
+        let rope_kv_fuse = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_ROPE_KV_FUSE")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
         // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
         // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
@@ -4991,8 +5002,28 @@ impl QwenDense {
                         // Track B3: upgrade kv pair from 1r → 2r (same default as
                         // gate+up Track A7).  kv_dim=1024, cols=h=2048 on Qwen-3B;
                         // 2r halves TG count (64 vs 128) and doubles ILP.
-                        // Bit-identical to 1r; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
-                        if ffn_pair_2r {
+                        // Track B5: 4r opt-in (DISMANTLE_QWEN_PAIR_4R=1) further
+                        // halves to 32 TGs with 4 FMA chains and inline scales.
+                        // Both bit-identical to 1r; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
+                        if ffn_pair_4r {
+                            kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else if ffn_pair_2r {
                             kernels::gemv_q4_k_v4_predec_pair_2r_pinned_tcb(
                                 &mut tcb,
                                 mmap_buf,
@@ -5114,7 +5145,30 @@ impl QwenDense {
                 //
                 // Fallback: when DISMANTLE_BACKEND_SEAM=1 (default-off), keep the
                 // original per-bias seam path + separate rope calls.
-                if use_seam {
+                // Track B6: when rope_kv_fuse=true && !use_seam && !f16_kv, fuse
+                // rope_qk + kv_append into a single dispatch (saves 1/layer = 36).
+                let did_fuse_rope_kv = !use_seam && !f16_kv && rope_kv_fuse;
+                if did_fuse_rope_kv {
+                    // Track B6 fused path: Q rope, K rope→k_cache, V→v_cache.
+                    kernels::rope_qk_kv_append_vbias_f32_tcb(
+                        &mut tcb,
+                        &arena.q_buf,
+                        &arena.k_token_buf,
+                        &arena.v_token_buf,
+                        layer.pinned.q_bias.as_ref(),
+                        layer.pinned.k_bias.as_ref(),
+                        layer.pinned.v_bias.as_ref(),
+                        &arena.k_cache_buf,
+                        &arena.v_cache_buf,
+                        n_heads,
+                        n_kv_heads,
+                        head_dim,
+                        pos_u32,
+                        theta,
+                        kv_dim,
+                        slot_kv_off_elems,
+                    )?;
+                } else if use_seam {
                     // Original seam path — bit-identical, kept for seam coverage.
                     if let Some(qb) = layer.pinned.q_bias.as_ref() {
                         let backend = crate::backend::metal::MetalBackend::new(ctx.clone());
@@ -5141,7 +5195,7 @@ impl QwenDense {
                         &mut tcb, &arena.k_token_buf, n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
                     )?;
                 } else {
-                    // Fused path (default): Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
+                    // Default rope path: Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
                     kernels::rope_qk_f32_b1_bias_tcb(
                         &mut tcb,
                         &arena.q_buf,
@@ -5169,49 +5223,52 @@ impl QwenDense {
                 // Track 3.7: fuse V-bias add + K-append + V-append into ONE
                 // dispatch for the default path, saving 2 dispatches/layer.
                 // Fallback to separate dispatches for f16_kv or seam paths.
-                if f16_kv {
-                    // f16 KV path: v_bias already added above (for !use_seam),
-                    // or by the seam block. Append with f32→f16 conversion.
-                    kernels::memcpy_f32_to_f16_off_tcb(
-                        &mut tcb,
-                        &arena.k_token_buf,
-                        arena.k_cache_f16_buf.as_ref().unwrap(),
-                        0,
-                        slot_kv_off_elems,
-                        kv_dim,
-                    )?;
-                    kernels::memcpy_f32_to_f16_off_tcb(
-                        &mut tcb,
-                        &arena.v_token_buf,
-                        arena.v_cache_f16_buf.as_ref().unwrap(),
-                        0,
-                        slot_kv_off_elems,
-                        kv_dim,
-                    )?;
-                } else if use_seam {
-                    // Seam path: v_bias was applied to v_token_buf in-place by the
-                    // seam block above. Separate appends.
-                    kernels::memcpy_f32_off_tcb(
-                        &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
-                        0, slot_kv_off_elems, kv_dim,
-                    )?;
-                    kernels::memcpy_f32_off_tcb(
-                        &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
-                        0, slot_kv_off_elems, kv_dim,
-                    )?;
-                } else {
-                    // Default path (!use_seam && !f16_kv): fused.
-                    // v_bias is applied inside the kernel (not pre-applied).
-                    kernels::kv_append_vbias_f32_tcb(
-                        &mut tcb,
-                        &arena.k_token_buf,
-                        &arena.v_token_buf,
-                        layer.pinned.v_bias.as_ref(),
-                        &arena.k_cache_buf,
-                        &arena.v_cache_buf,
-                        kv_dim,
-                        slot_kv_off_elems,
-                    )?;
+                // Track B6: skip entirely when did_fuse_rope_kv (fused above).
+                if !did_fuse_rope_kv {
+                    if f16_kv {
+                        // f16 KV path: v_bias already added above (for !use_seam),
+                        // or by the seam block. Append with f32→f16 conversion.
+                        kernels::memcpy_f32_to_f16_off_tcb(
+                            &mut tcb,
+                            &arena.k_token_buf,
+                            arena.k_cache_f16_buf.as_ref().unwrap(),
+                            0,
+                            slot_kv_off_elems,
+                            kv_dim,
+                        )?;
+                        kernels::memcpy_f32_to_f16_off_tcb(
+                            &mut tcb,
+                            &arena.v_token_buf,
+                            arena.v_cache_f16_buf.as_ref().unwrap(),
+                            0,
+                            slot_kv_off_elems,
+                            kv_dim,
+                        )?;
+                    } else if use_seam {
+                        // Seam path: v_bias was applied to v_token_buf in-place by the
+                        // seam block above. Separate appends.
+                        kernels::memcpy_f32_off_tcb(
+                            &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
+                            0, slot_kv_off_elems, kv_dim,
+                        )?;
+                        kernels::memcpy_f32_off_tcb(
+                            &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
+                            0, slot_kv_off_elems, kv_dim,
+                        )?;
+                    } else {
+                        // Default path (!use_seam && !f16_kv): fused.
+                        // v_bias is applied inside the kernel (not pre-applied).
+                        kernels::kv_append_vbias_f32_tcb(
+                            &mut tcb,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                            layer.pinned.v_bias.as_ref(),
+                            &arena.k_cache_buf,
+                            &arena.v_cache_buf,
+                            kv_dim,
+                            slot_kv_off_elems,
+                        )?;
+                    }
                 }
             }
 
