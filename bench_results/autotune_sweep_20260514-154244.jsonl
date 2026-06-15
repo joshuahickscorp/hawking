@@ -1,4 +1,0 @@
-{"field": "gemm_q4_k_schedule", "value": "v2t_gu_v2", "tokens_per_sec_median": 25.59735237369352, "trials": 6, "tokens": 32, "profile": "profiles/deepseek-v2-lite-q4.m3pro18.json"}
-{"field": "gemm_q4_k_schedule", "value": "v2t_gu", "tokens_per_sec_median": 24.746358697242826, "trials": 6, "tokens": 32, "profile": "profiles/deepseek-v2-lite-q4.m3pro18.json"}
-{"field": "gemm_q4_k_schedule", "value": "v2t_gu_serial", "tokens_per_sec_median": 22.28966781603571, "trials": 6, "tokens": 32, "profile": "profiles/deepseek-v2-lite-q4.m3pro18.json"}
-{"field": "gemm_q4_k_schedule", "value": "v2t", "tokens_per_sec_median": 23.649516372674366, "trials": 6, "tokens": 32, "profile": "profiles/deepseek-v2-lite-q4.m3pro18.json"}
