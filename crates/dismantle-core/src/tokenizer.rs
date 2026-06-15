@@ -631,6 +631,20 @@ fn build_tokenizer(
                 /* use_regex */ true,
             )));
             t.with_decoder(Some(ByteLevelDecoder::default()));
+            // Register the GGUF's control tokens (`<|im_start|>`, `<|im_end|>`,
+            // `<|endoftext|>`, …) as special so `encode` matches them as atomic
+            // ids instead of shattering them into byte-level pieces. Without
+            // this the chat template is mis-encoded and the model emits `<|>`
+            // garbage. Tokens already in the BPE vocab keep their existing id.
+            let mut specials: Vec<tokenizers::AddedToken> = Vec::new();
+            for s in tokens {
+                if is_special_token_str(s) {
+                    specials.push(tokenizers::AddedToken::from(s.clone(), true));
+                }
+            }
+            if !specials.is_empty() {
+                t.add_special_tokens(&specials);
+            }
             Ok((t, DecodeOneMode::Hf, None))
         }
         other => Err(Error::Model(format!(
