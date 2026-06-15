@@ -2,7 +2,7 @@
 //!
 //! The live speculation mechanism on code is the **n-gram / PLD / SAM draft**
 //! (τ≈1.43 generic, `reports/oracle/spec_accept.json`), *not* a trained head
-//! (EAGLE-3 is NO-GO, τ=0.877 net-negative — `reports/dead_levers.md`). The
+//! (EAGLE-3 is NO-GO, τ=0.877 net-negative — `docs/dead_levers.md`). The
 //! offline warm-start oracle (`reports/oracle/spec_accept_warmstart.json`)
 //! cleared GO: seeding a per-user n-gram index from the user's own prior
 //! tokens lifts the recomputed-suffix draft to τ≈3.40 (+0.888 over a cold

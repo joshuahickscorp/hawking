@@ -12,7 +12,7 @@ Where the actual work is:
 
 - **Hand-written Metal kernels** — Q4_K / Q6_K GEMV, flash-style attention, RoPE, RMSNorm, and fused variants, with no BLAS, MPSGraph, or external kernel library.
 - **Bit-parity discipline** — GPU kernels are gated against a CPU reference port (and, increasingly, an independent `llama.cpp` logit oracle), so a refactor can't silently change model outputs.
-- **A measured kill-ledger** — [`reports/dead_levers.md`](reports/dead_levers.md) records the optimizations that were tried and **rejected**, each with the measurement that killed it. The honest negative results are the most useful artifact here.
+- **A measured kill-ledger** — [`docs/dead_levers.md`](docs/dead_levers.md) records the optimizations that were tried and **rejected**, each with the measurement that killed it. The honest negative results are the most useful artifact here.
 
 [ARCHITECTURE.md](ARCHITECTURE.md) is the internal map.
 
@@ -86,7 +86,7 @@ dismantle serve \
 
 ## Performance (M3 Pro 18 GB, clean-room)
 
-llama.cpp Metal reaches ≈50 decode tok/s on Qwen2.5-3B-Q4_K_M; dismantle reaches ≈31. That gap is the honest baseline: ≈31 is near the bandwidth-bound ceiling for batch-1 Q4_K GEMV on this GPU, and closing it further needs *fewer weight bytes* (sub-4-bit quant) or the speculative / stateful axes — not micro-optimization. The measurements that ruled out the micro-optimization paths are in [`reports/dead_levers.md`](reports/dead_levers.md).
+llama.cpp Metal reaches ≈50 decode tok/s on Qwen2.5-3B-Q4_K_M; dismantle reaches ≈31. That gap is the honest baseline: ≈31 is near the bandwidth-bound ceiling for batch-1 Q4_K GEMV on this GPU, and closing it further needs *fewer weight bytes* (sub-4-bit quant) or the speculative / stateful axes — not micro-optimization. The measurements that ruled out the micro-optimization paths are in [`docs/dead_levers.md`](docs/dead_levers.md).
 
 | model | quant | dec_tps | notes |
 |---|---|---:|---|
