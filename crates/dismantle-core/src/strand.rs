@@ -87,7 +87,12 @@ pub fn matvec_rht(
         q12.len(),
         out_features * in_features
     );
-    assert_eq!(x.len(), in_features, "x len {} != in_features {in_features}", x.len());
+    assert_eq!(
+        x.len(),
+        in_features,
+        "x len {} != in_features {in_features}",
+        x.len()
+    );
     let inv = q12_to_f32();
     let mut y = vec![0.0f32; out_features];
     match mode {
