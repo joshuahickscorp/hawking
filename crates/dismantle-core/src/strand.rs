@@ -151,6 +151,89 @@ pub fn apply_outlier_overwrites(q12: &mut [i32], outliers: &[(usize, i32)]) {
     }
 }
 
+/// One decode-ready tensor parsed from a `.strand` v2 archive: the integer
+/// `EncodedTensor` plus the metadata needed to decode and serve it.
+pub struct StrandTensor {
+    /// Tensor name (e.g. `blk.0.ffn_down.weight`).
+    pub name: String,
+    /// Output features (rows) = `shape[0]`.
+    pub out_features: usize,
+    /// Input features (cols) = `shape[1]`.
+    pub in_features: usize,
+    /// Trellis decode config (L / k / block_len / vec_dim) for this tensor.
+    pub cfg: TrellisConfig,
+    /// Activation-RHT serving mode, from the header flag byte.
+    pub rht_mode: RhtMode,
+    /// Per-tensor RHT seed from the header (meaningful when `rht_mode != None`).
+    pub rht_seed: u64,
+    enc: EncodedTensor,
+}
+
+impl StrandTensor {
+    /// Decode this tensor to its integer-deterministic Q12 weights.
+    pub fn decode_q12(&self) -> Vec<i32> {
+        decode_q12(&self.enc, &self.cfg)
+    }
+
+    /// `y = decode(W) · serve(x)` — decode then serve with this tensor's RHT mode.
+    /// Convenience wrapper; a caller serving many tokens should `decode_q12` once
+    /// and reuse it across `matvec_rht` calls rather than re-decoding per token.
+    pub fn matvec(&self, x: &[f32]) -> Vec<f32> {
+        let q12 = self.decode_q12();
+        matvec_rht(
+            &q12,
+            x,
+            self.out_features,
+            self.in_features,
+            self.rht_mode,
+            self.rht_seed,
+        )
+    }
+}
+
+/// Parse a `.strand` v2 archive (the whole file's bytes) into decode-ready
+/// tensors. Reads the lean header (for the per-tensor `rht_cols` flag, which the
+/// payload parse does not carry) and the SDSQ-applied tensor payloads, then zips
+/// them by index. Errors on a header/payload count mismatch or a non-2-D tensor.
+pub fn read_strand(buf: &[u8]) -> Result<Vec<StrandTensor>, String> {
+    let header = strand_quant::format::read_strand_v2_header(buf)?;
+    let owned = strand_quant::sideinfo_wire::read_strand_v2_applied(buf)?;
+    if header.tensors.len() != owned.len() {
+        return Err(format!(
+            "strand reader: header lists {} tensors but payload has {}",
+            header.tensors.len(),
+            owned.len()
+        ));
+    }
+    let mut out = Vec::with_capacity(owned.len());
+    for (h, t) in header.tensors.into_iter().zip(owned) {
+        if h.shape.len() < 2 {
+            return Err(format!(
+                "strand reader: tensor {:?} is not 2-D (shape {:?})",
+                h.name, h.shape
+            ));
+        }
+        let out_features = h.shape[0] as usize;
+        let in_features = h.shape[1] as usize;
+        let mut cfg = TrellisConfig::new(
+            t.base.l_bits as u32,
+            t.base.k_bits as u32,
+            t.block_len as usize,
+        );
+        cfg.vec_dim = (t.base.vec_dim as u32).max(1);
+        out.push(StrandTensor {
+            name: h.name,
+            out_features,
+            in_features,
+            cfg,
+            rht_mode: RhtMode::from_flags(h.has_rht_seed, h.rht_cols),
+            rht_seed: h.rht_seed,
+            enc: t.base.enc,
+        });
+    }
+    Ok(out)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -242,5 +325,50 @@ mod tests {
         assert_eq!(q12[2], -500, "outlier must overwrite, not add");
         assert_eq!(q12[5], 999);
         assert_eq!(q12[0], 10, "non-outlier untouched");
+    }
+
+    #[test]
+    fn strand_file_round_trip_preserves_q12() {
+        use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
+        let (out_f, in_f) = (6usize, 256usize);
+        let w = synth_w(out_f * in_f);
+        let cfg = TrellisConfig::for_bpw(3.0);
+        let enc = encode_tensor(&w, &cfg);
+        // Reference: decode straight from the in-memory EncodedTensor.
+        let q12_direct = decode_q12(&enc, &cfg);
+
+        // Write a real `.strand` v2 archive, then read it back through the reader.
+        let shape = [out_f as u64, in_f as u64];
+        let packed = PackedTensorV2 {
+            base: PackedTensor {
+                name: "blk.0.ffn_down.weight",
+                shape: &shape,
+                rht_seed: 0,
+                l_bits: cfg.l_bits as u8,
+                k_bits: cfg.k_bits as u8,
+                vec_dim: cfg.vec_dim() as u8,
+                enc: &enc,
+            },
+            block_len: cfg.block_len as u32,
+        };
+        let bytes = write_strand_v2(&[packed], [0u8; 32], true).expect("write_strand_v2");
+
+        let tensors = read_strand(&bytes).expect("read_strand");
+        assert_eq!(tensors.len(), 1);
+        let t = &tensors[0];
+        assert_eq!(t.name, "blk.0.ffn_down.weight");
+        assert_eq!((t.out_features, t.in_features), (out_f, in_f));
+        assert_eq!(t.rht_mode, RhtMode::None);
+
+        // The integer decode read back from the wire is BIT-IDENTICAL to the
+        // direct decode — the determinism moat survives the file round-trip.
+        assert_eq!(t.decode_q12(), q12_direct, "file decode != direct decode");
+
+        // And serving through the reader matches the module-level matvec.
+        let x = synth_x(in_f);
+        assert_eq!(
+            t.matvec(&x),
+            matvec_rht(&q12_direct, &x, out_f, in_f, RhtMode::None, 0)
+        );
     }
 }
