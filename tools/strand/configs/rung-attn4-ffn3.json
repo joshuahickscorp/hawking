@@ -1,0 +1,4 @@
+{
+  "q_proj": 4, "k_proj": 4, "v_proj": 4, "o_proj": 4,
+  "gate_proj": 3, "up_proj": 3, "down_proj": 3
+}
