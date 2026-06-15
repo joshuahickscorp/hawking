@@ -37,21 +37,21 @@ impl RuntimeProfile {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
             "default" => Some(Self::Default),
-            "fast"    => Some(Self::Fast),
-            "race"    => Some(Self::Race),
+            "fast" => Some(Self::Fast),
+            "race" => Some(Self::Race),
             "efficient" => Some(Self::Efficient),
-            "exact"   => Some(Self::Exact),
-            _         => None,
+            "exact" => Some(Self::Exact),
+            _ => None,
         }
     }
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Default   => "default",
-            Self::Fast      => "fast",
-            Self::Race      => "race",
+            Self::Default => "default",
+            Self::Fast => "fast",
+            Self::Race => "race",
             Self::Efficient => "efficient",
-            Self::Exact     => "exact",
+            Self::Exact => "exact",
         }
     }
 }
@@ -169,9 +169,11 @@ impl RuntimeProfile {
     /// at startup so every profile "prints its active levers" (Track 2.2 gate).
     pub fn contract(&self) -> String {
         match self {
-            Self::Default => "profile=default: locked bit-identical default decode \
+            Self::Default => {
+                "profile=default: locked bit-identical default decode \
                 (predec + pair + gate/up-fuse, all bit-identical). quality: exact. J/tok: baseline."
-                .to_string(),
+                    .to_string()
+            }
             Self::Fast => "profile=fast: vocab-prune-32k + Q4K LM-head + Q4K FFN-down + predec \
                 + f16-scales. quality: mild trade (f16 scale rounding, rare-token prune). \
                 J/tok: lower than default (fewer bytes/token)."
@@ -205,17 +207,17 @@ pub enum EnergyMode {
 impl EnergyMode {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
-            "off"       => Some(Self::Off),
-            "balanced"  => Some(Self::Balanced),
+            "off" => Some(Self::Off),
+            "balanced" => Some(Self::Balanced),
             "efficient" => Some(Self::Efficient),
-            _           => None,
+            _ => None,
         }
     }
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Off       => "off",
-            Self::Balanced  => "balanced",
+            Self::Off => "off",
+            Self::Balanced => "balanced",
             Self::Efficient => "efficient",
         }
     }
@@ -223,8 +225,8 @@ impl EnergyMode {
     /// Gather window in milliseconds.
     pub fn gather_window_ms(&self) -> u64 {
         match self {
-            Self::Off       => 0,
-            Self::Balanced  => 3,
+            Self::Off => 0,
+            Self::Balanced => 3,
             Self::Efficient => 8,
         }
     }
@@ -278,22 +280,22 @@ pub enum WorkloadPack {
 impl WorkloadPack {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
-            "default"             => Some(Self::Default),
-            "code-completion"     => Some(Self::CodeCompletion),
-            "chat-shared-prompt"  => Some(Self::ChatSharedPrompt),
+            "default" => Some(Self::Default),
+            "code-completion" => Some(Self::CodeCompletion),
+            "chat-shared-prompt" => Some(Self::ChatSharedPrompt),
             "batch-summarization" => Some(Self::BatchSummarization),
-            "local-agent-loop"    => Some(Self::LocalAgentLoop),
-            _                     => None,
+            "local-agent-loop" => Some(Self::LocalAgentLoop),
+            _ => None,
         }
     }
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::Default            => "default",
-            Self::CodeCompletion     => "code-completion",
-            Self::ChatSharedPrompt   => "chat-shared-prompt",
+            Self::Default => "default",
+            Self::CodeCompletion => "code-completion",
+            Self::ChatSharedPrompt => "chat-shared-prompt",
             Self::BatchSummarization => "batch-summarization",
-            Self::LocalAgentLoop     => "local-agent-loop",
+            Self::LocalAgentLoop => "local-agent-loop",
         }
     }
 
@@ -437,11 +439,11 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // the server). We only set them when the variable is absent so that explicit
     // DISMANTLE_QWEN_*=0 opt-outs are honoured.
     for (var, val) in [
-        ("DISMANTLE_QWEN_Q4K_PREDEC",   "1"),  // pre-decoded scales → fast GEMV
-        ("DISMANTLE_QWEN_Q4K_LMHEAD",   "1"),  // GPU Q4K LM-head (vs CPU f16)
+        ("DISMANTLE_QWEN_Q4K_PREDEC", "1"), // pre-decoded scales → fast GEMV
+        ("DISMANTLE_QWEN_Q4K_LMHEAD", "1"), // GPU Q4K LM-head (vs CPU f16)
         ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"), // prune to 32K most-frequent tokens
-        ("DISMANTLE_QWEN_TCB",          "1"),  // token command buffers
-        ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),  // FFN down Q4K path
+        ("DISMANTLE_QWEN_TCB", "1"),        // token command buffers
+        ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"), // FFN down Q4K path
     ] {
         if std::env::var_os(var).is_none() {
             std::env::set_var(var, val);
@@ -477,8 +479,8 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     {
         let profile_wants_f16_kv = plan.f16_kv.unwrap_or(false);
         let enable = match opts.f16_kv {
-            Some(v)  => v,
-            None     => profile_wants_f16_kv,
+            Some(v) => v,
+            None => profile_wants_f16_kv,
         };
         if enable && std::env::var_os("DISMANTLE_QWEN_F16_KV").is_none() {
             std::env::set_var("DISMANTLE_QWEN_F16_KV", "1");
@@ -495,7 +497,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
     // but valuable for the race/efficient profile throughput maximization.
     let concurrent_qkv = plan.concurrent_qkv
-        || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV").map(|v| v == "1").unwrap_or(false);
+        || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV")
+            .map(|v| v == "1")
+            .unwrap_or(false);
 
     let cfg = EngineConfig {
         max_seq_len: 4096,
@@ -523,13 +527,16 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         let token_only_active = effective_profile == RuntimeProfile::Fast
             || effective_profile == RuntimeProfile::Race
             || effective_profile == RuntimeProfile::Efficient
-            || std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD").map(|v| v == "1").unwrap_or(false);
+            || std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD")
+                .map(|v| v == "1")
+                .unwrap_or(false);
         let token_only_str = if token_only_active {
             "active (Q4K LM head loaded)"
         } else {
             "inactive (fallback to full logits)"
         };
-        let hw_profile_str = opts.kernel_profile
+        let hw_profile_str = opts
+            .kernel_profile
             .as_ref()
             .map(|p| p.display().to_string())
             .unwrap_or_else(|| "none".to_string());
@@ -609,39 +616,74 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // byte-for-byte identical for Default/GreedyFirst. The policy was
                 // installed at startup (`d.scheduler.policy = effective_batch_policy`),
                 // so no extra binding is captured here.
-                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_prefix_grouped(max_batch);
+                let mut prefilling: Vec<u32> = state2
+                    .driver
+                    .lock()
+                    .scheduler
+                    .prefill_slots_prefix_grouped(max_batch);
                 if effective_energy.should_gather(prefilling.len(), max_batch) {
                     std::thread::sleep(std::time::Duration::from_millis(gather_window_ms));
-                    prefilling = state2.driver.lock().scheduler.prefill_slots_prefix_grouped(max_batch);
+                    prefilling = state2
+                        .driver
+                        .lock()
+                        .scheduler
+                        .prefill_slots_prefix_grouped(max_batch);
                 }
                 if !prefilling.is_empty() {
-                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
-                        let ids = state2.driver.lock().scheduler.slots
-                            .iter()
-                            .find(|s| s.id == id)
-                            .map(|s| s.prompt_ids.clone())
-                            .unwrap_or_default();
-                        if ids.is_empty() { None } else { Some((id as usize, ids)) }
-                    }).collect();
-                    let slot_refs: Vec<(usize, &[u32])> = slots_data.iter()
+                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling
+                        .iter()
+                        .filter_map(|&id| {
+                            let ids = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter()
+                                .find(|s| s.id == id)
+                                .map(|s| s.prompt_ids.clone())
+                                .unwrap_or_default();
+                            if ids.is_empty() {
+                                None
+                            } else {
+                                Some((id as usize, ids))
+                            }
+                        })
+                        .collect();
+                    let slot_refs: Vec<(usize, &[u32])> = slots_data
+                        .iter()
                         .map(|(s, ids)| (*s, ids.as_slice()))
                         .collect();
                     // Snapshot prefix_skip for every slot in this batch before
                     // touching any slot state, so we can partition without holding
                     // both the driver and engine locks simultaneously.
-                    let skip_map: Vec<(usize, usize)> = slot_refs.iter().map(|(slot_id, _)| {
-                        let skip = state2.driver.lock().scheduler.slots
-                            .iter().find(|s| s.id == *slot_id as u32)
-                            .map(|s| s.prefix_skip).unwrap_or(0);
-                        (*slot_id, skip)
-                    }).collect();
+                    let skip_map: Vec<(usize, usize)> = slot_refs
+                        .iter()
+                        .map(|(slot_id, _)| {
+                            let skip = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter()
+                                .find(|s| s.id == *slot_id as u32)
+                                .map(|s| s.prefix_skip)
+                                .unwrap_or(0);
+                            (*slot_id, skip)
+                        })
+                        .collect();
 
                     // Reset all non-zero prefix_skip values upfront so retries
                     // don't re-skip regardless of which path runs below.
                     for &(slot_id, skip) in &skip_map {
                         if skip > 0 {
-                            if let Some(s) = state2.driver.lock().scheduler.slots
-                                .iter_mut().find(|s| s.id == slot_id as u32) {
+                            if let Some(s) = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter_mut()
+                                .find(|s| s.id == slot_id as u32)
+                            {
                                 s.prefix_skip = 0;
                             }
                         }
@@ -651,10 +693,15 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                         let mut engine = state2.engine.lock();
                         if slot_refs.len() == 1 {
                             let (slot_id, prompt_ids) = slot_refs[0];
-                            let skip = skip_map.iter().find(|(id, _)| *id == slot_id)
-                                .map(|(_, s)| *s).unwrap_or(0);
+                            let skip = skip_map
+                                .iter()
+                                .find(|(id, _)| *id == slot_id)
+                                .map(|(_, s)| *s)
+                                .unwrap_or(0);
                             if skip > 0 {
-                                engine.prefill_slot_from_pos(slot_id, prompt_ids, skip).map(|_| ())
+                                engine
+                                    .prefill_slot_from_pos(slot_id, prompt_ids, skip)
+                                    .map(|_| ())
                             } else {
                                 engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
                             }
@@ -662,19 +709,30 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             // Track 5.2: partition into slots that have a prefix_skip
                             // (handle individually with prefill_slot_from_pos) and those
                             // that don't (run in parallel).
-                            let with_skip: Vec<(usize, &[u32], usize)> = slot_refs.iter()
+                            let with_skip: Vec<(usize, &[u32], usize)> = slot_refs
+                                .iter()
                                 .filter_map(|(slot_id, prompt_ids)| {
-                                    let skip = skip_map.iter()
+                                    let skip = skip_map
+                                        .iter()
                                         .find(|(id, _)| id == slot_id)
                                         .map(|(_, s)| *s)
                                         .unwrap_or(0);
-                                    if skip > 0 { Some((*slot_id, *prompt_ids, skip)) } else { None }
+                                    if skip > 0 {
+                                        Some((*slot_id, *prompt_ids, skip))
+                                    } else {
+                                        None
+                                    }
                                 })
                                 .collect();
-                            let without_skip: Vec<(usize, &[u32])> = slot_refs.iter()
+                            let without_skip: Vec<(usize, &[u32])> = slot_refs
+                                .iter()
                                 .filter(|(slot_id, _)| {
-                                    skip_map.iter().find(|(id, _)| id == slot_id)
-                                        .map(|(_, s)| *s).unwrap_or(0) == 0
+                                    skip_map
+                                        .iter()
+                                        .find(|(id, _)| id == slot_id)
+                                        .map(|(_, s)| *s)
+                                        .unwrap_or(0)
+                                        == 0
                                 })
                                 .map(|(slot_id, prompt_ids)| (*slot_id, *prompt_ids))
                                 .collect();
@@ -683,7 +741,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             let mut result: Result<(), dismantle_core::Error> = Ok(());
                             for (slot_id, prompt_ids, skip) in with_skip {
                                 if result.is_ok() {
-                                    result = engine.prefill_slot_from_pos(slot_id, prompt_ids, skip).map(|_| ());
+                                    result = engine
+                                        .prefill_slot_from_pos(slot_id, prompt_ids, skip)
+                                        .map(|_| ());
                                 }
                             }
                             // Parallel-prefill the remaining slots (only if no error so far).
@@ -696,14 +756,20 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                     match prefill_result {
                         Ok(()) => {
                             for &slot_id in &prefilling {
-                                state2.driver.lock().scheduler.mark_prefill_complete(slot_id);
+                                state2
+                                    .driver
+                                    .lock()
+                                    .scheduler
+                                    .mark_prefill_complete(slot_id);
                             }
                         }
                         Err(e) => {
                             tracing::warn!(err = %e, "prefill_slots_parallel failed");
                             for &slot_id in &prefilling {
                                 let tx = state2.slot_senders.lock().remove(&slot_id);
-                                if let Some(tx) = tx { let _ = tx.blocking_send(Err(())); }
+                                if let Some(tx) = tx {
+                                    let _ = tx.blocking_send(Err(()));
+                                }
                                 state2.driver.lock().scheduler.release_slot(slot_id);
                             }
                         }
@@ -756,26 +822,39 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                     // new slot is already in the prefix_index; search for a
                                     // different slot whose KV we can copy into this one.
                                     {
-                                        let prompt_ids = state2.driver.lock()
-                                            .scheduler.slots.iter()
+                                        let prompt_ids = state2
+                                            .driver
+                                            .lock()
+                                            .scheduler
+                                            .slots
+                                            .iter()
                                             .find(|s| s.id == sid)
                                             .map(|s| s.prompt_ids.clone())
                                             .unwrap_or_default();
                                         if !prompt_ids.is_empty() {
                                             let banked_len = http::banked_len_for(&prompt_ids);
                                             // 1) Live-slot match (Track 5.1): a DIFFERENT active slot.
-                                            let mut src: Option<(u32, usize)> = state2.driver.lock()
-                                                .scheduler.prefix_index
+                                            let mut src: Option<(u32, usize)> = state2
+                                                .driver
+                                                .lock()
+                                                .scheduler
+                                                .prefix_index
                                                 .find_prefix_match_excluding(&prompt_ids, 8, sid);
                                             // 2) On a live MISS, consult the cross-request bank
                                             //    (Track 5.2): a slot that previously held this fixed
                                             //    system prefix even though it has since freed. Pure
                                             //    CPU lookup; the bank stores no KV.
                                             if src.is_none() {
-                                                if let Some(entry) = state2.system_kv_bank.lock()
-                                                    .lookup(&prompt_ids, banked_len) {
+                                                if let Some(entry) = state2
+                                                    .system_kv_bank
+                                                    .lock()
+                                                    .lookup(&prompt_ids, banked_len)
+                                                {
                                                     if entry.source_slot != sid {
-                                                        src = Some((entry.source_slot, entry.prefix_len));
+                                                        src = Some((
+                                                            entry.source_slot,
+                                                            entry.prefix_len,
+                                                        ));
                                                     }
                                                 }
                                             }
@@ -784,8 +863,8 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                                     "[prefix-reuse] request matched slot {} at prefix_len={}",
                                                     src_slot, shared_len
                                                 );
-                                                let copy_result = state2.engine.lock()
-                                                    .copy_kv_prefix_to_slot(
+                                                let copy_result =
+                                                    state2.engine.lock().copy_kv_prefix_to_slot(
                                                         src_slot as usize,
                                                         sid as usize,
                                                         shared_len,
@@ -796,16 +875,23 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                                         driver.lane_stats.prefix_reuse_count += 1;
                                                         // prefix_skip so prefill can call
                                                         // prefill_slot_from_pos instead of full prefill.
-                                                        if let Some(slot) = driver.scheduler.slots
-                                                            .iter_mut().find(|s| s.id == sid) {
+                                                        if let Some(slot) = driver
+                                                            .scheduler
+                                                            .slots
+                                                            .iter_mut()
+                                                            .find(|s| s.id == sid)
+                                                        {
                                                             slot.prefix_skip = shared_len;
                                                         }
                                                     }
                                                     // Bank that THIS slot now holds copyable KV for the
                                                     // fixed leading span, so the NEXT serial turn (after
                                                     // this slot frees) still finds a source.
-                                                    state2.system_kv_bank.lock()
-                                                        .record(&prompt_ids, banked_len, sid);
+                                                    state2.system_kv_bank.lock().record(
+                                                        &prompt_ids,
+                                                        banked_len,
+                                                        sid,
+                                                    );
                                                 }
                                                 // copy Err (e.g. Unimplemented / stale banked slot):
                                                 // silently skip — normal prefill proceeds from pos 0.
@@ -813,8 +899,11 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                                 // No source yet, but this freshly-prefilled slot will
                                                 // hold the span shortly — bank it so a later serial turn
                                                 // can reuse it. (record() rejects sub-min spans itself.)
-                                                state2.system_kv_bank.lock()
-                                                    .record(&prompt_ids, banked_len, sid);
+                                                state2.system_kv_bank.lock().record(
+                                                    &prompt_ids,
+                                                    banked_len,
+                                                    sid,
+                                                );
                                             }
                                         }
                                     }
@@ -903,7 +992,11 @@ mod profile_lever_tests {
             assert!(p.force_off.contains(&k), "exact must force-off {k}");
         }
         assert!(p.set_if_unset.is_empty(), "exact sets no quality-trade var");
-        assert_eq!(p.f16_kv, Some(false), "exact leaves f16-KV off (bit-identity)");
+        assert_eq!(
+            p.f16_kv,
+            Some(false),
+            "exact leaves f16-KV off (bit-identity)"
+        );
         assert!(!p.concurrent_qkv);
     }
 
@@ -911,7 +1004,10 @@ mod profile_lever_tests {
     fn contracts_are_nonempty_and_self_label() {
         for rp in [RP::Default, RP::Fast, RP::Race, RP::Efficient, RP::Exact] {
             let c = rp.contract();
-            assert!(c.contains(rp.as_str()), "contract for {rp} must name itself");
+            assert!(
+                c.contains(rp.as_str()),
+                "contract for {rp} must name itself"
+            );
             assert!(c.len() > 20);
         }
     }

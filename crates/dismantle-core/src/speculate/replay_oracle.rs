@@ -189,7 +189,11 @@ pub fn replay_k(corpus: &[u32], k: usize, warm_start_tokens: usize) -> KReport {
         // The bonus/correction token preds[na] exists iff there is a token at
         // i+na; at the very tail it may not (the last cycle then retires only
         // the accepted drafts). Live loop always has the extra verify slot.
-        let bonus = if i + na < scored.len() { 1usize } else { 0usize };
+        let bonus = if i + na < scored.len() {
+            1usize
+        } else {
+            0usize
+        };
         let retired = na + bonus;
         debug_assert!(retired >= 1, "a cycle must retire at least one token");
 
@@ -317,7 +321,11 @@ mod tests {
             );
             assert_eq!(
                 r.drafts_accepted,
-                r.accept_hist.iter().enumerate().map(|(na, c)| na as u64 * c).sum::<u64>(),
+                r.accept_hist
+                    .iter()
+                    .enumerate()
+                    .map(|(na, c)| na as u64 * c)
+                    .sum::<u64>(),
                 "accept_hist must reconstruct drafts_accepted (k={})",
                 r.k
             );
@@ -340,12 +348,14 @@ mod tests {
             assert!(
                 (r.tau - 1.0).abs() < 1e-3,
                 "no acceptance must give tau~=1 (k={}, tau {})",
-                r.k, r.tau
+                r.k,
+                r.tau
             );
             assert!(
                 r.mean_accepted_len < 1e-6,
                 "mean accepted-run length must be ~0 (k={}, {})",
-                r.k, r.mean_accepted_len
+                r.k,
+                r.mean_accepted_len
             );
             // Per-token accounting still closes (every cycle retires exactly 1).
             assert_eq!(r.tokens_emitted as usize, rep.scored_tokens);
@@ -367,7 +377,8 @@ mod tests {
         assert!(
             r.drafts_accepted > 0 && r.tau > 1.2,
             "warm-started repetitive suffix should draft well (acc {}, tau {})",
-            r.drafts_accepted, r.tau
+            r.drafts_accepted,
+            r.tau
         );
     }
 

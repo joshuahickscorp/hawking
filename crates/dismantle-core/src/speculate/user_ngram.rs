@@ -248,7 +248,10 @@ mod tests {
         assert!(!d.is_empty());
         // (2,3) was seen twice → 2 then 4; argmax by count then smaller id → 2.
         let p = d.propose(&[2, 3], 2);
-        assert_eq!(p[0], 2, "warm-started (2,3) predicts the repeated successor");
+        assert_eq!(
+            p[0], 2,
+            "warm-started (2,3) predicts the repeated successor"
+        );
         // The seed left no live cursor; note_token after warm_start starts a
         // fresh transition (no chaining off the seed's last token 4).
         d.note_token(99);

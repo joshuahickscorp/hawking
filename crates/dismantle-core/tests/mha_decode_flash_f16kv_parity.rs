@@ -87,8 +87,7 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
     let q_dim = n_heads * head_dim;
     let kv_dim = n_kv_heads * head_dim;
 
-    let seed = (seq_len as u64)
-        .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+    let seed = (seq_len as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15)
         ^ ((n_heads as u64) << 17)
         ^ ((head_dim as u64) << 33);
     let q = fixed_f32(q_dim, seed ^ 0xA1);
@@ -100,8 +99,10 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
     let k_rt = f16_round_trip(&k);
     let v_rt = f16_round_trip(&v);
     let mut cpu = vec![0.0f32; q_dim];
-    mha_decode_step(&q, &k_rt, &v_rt, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu)
-        .expect("cpu mha_decode_step");
+    mha_decode_step(
+        &q, &k_rt, &v_rt, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu,
+    )
+    .expect("cpu mha_decode_step");
 
     let flash = run_flash_f16kv(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len);
 

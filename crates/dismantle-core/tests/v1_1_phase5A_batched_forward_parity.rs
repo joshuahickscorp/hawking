@@ -6,17 +6,22 @@
 //!
 //! Skips if model weights are not present.
 
-use std::path::PathBuf;
 use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, SpeculateMode, StreamEvent};
+use std::path::PathBuf;
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/deepseek-v2-lite-q4.gguf")
 }
 
-fn load_engine_with_profile(speculate_mode: SpeculateMode) -> Option<Box<dyn dismantle_core::Engine>> {
+fn load_engine_with_profile(
+    speculate_mode: SpeculateMode,
+) -> Option<Box<dyn dismantle_core::Engine>> {
     let p = weights_path();
     if !p.exists() {
-        eprintln!("v1_1_phase5A_batched_forward_parity: no weights at {:?}, skipping", p);
+        eprintln!(
+            "v1_1_phase5A_batched_forward_parity: no weights at {:?}, skipping",
+            p
+        );
         return None;
     }
     let mut cfg = EngineConfig::default();
@@ -65,7 +70,11 @@ fn check_batched_parity(
         .forward_tokens_batched_for_test(tokens, positions)
         .unwrap_or_else(|e| panic!("{label} batched: {e}"));
 
-    assert_eq!(seq_logits.len(), batch_logits.len(), "{label} result count mismatch");
+    assert_eq!(
+        seq_logits.len(),
+        batch_logits.len(),
+        "{label} result count mismatch"
+    );
     for m in 0..tokens.len() {
         let seq_top = argmax(&seq_logits[m]);
         let bat_top = argmax(&batch_logits[m]);
@@ -77,7 +86,11 @@ fn check_batched_parity(
     engine.reset_kv_for_test();
 }
 
-fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, max_new_tokens: usize) -> Vec<u32> {
+fn collect_tokens(
+    engine: &mut Box<dyn dismantle_core::Engine>,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> Vec<u32> {
     let req = GenerateRequest {
         prompt: prompt.to_string(),
         max_new_tokens,
@@ -93,18 +106,22 @@ fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, ma
         max_stall_ms: 0,
     };
     let mut tokens = Vec::new();
-    engine.generate(req, &mut |ev| {
-        if let StreamEvent::Token { id, .. } = ev {
-            tokens.push(id);
-        }
-    }).expect("generate");
+    engine
+        .generate(req, &mut |ev| {
+            if let StreamEvent::Token { id, .. } = ev {
+                tokens.push(id);
+            }
+        })
+        .expect("generate");
     tokens
 }
 
 /// K=1 through K=8 argmax parity: batched TCB path must match sequential.
 #[test]
 fn batched_tcb_argmax_parity_k1_through_k8() {
-    let Some(mut engine) = load_engine_with_profile(SpeculateMode::Off) else { return };
+    let Some(mut engine) = load_engine_with_profile(SpeculateMode::Off) else {
+        return;
+    };
 
     // K=1
     check_batched_parity(&mut engine, &[1u32], &[0], "K=1");
@@ -113,12 +130,7 @@ fn batched_tcb_argmax_parity_k1_through_k8() {
     check_batched_parity(&mut engine, &[1u32, 315], &[0, 1], "K=2");
 
     // K=4 (spec verify window default)
-    check_batched_parity(
-        &mut engine,
-        &[1u32, 315, 1012, 297],
-        &[0, 1, 2, 3],
-        "K=4",
-    );
+    check_batched_parity(&mut engine, &[1u32, 315, 1012, 297], &[0, 1, 2, 3], "K=4");
 
     // K=5 (spec verify window + anchor = typical batched verify call)
     check_batched_parity(
@@ -144,8 +156,12 @@ fn batched_tcb_argmax_parity_k1_through_k8() {
 /// n-gram spec output must be byte-identical to greedy with spec off.
 #[test]
 fn spec_batched_verify_exact_mode() {
-    let Some(mut ref_engine) = load_engine_with_profile(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine_with_profile(SpeculateMode::ExactShared) else { return };
+    let Some(mut ref_engine) = load_engine_with_profile(SpeculateMode::Off) else {
+        return;
+    };
+    let Some(mut spec_engine) = load_engine_with_profile(SpeculateMode::ExactShared) else {
+        return;
+    };
 
     // Repetitive prompt: n-gram acceptance rate is very high.
     {

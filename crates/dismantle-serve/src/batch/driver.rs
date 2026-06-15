@@ -80,8 +80,7 @@ impl BatchDriver {
 
         let b = batch.len();
         if all_greedy {
-            let token_ids =
-                engine.forward_multiseq_greedy_tokens(&tokens, &positions, &regions)?;
+            let token_ids = engine.forward_multiseq_greedy_tokens(&tokens, &positions, &regions)?;
             let eos_id = engine.eos_id_for_batch();
             let decoded = self
                 .scheduler
@@ -123,9 +122,7 @@ fn decode_output(engine: &dyn Engine, token: DecodedToken) -> Result<DecodeOutpu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dismantle_core::{
-        EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent,
-    };
+    use dismantle_core::{EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent};
     use std::path::Path;
 
     struct FakeEngine {
@@ -245,7 +242,10 @@ mod tests {
             ]
         );
         assert_eq!(driver.scheduler.slots[0].last_token, Some(1));
-        assert_eq!(driver.scheduler.slots[1].state, crate::batch::SlotState::Finishing);
+        assert_eq!(
+            driver.scheduler.slots[1].state,
+            crate::batch::SlotState::Finishing
+        );
     }
 
     #[test]
@@ -270,6 +270,9 @@ mod tests {
 
         assert_eq!(slot_id, 0);
         assert_eq!(driver.scheduler.slots[0].prompt_ids, vec![b'x' as u32]);
-        assert_eq!(driver.scheduler.slots[0].state, crate::batch::SlotState::Prefilling);
+        assert_eq!(
+            driver.scheduler.slots[0].state,
+            crate::batch::SlotState::Prefilling
+        );
     }
 }

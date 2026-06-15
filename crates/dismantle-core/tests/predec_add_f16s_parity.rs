@@ -20,7 +20,9 @@ fn make_q4k_predec(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) {
     // Scales in [0.1, 2.0] to avoid near-zero values where f16 rounding inflates error.
     let s: Vec<f32> = (0..rows * bpr * 16)
         .map(|i| {
-            let v = ((i as u32).wrapping_mul(2654435761).wrapping_add(seed ^ 0xAB)) as f32
+            let v = ((i as u32)
+                .wrapping_mul(2654435761)
+                .wrapping_add(seed ^ 0xAB)) as f32
                 / u32::MAX as f32;
             0.1 + v * 1.9
         })
@@ -29,12 +31,22 @@ fn make_q4k_predec(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) {
 }
 
 fn f32_to_f16_bytes(v: &[f32]) -> Vec<u8> {
-    v.iter().flat_map(|&x| f16::from_f32(x).to_le_bytes()).collect()
+    v.iter()
+        .flat_map(|&x| f16::from_f32(x).to_le_bytes())
+        .collect()
 }
 
 fn rel_l2(reference: &[f32], got: &[f32]) -> f64 {
-    let num: f64 = reference.iter().zip(got).map(|(&r, &g)| ((r - g) as f64).powi(2)).sum();
-    let den: f64 = reference.iter().map(|&r| (r as f64).powi(2)).sum::<f64>().max(1e-30);
+    let num: f64 = reference
+        .iter()
+        .zip(got)
+        .map(|(&r, &g)| ((r - g) as f64).powi(2))
+        .sum();
+    let den: f64 = reference
+        .iter()
+        .map(|&r| (r as f64).powi(2))
+        .sum::<f64>()
+        .max(1e-30);
     (num / den).sqrt()
 }
 
@@ -54,7 +66,16 @@ fn run_2r_add_f32(
     let res_buf = new_f32_buf(ctx, residual);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_2r_add_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &sc_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .unwrap();
     tcb.commit_and_wait().unwrap();
@@ -77,7 +98,16 @@ fn run_2r_add_f16s(
     let res_buf = new_f32_buf(ctx, residual);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_2r_add_f16s_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &sc_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .unwrap();
     tcb.commit_and_wait().unwrap();
@@ -100,7 +130,16 @@ fn run_4r_add_f32(
     let res_buf = new_f32_buf(ctx, residual);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_4r_add_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &sc_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .unwrap();
     tcb.commit_and_wait().unwrap();
@@ -123,7 +162,16 @@ fn run_4r_add_f16s(
     let res_buf = new_f32_buf(ctx, residual);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_4r_add_f16s_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &sc_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &sc_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .unwrap();
     tcb.commit_and_wait().unwrap();
@@ -142,26 +190,36 @@ fn d6_predec_2r_add_f16s_quality_gate() {
         (2048, 2048, 0xD600),
         (2048, 2048, 0xD601),
         // non-multiple-of-16 to test has1 guard
-        (33,   256,  0xD602),
-        (48,   256,  0xD603),
-        (512,  2048, 0xD604),
+        (33, 256, 0xD602),
+        (48, 256, 0xD603),
+        (512, 2048, 0xD604),
     ];
 
     for &(rows, cols, seed) in cases {
         let (w, sc) = make_q4k_predec(rows, cols, seed);
         let sc_f16 = f32_to_f16_bytes(&sc);
         let x: Vec<f32> = (0..cols)
-            .map(|i| ((i as u32).wrapping_mul(1664525).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0 - 1.0)
+            .map(|i| {
+                ((i as u32).wrapping_mul(1664525).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0
+                    - 1.0
+            })
             .collect();
         let residual: Vec<f32> = (0..rows)
-            .map(|i| ((i as u32).wrapping_mul(1103515245).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0 - 1.0)
+            .map(|i| {
+                ((i as u32).wrapping_mul(1103515245).wrapping_add(seed) as f32 / u32::MAX as f32)
+                    * 2.0
+                    - 1.0
+            })
             .collect();
 
         let ref_res = run_2r_add_f32(ctx, &w, &sc, &x, &residual, rows, cols);
         let got_res = run_2r_add_f16s(ctx, &w, &sc_f16, &x, &residual, rows, cols);
 
         let r = rel_l2(&ref_res, &got_res);
-        assert!(r < MAX_REL_L2, "2r_add_f16s rows={rows} cols={cols}: rel_L2={r:.4e} >= {MAX_REL_L2}");
+        assert!(
+            r < MAX_REL_L2,
+            "2r_add_f16s rows={rows} cols={cols}: rel_L2={r:.4e} >= {MAX_REL_L2}"
+        );
         eprintln!("D6 2r_add_f16s rows={rows} cols={cols}: rel_L2={r:.2e} OK");
     }
 }
@@ -180,32 +238,45 @@ fn d6_predec_4r_add_f16s_quality_gate() {
         (2048, 2048, 0xD610),
         (2048, 2048, 0xD611),
         // non-multiple-of-32 to test has1/has2/has3 guards
-        (33,   256,  0xD612),
-        (49,   256,  0xD613),
-        (512,  2048, 0xD614),
+        (33, 256, 0xD612),
+        (49, 256, 0xD613),
+        (512, 2048, 0xD614),
     ];
 
     for &(rows, cols, seed) in cases {
         let (w, sc) = make_q4k_predec(rows, cols, seed);
         let sc_f16 = f32_to_f16_bytes(&sc);
         let x: Vec<f32> = (0..cols)
-            .map(|i| ((i as u32).wrapping_mul(1664525).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0 - 1.0)
+            .map(|i| {
+                ((i as u32).wrapping_mul(1664525).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0
+                    - 1.0
+            })
             .collect();
         let residual: Vec<f32> = (0..rows)
-            .map(|i| ((i as u32).wrapping_mul(1103515245).wrapping_add(seed) as f32 / u32::MAX as f32) * 2.0 - 1.0)
+            .map(|i| {
+                ((i as u32).wrapping_mul(1103515245).wrapping_add(seed) as f32 / u32::MAX as f32)
+                    * 2.0
+                    - 1.0
+            })
             .collect();
 
-        let ref_res  = run_4r_add_f32(ctx, &w, &sc, &x, &residual, rows, cols);
-        let got_4r   = run_4r_add_f16s(ctx, &w, &sc_f16, &x, &residual, rows, cols);
-        let got_2r   = run_2r_add_f16s(ctx, &w, &sc_f16, &x, &residual, rows, cols);
+        let ref_res = run_4r_add_f32(ctx, &w, &sc, &x, &residual, rows, cols);
+        let got_4r = run_4r_add_f16s(ctx, &w, &sc_f16, &x, &residual, rows, cols);
+        let got_2r = run_2r_add_f16s(ctx, &w, &sc_f16, &x, &residual, rows, cols);
 
         let r4f = rel_l2(&ref_res, &got_4r);
         let cross = rel_l2(&got_2r, &got_4r);
 
-        assert!(r4f < MAX_REL_L2,
-            "4r_add_f16s rows={rows} cols={cols}: rel_L2 vs f32={r4f:.4e} >= {MAX_REL_L2}");
-        assert!(cross < MAX_CROSS_F16,
-            "2r_f16s vs 4r_f16s rows={rows} cols={cols}: cross={cross:.4e} >= {MAX_CROSS_F16}");
-        eprintln!("D6 4r_add_f16s rows={rows} cols={cols}: vs_f32={r4f:.2e} cross_f16={cross:.2e} OK");
+        assert!(
+            r4f < MAX_REL_L2,
+            "4r_add_f16s rows={rows} cols={cols}: rel_L2 vs f32={r4f:.4e} >= {MAX_REL_L2}"
+        );
+        assert!(
+            cross < MAX_CROSS_F16,
+            "2r_f16s vs 4r_f16s rows={rows} cols={cols}: cross={cross:.4e} >= {MAX_CROSS_F16}"
+        );
+        eprintln!(
+            "D6 4r_add_f16s rows={rows} cols={cols}: vs_f32={r4f:.2e} cross_f16={cross:.2e} OK"
+        );
     }
 }

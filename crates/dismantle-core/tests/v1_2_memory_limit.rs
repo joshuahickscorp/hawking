@@ -48,10 +48,7 @@ fn memory_limit_generous_succeeds() {
         ..Default::default()
     };
     let result = dismantle_core::model::load_engine(&weights, cfg);
-    assert!(
-        result.is_ok(),
-        "expected success with 99_999 MiB budget"
-    );
+    assert!(result.is_ok(), "expected success with 99_999 MiB budget");
 }
 
 /// No budget (None) — must succeed (unlimited).
@@ -67,10 +64,7 @@ fn memory_limit_none_is_unlimited() {
         ..Default::default()
     };
     let result = dismantle_core::model::load_engine(&weights, cfg);
-    assert!(
-        result.is_ok(),
-        "expected success with no memory limit"
-    );
+    assert!(result.is_ok(), "expected success with no memory limit");
 }
 
 /// Auto (Some(0)) — 80% of system RAM. On an 18 GiB Mac the budget is

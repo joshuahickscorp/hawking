@@ -19,11 +19,11 @@
 //! `forward_token_greedy_tcb`) is a follow-up best done with a real
 //! GGUF in hand to bench against.
 
+use super::arch_config::ArchReader;
+use super::weights::{dequant_f16, dequant_f32, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
-use crate::engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
-};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace_scaled, silu_mul,
@@ -39,8 +39,6 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
-use super::arch_config::ArchReader;
-use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct LlamaConfig {
@@ -164,7 +162,6 @@ impl LlamaConfig {
     }
 }
 
-
 pub struct LlamaLayer {
     /// Per-layer norms (eager fp32, small).
     pub attn_norm: Vec<f32>,
@@ -210,9 +207,6 @@ pub struct LlamaDense {
 }
 
 impl LlamaDense {
-
-
-
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
         if buf.len() != t.n_elems {
             buf.resize(t.n_elems, 0.0);
@@ -326,9 +320,30 @@ impl LlamaDense {
             let mut q_full = vec![0.0f32; q_dim];
             let mut k_token = vec![0.0f32; kv_dim];
             let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_q4_dispatch(&self.layers[li].q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].q_proj,
+                q_dim,
+                h,
+                &x_norm,
+                &mut q_full,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].k_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut k_token,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].v_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut v_token,
+                &mut scratch,
+            )?;
 
             // RoPE on every Q head and every KV head, with optional
             // Llama-3.1+ NTK rescale (None ⇒ bit-identical to plain
@@ -361,11 +376,25 @@ impl LlamaDense {
 
             let mut attn_out = vec![0.0f32; q_dim];
             mha_decode_step(
-                &q_full, keys, values, n_heads, n_kv_heads, head_dim, mha_seq_len, &mut attn_out,
+                &q_full,
+                keys,
+                values,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                mha_seq_len,
+                &mut attn_out,
             )?;
 
             let mut o = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&self.layers[li].o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].o_proj,
+                h,
+                q_dim,
+                &attn_out,
+                &mut o,
+                &mut scratch,
+            )?;
             add_inplace(&mut x, &o);
 
             let mut x_norm2 = vec![0.0f32; h];
@@ -373,8 +402,22 @@ impl LlamaDense {
             let mut g = vec![0.0f32; mid];
             let mut u = vec![0.0f32; mid];
             let mut a = vec![0.0f32; mid];
-            self.matmul_q4_dispatch(&self.layers[li].ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].ffn_gate,
+                mid,
+                h,
+                &x_norm2,
+                &mut g,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].ffn_up,
+                mid,
+                h,
+                &x_norm2,
+                &mut u,
+                &mut scratch,
+            )?;
             silu_mul(&g, &u, &mut a);
             let mut f = vec![0.0f32; h];
             self.matmul_q4_dispatch(&self.layers[li].ffn_down, h, mid, &a, &mut f, &mut scratch)?;

@@ -10,10 +10,13 @@ use crate::attn::mha_decode_step;
 // traits in `backend/mod.rs`, so this import is platform-neutral and does
 // not perturb non-macOS builds. The concrete `MetalBackend`/`MetalRecorder`
 // are named by fully-qualified path at the call site (no extra `use`).
+use super::arch_config::ArchReader;
+use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, tensor_ref, TensorRef};
 use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
-use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent};
-use super::arch_config::ArchReader;
+use crate::engine::{
+    Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
+};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gemv_f16, gemv_f32, rmsnorm, rope_inplace, silu_mul,
@@ -28,7 +31,6 @@ use half::f16;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f32_opt, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct QwenConfig {
@@ -93,7 +95,6 @@ impl QwenConfig {
     }
 }
 
-
 pub struct QwenLayer {
     // Per-layer norms (eager fp32, small).
     pub attn_norm: Vec<f32>,
@@ -153,7 +154,6 @@ pub struct QwenLayerPinned {
     pub ffn_up_f16: Option<crate::metal::PinnedBuffer>,
     pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
-
 
 pub struct QwenDense {
     pub config: QwenConfig,
@@ -247,7 +247,6 @@ pub struct QwenDense {
     /// Built lazily by `ensure_q4k_predec_cache_f16` from the f32 table.
     pub lm_head_pruned_predec_f16: Option<crate::metal::PinnedBuffer>,
 
-
     /// Item 1 wire-up: lazy-built Q4_K pre-decoded sub-block scale
     /// tables, keyed by GGUF mmap offset. Populated by
     /// `ensure_q4k_predec_cache` on first forward (DEFAULT-ON as of
@@ -276,8 +275,7 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) q4k_fast_buf: Option<crate::metal::PinnedBuffer>,
     #[cfg(target_os = "macos")]
-    pub(crate) q4k_fast_offsets:
-        Option<std::collections::HashMap<usize, (usize, usize)>>,
+    pub(crate) q4k_fast_offsets: Option<std::collections::HashMap<usize, (usize, usize)>>,
 
     /// Track E: pinned per-channel f32 scales for the LM_HEAD W4A8 path.
     /// Loaded once at model init from `reports/w4a8_lmhead_calibration_*.json`
@@ -425,9 +423,8 @@ impl FfnCaptureWriter {
     fn record(&mut self, layer: usize, norm_in: &[f32], act: &[f32]) {
         use std::io::Write as _;
         let _ = self.file.write_all(&(layer as u32).to_le_bytes());
-        let norm_bytes = unsafe {
-            std::slice::from_raw_parts(norm_in.as_ptr() as *const u8, self.hidden * 4)
-        };
+        let norm_bytes =
+            unsafe { std::slice::from_raw_parts(norm_in.as_ptr() as *const u8, self.hidden * 4) };
         let _ = self.file.write_all(norm_bytes);
         // Per-block max|a|, then (in a second pass) per-block ||a||_2, so the
         // packer can read the two arrays back-to-back.
@@ -553,7 +550,6 @@ pub struct MegakernelLayerWeightsF16 {
 }
 
 impl QwenDense {
-
     pub fn forward_layers_subset(
         &mut self,
         token: u32,
@@ -695,10 +691,7 @@ impl QwenDense {
     ///
     /// Bias vectors are empty if the underlying layer has no bias
     /// (Qwen2 carries Q/K/V biases but no O bias).
-    pub fn prep_megakernel_layer_f16(
-        &self,
-        li: usize,
-    ) -> Result<MegakernelLayerWeightsF16> {
+    pub fn prep_megakernel_layer_f16(&self, li: usize) -> Result<MegakernelLayerWeightsF16> {
         if li >= self.config.n_layers {
             return Err(Error::Model(format!(
                 "prep_megakernel_layer_f16: li={} >= n_layers={}",
@@ -727,10 +720,6 @@ impl QwenDense {
             v_bias: layer.v_bias.clone(),
         })
     }
-
-
-
-
 
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
         if buf.len() != t.n_elems {
@@ -862,222 +851,218 @@ impl Engine for QwenDense {
             vocab_prune_remap,
             lm_head_pruned_predec,
         ) = if let Some(ctx) = metal_ctx.as_ref() {
-                // P1-B (zero-copy loader, silicon #13): view the mmap'd GGUF
-                // as a no-copy MTLBuffer instead of copying the full ~1.93 GB
-                // into a StorageModeShared buffer. Saves ~1.9 GB RSS and
-                // ~324 ms TTFT, bit-identical (the GPU reads the same
-                // page-cache bytes the copy path would have memcpy'd). Sound
-                // because `self.gguf` (field at qwen_dense.rs:157) owns the
-                // mmap for the model's whole lifetime, so this buffer never
-                // outlives its backing pages. Mirrors deepseek_v2.rs:754.
-                let mmap_buf = unsafe { ctx.new_buffer_no_copy(&gguf.mmap[..]) };
-                // `embed_lookup_f32` is misnamed: the kernel signature
-                // reads the embed table as `device const half*`. Pin the
-                // f16 bytes directly (no dequant).
-                // P1-E: embed table is the largest model-driven GPU alloc once
-                // the weights are zero-copy (P1-B). Use the fallible allocator
-                // so an over-large model on a small device fails to load with a
-                // graceful Err instead of crashing on a nil MTLBuffer.
-                let eb = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?;
-                let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
-                // LM head -- explicit tensor if present, else tied to embed (f16).
-                let lhb = match lm_head.as_ref() {
-                    // P1-E: lm-head is the other large model-driven alloc.
-                    Some(w) => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(w))?,
-                    None => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?,
+            // P1-B (zero-copy loader, silicon #13): view the mmap'd GGUF
+            // as a no-copy MTLBuffer instead of copying the full ~1.93 GB
+            // into a StorageModeShared buffer. Saves ~1.9 GB RSS and
+            // ~324 ms TTFT, bit-identical (the GPU reads the same
+            // page-cache bytes the copy path would have memcpy'd). Sound
+            // because `self.gguf` (field at qwen_dense.rs:157) owns the
+            // mmap for the model's whole lifetime, so this buffer never
+            // outlives its backing pages. Mirrors deepseek_v2.rs:754.
+            let mmap_buf = unsafe { ctx.new_buffer_no_copy(&gguf.mmap[..]) };
+            // `embed_lookup_f32` is misnamed: the kernel signature
+            // reads the embed table as `device const half*`. Pin the
+            // f16 bytes directly (no dequant).
+            // P1-E: embed table is the largest model-driven GPU alloc once
+            // the weights are zero-copy (P1-B). Use the fallible allocator
+            // so an over-large model on a small device fails to load with a
+            // graceful Err instead of crashing on a nil MTLBuffer.
+            let eb = ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?;
+            let fnb = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm));
+            // LM head -- explicit tensor if present, else tied to embed (f16).
+            let lhb = match lm_head.as_ref() {
+                // P1-E: lm-head is the other large model-driven alloc.
+                Some(w) => ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(w))?,
+                None => {
+                    ctx.new_buffer_with_bytes_checked(bytemuck::cast_slice::<f16, u8>(&embed))?
+                }
+            };
+            // Optional one-time Q4_K quantization of the LM-head matrix.
+            // Activated by DISMANTLE_QWEN_Q4K_LMHEAD=1; trades one-time
+            // load-side quant cost for ~3.5× LM-head bandwidth savings
+            // per decode token. Skipped if vocab*hidden % 256 != 0.
+            let lhq4k = if crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD") {
+                let src_f16: &[f16] = match lm_head.as_ref() {
+                    Some(w) => w,
+                    None => &embed,
                 };
-                // Optional one-time Q4_K quantization of the LM-head matrix.
-                // Activated by DISMANTLE_QWEN_Q4K_LMHEAD=1; trades one-time
-                // load-side quant cost for ~3.5× LM-head bandwidth savings
-                // per decode token. Skipped if vocab*hidden % 256 != 0.
-                let lhq4k = if crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD")
-                {
-                    let src_f16: &[f16] = match lm_head.as_ref() {
-                        Some(w) => w,
-                        None => &embed,
-                    };
-                    let total = src_f16.len();
-                    if total % 256 == 0 {
-                        let src_f32: Vec<f32> = src_f16.iter().map(|&h| h.to_f32()).collect();
-                        let nb = total / 256;
-                        let mut q4k_bytes = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
-                        quant::quantize_q4_k(&src_f32, &mut q4k_bytes)?;
-                        Some(ctx.new_buffer_with_bytes(&q4k_bytes))
-                    } else {
-                        None
-                    }
+                let total = src_f16.len();
+                if total % 256 == 0 {
+                    let src_f32: Vec<f32> = src_f16.iter().map(|&h| h.to_f32()).collect();
+                    let nb = total / 256;
+                    let mut q4k_bytes = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                    quant::quantize_q4_k(&src_f32, &mut q4k_bytes)?;
+                    Some(ctx.new_buffer_with_bytes(&q4k_bytes))
                 } else {
                     None
-                };
-                // Per-layer norm + bias pinning.
-                for layer in layers.iter_mut() {
-                    let up_f32 = |w: &[f32]| {
-                        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w))
-                    };
-                    layer.pinned.attn_norm = Some(up_f32(&layer.attn_norm));
-                    layer.pinned.ffn_norm = Some(up_f32(&layer.ffn_norm));
-                    if !layer.q_bias.is_empty() {
-                        layer.pinned.q_bias = Some(up_f32(&layer.q_bias));
-                    }
-                    if !layer.k_bias.is_empty() {
-                        layer.pinned.k_bias = Some(up_f32(&layer.k_bias));
-                    }
-                    if !layer.v_bias.is_empty() {
-                        layer.pinned.v_bias = Some(up_f32(&layer.v_bias));
-                    }
+                }
+            } else {
+                None
+            };
+            // Per-layer norm + bias pinning.
+            for layer in layers.iter_mut() {
+                let up_f32 =
+                    |w: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(w));
+                layer.pinned.attn_norm = Some(up_f32(&layer.attn_norm));
+                layer.pinned.ffn_norm = Some(up_f32(&layer.ffn_norm));
+                if !layer.q_bias.is_empty() {
+                    layer.pinned.q_bias = Some(up_f32(&layer.q_bias));
+                }
+                if !layer.k_bias.is_empty() {
+                    layer.pinned.k_bias = Some(up_f32(&layer.k_bias));
+                }
+                if !layer.v_bias.is_empty() {
+                    layer.pinned.v_bias = Some(up_f32(&layer.v_bias));
+                }
 
-                    // P1f: non-Q4_K projections (typically Q6_K in Q4_K_M
-                    // mix-quant GGUFs) get dequantized once to f16 and
-                    // pinned. forward_token_greedy_tcb picks the
-                    // dispatcher based on .is_some().
-                    let dequant_to_f16_pin =
-                        |t: &TensorRef| -> Result<crate::metal::PinnedBuffer> {
-                            let mut f32_tmp = vec![0.0f32; t.n_elems];
-                            let bytes = &gguf.mmap[t.offset..t.offset + t.byte_size];
-                            quant::dequant_into(t.dtype, bytes, &mut f32_tmp)?;
-                            let f16_vec: Vec<f16> =
-                                f32_tmp.into_iter().map(f16::from_f32).collect();
-                            Ok(ctx.new_buffer_with_bytes(
-                                bytemuck::cast_slice::<f16, u8>(&f16_vec),
-                            ))
-                        };
-                    // 2026-05-24: only pin the f16 fallback for dtypes that
-                    // actually route through the f16 path at runtime. Q4_K
-                    // reads bit-packed from `weights_mmap_buf` via
-                    // `gemv_q4_k_m_v3_8r_pinned_tcb`; Q6_K reads bit-packed
-                    // from the same mmap via `gemv_q6_k_pinned_tcb` (see the
-                    // `gemv_proj!` macro in `forward_token_greedy_tcb`). For
-                    // a Q4_K_M GGUF every weight here is Q4_K or Q6_K, so
-                    // the f16 pin was ~1.7 GiB of resident memory the
-                    // engine never read. Other quant formats (Q3_K, Q5_K,
-                    // IQ-variants) still need the f16 fallback.
-                    for (t, slot) in [
-                        (&layer.q_proj, &mut layer.pinned.q_proj_f16),
-                        (&layer.k_proj, &mut layer.pinned.k_proj_f16),
-                        (&layer.v_proj, &mut layer.pinned.v_proj_f16),
-                        (&layer.o_proj, &mut layer.pinned.o_proj_f16),
-                        (&layer.ffn_gate, &mut layer.pinned.ffn_gate_f16),
-                        (&layer.ffn_up, &mut layer.pinned.ffn_up_f16),
-                        (&layer.ffn_down, &mut layer.pinned.ffn_down_f16),
-                    ] {
-                        if t.dtype != GgmlType::Q4_K && t.dtype != GgmlType::Q6_K {
-                            *slot = Some(dequant_to_f16_pin(t)?);
-                        }
-                    }
-                    // Optional: requant ffn_down (typically Q6_K) to Q4_K.
-                    // Biggest single weight per token; ~31% BW saving on
-                    // the Q6_K share at the cost of one extra pinned copy.
-                    if crate::env_on("DISMANTLE_QWEN_FFN_DOWN_Q4K")
-                        && layer.ffn_down.dtype != GgmlType::Q4_K
-                        && layer.ffn_down.n_elems % 256 == 0
-                    {
-                        let mut f32_tmp = vec![0.0f32; layer.ffn_down.n_elems];
-                        let bytes = &gguf.mmap[layer.ffn_down.offset
-                            ..layer.ffn_down.offset + layer.ffn_down.byte_size];
-                        quant::dequant_into(layer.ffn_down.dtype, bytes, &mut f32_tmp)?;
-                        let nb = layer.ffn_down.n_elems / 256;
-                        let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
-                        quant::quantize_q4_k(&f32_tmp, &mut q4k)?;
-                        // Phase-1: pre-decode the sub-block scale table for
-                        // this requant buffer when predec is active, so the
-                        // batched verify GEMM can use the predec kernel and
-                        // skip per-call Q4_K header repacking.
-                        if crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC") {
-                            let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
-                            let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
-                            layer.pinned.ffn_down_q4k_predec =
-                                Some(ctx.new_buffer_with_bytes(scales_bytes));
-                        }
-                        layer.pinned.ffn_down_q4k = Some(ctx.new_buffer_with_bytes(&q4k));
+                // P1f: non-Q4_K projections (typically Q6_K in Q4_K_M
+                // mix-quant GGUFs) get dequantized once to f16 and
+                // pinned. forward_token_greedy_tcb picks the
+                // dispatcher based on .is_some().
+                let dequant_to_f16_pin = |t: &TensorRef| -> Result<crate::metal::PinnedBuffer> {
+                    let mut f32_tmp = vec![0.0f32; t.n_elems];
+                    let bytes = &gguf.mmap[t.offset..t.offset + t.byte_size];
+                    quant::dequant_into(t.dtype, bytes, &mut f32_tmp)?;
+                    let f16_vec: Vec<f16> = f32_tmp.into_iter().map(f16::from_f32).collect();
+                    Ok(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&f16_vec)))
+                };
+                // 2026-05-24: only pin the f16 fallback for dtypes that
+                // actually route through the f16 path at runtime. Q4_K
+                // reads bit-packed from `weights_mmap_buf` via
+                // `gemv_q4_k_m_v3_8r_pinned_tcb`; Q6_K reads bit-packed
+                // from the same mmap via `gemv_q6_k_pinned_tcb` (see the
+                // `gemv_proj!` macro in `forward_token_greedy_tcb`). For
+                // a Q4_K_M GGUF every weight here is Q4_K or Q6_K, so
+                // the f16 pin was ~1.7 GiB of resident memory the
+                // engine never read. Other quant formats (Q3_K, Q5_K,
+                // IQ-variants) still need the f16 fallback.
+                for (t, slot) in [
+                    (&layer.q_proj, &mut layer.pinned.q_proj_f16),
+                    (&layer.k_proj, &mut layer.pinned.k_proj_f16),
+                    (&layer.v_proj, &mut layer.pinned.v_proj_f16),
+                    (&layer.o_proj, &mut layer.pinned.o_proj_f16),
+                    (&layer.ffn_gate, &mut layer.pinned.ffn_gate_f16),
+                    (&layer.ffn_up, &mut layer.pinned.ffn_up_f16),
+                    (&layer.ffn_down, &mut layer.pinned.ffn_down_f16),
+                ] {
+                    if t.dtype != GgmlType::Q4_K && t.dtype != GgmlType::Q6_K {
+                        *slot = Some(dequant_to_f16_pin(t)?);
                     }
                 }
-                // Optional vocab prune. Two modes:
-                //  * DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=N
-                //      Tokenize VOCAB_PRUNE_CORPUS, count frequencies,
-                //      union with the first 4096 ids, sort, take top N.
-                //      Builds a remap table so the GPU argmax index can
-                //      be translated back to the original vocab id.
-                //  * DISMANTLE_QWEN_VOCAB_PRUNE=N (legacy first-N)
-                //      Keep only the first N rows. No remap needed --
-                //      pruned_idx ≡ original_id.
-                // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the
-                // pruned slice is Q4_K-quantized for compound BW savings.
-                let want_q4k_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD");
-
-                // Helper: take a sorted list of original vocab ids, pull
-                // the corresponding f16 rows out of src, and return the
-                // contiguous (n, h) f16 vec.
-                let h = cfg.hidden;
-                let pack_rows = |src: &[f16], ids: &[u32]| -> Vec<f16> {
-                    let mut out = Vec::with_capacity(ids.len() * h);
-                    for &id in ids {
-                        let i = id as usize;
-                        out.extend_from_slice(&src[i * h..(i + 1) * h]);
+                // Optional: requant ffn_down (typically Q6_K) to Q4_K.
+                // Biggest single weight per token; ~31% BW saving on
+                // the Q6_K share at the cost of one extra pinned copy.
+                if crate::env_on("DISMANTLE_QWEN_FFN_DOWN_Q4K")
+                    && layer.ffn_down.dtype != GgmlType::Q4_K
+                    && layer.ffn_down.n_elems % 256 == 0
+                {
+                    let mut f32_tmp = vec![0.0f32; layer.ffn_down.n_elems];
+                    let bytes = &gguf.mmap
+                        [layer.ffn_down.offset..layer.ffn_down.offset + layer.ffn_down.byte_size];
+                    quant::dequant_into(layer.ffn_down.dtype, bytes, &mut f32_tmp)?;
+                    let nb = layer.ffn_down.n_elems / 256;
+                    let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                    quant::quantize_q4_k(&f32_tmp, &mut q4k)?;
+                    // Phase-1: pre-decode the sub-block scale table for
+                    // this requant buffer when predec is active, so the
+                    // batched verify GEMM can use the predec kernel and
+                    // skip per-call Q4_K header repacking.
+                    if crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC") {
+                        let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
+                        let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+                        layer.pinned.ffn_down_q4k_predec =
+                            Some(ctx.new_buffer_with_bytes(scales_bytes));
                     }
-                    out
+                    layer.pinned.ffn_down_q4k = Some(ctx.new_buffer_with_bytes(&q4k));
+                }
+            }
+            // Optional vocab prune. Two modes:
+            //  * DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS=N
+            //      Tokenize VOCAB_PRUNE_CORPUS, count frequencies,
+            //      union with the first 4096 ids, sort, take top N.
+            //      Builds a remap table so the GPU argmax index can
+            //      be translated back to the original vocab id.
+            //  * DISMANTLE_QWEN_VOCAB_PRUNE=N (legacy first-N)
+            //      Keep only the first N rows. No remap needed --
+            //      pruned_idx ≡ original_id.
+            // When DISMANTLE_QWEN_Q4K_LMHEAD=1 is ALSO set, the
+            // pruned slice is Q4_K-quantized for compound BW savings.
+            let want_q4k_lmhead = crate::env_on("DISMANTLE_QWEN_Q4K_LMHEAD");
+
+            // Helper: take a sorted list of original vocab ids, pull
+            // the corresponding f16 rows out of src, and return the
+            // contiguous (n, h) f16 vec.
+            let h = cfg.hidden;
+            let pack_rows = |src: &[f16], ids: &[u32]| -> Vec<f16> {
+                let mut out = Vec::with_capacity(ids.len() * h);
+                for &id in ids {
+                    let i = id as usize;
+                    out.extend_from_slice(&src[i * h..(i + 1) * h]);
+                }
+                out
+            };
+
+            let corpus_n = std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS")
+                .ok()
+                .and_then(|v| v.parse::<usize>().ok())
+                .filter(|&n| n > 0 && n < cfg.vocab_size);
+
+            // A1: predec scale table for the Q4_K pruned head is built
+            // from the same `q4k` bytes when DISMANTLE_QWEN_Q4K_PREDEC is
+            // active, so the final LM-head GEMV can use the pre-decoded
+            // kernel (bit-identical to inline Q4_K).
+            let want_predec_lmhead = want_q4k_lmhead && crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC");
+            let (pruned_buf, pruned_n, prune_remap, pruned_predec) = if let Some(n_target) =
+                corpus_n
+            {
+                // Build the whitelist from corpus token frequencies +
+                // first 4096 ids guaranteed (covers most ASCII + short
+                // BPE tokens).
+                let mut freq = std::collections::HashMap::<u32, u32>::new();
+                if let Ok(tokens) = tokenizer.encode(VOCAB_PRUNE_CORPUS, false) {
+                    for t in tokens {
+                        *freq.entry(t).or_insert(0) += 1;
+                    }
+                }
+                // Force-include first 4096 ids with a tiny baseline freq
+                // so they sort below corpus tokens but ahead of unseen ones.
+                let force_first = 4096u32.min(cfg.vocab_size as u32);
+                for id in 0..force_first {
+                    freq.entry(id).or_insert(1);
+                }
+                let mut ranked: Vec<(u32, u32)> = freq.into_iter().collect();
+                // Sort by frequency desc, then by id asc for stability.
+                ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+                let n_keep = n_target.min(ranked.len());
+                let mut ids: Vec<u32> = ranked.into_iter().take(n_keep).map(|(id, _)| id).collect();
+                // Resort by original id ascending so the row order in
+                // the pinned buffer matches the remap table.
+                ids.sort_unstable();
+                let src: &[f16] = match lm_head.as_ref() {
+                    Some(w) => w,
+                    None => &embed,
                 };
-
-                let corpus_n = std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE_CORPUS")
-                    .ok()
-                    .and_then(|v| v.parse::<usize>().ok())
-                    .filter(|&n| n > 0 && n < cfg.vocab_size);
-
-                // A1: predec scale table for the Q4_K pruned head is built
-                // from the same `q4k` bytes when DISMANTLE_QWEN_Q4K_PREDEC is
-                // active, so the final LM-head GEMV can use the pre-decoded
-                // kernel (bit-identical to inline Q4_K).
-                let want_predec_lmhead =
-                    want_q4k_lmhead && crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC");
-                let (pruned_buf, pruned_n, prune_remap, pruned_predec) = if let Some(n_target) = corpus_n {
-                    // Build the whitelist from corpus token frequencies +
-                    // first 4096 ids guaranteed (covers most ASCII + short
-                    // BPE tokens).
-                    let mut freq = std::collections::HashMap::<u32, u32>::new();
-                    if let Ok(tokens) = tokenizer.encode(VOCAB_PRUNE_CORPUS, false) {
-                        for t in tokens {
-                            *freq.entry(t).or_insert(0) += 1;
-                        }
+                let packed = pack_rows(src, &ids);
+                let mut predec_buf = None;
+                let buf = if want_q4k_lmhead && (ids.len() * h) % 256 == 0 {
+                    let packed_f32: Vec<f32> = packed.iter().map(|&hh| hh.to_f32()).collect();
+                    let nb = (ids.len() * h) / 256;
+                    let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
+                    quant::quantize_q4_k(&packed_f32, &mut q4k)?;
+                    if want_predec_lmhead {
+                        let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
+                        predec_buf = Some(
+                            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&scales)),
+                        );
                     }
-                    // Force-include first 4096 ids with a tiny baseline freq
-                    // so they sort below corpus tokens but ahead of unseen ones.
-                    let force_first = 4096u32.min(cfg.vocab_size as u32);
-                    for id in 0..force_first {
-                        freq.entry(id).or_insert(1);
-                    }
-                    let mut ranked: Vec<(u32, u32)> = freq.into_iter().collect();
-                    // Sort by frequency desc, then by id asc for stability.
-                    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
-                    let n_keep = n_target.min(ranked.len());
-                    let mut ids: Vec<u32> = ranked.into_iter().take(n_keep).map(|(id, _)| id).collect();
-                    // Resort by original id ascending so the row order in
-                    // the pinned buffer matches the remap table.
-                    ids.sort_unstable();
-                    let src: &[f16] = match lm_head.as_ref() {
-                        Some(w) => w,
-                        None => &embed,
-                    };
-                    let packed = pack_rows(src, &ids);
-                    let mut predec_buf = None;
-                    let buf = if want_q4k_lmhead && (ids.len() * h) % 256 == 0 {
-                        let packed_f32: Vec<f32> =
-                            packed.iter().map(|&hh| hh.to_f32()).collect();
-                        let nb = (ids.len() * h) / 256;
-                        let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
-                        quant::quantize_q4_k(&packed_f32, &mut q4k)?;
-                        if want_predec_lmhead {
-                            let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
-                            predec_buf = Some(ctx.new_buffer_with_bytes(
-                                bytemuck::cast_slice::<f32, u8>(&scales),
-                            ));
-                        }
-                        ctx.new_buffer_with_bytes(&q4k)
-                    } else {
-                        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&packed))
-                    };
-                    let nlen = ids.len();
-                    (Some(buf), Some(nlen), Some(ids), predec_buf)
+                    ctx.new_buffer_with_bytes(&q4k)
                 } else {
-                    let r = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
+                    ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&packed))
+                };
+                let nlen = ids.len();
+                (Some(buf), Some(nlen), Some(ids), predec_buf)
+            } else {
+                let r = match std::env::var("DISMANTLE_QWEN_VOCAB_PRUNE") {
                     Ok(v) if v != "0" && !v.is_empty() => {
                         let n_req = v.parse::<usize>().unwrap_or(32000);
                         let n = n_req.min(cfg.vocab_size);
@@ -1095,17 +1080,18 @@ impl Engine for QwenDense {
                                 let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
                                 quant::quantize_q4_k(&slice_f32, &mut q4k)?;
                                 if want_predec_lmhead {
-                                    let scales =
-                                        crate::kernels::predecode_q4_k_scale_table(&q4k);
-                                    predec_buf = Some(ctx.new_buffer_with_bytes(
-                                        bytemuck::cast_slice::<f32, u8>(&scales),
-                                    ));
+                                    let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
+                                    predec_buf =
+                                        Some(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<
+                                            f32,
+                                            u8,
+                                        >(
+                                            &scales
+                                        )));
                                 }
                                 ctx.new_buffer_with_bytes(&q4k)
                             } else {
-                                ctx.new_buffer_with_bytes(
-                                    bytemuck::cast_slice::<f16, u8>(slice),
-                                )
+                                ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(slice))
                             };
                             (Some(buf), Some(n), None, predec_buf)
                         } else {
@@ -1113,56 +1099,63 @@ impl Engine for QwenDense {
                         }
                     }
                     _ => (None, None, None, None),
-                    };
-                    r
                 };
-                // Whether the pruned buffer holds Q4_K bytes (vs plain f16).
-                let pruned_is_q4k =
-                    want_q4k_lmhead && pruned_n.is_some() && pruned_n.unwrap() > 0;
-
-                // 2026-05-24 — Metal pipeline cache pre-touch. The
-                // `pipeline()` call lazily compiles each kernel's
-                // ComputePipelineState on its first dispatch. For TTFT
-                // that means the first decode step pays a ~10-50 ms
-                // JIT compile per unique kernel. Warming all Qwen TCB
-                // kernels here moves that cost into load time, where
-                // the user already expects a pause. Missing kernels
-                // are ignored so other model architectures using this
-                // context don't fail.
-                const QWEN_TCB_KERNELS: &[&str] = &[
-                    "gemm_q4_k_m_v3_8r",
-                    "gemm_q4_k_v4_predec_2r_add",
-                    "gemm_q6_k_fused_v2",
-                    "gemm_q4_k_m_batched_v3w",
-                    "gemm_q4_k_m_batched_v3w_mma",
-                    "gemm_q4_k_m_batched_v3w_mma_predec",
-                    "gemv_f16",
-                    "rmsnorm_f32",
-                    "rmsnorm_metal_buf",
-                    "rope_q_f32_inplace",
-                    "kv_append_f32",
-                    "mha_decode_f32",
-                    "silu_mul",
-                    "add_inplace",
-                    "add_inplace_broadcast",
-                    "add_rmsnorm_fused",
-                    "sample_argmax_f32",
-                    "embed_lookup_f32",
-                    "embed_lookup_metal_f32",
-                    "memcpy_f32",
-                    "moe_batched_silu_mul",
-                ];
-                for k in QWEN_TCB_KERNELS {
-                    let _ = ctx.pipeline(k);
-                }
-
-                (
-                    Some(mmap_buf), Some(eb), Some(fnb), Some(lhb), lhq4k,
-                    pruned_buf, pruned_n, pruned_is_q4k, prune_remap, pruned_predec,
-                )
-            } else {
-                (None, None, None, None, None, None, None, false, None, None)
+                r
             };
+            // Whether the pruned buffer holds Q4_K bytes (vs plain f16).
+            let pruned_is_q4k = want_q4k_lmhead && pruned_n.is_some() && pruned_n.unwrap() > 0;
+
+            // 2026-05-24 — Metal pipeline cache pre-touch. The
+            // `pipeline()` call lazily compiles each kernel's
+            // ComputePipelineState on its first dispatch. For TTFT
+            // that means the first decode step pays a ~10-50 ms
+            // JIT compile per unique kernel. Warming all Qwen TCB
+            // kernels here moves that cost into load time, where
+            // the user already expects a pause. Missing kernels
+            // are ignored so other model architectures using this
+            // context don't fail.
+            const QWEN_TCB_KERNELS: &[&str] = &[
+                "gemm_q4_k_m_v3_8r",
+                "gemm_q4_k_v4_predec_2r_add",
+                "gemm_q6_k_fused_v2",
+                "gemm_q4_k_m_batched_v3w",
+                "gemm_q4_k_m_batched_v3w_mma",
+                "gemm_q4_k_m_batched_v3w_mma_predec",
+                "gemv_f16",
+                "rmsnorm_f32",
+                "rmsnorm_metal_buf",
+                "rope_q_f32_inplace",
+                "kv_append_f32",
+                "mha_decode_f32",
+                "silu_mul",
+                "add_inplace",
+                "add_inplace_broadcast",
+                "add_rmsnorm_fused",
+                "sample_argmax_f32",
+                "embed_lookup_f32",
+                "embed_lookup_metal_f32",
+                "memcpy_f32",
+                "moe_batched_silu_mul",
+            ];
+            for k in QWEN_TCB_KERNELS {
+                let _ = ctx.pipeline(k);
+            }
+
+            (
+                Some(mmap_buf),
+                Some(eb),
+                Some(fnb),
+                Some(lhb),
+                lhq4k,
+                pruned_buf,
+                pruned_n,
+                pruned_is_q4k,
+                prune_remap,
+                pruned_predec,
+            )
+        } else {
+            (None, None, None, None, None, None, None, false, None, None)
+        };
         #[cfg(not(target_os = "macos"))]
         let (
             weights_mmap_buf,
@@ -1188,7 +1181,11 @@ impl Engine for QwenDense {
             Option<crate::metal::PinnedBuffer>,
         ) = (None, None, None, None, None, None, None, false, None, None);
 
-        mark(&mut stage_marks, "metal_pinning+lm_head+vocab_prune+warmup", &mut t);
+        mark(
+            &mut stage_marks,
+            "metal_pinning+lm_head+vocab_prune+warmup",
+            &mut t,
+        );
 
         if load_timing_enabled {
             let total = load_t0.elapsed();
@@ -1196,11 +1193,7 @@ impl Engine for QwenDense {
             for (name, dt) in &stage_marks {
                 eprintln!("  {:42}{:>9.2} ms", name, dt.as_secs_f64() * 1000.0);
             }
-            eprintln!(
-                "  {:42}{:>9.2} ms",
-                "TOTAL",
-                total.as_secs_f64() * 1000.0
-            );
+            eprintln!("  {:42}{:>9.2} ms", "TOTAL", total.as_secs_f64() * 1000.0);
         }
 
         // Phase B.3: compute the capture layer index from env or default
@@ -1433,21 +1426,19 @@ impl Engine for QwenDense {
             crate::cache::prefill_disk::PrefillDiskCache::open_from_env()?
         };
         let cache_key_full = if prefix_cache.is_some() {
-            Some(crate::cache::prefill_disk::PrefillKey::from_model_and_prompt(
-                &self.model_id,
-                &tokenizer_sig,
-                &prompt_ids,
-            ))
+            Some(
+                crate::cache::prefill_disk::PrefillKey::from_model_and_prompt(
+                    &self.model_id,
+                    &tokenizer_sig,
+                    &prompt_ids,
+                ),
+            )
         } else {
             None
         };
         let disk_prefill_skipped = if let Some(cache) = prefix_cache.as_ref() {
             let key = cache_key_full.as_ref().unwrap();
-            match cache.lookup_longest_prefix(
-                &key.model_hash,
-                &key.tokenizer_hash,
-                &prompt_ids,
-            )? {
+            match cache.lookup_longest_prefix(&key.model_hash, &key.tokenizer_hash, &prompt_ids)? {
                 Some(hit) => {
                     let n = hit.n_tokens;
                     crate::cache::prefill_disk::restore_hit_into_kv(&hit, &mut self.kv)?;
@@ -1477,8 +1468,7 @@ impl Engine for QwenDense {
         // BW across B. Decode loop is unchanged. Requires TCB prefill.
         // Skips the leading `prefill_skipped` tokens already restored
         // from the prefix cache.
-        let batch_prefill = use_tcb_prefill
-            && crate::env_on("DISMANTLE_QWEN_BATCH_PREFILL");
+        let batch_prefill = use_tcb_prefill && crate::env_on("DISMANTLE_QWEN_BATCH_PREFILL");
         #[cfg(target_os = "macos")]
         if batch_prefill {
             const B_MAX: usize = 8;
@@ -1542,8 +1532,7 @@ impl Engine for QwenDense {
         // path `self.dense_arena` is `None`, so this is a no-op and `self.kv`
         // stays authoritative (it was written in-place during prefill).
         let any_cache_store = !prefill_aborted
-            && (ram_cache_on
-                || (prefix_cache.is_some() && cache_key_full.is_some()));
+            && (ram_cache_on || (prefix_cache.is_some() && cache_key_full.is_some()));
         if any_cache_store {
             #[cfg(target_os = "macos")]
             self.mirror_arena_kv_into_self(prompt_len);
@@ -1569,9 +1558,7 @@ impl Engine for QwenDense {
         // mirrored above), so the snapshot is the true prefill KV on both
         // the non-TCB and TCB paths.
         if !prefill_aborted && ram_cache_on {
-            if let (Some(mut cache), Some(key)) =
-                (self.ram_prefix_cache.take(), ram_key.clone())
-            {
+            if let (Some(mut cache), Some(key)) = (self.ram_prefix_cache.take(), ram_key.clone()) {
                 debug_assert_eq!(self.kv.seq_len, prompt_len);
                 let _ = cache.insert_from_kv(key, &self.kv);
                 self.ram_prefix_cache = Some(cache);
@@ -1600,7 +1587,6 @@ impl Engine for QwenDense {
             && self.metal_ctx.is_some()
             && crate::env_opt_out("DISMANTLE_QWEN_TCB");
 
-
         // Eagle5 / Eagle6 spec-decode (Phase B.4). Opt-in via
         // `--speculate eagle5` / EngineConfig::speculate_mode == Eagle5.
         // `--verify-window` controls K; DISMANTLE_QWEN_EAGLE5_K remains
@@ -1628,7 +1614,9 @@ impl Engine for QwenDense {
         if crate::env_on("DISMANTLE_QWEN_E5DIAG") {
             eprintln!(
                 "[e5diag] use_eagle5={} use_tcb={} head_some={} vw={}",
-                use_eagle5, use_tcb, self.eagle5_head.is_some(),
+                use_eagle5,
+                use_tcb,
+                self.eagle5_head.is_some(),
                 self.eagle5_verify_window,
             );
         }
@@ -1641,8 +1629,7 @@ impl Engine for QwenDense {
         // The bonus-first capture restructure below currently uses serial
         // verify; when this flag is set we keep capture disabled because
         // forward_tokens_batched_with_logits has no capture plumbing yet.
-        let use_eagle5_batched = crate::env_on("DISMANTLE_QWEN_EAGLE5_BATCHED")
-            && use_eagle5;
+        let use_eagle5_batched = crate::env_on("DISMANTLE_QWEN_EAGLE5_BATCHED") && use_eagle5;
 
         // L3.1 §2.1b — per-user n-gram draft (DISMANTLE_QWEN_USER_DRAFT).
         // DEFAULT-OFF, opt-in. A draft SOURCE for a propose→batched-verify→
@@ -1678,13 +1665,12 @@ impl Engine for QwenDense {
         // bounded amount. DEFAULT-OFF and only meaningful when a draft is
         // already enabled. When off, `spec_gov` stays `None` and the consult
         // sites below short-circuit to "always propose" (today's behavior).
-        let use_spec_governor =
-            use_user_draft && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR");
+        let use_spec_governor = use_user_draft && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR");
         // Test-only deterministic hook: forces the governor disabled from cycle
         // one so a gate can exercise "skip propose, still emit verifier tokens,
         // stay bit-identical" without an adversarial prompt or any timing.
-        let spec_gov_force_disable = use_spec_governor
-            && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR_FORCE_DISABLE");
+        let spec_gov_force_disable =
+            use_spec_governor && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR_FORCE_DISABLE");
         let spec_gov_window = crate::env_usize("DISMANTLE_QWEN_SPEC_GOVERNOR_WINDOW", 16);
         let spec_gov_min_rate = std::env::var("DISMANTLE_QWEN_SPEC_GOVERNOR_MIN_RATE")
             .ok()
@@ -1708,12 +1694,11 @@ impl Engine for QwenDense {
                 // Reuse the verifier's prune mapping: an explicit corpus
                 // remap if present, else the legacy first-N identity prune
                 // (`DISMANTLE_QWEN_VOCAB_PRUNE=N` → pruned idx j == real id j).
-                let remap: Option<Vec<u32>> =
-                    match (&self.vocab_prune_remap, self.vocab_pruned) {
-                        (Some(r), _) => Some(r.clone()),
-                        (None, Some(n)) => Some((0..n as u32).collect()),
-                        _ => None,
-                    };
+                let remap: Option<Vec<u32>> = match (&self.vocab_prune_remap, self.vocab_pruned) {
+                    (Some(r), _) => Some(r.clone()),
+                    (None, Some(n)) => Some((0..n as u32).collect()),
+                    _ => None,
+                };
                 if let Some(remap) = remap {
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.set_vocab_prune(&remap);
@@ -1744,24 +1729,23 @@ impl Engine for QwenDense {
             // `forward_token_greedy_tcb` mirrors this: it populates the
             // buffers when `self.eagle5_head.is_some()` too.
             let feed_head_captures = eagle5_capture_in_use || use_eagle5;
-            let mut eagle5_accept_trace =
-                if let Some(path) = std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE")
-                    .map(PathBuf::from)
-                {
-                    if let Some(parent) = path.parent() {
-                        if !parent.as_os_str().is_empty() {
-                            std::fs::create_dir_all(parent)?;
-                        }
+            let mut eagle5_accept_trace = if let Some(path) =
+                std::env::var_os("DISMANTLE_QWEN_EAGLE5_ACCEPT_TRACE").map(PathBuf::from)
+            {
+                if let Some(parent) = path.parent() {
+                    if !parent.as_os_str().is_empty() {
+                        std::fs::create_dir_all(parent)?;
                     }
-                    Some(
-                        std::fs::OpenOptions::new()
-                            .create(true)
-                            .append(true)
-                            .open(&path)?,
-                    )
-                } else {
-                    None
-                };
+                }
+                Some(
+                    std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(&path)?,
+                )
+            } else {
+                None
+            };
             let mut eagle5_cycle: usize = 0;
             // Logit-lens ceiling probe accumulators (see insertion below).
             let lens_probe = crate::env_on("DISMANTLE_QWEN_EAGLE5_LENS_PROBE");
@@ -1776,8 +1760,8 @@ impl Engine for QwenDense {
             // from the previous cycle's correction). Parity holds unconditionally
             // — we only ever emit model-VERIFIED tokens; drafts affect speed, not
             // output. Requires capture (residual) + batched verify primitive.
-            let use_propose_first = crate::env_on("DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST")
-                && eagle5_capture_in_use;
+            let use_propose_first =
+                crate::env_on("DISMANTLE_QWEN_EAGLE5_PROPOSE_FIRST") && eagle5_capture_in_use;
             if use_propose_first {
                 let k = eagle5_k.max(1);
                 // Read the capture-layer residual the bootstrap/cycle forward
@@ -1801,7 +1785,10 @@ impl Engine for QwenDense {
                     let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
                     self.sampler.record(carried_true);
                     crate::stateful::usage_capture::record_argmax(carried_true);
-                    sink(StreamEvent::Token { id: carried_true, text });
+                    sink(StreamEvent::Token {
+                        id: carried_true,
+                        text,
+                    });
                     if let Some(head) = self.eagle5_head.as_mut() {
                         head.note_token(carried_true);
                     }
@@ -1829,8 +1816,7 @@ impl Engine for QwenDense {
                     for j in 1..k {
                         vtoks.push(drafts[j]);
                     }
-                    let vpos: Vec<usize> =
-                        (0..k).map(|j| anchor_pos + 1 + j).collect();
+                    let vpos: Vec<usize> = (0..k).map(|j| anchor_pos + 1 + j).collect();
                     let (preds, residuals) = self.forward_tokens_verify(&vtoks, &vpos)?;
                     // preds[j] = true token at anchor_pos+2+j (valid while prefix
                     // matched). Accept lookahead d[1+j] vs preds[j].
@@ -1995,7 +1981,8 @@ impl Engine for QwenDense {
                     if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
                         let abs_max = v.iter().fold(0.0_f32, |m, &x| m.max(x.abs()));
                         let mean = v.iter().sum::<f32>() / (v.len() as f32);
-                        let var = v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
+                        let var =
+                            v.iter().map(|&x| (x - mean).powi(2)).sum::<f32>() / (v.len() as f32);
                         let nonzero = v.iter().filter(|&&x| x != 0.0).count();
                         eprintln!(
                             "[eagle5-debug] residual stats: nonzero={}/{}, mean={:.4}, std={:.4}, abs_max={:.4}, first8={:?}",
@@ -2097,11 +2084,14 @@ impl Engine for QwenDense {
                     }
                 };
                 if std::env::var("DISMANTLE_QWEN_EAGLE5_CAPTURE_DEBUG").is_ok() {
-                    let toks: Vec<String> = draft.iter().map(|&id| {
-                        self.tokenizer.decode_one(id).unwrap_or_default()
-                    }).collect();
-                    eprintln!("[eagle5-debug] bonus={} draft_ids={:?} draft_tokens={:?}",
-                        bonus, draft, toks);
+                    let toks: Vec<String> = draft
+                        .iter()
+                        .map(|&id| self.tokenizer.decode_one(id).unwrap_or_default())
+                        .collect();
+                    eprintln!(
+                        "[eagle5-debug] bonus={} draft_ids={:?} draft_tokens={:?}",
+                        bonus, draft, toks
+                    );
                 }
                 let draft_len = draft.len();
                 if draft_len == 0 {
@@ -2300,8 +2290,7 @@ impl Engine for QwenDense {
             // exactly as in 'ud_loop. Propose-first changes only how many target
             // forwards schedule per emitted token, never which tokens are
             // emitted. The bonus-first 'ud_loop remains the parity reference.
-            let mut draft_index =
-                crate::speculate::user_ngram::UserNgramDraft::new();
+            let mut draft_index = crate::speculate::user_ngram::UserNgramDraft::new();
             // Warm-start from the prompt (same in-prompt signal as 'ud_loop).
             draft_index.warm_start(&prompt_ids);
             // Lookahead count per cycle. The verify batch is `carried_true` +
@@ -2316,7 +2305,9 @@ impl Engine for QwenDense {
                     spec_gov_min_rate,
                 );
                 if spec_gov_force_disable {
-                    for _ in 0..8 { let _ = g.step(false); }
+                    for _ in 0..8 {
+                        let _ = g.step(false);
+                    }
                 }
                 Some(g)
             } else {
@@ -2334,7 +2325,10 @@ impl Engine for QwenDense {
                 let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
                 self.sampler.record(carried_true);
                 crate::stateful::usage_capture::record_argmax(carried_true);
-                sink(StreamEvent::Token { id: carried_true, text });
+                sink(StreamEvent::Token {
+                    id: carried_true,
+                    text,
+                });
                 draft_index.note_token(carried_true);
                 produced += 1;
             }
@@ -2367,7 +2361,9 @@ impl Engine for QwenDense {
                 let lookahead = if gov_propose {
                     draft_index.propose(&ctx_buf, k_la)
                 } else {
-                    if let Some(g) = spec_gov.as_mut() { let _ = g.step(false); }
+                    if let Some(g) = spec_gov.as_mut() {
+                        let _ = g.step(false);
+                    }
                     Vec::new()
                 };
                 let dlen = lookahead.len();
@@ -2379,8 +2375,7 @@ impl Engine for QwenDense {
                 let mut vtoks = Vec::with_capacity(dlen + 1);
                 vtoks.push(carried_true);
                 vtoks.extend_from_slice(&lookahead);
-                let vpos: Vec<usize> =
-                    (0..vtoks.len()).map(|j| anchor_pos + 1 + j).collect();
+                let vpos: Vec<usize> = (0..vtoks.len()).map(|j| anchor_pos + 1 + j).collect();
                 let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
 
                 // Accept lookahead[j] while it matches preds[j]. `na` is the
@@ -2400,7 +2395,9 @@ impl Engine for QwenDense {
                 stats.draft_rejected += dlen - na;
                 // Governor: accepted >=1 lookahead iff na > 0. Proposed cycles
                 // only; disabled cycles stepped above.
-                if let Some(g) = spec_gov.as_mut() { let _ = g.step(na > 0); }
+                if let Some(g) = spec_gov.as_mut() {
+                    let _ = g.step(na > 0);
+                }
                 // L3.1 §2.2 usage_capture: draft proposed under (anchor_tok,
                 // carried_true); na accepted, dlen-na rejected; verifier emits
                 // preds[0] next.
@@ -2445,7 +2442,11 @@ impl Engine for QwenDense {
                 // preds[na]) = (token at the new anchor_pos, its true
                 // successor). Mirror of the eagle5 'pf_loop advance, minus the
                 // residual carry.
-                anchor_tok = if na == 0 { carried_true } else { lookahead[na - 1] };
+                anchor_tok = if na == 0 {
+                    carried_true
+                } else {
+                    lookahead[na - 1]
+                };
                 anchor_pos = anchor_pos + 1 + na;
                 carried_true = preds[na];
                 // KV: valid through anchor_pos (last accepted). Next cycle's
@@ -2475,8 +2476,7 @@ impl Engine for QwenDense {
             //   Stage 3: verify [bonus, draft[..k-1]] in ONE batched forward;
             //            accept the longest agreeing prefix; correction on the
             //            first mismatch. KV bookkeeping identical to e5_loop.
-            let mut draft_index =
-                crate::speculate::user_ngram::UserNgramDraft::new();
+            let mut draft_index = crate::speculate::user_ngram::UserNgramDraft::new();
             // Warm-start from the prompt (the user's immediate history) so the
             // index has context from token one — the same in-prompt signal PLD
             // uses, plus the user's emitted stream as it grows.
@@ -2494,7 +2494,9 @@ impl Engine for QwenDense {
                 if spec_gov_force_disable {
                     // Past the consecutive-reject bail (>=5) so the gate sees
                     // is_enabled()==false deterministically from cycle one.
-                    for _ in 0..8 { let _ = g.step(false); }
+                    for _ in 0..8 {
+                        let _ = g.step(false);
+                    }
                 }
                 Some(g)
             } else {
@@ -2551,7 +2553,9 @@ impl Engine for QwenDense {
                 let draft = if gov_propose {
                     draft_index.propose(&ctx_buf, k_avail)
                 } else {
-                    if let Some(g) = spec_gov.as_mut() { let _ = g.step(false); }
+                    if let Some(g) = spec_gov.as_mut() {
+                        let _ = g.step(false);
+                    }
                     Vec::new()
                 };
                 let draft_len = draft.len();
@@ -2571,8 +2575,7 @@ impl Engine for QwenDense {
                 if draft_len > 1 {
                     vtoks.extend_from_slice(&draft[..draft_len - 1]);
                 }
-                let vpos: Vec<usize> =
-                    (0..draft_len).map(|j| bonus_pos + j).collect();
+                let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
                 let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
                 let mut first_reject = draft_len;
                 let mut correction: Option<u32> = None;
@@ -2588,7 +2591,9 @@ impl Engine for QwenDense {
                 // Governor: accepted >=1 draft iff first_reject > 0. Reached only
                 // on a proposed cycle (the real accept signal); disabled cycles
                 // were stepped above.
-                if let Some(g) = spec_gov.as_mut() { let _ = g.step(first_reject > 0); }
+                if let Some(g) = spec_gov.as_mut() {
+                    let _ = g.step(first_reject > 0);
+                }
                 // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
                 crate::stateful::usage_capture::record_draft(
                     (ctx_prev, bonus),
@@ -2668,12 +2673,18 @@ impl Engine for QwenDense {
             let mut corpus_file: Option<std::fs::File> =
                 std::env::var_os("DISMANTLE_QWEN_CAPTURE_CORPUS_PATH").and_then(|p| {
                     if !eagle5_capture_active {
-                        eprintln!("[capture-corpus] WARN: CORPUS_PATH set but \
+                        eprintln!(
+                            "[capture-corpus] WARN: CORPUS_PATH set but \
                                    DISMANTLE_QWEN_EAGLE5_CAPTURE!=1; no residuals will \
-                                   be captured. Skipping dump.");
+                                   be captured. Skipping dump."
+                        );
                         return None;
                     }
-                    match std::fs::OpenOptions::new().create(true).append(true).open(&p) {
+                    match std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(&p)
+                    {
                         Ok(mut f) => {
                             // Per-sequence sentinel: two u32 0xFFFFFFFF then the
                             // hidden dim, so the packer can self-describe.
@@ -2698,7 +2709,11 @@ impl Engine for QwenDense {
                 Some(p) => {
                     let n_blocks =
                         (self.config.intermediate + FFN_CAPTURE_BLOCK - 1) / FFN_CAPTURE_BLOCK;
-                    match std::fs::OpenOptions::new().create(true).append(true).open(&p) {
+                    match std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(&p)
+                    {
                         Ok(f) => {
                             use std::io::Write as _;
                             let mut bw = std::io::BufWriter::new(f);
@@ -2915,9 +2930,7 @@ impl Engine for QwenDense {
                     l.iter()
                         .copied()
                         .enumerate()
-                        .max_by(|a, b| {
-                            a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less)
-                        })
+                        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
                         .map(|(i, _)| i as u32)
                         .unwrap_or(0)
                 })
@@ -2930,16 +2943,20 @@ impl Engine for QwenDense {
         out_path: &std::path::Path,
         profile: crate::sidecar::SidecarProfile,
     ) -> Result<usize> {
-        use sha2::{Digest, Sha256};
+        use crate::kernels::predecode_q4_k_scale_table;
         use crate::sidecar::{
             SidecarContents, SidecarHeader, SidecarQuality, SidecarWriter, SIDECAR_VERSION,
         };
-        use crate::kernels::predecode_q4_k_scale_table;
+        use sha2::{Digest, Sha256};
 
         // ── SHA-256 of the source GGUF ────────────────────────────────────────
         let mut h = Sha256::new();
         h.update(&self.gguf.mmap[..]);
-        let gguf_hash = h.finalize().iter().map(|b| format!("{b:02x}")).collect::<String>();
+        let gguf_hash = h
+            .finalize()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
 
         // ── Shader hash ───────────────────────────────────────────────────────
         let shader_hash = crate::profile::shader_source_hash();
@@ -2949,8 +2966,12 @@ impl Engine for QwenDense {
         let mut seen_offsets = std::collections::HashSet::new();
 
         let mut collect = |tref: &TensorRef| {
-            if tref.dtype != GgmlType::Q4_K { return; }
-            if !seen_offsets.insert(tref.offset) { return; }
+            if tref.dtype != GgmlType::Q4_K {
+                return;
+            }
+            if !seen_offsets.insert(tref.offset) {
+                return;
+            }
             let bytes = &self.gguf.mmap[tref.offset..tref.offset + tref.byte_size];
             let scales = predecode_q4_k_scale_table(bytes);
             predec_entries.push((tref.offset as u64, scales));
@@ -3063,7 +3084,9 @@ impl Engine for QwenDense {
         }
         #[cfg(not(target_os = "macos"))]
         {
-            Err(crate::Error::Unimplemented("copy_kv_prefix_to_slot (off-macOS)"))
+            Err(crate::Error::Unimplemented(
+                "copy_kv_prefix_to_slot (off-macOS)",
+            ))
         }
     }
 
@@ -3094,9 +3117,16 @@ impl Engine for QwenDense {
             // Extract config values before any mutable borrows.
             let (n_layers, n_heads, n_kv_heads, head_dim, hidden, intermediate, vocab_size, kv_dim) = {
                 let cfg = &self.config;
-                (cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
-                 cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                 cfg.n_kv_heads * cfg.head_dim)
+                (
+                    cfg.n_layers,
+                    cfg.n_heads,
+                    cfg.n_kv_heads,
+                    cfg.head_dim,
+                    cfg.hidden,
+                    cfg.intermediate,
+                    cfg.vocab_size,
+                    cfg.n_kv_heads * cfg.head_dim,
+                )
             };
             let (multi_layer_stride, multi_max_seq) = {
                 let a = self.multiseq_arena.as_ref().unwrap();
@@ -3112,8 +3142,10 @@ impl Engine for QwenDense {
             // the prefix KV into self.kv first, we get a free warm start.
             // SAFETY: PinnedBuffer is MTLStorageModeShared — CPU-accessible.
             unsafe {
-                let src_k = self.multiseq_arena.as_ref().unwrap().k_cache_buf.contents() as *const f32;
-                let src_v = self.multiseq_arena.as_ref().unwrap().v_cache_buf.contents() as *const f32;
+                let src_k =
+                    self.multiseq_arena.as_ref().unwrap().k_cache_buf.contents() as *const f32;
+                let src_v =
+                    self.multiseq_arena.as_ref().unwrap().v_cache_buf.contents() as *const f32;
                 for li in 0..n_layers {
                     let src_off = li * multi_layer_stride + slot_base;
                     let dst_k = self.kv.keys[li].as_mut_ptr();
@@ -3125,7 +3157,7 @@ impl Engine for QwenDense {
 
             // ── Step 2: run forward only on the tail tokens ──────────────────
             let saved_seq_len = self.kv.seq_len;
-            self.kv.seq_len = start_pos;   // p0 > 0 seeds dense_arena on first chunk
+            self.kv.seq_len = start_pos; // p0 > 0 seeds dense_arena on first chunk
             self.dense_arena = None;
 
             const B_MAX: usize = 8;
@@ -3134,24 +3166,35 @@ impl Engine for QwenDense {
             let last_token = loop {
                 let end = (i + B_MAX).min(prompt_len);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
-                if end == prompt_len { break prompt_ids[prompt_len - 1]; }
+                if end == prompt_len {
+                    break prompt_ids[prompt_len - 1];
+                }
                 i = end;
             };
             // dense_arena now has complete KV for positions 0..prompt_len.
 
             // ── Step 3: ensure multiseq_arena + copy dense → slot ────────────
             if self.multiseq_arena.is_none() {
-                let ctx = self.metal_ctx.as_ref()
-                    .ok_or_else(|| crate::Error::Metal("prefill_slot_from_pos: no metal_ctx".into()))?;
+                let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                    crate::Error::Metal("prefill_slot_from_pos: no metal_ctx".into())
+                })?;
                 self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
-                    ctx, n_layers, n_heads, n_kv_heads, head_dim,
-                    hidden, intermediate, vocab_size,
-                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                    ctx,
+                    n_layers,
+                    n_heads,
+                    n_kv_heads,
+                    head_dim,
+                    hidden,
+                    intermediate,
+                    vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX,
+                    MAX_MULTISEQ_SLOTS,
                 ));
             }
             {
-                let dense_arena = self.dense_arena.as_ref()
-                    .ok_or_else(|| crate::Error::Metal("prefill_slot_from_pos: dense_arena missing".into()))?;
+                let dense_arena = self.dense_arena.as_ref().ok_or_else(|| {
+                    crate::Error::Metal("prefill_slot_from_pos: dense_arena missing".into())
+                })?;
                 let multi_arena = self.multiseq_arena.as_ref().unwrap();
                 let dense_layer_stride = dense_arena.max_seq * kv_dim;
                 let multi_layer_stride = multi_arena.max_seq * kv_dim;
@@ -3165,8 +3208,16 @@ impl Engine for QwenDense {
                     for li in 0..n_layers {
                         let src_off = li * dense_layer_stride;
                         let dst_off = li * multi_layer_stride + slot_base;
-                        std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k.add(dst_off), copy_elems);
-                        std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v.add(dst_off), copy_elems);
+                        std::ptr::copy_nonoverlapping(
+                            src_k.add(src_off),
+                            dst_k.add(dst_off),
+                            copy_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            src_v.add(src_off),
+                            dst_v.add(dst_off),
+                            copy_elems,
+                        );
                     }
                 }
             }
@@ -3207,7 +3258,7 @@ impl Engine for QwenDense {
             // writes from position 0.
             let saved_seq_len = self.kv.seq_len;
             self.kv.seq_len = 0;
-            self.dense_arena = None;  // triggers lazy re-allocation at pos=0
+            self.dense_arena = None; // triggers lazy re-allocation at pos=0
 
             const B_MAX: usize = 8;
             let positions: Vec<usize> = (0..prompt_len).collect();
@@ -3215,7 +3266,9 @@ impl Engine for QwenDense {
             let last_token = loop {
                 let end = (i + B_MAX).min(prompt_len);
                 self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
-                if end == prompt_len { break prompt_ids[prompt_len - 1]; }
+                if end == prompt_len {
+                    break prompt_ids[prompt_len - 1];
+                }
                 i = end;
             };
             // After the loop, dense_arena.k_cache_buf / v_cache_buf hold KV for
@@ -3224,13 +3277,22 @@ impl Engine for QwenDense {
             // ── Step 2: ensure multiseq_arena is allocated ───────────────────
             // (CB-1 fix: allocated once at max capacity, never reallocated.)
             if self.multiseq_arena.is_none() {
-                let ctx = self.metal_ctx.as_ref()
+                let ctx = self
+                    .metal_ctx
+                    .as_ref()
                     .ok_or_else(|| crate::Error::Metal("prefill_slot: no metal_ctx".into()))?;
                 let cfg = &self.config;
                 self.multiseq_arena = Some(DenseDecodeArena::new_with_batch(
-                    ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
-                    cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                    ctx,
+                    cfg.n_layers,
+                    cfg.n_heads,
+                    cfg.n_kv_heads,
+                    cfg.head_dim,
+                    cfg.hidden,
+                    cfg.intermediate,
+                    cfg.vocab_size,
+                    MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX,
+                    MAX_MULTISEQ_SLOTS,
                 ));
             }
 
@@ -3242,8 +3304,9 @@ impl Engine for QwenDense {
             {
                 let cfg = &self.config;
                 let kv_dim = cfg.n_kv_heads * cfg.head_dim;
-                let dense_arena = self.dense_arena.as_ref()
-                    .ok_or_else(|| crate::Error::Metal("prefill_slot: dense_arena missing".into()))?;
+                let dense_arena = self.dense_arena.as_ref().ok_or_else(|| {
+                    crate::Error::Metal("prefill_slot: dense_arena missing".into())
+                })?;
                 let multi_arena = self.multiseq_arena.as_ref().unwrap();
                 let dense_layer_stride = dense_arena.max_seq * kv_dim;
                 let multi_layer_stride = multi_arena.max_seq * kv_dim;
@@ -3262,8 +3325,16 @@ impl Engine for QwenDense {
                     for li in 0..cfg.n_layers {
                         let src_off = li * dense_layer_stride;
                         let dst_off = li * multi_layer_stride + slot_base;
-                        std::ptr::copy_nonoverlapping(src_k.add(src_off), dst_k.add(dst_off), copy_elems);
-                        std::ptr::copy_nonoverlapping(src_v.add(src_off), dst_v.add(dst_off), copy_elems);
+                        std::ptr::copy_nonoverlapping(
+                            src_k.add(src_off),
+                            dst_k.add(dst_off),
+                            copy_elems,
+                        );
+                        std::ptr::copy_nonoverlapping(
+                            src_v.add(src_off),
+                            dst_v.add(dst_off),
+                            copy_elems,
+                        );
                     }
                 }
             }
@@ -3334,7 +3405,8 @@ impl Engine for QwenDense {
                 let first_prompt = slots[0].1;
                 let mut len = first_prompt.len();
                 for &(_, prompt_ids) in slots.iter().skip(1) {
-                    let common = first_prompt.iter()
+                    let common = first_prompt
+                        .iter()
                         .zip(prompt_ids.iter())
                         .take(len)
                         .take_while(|(a, b)| a == b)
@@ -3383,10 +3455,14 @@ impl Engine for QwenDense {
                             let src_off = li * multi_layer_stride + slot0_base;
                             let dst_off = li * multi_layer_stride + slot_s_base;
                             std::ptr::copy_nonoverlapping(
-                                dst_k.add(src_off), dst_k.add(dst_off), copy_elems,
+                                dst_k.add(src_off),
+                                dst_k.add(dst_off),
+                                copy_elems,
                             );
                             std::ptr::copy_nonoverlapping(
-                                dst_v.add(src_off), dst_v.add(dst_off), copy_elems,
+                                dst_v.add(src_off),
+                                dst_v.add(dst_off),
+                                copy_elems,
                             );
                         }
                     }
@@ -3416,7 +3492,11 @@ impl Engine for QwenDense {
                 }
                 let arena = self.multiseq_arena.as_ref().unwrap();
                 let tcb = self.forward_tokens_multiseq_stack_tcb(
-                    arena, &tokens_p, &positions_p, &regions_p, MAX_MULTISEQ_CTX,
+                    arena,
+                    &tokens_p,
+                    &positions_p,
+                    &regions_p,
+                    MAX_MULTISEQ_CTX,
                 )?;
                 tcb.commit_and_wait()?;
             }
@@ -3440,7 +3520,8 @@ impl Engine for QwenDense {
         if tokens.len() != positions.len() {
             return Err(crate::Error::Model(format!(
                 "forward_tokens shape: tokens={} positions={}",
-                tokens.len(), positions.len()
+                tokens.len(),
+                positions.len()
             )));
         }
         let mut out = Vec::with_capacity(tokens.len());
@@ -3727,7 +3808,6 @@ impl QwenDense {
         self.gemv_f16_dispatch(w_f16, cfg.vocab_size, h, &x_norm, &mut logits)?;
         Ok(logits)
     }
-
 }
 
 #[cfg(target_os = "macos")]
@@ -3763,13 +3843,18 @@ impl QwenDense {
                         use sha2::{Digest, Sha256};
                         let mut h = Sha256::new();
                         h.update(&self.gguf.mmap[..]);
-                        h.finalize().iter().map(|b| format!("{b:02x}")).collect::<String>()
+                        h.finalize()
+                            .iter()
+                            .map(|b| format!("{b:02x}"))
+                            .collect::<String>()
                     };
-                    let compat = crate::sidecar::check_sidecar_compatibility(
-                        &header, &gguf_hash, "",
-                    );
+                    let compat =
+                        crate::sidecar::check_sidecar_compatibility(&header, &gguf_hash, "");
                     if compat.is_fatal() {
-                        eprintln!("sidecar: {:?}: hash mismatch — recomputing predec scales", sidecar_path);
+                        eprintln!(
+                            "sidecar: {:?}: hash mismatch — recomputing predec scales",
+                            sidecar_path
+                        );
                         // Fall through to recompute.
                     } else {
                         let mut cache = std::collections::HashMap::new();
@@ -3784,29 +3869,33 @@ impl QwenDense {
                 }
                 Ok(_) => { /* sidecar exists but no predec scales — fall through */ }
                 Err(e) => {
-                    eprintln!("sidecar: failed to load predec from {:?}: {e}", sidecar_path);
+                    eprintln!(
+                        "sidecar: failed to load predec from {:?}: {e}",
+                        sidecar_path
+                    );
                 }
             }
         }
 
         let mut cache = std::collections::HashMap::new();
-        let mut insert_q4k = |tref: &TensorRef,
-                              ctx: &crate::metal::MetalContext,
-                              cache: &mut std::collections::HashMap<usize, crate::metal::PinnedBuffer>|
-         -> Result<()> {
-            if tref.dtype != GgmlType::Q4_K {
-                return Ok(());
-            }
-            if cache.contains_key(&tref.offset) {
-                return Ok(());
-            }
-            let bytes = &self.gguf.mmap[tref.offset..tref.offset + tref.byte_size];
-            let scales = crate::kernels::predecode_q4_k_scale_table(bytes);
-            let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
-            let buf = ctx.new_buffer_with_bytes(scales_bytes);
-            cache.insert(tref.offset, buf);
-            Ok(())
-        };
+        let mut insert_q4k =
+            |tref: &TensorRef,
+             ctx: &crate::metal::MetalContext,
+             cache: &mut std::collections::HashMap<usize, crate::metal::PinnedBuffer>|
+             -> Result<()> {
+                if tref.dtype != GgmlType::Q4_K {
+                    return Ok(());
+                }
+                if cache.contains_key(&tref.offset) {
+                    return Ok(());
+                }
+                let bytes = &self.gguf.mmap[tref.offset..tref.offset + tref.byte_size];
+                let scales = crate::kernels::predecode_q4_k_scale_table(bytes);
+                let scales_bytes = bytemuck::cast_slice::<f32, u8>(&scales);
+                let buf = ctx.new_buffer_with_bytes(scales_bytes);
+                cache.insert(tref.offset, buf);
+                Ok(())
+            };
         // Walk every layer's Q4_K projection sites.
         for layer in &self.layers {
             insert_q4k(&layer.q_proj, ctx, &mut cache)?;
@@ -3854,9 +3943,7 @@ impl QwenDense {
         // (StorageModeShared → host-readable on unified memory).
         let narrow = |f32_buf: &crate::metal::PinnedBuffer| -> crate::metal::PinnedBuffer {
             let n = (f32_buf.length() as usize) / std::mem::size_of::<f32>();
-            let src = unsafe {
-                std::slice::from_raw_parts(f32_buf.contents() as *const f32, n)
-            };
+            let src = unsafe { std::slice::from_raw_parts(f32_buf.contents() as *const f32, n) };
             let f16: Vec<u8> = src
                 .iter()
                 .flat_map(|&v| half::f16::from_f32(v).to_bits().to_le_bytes())
@@ -3933,9 +4020,7 @@ impl QwenDense {
                     .and_then(|s| s.to_str())
                     .unwrap_or("model")
             )),
-            std::path::PathBuf::from(
-                "models/qwen2.5-3b-instruct-q4k_fast.dismantle"
-            ),
+            std::path::PathBuf::from("models/qwen2.5-3b-instruct-q4k_fast.dismantle"),
         ]);
         let sidecar_path = candidates.iter().find(|p| p.exists()).cloned();
         let sidecar_path = match sidecar_path {
@@ -3944,29 +4029,32 @@ impl QwenDense {
         };
         let bytes = std::fs::read(&sidecar_path).map_err(|e| {
             Error::Model(format!(
-                "read Q4K_FAST sidecar {}: {e}", sidecar_path.display()
+                "read Q4K_FAST sidecar {}: {e}",
+                sidecar_path.display()
             ))
         })?;
-        let hdr = crate::q4k_fast::parse_header(&bytes).map_err(|e| {
-            Error::Model(format!("parse Q4K_FAST sidecar: {e}"))
-        })?;
+        let hdr = crate::q4k_fast::parse_header(&bytes)
+            .map_err(|e| Error::Model(format!("parse Q4K_FAST sidecar: {e}")))?;
         // Build name → (sidecar_offset, byte_len) map.
         let mut by_name = std::collections::HashMap::with_capacity(hdr.tensors.len());
         for ent in &hdr.tensors {
-            by_name.insert(ent.name.clone(), (ent.byte_off as usize, ent.byte_len as usize));
+            by_name.insert(
+                ent.name.clone(),
+                (ent.byte_off as usize, ent.byte_len as usize),
+            );
         }
         // Walk every Q4_K projection per layer and map by source GGUF offset.
         let mut offsets = std::collections::HashMap::new();
         let cfg = &self.config;
         for li in 0..cfg.n_layers {
             let proj_to_name: &[(usize, &str)] = &[
-                (self.layers[li].q_proj.offset,    "attn_q.weight"),
-                (self.layers[li].k_proj.offset,    "attn_k.weight"),
-                (self.layers[li].v_proj.offset,    "attn_v.weight"),
-                (self.layers[li].o_proj.offset,    "attn_output.weight"),
-                (self.layers[li].ffn_gate.offset,  "ffn_gate.weight"),
-                (self.layers[li].ffn_up.offset,    "ffn_up.weight"),
-                (self.layers[li].ffn_down.offset,  "ffn_down.weight"),
+                (self.layers[li].q_proj.offset, "attn_q.weight"),
+                (self.layers[li].k_proj.offset, "attn_k.weight"),
+                (self.layers[li].v_proj.offset, "attn_v.weight"),
+                (self.layers[li].o_proj.offset, "attn_output.weight"),
+                (self.layers[li].ffn_gate.offset, "ffn_gate.weight"),
+                (self.layers[li].ffn_up.offset, "ffn_up.weight"),
+                (self.layers[li].ffn_down.offset, "ffn_down.weight"),
             ];
             for (src_off, name_suf) in proj_to_name {
                 let full = format!("blk.{li}.{name_suf}");
@@ -4001,7 +4089,9 @@ impl QwenDense {
         // Probe candidate paths.
         let candidates = [
             std::path::PathBuf::from("reports/w4a8_lmhead_calibration_2026_05_26.json"),
-            std::path::PathBuf::from("crates/dismantle-core/reports/w4a8_lmhead_calibration_2026_05_26.json"),
+            std::path::PathBuf::from(
+                "crates/dismantle-core/reports/w4a8_lmhead_calibration_2026_05_26.json",
+            ),
         ];
         let json_path = match candidates.iter().find(|p| p.exists()) {
             Some(p) => p,
@@ -4009,7 +4099,10 @@ impl QwenDense {
                 eprintln!(
                     "[w4a8-per-channel] WARN: calibration JSON missing at any of {:?} — \
                      falling back to per-block path",
-                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>()
+                    candidates
+                        .iter()
+                        .map(|p| p.display().to_string())
+                        .collect::<Vec<_>>()
                 );
                 return Ok(());
             }
@@ -4019,12 +4112,15 @@ impl QwenDense {
         let txt = std::fs::read_to_string(json_path)
             .map_err(|e| Error::Model(format!("read {}: {}", json_path.display(), e)))?;
         let key = "\"scales_per_channel\"";
-        let kstart = txt.find(key)
+        let kstart = txt
+            .find(key)
             .ok_or_else(|| Error::Model(format!("missing {} in {}", key, json_path.display())))?;
-        let lb = txt[kstart..].find('[')
+        let lb = txt[kstart..]
+            .find('[')
             .ok_or_else(|| Error::Model("scales_per_channel missing [".into()))?
             + kstart;
-        let rb = txt[lb..].find(']')
+        let rb = txt[lb..]
+            .find(']')
             .ok_or_else(|| Error::Model("scales_per_channel missing ]".into()))?
             + lb;
         let inner = &txt[lb + 1..rb];
@@ -4046,7 +4142,11 @@ impl QwenDense {
             scales.len(),
             json_path.display(),
             scales.iter().copied().fold(0.0f32, f32::max),
-            scales.iter().copied().filter(|s| *s > 0.0).fold(f32::INFINITY, f32::min),
+            scales
+                .iter()
+                .copied()
+                .filter(|s| *s > 0.0)
+                .fold(f32::INFINITY, f32::min),
         );
         Ok(())
     }
@@ -4078,7 +4178,10 @@ impl QwenDense {
                 eprintln!(
                     "[awq] WARN: smoothing JSON missing at any of {:?} — \
                      AWQ disabled (set DISMANTLE_QWEN_AWQ=0 to silence)",
-                    candidates.iter().map(|p| p.display().to_string()).collect::<Vec<_>>()
+                    candidates
+                        .iter()
+                        .map(|p| p.display().to_string())
+                        .collect::<Vec<_>>()
                 );
                 return Ok(());
             }
@@ -4094,7 +4197,8 @@ impl QwenDense {
                 json_path.display()
             )));
         }
-        let factors = root.get("smoothing_factors")
+        let factors = root
+            .get("smoothing_factors")
             .and_then(|v| v.as_object())
             .ok_or_else(|| Error::Model("missing smoothing_factors object".into()))?;
 
@@ -4109,18 +4213,21 @@ impl QwenDense {
         let mut silu_mul_bufs = Vec::with_capacity(n_layers);
 
         let extract = |key: &str, expected_len: usize| -> Result<Vec<f32>> {
-            let arr = factors.get(key)
+            let arr = factors
+                .get(key)
                 .and_then(|v| v.as_array())
                 .ok_or_else(|| Error::Model(format!("AWQ smoothing missing key {key}")))?;
             if arr.len() != expected_len {
                 return Err(Error::Model(format!(
                     "AWQ smoothing {key}: len {} != expected {}",
-                    arr.len(), expected_len
+                    arr.len(),
+                    expected_len
                 )));
             }
             let mut out = Vec::with_capacity(expected_len);
             for v in arr {
-                let f = v.as_f64()
+                let f = v
+                    .as_f64()
                     .ok_or_else(|| Error::Model(format!("AWQ {key}: non-numeric entry")))?;
                 out.push(f as f32);
             }
@@ -4282,9 +4389,9 @@ impl QwenDense {
         // of self). Must be done BEFORE the immutable borrows of
         // q4k_predec_cache / q4k_fast_buf below.
         let w4a8_active_early = crate::env_on("DISMANTLE_QWEN_W4A8");
-        let w4a8_lmhead_per_channel_early =
-            crate::env_on("DISMANTLE_QWEN_W4A8_PER_CHANNEL");
-        if w4a8_active_early && w4a8_lmhead_per_channel_early
+        let w4a8_lmhead_per_channel_early = crate::env_on("DISMANTLE_QWEN_W4A8_PER_CHANNEL");
+        if w4a8_active_early
+            && w4a8_lmhead_per_channel_early
             && self.lmhead_per_channel_scales_buf.is_none()
         {
             self.ensure_lmhead_per_channel_scales()?;
@@ -4368,7 +4475,8 @@ impl QwenDense {
         if awq_active_early && predec_active {
             return Err(Error::Model(
                 "DISMANTLE_QWEN_AWQ=1 is incompatible with DISMANTLE_QWEN_Q4K_PREDEC=1; \
-                 set DISMANTLE_QWEN_Q4K_PREDEC=0 to opt out of predec".into(),
+                 set DISMANTLE_QWEN_Q4K_PREDEC=0 to opt out of predec"
+                    .into(),
             ));
         }
         // Force the Q4K_FAST sidecar path so the AWQ-baked weights are
@@ -4377,9 +4485,7 @@ impl QwenDense {
         if awq_active_early && self.q4k_fast_buf.is_none() {
             self.ensure_q4k_fast_cache()?;
         }
-        if awq_active_early && w4a8_active_early
-            && self.awq_smoothing_x_norm.is_none()
-        {
+        if awq_active_early && w4a8_active_early && self.awq_smoothing_x_norm.is_none() {
             self.ensure_awq_smoothing_scales()?;
         }
         // Bind cache references for the macro body. predec takes
@@ -4437,9 +4543,7 @@ impl QwenDense {
         // When AWQ is active the sidecar IS the AWQ-baked Q4K_FAST file,
         // so we must route the Q4_K projections through the q4k_fast
         // kernel even if DISMANTLE_QWEN_Q4K_FAST wasn't set explicitly.
-        let q4k_fast_ref = if (q4k_fast_active || awq_active_early)
-            && !predec_active
-        {
+        let q4k_fast_ref = if (q4k_fast_active || awq_active_early) && !predec_active {
             self.q4k_fast_buf
                 .as_ref()
                 .zip(self.q4k_fast_offsets.as_ref())
@@ -4483,10 +4587,9 @@ impl QwenDense {
             .embed_buf
             .as_ref()
             .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: embed not pinned".into()))?;
-        let final_norm_buf = self
-            .final_norm_buf
-            .as_ref()
-            .ok_or_else(|| Error::Metal("forward_token_greedy_tcb: final_norm not pinned".into()))?;
+        let final_norm_buf = self.final_norm_buf.as_ref().ok_or_else(|| {
+            Error::Metal("forward_token_greedy_tcb: final_norm not pinned".into())
+        })?;
         let lm_head_buf = self
             .lm_head_buf
             .as_ref()
@@ -4823,7 +4926,8 @@ impl QwenDense {
         // Default off: +1.68% measured at B=1, below the +5% ship gate.
         // Exposed via EngineConfig so "fast"/"race" profiles can opt in
         // without setting the env var.
-        let qkv_concurrent = self.concurrent_qkv_config || crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
+        let qkv_concurrent =
+            self.concurrent_qkv_config || crate::env_on("DISMANTLE_QWEN_CONCURRENT_QKV");
         // Phase 2.3: GQA flash-style decode attention (online softmax).
         // When set, the GQA attention dispatch uses mha_decode_flash_f32
         // (constant threadgroup memory, no scores[seq_len]) instead of
@@ -4852,11 +4956,10 @@ impl QwenDense {
         let predec_2r_active = std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
             .map(|v| v != "0")
             .unwrap_or(true);
-        let oproj_add_rmsnorm_fuse =
-            crate::env_opt_out("DISMANTLE_QWEN_OPROJ_ADD_RMSNORM_FUSE")
-                && predec_active
-                && predec_2r_active
-                && !w4a8_oproj;
+        let oproj_add_rmsnorm_fuse = crate::env_opt_out("DISMANTLE_QWEN_OPROJ_ADD_RMSNORM_FUSE")
+            && predec_active
+            && predec_2r_active
+            && !w4a8_oproj;
         // Track 3.12/3.13: fuse Q/K bias+RoPE and f32 KV-cache append into
         // the QKV triple dispatch. The seam and f16-KV paths keep their
         // existing explicit post-processing kernels.
@@ -5198,8 +5301,7 @@ impl QwenDense {
                 && h % 256 == 0
                 && predec_cache_ref
                     .map(|m| {
-                        m.contains_key(&layer.q_proj.offset)
-                            && m.contains_key(&layer.k_proj.offset)
+                        m.contains_key(&layer.q_proj.offset) && m.contains_key(&layer.k_proj.offset)
                     })
                     .unwrap_or(false);
             if qkv_triple {
@@ -5221,12 +5323,24 @@ impl QwenDense {
                         kernels::gemv_q4k_predec_qkv_rope_append_4r_f16s_pinned_tcb(
                             &mut tcb,
                             mmap_buf,
-                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc_f16,
-                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc_f16,
-                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc_f16,
-                            q_dim, kv_dim, h,
-                            n_heads, n_kv_heads, head_dim,
-                            pos_u32, theta, slot_kv_off_elems,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc_f16,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc_f16,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc_f16,
+                            q_dim,
+                            kv_dim,
+                            h,
+                            n_heads,
+                            n_kv_heads,
+                            head_dim,
+                            pos_u32,
+                            theta,
+                            slot_kv_off_elems,
                             &arena.x_norm_buf,
                             &arena.q_buf,
                             layer.pinned.q_bias.as_ref(),
@@ -5240,12 +5354,24 @@ impl QwenDense {
                         kernels::gemv_q4k_predec_qkv_rope_append_f16s_pinned_tcb(
                             &mut tcb,
                             mmap_buf,
-                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc_f16,
-                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc_f16,
-                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc_f16,
-                            q_dim, kv_dim, h,
-                            n_heads, n_kv_heads, head_dim,
-                            pos_u32, theta, slot_kv_off_elems,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc_f16,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc_f16,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc_f16,
+                            q_dim,
+                            kv_dim,
+                            h,
+                            n_heads,
+                            n_kv_heads,
+                            head_dim,
+                            pos_u32,
+                            theta,
+                            slot_kv_off_elems,
                             &arena.x_norm_buf,
                             &arena.q_buf,
                             layer.pinned.q_bias.as_ref(),
@@ -5264,10 +5390,18 @@ impl QwenDense {
                         kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
                             &mut tcb,
                             mmap_buf,
-                            layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                            layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                            layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
-                            q_dim, kv_dim, h,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc,
+                            q_dim,
+                            kv_dim,
+                            h,
                             &arena.x_norm_buf,
                             &arena.q_buf,
                             &arena.k_token_buf,
@@ -5275,62 +5409,94 @@ impl QwenDense {
                         )?;
                     }
                 } else {
-                let cache = predec_cache_ref.expect("checked is_some via map");
-                let q_sc = &cache[&layer.q_proj.offset];
-                let k_sc = &cache[&layer.k_proj.offset];
-                let v_sc = &cache[&layer.v_proj.offset];
-                if qkv_rope_append_4r {
-                    kernels::gemv_q4k_predec_qkv_rope_append_4r_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
-                        q_dim, kv_dim, h,
-                        n_heads, n_kv_heads, head_dim,
-                        pos_u32, theta, slot_kv_off_elems,
-                        &arena.x_norm_buf,
-                        &arena.q_buf,
-                        layer.pinned.q_bias.as_ref(),
-                        layer.pinned.k_bias.as_ref(),
-                        layer.pinned.v_bias.as_ref(),
-                        &arena.k_cache_buf,
-                        &arena.v_cache_buf,
-                    )?;
-                    qkv_postproc_fused = true;
-                } else if qkv_rope_append {
-                    kernels::gemv_q4k_predec_qkv_rope_append_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
-                        q_dim, kv_dim, h,
-                        n_heads, n_kv_heads, head_dim,
-                        pos_u32, theta, slot_kv_off_elems,
-                        &arena.x_norm_buf,
-                        &arena.q_buf,
-                        layer.pinned.q_bias.as_ref(),
-                        layer.pinned.k_bias.as_ref(),
-                        layer.pinned.v_bias.as_ref(),
-                        &arena.k_cache_buf,
-                        &arena.v_cache_buf,
-                    )?;
-                    qkv_postproc_fused = true;
-                } else {
-                    kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                        layer.v_proj.offset, layer.v_proj.byte_size, v_sc,
-                        q_dim, kv_dim, h,
-                        &arena.x_norm_buf,
-                        &arena.q_buf,
-                        &arena.k_token_buf,
-                        &arena.v_token_buf,
-                    )?;
-                }
+                    let cache = predec_cache_ref.expect("checked is_some via map");
+                    let q_sc = &cache[&layer.q_proj.offset];
+                    let k_sc = &cache[&layer.k_proj.offset];
+                    let v_sc = &cache[&layer.v_proj.offset];
+                    if qkv_rope_append_4r {
+                        kernels::gemv_q4k_predec_qkv_rope_append_4r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc,
+                            q_dim,
+                            kv_dim,
+                            h,
+                            n_heads,
+                            n_kv_heads,
+                            head_dim,
+                            pos_u32,
+                            theta,
+                            slot_kv_off_elems,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            layer.pinned.q_bias.as_ref(),
+                            layer.pinned.k_bias.as_ref(),
+                            layer.pinned.v_bias.as_ref(),
+                            &arena.k_cache_buf,
+                            &arena.v_cache_buf,
+                        )?;
+                        qkv_postproc_fused = true;
+                    } else if qkv_rope_append {
+                        kernels::gemv_q4k_predec_qkv_rope_append_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc,
+                            q_dim,
+                            kv_dim,
+                            h,
+                            n_heads,
+                            n_kv_heads,
+                            head_dim,
+                            pos_u32,
+                            theta,
+                            slot_kv_off_elems,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            layer.pinned.q_bias.as_ref(),
+                            layer.pinned.k_bias.as_ref(),
+                            layer.pinned.v_bias.as_ref(),
+                            &arena.k_cache_buf,
+                            &arena.v_cache_buf,
+                        )?;
+                        qkv_postproc_fused = true;
+                    } else {
+                        kernels::gemv_q4k_predec_qkv_triple_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.q_proj.offset,
+                            layer.q_proj.byte_size,
+                            q_sc,
+                            layer.k_proj.offset,
+                            layer.k_proj.byte_size,
+                            k_sc,
+                            layer.v_proj.offset,
+                            layer.v_proj.byte_size,
+                            v_sc,
+                            q_dim,
+                            kv_dim,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.q_buf,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                        )?;
+                    }
                 }
             } else if qkv_mixed_triple {
                 let cache = predec_cache_ref.expect("checked is_some via map");
@@ -5340,12 +5506,23 @@ impl QwenDense {
                     kernels::gemv_q4k_q4k_q6k_rope_append_pinned_tcb(
                         &mut tcb,
                         mmap_buf,
-                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                        layer.v_proj.offset, layer.v_proj.byte_size,
-                        q_dim, kv_dim, h,
-                        n_heads, n_kv_heads, head_dim,
-                        pos_u32, theta, slot_kv_off_elems,
+                        layer.q_proj.offset,
+                        layer.q_proj.byte_size,
+                        q_sc,
+                        layer.k_proj.offset,
+                        layer.k_proj.byte_size,
+                        k_sc,
+                        layer.v_proj.offset,
+                        layer.v_proj.byte_size,
+                        q_dim,
+                        kv_dim,
+                        h,
+                        n_heads,
+                        n_kv_heads,
+                        head_dim,
+                        pos_u32,
+                        theta,
+                        slot_kv_off_elems,
                         &arena.x_norm_buf,
                         &arena.q_buf,
                         layer.pinned.q_bias.as_ref(),
@@ -5359,10 +5536,17 @@ impl QwenDense {
                     kernels::gemv_q4k_q4k_q6k_triple_pinned_tcb(
                         &mut tcb,
                         mmap_buf,
-                        layer.q_proj.offset, layer.q_proj.byte_size, q_sc,
-                        layer.k_proj.offset, layer.k_proj.byte_size, k_sc,
-                        layer.v_proj.offset, layer.v_proj.byte_size,
-                        q_dim, kv_dim, h,
+                        layer.q_proj.offset,
+                        layer.q_proj.byte_size,
+                        q_sc,
+                        layer.k_proj.offset,
+                        layer.k_proj.byte_size,
+                        k_sc,
+                        layer.v_proj.offset,
+                        layer.v_proj.byte_size,
+                        q_dim,
+                        kv_dim,
+                        h,
                         &arena.x_norm_buf,
                         &arena.q_buf,
                         &arena.k_token_buf,
@@ -5407,13 +5591,11 @@ impl QwenDense {
                     });
                     // 8r/3r and default E3 inline use f32 scales; E4's f16s
                     // inline variant is deliberately separate opt-in.
-                    if let Some((k_scales_f16, v_scales_f16)) =
-                        f16_pair.filter(|_| {
-                            !ffn_pair_8r
-                                && !ffn_pair_3r
-                                && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
-                        })
-                    {
+                    if let Some((k_scales_f16, v_scales_f16)) = f16_pair.filter(|_| {
+                        !ffn_pair_8r
+                            && !ffn_pair_3r
+                            && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
+                    }) {
                         // D4: prefer 4r_f16s when PAIR_4R is also set.
                         if ffn_pair_4r {
                             kernels::gemv_q4_k_v4_predec_pair_4r_f16s_pinned_tcb(
@@ -5714,10 +5896,24 @@ impl QwenDense {
                         tcb = rec.tcb;
                     }
                     kernels::rope_q_f32_inplace_tcb(
-                        &mut tcb, &arena.q_buf, n_heads, head_dim, 0, head_dim, pos_u32, theta,
+                        &mut tcb,
+                        &arena.q_buf,
+                        n_heads,
+                        head_dim,
+                        0,
+                        head_dim,
+                        pos_u32,
+                        theta,
                     )?;
                     kernels::rope_q_f32_inplace_tcb(
-                        &mut tcb, &arena.k_token_buf, n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
+                        &mut tcb,
+                        &arena.k_token_buf,
+                        n_kv_heads,
+                        head_dim,
+                        0,
+                        head_dim,
+                        pos_u32,
+                        theta,
                     )?;
                 } else {
                     // Default rope path: Q bias-add + Q rope + K bias-add + K rope → 1 dispatch.
@@ -5738,7 +5934,12 @@ impl QwenDense {
                     // (their append kernels take no v_bias param).
                     if f16_kv || int4_kv {
                         if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                            kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
+                            kernels::add_inplace_metal_tcb(
+                                &mut tcb,
+                                &arena.v_token_buf,
+                                vb,
+                                kv_dim,
+                            )?;
                         }
                     }
                     // (else: v_bias will be handled by kv_append_vbias_f32_tcb below)
@@ -5788,12 +5989,20 @@ impl QwenDense {
                         // Seam path: v_bias was applied to v_token_buf in-place by the
                         // seam block above. Separate appends.
                         kernels::memcpy_f32_off_tcb(
-                            &mut tcb, &arena.k_token_buf, &arena.k_cache_buf,
-                            0, slot_kv_off_elems, kv_dim,
+                            &mut tcb,
+                            &arena.k_token_buf,
+                            &arena.k_cache_buf,
+                            0,
+                            slot_kv_off_elems,
+                            kv_dim,
                         )?;
                         kernels::memcpy_f32_off_tcb(
-                            &mut tcb, &arena.v_token_buf, &arena.v_cache_buf,
-                            0, slot_kv_off_elems, kv_dim,
+                            &mut tcb,
+                            &arena.v_token_buf,
+                            &arena.v_cache_buf,
+                            0,
+                            slot_kv_off_elems,
+                            kv_dim,
                         )?;
                     } else {
                         // Default path (!use_seam && !f16_kv): fused.
@@ -5898,9 +6107,8 @@ impl QwenDense {
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            let fuse_gate = oproj_add_rmsnorm_fuse
-                && layer.o_proj.dtype == GgmlType::Q4_K
-                && q_dim % 256 == 0;
+            let fuse_gate =
+                oproj_add_rmsnorm_fuse && layer.o_proj.dtype == GgmlType::Q4_K && q_dim % 256 == 0;
             // D6: prefer f16 scales when fast profile is on; fall back to f32.
             let oproj_scales_f16 = if fuse_gate && predec_f16scales_active {
                 predec_cache_f16_ref.and_then(|m| m.get(&layer.o_proj.offset))
@@ -6051,13 +6259,9 @@ impl QwenDense {
                 });
                 // 8r/3r and default E3 inline use f32 scales; E4's f16s
                 // inline variant is deliberately separate opt-in.
-                if let Some((g_scales_f16, u_scales_f16)) =
-                    f16_pair.filter(|_| {
-                        !ffn_pair_8r
-                            && !ffn_pair_3r
-                            && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
-                    })
-                {
+                if let Some((g_scales_f16, u_scales_f16)) = f16_pair.filter(|_| {
+                    !ffn_pair_8r && !ffn_pair_3r && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
+                }) {
                     // Track D4: prefer 4r_f16s (32 rows/TG + half scale BW)
                     // when DISMANTLE_QWEN_PAIR_4R is also set.
                     if ffn_pair_4r {
@@ -6291,9 +6495,16 @@ impl QwenDense {
                     if predec_f16scales_active {
                         if let Some(predec_f16) = layer.pinned.ffn_down_q4k_predec_f16.as_ref() {
                             kernels::gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(
-                                &mut tcb, q4k_buf, 0, h * row_bytes,
-                                predec_f16, 0, h, intermediate,
-                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &mut tcb,
+                                q4k_buf,
+                                0,
+                                h * row_bytes,
+                                predec_f16,
+                                0,
+                                h,
+                                intermediate,
+                                &arena.ffn_gate_buf,
+                                &arena.ffn_up_buf,
                                 &arena.ffn_down_buf,
                             )?;
                             true
@@ -6303,9 +6514,16 @@ impl QwenDense {
                         {
                             // f16 cache not built yet — fall back to f32 predec swiglu.
                             kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
-                                &mut tcb, q4k_buf, 0, h * row_bytes,
-                                predec_scales, 0, h, intermediate,
-                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &mut tcb,
+                                q4k_buf,
+                                0,
+                                h * row_bytes,
+                                predec_scales,
+                                0,
+                                h,
+                                intermediate,
+                                &arena.ffn_gate_buf,
+                                &arena.ffn_up_buf,
                                 &arena.ffn_down_buf,
                             )?;
                             true
@@ -6317,9 +6535,16 @@ impl QwenDense {
                         .flatten()
                     {
                         kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
-                            &mut tcb, q4k_buf, 0, h * row_bytes,
-                            predec_scales, 0, h, intermediate,
-                            &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                            &mut tcb,
+                            q4k_buf,
+                            0,
+                            h * row_bytes,
+                            predec_scales,
+                            0,
+                            h,
+                            intermediate,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
                             &arena.ffn_down_buf,
                         )?;
                         true
@@ -6332,10 +6557,14 @@ impl QwenDense {
                         GgmlType::Q6_K => {
                             // Default Q4_K_M path: ffn_down is Q6_K.
                             kernels::gemv_q6_k_swiglu_pinned_tcb(
-                                &mut tcb, mmap_buf,
-                                layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                h, intermediate,
-                                &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                &mut tcb,
+                                mmap_buf,
+                                layer.ffn_down.offset,
+                                layer.ffn_down.byte_size,
+                                h,
+                                intermediate,
+                                &arena.ffn_gate_buf,
+                                &arena.ffn_up_buf,
                                 &arena.ffn_down_buf,
                             )?;
                             true
@@ -6343,14 +6572,22 @@ impl QwenDense {
                         GgmlType::Q4_K => {
                             // Native Q4_K ffn_down with predec cache.
                             if let Some(predec_scales) = ffn_down_predec
-                                .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                                .then(|| {
+                                    predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset))
+                                })
                                 .flatten()
                             {
                                 kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
-                                    &mut tcb, mmap_buf,
-                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                    predec_scales, 0, h, intermediate,
-                                    &arena.ffn_gate_buf, &arena.ffn_up_buf,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    predec_scales,
+                                    0,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_gate_buf,
+                                    &arena.ffn_up_buf,
                                     &arena.ffn_down_buf,
                                 )?;
                                 true
@@ -6416,8 +6653,7 @@ impl QwenDense {
                             ffn_scales,
                             &arena.ffn_down_buf,
                         )?;
-                    } else if let Some(scales_f16) = (ffn_down_predec
-                        && predec_f16scales_active)
+                    } else if let Some(scales_f16) = (ffn_down_predec && predec_f16scales_active)
                         .then(|| layer.pinned.ffn_down_q4k_predec_f16.as_ref())
                         .flatten()
                     {
@@ -6454,52 +6690,78 @@ impl QwenDense {
                     match layer.ffn_down.dtype {
                         GgmlType::Q6_K => {
                             kernels::gemv_q6_k_pinned_tcb(
-                                &mut tcb, mmap_buf,
-                                layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                h, intermediate,
-                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                &mut tcb,
+                                mmap_buf,
+                                layer.ffn_down.offset,
+                                layer.ffn_down.byte_size,
+                                h,
+                                intermediate,
+                                &arena.ffn_act_buf,
+                                &arena.ffn_down_buf,
                             )?;
                         }
                         GgmlType::Q4_K => {
-                            if let Some(scales_f16) = (ffn_down_predec
-                                && predec_f16scales_active)
-                                .then(|| predec_cache_f16_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                            if let Some(scales_f16) = (ffn_down_predec && predec_f16scales_active)
+                                .then(|| {
+                                    predec_cache_f16_ref.and_then(|m| m.get(&layer.ffn_down.offset))
+                                })
                                 .flatten()
                             {
                                 // A6.5: f16-scales ffn_down predec (native-Q4_K path).
                                 kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-                                    &mut tcb, mmap_buf,
-                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                    scales_f16, 0,
-                                    h, intermediate,
-                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    scales_f16,
+                                    0,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
                                 )?;
                             } else if let Some(predec_scales) = ffn_down_predec
-                                .then(|| predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset)))
+                                .then(|| {
+                                    predec_cache_ref.and_then(|m| m.get(&layer.ffn_down.offset))
+                                })
                                 .flatten()
                             {
                                 kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf,
-                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                    predec_scales, 0,
-                                    h, intermediate,
-                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    predec_scales,
+                                    0,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
                                 )?;
                             } else {
                                 kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                                    &mut tcb, mmap_buf,
-                                    layer.ffn_down.offset, layer.ffn_down.byte_size,
-                                    h, intermediate,
-                                    &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    layer.ffn_down.offset,
+                                    layer.ffn_down.byte_size,
+                                    h,
+                                    intermediate,
+                                    &arena.ffn_act_buf,
+                                    &arena.ffn_down_buf,
                                 )?;
                             }
                         }
                         _ => {
-                            let f16b = layer.pinned.ffn_down_f16.as_ref()
-                                .ok_or_else(|| Error::Metal("ffn_down dtype needs f16 fallback".into()))?;
+                            let f16b = layer.pinned.ffn_down_f16.as_ref().ok_or_else(|| {
+                                Error::Metal("ffn_down dtype needs f16 fallback".into())
+                            })?;
                             kernels::gemv_f16_metal_buf_tcb(
-                                &mut tcb, f16b, h, intermediate,
-                                &arena.ffn_act_buf, &arena.ffn_down_buf,
+                                &mut tcb,
+                                f16b,
+                                h,
+                                intermediate,
+                                &arena.ffn_act_buf,
+                                &arena.ffn_down_buf,
                             )?;
                         }
                     }
@@ -6582,14 +6844,20 @@ impl QwenDense {
                 let int_buf = self
                     .eagle5_capture_intermediate_buf
                     .as_ref()
-                    .ok_or_else(|| Error::Metal("eagle5 capture intermediate buf missing".into()))?;
+                    .ok_or_else(|| {
+                        Error::Metal("eagle5 capture intermediate buf missing".into())
+                    })?;
                 // DIAGNOSTIC: when DISMANTLE_QWEN_EAGLE5_CAPTURE_XNORM=1,
                 // capture the post-final-norm hidden (x_norm_buf — what
                 // literally feeds the LM head) into res_buf instead of the
                 // pre-norm residual. Used to validate the capture mechanism:
                 // (captured @ lm_head).argmax must equal the generated token.
                 let cap_xnorm = crate::env_on("DISMANTLE_QWEN_EAGLE5_CAPTURE_XNORM");
-                let res_src = if cap_xnorm { &arena.x_norm_buf } else { &arena.x_buf };
+                let res_src = if cap_xnorm {
+                    &arena.x_norm_buf
+                } else {
+                    &arena.x_buf
+                };
                 kernels::memcpy_f32_off_tcb(&mut tcb, res_src, res_buf, 0, 0, h)?;
                 kernels::memcpy_f32_off_tcb(&mut tcb, &arena.ffn_down_buf, int_buf, 0, 0, h)?;
             }
@@ -6614,8 +6882,7 @@ impl QwenDense {
                 h,
             )?;
         }
-        if let (Some(pruned_buf), Some(pn)) =
-            (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
+        if let (Some(pruned_buf), Some(pn)) = (self.lm_head_pruned_buf.as_ref(), self.vocab_pruned)
         {
             if self.vocab_pruned_is_q4k {
                 if h % 256 != 0 {
@@ -6761,7 +7028,12 @@ impl QwenDense {
                     &arena.x_norm_buf,
                     &arena.logits_buf,
                 )?;
-                kernels::sample_argmax_f32_tcb(&mut tcb, &arena.logits_buf, &arena.token_buf, vocab)?;
+                kernels::sample_argmax_f32_tcb(
+                    &mut tcb,
+                    &arena.logits_buf,
+                    &arena.token_buf,
+                    vocab,
+                )?;
                 self.last_dispatch_count = tcb.dispatch_count;
                 tcb.commit_and_wait()?;
                 self.kv.seq_len += 1;
@@ -6841,11 +7113,7 @@ impl QwenDense {
     /// Returns the activation at `hidden` length. Caller is responsible
     /// for running this once per token to build a sample sequence.
     #[cfg(target_os = "macos")]
-    pub fn dump_x_norm_after_forward(
-        &mut self,
-        token: u32,
-        pos: usize,
-    ) -> Result<Vec<f32>> {
+    pub fn dump_x_norm_after_forward(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
         // Run forward as usual; we don't care about the predicted token,
         // only the x_norm side effect in the arena.
         let _ = self.forward_token_greedy_tcb(token, pos)?;
@@ -6872,18 +7140,15 @@ impl QwenDense {
     /// `forward_token_greedy_tcb` would do B times.
     #[cfg(target_os = "macos")]
     #[allow(clippy::too_many_arguments)]
-    pub fn forward_tokens_batch_tcb(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-    ) -> Result<()> {
+    pub fn forward_tokens_batch_tcb(&mut self, tokens: &[u32], positions: &[usize]) -> Result<()> {
         use crate::kernels;
         use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
 
         if tokens.len() != positions.len() {
             return Err(Error::Model(format!(
                 "forward_tokens_batch_tcb: tokens={} positions={}",
-                tokens.len(), positions.len()
+                tokens.len(),
+                positions.len()
             )));
         }
         let b = tokens.len();
@@ -6912,10 +7177,9 @@ impl QwenDense {
             .embed_buf
             .as_ref()
             .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: embed not pinned".into()))?;
-        let final_norm_buf = self
-            .final_norm_buf
-            .as_ref()
-            .ok_or_else(|| Error::Metal("forward_tokens_batch_tcb: final_norm not pinned".into()))?;
+        let final_norm_buf = self.final_norm_buf.as_ref().ok_or_else(|| {
+            Error::Metal("forward_tokens_batch_tcb: final_norm not pinned".into())
+        })?;
 
         let cfg = &self.config;
         let h = cfg.hidden;
@@ -7013,10 +7277,14 @@ impl QwenDense {
                     let v_dst = arena.v_cache_buf.contents() as *mut f32;
                     unsafe {
                         std::ptr::copy_nonoverlapping(
-                            k_src.as_ptr(), k_dst.add(layer_off_elems), prefill_elems,
+                            k_src.as_ptr(),
+                            k_dst.add(layer_off_elems),
+                            prefill_elems,
                         );
                         std::ptr::copy_nonoverlapping(
-                            v_src.as_ptr(), v_dst.add(layer_off_elems), prefill_elems,
+                            v_src.as_ptr(),
+                            v_dst.add(layer_off_elems),
+                            prefill_elems,
                         );
                     }
                 }
@@ -7052,8 +7320,12 @@ impl QwenDense {
         // ── Embed B tokens into x_buf_batch[b, :] ────────────────
         for (bi, &tok) in tokens.iter().enumerate() {
             kernels::embed_lookup_metal_f32_off_tcb(
-                &mut tcb, embed_buf, tok, h,
-                &arena.x_buf_batch, bi * h_bytes,
+                &mut tcb,
+                embed_buf,
+                tok,
+                h,
+                &arena.x_buf_batch,
+                bi * h_bytes,
             )?;
         }
 
@@ -7066,9 +7338,13 @@ impl QwenDense {
         for bi in 0..b {
             kernels::rmsnorm_metal_buf_off_tcb(
                 &mut tcb,
-                &arena.x_buf_batch, bi * h_bytes,
-                layer0_attn_norm, eps, h,
-                &arena.x_norm_buf_batch, bi * h_bytes,
+                &arena.x_buf_batch,
+                bi * h_bytes,
+                layer0_attn_norm,
+                eps,
+                h,
+                &arena.x_norm_buf_batch,
+                bi * h_bytes,
             )?;
         }
 
@@ -7086,52 +7362,103 @@ impl QwenDense {
                     GgmlType::Q4_K => {
                         // Contiguous layout: (B, cols) f32 → (B, rows) f32.
                         // Requires x_stride = cols*f32 and out_stride = rows*f32.
-                        debug_assert_eq!($x_stride, $cols * f32_bytes,
-                            "batched_proj: Q4_K requires contiguous x_stride");
-                        debug_assert_eq!($out_stride, $rows * f32_bytes,
-                            "batched_proj: Q4_K requires contiguous out_stride");
-                        if let Some(scales) =
-                            predec_cache.and_then(|c| c.get(&$tref.offset))
-                        {
+                        debug_assert_eq!(
+                            $x_stride,
+                            $cols * f32_bytes,
+                            "batched_proj: Q4_K requires contiguous x_stride"
+                        );
+                        debug_assert_eq!(
+                            $out_stride,
+                            $rows * f32_bytes,
+                            "batched_proj: Q4_K requires contiguous out_stride"
+                        );
+                        if let Some(scales) = predec_cache.and_then(|c| c.get(&$tref.offset)) {
                             // P1-A: rows>cols (ffn gate/up) → predec-MMA twin
                             // (Option B, the shipped win). Other shapes keep the
                             // tuned predec kernel (MMA loses on square/wide).
                             if mma_on && $rows > $cols {
                                 kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             } else if b <= 4 {
                                 kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             } else {
                                 kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             }
                         } else if mma_on && $rows > $cols {
                             // Option A: predec-off parity anchor for rows>cols.
                             kernels::gemm_q4_k_m_batched_v3w_mma_pinned_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                $rows, $cols, b, $x_batch, $out_batch,
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                b,
+                                $x_batch,
+                                $out_batch,
                             )?;
                         } else {
                             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                $rows, $cols, b, $x_batch, $out_batch,
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                b,
+                                $x_batch,
+                                $out_batch,
                             )?;
                         }
                     }
                     GgmlType::Q6_K => {
                         for bi in 0..b {
                             kernels::gemv_q6_k_pinned_off_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                $rows, $cols,
-                                $x_batch, bi * $x_stride,
-                                $out_batch, bi * $out_stride,
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                $x_batch,
+                                bi * $x_stride,
+                                $out_batch,
+                                bi * $out_stride,
                             )?;
                         }
                     }
@@ -7143,9 +7470,14 @@ impl QwenDense {
                         })?;
                         for bi in 0..b {
                             kernels::gemv_f16_metal_buf_off_tcb(
-                                &mut tcb, buf_f16, $rows, $cols,
-                                $x_batch, bi * $x_stride,
-                                $out_batch, bi * $out_stride,
+                                &mut tcb,
+                                buf_f16,
+                                $rows,
+                                $cols,
+                                $x_batch,
+                                bi * $x_stride,
+                                $out_batch,
+                                bi * $out_stride,
                             )?;
                         }
                     }
@@ -7161,39 +7493,57 @@ impl QwenDense {
 
             // ── Q / K / V projections ────────────────────────────
             batched_proj!(
-                layer.q_proj, layer.pinned.q_proj_f16.as_ref(),
-                q_dim, h,
-                &arena.x_norm_buf_batch, h_bytes,
-                &arena.q_buf_batch, q_dim_bytes
+                layer.q_proj,
+                layer.pinned.q_proj_f16.as_ref(),
+                q_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.q_buf_batch,
+                q_dim_bytes
             );
             batched_proj!(
-                layer.k_proj, layer.pinned.k_proj_f16.as_ref(),
-                kv_dim, h,
-                &arena.x_norm_buf_batch, h_bytes,
-                &arena.k_token_buf_batch, kv_dim_bytes
+                layer.k_proj,
+                layer.pinned.k_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.k_token_buf_batch,
+                kv_dim_bytes
             );
             batched_proj!(
-                layer.v_proj, layer.pinned.v_proj_f16.as_ref(),
-                kv_dim, h,
-                &arena.x_norm_buf_batch, h_bytes,
-                &arena.v_token_buf_batch, kv_dim_bytes
+                layer.v_proj,
+                layer.pinned.v_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.v_token_buf_batch,
+                kv_dim_bytes
             );
 
             // ── Biases: broadcast one bias vector across B output
             // rows in a single dispatch — saves 3*(B-1) per layer.
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
-                kernels::add_inplace_broadcast_tcb(
-                    &mut tcb, &arena.q_buf_batch, qb, q_dim, b,
-                )?;
+                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.q_buf_batch, qb, q_dim, b)?;
             }
             if let Some(kb) = layer.pinned.k_bias.as_ref() {
                 kernels::add_inplace_broadcast_tcb(
-                    &mut tcb, &arena.k_token_buf_batch, kb, kv_dim, b,
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    kb,
+                    kv_dim,
+                    b,
                 )?;
             }
             if let Some(vb) = layer.pinned.v_bias.as_ref() {
                 kernels::add_inplace_broadcast_tcb(
-                    &mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b,
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    vb,
+                    kv_dim,
+                    b,
                 )?;
             }
 
@@ -7201,12 +7551,26 @@ impl QwenDense {
             for bi in 0..b {
                 let pos_u32 = (p0 + bi) as u32;
                 kernels::rope_q_f32_inplace_off_tcb(
-                    &mut tcb, &arena.q_buf_batch, bi * q_dim_bytes,
-                    n_heads, head_dim, 0, head_dim, pos_u32, theta,
+                    &mut tcb,
+                    &arena.q_buf_batch,
+                    bi * q_dim_bytes,
+                    n_heads,
+                    head_dim,
+                    0,
+                    head_dim,
+                    pos_u32,
+                    theta,
                 )?;
                 kernels::rope_q_f32_inplace_off_tcb(
-                    &mut tcb, &arena.k_token_buf_batch, bi * kv_dim_bytes,
-                    n_kv_heads, head_dim, 0, head_dim, pos_u32, theta,
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    bi * kv_dim_bytes,
+                    n_kv_heads,
+                    head_dim,
+                    0,
+                    head_dim,
+                    pos_u32,
+                    theta,
                 )?;
             }
 
@@ -7263,28 +7627,44 @@ impl QwenDense {
                 kernels::mha_decode_f16kv_batched_tcb(
                     &mut tcb,
                     &arena.q_buf_batch,
-                    arena.k_cache_f16_buf.as_ref().unwrap(), f16_off,
-                    arena.v_cache_f16_buf.as_ref().unwrap(), f16_off,
+                    arena.k_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
+                    arena.v_cache_f16_buf.as_ref().unwrap(),
+                    f16_off,
                     &arena.attn_out_buf_batch,
-                    p0, b, head_dim, n_heads, n_kv_heads,
+                    p0,
+                    b,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
                 )?;
             } else {
                 kernels::mha_decode_f32_batched_tcb(
                     &mut tcb,
                     &arena.q_buf_batch,
-                    &arena.k_cache_buf, layer_kv_off_bytes,
-                    &arena.v_cache_buf, layer_kv_off_bytes,
+                    &arena.k_cache_buf,
+                    layer_kv_off_bytes,
+                    &arena.v_cache_buf,
+                    layer_kv_off_bytes,
                     &arena.attn_out_buf_batch,
-                    p0, b, head_dim, n_heads, n_kv_heads,
+                    p0,
+                    b,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
                 )?;
             }
 
             // ── O projection (batched) ───────────────────────────
             batched_proj!(
-                layer.o_proj, layer.pinned.o_proj_f16.as_ref(),
-                h, q_dim,
-                &arena.attn_out_buf_batch, q_dim_bytes,
-                &arena.o_proj_out_buf_batch, h_bytes
+                layer.o_proj,
+                layer.pinned.o_proj_f16.as_ref(),
+                h,
+                q_dim,
+                &arena.attn_out_buf_batch,
+                q_dim_bytes,
+                &arena.o_proj_out_buf_batch,
+                h_bytes
             );
 
             // ── Fused (x += o_proj_out) + FFN norm, B rows in 1 dispatch.
@@ -7299,21 +7679,31 @@ impl QwenDense {
                 &arena.o_proj_out_buf_batch,
                 ffn_norm_pin,
                 &arena.x_norm_buf_batch,
-                eps, h, b,
+                eps,
+                h,
+                b,
             )?;
 
             // ── FFN gate / up / silu_mul / down ──────────────────
             batched_proj!(
-                layer.ffn_gate, layer.pinned.ffn_gate_f16.as_ref(),
-                intermediate, h,
-                &arena.x_norm_buf_batch, h_bytes,
-                &arena.ffn_gate_buf_batch, int_bytes
+                layer.ffn_gate,
+                layer.pinned.ffn_gate_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.ffn_gate_buf_batch,
+                int_bytes
             );
             batched_proj!(
-                layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(),
-                intermediate, h,
-                &arena.x_norm_buf_batch, h_bytes,
-                &arena.ffn_up_buf_batch, int_bytes
+                layer.ffn_up,
+                layer.pinned.ffn_up_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.ffn_up_buf_batch,
+                int_bytes
             );
 
             // ── Fused FFN tail: ffn_down_swiglu + add_rmsnorm_ffn.
@@ -7374,16 +7764,26 @@ impl QwenDense {
                     let blocks_per_row = intermediate / 256;
                     let row_bytes = blocks_per_row * 144;
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes,
-                        h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        h,
+                        intermediate,
+                        b,
+                        &arena.ffn_act_buf_batch,
+                        &arena.ffn_down_buf_batch,
                     )?;
                 } else {
                     batched_proj!(
-                        layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(),
-                        h, intermediate,
-                        &arena.ffn_act_buf_batch, int_bytes,
-                        &arena.ffn_down_buf_batch, h_bytes
+                        layer.ffn_down,
+                        layer.pinned.ffn_down_f16.as_ref(),
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf_batch,
+                        int_bytes,
+                        &arena.ffn_down_buf_batch,
+                        h_bytes
                     );
                 }
                 // ── Fused (x += ffn_down) + next-layer attn_norm
@@ -7394,7 +7794,9 @@ impl QwenDense {
                     &arena.ffn_down_buf_batch,
                     next_norm,
                     &arena.x_norm_buf_batch,
-                    eps, h, b,
+                    eps,
+                    h,
+                    b,
                 )?;
             }
             let _ = kv_dim_bytes;
@@ -7640,9 +8042,16 @@ impl QwenDense {
                                 // activations start at offset 0 in the batch buffer, so
                                 // passing $x_batch / $out_batch directly is correct.
                                 kernels::gemv_q4_k_v4_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols,
-                                    $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             } else if b <= 4 || v4r_highb {
                                 // v4r: barrier-free, 16 rows/TG, direct device x reads.
@@ -7654,31 +8063,62 @@ impl QwenDense {
                                 // disputes it → DISMANTLE_QWEN_MULTISEQ_V4R_HIGHB routes
                                 // B=5..8 here too so a clean aggregate bench can decide.
                                 kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             } else {
                                 // B=5..8: v3w wins (shmem staging amortizes x reads,
                                 // barrier cost < strided device-memory x-read cost).
                                 kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                                    &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                    scales, 0, $rows, $cols, b, $x_batch, $out_batch,
+                                    &mut tcb,
+                                    mmap_buf,
+                                    $tref.offset,
+                                    $tref.byte_size,
+                                    scales,
+                                    0,
+                                    $rows,
+                                    $cols,
+                                    b,
+                                    $x_batch,
+                                    $out_batch,
                                 )?;
                             }
                         } else {
                             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                $rows, $cols, b, $x_batch, $out_batch,
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                b,
+                                $x_batch,
+                                $out_batch,
                             )?;
                         }
                     }
                     GgmlType::Q6_K => {
                         for bi in 0..b {
                             kernels::gemv_q6_k_pinned_off_tcb(
-                                &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
-                                $rows, $cols,
-                                $x_batch, bi * $x_stride,
-                                $out_batch, bi * $out_stride,
+                                &mut tcb,
+                                mmap_buf,
+                                $tref.offset,
+                                $tref.byte_size,
+                                $rows,
+                                $cols,
+                                $x_batch,
+                                bi * $x_stride,
+                                $out_batch,
+                                bi * $out_stride,
                             )?;
                         }
                     }
@@ -7688,9 +8128,14 @@ impl QwenDense {
                         })?;
                         for bi in 0..b {
                             kernels::gemv_f16_metal_buf_off_tcb(
-                                &mut tcb, buf_f16, $rows, $cols,
-                                $x_batch, bi * $x_stride,
-                                $out_batch, bi * $out_stride,
+                                &mut tcb,
+                                buf_f16,
+                                $rows,
+                                $cols,
+                                $x_batch,
+                                bi * $x_stride,
+                                $out_batch,
+                                bi * $out_stride,
                             )?;
                         }
                     }
@@ -7701,7 +8146,12 @@ impl QwenDense {
         // Track 3.2: batched embed + layer-0 rmsnorm — 2 dispatches regardless of B
         // (was 2*B per-slot loops). At B=8 saves 14 dispatches; B=1 no change.
         kernels::embed_lookup_f32_batched_tcb(
-            &mut tcb, embed_buf, &tok_buf, &arena.x_buf_batch, h, b,
+            &mut tcb,
+            embed_buf,
+            &tok_buf,
+            &arena.x_buf_batch,
+            h,
+            b,
         )?;
         let layer0_attn_norm = self.layers[0]
             .pinned
@@ -7709,28 +8159,69 @@ impl QwenDense {
             .as_ref()
             .ok_or_else(|| Error::Metal("layer 0 attn_norm not pinned".into()))?;
         kernels::rmsnorm_f32_batched_tcb(
-            &mut tcb, &arena.x_buf_batch, layer0_attn_norm,
-            &arena.x_norm_buf_batch, eps, h, b,
+            &mut tcb,
+            &arena.x_buf_batch,
+            layer0_attn_norm,
+            &arena.x_norm_buf_batch,
+            eps,
+            h,
+            b,
         )?;
 
         for li in 0..cfg.n_layers {
             let layer = &self.layers[li];
 
-            batched_proj!(layer.q_proj, layer.pinned.q_proj_f16.as_ref(), q_dim, h,
-                &arena.x_norm_buf_batch, h_bytes, &arena.q_buf_batch, q_dim_bytes);
-            batched_proj!(layer.k_proj, layer.pinned.k_proj_f16.as_ref(), kv_dim, h,
-                &arena.x_norm_buf_batch, h_bytes, &arena.k_token_buf_batch, kv_dim_bytes);
-            batched_proj!(layer.v_proj, layer.pinned.v_proj_f16.as_ref(), kv_dim, h,
-                &arena.x_norm_buf_batch, h_bytes, &arena.v_token_buf_batch, kv_dim_bytes);
+            batched_proj!(
+                layer.q_proj,
+                layer.pinned.q_proj_f16.as_ref(),
+                q_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.q_buf_batch,
+                q_dim_bytes
+            );
+            batched_proj!(
+                layer.k_proj,
+                layer.pinned.k_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.k_token_buf_batch,
+                kv_dim_bytes
+            );
+            batched_proj!(
+                layer.v_proj,
+                layer.pinned.v_proj_f16.as_ref(),
+                kv_dim,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.v_token_buf_batch,
+                kv_dim_bytes
+            );
 
             if let Some(qb) = layer.pinned.q_bias.as_ref() {
                 kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.q_buf_batch, qb, q_dim, b)?;
             }
             if let Some(kb) = layer.pinned.k_bias.as_ref() {
-                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.k_token_buf_batch, kb, kv_dim, b)?;
+                kernels::add_inplace_broadcast_tcb(
+                    &mut tcb,
+                    &arena.k_token_buf_batch,
+                    kb,
+                    kv_dim,
+                    b,
+                )?;
             }
             if let Some(vb) = layer.pinned.v_bias.as_ref() {
-                kernels::add_inplace_broadcast_tcb(&mut tcb, &arena.v_token_buf_batch, vb, kv_dim, b)?;
+                kernels::add_inplace_broadcast_tcb(
+                    &mut tcb,
+                    &arena.v_token_buf_batch,
+                    vb,
+                    kv_dim,
+                    b,
+                )?;
             }
 
             // Fused Q+K RoPE: ONE dispatch/layer instead of two (Track 3.4).
@@ -7755,25 +8246,49 @@ impl QwenDense {
             let layer_off_elems = li * layer_kv_stride_elems;
             kernels::kv_scatter_append_multiseq_tcb(
                 &mut tcb,
-                &arena.k_token_buf_batch, &arena.v_token_buf_batch,
-                &arena.k_cache_buf, &arena.v_cache_buf,
-                &region_buf, &pos_buf,
-                kv_dim, b, slot_stride_elems, layer_off_elems,
+                &arena.k_token_buf_batch,
+                &arena.v_token_buf_batch,
+                &arena.k_cache_buf,
+                &arena.v_cache_buf,
+                &region_buf,
+                &pos_buf,
+                kv_dim,
+                b,
+                slot_stride_elems,
+                layer_off_elems,
             )?;
 
             // Multi-seq MHA: per-slot positions + per-slot KV base.
             let layer_kv_off_bytes = layer_off_elems * f32_bytes;
             kernels::mha_decode_f32_batched_multiseq_tcb(
-                &mut tcb, &arena.q_buf_batch,
-                &arena.k_cache_buf, layer_kv_off_bytes,
-                &arena.v_cache_buf, layer_kv_off_bytes,
-                &arena.attn_out_buf_batch, &pos_buf, &region_buf, mha_max_seq, slot_stride_elems,
-                b, head_dim, n_heads, n_kv_heads,
+                &mut tcb,
+                &arena.q_buf_batch,
+                &arena.k_cache_buf,
+                layer_kv_off_bytes,
+                &arena.v_cache_buf,
+                layer_kv_off_bytes,
+                &arena.attn_out_buf_batch,
+                &pos_buf,
+                &region_buf,
+                mha_max_seq,
+                slot_stride_elems,
+                b,
+                head_dim,
+                n_heads,
+                n_kv_heads,
             )?;
 
             // O projection.
-            batched_proj!(layer.o_proj, layer.pinned.o_proj_f16.as_ref(), h, q_dim,
-                &arena.attn_out_buf_batch, q_dim_bytes, &arena.o_proj_out_buf_batch, h_bytes);
+            batched_proj!(
+                layer.o_proj,
+                layer.pinned.o_proj_f16.as_ref(),
+                h,
+                q_dim,
+                &arena.attn_out_buf_batch,
+                q_dim_bytes,
+                &arena.o_proj_out_buf_batch,
+                h_bytes
+            );
 
             // Fused (x += o_proj_out) + ffn_norm.
             let ffn_norm_pin = layer
@@ -7782,15 +8297,37 @@ impl QwenDense {
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
             kernels::add_rmsnorm_fused_batched_tcb(
-                &mut tcb, &arena.x_buf_batch, &arena.o_proj_out_buf_batch,
-                ffn_norm_pin, &arena.x_norm_buf_batch, eps, h, b,
+                &mut tcb,
+                &arena.x_buf_batch,
+                &arena.o_proj_out_buf_batch,
+                ffn_norm_pin,
+                &arena.x_norm_buf_batch,
+                eps,
+                h,
+                b,
             )?;
 
             // FFN gate / up / silu_mul / down.
-            batched_proj!(layer.ffn_gate, layer.pinned.ffn_gate_f16.as_ref(), intermediate, h,
-                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_gate_buf_batch, int_bytes);
-            batched_proj!(layer.ffn_up, layer.pinned.ffn_up_f16.as_ref(), intermediate, h,
-                &arena.x_norm_buf_batch, h_bytes, &arena.ffn_up_buf_batch, int_bytes);
+            batched_proj!(
+                layer.ffn_gate,
+                layer.pinned.ffn_gate_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.ffn_gate_buf_batch,
+                int_bytes
+            );
+            batched_proj!(
+                layer.ffn_up,
+                layer.pinned.ffn_up_f16.as_ref(),
+                intermediate,
+                h,
+                &arena.x_norm_buf_batch,
+                h_bytes,
+                &arena.ffn_up_buf_batch,
+                int_bytes
+            );
 
             // Fused FFN tail: Q4_K predec ffn_down_swiglu followed by the
             // existing batched add+rmsnorm_ffn tail. The B=1 case uses the
@@ -7837,24 +8374,48 @@ impl QwenDense {
                 // Non-swiglu path (no Q4K predec, or non-Q4K ffn_down):
                 // keep the original silu_mul + separate ffn_down.
                 kernels::silu_mul_tcb(
-                    &mut tcb, &arena.ffn_gate_buf_batch, &arena.ffn_up_buf_batch,
-                    &arena.ffn_act_buf_batch, intermediate * b,
+                    &mut tcb,
+                    &arena.ffn_gate_buf_batch,
+                    &arena.ffn_up_buf_batch,
+                    &arena.ffn_act_buf_batch,
+                    intermediate * b,
                 )?;
                 if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                     let blocks_per_row = intermediate / 256;
                     let row_bytes = blocks_per_row * 144;
                     kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                        &mut tcb, q4k_buf, 0, h * row_bytes, h, intermediate, b,
-                        &arena.ffn_act_buf_batch, &arena.ffn_down_buf_batch,
+                        &mut tcb,
+                        q4k_buf,
+                        0,
+                        h * row_bytes,
+                        h,
+                        intermediate,
+                        b,
+                        &arena.ffn_act_buf_batch,
+                        &arena.ffn_down_buf_batch,
                     )?;
                 } else {
-                    batched_proj!(layer.ffn_down, layer.pinned.ffn_down_f16.as_ref(), h, intermediate,
-                        &arena.ffn_act_buf_batch, int_bytes, &arena.ffn_down_buf_batch, h_bytes);
+                    batched_proj!(
+                        layer.ffn_down,
+                        layer.pinned.ffn_down_f16.as_ref(),
+                        h,
+                        intermediate,
+                        &arena.ffn_act_buf_batch,
+                        int_bytes,
+                        &arena.ffn_down_buf_batch,
+                        h_bytes
+                    );
                 }
                 // Fused (x += ffn_down) + next-layer attn_norm (or final norm).
                 kernels::add_rmsnorm_fused_batched_tcb(
-                    &mut tcb, &arena.x_buf_batch, &arena.ffn_down_buf_batch,
-                    next_norm, &arena.x_norm_buf_batch, eps, h, b,
+                    &mut tcb,
+                    &arena.x_buf_batch,
+                    &arena.ffn_down_buf_batch,
+                    next_norm,
+                    &arena.x_norm_buf_batch,
+                    eps,
+                    h,
+                    b,
                 )?;
             }
         }
@@ -7926,9 +8487,16 @@ impl QwenDense {
                 .ok_or_else(|| Error::Metal("forward_tokens_multiseq: no metal_ctx".into()))?;
             let cfg = &self.config;
             self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
-                ctx, cfg.n_layers, cfg.n_heads, cfg.n_kv_heads, cfg.head_dim,
-                cfg.hidden, cfg.intermediate, cfg.vocab_size,
-                MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX, MAX_MULTISEQ_SLOTS,
+                ctx,
+                cfg.n_layers,
+                cfg.n_heads,
+                cfg.n_kv_heads,
+                cfg.head_dim,
+                cfg.hidden,
+                cfg.intermediate,
+                cfg.vocab_size,
+                MAX_MULTISEQ_SLOTS * MAX_MULTISEQ_CTX,
+                MAX_MULTISEQ_SLOTS,
             ));
         }
 
@@ -7945,8 +8513,13 @@ impl QwenDense {
         // final norm encoded). We append the LM-head GEMM into this SAME tcb when
         // R1 is ON, or commit it as-is on the CPU-fallback path. Either way there
         // is ONE commit_and_wait per decode step, not two.
-        let mut tcb =
-            self.forward_tokens_multiseq_stack_tcb(arena, tokens, positions, regions, max_seq_per_slot)?;
+        let mut tcb = self.forward_tokens_multiseq_stack_tcb(
+            arena,
+            tokens,
+            positions,
+            regions,
+            max_seq_per_slot,
+        )?;
 
         let h = self.config.hidden;
         let vocab = self.config.vocab_size;
@@ -7986,8 +8559,15 @@ impl QwenDense {
             // wrong dimensions for a predec GEMV over the full-vocab head.
             // GPU v3w beats CPU f16 at every batch size, which is the real gain.
             crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, lhq, 0, w_bytes, vocab, h, b,
-                &arena.x_norm_buf_batch, &logits_buf,
+                &mut tcb,
+                lhq,
+                0,
+                w_bytes,
+                vocab,
+                h,
+                b,
+                &arena.x_norm_buf_batch,
+                &logits_buf,
             )?;
             // ONE round-trip: layers + LM head in a single submit/fence.
             // Read dispatch_count before commit (which moves/drops tcb).
@@ -8058,10 +8638,8 @@ impl QwenDense {
 
         // Require Q4K LM head and shape preconditions for the on-GPU path.
         // Fall back to full-logits + CPU argmax when any condition fails.
-        let use_gpu_path = self.lm_head_q4k_buf.is_some()
-            && h % 256 == 0
-            && (1..=8).contains(&b)
-            && b > 0;
+        let use_gpu_path =
+            self.lm_head_q4k_buf.is_some() && h % 256 == 0 && (1..=8).contains(&b) && b > 0;
 
         if !use_gpu_path {
             let logits =
@@ -8072,9 +8650,7 @@ impl QwenDense {
                     l.iter()
                         .copied()
                         .enumerate()
-                        .max_by(|a, b| {
-                            a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less)
-                        })
+                        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
                         .map(|(i, _)| i as u32)
                         .unwrap_or(0)
                 })
@@ -8096,10 +8672,9 @@ impl QwenDense {
             )));
         }
         if self.multiseq_arena.is_none() {
-            let ctx = self
-                .metal_ctx
-                .as_ref()
-                .ok_or_else(|| Error::Metal("forward_tokens_multiseq_greedy: no metal_ctx".into()))?;
+            let ctx = self.metal_ctx.as_ref().ok_or_else(|| {
+                Error::Metal("forward_tokens_multiseq_greedy: no metal_ctx".into())
+            })?;
             let cfg = &self.config;
             self.multiseq_arena = Some(crate::metal::DenseDecodeArena::new_with_batch(
                 ctx,
@@ -8347,15 +8922,24 @@ impl QwenDense {
             let t2 = std::time::Instant::now();
             let mut tcb = TokenCommandBuffer::new(ctx);
             crate::kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, lm, 0, w_bytes, pruned, h, b,
-                &arena.x_norm_buf_batch, &logits_buf,
+                &mut tcb,
+                lm,
+                0,
+                w_bytes,
+                pruned,
+                h,
+                b,
+                &arena.x_norm_buf_batch,
+                &logits_buf,
             )?;
             tcb.commit_and_wait()?;
             let t_gemm = t2.elapsed();
             if vtim {
                 eprintln!(
                     "[verify-timing] B={} fwd={:.1}ms alloc={:.1}ms gemm+commit={:.1}ms",
-                    b, t_fwd.as_secs_f64() * 1e3, t_alloc.as_secs_f64() * 1e3,
+                    b,
+                    t_fwd.as_secs_f64() * 1e3,
+                    t_alloc.as_secs_f64() * 1e3,
                     t_gemm.as_secs_f64() * 1e3,
                 );
             }
@@ -8378,9 +8962,10 @@ impl QwenDense {
 
         // FALLBACK: CPU fp16 full-vocab LM head.
         let logits = self.forward_tokens_batched_with_logits(tokens, positions)?;
-        let arena = self.dense_arena.as_ref().ok_or_else(|| {
-            Error::Metal("forward_tokens_verify: arena not initialized".into())
-        })?;
+        let arena = self
+            .dense_arena
+            .as_ref()
+            .ok_or_else(|| Error::Metal("forward_tokens_verify: arena not initialized".into()))?;
         let xbuf = arena.x_buf_batch.contents() as *const f32;
         let residuals: Vec<Vec<f32>> = (0..b)
             .map(|i| unsafe { std::slice::from_raw_parts(xbuf.add(i * h), h) }.to_vec())
@@ -8403,10 +8988,7 @@ impl QwenDense {
 // + offline tool have a CPU-side reference for what the runtime will
 // eventually do.
 #[allow(dead_code)]
-pub(crate) fn load_q4k_fast_tensor(
-    path: &Path,
-    name: &str,
-) -> Result<Option<Vec<u8>>> {
+pub(crate) fn load_q4k_fast_tensor(path: &Path, name: &str) -> Result<Option<Vec<u8>>> {
     use crate::q4k_fast::parse_header;
     if !path.exists() {
         return Ok(None);

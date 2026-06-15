@@ -22,7 +22,14 @@ fn fixed_f32_positive(n: usize, seed: u64) -> Vec<f32> {
     (0..n).map(|_| rng.gen_range(0.5_f32..1.5_f32)).collect()
 }
 
-fn cpu_rmsnorm_gemv_f32(w: &[f32], x: &[f32], weight: &[f32], eps: f32, rows: usize, cols: usize) -> Vec<f32> {
+fn cpu_rmsnorm_gemv_f32(
+    w: &[f32],
+    x: &[f32],
+    weight: &[f32],
+    eps: f32,
+    rows: usize,
+    cols: usize,
+) -> Vec<f32> {
     let mut x_norm = vec![0.0f32; cols];
     kernels::rmsnorm(x, weight, eps, &mut x_norm);
     let mut out = vec![0.0f32; rows];
@@ -54,7 +61,14 @@ fn wedge_g_rmsnorm_gemv_f32_attn_pinned_tcb_matches_cpu() {
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
-        &mut tcb, &w_buf, &x_buf, &weight_buf, eps, &out_buf, rows, cols,
+        &mut tcb,
+        &w_buf,
+        &x_buf,
+        &weight_buf,
+        eps,
+        &out_buf,
+        rows,
+        cols,
     )
     .expect("rmsnorm_gemv_f32_attn_pinned_tcb");
     tcb.commit_and_wait().expect("commit");
@@ -72,9 +86,9 @@ fn wedge_g_rmsnorm_gemv_f32_attn_pinned_tcb_matches_cpu() {
 #[test]
 fn wedge_g_fused_pair_matches_cpu() {
     let ctx = ctx();
-    let rows_a = 48usize;  // q_lora_rank analogue
-    let rows_b = 64usize;  // kv_a_dim analogue
-    let cols = 128usize;   // hidden analogue
+    let rows_a = 48usize; // q_lora_rank analogue
+    let rows_b = 64usize; // kv_a_dim analogue
+    let cols = 128usize; // hidden analogue
     let eps = 1e-5f32;
 
     let w_a = fixed_f32(rows_a * cols, 0xAAAA_1111);
@@ -94,11 +108,25 @@ fn wedge_g_fused_pair_matches_cpu() {
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
-        &mut tcb, &w_a_buf, &x_buf, &weight_buf, eps, &out_a_buf, rows_a, cols,
+        &mut tcb,
+        &w_a_buf,
+        &x_buf,
+        &weight_buf,
+        eps,
+        &out_a_buf,
+        rows_a,
+        cols,
     )
     .expect("rmsnorm_gemv q_a");
     kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
-        &mut tcb, &w_b_buf, &x_buf, &weight_buf, eps, &out_b_buf, rows_b, cols,
+        &mut tcb,
+        &w_b_buf,
+        &x_buf,
+        &weight_buf,
+        eps,
+        &out_b_buf,
+        rows_b,
+        cols,
     )
     .expect("rmsnorm_gemv kv_a");
     tcb.commit_and_wait().expect("commit");
@@ -108,10 +136,7 @@ fn wedge_g_fused_pair_matches_cpu() {
 
     let diff_a = max_abs_diff(&cpu_out_a, &gpu_out_a);
     let diff_b = max_abs_diff(&cpu_out_b, &gpu_out_b);
-    assert!(
-        diff_a < 1e-3,
-        "q_a fused: max_abs_diff={diff_a:.2e} > 1e-3"
-    );
+    assert!(diff_a < 1e-3, "q_a fused: max_abs_diff={diff_a:.2e} > 1e-3");
     assert!(
         diff_b < 1e-3,
         "kv_a fused: max_abs_diff={diff_b:.2e} > 1e-3"
@@ -148,7 +173,14 @@ fn wedge_g_fused_argmax_agrees_with_unfused() {
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::rmsnorm_gemv_f32_attn_pinned_tcb(
-        &mut tcb, &w_buf, &x_buf, &weight_buf, eps, &out_buf, rows, cols,
+        &mut tcb,
+        &w_buf,
+        &x_buf,
+        &weight_buf,
+        eps,
+        &out_buf,
+        rows,
+        cols,
     )
     .expect("rmsnorm_gemv_f32_attn_pinned_tcb");
     tcb.commit_and_wait().expect("commit");

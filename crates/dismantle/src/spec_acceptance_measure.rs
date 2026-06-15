@@ -16,7 +16,10 @@ use dismantle_core::{model::load_engine, EngineConfig};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "dismantle-spec-acceptance-measure", about = "Phase 3 acceptance-rate measurement")]
+#[command(
+    name = "dismantle-spec-acceptance-measure",
+    about = "Phase 3 acceptance-rate measurement"
+)]
 struct Cli {
     /// Path to the GGUF weights file.
     #[arg(long)]

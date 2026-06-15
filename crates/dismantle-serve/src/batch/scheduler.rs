@@ -139,11 +139,11 @@ impl PrefixIndex {
 #[inline]
 fn prompt_length_bucket(len: usize) -> usize {
     match len {
-        0..=16     => 0,
-        17..=64    => 1,
-        65..=256   => 2,
+        0..=16 => 0,
+        17..=64 => 1,
+        65..=256 => 2,
         257..=1024 => 3,
-        _          => 4,
+        _ => 4,
     }
 }
 
@@ -222,7 +222,11 @@ pub fn group_by_prefix(slots: &[Slot], max_batch: usize, min_shared: usize) -> V
         Some((_, _, _, ids)) => ids.into_iter().take(max_batch).collect(),
         None => {
             // Latency-safety: no qualifying group -> FIFO admit by slot id.
-            cands.into_iter().take(max_batch).map(|(id, _)| id).collect()
+            cands
+                .into_iter()
+                .take(max_batch)
+                .map(|(id, _)| id)
+                .collect()
         }
     }
 }
@@ -238,9 +242,7 @@ pub struct Scheduler {
 
 impl Scheduler {
     pub fn new(max_batch_size: usize) -> Self {
-        let slots = (0..max_batch_size as u32)
-            .map(Slot::idle)
-            .collect();
+        let slots = (0..max_batch_size as u32).map(Slot::idle).collect();
         Self {
             slots,
             max_batch_size,
@@ -307,8 +309,7 @@ impl Scheduler {
                         .req
                         .as_ref()
                         .map(|r| {
-                            r.sampling.temperature <= 0.0
-                                && r.sampling.repetition_penalty <= 1.0
+                            r.sampling.temperature <= 0.0 && r.sampling.repetition_penalty <= 1.0
                         })
                         .unwrap_or(false);
                     if is_greedy {
@@ -512,7 +513,10 @@ mod tests {
         let scheduler = Scheduler::new(3);
         assert_eq!(scheduler.active_count(), 0);
         assert_eq!(scheduler.slots.len(), 3);
-        assert!(scheduler.slots.iter().all(|slot| slot.state == SlotState::Idle));
+        assert!(scheduler
+            .slots
+            .iter()
+            .all(|slot| slot.state == SlotState::Idle));
     }
 
     #[test]
@@ -590,10 +594,7 @@ mod tests {
         }
 
         let batch = scheduler.decode_batch(2);
-        let mut logits = vec![
-            vec![0.0, 3.0, 1.0],
-            vec![0.0, 1.0, 5.0],
-        ];
+        let mut logits = vec![vec![0.0, 3.0, 1.0], vec![0.0, 1.0, 5.0]];
         let decoded = scheduler
             .apply_decode_logits(&batch, &mut logits, Some(2))
             .expect("apply logits");
@@ -639,13 +640,20 @@ mod tests {
         // Bucketed selector must pick the 4-slot bucket.
         let mut scheduler = Scheduler::new(8);
         for _ in 0..4 {
-            scheduler.admit(req(4), (0..8u32).collect()).expect("admit short");
+            scheduler
+                .admit(req(4), (0..8u32).collect())
+                .expect("admit short");
         }
-        scheduler.admit(req(4), (0..512u32).collect()).expect("admit long");
+        scheduler
+            .admit(req(4), (0..512u32).collect())
+            .expect("admit long");
 
         let chosen = scheduler.prefill_slots_bucketed(8);
         assert_eq!(chosen.len(), 4, "should pick all 4 short-prompt slots");
-        assert!(!chosen.contains(&4), "long slot must not be in the chosen batch");
+        assert!(
+            !chosen.contains(&4),
+            "long slot must not be in the chosen batch"
+        );
     }
 
     #[test]
@@ -653,21 +661,30 @@ mod tests {
         // 2 short (bucket 0) vs 2 long (bucket 3) — tie; long wins.
         let mut scheduler = Scheduler::new(8);
         for _ in 0..2 {
-            scheduler.admit(req(4), (0..8u32).collect()).expect("admit short");
+            scheduler
+                .admit(req(4), (0..8u32).collect())
+                .expect("admit short");
         }
         for _ in 0..2 {
-            scheduler.admit(req(4), (0..512u32).collect()).expect("admit long");
+            scheduler
+                .admit(req(4), (0..512u32).collect())
+                .expect("admit long");
         }
         let chosen = scheduler.prefill_slots_bucketed(8);
         assert_eq!(chosen.len(), 2);
-        assert!(chosen.iter().all(|&id| id >= 2), "tie should choose long bucket");
+        assert!(
+            chosen.iter().all(|&id| id >= 2),
+            "tie should choose long bucket"
+        );
     }
 
     #[test]
     fn bucketed_prefill_homogeneous_queue_matches_plain() {
         let mut scheduler = Scheduler::new(4);
         for _ in 0..4 {
-            scheduler.admit(req(4), (0..32u32).collect()).expect("admit");
+            scheduler
+                .admit(req(4), (0..32u32).collect())
+                .expect("admit");
         }
         assert_eq!(
             scheduler.prefill_slots_bucketed(4),
@@ -686,18 +703,26 @@ mod tests {
     fn group_by_prefix_cobatches_shared_prefix() {
         // slots 0,1,2 share a 10-token prefix; slot 3 is unrelated.
         let shared: Vec<u32> = (100..110).collect();
-        let mut a = shared.clone(); a.push(1);
-        let mut b = shared.clone(); b.push(2);
-        let mut c = shared.clone(); c.push(3);
+        let mut a = shared.clone();
+        a.push(1);
+        let mut b = shared.clone();
+        b.push(2);
+        let mut c = shared.clone();
+        c.push(3);
         let d: Vec<u32> = (900..912).collect();
         let mut scheduler = Scheduler::new(4);
         prefilling(&mut scheduler, &[(0, a), (1, b), (2, c), (3, d)]);
 
         let chosen = group_by_prefix(&scheduler.slots, 4, 8);
         // The 3 shared-prefix slots must co-batch; the unrelated one excluded.
-        assert!(chosen.contains(&0) && chosen.contains(&1) && chosen.contains(&2),
-            "shared-prefix trio must co-batch, got {chosen:?}");
-        assert!(!chosen.contains(&3), "unrelated slot must not join, got {chosen:?}");
+        assert!(
+            chosen.contains(&0) && chosen.contains(&1) && chosen.contains(&2),
+            "shared-prefix trio must co-batch, got {chosen:?}"
+        );
+        assert!(
+            !chosen.contains(&3),
+            "unrelated slot must not join, got {chosen:?}"
+        );
     }
 
     #[test]
@@ -715,9 +740,19 @@ mod tests {
         // Two slots, disjoint prompts (shared prefix 0 < min_shared) -> FIFO set,
         // not starvation. Both admit, in slot-id order.
         let mut scheduler = Scheduler::new(4);
-        prefilling(&mut scheduler, &[(0, vec![1,2,3,4,5,6,7,8,9]), (1, vec![90,91,92,93,94,95,96,97,98])]);
+        prefilling(
+            &mut scheduler,
+            &[
+                (0, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                (1, vec![90, 91, 92, 93, 94, 95, 96, 97, 98]),
+            ],
+        );
         let chosen = group_by_prefix(&scheduler.slots, 4, 8);
-        assert_eq!(chosen, vec![0, 1], "disjoint prompts should FIFO-admit both, got {chosen:?}");
+        assert_eq!(
+            chosen,
+            vec![0, 1],
+            "disjoint prompts should FIFO-admit both, got {chosen:?}"
+        );
     }
 
     #[test]
@@ -725,15 +760,23 @@ mod tests {
         // Group X = slots {0,1} share 12 tokens. Group Y = slots {2,3} share 8.
         // Longer shared prefix (X) must win regardless of slot order.
         let px: Vec<u32> = (0..12).collect();
-        let mut x0 = px.clone(); x0.push(70);
-        let mut x1 = px.clone(); x1.push(71);
+        let mut x0 = px.clone();
+        x0.push(70);
+        let mut x1 = px.clone();
+        x1.push(71);
         let py: Vec<u32> = (200..208).collect();
-        let mut y0 = py.clone(); y0.push(72);
-        let mut y1 = py.clone(); y1.push(73);
+        let mut y0 = py.clone();
+        y0.push(72);
+        let mut y1 = py.clone();
+        y1.push(73);
         let mut scheduler = Scheduler::new(4);
         prefilling(&mut scheduler, &[(0, x0), (1, x1), (2, y0), (3, y1)]);
         let chosen = group_by_prefix(&scheduler.slots, 2, 8);
-        assert_eq!(chosen, vec![0, 1], "longer-shared-prefix group must win, got {chosen:?}");
+        assert_eq!(
+            chosen,
+            vec![0, 1],
+            "longer-shared-prefix group must win, got {chosen:?}"
+        );
         // Determinism: identical inputs -> identical output.
         assert_eq!(chosen, group_by_prefix(&scheduler.slots, 2, 8));
     }
@@ -742,7 +785,11 @@ mod tests {
     fn prefill_slots_prefix_grouped_falls_back_when_policy_off() {
         // With BatchPolicy::Default the prefix selector must equal the bucketed one.
         let mut scheduler = Scheduler::new(4);
-        for _ in 0..4 { scheduler.admit(req(4), (0..32u32).collect()).expect("admit"); }
+        for _ in 0..4 {
+            scheduler
+                .admit(req(4), (0..32u32).collect())
+                .expect("admit");
+        }
         assert_eq!(
             scheduler.prefill_slots_prefix_grouped(4),
             scheduler.prefill_slots_bucketed(4),

@@ -96,7 +96,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 const WARMUP: usize = 30;
@@ -165,14 +167,25 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
 
     // 1b. Q3_K fused 2r: 110 B weights, no scale table, 2-row ILP (16 rows/TG).
     let us_q3_fused_2r = time_dispatch("Q3_K fused 2r", |tcb| {
-        kernels::gemv_q3_k_fused_2r_pinned_tcb(tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf)
-            .expect("q3_k fused 2r encode");
+        kernels::gemv_q3_k_fused_2r_pinned_tcb(
+            tcb, &q3_buf, 0, q3_wlen, rows, cols, &x_buf, &y_buf,
+        )
+        .expect("q3_k fused 2r encode");
     });
 
     // 2. Q3_K predec: 110 B weights + 16 f32 scales.
     let us_q3_predec = time_dispatch("Q3_K predec", |tcb| {
         kernels::gemv_q3_k_v4_predec_pinned_tcb(
-            tcb, &q3_buf, 0, q3_wlen, &q3_scales_buf, 0, rows, cols, &x_buf, &y_buf,
+            tcb,
+            &q3_buf,
+            0,
+            q3_wlen,
+            &q3_scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_buf,
         )
         .expect("q3_k predec encode");
     });
@@ -180,7 +193,16 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     // 3. Q4_K predec: 144 B weights + 16 f32 scales.
     let us_q4_predec = time_dispatch("Q4_K predec", |tcb| {
         kernels::gemv_q4_k_v4_predec_pinned_tcb(
-            tcb, &q4_buf, 0, q4_wlen, &q4_scales_buf, 0, rows, cols, &x_buf, &y_buf,
+            tcb,
+            &q4_buf,
+            0,
+            q4_wlen,
+            &q4_scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_buf,
         )
         .expect("q4_k predec encode");
     });
@@ -232,9 +254,9 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     }
     // Intra-Q3: how much faster is fused_2r than the old fused_v2.
     let r2_vs_fused = (us_q3_fused - us_q3_fused_2r) / us_q3_fused * 100.0; // + => 2r faster
-    // Verdict (b): does the fastest Q3_K beat Q4_K predec (the byte-cut premise)?
+                                                                            // Verdict (b): does the fastest Q3_K beat Q4_K predec (the byte-cut premise)?
     let bytecut = (us_q4_predec - q3_us) / us_q4_predec * 100.0; // + => Q3 faster (byte-cut holds)
-    // Verdict (c): does fused_2r alone beat Q4_predec (the byte-cut-TRUE kernel)?
+                                                                 // Verdict (c): does fused_2r alone beat Q4_predec (the byte-cut-TRUE kernel)?
     let r2_vs_q4 = (us_q4_predec - us_q3_fused_2r) / us_q4_predec * 100.0; // + => Q3 fused_2r faster
 
     eprintln!(

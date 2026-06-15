@@ -678,7 +678,10 @@ fn short_hex(bytes: &[u8]) -> String {
 /// `validate_for_gguf` against a stale pinned profile.
 pub fn fresh_test_profile(weights_path: &std::path::Path) -> crate::Result<KernelProfile> {
     let gguf = crate::gguf::GgufFile::open(weights_path)?;
-    Ok(build_deterministic_profile(&gguf, &AutotuneOptions::default()))
+    Ok(build_deterministic_profile(
+        &gguf,
+        &AutotuneOptions::default(),
+    ))
 }
 
 #[cfg(test)]
@@ -700,10 +703,7 @@ mod tests {
         let a = score_candidates(&candidates);
         let b = score_candidates(&candidates);
         assert_eq!(a, b);
-        assert_eq!(
-            select_variant(&candidates, &a).unwrap().id,
-            "metal-default"
-        );
+        assert_eq!(select_variant(&candidates, &a).unwrap().id, "metal-default");
     }
 
     #[test]
@@ -839,11 +839,18 @@ mod tests {
             mk("mid", 2, 40.0, 0.95),
             mk("slow", 1, 30.0, 1.00),
         ]);
-        let chosen = select_best(&evidence, DEFAULT_QUALITY_FLOOR).expect("a candidate clears floor");
+        let chosen =
+            select_best(&evidence, DEFAULT_QUALITY_FLOOR).expect("a candidate clears floor");
         assert_eq!(chosen.variant_id, "mid");
         // score_measurement rejects sub-floor candidates with NEG_INFINITY.
-        assert_eq!(score_measurement(&evidence.measurements[0], DEFAULT_QUALITY_FLOOR), f64::NEG_INFINITY);
-        assert_eq!(score_measurement(&evidence.measurements[1], DEFAULT_QUALITY_FLOOR), 40.0);
+        assert_eq!(
+            score_measurement(&evidence.measurements[0], DEFAULT_QUALITY_FLOOR),
+            f64::NEG_INFINITY
+        );
+        assert_eq!(
+            score_measurement(&evidence.measurements[1], DEFAULT_QUALITY_FLOOR),
+            40.0
+        );
     }
 
     #[test]
@@ -879,7 +886,8 @@ mod tests {
     fn measured_constructor_round_trips_new_fields() {
         // New optional fields must serialize/deserialize and survive the
         // PartialEq derive (f64 PartialEq, no NaN produced here).
-        let m = AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
+        let m =
+            AutotuneMeasurement::measured("metal-default", 1, 47.96, 1.0, RuntimeLevers::default());
         let json = serde_json::to_string(&m).unwrap();
         let back: AutotuneMeasurement = serde_json::from_str(&json).unwrap();
         assert_eq!(m, back);
@@ -926,8 +934,14 @@ mod tests {
             // / `quality` keys in these JSONs => 0.0 / 1.0).
             for m in &p.evidence.measurements {
                 assert_eq!(m.tps, 0.0, "{f}: legacy measurement tps defaults to 0.0");
-                assert_eq!(m.quality, 1.0, "{f}: legacy measurement quality defaults to 1.0");
-                assert!(m.runtime_levers.is_none(), "{f}: legacy measurement has no runtime_levers");
+                assert_eq!(
+                    m.quality, 1.0,
+                    "{f}: legacy measurement quality defaults to 1.0"
+                );
+                assert!(
+                    m.runtime_levers.is_none(),
+                    "{f}: legacy measurement has no runtime_levers"
+                );
             }
         }
     }

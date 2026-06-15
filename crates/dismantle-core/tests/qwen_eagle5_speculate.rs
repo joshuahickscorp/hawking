@@ -57,8 +57,7 @@ fn run_greedy_capture_stats(
     weights: &PathBuf,
     cfg: dismantle_core::EngineConfig,
 ) -> (Vec<u32>, dismantle_core::GenStats) {
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load engine");
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load engine");
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
@@ -126,7 +125,10 @@ fn qwen_eagle5_speculate_off_bit_identical_to_baseline() {
         ids_a, ids_b,
         "TCB-only must be bit-identical to baseline\n  baseline: {ids_a:?}\n  tcb:      {ids_b:?}"
     );
-    eprintln!("speculate=off path is stable across TCB toggle ({} tokens)", ids_a.len());
+    eprintln!(
+        "speculate=off path is stable across TCB toggle ({} tokens)",
+        ids_a.len()
+    );
 }
 
 #[test]
@@ -177,11 +179,14 @@ fn qwen_eagle5_speculate_on_mock_head_engages_and_preserves_greedy() {
     assert!(
         total > 0,
         "eagle5 dispatch never engaged: draft_accepted={} draft_rejected={}",
-        eagle5_stats.draft_accepted, eagle5_stats.draft_rejected,
+        eagle5_stats.draft_accepted,
+        eagle5_stats.draft_rejected,
     );
     eprintln!(
         "eagle5 dispatch engaged: accepted={} rejected={} ({} tokens emitted)",
-        eagle5_stats.draft_accepted, eagle5_stats.draft_rejected, eagle5_ids.len()
+        eagle5_stats.draft_accepted,
+        eagle5_stats.draft_rejected,
+        eagle5_ids.len()
     );
 }
 
@@ -236,11 +241,14 @@ fn qwen_eagle5_batched_mock_head_preserves_greedy() {
     assert!(
         total > 0,
         "batched eagle5 dispatch never engaged: accepted={} rejected={}",
-        batched_stats.draft_accepted, batched_stats.draft_rejected,
+        batched_stats.draft_accepted,
+        batched_stats.draft_rejected,
     );
     eprintln!(
         "batched eagle5 engaged: accepted={} rejected={} ({} tokens emitted)",
-        batched_stats.draft_accepted, batched_stats.draft_rejected, batched_ids.len()
+        batched_stats.draft_accepted,
+        batched_stats.draft_rejected,
+        batched_ids.len()
     );
 }
 
@@ -299,10 +307,13 @@ fn qwen_eagle5_capture_preserves_greedy() {
     assert!(
         total > 0,
         "capture-mode eagle5 dispatch never engaged: accepted={} rejected={}",
-        capture_stats.draft_accepted, capture_stats.draft_rejected,
+        capture_stats.draft_accepted,
+        capture_stats.draft_rejected,
     );
     eprintln!(
         "capture-mode eagle5 engaged: accepted={} rejected={} ({} tokens emitted)",
-        capture_stats.draft_accepted, capture_stats.draft_rejected, capture_ids.len()
+        capture_stats.draft_accepted,
+        capture_stats.draft_rejected,
+        capture_ids.len()
     );
 }

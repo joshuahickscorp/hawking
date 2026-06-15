@@ -57,8 +57,15 @@ fn is_special_token_str(s: &str) -> bool {
     (s.len() >= 4 && s.starts_with("<|") && s.ends_with("|>"))
         || matches!(
             s,
-            "<s>" | "</s>" | "<unk>" | "<pad>" | "<mask>" | "<bos>" | "<eos>"
-                | "<start_of_turn>" | "<end_of_turn>"
+            "<s>"
+                | "</s>"
+                | "<unk>"
+                | "<pad>"
+                | "<mask>"
+                | "<bos>"
+                | "<eos>"
+                | "<start_of_turn>"
+                | "<end_of_turn>"
         )
 }
 
@@ -189,8 +196,7 @@ impl Tokenizer {
             model, &tokens, &merges, &scores, bos_id, eos_id, unk_id, add_bos, add_eos,
         )?;
 
-        let (special_ids, eog_ids) =
-            build_special_sets(&tokens, bos_id, eos_id, pad_id, unk_id);
+        let (special_ids, eog_ids) = build_special_sets(&tokens, bos_id, eos_id, pad_id, unk_id);
 
         Ok(Self {
             inner,

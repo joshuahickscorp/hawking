@@ -47,13 +47,18 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 /// Pin a Vec<f16> as raw little-endian bytes (no bytemuck Pod dependency on
 /// half::f16); the f16s kernel reads the scale buffers as `device const half*`.
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 

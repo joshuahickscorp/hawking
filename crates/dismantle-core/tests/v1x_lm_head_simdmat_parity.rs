@@ -14,7 +14,10 @@ mod common;
 use common::*;
 
 fn fixed_f16(n: usize, seed: u64) -> Vec<f16> {
-    fixed_f32(n, seed).iter().map(|&v| f16::from_f32(v)).collect()
+    fixed_f32(n, seed)
+        .iter()
+        .map(|&v| f16::from_f32(v))
+        .collect()
 }
 
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {

@@ -22,8 +22,8 @@
 use std::path::PathBuf;
 
 use dismantle_core::{
-    metal::DenseDecodeArena, model::qwen_dense::QwenDense, profile::fresh_test_profile,
-    Engine, EngineConfig,
+    metal::DenseDecodeArena, model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine,
+    EngineConfig,
 };
 
 const PROMPT: &str = "Hello, my name is";
@@ -124,7 +124,10 @@ fn qkv_concurrent_parity_self_consistency() {
     let cos = cosine(&a.logits, &b.logits);
     eprintln!("[sanity] off-vs-off logits cosine = {cos:.9}");
     assert!(cos > 0.99999, "two baseline runs disagree: cos={cos}");
-    assert_eq!(a.tokens, b.tokens, "two baseline runs emit different tokens");
+    assert_eq!(
+        a.tokens, b.tokens,
+        "two baseline runs emit different tokens"
+    );
 }
 
 #[test]

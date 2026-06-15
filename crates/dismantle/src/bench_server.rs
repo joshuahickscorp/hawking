@@ -70,7 +70,9 @@ pub fn run(opts: BenchServerOptions) -> Result<()> {
         "[bench-server] model loaded in {:.1}s — ready for requests on stdin (JSON-line)",
         load_start.elapsed().as_secs_f64()
     );
-    eprintln!("[bench-server] request format: {{\"id\":\"req_1\",\"prompt\":\"...\",\"max_tokens\":12}}");
+    eprintln!(
+        "[bench-server] request format: {{\"id\":\"req_1\",\"prompt\":\"...\",\"max_tokens\":12}}"
+    );
 
     let stdin = std::io::stdin();
     let stdout = std::io::stdout();

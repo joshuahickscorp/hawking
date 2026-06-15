@@ -6,13 +6,13 @@
 pub mod arch_config;
 pub mod deepseek_v2;
 pub mod expert_cache;
-pub mod weights;
 pub mod gemma2;
 pub mod llama;
 pub mod mixtral;
 pub mod phi3;
 pub mod qwen_dense;
 pub mod qwen_moe;
+pub mod weights;
 
 use crate::gguf::GgufFile;
 use crate::{Engine, EngineConfig, Error, Result};
@@ -24,7 +24,11 @@ use std::path::Path;
 pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn Engine>> {
     // v1.2.0-12: merge profile device_limits into config before opening GGUF.
     // CLI flags override profile values; absent CLI values inherit profile defaults.
-    if let Some(limits) = config.kernel_profile.as_ref().and_then(|p| p.device_limits.as_ref()) {
+    if let Some(limits) = config
+        .kernel_profile
+        .as_ref()
+        .and_then(|p| p.device_limits.as_ref())
+    {
         if config.memory_limit_mb.is_none() {
             config.memory_limit_mb = limits.memory_limit_mb;
         }
@@ -135,7 +139,10 @@ fn honor_sidecar_tier_map(weights: &Path, gguf: &crate::gguf::GgufFile) -> usize
     let header = match crate::sidecar::read_sidecar_header(&sidecar_path) {
         Ok(h) => h,
         Err(e) => {
-            eprintln!("[tier-map] sidecar {:?}: header read failed ({e}); ignoring", sidecar_path);
+            eprintln!(
+                "[tier-map] sidecar {:?}: header read failed ({e}); ignoring",
+                sidecar_path
+            );
             return 0;
         }
     };
@@ -144,7 +151,10 @@ fn honor_sidecar_tier_map(weights: &Path, gguf: &crate::gguf::GgufFile) -> usize
         _ => return 0, // predec-only / empty sidecar — nothing to honor
     };
     if let Err(e) = tier_map.validate() {
-        eprintln!("[tier-map] sidecar {:?}: invalid tier map ({e}); ignoring", sidecar_path);
+        eprintln!(
+            "[tier-map] sidecar {:?}: invalid tier map ({e}); ignoring",
+            sidecar_path
+        );
         return 0;
     }
     // Per-tensor logging (needs info.dtype; left inline). The returned match
@@ -208,7 +218,10 @@ mod tier_map_hook_tests {
         SidecarTierMap {
             entries: pairs
                 .iter()
-                .map(|(t, d)| SidecarTierEntry { tensor: (*t).to_string(), dtype: (*d).to_string() })
+                .map(|(t, d)| SidecarTierEntry {
+                    tensor: (*t).to_string(),
+                    dtype: (*d).to_string(),
+                })
                 .collect(),
         }
     }
@@ -231,9 +244,9 @@ mod tier_map_hook_tests {
         ]);
         let gguf_names = [
             "token_embd.weight",
-            "blk.0.ffn_down.weight",   // override -> counts
-            "blk.0.attn_q.weight",     // no entry
-            "blk.12.ffn_down.weight",  // override -> counts
+            "blk.0.ffn_down.weight",  // override -> counts
+            "blk.0.attn_q.weight",    // no entry
+            "blk.12.ffn_down.weight", // override -> counts
             "output.weight",
         ];
         // Two of the three map entries match the live name set.
@@ -242,7 +255,10 @@ mod tier_map_hook_tests {
 
     #[test]
     fn iteration_order_independent() {
-        let m = tm(&[("blk.5.ffn_up.weight", "q8_0"), ("blk.5.ffn_down.weight", "q6_K")]);
+        let m = tm(&[
+            ("blk.5.ffn_up.weight", "q8_0"),
+            ("blk.5.ffn_down.weight", "q6_K"),
+        ]);
         let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"];
         let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
         assert_eq!(tier_map_overrides_for_names(&m, a), 2);
@@ -254,7 +270,10 @@ mod tier_map_hook_tests {
         use crate::gguf::GgmlType;
         let m = tm(&[("blk.0.ffn_down.weight", "q6_K"), ("output.weight", "Q8_0")]);
         m.validate().expect("synthetic tier map must validate");
-        assert_eq!(m.dtype_for("blk.0.ffn_down.weight").unwrap(), Some(GgmlType::Q6_K));
+        assert_eq!(
+            m.dtype_for("blk.0.ffn_down.weight").unwrap(),
+            Some(GgmlType::Q6_K)
+        );
         assert_eq!(m.dtype_for("output.weight").unwrap(), Some(GgmlType::Q8_0));
         assert_eq!(m.dtype_for("blk.0.attn_q.weight").unwrap(), None);
     }
@@ -265,6 +284,9 @@ mod tier_map_hook_tests {
         // dtype_for Err as "no override" (not counted) per the caller contract.
         let m = tm(&[("blk.0.ffn_down.weight", "f16_bogus")]);
         assert!(m.validate().is_err());
-        assert_eq!(tier_map_overrides_for_names(&m, ["blk.0.ffn_down.weight"]), 0);
+        assert_eq!(
+            tier_map_overrides_for_names(&m, ["blk.0.ffn_down.weight"]),
+            0
+        );
     }
 }

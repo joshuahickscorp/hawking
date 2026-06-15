@@ -167,8 +167,7 @@ impl SpecGovernor {
         // 2. advance the state machine.
         match self.state {
             GovState::Enabled => {
-                let streak_bail =
-                    self.consecutive_rejections >= self.max_consecutive_rejections;
+                let streak_bail = self.consecutive_rejections >= self.max_consecutive_rejections;
                 // Rate-based disable only once the window is full, so a couple
                 // of early misses cannot trip it on no evidence.
                 let rate_bail =
@@ -271,9 +270,18 @@ mod tests {
         // window=8, disable_below=0.35: pattern accept-once-every-4 -> rate 0.25.
         let mut gov = SpecGovernor::with_thresholds(8, 0.50, 0.35, 5, 8);
         // 8 cycles at 2/8 = 0.25 acceptance, max run of misses = 3 (< 5).
-        feed(&mut gov, &[true, false, false, false, true, false, false, false]);
-        assert!(gov.consecutive_rejections() < 5, "must not be a streak bail");
-        assert!(!gov.is_enabled(), "low rolling rate must disable via the floor");
+        feed(
+            &mut gov,
+            &[true, false, false, false, true, false, false, false],
+        );
+        assert!(
+            gov.consecutive_rejections() < 5,
+            "must not be a streak bail"
+        );
+        assert!(
+            !gov.is_enabled(),
+            "low rolling rate must disable via the floor"
+        );
     }
 
     #[test]
@@ -295,7 +303,10 @@ mod tests {
 
         // (3) HYSTERESIS HOLD: a single recovering accept must NOT re-enable --
         // the cooldown dwell is still counting and the band is not yet cleared.
-        assert!(!gov.step(true), "one lucky accept must not flap spec back on");
+        assert!(
+            !gov.step(true),
+            "one lucky accept must not flap spec back on"
+        );
         assert!(matches!(gov.state(), GovState::Cooldown { .. }));
 
         // (4) RE-ENABLE: sustained accepts clear both the cooldown dwell AND
@@ -320,12 +331,17 @@ mod tests {
         // Drive rate to ~0.5 (in the dead-band) without a 5-miss streak.
         feed(
             &mut gov,
-            &[true, false, true, false, true, false, true, false, true, false],
+            &[
+                true, false, true, false, true, false, true, false, true, false,
+            ],
         );
         assert!((gov.accept_rate() - 0.5).abs() < 1e-6);
         // 0.5 is below enable_above(0.6) and above disable_below(0.3): an
         // enabled governor stays enabled (no disable trigger fired).
-        assert!(gov.is_enabled(), "dead-band rate must not disable from Enabled");
+        assert!(
+            gov.is_enabled(),
+            "dead-band rate must not disable from Enabled"
+        );
 
         // Now force into cooldown via a streak, then hold the rate in the band:
         // it must NOT re-enable while the rate is below enable_above.
@@ -334,7 +350,9 @@ mod tests {
         // Long alternating run: cooldown elapses but rate ~0.5 < 0.6.
         feed(
             &mut gov,
-            &[true, false, true, false, true, false, true, false, true, false],
+            &[
+                true, false, true, false, true, false, true, false, true, false,
+            ],
         );
         assert!(
             !gov.is_enabled(),

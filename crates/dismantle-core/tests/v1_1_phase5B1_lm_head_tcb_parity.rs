@@ -14,8 +14,8 @@
 //! The engine pair for test 2 is shared (single load for both prompts) to keep
 //! GPU memory pressure low. Skips if model weights are not present.
 
-use std::path::PathBuf;
 use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, SpeculateMode, StreamEvent};
+use std::path::PathBuf;
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/deepseek-v2-lite-q4.gguf")
@@ -68,11 +68,13 @@ fn collect_tokens(
         max_stall_ms: 0,
     };
     let mut tokens = Vec::new();
-    engine.generate(req, &mut |ev| {
-        if let StreamEvent::Token { id, .. } = ev {
-            tokens.push(id);
-        }
-    }).expect("generate");
+    engine
+        .generate(req, &mut |ev| {
+            if let StreamEvent::Token { id, .. } = ev {
+                tokens.push(id);
+            }
+        })
+        .expect("generate");
     tokens
 }
 
@@ -80,7 +82,9 @@ fn collect_tokens(
 /// identical tokens. This verifies the Phase 5B.1 LM-head fold is deterministic.
 #[test]
 fn lm_head_fold_is_deterministic() {
-    let Some(mut engine) = load_engine(SpeculateMode::Off) else { return };
+    let Some(mut engine) = load_engine(SpeculateMode::Off) else {
+        return;
+    };
 
     let prompts = [
         "The quick brown fox",
@@ -97,7 +101,10 @@ fn lm_head_fold_is_deterministic() {
             run1, run2,
             "prompt={prompt:?}: Phase 5B.1 fold not deterministic\nrun1={run1:?}\nrun2={run2:?}"
         );
-        assert!(!run1.is_empty(), "prompt={prompt:?}: fold produced no tokens");
+        assert!(
+            !run1.is_empty(),
+            "prompt={prompt:?}: fold produced no tokens"
+        );
     }
 }
 
@@ -105,13 +112,17 @@ fn lm_head_fold_is_deterministic() {
 /// Both repetitive and natural prompts are tested with a single engine-pair load.
 #[test]
 fn spec_exact_mode_with_lm_head_fold() {
-    let Some(mut ref_engine)  = load_engine(SpeculateMode::Off)   else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
+    let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else {
+        return;
+    };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else {
+        return;
+    };
 
     // Repetitive prompt (high n-gram acceptance).
     {
         let prompt = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
-        let ref_ids  = collect_tokens(&mut ref_engine,  prompt, 16);
+        let ref_ids = collect_tokens(&mut ref_engine, prompt, 16);
         let spec_ids = collect_tokens(&mut spec_engine, prompt, 16);
         assert_eq!(
             ref_ids, spec_ids,
@@ -122,7 +133,7 @@ fn spec_exact_mode_with_lm_head_fold() {
     // Natural-text prompt (low n-gram acceptance).
     {
         let prompt = "Explain how speculative decoding works:";
-        let ref_ids  = collect_tokens(&mut ref_engine,  prompt, 12);
+        let ref_ids = collect_tokens(&mut ref_engine, prompt, 12);
         let spec_ids = collect_tokens(&mut spec_engine, prompt, 12);
         assert_eq!(
             ref_ids, spec_ids,

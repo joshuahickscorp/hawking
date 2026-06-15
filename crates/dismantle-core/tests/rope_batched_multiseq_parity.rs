@@ -88,7 +88,10 @@ fn rope_batched_multiseq_matches_per_slot() {
     let expected_q = run_per_slot(&xq, n_heads, head_dim, q_dim, &positions, theta);
     let actual_q = run_batched(&xq, n_heads, head_dim, q_dim, &positions, theta);
     let diff_q = max_abs_diff(&expected_q, &actual_q);
-    assert_eq!(diff_q, 0.0, "Q rope: batched != per-slot (max_abs_diff {diff_q})");
+    assert_eq!(
+        diff_q, 0.0,
+        "Q rope: batched != per-slot (max_abs_diff {diff_q})"
+    );
 
     // K width (GQA: fewer heads, narrower slot stride).
     let kv_dim = n_kv_heads * head_dim;
@@ -96,7 +99,10 @@ fn rope_batched_multiseq_matches_per_slot() {
     let expected_k = run_per_slot(&xk, n_kv_heads, head_dim, kv_dim, &positions, theta);
     let actual_k = run_batched(&xk, n_kv_heads, head_dim, kv_dim, &positions, theta);
     let diff_k = max_abs_diff(&expected_k, &actual_k);
-    assert_eq!(diff_k, 0.0, "K rope: batched != per-slot (max_abs_diff {diff_k})");
+    assert_eq!(
+        diff_k, 0.0,
+        "K rope: batched != per-slot (max_abs_diff {diff_k})"
+    );
 
     // B=1 degenerate case must also match.
     let one = [777u32];

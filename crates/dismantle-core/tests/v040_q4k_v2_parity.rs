@@ -6,8 +6,8 @@
 
 #![cfg(target_os = "macos")]
 
-use dismantle_core::kernels;
 use dismantle_core::gguf::GgmlType;
+use dismantle_core::kernels;
 use dismantle_core::quant::dequant_into;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
@@ -79,8 +79,7 @@ fn test_gemm_q4k_v2_realistic() {
     let x = fixed_input(cols, 0x1234_5678);
 
     let mut w_f32 = vec![0.0_f32; rows * cols];
-    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32)
-        .expect("Q4_K dequant should succeed");
+    dequant_into(GgmlType::Q4_K, &w_bytes, &mut w_f32).expect("Q4_K dequant should succeed");
     let mut scalar_out = vec![0.0_f32; rows];
     kernels::gemv_f32(&w_f32, rows, cols, &x, &mut scalar_out);
 

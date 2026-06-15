@@ -16,8 +16,8 @@
 use anyhow::{bail, Context, Result};
 use dismantle_core::gguf::{GgmlType, GgufFile};
 use dismantle_core::q4k_fast::{
-    convert_q4k_tensor_to_fast, serialize_sidecar, src_hash_from_sha256_first8,
-    WrittenTensor, Q4K_BLOCK_BYTES, Q4K_BLOCK_ELEMS, Q4K_FAST_BLOCK_BYTES,
+    convert_q4k_tensor_to_fast, serialize_sidecar, src_hash_from_sha256_first8, WrittenTensor,
+    Q4K_BLOCK_BYTES, Q4K_BLOCK_ELEMS, Q4K_FAST_BLOCK_BYTES,
 };
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -28,14 +28,16 @@ fn main() -> Result<()> {
     let input = args.next().context("missing <input.gguf>")?;
     let output = args.next().context("missing <output.dismantle>")?;
     if args.next().is_some() {
-        bail!("unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.dismantle>");
+        bail!(
+            "unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.dismantle>"
+        );
     }
     let input_path = PathBuf::from(input);
     let output_path = PathBuf::from(output);
 
     eprintln!("[q4k_fast] hashing source GGUF: {}", input_path.display());
-    let src_bytes = fs::read(&input_path)
-        .with_context(|| format!("read input {}", input_path.display()))?;
+    let src_bytes =
+        fs::read(&input_path).with_context(|| format!("read input {}", input_path.display()))?;
     let mut hasher = Sha256::new();
     hasher.update(&src_bytes);
     let digest = hasher.finalize();
