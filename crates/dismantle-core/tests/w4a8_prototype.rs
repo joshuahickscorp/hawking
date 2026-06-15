@@ -46,7 +46,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
     // Typical post-rmsnorm activation magnitude: ~[-3, 3].
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 fn new_buf_bytes(ctx: &MetalContext, bytes: &[u8]) -> PinnedBuffer {
@@ -69,9 +71,16 @@ fn w4a8_parity_and_bw_saving() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_f32_buf, &y_baseline_buf,
-        ).expect("baseline encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -86,9 +95,17 @@ fn w4a8_parity_and_bw_saving() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_int8_buf, &x_scales_buf, &y_w4a8_buf,
-        ).expect("W4A8 encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_buf,
+            &x_scales_buf,
+            &y_w4a8_buf,
+        )
+        .expect("W4A8 encode");
         tcb.commit_and_wait().expect("W4A8 commit");
     }
     let y_w4a8 = read_f32_buf(&y_w4a8_buf, rows);
@@ -102,9 +119,15 @@ fn w4a8_parity_and_bw_saving() {
     let norm_a: f32 = y_baseline.iter().map(|&a| a * a).sum::<f32>().sqrt();
     let norm_b: f32 = y_w4a8.iter().map(|&a| a * a).sum::<f32>().sqrt();
     let cosine = dot_ab / (norm_a * norm_b);
-    let rmse: f32 = (y_baseline.iter().zip(&y_w4a8)
-        .map(|(&a, &b)| (a - b).powi(2)).sum::<f32>() / y_baseline.len() as f32).sqrt();
-    let mean_abs_baseline = y_baseline.iter().map(|x| x.abs()).sum::<f32>() / y_baseline.len() as f32;
+    let rmse: f32 = (y_baseline
+        .iter()
+        .zip(&y_w4a8)
+        .map(|(&a, &b)| (a - b).powi(2))
+        .sum::<f32>()
+        / y_baseline.len() as f32)
+        .sqrt();
+    let mean_abs_baseline =
+        y_baseline.iter().map(|x| x.abs()).sum::<f32>() / y_baseline.len() as f32;
     let nrmse = rmse / mean_abs_baseline;
     eprintln!(
         "[W4A8 parity] cosine_sim={:.6}  rmse={:.4e}  nrmse={:.4e} (norm by mean|baseline|)",
@@ -119,9 +142,14 @@ fn w4a8_parity_and_bw_saving() {
         let b = i / 256;
         let recovered = x_int8[i] as f32 * x_scales[b];
         let err = (recovered - x[i]).abs();
-        if err > max_recover_err { max_recover_err = err; }
+        if err > max_recover_err {
+            max_recover_err = err;
+        }
     }
-    eprintln!("[debug] quant roundtrip max_abs_err on x: {:.4e}", max_recover_err);
+    eprintln!(
+        "[debug] quant roundtrip max_abs_err on x: {:.4e}",
+        max_recover_err
+    );
     assert!(
         cosine > 0.999 && nrmse < 0.05,
         "W4A8 output out of tolerance: cosine={cosine:.6} nrmse={nrmse:.4e}"
@@ -138,16 +166,30 @@ fn w4a8_parity_and_bw_saving() {
         let mut run = || {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-                &mut tcb, &model_buf, 0, w_bytes.len(),
-                rows, cols, &x_f32_buf, &y_baseline_buf,
-            ).unwrap();
+                &mut tcb,
+                &model_buf,
+                0,
+                w_bytes.len(),
+                rows,
+                cols,
+                &x_f32_buf,
+                &y_baseline_buf,
+            )
+            .unwrap();
             tcb.commit_and_wait().unwrap();
         };
-        for _ in 0..warmup { run(); }
+        for _ in 0..warmup {
+            run();
+        }
         let t0 = Instant::now();
-        for _ in 0..calls { run(); }
+        for _ in 0..calls {
+            run();
+        }
         let us = t0.elapsed().as_micros() as f64 / calls as f64;
-        eprintln!("[A] f32 baseline (v3_8r)               mean={:.1} us/call", us);
+        eprintln!(
+            "[A] f32 baseline (v3_8r)               mean={:.1} us/call",
+            us
+        );
     }
 
     // (B) W4A8 kernel time ONLY (pre-quantized, no quantize cost included)
@@ -155,16 +197,31 @@ fn w4a8_parity_and_bw_saving() {
         let mut run = || {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
-                &mut tcb, &model_buf, 0, w_bytes.len(),
-                rows, cols, &x_int8_buf, &x_scales_buf, &y_w4a8_buf,
-            ).unwrap();
+                &mut tcb,
+                &model_buf,
+                0,
+                w_bytes.len(),
+                rows,
+                cols,
+                &x_int8_buf,
+                &x_scales_buf,
+                &y_w4a8_buf,
+            )
+            .unwrap();
             tcb.commit_and_wait().unwrap();
         };
-        for _ in 0..warmup { run(); }
+        for _ in 0..warmup {
+            run();
+        }
         let t0 = Instant::now();
-        for _ in 0..calls { run(); }
+        for _ in 0..calls {
+            run();
+        }
         let us = t0.elapsed().as_micros() as f64 / calls as f64;
-        eprintln!("[B] W4A8 kernel only (pre-quantized)   mean={:.1} us/call", us);
+        eprintln!(
+            "[B] W4A8 kernel only (pre-quantized)   mean={:.1} us/call",
+            us
+        );
     }
 
     // (C) W4A8 + quantize cost (realistic per-step cost)
@@ -175,16 +232,31 @@ fn w4a8_parity_and_bw_saving() {
             let xs_buf = new_f32_buf(ctx, &x_s);
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
-                &mut tcb, &model_buf, 0, w_bytes.len(),
-                rows, cols, &xq_buf, &xs_buf, &y_w4a8_buf,
-            ).unwrap();
+                &mut tcb,
+                &model_buf,
+                0,
+                w_bytes.len(),
+                rows,
+                cols,
+                &xq_buf,
+                &xs_buf,
+                &y_w4a8_buf,
+            )
+            .unwrap();
             tcb.commit_and_wait().unwrap();
         };
-        for _ in 0..warmup { run(); }
+        for _ in 0..warmup {
+            run();
+        }
         let t0 = Instant::now();
-        for _ in 0..calls { run(); }
+        for _ in 0..calls {
+            run();
+        }
         let us = t0.elapsed().as_micros() as f64 / calls as f64;
-        eprintln!("[C] W4A8 + quantize + alloc each call  mean={:.1} us/call", us);
+        eprintln!(
+            "[C] W4A8 + quantize + alloc each call  mean={:.1} us/call",
+            us
+        );
         eprintln!("    (production would amortize quant across all 7 GEMVs per layer)");
     }
 }

@@ -62,7 +62,15 @@ fn batched_predec_bit_identical_to_v3w() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_ref,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
             )
             .expect("v3w encode");
             tcb.commit_and_wait().expect("v3w commit");
@@ -71,7 +79,17 @@ fn batched_predec_bit_identical_to_v3w() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_predec,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_predec,
             )
             .expect("predec encode");
             tcb.commit_and_wait().expect("predec commit");
@@ -94,7 +112,10 @@ fn batched_predec_bit_identical_to_v3w() {
                 a.len()
             );
         }
-        eprintln!("[batched-predec parity] batch={batch}: {} elems bit-identical", a.len());
+        eprintln!(
+            "[batched-predec parity] batch={batch}: {} elems bit-identical",
+            a.len()
+        );
     }
 }
 
@@ -122,7 +143,15 @@ fn batched_predec_bit_identical_ffn_down_shape() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_ref,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
             )
             .expect("v3w encode");
             tcb.commit_and_wait().expect("v3w commit");
@@ -131,7 +160,17 @@ fn batched_predec_bit_identical_ffn_down_shape() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_predec,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_predec,
             )
             .expect("predec encode");
             tcb.commit_and_wait().expect("predec commit");
@@ -148,6 +187,9 @@ fn batched_predec_bit_identical_ffn_down_shape() {
         if let Some((i, av, bv)) = first {
             panic!("ffn_down batch={batch}: first diff @ {i} v3w={av:e} predec={bv:e}");
         }
-        eprintln!("[batched-predec parity ffn_down] batch={batch}: {} elems bit-identical", a.len());
+        eprintln!(
+            "[batched-predec parity ffn_down] batch={batch}: {} elems bit-identical",
+            a.len()
+        );
     }
 }

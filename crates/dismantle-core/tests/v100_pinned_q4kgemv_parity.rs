@@ -56,8 +56,17 @@ fn pinned_q4kgemv_small() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut pinned_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut pinned_out)
-        .expect("pinned path should succeed");
+    kernels::gemv_q4_k_m_v2_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut pinned_out,
+    )
+    .expect("pinned path should succeed");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
     println!("[WedgeA] pinned vs copy small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -83,11 +92,22 @@ fn pinned_q4kgemv_realistic() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut pinned_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut pinned_out)
-        .expect("pinned path should succeed");
+    kernels::gemv_q4_k_m_v2_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut pinned_out,
+    )
+    .expect("pinned path should succeed");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
-    println!("[WedgeA] pinned vs copy realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!(
+        "[WedgeA] pinned vs copy realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
+    );
     assert!(
         diff < 1e-5,
         "pinned vs copy diff {diff:.2e} >= 1e-5 (should be bit-identical)"
@@ -109,18 +129,23 @@ fn pinned_q4kgemv_nonzero_offset() {
     let ctx = ctx();
 
     let mut copy_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut copy_out)
-        .expect("copy path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut copy_out).expect("copy path");
 
     let model_buf = pinned_from_bytes(ctx, &padded);
     let mut pinned_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2_pinned(ctx, &model_buf, pad, w_bytes.len(), rows, cols, &x, &mut pinned_out)
-        .expect("pinned path with offset");
+    kernels::gemv_q4_k_m_v2_pinned(
+        ctx,
+        &model_buf,
+        pad,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut pinned_out,
+    )
+    .expect("pinned path with offset");
 
     let diff = max_abs_diff(&copy_out, &pinned_out);
     println!("[WedgeA] pinned vs copy nonzero-offset (pad={pad}) max abs diff = {diff:.2e}");
-    assert!(
-        diff < 1e-5,
-        "offset pinned vs copy diff {diff:.2e} >= 1e-5"
-    );
+    assert!(diff < 1e-5, "offset pinned vs copy diff {diff:.2e} >= 1e-5");
 }

@@ -1,5 +1,6 @@
 #![allow(clippy::all)]
 pub mod attn;
+pub mod backend;
 pub mod cache;
 pub mod gguf;
 pub mod kernel_bench;
@@ -13,6 +14,7 @@ pub mod q4k_fast;
 pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
+pub mod sidecar;
 pub mod speculate;
 pub mod stateful;
 pub mod tokenizer;
@@ -23,8 +25,8 @@ pub use error::{Error, Result};
 
 mod engine;
 pub use engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest,
-    SamplingParams, SpeculateMode, StopReason, StreamEvent,
+    Engine, EngineConfig, GenStats, GenerateRequest, SamplingParams, SpeculateMode, StopReason,
+    StreamEvent,
 };
 
 /// `true` when env var `name` is set to "1". The codebase's standard
@@ -51,5 +53,8 @@ pub fn env_opt_out(name: &str) -> bool {
 /// Parse env var `name` as usize, falling back to `default` when unset
 /// or unparseable.
 pub fn env_usize(name: &str, default: usize) -> usize {
-    std::env::var(name).ok().and_then(|v| v.parse().ok()).unwrap_or(default)
+    std::env::var(name)
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(default)
 }

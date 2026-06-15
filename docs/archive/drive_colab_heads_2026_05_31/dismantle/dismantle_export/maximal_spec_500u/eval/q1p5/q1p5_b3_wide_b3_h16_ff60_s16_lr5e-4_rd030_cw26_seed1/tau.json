@@ -1,6 +1,0 @@
-{
-  "ckpt": "/content/drive/MyDrive/dismantle/maximal_spec_500u/artifacts/q1p5/checkpoints/q1p5_b3_wide_b3_h16_ff60_s16_lr5e-4_rd030_cw26_seed1/head_final.safetensors",
-  "tau": 7.983125,
-  "windows": 30000,
-  "schema": "eagle5-tau-pytorch-v1"
-}

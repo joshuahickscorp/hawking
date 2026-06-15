@@ -6,8 +6,8 @@
 //!
 //! Skips if model weights are not present.
 
-use std::path::PathBuf;
 use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, SpeculateMode, StreamEvent};
+use std::path::PathBuf;
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/deepseek-v2-lite-q4.gguf")
@@ -16,7 +16,10 @@ fn weights_path() -> PathBuf {
 fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn dismantle_core::Engine>> {
     let p = weights_path();
     if !p.exists() {
-        eprintln!("v1_1_phase4D_spec_exact_mode: no weights at {:?}, skipping", p);
+        eprintln!(
+            "v1_1_phase4D_spec_exact_mode: no weights at {:?}, skipping",
+            p
+        );
         return None;
     }
     let mut cfg = EngineConfig::default();
@@ -40,7 +43,11 @@ fn load_engine(speculate_mode: SpeculateMode) -> Option<Box<dyn dismantle_core::
     }
 }
 
-fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, max_new_tokens: usize) -> Vec<u32> {
+fn collect_tokens(
+    engine: &mut Box<dyn dismantle_core::Engine>,
+    prompt: &str,
+    max_new_tokens: usize,
+) -> Vec<u32> {
     let req = GenerateRequest {
         prompt: prompt.to_string(),
         max_new_tokens,
@@ -56,11 +63,13 @@ fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, ma
         max_stall_ms: 0,
     };
     let mut tokens = Vec::new();
-    engine.generate(req, &mut |ev| {
-        if let StreamEvent::Token { id, .. } = ev {
-            tokens.push(id);
-        }
-    }).expect("generate");
+    engine
+        .generate(req, &mut |ev| {
+            if let StreamEvent::Token { id, .. } = ev {
+                tokens.push(id);
+            }
+        })
+        .expect("generate");
     tokens
 }
 
@@ -68,10 +77,15 @@ fn collect_tokens(engine: &mut Box<dyn dismantle_core::Engine>, prompt: &str, ma
 /// Output must be byte-identical to non-spec greedy.
 #[test]
 fn repetitive_prompt_spec_matches_greedy() {
-    let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
+    let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else {
+        return;
+    };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else {
+        return;
+    };
 
-    let prompt = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+    let prompt =
+        "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 20);
     let spec_ids = collect_tokens(&mut spec_engine, prompt, 20);
 
@@ -84,8 +98,12 @@ fn repetitive_prompt_spec_matches_greedy() {
 /// Natural-text prompt: n-gram may not always match, but output must be identical.
 #[test]
 fn natural_prompt_spec_matches_greedy() {
-    let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else { return };
-    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else { return };
+    let Some(mut ref_engine) = load_engine(SpeculateMode::Off) else {
+        return;
+    };
+    let Some(mut spec_engine) = load_engine(SpeculateMode::ExactShared) else {
+        return;
+    };
 
     let prompt = "Explain how speculative decoding works in language models:";
     let ref_ids = collect_tokens(&mut ref_engine, prompt, 15);

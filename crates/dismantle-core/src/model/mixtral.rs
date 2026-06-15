@@ -5,6 +5,7 @@
 //! `blk.N.ffn_down.E.weight`. This module intentionally does not look for the
 //! fused `*_exps.weight` layout used by the DeepSeek path.
 
+use super::weights::{dequant_f16, dequant_f32};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
@@ -18,7 +19,6 @@ use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use super::weights::{dequant_f32, dequant_f16};
 
 const WEIGHT_CHUNK_STRIDE: usize = 128 * 1024 * 1024;
 const WEIGHT_CHUNK_OVERLAP: usize = 64 * 1024 * 1024;
@@ -229,8 +229,6 @@ impl MixtralEngine {
             .collect()
     }
 
-
-
     fn dequant_f32_expected(
         g: &GgufFile,
         name: &str,
@@ -342,9 +340,7 @@ impl Engine for MixtralEngine {
         let gguf = GgufFile::open(weights)?;
         Self::madvise_willneed_mmap(&gguf);
         if !is_mixtral_gguf(&gguf) {
-            return Err(Error::Model(
-                "not a Mixtral split-expert MoE GGUF".into(),
-            ));
+            return Err(Error::Model("not a Mixtral split-expert MoE GGUF".into()));
         }
         let cfg = MixtralConfig::from_gguf(&gguf)?;
         let model_id = gguf.name().unwrap_or("mixtral-8x7b").to_string();
@@ -457,9 +453,7 @@ impl Engine for MixtralEngine {
                 let lm: &[f16] = lm_head.as_deref().unwrap_or(&embed);
                 (
                     Some(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&embed))),
-                    Some(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(
-                        &final_norm,
-                    ))),
+                    Some(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&final_norm))),
                     Some(ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(lm))),
                     Some(MixtralDecodeArena::new(ctx, &cfg)),
                 )
@@ -727,7 +721,11 @@ impl MixtralEngine {
     #[cfg(target_os = "macos")]
     fn debug_top_logits(&self, logits: &[f32]) {
         let mut idx: Vec<usize> = (0..logits.len()).collect();
-        idx.sort_by(|&a, &b| logits[b].partial_cmp(&logits[a]).unwrap_or(std::cmp::Ordering::Equal));
+        idx.sort_by(|&a, &b| {
+            logits[b]
+                .partial_cmp(&logits[a])
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         let top: Vec<(usize, f32)> = idx.iter().take(10).map(|&i| (i, logits[i])).collect();
         let decoded: Vec<(usize, String)> = idx
             .iter()
@@ -798,7 +796,10 @@ impl MixtralEngine {
         let kv_hidden = n_kv_heads * head_dim;
         let stride = kv_hidden;
         if self.kv.seq_len >= self.kv.max_seq {
-            return Err(Error::Model(format!("kv cache full at {}", self.kv.max_seq)));
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
         }
         let kv_off = self.kv.seq_len * stride;
         let mha_seq_len = self.kv.seq_len + 1;
@@ -916,7 +917,12 @@ impl MixtralEngine {
                         cfg.rope_theta,
                     )?;
                     rope_tcb.commit_and_wait()?;
-                    Self::debug_buffer(&format!("layer{li}.q_post_rope_head0"), &arena.q_buf, head_dim, 8)?;
+                    Self::debug_buffer(
+                        &format!("layer{li}.q_post_rope_head0"),
+                        &arena.q_buf,
+                        head_dim,
+                        8,
+                    )?;
                 } else {
                     crate::kernels::rope_q_f32_inplace_tcb(
                         &mut tcb,

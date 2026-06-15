@@ -156,7 +156,10 @@ fn build_kernel_summary(samples: &[serde_json::Value]) -> serde_json::Value {
     // kernel_name → Vec<wall_us>
     let mut by_kernel: HashMap<&str, Vec<u64>> = HashMap::new();
     for s in samples {
-        let name = s.get("kernel_name").and_then(|v| v.as_str()).unwrap_or("other");
+        let name = s
+            .get("kernel_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("other");
         let us = s.get("wall_us").and_then(|v| v.as_u64()).unwrap_or(0);
         by_kernel.entry(name).or_default().push(us);
     }
@@ -165,7 +168,7 @@ fn build_kernel_summary(samples: &[serde_json::Value]) -> serde_json::Value {
         .map(|(name, times)| {
             let count = times.len() as u64;
             let total: u64 = times.iter().sum();
-            let mean = if count > 0 { total / count } else { 0 };
+            let mean = total.checked_div(count).unwrap_or(0);
             let mut sorted = times.clone();
             sorted.sort_unstable();
             let p50 = sorted[sorted.len() / 2];
@@ -199,7 +202,10 @@ fn build_layer_summary(samples: &[serde_json::Value]) -> serde_json::Value {
             Some(l) => l as u32,
             None => continue, // skip non-layer dispatches (final norm, LM head)
         };
-        let name = s.get("kernel_name").and_then(|v| v.as_str()).unwrap_or("other");
+        let name = s
+            .get("kernel_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("other");
         let us = s.get("wall_us").and_then(|v| v.as_u64()).unwrap_or(0);
         let entry = by_layer.entry(layer).or_default();
         entry.0 += us;

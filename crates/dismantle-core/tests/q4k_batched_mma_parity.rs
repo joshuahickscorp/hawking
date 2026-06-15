@@ -95,14 +95,24 @@ fn check_shape_mma(ctx: &MetalContext, rows: usize, cols: usize, seed: u64) {
     let wbuf = ctx.new_buffer_with_bytes(&w);
     let mut rng = Pcg64Mcg::new(seed as u128 ^ 0xA5A5_A5A5);
     for batch in [1usize, 2, 4, 8] {
-        let x: Vec<f32> = (0..batch * cols).map(|_| rng.gen_range(-3.0_f32..3.0)).collect();
+        let x: Vec<f32> = (0..batch * cols)
+            .map(|_| rng.gen_range(-3.0_f32..3.0))
+            .collect();
         let xbuf = newf(ctx, &x);
 
         let y_ref = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_ref,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
             )
             .expect("v3w encode");
             tcb.commit_and_wait().expect("v3w commit");
@@ -111,7 +121,15 @@ fn check_shape_mma(ctx: &MetalContext, rows: usize, cols: usize, seed: u64) {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_mma_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), rows, cols, batch, &xbuf, &y_mma,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_mma,
             )
             .expect("mma encode");
             tcb.commit_and_wait().expect("mma commit");
@@ -132,14 +150,26 @@ fn check_shape_mma_predec(ctx: &MetalContext, rows: usize, cols: usize, seed: u6
     let sbuf = newf(ctx, &scales);
     let mut rng = Pcg64Mcg::new(seed as u128 ^ 0x1234_9876);
     for batch in [1usize, 2, 4, 8] {
-        let x: Vec<f32> = (0..batch * cols).map(|_| rng.gen_range(-3.0_f32..3.0)).collect();
+        let x: Vec<f32> = (0..batch * cols)
+            .map(|_| rng.gen_range(-3.0_f32..3.0))
+            .collect();
         let xbuf = newf(ctx, &x);
 
         let y_ref = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_ref,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_ref,
             )
             .expect("v3w_predec encode");
             tcb.commit_and_wait().expect("v3w_predec commit");
@@ -148,7 +178,17 @@ fn check_shape_mma_predec(ctx: &MetalContext, rows: usize, cols: usize, seed: u6
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_mma_predec_pinned_tcb(
-                &mut tcb, &wbuf, 0, w.len(), &sbuf, 0, rows, cols, batch, &xbuf, &y_mma,
+                &mut tcb,
+                &wbuf,
+                0,
+                w.len(),
+                &sbuf,
+                0,
+                rows,
+                cols,
+                batch,
+                &xbuf,
+                &y_mma,
             )
             .expect("mma_predec encode");
             tcb.commit_and_wait().expect("mma_predec commit");

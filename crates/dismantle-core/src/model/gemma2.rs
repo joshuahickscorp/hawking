@@ -24,11 +24,11 @@
 //! On macOS the Q4_K projections, f16 LM head, and rmsnorm run on Metal;
 //! attention and non-Q4_K weights use the CPU reference path.
 
+use super::arch_config::ArchReader;
+use super::weights::{dequant_f16, dequant_f32, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step_gemma;
 use crate::cache::KvCache;
-use crate::engine::{
-    Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent,
-};
+use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::{GgmlType, GgufFile};
 use crate::kernels::{
     add_inplace, embed_lookup, gelu_mul, gemv_f16, gemv_f32, logit_softcap_inplace, rmsnorm,
@@ -44,8 +44,6 @@ use half::f16;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
-use super::arch_config::ArchReader;
-use super::weights::{TensorRef, tensor_ref, dequant_f32, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct Gemma2Config {
@@ -103,8 +101,7 @@ impl Gemma2Config {
         let max_seq_len = r.opt_usize("context_length", 8192);
 
         // query_pre_attn_scalar defaults to head_dim when absent.
-        let qpas = get_f32("gemma2.attention.query_pre_attn_scalar")
-            .unwrap_or(head_dim as f32);
+        let qpas = get_f32("gemma2.attention.query_pre_attn_scalar").unwrap_or(head_dim as f32);
         let attn_scale = 1.0 / qpas.sqrt();
         let attn_logit_softcap = get_f32("gemma2.attn_logit_softcapping").unwrap_or(0.0);
         let final_logit_softcap = get_f32("gemma2.final_logit_softcapping").unwrap_or(0.0);
@@ -139,7 +136,6 @@ impl Gemma2Config {
     }
 }
 
-
 pub struct Gemma2Layer {
     /// Sandwich norms (all already +1.0 at load for the (1+w) convention).
     pub attn_norm: Vec<f32>,
@@ -172,7 +168,6 @@ pub struct Gemma2 {
 }
 
 impl Gemma2 {
-
     /// Gemma RMSNorm weights are stored centered at 0; the effective
     /// scale is `(1 + w)`. Fold the +1.0 in at load so the standard
     /// rmsnorm kernel applies the right gain.
@@ -183,8 +178,6 @@ impl Gemma2 {
         }
         Ok(w)
     }
-
-
 
     fn dequant_ref_into(&self, t: &TensorRef, buf: &mut Vec<f32>) -> Result<()> {
         if buf.len() != t.n_elems {
@@ -270,7 +263,10 @@ impl Gemma2 {
 
         let stride = n_kv_heads * head_dim;
         if self.kv.seq_len >= self.kv.max_seq {
-            return Err(Error::Model(format!("kv cache full at {}", self.kv.max_seq)));
+            return Err(Error::Model(format!(
+                "kv cache full at {}",
+                self.kv.max_seq
+            )));
         }
         let kv_off = self.kv.seq_len * stride;
         let mha_seq_len = self.kv.seq_len + 1;
@@ -286,9 +282,30 @@ impl Gemma2 {
             let mut q_full = vec![0.0f32; q_dim];
             let mut k_token = vec![0.0f32; kv_dim];
             let mut v_token = vec![0.0f32; kv_dim];
-            self.matmul_q4_dispatch(&self.layers[li].q_proj, q_dim, h, &x_norm, &mut q_full, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].k_proj, kv_dim, h, &x_norm, &mut k_token, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].v_proj, kv_dim, h, &x_norm, &mut v_token, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].q_proj,
+                q_dim,
+                h,
+                &x_norm,
+                &mut q_full,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].k_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut k_token,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].v_proj,
+                kv_dim,
+                h,
+                &x_norm,
+                &mut v_token,
+                &mut scratch,
+            )?;
 
             for h_i in 0..n_heads {
                 let off = h_i * head_dim;
@@ -321,10 +338,22 @@ impl Gemma2 {
             )?;
 
             let mut o = vec![0.0f32; h];
-            self.matmul_q4_dispatch(&self.layers[li].o_proj, h, q_dim, &attn_out, &mut o, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].o_proj,
+                h,
+                q_dim,
+                &attn_out,
+                &mut o,
+                &mut scratch,
+            )?;
             // Post-attention norm BEFORE the residual add (sandwich).
             let mut o_norm = vec![0.0f32; h];
-            self.rmsnorm_dispatch(&o, &self.layers[li].post_attention_norm, rms_eps, &mut o_norm)?;
+            self.rmsnorm_dispatch(
+                &o,
+                &self.layers[li].post_attention_norm,
+                rms_eps,
+                &mut o_norm,
+            )?;
             add_inplace(&mut x, &o_norm);
 
             // Pre-ffn norm.
@@ -333,8 +362,22 @@ impl Gemma2 {
             let mut g = vec![0.0f32; mid];
             let mut u = vec![0.0f32; mid];
             let mut a = vec![0.0f32; mid];
-            self.matmul_q4_dispatch(&self.layers[li].ffn_gate, mid, h, &x_norm2, &mut g, &mut scratch)?;
-            self.matmul_q4_dispatch(&self.layers[li].ffn_up, mid, h, &x_norm2, &mut u, &mut scratch)?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].ffn_gate,
+                mid,
+                h,
+                &x_norm2,
+                &mut g,
+                &mut scratch,
+            )?;
+            self.matmul_q4_dispatch(
+                &self.layers[li].ffn_up,
+                mid,
+                h,
+                &x_norm2,
+                &mut u,
+                &mut scratch,
+            )?;
             // GeGLU (not SwiGLU).
             gelu_mul(&g, &u, &mut a);
             let mut f = vec![0.0f32; h];

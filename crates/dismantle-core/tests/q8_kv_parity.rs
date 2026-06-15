@@ -124,8 +124,19 @@ fn run_q8_vs_f32(label: &str, seq_len: usize, c_kv_scale: f32, atol: f32) {
     // Reference path: f32 c_kv → existing mla_decode_metal
     let mut ref_out = vec![0.0f32; N_HEADS * V_HEAD];
     kernels::mla_decode_metal(
-        ctx, &q, &c_kv, &k_pe, &kv_b_buf, N_HEADS, QK_NOPE, QK_ROPE, V_HEAD, KV_LORA, seq_len,
-        scale, &mut ref_out,
+        ctx,
+        &q,
+        &c_kv,
+        &k_pe,
+        &kv_b_buf,
+        N_HEADS,
+        QK_NOPE,
+        QK_ROPE,
+        V_HEAD,
+        KV_LORA,
+        seq_len,
+        scale,
+        &mut ref_out,
     )
     .expect("mla_decode_metal");
 
@@ -141,8 +152,19 @@ fn run_q8_vs_f32(label: &str, seq_len: usize, c_kv_scale: f32, atol: f32) {
 
     let mut q8_out = vec![0.0f32; N_HEADS * V_HEAD];
     kernels::mla_decode_q8kv_metal(
-        ctx, &q, &c_kv_q8, &k_pe, &kv_b_buf, N_HEADS, QK_NOPE, QK_ROPE, V_HEAD, KV_LORA, seq_len,
-        scale, &mut q8_out,
+        ctx,
+        &q,
+        &c_kv_q8,
+        &k_pe,
+        &kv_b_buf,
+        N_HEADS,
+        QK_NOPE,
+        QK_ROPE,
+        V_HEAD,
+        KV_LORA,
+        seq_len,
+        scale,
+        &mut q8_out,
     )
     .expect("mla_decode_q8kv_metal");
 

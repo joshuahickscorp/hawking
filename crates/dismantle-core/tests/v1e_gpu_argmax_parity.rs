@@ -17,7 +17,10 @@ mod common;
 use common::*;
 
 fn fixed_f16(n: usize, seed: u64) -> Vec<f16> {
-    fixed_f32(n, seed).iter().map(|&v| f16::from_f32(v)).collect()
+    fixed_f32(n, seed)
+        .iter()
+        .map(|&v| f16::from_f32(v))
+        .collect()
 }
 
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
@@ -139,8 +142,15 @@ fn wedge_e_lmhead_plus_argmax_tcb_matches_cpu() {
     let token_buf = ctx.new_buffer(std::mem::size_of::<u32>());
 
     let mut tcb = TokenCommandBuffer::new(ctx);
-    kernels::gemv_f16_metal_buf_tcb(&mut tcb, &lm_head_buf, vocab, hidden, &x_norm_buf, &logits_buf)
-        .expect("gemv_f16_metal_buf_tcb");
+    kernels::gemv_f16_metal_buf_tcb(
+        &mut tcb,
+        &lm_head_buf,
+        vocab,
+        hidden,
+        &x_norm_buf,
+        &logits_buf,
+    )
+    .expect("gemv_f16_metal_buf_tcb");
     kernels::sample_argmax_f32_tcb(&mut tcb, &logits_buf, &token_buf, vocab)
         .expect("sample_argmax_f32_tcb");
     tcb.commit_and_wait().expect("commit");
@@ -154,8 +164,5 @@ fn wedge_e_lmhead_plus_argmax_tcb_matches_cpu() {
     // Also verify the logits buf matches CPU within fp16 tolerance.
     let gpu_logits = read_f32_buf(&logits_buf, vocab);
     let diff = max_abs_diff(&cpu_logits, &gpu_logits);
-    assert!(
-        diff < 1e-3,
-        "logits max_abs_diff={diff:.2e} > 1e-3"
-    );
+    assert!(diff < 1e-3, "logits max_abs_diff={diff:.2e} > 1e-3");
 }

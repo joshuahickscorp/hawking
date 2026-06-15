@@ -95,8 +95,7 @@ pub mod inner {
     // Compile-time check that `MkLayerArgs`/`MkArgs` match the byte
     // layout the shader expects. If either fires, the shader struct
     // has drifted from the Rust struct (or vice-versa).
-    const _MK_LAYER_ARGS_SIZE_CHECK: [(); 120] =
-        [(); std::mem::size_of::<MkLayerArgs>()];
+    const _MK_LAYER_ARGS_SIZE_CHECK: [(); 120] = [(); std::mem::size_of::<MkLayerArgs>()];
     const _MK_ARGS_SIZE_CHECK: [(); 20] = [(); std::mem::size_of::<MkArgs>()];
 
     // ── Qwen-3B megakernel shape constants (mirror shader header) ───────────
@@ -133,22 +132,14 @@ pub mod inner {
         /// Allocate `metal::Buffer`s for every weight tensor in `w`,
         /// `memcpy` the host bytes in, and return the bundle paired
         /// with the populated `MkLayerArgs` argbuf descriptor.
-        pub fn upload(
-            ctx: &MetalContext,
-            w: &MegakernelLayerWeightsF16,
-        ) -> (Self, MkLayerArgs) {
+        pub fn upload(ctx: &MetalContext, w: &MegakernelLayerWeightsF16) -> (Self, MkLayerArgs) {
             let halfs = |v: &[f16]| {
                 let bytes = unsafe {
-                    std::slice::from_raw_parts(
-                        v.as_ptr() as *const u8,
-                        std::mem::size_of_val(v),
-                    )
+                    std::slice::from_raw_parts(v.as_ptr() as *const u8, std::mem::size_of_val(v))
                 };
                 ctx.new_buffer_with_bytes(bytes)
             };
-            let floats = |v: &[f32]| {
-                ctx.new_buffer_with_bytes(bytemuck::cast_slice(v))
-            };
+            let floats = |v: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice(v));
 
             let qw = halfs(&w.q_proj);
             let kw = halfs(&w.k_proj);
@@ -185,7 +176,18 @@ pub mod inner {
             };
             (
                 Self {
-                    qw, kw, vw, ow, gw, uw, dw, attn_norm, ffn_norm, qb, kb, vb,
+                    qw,
+                    kw,
+                    vw,
+                    ow,
+                    gw,
+                    uw,
+                    dw,
+                    attn_norm,
+                    ffn_norm,
+                    qb,
+                    kb,
+                    vb,
                 },
                 args,
             )
@@ -197,9 +199,15 @@ pub mod inner {
         /// only sees the argbuf directly).
         pub fn mark_used(&self, enc: &metal::ComputeCommandEncoderRef) {
             let mut refs: Vec<&metal::ResourceRef> = vec![
-                &self.qw, &self.kw, &self.vw, &self.ow,
-                &self.gw, &self.uw, &self.dw,
-                &self.attn_norm, &self.ffn_norm,
+                &self.qw,
+                &self.kw,
+                &self.vw,
+                &self.ow,
+                &self.gw,
+                &self.uw,
+                &self.dw,
+                &self.attn_norm,
+                &self.ffn_norm,
             ];
             if let Some(b) = self.qb.as_ref() {
                 refs.push(b);
@@ -250,23 +258,18 @@ pub mod inner {
 
         // Residual buffers.
         let x_in_bytes = unsafe {
-            std::slice::from_raw_parts(
-                x_in.as_ptr() as *const u8,
-                std::mem::size_of_val(x_in),
-            )
+            std::slice::from_raw_parts(x_in.as_ptr() as *const u8, std::mem::size_of_val(x_in))
         };
         let x_in_buf = ctx.new_buffer_with_bytes(x_in_bytes);
         let x_out_buf = ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>());
 
         // KV cache: 2 layers × max_seq × kv_dim halfs each.
-        let kv_bytes_per_buf =
-            2 * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
+        let kv_bytes_per_buf = 2 * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
         let k_cache_buf = ctx.new_buffer(kv_bytes_per_buf);
         let v_cache_buf = ctx.new_buffer(kv_bytes_per_buf);
 
         // FFN scratch (DRAM spill for stage I/J/K).
-        let ffn_scratch_buf =
-            ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>());
+        let ffn_scratch_buf = ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>());
 
         // Upload both layers' weights and build per-layer argbufs.
         let (l0_buffers, l0_args) = LayerMetalBuffers::upload(ctx, layer0);
@@ -362,24 +365,19 @@ pub mod inner {
 
         // Residual buffers.
         let x_in_bytes = unsafe {
-            std::slice::from_raw_parts(
-                x_in.as_ptr() as *const u8,
-                std::mem::size_of_val(x_in),
-            )
+            std::slice::from_raw_parts(x_in.as_ptr() as *const u8, std::mem::size_of_val(x_in))
         };
         let x_in_buf = ctx.new_buffer_with_bytes(x_in_bytes);
         let x_out_buf = ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>());
 
         // KV cache: n layers × max_seq × kv_dim halfs per buffer. The
         // shader strides layer `li` by `max_seq * kv_dim`.
-        let kv_bytes =
-            n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
+        let kv_bytes = n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
         let k_cache_buf = ctx.new_buffer(kv_bytes);
         let v_cache_buf = ctx.new_buffer(kv_bytes);
 
         // FFN scratch (reused per layer).
-        let ffn_scratch_buf =
-            ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>());
+        let ffn_scratch_buf = ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>());
 
         // Upload every layer's weights; keep the buffer bundles alive
         // for the dispatch (their gpu_addresses live in the argbufs).
@@ -491,15 +489,13 @@ pub mod inner {
                 )
             };
             let layer_args_buf = ctx.new_buffer_with_bytes(layer_args_bytes);
-            let kv_bytes =
-                n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
+            let kv_bytes = n * (max_seq as usize) * MK_KV_DIM * std::mem::size_of::<f16>();
             Ok(Self {
                 layer_buffers,
                 layer_args_buf,
                 k_cache_buf: ctx.new_buffer(kv_bytes),
                 v_cache_buf: ctx.new_buffer(kv_bytes),
-                ffn_scratch_buf: ctx
-                    .new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>()),
+                ffn_scratch_buf: ctx.new_buffer(MK_INTERMEDIATE * std::mem::size_of::<f16>()),
                 x_in_buf: ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>()),
                 x_out_buf: ctx.new_buffer(MK_HIDDEN * std::mem::size_of::<f16>()),
                 n_layers: n as u32,
@@ -537,8 +533,7 @@ pub mod inner {
             let scalar_bytes: [u8; std::mem::size_of::<MkArgs>()] =
                 unsafe { std::mem::transmute(scalar_args) };
             let scalar_buf = ctx.new_buffer_with_bytes(&scalar_bytes);
-            let shmem_bytes =
-                (MK_SHMEM_HALFS * std::mem::size_of::<f16>()) as u64;
+            let shmem_bytes = (MK_SHMEM_HALFS * std::mem::size_of::<f16>()) as u64;
             ctx.dispatch_threads(
                 "qwen3b_megakernel_nlayer",
                 (MK_TG_SIZE, 1, 1),
@@ -559,8 +554,7 @@ pub mod inner {
             )?;
             let mut out = vec![f16::ZERO; MK_HIDDEN];
             let out_ptr = self.x_out_buf.contents() as *const f16;
-            let out_slice =
-                unsafe { std::slice::from_raw_parts(out_ptr, MK_HIDDEN) };
+            let out_slice = unsafe { std::slice::from_raw_parts(out_ptr, MK_HIDDEN) };
             out.copy_from_slice(out_slice);
             Ok(out)
         }
@@ -570,8 +564,7 @@ pub mod inner {
 #[cfg(target_os = "macos")]
 #[allow(unused_imports)]
 pub use inner::{
-    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, LayerMetalBuffers,
-    MegakernelRunner, MkArgs, MkLayerArgs,
-    MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, LayerMetalBuffers, MegakernelRunner,
+    MkArgs, MkLayerArgs, MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
     MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };

@@ -48,7 +48,9 @@ fn make_q3k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 #[test]
@@ -68,9 +70,16 @@ fn q3k_v4_predec_matches_fused_v2_fp16() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q3_k_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_buf, &y_fused_buf,
-        ).expect("q3_k fused encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_buf,
+            &y_fused_buf,
+        )
+        .expect("q3_k fused encode");
         tcb.commit_and_wait().expect("q3_k fused commit");
     }
     let y_fused = read_f32_buf(&y_fused_buf, rows);
@@ -78,19 +87,31 @@ fn q3k_v4_predec_matches_fused_v2_fp16() {
     // v4_predec: build host-side scale table (16 f32/block), pin, dispatch.
     let scales = predecode_q3_k_scale_table(&w_bytes);
     let expected_scale_len = rows * (cols / 256) * 16;
-    assert_eq!(scales.len(), expected_scale_len,
+    assert_eq!(
+        scales.len(),
+        expected_scale_len,
         "predecode_q3_k_scale_table length mismatch: got {} expected {}",
-        scales.len(), expected_scale_len);
+        scales.len(),
+        expected_scale_len
+    );
     let scales_buf = new_f32_buf(ctx, &scales);
 
     let y_predec_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q3_k_v4_predec_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            &scales_buf, 0,
-            rows, cols, &x_buf, &y_predec_buf,
-        ).expect("q3_k v4_predec encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_predec_buf,
+        )
+        .expect("q3_k v4_predec encode");
         tcb.commit_and_wait().expect("q3_k v4_predec commit");
     }
     let y_predec = read_f32_buf(&y_predec_buf, rows);
@@ -111,7 +132,8 @@ fn q3k_v4_predec_matches_fused_v2_fp16() {
         max_abs < ATOL,
         "q3k_v4_predec exceeds fp16 tol vs fused_v2: max_abs={max_abs:e} (atol {ATOL}) \
          at i={worst}  fused={}  predec={}",
-        y_fused[worst], y_predec[worst],
+        y_fused[worst],
+        y_predec[worst],
     );
     eprintln!(
         "[q3k_v4_predec parity] {rows} rows within fp16 tol; max_abs={max_abs:e} (atol {ATOL})"

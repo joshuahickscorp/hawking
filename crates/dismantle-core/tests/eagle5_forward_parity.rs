@@ -125,8 +125,8 @@ fn q1p5_head_path() -> Option<PathBuf> {
         }
     }
     let home = std::env::var_os("HOME")?;
-    let candidate = PathBuf::from(home)
-        .join("Downloads/dismantle_export/heads/q1p5_eagle6_long.safetensors");
+    let candidate =
+        PathBuf::from(home).join("Downloads/dismantle_export/heads/q1p5_eagle6_long.safetensors");
     if candidate.exists() {
         Some(candidate)
     } else {
@@ -138,8 +138,8 @@ fn q1p5_head_path() -> Option<PathBuf> {
 #[ignore = "needs DISMANTLE_Q3B_HEAD or ~/Downloads/head_final.safetensors"]
 fn eagle6_forward_matches_pytorch_q3b() {
     let head = head_path().expect("set DISMANTLE_Q3B_HEAD or place head at ~/Downloads/");
-    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/eagle5_parity_q3b.json");
+    let fixture_path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/eagle5_parity_q3b.json");
     let raw = std::fs::read_to_string(&fixture_path)
         .unwrap_or_else(|e| panic!("read {}: {e}", fixture_path.display()));
     let f: Fixture = serde_json::from_str(&raw).expect("parse fixture");
@@ -219,7 +219,10 @@ fn eagle6_forward_matches_pytorch_q3b() {
     }
     let l2 = l2_sq.sqrt();
     let l2_rust = l2_rust.sqrt() as f32;
-    eprintln!("argmax parity: rust={} pytorch={} OK", rust_argmax, f.argmax);
+    eprintln!(
+        "argmax parity: rust={} pytorch={} OK",
+        rust_argmax, f.argmax
+    );
     eprintln!(
         "rust L2={:.2}  pytorch L2={:.2}  delta L2={:.4}  L_inf={:.4e}",
         l2_rust, f.logits_l2, l2, l_inf
@@ -277,8 +280,8 @@ fn eagle6_forward_matches_pytorch_q3b() {
 fn eagle6_forward_matches_pytorch_q1p5() {
     let head = q1p5_head_path()
         .expect("set DISMANTLE_Q1P5_HEAD or place q1p5_eagle6_long.safetensors at ~/Downloads/dismantle_export/heads/");
-    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/eagle5_parity_q1p5.json");
+    let fixture_path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/eagle5_parity_q1p5.json");
     let raw = std::fs::read_to_string(&fixture_path)
         .unwrap_or_else(|e| panic!("read {}: {e}", fixture_path.display()));
     let f: Fixture = serde_json::from_str(&raw).expect("parse fixture");
@@ -319,7 +322,10 @@ fn eagle6_forward_matches_pytorch_q1p5() {
     }
     let l2 = l2_sq.sqrt();
     let l2_rust = l2_rust.sqrt() as f32;
-    eprintln!("q1p5 argmax parity: rust={} pytorch={} OK", rust_argmax, f.argmax);
+    eprintln!(
+        "q1p5 argmax parity: rust={} pytorch={} OK",
+        rust_argmax, f.argmax
+    );
     eprintln!(
         "q1p5 rust L2={:.2}  pytorch L2={:.2}  delta L2={:.4}  L_inf={:.4e}",
         l2_rust, f.logits_l2, l2, l_inf
@@ -329,13 +335,18 @@ fn eagle6_forward_matches_pytorch_q1p5() {
     // slack on L_inf — still well under any value that would affect
     // top-K rankings.
     const L_INF_TOL: f32 = 1e-1;
-    assert!(l_inf <= L_INF_TOL, "q1p5 L_inf parity violation: {l_inf:.4e} > {L_INF_TOL:.4e}");
+    assert!(
+        l_inf <= L_INF_TOL,
+        "q1p5 L_inf parity violation: {l_inf:.4e} > {L_INF_TOL:.4e}"
+    );
 
     let l2_rel = ((l2_rust - f.logits_l2).abs() / f.logits_l2).abs();
     assert!(
         l2_rel < 0.01,
         "q1p5 logits L2 disagrees by {:.2}%; rust={} pytorch={}",
-        l2_rel * 100.0, l2_rust, f.logits_l2,
+        l2_rel * 100.0,
+        l2_rust,
+        f.logits_l2,
     );
 
     use std::collections::HashSet;

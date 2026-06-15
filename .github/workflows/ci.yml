@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "harden/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: fmt · clippy · build · test
+    # Apple Silicon runner — real Metal GPU, matches the target platform.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable + rustfmt + clippy)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry + target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      # Deny warnings, with external (objc cfg) and a few pedantic lints
+      # allowlisted. Any NEW lint of an un-allowed kind fails the build.
+      - name: Clippy
+        run: |
+          cargo clippy --workspace -- -D warnings \
+            -A unexpected_cfgs \
+            -A unused_assignments \
+            -A clippy::should_implement_trait \
+            -A clippy::type_complexity \
+            -A clippy::too_many_arguments
+
+      - name: Build
+        run: cargo build --workspace
+
+      # Compile every test target, including the GPU/model parity gates, so a
+      # broken test can't hide behind a skip.
+      - name: Compile all tests
+        run: cargo test --workspace --no-run
+
+      # Run the deterministic unit tests (no model weights or GPU required).
+      # Model-dependent parity gates skip cleanly when weights are absent; the
+      # independent-oracle (llama.cpp) gate runs once a small fixture is wired.
+      - name: Unit tests
+        run: cargo test --workspace --lib --bins

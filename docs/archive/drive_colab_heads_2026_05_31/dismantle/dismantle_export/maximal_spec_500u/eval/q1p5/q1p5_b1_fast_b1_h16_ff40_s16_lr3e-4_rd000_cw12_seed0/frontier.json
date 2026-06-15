@@ -1,6 +1,0 @@
-{
-  "ckpt": "/content/drive/MyDrive/dismantle/maximal_spec_500u/artifacts/q1p5/checkpoints/q1p5_b1_fast_b1_h16_ff40_s16_lr3e-4_rd000_cw12_seed0/head_final.safetensors",
-  "corpus": "/content/drive/MyDrive/dismantle/maximal_spec_500u/corpora/q1p5_corpus",
-  "frozen": "/content/q1p5_frozen.npz",
-  "max_depth": 24,
-  "policies": {"best_deployable": {"accepted_draft_tokens_per_verify": 23.603666666666665, "base_tps": 95.0, "efficiency": 0.8, "kind": "fixed_k", "max_depth": 24, "projected_dec_tps": 1869.8786666666667, "full_accept_rate": 0.9715416666666666}}, "schema": "eagle5-frontier-policy-v1", "windows": 24000}

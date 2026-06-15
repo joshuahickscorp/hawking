@@ -43,8 +43,7 @@ fn run_greedy(weights: &PathBuf, expect_arch: &str) -> Vec<u32> {
     // Profiles are model-specific (generated via `dismantle autotune`);
     // the smoke gate intentionally exercises the no-profile load path.
     let cfg = dismantle_core::EngineConfig::default();
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load llama engine");
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load llama engine");
     assert_eq!(
         engine.model_arch(),
         expect_arch,
@@ -84,7 +83,7 @@ fn hash16(ids: &[u32]) -> String {
 }
 
 fn check_or_pin(label: &str, actual_hash: &str) {
-    let pin_path = PathBuf::from("../../tests/golden/_llama32_token_baseline.hashes");
+    let pin_path = PathBuf::from("tests/golden/_llama32_token_baseline.hashes");
     let actual_line = format!("{}: {}\n", label, actual_hash);
     let existing = std::fs::read_to_string(&pin_path).unwrap_or_default();
     let prior = existing

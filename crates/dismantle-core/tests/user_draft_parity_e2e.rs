@@ -56,6 +56,13 @@ fn make_engine(weights: &PathBuf) -> Box<dyn dismantle_core::Engine> {
     // draft flag (default-on prefix cache is bit-identical anyway, but a
     // single-request gate has no prior session to hit, so it is inert).
     std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
+    // E3 (DISMANTLE_QWEN_PAIR_2R_INLINE, default-on) is bit-identical to old-2r
+    // for plain greedy but is NOT consistent with the batched verify path, so it
+    // breaks user-draft bit-identity. Production auto-disables E3 when user-draft
+    // is active (see the E3 gate in qwen_dense.rs); mirror that here so this gate
+    // validates the SHIPPED draft config. Set process-wide before the first
+    // generate so the E3 OnceLock caches "off" for both the ref and draft arms.
+    std::env::set_var("DISMANTLE_QWEN_PAIR_2R_INLINE", "0");
     let cfg = dismantle_core::EngineConfig::default();
     dismantle_core::model::load_engine(weights, cfg).expect("load engine")
 }
@@ -118,8 +125,16 @@ fn user_draft_is_bit_identical() {
     };
     std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
 
     // First 3 tokens (the project's token-parity window) — checked
     // explicitly so a failure message pinpoints the window.
@@ -191,8 +206,16 @@ fn user_draft_bit_identical_fast_pruned_q4k() {
     std::env::remove_var("DISMANTLE_QWEN_VOCAB_PRUNE");
     std::env::remove_var("DISMANTLE_QWEN_Q4K_LMHEAD");
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
     assert_eq!(
         &ref_ids[..3],
         &draft_ids[..3],
@@ -275,8 +298,16 @@ fn user_draft_bit_identical_full_fast_env() {
     std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
     clear_full_fast_env();
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
     assert_eq!(
         &ref_ids[..3],
         &draft_ids[..3],
@@ -305,7 +336,11 @@ fn user_draft_bit_identical_full_fast_env() {
 /// GPU fast verify path (VOCAB_PRUNE + Q4K_LMHEAD) vs the CPU fp16 fallback, so
 /// the new loop is exercised on both. Returns (bonus_first_ids, accepted)
 /// alongside the asserted-equal propose_first_ids for the caller to log.
-fn propose_first_matches_bonus_first(weights: &PathBuf, pruned: bool, n: usize) -> (Vec<u32>, Vec<u32>, usize, usize) {
+fn propose_first_matches_bonus_first(
+    weights: &PathBuf,
+    pruned: bool,
+    n: usize,
+) -> (Vec<u32>, Vec<u32>, usize, usize) {
     if pruned {
         std::env::set_var("DISMANTLE_QWEN_VOCAB_PRUNE", "32000");
         std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");

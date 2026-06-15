@@ -25,12 +25,18 @@ pub fn run(opts: BenchKernelOptions) -> Result<()> {
     let mut results = Vec::new();
 
     for kernel_name in &kernels {
-        eprint!("  benching {} at {}x{} ({} iters)... ", kernel_name, rows, cols, opts.iterations);
+        eprint!(
+            "  benching {} at {}x{} ({} iters)... ",
+            kernel_name, rows, cols, opts.iterations
+        );
         let _ = std::io::stderr().flush();
 
         match kernel_bench::run_kernel(kernel_name, rows, cols, opts.iterations) {
             Ok(result) => {
-                eprintln!("mean={:.1}μs p50={:.1}μs p99={:.1}μs", result.mean_us, result.p50_us, result.p99_us);
+                eprintln!(
+                    "mean={:.1}μs p50={:.1}μs p99={:.1}μs",
+                    result.mean_us, result.p50_us, result.p99_us
+                );
                 println!("{}", serde_json::to_string(&result)?);
                 results.push(result);
             }
@@ -62,7 +68,10 @@ fn git_short_head() -> String {
         .unwrap_or_else(|| "unknown".into())
 }
 
-fn append_to_history(results: &[dismantle_core::kernel_bench::KernelBenchResult], _commit: &str) -> Result<()> {
+fn append_to_history(
+    results: &[dismantle_core::kernel_bench::KernelBenchResult],
+    _commit: &str,
+) -> Result<()> {
     std::fs::create_dir_all("bench_results")?;
     let mut f = std::fs::OpenOptions::new()
         .append(true)
@@ -71,6 +80,9 @@ fn append_to_history(results: &[dismantle_core::kernel_bench::KernelBenchResult]
     for r in results {
         writeln!(f, "{}", serde_json::to_string(r)?)?;
     }
-    eprintln!("appended {} result(s) to bench_results/kernel_perf_history.jsonl", results.len());
+    eprintln!(
+        "appended {} result(s) to bench_results/kernel_perf_history.jsonl",
+        results.len()
+    );
     Ok(())
 }

@@ -17,14 +17,30 @@ pub struct DecodeOutput {
     pub finished: bool,
 }
 
+/// Decode-lane stats accumulated across all steps. Exposed via /metrics.
+#[derive(Debug, Default, Clone)]
+pub struct LaneStats {
+    /// Steps routed through the greedy token-only path (B×4 byte readback).
+    pub greedy_steps: u64,
+    /// Steps routed through the full-logits path (B×vocab×4 byte readback).
+    pub logits_steps: u64,
+    /// Cumulative bytes read back from GPU this session.
+    pub readback_bytes: u64,
+    /// Track 5.2: number of admissions where a KV prefix was successfully
+    /// copied from an existing slot (copy_kv_prefix_to_slot returned Ok).
+    pub prefix_reuse_count: u64,
+}
+
 pub struct BatchDriver {
     pub scheduler: Scheduler,
+    pub lane_stats: LaneStats,
 }
 
 impl BatchDriver {
     pub fn new(max_batch_size: usize) -> Self {
         Self {
             scheduler: Scheduler::new(max_batch_size),
+            lane_stats: LaneStats::default(),
         }
     }
 
@@ -45,11 +61,47 @@ impl BatchDriver {
 
         let tokens: Vec<u32> = batch.iter().map(|step| step.token).collect();
         let positions: Vec<usize> = batch.iter().map(|step| step.position).collect();
-        let mut logits = engine.forward_tokens_batched(&tokens, &positions)?;
+        // STABLE KV region per slot = the slot id (0..max_batch_size, reused on
+        // release), NOT the compacted batch index — so a slot keeps its KV as the
+        // ready set churns. The multi-seq path keys KV by this region.
+        let regions: Vec<usize> = batch.iter().map(|step| step.slot_id as usize).collect();
+
+        // Greedy lane: all slots are temperature=0 with no repetition penalty
+        // override → route to token-only path (B×4 byte readback, no logits).
+        let all_greedy = batch.iter().all(|step| {
+            self.scheduler
+                .slots
+                .iter()
+                .find(|s| s.id == step.slot_id)
+                .and_then(|s| s.req.as_ref())
+                .map(|r| r.sampling.temperature <= 0.0 && r.sampling.repetition_penalty <= 1.0)
+                .unwrap_or(false)
+        });
+
+        let b = batch.len();
+        if all_greedy {
+            let token_ids = engine.forward_multiseq_greedy_tokens(&tokens, &positions, &regions)?;
+            let eos_id = engine.eos_id_for_batch();
+            let decoded = self
+                .scheduler
+                .apply_decode_tokens(&batch, token_ids, eos_id)?;
+            self.lane_stats.greedy_steps += 1;
+            self.lane_stats.readback_bytes += (b * std::mem::size_of::<u32>()) as u64;
+            return decoded
+                .into_iter()
+                .map(|token| decode_output(engine, token))
+                .collect();
+        }
+
+        // Full-logits lane (sampling, logprobs, or repetition penalty requests).
+        let mut logits = engine.forward_multiseq_batched(&tokens, &positions, &regions)?;
+        let vocab = logits.first().map(|l| l.len()).unwrap_or(0);
         let eos_id = engine.eos_id_for_batch();
         let decoded = self
             .scheduler
             .apply_decode_logits(&batch, &mut logits, eos_id)?;
+        self.lane_stats.logits_steps += 1;
+        self.lane_stats.readback_bytes += (b * vocab * std::mem::size_of::<f32>()) as u64;
 
         decoded
             .into_iter()
@@ -70,9 +122,7 @@ fn decode_output(engine: &dyn Engine, token: DecodedToken) -> Result<DecodeOutpu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dismantle_core::{
-        EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent,
-    };
+    use dismantle_core::{EngineConfig, GenStats, GenerateRequest, SamplingParams, StreamEvent};
     use std::path::Path;
 
     struct FakeEngine {
@@ -192,7 +242,10 @@ mod tests {
             ]
         );
         assert_eq!(driver.scheduler.slots[0].last_token, Some(1));
-        assert_eq!(driver.scheduler.slots[1].state, crate::batch::SlotState::Finishing);
+        assert_eq!(
+            driver.scheduler.slots[1].state,
+            crate::batch::SlotState::Finishing
+        );
     }
 
     #[test]
@@ -217,6 +270,9 @@ mod tests {
 
         assert_eq!(slot_id, 0);
         assert_eq!(driver.scheduler.slots[0].prompt_ids, vec![b'x' as u32]);
-        assert_eq!(driver.scheduler.slots[0].state, crate::batch::SlotState::Prefilling);
+        assert_eq!(
+            driver.scheduler.slots[0].state,
+            crate::batch::SlotState::Prefilling
+        );
     }
 }

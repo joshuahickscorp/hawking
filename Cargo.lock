@@ -330,15 +330,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crossbeam-channel"
-version = "0.5.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -476,11 +467,10 @@ dependencies = [
  "dismantle-bench",
  "dismantle-core",
  "dismantle-serve",
- "half",
  "serde",
  "serde_json",
+ "sha2",
  "tokio",
- "tracing",
  "tracing-subscriber",
 ]
 
@@ -489,19 +479,16 @@ name = "dismantle-bench"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "clap",
  "dismantle-core",
  "serde",
  "serde_json",
  "sha2",
- "tracing",
 ]
 
 [[package]]
 name = "dismantle-core"
 version = "0.2.2"
 dependencies = [
- "anyhow",
  "bytemuck",
  "half",
  "memmap2",
@@ -519,7 +506,6 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tokenizers",
- "tracing",
 ]
 
 [[package]]
@@ -529,7 +515,6 @@ dependencies = [
  "anyhow",
  "axum",
  "bytes",
- "crossbeam-channel",
  "dismantle-core",
  "futures",
  "http-body-util",

@@ -1,3 +1,4 @@
+use super::weights::{dequant_f16, tensor_ref, TensorRef};
 use crate::cache::KvCache;
 use crate::engine::{
     Engine, EngineConfig, GenStats, GenerateRequest, SpeculateMode, StopReason, StreamEvent,
@@ -14,7 +15,6 @@ use crate::{Error, Result};
 use half::f16;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
-use super::weights::{TensorRef, tensor_ref, dequant_f16};
 
 #[derive(Debug, Clone)]
 pub struct DeepSeekConfig {
@@ -200,7 +200,6 @@ pub struct DeepSeekV2 {
     pub pruned_vocab: Option<crate::vocab_prune::PrunedVocab>,
 }
 
-
 pub struct Layer {
     pub attn_norm: Vec<f32>,
     pub ffn_norm: Vec<f32>,
@@ -336,7 +335,9 @@ impl FfnMoeSetup {
     ) -> &'static str {
         match self.routed_down_dtype {
             GgmlType::Q8_0 => match q4k_schedule {
-                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => "moe_batched_gemm_q8_0_indexed_v2t",
+                "v2t" | "v2t_gu" | "v2t_gu_serial" | "v2t_gu_v2" => {
+                    "moe_batched_gemm_q8_0_indexed_v2t"
+                }
                 _ => "moe_batched_gemm_q8_0_indexed",
             },
             GgmlType::Q5_0 => match routed_down_schedule {
@@ -404,7 +405,6 @@ impl DeepSeekV2 {
             Ok(None)
         }
     }
-
 
     /// Build a `TensorRef` for a single (non-fused) tensor -- the
     /// returned ref points into the GGUF mmap.
@@ -507,7 +507,8 @@ impl Engine for DeepSeekV2 {
             if pruned_vocab.is_some() {
                 return Err(Error::Model(
                     "vocab_prune_path set but model has tied embeddings (no output.weight); \
-                     pruning the tied embed table would break input embed lookup".into(),
+                     pruning the tied embed table would break input embed lookup"
+                        .into(),
                 ));
             }
             None
@@ -643,11 +644,34 @@ impl Engine for DeepSeekV2 {
         // pinned. Profiles still control via `mla_schedule`; `"legacy-materialized"`
         // (or any non-`"metal-mla"` value) opts out and keeps the materialized
         // KvCache as the only cache.
-        let mla_metal = config
-            .kernel_profile
-            .as_ref()
-            .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
-            .unwrap_or(true);
+        // Phase 3.3 reach: the compressed-MLA cache is only consumable by the
+        // Metal MLA kernels. When no Metal context will be present -- off-macOS
+        // (no Metal) or on-macOS under force_cpu (Edit A above sets
+        // metal_ctx=None) -- there is no consumer, so keep `mla_c_kv` empty and
+        // let `attention()` take the materialized-KV CPU path (kv_b_proj expand
+        // + mha_decode_step). If `mla_c_kv` were non-empty WITHOUT a Metal ctx,
+        // `attention()` would hard-error at the `mla_decode: Metal context
+        // unavailable` branch. `cpu_only` is exactly the condition under which
+        // Edit A yields metal_ctx.is_none(), so this gate is equivalent to
+        // `<profile-based> && metal_ctx.is_some()` (and metal_ctx is always None
+        // off-macOS, where the non-macOS arm forces false).
+        let cpu_only = config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU");
+        let mla_metal = {
+            #[cfg(target_os = "macos")]
+            {
+                !cpu_only
+                    && config
+                        .kernel_profile
+                        .as_ref()
+                        .map(|p| p.selected.mla_schedule.as_str() == "metal-mla")
+                        .unwrap_or(true)
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                let _ = cpu_only;
+                false
+            }
+        };
         let (mla_c_kv, mla_k_pe) = if mla_metal {
             let c_kv = (0..cfg.n_layers)
                 .map(|_| vec![0.0f32; max_seq * cfg.kv_lora_rank])
@@ -665,7 +689,17 @@ impl Engine for DeepSeekV2 {
         // Metal context: built once per model, owned for the model's
         // lifetime. Errors here (no GPU, shader compile failure) are
         // soft -- `None` falls back to CPU kernels in every dispatcher.
-        let metal_ctx = MetalContext::new_with_trace(config.trace_dispatch).ok();
+        //
+        // Phase 3.3 portability/reach: `force_cpu` (config or
+        // DISMANTLE_FORCE_CPU=1) loads with NO Metal context, forcing the
+        // pure-Rust CPU reference path. This is the same state the engine is
+        // in off-macOS (no Metal) and is how the CPU "backend" is exercised
+        // for the CPU-vs-Metal parity cross-check. Mirrors qwen_dense.rs.
+        let metal_ctx = if config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU") {
+            None
+        } else {
+            MetalContext::new_with_trace(config.trace_dispatch).ok()
+        };
         let device_name = metal_ctx.as_ref().map(|ctx| ctx.device_name());
         if let Some(profile) = config.kernel_profile.as_ref() {
             profile.validate_for_gguf(&gguf, device_name.as_deref())?;
@@ -685,44 +719,43 @@ impl Engine for DeepSeekV2 {
         // training run completes — it lets the spec-decode runtime
         // ship behind DISMANTLE_SPEC_DECODE=eagle5 without blocking
         // on training completion.
-        let eagle5_head: Option<crate::speculate::eagle5::Eagle5Head> = if speculate_mode
-            == SpeculateMode::Eagle5
-        {
-            let h = cfg.hidden;
-            let v = cfg.vocab_size;
-            let head = match config.eagle5_head_path.as_deref() {
-                Some(p) => {
-                    match crate::speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
-                        Ok(loaded) => {
-                            eprintln!(
-                                "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
-                                p.display()
-                            );
-                            loaded
-                        }
-                        Err(e) => {
-                            eprintln!(
-                                "[eagle5] WARNING: trained-head loader failed ({e:?}); \
+        let eagle5_head: Option<crate::speculate::eagle5::Eagle5Head> =
+            if speculate_mode == SpeculateMode::Eagle5 {
+                let h = cfg.hidden;
+                let v = cfg.vocab_size;
+                let head = match config.eagle5_head_path.as_deref() {
+                    Some(p) => {
+                        match crate::speculate::eagle5::Eagle5Head::load_from_safetensors(p, h, v) {
+                            Ok(loaded) => {
+                                eprintln!(
+                                    "[eagle5] loaded trained head from {} (hidden={h}, vocab={v})",
+                                    p.display()
+                                );
+                                loaded
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "[eagle5] WARNING: trained-head loader failed ({e:?}); \
                                  falling back to deterministic mock head — accept rate will \
                                  be near 1/vocab and is only useful for runtime validation."
-                            );
-                            crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                                );
+                                crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                            }
                         }
                     }
-                }
-                None => {
-                    eprintln!(
-                        "[eagle5] no --eagle5-head path supplied; using deterministic mock \
+                    None => {
+                        eprintln!(
+                            "[eagle5] no --eagle5-head path supplied; using deterministic mock \
                          head (hidden={h}, vocab={v}). Accept rate will be near 1/vocab — \
                          runtime-validation mode only."
-                    );
-                    crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
-                }
+                        );
+                        crate::speculate::eagle5::Eagle5Head::mock(0xea91e5_u64, h, v)
+                    }
+                };
+                Some(head)
+            } else {
+                None
             };
-            Some(head)
-        } else {
-            None
-        };
 
         // WB weight-pinning: when Metal is alive, upload the LM-head
         // fp16 matrix to a single Buffer that lives for the model's
@@ -778,8 +811,17 @@ impl Engine for DeepSeekV2 {
             let total_len = gguf.mmap.len();
             let mut hinted_mib: usize = 0;
             for layer in &layers {
-                if let LayerMode::MoE { routed_fused, shared_fused, .. } = &layer.mode {
-                    for tref in [&routed_fused.gate_w, &routed_fused.up_w, &routed_fused.down_w] {
+                if let LayerMode::MoE {
+                    routed_fused,
+                    shared_fused,
+                    ..
+                } = &layer.mode
+                {
+                    for tref in [
+                        &routed_fused.gate_w,
+                        &routed_fused.up_w,
+                        &routed_fused.down_w,
+                    ] {
                         let off = tref.offset;
                         let len = tref.byte_size;
                         if off.saturating_add(len) <= total_len {
@@ -812,7 +854,9 @@ impl Engine for DeepSeekV2 {
                 }
             }
             if config.trace_dispatch && hinted_mib > 0 {
-                eprintln!("[dismantle] madvise WILLNEED hinted {hinted_mib} MiB of MoE expert weights");
+                eprintln!(
+                    "[dismantle] madvise WILLNEED hinted {hinted_mib} MiB of MoE expert weights"
+                );
             }
         }
 
@@ -867,7 +911,12 @@ impl Engine for DeepSeekV2 {
                 if let LayerMode::MoE { gate_logits_w, .. } = &layer.mode {
                     layer.pinned.gate_logits_w = Some(upload(gate_logits_w));
                 }
-                if let LayerMode::Dense { gate_w, up_w, down_w } = &layer.mode {
+                if let LayerMode::Dense {
+                    gate_w,
+                    up_w,
+                    down_w,
+                } = &layer.mode
+                {
                     layer.pinned.dense_gate_w = Some(upload(gate_w));
                     layer.pinned.dense_up_w = Some(upload(up_w));
                     layer.pinned.dense_down_w = Some(upload(down_w));
@@ -920,10 +969,14 @@ impl Engine for DeepSeekV2 {
             if metal_ctx.is_some() && mla_metal {
                 let ctx = metal_ctx.as_ref().unwrap();
                 let c_kv: Vec<PinnedBuffer> = (0..cfg.n_layers)
-                    .map(|_| ctx.new_buffer(max_seq * cfg.kv_lora_rank * std::mem::size_of::<f32>()))
+                    .map(|_| {
+                        ctx.new_buffer(max_seq * cfg.kv_lora_rank * std::mem::size_of::<f32>())
+                    })
                     .collect();
                 let k_pe: Vec<PinnedBuffer> = (0..cfg.n_layers)
-                    .map(|_| ctx.new_buffer(max_seq * cfg.qk_rope_head_dim * std::mem::size_of::<f32>()))
+                    .map(|_| {
+                        ctx.new_buffer(max_seq * cfg.qk_rope_head_dim * std::mem::size_of::<f32>())
+                    })
                     .collect();
                 (c_kv, k_pe)
             } else {
@@ -945,7 +998,10 @@ impl Engine for DeepSeekV2 {
             }
         };
         #[cfg(not(target_os = "macos"))]
-        let (embed_buf, final_norm_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
+        let (embed_buf, final_norm_buf): (
+            Option<crate::metal::PinnedBuffer>,
+            Option<crate::metal::PinnedBuffer>,
+        ) = (None, None);
 
         // v1.0.0-E: logits buffer (vocab × f32) and token buffer (1 × u32).
         // Allocated once; reused every greedy decode step to avoid per-token heap churn.
@@ -960,7 +1016,10 @@ impl Engine for DeepSeekV2 {
             }
         };
         #[cfg(not(target_os = "macos"))]
-        let (logits_buf, token_buf): (Option<crate::metal::PinnedBuffer>, Option<crate::metal::PinnedBuffer>) = (None, None);
+        let (logits_buf, token_buf): (
+            Option<crate::metal::PinnedBuffer>,
+            Option<crate::metal::PinnedBuffer>,
+        ) = (None, None);
 
         // v1.2.0-9: save dimensions before cfg is moved into the struct literal.
         let cfg_n_layers = cfg.n_layers;
@@ -1038,7 +1097,8 @@ impl Engine for DeepSeekV2 {
             if self.eagle5_head.is_none() {
                 return Err(Error::Model(
                     "--speculate eagle5 requested but no Eagle5Head was constructed; \
-                     this is a load-time bug — check EngineConfig::eagle5_head_path".into(),
+                     this is a load-time bug — check EngineConfig::eagle5_head_path"
+                        .into(),
                 ));
             }
         }
@@ -1142,7 +1202,11 @@ impl Engine for DeepSeekV2 {
                 let remaining = req.max_new_tokens - produced;
 
                 // Clamp draft window: always draft ≥ 1 if budget allows.
-                let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
+                let actual_k = if remaining <= 1 {
+                    0
+                } else {
+                    spec_k.min(remaining - 1)
+                };
 
                 if actual_k == 0 {
                     // Too close to budget -- single greedy step.
@@ -1153,7 +1217,9 @@ impl Engine for DeepSeekV2 {
                     let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                     sink(StreamEvent::Token { id: next_id, text });
                     produced += 1;
-                    if Some(next_id) == eos { reason = StopReason::Eos; }
+                    if Some(next_id) == eos {
+                        reason = StopReason::Eos;
+                    }
                     break 'spec_loop;
                 }
 
@@ -1190,7 +1256,8 @@ impl Engine for DeepSeekV2 {
                 let use_profiled_greedy = self.profiled_greedy_enabled(&req.sampling);
                 let verify_result =
                     crate::speculate::shared::verify_draft_ids_until_mismatch(&draft_ids, |k| {
-                        let id = self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
+                        let id =
+                            self.forward_token_argmax(tmp_last, pos + k, use_profiled_greedy)?;
                         if id == draft_ids[k] {
                             tmp_last = draft_ids[k]; // feed draft tokens through verify context
                         }
@@ -1199,7 +1266,9 @@ impl Engine for DeepSeekV2 {
                 let first_reject = verify_result.accepted_count;
                 let bonus_id = match verify_result.first_divergent_token {
                     Some(id) => id,
-                    None => self.forward_token_argmax(tmp_last, pos + actual_k, use_profiled_greedy)?,
+                    None => {
+                        self.forward_token_argmax(tmp_last, pos + actual_k, use_profiled_greedy)?
+                    }
                 };
                 let verify_ms = verify_t0.elapsed().as_secs_f64() * 1000.0;
 
@@ -1290,7 +1359,11 @@ impl Engine for DeepSeekV2 {
                 }
                 let step_start = Instant::now();
                 let remaining = req.max_new_tokens - produced;
-                let actual_k = if remaining <= 1 { 0 } else { spec_k.min(remaining - 1) };
+                let actual_k = if remaining <= 1 {
+                    0
+                } else {
+                    spec_k.min(remaining - 1)
+                };
 
                 if actual_k == 0 {
                     // Near budget — single greedy step.
@@ -1308,7 +1381,9 @@ impl Engine for DeepSeekV2 {
                     let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                     sink(StreamEvent::Token { id: next_id, text });
                     produced += 1;
-                    if Some(next_id) == eos { reason = StopReason::Eos; }
+                    if Some(next_id) == eos {
+                        reason = StopReason::Eos;
+                    }
                     break 'eagle5_loop;
                 }
 
@@ -1337,9 +1412,13 @@ impl Engine for DeepSeekV2 {
                     let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
                     sink(StreamEvent::Token { id: next_id, text });
                     produced += 1;
-                    if Some(next_id) == eos { reason = StopReason::Eos; break 'eagle5_loop; }
+                    if Some(next_id) == eos {
+                        reason = StopReason::Eos;
+                        break 'eagle5_loop;
+                    }
                     if stall_active && step_start.elapsed() > stall_limit {
-                        reason = StopReason::Aborted; break 'eagle5_loop;
+                        reason = StopReason::Aborted;
+                        break 'eagle5_loop;
                     }
                     last_id = next_id;
                     pos += 1;
@@ -1359,9 +1438,7 @@ impl Engine for DeepSeekV2 {
                 let batch_tokens: Vec<u32> = std::iter::once(last_id)
                     .chain(draft_ids.iter().copied())
                     .collect();
-                let batch_positions: Vec<usize> = (0..=draft_actual_k)
-                    .map(|ki| pos + ki)
-                    .collect();
+                let batch_positions: Vec<usize> = (0..=draft_actual_k).map(|ki| pos + ki).collect();
                 let logits_batch = self.forward_tokens_batched(&batch_tokens, &batch_positions)?;
 
                 let mut first_reject = 0usize;
@@ -1374,9 +1451,8 @@ impl Engine for DeepSeekV2 {
                     }
                     first_reject += 1;
                 }
-                let bonus_id = correction_id.unwrap_or_else(|| {
-                    crate::kernels::argmax_f32(&logits_batch[draft_actual_k])
-                });
+                let bonus_id = correction_id
+                    .unwrap_or_else(|| crate::kernels::argmax_f32(&logits_batch[draft_actual_k]));
                 let verify_ms = verify_t0.elapsed().as_secs_f64() * 1000.0;
 
                 self.kv.seq_len = draft_start_seq + first_reject + 1;
@@ -1393,8 +1469,13 @@ impl Engine for DeepSeekV2 {
                         head.note_token(id);
                     }
                     produced += 1;
-                    if Some(id) == eos { reason = StopReason::Eos; break 'eagle5_loop; }
-                    if produced >= req.max_new_tokens { break 'eagle5_loop; }
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        break 'eagle5_loop;
+                    }
+                    if produced >= req.max_new_tokens {
+                        break 'eagle5_loop;
+                    }
                 }
 
                 // --- EMIT correction / bonus ---
@@ -1418,9 +1499,13 @@ impl Engine for DeepSeekV2 {
                     );
                 }
 
-                if Some(bonus_id) == eos { reason = StopReason::Eos; break; }
+                if Some(bonus_id) == eos {
+                    reason = StopReason::Eos;
+                    break;
+                }
                 if stall_active && step_start.elapsed() > stall_limit {
-                    reason = StopReason::Aborted; break;
+                    reason = StopReason::Aborted;
+                    break;
                 }
             }
         } else {
@@ -1518,11 +1603,7 @@ impl Engine for DeepSeekV2 {
         self.forward_tokens(tokens, positions)
     }
 
-    fn forward_token_shared_only_for_test(
-        &mut self,
-        token: u32,
-        pos: usize,
-    ) -> Result<Vec<f32>> {
+    fn forward_token_shared_only_for_test(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
         self.forward_token_shared_only(token, pos)
     }
 
@@ -1752,10 +1833,14 @@ impl DeepSeekV2 {
         let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
         let logits_buf = self.logits_buf.as_ref().unwrap();
         let tok_buf = self.token_buf.as_ref().unwrap();
-        let q4k_schedule = self.kernel_profile.as_ref()
+        let q4k_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
-        let shared_down_schedule = self.kernel_profile.as_ref()
+        let shared_down_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.shared_down_schedule.as_str())
             .unwrap_or("basic");
         let use_simdmat = self
@@ -1767,9 +1852,14 @@ impl DeepSeekV2 {
 
         for li in 0..n_layers {
             crate::metal::set_current_layer(Some(li as u32));
-            let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("shared-only: l{li} kv_b_proj not pinned")))?;
-            let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
+            let kv_b_proj_buf =
+                self.layers[li].pinned.kv_b_proj.as_ref().ok_or_else(|| {
+                    Error::Model(format!("shared-only: l{li} kv_b_proj not pinned"))
+                })?;
+            let o_proj_buf = self.layers[li]
+                .pinned
+                .o_proj
+                .as_ref()
                 .ok_or_else(|| Error::Model(format!("shared-only: l{li} o_proj not pinned")))?;
             let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
             let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
@@ -1795,10 +1885,20 @@ impl DeepSeekV2 {
             )?;
             crate::kernels::add_inplace_metal_tcb(&mut tcb, &arena.x_buf, &arena.out, h)?;
             crate::kernels::rmsnorm_metal_buf_tcb(
-                &mut tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                &mut tcb,
+                &arena.x_buf,
+                ffn_norm_buf,
+                eps,
+                h,
+                &arena.x_norm_buf,
             )?;
             if !self.encode_shared_only_ffn_tcb(
-                &mut tcb, li, arena, model_buf, q4k_schedule, shared_down_schedule,
+                &mut tcb,
+                li,
+                arena,
+                model_buf,
+                q4k_schedule,
+                shared_down_schedule,
             )? {
                 return Err(Error::Model(format!(
                     "shared-only GPU path could not encode layer {li}"
@@ -1814,28 +1914,61 @@ impl DeepSeekV2 {
         let x_norm_f16 = self.use_x_norm_f16();
         if x_norm_f16 {
             crate::kernels::rmsnorm_f32_to_f16_tcb(
-                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_f16_buf,
+                &mut tcb,
+                &arena.x_buf,
+                final_norm_buf,
+                eps,
+                h,
+                &arena.x_norm_f16_buf,
             )?;
             crate::kernels::gemv_f16_f16in_tcb(
-                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_f16_buf, logits_buf,
+                &mut tcb,
+                lm_head_buf,
+                self.config.vocab_size,
+                h,
+                &arena.x_norm_f16_buf,
+                logits_buf,
             )?;
         } else if use_simdmat {
             crate::kernels::rmsnorm_metal_buf_tcb(
-                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                &mut tcb,
+                &arena.x_buf,
+                final_norm_buf,
+                eps,
+                h,
+                &arena.x_norm_buf,
             )?;
             crate::kernels::gemv_f16_simdmat_tcb(
-                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
+                &mut tcb,
+                lm_head_buf,
+                self.config.vocab_size,
+                h,
+                &arena.x_norm_buf,
+                logits_buf,
             )?;
         } else {
             crate::kernels::rmsnorm_metal_buf_tcb(
-                &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                &mut tcb,
+                &arena.x_buf,
+                final_norm_buf,
+                eps,
+                h,
+                &arena.x_norm_buf,
             )?;
             crate::kernels::gemv_f16_metal_buf_tcb(
-                &mut tcb, lm_head_buf, self.config.vocab_size, h, &arena.x_norm_buf, logits_buf,
+                &mut tcb,
+                lm_head_buf,
+                self.config.vocab_size,
+                h,
+                &arena.x_norm_buf,
+                logits_buf,
             )?;
         }
         crate::kernels::sample_argmax_f32_tcb(
-            &mut tcb, logits_buf, tok_buf, self.config.vocab_size,
+            &mut tcb,
+            logits_buf,
+            tok_buf,
+            self.config.vocab_size,
         )?;
         tcb.commit_and_wait()?;
 
@@ -1916,8 +2049,12 @@ impl DeepSeekV2 {
     /// (e.g. q_a_proj + kv_a_proj_with_mqa) that read the same `x` into one CB.
     fn gemv_f32_attn_pair_dispatch(
         &self,
-        w_a: &[f32], pinned_a: Option<&PinnedBuffer>, rows_a: usize,
-        w_b: &[f32], pinned_b: Option<&PinnedBuffer>, rows_b: usize,
+        w_a: &[f32],
+        pinned_a: Option<&PinnedBuffer>,
+        rows_a: usize,
+        w_b: &[f32],
+        pinned_b: Option<&PinnedBuffer>,
+        rows_b: usize,
         cols: usize,
         x: &[f32],
         out_a: &mut [f32],
@@ -1981,7 +2118,8 @@ impl DeepSeekV2 {
                     .map(|p| p.selected.gemm_q4_k_schedule == "simdgroup")
                     .unwrap_or(false);
                 if use_simd {
-                    let bytes_gate = &self.gguf.mmap[t_gate.offset..t_gate.offset + t_gate.byte_size];
+                    let bytes_gate =
+                        &self.gguf.mmap[t_gate.offset..t_gate.offset + t_gate.byte_size];
                     let bytes_up = &self.gguf.mmap[t_up.offset..t_up.offset + t_up.byte_size];
                     return crate::kernels::dispatch_gemv_q4_k_m_simd_pair_silu_batched(
                         ctx, bytes_gate, bytes_up, rows, cols, x, a,
@@ -1992,7 +2130,7 @@ impl DeepSeekV2 {
         let mut g_tmp = vec![0.0f32; rows];
         let mut u_tmp = vec![0.0f32; rows];
         self.moe_expert_matmul_dispatch(t_gate, rows, cols, x, &mut g_tmp, scratch)?;
-        self.moe_expert_matmul_dispatch(t_up,   rows, cols, x, &mut u_tmp, scratch)?;
+        self.moe_expert_matmul_dispatch(t_up, rows, cols, x, &mut u_tmp, scratch)?;
         crate::kernels::silu_mul(&g_tmp, &u_tmp, a);
         Ok(())
     }
@@ -2096,13 +2234,17 @@ impl DeepSeekV2 {
                 // doesn't have a matching kernel name. Map all v2t_* schedules
                 // to the v2 standalone kernel so we never silently regress to
                 // the slow scalar `gemv_q4_k_m` here.
-                if matches!(
-                    schedule,
-                    "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_serial"
-                ) {
+                if matches!(schedule, "v2t" | "v2t_gu" | "v2t_gu_v2" | "v2t_gu_serial") {
                     if let Some(model_buf) = &self.weights_mmap_buf {
                         return crate::kernels::gemv_q4_k_m_v2_pinned(
-                            ctx, model_buf, t.offset, t.byte_size, rows, cols, x, out,
+                            ctx,
+                            model_buf,
+                            t.offset,
+                            t.byte_size,
+                            rows,
+                            cols,
+                            x,
+                            out,
                         );
                     }
                     return crate::kernels::gemv_q4_k_m_v2(ctx, bytes, rows, cols, x, out);
@@ -2228,15 +2370,12 @@ impl DeepSeekV2 {
     /// Multi-token forward pass. Phase 2 Wedge 2a: initial impl is a loop
     /// over `forward_token` -- semantically identical to N sequential single-
     /// token calls. Subsequent wedges (2c-2f) widen the internals.
-    fn forward_tokens(
-        &mut self,
-        tokens: &[u32],
-        positions: &[usize],
-    ) -> Result<Vec<Vec<f32>>> {
+    fn forward_tokens(&mut self, tokens: &[u32], positions: &[usize]) -> Result<Vec<Vec<f32>>> {
         if tokens.len() != positions.len() {
             return Err(Error::Model(format!(
                 "forward_tokens shape: tokens={} positions={}",
-                tokens.len(), positions.len()
+                tokens.len(),
+                positions.len()
             )));
         }
         let mut out = Vec::with_capacity(tokens.len());
@@ -2280,9 +2419,10 @@ impl DeepSeekV2 {
         {
             let tcb_base = self.metal_ctx.is_some()
                 && self.decode_arena.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
-                });
+                && self
+                    .layers
+                    .iter()
+                    .all(|l| l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some());
             let wedge_c_ready = tcb_base
                 && !self.mla_c_kv.is_empty()
                 && self.weights_mmap_buf.is_some()
@@ -2290,7 +2430,11 @@ impl DeepSeekV2 {
                 && self.final_norm_buf.is_some()
                 && self.layers.iter().all(Self::layer_has_tcb_attention);
             let k = tokens.len();
-            let max_bs = self.decode_arena.as_ref().map(|a| a.max_batch_size).unwrap_or(0);
+            let max_bs = self
+                .decode_arena
+                .as_ref()
+                .map(|a| a.max_batch_size)
+                .unwrap_or(0);
             if wedge_c_ready && !self.mla_c_kv_gpu.is_empty() && k <= max_bs {
                 return self.forward_tokens_batched_tcb(tokens, positions);
             }
@@ -2344,17 +2488,23 @@ impl DeepSeekV2 {
         }
 
         let seq_slot_base = self.kv.seq_len;
-        let q4k_schedule = self.kernel_profile.as_ref()
+        let q4k_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.gemm_q4_k_schedule.as_str())
             .unwrap_or("scalar");
         // v2.1.0-T2.11: Q5_0 routed-down kernel selector. "basic" routes to
         // the historical kernel; "v2t" opts into the new 8-rows-per-TG
         // simdsum kernel. Default is "basic" -- flip via profile JSON.
-        let routed_down_schedule = self.kernel_profile.as_ref()
+        let routed_down_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.routed_down_schedule.as_str())
             .unwrap_or("basic");
         // v2.1.0-T2.12: Q6_K shared-down kernel selector (parallel pattern).
-        let shared_down_schedule = self.kernel_profile.as_ref()
+        let shared_down_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.shared_down_schedule.as_str())
             .unwrap_or("basic");
 
@@ -2375,10 +2525,13 @@ impl DeepSeekV2 {
                     crate::metal::set_current_layer(Some(li as u32));
 
                     let moe_setup = self.ffn_moe_check(li)?;
-                    let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                        .ok_or_else(|| crate::Error::Model(format!("batched5A: l{li} kv_b_proj not pinned")))?;
-                    let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
-                        .ok_or_else(|| crate::Error::Model(format!("batched5A: l{li} o_proj not pinned")))?;
+                    let kv_b_proj_buf =
+                        self.layers[li].pinned.kv_b_proj.as_ref().ok_or_else(|| {
+                            crate::Error::Model(format!("batched5A: l{li} kv_b_proj not pinned"))
+                        })?;
+                    let o_proj_buf = self.layers[li].pinned.o_proj.as_ref().ok_or_else(|| {
+                        crate::Error::Model(format!("batched5A: l{li} o_proj not pinned"))
+                    })?;
                     let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
                     let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
                     let scale = 1.0f32 / (head_dim_q as f32).sqrt();
@@ -2386,17 +2539,30 @@ impl DeepSeekV2 {
                     // Phase 1: embed lookup (li=0) or add_inplace residual (li>0),
                     //           then q/kv projections + kv_append into GPU KV at seq_slot.
                     self.encode_attention_phase1_into_tcb(
-                        &mut global_tcb, li, pos, Some(token), seq_slot,
+                        &mut global_tcb,
+                        li,
+                        pos,
+                        Some(token),
+                        seq_slot,
                     )?;
                     // Phase 2: q_b_proj + rope_q.
                     self.encode_attention_phase2_tcb(&mut global_tcb, li, pos)?;
                     // Phase 3: mla_decode (reads seq_len GPU KV entries) + o_proj.
                     crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                        &mut global_tcb, arena, kv_b_proj_buf, o_proj_buf,
-                        &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
-                        self.config.n_heads, self.config.qk_nope_head_dim,
-                        self.config.qk_rope_head_dim, self.config.v_head_dim,
-                        self.config.kv_lora_rank, seq_len, scale, h,
+                        &mut global_tcb,
+                        arena,
+                        kv_b_proj_buf,
+                        o_proj_buf,
+                        &self.mla_c_kv_gpu[li],
+                        &self.mla_k_pe_gpu[li],
+                        self.config.n_heads,
+                        self.config.qk_nope_head_dim,
+                        self.config.qk_rope_head_dim,
+                        self.config.v_head_dim,
+                        self.config.kv_lora_rank,
+                        seq_len,
+                        scale,
+                        h,
                     )?;
                     // Session F (sketch): opt-in fused add_inplace + rmsnorm.
                     // Default OFF; flip via DISMANTLE_FUSED_ADD_RMSNORM=1.
@@ -2405,18 +2571,29 @@ impl DeepSeekV2 {
                     if std::env::var_os("DISMANTLE_FUSED_ADD_RMSNORM").is_some() {
                         crate::kernels::add_rmsnorm_fused_tcb(
                             &mut global_tcb,
-                            &arena.x_buf, &arena.out,
-                            ffn_norm_buf, &arena.x_norm_buf,
-                            eps, h,
+                            &arena.x_buf,
+                            &arena.out,
+                            ffn_norm_buf,
+                            &arena.x_norm_buf,
+                            eps,
+                            h,
                         )?;
                     } else {
                         // Residual: x_buf += attn_out (arena.out).
                         crate::kernels::add_inplace_metal_tcb(
-                            &mut global_tcb, &arena.x_buf, &arena.out, h,
+                            &mut global_tcb,
+                            &arena.x_buf,
+                            &arena.out,
+                            h,
                         )?;
                         // FFN norm: x_buf → x_norm_buf.
                         crate::kernels::rmsnorm_metal_buf_tcb(
-                            &mut global_tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
+                            &mut global_tcb,
+                            &arena.x_buf,
+                            ffn_norm_buf,
+                            eps,
+                            h,
+                            &arena.x_norm_buf,
                         )?;
                     }
 
@@ -2424,9 +2601,12 @@ impl DeepSeekV2 {
                     if let Some(ref setup) = moe_setup {
                         let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
                         crate::kernels::gemv_f32_moe_pinned_buf_tcb(
-                            &mut global_tcb, gate_buf,
-                            self.config.n_routed_experts, self.config.hidden,
-                            &arena.x_norm_buf, &arena.moe_logits_buf,
+                            &mut global_tcb,
+                            gate_buf,
+                            self.config.n_routed_experts,
+                            self.config.hidden,
+                            &arena.x_norm_buf,
+                            &arena.moe_logits_buf,
                         )?;
                         crate::kernels::moe_topk_gate_tcb(
                             &mut global_tcb,
@@ -2453,8 +2633,14 @@ impl DeepSeekV2 {
                             self.config.moe_intermediate,
                             setup.shared_mid,
                             q4k_schedule,
-                            setup.routed_down_kernel_with_schedule(q4k_schedule, routed_down_schedule),
-                            setup.shared_down_kernel_with_schedule(q4k_schedule, shared_down_schedule),
+                            setup.routed_down_kernel_with_schedule(
+                                q4k_schedule,
+                                routed_down_schedule,
+                            ),
+                            setup.shared_down_kernel_with_schedule(
+                                q4k_schedule,
+                                shared_down_schedule,
+                            ),
                             &arena.x_norm_buf,
                             &arena.ffn_out_buf,
                             &arena.moe_routed_gate_out_buf,
@@ -2480,16 +2666,28 @@ impl DeepSeekV2 {
 
                 // Final residual accumulation + final norm for token ki.
                 crate::kernels::add_inplace_metal_tcb(
-                    &mut global_tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                    &mut global_tcb,
+                    &arena.x_buf,
+                    &arena.ffn_out_buf,
+                    h,
                 )?;
                 crate::kernels::rmsnorm_metal_buf_tcb(
-                    &mut global_tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                    &mut global_tcb,
+                    &arena.x_buf,
+                    final_norm_buf,
+                    eps,
+                    h,
+                    &arena.x_norm_buf,
                 )?;
                 // Blit x_norm_buf → batch_x_norm_buf[ki] so it survives the next token
                 // overwriting x_norm_buf.
                 let sz = (h * std::mem::size_of::<f32>()) as u64;
                 global_tcb.copy_buffer_bytes(
-                    &arena.x_norm_buf, 0, &arena.batch_x_norm_buf[ki], 0, sz,
+                    &arena.x_norm_buf,
+                    0,
+                    &arena.batch_x_norm_buf[ki],
+                    0,
+                    sz,
                 )?;
             }
 
@@ -2555,13 +2753,15 @@ impl DeepSeekV2 {
         if c_kv.len() != kv_lora_rank {
             return Err(Error::Model(format!(
                 "mla_kv_append c_kv len: got {} expected {}",
-                c_kv.len(), kv_lora_rank
+                c_kv.len(),
+                kv_lora_rank
             )));
         }
         if k_pe.len() != qk_rope_head_dim {
             return Err(Error::Model(format!(
                 "mla_kv_append k_pe len: got {} expected {}",
-                k_pe.len(), qk_rope_head_dim
+                k_pe.len(),
+                qk_rope_head_dim
             )));
         }
         let pos_c = seq_slot * kv_lora_rank;
@@ -2577,7 +2777,8 @@ impl DeepSeekV2 {
         #[cfg(not(target_os = "macos"))]
         let wedge_e_ok = false;
 
-        let (x_norm, maybe_greedy) = self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
+        let (x_norm, maybe_greedy) =
+            self.forward_token_final_norm_maybe_read(token, pos, !wedge_e_ok)?;
 
         // Phase 5B.1: LM head + argmax were folded into the global TCB -- token ready.
         // This is the fast path: one TCB commit covers all 27 layers + final-norm + LM head.
@@ -2615,11 +2816,21 @@ impl DeepSeekV2 {
                         .unwrap_or(false);
                     if use_simdmat {
                         crate::kernels::gemv_f16_simdmat_tcb(
-                            &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
+                            &mut tcb,
+                            lm_head_buf,
+                            vocab,
+                            cols,
+                            &arena.x_norm_buf,
+                            logits_buf,
                         )?;
                     } else {
                         crate::kernels::gemv_f16_metal_buf_tcb(
-                            &mut tcb, lm_head_buf, vocab, cols, &arena.x_norm_buf, logits_buf,
+                            &mut tcb,
+                            lm_head_buf,
+                            vocab,
+                            cols,
+                            &arena.x_norm_buf,
+                            logits_buf,
                         )?;
                     }
                     crate::kernels::sample_argmax_f32_tcb(&mut tcb, logits_buf, tok_buf, vocab)?;
@@ -2667,7 +2878,9 @@ impl DeepSeekV2 {
 
     fn forward_token_final_norm(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
         let (x_norm, _) = self.forward_token_final_norm_maybe_read(token, pos, true)?;
-        x_norm.ok_or_else(|| Error::Model("forward_token_final_norm: final norm not read back".into()))
+        x_norm.ok_or_else(|| {
+            Error::Model("forward_token_final_norm: final norm not read back".into())
+        })
     }
 
     /// Returns `(Option<x_norm>, Option<greedy_token>)`.
@@ -2690,9 +2903,10 @@ impl DeepSeekV2 {
         {
             let tcb_base = self.metal_ctx.is_some()
                 && self.decode_arena.is_some()
-                && self.layers.iter().all(|l| {
-                    l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some()
-                });
+                && self
+                    .layers
+                    .iter()
+                    .all(|l| l.pinned.attn_norm.is_some() && l.pinned.ffn_norm.is_some());
             let wedge_c_active = tcb_base
                 && !self.mla_c_kv.is_empty()
                 && self.weights_mmap_buf.is_some()
@@ -2713,11 +2927,15 @@ impl DeepSeekV2 {
                     for li in 0..n_layers {
                         MetalContext::write_buffer_bytes(
                             &self.mla_c_kv_gpu[li],
-                            bytemuck::cast_slice(&self.mla_c_kv[li][..self.kv.seq_len * kv_lora_rank]),
+                            bytemuck::cast_slice(
+                                &self.mla_c_kv[li][..self.kv.seq_len * kv_lora_rank],
+                            ),
                         );
                         MetalContext::write_buffer_bytes(
                             &self.mla_k_pe_gpu[li],
-                            bytemuck::cast_slice(&self.mla_k_pe[li][..self.kv.seq_len * qk_rope_head_dim]),
+                            bytemuck::cast_slice(
+                                &self.mla_k_pe[li][..self.kv.seq_len * qk_rope_head_dim],
+                            ),
                         );
                     }
                 }
@@ -2733,9 +2951,8 @@ impl DeepSeekV2 {
                 // This eliminates 26 commit+wait round-trips (saves ~4ms/token at 162μs/commit).
                 // ExactShared originally needed CPU KV mirrors for CPU draft; with
                 // GPU shared-only draft, verifier can use the single-TCB fast path.
-                let use_gpu_shared_draft =
-                    self.speculate_mode == crate::SpeculateMode::ExactShared
-                        && self.shared_only_gpu_argmax_available();
+                let use_gpu_shared_draft = self.speculate_mode == crate::SpeculateMode::ExactShared
+                    && self.shared_only_gpu_argmax_available();
                 let use_single_tcb = self.speculate_mode != crate::SpeculateMode::ExactShared
                     || use_gpu_shared_draft;
 
@@ -2755,15 +2972,21 @@ impl DeepSeekV2 {
                     let ctx = self.metal_ctx.as_ref().unwrap();
                     let arena = self.decode_arena.as_ref().unwrap();
                     let model_buf = self.weights_mmap_buf.as_ref().unwrap();
-                    let q4k_schedule = self.kernel_profile.as_ref()
+                    let q4k_schedule = self
+                        .kernel_profile
+                        .as_ref()
                         .map(|p| p.selected.gemm_q4_k_schedule.as_str())
                         .unwrap_or("scalar");
                     // v2.1.0-T2.11: Q5_0 routed-down schedule (see above).
-                    let routed_down_schedule = self.kernel_profile.as_ref()
+                    let routed_down_schedule = self
+                        .kernel_profile
+                        .as_ref()
                         .map(|p| p.selected.routed_down_schedule.as_str())
                         .unwrap_or("basic");
                     // v2.1.0-T2.12: Q6_K shared-down schedule.
-                    let shared_down_schedule = self.kernel_profile.as_ref()
+                    let shared_down_schedule = self
+                        .kernel_profile
+                        .as_ref()
                         .map(|p| p.selected.shared_down_schedule.as_str())
                         .unwrap_or("basic");
 
@@ -2780,64 +3003,105 @@ impl DeepSeekV2 {
                         let moe_setup = self.ffn_moe_check(li)?;
 
                         // Borrow the single global TCB or create a per-layer one.
-                        let kv_b_proj_buf = self.layers[li].pinned.kv_b_proj.as_ref()
-                            .ok_or_else(|| crate::Error::Model(format!("merged: l{li} kv_b_proj not pinned")))?;
-                        let o_proj_buf = self.layers[li].pinned.o_proj.as_ref()
-                            .ok_or_else(|| crate::Error::Model(format!("merged: l{li} o_proj not pinned")))?;
+                        let kv_b_proj_buf =
+                            self.layers[li].pinned.kv_b_proj.as_ref().ok_or_else(|| {
+                                crate::Error::Model(format!("merged: l{li} kv_b_proj not pinned"))
+                            })?;
+                        let o_proj_buf =
+                            self.layers[li].pinned.o_proj.as_ref().ok_or_else(|| {
+                                crate::Error::Model(format!("merged: l{li} o_proj not pinned"))
+                            })?;
                         let ffn_norm_buf = self.layers[li].pinned.ffn_norm.as_ref().unwrap();
-                        let head_dim_q = self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
+                        let head_dim_q =
+                            self.config.qk_nope_head_dim + self.config.qk_rope_head_dim;
                         let scale = 1.0f32 / (head_dim_q as f32).sqrt();
 
                         // Encode all kernels for this layer into the active TCB.
-                        let encode_layer = |tcb: &mut crate::metal::TokenCommandBuffer<'_>| -> Result<bool> {
-                            // Phase 1 + kv_append_f32 (writes GPU KV at seq_slot)
-                            self.encode_attention_phase1_into_tcb(tcb, li, pos, Some(token), seq_slot)?;
-                            // Phase 2: q_b_proj + rope_q
-                            self.encode_attention_phase2_tcb(tcb, li, pos)?;
-                            // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
-                            crate::kernels::mla_decode_and_o_proj_arena_tcb(
-                                tcb, arena, kv_b_proj_buf, o_proj_buf,
-                                &self.mla_c_kv_gpu[li], &self.mla_k_pe_gpu[li],
-                                self.config.n_heads, self.config.qk_nope_head_dim,
-                                self.config.qk_rope_head_dim, self.config.v_head_dim,
-                                self.config.kv_lora_rank, seq_len, scale, h,
-                            )?;
-                            crate::kernels::add_inplace_metal_tcb(tcb, &arena.x_buf, &arena.out, h)?;
-                            crate::kernels::rmsnorm_metal_buf_tcb(
-                                tcb, &arena.x_buf, ffn_norm_buf, eps, h, &arena.x_norm_buf,
-                            )?;
-                            if let Some(ref setup) = moe_setup {
-                                let gate_buf = self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
-                                crate::kernels::gemv_f32_moe_pinned_buf_tcb(
-                                    tcb, gate_buf,
-                                    self.config.n_routed_experts, self.config.hidden,
-                                    &arena.x_norm_buf, &arena.moe_logits_buf,
-                                )?;
-                                crate::kernels::moe_topk_gate_tcb(
+                        let encode_layer =
+                            |tcb: &mut crate::metal::TokenCommandBuffer<'_>| -> Result<bool> {
+                                // Phase 1 + kv_append_f32 (writes GPU KV at seq_slot)
+                                self.encode_attention_phase1_into_tcb(
                                     tcb,
-                                    &arena.moe_logits_buf,
-                                    &arena.moe_route_ids_buf,
-                                    &arena.moe_route_weights_buf,
-                                    self.config.n_routed_experts,
-                                    self.config.top_k_routed,
+                                    li,
+                                    pos,
+                                    Some(token),
+                                    seq_slot,
                                 )?;
-                                // v1.2.0-9: snapshot route IDs into per-layer history
-                                // so expert access stats can be updated after the CB
-                                // completes. Without this, only the last layer's routes
-                                // are visible (the arena buffer is reused each layer).
-                                if self.expert_cache.is_some() {
-                                    let moe_li = li.saturating_sub(self.config.first_k_dense_layers);
-                                    let dst_off = (moe_li * self.config.top_k_routed
-                                        * std::mem::size_of::<u32>()) as u64;
-                                    let sz = (self.config.top_k_routed
-                                        * std::mem::size_of::<u32>()) as u64;
-                                    tcb.copy_buffer_bytes(
-                                        &arena.moe_route_ids_buf, 0,
-                                        &arena.route_history_buf, dst_off,
-                                        sz,
+                                // Phase 2: q_b_proj + rope_q
+                                self.encode_attention_phase2_tcb(tcb, li, pos)?;
+                                // Phase 3: mla_decode reads GPU KV (seq_len entries, including new one)
+                                crate::kernels::mla_decode_and_o_proj_arena_tcb(
+                                    tcb,
+                                    arena,
+                                    kv_b_proj_buf,
+                                    o_proj_buf,
+                                    &self.mla_c_kv_gpu[li],
+                                    &self.mla_k_pe_gpu[li],
+                                    self.config.n_heads,
+                                    self.config.qk_nope_head_dim,
+                                    self.config.qk_rope_head_dim,
+                                    self.config.v_head_dim,
+                                    self.config.kv_lora_rank,
+                                    seq_len,
+                                    scale,
+                                    h,
+                                )?;
+                                crate::kernels::add_inplace_metal_tcb(
+                                    tcb,
+                                    &arena.x_buf,
+                                    &arena.out,
+                                    h,
+                                )?;
+                                crate::kernels::rmsnorm_metal_buf_tcb(
+                                    tcb,
+                                    &arena.x_buf,
+                                    ffn_norm_buf,
+                                    eps,
+                                    h,
+                                    &arena.x_norm_buf,
+                                )?;
+                                if let Some(ref setup) = moe_setup {
+                                    let gate_buf =
+                                        self.layers[li].pinned.gate_logits_w.as_ref().unwrap();
+                                    crate::kernels::gemv_f32_moe_pinned_buf_tcb(
+                                        tcb,
+                                        gate_buf,
+                                        self.config.n_routed_experts,
+                                        self.config.hidden,
+                                        &arena.x_norm_buf,
+                                        &arena.moe_logits_buf,
                                     )?;
-                                }
-                                crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
+                                    crate::kernels::moe_topk_gate_tcb(
+                                        tcb,
+                                        &arena.moe_logits_buf,
+                                        &arena.moe_route_ids_buf,
+                                        &arena.moe_route_weights_buf,
+                                        self.config.n_routed_experts,
+                                        self.config.top_k_routed,
+                                    )?;
+                                    // v1.2.0-9: snapshot route IDs into per-layer history
+                                    // so expert access stats can be updated after the CB
+                                    // completes. Without this, only the last layer's routes
+                                    // are visible (the arena buffer is reused each layer).
+                                    if self.expert_cache.is_some() {
+                                        let moe_li =
+                                            li.saturating_sub(self.config.first_k_dense_layers);
+                                        let dst_off = (moe_li
+                                            * self.config.top_k_routed
+                                            * std::mem::size_of::<u32>())
+                                            as u64;
+                                        let sz = (self.config.top_k_routed
+                                            * std::mem::size_of::<u32>())
+                                            as u64;
+                                        tcb.copy_buffer_bytes(
+                                            &arena.moe_route_ids_buf,
+                                            0,
+                                            &arena.route_history_buf,
+                                            dst_off,
+                                            sz,
+                                        )?;
+                                    }
+                                    crate::kernels::encode_moe_block_batched_indexed_tcb_with_scratch(
                                     tcb,
                                     model_buf,
                                     setup.routed_gate_off,
@@ -2867,12 +3131,12 @@ impl DeepSeekV2 {
                                     &arena.moe_shared_act_buf,
                                     &arena.moe_shared_out_buf,
                                 )?;
-                                Ok(true)
-                            } else {
-                                let handled = self.encode_dense_ffn_tcb(tcb, li, arena)?;
-                                Ok(handled)
-                            }
-                        };
+                                    Ok(true)
+                                } else {
+                                    let handled = self.encode_dense_ffn_tcb(tcb, li, arena)?;
+                                    Ok(handled)
+                                }
+                            };
 
                         let dense_handled: bool;
                         if use_single_tcb {
@@ -2887,12 +3151,18 @@ impl DeepSeekV2 {
                             let off_c = seq_slot * kv_lora_rank;
                             let off_pe = seq_slot * qk_rope_head_dim;
                             unsafe {
-                                let ptr_c = (self.mla_c_kv_gpu[li].contents() as *const f32).add(off_c);
-                                let ptr_pe = (self.mla_k_pe_gpu[li].contents() as *const f32).add(off_pe);
-                                self.mla_c_kv[li][off_c..off_c + kv_lora_rank]
-                                    .copy_from_slice(std::slice::from_raw_parts(ptr_c, kv_lora_rank));
+                                let ptr_c =
+                                    (self.mla_c_kv_gpu[li].contents() as *const f32).add(off_c);
+                                let ptr_pe =
+                                    (self.mla_k_pe_gpu[li].contents() as *const f32).add(off_pe);
+                                self.mla_c_kv[li][off_c..off_c + kv_lora_rank].copy_from_slice(
+                                    std::slice::from_raw_parts(ptr_c, kv_lora_rank),
+                                );
                                 self.mla_k_pe[li][off_pe..off_pe + qk_rope_head_dim]
-                                    .copy_from_slice(std::slice::from_raw_parts(ptr_pe, qk_rope_head_dim));
+                                    .copy_from_slice(std::slice::from_raw_parts(
+                                        ptr_pe,
+                                        qk_rope_head_dim,
+                                    ));
                             }
                         }
 
@@ -2922,47 +3192,77 @@ impl DeepSeekV2 {
                         let final_norm_buf = self.final_norm_buf.as_ref().unwrap();
                         if n_layers > 0 {
                             crate::kernels::add_inplace_metal_tcb(
-                                tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                                tcb,
+                                &arena.x_buf,
+                                &arena.ffn_out_buf,
+                                h,
                             )?;
                         }
                         // Phase 5C.2: final norm writes f16 when x_norm_dtype="f16".
                         let x_norm_f16 = self.use_x_norm_f16();
                         if x_norm_f16 {
                             crate::kernels::rmsnorm_f32_to_f16_tcb(
-                                tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_f16_buf,
+                                tcb,
+                                &arena.x_buf,
+                                final_norm_buf,
+                                eps,
+                                h,
+                                &arena.x_norm_f16_buf,
                             )?;
                         } else {
                             crate::kernels::rmsnorm_metal_buf_tcb(
-                                tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                                tcb,
+                                &arena.x_buf,
+                                final_norm_buf,
+                                eps,
+                                h,
+                                &arena.x_norm_buf,
                             )?;
                         }
                         if lm_head_foldable {
                             let lm_head_buf = self.lm_head_buf.as_ref().unwrap();
-                            let logits_buf  = self.logits_buf.as_ref().unwrap();
-                            let tok_buf     = self.token_buf.as_ref().unwrap();
+                            let logits_buf = self.logits_buf.as_ref().unwrap();
+                            let tok_buf = self.token_buf.as_ref().unwrap();
                             let vocab = self.config.vocab_size;
                             if x_norm_f16 {
                                 // f16 x_norm path: always use scalar f16in kernel (not simdmat).
                                 crate::kernels::gemv_f16_f16in_tcb(
-                                    tcb, lm_head_buf, vocab, h, &arena.x_norm_f16_buf, logits_buf,
+                                    tcb,
+                                    lm_head_buf,
+                                    vocab,
+                                    h,
+                                    &arena.x_norm_f16_buf,
+                                    logits_buf,
                                 )?;
                             } else {
-                                let use_simdmat = self.kernel_profile.as_ref()
-                                    .map(|p| p.selected.lm_head_schedule.contains("simdgroup-matrix"))
+                                let use_simdmat = self
+                                    .kernel_profile
+                                    .as_ref()
+                                    .map(|p| {
+                                        p.selected.lm_head_schedule.contains("simdgroup-matrix")
+                                    })
                                     .unwrap_or(false);
                                 if use_simdmat {
                                     crate::kernels::gemv_f16_simdmat_tcb(
-                                        tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                        tcb,
+                                        lm_head_buf,
+                                        vocab,
+                                        h,
+                                        &arena.x_norm_buf,
+                                        logits_buf,
                                     )?;
                                 } else {
                                     crate::kernels::gemv_f16_metal_buf_tcb(
-                                        tcb, lm_head_buf, vocab, h, &arena.x_norm_buf, logits_buf,
+                                        tcb,
+                                        lm_head_buf,
+                                        vocab,
+                                        h,
+                                        &arena.x_norm_buf,
+                                        logits_buf,
                                     )?;
                                 }
                             }
-                            crate::kernels::sample_argmax_f32_tcb(
-                                tcb, logits_buf, tok_buf, vocab,
-                            )?;
+                            crate::kernels::sample_argmax_f32_tcb(tcb, logits_buf, tok_buf, vocab)?;
                             lm_head_folded = true;
                         }
                     }
@@ -2991,18 +3291,13 @@ impl DeepSeekV2 {
                         let n_moe_li = arena.n_moe_layers;
                         if top_k > 0 && n_moe_li > 0 {
                             let ptr = arena.route_history_buf.contents() as *const u32;
-                            let history = unsafe {
-                                std::slice::from_raw_parts(ptr, n_moe_li * top_k)
-                            };
+                            let history =
+                                unsafe { std::slice::from_raw_parts(ptr, n_moe_li * top_k) };
                             let first_dense = self.config.first_k_dense_layers;
                             for moe_li in 0..n_moe_li {
                                 for slot in 0..top_k {
                                     let expert_id = history[moe_li * top_k + slot];
-                                    cache.note_access(
-                                        first_dense + moe_li,
-                                        expert_id,
-                                        pos as u64,
-                                    );
+                                    cache.note_access(first_dense + moe_li, expert_id, pos as u64);
                                 }
                             }
                         }
@@ -3015,9 +3310,11 @@ impl DeepSeekV2 {
                 crate::metal::set_current_layer(None);
 
                 if decode_timing {
-                    eprintln!("[timing/merged] total={:.1}ms tps_ceil={:.0}",
+                    eprintln!(
+                        "[timing/merged] total={:.1}ms tps_ceil={:.0}",
                         total_us as f64 / 1000.0,
-                        1_000_000.0 / total_us as f64);
+                        1_000_000.0 / total_us as f64
+                    );
                 }
 
                 // Phase 5B.1: LM head (and final-norm) already folded into global TCB.
@@ -3035,11 +3332,19 @@ impl DeepSeekV2 {
                     let mut tcb = crate::metal::TokenCommandBuffer::new(ctx);
                     if n_layers > 0 {
                         crate::kernels::add_inplace_metal_tcb(
-                            &mut tcb, &arena.x_buf, &arena.ffn_out_buf, h,
+                            &mut tcb,
+                            &arena.x_buf,
+                            &arena.ffn_out_buf,
+                            h,
                         )?;
                     }
                     crate::kernels::rmsnorm_metal_buf_tcb(
-                        &mut tcb, &arena.x_buf, final_norm_buf, eps, h, &arena.x_norm_buf,
+                        &mut tcb,
+                        &arena.x_buf,
+                        final_norm_buf,
+                        eps,
+                        h,
+                        &arena.x_norm_buf,
                     )?;
                     tcb.commit_and_wait()?;
                     if !read_back {
@@ -3052,19 +3357,66 @@ impl DeepSeekV2 {
             }
         }
 
-        // Wedge C is the only supported decode path for V2-Lite. If its
-        // preconditions don't hold (Metal context + decode arena + pinned
+        // Phase 3.3 reach: pure-Rust CPU decode path. Taken when no Metal
+        // context is present -- i.e. off-macOS, or on-macOS under force_cpu
+        // (DISMANTLE_FORCE_CPU=1, via Edit A). This is the per-layer driver
+        // that was retired from the GPU build in v2.2.0-cleanup-16; it is
+        // required for MoE models (deepseek_v2) to decode on CPU. It mirrors
+        // `forward_token_shared_only` exactly but calls the full `ffn()`
+        // (routed + shared experts) instead of `ffn_shared_only`. Every verb
+        // it touches has a CPU fallback (rmsnorm_dispatch, gemv_f32_attn /
+        // gemv_f32_moe / moe_expert_*_matmul dispatchers all branch to CPU
+        // when metal_ctx is None), so attention's materialized-KV path
+        // (mla_c_kv kept empty by load, Edit B) and the MoE expert GEMVs
+        // (dequant_ref_into -> gemv_f32 -> silu_mul) run pure-Rust. Returns the
+        // final-normed residual; the caller applies the LM head (forward_token
+        // via gemv_f16_dispatch).
+        if self.metal_ctx.is_none() {
+            let _ = read_back; // CPU path always returns x_norm; LM-head fold is Metal-only.
+            let mut x = vec![0.0f32; h];
+            embed_lookup(&self.embed, h, token, &mut x);
+
+            for li in 0..self.config.n_layers {
+                crate::metal::set_current_layer(Some(li as u32));
+
+                let mut x_norm = vec![0.0f32; h];
+                self.rmsnorm_dispatch(
+                    &x,
+                    &self.layers[li].attn_norm,
+                    self.config.rms_norm_eps,
+                    &mut x_norm,
+                )?;
+                let attn_out = self.attention(li, pos, &x_norm)?;
+                add_inplace(&mut x, &attn_out);
+
+                self.rmsnorm_dispatch(
+                    &x.clone(),
+                    &self.layers[li].ffn_norm,
+                    self.config.rms_norm_eps,
+                    &mut x_norm,
+                )?;
+                let ffn_out = self.ffn(li, &x_norm)?;
+                add_inplace(&mut x, &ffn_out);
+            }
+            crate::metal::set_current_layer(None);
+
+            let mut x_norm = vec![0.0f32; h];
+            self.rmsnorm_dispatch(&x, &self.final_norm, self.config.rms_norm_eps, &mut x_norm)?;
+            return Ok((Some(x_norm), None));
+        }
+
+        // Wedge C is the only supported decode path for V2-Lite when Metal is
+        // present. If its preconditions don't hold (decode arena + pinned
         // norms + MLA cache + GPU-resident KV mirrors + TCB-attention-ready
         // layers), surface a clear error rather than silently routing through
-        // a CPU/Wedge-B fallback. The legacy fallbacks were retired in
+        // a CPU/Wedge-B fallback. The legacy GPU fallbacks were retired in
         // v2.2.0-cleanup-16 after a runtime-panic audit proved them dead
         // under the shipped production profile.
         let _ = token;
         let _ = pos;
         let _ = read_back;
         Err(Error::Model(
-            "forward_token: Wedge C preconditions not met; legacy fallback retired"
-                .into(),
+            "forward_token: Wedge C preconditions not met; legacy fallback retired".into(),
         ))
     }
 
@@ -3114,13 +3466,20 @@ impl DeepSeekV2 {
         let qk_nope_head_dim = self.config.qk_nope_head_dim;
         let qk_rope_head_dim = self.config.qk_rope_head_dim;
         let rope_theta = self.config.rope_theta;
-        let q_b_proj_buf = self.layers[li].pinned.q_b_proj.as_ref()
+        let q_b_proj_buf = self.layers[li]
+            .pinned
+            .q_b_proj
+            .as_ref()
             .ok_or_else(|| Error::Model(format!("phase2_tcb: l{li} q_b_proj not pinned")))?;
         let q_out_rows = n_heads * head_dim_q;
         // q_b_proj pinned as f16; cols=1536 rows=3072 both % 8 == 0
         crate::kernels::gemv_f16_simdmat_tcb(
-            tcb, q_b_proj_buf, q_out_rows, q_lora,
-            &arena.q_lora_normed_buf, &arena.q,
+            tcb,
+            q_b_proj_buf,
+            q_out_rows,
+            q_lora,
+            &arena.q_lora_normed_buf,
+            &arena.q,
         )?;
         crate::kernels::rope_q_f32_inplace_tcb(
             tcb,
@@ -3165,17 +3524,28 @@ impl DeepSeekV2 {
         // v2.2.0-T2.14: opt-in v2t-pattern dispatcher for the fused
         // rmsnorm+attn GEMV. Falls back to the basic kernel when the
         // schedule is not "v2t" or when row/col constraints don't hold.
-        let rmsnorm_attn_schedule = self.kernel_profile.as_ref()
+        let rmsnorm_attn_schedule = self
+            .kernel_profile
+            .as_ref()
             .map(|p| p.selected.rmsnorm_attn_schedule.as_str())
             .unwrap_or("basic");
         let use_v2t_rmsnorm_attn = rmsnorm_attn_schedule == "v2t";
 
         let arena = self.decode_arena.as_ref().unwrap();
-        let kv_a_proj_buf = self.layers[li].pinned.kv_a_proj_with_mqa.as_ref()
+        let kv_a_proj_buf = self.layers[li]
+            .pinned
+            .kv_a_proj_with_mqa
+            .as_ref()
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} kv_a_proj not pinned")))?;
-        let attn_norm_buf = self.layers[li].pinned.attn_norm.as_ref()
+        let attn_norm_buf = self.layers[li]
+            .pinned
+            .attn_norm
+            .as_ref()
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} attn_norm not pinned")))?;
-        let kv_a_norm_buf = self.layers[li].pinned.kv_a_norm.as_ref()
+        let kv_a_norm_buf = self.layers[li]
+            .pinned
+            .kv_a_norm
+            .as_ref()
             .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} kv_a_norm not pinned")))?;
 
         let dispatch_rmsnorm_attn = |tcb: &mut crate::metal::TokenCommandBuffer<'_>,
@@ -3187,11 +3557,25 @@ impl DeepSeekV2 {
          -> Result<()> {
             if use_v2t_rmsnorm_attn && rows % 8 == 0 && cols % 32 == 0 {
                 crate::kernels::rmsnorm_gemv_f16w_attn_pinned_v2t_tcb(
-                    tcb, w, x, attn_norm_buf, eps, out, rows, cols,
+                    tcb,
+                    w,
+                    x,
+                    attn_norm_buf,
+                    eps,
+                    out,
+                    rows,
+                    cols,
                 )
             } else {
                 crate::kernels::rmsnorm_gemv_f16w_attn_pinned_tcb(
-                    tcb, w, x, attn_norm_buf, eps, out, rows, cols,
+                    tcb,
+                    w,
+                    x,
+                    attn_norm_buf,
+                    eps,
+                    out,
+                    rows,
+                    cols,
                 )
             }
         };
@@ -3205,29 +3589,61 @@ impl DeepSeekV2 {
             }
         }
         if q_lora_path {
-            let q_a_proj_buf = self.layers[li].pinned.q_a_proj.as_ref()
-                .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_a_proj not pinned")))?;
-            let q_a_norm_buf = self.layers[li].pinned.q_a_norm.as_ref()
-                .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_a_norm not pinned")))?;
+            let q_a_proj_buf =
+                self.layers[li].pinned.q_a_proj.as_ref().ok_or_else(|| {
+                    Error::Model(format!("p1_into_tcb: l{li} q_a_proj not pinned"))
+                })?;
+            let q_a_norm_buf =
+                self.layers[li].pinned.q_a_norm.as_ref().ok_or_else(|| {
+                    Error::Model(format!("p1_into_tcb: l{li} q_a_norm not pinned"))
+                })?;
             dispatch_rmsnorm_attn(
-                tcb, q_a_proj_buf, &arena.x_buf, &arena.q_lora_buf, q_lora, h,
+                tcb,
+                q_a_proj_buf,
+                &arena.x_buf,
+                &arena.q_lora_buf,
+                q_lora,
+                h,
             )?;
             crate::kernels::rmsnorm_metal_buf_tcb(
-                tcb, &arena.q_lora_buf, q_a_norm_buf, eps, q_lora, &arena.q_lora_normed_buf,
+                tcb,
+                &arena.q_lora_buf,
+                q_a_norm_buf,
+                eps,
+                q_lora,
+                &arena.q_lora_normed_buf,
             )?;
         } else {
-            let q_proj_buf = self.layers[li].pinned.q_proj.as_ref()
+            let q_proj_buf = self.layers[li]
+                .pinned
+                .q_proj
+                .as_ref()
                 .ok_or_else(|| Error::Model(format!("p1_into_tcb: l{li} q_proj not pinned")))?;
             // v2.1.0-T2.13: q_proj pinned as f16; use f16w rmsnorm kernel.
             dispatch_rmsnorm_attn(
-                tcb, q_proj_buf, &arena.x_buf, &arena.q, n_heads * head_dim_q, h,
+                tcb,
+                q_proj_buf,
+                &arena.x_buf,
+                &arena.q,
+                n_heads * head_dim_q,
+                h,
             )?;
         }
         dispatch_rmsnorm_attn(
-            tcb, kv_a_proj_buf, &arena.x_buf, &arena.kv_a_out_buf, kv_a_dim, h,
+            tcb,
+            kv_a_proj_buf,
+            &arena.x_buf,
+            &arena.kv_a_out_buf,
+            kv_a_dim,
+            h,
         )?;
         crate::kernels::rmsnorm_metal_buf_tcb(
-            tcb, &arena.kv_a_out_buf, kv_a_norm_buf, eps, kv_lora_rank, &arena.c_kv_normed_buf,
+            tcb,
+            &arena.kv_a_out_buf,
+            kv_a_norm_buf,
+            eps,
+            kv_lora_rank,
+            &arena.c_kv_normed_buf,
         )?;
         crate::kernels::rope_slice_f32_inplace_tcb(
             tcb,
@@ -3324,13 +3740,20 @@ impl DeepSeekV2 {
     #[cfg(target_os = "macos")]
     fn ffn_moe_check(&self, li: usize) -> Result<Option<FfnMoeSetup>> {
         use crate::gguf::GgmlType;
-        if self.metal_ctx.is_none() || self.decode_arena.is_none() || self.weights_mmap_buf.is_none() {
+        if self.metal_ctx.is_none()
+            || self.decode_arena.is_none()
+            || self.weights_mmap_buf.is_none()
+        {
             return Ok(None);
         }
         let setup = {
             let layer = &self.layers[li];
             match &layer.mode {
-                LayerMode::MoE { routed_fused, shared_fused, .. } => {
+                LayerMode::MoE {
+                    routed_fused,
+                    shared_fused,
+                    ..
+                } => {
                     if routed_fused.gate_w.dtype != GgmlType::Q4_K
                         || routed_fused.up_w.dtype != GgmlType::Q4_K
                         || !matches!(
@@ -3433,11 +3856,16 @@ impl DeepSeekV2 {
         } else if !layer.q_proj.is_empty() {
             // q_proj and kv_a_proj share input x -- coalesce into one CB.
             self.gemv_f32_attn_pair_dispatch(
-                &layer.q_proj, layer.pinned.q_proj.as_ref(), n_heads * head_dim_q,
+                &layer.q_proj,
+                layer.pinned.q_proj.as_ref(),
+                n_heads * head_dim_q,
                 &layer.kv_a_proj_with_mqa,
-                    layer.pinned.kv_a_proj_with_mqa.as_ref(),
-                    kv_a_dim,
-                h, x, &mut q_full, &mut kv_a,
+                layer.pinned.kv_a_proj_with_mqa.as_ref(),
+                kv_a_dim,
+                h,
+                x,
+                &mut q_full,
+                &mut kv_a,
             )?;
         } else {
             return Err(Error::Model(format!("layer {li}: no q projection found")));
@@ -3785,8 +4213,7 @@ impl DeepSeekV2 {
                 for &(eid, weight) in &routes {
                     let e = &routed[eid];
                     self.moe_expert_pair_matmul_dispatch(
-                        &e.gate_w, &e.up_w, mid, cfg.hidden, x,
-                        &mut a_buf, &mut w_buf,
+                        &e.gate_w, &e.up_w, mid, cfg.hidden, x, &mut a_buf, &mut w_buf,
                     )?;
                     self.moe_expert_matmul_dispatch(
                         &e.down_w, cfg.hidden, mid, &a_buf, &mut tmp, &mut w_buf,
@@ -3802,8 +4229,7 @@ impl DeepSeekV2 {
                     let mut sa = vec![0.0f32; smid];
 
                     self.moe_expert_pair_matmul_dispatch(
-                        &s.gate_w, &s.up_w, smid, cfg.hidden, x,
-                        &mut sa, &mut w_buf,
+                        &s.gate_w, &s.up_w, smid, cfg.hidden, x, &mut sa, &mut w_buf,
                     )?;
 
                     self.moe_expert_matmul_dispatch(
@@ -3869,8 +4295,7 @@ impl DeepSeekV2 {
                     let smid = cfg.n_shared_experts * cfg.moe_intermediate;
                     let mut sa = vec![0.0f32; smid];
                     self.moe_expert_pair_matmul_dispatch(
-                        &s.gate_w, &s.up_w, smid, cfg.hidden, x,
-                        &mut sa, &mut w_buf,
+                        &s.gate_w, &s.up_w, smid, cfg.hidden, x, &mut sa, &mut w_buf,
                     )?;
                     self.moe_expert_matmul_dispatch(
                         &s.down_w, cfg.hidden, smid, &sa, &mut tmp, &mut w_buf,

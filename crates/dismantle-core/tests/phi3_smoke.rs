@@ -32,8 +32,7 @@ fn find_gguf(tags: &[&str]) -> Option<PathBuf> {
 
 fn run_greedy(weights: &PathBuf) -> Vec<u32> {
     let cfg = dismantle_core::EngineConfig::default();
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load phi3 engine");
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load phi3 engine");
     assert_eq!(engine.model_arch(), "phi3", "dispatcher must route to phi3");
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
@@ -68,7 +67,7 @@ fn hash16(ids: &[u32]) -> String {
 }
 
 fn check_or_pin(label: &str, actual_hash: &str) {
-    let pin_path = PathBuf::from("../../tests/golden/_phi3_token_baseline.hashes");
+    let pin_path = PathBuf::from("tests/golden/_phi3_token_baseline.hashes");
     let actual_line = format!("{}: {}\n", label, actual_hash);
     let existing = std::fs::read_to_string(&pin_path).unwrap_or_default();
     match existing

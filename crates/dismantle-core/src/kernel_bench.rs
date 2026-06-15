@@ -131,7 +131,12 @@ mod imp {
 
     // ── Q4_K_M v2 (gemm_q4_k_m_fused_v2) ────────────────────────────────────
 
-    fn bench_q4k_v2(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
+    fn bench_q4k_v2(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        iterations: usize,
+    ) -> Result<Vec<f64>> {
         if cols % 256 != 0 {
             return Err(crate::Error::Kernel(format!(
                 "gemv_q4_k_m_v2_pinned_tcb requires cols%256==0; got cols={cols}"
@@ -158,8 +163,16 @@ mod imp {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(3, size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(4, size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_bytes(
+                    3,
+                    size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
             })
         };
 
@@ -178,7 +191,12 @@ mod imp {
 
     // ── Q3_K (gemm_q3_k_fused_v2) ────────────────────────────────────────────
 
-    fn bench_q3k(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
+    fn bench_q3k(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        iterations: usize,
+    ) -> Result<Vec<f64>> {
         if cols % 256 != 0 {
             return Err(crate::Error::Kernel(format!(
                 "gemv_q3_k_pinned_tcb requires cols%256==0; got cols={cols}"
@@ -205,8 +223,16 @@ mod imp {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(3, size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(4, size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_bytes(
+                    3,
+                    size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
             })
         };
 
@@ -225,7 +251,12 @@ mod imp {
 
     // ── F16 pinned (gemv_f16) ─────────────────────────────────────────────────
 
-    fn bench_f16_pinned(ctx: &MetalContext, rows: usize, cols: usize, iterations: usize) -> Result<Vec<f64>> {
+    fn bench_f16_pinned(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        iterations: usize,
+    ) -> Result<Vec<f64>> {
         let w_bytes = rows * cols * 2; // f16 = 2 bytes
         let x_bytes = cols * size_of::<f32>();
         let out_bytes = rows * size_of::<f32>();
@@ -246,8 +277,16 @@ mod imp {
                 enc.set_buffer(0, Some(&w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(3, size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(4, size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_bytes(
+                    3,
+                    size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
                 enc.set_threadgroup_memory_length(0, shmem);
             })
         };
@@ -265,7 +304,12 @@ mod imp {
         Ok(samples)
     }
 
-    pub fn run_kernel(kernel: &str, rows: usize, cols: usize, iterations: usize) -> Result<KernelBenchResult> {
+    pub fn run_kernel(
+        kernel: &str,
+        rows: usize,
+        cols: usize,
+        iterations: usize,
+    ) -> Result<KernelBenchResult> {
         let ctx = MetalContext::new()?;
         let shape_str = format!("{rows}x{cols}");
         let tag = super::shape_tag(rows, cols);
@@ -316,6 +360,11 @@ mod imp {
 }
 
 /// Bench a single named kernel at the given (rows, cols, iterations).
-pub fn run_kernel(kernel: &str, rows: usize, cols: usize, iterations: usize) -> Result<KernelBenchResult> {
+pub fn run_kernel(
+    kernel: &str,
+    rows: usize,
+    cols: usize,
+    iterations: usize,
+) -> Result<KernelBenchResult> {
     imp::run_kernel(kernel, rows, cols, iterations)
 }

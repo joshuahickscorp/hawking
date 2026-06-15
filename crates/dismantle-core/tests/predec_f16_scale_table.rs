@@ -46,6 +46,12 @@ fn f16_predec_table_matches_f32_within_budget() {
         }
     }
     // f16 has an ~11-bit mantissa → relative error < ~5e-4 for in-range values.
-    assert!(max_abs < 1e-2, "max abs diff {max_abs} too large for f16 scales");
-    assert!(max_rel < 1e-2, "max rel diff {max_rel} exceeds the f16 precision budget");
+    assert!(
+        max_abs < 1e-2,
+        "max abs diff {max_abs} too large for f16 scales"
+    );
+    assert!(
+        max_rel < 1e-2,
+        "max rel diff {max_rel} exceeds the f16 precision budget"
+    );
 }

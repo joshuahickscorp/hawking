@@ -38,7 +38,7 @@ fn f32_buf_read(ptr: *const f32, n: usize) -> Vec<f32> {
 #[test]
 fn token_command_buffer_matches_sequential() {
     let ctx = make_ctx();
-    let n = TG_SIZE as usize;  // 256 elements
+    let n = TG_SIZE as usize; // 256 elements
     let eps = 1e-5f32;
 
     // ── prepare input data ────────────────────────────────────────────────────
@@ -49,12 +49,12 @@ fn token_command_buffer_matches_sequential() {
     let b_f32: Vec<f32> = (0..n).map(|i| (i as f32 * 0.02).cos()).collect();
 
     // ── sequential path ───────────────────────────────────────────────────────
-    let x_bytes   = f32_to_f16_bytes(&x_f32);
-    let w_bytes   = f32_to_f16_bytes(&w_f32);
+    let x_bytes = f32_to_f16_bytes(&x_f32);
+    let w_bytes = f32_to_f16_bytes(&w_f32);
     let rn_out_seq = ctx.new_buffer(n * std::mem::size_of::<f16>());
 
-    let x_buf_s  = ctx.new_buffer_with_bytes(&x_bytes);
-    let w_buf_s  = ctx.new_buffer_with_bytes(&w_bytes);
+    let x_buf_s = ctx.new_buffer_with_bytes(&x_bytes);
+    let w_buf_s = ctx.new_buffer_with_bytes(&w_bytes);
     let hidden_u32 = n as u32;
     let shmem = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
 
@@ -66,32 +66,39 @@ fn token_command_buffer_matches_sequential() {
         enc.set_bytes(3, 4, &hidden_u32 as *const u32 as *const _);
         enc.set_bytes(4, 4, &eps as *const f32 as *const _);
         enc.set_threadgroup_memory_length(0, shmem);
-    }).expect("seq rmsnorm");
+    })
+    .expect("seq rmsnorm");
 
-    let a_bytes      = f32_bytes(&a_f32);
-    let b_bytes      = f32_bytes(&b_f32);
-    let a_buf_s      = ctx.new_buffer_with_bytes(&a_bytes);
-    let b_buf_s      = ctx.new_buffer_with_bytes(&b_bytes);
-    let n_u32        = n as u32;
-    let n_tg         = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+    let a_bytes = f32_bytes(&a_f32);
+    let b_bytes = f32_bytes(&b_f32);
+    let a_buf_s = ctx.new_buffer_with_bytes(&a_bytes);
+    let b_buf_s = ctx.new_buffer_with_bytes(&b_bytes);
+    let n_u32 = n as u32;
+    let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
 
     // Sequential: add_inplace dispatch.
-    ctx.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-        enc.set_buffer(0, Some(&a_buf_s), 0);
-        enc.set_buffer(1, Some(&b_buf_s), 0);
-        enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-    }).expect("seq add_inplace");
+    ctx.dispatch_threads(
+        "add_inplace",
+        (n_tg * TG_SIZE, 1, 1),
+        (TG_SIZE, 1, 1),
+        |enc| {
+            enc.set_buffer(0, Some(&a_buf_s), 0);
+            enc.set_buffer(1, Some(&b_buf_s), 0);
+            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+        },
+    )
+    .expect("seq add_inplace");
 
     // Read sequential results.
     let rn_seq = f16_buf_to_f32(rn_out_seq.contents() as *const f16, n);
     let ai_seq = f32_buf_read(a_buf_s.contents() as *const f32, n);
 
     // ── TCB path ──────────────────────────────────────────────────────────────
-    let x_buf_t  = ctx.new_buffer_with_bytes(&x_bytes);
-    let w_buf_t  = ctx.new_buffer_with_bytes(&w_bytes);
+    let x_buf_t = ctx.new_buffer_with_bytes(&x_bytes);
+    let w_buf_t = ctx.new_buffer_with_bytes(&w_bytes);
     let rn_out_tcb = ctx.new_buffer(n * std::mem::size_of::<f16>());
-    let a_buf_t  = ctx.new_buffer_with_bytes(&a_bytes);
-    let b_buf_t  = ctx.new_buffer_with_bytes(&b_bytes);
+    let a_buf_t = ctx.new_buffer_with_bytes(&a_bytes);
+    let b_buf_t = ctx.new_buffer_with_bytes(&b_bytes);
 
     {
         let mut tcb = TokenCommandBuffer::new(&ctx);
@@ -103,13 +110,20 @@ fn token_command_buffer_matches_sequential() {
             enc.set_bytes(3, 4, &hidden_u32 as *const u32 as *const _);
             enc.set_bytes(4, 4, &eps as *const f32 as *const _);
             enc.set_threadgroup_memory_length(0, shmem);
-        }).expect("tcb rmsnorm");
+        })
+        .expect("tcb rmsnorm");
 
-        tcb.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&a_buf_t), 0);
-            enc.set_buffer(1, Some(&b_buf_t), 0);
-            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-        }).expect("tcb add_inplace");
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&a_buf_t), 0);
+                enc.set_buffer(1, Some(&b_buf_t), 0);
+                enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+            },
+        )
+        .expect("tcb add_inplace");
 
         tcb.commit_and_wait().expect("tcb commit");
     }
@@ -124,7 +138,11 @@ fn token_command_buffer_matches_sequential() {
         assert_eq!(s, t, "rmsnorm[{i}]: seq={s} tcb={t}");
     }
 
-    assert_eq!(ai_seq.len(), ai_tcb.len(), "add_inplace output length mismatch");
+    assert_eq!(
+        ai_seq.len(),
+        ai_tcb.len(),
+        "add_inplace output length mismatch"
+    );
     for (i, (&s, &t)) in ai_seq.iter().zip(ai_tcb.iter()).enumerate() {
         assert_eq!(s, t, "add_inplace[{i}]: seq={s} tcb={t}");
     }
@@ -140,16 +158,22 @@ fn token_command_buffer_drop_commits() {
     let a_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&a_f32));
     let b_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&b_f32));
     let n_u32 = n as u32;
-    let n_tg  = (n_u32 + TG_SIZE - 1) / TG_SIZE;
+    let n_tg = (n_u32 + TG_SIZE - 1) / TG_SIZE;
 
     {
         // Drop without explicit commit: Drop impl should commit cleanly.
         let mut tcb = TokenCommandBuffer::new(&ctx);
-        tcb.dispatch_threads("add_inplace", (n_tg * TG_SIZE, 1, 1), (TG_SIZE, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&a_buf), 0);
-            enc.set_buffer(1, Some(&b_buf), 0);
-            enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
-        }).expect("tcb add_inplace");
+        tcb.dispatch_threads(
+            "add_inplace",
+            (n_tg * TG_SIZE, 1, 1),
+            (TG_SIZE, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&a_buf), 0);
+                enc.set_buffer(1, Some(&b_buf), 0);
+                enc.set_bytes(2, 4, &n_u32 as *const u32 as *const _);
+            },
+        )
+        .expect("tcb add_inplace");
         // Dropped here — Drop impl commits.
     }
 
@@ -157,6 +181,10 @@ fn token_command_buffer_drop_commits() {
     let result = unsafe { std::slice::from_raw_parts(a_buf.contents() as *const f32, n) };
     for i in 0..n {
         let expected = i as f32 + 1.0;
-        assert!((result[i] - expected).abs() < 1e-6, "drop[{i}]: got={} expected={expected}", result[i]);
+        assert!(
+            (result[i] - expected).abs() < 1e-6,
+            "drop[{i}]: got={} expected={expected}",
+            result[i]
+        );
     }
 }

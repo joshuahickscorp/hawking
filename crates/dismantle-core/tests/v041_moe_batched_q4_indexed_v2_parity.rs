@@ -7,9 +7,9 @@
 #![cfg(target_os = "macos")]
 
 use dismantle_core::kernels;
+use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
-use half::f16;
 
 mod common;
 use common::*;

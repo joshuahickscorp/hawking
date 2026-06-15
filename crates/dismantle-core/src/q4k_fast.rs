@@ -185,7 +185,10 @@ pub fn convert_q4k_block_to_fast(
 /// cols) / 256`. Tensor major order is preserved (row-major); each row is
 /// `cols/256` super-blocks.
 pub fn convert_q4k_tensor_to_fast(src: &[u8], rows: usize, cols: usize) -> Vec<u8> {
-    assert!(cols % Q4K_BLOCK_ELEMS == 0, "cols must be a multiple of 256");
+    assert!(
+        cols % Q4K_BLOCK_ELEMS == 0,
+        "cols must be a multiple of 256"
+    );
     let blocks_per_row = cols / Q4K_BLOCK_ELEMS;
     let n_blocks = rows * blocks_per_row;
     assert_eq!(
@@ -304,7 +307,10 @@ pub fn serialize_sidecar(src_hash: u64, tensors: Vec<WrittenTensor>) -> Vec<u8> 
 /// truncated input.
 pub fn parse_header(file: &[u8]) -> Result<Q4kFastHeader, String> {
     if file.len() < 26 {
-        return Err(format!("file too short for Q4K_FAST header: {}", file.len()));
+        return Err(format!(
+            "file too short for Q4K_FAST header: {}",
+            file.len()
+        ));
     }
     if &file[0..9] != Q4K_FAST_MAGIC {
         return Err(format!(
@@ -463,11 +469,7 @@ mod tests {
                 let s1 = src_run[2 * i + 1];
                 let v0 = if is_high { s0 >> 4 } else { s0 & 0x0F };
                 let v1 = if is_high { s1 >> 4 } else { s1 & 0x0F };
-                assert_eq!(
-                    fast[off + 4 + i],
-                    v0 | (v1 << 4),
-                    "nibble k={k} i={i}"
-                );
+                assert_eq!(fast[off + 4 + i], v0 | (v1 << 4), "nibble k={k} i={i}");
             }
         }
     }

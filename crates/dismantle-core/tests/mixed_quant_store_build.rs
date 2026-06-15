@@ -36,10 +36,7 @@ fn build_default_tier_map_against_v2_lite_gguf() {
         .expect("tier map matches V2-Lite shape");
 
     let store = MixedQuantStore::build(
-        &gguf,
-        &tier_map,
-        27,
-        1,  // first_k_dense_layers for V2-Lite
+        &gguf, &tier_map, 27, 1,  // first_k_dense_layers for V2-Lite
         64, // n_routed_experts
         true,
     )

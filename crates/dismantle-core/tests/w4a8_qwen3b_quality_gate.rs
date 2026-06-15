@@ -25,8 +25,8 @@
 use std::path::PathBuf;
 
 use dismantle_core::{
-    metal::DenseDecodeArena, model::qwen_dense::QwenDense, profile::fresh_test_profile,
-    Engine, EngineConfig,
+    metal::DenseDecodeArena, model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine,
+    EngineConfig,
 };
 
 const PROMPT: &str = "Hello, my name is";
@@ -138,7 +138,10 @@ fn w4a8_quality_gate_self_consistency_f32() {
     let cos = cosine(&a.logits, &b.logits);
     eprintln!("[sanity] f32-vs-f32 logits cosine = {cos:.9}");
     assert!(cos > 0.99999, "two fresh f32 runs disagree: cos={cos}");
-    assert_eq!(a.tokens, b.tokens, "two fresh f32 runs emit different tokens");
+    assert_eq!(
+        a.tokens, b.tokens,
+        "two fresh f32 runs emit different tokens"
+    );
 }
 
 #[test]
@@ -167,10 +170,7 @@ fn w4a8_quality_gate() {
         .unwrap_or(MAX_NEW);
     eprintln!("[w4a8 quality gate] first divergence at token index {first_div}");
 
-    assert!(
-        cos > 0.998,
-        "logit cosine too low: {cos:.6} (need > 0.998)"
-    );
+    assert!(cos > 0.998, "logit cosine too low: {cos:.6} (need > 0.998)");
     assert!(
         first_div >= 8,
         "greedy divergence at token {first_div} (need >= 8)"

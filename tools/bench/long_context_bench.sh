@@ -52,12 +52,20 @@ for ctx in $CTXS; do
   if [[ -n "${PROMPT_FILE:-}" ]]; then promptf="$PROMPT_FILE"
   else promptf="/tmp/lcb_prompt_${ctx}.txt"; synth_prompt "$ctx" > "$promptf"; fi
   j="/tmp/lcb_${ctx}.json"
-  nice -n 19 taskpolicy -b "$BIN" generate --weights "$WEIGHTS" \
+  # generate prints "[stats] ... prefill_ms=NN ... dec_tps=NN" to STDERR — but
+  # ONLY when --json is NOT passed (--json suppresses the stats line). So run
+  # WITHOUT --json and parse the stats line from captured stderr.
+  # --max-seq-len must exceed prompt+gen or generate errors "kv cache full" and
+  # emits no stats (the bug that showed decode_tps=0 at ctx>=4096). Size it to
+  # ctx + GEN_TOKENS + margin.
+  maxseq=$(( ctx + ctx/2 + GEN_TOKENS + 256 ))   # 50% headroom: synth prompt may tokenize denser than ~4 char/tok
+  serr=$(nice -n 19 taskpolicy -b "$BIN" generate --weights "$WEIGHTS" \
     --kernel-profile "$PROFILE" --prompt "$(cat "$promptf")" \
-    --max-new-tokens "$GEN_TOKENS" --temperature 0 --seed 0 \
-    --json "$j" >/dev/null 2>&1
-  prefill=$(jq -r '(.. | .prefill_ms? // empty) // 0' "$j" 2>/dev/null | head -1)
-  dtps=$(jq -r '(.. | .decode_tps? // empty) // 0' "$j" 2>/dev/null | head -1)
+    --max-seq-len "$maxseq" \
+    --max-new-tokens "$GEN_TOKENS" --temperature 0 --seed 0 2>&1 >/dev/null)
+  prefill=$(printf '%s\n' "$serr" | sed -n 's/.*prefill_ms=\([0-9.][0-9.]*\).*/\1/p' | head -1)
+  dtps=$(printf '%s\n' "$serr" | sed -n 's/.*dec_tps=\([0-9.][0-9.]*\).*/\1/p' | head -1)
+  prefill="${prefill:-0}"; dtps="${dtps:-0}"
   kv_tok=$(( kv_bytes_per_pos * ctx ))
   share=$(awk -v kv="$kv_tok" -v w="$WEIGHT_BYTES_PER_TOKEN" 'BEGIN{printf "%.1f", kv/(kv+w)*100}')
   printf "%8s %12s %12s %14s %11s%%\n" "$ctx" "${prefill:-?}" "${dtps:-?}" "$kv_tok" "$share"
