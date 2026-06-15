@@ -1562,7 +1562,7 @@ fn autotune_main(
 /// Both runs share this process so contamination cancels in the delta.
 /// The measurement uses wall-clock time for a fixed number of decode steps
 /// via the bench harness (no model I/O; just timing the forward pass).
-fn run_runtime_autotune_phase(weights: &PathBuf, profile_id: &str) -> Option<String> {
+fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Option<String> {
     use dismantle_core::{EngineConfig, GenerateRequest, SamplingParams, StreamEvent};
 
     let n_tokens: usize = 32; // decode budget: enough for a stable mean
@@ -2134,10 +2134,10 @@ fn bake_sidecar_main(
     eprintln!("[bake-sidecar] profile:        {profile}");
     eprintln!("[bake-sidecar] planned steps:");
     eprintln!("[bake-sidecar]   q4k_predec_scales = true");
-    if vocab_prune.is_some() {
+    if let Some(vp) = vocab_prune.as_ref() {
         eprintln!(
             "[bake-sidecar]   pruned_lm_head_q4k = true  (vocab-prune: {})",
-            vocab_prune.as_ref().unwrap().display()
+            vp.display()
         );
     } else {
         eprintln!("[bake-sidecar]   pruned_lm_head_q4k = false  (no --vocab-prune given)");

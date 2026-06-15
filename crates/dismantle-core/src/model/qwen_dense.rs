@@ -3878,7 +3878,7 @@ impl QwenDense {
         }
 
         let mut cache = std::collections::HashMap::new();
-        let mut insert_q4k =
+        let insert_q4k =
             |tref: &TensorRef,
              ctx: &crate::metal::MetalContext,
              cache: &mut std::collections::HashMap<usize, crate::metal::PinnedBuffer>|
