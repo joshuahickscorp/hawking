@@ -701,9 +701,11 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                             if skip > 0 {
                                 engine
                                     .prefill_slot_from_pos(slot_id, prompt_ids, skip)
-                                    .map(|_| ())
+                                    .map(|ft| vec![(slot_id, ft)])
                             } else {
-                                engine.prefill_slot(slot_id, prompt_ids).map(|_| ())
+                                engine
+                                    .prefill_slot(slot_id, prompt_ids)
+                                    .map(|ft| vec![(slot_id, ft)])
                             }
                         } else {
                             // Track 5.2: partition into slots that have a prefix_skip
@@ -737,30 +739,65 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                 .map(|(slot_id, prompt_ids)| (*slot_id, *prompt_ids))
                                 .collect();
 
-                            // Sequentially prefill the skip slots.
+                            // Sequentially prefill the skip slots, collecting each
+                            // slot's first generated token to seed decode with.
+                            let mut firsts: Vec<(usize, u32)> = Vec::new();
                             let mut result: Result<(), dismantle_core::Error> = Ok(());
                             for (slot_id, prompt_ids, skip) in with_skip {
                                 if result.is_ok() {
-                                    result = engine
-                                        .prefill_slot_from_pos(slot_id, prompt_ids, skip)
-                                        .map(|_| ());
+                                    match engine.prefill_slot_from_pos(slot_id, prompt_ids, skip) {
+                                        Ok(ft) => firsts.push((slot_id, ft)),
+                                        Err(e) => result = Err(e),
+                                    }
                                 }
                             }
                             // Parallel-prefill the remaining slots (only if no error so far).
                             if result.is_ok() && !without_skip.is_empty() {
-                                result = engine.prefill_slots_parallel(&without_skip);
+                                match engine.prefill_slots_parallel(&without_skip) {
+                                    Ok(fts) => {
+                                        for ((sid, _), ft) in without_skip.iter().zip(fts) {
+                                            firsts.push((*sid, ft));
+                                        }
+                                    }
+                                    Err(e) => result = Err(e),
+                                }
                             }
-                            result
+                            result.map(|()| firsts)
                         }
                     };
                     match prefill_result {
-                        Ok(()) => {
-                            for &slot_id in &prefilling {
-                                state2
-                                    .driver
-                                    .lock()
-                                    .scheduler
-                                    .mark_prefill_complete(slot_id);
+                        Ok(firsts) => {
+                            // Mark each prefilled slot ready, then SEED it with the
+                            // first generated token (from the prefill's last-position
+                            // logits) and stream that token immediately. The decode
+                            // loop then continues from the SECOND token. This avoids
+                            // re-feeding the last prompt token through the decode
+                            // path, which produced a spurious leading word.
+                            let eos = { state2.engine.lock().eos_id_for_batch() };
+                            for (slot_id, first_token) in firsts {
+                                let sid = slot_id as u32;
+                                let decoded = {
+                                    let mut driver = state2.driver.lock();
+                                    driver.scheduler.mark_prefill_complete(sid);
+                                    driver.scheduler.seed_first_token(sid, first_token, eos)
+                                };
+                                let Some(decoded) = decoded else { continue };
+                                let text = {
+                                    state2
+                                        .engine
+                                        .lock()
+                                        .decode_token_for_batch(first_token)
+                                        .unwrap_or_default()
+                                };
+                                let tx = state2.slot_senders.lock().get(&sid).cloned();
+                                if let Some(tx) = tx {
+                                    let _ = tx.blocking_send(Ok(text));
+                                    state2.tokens_generated.fetch_add(1, Ordering::Relaxed);
+                                    if decoded.finished {
+                                        state2.slot_senders.lock().remove(&sid);
+                                        state2.driver.lock().scheduler.release_slot(sid);
+                                    }
+                                }
                             }
                         }
                         Err(e) => {

@@ -416,6 +416,18 @@ impl Scheduler {
         true
     }
 
+    /// Seed a slot's first generated token after prefill (see
+    /// `Slot::seed_first_token`). Returns the `DecodedToken` so the caller can
+    /// stream the text and release the slot if it is already an EOS.
+    pub fn seed_first_token(
+        &mut self,
+        id: u32,
+        token: u32,
+        eos_id: Option<u32>,
+    ) -> Option<DecodedToken> {
+        self.slot_mut(id).map(|s| s.seed_first_token(token, eos_id))
+    }
+
     pub fn decode_batch(&self, max: usize) -> Vec<DecodeStep> {
         self.ready_decode_indices(max)
             .into_iter()

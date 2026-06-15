@@ -144,6 +144,29 @@ impl Slot {
         }
     }
 
+    /// Seed the slot with the FIRST generated token, derived from the prefill's
+    /// last-position prediction (returned by `Engine::prefill_slot`). Records it
+    /// as the first output but does NOT advance `position`: prefill built KV for
+    /// `0..prompt_len-1`, so this token is fed at `position` (= prompt_len) on the
+    /// next decode step to produce the SECOND token. Re-feeding the last PROMPT
+    /// token here instead (the old behaviour) produced a spurious leading word on
+    /// every response because the decode kernels diverge from the batch prefill.
+    pub fn seed_first_token(&mut self, token: u32, eos_id: Option<u32>) -> DecodedToken {
+        self.generated_ids.push(token);
+        if let Some(sampler) = self.sampler.as_mut() {
+            sampler.record(token);
+        }
+        self.last_token = Some(token);
+        if Some(token) == eos_id || self.generated_ids.len() >= self.max_new_tokens {
+            self.state = SlotState::Finishing;
+        }
+        DecodedToken {
+            slot_id: self.id,
+            token,
+            finished: self.state == SlotState::Finishing,
+        }
+    }
+
     pub fn release(&mut self) {
         let id = self.id;
         *self = Self::idle(id);
