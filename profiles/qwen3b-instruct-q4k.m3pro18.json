@@ -50,6 +50,6 @@
     "shared_down_schedule": "basic",
     "x_norm_dtype": "f32"
   },
-  "shader_hash": "6a8ab59cd366e6168a8f122c",
+  "shader_hash": "b20edef8d8e4a34d02277144",
   "tensor_layout_hash": "46a61a049d19cca43d3279ec"
 }
