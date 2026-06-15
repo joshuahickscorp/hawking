@@ -1,4 +1,3 @@
-pub mod dispatch;
 
 use crate::kernels::{gemv_f32, silu_mul, softmax_inplace};
 use crate::Result;
