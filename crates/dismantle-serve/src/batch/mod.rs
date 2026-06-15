@@ -105,7 +105,13 @@ impl Slot {
     pub fn sample_next(&mut self, logits: &mut [f32]) -> Option<u32> {
         let req = self.req.as_ref()?;
         let sampler = self.sampler.as_mut()?;
-        Some(sampler.sample(logits, &req.sampling))
+        let token = sampler.sample(logits, &req.sampling);
+        // Record the emitted token so the repetition penalty has history. The
+        // single-stream generate() path does this; the batch path did not, so
+        // the penalty was dead in `serve` and short prompts fell into `<|>`
+        // repetition loops.
+        sampler.record(token);
+        Some(token)
     }
 
     pub fn record_token(&mut self, token: u32) {
