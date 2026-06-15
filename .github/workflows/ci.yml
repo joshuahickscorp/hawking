@@ -28,8 +28,11 @@ jobs:
       - name: Cache cargo registry + target
         uses: Swatinem/rust-cache@v2
 
+      # No `--all`: it descends into the workspace-excluded vendor/ crates (the
+      # absorbed STRAND quant track), which keep their upstream formatting. Plain
+      # `cargo fmt` checks the workspace members only.
       - name: Format check
-        run: cargo fmt --all -- --check
+        run: cargo fmt -- --check
 
       # Deny warnings, with external (objc cfg) and a few pedantic lints
       # allowlisted. Any NEW lint of an un-allowed kind fails the build.

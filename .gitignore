@@ -76,7 +76,12 @@ bench_out/
 # Per-run bench output dirs (history is kept in bench_history.jsonl)
 bench_results/coexist_*/
 bench_results/v0.3.*/
-/vendor/
+# vendor/ holds the absorbed STRAND quant track (source, tracked). Its build
+# artifacts are ignored by the **/target rule above — do NOT blanket-ignore vendor/.
+# The per-crate Cargo.lock is a standalone-build artifact (these crates are excluded
+# from the workspace + concrete-pinned in their Cargo.toml) — regenerable, not tracked.
+/vendor/strand-quant/Cargo.lock
+/vendor/strand-decode-kernel/Cargo.lock
 
 # Derived calibration artifacts (regenerable from corpus + GGUF + scripts)
 eagle4/qwen3b_frozen.npz

@@ -1,21 +1,27 @@
-//! strand_bake — PLANNED, NOT IMPLEMENTED (a deliberately empty seam).
+//! strand_bake — offline STRAND (QTIP) weight baker. SEAM — pipeline not yet wired.
 //!
-//! Intended future tool: convert GGUF/safetensors weights into a `.strand` v2
-//! trellis-coded deploy artifact by absorbing the `strand-quant` QTIP backend
-//! (sub-4-bit, integer float-free decode). That backend is developed in a
-//! separate project and is NOT wired in here — so there is no encoder, no
-//! writer, and no baking logic in this binary.
+//! Converts GGUF/safetensors weights into a `.strand` v2 trellis-coded deploy
+//! artifact using the `strand-quant` QTIP backend (sub-4-bit, integer float-free
+//! decode). That backend is now ABSORBED into this repo at `vendor/strand-quant`
+//! (from ~/Downloads/strand, tag `quant-handoff`) — the encoder, the STR2 v2
+//! writer, and the load-bearing i64 reconstruct all live there.
 //!
-//! dismantle has NO quantization or baking capability of its own today; it
-//! consumes pre-quantized GGUF files. Do not read this as a working tool.
+//! What remains here is the baker's own glue: read f32 weights out of a GGUF,
+//! select the projection tensors, call `strand_quant::encode::encode_tensor`, and
+//! emit the file with `strand_quant::format::write_strand_v2`. See
+//! `docs/strand/STRAND-dismantle-wiring.md` Step 4 for the exact pipeline.
+//!
+//! Until that glue lands, dismantle still consumes pre-quantized GGUF files; this
+//! binary is a documented seam, not a working tool.
 
 fn main() {
     eprintln!(
-        "strand_bake: not implemented.\n\
+        "strand_bake: baker pipeline not yet wired.\n\
          \n\
-         dismantle does not bake quantized weights — it loads pre-quantized GGUF \
-         files. Absorbing the strand-quant (QTIP) sub-4-bit backend is a planned, \
-         deferred feature; see the Roadmap in README.md."
+         The strand-quant (QTIP) backend is absorbed at vendor/strand-quant, but the\n\
+         GGUF f32 read -> encode_tensor -> write_strand_v2 glue in this binary is not\n\
+         implemented yet. See docs/strand/STRAND-dismantle-wiring.md Step 4.\n\
+         dismantle currently loads pre-quantized GGUF files."
     );
     std::process::exit(2);
 }

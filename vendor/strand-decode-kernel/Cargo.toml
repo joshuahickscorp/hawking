@@ -1,0 +1,26 @@
+[package]
+name = "strand-decode-kernel"
+version = "0.1.0"
+edition = "2021"
+description = "On-device runtime: decode STRAND trellis-coded weights and run the matmul, integer-deterministic, no GPU/float unit required."
+
+[features]
+# G2b: use vfmaq_f32 (fused multiply-add, single rounding) in the across-the-batch NEON
+# MAC instead of the default non-fused vmulq+vaddq. FASTER + more accurate, but CHANGES
+# low-order float bits of fused_gemm (B>=4) vs the scalar reference — a per-kernel float
+# caveat (the integer Q12 decode is bit-identical either way). OFF by default; the
+# strict float-bit-equality tests are compiled out under it.
+neon-fma = []
+
+[dependencies]
+strand-quant = { path = "../strand-quant" }
+memmap2 = "0.9"                                # mmap the .strand v2 file (read-only, zero-copy views)
+rayon = "1"                                    # concrete, not workspace-inherited: this crate is excluded
+                                               # from the root workspace (self-contained, like strand-quant)
+
+# Metal path. SAME pin as strand-quant (strand-quant/Cargo.toml metal/objc block) so the
+# workspace lockfile is unchanged and the already-compiled metal/objc rlibs are reused.
+# macOS-only; loader.rs/gemv.rs + the public CPU API build with no GPU on every target.
+[target.'cfg(target_os = "macos")'.dependencies]
+metal = "0.27"
+objc  = "0.2"

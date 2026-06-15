@@ -1,0 +1,34 @@
+[package]
+name = "strand-quant"
+description = "STRAND tool — integer-deterministic-decode, float-encode trellis-coded (QTIP-style bitshift) weight quantizer."
+# Self-contained package: this crate is excluded from the root STRAND workspace and is
+# consumed by `dismantle` as a path dependency (see experimental/docs/STRAND-dismantle-wiring.md).
+# It must NOT inherit from a workspace — concrete versions here are what let it build standalone
+# (`cargo check --manifest-path crates/strand-quant/Cargo.toml`) and inside dismantle's workspace.
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+rust-version = "1.80"
+repository = "https://github.com/strand-compress/strand"
+
+# This is a *tool* crate beside the STRAND codec. The ENCODE
+# side (Viterbi search, scale selection, Gaussian codebook generation) is allowed
+# to use floating point — it is offline preprocessing. The DECODE side lives in
+# the `decode` module and is integer-only (see its module docs); it carries the
+# workspace determinism guarantee.
+[features]
+# Enable the CUDA GPU Viterbi backend.  Requires CUDA toolkit (nvcc + nvrtc).
+# Activate with: --features cuda
+# On macOS Metal takes precedence; CUDA is the Windows/Linux GPU path.
+cuda = ["dep:cudarc"]
+
+[dependencies]
+wide      = "0.7"   # concrete (not workspace-inherited): see the self-contained note above
+cudarc    = { version = "0.12", features = ["driver", "nvrtc", "cuda-version-from-build-system"], optional = true }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+metal = "0.27"
+objc  = "0.2"
+
+[dev-dependencies]
+# (none — tests are self-contained)
