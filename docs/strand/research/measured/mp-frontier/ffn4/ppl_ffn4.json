@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "harness_version": "1.0.0",
+  "harness_key": {
+    "harness_version": "1.0.0",
+    "device": "mps",
+    "dtype": "bfloat16",
+    "ctx": 2048,
+    "chunks": 64,
+    "dataset_id": "wikitext"
+  },
+  "harness_key8": "e03d391d",
+  "model": "ffn4",
+  "model_path": "/Users/scammermike/Downloads/strand/research/mp-frontier/ffn4/recon",
+  "tag": "ffn4",
+  "ppl": 23.531124429594144,
+  "ctx": 2048,
+  "chunks": 64,
+  "tokens": 131008,
+  "device": "mps",
+  "device_mode": "mps",
+  "dtype": "bfloat16",
+  "dataset_id": "wikitext",
+  "dataset_fp": "696cca6b65a171b0",
+  "eff_bpw": 4.542419,
+  "timestamp": "2026-06-12T19:11:54-0400",
+  "epoch": 1781305914,
+  "out_json": "/Users/scammermike/Downloads/strand/research/mp-frontier/ffn4/ppl_ffn4_ffn4.json",
+  "ce_slice": 512,
+  "torch": "2.6.0",
+  "transformers": "5.6.2",
+  "promotion": {
+    "state": "GATED",
+    "gate_type": "eval",
+    "loss_tax_nats": 0.6297,
+    "bf16_anchor": 12.536,
+    "anchor_key": "qwen-05b",
+    "eff_bpw": 4.542419,
+    "primary_ppl": 23.531124429594144,
+    "reasons": [
+      "informational: needs an explicit target/bar to promote"
+    ],
+    "billed_complete": true
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "harness_version": "1.0.0",
+  "harness_key": {
+    "harness_version": "1.0.0",
+    "device": "mps",
+    "dtype": "bfloat16",
+    "ctx": 2048,
+    "chunks": 64,
+    "dataset_id": "wikitext"
+  },
+  "harness_key8": "e03d391d",
+  "model": "dp_attn2",
+  "model_path": "/Users/scammermike/Downloads/strand/research/mp-frontier/dp_attn2/recon",
+  "tag": "dp_attn2",
+  "ppl": 32.11771845080489,
+  "ctx": 2048,
+  "chunks": 64,
+  "tokens": 131008,
+  "device": "mps",
+  "device_mode": "mps",
+  "dtype": "bfloat16",
+  "dataset_id": "wikitext",
+  "dataset_fp": "696cca6b65a171b0",
+  "eff_bpw": 3.569749,
+  "timestamp": "2026-06-12T18:43:38-0400",
+  "epoch": 1781304218,
+  "out_json": "/Users/scammermike/Downloads/strand/research/mp-frontier/dp_attn2/ppl_dp_attn2_dp_attn2.json",
+  "ce_slice": 512,
+  "torch": "2.6.0",
+  "transformers": "5.6.2"
+}
