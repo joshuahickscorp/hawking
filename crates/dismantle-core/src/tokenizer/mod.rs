@@ -10,7 +10,7 @@
 use crate::gguf::GgufFile;
 use crate::{Error, Result};
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::path::Path;
 use tokenizers::Tokenizer as HfTokenizer;
 
@@ -21,6 +21,12 @@ pub struct Tokenizer {
     pad_id: Option<u32>,
     decode_one_mode: DecodeOneMode,
     llama_spm: Option<LlamaSpmTokenizer>,
+    /// Control/special token ids (e.g. `<|im_end|>`, `<|im_start|>`). These are
+    /// chat-template scaffolding and must never appear in streamed output.
+    special_ids: HashSet<u32>,
+    /// End-of-generation token ids: the GGUF eos plus chat turn terminators
+    /// (`<|im_end|>`, `<|eot_id|>`, …). Generation stops on ANY of these.
+    eog_ids: HashSet<u32>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -29,12 +35,85 @@ enum DecodeOneMode {
     SentencePiece,
 }
 
+/// Token strings that terminate generation (in addition to the declared eos).
+/// Different GGUF conversions set `eos_token_id` to either `<|endoftext|>` or
+/// `<|im_end|>`; treating the whole family as end-of-generation makes the chat
+/// path stop correctly regardless of which the file picked.
+const EOG_TOKEN_STRINGS: &[&str] = &[
+    "<|im_end|>",
+    "<|endoftext|>",
+    "<|eot_id|>",
+    "<|end|>",
+    "<|end_of_text|>",
+    "<end_of_turn>",
+    "</s>",
+    "<eos>",
+];
+
+/// True for control tokens identified by string shape: the `<|...|>` family
+/// (Qwen, Llama-3, Phi) plus the classic SentencePiece sentinels. Real vocab
+/// entries never take these forms, so there are no false positives on text.
+fn is_special_token_str(s: &str) -> bool {
+    (s.len() >= 4 && s.starts_with("<|") && s.ends_with("|>"))
+        || matches!(
+            s,
+            "<s>" | "</s>" | "<unk>" | "<pad>" | "<mask>" | "<bos>" | "<eos>"
+                | "<start_of_turn>" | "<end_of_turn>"
+        )
+}
+
+/// Build the (special, end-of-generation) id sets from the vocab + the known
+/// sentinel ids. `tokens` is indexed by token id.
+fn build_special_sets(
+    tokens: &[String],
+    bos: Option<u32>,
+    eos: Option<u32>,
+    pad: Option<u32>,
+    unk: Option<u32>,
+) -> (HashSet<u32>, HashSet<u32>) {
+    let mut special = HashSet::new();
+    let mut eog = HashSet::new();
+    for id in [bos, eos, pad, unk].into_iter().flatten() {
+        special.insert(id);
+    }
+    if let Some(e) = eos {
+        eog.insert(e);
+    }
+    for (i, s) in tokens.iter().enumerate() {
+        let id = i as u32;
+        let s = s.as_str();
+        if is_special_token_str(s) {
+            special.insert(id);
+        }
+        if EOG_TOKEN_STRINGS.contains(&s) {
+            special.insert(id);
+            eog.insert(id);
+        }
+    }
+    (special, eog)
+}
+
+/// Materialize the vocab as a Vec indexed by token id (for `tokenizer.json`
+/// loads, where the GGUF token list isn't available).
+fn id_ordered_vocab(inner: &HfTokenizer) -> Vec<String> {
+    let size = inner.get_vocab_size(true);
+    let mut v = vec![String::new(); size];
+    for (s, id) in inner.get_vocab(true) {
+        if (id as usize) < v.len() {
+            v[id as usize] = s;
+        }
+    }
+    v
+}
+
 impl Tokenizer {
     /// Load `tokenizer.json` from a path (preferred — exact behavior
     /// match with the upstream model).
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let inner = HfTokenizer::from_file(path)
             .map_err(|e| Error::Model(format!("tokenizer load: {e}")))?;
+        let (special_ids, eog_ids) =
+            build_special_sets(&id_ordered_vocab(&inner), None, None, None, None);
         Ok(Self {
             inner,
             bos_id: None,
@@ -42,6 +121,8 @@ impl Tokenizer {
             pad_id: None,
             decode_one_mode: DecodeOneMode::Hf,
             llama_spm: None,
+            special_ids,
+            eog_ids,
         })
     }
 
@@ -108,6 +189,9 @@ impl Tokenizer {
             model, &tokens, &merges, &scores, bos_id, eos_id, unk_id, add_bos, add_eos,
         )?;
 
+        let (special_ids, eog_ids) =
+            build_special_sets(&tokens, bos_id, eos_id, pad_id, unk_id);
+
         Ok(Self {
             inner,
             bos_id,
@@ -115,6 +199,8 @@ impl Tokenizer {
             pad_id,
             decode_one_mode,
             llama_spm,
+            special_ids,
+            eog_ids,
         })
     }
 
@@ -142,6 +228,12 @@ impl Tokenizer {
     /// (Ġ for BPE, ▁ for SPM). Used by streaming generation where we
     /// emit tokens one at a time.
     pub fn decode_one(&self, id: u32) -> Result<String> {
+        // Streaming decoders emit one token at a time, so `decode`'s skip-special
+        // pass never runs. Guard here so control tokens (`<|im_end|>`,
+        // `<|im_start|>`, …) never leak into chat/completion output.
+        if self.special_ids.contains(&id) {
+            return Ok(String::new());
+        }
         match self.decode_one_mode {
             DecodeOneMode::Hf => self
                 .inner
@@ -149,6 +241,19 @@ impl Tokenizer {
                 .map_err(|e| Error::Model(format!("decode: {e}"))),
             DecodeOneMode::SentencePiece => self.decode_sentencepiece_one(id),
         }
+    }
+
+    /// True for control/special tokens (chat scaffolding) — never user-visible.
+    pub fn is_special(&self, id: u32) -> bool {
+        self.special_ids.contains(&id)
+    }
+
+    /// True for end-of-generation tokens: the declared eos plus chat turn
+    /// terminators like `<|im_end|>`. Stop generation on ANY of these — keying
+    /// only on the single GGUF `eos_token_id` misses the chat terminator on
+    /// conversions that set eos to `<|endoftext|>`.
+    pub fn is_eog(&self, id: u32) -> bool {
+        self.eog_ids.contains(&id)
     }
 
     pub fn vocab_size(&self) -> usize {
