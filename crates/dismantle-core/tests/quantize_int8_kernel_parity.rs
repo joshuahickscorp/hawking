@@ -37,10 +37,8 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     let scales_buf = ctx.new_buffer((n / 256) * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_tcb(
-            &mut tcb, &x_buf, &int8_buf, &scales_buf, n,
-        )
-        .expect("encode");
+        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, n)
+            .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     let gpu_int8 = read_i8(&int8_buf, n);
@@ -89,16 +87,17 @@ fn quantize_int8_kernel_handles_all_zero_block() {
     let ctx = ctx();
     let mut x = vec![0.0f32; 2048];
     // Non-zero middle block so we exercise both paths in one dispatch.
-    for i in 512..768 { x[i] = 1.5 * ((i as f32) - 640.0) / 128.0; }
+    for i in 512..768 {
+        x[i] = 1.5 * ((i as f32) - 640.0) / 128.0;
+    }
     let (cpu_int8, cpu_scales) = kernels::quantize_to_int8_per_block(&x, 256);
     let x_buf = new_f32_buf(ctx, &x);
     let int8_buf = ctx.new_buffer(2048);
     let scales_buf = ctx.new_buffer(8 * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::quantize_f32_to_int8_per_block_tcb(
-            &mut tcb, &x_buf, &int8_buf, &scales_buf, 2048,
-        ).expect("encode");
+        kernels::quantize_f32_to_int8_per_block_tcb(&mut tcb, &x_buf, &int8_buf, &scales_buf, 2048)
+            .expect("encode");
         tcb.commit_and_wait().expect("commit");
     }
     assert_eq!(cpu_scales, read_f32(&scales_buf, 8), "scales");

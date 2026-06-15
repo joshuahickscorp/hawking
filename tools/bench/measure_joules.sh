@@ -187,15 +187,27 @@ run_one() {  # $1 = label, $2 = extra-env (e.g. "DISMANTLE_QWEN_PREDEC_F16SCALES
     --prompt "$PROMPT" --max-new-tokens "$TOKENS" --temperature 0 --seed 0 \
     > "$statf" 2>&1
 
-  # stop the sampler
-  kill "$sampler_pid" 2>/dev/null; wait "$sampler_pid" 2>/dev/null
+  # stop the sampler — kill children first (macmon pipe / sudo powermetrics)
+  # so they don't outlive their parent and orphan. pkill -P sends SIGTERM to
+  # all direct children of the subshell; the subshell itself (while-read) is
+  # then killed and reaped. Without this, macmon pipe survives as an orphan
+  # because bash's last-pipeline-component rule makes the while-read run IN
+  # the subshell (PID=$sampler_pid), leaving macmon as its child — kill
+  # $sampler_pid kills the reader but macmon has no pending write so it
+  # doesn't die on SIGPIPE.
+  pkill -P "$sampler_pid" 2>/dev/null || true
+  kill "$sampler_pid" 2>/dev/null
+  wait "$sampler_pid" 2>/dev/null || true
 
   # parse the stats line
   local statline dec_ms dec_tps comp_tok
   statline=$(grep -E '\[stats\]' "$statf" | tail -1)
   if [[ -z "$statline" ]]; then
-    echo "  [$label] WARN: no [stats] line found. Raw tail:" >&2
+    # FAIL LOUD — no decode happened (stale-profile hash, OOM, model error).
+    # Don't emit a fake 0.0000 J/tok 'pass'; fail so the caller/queue sees it.
+    echo "  [$label] FAIL: no [stats] line — decode produced no measurement. Raw tail:" >&2
     tail -3 "$statf" >&2
+    exit 1
   fi
   dec_ms=$(printf '%s' "$statline"  | grep -oE 'decode_ms=[0-9.]+'  | grep -oE '[0-9.]+')
   dec_tps=$(printf '%s' "$statline" | grep -oE 'dec_tps=[0-9.]+'    | grep -oE '[0-9.]+')

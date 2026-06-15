@@ -16,7 +16,10 @@ use dismantle_core::{model::load_engine, EngineConfig};
 use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[command(name = "dismantle-spec-acceptance-measure", about = "Phase 3 acceptance-rate measurement")]
+#[command(
+    name = "dismantle-spec-acceptance-measure",
+    about = "Phase 3 acceptance-rate measurement"
+)]
 struct Cli {
     /// Path to the GGUF weights file.
     #[arg(long)]
@@ -130,6 +133,9 @@ fn main() -> Result<()> {
         let mut prompt_steps = 0usize;
         let mut prompt_agreed = 0usize;
 
+        // prompt_steps counts iterations that COMPLETED (the early `break`s skip
+        // the increment), so it is not a plain enumerate index.
+        #[allow(clippy::explicit_counter_loop)]
         for _ in 0..cli.steps {
             // Run shared-only first (for measurement; doesn't advance pos).
             let shared_logits = engine

@@ -128,9 +128,7 @@ impl TierMap {
             )));
         }
         if raw.n_layers == 0 {
-            return Err(Error::Model(
-                "quant_tier_map: n_layers must be > 0".into(),
-            ));
+            return Err(Error::Model("quant_tier_map: n_layers must be > 0".into()));
         }
         let mut overrides = HashMap::new();
         let mut seen = std::collections::HashSet::new();
@@ -210,8 +208,8 @@ mod tests {
     use super::*;
 
     fn parse(json: &str) -> Result<TierMap> {
-        let raw: TierFile = serde_json::from_str(json)
-            .map_err(|e| Error::Model(format!("test parse: {e}")))?;
+        let raw: TierFile =
+            serde_json::from_str(json).map_err(|e| Error::Model(format!("test parse: {e}")))?;
         TierMap::from_parts(raw)
     }
 

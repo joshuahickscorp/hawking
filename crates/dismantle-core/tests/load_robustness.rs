@@ -24,10 +24,15 @@ fn new_buffer_checked_errs_gracefully_on_oversize() {
     // hand back a nil buffer that crashes a later dispatch.
     let huge = 1usize << 48;
     let r = ctx.new_buffer_checked(huge);
-    assert!(r.is_err(), "oversize new_buffer_checked should be Err, got Ok");
+    assert!(
+        r.is_err(),
+        "oversize new_buffer_checked should be Err, got Ok"
+    );
 
     // A normal allocation still succeeds and reports at least the requested len.
-    let ok = ctx.new_buffer_checked(4096).expect("normal alloc should succeed");
+    let ok = ctx
+        .new_buffer_checked(4096)
+        .expect("normal alloc should succeed");
     assert!(ok.length() >= 4096, "buffer length {} < 4096", ok.length());
 
     // bytes variant: a small slice succeeds.
@@ -92,7 +97,7 @@ fn open_errs_on_truncated_header() {
     bytes.extend_from_slice(&3u32.to_le_bytes()); // version 3
     bytes.extend_from_slice(&5u64.to_le_bytes()); // tensor_count
     bytes.extend_from_slice(&5u64.to_le_bytes()); // kv_count
-    // no metadata bytes follow → truncated
+                                                  // no metadata bytes follow → truncated
     let p = write_tmp("truncated", &bytes);
     let r = GgufFile::open(&p);
     let _ = std::fs::remove_file(&p);

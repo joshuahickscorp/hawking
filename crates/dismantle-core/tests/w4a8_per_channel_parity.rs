@@ -52,7 +52,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x_typical(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 /// Channel-correlated calibration: simulate the "static scale per channel"
@@ -97,8 +99,8 @@ fn cosine_and_nrmse(a: &[f32], b: &[f32]) -> (f32, f32) {
     let na: f32 = a.iter().map(|&x| x * x).sum::<f32>().sqrt();
     let nb: f32 = b.iter().map(|&x| x * x).sum::<f32>().sqrt();
     let cosine = dot / (na * nb);
-    let rmse: f32 = (a.iter().zip(b)
-        .map(|(&x, &y)| (x - y).powi(2)).sum::<f32>() / a.len() as f32).sqrt();
+    let rmse: f32 =
+        (a.iter().zip(b).map(|(&x, &y)| (x - y).powi(2)).sum::<f32>() / a.len() as f32).sqrt();
     let mean_abs_a = a.iter().map(|x| x.abs()).sum::<f32>() / a.len() as f32;
     let nrmse = rmse / mean_abs_a;
     (cosine, nrmse)
@@ -120,9 +122,16 @@ fn w4a8_per_channel_typical_activations() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_f32_buf, &y_baseline_buf,
-        ).expect("baseline encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -143,17 +152,23 @@ fn w4a8_per_channel_typical_activations() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_int8_buf, &x_scales_buf, &y_w4a8_buf,
-        ).expect("W4A8 per-channel encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_buf,
+            &x_scales_buf,
+            &y_w4a8_buf,
+        )
+        .expect("W4A8 per-channel encode");
         tcb.commit_and_wait().expect("W4A8 per-channel commit");
     }
     let y_w4a8 = read_f32_buf(&y_w4a8_buf, rows);
 
     let (cosine, nrmse) = cosine_and_nrmse(&y_baseline, &y_w4a8);
-    eprintln!(
-        "[W4A8 per-channel, typical] cosine={cosine:.6}  nrmse={nrmse:.4e}"
-    );
+    eprintln!("[W4A8 per-channel, typical] cosine={cosine:.6}  nrmse={nrmse:.4e}");
     eprintln!("  baseline[0..6] = {:?}", &y_baseline[..6]);
     eprintln!("  w4a8[0..6]     = {:?}", &y_w4a8[..6]);
 
@@ -196,9 +211,16 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_f32_buf, &y_baseline_buf,
-        ).unwrap();
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .unwrap();
         tcb.commit_and_wait().unwrap();
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -211,9 +233,17 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemm_q4_k_a8_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_int8_pb_buf, &x_scales_pb_buf, &y_pb_buf,
-        ).unwrap();
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_pb_buf,
+            &x_scales_pb_buf,
+            &y_pb_buf,
+        )
+        .unwrap();
         tcb.commit_and_wait().unwrap();
     }
     let y_pb = read_f32_buf(&y_pb_buf, rows);
@@ -226,9 +256,17 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_int8_pc_buf, &x_scales_pc_buf, &y_pc_buf,
-        ).unwrap();
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_pc_buf,
+            &x_scales_pc_buf,
+            &y_pc_buf,
+        )
+        .unwrap();
         tcb.commit_and_wait().unwrap();
     }
     let y_pc = read_f32_buf(&y_pc_buf, rows);
@@ -239,9 +277,14 @@ fn w4a8_per_channel_beats_per_block_on_outliers() {
     eprintln!("[outlier regime]");
     eprintln!("  per-block:   cosine={cos_pb:.6}  nrmse={nrmse_pb:.4e}");
     eprintln!("  per-channel: cosine={cos_pc:.6}  nrmse={nrmse_pc:.4e}");
-    eprintln!("  improvement: cosine +{:.6}, nrmse / {:.2}×",
+    eprintln!(
+        "  improvement: cosine +{:.6}, nrmse / {:.2}×",
         cos_pc - cos_pb,
-        if nrmse_pc > 0.0 { nrmse_pb / nrmse_pc } else { f32::INFINITY },
+        if nrmse_pc > 0.0 {
+            nrmse_pb / nrmse_pc
+        } else {
+            f32::INFINITY
+        },
     );
 
     // Per-channel must beat per-block in the outlier regime — that's the

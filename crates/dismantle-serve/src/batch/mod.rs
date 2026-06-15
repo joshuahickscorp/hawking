@@ -29,6 +29,11 @@ pub struct Slot {
     pub last_token: Option<u32>,
     pub position: usize,
     pub max_new_tokens: usize,
+    /// Track 5.2: if >0, the first `prefix_skip` tokens of prompt_ids were already
+    /// KV-copied from another slot. The prefill path should call
+    /// prefill_slot_from_pos(slot_id, prompt_ids, prefix_skip) instead of
+    /// prefill_slot(slot_id, prompt_ids) to skip re-computing those positions.
+    pub prefix_skip: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -57,6 +62,7 @@ impl Slot {
             last_token: None,
             position: 0,
             max_new_tokens: 0,
+            prefix_skip: 0,
         }
     }
 
@@ -99,7 +105,13 @@ impl Slot {
     pub fn sample_next(&mut self, logits: &mut [f32]) -> Option<u32> {
         let req = self.req.as_ref()?;
         let sampler = self.sampler.as_mut()?;
-        Some(sampler.sample(logits, &req.sampling))
+        let token = sampler.sample(logits, &req.sampling);
+        // Record the emitted token so the repetition penalty has history. The
+        // single-stream generate() path does this; the batch path did not, so
+        // the penalty was dead in `serve` and short prompts fell into `<|>`
+        // repetition loops.
+        sampler.record(token);
+        Some(token)
     }
 
     pub fn record_token(&mut self, token: u32) {
@@ -124,6 +136,29 @@ impl Slot {
         self.record_token(token);
         if Some(token) == eos_id {
             self.finish();
+        }
+        DecodedToken {
+            slot_id: self.id,
+            token,
+            finished: self.state == SlotState::Finishing,
+        }
+    }
+
+    /// Seed the slot with the FIRST generated token, derived from the prefill's
+    /// last-position prediction (returned by `Engine::prefill_slot`). Records it
+    /// as the first output but does NOT advance `position`: prefill built KV for
+    /// `0..prompt_len-1`, so this token is fed at `position` (= prompt_len) on the
+    /// next decode step to produce the SECOND token. Re-feeding the last PROMPT
+    /// token here instead (the old behaviour) produced a spurious leading word on
+    /// every response because the decode kernels diverge from the batch prefill.
+    pub fn seed_first_token(&mut self, token: u32, eos_id: Option<u32>) -> DecodedToken {
+        self.generated_ids.push(token);
+        if let Some(sampler) = self.sampler.as_mut() {
+            sampler.record(token);
+        }
+        self.last_token = Some(token);
+        if Some(token) == eos_id || self.generated_ids.len() >= self.max_new_tokens {
+            self.state = SlotState::Finishing;
         }
         DecodedToken {
             slot_id: self.id,

@@ -1,3 +1,0 @@
-{
-  "ckpt": "/content/drive/MyDrive/dismantle/maximal_spec_500u/artifacts/q1p5/checkpoints/q1p5_overeng_calib_heavy_w030_d4_p070_lr3e-5_from_40e637f9/head_final.safetensors",
-  "policies": {"best_deployable": {"accepted_draft_tokens_per_verify": 2.039625, "projected_dec_tps": 231.01150000000004, "kind": "fixed_k", "max_depth": 24}}, "schema": "eagle5-frontier-policy-v1", "windows": 24000}

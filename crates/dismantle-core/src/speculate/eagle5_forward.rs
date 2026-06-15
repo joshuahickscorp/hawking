@@ -73,8 +73,16 @@ pub fn forward_single_step(
     intermediate: &[f32],
 ) -> Vec<f32> {
     forward_single_step_with_hidden(
-        config, in_proj, blocks, residual_gate, output_norm,
-        token_embd_f16, lm_head_f16, prev_token, residual_in, intermediate,
+        config,
+        in_proj,
+        blocks,
+        residual_gate,
+        output_norm,
+        token_embd_f16,
+        lm_head_f16,
+        prev_token,
+        residual_in,
+        intermediate,
     )
     .0
 }
@@ -104,8 +112,15 @@ pub fn forward_single_step_with_hidden(
     // vocab-pruned propose path can reuse it and size the lm_head matmul
     // to the pruned vocab (the dominant cost — 311M FMAs at full q3b vocab).
     let draft_hidden = compute_draft_hidden(
-        config, in_proj, blocks, residual_gate, output_norm,
-        token_embd_f16, prev_token, residual_in, intermediate,
+        config,
+        in_proj,
+        blocks,
+        residual_gate,
+        output_norm,
+        token_embd_f16,
+        prev_token,
+        residual_in,
+        intermediate,
     );
     // logits = draft_hidden @ lm_head over the FULL vocab (parity path).
     let logits = lm_head_logits(&draft_hidden, lm_head_f16, h, v);
@@ -283,12 +298,7 @@ fn rms_norm(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 /// Same threading pattern as `matmul_no_bias` (per-row independence,
 /// bit-identical to single-threaded). Reusing from the Eagle5 module
 /// keeps the threaded-matmul logic in one place.
-pub fn matmul_no_bias_f16w(
-    w_f16: &[f16],
-    x: &[f32],
-    out_dim: usize,
-    in_dim: usize,
-) -> Vec<f32> {
+pub fn matmul_no_bias_f16w(w_f16: &[f16], x: &[f32], out_dim: usize, in_dim: usize) -> Vec<f32> {
     debug_assert_eq!(w_f16.len(), out_dim * in_dim);
     debug_assert_eq!(x.len(), in_dim);
 
@@ -423,7 +433,7 @@ fn attention_s1(h: &[f32], blk: &TrainedBlock, n_heads: usize, hidden: usize) ->
         // Scores: scalar = qk * scale. Mask = 0. softmax over 1
         // element is exactly 1.0; we don't need exp() for that.
         let _scores = qk * scale; // computed for parity clarity, but unused
-        // attn_out for this head = 1.0 * v_head = v_head.
+                                  // attn_out for this head = 1.0 * v_head = v_head.
         for d in 0..head_dim {
             attn_hidden[off + d] = v[off + d];
         }
@@ -433,14 +443,7 @@ fn attention_s1(h: &[f32], blk: &TrainedBlock, n_heads: usize, hidden: usize) ->
 }
 
 /// SwiGLU: `down(silu(gate(h)) * up(h))`.
-fn swiglu(
-    h: &[f32],
-    gate: &[f32],
-    up: &[f32],
-    down: &[f32],
-    hidden: usize,
-    ff: usize,
-) -> Vec<f32> {
+fn swiglu(h: &[f32], gate: &[f32], up: &[f32], down: &[f32], hidden: usize, ff: usize) -> Vec<f32> {
     let g = matmul_no_bias(gate, h, ff, hidden);
     let u = matmul_no_bias(up, h, ff, hidden);
     let mut activated = vec![0.0f32; ff];

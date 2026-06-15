@@ -1,0 +1,23 @@
+# strand_bake — PLANNED placeholder for a future offline STRAND (QTIP) baker.
+#
+# DEFERRED / NOT IMPLEMENTED. This crate is an intentional no-op placeholder and
+# is deliberately NOT in the workspace root `Cargo.toml` `members` array: there
+# is no quantization backend wired in, so `cargo build` at the root ignores it
+# and dismantle compiles untouched. When the strand-quant absorption happens,
+# this is where the offline `.strand` baker lands — add it to `members` and a
+# `strand-quant` path dependency at that point.
+[package]
+name = "strand_bake_tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "PLANNED placeholder for an offline STRAND (QTIP) weight baker — not implemented."
+
+[[bin]]
+name = "strand_bake"
+path = "src/main.rs"
+
+[dependencies]

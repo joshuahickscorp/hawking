@@ -90,7 +90,8 @@ if [[ "$DO_PARITY" == 1 && ( "$MODE" == parity || "$MODE" == all ) ]]; then
       echo "  $c vs A: IDENTICAL ✓"
     else echo "  $c vs A: DIFF ✗"; PARITY_RESULT="fail"; fi
   done
-  echo "  PARITY: ${PARITY_RESULT^^}"
+  PARITY_UPPER=$(printf '%s' "$PARITY_RESULT" | tr '[:lower:]' '[:upper:]')
+  echo "  PARITY: ${PARITY_UPPER}"
 fi
 
 MED_A=0; MED_B=0; MED_C=0; TPS_A=""; TPS_B=""; TPS_C=""
@@ -102,7 +103,7 @@ if [[ "$MODE" == bench || "$MODE" == all ]]; then
       run "$c" bench --backend dismantle --suite decode --weights "$WEIGHTS" \
         --trials 1 --max-new-tokens "$TOKENS" --kernel-profile "$PROFILE" \
         --json "$j" >/dev/null 2>&1
-      v=$(jq -r '.results.trial_stats[0].decode_tps // "0"' "$j" 2>/dev/null)
+      v=$(jq -r '(.results.decode_tps // .results.trial_stats[0].decode_tps // 0)' "$j" 2>/dev/null)
       eval "TPS_$c=\"\$TPS_$c $v\""
     done
   done
@@ -146,13 +147,20 @@ doc = {
   "base_env": """$BASE_ENV""".split(),
   "env_a": "$ENV_A", "env_b": "$ENV_B", "env_c": "$ENV_C" or None,
   "parity": "$PARITY_RESULT",
-  "median_tps_a": mA, "median_tps_b": mB,
+  "median_tps_a": mA, "median_tps_b": mB, "median_tps_c": ($MED_C if "$ENV_C" else None),
   "ratio_b_over_a": (mB/mA) if mA else None,
   "pct_delta": ((mB/mA-1)*100) if mA else None,
   "gate": "$GATE_PASSED", "gate_trace": "$GATE_TRACE" or None,
 }
+if "$ENV_C" and mA:
+    mC = doc["median_tps_c"]
+    doc["ratio_c_over_a"] = (mC/mA) if mC else None
+    doc["pct_delta_c"] = ((mC/mA-1)*100) if mC else None
 json.dump(doc, open(out, "w"), indent=2)
 print(f"\nwrote {out}")
-print(f"  parity={doc['parity']} gate={doc['gate']} "
-      f"B/A={doc['ratio_b_over_a']!r} ({doc['pct_delta'] and round(doc['pct_delta'],1)}%)")
+line = (f"  parity={doc['parity']} gate={doc['gate']} "
+        f"B/A={doc['ratio_b_over_a']!r} ({doc['pct_delta'] and round(doc['pct_delta'],1)}%)")
+if "$ENV_C":
+    line += f" C/A={doc.get('ratio_c_over_a')!r} ({doc.get('pct_delta_c') and round(doc.get('pct_delta_c'),1)}%)"
+print(line)
 PYEOF

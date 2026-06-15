@@ -14,7 +14,10 @@ fn weights_path() -> PathBuf {
 fn load_engine() -> Option<Box<dyn dismantle_core::Engine>> {
     let p = weights_path();
     if !p.exists() {
-        eprintln!("v_a1_batched_scaffold_parity: no weights at {:?}, skipping", p);
+        eprintln!(
+            "v_a1_batched_scaffold_parity: no weights at {:?}, skipping",
+            p
+        );
         return None;
     }
     let cfg = dismantle_core::EngineConfig::default();
@@ -29,7 +32,9 @@ fn load_engine() -> Option<Box<dyn dismantle_core::Engine>> {
 
 #[test]
 fn batched_scaffold_returns_n_finite_logit_vectors() {
-    let Some(mut engine) = load_engine() else { return };
+    let Some(mut engine) = load_engine() else {
+        return;
+    };
 
     let tokens = [1u32, 2, 3];
     let positions = [0usize, 1, 2];
@@ -50,7 +55,9 @@ fn batched_scaffold_returns_n_finite_logit_vectors() {
 
 #[test]
 fn batched_scaffold_matches_sequential_at_atol_1e5() {
-    let Some(mut engine) = load_engine() else { return };
+    let Some(mut engine) = load_engine() else {
+        return;
+    };
 
     let tokens = [1u32, 7, 42];
     let positions = [0usize, 1, 2];
@@ -79,7 +86,11 @@ fn batched_scaffold_matches_sequential_at_atol_1e5() {
             batch_results[m].len(),
             "logit vector length mismatch at token {m}"
         );
-        for (j, (&s, &b)) in seq_results[m].iter().zip(batch_results[m].iter()).enumerate() {
+        for (j, (&s, &b)) in seq_results[m]
+            .iter()
+            .zip(batch_results[m].iter())
+            .enumerate()
+        {
             let diff = (s - b).abs();
             assert!(
                 diff <= 1e-5,
@@ -91,7 +102,9 @@ fn batched_scaffold_matches_sequential_at_atol_1e5() {
 
 #[test]
 fn batched_scaffold_empty_tokens_ok() {
-    let Some(mut engine) = load_engine() else { return };
+    let Some(mut engine) = load_engine() else {
+        return;
+    };
 
     let results = engine
         .forward_tokens_batched_for_test(&[], &[])

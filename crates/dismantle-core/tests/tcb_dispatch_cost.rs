@@ -27,13 +27,22 @@ fn median(mut v: Vec<f64>) -> f64 {
 /// microbench). With distinct=32 the working set (32 x matrix bytes) exceeds
 /// L2 so every dispatch in a window reads a COLD matrix from DRAM — the
 /// production decode regime (each layer's q/k/v/o/gate/up/down differs).
-fn bench_k(ctx: &MetalContext, rows: usize, cols: usize, k: usize, iters: usize, distinct: usize) -> f64 {
+fn bench_k(
+    ctx: &MetalContext,
+    rows: usize,
+    cols: usize,
+    k: usize,
+    iters: usize,
+    distinct: usize,
+) -> f64 {
     let blocks_per_row = cols / 256;
     let w_bytes = rows * blocks_per_row * 144;
     let x_bytes = cols * std::mem::size_of::<f32>();
     let out_bytes = rows * std::mem::size_of::<f32>();
 
-    let w_bufs: Vec<_> = (0..distinct.max(1)).map(|_| ctx.new_buffer(w_bytes)).collect();
+    let w_bufs: Vec<_> = (0..distinct.max(1))
+        .map(|_| ctx.new_buffer(w_bytes))
+        .collect();
     let x_buf = ctx.new_buffer(x_bytes);
     let out_buf = ctx.new_buffer(out_bytes);
 
@@ -52,8 +61,16 @@ fn bench_k(ctx: &MetalContext, rows: usize, cols: usize, k: usize, iters: usize,
                 enc.set_buffer(0, Some(w_buf), 0);
                 enc.set_buffer(1, Some(&x_buf), 0);
                 enc.set_buffer(2, Some(&out_buf), 0);
-                enc.set_bytes(3, std::mem::size_of::<u32>() as u64, &rows_u32 as *const u32 as *const _);
-                enc.set_bytes(4, std::mem::size_of::<u32>() as u64, &cols_u32 as *const u32 as *const _);
+                enc.set_bytes(
+                    3,
+                    std::mem::size_of::<u32>() as u64,
+                    &rows_u32 as *const u32 as *const _,
+                );
+                enc.set_bytes(
+                    4,
+                    std::mem::size_of::<u32>() as u64,
+                    &cols_u32 as *const u32 as *const _,
+                );
             })
             .unwrap();
         }
@@ -78,16 +95,37 @@ fn tcb_dispatch_cost_curve() {
     let ctx = MetalContext::new().expect("Metal device required");
     let ks = [1usize, 2, 4, 8, 16, 32, 64, 128, 256];
     // 2048x2048 = q/o proj shape; 11008x2048 = ffn gate/up shape.
-    for (rows, cols, label) in [(2048usize, 2048usize, "q/o 2048x2048"), (11008, 2048, "ffn 11008x2048")] {
+    for (rows, cols, label) in [
+        (2048usize, 2048usize, "q/o 2048x2048"),
+        (11008, 2048, "ffn 11008x2048"),
+    ] {
         for distinct in [1usize, 32usize] {
-            let regime = if distinct == 1 { "SAME buf (L2 cache-hit)" } else { "32 distinct bufs (cold DRAM, = decode)" };
+            let regime = if distinct == 1 {
+                "SAME buf (L2 cache-hit)"
+            } else {
+                "32 distinct bufs (cold DRAM, = decode)"
+            };
             println!("\n=== {label} — {regime} — K dispatches in ONE TCB ===");
-            println!("{:>5}  {:>12}  {:>14}  {:>16}", "K", "total_us", "us/dispatch", "marginal_us/disp");
+            println!(
+                "{:>5}  {:>12}  {:>14}  {:>16}",
+                "K", "total_us", "us/dispatch", "marginal_us/disp"
+            );
             let base = bench_k(&ctx, rows, cols, 1, 300, distinct);
             for &k in &ks {
-                let total = bench_k(&ctx, rows, cols, k, if k <= 16 { 300 } else { 150 }, distinct);
+                let total = bench_k(
+                    &ctx,
+                    rows,
+                    cols,
+                    k,
+                    if k <= 16 { 300 } else { 150 },
+                    distinct,
+                );
                 let per = total / k as f64;
-                let marginal = if k > 1 { (total - base) / (k as f64 - 1.0) } else { total };
+                let marginal = if k > 1 {
+                    (total - base) / (k as f64 - 1.0)
+                } else {
+                    total
+                };
                 println!("{k:>5}  {total:>12.1}  {per:>14.1}  {marginal:>16.1}");
             }
         }

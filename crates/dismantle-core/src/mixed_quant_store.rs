@@ -78,7 +78,9 @@ fn cache_root() -> std::path::PathBuf {
         return std::path::PathBuf::from(xdg).join("dismantle");
     }
     if let Ok(home) = std::env::var("HOME") {
-        return std::path::PathBuf::from(home).join(".cache").join("dismantle");
+        return std::path::PathBuf::from(home)
+            .join(".cache")
+            .join("dismantle");
     }
     std::path::PathBuf::from("/tmp").join("dismantle-cache")
 }
@@ -147,11 +149,19 @@ pub struct MixedQuantStore {
 
 impl StoreKey {
     pub fn routed(layer: usize, group: GroupKind, expert: usize) -> Self {
-        Self { layer, group, expert }
+        Self {
+            layer,
+            group,
+            expert,
+        }
     }
 
     pub fn shared(layer: usize, group: GroupKind) -> Self {
-        Self { layer, group, expert: usize::MAX }
+        Self {
+            layer,
+            group,
+            expert: usize::MAX,
+        }
     }
 }
 
@@ -215,8 +225,12 @@ impl MixedQuantStore {
             }
         }
         let store = Self::build(
-            gguf, tier_map, n_layers, first_k_dense_layers,
-            n_routed_experts, include_shared,
+            gguf,
+            tier_map,
+            n_layers,
+            first_k_dense_layers,
+            n_routed_experts,
+            include_shared,
         )?;
         let _ = std::fs::create_dir_all(&cache_dir);
         let _ = store.write_cache(&bin, &meta); // best-effort
@@ -366,12 +380,15 @@ impl MixedQuantStore {
 
                 // Read whole tensor; dequant once into a reusable buffer.
                 let src_bytes = gguf.tensor_bytes(&routed_name).ok_or_else(|| {
-                    Error::Model(format!("mixed_quant_store: tensor_bytes None for {routed_name}"))
+                    Error::Model(format!(
+                        "mixed_quant_store: tensor_bytes None for {routed_name}"
+                    ))
                 })?;
                 let src_bytes_per_expert = src_bytes.len() / n_routed_experts;
                 let mut deq = vec![0.0f32; elems_per_expert];
                 for e in 0..n_routed_experts {
-                    let e_src = &src_bytes[e * src_bytes_per_expert..(e + 1) * src_bytes_per_expert];
+                    let e_src =
+                        &src_bytes[e * src_bytes_per_expert..(e + 1) * src_bytes_per_expert];
                     quant::dequant_into(info.dtype, e_src, &mut deq)?;
                     let offset = blob.len();
                     blob.resize(offset + bytes_per_expert_out, 0u8);
@@ -393,8 +410,7 @@ impl MixedQuantStore {
                     let shared_name = format!("blk.{li}.ffn_down_shexp.weight");
                     if let Some(sinfo) = gguf.tensor(&shared_name) {
                         if sinfo.dtype != tier {
-                            let sn_elems: usize =
-                                sinfo.dims.iter().product::<u64>() as usize;
+                            let sn_elems: usize = sinfo.dims.iter().product::<u64>() as usize;
                             let sbytes_out = quant_block_bytes(tier, sn_elems)?;
                             let sbytes = gguf.tensor_bytes(&shared_name).ok_or_else(|| {
                                 Error::Model(format!(
@@ -405,11 +421,7 @@ impl MixedQuantStore {
                             quant::dequant_into(sinfo.dtype, sbytes, &mut sdeq)?;
                             let offset = blob.len();
                             blob.resize(offset + sbytes_out, 0u8);
-                            quantize_into(
-                                tier,
-                                &sdeq,
-                                &mut blob[offset..offset + sbytes_out],
-                            )?;
+                            quantize_into(tier, &sdeq, &mut blob[offset..offset + sbytes_out])?;
                             tensors.insert(
                                 StoreKey::shared(li, GroupKind::Down),
                                 StoredTensor {

@@ -2,7 +2,7 @@
 //!
 //! The live speculation mechanism on code is the **n-gram / PLD / SAM draft**
 //! (τ≈1.43 generic, `reports/oracle/spec_accept.json`), *not* a trained head
-//! (EAGLE-3 is NO-GO, τ=0.877 net-negative — `reports/dead_levers.md`). The
+//! (EAGLE-3 is NO-GO, τ=0.877 net-negative — `docs/dead_levers.md`). The
 //! offline warm-start oracle (`reports/oracle/spec_accept_warmstart.json`)
 //! cleared GO: seeding a per-user n-gram index from the user's own prior
 //! tokens lifts the recomputed-suffix draft to τ≈3.40 (+0.888 over a cold
@@ -248,7 +248,10 @@ mod tests {
         assert!(!d.is_empty());
         // (2,3) was seen twice → 2 then 4; argmax by count then smaller id → 2.
         let p = d.propose(&[2, 3], 2);
-        assert_eq!(p[0], 2, "warm-started (2,3) predicts the repeated successor");
+        assert_eq!(
+            p[0], 2,
+            "warm-started (2,3) predicts the repeated successor"
+        );
         // The seed left no live cursor; note_token after warm_start starts a
         // fresh transition (no chaining off the seed's last token 4).
         d.note_token(99);

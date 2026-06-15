@@ -1,106 +1,41 @@
 # dismantle
 
-Pure-Rust inference engine for transformer language models on Apple Silicon.
-Single binary. No Python at runtime. No llama.cpp dependency. Loads GGUF weights
-via mmap and runs them through hand-rolled Metal compute kernels.
+A from-scratch LLM inference engine for Apple Silicon — a single pure-Rust binary that mmaps a GGUF model, decodes it through hand-written Metal compute kernels, and serves it over an OpenAI-compatible API. No Python at runtime, no `llama.cpp` dependency, no BLAS or MPSGraph.
 
-dismantle runs **both dense and Mixture-of-Experts** models through one Metal
-runtime. The primary tuned target is **Qwen2.5-3B-Instruct Q4_K_M** (dense); the
-loader detects the architecture from GGUF metadata and routes to the matching
-forward pass.
+## What this is — and what it isn't
 
-## Supported families
+A **systems project**. The goal is to own the entire inference stack end-to-end — GGUF parsing → zero-copy weight residency → Metal Q4_K GEMV / attention / RoPE / RMSNorm kernels → sampling → an OpenAI-compatible HTTP server — in one auditable Rust binary.
 
-Architecture is auto-detected from GGUF metadata (`model/mod.rs`):
+It is **not** a `llama.cpp` replacement. llama.cpp is faster and supports far more models and quant formats (≈50 vs ≈31 decode tok/s on Qwen2.5-3B-Q4_K_M, M3 Pro). dismantle exists to build that stack from scratch and hold it to a strict correctness bar — not to win on model coverage or peak throughput.
 
-| Family | Kind | Notes |
-|---|---|---|
-| **Qwen2.5** (`qwen2` / `qwen2.5`) | dense | primary tuned target; full fast-decode stack |
-| Llama 3.x / Mistral (`llama3.x`, `mistral`) | dense | shares the dense fast-decode core |
-| Gemma 2 (`gemma2`) | dense | soft-cap logits + per-arch scales |
-| Phi-3 / 3.5 (`phi3`) | dense | sliding-window attention |
-| DeepSeek-V2-Lite (`deepseek2-lite`) | MoE | 16B params, 2.4B active/token; MLA attention |
-| Mixtral 8×7B (`llama`+MoE) | MoE | runs on 18 GB Macs via memory-conscious expert dispatch |
-| Qwen3-MoE (`qwen3moe`) | MoE | grouped-expert GEMM path |
+Where the actual work is:
 
-Pass any GGUF via `--weights`; unknown architectures error with the supported list.
+- **Hand-written Metal kernels** — Q4_K / Q6_K GEMV, flash-style attention, RoPE, RMSNorm, and fused variants, with no BLAS, MPSGraph, or external kernel library.
+- **Bit-parity discipline** — GPU kernels are gated against a CPU reference port (and, increasingly, an independent `llama.cpp` logit oracle), so a refactor can't silently change model outputs.
+- **A measured kill-ledger** — [`docs/dead_levers.md`](docs/dead_levers.md) records the optimizations that were tried and **rejected**, each with the measurement that killed it. The honest negative results are the most useful artifact here.
 
-## What's distinctive
+[ARCHITECTURE.md](ARCHITECTURE.md) is the internal map.
 
-- **Pure Rust + Metal** — single binary, no Python in the runtime, no C++ shim.
-  Source-build with `cargo`. The `.metal` shaders are embedded via `include_str!`
-  and compiled at runtime through `MTLDevice newLibraryWithSource:`.
-- **Dense + MoE in one runtime** — a single Metal kernel set serves both; MoE
-  models route through grouped-expert GEMM, dense models through the tuned Q4_K
-  GEMV path.
-- **Zero-copy GGUF load** — one mmap + a no-copy `MTLBuffer` over the mapping +
-  per-tensor offsets. Weights are never copied into a second buffer: **−1.9 GB
-  RSS, −324 ms TTFT**, bit-identical (silicon lever #13).
-- **OpenAI-compatible HTTP API** — `dismantle serve` exposes `/v1/chat/completions`
-  and `/v1/completions` with SSE streaming and structured error codes.
-- **Reproducible methodology** — every perf claim is reproducible from the
-  `tools/bench/*` harness in tree (paired A/B, statistical CIs, kernel-level
-  timing, clean-room contamination control). The kill-ledger
-  (`reports/dead_levers.md`) records every lever that was built, measured, and
-  ruled out, with its evidence.
+## What it does
 
-## The moat — where dismantle is genuinely strong
+- Loads GGUF weights via mmap with a zero-copy `MTLBuffer` over the mapping (no second allocation).
+- Runs dense and Mixture-of-Experts transformers through hand-rolled Metal compute kernels.
+- Exposes an OpenAI-compatible HTTP API (`dismantle serve` — both `/v1/chat/completions` and `/v1/completions`) and a benchmark harness (`dismantle bench`).
+- Auto-detects the architecture from GGUF metadata; unknown architectures error with the supported list.
 
-Three levers that hold up under clean measurement (the rest are recorded as dead
-in `reports/dead_levers.md`):
+## Models
 
-1. **Prefix-cache reuse** — a default-on exact KV prefix cache. On warm,
-   shared-prefix workloads (agent loops, repeated system prompts, multi-turn
-   chat) it elides re-prefilling the shared head — up to **~84% of prefill** on a
-   matching prefix. The on-disk variant persists across runs.
-2. **Speculation on code** — a free n-gram draft (τ=1.43 on code) feeding a
-   pruned-vocab Q4_K GPU verify; **+148% decode on repetitive code** generation,
-   bit-identical to greedy. (The trained EAGLE draft head is NO-GO — see
-   verdicts.)
-3. **Low-RAM footprint** — the zero-copy loader keeps peak RSS near the model
-   size, which is what lets a 3B run alongside other GPU/RAM-heavy work on an
-   18 GB box.
+Architecture is detected from GGUF metadata. The primary tuned and verified target is **Qwen2.5 dense (Q4_K_M)**. Other families load through the same path but are verified to varying degrees — check [MODELS.md](MODELS.md) for the exact *verified / loads / untested* status per family before relying on one.
 
-## Measured performance (M3 Pro 18 GB, clean-room, 2026-05-31)
-
-| model | quant | dec_tps | energy | notes |
-|---|---|---:|---:|---|
-| Qwen2.5-3B-Instruct | Q4_K_M | **~31** | 0.17 J/tok | clean-room anchor (Claude quit), greedy temp=0; range ~29–31 |
-| DeepSeek-V2-Lite-Chat | Q4_K_M | ~17 | — | TRIALS=4 TOKENS=24 coexist, 95% CI [16.6, 18.0] |
-| Mixtral-8×7B-Instruct | Q3_K_M | ~0.1 | — | functional, SSD-bandwidth-limited on 18 GB |
-
-**Honest ceiling.** llama.cpp Metal lands around ~50 dec_tps on Qwen-3B-Q4_K_M on
-the same hardware. dismantle's ~31 is the result of an exhausted decode-kernel
-micro-opt track: the Q4_K predec decode GEMV is at the **Apple-GPU memory-model
-optimum for batch-1** (bandwidth-bound at ~56% of peak; vectorized unpack,
-access-order repack, and occupancy tuning all measured Type-1 dead). Further
-dense-decode throughput requires **fewer weight bytes** or the **spec / stateful**
-axes — not more kernel micro-optimization. The ~31 anchor is accepted as the
-honest steady-state number; the moat levers above are where the real wins are.
-
-## Verdict outcomes (sub-Q4 byte-cut axis — closed 2026-06-01)
-
-The remaining "fewer bytes" bets were taken to decisive quality gates and closed:
-
-- **imatrix mixed-precision (non-uniform Q4/Q3) — NO-GO (Type-1).** Uniform-Q3
-  requant is worse than Q4_K on every quality axis (PPL 4.68 > 4.59, logit cos
-  0.983 < 0.993); the weight-RMSE oracle already showed the true mixed split
-  trails Q4_K on 7/7 tensor families.
-- **QTIP 3-bit trellis — leaning NO-GO.** The measured weight-quality bracket is
-  +0.44 to +1.37 bits short of Q4_K_M; the decisive Cornell-RelaxML codec run is
-  deferred (`ALLOW_FRESH_QTIP_CODEC`), so it is not yet a *recorded* kill.
-- **W4A8 mixed-precision decode — HELD** at 1.115× (below the 1.20× ship gate;
-  needs AWQ-from-f16, not requant-from-Q4_K).
-
-Net: no sub-Q4 byte-cut GO cleared a gate → no default config flips. Full
-classification + resurrection oracles in `reports/dead_levers.md`.
-
-## Requirements
-
-- Apple Silicon Mac (M1, M2, M3, or M4)
-- Rust stable
-- ~4 GB free RAM for Qwen2.5-3B Q4_K_M (model + KV cache)
-- ~12 GB free RAM for DeepSeek-V2-Lite Q4_K_M; ~14 GB + 16 GB disk for Mixtral 8×7B
+| Family | Kind |
+|---|---|
+| Qwen2.5 (`qwen2`) | dense — primary tuned target |
+| Llama 3.x / Mistral | dense |
+| Gemma 2 | dense |
+| Phi-3 / 3.5 | dense |
+| DeepSeek-V2-Lite | MoE — MLA attention |
+| Mixtral 8×7B | MoE |
+| Qwen3-MoE | MoE |
 
 ## Build
 
@@ -108,8 +43,10 @@ classification + resurrection oracles in `reports/dead_levers.md`.
 git clone https://github.com/joshuahickscorp/dismantle.git
 cd dismantle
 cargo build --release --workspace
-# Binary: target/release/dismantle
+# binary: target/release/dismantle
 ```
+
+Requirements: Apple Silicon Mac (M1–M4), Rust stable, ~4 GB RAM for Qwen2.5-3B Q4_K_M.
 
 ## Get a model
 
@@ -118,81 +55,90 @@ cargo build --release --workspace
 ./tools/fetch-mixtral.sh      # Mixtral 8×7B Q3_K_M (~16 GB)
 ```
 
-Or download any GGUF (e.g. `qwen2.5-3b-instruct-q4_k_m.gguf`) into `models/` and
-pass it via `--weights`. The architecture is detected from metadata.
+Or place any GGUF in `models/` and pass it via `--weights`. The tuned target is Qwen2.5-3B-Instruct-Q4_K_M.
 
 ## Usage
 
-**Check fit before loading:**
-
 ```sh
+# Check fit before loading
 dismantle doctor --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
-```
 
-**Pick the fastest kernels for your machine** (run once, takes 1–2 min):
-
-```sh
+# Pick fastest kernels for your machine (run once, ~1–2 min)
 dismantle autotune \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --out profiles/my-mac.json
-```
 
-**Generate:**
-
-```sh
+# Generate
 dismantle generate \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
   --prompt "Write a Rust function that reverses a linked list." \
   --max-new-tokens 256
-```
 
-**Serve as an OpenAI-compatible HTTP API:**
-
-```sh
+# Serve (OpenAI-compatible)
 dismantle serve \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
   --addr 127.0.0.1:8080
 ```
 
-```sh
-curl http://127.0.0.1:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "Qwen2.5-3B-Instruct",
-    "messages": [{"role": "user", "content": "Write a haiku about Metal kernels."}],
-    "max_tokens": 64
-  }'
-```
+`/v1/chat/completions` and `/v1/completions` both stream via SSE. See [docs/serve.md](docs/serve.md).
 
-`/v1/completions` (legacy) is also served; both stream via SSE. Errors return the
-OpenAI `{error:{message,type,code}}` shape. See [docs/serve.md](docs/serve.md).
+## Performance (M3 Pro 18 GB, clean-room)
+
+llama.cpp Metal reaches ≈50 decode tok/s on Qwen2.5-3B-Q4_K_M; dismantle reaches ≈31. That gap is the honest baseline: ≈31 is near the bandwidth-bound ceiling for batch-1 Q4_K GEMV on this GPU, and closing it further needs *fewer weight bytes* (sub-4-bit quant) or the speculative / stateful axes — not micro-optimization. The measurements that ruled out the micro-optimization paths are in [`docs/dead_levers.md`](docs/dead_levers.md).
+
+| model | quant | dec_tps | notes |
+|---|---|---:|---|
+| Qwen2.5-3B-Instruct | Q4_K_M | ~31 | clean-room anchor, greedy temp=0 |
+| DeepSeek-V2-Lite-Chat | Q4_K_M | ~17 | TRIALS=4 TOKENS=24, 95% CI [16.6, 18.0] |
+| Mixtral-8×7B-Instruct | Q3_K_M | ~0.1 | SSD-bandwidth-limited on 18 GB |
+
+## Engineering depth — what survives clean measurement
+
+Three levers held up under contamination-controlled measurement (the rest are in the kill-ledger):
+
+1. **Prefix-cache reuse** — default-on exact KV prefix cache; elides up to ~84% of prefill on warm shared-prefix workloads. An on-disk variant persists across runs.
+2. **Speculative decode on code** — free n-gram draft (τ=1.43 on code) with pruned-vocab GPU verify; +148% decode on repetitive code, bit-identical to greedy.
+3. **Low-RAM footprint** — the zero-copy loader keeps peak RSS near model size, so a 3B runs alongside other GPU-heavy work on an 18 GB machine.
+
+## Known limitations
+
+- **Single-stream is the tuned path.** Continuous batching (the multi-sequence decode lane) is implemented and parity-gated bit-identical to single-stream, but it is less battle-tested and the batch scheduler does not yet honor `stop` strings.
+- **Model coverage is narrow** compared to llama.cpp — see [MODELS.md](MODELS.md) for what's actually verified.
+- **Off-macOS** builds compile the CPU path only (dense models); MoE CPU decode is out of scope.
+- **Greedy decoding can repeat.** `generate` defaults to `--temperature 0` (deterministic greedy), which can fall into short repetition loops on long outputs. Pass `--temperature 0.7` (or raise `--top-p`) for varied text; the chat/completions server already defaults to temperature 0.7.
+
+## Named profiles — `--profile fast`
+
+`--profile fast` sets `DISMANTLE_QWEN_VOCAB_PRUNE=32000` + Q4K LM-head + Q4K FFN-down + predec + f16-scales. Delivers +7.4% paired dec_tps on Qwen2.5-3B-Q4_K_M; output is **not** bit-identical to default (f16 scale rounding). Explicit `DISMANTLE_QWEN_*` env vars take precedence over the bundle.
+
+## CPU reference path — `DISMANTLE_FORCE_CPU=1`
+
+Forces the engine to load with no Metal context, exercising the same pure-Rust path used off-macOS. Cross-checked on Qwen2.5-0.5B-Q4_K_M: 12/12 leading greedy token IDs identical vs Metal. Dense models only; MoE CPU decode is out of scope.
 
 ## Reproduce the perf numbers
 
 ```sh
-TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh        # paired median + 95% CI + IQR
+# Paired median + 95% CI (shared background load is OK)
+TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh
+
+# Contamination-controlled absolute anchor (close agent/GPU workloads first)
+bash tools/bench/clean_room_batch.sh
 ```
 
-For the contamination-controlled anchor, quit Claude first and run
-`tools/bench/clean_room_batch.sh`. See [tools/bench/README.md](tools/bench/README.md)
-for the standardized bench parameter conventions.
+See [tools/bench/README.md](tools/bench/README.md) for parameter conventions.
 
-## Mixtral 8×7B support
+## Notes
 
-Mixtral Q3_K_M is a secondary target. See [docs/mixtral.md](docs/mixtral.md) for
-fetch + run instructions. Throughput is SSD-bandwidth-limited on 18 GB machines
-(expert weights page-fault between layers); 32+ GB machines run faster because
-more experts stay resident.
+- Mixtral Q3_K_M is SSD-bandwidth-limited on 18 GB; see [docs/mixtral.md](docs/mixtral.md).
+- Off-macOS: Metal deps are macOS-gated in `Cargo.toml`; CPU primitives compile unconditionally. Off-macOS verification requires a non-macOS toolchain.
+- v0.2.x, active development. See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map.
 
-## Project status
+## Roadmap
 
-**v0.2.x, active development.** The engine ships at its current honest
-performance with a small, auditable codebase. The decode-kernel micro-opt track
-is exhausted (ceiling proven); future throughput work is on the speculation and
-stateful-reuse axes. See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map
-and `reports/dead_levers.md` for the full lever ledger.
+- **Sub-4-bit quantization (deferred).** Absorbing the `strand-quant` QTIP trellis backend to bake `.strand` artifacts with integer, float-free decode is planned but **not implemented** — `tools/strand_bake` is a labeled placeholder, not a working baker. dismantle currently consumes pre-quantized GGUF only.
+- **Independent-oracle parity in CI** — expand the `llama.cpp` logit-export gate beyond the current self-consistency (Metal vs the in-repo CPU port) checks.
 
 ## License
 

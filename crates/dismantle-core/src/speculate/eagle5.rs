@@ -96,10 +96,7 @@ enum Inner {
     /// allocates Metal buffers or holds GPU state. Accept rate is
     /// effectively 0% — the only purpose is to drive the spec-decode
     /// runtime branch end-to-end without depending on training.
-    Mock {
-        embed: Vec<f32>,
-        out_w: Vec<f32>,
-    },
+    Mock { embed: Vec<f32>, out_w: Vec<f32> },
     /// Trained head loaded from a safetensors checkpoint produced by
     /// `colab/finish_q3b_reconciliation.ipynb` (or the predecessor
     /// `colab/eagle5_train_pytorch.py`). Holds the full Eagle6 head:
@@ -377,32 +374,22 @@ impl Eagle5Head {
         let load_block = |prefix: &str| -> Result<TrainedBlock> {
             Ok(TrainedBlock {
                 attn_norm: st.read_f32(&format!("{prefix}attn_norm"), &[hidden_dim])?,
-                q_proj: st.read_f32(
-                    &format!("{prefix}q_proj.weight"),
-                    &[hidden_dim, hidden_dim],
-                )?,
-                k_proj: st.read_f32(
-                    &format!("{prefix}k_proj.weight"),
-                    &[hidden_dim, hidden_dim],
-                )?,
-                v_proj: st.read_f32(
-                    &format!("{prefix}v_proj.weight"),
-                    &[hidden_dim, hidden_dim],
-                )?,
+                q_proj: st
+                    .read_f32(&format!("{prefix}q_proj.weight"), &[hidden_dim, hidden_dim])?,
+                k_proj: st
+                    .read_f32(&format!("{prefix}k_proj.weight"), &[hidden_dim, hidden_dim])?,
+                v_proj: st
+                    .read_f32(&format!("{prefix}v_proj.weight"), &[hidden_dim, hidden_dim])?,
                 out_proj: st.read_f32(
                     &format!("{prefix}out_proj.weight"),
                     &[hidden_dim, hidden_dim],
                 )?,
                 mlp_norm: st.read_f32(&format!("{prefix}mlp_norm"), &[hidden_dim])?,
-                mlp_gate: st.read_f32(
-                    &format!("{prefix}mlp.gate.weight"),
-                    &[ff_dim, hidden_dim],
-                )?,
+                mlp_gate: st
+                    .read_f32(&format!("{prefix}mlp.gate.weight"), &[ff_dim, hidden_dim])?,
                 mlp_up: st.read_f32(&format!("{prefix}mlp.up.weight"), &[ff_dim, hidden_dim])?,
-                mlp_down: st.read_f32(
-                    &format!("{prefix}mlp.down.weight"),
-                    &[hidden_dim, ff_dim],
-                )?,
+                mlp_down: st
+                    .read_f32(&format!("{prefix}mlp.down.weight"), &[hidden_dim, ff_dim])?,
             })
         };
 
@@ -566,13 +553,19 @@ impl Eagle5Head {
                 let mut inter: &[f32] = intermediate;
                 for _ in 0..k {
                     let draft_hidden = compute_draft_hidden(
-                        config, in_proj, blocks, *residual_gate, output_norm,
-                        token_embd_f16, cur, &res, inter,
+                        config,
+                        in_proj,
+                        blocks,
+                        *residual_gate,
+                        output_norm,
+                        token_embd_f16,
+                        cur,
+                        &res,
+                        inter,
                     );
                     let next = match pruned {
                         Some((lm_pruned, remap)) => {
-                            let logits =
-                                lm_head_logits(&draft_hidden, lm_pruned, h, remap.len());
+                            let logits = lm_head_logits(&draft_hidden, lm_pruned, h, remap.len());
                             remap[crate::kernels::argmax_f32(&logits) as usize]
                         }
                         None => {
@@ -595,12 +588,7 @@ impl Eagle5Head {
     /// Full-forward argmax step. For Trained heads invokes the real
     /// Eagle6 forward pass via `eagle5_forward::forward_single_step`.
     /// For Mock heads falls back to the simple linear projection.
-    fn argmax_step_full(
-        &self,
-        prev: u32,
-        residual_in: &[f32],
-        intermediate: &[f32],
-    ) -> u32 {
+    fn argmax_step_full(&self, prev: u32, residual_in: &[f32], intermediate: &[f32]) -> u32 {
         match &self.inner {
             Inner::Mock { .. } => self.argmax_step(prev),
             Inner::Trained { .. } => {
@@ -798,7 +786,11 @@ struct XorShift64 {
 impl XorShift64 {
     fn new(seed: u64) -> Self {
         Self {
-            state: if seed == 0 { 0xdead_beef_cafe_babe } else { seed },
+            state: if seed == 0 {
+                0xdead_beef_cafe_babe
+            } else {
+                seed
+            },
         }
     }
 
@@ -860,7 +852,10 @@ mod tests {
         h.reset();
         h.note_token(11);
         let from_noted = h.propose(5, 1);
-        assert_ne!(from_default, from_noted, "note_token must seed next propose");
+        assert_ne!(
+            from_default, from_noted,
+            "note_token must seed next propose"
+        );
     }
 
     #[test]

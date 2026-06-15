@@ -49,7 +49,9 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 fn read_i8_buf(buf: &PinnedBuffer, n: usize) -> Vec<i8> {
@@ -76,7 +78,11 @@ fn gpu_quantize_matches_cpu_per_channel() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::quantize_f32_to_int8_per_channel_tcb(
-            &mut tcb, &x_buf, &scales_buf, &out_buf, cols,
+            &mut tcb,
+            &x_buf,
+            &scales_buf,
+            &out_buf,
+            cols,
         )
         .expect("GPU quantize encode");
         tcb.commit_and_wait().expect("GPU quantize commit");
@@ -84,12 +90,13 @@ fn gpu_quantize_matches_cpu_per_channel() {
     let gpu_i8 = read_i8_buf(&out_buf, cols);
 
     assert_eq!(
-        cpu_i8.len(), gpu_i8.len(),
-        "lengths differ: cpu={} gpu={}", cpu_i8.len(), gpu_i8.len()
+        cpu_i8.len(),
+        gpu_i8.len(),
+        "lengths differ: cpu={} gpu={}",
+        cpu_i8.len(),
+        gpu_i8.len()
     );
-    let mismatches: Vec<usize> = (0..cols)
-        .filter(|&i| cpu_i8[i] != gpu_i8[i])
-        .collect();
+    let mismatches: Vec<usize> = (0..cols).filter(|&i| cpu_i8[i] != gpu_i8[i]).collect();
     if !mismatches.is_empty() {
         let first = mismatches[0];
         panic!(
@@ -106,7 +113,7 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     //   1. GPU per-channel quantize x_norm → x_int8 using static scales
     //   2. GPU per-channel gemm_q4_k_a8_v3_8r_per_channel
     //   3. Compare against f32-baseline gemv at same Q4_K weights
-    let rows = 32768_usize;  // smaller-than-vocab but same shape ratio
+    let rows = 32768_usize; // smaller-than-vocab but same shape ratio
     let cols = 2048_usize;
     let ctx = ctx();
 
@@ -120,9 +127,16 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_m_v3_8r_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_f32_buf, &y_baseline_buf,
-        ).expect("baseline encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_f32_buf,
+            &y_baseline_buf,
+        )
+        .expect("baseline encode");
         tcb.commit_and_wait().expect("baseline commit");
     }
     let y_baseline = read_f32_buf(&y_baseline_buf, rows);
@@ -135,12 +149,25 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::quantize_f32_to_int8_per_channel_tcb(
-            &mut tcb, &x_f32_buf, &scales_buf, &x_int8_buf, cols,
-        ).expect("E4 quantize encode");
+            &mut tcb,
+            &x_f32_buf,
+            &scales_buf,
+            &x_int8_buf,
+            cols,
+        )
+        .expect("E4 quantize encode");
         kernels::gemm_q4_k_a8_v3_8r_per_channel_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            rows, cols, &x_int8_buf, &scales_buf, &y_pc_buf,
-        ).expect("E4 per-channel gemm encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            rows,
+            cols,
+            &x_int8_buf,
+            &scales_buf,
+            &y_pc_buf,
+        )
+        .expect("E4 per-channel gemm encode");
         tcb.commit_and_wait().expect("E4 commit");
     }
     let y_pc = read_f32_buf(&y_pc_buf, rows);
@@ -150,13 +177,22 @@ fn end_to_end_per_channel_lmhead_pipeline() {
     let na: f32 = y_baseline.iter().map(|&v| v * v).sum::<f32>().sqrt();
     let nb: f32 = y_pc.iter().map(|&v| v * v).sum::<f32>().sqrt();
     let cosine = dot / (na * nb);
-    let rmse: f32 = (y_baseline.iter().zip(&y_pc)
-        .map(|(&a, &b)| (a - b).powi(2)).sum::<f32>() / rows as f32).sqrt();
+    let rmse: f32 = (y_baseline
+        .iter()
+        .zip(&y_pc)
+        .map(|(&a, &b)| (a - b).powi(2))
+        .sum::<f32>()
+        / rows as f32)
+        .sqrt();
     let mean_abs = y_baseline.iter().map(|x| x.abs()).sum::<f32>() / rows as f32;
     let nrmse = rmse / mean_abs;
     eprintln!(
         "[E4 end-to-end] rows={} cosine={:.6} nrmse={:.4e}  baseline[0..4]={:?}  pc[0..4]={:?}",
-        rows, cosine, nrmse, &y_baseline[..4], &y_pc[..4]
+        rows,
+        cosine,
+        nrmse,
+        &y_baseline[..4],
+        &y_pc[..4]
     );
     assert!(
         cosine > 0.9999 && nrmse < 0.02,

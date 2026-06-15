@@ -53,6 +53,16 @@ pub struct DispatchSample {
     pub layer_hint: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gpu_us: Option<u64>,
+    /// Raw GPU-clock start/end timestamps (ns) for this dispatch, from the
+    /// timestamp counter set. Populated ONLY by `DISMANTLE_TCB_TRACE=gpu_prod`
+    /// (single-CB production path); `None` everywhere else. Carrying the raw
+    /// endpoints — not just their difference — lets an offline parser compute
+    /// the PRODUCTION inter-dispatch gap (start[i+1] - end[i]) without
+    /// Instruments. Off by default ⇒ parity-neutral (skipped when `None`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_start_ns: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gpu_end_ns: Option<u64>,
 }
 
 /// Thread-local current-layer index. Set/cleared by the forward pass
@@ -89,11 +99,11 @@ pub fn current_layer() -> Option<u32> {
 #[cfg(target_os = "macos")]
 mod imp {
     use super::*;
+    use metal::objc::{class, msg_send, sel, sel_impl};
     use metal::{
         Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineState,
         Device, Library, MTLDispatchType, MTLResourceOptions, MTLSize,
     };
-    use metal::objc::{msg_send, sel, sel_impl};
 
     /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
     /// objc msg_send. The `metal` 0.29 crate doesn't wrap these selectors,
@@ -119,6 +129,90 @@ mod imp {
     use std::collections::HashMap;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
+
+    /// Wave-6 residency lever (`DISMANTLE_QWEN_RESIDENCY=1`, DEFAULT-OFF).
+    ///
+    /// Create one `MTLResidencySet` on `device`, add every buffer in
+    /// `allocations` to it, `commit`, attach it to `queue`, and
+    /// `requestResidency`. This pins the decode working set (the
+    /// ~1.6 GB no-copy weights mmap + the persistent arena/model
+    /// buffers) resident for the queue's lifetime, so the driver stops
+    /// implicitly re-validating residency per command buffer -- the
+    /// runtime/command-buffer-layer overhead the Wave-6 research flagged
+    /// as the home of the llama.cpp tps gap.
+    ///
+    /// macOS 15+ only (all selectors are `API_AVAILABLE(macos(15.0))`);
+    /// the runtime here is macOS 26.5. The `metal` 0.29 crate wraps none
+    /// of `MTLResidencySet`, so -- exactly like `cb_gpu_duration_us`
+    /// above -- we go through raw objc `msg_send`. A `&XxxRef` encodes as
+    /// its object pointer (foreign_obj_type! impls `objc::Message` for
+    /// every Ref; the crate itself passes `&BufferRef` to `setBuffer:`),
+    /// so we hand `&DeviceRef`/`&CommandQueueRef`/`&BufferRef` straight
+    /// to the selectors.
+    ///
+    /// The created set is INTENTIONALLY not retained by us: `-addResidencySet:`
+    /// makes the command queue keep it resident (and retained) for the
+    /// whole process, so the `+1` from `newResidencySetWithDescriptor:`
+    /// is handed to the queue. We never store it on a `Send + Sync`
+    /// engine struct (a raw `*mut Object` is `!Send`), and we never call
+    /// it more than once per process.
+    ///
+    /// SAFETY: every buffer in `allocations` must outlive the command
+    /// queue. In dismantle they all do -- the weights buffer is backed by
+    /// the engine-lifetime GGUF mmap and the arena/model buffers live on
+    /// the engine for its whole lifetime.
+    unsafe fn install_residency_set(
+        device: &metal::DeviceRef,
+        queue: &metal::CommandQueueRef,
+        allocations: &[&metal::BufferRef],
+    ) -> Result<()> {
+        use metal::objc::runtime::Object;
+        // 1. Descriptor: class!(...) + `new` (alloc+init), like every
+        //    MTL*Descriptor in the metal crate (e.g. counters.rs).
+        let desc_cls = class!(MTLResidencySetDescriptor);
+        let desc: *mut Object = msg_send![desc_cls, new];
+        if desc.is_null() {
+            return Err(Error::Metal(
+                "MTLResidencySetDescriptor alloc failed".into(),
+            ));
+        }
+        let cap: u64 = allocations.len() as u64;
+        let _: () = msg_send![desc, setInitialCapacity: cap];
+        // 2. Create the set off the device. ObjC selector is
+        //    `newResidencySetWithDescriptor:error:` (the Swift name
+        //    `makeResidencySetWithDescriptor:` is NOT a selector). Error
+        //    out-param idiom copied from `new_library_with_source`.
+        let mut err: *mut Object = std::ptr::null_mut();
+        let set: *mut Object =
+            msg_send![device, newResidencySetWithDescriptor: desc error: &mut err];
+        // Balance the +1 from `new` on the descriptor now that the set
+        // owns its copy of the parameters.
+        let _: () = msg_send![desc, release];
+        if set.is_null() {
+            let msg = if err.is_null() {
+                "newResidencySetWithDescriptor: returned nil".to_string()
+            } else {
+                let d: *mut Object = msg_send![err, localizedDescription];
+                let c: *const std::os::raw::c_char = msg_send![d, UTF8String];
+                std::ffi::CStr::from_ptr(c).to_string_lossy().into_owned()
+            };
+            return Err(Error::Metal(format!(
+                "newResidencySetWithDescriptor:error: {msg}"
+            )));
+        }
+        // 3. Add each allocation (uncommitted), then commit in bulk.
+        for buf in allocations {
+            let _: () = msg_send![set, addAllocation: *buf];
+        }
+        let _: () = msg_send![set, commit];
+        // 4. Attach to the queue (queue now retains it for its lifetime)
+        //    and request immediate residency.
+        let _: () = msg_send![queue, addResidencySet: set];
+        let _: () = msg_send![set, requestResidency];
+        // Intentional: do NOT release `set`. The queue holds it for the
+        // process lifetime; the `+1` is handed off deliberately.
+        Ok(())
+    }
 
     /// v2.2.0-L7: lookup the `timestamp` common counter set on the device,
     /// returning `Some(CounterSet)` if available. Apple silicon (M1/M2/M3)
@@ -172,7 +266,9 @@ mod imp {
             // Shared storage so we can read raw via resolveCounterRange:
             // without a separate blit-encoder resolve pass.
             desc.set_storage_mode(::metal::MTLStorageMode::Shared);
-            let sample_buf = device.new_counter_sample_buffer_with_descriptor(&desc).ok()?;
+            let sample_buf = device
+                .new_counter_sample_buffer_with_descriptor(&desc)
+                .ok()?;
             Some(Self {
                 sample_buf,
                 next_pair: AtomicUsize::new(0),
@@ -218,7 +314,10 @@ mod imp {
         /// nanoseconds for the timestamp counter set (per Apple docs).
         fn drain(&self) -> Vec<super::DispatchSample> {
             let pending = std::mem::take(&mut *self.pending.lock());
-            let pair_count = self.next_pair.load(Ordering::Relaxed).min(self.capacity_pairs);
+            let pair_count = self
+                .next_pair
+                .load(Ordering::Relaxed)
+                .min(self.capacity_pairs);
             if pair_count == 0 {
                 return pending
                     .into_iter()
@@ -227,6 +326,8 @@ mod imp {
                         wall_us: p.cpu_us,
                         layer_hint: p.layer_hint,
                         gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                     })
                     .collect();
             }
@@ -258,20 +359,26 @@ mod imp {
                 .map(|p| {
                     let i0 = p.pair_index * 2;
                     let i1 = i0 + 1;
-                    let gpu_us = if i1 < timestamps.len()
+                    let valid = i1 < timestamps.len()
                         && timestamps[i0] != ERR
                         && timestamps[i1] != ERR
-                        && timestamps[i1] >= timestamps[i0]
-                    {
-                        Some((timestamps[i1] - timestamps[i0]) / 1000)
+                        && timestamps[i1] >= timestamps[i0];
+                    let (gpu_us, gpu_start_ns, gpu_end_ns) = if valid {
+                        (
+                            Some((timestamps[i1] - timestamps[i0]) / 1000),
+                            Some(timestamps[i0]),
+                            Some(timestamps[i1]),
+                        )
                     } else {
-                        None
+                        (None, None, None)
                     };
                     super::DispatchSample {
                         kernel_name: p.kernel_name,
                         wall_us: p.cpu_us,
                         layer_hint: p.layer_hint,
                         gpu_us,
+                        gpu_start_ns,
+                        gpu_end_ns,
                     }
                 })
                 .collect()
@@ -304,6 +411,8 @@ mod imp {
                 wall_us,
                 layer_hint,
                 gpu_us: None,
+                gpu_start_ns: None,
+                gpu_end_ns: None,
             });
         }
 
@@ -443,15 +552,44 @@ mod imp {
             "gemm_q3_k_fused_2r" => "gemm_q3_k_fused_2r",
             "gemm_q3_k_v4_predec" => "gemm_q3_k_v4_predec",
             "gemm_q6_k_fused_v2" => "gemm_q6_k_fused_v2",
+            "gemm_q6_k_fused_v2_swiglu" => "gemm_q6_k_fused_v2_swiglu",
+            "gemm_q6_k_fused_v2_swiglu_2r" => "gemm_q6_k_fused_v2_swiglu_2r",
+            "gemm_q6_k_fused_v2_swiglu_4r" => "gemm_q6_k_fused_v2_swiglu_4r",
             "gemm_q4_k_m_simdmat" => "gemm_q4_k_m_simdmat",
             "gemm_q4_k_m_v3_8r" => "gemm_q4_k_m_v3_8r",
             "gemm_q4_k_v4_predec" => "gemm_q4_k_v4_predec",
+            "gemm_q4_k_v4_predec_swiglu" => "gemm_q4_k_v4_predec_swiglu",
             "gemm_q4_k_v4_predec_2r" => "gemm_q4_k_v4_predec_2r",
+            "gemm_q4_k_v4_predec_2r_add" => "gemm_q4_k_v4_predec_2r_add",
+            "gemm_q4_k_v4_predec_2r_add_f16s" => "gemm_q4_k_v4_predec_2r_add_f16s",
+            "gemm_q4_k_v4_predec_2r_swiglu" => "gemm_q4_k_v4_predec_2r_swiglu",
             "gemm_q4_k_v4_predec_2r_f16s" => "gemm_q4_k_v4_predec_2r_f16s",
             "gemm_q4_k_v4_predec_4r" => "gemm_q4_k_v4_predec_4r",
+            "gemm_q4_k_v4_predec_4r_add" => "gemm_q4_k_v4_predec_4r_add",
+            "gemm_q4_k_v4_predec_4r_add_f16s" => "gemm_q4_k_v4_predec_4r_add_f16s",
+            "gemm_q4_k_v4_predec_4r_f16s" => "gemm_q4_k_v4_predec_4r_f16s",
+            "gemm_q4_k_v4_predec_4r_swiglu" => "gemm_q4_k_v4_predec_4r_swiglu",
+            "gemm_q4_k_v4_predec_f16s_4r_swiglu" => "gemm_q4_k_v4_predec_f16s_4r_swiglu",
             "gemm_q4_k_v4_predec_pair" => "gemm_q4_k_v4_predec_pair",
+            "gemm_q4_k_v4_predec_pair_2r" => "gemm_q4_k_v4_predec_pair_2r",
+            "gemm_q4_k_v4_predec_pair_2r_inline" => "gemm_q4_k_v4_predec_pair_2r_inline",
+            "gemm_q4_k_v4_predec_pair_2r_inline_nox" => "gemm_q4_k_v4_predec_pair_2r_inline_nox",
+            "gemm_q4_k_v4_predec_pair_2r_inline_f16s" => "gemm_q4_k_v4_predec_pair_2r_inline_f16s",
+            "gemm_q4_k_v4_predec_pair_f16s_nox" => "gemm_q4_k_v4_predec_pair_f16s_nox",
+            "gemm_q4_k_v4_predec_pair_f16s_halfreg" => "gemm_q4_k_v4_predec_pair_f16s_halfreg",
+            "gemm_q4_k_v4_predec_pair_3r" => "gemm_q4_k_v4_predec_pair_3r",
+            "gemm_q4_k_v4_predec_pair_4r" => "gemm_q4_k_v4_predec_pair_4r",
+            "gemm_q4_k_v4_predec_pair_4r_f16s" => "gemm_q4_k_v4_predec_pair_4r_f16s",
+            "gemm_q4_k_v4_predec_pair_8r" => "gemm_q4_k_v4_predec_pair_8r",
             "gemm_q4_k_v4_predec_pair_f16s" => "gemm_q4_k_v4_predec_pair_f16s",
             "gemm_q4_k_m_v3_dual" => "gemm_q4_k_m_v3_dual",
+            "gemm_q4k_predec_qkv_triple" => "gemm_q4k_predec_qkv_triple",
+            "gemm_q4k_q4k_q6k_triple" => "gemm_q4k_q4k_q6k_triple",
+            "gemm_q4k_predec_qkv_rope_append" => "gemm_q4k_predec_qkv_rope_append",
+            "gemm_q4k_predec_qkv_rope_append_f16s" => "gemm_q4k_predec_qkv_rope_append_f16s",
+            "gemm_q4k_predec_qkv_rope_append_4r" => "gemm_q4k_predec_qkv_rope_append_4r",
+            "gemm_q4k_predec_qkv_rope_append_4r_f16s" => "gemm_q4k_predec_qkv_rope_append_4r_f16s",
+            "gemm_q4k_q4k_q6k_rope_append" => "gemm_q4k_q4k_q6k_rope_append",
             "gemm_q4_k_m_v3_llama" => "gemm_q4_k_m_v3_llama",
             "gemv_f16_f16in" => "gemv_f16_f16in",
             "kv_append_f32" => "kv_append_f32",
@@ -460,6 +598,9 @@ mod imp {
             "rmsnorm_gemv_f16w_attn_pinned" => "rmsnorm_gemv_f16w_attn_pinned",
             "rmsnorm_gemv_f16w_attn_pinned_v2t" => "rmsnorm_gemv_f16w_attn_pinned_v2t",
             "rope_q_f32_inplace" => "rope_q_f32_inplace",
+            "kv_append_vbias_f32" => "kv_append_vbias_f32",
+            "rope_qk_f32_b1_bias" => "rope_qk_f32_b1_bias",
+            "rope_qk_kv_append_vbias_f32" => "rope_qk_kv_append_vbias_f32",
             "rope_slice_f32_inplace" => "rope_slice_f32_inplace",
             "embed_lookup_f32" => "embed_lookup_f32",
             "flash_attn_decode_kernel" => "flash_attn_decode_kernel",
@@ -479,16 +620,40 @@ mod imp {
             // correctly the moment they're wired in, never silently as 'other').
             "mha_decode_f32" => "mha_decode_f32",
             "mha_decode_f32_batched" => "mha_decode_f32_batched",
+            "mha_decode_f16kv" => "mha_decode_f16kv",
+            "mha_decode_f16kv_batched" => "mha_decode_f16kv_batched",
+            "mha_decode_flash_f32" => "mha_decode_flash_f32",
+            "mha_decode_flash_f16kv" => "mha_decode_flash_f16kv",
+            "kv_quant_int4_append" => "kv_quant_int4_append",
+            "mha_decode_flash_int4kv" => "mha_decode_flash_int4kv",
+            "kv_int4_calib_max" => "kv_int4_calib_max",
+            "kv_quant_int4_append_pc" => "kv_quant_int4_append_pc",
+            "mha_decode_flash_int4kv_pc" => "mha_decode_flash_int4kv_pc",
+            "mla_decode_kernel_q8kv" => "mla_decode_kernel_q8kv",
+            "kv_append_q8_0_f32" => "kv_append_q8_0_f32",
             "add_inplace_broadcast" => "add_inplace_broadcast",
             "memcpy_f32_off" => "memcpy_f32_off",
+            "memcpy_f32_to_f16_off" => "memcpy_f32_to_f16_off",
             "add_rmsnorm_fused_batched" => "add_rmsnorm_fused_batched",
             "gemm_q4_k_m_batched_v2" => "gemm_q4_k_m_batched_v2",
             "gemm_q4_k_m_batched_v3" => "gemm_q4_k_m_batched_v3",
             "gemm_q4_k_m_batched_v3w" => "gemm_q4_k_m_batched_v3w",
             "gemm_q4_k_m_batched_v3w_predec" => "gemm_q4_k_m_batched_v3w_predec",
+            "gemm_q4_k_m_batched_v4r_predec" => "gemm_q4_k_m_batched_v4r_predec",
+            "gemm_q4_k_m_batched_v4r_predec_swiglu" => "gemm_q4_k_m_batched_v4r_predec_swiglu",
             "gemm_q4k_fast_v1" => "gemm_q4k_fast_v1",
             "gemm_q4_k_a8_v3_8r_per_channel" => "gemm_q4_k_a8_v3_8r_per_channel",
+            "moe_batched_gemm_q8_0_indexed_v2t_w4" => "moe_batched_gemm_q8_0_indexed_v2t_w4",
+            "moe_batched_gemm_q8_0_indexed_v2t_w2" => "moe_batched_gemm_q8_0_indexed_v2t_w2",
             "quantize_f32_to_int8_per_channel" => "quantize_f32_to_int8_per_channel",
+            "embed_lookup_rmsnorm_f32" => "embed_lookup_rmsnorm_f32",
+            "sample_argmax_f32_batched" => "sample_argmax_f32_batched",
+            "embed_lookup_f32_batched" => "embed_lookup_f32_batched",
+            "rmsnorm_f32_batched" => "rmsnorm_f32_batched",
+            "rope_f32_batched_multiseq" => "rope_f32_batched_multiseq",
+            "rope_qk_f32_batched_multiseq" => "rope_qk_f32_batched_multiseq",
+            "mha_decode_f32_batched_multiseq" => "mha_decode_f32_batched_multiseq",
+            "kv_scatter_append_multiseq" => "kv_scatter_append_multiseq",
             "qwen3b_megakernel_2layer" => "qwen3b_megakernel_2layer",
             "qwen3b_megakernel_nlayer" => "qwen3b_megakernel_nlayer",
             "gpu_address_probe" => "gpu_address_probe",
@@ -512,7 +677,8 @@ mod imp {
                 .new_library_with_source(&src, &opts)
                 .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
             // Resolve at construction so hot-path checks are a single bool load.
-            let effective = trace_dispatch || std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let effective =
+                trace_dispatch || std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
             Ok(Self {
                 inner: Arc::new(Inner {
                     device,
@@ -531,6 +697,30 @@ mod imp {
         }
         pub fn queue(&self) -> &CommandQueue {
             &self.inner.queue
+        }
+
+        /// Wave-6 (`DISMANTLE_QWEN_RESIDENCY=1`, DEFAULT-OFF): pin
+        /// `allocations` (the decode working set: weights mmap + arena +
+        /// model buffers) into one process-lifetime `MTLResidencySet`
+        /// attached to this context's command queue. Call ONCE, after
+        /// load / on first decode. No-op (returns `Ok`) when the flag is
+        /// unset -- so the golden path issues zero residency objc traffic
+        /// and stays byte-for-byte unchanged.
+        ///
+        /// SAFETY contract is `install_residency_set`'s: each buffer must
+        /// outlive the command queue (true for all dismantle decode
+        /// buffers -- weights are mmap-backed for the engine lifetime,
+        /// arena/model buffers live on the engine).
+        pub fn request_residency(&self, allocations: &[&Buffer]) -> Result<()> {
+            if !crate::env_on("DISMANTLE_QWEN_RESIDENCY") {
+                return Ok(());
+            }
+            if allocations.is_empty() {
+                return Ok(());
+            }
+            // &Buffer derefs to &BufferRef (foreign_obj_type! Deref).
+            let refs: Vec<&metal::BufferRef> = allocations.iter().map(|b| &***b).collect();
+            unsafe { install_residency_set(&self.inner.device, &self.inner.queue, &refs) }
         }
         pub fn library(&self) -> &Library {
             &self.inner.library
@@ -575,7 +765,9 @@ mod imp {
         pub fn new_buffer_with_bytes(&self, bytes: &[u8]) -> Buffer {
             if self.trace_dispatch {
                 self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
-                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+                self.stats
+                    .bytes_allocated
+                    .fetch_add(bytes.len(), Ordering::Relaxed);
             }
             self.inner.device.new_buffer_with_data(
                 bytes.as_ptr() as *const _,
@@ -638,7 +830,9 @@ mod imp {
             }
             if self.trace_dispatch {
                 self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
-                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+                self.stats
+                    .bytes_allocated
+                    .fetch_add(bytes.len(), Ordering::Relaxed);
             }
             Ok(self.inner.device.new_buffer_with_data(
                 bytes.as_ptr() as *const _,
@@ -699,7 +893,11 @@ mod imp {
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
             let trace_enabled = self.trace_dispatch;
-            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+            let t0 = if trace_enabled {
+                Some(Instant::now())
+            } else {
+                None
+            };
 
             let pipe = self.pipeline(fn_name)?;
             let cmd = self.inner.queue.new_command_buffer();
@@ -720,11 +918,8 @@ mod imp {
 
             if let Some(t0) = t0 {
                 let wall_us = t0.elapsed().as_micros() as u64;
-                self.trace.record(
-                    static_kernel_name(fn_name),
-                    wall_us,
-                    super::current_layer(),
-                );
+                self.trace
+                    .record(static_kernel_name(fn_name), wall_us, super::current_layer());
             }
             Ok(())
         }
@@ -734,7 +929,11 @@ mod imp {
             encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
         ) -> Result<()> {
             let trace_enabled = self.trace_dispatch;
-            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+            let t0 = if trace_enabled {
+                Some(Instant::now())
+            } else {
+                None
+            };
 
             let cmd = self.inner.queue.new_command_buffer();
             let mut batch = CommandBatch { ctx: self, cmd };
@@ -749,7 +948,8 @@ mod imp {
             if let Some(t0) = t0 {
                 let wall_us = t0.elapsed().as_micros() as u64;
                 // dispatch_batch is used for mla_decode_and_o_proj_metal
-                self.trace.record("dispatch_batch", wall_us, super::current_layer());
+                self.trace
+                    .record("dispatch_batch", wall_us, super::current_layer());
             }
             Ok(())
         }
@@ -870,6 +1070,12 @@ mod imp {
         /// dispatches (no overlapping read-write or write-write buffer
         /// ranges between any two dispatches in the group).
         concurrent_encoder: Option<ComputeCommandEncoder>,
+        /// Track 3.1 / Track 5.1: running count of Metal compute dispatches
+        /// encoded into this TCB. Incremented unconditionally (no trace_dispatch
+        /// guard) since it's a plain usize add on the hot path — zero cost
+        /// compared to the GPU work being encoded. Read back via
+        /// `dispatch_count()` after encoding, before `commit_and_wait`.
+        pub dispatch_count: usize,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -888,7 +1094,14 @@ mod imp {
                 tcb_samples: Vec::new(),
                 prod_cb_tracer,
                 concurrent_encoder: None,
+                dispatch_count: 0,
             }
+        }
+
+        /// Return the number of compute dispatches encoded so far.
+        /// Valid both before and after `commit_and_wait`.
+        pub fn dispatch_count(&self) -> usize {
+            self.dispatch_count
         }
 
         /// P0.1 spike (Q/K/V concurrent-encoder).
@@ -928,8 +1141,7 @@ mod imp {
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
-            let enc =
-                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
+            let enc = cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
             enc.set_label("concurrent_group");
             self.concurrent_encoder = Some(enc.to_owned());
             Ok(())
@@ -962,6 +1174,8 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
+            // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
+            self.dispatch_count += 1;
             // P0.1: if a concurrent group is active, record into its shared
             // encoder. Only set under Off/CpuEncode modes by
             // `begin_concurrent_group`, so the Split/Prod branches below
@@ -989,6 +1203,8 @@ mod imp {
                         wall_us: t0.elapsed().as_micros() as u64,
                         layer_hint: super::current_layer(),
                         gpu_us: None,
+                        gpu_start_ns: None,
+                        gpu_end_ns: None,
                     });
                 }
                 return Ok(());
@@ -1024,6 +1240,8 @@ mod imp {
                     wall_us: t0.elapsed().as_micros() as u64,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
+                    gpu_start_ns: None,
+                    gpu_end_ns: None,
                 });
             }
             Ok(())
@@ -1096,6 +1314,8 @@ mod imp {
                     wall_us: cpu_us,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
+                    gpu_start_ns: None,
+                    gpu_end_ns: None,
                 });
             }
             Ok(())
@@ -1135,6 +1355,8 @@ mod imp {
                 wall_us: cpu_us,
                 layer_hint: super::current_layer(),
                 gpu_us: Some(gpu_us),
+                gpu_start_ns: None,
+                gpu_end_ns: None,
             });
             Ok(())
         }
@@ -1298,6 +1520,7 @@ mod imp {
     /// Non-macOS stub for TokenCommandBuffer. Never constructed off-macOS.
     pub struct TokenCommandBuffer<'ctx> {
         _ctx: std::marker::PhantomData<&'ctx ()>,
+        pub dispatch_count: usize,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
@@ -1313,6 +1536,10 @@ mod imp {
             _encode: impl FnOnce(()),
         ) -> Result<()> {
             Err(Error::Metal("metal unavailable on this platform".into()))
+        }
+
+        pub fn dispatch_count(&self) -> usize {
+            0
         }
 
         pub fn commit_and_wait(self) -> Result<()> {

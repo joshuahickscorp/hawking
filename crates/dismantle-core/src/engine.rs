@@ -44,6 +44,23 @@ pub struct EngineConfig {
     /// rate requires a trained checkpoint produced by
     /// `tools/training/eagle5_train.py`.
     pub eagle5_head_path: Option<std::path::PathBuf>,
+    /// Portability/reach knob (Phase 3.3): when `true` (or env
+    /// `DISMANTLE_FORCE_CPU=1`), the engine loads with NO Metal context
+    /// (`metal_ctx = None`), forcing the pure-Rust CPU reference path
+    /// (`forward_token` + scalar dequant GEMV). This is how the CPU "backend"
+    /// is exercised on macOS for the CPU-vs-Metal parity cross-check, and is
+    /// the same path the engine takes off-macOS where Metal is absent. Perf is
+    /// not the bar here — correctness/reach is. Default `false` (Metal when available).
+    pub force_cpu: bool,
+    /// Track 3.3: when `true`, use a single `MTLDispatchTypeConcurrent` encoder
+    /// for the Q/K/V projection triple per decode layer. All three projections
+    /// read `x_norm_buf` and write disjoint outputs, so the driver may overlap
+    /// them on-GPU. Prior measurement showed +1.68% at B=1 (below the +5% ship
+    /// gate). Now exposed as a config field so "fast"/"race" profiles can turn it
+    /// on without env var. The env var `DISMANTLE_QWEN_CONCURRENT_QKV=1` overrides
+    /// this field to `true` when set (env var wins over config).
+    /// Default: `false`.
+    pub concurrent_qkv: bool,
 }
 
 impl Default for EngineConfig {
@@ -62,6 +79,8 @@ impl Default for EngineConfig {
             vocab_prune_path: None,
             quant_tier_map_path: None,
             eagle5_head_path: None,
+            force_cpu: false,
+            concurrent_qkv: false,
         }
     }
 }
@@ -195,6 +214,62 @@ pub struct GenStats {
     pub metal_buffers_created: usize,
     pub metal_bytes_allocated: usize,
     pub metal_commits: usize,
+    /// Track 3.1 / 5.1: number of Metal compute dispatches in the last
+    /// decode forward step. Populated from
+    /// `TokenCommandBuffer::dispatch_count()` after the step completes.
+    /// Non-zero only when the engine reads back the counter (i.e. when
+    /// `trace_dispatch` is on OR `DISMANTLE_TRACE_DISPATCH=1`).
+    /// Always 0 when trace is off to avoid any hot-path overhead.
+    pub metal_dispatches: usize,
+    /// Track 3.1 alias matching the plan target label. Same value as
+    /// `metal_dispatches`; both fields are populated together.
+    pub dispatches_per_forward: usize,
+    /// Track 0.2 (observability): total bytes read back from the GPU across the
+    /// whole decode loop. Token-only greedy reads 4 B/step (argmax id); a
+    /// full-logits path reads vocab*4 B/step. 0 when no GPU readback occurred.
+    pub readback_bytes: u64,
+    /// Track 0.2: decode steps that materialized a full logit row on the CPU.
+    pub logits_materialized_rows: u64,
+    /// Track 0.2: the vocab width a materialized logit row spans (effective
+    /// vocab_size, post prune). × `logits_materialized_rows` = floats to CPU.
+    pub logits_materialized_vocab: usize,
+    /// Track 0.2: true when ≥1 decode step used the GPU token-only (4-byte
+    /// argmax readback) path rather than reading full logits back.
+    pub token_only_path_used: bool,
+    /// Track 0.2: which LM-head path the decode loop selected, for the banner /
+    /// stats line: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16" | "cpu" | "".
+    pub lm_head_path: String,
+}
+
+impl GenStats {
+    /// Track 0.2 — derived decode throughput (tok/s; 0 when no decode elapsed).
+    pub fn dec_tps(&self) -> f64 {
+        (self.completion_tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
+    }
+
+    /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
+    /// small, parseable JSON object (omits the heavy `dispatch_samples` vec and
+    /// the raw trace counters). Needs no GPU/model/bench → unit-testable on a
+    /// busy machine via a hand-constructed `GenStats`.
+    pub fn stats_json(&self) -> serde_json::Value {
+        serde_json::json!({
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "prefill_ms": self.prefill_ms,
+            "decode_ms": self.decode_ms,
+            "dec_tps": self.dec_tps(),
+            "dispatches_per_forward": self.dispatches_per_forward,
+            "draft_accepted": self.draft_accepted,
+            "draft_rejected": self.draft_rejected,
+            "profile_id": self.profile_id,
+            "device_id": self.device_id,
+            "readback_bytes": self.readback_bytes,
+            "logits_materialized_rows": self.logits_materialized_rows,
+            "logits_materialized_vocab": self.logits_materialized_vocab,
+            "token_only_path_used": self.token_only_path_used,
+            "lm_head_path": self.lm_head_path,
+        })
+    }
 }
 
 pub trait Engine: Send + Sync {
@@ -243,6 +318,54 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_for_test(tokens, positions)
     }
 
+    /// Continuous-batching PREFILL seam: run `prompt_ids` through the full
+    /// transformer forward and plant the resulting per-layer KV into the
+    /// slot-strided `multiseq_arena` at stable region `slot_id`. Returns the
+    /// argmax token from the final prompt position (the first token to decode).
+    /// Caller must invoke `scheduler.mark_prefill_complete(slot_id)` on success.
+    ///
+    /// Default: unimplemented. QwenDense overrides with the GPU decode-from-0
+    /// path (forward_tokens_batch_tcb + KV copy into multiseq slot region).
+    fn prefill_slot(&mut self, _slot_id: usize, _prompt_ids: &[u32]) -> Result<u32> {
+        Err(crate::Error::Unimplemented("prefill_slot"))
+    }
+
+    /// Continuous-batching PARALLEL PREFILL: process all slots' prompts in one
+    /// pass — one GPU dispatch per token position across all B slots — instead
+    /// of B sequential `prefill_slot` calls. Weights are read once per position
+    /// step and applied to all B active slots, amortising the ~4.8s sequential
+    /// prefill cost at B=8 down to a single batched pass.
+    ///
+    /// Default: serial fallback via `prefill_slot` (correct, slower). QwenDense
+    /// overrides with the position-by-position multiseq stack path.
+    ///
+    /// Returns the FIRST generated token per slot (in `slots` order), derived
+    /// from each prompt's last-position logits — the caller seeds decode with it.
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<Vec<u32>> {
+        slots
+            .iter()
+            .map(|&(slot_id, prompt_ids)| self.prefill_slot(slot_id, prompt_ids))
+            .collect()
+    }
+
+    /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT
+    /// slots at DIVERGENT positions — each its own sequence/prefix — returning N
+    /// per-slot logit vectors the scheduler samples from. This is DISTINCT from
+    /// `forward_tokens_batched`, which is B tokens of ONE sequence at contiguous
+    /// positions (prefill/verify). The default is a correctness-preserving
+    /// per-slot fallback; QwenDense overrides it with the GPU multi-seq path
+    /// (weight read once across slots via the v3w GEMM + the multi-seq MHA +
+    /// per-slot slot-strided KV).
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        let _ = regions;
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
     /// Phase 2 Wedge 2a -- multi-token forward shim. Currently a loop;
     /// later wedges widen internals. Exposed for parity testing and for
     /// future generate() integration.
@@ -255,12 +378,10 @@ pub trait Engine: Send + Sync {
     /// Phase 3 prep -- shared-only forward for spec acceptance measurement.
     /// Returns logits from a forward pass that runs only shared experts
     /// (routed contributions zeroed). Dense models return Err("unimplemented").
-    fn forward_token_shared_only_for_test(
-        &mut self,
-        _token: u32,
-        _pos: usize,
-    ) -> Result<Vec<f32>> {
-        Err(crate::Error::Unimplemented("forward_token_shared_only_for_test"))
+    fn forward_token_shared_only_for_test(&mut self, _token: u32, _pos: usize) -> Result<Vec<f32>> {
+        Err(crate::Error::Unimplemented(
+            "forward_token_shared_only_for_test",
+        ))
     }
 
     /// Phase A Wedge A1 -- layer-first batched forward. Accepts N tokens
@@ -276,9 +397,119 @@ pub trait Engine: Send + Sync {
         self.forward_tokens_batched(tokens, positions)
     }
 
+    /// Track 4.2 — Bake a `.dismantle` sidecar with predecoded Q4_K scale tables.
+    ///
+    /// Walks all Q4_K tensors in the model, runs `predecode_q4_k_scale_table` on
+    /// each, and writes the results to `out_path` in the v1 binary sidecar format.
+    /// Returns the number of bytes written.
+    ///
+    /// Subsequent model loads detect the sidecar, validate GGUF hash, and load
+    /// predec scales directly — skipping the ~200ms decode pass at startup.
+    ///
+    /// Default: Err(Unimplemented). QwenDense overrides.
+    fn bake_sidecar_predec(
+        &self,
+        _out_path: &std::path::Path,
+        _profile: crate::sidecar::SidecarProfile,
+    ) -> Result<usize> {
+        Err(crate::Error::Unimplemented("bake_sidecar_predec"))
+    }
+
+    /// Track 5.2 — Prefill `slot_id` starting at `start_pos` rather than 0.
+    ///
+    /// Caller must have already called `copy_kv_prefix_to_slot(src, slot_id, start_pos)`
+    /// so the multiseq arena holds correct KV for positions 0..start_pos. This method
+    /// runs the model forward only for `prompt_ids[start_pos..]`, saving the cost of
+    /// re-prefilling the shared prefix.
+    ///
+    /// Returns the argmax token from the last prompt position.
+    ///
+    /// Default: falls back to `prefill_slot(slot_id, prompt_ids)` (correct, ignores start_pos).
+    fn prefill_slot_from_pos(
+        &mut self,
+        slot_id: usize,
+        prompt_ids: &[u32],
+        start_pos: usize,
+    ) -> Result<u32> {
+        let _ = start_pos;
+        self.prefill_slot(slot_id, prompt_ids)
+    }
+
+    /// Track 5.1 — Copy the KV state for the first `prefix_len` positions
+    /// from `src_slot` to `dst_slot` in the multiseq arena. Both slots must be
+    /// valid, allocated slot ids (0..max_batch_size). After a successful copy,
+    /// `dst_slot` has byte-identical KV for positions 0..prefix_len and the
+    /// caller may begin prefilling from position `prefix_len` onward.
+    ///
+    /// For `PinnedBuffer` (MTLStorageModeShared), this is a CPU memcpy —
+    /// no GPU dispatch, no TCB commit needed.
+    ///
+    /// Default: `Err(Unimplemented)`. QwenDense overrides.
+    fn copy_kv_prefix_to_slot(
+        &mut self,
+        _src_slot: usize,
+        _dst_slot: usize,
+        _prefix_len: usize,
+    ) -> Result<()> {
+        Err(crate::Error::Unimplemented("copy_kv_prefix_to_slot"))
+    }
+
+    /// Greedy token-only multiseq decode: B token ids without materializing
+    /// B×vocab logits on the CPU. Only valid for temperature=0 (greedy).
+    ///
+    /// QwenDense overrides: appends Q4K LM head + batched GPU argmax into the
+    /// stack's TCB, commits once, reads back B×4 bytes instead of B×vocab×4.
+    ///
+    /// Default: delegates to forward_multiseq_batched + per-slot CPU argmax.
+    fn forward_multiseq_greedy_tokens(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<u32>> {
+        let logits = self.forward_multiseq_batched(tokens, positions, regions)?;
+        Ok(logits
+            .into_iter()
+            .map(|l| {
+                l.iter()
+                    .copied()
+                    .enumerate()
+                    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
+                    .map(|(i, _)| i as u32)
+                    .unwrap_or(0)
+            })
+            .collect())
+    }
+
     /// Phase A parity helper -- reset KV cache to empty so two forward passes
     /// can be compared from the same starting state.
     fn reset_kv_for_test(&mut self) {}
+
+    /// Track 5.1: return the number of Metal compute dispatches that were
+    /// encoded in the most recently completed `forward_*` call. Engines that
+    /// count dispatches (QwenDense overrides this) return the actual count;
+    /// the default returns 0 (no-op for engines that don't track it).
+    fn last_forward_dispatch_count(&self) -> usize {
+        0
+    }
+
+    /// Track 5.1 (prefix-cache groundwork): return a hash of the KV state at
+    /// position `pos` for `slot_id`. Two requests that share a common prefix
+    /// of length N should produce the same fingerprint at position N. The serve
+    /// scheduler uses this to detect shareable prefixes without inspecting KV
+    /// bytes directly. Default: `None` (no fingerprint support — the scheduler
+    /// falls back to token-sequence matching).
+    fn kv_fingerprint_at_pos(&self, _slot_id: usize, _pos: usize) -> Option<u64> {
+        None
+    }
+
+    /// Track 5.1 (prefix-cache groundwork): maximum number of slots for which
+    /// this engine can maintain independent prefix state. `0` means no prefix
+    /// sharing is supported (default). QwenDense will return MAX_MULTISEQ_SLOTS
+    /// once the full prefix-sharing seam is wired.
+    fn max_prefix_slots(&self) -> usize {
+        0
+    }
 
     /// v1.2.0-9: return per-layer per-expert access counts for the stats
     /// subcommand. Returns `None` if the engine has no expert cache (dense
@@ -289,5 +520,54 @@ pub trait Engine: Send + Sync {
     /// layers are included as empty vecs.
     fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
         None
+    }
+}
+
+#[cfg(test)]
+mod gen_stats_observability_tests {
+    use super::GenStats;
+
+    #[test]
+    fn dec_tps_zero_when_no_decode() {
+        let s = GenStats::default();
+        assert_eq!(s.dec_tps(), 0.0);
+    }
+
+    #[test]
+    fn dec_tps_formula() {
+        let s = GenStats {
+            completion_tokens: 64,
+            decode_ms: 2000.0,
+            ..Default::default()
+        };
+        // 64 tokens / 2.0 s = 32 tok/s
+        assert!((s.dec_tps() - 32.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn stats_json_carries_observability_fields() {
+        let s = GenStats {
+            prompt_tokens: 14,
+            completion_tokens: 64,
+            decode_ms: 2000.0,
+            dispatches_per_forward: 255,
+            readback_bytes: 256,
+            logits_materialized_rows: 0,
+            logits_materialized_vocab: 32000,
+            token_only_path_used: true,
+            lm_head_path: "q4k-predec-f16s".to_string(),
+            ..Default::default()
+        };
+        let j = s.stats_json();
+        assert_eq!(j["dec_tps"].as_f64().unwrap().round(), 32.0);
+        assert_eq!(j["dispatches_per_forward"], 255);
+        assert_eq!(j["readback_bytes"], 256);
+        assert_eq!(j["token_only_path_used"], true);
+        assert_eq!(j["lm_head_path"], "q4k-predec-f16s");
+        assert_eq!(j["logits_materialized_vocab"], 32000);
+        // serializes to a compact, parseable object (no heavy dispatch_samples vec)
+        let s = serde_json::to_string(&j).unwrap();
+        assert!(!s.contains("dispatch_samples"));
+        assert!(serde_json::from_str::<serde_json::Value>(&s).is_ok());
     }
 }

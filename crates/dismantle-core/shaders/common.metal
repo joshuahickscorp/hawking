@@ -423,6 +423,54 @@ kernel void memcpy_f32_off(
     dst[args.dst_off + id] = src[args.src_off + id];
 }
 
+// f32->f16 KV-append (Phase 2.1-a). Clone of memcpy_f32_off that writes the
+// per-token f32 K/V slice into a `half` cache at `dst_off` (ELEMENT units —
+// dst_off indexes half elements, identical convention to memcpy_f32_off).
+// Reuses ArgbufMemcpyF32 (declared above). half(x) round-to-nearest-even
+// matches Rust half::f16::from_f32 (the parity test asserts bit-equality).
+// Default-off lever (reached only when DISMANTLE_QWEN_F16_KV=1).
+kernel void memcpy_f32_to_f16_off(
+    device const float*           src  [[buffer(0)]],
+    device       half*            dst  [[buffer(1)]],
+    constant ArgbufMemcpyF32&     args [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.n) return;
+    dst[args.dst_off + id] = half(src[args.src_off + id]);
+}
+
+// R3 — batched KV scatter-append over B multi-seq decode slots. Each slot writes
+// its kv_dim K and V elements into its OWN stable region (regions[bi]) at its OWN
+// position (positions[bi]) within layer `layer_off`, in ONE dispatch (K+V) instead
+// of 2B memcpys. Byte-identical to the per-slot memcpy_f32_off loop (pure copy):
+//   dst_elem = layer_off + regions[bi]*slot_stride + positions[bi]*kv_dim + i
+struct ArgbufKvScatter {
+    uint kv_dim;
+    uint b;
+    uint slot_stride;  // max_seq_per_slot * kv_dim (one slot's per-layer region)
+    uint layer_off;    // li * (max_batch * max_seq_per_slot * kv_dim)
+};
+
+kernel void kv_scatter_append_multiseq(
+    device const float* src_k      [[buffer(0)]],
+    device const float* src_v      [[buffer(1)]],
+    device       float* k_cache    [[buffer(2)]],
+    device       float* v_cache    [[buffer(3)]],
+    constant ArgbufKvScatter& args [[buffer(4)]],
+    device const uint*  regions    [[buffer(5)]],
+    device const uint*  positions  [[buffer(6)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = args.b * args.kv_dim;
+    if (id >= total) return;
+    uint bi = id / args.kv_dim;
+    uint i  = id - bi * args.kv_dim;
+    uint dst = args.layer_off + regions[bi] * args.slot_stride + positions[bi] * args.kv_dim + i;
+    uint src = bi * args.kv_dim + i;
+    k_cache[dst] = src_k[src];
+    v_cache[dst] = src_v[src];
+}
+
 kernel void rope_inplace(
     device       half* x        [[buffer(0)]],
     constant     uint& head_dim [[buffer(1)]],
@@ -484,6 +532,165 @@ kernel void rope_slice_f32_inplace(
     x[off + 1u] = x0 * s + x1 * c;
 }
 
+// R2 — batched RoPE over B multi-seq decode slots, each at its OWN position
+// (positions[bi]). Bit-identical to running rope_q_f32_inplace per slot: the
+// rotation is elementwise (no reduction), so batching over B changes no element.
+// `x` is laid out [B, n_heads*head_dim] with `slot_stride` elements per slot.
+// Called once for Q (n_heads, slot_stride=q_dim) and once for K (n_kv_heads,
+// slot_stride=kv_dim). qk_nope_dim is 0 here (full-head rope, the dense path).
+struct ArgbufRopeMultiseq {
+    uint  n_heads;
+    uint  head_dim;     // full head (= qk_rope_dim); qk_nope_dim is 0
+    uint  slot_stride;  // elements per slot (q_dim for Q, kv_dim for K)
+    uint  b;
+    float base;
+};
+
+kernel void rope_f32_batched_multiseq(
+    device       float* x             [[buffer(0)]],
+    constant ArgbufRopeMultiseq& args [[buffer(1)]],
+    device const uint*  positions     [[buffer(2)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint per_slot = args.n_heads * pairs_per_head;
+    uint total = args.b * per_slot;
+    if (id >= total) return;
+
+    uint bi   = id / per_slot;
+    uint rem  = id - bi * per_slot;
+    uint head = rem / pairs_per_head;
+    uint pair = rem - head * pairs_per_head;
+    uint off  = bi * args.slot_stride + head * args.head_dim + 2u * pair;
+
+    float theta = (float)positions[bi] / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+    float c = cos(theta);
+    float s = sin(theta);
+    float x0 = x[off];
+    float x1 = x[off + 1u];
+    x[off]      = x0 * c - x1 * s;
+    x[off + 1u] = x0 * s + x1 * c;
+}
+
+// Fused Q+K RoPE for multiseq batched decode (Track 3.4).
+// Replaces two separate rope_f32_batched_multiseq dispatches per layer with one,
+// saving 1 dispatch/layer × n_layers = 28 dispatches on Qwen-3B.
+//
+// Grid: (b * (n_q_heads + n_k_heads) * head_dim/2, 1, 1).
+// Threads with id < b*n_q_heads*(head_dim/2) process Q; the rest process K.
+// Q and K have different slot strides (q_dim vs kv_dim for GQA) but share
+// the same rope base and positions buffer.
+struct ArgbufRopeQKMultiseq {
+    uint  n_q_heads;     // Q heads (n_heads)
+    uint  n_k_heads;     // K heads (n_kv_heads; may differ for GQA)
+    uint  head_dim;
+    uint  q_slot_stride; // elements per Q slot = n_q_heads * head_dim
+    uint  k_slot_stride; // elements per K slot = n_k_heads * head_dim
+    uint  b;
+    float base;
+};
+kernel void rope_qk_f32_batched_multiseq(
+    device       float* q             [[buffer(0)]],  // (B, q_slot_stride)
+    device       float* k             [[buffer(1)]],  // (B, k_slot_stride)
+    constant ArgbufRopeQKMultiseq& args [[buffer(2)]],
+    device const uint*  positions     [[buffer(3)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_per_slot = args.n_q_heads * pairs_per_head;
+    uint k_per_slot = args.n_k_heads * pairs_per_head;
+    uint q_total    = args.b * q_per_slot;
+    uint total      = q_total + args.b * k_per_slot;
+    if (id >= total) return;
+
+    uint pair, off;
+    float theta_denom;
+    device float* buf;
+
+    if (id < q_total) {
+        uint bi   = id / q_per_slot;
+        uint rem  = id - bi * q_per_slot;
+        uint head = rem / pairs_per_head;
+        pair      = rem - head * pairs_per_head;
+        off       = bi * args.q_slot_stride + head * args.head_dim + 2u * pair;
+        buf       = q;
+        theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float theta = (float)positions[bi] / theta_denom;
+        float c = cos(theta); float s = sin(theta);
+        float x0 = buf[off]; float x1 = buf[off + 1u];
+        buf[off]      = x0 * c - x1 * s;
+        buf[off + 1u] = x0 * s + x1 * c;
+    } else {
+        uint kid  = id - q_total;
+        uint bi   = kid / k_per_slot;
+        uint rem  = kid - bi * k_per_slot;
+        uint head = rem / pairs_per_head;
+        pair      = rem - head * pairs_per_head;
+        off       = bi * args.k_slot_stride + head * args.head_dim + 2u * pair;
+        theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float theta = (float)positions[bi] / theta_denom;
+        float c = cos(theta); float s = sin(theta);
+        float x0 = k[off]; float x1 = k[off + 1u];
+        k[off]      = x0 * c - x1 * s;
+        k[off + 1u] = x0 * s + x1 * c;
+    }
+}
+
+// Track 3.2 — Batched embed lookup: B tokens in one dispatch.
+// Grid: (B * hidden, 1, 1). Saves B-1 dispatches vs the per-slot loop.
+// tokens: GPU buffer of B u32 token ids (packed, no stride).
+// out: (B, hidden) f32, row-major, slot-contiguous.
+kernel void embed_lookup_f32_batched(
+    device const half*  embed   [[buffer(0)]],  // (vocab, hidden) f16
+    device const uint*  tokens  [[buffer(1)]],  // (B,) token ids
+    device       float* out     [[buffer(2)]],  // (B, hidden) f32
+    constant     uint&  hidden  [[buffer(3)]],
+    constant     uint&  b       [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint total = b * hidden;
+    if (id >= total) return;
+    uint slot = id / hidden;
+    uint elem = id - slot * hidden;
+    uint tok  = tokens[slot];
+    out[slot * hidden + elem] = (float)embed[(uint64_t)tok * (uint64_t)hidden + elem];
+}
+
+// Track 3.2 — Batched cold rmsnorm: B rows in one dispatch.
+// Grid: (TG_SIZE * B, 1, 1). One TG per slot.
+// Unlike add_rmsnorm_fused_batched, does NOT add a delta to x.
+// Used for the layer-0 pre-norm where x is the embed output (no residual).
+kernel void rmsnorm_f32_batched(
+    device const float*     x      [[buffer(0)]],  // (B, hidden) input
+    device const float*     weight [[buffer(1)]],  // (hidden,) scale
+    device       float*     out    [[buffer(2)]],  // (B, hidden) output
+    constant ArgbufRmsnorm& args   [[buffer(3)]],
+    threadgroup  float*     shmem  [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    uint row_off              = tg_id * args.hidden;
+    device const float* x_row = x   + row_off;
+    device       float* o_row = out + row_off;
+
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = x_row[i];
+        partial += v * v;
+    }
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv = 1.0f / sqrt(shmem[0] / (float)args.hidden + args.eps);
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        o_row[i] = x_row[i] * inv * weight[i];
+    }
+}
+
 // v1.0.0-D — embed lookup writing f32 residual stream.
 // Reads f16 embed table, writes f32 x_buf directly (no CPU round-trip).
 kernel void embed_lookup_f32(
@@ -495,6 +702,77 @@ kernel void embed_lookup_f32(
 {
     if (id >= hidden) return;
     out[id] = (float)embed[token * hidden + id];
+}
+
+// ── embed_lookup_rmsnorm_f32 ──────────────────────────────────────────────────
+// Track B7 — Fused embedding lookup + layer-0 RMSNorm. ONE dispatch replaces:
+//   embed_lookup_metal_f32_tcb(token → x)
+//   rmsnorm_metal_buf_tcb(x, weight → x_norm)
+//
+// Phase 1 loads embedding row → writes to x (device), accumulates partial squares.
+// After the shmem variance reduction, phase 2 re-reads x and writes x_norm.
+// The re-read is ~free on Apple Silicon (L1 cache hit from phase 1) and makes
+// the computation bit-identical to the two-dispatch reference (rmsnorm_f32 reads
+// from device memory too). The win is purely structural: one dispatch vs two.
+//
+// The shmem reduction uses mem_threadgroup only: within a single thread,
+// device writes before the barrier are sequentially visible to the same thread
+// after the barrier, so no mem_device barrier is needed.
+//
+// Buffer layout:
+//   0: embed   (half*, large embedding table)
+//   1: weight  (float*, RMSNorm scale weights)
+//   2: x       (float*, residual stream — write destination)
+//   3: x_norm  (float*, normalized output)
+//   4: args    (ArgbufEmbedRmsnorm { hidden, token, eps })
+//   threadgroup(0): shmem (tg_size × f32)
+//
+// Grid: (TG_SIZE, 1, 1) — same single-TG contract as rmsnorm_f32.
+struct ArgbufEmbedRmsnorm {
+    uint  hidden;
+    uint  token;
+    float eps;
+};
+
+kernel void embed_lookup_rmsnorm_f32(
+    device const half*  embed   [[buffer(0)]],
+    device const float* weight  [[buffer(1)]],
+    device       float* x       [[buffer(2)]],
+    device       float* x_norm  [[buffer(3)]],
+    constant ArgbufEmbedRmsnorm& args [[buffer(4)]],
+    threadgroup  float* shmem   [[threadgroup(0)]],
+    uint         tid            [[thread_position_in_threadgroup]],
+    uint         tg_size        [[threads_per_threadgroup]])
+{
+    uint64_t embed_off = (uint64_t)args.token * (uint64_t)args.hidden;
+
+    // Phase 1: load embedding values → write x to device, accumulate squares.
+    // The partial-sum accumulation exactly mirrors rmsnorm_f32 (reads from device
+    // memory after write, same as `float v = x[i]; partial += v * v;`).
+    float partial = 0.0f;
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        float v = (float)embed[embed_off + i];
+        x[i] = v;
+        partial += v * v;
+    }
+
+    // Threadgroup shmem reduction for the variance.
+    shmem[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) shmem[tid] += shmem[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    // Mirror rmsnorm_f32 exactly: two-step sqrt+reciprocal, multiply order x*inv*w.
+    float rms = sqrt(shmem[0] / (float)args.hidden + args.eps);
+    float inv = 1.0f / rms;
+
+    // Phase 2: re-read x (same pattern as rmsnorm_f32) to produce bit-identical output.
+    // The x values are already in L1/shared cache from phase 1 on Apple Silicon, so this
+    // second read costs ~0 additional memory bandwidth vs a separate rmsnorm dispatch.
+    for (uint i = tid; i < args.hidden; i += tg_size) {
+        x_norm[i] = x[i] * inv * weight[i];
+    }
 }
 
 // G1.2 — fp16-weight × fp32-vec → fp32 GEMV (LM-head shape).
@@ -790,4 +1068,209 @@ kernel void use_resource_poc_add(
 {
     if (tid >= args.n) return;
     out[tid] = args.a[tid] + args.b[tid];
+}
+
+// ── kv_append_vbias_f32 ───────────────────────────────────────────────────────
+// Track 3.7 — Fused KV-cache append with V-bias addition.
+//
+// Replaces THREE dispatches per layer in forward_token_greedy_tcb:
+//   add_inplace(v_token_buf, v_bias)         ← V bias (no rope)
+//   memcpy_f32_off(k_token_buf → k_cache)   ← K cache append
+//   memcpy_f32_off(v_token_buf → v_cache)   ← V cache append
+// with ONE dispatch, saving 2 dispatches/layer × n_layers = 56 on Qwen-3B.
+//
+// K-token is written verbatim (K bias was already applied in rope_qk_b1_bias).
+// V-token has v_bias optionally added before writing to v_cache.
+//
+// Buffer layout:
+//   0: k_tok     (float*, kv_dim, input — K token vector, bias already applied)
+//   1: v_tok     (float*, kv_dim, input — V token vector, NO bias yet)
+//   2: v_bias    (float*, kv_dim, optional V bias — only read when has_v_bias=1)
+//   3: k_cache   (float*, large KV cache, output)
+//   4: v_cache   (float*, large KV cache, output)
+//   5: args      (ArgbufKvAppendVbias)
+//
+// Grid: (kv_dim, 1, 1)
+struct ArgbufKvAppendVbias {
+    uint kv_dim;
+    uint kv_off;      // element offset into k_cache and v_cache
+    uint has_v_bias;  // 1 if v_bias is valid, 0 otherwise
+};
+
+kernel void kv_append_vbias_f32(
+    device const float* k_tok   [[buffer(0)]],
+    device const float* v_tok   [[buffer(1)]],
+    device const float* v_bias  [[buffer(2)]],
+    device       float* k_cache [[buffer(3)]],
+    device       float* v_cache [[buffer(4)]],
+    constant ArgbufKvAppendVbias& args [[buffer(5)]],
+    uint id [[thread_position_in_grid]])
+{
+    if (id >= args.kv_dim) return;
+    k_cache[args.kv_off + id] = k_tok[id];
+    v_cache[args.kv_off + id] = v_tok[id] + (args.has_v_bias ? v_bias[id] : 0.0f);
+}
+
+// ── rope_qk_f32_b1_bias ───────────────────────────────────────────────────────
+// Track 3.6 — B=1 fused Q+K RoPE with in-place bias addition.
+//
+// Replaces FOUR dispatches per layer in forward_token_greedy_tcb:
+//   add_inplace(q_buf, q_bias)   ← Q bias
+//   rope_q_f32_inplace(q_buf)    ← Q rope
+//   add_inplace(k_buf, k_bias)   ← K bias
+//   rope_q_f32_inplace(k_buf)    ← K rope
+// with ONE dispatch, saving 3 dispatches/layer × n_layers = 84 on Qwen-3B.
+//
+// The bias is added BEFORE rotation (as in the original sequence). Each thread
+// handles ONE complex pair (2 float elements) for one head of Q or K.
+//
+// Buffer layout:
+//   0: q      (float*, n_q_heads * head_dim, in-place)
+//   1: k      (float*, n_k_heads * head_dim, in-place)
+//   2: q_bias (float*, n_q_heads * head_dim, or NULL-equivalent if no bias)
+//   3: k_bias (float*, n_k_heads * head_dim, or NULL-equivalent if no bias)
+//   4: args   (ArgbufRopeQKB1Bias)
+//
+// Grid: (n_q_heads * head_dim/2 + n_k_heads * head_dim/2, 1, 1)
+// Threads id < n_q_heads * (head_dim/2) handle Q; the rest handle K.
+struct ArgbufRopeQKB1Bias {
+    uint  n_q_heads;
+    uint  n_k_heads;
+    uint  head_dim;
+    uint  pos;
+    float base;
+    uint  has_q_bias; // 1 if q_bias is valid, 0 otherwise
+    uint  has_k_bias; // 1 if k_bias is valid, 0 otherwise
+};
+
+kernel void rope_qk_f32_b1_bias(
+    device       float* q    [[buffer(0)]],
+    device       float* k    [[buffer(1)]],
+    device const float* qb   [[buffer(2)]],
+    device const float* kb   [[buffer(3)]],
+    constant ArgbufRopeQKB1Bias& args [[buffer(4)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_total = args.n_q_heads * pairs_per_head;
+    uint total   = q_total + args.n_k_heads * pairs_per_head;
+    if (id >= total) return;
+
+    device float* buf;
+    device const float* bias;
+    uint head, pair, off;
+    bool use_bias;
+
+    if (id < q_total) {
+        head     = id / pairs_per_head;
+        pair     = id - head * pairs_per_head;
+        off      = head * args.head_dim + 2u * pair;
+        buf      = q + off;
+        bias     = qb + off;
+        use_bias = args.has_q_bias != 0u;
+    } else {
+        uint kid = id - q_total;
+        head     = kid / pairs_per_head;
+        pair     = kid - head * pairs_per_head;
+        off      = head * args.head_dim + 2u * pair;
+        buf      = k + off;
+        bias     = kb + off;
+        use_bias = args.has_k_bias != 0u;
+    }
+
+    float x0 = buf[0] + (use_bias ? bias[0] : 0.0f);
+    float x1 = buf[1] + (use_bias ? bias[1] : 0.0f);
+    float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+    float c = cos(theta), s = sin(theta);
+    buf[0] = x0 * c - x1 * s;
+    buf[1] = x0 * s + x1 * c;
+}
+
+// ── rope_qk_kv_append_vbias_f32 ───────────────────────────────────────────────
+// Track B6 — Fuses rope_qk_f32_b1_bias + kv_append_vbias_f32 into ONE dispatch.
+//
+// Saves 1 dispatch/layer × n_layers = 36 on Qwen-3B vs the two-dispatch path.
+//
+// Thread partition (id ∈ [0, total)):
+//   [0,               q_pairs):           Q: bias + RoPE, write q_buf in-place
+//   [q_pairs,         q_pairs+k_pairs):   K: bias + RoPE k_tok, write k_cache
+//   [q_pairs+k_pairs, q_pairs+k_pairs+kv_dim): V: add v_bias, write v_cache
+//
+// Note: k_tok is READ-ONLY in this kernel (the rotated K is written directly to
+// k_cache; k_token_buf is left in pre-rope state, which is fine since nothing
+// reads it after this dispatch).
+//
+// Buffer layout:
+//   0: q_buf    (float*, n_q_heads*head_dim, in-place Q rope destination)
+//   1: k_tok    (float*, kv_dim, read-only; pre-rope K token)
+//   2: v_tok    (float*, kv_dim, read-only)
+//   3: q_bias   (float*, n_q_heads*head_dim, or unused when has_q_bias=0)
+//   4: k_bias   (float*, kv_dim, or unused when has_k_bias=0)
+//   5: v_bias   (float*, kv_dim, or unused when has_v_bias=0)
+//   6: k_cache  (float*, large KV cache, write only)
+//   7: v_cache  (float*, large KV cache, write only)
+//   8: args     (ArgbufRopeQKKVAppend)
+//
+// Grid: (n_q_heads*head_dim/2 + n_k_heads*head_dim/2 + kv_dim, 1, 1)
+struct ArgbufRopeQKKVAppend {
+    uint  n_q_heads;
+    uint  n_k_heads;
+    uint  head_dim;
+    uint  pos;
+    float base;
+    uint  has_q_bias;
+    uint  has_k_bias;
+    uint  has_v_bias;
+    uint  kv_dim;    // n_k_heads * head_dim
+    uint  kv_off;    // element offset into k_cache / v_cache
+};
+
+kernel void rope_qk_kv_append_vbias_f32(
+    device       float* q_buf   [[buffer(0)]],
+    device const float* k_tok   [[buffer(1)]],
+    device const float* v_tok   [[buffer(2)]],
+    device const float* q_bias  [[buffer(3)]],
+    device const float* k_bias  [[buffer(4)]],
+    device const float* v_bias  [[buffer(5)]],
+    device       float* k_cache [[buffer(6)]],
+    device       float* v_cache [[buffer(7)]],
+    constant ArgbufRopeQKKVAppend& args [[buffer(8)]],
+    uint id [[thread_position_in_grid]])
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint q_pairs  = args.n_q_heads * pairs_per_head;
+    uint k_pairs  = args.n_k_heads * pairs_per_head;
+    uint q_end    = q_pairs;
+    uint k_end    = q_pairs + k_pairs;
+    uint v_end    = k_end + args.kv_dim;
+    if (id >= v_end) return;
+
+    if (id < q_end) {
+        // ── Q: bias + RoPE, in-place write to q_buf ─────────────────────────
+        uint head = id / pairs_per_head;
+        uint pair = id - head * pairs_per_head;
+        uint off  = head * args.head_dim + 2u * pair;
+        float x0 = q_buf[off]   + (args.has_q_bias ? q_bias[off]   : 0.0f);
+        float x1 = q_buf[off+1] + (args.has_q_bias ? q_bias[off+1] : 0.0f);
+        float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float c = cos(theta), s = sin(theta);
+        q_buf[off]   = x0 * c - x1 * s;
+        q_buf[off+1] = x0 * s + x1 * c;
+    } else if (id < k_end) {
+        // ── K: bias + RoPE k_tok, write directly to k_cache ─────────────────
+        uint kid  = id - q_end;
+        uint head = kid / pairs_per_head;
+        uint pair = kid - head * pairs_per_head;
+        uint off  = head * args.head_dim + 2u * pair;
+        float x0 = k_tok[off]   + (args.has_k_bias ? k_bias[off]   : 0.0f);
+        float x1 = k_tok[off+1] + (args.has_k_bias ? k_bias[off+1] : 0.0f);
+        float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
+        float c = cos(theta), s = sin(theta);
+        k_cache[args.kv_off + off]   = x0 * c - x1 * s;
+        k_cache[args.kv_off + off+1] = x0 * s + x1 * c;
+    } else {
+        // ── V: add optional bias, write to v_cache ───────────────────────────
+        uint vid = id - k_end;
+        v_cache[args.kv_off + vid] = v_tok[vid] + (args.has_v_bias ? v_bias[vid] : 0.0f);
+    }
 }

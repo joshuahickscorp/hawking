@@ -32,9 +32,12 @@ fn find_gguf(size_tag: &str) -> Option<PathBuf> {
 
 fn run_greedy(weights: &PathBuf) -> Vec<u32> {
     let cfg = dismantle_core::EngineConfig::default();
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load gemma2 engine");
-    assert_eq!(engine.model_arch(), "gemma2", "dispatcher must route to gemma2");
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load gemma2 engine");
+    assert_eq!(
+        engine.model_arch(),
+        "gemma2",
+        "dispatcher must route to gemma2"
+    );
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
@@ -68,7 +71,7 @@ fn hash16(ids: &[u32]) -> String {
 }
 
 fn check_or_pin(label: &str, actual_hash: &str) {
-    let pin_path = PathBuf::from("../../tests/golden/_gemma2_token_baseline.hashes");
+    let pin_path = PathBuf::from("tests/golden/_gemma2_token_baseline.hashes");
     let actual_line = format!("{}: {}\n", label, actual_hash);
     let existing = std::fs::read_to_string(&pin_path).unwrap_or_default();
     match existing
