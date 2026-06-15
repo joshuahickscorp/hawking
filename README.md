@@ -107,6 +107,7 @@ Three levers held up under contamination-controlled measurement (the rest are in
 - **Single-stream is the tuned path.** Continuous batching (the multi-sequence decode lane) is implemented and parity-gated bit-identical to single-stream, but it is less battle-tested and the batch scheduler does not yet honor `stop` strings.
 - **Model coverage is narrow** compared to llama.cpp — see [MODELS.md](MODELS.md) for what's actually verified.
 - **Off-macOS** builds compile the CPU path only (dense models); MoE CPU decode is out of scope.
+- **Greedy decoding can repeat.** `generate` defaults to `--temperature 0` (deterministic greedy), which can fall into short repetition loops on long outputs. Pass `--temperature 0.7` (or raise `--top-p`) for varied text; the chat/completions server already defaults to temperature 0.7.
 
 ## Named profiles — `--profile fast`
 
