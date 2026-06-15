@@ -338,11 +338,14 @@ pub trait Engine: Send + Sync {
     ///
     /// Default: serial fallback via `prefill_slot` (correct, slower). QwenDense
     /// overrides with the position-by-position multiseq stack path.
-    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
-        for &(slot_id, ref prompt_ids) in slots {
-            self.prefill_slot(slot_id, prompt_ids)?;
-        }
-        Ok(())
+    ///
+    /// Returns the FIRST generated token per slot (in `slots` order), derived
+    /// from each prompt's last-position logits — the caller seeds decode with it.
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<Vec<u32>> {
+        slots
+            .iter()
+            .map(|&(slot_id, prompt_ids)| self.prefill_slot(slot_id, prompt_ids))
+            .collect()
     }
 
     /// Continuous-batching DECODE seam: one decode step across N INDEPENDENT

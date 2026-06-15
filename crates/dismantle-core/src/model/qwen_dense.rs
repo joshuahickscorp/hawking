@@ -1012,6 +1012,10 @@ impl Engine for QwenDense {
             // active, so the final LM-head GEMV can use the pre-decoded
             // kernel (bit-identical to inline Q4_K).
             let want_predec_lmhead = want_q4k_lmhead && crate::env_on("DISMANTLE_QWEN_Q4K_PREDEC");
+            // Control tokens (<|im_end|>, …) must survive pruning — the model has
+            // to be able to emit them (e.g. to end a chat turn). Both prune modes
+            // force-include these high-id tokens that frequency/first-N would drop.
+            let control_ids = tokenizer.control_token_ids();
             let (pruned_buf, pruned_n, prune_remap, pruned_predec) = if let Some(n_target) =
                 corpus_n
             {
@@ -1029,6 +1033,13 @@ impl Engine for QwenDense {
                 let force_first = 4096u32.min(cfg.vocab_size as u32);
                 for id in 0..force_first {
                     freq.entry(id).or_insert(1);
+                }
+                // Always keep the control tokens (top priority) so the model can
+                // emit <|im_end|> etc. — without this, chat turns never terminate.
+                for &id in &control_ids {
+                    if (id as usize) < cfg.vocab_size {
+                        freq.insert(id, u32::MAX);
+                    }
                 }
                 let mut ranked: Vec<(u32, u32)> = freq.into_iter().collect();
                 // Sort by frequency desc, then by id asc for stability.
@@ -1071,14 +1082,27 @@ impl Engine for QwenDense {
                                 Some(w) => w,
                                 None => &embed,
                             };
-                            let slice = &src[..n * h];
+                            // First n ids PLUS the control tokens (high ids that a
+                            // contiguous first-n would drop — the model could then
+                            // never emit <|im_end|>). Pack + remap instead of a
+                            // bare slice.
+                            let mut ids: Vec<u32> = (0..n as u32).collect();
+                            for &id in &control_ids {
+                                if (id as usize) < cfg.vocab_size && id as usize >= n {
+                                    ids.push(id);
+                                }
+                            }
+                            ids.sort_unstable();
+                            ids.dedup();
+                            let nlen = ids.len();
+                            let packed = pack_rows(src, &ids);
                             let mut predec_buf = None;
-                            let buf = if want_q4k_lmhead && (n * h) % 256 == 0 {
-                                let slice_f32: Vec<f32> =
-                                    slice.iter().map(|&hh| hh.to_f32()).collect();
-                                let nb = (n * h) / 256;
+                            let buf = if want_q4k_lmhead && (nlen * h) % 256 == 0 {
+                                let packed_f32: Vec<f32> =
+                                    packed.iter().map(|&hh| hh.to_f32()).collect();
+                                let nb = (nlen * h) / 256;
                                 let mut q4k = vec![0u8; nb * quant::Q4_K_BLOCK_BYTES];
-                                quant::quantize_q4_k(&slice_f32, &mut q4k)?;
+                                quant::quantize_q4_k(&packed_f32, &mut q4k)?;
                                 if want_predec_lmhead {
                                     let scales = crate::kernels::predecode_q4_k_scale_table(&q4k);
                                     predec_buf =
@@ -1091,9 +1115,9 @@ impl Engine for QwenDense {
                                 }
                                 ctx.new_buffer_with_bytes(&q4k)
                             } else {
-                                ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(slice))
+                                ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f16, u8>(&packed))
                             };
-                            (Some(buf), Some(n), None, predec_buf)
+                            (Some(buf), Some(nlen), Some(ids), predec_buf)
                         } else {
                             (None, None, None, None)
                         }
@@ -2862,6 +2886,16 @@ impl Engine for QwenDense {
         &self.model_id
     }
 
+    /// Report the GGUF architecture (e.g. "qwen2") so the server selects the
+    /// correct chat template. Without this the trait default "unknown" routed
+    /// chat through the GENERIC template (`<|user|>` / `<|assistant|>`), which
+    /// shatters into literal `<`,`|`,`>` tokens and omits `<|im_end|>` turn
+    /// terminators — the model then never sees a stop token and degenerates into
+    /// `<|>` repetition. Real cause of the `/v1/chat/completions` garbage.
+    fn model_arch(&self) -> &str {
+        self.gguf.architecture().unwrap_or("qwen2")
+    }
+
     fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
         self.tokenizer.encode(prompt, true)
     }
@@ -3260,19 +3294,24 @@ impl Engine for QwenDense {
             self.kv.seq_len = 0;
             self.dense_arena = None; // triggers lazy re-allocation at pos=0
 
-            const B_MAX: usize = 8;
-            let positions: Vec<usize> = (0..prompt_len).collect();
-            let mut i = 0;
-            let last_token = loop {
-                let end = (i + B_MAX).min(prompt_len);
-                self.forward_tokens_batch_tcb(&prompt_ids[i..end], &positions[i..end])?;
-                if end == prompt_len {
-                    break prompt_ids[prompt_len - 1];
-                }
-                i = end;
-            };
-            // After the loop, dense_arena.k_cache_buf / v_cache_buf hold KV for
-            // positions 0..prompt_len-1. kv.seq_len == prompt_len.
+            // Single-token greedy prefill — the EXACT default path that
+            // single-stream `generate()` uses. `forward_token_greedy_tcb` builds
+            // the GPU decode arena (dense_arena) with full causal attention and
+            // returns the greedy next token (vocab-pruned head) at each position;
+            // the LAST call's return is the FIRST generated token, which the
+            // server seeds decode with. This matches the CLI bit-for-bit.
+            //
+            // The chunked BATCH prefill (`forward_tokens_batch_tcb`, an opt-in
+            // throughput lever even in the CLI) was faster but attends only
+            // WITHIN each 8-token chunk, so the last chunk's x_norm never sees the
+            // prompt body — its LM-head argmax is a constant, prompt-independent
+            // stray token (a "caffine"-style leading word on every response).
+            let mut first_token = prompt_ids[prompt_len - 1];
+            for (idx, &tok) in prompt_ids.iter().enumerate() {
+                first_token = self.forward_token_greedy_tcb(tok, idx)?;
+            }
+            // dense_arena.k_cache_buf / v_cache_buf now hold KV for positions
+            // 0..prompt_len-1. kv.seq_len == prompt_len.
 
             // ── Step 2: ensure multiseq_arena is allocated ───────────────────
             // (CB-1 fix: allocated once at max capacity, never reallocated.)
@@ -3345,7 +3384,7 @@ impl Engine for QwenDense {
             self.kv.seq_len = saved_seq_len;
             self.dense_arena = None;
 
-            return Ok(last_token);
+            return Ok(first_token);
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -3353,163 +3392,18 @@ impl Engine for QwenDense {
         }
     }
 
-    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<()> {
-        #[cfg(target_os = "macos")]
-        {
-            if slots.is_empty() {
-                return Ok(());
-            }
-            const MAX_MULTISEQ_SLOTS: usize = 8;
-            const MAX_MULTISEQ_CTX: usize = 4096;
-            if slots.len() > MAX_MULTISEQ_SLOTS {
-                return Err(crate::Error::Model(format!(
-                    "prefill_slots_parallel: {} slots > {MAX_MULTISEQ_SLOTS}",
-                    slots.len()
-                )));
-            }
-            let max_prompt_len = slots.iter().map(|(_, ids)| ids.len()).max().unwrap_or(0);
-            if max_prompt_len == 0 {
-                return Ok(());
-            }
-            if max_prompt_len > MAX_MULTISEQ_CTX {
-                return Err(crate::Error::Model(format!(
-                    "prefill_slots_parallel: prompt_len={max_prompt_len} > {MAX_MULTISEQ_CTX}"
-                )));
-            }
-
-            // ── Hybrid prefill strategy ──────────────────────────────────────
-            //
-            // The efficient single-seq path (`prefill_slot`) uses
-            // `forward_tokens_batch_tcb` with B_MAX=8 tokens per GPU pass:
-            //   ceil(prompt_len / 8) weight reads per slot.
-            //
-            // The position-by-position path reads weights once per position:
-            //   max_prompt_len weight reads total (shared across B slots).
-            //
-            // Cross-over: position-by-position beats serial when
-            //   max_prompt_len < B × ceil(max_prompt_len / 8)
-            //   i.e. B > 8  (which never happens at max_batch = 8)
-            // So serial prefill_slot is always equal or better for B ≤ 8
-            // EXCEPT for the shared-prefix case below.
-            //
-            // Shared-prefix optimisation:
-            //   When slots share a common prefix (e.g. system prompt), prefill
-            //   the prefix ONCE for slot 0 via the efficient B_MAX=8 path, then
-            //   CPU-memcpy the prefix KV into every other slot's arena region.
-            //   Cost: ceil(prefix_len / 8) instead of B × ceil(prefix_len / 8).
-            //   For B=8 with a 200-token system prompt: 25 steps → 25 steps
-            //   (amortized 1/8 per slot, and copy is near-free on unified memory).
-
-            // Step A: longest common prefix length.
-            let prefix_len = {
-                let first_prompt = slots[0].1;
-                let mut len = first_prompt.len();
-                for &(_, prompt_ids) in slots.iter().skip(1) {
-                    let common = first_prompt
-                        .iter()
-                        .zip(prompt_ids.iter())
-                        .take(len)
-                        .take_while(|(a, b)| a == b)
-                        .count();
-                    len = common.min(prompt_ids.len()).min(first_prompt.len());
-                }
-                len
-            };
-
-            if prefix_len == 0 {
-                // No shared prefix: serial prefill_slot per slot.
-                // B_MAX=8 efficient: ceil(L/8) weight reads per slot.
-                // Strictly better than position-by-position for all B ≤ 8.
-                for &(slot_id, prompt_ids) in slots.iter() {
-                    self.prefill_slot(slot_id, prompt_ids)?;
-                }
-                return Ok(());
-            }
-
-            // Shared prefix (prefix_len >= 1):
-
-            // Step B: prefill slot 0's full prompt via the efficient B_MAX=8 path.
-            // `prefill_slot` uses forward_tokens_batch_tcb internally and writes
-            // KV into multiseq_arena[slot0] for positions 0..slot0_prompt.len()-1.
-            let (slot0_id, slot0_prompt) = slots[0];
-            self.prefill_slot(slot0_id, slot0_prompt)?;
-            // multiseq_arena is now allocated (prefill_slot ensures it).
-
-            // Step C: CPU-copy prefix KV from slot 0 to every other slot's region.
-            // Layout: k[layer * multi_layer_stride + slot * MAX_MULTISEQ_CTX * kv_dim + pos * kv_dim]
-            // SAFETY: Metal unified memory, CPU-accessible on Apple Silicon.
-            // Slot regions are non-overlapping. No concurrent GPU access (engine mutex).
-            {
-                let cfg = &self.config;
-                let kv_dim = cfg.n_kv_heads * cfg.head_dim;
-                let multi_arena = self.multiseq_arena.as_ref().unwrap();
-                let multi_layer_stride = multi_arena.max_seq * kv_dim;
-                let copy_elems = prefix_len * kv_dim;
-                let slot0_base = slot0_id * MAX_MULTISEQ_CTX * kv_dim;
-                unsafe {
-                    let dst_k = multi_arena.k_cache_buf.contents() as *mut f32;
-                    let dst_v = multi_arena.v_cache_buf.contents() as *mut f32;
-                    for &(slot_s, _) in slots.iter().skip(1) {
-                        let slot_s_base = slot_s * MAX_MULTISEQ_CTX * kv_dim;
-                        for li in 0..cfg.n_layers {
-                            let src_off = li * multi_layer_stride + slot0_base;
-                            let dst_off = li * multi_layer_stride + slot_s_base;
-                            std::ptr::copy_nonoverlapping(
-                                dst_k.add(src_off),
-                                dst_k.add(dst_off),
-                                copy_elems,
-                            );
-                            std::ptr::copy_nonoverlapping(
-                                dst_v.add(src_off),
-                                dst_v.add(dst_off),
-                                copy_elems,
-                            );
-                        }
-                    }
-                }
-            }
-
-            // Step D: suffix-only parallel prefill for slots[1..] only.
-            // Slot 0 is already fully prefilled. For each other slot, run its
-            // suffix (positions prefix_len..prompt_len) through the multiseq
-            // stack (which sees the prefix KV via the copy above).
-            if self.q4k_predec_cache.is_none() {
-                self.ensure_q4k_predec_cache()?;
-            }
-            for p in prefix_len..max_prompt_len {
-                let mut tokens_p = Vec::new();
-                let mut positions_p = Vec::new();
-                let mut regions_p = Vec::new();
-                for &(slot_id, prompt_ids) in slots.iter().skip(1) {
-                    if p < prompt_ids.len() {
-                        tokens_p.push(prompt_ids[p]);
-                        positions_p.push(p);
-                        regions_p.push(slot_id);
-                    }
-                }
-                if tokens_p.is_empty() {
-                    break;
-                }
-                let arena = self.multiseq_arena.as_ref().unwrap();
-                let tcb = self.forward_tokens_multiseq_stack_tcb(
-                    arena,
-                    &tokens_p,
-                    &positions_p,
-                    &regions_p,
-                    MAX_MULTISEQ_CTX,
-                )?;
-                tcb.commit_and_wait()?;
-            }
-
-            return Ok(());
-        }
-        #[cfg(not(target_os = "macos"))]
-        {
-            for &(slot_id, prompt_ids) in slots.iter() {
-                self.prefill_slot(slot_id, prompt_ids)?;
-            }
-            Ok(())
-        }
+    fn prefill_slots_parallel(&mut self, slots: &[(usize, &[u32])]) -> Result<Vec<u32>> {
+        // Serial prefill per slot. Each `prefill_slot` returns that slot's first
+        // generated token (from its prompt's last-position logits) so the caller
+        // seeds decode correctly. The previous batched/shared-prefix path was a
+        // prefill-latency optimisation for concurrent admissions; per its own
+        // analysis serial is equal-or-better for B<=8 except the shared-prefix
+        // case, and it cannot yield the per-slot first token decode now needs.
+        // Decode throughput (the continuous-batch win) is unaffected.
+        slots
+            .iter()
+            .map(|&(slot_id, prompt_ids)| self.prefill_slot(slot_id, prompt_ids))
+            .collect()
     }
 
     fn forward_tokens_for_test(
@@ -8636,7 +8530,7 @@ impl QwenDense {
         let h = self.config.hidden;
         let vocab = self.config.vocab_size;
 
-        // Require Q4K LM head and shape preconditions for the on-GPU path.
+        // Require a Q4K LM head and shape preconditions for the on-GPU path.
         // Fall back to full-logits + CPU argmax when any condition fails.
         let use_gpu_path =
             self.lm_head_q4k_buf.is_some() && h % 256 == 0 && (1..=8).contains(&b) && b > 0;
@@ -8702,7 +8596,7 @@ impl QwenDense {
             max_seq_per_slot,
         )?;
 
-        // ── Q4K LM head (same as GPU path in forward_tokens_multiseq_logits) ─
+        // ── Q4K LM head (full vocab) ─────────────────────────────────────────
         let arena = self.multiseq_arena.as_ref().unwrap();
         let lhq = self.lm_head_q4k_buf.as_ref().unwrap();
         let blocks_per_row = h / 256;
