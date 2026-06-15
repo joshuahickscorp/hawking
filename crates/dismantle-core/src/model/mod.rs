@@ -57,6 +57,8 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
     let gguf = GgufFile::open(weights)?;
     let arch = gguf.architecture().unwrap_or("").to_string();
     let is_mixtral = mixtral::is_mixtral_gguf(&gguf);
+    // Track 4.3: read + honor (log) the sidecar mixed-quant tier map, if present.
+    let _ = honor_sidecar_tier_map(weights, &gguf);
     drop(gguf); // model loaders re-open via mmap
     match arch.as_str() {
         "llama" if is_mixtral => {
@@ -96,6 +98,83 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
     }
 }
 
+/// Pure resolver core of [`honor_sidecar_tier_map`]: count how many of `names`
+/// have a recognized per-tensor dtype override in `tm`. No GGUF, no I/O, no
+/// Metal — hermetically unit-testable. `dtype_for` only returns `Err` on an
+/// unknown dtype string, which `tm.validate()` rejects up-front; a defensive
+/// `Err` here is treated as "not an override" (not counted) to mirror the
+/// non-fatal logging contract of the caller.
+fn tier_map_overrides_for_names<'a>(
+    tm: &crate::sidecar::SidecarTierMap,
+    names: impl IntoIterator<Item = &'a str>,
+) -> usize {
+    names
+        .into_iter()
+        .filter(|name| matches!(tm.dtype_for(name), Ok(Some(_))))
+        .count()
+}
+
+/// Track 4.3 — sidecar mixed-quant tier-map READ+HONOR hook.
+///
+/// When a `.dismantle` sidecar with a `tier_map` sits next to `weights`, this
+/// validates the map once and logs the per-tensor dtype override the loader
+/// WOULD honor (resolved via `SidecarTierMap::dtype_for`). It intentionally
+/// does NOT re-quantize or mutate `EngineConfig`: tier *selection* + requant
+/// materialization is `reports/dead_levers.md` #16 (Type-1 dead) /
+/// `MixedQuantStore`, out of scope. This is the read-side wiring that makes the
+/// format an actually-consumed surface rather than a dormant scaffold.
+///
+/// Non-fatal: any sidecar read error or hash drift is logged and skipped so a
+/// stale/foreign sidecar never blocks a normal GGUF load. Returns the number of
+/// recognized overrides (0 when no sidecar / no tier map) for callers/tests.
+fn honor_sidecar_tier_map(weights: &Path, gguf: &crate::gguf::GgufFile) -> usize {
+    let sidecar_path = crate::sidecar::sidecar_path_for(weights);
+    if !sidecar_path.exists() {
+        return 0;
+    }
+    let header = match crate::sidecar::read_sidecar_header(&sidecar_path) {
+        Ok(h) => h,
+        Err(e) => {
+            eprintln!("[tier-map] sidecar {:?}: header read failed ({e}); ignoring", sidecar_path);
+            return 0;
+        }
+    };
+    let tier_map = match header.tier_map.as_ref() {
+        Some(tm) if !tm.is_empty() => tm,
+        _ => return 0, // predec-only / empty sidecar — nothing to honor
+    };
+    if let Err(e) = tier_map.validate() {
+        eprintln!("[tier-map] sidecar {:?}: invalid tier map ({e}); ignoring", sidecar_path);
+        return 0;
+    }
+    // Per-tensor logging (needs info.dtype; left inline). The returned match
+    // COUNT is computed by the pure, unit-tested `tier_map_overrides_for_names`
+    // so the resolve contract has hermetic test coverage.
+    for (name, info) in &gguf.tensors {
+        match tier_map.dtype_for(name) {
+            Ok(Some(target)) => {
+                eprintln!(
+                    "[tier-map] {name}: gguf={:?} -> sidecar override {:?} (read-only; requant out of scope)",
+                    info.dtype, target
+                );
+            }
+            Ok(None) => {}
+            Err(e) => {
+                // validate() already passed, so this is unreachable for present
+                // tensors; log defensively rather than panic.
+                eprintln!("[tier-map] {name}: dtype resolve error ({e}); ignoring");
+            }
+        }
+    }
+    let honored = tier_map_overrides_for_names(tier_map, gguf.tensors.keys().map(String::as_str));
+    eprintln!(
+        "[tier-map] sidecar {:?}: {honored} of {} tier-map entries matched live GGUF tensors",
+        sidecar_path,
+        tier_map.entries.len()
+    );
+    honored
+}
+
 /// Return system total RAM in MiB. Returns 0 on failure.
 fn system_ram_mb() -> usize {
     #[cfg(target_os = "macos")]
@@ -117,5 +196,75 @@ fn system_ram_mb() -> usize {
     #[cfg(not(target_os = "macos"))]
     {
         0
+    }
+}
+
+#[cfg(test)]
+mod tier_map_hook_tests {
+    use super::tier_map_overrides_for_names;
+    use crate::sidecar::{SidecarTierEntry, SidecarTierMap};
+
+    fn tm(pairs: &[(&str, &str)]) -> SidecarTierMap {
+        SidecarTierMap {
+            entries: pairs
+                .iter()
+                .map(|(t, d)| SidecarTierEntry { tensor: (*t).to_string(), dtype: (*d).to_string() })
+                .collect(),
+        }
+    }
+
+    #[test]
+    fn empty_map_matches_nothing() {
+        let m = tm(&[]);
+        assert!(m.is_empty());
+        let names = ["blk.0.ffn_down.weight", "output.weight"];
+        assert_eq!(tier_map_overrides_for_names(&m, names), 0);
+    }
+
+    #[test]
+    fn counts_only_present_overrides_with_real_tensor_names() {
+        // Real GGUF-shaped names; only two of them are in the tier map.
+        let m = tm(&[
+            ("blk.0.ffn_down.weight", "q6_K"),
+            ("blk.12.ffn_down.weight", "q8_0"),
+            ("blk.99.attn_q.weight", "q4_K"), // present in map, absent from GGUF below
+        ]);
+        let gguf_names = [
+            "token_embd.weight",
+            "blk.0.ffn_down.weight",   // override -> counts
+            "blk.0.attn_q.weight",     // no entry
+            "blk.12.ffn_down.weight",  // override -> counts
+            "output.weight",
+        ];
+        // Two of the three map entries match the live name set.
+        assert_eq!(tier_map_overrides_for_names(&m, gguf_names), 2);
+    }
+
+    #[test]
+    fn iteration_order_independent() {
+        let m = tm(&[("blk.5.ffn_up.weight", "q8_0"), ("blk.5.ffn_down.weight", "q6_K")]);
+        let a = ["blk.5.ffn_up.weight", "blk.5.ffn_down.weight", "x"];
+        let b = ["x", "blk.5.ffn_down.weight", "blk.5.ffn_up.weight"];
+        assert_eq!(tier_map_overrides_for_names(&m, a), 2);
+        assert_eq!(tier_map_overrides_for_names(&m, b), 2);
+    }
+
+    #[test]
+    fn dtype_for_resolves_and_validate_passes() {
+        use crate::gguf::GgmlType;
+        let m = tm(&[("blk.0.ffn_down.weight", "q6_K"), ("output.weight", "Q8_0")]);
+        m.validate().expect("synthetic tier map must validate");
+        assert_eq!(m.dtype_for("blk.0.ffn_down.weight").unwrap(), Some(GgmlType::Q6_K));
+        assert_eq!(m.dtype_for("output.weight").unwrap(), Some(GgmlType::Q8_0));
+        assert_eq!(m.dtype_for("blk.0.attn_q.weight").unwrap(), None);
+    }
+
+    #[test]
+    fn unknown_dtype_is_not_counted() {
+        // validate() would reject this, but the helper must defensively treat a
+        // dtype_for Err as "no override" (not counted) per the caller contract.
+        let m = tm(&[("blk.0.ffn_down.weight", "f16_bogus")]);
+        assert!(m.validate().is_err());
+        assert_eq!(tier_map_overrides_for_names(&m, ["blk.0.ffn_down.weight"]), 0);
     }
 }

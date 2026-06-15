@@ -1673,6 +1673,24 @@ impl Engine for QwenDense {
         // The bonus-first loop stays the bit-identical reference for the gate.
         let user_draft_propose_first =
             use_user_draft && crate::env_on("DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST");
+        // MID (spec governor wiring): auto-disable proposing during a low-accept
+        // stretch so a cold n-gram draft can never hurt more than a small,
+        // bounded amount. DEFAULT-OFF and only meaningful when a draft is
+        // already enabled. When off, `spec_gov` stays `None` and the consult
+        // sites below short-circuit to "always propose" (today's behavior).
+        let use_spec_governor =
+            use_user_draft && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR");
+        // Test-only deterministic hook: forces the governor disabled from cycle
+        // one so a gate can exercise "skip propose, still emit verifier tokens,
+        // stay bit-identical" without an adversarial prompt or any timing.
+        let spec_gov_force_disable = use_spec_governor
+            && crate::env_on("DISMANTLE_QWEN_SPEC_GOVERNOR_FORCE_DISABLE");
+        let spec_gov_window = crate::env_usize("DISMANTLE_QWEN_SPEC_GOVERNOR_WINDOW", 16);
+        let spec_gov_min_rate = std::env::var("DISMANTLE_QWEN_SPEC_GOVERNOR_MIN_RATE")
+            .ok()
+            .and_then(|v| v.parse::<f32>().ok())
+            .filter(|r| r.is_finite() && *r >= 0.0 && *r <= 1.0)
+            .unwrap_or(0.35);
 
         #[cfg(target_os = "macos")]
         if use_eagle5 {
@@ -2292,6 +2310,18 @@ impl Engine for QwenDense {
             // vtoks.len() <= 8. (The eagle5 'pf_loop verifies k tokens =
             // carried_true + k-1 lookahead for the same reason.)
             let k_la = user_draft_k.min(7);
+            let mut spec_gov = if use_spec_governor {
+                let mut g = crate::speculate::governor::SpecGovernor::new(
+                    spec_gov_window,
+                    spec_gov_min_rate,
+                );
+                if spec_gov_force_disable {
+                    for _ in 0..8 { let _ = g.step(false); }
+                }
+                Some(g)
+            } else {
+                None
+            };
 
             // ── Bootstrap: ONE forward of the last prompt token yields the
             // first true next token (carried_true). Unlike the eagle5 bootstrap
@@ -2328,7 +2358,18 @@ impl Engine for QwenDense {
                 // (chaining stops on a miss); a length-0 result degenerates to a
                 // plain 1-token decode through the same verify primitive below.
                 let ctx_buf: [u32; 2] = [anchor_tok, carried_true];
-                let lookahead = draft_index.propose(&ctx_buf, k_la);
+                // Governor gate: when disabled, propose nothing. An empty
+                // `lookahead` makes vtoks = [carried_true] and the single verify
+                // forward below degenerates to a plain 1-token decode (preds[0] is
+                // carried_true's true successor) — byte-identical. step(false) per
+                // skipped cycle keeps the window/cooldown advancing.
+                let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
+                let lookahead = if gov_propose {
+                    draft_index.propose(&ctx_buf, k_la)
+                } else {
+                    if let Some(g) = spec_gov.as_mut() { let _ = g.step(false); }
+                    Vec::new()
+                };
                 let dlen = lookahead.len();
 
                 // ONE batched verify forward: [carried_true, lookahead[0..dlen]]
@@ -2357,6 +2398,9 @@ impl Engine for QwenDense {
                 }
                 stats.draft_accepted += na;
                 stats.draft_rejected += dlen - na;
+                // Governor: accepted >=1 lookahead iff na > 0. Proposed cycles
+                // only; disabled cycles stepped above.
+                if let Some(g) = spec_gov.as_mut() { let _ = g.step(na > 0); }
                 // L3.1 §2.2 usage_capture: draft proposed under (anchor_tok,
                 // carried_true); na accepted, dlen-na rejected; verifier emits
                 // preds[0] next.
@@ -2442,6 +2486,20 @@ impl Engine for QwenDense {
             // last prompt token (the token whose continuation we decode first).
             let mut last_emit: u32 = last_id;
             let mut pos = prompt_len;
+            let mut spec_gov = if use_spec_governor {
+                let mut g = crate::speculate::governor::SpecGovernor::new(
+                    spec_gov_window,
+                    spec_gov_min_rate,
+                );
+                if spec_gov_force_disable {
+                    // Past the consecutive-reject bail (>=5) so the gate sees
+                    // is_enabled()==false deterministically from cycle one.
+                    for _ in 0..8 { let _ = g.step(false); }
+                }
+                Some(g)
+            } else {
+                None
+            };
 
             'ud_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -2483,11 +2541,23 @@ impl Engine for QwenDense {
                     continue;
                 }
                 let ctx_buf: [u32; 2] = [ctx_prev, bonus];
-                let draft = draft_index.propose(&ctx_buf, k_avail);
+                // Governor gate: when disabled, skip proposing this cycle. An
+                // empty `draft` falls through the proven degenerate branch below
+                // (Stage-1 bonus already emitted the true token), so the emitted
+                // stream is byte-identical — the governor only suppresses
+                // speculation. We still step(false) per disabled cycle so the
+                // window/cooldown advance.
+                let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
+                let draft = if gov_propose {
+                    draft_index.propose(&ctx_buf, k_avail)
+                } else {
+                    if let Some(g) = spec_gov.as_mut() { let _ = g.step(false); }
+                    Vec::new()
+                };
                 let draft_len = draft.len();
                 if draft_len == 0 {
-                    // No prediction → next cycle's stage-1 forward emits the
-                    // next token (still exact, just no speculation this step).
+                    // No prediction (or governor-suppressed) → next cycle's
+                    // stage-1 forward emits the next token (still exact).
                     pos = bonus_pos;
                     continue;
                 }
@@ -2515,6 +2585,10 @@ impl Engine for QwenDense {
                 }
                 stats.draft_accepted += first_reject;
                 stats.draft_rejected += draft_len - first_reject;
+                // Governor: accepted >=1 draft iff first_reject > 0. Reached only
+                // on a proposed cycle (the real accept signal); disabled cycles
+                // were stepped above.
+                if let Some(g) = spec_gov.as_mut() { let _ = g.step(first_reject > 0); }
                 // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
                 crate::stateful::usage_capture::record_draft(
                     (ctx_prev, bonus),
@@ -2757,6 +2831,8 @@ impl Engine for QwenDense {
         // Track 3.1 / 5.1: last-step dispatch count (always valid).
         stats.metal_dispatches = self.last_dispatch_count;
         stats.dispatches_per_forward = self.last_dispatch_count;
+        // Track 0.2 observability: record the LM-head path taken this run.
+        stats.lm_head_path = self.lm_head_path().to_string();
         // L3.1 §2.2 usage_capture: flush the per-run histogram + draft ledger
         // (no-op unless DISMANTLE_QWEN_USAGE_CAPTURE=1).
         crate::stateful::usage_capture::flush();
@@ -2911,6 +2987,7 @@ impl Engine for QwenDense {
             },
             bake_device: self.model_id.clone(),
             bake_time_secs: 0, // caller stamps if needed
+            tier_map: None,    // Track 4.3 scaffold: predec bake carries no tier map
         };
 
         let writer = SidecarWriter {
@@ -3383,6 +3460,47 @@ impl Engine for QwenDense {
 }
 
 impl QwenDense {
+    /// Track 0.2 (observability): which LM-head path the decode loop selects, for
+    /// the GenStats `[stats-json]` line. Re-derives the SAME branch from self
+    /// fields + env flags (no GPU/forward needed) → callable at decode finalize.
+    /// One of: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16" | "cpu".
+    pub(crate) fn lm_head_path(&self) -> &'static str {
+        if self.metal_ctx.is_none() {
+            return "cpu";
+        }
+        let predec_active = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC")
+            .map(|v| v != "0")
+            .unwrap_or(true);
+        let lmhead_predec_active = predec_active
+            && self.lm_head_pruned_predec.is_some()
+            && std::env::var_os("DISMANTLE_QWEN_LMHEAD_PREDEC")
+                .map(|v| v != "0")
+                .unwrap_or(true);
+        let predec_f16scales_active = predec_active
+            && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES")
+                .map(|v| v != "0")
+                .unwrap_or(false);
+        let w4a8_active = crate::env_on("DISMANTLE_QWEN_W4A8");
+        let pruned_q4k = self.lm_head_pruned_buf.is_some() && self.vocab_pruned_is_q4k;
+        let any_q4k = pruned_q4k || self.lm_head_q4k_buf.is_some();
+        if !any_q4k {
+            return "f16";
+        }
+        if w4a8_active {
+            return "q4k";
+        }
+        if predec_f16scales_active
+            && lmhead_predec_active
+            && self.lm_head_pruned_predec_f16.is_some()
+        {
+            return "q4k-predec-f16s";
+        }
+        if lmhead_predec_active {
+            return "q4k-predec";
+        }
+        "q4k"
+    }
+
     fn rmsnorm_dispatch(&self, x: &[f32], weight: &[f32], eps: f32, out: &mut [f32]) -> Result<()> {
         #[cfg(target_os = "macos")]
         if let Some(ctx) = &self.metal_ctx {
@@ -4202,6 +4320,51 @@ impl QwenDense {
                 ));
             }
         }
+        // Track 5.3: int4 per-row-symmetric K/V cache (~1/4 the f32 footprint)
+        // composes only with the plain Q4_K decode path. Mutually exclusive with
+        // F16_KV / W4A8 / FLASH_ATTN / BATCH_PREFILL — refuse rather than emit
+        // un-vetted logits. Cosine-gated (≥0.996), NOT bit-identical; DEFAULT-OFF.
+        if crate::env_on("DISMANTLE_QWEN_INT4_KV") {
+            // Track 5.3 — DISABLED pending a per-CHANNEL redesign. The routing,
+            // kernels (kv_quant_int4_append / mha_decode_flash_int4kv), and arena
+            // are BUILT + numerically faithful on uniform K/V (cosine 0.996), but
+            // the per-ROW symmetric scheme (one scale per 128-elem token row)
+            // COLLAPSES on real K/V: post-RoPE K/V has per-channel outliers that
+            // dominate the row scale, rounding the rest to ~0 → incoherent output.
+            // (flash-f16kv on the SAME path is coherent, isolating this to the
+            // quant scheme.) silicon #15 specified per-CHANNEL scales; that's the
+            // fix. Fail loudly instead of emitting garbage. Set
+            // DISMANTLE_QWEN_INT4_KV_EXPERIMENTAL=1 to force-enable for redesign work.
+            if !crate::env_on("DISMANTLE_QWEN_INT4_KV_EXPERIMENTAL") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_INT4_KV is staged but DISABLED: per-row int4 KV is \
+                     inadequate on real (outlier-heavy) K/V — needs per-channel scales \
+                     (see dead_levers.md). Use --profile race (f16-KV) for KV footprint, \
+                     or set DISMANTLE_QWEN_INT4_KV_EXPERIMENTAL=1 to force-enable for redesign."
+                        .into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_F16_KV") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_INT4_KV=1 is incompatible with DISMANTLE_QWEN_F16_KV=1; unset one".into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_W4A8") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_INT4_KV=1 is incompatible with DISMANTLE_QWEN_W4A8=1 (unanalyzed); unset one".into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_FLASH_ATTN") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_INT4_KV=1 is incompatible with DISMANTLE_QWEN_FLASH_ATTN=1 (unanalyzed); unset one".into(),
+                ));
+            }
+            if crate::env_on("DISMANTLE_QWEN_BATCH_PREFILL") {
+                return Err(Error::Model(
+                    "DISMANTLE_QWEN_INT4_KV=1 is incompatible with DISMANTLE_QWEN_BATCH_PREFILL=1 (int4 cache is seeded incrementally via the per-token append path); unset one".into(),
+                ));
+            }
+        }
         if awq_active_early && predec_active {
             return Err(Error::Model(
                 "DISMANTLE_QWEN_AWQ=1 is incompatible with DISMANTLE_QWEN_Q4K_PREDEC=1; \
@@ -4487,13 +4650,118 @@ impl QwenDense {
                     .unwrap_or(false)
             })
         };
+        // Track E1: 8r gate+up pair — opt-in (DISMANTLE_QWEN_PAIR_8R=1).
+        // 16 accumulators (gate0-7 + up0-7), 64 rows/TG vs 32 for 4r / 16 for 2r.
+        // 172 TGs for Qwen-3B gate+up (11008 rows) vs 344 (4r) / 688 (2r).
+        // Supersedes PAIR_4R when set; bit-identical.
+        let ffn_pair_8r = {
+            static E8R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E8R.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_8R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        // Track E2: 3r gate+up pair — opt-in (DISMANTLE_QWEN_PAIR_3R=1).
+        // Custom middle geometry between the proven 2r and flat 4r forms.
+        // Superseded by PAIR_8R when set.
+        let ffn_pair_3r = !ffn_pair_8r && {
+            static E3R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E3R.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_3R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
         // Track B2: 4r gate+up pair — opt-in (DISMANTLE_QWEN_PAIR_4R=1).
         // 8 accumulators, inline scale reads, 32 rows/TG vs 16 for 2r.
-        // Bit-identical to 2r; bench to confirm before defaulting.
-        let ffn_pair_4r = {
+        // Bit-identical, but current paired bench is flat/slightly negative.
+        // Superseded by PAIR_8R/PAIR_3R when set.
+        let ffn_pair_4r = !ffn_pair_8r && !ffn_pair_3r && {
             static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
             *E.get_or_init(|| {
                 std::env::var_os("DISMANTLE_QWEN_PAIR_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        // Track F1: E3 inline pair, ALSO dropping the xl[8] activation preload
+        // (x read per-pi). Bit-identical to E3; frees ~6 registers to test whether
+        // the dominant pair GEMV is still occupancy-bound after E3. Opt-in via
+        // DISMANTLE_QWEN_PAIR_2R_INLINE_NOX=1 (engages the inline f32 path and
+        // swaps the inline kernel for its nox twin). Superseded by 8r/3r/4r.
+        let ffn_pair_2r_inline_nox = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_2R_INLINE_NOX")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        // Track E3: 2r gate+up pair with inline scale reads — DEFAULT-ON.
+        // Same geometry as the old default 2r and BIT-IDENTICAL to it (parity test
+        // pair_2r_inline_matches_pair_2r), but drops the 64-float scale preload →
+        // CLEAN bench 2026-06-06: +9.6% (64-tok×7-trial, Claude quit, all B-trials
+        // above all A-trials). Promoted to default per the dead_levers resurrection
+        // check ("promote to default if clean bench agrees"). Opt OUT via
+        // DISMANTLE_QWEN_PAIR_2R_INLINE=0 (falls back to the preloaded 2r).
+        // F1 (nox) rides this same f32 inline path, so enabling nox implies it.
+        let ffn_pair_2r_inline = !ffn_pair_8r
+            && !ffn_pair_3r
+            && !ffn_pair_4r
+            && (ffn_pair_2r_inline_nox || {
+                static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+                *E.get_or_init(|| {
+                    std::env::var_os("DISMANTLE_QWEN_PAIR_2R_INLINE")
+                        .map(|v| v != "0")
+                        // DEFAULT-ON for plain decode, but DEFAULT-OFF when the
+                        // user n-gram draft is active: E3's inline-pair single-
+                        // token kernel is bit-identical to old-2r for greedy, but
+                        // the batched verify path (forward_tokens_verify) does NOT
+                        // use it, so a draft cycle mixes E3 (bonus) with non-E3
+                        // (verify) and the verifier's argmax disagrees with what
+                        // sequential E3 decode would emit -> user-draft loses
+                        // bit-identity (regression found 2026-06-07; HEAD was
+                        // lossless because old-2r single-token agreed with verify).
+                        // An explicit DISMANTLE_QWEN_PAIR_2R_INLINE=1 still forces
+                        // it on (power user accepting the trade). The real fix is a
+                        // batched-E3 verify kernel; until then this keeps draft
+                        // lossless while plain decode keeps E3's +9.6%.
+                        .unwrap_or_else(|| !crate::env_on("DISMANTLE_QWEN_USER_DRAFT"))
+                })
+            });
+        // Track E4: f16-scale variant of E3's inline pair. Kept as a separate
+        // opt-in because the first clean paired rerun was slower than pair_f16s.
+        // nox rides the f32 path, so it never selects the f16-inline variant.
+        let ffn_pair_2r_inline_f16s = ffn_pair_2r_inline && !ffn_pair_2r_inline_nox && {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_2R_INLINE_F16S")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        // Track F2: the FAST/headline f16-scale pair (pair_f16s) with the xl[8]
+        // activation preload dropped (x read per-pi); the half-scale preload is
+        // KEPT (E4 showed inlining f16 scales loses). Bit-identical to pair_f16s.
+        // Opt-in via DISMANTLE_QWEN_PAIR_F16S_NOX=1; engages only on the f16 path
+        // (does not force the f32 inline route the way F1 does).
+        let ffn_pair_f16s_nox = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_F16S_NOX")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        // Track F3: f16-scale pair with scales held in HALF registers (packed,
+        // ~16 regs vs 32) + xl preload dropped. Coalesced half preload kept (unlike
+        // E4's lossy inline). Bit-identical to pair_f16s. Opt-in; takes priority
+        // over F2 (f16s_nox) on the f16 path. DISMANTLE_QWEN_PAIR_F16S_HALFREG=1.
+        let ffn_pair_f16s_halfreg = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PAIR_F16S_HALFREG")
                     .map(|v| v != "0")
                     .unwrap_or(false)
             })
@@ -4565,6 +4833,15 @@ impl QwenDense {
         // golden decode hash is unaffected.
         let flash_attn = crate::env_on("DISMANTLE_QWEN_FLASH_ATTN");
         let f16_kv = crate::env_on("DISMANTLE_QWEN_F16_KV");
+        // Track 5.3: int4 per-row symmetric K/V cache (footprint lever). Guarded
+        // mutually-exclusive with f16_kv/w4a8/flash_attn/batch_prefill above.
+        let int4_kv = crate::env_on("DISMANTLE_QWEN_INT4_KV");
+        // Wave-R6: flash decode over the f16 KV cache. Rides the F16_KV machinery
+        // (arena/append/prefill/readback all gated on F16_KV); only the decode
+        // kernel changes to the constant-shmem flash variant so it runs at 32K
+        // (standalone mha_decode_f16kv has an O(seq) scores-shmem cap ~7800 tok).
+        // Requires DISMANTLE_QWEN_F16_KV=1 too; opt-in, atol 1e-3 (not bit-identical).
+        let flash_f16kv = crate::env_on("DISMANTLE_QWEN_FLASH_F16KV");
         // Track 3.14: fuse the Q4_K f32-predec o_proj GEMV with the residual
         // add, then run the required vector-wide ffn_norm as the next dispatch.
         // This is default-on only for the default 2r f32-predec path; W4A8,
@@ -4585,7 +4862,8 @@ impl QwenDense {
         // existing explicit post-processing kernels.
         let qkv_rope_append = crate::env_opt_out("DISMANTLE_QWEN_QKV_ROPE_APPEND")
             && !use_seam
-            && !f16_kv;
+            && !f16_kv
+            && !int4_kv;
         // Track C28: 4r variant of qkv_rope_append — Q/K at 4r/simdgroup,
         // V at 2r/simdgroup. Reduces TG count 320→160 for Qwen-3B.
         // Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (checked at runtime).
@@ -4609,6 +4887,11 @@ impl QwenDense {
         // after the fresh-arena hoist above.
         if f16_kv {
             self.dense_arena.as_mut().unwrap().ensure_f16_kv(ctx);
+        }
+        // Track 5.3: allocate the int4 K/V cache before the immutable arena
+        // borrow below. Idempotent (no-op once packed buffers exist).
+        if int4_kv {
+            self.dense_arena.as_mut().unwrap().ensure_int4_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
         // Pre-bind the W4A8 scratch buffers (None when flag is off) so the
@@ -5122,7 +5405,15 @@ impl QwenDense {
                             _ => None,
                         }
                     });
-                    if let Some((k_scales_f16, v_scales_f16)) = f16_pair {
+                    // 8r/3r and default E3 inline use f32 scales; E4's f16s
+                    // inline variant is deliberately separate opt-in.
+                    if let Some((k_scales_f16, v_scales_f16)) =
+                        f16_pair.filter(|_| {
+                            !ffn_pair_8r
+                                && !ffn_pair_3r
+                                && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
+                        })
+                    {
                         // D4: prefer 4r_f16s when PAIR_4R is also set.
                         if ffn_pair_4r {
                             kernels::gemv_q4_k_v4_predec_pair_4r_f16s_pinned_tcb(
@@ -5142,37 +5433,105 @@ impl QwenDense {
                                 &arena.k_token_buf,
                                 &arena.v_token_buf,
                             )?;
+                        } else if ffn_pair_2r_inline_f16s {
+                            kernels::gemv_q4_k_v4_predec_pair_2r_inline_f16s_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales_f16,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales_f16,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
                         } else {
-                        kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
-                            &mut tcb,
-                            mmap_buf,
-                            layer.k_proj.offset,
-                            layer.k_proj.byte_size,
-                            k_scales_f16,
-                            0,
-                            layer.v_proj.offset,
-                            layer.v_proj.byte_size,
-                            v_scales_f16,
-                            0,
-                            kv_dim,
-                            h,
-                            &arena.x_norm_buf,
-                            &arena.k_token_buf,
-                            &arena.v_token_buf,
-                        )?;
+                            kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales_f16,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales_f16,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
                         }
                     } else {
                         let cache = predec_cache_ref.expect("checked is_some via map");
                         let k_scales = &cache[&layer.k_proj.offset];
                         let v_scales = &cache[&layer.v_proj.offset];
-                        // Track B3: upgrade kv pair from 1r → 2r (same default as
-                        // gate+up Track A7).  kv_dim=1024, cols=h=2048 on Qwen-3B;
-                        // 2r halves TG count (64 vs 128) and doubles ILP.
-                        // Track B5: 4r opt-in (DISMANTLE_QWEN_PAIR_4R=1) further
-                        // halves to 32 TGs with 4 FMA chains and inline scales.
-                        // Both bit-identical to 1r; opt-out via DISMANTLE_QWEN_PAIR_1R=1.
-                        if ffn_pair_4r {
+                        // Track B3/B5/E1/E2/E3: kv pair geometry ladder.
+                        // 8r (E1) → 3r (E2) → 4r (B5) → 2r-inline (E3) → 2r (B3) → 1r.
+                        if ffn_pair_8r {
+                            kernels::gemv_q4_k_v4_predec_pair_8r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else if ffn_pair_3r {
+                            kernels::gemv_q4_k_v4_predec_pair_3r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else if ffn_pair_4r {
                             kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+                                &mut tcb,
+                                mmap_buf,
+                                layer.k_proj.offset,
+                                layer.k_proj.byte_size,
+                                k_scales,
+                                0,
+                                layer.v_proj.offset,
+                                layer.v_proj.byte_size,
+                                v_scales,
+                                0,
+                                kv_dim,
+                                h,
+                                &arena.x_norm_buf,
+                                &arena.k_token_buf,
+                                &arena.v_token_buf,
+                            )?;
+                        } else if ffn_pair_2r_inline {
+                            kernels::gemv_q4_k_v4_predec_pair_2r_inline_pinned_tcb(
                                 &mut tcb,
                                 mmap_buf,
                                 layer.k_proj.offset,
@@ -5313,7 +5672,7 @@ impl QwenDense {
                 // original per-bias seam path + separate rope calls.
                 // Track B6: when rope_kv_fuse=true && !use_seam && !f16_kv, fuse
                 // rope_qk + kv_append into a single dispatch (saves 1/layer = 36).
-                let did_fuse_rope_kv = !use_seam && !f16_kv && rope_kv_fuse;
+                let did_fuse_rope_kv = !use_seam && !f16_kv && !int4_kv && rope_kv_fuse;
                 if did_fuse_rope_kv {
                     // Track B6 fused path: Q rope, K rope→k_cache, V→v_cache.
                     kernels::rope_qk_kv_append_vbias_f32_tcb(
@@ -5375,9 +5734,9 @@ impl QwenDense {
                         theta,
                     )?;
                     // Track 3.7: V bias and KV append are fused below when
-                    // !f16_kv. Only dispatch v_bias separately for f16_kv
-                    // (no f16 variant of kv_append_vbias yet).
-                    if f16_kv {
+                    // !f16_kv. Only dispatch v_bias separately for f16_kv / int4_kv
+                    // (their append kernels take no v_bias param).
+                    if f16_kv || int4_kv {
                         if let Some(vb) = layer.pinned.v_bias.as_ref() {
                             kernels::add_inplace_metal_tcb(&mut tcb, &arena.v_token_buf, vb, kv_dim)?;
                         }
@@ -5391,7 +5750,22 @@ impl QwenDense {
                 // Fallback to separate dispatches for f16_kv or seam paths.
                 // Track B6: skip entirely when did_fuse_rope_kv (fused above).
                 if !did_fuse_rope_kv {
-                    if f16_kv {
+                    if int4_kv {
+                        // Track 5.3: quantize+pack this token's K/V (post-RoPE,
+                        // post-V-bias) into the int4 cache at this (layer, slot).
+                        kernels::kv_quant_int4_append_tcb(
+                            &mut tcb,
+                            &arena.k_token_buf,
+                            &arena.v_token_buf,
+                            arena.k_cache_int4_packed.as_ref().unwrap(),
+                            arena.k_cache_int4_scales.as_ref().unwrap(),
+                            arena.v_cache_int4_packed.as_ref().unwrap(),
+                            arena.v_cache_int4_scales.as_ref().unwrap(),
+                            n_kv_heads,
+                            head_dim,
+                            arena.kv_int4_dst_row_base(li, seq_slot),
+                        )?;
+                    } else if f16_kv {
                         // f16 KV path: v_bias already added above (for !use_seam),
                         // or by the seam block. Append with f32→f16 conversion.
                         kernels::memcpy_f32_to_f16_off_tcb(
@@ -5440,11 +5814,42 @@ impl QwenDense {
 
             // ── MHA decode (GQA) ─────────────────────────────────────
             let layer_kv_off_bytes = li * layer_kv_stride_bytes;
-            if f16_kv {
+            if int4_kv {
+                // Track 5.3: flash decode over the int4 cache. Packed plane uses
+                // the per-layer BYTE offset (head_dim/2 bytes/row); scales plane
+                // the per-layer ROW offset (one f16/row). Q/out stay f32.
+                let int4_pack_off = arena.kv_int4_layer_byte_offset(li);
+                let int4_scale_off = arena.kv_int4_layer_scale_offset(li);
+                kernels::mha_decode_flash_int4kv_tcb(
+                    &mut tcb,
+                    &arena.q_buf,
+                    arena.k_cache_int4_packed.as_ref().unwrap(),
+                    int4_pack_off,
+                    arena.k_cache_int4_scales.as_ref().unwrap(),
+                    int4_scale_off,
+                    arena.v_cache_int4_packed.as_ref().unwrap(),
+                    int4_pack_off,
+                    arena.v_cache_int4_scales.as_ref().unwrap(),
+                    int4_scale_off,
+                    &arena.attn_out_buf,
+                    mha_seq_len,
+                    head_dim,
+                    n_heads,
+                    n_kv_heads,
+                )?;
+            } else if f16_kv {
                 // f16 cache uses the HALF-stride byte offset (NOT the f32
                 // layer_kv_off_bytes). Q and attn_out stay f32.
                 let f16_off = arena.kv_f16_layer_byte_offset(li);
-                kernels::mha_decode_f16kv_tcb(
+                // Wave-R6: constant-shmem flash variant when FLASH_F16KV is set
+                // (runs at 32K; the materialize mha_decode_f16kv caps ~7800 tok).
+                // Both wrappers share the same signature → select by fn pointer.
+                let mha_f16kv = if flash_f16kv {
+                    kernels::mha_decode_flash_f16kv_tcb
+                } else {
+                    kernels::mha_decode_f16kv_tcb
+                };
+                mha_f16kv(
                     &mut tcb,
                     &arena.q_buf,
                     arena.k_cache_f16_buf.as_ref().unwrap(),
@@ -5644,7 +6049,15 @@ impl QwenDense {
                         _ => None,
                     }
                 });
-                if let Some((g_scales_f16, u_scales_f16)) = f16_pair {
+                // 8r/3r and default E3 inline use f32 scales; E4's f16s
+                // inline variant is deliberately separate opt-in.
+                if let Some((g_scales_f16, u_scales_f16)) =
+                    f16_pair.filter(|_| {
+                        !ffn_pair_8r
+                            && !ffn_pair_3r
+                            && (!ffn_pair_2r_inline || ffn_pair_2r_inline_f16s)
+                    })
+                {
                     // Track D4: prefer 4r_f16s (32 rows/TG + half scale BW)
                     // when DISMANTLE_QWEN_PAIR_4R is also set.
                     if ffn_pair_4r {
@@ -5665,35 +6078,125 @@ impl QwenDense {
                             &arena.ffn_gate_buf,
                             &arena.ffn_up_buf,
                         )?;
+                    } else if ffn_pair_2r_inline_f16s {
+                        kernels::gemv_q4_k_v4_predec_pair_2r_inline_f16s_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales_f16,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales_f16,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
                     } else {
-                    kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb(
-                        &mut tcb,
-                        mmap_buf,
-                        layer.ffn_gate.offset,
-                        layer.ffn_gate.byte_size,
-                        g_scales_f16,
-                        0,
-                        layer.ffn_up.offset,
-                        layer.ffn_up.byte_size,
-                        u_scales_f16,
-                        0,
-                        intermediate,
-                        h,
-                        &arena.x_norm_buf,
-                        &arena.ffn_gate_buf,
-                        &arena.ffn_up_buf,
-                    )?;
+                        // F3 (halfreg, half-register scales) > F2 (f16s_nox, drop
+                        // xl) > default f16s. All three bit-identical to pair_f16s.
+                        let pair_f16s = if ffn_pair_f16s_halfreg {
+                            kernels::gemv_q4_k_v4_predec_pair_f16s_halfreg_pinned_tcb
+                        } else if ffn_pair_f16s_nox {
+                            kernels::gemv_q4_k_v4_predec_pair_f16s_nox_pinned_tcb
+                        } else {
+                            kernels::gemv_q4_k_v4_predec_pair_f16s_pinned_tcb
+                        };
+                        pair_f16s(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales_f16,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales_f16,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
                     }
                 } else {
                     let cache = predec_cache_ref.expect("checked is_some via map");
                     let g_scales = &cache[&layer.ffn_gate.offset];
                     let u_scales = &cache[&layer.ffn_up.offset];
-                    // Gate+up pair dispatch ladder:
-                    //   4r (opt-in, DISMANTLE_QWEN_PAIR_4R=1) — inline scales, 32 rows/TG
-                    //   2r (default, Track A7) — preloaded scales, 16 rows/TG
-                    //   1r (opt-out, DISMANTLE_QWEN_PAIR_1R=1) — 2 accumulators
-                    if ffn_pair_4r {
+                    // Gate+up pair dispatch ladder (E1→E2→B5→E3→A7→1r):
+                    //   8r (E1, opt-in PAIR_8R) — 64 rows/TG, 8 FMA chains for latency hiding
+                    //   3r (E2, opt-in PAIR_3R) — 24 rows/TG, middle ILP geometry
+                    //   4r (B5, opt-in PAIR_4R) — 32 rows/TG, inline scales
+                    //   2r_inline (E3, opt-in PAIR_2R_INLINE) — 16 rows/TG, inline scales
+                    //   2r (A7, default-on) — 16 rows/TG, preloaded scales
+                    //   1r (opt-out PAIR_1R) — 2 accumulators
+                    if ffn_pair_8r {
+                        kernels::gemv_q4_k_v4_predec_pair_8r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else if ffn_pair_3r {
+                        kernels::gemv_q4_k_v4_predec_pair_3r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else if ffn_pair_4r {
                         kernels::gemv_q4_k_v4_predec_pair_4r_pinned_tcb(
+                            &mut tcb,
+                            mmap_buf,
+                            layer.ffn_gate.offset,
+                            layer.ffn_gate.byte_size,
+                            g_scales,
+                            0,
+                            layer.ffn_up.offset,
+                            layer.ffn_up.byte_size,
+                            u_scales,
+                            0,
+                            intermediate,
+                            h,
+                            &arena.x_norm_buf,
+                            &arena.ffn_gate_buf,
+                            &arena.ffn_up_buf,
+                        )?;
+                    } else if ffn_pair_2r_inline {
+                        // F1: swap inline → inline_nox (drop xl preload) when set.
+                        let pair_inline = if ffn_pair_2r_inline_nox {
+                            kernels::gemv_q4_k_v4_predec_pair_2r_inline_nox_pinned_tcb
+                        } else {
+                            kernels::gemv_q4_k_v4_predec_pair_2r_inline_pinned_tcb
+                        };
+                        pair_inline(
                             &mut tcb,
                             mmap_buf,
                             layer.ffn_gate.offset,
@@ -7113,6 +7616,12 @@ impl QwenDense {
         let tok_buf = ctx.new_buffer_with_bytes(&tok_bytes);
 
         let predec_cache = self.q4k_predec_cache.as_ref();
+        // Wave-R0: opt-in route B=5..8 projections through the barrier-free 16-rows/TG
+        // v4r_predec kernel (already parity-proven bit-identical to v3w at B=8) instead
+        // of the 8-rows/TG shmem-barrier v3w. The closeout profile (wf_60586084) found
+        // v3w DRAM-latency-bound/under-occupied even at high B; this lets a clean
+        // aggregate bench settle v4r-vs-v3w at B>4 without a v3w rewrite. Default OFF.
+        let v4r_highb = crate::env_on("DISMANTLE_QWEN_MULTISEQ_V4R_HIGHB");
         let mut tcb = TokenCommandBuffer::new(ctx);
 
         // Batched projection (default path: Q4_K v3w predec/plain, Q6_K / f16
@@ -7135,14 +7644,15 @@ impl QwenDense {
                                     scales, 0, $rows, $cols,
                                     $x_batch, $out_batch,
                                 )?;
-                            } else if b <= 4 {
+                            } else if b <= 4 || v4r_highb {
                                 // v4r: barrier-free, 16 rows/TG, direct device x reads.
                                 // Wins at B=2..4 where 16-barrier-per-projection cost
                                 // exceeds the extra x-read latency (x is L2-cached, ~15
                                 // cycles/read; shmem is ~1 cycle but gated behind 2
                                 // TG barriers per block = 16 barriers/projection call).
-                                // At B>4 the strided x reads (B×256×4B per block, cols-
-                                // strided) cost more than the barriers → use v3w there.
+                                // At B>4 v3w was assumed to win, but the closeout profile
+                                // disputes it → DISMANTLE_QWEN_MULTISEQ_V4R_HIGHB routes
+                                // B=5..8 here too so a clean aggregate bench can decide.
                                 kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
                                     &mut tcb, mmap_buf, $tref.offset, $tref.byte_size,
                                     scales, 0, $rows, $cols, b, $x_batch, $out_batch,

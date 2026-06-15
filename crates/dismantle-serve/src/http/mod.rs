@@ -17,6 +17,7 @@ use axum::{
     Json, Router,
 };
 use crate::batch::driver::BatchDriver;
+use crate::system_kv_bank::SystemPromptKvBank;
 use dismantle_core::{Engine, GenerateRequest, SamplingParams};
 use futures::stream::Stream;
 use parking_lot::Mutex;
@@ -129,6 +130,31 @@ pub struct AppState {
     pub requests_admitted: Arc<AtomicU64>,
     pub tokens_generated: Arc<AtomicU64>,
     pub requests_queued: Arc<AtomicU64>,
+    /// Track 5.2: serve-lifetime hash(system-prefix) -> source-slot routing
+    /// hint. Survives a source request finishing, so serial workloads that
+    /// re-send an identical system prompt still get shared-prefix KV reuse
+    /// (the live `PrefixIndex` only matches CURRENTLY-active slots). Stores
+    /// zero KV bytes; every hit is re-verified by the bit-identical
+    /// `copy_kv_prefix_to_slot` + `prefill_slot_from_pos` path, so a stale
+    /// slot simply fails the copy and falls back to a cold prefill.
+    pub system_kv_bank: Arc<Mutex<SystemPromptKvBank>>,
+}
+
+/// Track 5.2 — the agreed banked-prefix length the serve-loop admit path uses
+/// for BOTH `SystemPromptKvBank::record` and `::lookup`. PURE (no I/O, no
+/// model): the gate test calls this directly so the record/lookup keys can
+/// never silently diverge.
+///
+/// The bank requires a STRICT leading prefix (`banked_len < prompt_ids.len()`),
+/// unlike the live `find_prefix_match_excluding` which keys on the full source
+/// slot length. We bank the prompt minus its last token — the "bail one token
+/// short" rule the disk/RAM KV tiers use — so the decode loop always keeps a
+/// real `last_id`. For a serial workload that re-sends the SAME prompt, the
+/// turn that records and the turn that looks up both see identical `prompt_ids`
+/// and therefore hash to the same key. Returns 0 when the prompt is too short
+/// to bank (the bank itself also rejects `< min_prefix_tokens`).
+pub fn banked_len_for(prompt_ids: &[u32]) -> usize {
+    prompt_ids.len().saturating_sub(1)
 }
 
 pub fn router(state: AppState) -> Router {
@@ -138,6 +164,7 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/chat/completions", post(chat_completions))
         .route("/v1/completions", post(completions))
         .route("/v1/dismantle/tokens", post(dismantle_tokens))
+        .route("/v1/dismantle/generate", post(dismantle_generate))
         .route("/metrics", get(metrics))
         .with_state(state)
 }
@@ -434,6 +461,90 @@ fn sse_response(
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
 }
 
+/// Lean request body for the native `/v1/dismantle/generate` endpoint.
+/// No role/message envelope — just the generation knobs.
+#[derive(Deserialize)]
+pub struct DismantleGenerateReq {
+    pub prompt: String,
+    #[serde(default = "default_max_tokens")]
+    pub max_tokens: usize,
+    /// Greedy when absent or <= 0.0 (routes to the token-only B×4 lane).
+    #[serde(default)]
+    pub temperature: Option<f32>,
+    #[serde(default)]
+    pub top_p: Option<f32>,
+    #[serde(default)]
+    pub seed: Option<u64>,
+    /// Stop strings. Mapped into GenerateRequest.stop. (The batch scheduler
+    /// does not yet honor stop; this preserves the field end-to-end.)
+    #[serde(default)]
+    pub stop: Vec<String>,
+}
+
+/// PURE request->GenerateRequest mapping. No engine, no I/O — the gate test
+/// calls this directly. temperature absent/<=0 => greedy (temp 0, top_k 0,
+/// top_p 1) so the slot routes through forward_multiseq_greedy_tokens.
+pub fn map_dismantle_generate_req(req: &DismantleGenerateReq) -> GenerateRequest {
+    let temp = req.temperature.unwrap_or(0.0);
+    let greedy = temp <= 0.0;
+    let sampling = SamplingParams {
+        temperature: if greedy { 0.0 } else { temp },
+        top_k: if greedy { 0 } else { 40 },
+        top_p: if greedy { 1.0 } else { req.top_p.unwrap_or(0.9) },
+        repetition_penalty: 1.0,
+        seed: req.seed,
+    };
+    GenerateRequest {
+        prompt: req.prompt.clone(),
+        max_new_tokens: req.max_tokens,
+        sampling,
+        stop: req.stop.clone(),
+        abort: None,
+        max_stall_ms: 0,
+    }
+}
+
+/// Re-derive the LM-head path label the same way the engine does for the
+/// env-controlled cases (serve always sets DISMANTLE_QWEN_Q4K_LMHEAD=1, so the
+/// q4k* branch is the live one). Mirrors QwenDense::lm_head_path env logic.
+/// Returns one of: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16".
+pub fn lm_head_path_from_env() -> &'static str {
+    let q4k = std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD").map(|v| v != "0").unwrap_or(false);
+    if !q4k {
+        return "f16";
+    }
+    let predec = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC").map(|v| v != "0").unwrap_or(true);
+    let f16s = predec && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES").map(|v| v != "0").unwrap_or(false);
+    if f16s {
+        "q4k-predec-f16s"
+    } else if predec {
+        "q4k-predec"
+    } else {
+        "q4k"
+    }
+}
+
+/// PURE: build the native final stats object from server-observed values.
+/// Field NAMES mirror GenStats::stats_json() so native + OpenAI clients parse
+/// the same keys. dec_tps = completion_tokens / (decode_ms/1000).
+pub fn dismantle_generate_stats_json(
+    prompt_tokens: usize,
+    completion_tokens: usize,
+    decode_ms: f64,
+    token_only_path_used: bool,
+    lm_head_path: &str,
+) -> serde_json::Value {
+    let dec_tps = (completion_tokens as f64) / (decode_ms / 1000.0).max(1e-6);
+    serde_json::json!({
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "decode_ms": decode_ms,
+        "dec_tps": dec_tps,
+        "token_only_path_used": token_only_path_used,
+        "lm_head_path": lm_head_path,
+    })
+}
+
 /// Request body for the low-overhead `/v1/dismantle/tokens` endpoint.
 #[derive(Deserialize)]
 struct DismantleTokensReq {
@@ -547,6 +658,99 @@ fn token_id_sse_response(
                     }
                 }
                 Err(()) => {
+                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
+                    break;
+                }
+            }
+        }
+    });
+
+    Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
+}
+
+async fn dismantle_generate(State(s): State<AppState>, body: Bytes) -> Response {
+    let req: DismantleGenerateReq = match parse_json(&body) {
+        Ok(req) => req,
+        Err(e) => return e.into_response(),
+    };
+    if req.prompt.is_empty() {
+        return ApiError::missing_parameter("'prompt' must not be empty").into_response();
+    }
+    let gen = map_dismantle_generate_req(&req);
+    dismantle_generate_sse(s, gen).into_response()
+}
+
+/// Native streaming response: per-token JSON chunks {tok_index, text} then a
+/// final {stats:{...}} event, then [DONE]. Reuses the OpenAI path's admit +
+/// per-slot SlotToken channel — does NOT fork the continuous-batch decode loop.
+fn dismantle_generate_sse(
+    state: AppState,
+    req: GenerateRequest,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    let (sse_tx, sse_rx) = tokio::sync::mpsc::channel::<Result<Event, Infallible>>(256);
+    let (tok_tx, mut tok_rx) = async_mpsc::channel::<SlotToken>(256);
+
+    // prompt_tokens for the stats object (tokenize once for the count; admit
+    // tokenizes again internally — cheap, keeps admit's signature unchanged).
+    let prompt_tokens = {
+        let engine = state.engine.lock();
+        engine.encode_prompt_for_batch(&req.prompt).map(|v| v.len()).unwrap_or(0)
+    };
+    // Snapshot whether the greedy/token-only lane is in play for this request.
+    let token_only_snapshot = state.driver.lock().lane_stats.greedy_steps > 0
+        || req.sampling.temperature <= 0.0;
+    let lm_head = lm_head_path_from_env();
+
+    let slot_id_opt = {
+        let engine = state.engine.lock();
+        let mut driver = state.driver.lock();
+        driver.admit(&**engine, req.clone()).ok().flatten()
+    };
+    if let Some(slot_id) = slot_id_opt {
+        state.requests_admitted.fetch_add(1, Ordering::Relaxed);
+        state.slot_senders.lock().insert(slot_id, tok_tx);
+    } else {
+        let queue_cap = state.max_batch * 8;
+        if state.wait_queue.lock().len() >= queue_cap {
+            let sse_tx2 = sse_tx.clone();
+            tokio::spawn(async move {
+                let body = serde_json::json!({
+                    "error": {"message": "server busy — no batch slot available",
+                              "type": "server_error", "code": "slot_exhausted"}
+                });
+                let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
+            });
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+        }
+        state.requests_queued.fetch_add(1, Ordering::Relaxed);
+        state.wait_queue.lock().push_back((req, tok_tx, false));
+    };
+
+    // Forward token text fragments as native chunks; count tokens + wall time
+    // for an accurate per-request dec_tps; emit a final stats event on EOS.
+    tokio::spawn(async move {
+        let start = std::time::Instant::now();
+        let mut completion_tokens: usize = 0;
+        while let Some(item) = tok_rx.recv().await {
+            match item {
+                Ok(text) => {
+                    let chunk = serde_json::json!({
+                        "tok_index": completion_tokens,
+                        "text": text,
+                    });
+                    completion_tokens += 1;
+                    if sse_tx.send(Ok(Event::default().data(chunk.to_string()))).await.is_err() {
+                        break;
+                    }
+                }
+                Err(()) => {
+                    let decode_ms = start.elapsed().as_secs_f64() * 1000.0;
+                    let stats = dismantle_generate_stats_json(
+                        prompt_tokens, completion_tokens, decode_ms,
+                        token_only_snapshot, lm_head,
+                    );
+                    let final_obj = serde_json::json!({ "stats": stats });
+                    let _ = sse_tx.send(Ok(Event::default().data(final_obj.to_string()))).await;
                     let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
                     break;
                 }

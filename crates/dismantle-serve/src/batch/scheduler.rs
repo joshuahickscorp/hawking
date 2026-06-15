@@ -147,6 +147,86 @@ fn prompt_length_bucket(len: usize) -> usize {
     }
 }
 
+/// Length of the longest common prefix of two token slices.
+#[inline]
+fn common_prefix_len(a: &[u32], b: &[u32]) -> usize {
+    a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
+}
+
+/// Track 5.4 — prefix-affinity prefill cohort selection (PURE).
+///
+/// Given the full slot table, pick the set of `Prefilling` slots that share the
+/// LONGEST common token prefix, returning their slot ids (capped at `max_batch`).
+/// Batching same-prefix prompts lets one prefill pass cover the shared prefix
+/// once (KV computed once, then branched per slot) instead of N times.
+///
+/// Determinism: candidates are processed in ascending slot-id order; the winning
+/// group maximizes (shared_prefix_len, group_size) with the smallest anchor
+/// slot-id as the final tie-break — a pure deterministic function of the table.
+///
+/// Latency-safety: when NO group of size >= 2 with shared_len >= `min_shared`
+/// exists, fall back to admitting Prefilling slots in slot-id order (the same
+/// set the Default/bucketed paths would admit) so a unique request is never
+/// starved waiting for a co-prefix partner.
+pub fn group_by_prefix(slots: &[Slot], max_batch: usize, min_shared: usize) -> Vec<u32> {
+    // Collect Prefilling candidates as (slot_id, prompt_ids), ascending by id.
+    let mut cands: Vec<(u32, &[u32])> = slots
+        .iter()
+        .filter(|s| s.state == SlotState::Prefilling)
+        .map(|s| (s.id, s.prompt_ids.as_slice()))
+        .collect();
+    cands.sort_by_key(|&(id, _)| id);
+    if cands.is_empty() || max_batch == 0 {
+        return Vec::new();
+    }
+
+    let mut best: Option<(usize, usize, u32, Vec<u32>)> = None; // (shared, size, anchor_id, ids)
+    for ai in 0..cands.len() {
+        let (anchor_id, anchor_ids) = cands[ai];
+        // (cpl_with_anchor, slot_id) for all other candidates.
+        let mut partners: Vec<(usize, u32)> = cands
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i != ai)
+            .map(|(_, &(id, ids))| (common_prefix_len(anchor_ids, ids), id))
+            .collect();
+        // Descending by cpl; tie-break ascending slot-id for determinism.
+        partners.sort_by(|x, y| y.0.cmp(&x.0).then(x.1.cmp(&y.1)));
+        let cap_partners = max_batch.saturating_sub(1).min(partners.len());
+        for k in 1..=cap_partners {
+            let shared_len = partners[k - 1].0; // k-th largest cpl (1-indexed)
+            if shared_len < min_shared {
+                break; // further k only lowers shared_len (sorted desc)
+            }
+            let size = k + 1;
+            let mut group: Vec<u32> = Vec::with_capacity(size);
+            group.push(anchor_id);
+            for &(_, pid) in &partners[..k] {
+                group.push(pid);
+            }
+            group.sort_unstable();
+            let better = match &best {
+                None => true,
+                Some((bs, bz, ba, _)) => {
+                    (shared_len, size).cmp(&(*bs, *bz)) == std::cmp::Ordering::Greater
+                        || ((shared_len, size) == (*bs, *bz) && anchor_id < *ba)
+                }
+            };
+            if better {
+                best = Some((shared_len, size, anchor_id, group));
+            }
+        }
+    }
+
+    match best {
+        Some((_, _, _, ids)) => ids.into_iter().take(max_batch).collect(),
+        None => {
+            // Latency-safety: no qualifying group -> FIFO admit by slot id.
+            cands.into_iter().take(max_batch).map(|(id, _)| id).collect()
+        }
+    }
+}
+
 pub struct Scheduler {
     pub slots: Vec<Slot>,
     pub max_batch_size: usize,
@@ -308,6 +388,20 @@ impl Scheduler {
             .take(max.min(self.max_batch_size))
             .map(|(_, _, id)| id)
             .collect()
+    }
+
+    /// Track 5.4 — prefix-affinity prefill selector.
+    ///
+    /// When `policy == PrefixGrouped`, return the same-prefix cohort from
+    /// `group_by_prefix`; otherwise fall back to the length-bucketed selector.
+    /// `min_shared = 8` matches the serve layer's `find_prefix_match_excluding`
+    /// threshold (8 tokens) so the chosen cohort is also a KV-copy candidate.
+    pub fn prefill_slots_prefix_grouped(&self, max: usize) -> Vec<u32> {
+        let cap = max.min(self.max_batch_size);
+        match self.policy {
+            BatchPolicy::PrefixGrouped => group_by_prefix(&self.slots, cap, 8),
+            _ => self.prefill_slots_bucketed(cap),
+        }
     }
 
     pub fn mark_prefill_complete(&mut self, id: u32) -> bool {
@@ -578,6 +672,80 @@ mod tests {
         assert_eq!(
             scheduler.prefill_slots_bucketed(4),
             scheduler.prefill_slots(4),
+        );
+    }
+
+    fn prefilling(scheduler: &mut Scheduler, prompts: &[(u32, Vec<u32>)]) {
+        for (id, ids) in prompts {
+            let slot = scheduler.slot_mut(*id).expect("slot");
+            slot.assign(req(8), ids.clone()); // assign -> SlotState::Prefilling
+        }
+    }
+
+    #[test]
+    fn group_by_prefix_cobatches_shared_prefix() {
+        // slots 0,1,2 share a 10-token prefix; slot 3 is unrelated.
+        let shared: Vec<u32> = (100..110).collect();
+        let mut a = shared.clone(); a.push(1);
+        let mut b = shared.clone(); b.push(2);
+        let mut c = shared.clone(); c.push(3);
+        let d: Vec<u32> = (900..912).collect();
+        let mut scheduler = Scheduler::new(4);
+        prefilling(&mut scheduler, &[(0, a), (1, b), (2, c), (3, d)]);
+
+        let chosen = group_by_prefix(&scheduler.slots, 4, 8);
+        // The 3 shared-prefix slots must co-batch; the unrelated one excluded.
+        assert!(chosen.contains(&0) && chosen.contains(&1) && chosen.contains(&2),
+            "shared-prefix trio must co-batch, got {chosen:?}");
+        assert!(!chosen.contains(&3), "unrelated slot must not join, got {chosen:?}");
+    }
+
+    #[test]
+    fn group_by_prefix_lone_unique_request_still_admits() {
+        // Single Prefilling slot with a unique prompt: must admit promptly
+        // (latency-safety), not return empty waiting for a co-prefix partner.
+        let mut scheduler = Scheduler::new(4);
+        prefilling(&mut scheduler, &[(2, (500..520).collect())]);
+        let chosen = group_by_prefix(&scheduler.slots, 4, 8);
+        assert_eq!(chosen, vec![2], "lone request must admit, got {chosen:?}");
+    }
+
+    #[test]
+    fn group_by_prefix_no_shared_prefix_falls_back_fifo() {
+        // Two slots, disjoint prompts (shared prefix 0 < min_shared) -> FIFO set,
+        // not starvation. Both admit, in slot-id order.
+        let mut scheduler = Scheduler::new(4);
+        prefilling(&mut scheduler, &[(0, vec![1,2,3,4,5,6,7,8,9]), (1, vec![90,91,92,93,94,95,96,97,98])]);
+        let chosen = group_by_prefix(&scheduler.slots, 4, 8);
+        assert_eq!(chosen, vec![0, 1], "disjoint prompts should FIFO-admit both, got {chosen:?}");
+    }
+
+    #[test]
+    fn group_by_prefix_deterministic_tie_break_prefers_longer_then_lower_anchor() {
+        // Group X = slots {0,1} share 12 tokens. Group Y = slots {2,3} share 8.
+        // Longer shared prefix (X) must win regardless of slot order.
+        let px: Vec<u32> = (0..12).collect();
+        let mut x0 = px.clone(); x0.push(70);
+        let mut x1 = px.clone(); x1.push(71);
+        let py: Vec<u32> = (200..208).collect();
+        let mut y0 = py.clone(); y0.push(72);
+        let mut y1 = py.clone(); y1.push(73);
+        let mut scheduler = Scheduler::new(4);
+        prefilling(&mut scheduler, &[(0, x0), (1, x1), (2, y0), (3, y1)]);
+        let chosen = group_by_prefix(&scheduler.slots, 2, 8);
+        assert_eq!(chosen, vec![0, 1], "longer-shared-prefix group must win, got {chosen:?}");
+        // Determinism: identical inputs -> identical output.
+        assert_eq!(chosen, group_by_prefix(&scheduler.slots, 2, 8));
+    }
+
+    #[test]
+    fn prefill_slots_prefix_grouped_falls_back_when_policy_off() {
+        // With BatchPolicy::Default the prefix selector must equal the bucketed one.
+        let mut scheduler = Scheduler::new(4);
+        for _ in 0..4 { scheduler.admit(req(4), (0..32u32).collect()).expect("admit"); }
+        assert_eq!(
+            scheduler.prefill_slots_prefix_grouped(4),
+            scheduler.prefill_slots_bucketed(4),
         );
     }
 }
