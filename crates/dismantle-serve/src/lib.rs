@@ -6,8 +6,10 @@
 pub mod batch;
 pub mod http;
 pub mod spec_gov;
+pub mod system_kv_bank;
 
 pub use batch::scheduler::BatchPolicy;
+pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
 
 use anyhow::Result;
 use std::net::SocketAddr;
@@ -60,6 +62,134 @@ impl std::fmt::Display for RuntimeProfile {
     }
 }
 
+/// Data-only description of the env-var levers a [`RuntimeProfile`] activates.
+///
+/// Pure: building it touches no process state. Both the CLI generate path
+/// (`apply_profile` in the `dismantle` bin) and `serve::run` consume it, so
+/// there is exactly ONE source of truth for the profile → lever mapping.
+///
+/// Caller contract:
+///   * `set_if_unset` — set each (key,val) ONLY when the var is currently absent
+///     (explicit `DISMANTLE_QWEN_*` env always wins → opt-out honoured).
+///   * `force_off`    — set each var to "0" UNCONDITIONALLY (`Exact` uses this to
+///     guarantee bit-identity even if a quality-trade var was set upstream).
+///   * `f16_kv`       — profile default for the f16 KV cache (None = leave to a
+///     more specific override such as `--f16-kv`).
+///   * `concurrent_qkv` — whether the profile wants concurrent Q/K/V encode.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LeverPlan {
+    pub set_if_unset: Vec<(&'static str, &'static str)>,
+    pub force_off: Vec<&'static str>,
+    pub f16_kv: Option<bool>,
+    pub concurrent_qkv: bool,
+}
+
+impl RuntimeProfile {
+    /// The validated fast-path lever bundle shared by Fast / Race / Efficient.
+    /// Bit-identical EXCEPT PREDEC_F16SCALES (f16 scale rounding) and VOCAB_PRUNE
+    /// (drops rare tokens) — mild quality trades; FFN_DOWN_Q4K requants Q6_K→Q4_K.
+    fn fast_bundle() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("DISMANTLE_QWEN_Q4K_LMHEAD", "1"),
+            ("DISMANTLE_QWEN_Q4K_PREDEC", "1"),
+            ("DISMANTLE_QWEN_PREDEC_F16SCALES", "1"),
+            ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"),
+            ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),
+        ]
+    }
+
+    /// Policy: which profile an UNSET `--profile` resolves to on the CLI front
+    /// door. The ONE place the "fast is the default" decision lives. The library
+    /// default (`RuntimeProfile::Default`) is deliberately NOT changed — embedders
+    /// and serve integration tests keep the conservative bit-identical default;
+    /// only the CLI `generate`/`bench` front door flips.
+    pub fn default_when_unset() -> Self {
+        Self::Fast
+    }
+
+    /// Levers to force OFF when resolving an UNSET `--profile` (the MIDDLE
+    /// variant): keep every fast lever EXCEPT `PREDEC_F16SCALES`, which failed
+    /// quality_oracle at 0.792/11.46% (e613dde). Net ≈ 38–39 t/s at low quality
+    /// risk. To ship FULL fast (~42) after the oracle re-passes f16-scales,
+    /// return `&[]` here.
+    pub fn default_unset_force_off() -> &'static [&'static str] {
+        &["DISMANTLE_QWEN_PREDEC_F16SCALES"]
+    }
+
+    /// Pure profile → lever mapping. Touches no env state.
+    pub fn lever_plan(&self) -> LeverPlan {
+        match self {
+            Self::Default => LeverPlan {
+                set_if_unset: Vec::new(),
+                force_off: Vec::new(),
+                f16_kv: None,
+                concurrent_qkv: false,
+            },
+            Self::Fast => LeverPlan {
+                set_if_unset: Self::fast_bundle(),
+                force_off: Vec::new(),
+                f16_kv: Some(false),
+                concurrent_qkv: true,
+            },
+            // Max t/s: fast bundle + f16 KV (frees bandwidth) + concurrent QKV.
+            Self::Race => LeverPlan {
+                set_if_unset: Self::fast_bundle(),
+                force_off: Vec::new(),
+                f16_kv: Some(true),
+                concurrent_qkv: true,
+            },
+            // Min J/tok under a t/s floor: fast bundle + energy mode + f16 KV.
+            Self::Efficient => {
+                let mut s = Self::fast_bundle();
+                s.push(("DISMANTLE_ENERGY_EFFICIENT", "1"));
+                LeverPlan {
+                    set_if_unset: s,
+                    force_off: Vec::new(),
+                    f16_kv: Some(true),
+                    concurrent_qkv: true,
+                }
+            }
+            // Bit-identical conservative path. Bit-identical default-ON levers
+            // (predec/pair/gate-up-fuse) stay on; force OFF every quality-trade
+            // var so output matches the golden default even if one was set upstream.
+            Self::Exact => LeverPlan {
+                set_if_unset: Vec::new(),
+                force_off: vec![
+                    "DISMANTLE_QWEN_PREDEC_F16SCALES", // f16 scale rounding
+                    "DISMANTLE_QWEN_FFN_DOWN_Q4K",     // Q6_K→Q4_K requant
+                    "DISMANTLE_QWEN_VOCAB_PRUNE",      // drops rare tokens
+                ],
+                f16_kv: Some(false),
+                concurrent_qkv: false,
+            },
+        }
+    }
+
+    /// One-line human contract: lever set + quality + J/tok statement. Printed
+    /// at startup so every profile "prints its active levers" (Track 2.2 gate).
+    pub fn contract(&self) -> String {
+        match self {
+            Self::Default => "profile=default: locked bit-identical default decode \
+                (predec + pair + gate/up-fuse, all bit-identical). quality: exact. J/tok: baseline."
+                .to_string(),
+            Self::Fast => "profile=fast: vocab-prune-32k + Q4K LM-head + Q4K FFN-down + predec \
+                + f16-scales. quality: mild trade (f16 scale rounding, rare-token prune). \
+                J/tok: lower than default (fewer bytes/token)."
+                .to_string(),
+            Self::Race => "profile=race: fast bundle + f16 KV + concurrent Q/K/V. \
+                quality: same mild trade as fast. goal: MAX tokens/sec."
+                .to_string(),
+            Self::Efficient => "profile=efficient: fast bundle + f16 KV + energy-efficient gather \
+                window. quality: same mild trade as fast. goal: MIN J/tok under a t/s floor."
+                .to_string(),
+            Self::Exact => "profile=exact: bit-identical conservative path. Forces OFF f16-scales \
+                / Q4K-FFN-down / vocab-prune. quality: EXACT (greedy bit-identical to default). \
+                J/tok: baseline."
+                .to_string(),
+        }
+    }
+}
+
 /// Energy-mode controls gather-window sizing and future energy-aware batching.
 ///
 /// `Off`       — no gather window (lowest latency).
@@ -97,6 +227,24 @@ impl EnergyMode {
             Self::Balanced  => 3,
             Self::Efficient => 8,
         }
+    }
+
+    /// Pure gather/admission decision — the predicate the continuous-batch
+    /// loop uses to decide whether to wait (sleep up to `gather_window_ms()`)
+    /// for more requests before committing a prefill batch.
+    ///
+    /// Returns `true` ONLY when waiting can help AND is safe:
+    ///   * `ready > 0`              — at least one slot is queued (never wait on empty),
+    ///   * `max_batch > 1`          — single-slot servers can't batch → never wait
+    ///                                (a latency-sensitive single is NEVER delayed),
+    ///   * `ready < max_batch`      — batch already full → commit now, don't wait,
+    ///   * `gather_window_ms() > 0` — `Off` disables the window entirely.
+    ///
+    /// This is the extracted, unit-testable form of the inline predicate in
+    /// `serve::run()` (the `prefilling.len() < max_batch && gather_window_ms > 0`
+    /// guard). Keep the two in sync: the loop should call this helper.
+    pub fn should_gather(&self, ready: usize, max_batch: usize) -> bool {
+        ready > 0 && max_batch > 1 && ready < max_batch && self.gather_window_ms() > 0
     }
 }
 
@@ -248,6 +396,10 @@ impl Default for ServeOptions {
     }
 }
 
+fn dismantle_serve_system_kv_bank_default() -> system_kv_bank::SystemPromptKvBank {
+    system_kv_bank::SystemPromptKvBank::new()
+}
+
 pub async fn run(opts: ServeOptions) -> Result<()> {
     use dismantle_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
 
@@ -300,41 +452,17 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // Fast / Race / Efficient: opt into the both-metrics-optimal fast-path.
     // Exact: clear quality-trade vars so the path is bit-identical.
     // All of these respect explicit DISMANTLE_QWEN_*=0 opt-outs set before launch.
-    match &effective_profile {
-        RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient => {
-            for (k, v) in [
-                ("DISMANTLE_QWEN_Q4K_LMHEAD",       "1"),
-                ("DISMANTLE_QWEN_Q4K_PREDEC",        "1"),
-                ("DISMANTLE_QWEN_PREDEC_F16SCALES",  "1"),
-                ("DISMANTLE_QWEN_VOCAB_PRUNE",       "32000"),
-                ("DISMANTLE_QWEN_FFN_DOWN_Q4K",      "1"),
-            ] {
-                if std::env::var_os(k).is_none() {
-                    std::env::set_var(k, v);
-                }
-            }
-            if effective_profile == RuntimeProfile::Efficient {
-                if std::env::var_os("DISMANTLE_ENERGY_EFFICIENT").is_none() {
-                    std::env::set_var("DISMANTLE_ENERGY_EFFICIENT", "1");
-                }
-            }
+    // Single source of truth = RuntimeProfile::lever_plan() (shared with the CLI
+    // generate path). set_if_unset respects explicit DISMANTLE_QWEN_*=0 opt-outs;
+    // force_off enforces Exact's bit-identity even if a quality-trade var was set.
+    let plan = effective_profile.lever_plan();
+    for (k, v) in &plan.set_if_unset {
+        if std::env::var_os(k).is_none() {
+            std::env::set_var(k, v);
         }
-        RuntimeProfile::Exact => {
-            // Clear quality-trade vars unless the user pinned them explicitly.
-            // Only clear if the process-level value matches the default "on"
-            // (i.e. we set it, not the user).
-            for k in [
-                "DISMANTLE_QWEN_PREDEC_F16SCALES",
-            ] {
-                // env::remove_var is safe here — Exact opts out of quality trades.
-                if std::env::var_os(k).map(|v| v == "1").unwrap_or(false) {
-                    // If it wasn't set by the user we clear it.  We can't
-                    // distinguish, so we leave it — the user can always set =0.
-                    let _ = k; // intentional no-op: document the intent only
-                }
-            }
-        }
-        RuntimeProfile::Default => {}
+    }
+    for k in &plan.force_off {
+        std::env::set_var(k, "0");
     }
 
     // ── Track 5.3: f16 KV cache env var ─────────────────────────────────────
@@ -347,10 +475,7 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     //   Some(false) → force off regardless of profile
     //   None        → use the profile/workload default
     {
-        let profile_wants_f16_kv = matches!(
-            effective_profile,
-            RuntimeProfile::Race | RuntimeProfile::Efficient
-        );
+        let profile_wants_f16_kv = plan.f16_kv.unwrap_or(false);
         let enable = match opts.f16_kv {
             Some(v)  => v,
             None     => profile_wants_f16_kv,
@@ -369,10 +494,8 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     // concurrent_qkv: ON for fast/race/efficient — overlaps Q/K/V projections
     // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
     // but valuable for the race/efficient profile throughput maximization.
-    let concurrent_qkv = matches!(
-        effective_profile,
-        RuntimeProfile::Fast | RuntimeProfile::Race | RuntimeProfile::Efficient
-    ) || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV").map(|v| v == "1").unwrap_or(false);
+    let concurrent_qkv = plan.concurrent_qkv
+        || std::env::var_os("DISMANTLE_QWEN_CONCURRENT_QKV").map(|v| v == "1").unwrap_or(false);
 
     let cfg = EngineConfig {
         max_seq_len: 4096,
@@ -451,6 +574,9 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
         requests_admitted: Arc::new(AtomicU64::new(0)),
         tokens_generated: Arc::new(AtomicU64::new(0)),
         requests_queued: Arc::new(AtomicU64::new(0)),
+        system_kv_bank: Arc::new(parking_lot::Mutex::new(
+            dismantle_serve_system_kv_bank_default(),
+        )),
     };
 
     // ── Background continuous-batching loop ───────────────────────────────
@@ -477,10 +603,16 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                 // (off=0ms, balanced=3ms, efficient=8ms). 0ms disables the
                 // window entirely. Non-zero values allow co-arriving requests
                 // to be batched together.
-                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
-                if !prefilling.is_empty() && max_batch > 1 && prefilling.len() < max_batch && gather_window_ms > 0 {
+                // Track 5: dispatch on scheduler.policy. prefill_slots_prefix_grouped
+                // returns the same-prefix cohort (group_by_prefix, min_shared=8) when
+                // policy == PrefixGrouped, else delegates to prefill_slots_bucketed —
+                // byte-for-byte identical for Default/GreedyFirst. The policy was
+                // installed at startup (`d.scheduler.policy = effective_batch_policy`),
+                // so no extra binding is captured here.
+                let mut prefilling: Vec<u32> = state2.driver.lock().scheduler.prefill_slots_prefix_grouped(max_batch);
+                if effective_energy.should_gather(prefilling.len(), max_batch) {
                     std::thread::sleep(std::time::Duration::from_millis(gather_window_ms));
-                    prefilling = state2.driver.lock().scheduler.prefill_slots_bucketed(max_batch);
+                    prefilling = state2.driver.lock().scheduler.prefill_slots_prefix_grouped(max_batch);
                 }
                 if !prefilling.is_empty() {
                     let slots_data: Vec<(usize, Vec<u32>)> = prefilling.iter().filter_map(|&id| {
@@ -630,10 +762,24 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                             .map(|s| s.prompt_ids.clone())
                                             .unwrap_or_default();
                                         if !prompt_ids.is_empty() {
-                                            let prefix_match = state2.driver.lock()
+                                            let banked_len = http::banked_len_for(&prompt_ids);
+                                            // 1) Live-slot match (Track 5.1): a DIFFERENT active slot.
+                                            let mut src: Option<(u32, usize)> = state2.driver.lock()
                                                 .scheduler.prefix_index
                                                 .find_prefix_match_excluding(&prompt_ids, 8, sid);
-                                            if let Some((src_slot, shared_len)) = prefix_match {
+                                            // 2) On a live MISS, consult the cross-request bank
+                                            //    (Track 5.2): a slot that previously held this fixed
+                                            //    system prefix even though it has since freed. Pure
+                                            //    CPU lookup; the bank stores no KV.
+                                            if src.is_none() {
+                                                if let Some(entry) = state2.system_kv_bank.lock()
+                                                    .lookup(&prompt_ids, banked_len) {
+                                                    if entry.source_slot != sid {
+                                                        src = Some((entry.source_slot, entry.prefix_len));
+                                                    }
+                                                }
+                                            }
+                                            if let Some((src_slot, shared_len)) = src {
                                                 tracing::debug!(
                                                     "[prefix-reuse] request matched slot {} at prefix_len={}",
                                                     src_slot, shared_len
@@ -645,18 +791,30 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
                                                         shared_len,
                                                     );
                                                 if copy_result.is_ok() {
-                                                    let mut driver = state2.driver.lock();
-                                                    driver.lane_stats.prefix_reuse_count += 1;
-                                                    // Record prefix_skip so the prefill path can
-                                                    // call prefill_slot_from_pos instead of full prefill.
-                                                    if let Some(slot) = driver.scheduler.slots
-                                                        .iter_mut().find(|s| s.id == sid) {
-                                                        slot.prefix_skip = shared_len;
+                                                    {
+                                                        let mut driver = state2.driver.lock();
+                                                        driver.lane_stats.prefix_reuse_count += 1;
+                                                        // prefix_skip so prefill can call
+                                                        // prefill_slot_from_pos instead of full prefill.
+                                                        if let Some(slot) = driver.scheduler.slots
+                                                            .iter_mut().find(|s| s.id == sid) {
+                                                            slot.prefix_skip = shared_len;
+                                                        }
                                                     }
+                                                    // Bank that THIS slot now holds copyable KV for the
+                                                    // fixed leading span, so the NEXT serial turn (after
+                                                    // this slot frees) still finds a source.
+                                                    state2.system_kv_bank.lock()
+                                                        .record(&prompt_ids, banked_len, sid);
                                                 }
-                                                // If copy_kv_prefix_to_slot returns Err (e.g.
-                                                // Unimplemented), silently skip — normal prefill
-                                                // will proceed from position 0.
+                                                // copy Err (e.g. Unimplemented / stale banked slot):
+                                                // silently skip — normal prefill proceeds from pos 0.
+                                            } else {
+                                                // No source yet, but this freshly-prefilled slot will
+                                                // hold the span shortly — bank it so a later serial turn
+                                                // can reuse it. (record() rejects sub-min spans itself.)
+                                                state2.system_kv_bank.lock()
+                                                    .record(&prompt_ids, banked_len, sid);
                                             }
                                         }
                                     }
@@ -678,4 +836,147 @@ pub async fn run(opts: ServeOptions) -> Result<()> {
     let listener = tokio::net::TcpListener::bind(opts.addr).await?;
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod profile_lever_tests {
+    use super::RuntimeProfile as RP;
+
+    fn has(plan_keys: &[(&'static str, &'static str)], k: &str) -> bool {
+        plan_keys.iter().any(|(kk, _)| *kk == k)
+    }
+
+    #[test]
+    fn default_touches_nothing() {
+        let p = RP::Default.lever_plan();
+        assert!(p.set_if_unset.is_empty());
+        assert!(p.force_off.is_empty());
+        assert_eq!(p.f16_kv, None);
+        assert!(!p.concurrent_qkv);
+    }
+
+    #[test]
+    fn fast_sets_full_bundle_no_f16kv() {
+        let p = RP::Fast.lever_plan();
+        for k in [
+            "DISMANTLE_QWEN_Q4K_LMHEAD",
+            "DISMANTLE_QWEN_Q4K_PREDEC",
+            "DISMANTLE_QWEN_PREDEC_F16SCALES",
+            "DISMANTLE_QWEN_VOCAB_PRUNE",
+            "DISMANTLE_QWEN_FFN_DOWN_Q4K",
+        ] {
+            assert!(has(&p.set_if_unset, k), "fast must set {k}");
+        }
+        assert_eq!(p.f16_kv, Some(false), "fast leaves f16-KV off");
+        assert!(p.concurrent_qkv);
+        assert!(p.force_off.is_empty());
+    }
+
+    #[test]
+    fn race_is_fast_plus_f16kv() {
+        let p = RP::Race.lever_plan();
+        assert!(has(&p.set_if_unset, "DISMANTLE_QWEN_VOCAB_PRUNE"));
+        assert_eq!(p.f16_kv, Some(true), "race enables f16-KV");
+        assert!(p.concurrent_qkv);
+        assert!(!has(&p.set_if_unset, "DISMANTLE_ENERGY_EFFICIENT"));
+    }
+
+    #[test]
+    fn efficient_adds_energy_and_f16kv() {
+        let p = RP::Efficient.lever_plan();
+        assert!(
+            has(&p.set_if_unset, "DISMANTLE_ENERGY_EFFICIENT"),
+            "efficient sets energy mode"
+        );
+        assert_eq!(p.f16_kv, Some(true), "efficient enables f16-KV");
+        assert!(has(&p.set_if_unset, "DISMANTLE_QWEN_Q4K_PREDEC"));
+    }
+
+    #[test]
+    fn exact_force_offs_every_quality_trade() {
+        let p = RP::Exact.lever_plan();
+        for k in [
+            "DISMANTLE_QWEN_PREDEC_F16SCALES",
+            "DISMANTLE_QWEN_FFN_DOWN_Q4K",
+            "DISMANTLE_QWEN_VOCAB_PRUNE",
+        ] {
+            assert!(p.force_off.contains(&k), "exact must force-off {k}");
+        }
+        assert!(p.set_if_unset.is_empty(), "exact sets no quality-trade var");
+        assert_eq!(p.f16_kv, Some(false), "exact leaves f16-KV off (bit-identity)");
+        assert!(!p.concurrent_qkv);
+    }
+
+    #[test]
+    fn contracts_are_nonempty_and_self_label() {
+        for rp in [RP::Default, RP::Fast, RP::Race, RP::Efficient, RP::Exact] {
+            let c = rp.contract();
+            assert!(c.contains(rp.as_str()), "contract for {rp} must name itself");
+            assert!(c.len() > 20);
+        }
+    }
+
+    #[test]
+    fn from_str_roundtrips_all_known() {
+        for s in ["default", "fast", "race", "efficient", "exact"] {
+            assert_eq!(RP::from_str(s).unwrap().as_str(), s);
+        }
+        assert!(
+            RP::from_str("m3-pro-18gb").is_none(),
+            "hardware string is not a runtime profile"
+        );
+    }
+
+    /// Track 0/9 lock-in: the "fast is the CLI default" decision must keep
+    /// resolving an UNSET `--profile` to `Fast`. Validated GPU-side once
+    /// (~38-39 t/s middle variant); pin it on CPU so a refactor can't silently
+    /// flip the default back to the conservative bit-identical path.
+    #[test]
+    fn default_when_unset_is_fast() {
+        assert_eq!(
+            RP::default_when_unset(),
+            RP::Fast,
+            "unset --profile must resolve to fast (the shipped CLI default)"
+        );
+    }
+
+    /// Track 0/9 lock-in: the UNSET-default contract is exactly
+    /// "fast bundle MINUS PREDEC_F16SCALES". i.e. the MIDDLE variant keeps the
+    /// 4 bit-identical-ish fast levers (Q4K LM-head, predec, vocab-prune,
+    /// Q4K FFN-down) but force-OFFs f16-scales (it failed quality_oracle
+    /// 0.792/11.46% @ e613dde). This pins both halves so neither can drift.
+    #[test]
+    fn unset_default_is_fast_minus_f16scales() {
+        let bundle = RP::Fast.lever_plan().set_if_unset; // == fast_bundle()
+        let force_off = RP::default_unset_force_off();
+
+        // (i) f16-scales is the one-and-only lever the unset default disables.
+        assert_eq!(
+            force_off,
+            &["DISMANTLE_QWEN_PREDEC_F16SCALES"],
+            "unset default must force-off exactly PREDEC_F16SCALES"
+        );
+
+        // (ii) the 4 kept fast levers remain in the bundle (so unset still
+        //      runs the fast path minus f16-scales, not the conservative path).
+        for k in [
+            "DISMANTLE_QWEN_Q4K_LMHEAD",
+            "DISMANTLE_QWEN_Q4K_PREDEC",
+            "DISMANTLE_QWEN_VOCAB_PRUNE",
+            "DISMANTLE_QWEN_FFN_DOWN_Q4K",
+        ] {
+            assert!(
+                has(&bundle, k),
+                "fast bundle must keep {k} (a kept lever under the unset default)"
+            );
+        }
+
+        // (iii) f16-scales IS in the full fast bundle (so the force-off is what
+        //       removes it for the unset default — not its absence). This is the
+        //       load-bearing invariant: unset = fast bundle XOR-removed of f16s.
+        assert!(
+            has(&bundle, force_off[0]),
+            "the force-off lever must exist in the fast bundle (else force-off is a no-op)"
+        );
+    }
 }

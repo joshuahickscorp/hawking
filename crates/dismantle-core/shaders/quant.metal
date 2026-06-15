@@ -2814,6 +2814,247 @@ kernel void gemm_q4_k_v4_predec_pair_2r(
     }
 }
 
+// ── gemm_q4_k_v4_predec_pair_2r_inline ───────────────────────────────────────
+// Track E3 — 2-row geometry with inline scale reads. This isolates scale access
+// style from row-ILP geometry: same rows/TG and accumulator count as pair_2r,
+// but no 64-float scale preload arrays.
+// Parity: bit-identical to pair_2r (same per-accumulator FMA order).
+// Grid: (ceil(rows/16)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_2r_inline(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.0f, pg1 = 0.0f, pu0 = 0.0f, pu1 = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul;
+        uint64_t so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul;
+        uint64_t so1 = rs1 + (uint64_t)b * 16ul;
+
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg0 += (g_scales[so0+(uint64_t)(k0*2u)] * (float)(qg0 & 0x0Fu) - g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += (g_scales[so0+(uint64_t)(k1*2u)] * (float)(qg0 >> 4u)   - g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu0 += (u_scales[so0+(uint64_t)(k0*2u)] * (float)(qu0 & 0x0Fu) - u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += (u_scales[so0+(uint64_t)(k1*2u)] * (float)(qu0 >> 4u)   - u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg1 += (g_scales[so1+(uint64_t)(k0*2u)] * (float)(qg1 & 0x0Fu) - g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += (g_scales[so1+(uint64_t)(k1*2u)] * (float)(qg1 >> 4u)   - g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu1 += (u_scales[so1+(uint64_t)(k0*2u)] * (float)(qu1 & 0x0Fu) - u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += (u_scales[so1+(uint64_t)(k1*2u)] * (float)(qu1 >> 4u)   - u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+}
+
+// ── gemm_q4_k_v4_predec_pair_2r_inline_nox ───────────────────────────────────
+// Track F1 — E3's 2-row inline-scale gate+up pair, ALSO dropping the xl[8]
+// activation preload. x0/x1 are read straight from device memory inside the pi
+// loop (same 8 coalesced loads/block as the preload — each x value still feeds
+// all 4 accumulators within its pi iteration), but only 2 live x-registers
+// instead of 8. The f16x kill measured x at ~0.026% of this GEMV's traffic, so
+// re-reading per-pi costs ~0 bandwidth; the goal is to free ~6 registers and lift
+// occupancy ON TOP of the E3 scale-inline win — testing whether the dominant
+// (46.6%-of-decode) pair kernel is STILL register/occupancy-bound after E3.
+// Parity: bit-identical to pair_2r / pair_2r_inline (identical per-accumulator
+// FMA order, identical x values — xl[k] was just x[b*256+k*32+lane]).
+// Grid: (ceil(rows/16)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_2r_inline_nox(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.0f, pg1 = 0.0f, pu0 = 0.0f, pu1 = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul;
+        uint64_t so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul;
+        uint64_t so1 = rs1 + (uint64_t)b * 16ul;
+        uint64_t xb  = (uint64_t)b * 256ul;
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = x[xb + (uint64_t)(k0 * 32u + simd_lane)];
+            float x1 = x[xb + (uint64_t)(k1 * 32u + simd_lane)];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg0 += (g_scales[so0+(uint64_t)(k0*2u)] * (float)(qg0 & 0x0Fu) - g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += (g_scales[so0+(uint64_t)(k1*2u)] * (float)(qg0 >> 4u)   - g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu0 += (u_scales[so0+(uint64_t)(k0*2u)] * (float)(qu0 & 0x0Fu) - u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += (u_scales[so0+(uint64_t)(k1*2u)] * (float)(qu0 >> 4u)   - u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg1 += (g_scales[so1+(uint64_t)(k0*2u)] * (float)(qg1 & 0x0Fu) - g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += (g_scales[so1+(uint64_t)(k1*2u)] * (float)(qg1 >> 4u)   - g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu1 += (u_scales[so1+(uint64_t)(k0*2u)] * (float)(qu1 & 0x0Fu) - u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += (u_scales[so1+(uint64_t)(k1*2u)] * (float)(qu1 >> 4u)   - u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+}
+
+// ── gemm_q4_k_v4_predec_pair_3r ──────────────────────────────────────────────
+// Track E2 — 3-row-per-simdgroup gate+up pair. Custom middle geometry between
+// the proven 2r and flat/slightly-negative 4r forms: 24 rows/TG, 6 independent
+// accumulators, inline scale reads. The goal is to harvest some row-level ILP
+// and dispatch-count reduction before 4r/8r register pressure dominates.
+// Parity: bit-identical to pair_2r (same per-accumulator FMA order).
+// Grid: (ceil(rows/24)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_3r(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // 3 rows per simdgroup: row0, row0+8, row0+16.
+    // 24 rows per TG (8 simdgroups × 3 rows each).
+    uint row0 = gid * 24u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u, row2 = row0 + 16u;
+    bool has1 = row1 < rows, has2 = row2 < rows;
+    uint r1 = has1 ? row1 : row0;
+    uint r2 = has2 ? row2 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs2 = (uint64_t)r2   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.f, pg1 = 0.f, pg2 = 0.f;
+    float pu0 = 0.f, pu1 = 0.f, pu2 = 0.f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b*144ul, so0 = rs0 + (uint64_t)b*16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b*144ul, so1 = rs1 + (uint64_t)b*16ul;
+        uint64_t bo2 = rb2 + (uint64_t)b*144ul, so2 = rs2 + (uint64_t)b*16ul;
+
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b*256ul + (uint64_t)(k*32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg0 += (g_scales[so0+(uint64_t)(k0*2u)] * (float)(qg0&0x0Fu) - g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += (g_scales[so0+(uint64_t)(k1*2u)] * (float)(qg0>>4u)   - g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu0 += (u_scales[so0+(uint64_t)(k0*2u)] * (float)(qu0&0x0Fu) - u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += (u_scales[so0+(uint64_t)(k1*2u)] * (float)(qu0>>4u)   - u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg1 += (g_scales[so1+(uint64_t)(k0*2u)] * (float)(qg1&0x0Fu) - g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += (g_scales[so1+(uint64_t)(k1*2u)] * (float)(qg1>>4u)   - g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu1 += (u_scales[so1+(uint64_t)(k0*2u)] * (float)(qu1&0x0Fu) - u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += (u_scales[so1+(uint64_t)(k1*2u)] * (float)(qu1>>4u)   - u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg2 = wg_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pg2 += (g_scales[so2+(uint64_t)(k0*2u)] * (float)(qg2&0x0Fu) - g_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pg2 += (g_scales[so2+(uint64_t)(k1*2u)] * (float)(qg2>>4u)   - g_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu2 = wu_q4[bo2 + 16ul + (uint64_t)pi*32ul + (uint64_t)simd_lane];
+            pu2 += (u_scales[so2+(uint64_t)(k0*2u)] * (float)(qu2&0x0Fu) - u_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pu2 += (u_scales[so2+(uint64_t)(k1*2u)] * (float)(qu2>>4u)   - u_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+    if (has2) {
+        pg2 = simd_sum(pg2); pu2 = simd_sum(pu2);
+        if (simd_lane == 0u) { yg[row2] = pg2; yu[row2] = pu2; }
+    }
+}
+
 // ── gemm_q4_k_v4_predec_pair_4r ──────────────────────────────────────────────
 // 4-row-per-simdgroup variant of the gate+up pair (Track B2, opt-in via
 // DISMANTLE_QWEN_PAIR_4R=1).  Uses inline scale access (no preload array) so
@@ -2998,6 +3239,224 @@ kernel void gemm_q4_k_v4_predec_pair_f16s(
     }
 }
 
+// ── gemm_q4_k_v4_predec_pair_f16s_nox ────────────────────────────────────────
+// Track F2 — the FAST/headline pair kernel (pair_f16s, 46.6% of decode on the
+// f16-scale profile) with the xl[8] activation preload removed. CRITICAL: the
+// half-width scale PRELOAD is KEPT (E4 proved inlining the f16 scales de-coalesces
+// the 2-byte half loads and loses −5.6%); this lever drops ONLY the f32 x preload,
+// reading x0/x1 from device memory inside the pi loop. Each x value still feeds
+// the gate and up FMAs within its pi iteration, so it stays at 8 coalesced f32
+// loads/block (x ≈ 0.026% of traffic per the f16x kill ⇒ ~0 bandwidth cost), while
+// 2 live x-registers replace 8 → frees ~6 registers to lift occupancy on the
+// headline kernel. Independent of F1: tests the x-preload axis on the f16-scale
+// path that E4's scale-inline loss did NOT cover.
+// Parity: bit-identical to pair_f16s (same half scales, same per-row FMA order,
+// same x values).
+// Grid: (ceil(rows/8)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_f16s_nox(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const half*  g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const half*  u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial_g = 0.0f;
+    float partial_u = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        // Half-scale PRELOAD kept (coalesced 2-byte loads — E4 showed inlining
+        // these loses on the f16 path). Only the x preload below is dropped.
+        float dsg[8], dmg[8], dsu[8], dmu[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            dsg[sub] = (float)g_scales[so + (uint64_t)(sub * 2u)];
+            dmg[sub] = (float)g_scales[so + (uint64_t)(sub * 2u + 1u)];
+            dsu[sub] = (float)u_scales[so + (uint64_t)(sub * 2u)];
+            dmu[sub] = (float)u_scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        uint64_t xb = (uint64_t)b * 256ul;
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = x[xb + (uint64_t)(k0 * 32u + simd_lane)];
+            float x1 = x[xb + (uint64_t)(k1 * 32u + simd_lane)];
+            uchar qbg = wg_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_g += (dsg[k0] * (float)(qbg & 0x0Fu) - dmg[k0]) * x0;
+            partial_g += (dsg[k1] * (float)(qbg >> 4u)   - dmg[k1]) * x1;
+            uchar qbu = wu_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_u += (dsu[k0] * (float)(qbu & 0x0Fu) - dmu[k0]) * x0;
+            partial_u += (dsu[k1] * (float)(qbu >> 4u)   - dmu[k1]) * x1;
+        }
+    }
+
+    partial_g = simd_sum(partial_g);
+    partial_u = simd_sum(partial_u);
+    if (simd_lane == 0u) {
+        yg[base_row] = partial_g;
+        yu[base_row] = partial_u;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_pair_f16s_halfreg ────────────────────────────────────
+// Track F3 — the FAST/headline f16-scale pair with the scale preload kept in
+// HALF registers instead of widened to float, AND the xl[8] activation preload
+// dropped. This attacks the largest register consumer on the headline kernel:
+// pair_f16s widens the 32 preloaded scales to f32 (32 registers); storing them
+// as `half` lets the Apple-GPU fp16 register file pack 2/reg (~16 registers), and
+// the per-pi x reads (F2's nox) drop another ~6 — together a much larger register
+// cut than F2 alone, aimed at crossing an occupancy threshold E3 did not.
+// CRITICAL difference from E4 (which LOST −5.6%): the scale loads stay a COALESCED
+// preload (contiguous half reads), NOT inlined/scattered — only the register WIDTH
+// changes; widening to float happens at the FMA. (float)half is exact, so this is
+// BIT-IDENTICAL to pair_f16s (same half values, same per-row FMA order).
+// Grid: (ceil(rows/8)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_f16s_halfreg(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const half*  g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const half*  u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint                gid       [[threadgroup_position_in_grid]],
+    uint                simd_lane [[thread_index_in_simdgroup]],
+    uint                simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row = gid * 8u + simd_id;
+    if (base_row >= rows) return;
+
+    uint  blocks_per_row = cols / 256u;
+    uint64_t row_byte_off  = (uint64_t)base_row * (uint64_t)blocks_per_row * 144ul;
+    uint64_t row_scale_off = (uint64_t)base_row * (uint64_t)blocks_per_row * 16ul;
+    float partial_g = 0.0f;
+    float partial_u = 0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo = row_byte_off  + (uint64_t)b * 144ul;
+        uint64_t so = row_scale_off + (uint64_t)b * 16ul;
+
+        // Coalesced half preload, kept in HALF registers (no widen here).
+        half dsg[8], dmg[8], dsu[8], dmu[8];
+        for (uint sub = 0; sub < 8u; ++sub) {
+            dsg[sub] = g_scales[so + (uint64_t)(sub * 2u)];
+            dmg[sub] = g_scales[so + (uint64_t)(sub * 2u + 1u)];
+            dsu[sub] = u_scales[so + (uint64_t)(sub * 2u)];
+            dmu[sub] = u_scales[so + (uint64_t)(sub * 2u + 1u)];
+        }
+
+        uint64_t xb = (uint64_t)b * 256ul;
+        for (uint pi = 0; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = x[xb + (uint64_t)(k0 * 32u + simd_lane)];
+            float x1 = x[xb + (uint64_t)(k1 * 32u + simd_lane)];
+            uchar qbg = wg_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_g += ((float)dsg[k0] * (float)(qbg & 0x0Fu) - (float)dmg[k0]) * x0;
+            partial_g += ((float)dsg[k1] * (float)(qbg >> 4u)   - (float)dmg[k1]) * x1;
+            uchar qbu = wu_q4[bo + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            partial_u += ((float)dsu[k0] * (float)(qbu & 0x0Fu) - (float)dmu[k0]) * x0;
+            partial_u += ((float)dsu[k1] * (float)(qbu >> 4u)   - (float)dmu[k1]) * x1;
+        }
+    }
+
+    partial_g = simd_sum(partial_g);
+    partial_u = simd_sum(partial_u);
+    if (simd_lane == 0u) {
+        yg[base_row] = partial_g;
+        yu[base_row] = partial_u;
+    }
+}
+
+// ── gemm_q4_k_v4_predec_pair_2r_inline_f16s ──────────────────────────────────
+// Track E4 — E3 2-row inline geometry + A6.5 half-width scale tables.
+// Same rows/TG as pair_2r and same scale byte volume as pair_f16s, with no
+// scale preload arrays. NOT bit-identical to f32 scales, but should be exactly
+// equal to pair_f16s for the same half-scale tables and per-row FMA order.
+// Grid: (ceil(rows/16)*256, 1, 1)   TG: (256, 1, 1)
+kernel void gemm_q4_k_v4_predec_pair_2r_inline_f16s(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const half*  g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const half*  u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint row0 = gid * 16u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u;
+    bool has1 = row1 < rows;
+    uint r1 = has1 ? row1 : row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)blocks_per_row * 16ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 144ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)blocks_per_row * 16ul;
+
+    float pg0 = 0.0f, pg1 = 0.0f, pu0 = 0.0f, pu1 = 0.0f;
+
+    for (uint b = 0u; b < blocks_per_row; ++b) {
+        uint64_t bo0 = rb0 + (uint64_t)b * 144ul;
+        uint64_t so0 = rs0 + (uint64_t)b * 16ul;
+        uint64_t bo1 = rb1 + (uint64_t)b * 144ul;
+        uint64_t so1 = rs1 + (uint64_t)b * 16ul;
+
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b * 256ul + (uint64_t)(k * 32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg0 += ((float)g_scales[so0+(uint64_t)(k0*2u)] * (float)(qg0 & 0x0Fu) - (float)g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += ((float)g_scales[so0+(uint64_t)(k1*2u)] * (float)(qg0 >> 4u)   - (float)g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu0 = wu_q4[bo0 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu0 += ((float)u_scales[so0+(uint64_t)(k0*2u)] * (float)(qu0 & 0x0Fu) - (float)u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += ((float)u_scales[so0+(uint64_t)(k1*2u)] * (float)(qu0 >> 4u)   - (float)u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pg1 += ((float)g_scales[so1+(uint64_t)(k0*2u)] * (float)(qg1 & 0x0Fu) - (float)g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += ((float)g_scales[so1+(uint64_t)(k1*2u)] * (float)(qg1 >> 4u)   - (float)g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qu1 = wu_q4[bo1 + 16ul + (uint64_t)pi * 32ul + (uint64_t)simd_lane];
+            pu1 += ((float)u_scales[so1+(uint64_t)(k0*2u)] * (float)(qu1 & 0x0Fu) - (float)u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += ((float)u_scales[so1+(uint64_t)(k1*2u)] * (float)(qu1 >> 4u)   - (float)u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0 = simd_sum(pg0); pu0 = simd_sum(pu0);
+    if (simd_lane == 0u) { yg[row0] = pg0; yu[row0] = pu0; }
+    if (has1) {
+        pg1 = simd_sum(pg1); pu1 = simd_sum(pu1);
+        if (simd_lane == 0u) { yg[row1] = pg1; yu[row1] = pu1; }
+    }
+}
+
 // ── gemm_q4_k_v4_predec_pair_4r_f16s ─────────────────────────────────────────
 // Track D4 (2026-06-06): combines pair_4r (32 rows/TG) with f16-scales bandwidth.
 // For gate+up (11008 rows × 2048 cols): 344 TGs vs 688 (4r) or 1376 (f16s 1r).
@@ -3098,6 +3557,152 @@ kernel void gemm_q4_k_v4_predec_pair_4r_f16s(
         pg3 = simd_sum(pg3); pu3 = simd_sum(pu3);
         if (simd_lane == 0u) { yg[row3] = pg3; yu[row3] = pu3; }
     }
+}
+
+// ── gemm_q4_k_v4_predec_pair_8r ──────────────────────────────────────────────
+// Track E1 — 8-rows-per-simdgroup gate+up pair. Extends pair_4r with 4 more
+// rows (8 per simdgroup = 64 rows/TG vs 32 for 4r, 16 for 2r). The 16
+// independent FMA chains (gate0-7 + up0-7) give the GPU's out-of-order engine
+// more room to overlap weight reads with computation — better memory latency
+// hiding on bandwidth-bound GEMV. Activation xl[8] is shared across all 16
+// chains (amortized 16× per element). Requires rows % 8 == 0 is NOT required
+// (has1-7 guards handle the tail), but performance is best at multiples of 64.
+//
+// Grid: (ceil(rows/64)*256, 1, 1)  TG: (256, 1, 1)
+// rows = intermediate (11008 for Qwen-3B) → 172 TGs vs 344 (4r) / 688 (2r).
+kernel void gemm_q4_k_v4_predec_pair_8r(
+    device const uchar* wg_q4   [[buffer(0)]],
+    device const float* g_scales[[buffer(1)]],
+    device const uchar* wu_q4   [[buffer(2)]],
+    device const float* u_scales[[buffer(3)]],
+    device const float* x       [[buffer(4)]],
+    device       float* yg      [[buffer(5)]],
+    device       float* yu      [[buffer(6)]],
+    constant     uint&  rows    [[buffer(7)]],
+    constant     uint&  cols    [[buffer(8)]],
+    uint gid       [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    // 8 rows per simdgroup: row0, row0+8, row0+16, ..., row0+56.
+    // 64 rows per TG (8 simdgroups × 8 rows each).
+    uint row0 = gid * 64u + simd_id;
+    if (row0 >= rows) return;
+    uint row1 = row0 + 8u,  row2 = row0 + 16u, row3 = row0 + 24u;
+    uint row4 = row0 + 32u, row5 = row0 + 40u, row6 = row0 + 48u, row7 = row0 + 56u;
+    bool has1 = row1 < rows, has2 = row2 < rows, has3 = row3 < rows;
+    bool has4 = row4 < rows, has5 = row5 < rows, has6 = row6 < rows, has7 = row7 < rows;
+    uint r1 = has1 ? row1 : row0; uint r2 = has2 ? row2 : row0;
+    uint r3 = has3 ? row3 : row0; uint r4 = has4 ? row4 : row0;
+    uint r5 = has5 ? row5 : row0; uint r6 = has6 ? row6 : row0;
+    uint r7 = has7 ? row7 : row0;
+
+    uint bpr = cols / 256u;
+    uint64_t rb0 = (uint64_t)row0 * (uint64_t)bpr * 144ul;
+    uint64_t rb1 = (uint64_t)r1   * (uint64_t)bpr * 144ul;
+    uint64_t rb2 = (uint64_t)r2   * (uint64_t)bpr * 144ul;
+    uint64_t rb3 = (uint64_t)r3   * (uint64_t)bpr * 144ul;
+    uint64_t rb4 = (uint64_t)r4   * (uint64_t)bpr * 144ul;
+    uint64_t rb5 = (uint64_t)r5   * (uint64_t)bpr * 144ul;
+    uint64_t rb6 = (uint64_t)r6   * (uint64_t)bpr * 144ul;
+    uint64_t rb7 = (uint64_t)r7   * (uint64_t)bpr * 144ul;
+    uint64_t rs0 = (uint64_t)row0 * (uint64_t)bpr * 16ul;
+    uint64_t rs1 = (uint64_t)r1   * (uint64_t)bpr * 16ul;
+    uint64_t rs2 = (uint64_t)r2   * (uint64_t)bpr * 16ul;
+    uint64_t rs3 = (uint64_t)r3   * (uint64_t)bpr * 16ul;
+    uint64_t rs4 = (uint64_t)r4   * (uint64_t)bpr * 16ul;
+    uint64_t rs5 = (uint64_t)r5   * (uint64_t)bpr * 16ul;
+    uint64_t rs6 = (uint64_t)r6   * (uint64_t)bpr * 16ul;
+    uint64_t rs7 = (uint64_t)r7   * (uint64_t)bpr * 16ul;
+
+    float pg0=0.f,pg1=0.f,pg2=0.f,pg3=0.f,pg4=0.f,pg5=0.f,pg6=0.f,pg7=0.f;
+    float pu0=0.f,pu1=0.f,pu2=0.f,pu3=0.f,pu4=0.f,pu5=0.f,pu6=0.f,pu7=0.f;
+
+    for (uint b = 0u; b < bpr; ++b) {
+        uint64_t bo0=rb0+(uint64_t)b*144ul, so0=rs0+(uint64_t)b*16ul;
+        uint64_t bo1=rb1+(uint64_t)b*144ul, so1=rs1+(uint64_t)b*16ul;
+        uint64_t bo2=rb2+(uint64_t)b*144ul, so2=rs2+(uint64_t)b*16ul;
+        uint64_t bo3=rb3+(uint64_t)b*144ul, so3=rs3+(uint64_t)b*16ul;
+        uint64_t bo4=rb4+(uint64_t)b*144ul, so4=rs4+(uint64_t)b*16ul;
+        uint64_t bo5=rb5+(uint64_t)b*144ul, so5=rs5+(uint64_t)b*16ul;
+        uint64_t bo6=rb6+(uint64_t)b*144ul, so6=rs6+(uint64_t)b*16ul;
+        uint64_t bo7=rb7+(uint64_t)b*144ul, so7=rs7+(uint64_t)b*16ul;
+
+        float xl[8];
+        for (uint k = 0u; k < 8u; ++k)
+            xl[k] = x[(uint64_t)b*256ul + (uint64_t)(k*32u + simd_lane)];
+
+        for (uint pi = 0u; pi < 4u; ++pi) {
+            uint k0 = pi * 2u, k1 = k0 + 1u;
+            float x0 = xl[k0], x1 = xl[k1];
+
+            uchar qg0 = wg_q4[bo0+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg0 += (g_scales[so0+(uint64_t)(k0*2u)]   * (float)(qg0&0x0Fu) - g_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pg0 += (g_scales[so0+(uint64_t)(k1*2u)]   * (float)(qg0>>4u)   - g_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu0 = wu_q4[bo0+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu0 += (u_scales[so0+(uint64_t)(k0*2u)]   * (float)(qu0&0x0Fu) - u_scales[so0+(uint64_t)(k0*2u+1u)]) * x0;
+            pu0 += (u_scales[so0+(uint64_t)(k1*2u)]   * (float)(qu0>>4u)   - u_scales[so0+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg1 = wg_q4[bo1+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg1 += (g_scales[so1+(uint64_t)(k0*2u)]   * (float)(qg1&0x0Fu) - g_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pg1 += (g_scales[so1+(uint64_t)(k1*2u)]   * (float)(qg1>>4u)   - g_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu1 = wu_q4[bo1+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu1 += (u_scales[so1+(uint64_t)(k0*2u)]   * (float)(qu1&0x0Fu) - u_scales[so1+(uint64_t)(k0*2u+1u)]) * x0;
+            pu1 += (u_scales[so1+(uint64_t)(k1*2u)]   * (float)(qu1>>4u)   - u_scales[so1+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg2 = wg_q4[bo2+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg2 += (g_scales[so2+(uint64_t)(k0*2u)]   * (float)(qg2&0x0Fu) - g_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pg2 += (g_scales[so2+(uint64_t)(k1*2u)]   * (float)(qg2>>4u)   - g_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu2 = wu_q4[bo2+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu2 += (u_scales[so2+(uint64_t)(k0*2u)]   * (float)(qu2&0x0Fu) - u_scales[so2+(uint64_t)(k0*2u+1u)]) * x0;
+            pu2 += (u_scales[so2+(uint64_t)(k1*2u)]   * (float)(qu2>>4u)   - u_scales[so2+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg3 = wg_q4[bo3+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg3 += (g_scales[so3+(uint64_t)(k0*2u)]   * (float)(qg3&0x0Fu) - g_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pg3 += (g_scales[so3+(uint64_t)(k1*2u)]   * (float)(qg3>>4u)   - g_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu3 = wu_q4[bo3+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu3 += (u_scales[so3+(uint64_t)(k0*2u)]   * (float)(qu3&0x0Fu) - u_scales[so3+(uint64_t)(k0*2u+1u)]) * x0;
+            pu3 += (u_scales[so3+(uint64_t)(k1*2u)]   * (float)(qu3>>4u)   - u_scales[so3+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg4 = wg_q4[bo4+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg4 += (g_scales[so4+(uint64_t)(k0*2u)]   * (float)(qg4&0x0Fu) - g_scales[so4+(uint64_t)(k0*2u+1u)]) * x0;
+            pg4 += (g_scales[so4+(uint64_t)(k1*2u)]   * (float)(qg4>>4u)   - g_scales[so4+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu4 = wu_q4[bo4+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu4 += (u_scales[so4+(uint64_t)(k0*2u)]   * (float)(qu4&0x0Fu) - u_scales[so4+(uint64_t)(k0*2u+1u)]) * x0;
+            pu4 += (u_scales[so4+(uint64_t)(k1*2u)]   * (float)(qu4>>4u)   - u_scales[so4+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg5 = wg_q4[bo5+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg5 += (g_scales[so5+(uint64_t)(k0*2u)]   * (float)(qg5&0x0Fu) - g_scales[so5+(uint64_t)(k0*2u+1u)]) * x0;
+            pg5 += (g_scales[so5+(uint64_t)(k1*2u)]   * (float)(qg5>>4u)   - g_scales[so5+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu5 = wu_q4[bo5+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu5 += (u_scales[so5+(uint64_t)(k0*2u)]   * (float)(qu5&0x0Fu) - u_scales[so5+(uint64_t)(k0*2u+1u)]) * x0;
+            pu5 += (u_scales[so5+(uint64_t)(k1*2u)]   * (float)(qu5>>4u)   - u_scales[so5+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg6 = wg_q4[bo6+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg6 += (g_scales[so6+(uint64_t)(k0*2u)]   * (float)(qg6&0x0Fu) - g_scales[so6+(uint64_t)(k0*2u+1u)]) * x0;
+            pg6 += (g_scales[so6+(uint64_t)(k1*2u)]   * (float)(qg6>>4u)   - g_scales[so6+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu6 = wu_q4[bo6+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu6 += (u_scales[so6+(uint64_t)(k0*2u)]   * (float)(qu6&0x0Fu) - u_scales[so6+(uint64_t)(k0*2u+1u)]) * x0;
+            pu6 += (u_scales[so6+(uint64_t)(k1*2u)]   * (float)(qu6>>4u)   - u_scales[so6+(uint64_t)(k1*2u+1u)]) * x1;
+
+            uchar qg7 = wg_q4[bo7+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pg7 += (g_scales[so7+(uint64_t)(k0*2u)]   * (float)(qg7&0x0Fu) - g_scales[so7+(uint64_t)(k0*2u+1u)]) * x0;
+            pg7 += (g_scales[so7+(uint64_t)(k1*2u)]   * (float)(qg7>>4u)   - g_scales[so7+(uint64_t)(k1*2u+1u)]) * x1;
+            uchar qu7 = wu_q4[bo7+16ul+(uint64_t)pi*32ul+(uint64_t)simd_lane];
+            pu7 += (u_scales[so7+(uint64_t)(k0*2u)]   * (float)(qu7&0x0Fu) - u_scales[so7+(uint64_t)(k0*2u+1u)]) * x0;
+            pu7 += (u_scales[so7+(uint64_t)(k1*2u)]   * (float)(qu7>>4u)   - u_scales[so7+(uint64_t)(k1*2u+1u)]) * x1;
+        }
+    }
+
+    pg0=simd_sum(pg0); pu0=simd_sum(pu0);
+    if (simd_lane==0u) { yg[row0]=pg0; yu[row0]=pu0; }
+    if (has1) { pg1=simd_sum(pg1); pu1=simd_sum(pu1); if (simd_lane==0u) { yg[row1]=pg1; yu[row1]=pu1; } }
+    if (has2) { pg2=simd_sum(pg2); pu2=simd_sum(pu2); if (simd_lane==0u) { yg[row2]=pg2; yu[row2]=pu2; } }
+    if (has3) { pg3=simd_sum(pg3); pu3=simd_sum(pu3); if (simd_lane==0u) { yg[row3]=pg3; yu[row3]=pu3; } }
+    if (has4) { pg4=simd_sum(pg4); pu4=simd_sum(pu4); if (simd_lane==0u) { yg[row4]=pg4; yu[row4]=pu4; } }
+    if (has5) { pg5=simd_sum(pg5); pu5=simd_sum(pu5); if (simd_lane==0u) { yg[row5]=pg5; yu[row5]=pu5; } }
+    if (has6) { pg6=simd_sum(pg6); pu6=simd_sum(pu6); if (simd_lane==0u) { yg[row6]=pg6; yu[row6]=pu6; } }
+    if (has7) { pg7=simd_sum(pg7); pu7=simd_sum(pu7); if (simd_lane==0u) { yg[row7]=pg7; yu[row7]=pu7; } }
 }
 
 // ── gemm_q4_k_v4_predec_2r ───────────────────────────────────────────────────
@@ -4708,6 +5313,130 @@ kernel void gemm_q6_k_fused_v2_swiglu_2r(
         partial1 = simd_sum(partial1);
         if (simd_lane == 0u) y[base_r1] = partial1;
     }
+}
+
+// ── gemm_q6_k_fused_v2_swiglu_4r ─────────────────────────────────────────────
+// Track D8 — 4-rows-per-simdgroup extension of gemm_q6_k_fused_v2_swiglu_2r.
+// Halves TG count again vs 2r: 64 TGs (vs 128 for 2r, 256 for 1r) for Qwen-3B
+// ffn_down (2048 rows × 11008 cols Q6K). Four independent accumulator chains
+// (partial0-3) share the SwiGLU activation reads (xi_idx row-independent),
+// saving 4× the gate/up BW vs separate dispatches, while reading separate Q6K
+// weight bytes + scales per row. Better memory latency hiding than 2r (4 vs 2
+// outstanding weight-read streams per thread).
+//
+// Grid: (ceil(rows/32)*256, 1, 1)  TG: (256, 1, 1)
+kernel void gemm_q6_k_fused_v2_swiglu_4r(
+    device const uchar* w_q6  [[buffer(0)]],
+    device const float* gate  [[buffer(1)]],
+    device const float* up    [[buffer(2)]],
+    device       float* y     [[buffer(3)]],
+    constant     uint&  rows  [[buffer(4)]],
+    constant     uint&  cols  [[buffer(5)]],
+    uint  tid       [[thread_position_in_threadgroup]],
+    uint  gid       [[threadgroup_position_in_grid]],
+    uint  simd_lane [[thread_index_in_simdgroup]],
+    uint  simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    uint base_row0 = gid * 32u + simd_id;
+    if (base_row0 >= rows) return;
+    uint base_row1 = base_row0 + 8u;
+    uint base_row2 = base_row0 + 16u;
+    uint base_row3 = base_row0 + 24u;
+    bool has1 = base_row1 < rows;
+    bool has2 = base_row2 < rows;
+    bool has3 = base_row3 < rows;
+    uint base_r1 = has1 ? base_row1 : base_row0;
+    uint base_r2 = has2 ? base_row2 : base_row0;
+    uint base_r3 = has3 ? base_row3 : base_row0;
+
+    uint blocks_per_row = cols / 256u;
+    uint64_t row_byte_off0 = (uint64_t)base_row0 * (uint64_t)blocks_per_row * 210ul;
+    uint64_t row_byte_off1 = (uint64_t)base_r1   * (uint64_t)blocks_per_row * 210ul;
+    uint64_t row_byte_off2 = (uint64_t)base_r2   * (uint64_t)blocks_per_row * 210ul;
+    uint64_t row_byte_off3 = (uint64_t)base_r3   * (uint64_t)blocks_per_row * 210ul;
+
+    // Thread-specific index constants — same for all four rows.
+    uint half_idx          = simd_lane >> 4u;
+    uint group             = (simd_lane >> 2u) & 3u;
+    uint l_base            = (simd_lane & 3u) * 8u;
+    uint scale_l_off       = l_base >> 4u;
+    uint scale_byte_off    = 192u + half_idx * 8u + scale_l_off + group * 2u;
+    uint ql_group_off      = (group & 1u) * 32u;
+    bool group_high_nibble = (group >= 2u);
+    uint qh_shift          = group * 2u;
+    uint tid_base          = half_idx * 128u + group * 32u + l_base;
+
+    float partial0=0.0f, partial1=0.0f, partial2=0.0f, partial3=0.0f;
+
+    for (uint b = 0; b < blocks_per_row; ++b) {
+        uint64_t bo0 = row_byte_off0 + (uint64_t)b * 210ul;
+        uint64_t bo1 = row_byte_off1 + (uint64_t)b * 210ul;
+        uint64_t bo2 = row_byte_off2 + (uint64_t)b * 210ul;
+        uint64_t bo3 = row_byte_off3 + (uint64_t)b * 210ul;
+
+        // Block d + per-group scale — row 0.
+        ushort d_bits0 = (ushort)w_q6[bo0+208u] | ((ushort)w_q6[bo0+209u] << 8);
+        float  ds0     = (float)as_type<half>(d_bits0) * (float)(int)(signed char)w_q6[bo0+(uint64_t)scale_byte_off];
+        // Row 1.
+        ushort d_bits1 = (ushort)w_q6[bo1+208u] | ((ushort)w_q6[bo1+209u] << 8);
+        float  ds1     = (float)as_type<half>(d_bits1) * (float)(int)(signed char)w_q6[bo1+(uint64_t)scale_byte_off];
+        // Row 2.
+        ushort d_bits2 = (ushort)w_q6[bo2+208u] | ((ushort)w_q6[bo2+209u] << 8);
+        float  ds2     = (float)as_type<half>(d_bits2) * (float)(int)(signed char)w_q6[bo2+(uint64_t)scale_byte_off];
+        // Row 3.
+        ushort d_bits3 = (ushort)w_q6[bo3+208u] | ((ushort)w_q6[bo3+209u] << 8);
+        float  ds3     = (float)as_type<half>(d_bits3) * (float)(int)(signed char)w_q6[bo3+(uint64_t)scale_byte_off];
+
+        uint64_t ql_base0 = bo0 + (uint64_t)half_idx*64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base0 = bo0 + 128ul + (uint64_t)half_idx*32ul;
+        uint64_t ql_base1 = bo1 + (uint64_t)half_idx*64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base1 = bo1 + 128ul + (uint64_t)half_idx*32ul;
+        uint64_t ql_base2 = bo2 + (uint64_t)half_idx*64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base2 = bo2 + 128ul + (uint64_t)half_idx*32ul;
+        uint64_t ql_base3 = bo3 + (uint64_t)half_idx*64ul + (uint64_t)ql_group_off;
+        uint64_t qh_base3 = bo3 + 128ul + (uint64_t)half_idx*32ul;
+
+        float lane_acc0=0.0f, lane_acc1=0.0f, lane_acc2=0.0f, lane_acc3=0.0f;
+        for (uint k = 0u; k < 8u; ++k) {
+            uint l = l_base + k;
+
+            uchar qlb0 = w_q6[ql_base0 + (uint64_t)l];
+            uint qlow0 = group_high_nibble ? ((uint)(qlb0>>4)&0xFu) : ((uint)qlb0&0xFu);
+            int qi0 = (int)(qlow0 | (((uint)w_q6[qh_base0+(uint64_t)l]>>qh_shift)&3u)<<4u) - 32;
+
+            uchar qlb1 = w_q6[ql_base1 + (uint64_t)l];
+            uint qlow1 = group_high_nibble ? ((uint)(qlb1>>4)&0xFu) : ((uint)qlb1&0xFu);
+            int qi1 = (int)(qlow1 | (((uint)w_q6[qh_base1+(uint64_t)l]>>qh_shift)&3u)<<4u) - 32;
+
+            uchar qlb2 = w_q6[ql_base2 + (uint64_t)l];
+            uint qlow2 = group_high_nibble ? ((uint)(qlb2>>4)&0xFu) : ((uint)qlb2&0xFu);
+            int qi2 = (int)(qlow2 | (((uint)w_q6[qh_base2+(uint64_t)l]>>qh_shift)&3u)<<4u) - 32;
+
+            uchar qlb3 = w_q6[ql_base3 + (uint64_t)l];
+            uint qlow3 = group_high_nibble ? ((uint)(qlb3>>4)&0xFu) : ((uint)qlb3&0xFu);
+            int qi3 = (int)(qlow3 | (((uint)w_q6[qh_base3+(uint64_t)l]>>qh_shift)&3u)<<4u) - 32;
+
+            // Shared SwiGLU activation (xi_idx row-independent).
+            uint xi_idx = b * 256u + tid_base + k;
+            float g = gate[xi_idx];
+            float xi = (g / (1.0f + exp(-g))) * up[xi_idx];
+
+            lane_acc0 += (float)qi0 * xi;
+            lane_acc1 += (float)qi1 * xi;
+            lane_acc2 += (float)qi2 * xi;
+            lane_acc3 += (float)qi3 * xi;
+        }
+        partial0 += ds0 * lane_acc0;
+        partial1 += ds1 * lane_acc1;
+        partial2 += ds2 * lane_acc2;
+        partial3 += ds3 * lane_acc3;
+    }
+
+    partial0 = simd_sum(partial0);
+    if (simd_lane == 0u) y[base_row0] = partial0;
+    if (has1) { partial1 = simd_sum(partial1); if (simd_lane == 0u) y[base_row1] = partial1; }
+    if (has2) { partial2 = simd_sum(partial2); if (simd_lane == 0u) y[base_row2] = partial2; }
+    if (has3) { partial3 = simd_sum(partial3); if (simd_lane == 0u) y[base_row3] = partial3; }
 }
 
 // ── gemm_q4_k_v4_predec_swiglu ───────────────────────────────────────────────

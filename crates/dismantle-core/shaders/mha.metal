@@ -245,6 +245,459 @@ kernel void mha_decode_flash_f32(
     }
 }
 
+// ── mha_decode_flash_f16kv (long-context decode-at-depth) ────────────────────
+// Wave-R6: byte-for-byte clone of mha_decode_flash_f32 with the K/V cache typed
+// `half*` (widened to float at read), exactly as mha_decode_f16kv does. This is
+// the ONLY attention kernel that BOTH (a) runs at 32K — flash online-softmax uses
+// CONSTANT threadgroup memory, whereas standalone mha_decode_f16kv allocates
+// O(seq) scores shmem and exceeds 32 KB past ~7800 tokens — AND (b) halves the
+// dominant per-token KV byte stream at depth. q/out/acc/scores/state stay f32
+// (the residual is never f16 — recorded Type-1 kill). Numerically equals
+// mha_decode_f16kv on the same f16 cache up to the online-softmax reorder
+// (gate atol 1e-3 + rtol 1e-4, NOT the strict 1e-4). Opt-in DISMANTLE_QWEN_FLASH_F16KV
+// (rides the F16_KV cache machinery; only the decode kernel changes).
+kernel void mha_decode_flash_f16kv(
+    constant ArgbufMhaDecode& args   [[buffer(0)]],
+    device const float*       q      [[buffer(1)]],
+    device const half*        k_cache[[buffer(2)]],
+    device const half*        v_cache[[buffer(3)]],
+    device       float*       out    [[buffer(4)]],
+    threadgroup  float*       acc         [[threadgroup(0)]],
+    threadgroup  float*       scores_tile [[threadgroup(1)]],
+    threadgroup  float*       state       [[threadgroup(2)]],
+    uint tid       [[thread_position_in_threadgroup]],
+    uint tg_id     [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    const uint h      = tg_id;
+    const uint H_DIM  = args.head_dim;
+    const uint SEQ    = args.seq_len;
+    const uint NKV    = args.n_kv_heads;
+    const uint GROUP  = args.group_size;
+    const uint kv_h   = h / GROUP;
+    const float scale = args.scale;
+
+    device const float* q_h = q + h * H_DIM;
+
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) acc[i] = 0.0f;
+    if (tid == 0u) { state[0] = -INFINITY; state[1] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint n_tiles = (SEQ + MHA_FLASH_TG - 1u) / MHA_FLASH_TG;
+
+    for (uint tile = 0u; tile < n_tiles; ++tile) {
+        const uint t_base = tile * MHA_FLASH_TG;
+        const uint t_len  = min(MHA_FLASH_TG, SEQ - t_base);
+        const uint t      = t_base + tid;
+
+        float s_local = -INFINITY;
+        if (tid < t_len) {
+            device const half* kt = k_cache + (t * NKV + kv_h) * H_DIM;
+            float s = 0.0f;
+            for (uint i = 0u; i < H_DIM; ++i) s += q_h[i] * (float)kt[i];
+            s_local = s * scale;
+        }
+        scores_tile[tid] = s_local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        float simd_mx = simd_max(s_local);
+        if (simd_lane == 0u) state[4u + simd_id] = simd_mx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (tid == 0u) {
+            float tile_max = max(max(state[4], state[5]), max(state[6], state[7]));
+            float m_old    = state[0];
+            float m_new    = max(m_old, tile_max);
+            float corr     = exp(m_old - m_new);
+            float tile_sum = 0.0f;
+            for (uint ti = 0u; ti < t_len; ++ti)
+                tile_sum += exp(scores_tile[ti] - m_new);
+            state[0] = m_new;
+            state[1] = state[1] * corr + tile_sum;
+            state[2] = corr;
+            state[3] = m_new;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        const float corr_bc = state[2];
+        const float m_bc    = state[3];
+        for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+            float a = acc[i] * corr_bc;
+            for (uint ti = 0u; ti < t_len; ++ti) {
+                float w = exp(scores_tile[ti] - m_bc);
+                device const half* vt =
+                    v_cache + ((t_base + ti) * NKV + kv_h) * H_DIM;
+                a += w * (float)vt[i];
+            }
+            acc[i] = a;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    const float inv_l = 1.0f / state[1];
+    device float* out_h = out + h * H_DIM;
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+        out_h[i] = acc[i] * inv_l;
+    }
+}
+
+// ── int4 (per-row symmetric) KV cache — Track 5.3 / silicon #15 ──────────────
+// Footprint: 64 packed bytes + 1 f16 scale per (token,kv_head) row of head_dim=128
+// (~4× vs f32, 2× vs f16-KV); long-context enabler. NOT bit-identical — symmetric
+// int4 [-7,7], one f16 scale/row. Quant math (BOTH kernels must agree exactly):
+//   scale = max|row| / 7  (1.0 if max==0);  q = clamp(rint(x/scale), -7, 7);
+//   nibble u = q & 0xF (two's-complement); byte j = u_{2j} | (u_{2j+1} << 4);
+//   dequant: s = sign_extend4(u);  x ≈ s * scale.
+struct ArgbufKvQuantInt4 {
+    uint kv_dim;        // n_kv_heads * head_dim (elements in the per-token K/V slice)
+    uint head_dim;      // per-row width (128)
+    uint dst_row_base;  // first ROW index for this token: (layer*max_seq + seq_slot)*n_kv_heads
+};
+
+// One threadgroup per (row, K|V). grid = (n_kv_heads, 2, 1); tg = head_dim threads.
+// Each thread owns one element; tree-reduce row max|x|; thread 0 writes the f16
+// scale; threads cooperatively pack 2 nibbles/byte.
+kernel void kv_quant_int4_append(
+    device const float* src_k        [[buffer(0)]],
+    device const float* src_v        [[buffer(1)]],
+    device       uchar* k_packed     [[buffer(2)]],
+    device       half*  k_scales     [[buffer(3)]],
+    device       uchar* v_packed     [[buffer(4)]],
+    device       half*  v_scales     [[buffer(5)]],
+    constant ArgbufKvQuantInt4& args [[buffer(6)]],
+    threadgroup float* red           [[threadgroup(0)]],   // head_dim floats
+    uint3 tg_id  [[threadgroup_position_in_grid]],
+    uint3 tid3   [[thread_position_in_threadgroup]],
+    uint3 tsz3   [[threads_per_threadgroup]])
+{
+    // Metal requires position attributes to be all-vector or all-scalar; the 2D
+    // grid (rows, K|V) needs tg_id.y, so all three are uint3 (index .x for the 1D
+    // thread axis).
+    const uint tid  = tid3.x;
+    const uint tsz  = tsz3.x;
+    const uint HD   = args.head_dim;
+    const uint kvh  = tg_id.x;            // which kv-head row within this token
+    const bool isV  = (tg_id.y == 1u);
+    device const float* src = (isV ? src_v : src_k) + kvh * HD;
+    device uchar* packed    = (isV ? v_packed : k_packed);
+    device half*  scales    = (isV ? v_scales : k_scales);
+    const uint row = args.dst_row_base + kvh;
+
+    // 1. load element, reduce row max|x|.
+    float x = (tid < HD) ? src[tid] : 0.0f;
+    red[tid] = fabs(x);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint s = tsz / 2u; s > 0u; s >>= 1) {
+        if (tid < s) red[tid] = max(red[tid], red[tid + s]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float maxabs = red[0];
+    float scale  = (maxabs > 0.0f) ? (maxabs / 7.0f) : 1.0f;
+    if (tid == 0u) scales[row] = (half)scale;
+
+    // 2. quantize this thread's element → 4-bit two's-complement nibble.
+    int q = (int)rint(x / scale);
+    q = clamp(q, -7, 7);
+    uint u = (uint)(q & 0xF);
+
+    // 3. pack 2 nibbles/byte. Stash nibble in `red` (exact for 0..15), then the
+    //    even thread of each pair writes the byte (reads its odd partner).
+    threadgroup_barrier(mem_flags::mem_threadgroup);   // all done reading red[0]
+    red[tid] = (float)u;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if ((tid & 1u) == 0u && tid < HD) {
+        uint lo = (uint)red[tid];
+        uint hi = (uint)red[tid + 1u];
+        packed[row * (HD / 2u) + (tid >> 1)] = (uchar)((lo & 0xF) | ((hi & 0xF) << 4));
+    }
+}
+
+// mha_decode_flash_int4kv — flash online-softmax decode reading an int4 K/V cache.
+// Identical constant-shmem structure to mha_decode_flash_f16kv (runs at 32K), but
+// each K/V row is 64 packed bytes + one f16 scale, dequantized in-register.
+// q/out/acc/scores/state stay f32. Reuses ArgbufMhaDecode.
+kernel void mha_decode_flash_int4kv(
+    constant ArgbufMhaDecode& args   [[buffer(0)]],
+    device const float*  q           [[buffer(1)]],
+    device const uchar*  k_packed    [[buffer(2)]],
+    device const half*   k_scales    [[buffer(3)]],
+    device const uchar*  v_packed    [[buffer(4)]],
+    device const half*   v_scales    [[buffer(5)]],
+    device       float*  out         [[buffer(6)]],
+    threadgroup  float*  acc         [[threadgroup(0)]],
+    threadgroup  float*  scores_tile [[threadgroup(1)]],
+    threadgroup  float*  state       [[threadgroup(2)]],
+    uint tid       [[thread_position_in_threadgroup]],
+    uint tg_id     [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    const uint h      = tg_id;
+    const uint H_DIM  = args.head_dim;
+    const uint SEQ    = args.seq_len;
+    const uint NKV    = args.n_kv_heads;
+    const uint GROUP  = args.group_size;
+    const uint kv_h   = h / GROUP;
+    const float scale = args.scale;
+    const uint HALF   = H_DIM / 2u;             // packed bytes per row
+
+    device const float* q_h = q + h * H_DIM;
+
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) acc[i] = 0.0f;
+    if (tid == 0u) { state[0] = -INFINITY; state[1] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint n_tiles = (SEQ + MHA_FLASH_TG - 1u) / MHA_FLASH_TG;
+    for (uint tile = 0u; tile < n_tiles; ++tile) {
+        const uint t_base = tile * MHA_FLASH_TG;
+        const uint t_len  = min(MHA_FLASH_TG, SEQ - t_base);
+        const uint t      = t_base + tid;
+
+        float s_local = -INFINITY;
+        if (tid < t_len) {
+            const uint row = t * NKV + kv_h;
+            device const uchar* kp = k_packed + (uint64_t)row * HALF;
+            float ks = (float)k_scales[row];
+            float s = 0.0f;
+            for (uint b = 0u; b < HALF; ++b) {
+                uchar byte = kp[b];
+                int lo = ((int)((byte & 0x0F) << 28)) >> 28;   // sign-extend nibble
+                int hi = ((int)((byte & 0xF0) << 24)) >> 28;
+                s += q_h[2u * b] * ((float)lo * ks) + q_h[2u * b + 1u] * ((float)hi * ks);
+            }
+            s_local = s * scale;
+        }
+        scores_tile[tid] = s_local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        float simd_mx = simd_max(s_local);
+        if (simd_lane == 0u) state[4u + simd_id] = simd_mx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        if (tid == 0u) {
+            float tile_max = max(max(state[4], state[5]), max(state[6], state[7]));
+            float m_old    = state[0];
+            float m_new    = max(m_old, tile_max);
+            float corr     = exp(m_old - m_new);
+            float tile_sum = 0.0f;
+            for (uint ti = 0u; ti < t_len; ++ti)
+                tile_sum += exp(scores_tile[ti] - m_new);
+            state[0] = m_new;
+            state[1] = state[1] * corr + tile_sum;
+            state[2] = corr;
+            state[3] = m_new;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        const float corr_bc = state[2];
+        const float m_bc    = state[3];
+        for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+            float a = acc[i] * corr_bc;
+            const uint byte_i = i >> 1;
+            const bool hi_nib = (i & 1u) != 0u;
+            for (uint ti = 0u; ti < t_len; ++ti) {
+                float w = exp(scores_tile[ti] - m_bc);
+                const uint row = (t_base + ti) * NKV + kv_h;
+                uchar byte = v_packed[(uint64_t)row * HALF + byte_i];
+                int nib = hi_nib ? (((int)((byte & 0xF0) << 24)) >> 28)
+                                 : (((int)((byte & 0x0F) << 28)) >> 28);
+                a += w * ((float)nib * (float)v_scales[row]);
+            }
+            acc[i] = a;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    const float inv_l = 1.0f / state[1];
+    device float* out_h = out + h * H_DIM;
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+        out_h[i] = acc[i] * inv_l;
+    }
+}
+
+// ── int4 PER-CHANNEL KV cache (#15 redesign) ────────────────────────────────
+// The per-ROW scheme above collapses on real K/V (a few post-RoPE channels
+// dominate max|row| → rest round to ~0). PER-CHANNEL gives each head_dim channel
+// c its OWN fixed scale s[layer,kvh,c] = max_t|x[t,c]| / 7, calibrated over the
+// prompt (running max via kv_int4_calib_max as prefill streams tokens; host
+// finalizes /7 at the prefill→decode boundary). Same packing/sign-extend/flash
+// structure as the per-row kernels — only the scale index changes (per-channel,
+// not per-row). dead_levers #15 measured per-channel int4 at cosine 0.998.
+struct ArgbufKvInt4Calib {
+    uint head_dim;       // channels per (kvh) row (128)
+    uint scale_row_base; // first CHANNEL index for this layer: layer*n_kv_heads*head_dim
+};
+// Running-max fold of ONE token into the per-channel scale table. Each thread c
+// touches a DISTINCT slot (no race); host runs it once per prefill token.
+// grid=(n_kv_heads*head_dim,2,1)  tg=(head_dim,1,1). Table must be ZEROED first
+// (new_buffer is not zero-initialized).
+kernel void kv_int4_calib_max(
+    device const float* src_k         [[buffer(0)]],
+    device const float* src_v         [[buffer(1)]],
+    device       half*  k_chan_scales [[buffer(2)]],
+    device       half*  v_chan_scales [[buffer(3)]],
+    constant ArgbufKvInt4Calib& args  [[buffer(4)]],
+    uint3 tg_id [[threadgroup_position_in_grid]],
+    uint3 tid3  [[thread_position_in_threadgroup]])
+{
+    const uint c   = tid3.x;
+    const uint HD  = args.head_dim;
+    if (c >= HD) return;
+    const uint kvh = tg_id.x;
+    const bool isV = (tg_id.y == 1u);
+    device const float* src = (isV ? src_v : src_k) + kvh * HD;
+    device half*  scales    = (isV ? v_chan_scales : k_chan_scales);
+    const uint slot = args.scale_row_base + kvh * HD + c;
+    float a   = fabs(src[c]);
+    float cur = (float)scales[slot];
+    scales[slot] = (half)max(cur, a);
+}
+
+// Per-channel int4 append: identical packing to kv_quant_int4_append, but reads
+// the FIXED per-channel scale s_c (no row reduction). grid=(n_kv_heads*head_dim,2,1)
+// tg=(head_dim,1,1); threadgroup `red` (head_dim floats) carries nibbles for pack.
+struct ArgbufKvQuantInt4PC {
+    uint head_dim;       // 128
+    uint dst_row_base;   // first ROW for this token: (layer*max_seq+slot)*n_kv_heads
+    uint scale_row_base; // first CHANNEL for this layer: layer*n_kv_heads*head_dim
+};
+kernel void kv_quant_int4_append_pc(
+    device const float* src_k         [[buffer(0)]],
+    device const float* src_v         [[buffer(1)]],
+    device       uchar* k_packed      [[buffer(2)]],
+    device const half*  k_chan_scales [[buffer(3)]],
+    device       uchar* v_packed      [[buffer(4)]],
+    device const half*  v_chan_scales [[buffer(5)]],
+    constant ArgbufKvQuantInt4PC& args[[buffer(6)]],
+    threadgroup float* red            [[threadgroup(0)]],
+    uint3 tg_id [[threadgroup_position_in_grid]],
+    uint3 tid3  [[thread_position_in_threadgroup]])
+{
+    const uint c   = tid3.x;
+    const uint HD  = args.head_dim;
+    const uint kvh = tg_id.x;
+    const bool isV = (tg_id.y == 1u);
+    device const float* src    = (isV ? src_v : src_k) + kvh * HD;
+    device uchar*      packed   = (isV ? v_packed : k_packed);
+    device const half* scales   = (isV ? v_chan_scales : k_chan_scales);
+    const uint row  = args.dst_row_base + kvh;
+    const uint cbas = args.scale_row_base + kvh * HD;
+
+    float x  = (c < HD) ? src[c] : 0.0f;
+    float sc = (c < HD) ? (float)scales[cbas + c] : 1.0f;
+    sc = (sc > 0.0f) ? sc : 1.0f;
+    int q = (int)rint(x / sc);
+    q = clamp(q, -7, 7);
+    uint u = (uint)(q & 0xF);
+
+    red[c] = (float)u;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if ((c & 1u) == 0u && c < HD) {
+        uint lo = (uint)red[c];
+        uint hi = (uint)red[c + 1u];
+        packed[row * (HD / 2u) + (c >> 1)] = (uchar)((lo & 0xF) | ((hi & 0xF) << 4));
+    }
+}
+
+// Per-channel int4 flash decode: clone of mha_decode_flash_int4kv, but each
+// nibble is multiplied by its CHANNEL's fixed scale (k/v_chan_scales[cbas+chan])
+// instead of one row scale. scale_row_base passed as a scalar buffer(7).
+kernel void mha_decode_flash_int4kv_pc(
+    constant ArgbufMhaDecode& args   [[buffer(0)]],
+    device const float*  q           [[buffer(1)]],
+    device const uchar*  k_packed    [[buffer(2)]],
+    device const half*   k_chan_scales [[buffer(3)]],
+    device const uchar*  v_packed    [[buffer(4)]],
+    device const half*   v_chan_scales [[buffer(5)]],
+    device       float*  out         [[buffer(6)]],
+    constant uint&       scale_row_base [[buffer(7)]],
+    threadgroup  float*  acc         [[threadgroup(0)]],
+    threadgroup  float*  scores_tile [[threadgroup(1)]],
+    threadgroup  float*  state       [[threadgroup(2)]],
+    uint tid       [[thread_position_in_threadgroup]],
+    uint tg_id     [[threadgroup_position_in_grid]],
+    uint simd_lane [[thread_index_in_simdgroup]],
+    uint simd_id   [[simdgroup_index_in_threadgroup]])
+{
+    const uint h      = tg_id;
+    const uint H_DIM  = args.head_dim;
+    const uint SEQ    = args.seq_len;
+    const uint NKV    = args.n_kv_heads;
+    const uint GROUP  = args.group_size;
+    const uint kv_h   = h / GROUP;
+    const float scale = args.scale;
+    const uint HALF   = H_DIM / 2u;
+    const uint cbas   = scale_row_base + kv_h * H_DIM;
+
+    device const float* q_h = q + h * H_DIM;
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) acc[i] = 0.0f;
+    if (tid == 0u) { state[0] = -INFINITY; state[1] = 0.0f; }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint n_tiles = (SEQ + MHA_FLASH_TG - 1u) / MHA_FLASH_TG;
+    for (uint tile = 0u; tile < n_tiles; ++tile) {
+        const uint t_base = tile * MHA_FLASH_TG;
+        const uint t_len  = min(MHA_FLASH_TG, SEQ - t_base);
+        const uint t      = t_base + tid;
+
+        float s_local = -INFINITY;
+        if (tid < t_len) {
+            const uint row = t * NKV + kv_h;
+            device const uchar* kp = k_packed + (uint64_t)row * HALF;
+            float s = 0.0f;
+            for (uint b = 0u; b < HALF; ++b) {
+                uchar byte = kp[b];
+                int lo = ((int)((byte & 0x0F) << 28)) >> 28;
+                int hi = ((int)((byte & 0xF0) << 24)) >> 28;
+                float slo = (float)k_chan_scales[cbas + 2u * b];
+                float shi = (float)k_chan_scales[cbas + 2u * b + 1u];
+                s += q_h[2u * b] * ((float)lo * slo) + q_h[2u * b + 1u] * ((float)hi * shi);
+            }
+            s_local = s * scale;
+        }
+        scores_tile[tid] = s_local;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        float simd_mx = simd_max(s_local);
+        if (simd_lane == 0u) state[4u + simd_id] = simd_mx;
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if (tid == 0u) {
+            float tile_max = max(max(state[4], state[5]), max(state[6], state[7]));
+            float m_old = state[0];
+            float m_new = max(m_old, tile_max);
+            float corr  = exp(m_old - m_new);
+            float tile_sum = 0.0f;
+            for (uint ti = 0u; ti < t_len; ++ti) tile_sum += exp(scores_tile[ti] - m_new);
+            state[0] = m_new; state[1] = state[1] * corr + tile_sum;
+            state[2] = corr;  state[3] = m_new;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        const float corr_bc = state[2];
+        const float m_bc    = state[3];
+        for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) {
+            float a = acc[i] * corr_bc;
+            const uint byte_i = i >> 1;
+            const bool hi_nib = (i & 1u) != 0u;
+            float vsc = (float)v_chan_scales[cbas + i];
+            for (uint ti = 0u; ti < t_len; ++ti) {
+                float w = exp(scores_tile[ti] - m_bc);
+                const uint row = (t_base + ti) * NKV + kv_h;
+                uchar byte = v_packed[(uint64_t)row * HALF + byte_i];
+                int nib = hi_nib ? (((int)((byte & 0xF0) << 24)) >> 28)
+                                 : (((int)((byte & 0x0F) << 28)) >> 28);
+                a += w * ((float)nib * vsc);
+            }
+            acc[i] = a;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    const float inv_l = 1.0f / state[1];
+    device float* out_h = out + h * H_DIM;
+    for (uint i = tid; i < H_DIM; i += MHA_FLASH_TG) out_h[i] = acc[i] * inv_l;
+}
+
 // P3 — Batched MHA decode: B query tokens at consecutive positions
 // [p0..p0+B) share the K/V cache. Each TG handles one (head, batch_elem)
 // pair via a 2D grid (n_heads, B). Per-batch seq_len is computed as
