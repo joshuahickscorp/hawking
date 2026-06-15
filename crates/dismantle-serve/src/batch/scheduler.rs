@@ -486,7 +486,7 @@ impl Scheduler {
             ));
         }
         let mut out = Vec::with_capacity(batch.len());
-        for (step, token) in batch.iter().zip(token_ids.into_iter()) {
+        for (step, token) in batch.iter().zip(token_ids) {
             let slot = self
                 .slot_mut(step.slot_id)
                 .ok_or_else(|| anyhow!("decode result for unknown slot {}", step.slot_id))?;
