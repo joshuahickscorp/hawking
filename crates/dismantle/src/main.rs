@@ -1045,10 +1045,8 @@ fn doctor_main(weights: PathBuf, max_seq_len: usize) -> Result<()> {
         + get_u32(&["deepseek2.attention.qk_rope_head_dim"]).unwrap_or(0);
     let head_dim = if deepseek_head_dim > 0 {
         deepseek_head_dim
-    } else if heads > 0 {
-        hidden / heads
     } else {
-        0
+        hidden.checked_div(heads).unwrap_or(0)
     };
     let kv_cache_bytes = layers
         .saturating_mul(context)
