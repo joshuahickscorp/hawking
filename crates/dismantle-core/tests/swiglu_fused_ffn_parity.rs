@@ -164,7 +164,9 @@ fn swiglu_fused_v4r_matches_ref() {
     let rows = 2048; let cols = 11008;
     let (w, scales) = make_q4k_weights(rows, cols, 0x1234);
 
-    for b in [2usize, 3, 4] {
+    // Wave-R0: extended to B=5..8 to gate the DISMANTLE_QWEN_MULTISEQ_V4R_HIGHB
+    // route (fused v4r swiglu must match its f32 ref on the ffn_down shape at high B).
+    for b in [2usize, 3, 4, 5, 6, 7, 8] {
         let gate = rand_vec(b * cols, 0xCAFE + b as u32);
         let up   = rand_vec(b * cols, 0xF00D + b as u32);
         let ref_out   = run_ref_v4r(ctx, &w, &scales, &gate, &up, rows, cols, b);
