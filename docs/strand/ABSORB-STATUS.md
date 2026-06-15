@@ -86,22 +86,32 @@ CPU-path size, and bit-identical decode. It **LOSES on speed** — the FFN GEMV 
 (measured d=2 vector kernel only 1.18×, below the 1.3× bar); col-RHT lifts per-row→per-column but
 stays under Q4_K. *"Footprint/determinism is bought with throughput."*
 
-## Pass 2 — GEMV / activation-RHT wiring
+## Pass 2 — TQ: GEMV / activation-RHT wiring
 
-**Slice 1 — DONE & verified** (`crates/dismantle-core/src/strand.rs`, feature `strand`):
-the CPU serving reference — integer Q12 decode (`decode_q12` → `strand_quant::decode_tensor_fixed`)
-+ the row/col/none activation-RHT `matvec_rht` mirroring `outlier_mac.rs`, + `apply_outlier_overwrites`
-(the OUTL `w[i]=v` overwrite). 3 tests green (`cargo test -p dismantle-core --features strand`):
-Q12 decode determinism + match to float decode; the **col-RHT one-transform-serves-all-rows identity**;
-OUTL overwrite-not-add. **Default build byte-identical** — `strand-quant` is not pulled without the
-feature (`cargo tree`: 0). This module is the parity oracle the GPU kernel will be gated against.
+The dismantle-side serving project is **TQ (Trellis-Quant)** — feature `tq`, module
+`dismantle_core::tq`, artifact extension **`.tq`** (the on-disk wire magic stays `STR2`; `.tq` is
+TQ's project identity). Built on the absorbed `strand-quant` codec.
 
-**Remaining (needs a baked artifact + Metal GPU iteration):**
-- **`.strand` file reader** in dismantle — wire `read_strand_v2_header` + per-tensor bytes → the
-  `EncodedTensor`/`TrellisConfig` that `decode_q12` consumes (recipe Step 3; in-memory encode→decode
-  is already proven, file I/O is the remaining layer).
-- **Step 4** — finish the `strand_bake` baker (GGUF f32 → select → `encode_tensor` → `write_strand_v2`).
-  Current `strand_bake` is the 20-line stub, NOT the scaffold the recipe assumes → write from scratch.
-- **Steps 5–9** — port the G4 bitslice Metal kernel, build the loader `BlockEntry` table, dispatch the
-  STRAND arm behind `DISMANTLE_QWEN_STRAND` (default-off), and pass the **GPU↔CPU bit-identity gate**
-  against `strand::matvec_rht`. Reference: `vendor/strand-decode-kernel/{outlier_mac.rs,shaders/strand_bitslice.metal}`.
+**Slice 1 — DONE & merged** (PR #2): CPU serving reference in `tq.rs` — integer Q12 decode
+(`decode_q12` → `strand_quant::decode_tensor_fixed`) + the row/col/none activation-RHT `matvec_rht`
+mirroring `outlier_mac.rs` + `apply_outlier_overwrites` (the OUTL `w[i]=v` overwrite). Tests: Q12
+decode determinism + match to float decode; the **col-RHT one-transform-serves-all-rows identity**;
+OUTL overwrite-not-add.
+
+**Slice 2 — DONE & merged** (PR #3): `tq::read_strand(bytes) -> Vec<StrandTensor>` — parse a `.tq`/STR2
+archive into decode-ready tensors (zip lean header for `rht_cols`/shape/seed with the SDSQ-applied
+payloads). `StrandTensor::{decode_q12, matvec}`. Round-trip test: encode → `write_strand_v2` →
+`read_strand` → decode is **bit-identical** to the direct decode. End-to-end **file → decode → serve**
+CPU path on main.
+
+**Default build byte-identical** throughout — `strand-quant` is not pulled without the `tq` feature
+(`cargo tree`: 0). The `tq` module is the parity oracle the GPU kernel will be gated against.
+
+**Remaining:**
+- **Baker (Step 4)** — `tq_bake`: GGUF → select projections → `encode_tensor` → `write_strand_v2` →
+  `<name>.tq`. Locally only a Q4_K model is present, so the f32 encode source comes from a Q4_K→f32
+  dequant (plumbing validation, not a quality artifact); a real bake needs an f16/f32 source.
+- **Metal kernel (Steps 5–9)** — port the G4 bitslice decode→GEMV, build the loader block table,
+  dispatch behind `DISMANTLE_QWEN_TQ` (default-off), pass the **GPU↔CPU bit-identity gate** against
+  `tq::matvec_rht`. Reference: `vendor/strand-decode-kernel/{outlier_mac.rs,shaders/strand_bitslice.metal}`.
+  The long pole — needs sustained GPU iteration.
