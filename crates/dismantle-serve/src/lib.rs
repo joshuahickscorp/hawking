@@ -238,7 +238,7 @@ impl EnergyMode {
     /// Returns `true` ONLY when waiting can help AND is safe:
     ///   * `ready > 0`              — at least one slot is queued (never wait on empty),
     ///   * `max_batch > 1`          — single-slot servers can't batch → never wait
-    ///                                (a latency-sensitive single is NEVER delayed),
+    ///     (a latency-sensitive single is NEVER delayed),
     ///   * `ready < max_batch`      — batch already full → commit now, don't wait,
     ///   * `gather_window_ms() > 0` — `Off` disables the window entirely.
     ///

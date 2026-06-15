@@ -100,10 +100,10 @@ impl PrefixIndex {
                 continue;
             }
             let request_prefix_hash = hash_tokens(&tokens[..overlap]);
-            if stored_hash == request_prefix_hash {
-                if best.map(|(_, bl)| overlap > bl).unwrap_or(true) {
-                    best = Some((slot_id, overlap));
-                }
+            if stored_hash == request_prefix_hash
+                && best.map(|(_, bl)| overlap > bl).unwrap_or(true)
+            {
+                best = Some((slot_id, overlap));
             }
         }
         best
@@ -123,10 +123,10 @@ impl PrefixIndex {
                 continue;
             }
             let request_prefix_hash = hash_tokens(&tokens[..overlap]);
-            if stored_hash == request_prefix_hash {
-                if best.map(|(_, bl)| overlap > bl).unwrap_or(true) {
-                    best = Some((slot_id, overlap));
-                }
+            if stored_hash == request_prefix_hash
+                && best.map(|(_, bl)| overlap > bl).unwrap_or(true)
+            {
+                best = Some((slot_id, overlap));
             }
         }
         best
