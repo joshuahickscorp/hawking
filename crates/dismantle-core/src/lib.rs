@@ -17,6 +17,10 @@ pub mod sample;
 pub mod sidecar;
 pub mod speculate;
 pub mod stateful;
+/// STRAND (`.strand` v2) CPU decode + activation-RHT serving reference.
+/// Behind the `strand` feature so default builds are byte-identical.
+#[cfg(feature = "strand")]
+pub mod strand;
 pub mod tokenizer;
 pub mod vocab_prune;
 

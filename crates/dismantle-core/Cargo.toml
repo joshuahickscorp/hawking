@@ -8,7 +8,17 @@ repository.workspace = true
 authors.workspace = true
 description = "Apple Silicon MoE inference engine — kernels, model, runtime"
 
+[features]
+# Absorbed STRAND quant track: pulls in the `.strand` v2 decode + activation-RHT
+# CPU serving reference (src/strand.rs). OFF by default so the product build is
+# byte-identical (no strand-quant dep, no metal 0.27). Enable for the STRAND path:
+#   cargo test -p dismantle-core --features strand
+strand = ["dep:strand-quant"]
+
 [dependencies]
+# Absorbed STRAND quantizer — single owner of the .strand v2 wire format + the
+# integer-deterministic Q12 decode. Optional + behind the `strand` feature.
+strand-quant = { path = "../../vendor/strand-quant", optional = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
