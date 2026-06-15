@@ -104,6 +104,7 @@ impl Engine for StubEngine {
 fn app() -> Router {
     let state = AppState {
         engine: Arc::new(Mutex::new(Box::new(StubEngine::new()))),
+        system_kv_bank: Arc::new(Mutex::new(dismantle_serve::SystemPromptKvBank::new())),
         driver: Arc::new(Mutex::new(BatchDriver::new(1))),
         slot_senders: Arc::new(Mutex::new(HashMap::new())),
         wait_queue: Arc::new(Mutex::new(VecDeque::new())),
@@ -119,6 +120,7 @@ fn app() -> Router {
 fn failing_app() -> Router {
     let state = AppState {
         engine: Arc::new(Mutex::new(Box::new(StubEngine::failing()))),
+        system_kv_bank: Arc::new(Mutex::new(dismantle_serve::SystemPromptKvBank::new())),
         driver: Arc::new(Mutex::new(BatchDriver::new(1))),
         slot_senders: Arc::new(Mutex::new(HashMap::new())),
         wait_queue: Arc::new(Mutex::new(VecDeque::new())),

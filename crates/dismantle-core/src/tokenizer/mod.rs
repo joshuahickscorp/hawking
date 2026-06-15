@@ -706,6 +706,8 @@ mod tests {
             pad_id: None,
             decode_one_mode,
             llama_spm,
+            special_ids: HashSet::new(),
+            eog_ids: HashSet::new(),
         };
 
         assert_eq!(tokenizer.decode_one(4).unwrap(), " upon");
