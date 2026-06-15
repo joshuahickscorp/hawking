@@ -133,6 +133,9 @@ fn main() -> Result<()> {
         let mut prompt_steps = 0usize;
         let mut prompt_agreed = 0usize;
 
+        // prompt_steps counts iterations that COMPLETED (the early `break`s skip
+        // the increment), so it is not a plain enumerate index.
+        #[allow(clippy::explicit_counter_loop)]
         for _ in 0..cli.steps {
             // Run shared-only first (for measurement; doesn't advance pos).
             let shared_logits = engine
