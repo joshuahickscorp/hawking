@@ -56,6 +56,13 @@ fn make_engine(weights: &PathBuf) -> Box<dyn dismantle_core::Engine> {
     // draft flag (default-on prefix cache is bit-identical anyway, but a
     // single-request gate has no prior session to hit, so it is inert).
     std::env::set_var("DISMANTLE_QWEN_PREFIX_CACHE", "0");
+    // E3 (DISMANTLE_QWEN_PAIR_2R_INLINE, default-on) is bit-identical to old-2r
+    // for plain greedy but is NOT consistent with the batched verify path, so it
+    // breaks user-draft bit-identity. Production auto-disables E3 when user-draft
+    // is active (see the E3 gate in qwen_dense.rs); mirror that here so this gate
+    // validates the SHIPPED draft config. Set process-wide before the first
+    // generate so the E3 OnceLock caches "off" for both the ref and draft arms.
+    std::env::set_var("DISMANTLE_QWEN_PAIR_2R_INLINE", "0");
     let cfg = dismantle_core::EngineConfig::default();
     dismantle_core::model::load_engine(weights, cfg).expect("load engine")
 }

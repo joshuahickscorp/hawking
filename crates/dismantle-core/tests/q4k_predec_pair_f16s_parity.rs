@@ -160,11 +160,107 @@ fn q4k_v4_predec_pair_f16s_relative_parity() {
     let yg_f16 = read_f32_buf(&yg_f16_buf, rows);
     let yu_f16 = read_f32_buf(&yu_f16_buf, rows);
 
+    // E4: same half-scale tables, but 2-row inline geometry. This should match
+    // the existing f16 pair exactly because the per-row FMA order is unchanged.
+    let yg_inline_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let yu_inline_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    {
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        kernels::gemv_q4_k_v4_predec_pair_2r_inline_f16s_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            wg_bytes.len(),
+            &g_scales_f16_buf,
+            0,
+            u_offset,
+            wu_bytes.len(),
+            &u_scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &yg_inline_f16_buf,
+            &yu_inline_f16_buf,
+        )
+        .expect("2r inline f16s pair encode");
+        tcb.commit_and_wait().expect("2r inline f16s pair commit");
+    }
+    let yg_inline_f16 = read_f32_buf(&yg_inline_f16_buf, rows);
+    let yu_inline_f16 = read_f32_buf(&yu_inline_f16_buf, rows);
+
+    // F2: pair_f16s with the xl[8] activation preload dropped (x read per-pi).
+    // Same half-scale tables and per-row FMA order ⇒ must equal pair_f16s exactly.
+    let yg_f16s_nox_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let yu_f16s_nox_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    {
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        kernels::gemv_q4_k_v4_predec_pair_f16s_nox_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            wg_bytes.len(),
+            &g_scales_f16_buf,
+            0,
+            u_offset,
+            wu_bytes.len(),
+            &u_scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &yg_f16s_nox_buf,
+            &yu_f16s_nox_buf,
+        )
+        .expect("f16s nox pair encode");
+        tcb.commit_and_wait().expect("f16s nox pair commit");
+    }
+    let yg_f16s_nox = read_f32_buf(&yg_f16s_nox_buf, rows);
+    let yu_f16s_nox = read_f32_buf(&yu_f16s_nox_buf, rows);
+
+    // F3: pair_f16s with scales held in half registers (widened at FMA) + no xl
+    // preload. (float)half is exact ⇒ must equal pair_f16s bit-for-bit.
+    let yg_halfreg_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let yu_halfreg_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    {
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        kernels::gemv_q4_k_v4_predec_pair_f16s_halfreg_pinned_tcb(
+            &mut tcb,
+            &model_buf,
+            0,
+            wg_bytes.len(),
+            &g_scales_f16_buf,
+            0,
+            u_offset,
+            wu_bytes.len(),
+            &u_scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &yg_halfreg_buf,
+            &yu_halfreg_buf,
+        )
+        .expect("f16s halfreg pair encode");
+        tcb.commit_and_wait().expect("f16s halfreg pair commit");
+    }
+    let yg_halfreg = read_f32_buf(&yg_halfreg_buf, rows);
+    let yu_halfreg = read_f32_buf(&yu_halfreg_buf, rows);
+
     let (g_rel, g_max, g_norm) = rel_l2(&yg_ref, &yg_f16);
     let (u_rel, u_max, u_norm) = rel_l2(&yu_ref, &yu_f16);
+    let g_inline_max = max_abs_diff(&yg_f16, &yg_inline_f16);
+    let u_inline_max = max_abs_diff(&yu_f16, &yu_inline_f16);
+    let g_nox_max = max_abs_diff(&yg_f16, &yg_f16s_nox);
+    let u_nox_max = max_abs_diff(&yu_f16, &yu_f16s_nox);
+    let g_halfreg_max = max_abs_diff(&yg_f16, &yg_halfreg);
+    let u_halfreg_max = max_abs_diff(&yu_f16, &yu_halfreg);
     eprintln!(
         "[q4k_v4_predec_pair_f16s parity] gate rel_L2={g_rel:.3e} max_abs={g_max:.3e} \
-         (||ref||={g_norm:.3e}) | up rel_L2={u_rel:.3e} max_abs={u_max:.3e} (||ref||={u_norm:.3e})"
+         (||ref||={g_norm:.3e}) | up rel_L2={u_rel:.3e} max_abs={u_max:.3e} (||ref||={u_norm:.3e}) \
+         | inline_f16_max gate={g_inline_max:.3e} up={u_inline_max:.3e} \
+         | f16s_nox_max gate={g_nox_max:.3e} up={u_nox_max:.3e} \
+         | f16s_halfreg_max gate={g_halfreg_max:.3e} up={u_halfreg_max:.3e}"
     );
     // f16 scale rounding (~5e-4 relative per scale) keeps both whole-vector
     // relative errors well under 1%. A failure here means the f16 table or the
@@ -176,5 +272,29 @@ fn q4k_v4_predec_pair_f16s_relative_parity() {
     assert!(
         u_rel < 1e-2,
         "f16s pair UP rel_L2 {u_rel:.3e} exceeds the 1e-2 f16 precision budget"
+    );
+    assert_eq!(
+        g_inline_max, 0.0,
+        "2r-inline f16s GATE max_abs {g_inline_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_inline_max, 0.0,
+        "2r-inline f16s UP max_abs {u_inline_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        g_nox_max, 0.0,
+        "f16s_nox GATE max_abs {g_nox_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_nox_max, 0.0,
+        "f16s_nox UP max_abs {u_nox_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        g_halfreg_max, 0.0,
+        "f16s_halfreg GATE max_abs {g_halfreg_max:.3e} differs from pair_f16s"
+    );
+    assert_eq!(
+        u_halfreg_max, 0.0,
+        "f16s_halfreg UP max_abs {u_halfreg_max:.3e} differs from pair_f16s"
     );
 }
