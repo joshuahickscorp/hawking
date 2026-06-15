@@ -134,6 +134,11 @@ See [tools/bench/README.md](tools/bench/README.md) for parameter conventions.
 - Off-macOS: Metal deps are macOS-gated in `Cargo.toml`; CPU primitives compile unconditionally. Off-macOS verification requires a non-macOS toolchain.
 - v0.2.x, active development. See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map.
 
+## Roadmap
+
+- **Sub-4-bit quantization (deferred).** Absorbing the `strand-quant` QTIP trellis backend to bake `.strand` artifacts with integer, float-free decode is planned but **not implemented** — `tools/strand_bake` is a labeled placeholder, not a working baker. dismantle currently consumes pre-quantized GGUF only.
+- **Independent-oracle parity in CI** — expand the `llama.cpp` logit-export gate beyond the current self-consistency (Metal vs the in-repo CPU port) checks.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
