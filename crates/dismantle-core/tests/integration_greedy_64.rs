@@ -50,9 +50,9 @@ fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
         // This label has a prior pin and it matches — the guard holds.
         Some(prior) if prior.trim() == actual_line => {}
         // This label drifted — a real regression.
-        Some(prior) => panic!(
-            "greedy 64 hash drift for {label}:\n  pinned: {prior}\n  actual: {actual_line}"
-        ),
+        Some(prior) => {
+            panic!("greedy 64 hash drift for {label}:\n  pinned: {prior}\n  actual: {actual_line}")
+        }
         // First sight of this label — pin it (append; create the file if absent).
         None => {
             use std::io::Write;
