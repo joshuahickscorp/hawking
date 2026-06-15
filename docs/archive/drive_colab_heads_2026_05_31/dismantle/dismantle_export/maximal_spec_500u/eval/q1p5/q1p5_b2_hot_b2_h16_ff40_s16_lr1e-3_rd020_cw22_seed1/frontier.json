@@ -1,3 +1,0 @@
-{
-  "ckpt": "/content/drive/MyDrive/dismantle/maximal_spec_500u/artifacts/q1p5/checkpoints/q1p5_b2_hot_b2_h16_ff40_s16_lr1e-3_rd020_cw22_seed1/head_final.safetensors",
-  "policies": {"best_deployable": {"accepted_draft_tokens_per_verify": 23.533791666666666, "projected_dec_tps": 1864.568166666667, "kind": "fixed_k", "max_depth": 24}}, "schema": "eagle5-frontier-policy-v1", "windows": 24000}
