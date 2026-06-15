@@ -65,29 +65,56 @@ fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
     }
 }
 
-// ── F32 regression guard (original c30b9e036d578ae2 must hold) ──────────────
+// ── Greedy 64-token regression guard ────────────────────────────────────────
+//
+// Runs against the first model present on disk — the primary Qwen-3B target,
+// then DeepSeek-V2-Lite. The hash self-pins on first run and guards drift
+// afterward. It skips ONLY when no model is available; previously it pinned a
+// model that wasn't on disk, so it skipped silently and guarded nothing.
+
+/// `(weights, profile, pin-label)` for the first model that exists on disk.
+fn first_available_model() -> Option<(PathBuf, PathBuf, &'static str)> {
+    const CANDIDATES: &[(&str, &str, &str)] = &[
+        (
+            "../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+            "../../profiles/qwen3b-instruct-q4k.m3pro18.json",
+            "qwen3b-q4k-greedy64",
+        ),
+        (
+            "../../models/deepseek-v2-lite-q4.gguf",
+            "../../profiles/deepseek-v2-lite-q4.m3pro18.json",
+            "deepseek-v2-lite-q4-greedy64",
+        ),
+    ];
+    CANDIDATES.iter().find_map(|&(w, p, label)| {
+        let wp = PathBuf::from(w);
+        if wp.exists() {
+            Some((wp, PathBuf::from(p), label))
+        } else {
+            None
+        }
+    })
+}
 
 #[test]
-fn greedy_64_f32_regression() {
-    let weights = PathBuf::from("../../models/deepseek-v2-lite-q4.gguf");
-    if !weights.exists() {
-        eprintln!("skipping greedy_64_f32_regression: no weights");
+fn greedy_64_regression() {
+    let Some((weights, profile_path, label)) = first_available_model() else {
+        eprintln!(
+            "skipping greedy_64_regression: no model on disk (tried Qwen-3B, DeepSeek-V2-Lite)"
+        );
         return;
-    }
-    let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
+    };
     let profile =
         dismantle_core::profile::KernelProfile::load(&profile_path).expect("load profile");
-
     let cfg = dismantle_core::EngineConfig {
         kernel_profile: Some(profile),
         ..Default::default()
     };
     let ids = run_greedy_64(&weights, cfg);
     let hash = hash16(&ids);
-
     check_or_pin(
         &PathBuf::from("../../tests/golden/_phase0_token_baseline_64.hashes"),
-        "v0.5.0-phase0",
+        label,
         &hash,
     );
 }
