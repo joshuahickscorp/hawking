@@ -124,7 +124,7 @@ fn tier_map_overrides_for_names<'a>(
 /// validates the map once and logs the per-tensor dtype override the loader
 /// WOULD honor (resolved via `SidecarTierMap::dtype_for`). It intentionally
 /// does NOT re-quantize or mutate `EngineConfig`: tier *selection* + requant
-/// materialization is `reports/dead_levers.md` #16 (Type-1 dead) /
+/// materialization is `docs/dead_levers.md` #16 (Type-1 dead) /
 /// `MixedQuantStore`, out of scope. This is the read-side wiring that makes the
 /// format an actually-consumed surface rather than a dormant scaffold.
 ///

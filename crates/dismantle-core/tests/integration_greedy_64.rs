@@ -113,7 +113,7 @@ fn greedy_64_regression() {
     let ids = run_greedy_64(&weights, cfg);
     let hash = hash16(&ids);
     check_or_pin(
-        &PathBuf::from("../../tests/golden/_phase0_token_baseline_64.hashes"),
+        &PathBuf::from("tests/golden/_phase0_token_baseline_64.hashes"),
         label,
         &hash,
     );
