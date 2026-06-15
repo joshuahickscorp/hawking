@@ -15,6 +15,10 @@ pub mod quant;
 pub mod quant_tier_map;
 pub mod sample;
 pub mod sidecar;
+/// STRAND (`.strand` v2) CPU decode + activation-RHT serving reference.
+/// Behind the `strand` feature so default builds are byte-identical.
+#[cfg(feature = "strand")]
+pub mod strand;
 pub mod speculate;
 pub mod stateful;
 pub mod tokenizer;
