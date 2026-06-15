@@ -34,7 +34,6 @@ tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
 rand = "0.8"
 rand_pcg = "0.3"
 sha2 = "0.10"
-crossbeam-channel = "0.5"
 tokio-stream = "0.1"
 futures = "0.3"
 parking_lot = "0.12"
