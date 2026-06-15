@@ -19,7 +19,6 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
 parking_lot = { workspace = true }
-crossbeam-channel = { workspace = true }
 
 [dev-dependencies]
 # All three are already in the workspace lockfile via axum's tree, so this
