@@ -60,8 +60,17 @@ fn v1k_simdmat_vs_v2_small() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut sm_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_simdmat_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut sm_out)
-        .expect("simdmat path should succeed");
+    kernels::gemv_q4_k_m_simdmat_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut sm_out,
+    )
+    .expect("simdmat path should succeed");
 
     let diff = max_abs_diff(&v2_out, &sm_out);
     println!("[WedgeK] simdmat vs v2 small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -82,20 +91,27 @@ fn v1k_simdmat_vs_v2_realistic() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut sm_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_simdmat_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut sm_out)
-        .expect("simdmat path");
+    kernels::gemv_q4_k_m_simdmat_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut sm_out,
+    )
+    .expect("simdmat path");
 
     let diff = max_abs_diff(&v2_out, &sm_out);
-    println!("[WedgeK] simdmat vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
-    assert!(
-        diff < 1e-3,
-        "simdmat vs v2 diff {diff:.2e} >= 1e-3"
+    println!(
+        "[WedgeK] simdmat vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
     );
+    assert!(diff < 1e-3, "simdmat vs v2 diff {diff:.2e} >= 1e-3");
 }
 
 #[test]
@@ -110,25 +126,48 @@ fn v1k_simdmat_argmax_agrees() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut sm_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_simdmat_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut sm_out)
-        .expect("simdmat path");
+    kernels::gemv_q4_k_m_simdmat_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut sm_out,
+    )
+    .expect("simdmat path");
 
     let diff = max_abs_diff(&v2_out, &sm_out);
-    println!("[WedgeK] simdmat vs v2 argmax shape (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!(
+        "[WedgeK] simdmat vs v2 argmax shape (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
+    );
     assert!(
         diff < 1e-3,
         "simdmat vs v2 diff {diff:.2e} >= 1e-3 on argmax shape"
     );
 
-    let v2_argmax = v2_out.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(i, _)| i).unwrap();
-    let sm_argmax = sm_out.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(i, _)| i).unwrap();
+    let v2_argmax = v2_out
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+        .map(|(i, _)| i)
+        .unwrap();
+    let sm_argmax = sm_out
+        .iter()
+        .enumerate()
+        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+        .map(|(i, _)| i)
+        .unwrap();
     println!("[WedgeK] argmax: v2={v2_argmax} simdmat={sm_argmax}");
-    assert_eq!(v2_argmax, sm_argmax, "argmax must match between v2 and simdmat");
+    assert_eq!(
+        v2_argmax, sm_argmax,
+        "argmax must match between v2 and simdmat"
+    );
 }
 
 // ── v3_8r parity tests ───────────────────────────────────────────────────────
@@ -144,13 +183,21 @@ fn v1k_v3_8r_vs_v2_small() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut v3_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_8r_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut v3_out)
-        .expect("v3_8r path");
+    kernels::gemv_q4_k_m_v3_8r_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut v3_out,
+    )
+    .expect("v3_8r path");
 
     let diff = max_abs_diff(&v2_out, &v3_out);
     println!("[WedgeK] v3_8r vs v2 small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -168,13 +215,21 @@ fn v1k_v3_8r_vs_v2_realistic() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut v3_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_8r_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut v3_out)
-        .expect("v3_8r path");
+    kernels::gemv_q4_k_m_v3_8r_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut v3_out,
+    )
+    .expect("v3_8r path");
 
     let diff = max_abs_diff(&v2_out, &v3_out);
     println!("[WedgeK] v3_8r vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -194,13 +249,21 @@ fn v1k_v3_dual_vs_v2_small() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut dual_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_dual_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut dual_out)
-        .expect("v3_dual path");
+    kernels::gemv_q4_k_m_v3_dual_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut dual_out,
+    )
+    .expect("v3_dual path");
 
     let diff = max_abs_diff(&v2_out, &dual_out);
     println!("[WedgeK] v3_dual vs v2 small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -218,16 +281,26 @@ fn v1k_v3_dual_vs_v2_realistic() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut dual_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_dual_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut dual_out)
-        .expect("v3_dual path");
+    kernels::gemv_q4_k_m_v3_dual_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut dual_out,
+    )
+    .expect("v3_dual path");
 
     let diff = max_abs_diff(&v2_out, &dual_out);
-    println!("[WedgeK] v3_dual vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!(
+        "[WedgeK] v3_dual vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
+    );
     assert!(diff < 1e-3, "v3_dual vs v2 diff {diff:.2e} >= 1e-3");
 }
 
@@ -247,8 +320,17 @@ fn v1k_v3_llama_vs_v2_small() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut llama_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_llama_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut llama_out)
-        .expect("v3_llama path");
+    kernels::gemv_q4_k_m_v3_llama_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut llama_out,
+    )
+    .expect("v3_llama path");
 
     let diff = max_abs_diff(&v2_out, &llama_out);
     println!("[WedgeK] v3_llama vs v2 small (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
@@ -269,11 +351,22 @@ fn v1k_v3_llama_vs_v2_realistic() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut llama_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_llama_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut llama_out)
-        .expect("v3_llama path");
+    kernels::gemv_q4_k_m_v3_llama_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut llama_out,
+    )
+    .expect("v3_llama path");
 
     let diff = max_abs_diff(&v2_out, &llama_out);
-    println!("[WedgeK] v3_llama vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
+    println!(
+        "[WedgeK] v3_llama vs v2 realistic (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
+    );
     assert!(diff < 1e-3, "v3_llama vs v2 diff {diff:.2e} >= 1e-3");
 }
 
@@ -291,12 +384,26 @@ fn v1k_v3_llama_odd_rows() {
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut llama_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_llama_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut llama_out)
-        .expect("v3_llama odd rows path");
+    kernels::gemv_q4_k_m_v3_llama_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut llama_out,
+    )
+    .expect("v3_llama odd rows path");
 
     let diff = max_abs_diff(&v2_out, &llama_out);
-    println!("[WedgeK] v3_llama vs v2 odd rows (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
-    assert!(diff < 1e-3, "v3_llama vs v2 diff {diff:.2e} >= 1e-3 on odd rows");
+    println!(
+        "[WedgeK] v3_llama vs v2 odd rows (rows={rows} cols={cols}) max abs diff = {diff:.2e}"
+    );
+    assert!(
+        diff < 1e-3,
+        "v3_llama vs v2 diff {diff:.2e} >= 1e-3 on odd rows"
+    );
 }
 
 #[test]
@@ -311,15 +418,26 @@ fn v1k_v3_dual_odd_rows() {
     let ctx = ctx();
 
     let mut v2_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out)
-        .expect("v2 path");
+    kernels::gemv_q4_k_m_v2(ctx, &w_bytes, rows, cols, &x, &mut v2_out).expect("v2 path");
 
     let model_buf = pinned_from_bytes(ctx, &w_bytes);
     let mut dual_out = vec![0.0f32; rows];
-    kernels::gemv_q4_k_m_v3_dual_pinned(ctx, &model_buf, 0, w_bytes.len(), rows, cols, &x, &mut dual_out)
-        .expect("v3_dual odd-rows path");
+    kernels::gemv_q4_k_m_v3_dual_pinned(
+        ctx,
+        &model_buf,
+        0,
+        w_bytes.len(),
+        rows,
+        cols,
+        &x,
+        &mut dual_out,
+    )
+    .expect("v3_dual odd-rows path");
 
     let diff = max_abs_diff(&v2_out, &dual_out);
     println!("[WedgeK] v3_dual vs v2 odd rows (rows={rows} cols={cols}) max abs diff = {diff:.2e}");
-    assert!(diff < 1e-3, "v3_dual vs v2 diff {diff:.2e} >= 1e-3 on odd rows");
+    assert!(
+        diff < 1e-3,
+        "v3_dual vs v2 diff {diff:.2e} >= 1e-3 on odd rows"
+    );
 }

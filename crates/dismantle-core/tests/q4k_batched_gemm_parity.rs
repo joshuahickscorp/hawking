@@ -67,8 +67,7 @@ fn batched_q4k_matches_per_token_gemv() {
 
     for &batch in &[1usize, 2, 3, 4, 5, 6, 7, 8] {
         let x_batch = fixed_f32(batch * cols, 0x1234_5678 ^ (batch as u64));
-        let expected =
-            reference_b_gemvs(ctx, &model_buf, w_q4.len(), rows, cols, &x_batch, batch);
+        let expected = reference_b_gemvs(ctx, &model_buf, w_q4.len(), rows, cols, &x_batch, batch);
 
         let x_buf = new_f32_buf(ctx, &x_batch);
 
@@ -103,9 +102,17 @@ fn batched_q4k_matches_per_token_gemv() {
             {
                 let mut tcb = TokenCommandBuffer::new(ctx);
                 kernels::gemm_q4_k_m_batched_v3_pinned_tcb(
-                    &mut tcb, &model_buf, 0, w_q4.len(),
-                    rows, cols, batch, &x_buf, &y_buf_v3,
-                ).expect("batched gemm v3 encode");
+                    &mut tcb,
+                    &model_buf,
+                    0,
+                    w_q4.len(),
+                    rows,
+                    cols,
+                    batch,
+                    &x_buf,
+                    &y_buf_v3,
+                )
+                .expect("batched gemm v3 encode");
                 tcb.commit_and_wait().expect("commit v3");
             }
             let actual_v3 = read_f32_buf(&y_buf_v3, batch * rows);
@@ -121,9 +128,17 @@ fn batched_q4k_matches_per_token_gemv() {
         {
             let mut tcb = TokenCommandBuffer::new(ctx);
             kernels::gemm_q4_k_m_batched_v3w_pinned_tcb(
-                &mut tcb, &model_buf, 0, w_q4.len(),
-                rows, cols, batch, &x_buf, &y_buf_v3w,
-            ).expect("batched gemm v3w encode");
+                &mut tcb,
+                &model_buf,
+                0,
+                w_q4.len(),
+                rows,
+                cols,
+                batch,
+                &x_buf,
+                &y_buf_v3w,
+            )
+            .expect("batched gemm v3w encode");
             tcb.commit_and_wait().expect("commit v3w");
         }
         let actual_v3w = read_f32_buf(&y_buf_v3w, batch * rows);

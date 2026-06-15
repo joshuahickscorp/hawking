@@ -587,20 +587,24 @@ fn main() -> Result<()> {
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
 
             // Parse --profile (global flag) into RuntimeProfile.
-            let runtime_profile = cli.profile.as_deref()
+            let runtime_profile = cli
+                .profile
+                .as_deref()
                 .and_then(dismantle_serve::RuntimeProfile::from_str)
                 .unwrap_or(dismantle_serve::RuntimeProfile::Default);
 
             // Parse --energy-mode.
-            let resolved_energy_mode = energy_mode.as_deref()
+            let resolved_energy_mode = energy_mode
+                .as_deref()
                 .and_then(dismantle_serve::EnergyMode::from_str)
                 .unwrap_or(dismantle_serve::EnergyMode::Off);
 
             // Parse --batch-policy.
-            let resolved_batch_policy = batch_policy.as_deref()
+            let resolved_batch_policy = batch_policy
+                .as_deref()
                 .and_then(|s| match s {
-                    "default"        => Some(dismantle_serve::BatchPolicy::Default),
-                    "greedy-first"   => Some(dismantle_serve::BatchPolicy::GreedyFirst),
+                    "default" => Some(dismantle_serve::BatchPolicy::Default),
+                    "greedy-first" => Some(dismantle_serve::BatchPolicy::GreedyFirst),
                     "prefix-grouped" => Some(dismantle_serve::BatchPolicy::PrefixGrouped),
                     other => {
                         eprintln!(
@@ -613,7 +617,8 @@ fn main() -> Result<()> {
                 .unwrap_or(dismantle_serve::BatchPolicy::Default);
 
             // Parse --workload.
-            let resolved_workload = workload.as_deref()
+            let resolved_workload = workload
+                .as_deref()
                 .and_then(dismantle_serve::WorkloadPack::from_str)
                 .unwrap_or(dismantle_serve::WorkloadPack::Default);
 
@@ -812,11 +817,26 @@ fn main() -> Result<()> {
             vocab_prune,
             quality_eval_count,
             tier_map_json,
-        } => bake_sidecar_main(weights, out, profile, kernel_profile, vocab_prune, quality_eval_count, tier_map_json),
-        Cmd::Verify { weights, expected_sha256 } => verify_main(weights, expected_sha256),
-        Cmd::SpecOracle { corpus, tokenizer_from, k, warm_frac, json } => {
-            spec_oracle_main(corpus, tokenizer_from, k, warm_frac, json)
-        }
+        } => bake_sidecar_main(
+            weights,
+            out,
+            profile,
+            kernel_profile,
+            vocab_prune,
+            quality_eval_count,
+            tier_map_json,
+        ),
+        Cmd::Verify {
+            weights,
+            expected_sha256,
+        } => verify_main(weights, expected_sha256),
+        Cmd::SpecOracle {
+            corpus,
+            tokenizer_from,
+            k,
+            warm_frac,
+            json,
+        } => spec_oracle_main(corpus, tokenizer_from, k, warm_frac, json),
     }
 }
 
@@ -867,8 +887,12 @@ fn rank_profile_report(p: &dismantle_core::profile::KernelProfile, quality_floor
                         s,
                         "  runtime_levers: profile_name={:?} vocab_prune={:?} \
                          lm_head_path={:?} ffn_down_q4k={} scale_dtype={:?} kv_dtype={:?}",
-                        lv.profile_name, lv.vocab_prune, lv.lm_head_path,
-                        lv.ffn_down_q4k, lv.scale_dtype, lv.kv_dtype
+                        lv.profile_name,
+                        lv.vocab_prune,
+                        lv.lm_head_path,
+                        lv.ffn_down_q4k,
+                        lv.scale_dtype,
+                        lv.kv_dtype
                     );
                 }
                 None => {
@@ -952,9 +976,9 @@ fn rank_profile_json(
             })
         })
         .collect();
-    let selected = select_best(&p.evidence, quality_floor).map(|b| {
-        serde_json::json!({ "variant_id": b.variant_id, "tps": b.tps, "quality": b.quality })
-    });
+    let selected = select_best(&p.evidence, quality_floor).map(
+        |b| serde_json::json!({ "variant_id": b.variant_id, "tps": b.tps, "quality": b.quality }),
+    );
     let obj = serde_json::json!({
         "profile_id": p.profile_id,
         "profile_name": p.profile_name,
@@ -1195,9 +1219,7 @@ fn stats_main(
             }
         }
     } else {
-        println!(
-            "expert_tracking: disabled (pass --max-routed-expert-ram-mb to enable)"
-        );
+        println!("expert_tracking: disabled (pass --max-routed-expert-ram-mb to enable)");
     }
     Ok(())
 }
@@ -1389,9 +1411,7 @@ fn synthetic_q4_k_bytes(n_blocks: usize) -> Vec<u8> {
 
 #[cfg(target_os = "macos")]
 fn synthetic_input(cols: usize) -> Vec<f32> {
-    (0..cols)
-        .map(|i| ((i % 97) as f32 - 48.0) / 97.0)
-        .collect()
+    (0..cols).map(|i| ((i % 97) as f32 - 48.0) / 97.0).collect()
 }
 
 fn autotune_main(
@@ -1486,7 +1506,8 @@ fn autotune_main(
     let mut runtime_profile_label = "default".to_string();
     if runtime_autotune {
         eprintln!("[autotune] phase 2: runtime autotune (paired default vs fast, B=1)");
-        let runtime_profile_choice = run_runtime_autotune_phase(&weights, selected.profile_id.as_str());
+        let runtime_profile_choice =
+            run_runtime_autotune_phase(&weights, selected.profile_id.as_str());
         runtime_profile_label = runtime_profile_choice
             .clone()
             .unwrap_or_else(|| "default".to_string());
@@ -1581,12 +1602,14 @@ fn run_runtime_autotune_phase(weights: &PathBuf, profile_id: &str) -> Option<Str
             };
             let mut decode_ms = 0.0f64;
             let mut completion_tokens = 0usize;
-            engine.generate(req, &mut |ev| {
-                if let StreamEvent::Done { stats, .. } = ev {
-                    decode_ms = stats.decode_ms;
-                    completion_tokens = stats.completion_tokens;
-                }
-            }).ok()?;
+            engine
+                .generate(req, &mut |ev| {
+                    if let StreamEvent::Done { stats, .. } = ev {
+                        decode_ms = stats.decode_ms;
+                        completion_tokens = stats.completion_tokens;
+                    }
+                })
+                .ok()?;
             if decode_ms > 0.0 && completion_tokens > 0 {
                 Some(completion_tokens as f64 / (decode_ms / 1000.0))
             } else {
@@ -1601,9 +1624,7 @@ fn run_runtime_autotune_phase(weights: &PathBuf, profile_id: &str) -> Option<Str
         result
     };
 
-    eprintln!(
-        "[autotune/runtime] measuring default profile (profile_id={profile_id})"
-    );
+    eprintln!("[autotune/runtime] measuring default profile (profile_id={profile_id})");
     let tps_default = match measure_tps(&[]) {
         Some(v) => v,
         None => {
@@ -1612,14 +1633,12 @@ fn run_runtime_autotune_phase(weights: &PathBuf, profile_id: &str) -> Option<Str
         }
     };
 
-    eprintln!(
-        "[autotune/runtime] measuring fast profile (profile_id={profile_id})"
-    );
+    eprintln!("[autotune/runtime] measuring fast profile (profile_id={profile_id})");
     let fast_vars = [
-        ("DISMANTLE_QWEN_VOCAB_PRUNE",     "32000"),
-        ("DISMANTLE_QWEN_Q4K_LMHEAD",      "1"),
-        ("DISMANTLE_QWEN_FFN_DOWN_Q4K",    "1"),
-        ("DISMANTLE_QWEN_Q4K_PREDEC",      "1"),
+        ("DISMANTLE_QWEN_VOCAB_PRUNE", "32000"),
+        ("DISMANTLE_QWEN_Q4K_LMHEAD", "1"),
+        ("DISMANTLE_QWEN_FFN_DOWN_Q4K", "1"),
+        ("DISMANTLE_QWEN_Q4K_PREDEC", "1"),
         ("DISMANTLE_QWEN_PREDEC_F16SCALES", "1"),
     ];
     let tps_fast = match measure_tps(&fast_vars) {
@@ -1854,16 +1873,17 @@ fn generate_main(
                 .map(|l| l.to_string())
                 .collect();
             if v.is_empty() {
-                return Err(anyhow::anyhow!("prompts file {} has no prompts", path.display()));
+                return Err(anyhow::anyhow!(
+                    "prompts file {} has no prompts",
+                    path.display()
+                ));
             }
             eprintln!("[capture] {} prompts from {}", v.len(), path.display());
             v
         }
         None => {
             if prompt.is_empty() {
-                return Err(anyhow::anyhow!(
-                    "provide --prompt or --prompts-file"
-                ));
+                return Err(anyhow::anyhow!("provide --prompt or --prompts-file"));
             }
             vec![prompt]
         }
@@ -2067,17 +2087,13 @@ fn batch_hash_main(
     }
 
     // Header + lines, matching expand-baseline.sh's output format.
-    let model_name = weights
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("?");
+    let model_name = weights.file_name().and_then(|n| n.to_str()).unwrap_or("?");
     let header = format!(
         "# Phase 1 token-output baseline -- captured by `dismantle batch-hash`\n\
          # Format: <prompt-id> <max-new-tokens> <hash-hex> <prompt-text>\n\
          # algo: blake3\n\
          # Generation: temp=0 greedy, max_new_tokens={}, model={}\n",
-        tokens,
-        model_name
+        tokens, model_name
     );
     let body = output_lines.join("\n") + "\n";
     let blob = format!("{header}{body}");
@@ -2105,13 +2121,11 @@ fn bake_sidecar_main(
 
     // Parse and validate the profile name.
     let sidecar_profile = match profile.as_str() {
-        "fast"      => SidecarProfile::Fast,
-        "race"      => SidecarProfile::Race,
+        "fast" => SidecarProfile::Fast,
+        "race" => SidecarProfile::Race,
         "efficient" => SidecarProfile::Efficient,
-        "exact"     => SidecarProfile::Exact,
-        other => anyhow::bail!(
-            "unknown --profile {other:?} (known: fast, race, efficient, exact)"
-        ),
+        "exact" => SidecarProfile::Exact,
+        other => anyhow::bail!("unknown --profile {other:?} (known: fast, race, efficient, exact)"),
     };
 
     // --- Step 1: print the planned bake steps ---
@@ -2121,8 +2135,10 @@ fn bake_sidecar_main(
     eprintln!("[bake-sidecar] planned steps:");
     eprintln!("[bake-sidecar]   q4k_predec_scales = true");
     if vocab_prune.is_some() {
-        eprintln!("[bake-sidecar]   pruned_lm_head_q4k = true  (vocab-prune: {})",
-            vocab_prune.as_ref().unwrap().display());
+        eprintln!(
+            "[bake-sidecar]   pruned_lm_head_q4k = true  (vocab-prune: {})",
+            vocab_prune.as_ref().unwrap().display()
+        );
     } else {
         eprintln!("[bake-sidecar]   pruned_lm_head_q4k = false  (no --vocab-prune given)");
     }
@@ -2145,7 +2161,10 @@ fn bake_sidecar_main(
         kernel_profile: kprofile,
         ..Default::default()
     };
-    eprintln!("[bake-sidecar] loading engine from {} ...", weights.display());
+    eprintln!(
+        "[bake-sidecar] loading engine from {} ...",
+        weights.display()
+    );
     let _engine = dismantle_core::model::load_engine(&weights, cfg)?;
     eprintln!("[bake-sidecar] engine loaded");
 
@@ -2163,21 +2182,32 @@ fn bake_sidecar_main(
     // --- Step 4: summary ---
     // Track 4.3: fold an optional mixed-quant tier map into the baked sidecar.
     if let Some(tm_path) = tier_map_json.as_ref() {
-        eprintln!("[bake-sidecar] attaching tier map from {} ...", tm_path.display());
+        eprintln!(
+            "[bake-sidecar] attaching tier map from {} ...",
+            tm_path.display()
+        );
         let tm = dismantle_core::sidecar::load_sidecar_tier_map_json(tm_path)?;
         let n_entries = tm.entries.len();
         let new_bytes = dismantle_core::sidecar::attach_tier_map_to_sidecar(&out_path, tm)?;
-        eprintln!("[bake-sidecar]   tier_map: {n_entries} entries embedded ({new_bytes} bytes total)");
+        eprintln!(
+            "[bake-sidecar]   tier_map: {n_entries} entries embedded ({new_bytes} bytes total)"
+        );
     }
 
     eprintln!("[bake-sidecar] summary:");
-    eprintln!("[bake-sidecar]   wrote {bytes} bytes → {}", out_path.display());
+    eprintln!(
+        "[bake-sidecar]   wrote {bytes} bytes → {}",
+        out_path.display()
+    );
     eprintln!("[bake-sidecar]   q4k_predec_scales: baked");
     if vocab_prune.is_some() {
         eprintln!("[bake-sidecar]   pruned_lm_head_q4k: not yet implemented (follow-on)");
     }
-    eprintln!("[bake-sidecar] done. Next load from {} will detect this sidecar and skip \
-               the ~200ms predec decode pass.", weights.display());
+    eprintln!(
+        "[bake-sidecar] done. Next load from {} will detect this sidecar and skip \
+               the ~200ms predec decode pass.",
+        weights.display()
+    );
     Ok(())
 }
 
@@ -2211,7 +2241,9 @@ fn verify_main(weights: PathBuf, expected_sha256: Option<String>) -> Result<()> 
     let mut buf = vec![0u8; 65536];
     loop {
         let n = f.read(&mut buf)?;
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
         hasher.update(&buf[..n]);
     }
     let hash_bytes = hasher.finalize();
@@ -2343,10 +2375,7 @@ mod profile_rank_tests {
     #[test]
     fn custom_floor_changes_selection() {
         // With a 0.96 floor, `mid` (0.95) now fails and `slow` (1.00) wins.
-        let p = profile_with(vec![
-            mk("mid", 2, 40.0, 0.95),
-            mk("slow", 1, 30.0, 1.00),
-        ]);
+        let p = profile_with(vec![mk("mid", 2, 40.0, 0.95), mk("slow", 1, 30.0, 1.00)]);
         let report = rank_profile_report(&p, 0.96);
         assert!(report.contains("selected: slow"), "got:\n{report}");
         assert!(report.contains("quality_floor: 0.9600"));
@@ -2354,10 +2383,7 @@ mod profile_rank_tests {
 
     #[test]
     fn json_report_is_valid_and_marks_rejects() {
-        let p = profile_with(vec![
-            mk("fast", 3, 55.0, 0.80),
-            mk("mid", 2, 40.0, 0.95),
-        ]);
+        let p = profile_with(vec![mk("fast", 3, 55.0, 0.80), mk("mid", 2, 40.0, 0.95)]);
         let out = rank_profile_json(&p, DEFAULT_QUALITY_FLOOR).unwrap();
         let v: serde_json::Value = serde_json::from_str(&out).unwrap();
         assert_eq!(v["selected"]["variant_id"], "mid");
@@ -2435,7 +2461,10 @@ fn spec_oracle_main(
         s.push_str(&format!("  \"verdict\": \"{}\",\n", report.verdict()));
         s.push_str(&format!("  \"corpus_tokens\": {},\n", ids.len()));
         s.push_str(&format!("  \"scored_tokens\": {},\n", report.scored_tokens));
-        s.push_str(&format!("  \"warm_start_tokens\": {},\n", report.warm_start_tokens));
+        s.push_str(&format!(
+            "  \"warm_start_tokens\": {},\n",
+            report.warm_start_tokens
+        ));
         s.push_str(&format!(
             "  \"best_k\": {},\n",
             report.best().map(|b| b.k as i64).unwrap_or(-1)
@@ -2448,9 +2477,17 @@ fn spec_oracle_main(
                  \"tau\": {:.6}, \"mean_accepted_len\": {:.6}, \"hit_rate\": {:.6}, \
                  \"proposal_coverage\": {:.6}, \"draft_accept_frac\": {:.6}, \
                  \"governor_propose_frac\": {:.6}, \"accept_hist\": {:?}}}{}\n",
-                r.k, r.forward_cycles, r.tokens_emitted, r.tau, r.mean_accepted_len,
-                r.hit_rate, r.proposal_coverage, r.draft_accept_frac,
-                r.governor_propose_frac, r.accept_hist, comma
+                r.k,
+                r.forward_cycles,
+                r.tokens_emitted,
+                r.tau,
+                r.mean_accepted_len,
+                r.hit_rate,
+                r.proposal_coverage,
+                r.draft_accept_frac,
+                r.governor_propose_frac,
+                r.accept_hist,
+                comma
             ));
         }
         s.push_str("  ]\n}");
@@ -2498,7 +2535,10 @@ mod spec_oracle_tests {
     #[test]
     fn parse_k_list_handles_comma_and_whitespace() {
         assert_eq!(spec_oracle_parse_k_list("4,7").unwrap(), vec![4, 7]);
-        assert_eq!(spec_oracle_parse_k_list(" 4 , 7 ,8").unwrap(), vec![4, 7, 8]);
+        assert_eq!(
+            spec_oracle_parse_k_list(" 4 , 7 ,8").unwrap(),
+            vec![4, 7, 8]
+        );
         assert!(spec_oracle_parse_k_list("").is_err());
         assert!(spec_oracle_parse_k_list("4,x").is_err());
     }
@@ -2520,8 +2560,16 @@ mod spec_oracle_tests {
         assert_eq!(report.warm_start_tokens, warm);
         assert_eq!(report.scored_tokens, ids.len() - warm);
         let best = report.best().expect("non-empty grid");
-        assert!(best.tau > 1.05, "repetitive corpus must beat plain decode (tau {})", best.tau);
-        assert_eq!(report.verdict(), "GO", "repetitive stream should clear the GO band");
+        assert!(
+            best.tau > 1.05,
+            "repetitive corpus must beat plain decode (tau {})",
+            best.tau
+        );
+        assert_eq!(
+            report.verdict(),
+            "GO",
+            "repetitive stream should clear the GO band"
+        );
         // accounting closes for every row (the property the handler relies on).
         for r in &report.per_k {
             assert_eq!(r.tokens_emitted as usize, report.scored_tokens);

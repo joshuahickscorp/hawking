@@ -45,13 +45,18 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 /// Pin a Vec<f16> as raw little-endian bytes — the f16s kernel reads buffer(1)
 /// as `device const half*`. Matches new_f16_buf in the parity test.
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 
@@ -106,7 +111,16 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     // f32-scales: 144 B weights + 16 f32 scales (64 B) per block + x (4 B/col) + y.
     let us_f32 = time_dispatch("f32 scales (2r)", |tcb| {
         kernels::gemv_q4_k_v4_predec_pinned_tcb(
-            tcb, &model_buf, 0, wlen, &scales_f32_buf, 0, rows, cols, &x_buf, &y_f32_buf,
+            tcb,
+            &model_buf,
+            0,
+            wlen,
+            &scales_f32_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_f32_buf,
         )
         .expect("f32 predec encode");
     });
@@ -114,7 +128,16 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
     // f16-scales: 144 B weights + 16 f16 scales (32 B) per block + x + y.
     let us_f16 = time_dispatch("f16 scales (2r)", |tcb| {
         kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-            tcb, &model_buf, 0, wlen, &scales_f16_buf, 0, rows, cols, &x_buf, &y_f16_buf,
+            tcb,
+            &model_buf,
+            0,
+            wlen,
+            &scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_f16_buf,
         )
         .expect("f16s predec encode");
     });
@@ -138,9 +161,7 @@ fn bench_shape(rows: usize, cols: usize, tag: &str) {
         (1.0 - bytes_f16 / bytes_f32) * 100.0
     );
     eprintln!("  GB/s:       f32={gbps_f32:.1}  f16={gbps_f16:.1}");
-    eprintln!(
-        "  >>> {tag}: f32={us_f32:.3} µs  f16={us_f16:.3} µs  speedup={speedup:+.2}%"
-    );
+    eprintln!("  >>> {tag}: f32={us_f32:.3} µs  f16={us_f16:.3} µs  speedup={speedup:+.2}%");
 }
 
 #[test]

@@ -65,7 +65,13 @@ fn worst_violation(actual: &[f32], reference: &[f32], atol: f32, rtol: f32) -> f
 /// scaled 10–50x across ALL tokens — the exact failure mode for per-row.
 fn outlier_kv(seq_len: usize, kv_dim: usize, head_dim: usize, seed: u64) -> Vec<f32> {
     let mut v = fixed_f32(seq_len * kv_dim, seed);
-    let outliers = [(7usize, 10.0f32), (33, 25.0), (64, 50.0), (99, 15.0), (120, 30.0)];
+    let outliers = [
+        (7usize, 10.0f32),
+        (33, 25.0),
+        (64, 50.0),
+        (99, 15.0),
+        (120, 30.0),
+    ];
     let n_kv_heads = kv_dim / head_dim;
     for t in 0..seq_len {
         for kvh in 0..n_kv_heads {
@@ -126,15 +132,23 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
         let sk = new_f32_buf(ctx, &k[t * kv_dim..(t + 1) * kv_dim]);
         let sv = new_f32_buf(ctx, &v[t * kv_dim..(t + 1) * kv_dim]);
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::kv_int4_calib_max_tcb(&mut tcb, &sk, &sv, &k_chan, &v_chan, n_kv_heads, head_dim, 0)
-            .expect("calib encode");
+        kernels::kv_int4_calib_max_tcb(
+            &mut tcb, &sk, &sv, &k_chan, &v_chan, n_kv_heads, head_dim, 0,
+        )
+        .expect("calib encode");
         tcb.commit_and_wait().expect("calib commit");
     }
     // ── finalize: scale_c = max_c / 7 (host), re-upload as f16 ──
     let k_max = read_f16_buf_as_f32(&k_chan, n_chan);
     let v_max = read_f16_buf_as_f32(&v_chan, n_chan);
-    let k_scale: Vec<f32> = k_max.iter().map(|&m| if m > 0.0 { m / 7.0 } else { 1.0 }).collect();
-    let v_scale: Vec<f32> = v_max.iter().map(|&m| if m > 0.0 { m / 7.0 } else { 1.0 }).collect();
+    let k_scale: Vec<f32> = k_max
+        .iter()
+        .map(|&m| if m > 0.0 { m / 7.0 } else { 1.0 })
+        .collect();
+    let v_scale: Vec<f32> = v_max
+        .iter()
+        .map(|&m| if m > 0.0 { m / 7.0 } else { 1.0 })
+        .collect();
     let k_chan_f = new_f16_buf(ctx, &k_scale);
     let v_chan_f = new_f16_buf(ctx, &v_scale);
 
@@ -146,8 +160,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
         let sv = new_f32_buf(ctx, &v[t * kv_dim..(t + 1) * kv_dim]);
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::kv_quant_int4_append_pc_tcb(
-            &mut tcb, &sk, &sv, &k_packed, &k_chan_f, &v_packed, &v_chan_f, n_kv_heads, head_dim,
-            t * n_kv_heads, 0,
+            &mut tcb,
+            &sk,
+            &sv,
+            &k_packed,
+            &k_chan_f,
+            &v_packed,
+            &v_chan_f,
+            n_kv_heads,
+            head_dim,
+            t * n_kv_heads,
+            0,
         )
         .expect("append_pc encode");
         tcb.commit_and_wait().expect("append_pc commit");
@@ -173,8 +196,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
     let k_rt = dequant_pc(&kp, &k_scale, seq_len, n_kv_heads, head_dim);
     let v_rt = dequant_pc(&vp, &v_scale, seq_len, n_kv_heads, head_dim);
     let mut cpu_int4 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k_rt, &v_rt, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_int4)
-        .expect("cpu int4");
+    mha_decode_step(
+        &q,
+        &k_rt,
+        &v_rt,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_int4,
+    )
+    .expect("cpu int4");
     let viol = worst_violation(&gpu, &cpu_int4, 5e-3, 1e-3);
     assert!(
         viol <= 0.0,
@@ -183,8 +215,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
 
     // ── GATE 2: cosine vs f32 ref on the ORIGINAL outlier K/V (the quality fix) ──
     let mut cpu_f32 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_f32)
-        .expect("cpu f32");
+    mha_decode_step(
+        &q,
+        &k,
+        &v,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_f32,
+    )
+    .expect("cpu f32");
     let cos = cosine(&gpu, &cpu_f32);
     // Bar 0.985 on this DELIBERATELY worst-case synthetic (uniform-random base —
     // itself hard for int4 — plus 5 channels at up to 50x). per-row scores ~0.1

@@ -142,7 +142,10 @@ fn logits_lane_req(max_new_tokens: usize) -> GenerateRequest {
 /// Admit two slots seeded with last_token 10 and 20, mark them ready to decode.
 fn seed_two_slots(driver: &mut BatchDriver, req_fn: impl Fn(usize) -> GenerateRequest) {
     for (id, token) in [(0u32, 10u32), (1u32, 20u32)] {
-        let slot_id = driver.scheduler.admit(req_fn(4), vec![token]).expect("admit");
+        let slot_id = driver
+            .scheduler
+            .admit(req_fn(4), vec![token])
+            .expect("admit");
         assert_eq!(slot_id, id);
         assert!(driver.scheduler.mark_prefill_complete(slot_id));
     }
@@ -156,7 +159,9 @@ fn all_greedy_batch_routes_token_only_and_charges_b_times_4() {
     seed_two_slots(&mut driver, greedy_req);
     let mut engine = StubEngine::new();
 
-    let out = driver.decode_ready_once(&mut engine, 4).expect("decode once");
+    let out = driver
+        .decode_ready_once(&mut engine, 4)
+        .expect("decode once");
 
     // Tokens are the per-slot argmax: slot0 (from token 10) → 1, slot1 (20) → 2.
     let toks: Vec<u32> = out.iter().map(|o| o.token).collect();
@@ -185,10 +190,16 @@ fn rep_penalty_batch_routes_full_logits_and_charges_b_times_vocab_times_4() {
     seed_two_slots(&mut driver, logits_lane_req);
     let mut engine = StubEngine::new();
 
-    let out = driver.decode_ready_once(&mut engine, 4).expect("decode once");
+    let out = driver
+        .decode_ready_once(&mut engine, 4)
+        .expect("decode once");
 
     let toks: Vec<u32> = out.iter().map(|o| o.token).collect();
-    assert_eq!(toks, vec![1, 2], "logits lane argmax tokens (temp=0 → argmax)");
+    assert_eq!(
+        toks,
+        vec![1, 2],
+        "logits lane argmax tokens (temp=0 → argmax)"
+    );
 
     assert_eq!(driver.lane_stats.greedy_steps, 0, "no greedy step");
     assert_eq!(driver.lane_stats.logits_steps, 1, "one logits step");
@@ -208,7 +219,10 @@ fn rep_penalty_batch_routes_full_logits_and_charges_b_times_vocab_times_4() {
 fn one_sampling_slot_forces_full_logits_for_the_batch() {
     let mut driver = BatchDriver::new(4);
     // slot0 greedy, slot1 rep-penalty → batch is NOT all-greedy.
-    let g = driver.scheduler.admit(greedy_req(4), vec![10]).expect("admit g");
+    let g = driver
+        .scheduler
+        .admit(greedy_req(4), vec![10])
+        .expect("admit g");
     let s = driver
         .scheduler
         .admit(logits_lane_req(4), vec![20])
@@ -217,10 +231,15 @@ fn one_sampling_slot_forces_full_logits_for_the_batch() {
     assert!(driver.scheduler.mark_prefill_complete(s));
     let mut engine = StubEngine::new();
 
-    let _ = driver.decode_ready_once(&mut engine, 4).expect("decode once");
+    let _ = driver
+        .decode_ready_once(&mut engine, 4)
+        .expect("decode once");
 
     assert_eq!(driver.lane_stats.greedy_steps, 0);
-    assert_eq!(driver.lane_stats.logits_steps, 1, "mixed batch → full logits");
+    assert_eq!(
+        driver.lane_stats.logits_steps, 1,
+        "mixed batch → full logits"
+    );
     let b = 2u64;
     assert_eq!(
         driver.lane_stats.readback_bytes,
@@ -255,5 +274,8 @@ fn greedy_and_logits_lanes_produce_identical_tokens() {
     // ...yet produced bit-identical token ids per slot.
     let g: Vec<(u32, u32)> = greedy_out.iter().map(|o| (o.slot_id, o.token)).collect();
     let l: Vec<(u32, u32)> = logits_out.iter().map(|o| (o.slot_id, o.token)).collect();
-    assert_eq!(g, l, "greedy lane and full-logits lane must yield same tokens");
+    assert_eq!(
+        g, l,
+        "greedy lane and full-logits lane must yield same tokens"
+    );
 }

@@ -15,8 +15,7 @@ fn run_greedy(weights: &PathBuf, force_cpu: bool, n: usize) -> Vec<u32> {
         force_cpu,
         ..Default::default()
     };
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load engine");
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load engine");
     let req = dismantle_core::GenerateRequest {
         prompt: "The capital of France is".into(),
         max_new_tokens: n,

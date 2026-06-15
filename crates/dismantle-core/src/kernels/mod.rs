@@ -8861,10 +8861,8 @@ mod metal_dispatch {
         dst_row_base: usize,
     ) -> Result<()> {
         let kv_dim = (n_kv_heads * head_dim) as u32;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, kv_dim);
         ab.set_u32(1, head_dim as u32);
         ab.set_u32(2, dst_row_base as u32);
@@ -10477,10 +10475,8 @@ mod metal_dispatch {
         x_norm_buf: &PinnedBuffer,
     ) -> Result<()> {
         let shmem_bytes = (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64;
-        let mut ab = KernelArgBuffer::new(
-            tcb.ctx,
-            &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32],
-        )?;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32])?;
         ab.set_u32(0, hidden as u32);
         ab.set_u32(1, token);
         ab.set_f32(2, eps);

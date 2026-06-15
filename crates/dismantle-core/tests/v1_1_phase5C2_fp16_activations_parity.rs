@@ -56,7 +56,10 @@ fn rmsnorm_f32_ref(x: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
     let n = x.len();
     let rms = (x.iter().map(|v| v * v).sum::<f32>() / n as f32 + eps).sqrt();
     let inv = 1.0 / rms;
-    x.iter().zip(weight.iter()).map(|(&xv, &wv)| xv * inv * wv).collect()
+    x.iter()
+        .zip(weight.iter())
+        .map(|(&xv, &wv)| xv * inv * wv)
+        .collect()
 }
 
 /// Compute rmsnorm → f16 → f32 promote (simulates GPU rmsnorm_f32_to_f16).
@@ -81,9 +84,7 @@ fn gemv_f16_f32in_ref(w: &[u16], x: &[f32], rows: usize, cols: usize) -> Vec<f32
             let row = &w[r * cols..(r + 1) * cols];
             row.iter()
                 .zip(x.iter())
-                .map(|(&wbits, &xv)| {
-                    half::f16::from_bits(wbits).to_f32() * xv
-                })
+                .map(|(&wbits, &xv)| half::f16::from_bits(wbits).to_f32() * xv)
                 .sum::<f32>()
         })
         .collect()
@@ -92,7 +93,8 @@ fn gemv_f16_f32in_ref(w: &[u16], x: &[f32], rows: usize, cols: usize) -> Vec<f32
 /// Compute GEMV with f16 weights × f16 activation → f32 output (reference for gemv_f16_f16in).
 fn gemv_f16_f16in_ref(w: &[u16], x_f32: &[f32], rows: usize, cols: usize) -> Vec<f32> {
     // Simulate: convert activation to f16, then compute.
-    let x_f16: Vec<f32> = x_f32.iter()
+    let x_f16: Vec<f32> = x_f32
+        .iter()
         .map(|&v| half::f16::from_f32(v).to_f32())
         .collect();
     (0..rows)
@@ -100,9 +102,7 @@ fn gemv_f16_f16in_ref(w: &[u16], x_f32: &[f32], rows: usize, cols: usize) -> Vec
             let row = &w[r * cols..(r + 1) * cols];
             row.iter()
                 .zip(x_f16.iter())
-                .map(|(&wbits, &xv)| {
-                    half::f16::from_bits(wbits).to_f32() * xv
-                })
+                .map(|(&wbits, &xv)| half::f16::from_bits(wbits).to_f32() * xv)
                 .sum::<f32>()
         })
         .collect()
@@ -206,9 +206,7 @@ fn gemv_f16_f16in_parity() {
             "trial {trial}: logit max_diff={max_diff:.2e} > atol=5e-3"
         );
     }
-    eprintln!(
-        "✓ gemv_f16_f16in parity: argmax exact, logit atol≤5e-3 (8 trials, {rows}×{cols})"
-    );
+    eprintln!("✓ gemv_f16_f16in parity: argmax exact, logit atol≤5e-3 (8 trials, {rows}×{cols})");
 }
 
 /// Combined pipeline parity: rmsnorm_f32_to_f16 + gemv_f16_f16in argmax matches

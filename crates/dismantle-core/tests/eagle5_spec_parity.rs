@@ -22,12 +22,8 @@ use std::path::PathBuf;
 const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 16;
 
-fn run_greedy(
-    weights: &PathBuf,
-    cfg: dismantle_core::EngineConfig,
-) -> Vec<u32> {
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load engine");
+fn run_greedy(weights: &PathBuf, cfg: dismantle_core::EngineConfig) -> Vec<u32> {
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load engine");
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,

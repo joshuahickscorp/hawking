@@ -17,14 +17,13 @@ fn forward_token_shared_only_returns_finite_logits() {
         return;
     }
     let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
-    let profile = dismantle_core::profile::KernelProfile::load(&profile_path)
-        .expect("load profile");
+    let profile =
+        dismantle_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = dismantle_core::EngineConfig {
         kernel_profile: Some(profile),
         ..Default::default()
     };
-    let mut engine = dismantle_core::model::load_engine(&weights, cfg)
-        .expect("load engine");
+    let mut engine = dismantle_core::model::load_engine(&weights, cfg).expect("load engine");
 
     // Token 1 (BOS-like) at position 0.
     let token = 1u32;
@@ -44,5 +43,9 @@ fn forward_token_shared_only_returns_finite_logits() {
         .filter(|(_, &v)| !v.is_finite())
         .map(|(i, _)| i)
         .collect();
-    assert!(non_finite.is_empty(), "non-finite logits at indices: {:?}", &non_finite[..non_finite.len().min(5)]);
+    assert!(
+        non_finite.is_empty(),
+        "non-finite logits at indices: {:?}",
+        &non_finite[..non_finite.len().min(5)]
+    );
 }

@@ -5,8 +5,8 @@
 
 pub mod eagle5;
 pub mod eagle5_forward;
-pub mod shared;
-pub mod safetensors_io;
-pub mod user_ngram;
 pub mod governor;
 pub mod replay_oracle;
+pub mod safetensors_io;
+pub mod shared;
+pub mod user_ngram;

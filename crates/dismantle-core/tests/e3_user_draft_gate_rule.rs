@@ -34,10 +34,16 @@ fn e3_default(user_draft_on: bool, explicit: Option<bool>) -> bool {
 fn explicit_override_always_wins() {
     // An explicit DISMANTLE_QWEN_PAIR_2R_INLINE pins the result regardless of
     // user-draft (power user accepting the draft bit-identity trade).
-    assert!(e3_default(true, Some(true)), "explicit=1 forces E3 ON even under user-draft");
+    assert!(
+        e3_default(true, Some(true)),
+        "explicit=1 forces E3 ON even under user-draft"
+    );
     assert!(e3_default(false, Some(true)), "explicit=1 forces E3 ON");
     assert!(!e3_default(false, Some(false)), "explicit=0 forces E3 OFF");
-    assert!(!e3_default(true, Some(false)), "explicit=0 forces E3 OFF even without user-draft");
+    assert!(
+        !e3_default(true, Some(false)),
+        "explicit=0 forces E3 OFF even without user-draft"
+    );
 }
 
 #[test]
@@ -45,6 +51,12 @@ fn unset_default_is_off_under_user_draft_on_otherwise() {
     // THE load-bearing invariant (the 2026-06-07 regression this guards):
     // with no explicit override, E3 is ON for plain decode and OFF when the
     // user n-gram draft is active (keeps forward_tokens_verify bit-identical).
-    assert!(e3_default(false, None), "unset + no user-draft => E3 ON (+9.6%)");
-    assert!(!e3_default(true, None), "unset + user-draft ON => E3 OFF (draft stays lossless)");
+    assert!(
+        e3_default(false, None),
+        "unset + no user-draft => E3 ON (+9.6%)"
+    );
+    assert!(
+        !e3_default(true, None),
+        "unset + user-draft ON => E3 OFF (draft stays lossless)"
+    );
 }

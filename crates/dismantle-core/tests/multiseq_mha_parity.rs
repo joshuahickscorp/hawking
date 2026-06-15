@@ -51,7 +51,10 @@ fn run_multiseq(label: &str, positions: &[u32], max_seq: usize, atol: f32) {
     let mut ref_cpu = vec![0.0f32; b * q_dim];
     for bi in 0..b {
         let seq_bi = positions[bi] as usize + 1;
-        assert!(seq_bi <= max_seq, "seq_bi {seq_bi} exceeds max_seq {max_seq}");
+        assert!(
+            seq_bi <= max_seq,
+            "seq_bi {seq_bi} exceeds max_seq {max_seq}"
+        );
         let q_bi = &q[bi * q_dim..(bi + 1) * q_dim];
         let k_bi = &k[bi * stride..bi * stride + seq_bi * kv_dim];
         let v_bi = &v[bi * stride..bi * stride + seq_bi * kv_dim];
@@ -74,8 +77,21 @@ fn run_multiseq(label: &str, positions: &[u32], max_seq: usize, atol: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_batched_multiseq_tcb(
-            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, &pos_buf, &region_buf, max_seq,
-            stride, b, HEAD_DIM, N_HEADS, N_KV_HEADS,
+            &mut tcb,
+            &q_buf,
+            &k_buf,
+            0,
+            &v_buf,
+            0,
+            &out_buf,
+            &pos_buf,
+            &region_buf,
+            max_seq,
+            stride,
+            b,
+            HEAD_DIM,
+            N_HEADS,
+            N_KV_HEADS,
         )
         .expect("multiseq encode");
         tcb.commit_and_wait().expect("multiseq commit");
@@ -86,7 +102,10 @@ fn run_multiseq(label: &str, positions: &[u32], max_seq: usize, atol: f32) {
     println!(
         "[multiseq] {label}: b={b} positions={positions:?} diff_vs_cpu={diff:.3e} atol={atol:.0e}"
     );
-    assert!(diff < atol, "{label}: multiseq vs CPU diff {diff:.3e} >= {atol:.0e}");
+    assert!(
+        diff < atol,
+        "{label}: multiseq vs CPU diff {diff:.3e} >= {atol:.0e}"
+    );
 }
 
 #[test]

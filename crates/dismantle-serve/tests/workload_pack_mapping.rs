@@ -53,15 +53,30 @@ fn workload_defaults_match_documented_triples() {
 
     let cases: &[(WorkloadPack, RP, EM, BP)] = &[
         (WorkloadPack::Default, RP::Default, EM::Off, BP::Default),
-        (WorkloadPack::CodeCompletion, RP::Race, EM::Off, BP::GreedyFirst),
-        (WorkloadPack::ChatSharedPrompt, RP::Fast, EM::Balanced, BP::PrefixGrouped),
+        (
+            WorkloadPack::CodeCompletion,
+            RP::Race,
+            EM::Off,
+            BP::GreedyFirst,
+        ),
+        (
+            WorkloadPack::ChatSharedPrompt,
+            RP::Fast,
+            EM::Balanced,
+            BP::PrefixGrouped,
+        ),
         (
             WorkloadPack::BatchSummarization,
             RP::Efficient,
             EM::Efficient,
             BP::GreedyFirst,
         ),
-        (WorkloadPack::LocalAgentLoop, RP::Fast, EM::Off, BP::GreedyFirst),
+        (
+            WorkloadPack::LocalAgentLoop,
+            RP::Fast,
+            EM::Off,
+            BP::GreedyFirst,
+        ),
     ];
 
     for (pack, want_profile, want_energy, want_policy) in cases {
@@ -89,9 +104,15 @@ fn workload_expands_to_expected_profile_and_knobs() {
             "DISMANTLE_QWEN_VOCAB_PRUNE",
             "DISMANTLE_QWEN_FFN_DOWN_Q4K",
         ] {
-            assert!(has(&plan.set_if_unset, k), "code-completion(race) must set {k}");
+            assert!(
+                has(&plan.set_if_unset, k),
+                "code-completion(race) must set {k}"
+            );
         }
-        assert_eq!(val(&plan.set_if_unset, "DISMANTLE_QWEN_VOCAB_PRUNE"), Some("32000"));
+        assert_eq!(
+            val(&plan.set_if_unset, "DISMANTLE_QWEN_VOCAB_PRUNE"),
+            Some("32000")
+        );
         assert_eq!(plan.f16_kv, Some(true), "race enables f16-KV");
         assert!(plan.concurrent_qkv);
         assert!(plan.force_off.is_empty());
@@ -154,8 +175,26 @@ fn workload_expands_to_expected_profile_and_knobs() {
 #[test]
 fn workload_energy_maps_to_gather_window_ms() {
     assert_eq!(WorkloadPack::Default.defaults().1.gather_window_ms(), 0);
-    assert_eq!(WorkloadPack::CodeCompletion.defaults().1.gather_window_ms(), 0);
-    assert_eq!(WorkloadPack::ChatSharedPrompt.defaults().1.gather_window_ms(), 3);
-    assert_eq!(WorkloadPack::BatchSummarization.defaults().1.gather_window_ms(), 8);
-    assert_eq!(WorkloadPack::LocalAgentLoop.defaults().1.gather_window_ms(), 0);
+    assert_eq!(
+        WorkloadPack::CodeCompletion.defaults().1.gather_window_ms(),
+        0
+    );
+    assert_eq!(
+        WorkloadPack::ChatSharedPrompt
+            .defaults()
+            .1
+            .gather_window_ms(),
+        3
+    );
+    assert_eq!(
+        WorkloadPack::BatchSummarization
+            .defaults()
+            .1
+            .gather_window_ms(),
+        8
+    );
+    assert_eq!(
+        WorkloadPack::LocalAgentLoop.defaults().1.gather_window_ms(),
+        0
+    );
 }

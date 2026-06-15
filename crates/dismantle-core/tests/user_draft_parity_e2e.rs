@@ -125,8 +125,16 @@ fn user_draft_is_bit_identical() {
     };
     std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
 
     // First 3 tokens (the project's token-parity window) — checked
     // explicitly so a failure message pinpoints the window.
@@ -198,8 +206,16 @@ fn user_draft_bit_identical_fast_pruned_q4k() {
     std::env::remove_var("DISMANTLE_QWEN_VOCAB_PRUNE");
     std::env::remove_var("DISMANTLE_QWEN_Q4K_LMHEAD");
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
     assert_eq!(
         &ref_ids[..3],
         &draft_ids[..3],
@@ -282,8 +298,16 @@ fn user_draft_bit_identical_full_fast_env() {
     std::env::set_var("DISMANTLE_QWEN_USER_DRAFT", "0");
     clear_full_fast_env();
 
-    assert_eq!(draft_ids.len(), MAX_NEW_TOKENS, "draft-ON produced wrong token count");
-    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "draft-OFF produced wrong token count");
+    assert_eq!(
+        draft_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-ON produced wrong token count"
+    );
+    assert_eq!(
+        ref_ids.len(),
+        MAX_NEW_TOKENS,
+        "draft-OFF produced wrong token count"
+    );
     assert_eq!(
         &ref_ids[..3],
         &draft_ids[..3],
@@ -312,7 +336,11 @@ fn user_draft_bit_identical_full_fast_env() {
 /// GPU fast verify path (VOCAB_PRUNE + Q4K_LMHEAD) vs the CPU fp16 fallback, so
 /// the new loop is exercised on both. Returns (bonus_first_ids, accepted)
 /// alongside the asserted-equal propose_first_ids for the caller to log.
-fn propose_first_matches_bonus_first(weights: &PathBuf, pruned: bool, n: usize) -> (Vec<u32>, Vec<u32>, usize, usize) {
+fn propose_first_matches_bonus_first(
+    weights: &PathBuf,
+    pruned: bool,
+    n: usize,
+) -> (Vec<u32>, Vec<u32>, usize, usize) {
     if pruned {
         std::env::set_var("DISMANTLE_QWEN_VOCAB_PRUNE", "32000");
         std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");

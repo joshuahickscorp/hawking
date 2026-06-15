@@ -5,8 +5,8 @@
 //!
 //! Skips if model not present.
 
-use std::path::PathBuf;
 use dismantle_core::kernels::{rope_inplace, rope_inplace_batch};
+use std::path::PathBuf;
 
 #[test]
 fn rope_batch_matches_sequential() {
@@ -52,16 +52,16 @@ fn forward_tokens_shim_returns_n_vectors() {
         return;
     }
     let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
-    let profile = dismantle_core::profile::KernelProfile::load(&profile_path)
-        .expect("load profile");
+    let profile =
+        dismantle_core::profile::KernelProfile::load(&profile_path).expect("load profile");
     let cfg = dismantle_core::EngineConfig {
         kernel_profile: Some(profile),
         ..Default::default()
     };
-    let mut engine = dismantle_core::model::load_engine(&weights, cfg)
-        .expect("load engine");
+    let mut engine = dismantle_core::model::load_engine(&weights, cfg).expect("load engine");
 
-    let logits = engine.forward_tokens_for_test(&[1, 2, 3], &[0, 1, 2])
+    let logits = engine
+        .forward_tokens_for_test(&[1, 2, 3], &[0, 1, 2])
         .expect("forward_tokens shim");
     assert_eq!(logits.len(), 3, "must return N logit vectors for N tokens");
     for (i, lvec) in logits.iter().enumerate() {

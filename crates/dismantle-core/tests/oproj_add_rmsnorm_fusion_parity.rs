@@ -155,7 +155,16 @@ fn run_2r_add_direct(
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_2r_add_pinned_tcb(
-        &mut tcb, &w_buf, 0, w_q4.len(), &scales_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w_q4.len(),
+        &scales_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .expect("2r_add dispatch");
     tcb.commit_and_wait().expect("2r_add wait");
@@ -179,7 +188,16 @@ fn run_4r_add_direct(
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_4r_add_pinned_tcb(
-        &mut tcb, &w_buf, 0, w_q4.len(), &scales_buf, 0, rows, cols, &x_buf, &res_buf,
+        &mut tcb,
+        &w_buf,
+        0,
+        w_q4.len(),
+        &scales_buf,
+        0,
+        rows,
+        cols,
+        &x_buf,
+        &res_buf,
     )
     .expect("4r_add dispatch");
     tcb.commit_and_wait().expect("4r_add wait");

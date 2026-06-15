@@ -40,7 +40,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -104,7 +106,9 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
     // token, under the SAME full-vocab Q4_K head.
     for &s in &seeds {
         engine.kv.reset();
-        let single = engine.forward_token_greedy_tcb(s, 0).expect("single-stream fwd");
+        let single = engine
+            .forward_token_greedy_tcb(s, 0)
+            .expect("single-stream fwd");
         engine.multiseq_arena = None;
         let ms = engine
             .forward_tokens_multiseq(&[s], &[0], max_seq)
@@ -185,7 +189,11 @@ fn multiseq_single_tcb_tail_bit_identical_and_anchored() {
         .expect("rerun fused-tail logits");
     for bi in 0..b {
         let first = &batched_logits[bi][0];
-        assert_eq!(rerun[bi].len(), first.len(), "slot {bi}: rerun length differs");
+        assert_eq!(
+            rerun[bi].len(),
+            first.len(),
+            "slot {bi}: rerun length differs"
+        );
         for (i, (&rv, &fv)) in rerun[bi].iter().zip(first.iter()).enumerate() {
             assert_eq!(
                 rv.to_bits(),

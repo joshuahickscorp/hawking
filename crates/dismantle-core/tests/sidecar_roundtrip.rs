@@ -25,8 +25,7 @@
 
 use dismantle_core::sidecar::{
     check_sidecar_compatibility, read_predec_entries, sidecar_path_for, SidecarCompat,
-    SidecarContents, SidecarHeader, SidecarProfile, SidecarQuality, SidecarWriter,
-    SIDECAR_VERSION,
+    SidecarContents, SidecarHeader, SidecarProfile, SidecarQuality, SidecarWriter, SIDECAR_VERSION,
 };
 
 /// Deterministic Q4_K blocks (144 bytes each) with realistic header scales and
@@ -88,7 +87,11 @@ fn bake_load_roundtrip_equals_in_memory_predecode() {
     // computes when there is no sidecar).
     let mem0 = predecode_q4_k_scale_table(&t0);
     let mem1 = predecode_q4_k_scale_table(&t1);
-    assert_eq!(mem0.len(), 48 * 16, "predec table is 16 f32 per 144-byte block");
+    assert_eq!(
+        mem0.len(),
+        48 * 16,
+        "predec table is 16 f32 per 144-byte block"
+    );
     assert_eq!(mem1.len(), 80 * 16);
 
     // Bake: write exactly those tables into a sidecar (what bake_sidecar_predec
@@ -124,10 +127,18 @@ fn bake_load_roundtrip_equals_in_memory_predecode() {
     assert_eq!(r1.len(), mem1.len());
     // bit-identical: compare raw f32 bits, not approximate.
     for (i, (&a, &b)) in r0.iter().zip(mem0.iter()).enumerate() {
-        assert_eq!(a.to_bits(), b.to_bits(), "off0 scale[{i}] not bit-identical");
+        assert_eq!(
+            a.to_bits(),
+            b.to_bits(),
+            "off0 scale[{i}] not bit-identical"
+        );
     }
     for (i, (&a, &b)) in r1.iter().zip(mem1.iter()).enumerate() {
-        assert_eq!(a.to_bits(), b.to_bits(), "off1 scale[{i}] not bit-identical");
+        assert_eq!(
+            a.to_bits(),
+            b.to_bits(),
+            "off1 scale[{i}] not bit-identical"
+        );
     }
 }
 
@@ -167,7 +178,10 @@ fn hash_mismatch_is_fatal_and_match_is_loadable() {
     let mut future = header.clone();
     future.version = SIDECAR_VERSION + 1;
     let too_new = check_sidecar_compatibility(&future, "hash_of_gguf_A", "shader_A");
-    assert!(matches!(too_new, SidecarCompat::VersionTooNew { .. }), "got {too_new:?}");
+    assert!(
+        matches!(too_new, SidecarCompat::VersionTooNew { .. }),
+        "got {too_new:?}"
+    );
     assert!(too_new.is_fatal());
 }
 
@@ -187,5 +201,8 @@ fn bad_magic_is_rejected() {
 #[test]
 fn sidecar_path_derivation() {
     let p = sidecar_path_for(std::path::Path::new("models/qwen2.5-3b-q4_k_m.gguf"));
-    assert_eq!(p, std::path::PathBuf::from("models/qwen2.5-3b-q4_k_m.dismantle"));
+    assert_eq!(
+        p,
+        std::path::PathBuf::from("models/qwen2.5-3b-q4_k_m.dismantle")
+    );
 }

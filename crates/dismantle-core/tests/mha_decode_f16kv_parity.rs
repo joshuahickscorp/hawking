@@ -74,8 +74,17 @@ fn run_f16kv_single(label: &str, seq_len: usize, atol: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_tcb(
-            &mut tcb, &q_buf, &k_ref_buf, 0, &v_ref_buf, 0, &ref_out_buf,
-            seq_len, HEAD_DIM, N_HEADS, N_KV_HEADS,
+            &mut tcb,
+            &q_buf,
+            &k_ref_buf,
+            0,
+            &v_ref_buf,
+            0,
+            &ref_out_buf,
+            seq_len,
+            HEAD_DIM,
+            N_HEADS,
+            N_KV_HEADS,
         )
         .expect("mha_decode_f32_tcb encode");
         tcb.commit_and_wait().expect("mha_decode_f32_tcb commit");
@@ -85,7 +94,14 @@ fn run_f16kv_single(label: &str, seq_len: usize, atol: f32) {
     // Reference B: CPU mha_decode_step on the round-tripped K/V.
     let mut ref_cpu = vec![0.0f32; q_dim];
     mha_decode_step(
-        &q, &k_rt, &v_rt, N_HEADS, N_KV_HEADS, HEAD_DIM, seq_len, &mut ref_cpu,
+        &q,
+        &k_rt,
+        &v_rt,
+        N_HEADS,
+        N_KV_HEADS,
+        HEAD_DIM,
+        seq_len,
+        &mut ref_cpu,
     )
     .expect("cpu mha_decode_step");
 
@@ -96,8 +112,8 @@ fn run_f16kv_single(label: &str, seq_len: usize, atol: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f16kv_tcb(
-            &mut tcb, &q_buf, &k_f16_buf, 0, &v_f16_buf, 0, &out_buf,
-            seq_len, HEAD_DIM, N_HEADS, N_KV_HEADS,
+            &mut tcb, &q_buf, &k_f16_buf, 0, &v_f16_buf, 0, &out_buf, seq_len, HEAD_DIM, N_HEADS,
+            N_KV_HEADS,
         )
         .expect("mha_decode_f16kv_tcb encode");
         tcb.commit_and_wait().expect("mha_decode_f16kv_tcb commit");
@@ -109,8 +125,14 @@ fn run_f16kv_single(label: &str, seq_len: usize, atol: f32) {
     println!(
         "[f16kv-single] {label}: seq={seq_len} diff_vs_f32gpu={diff_gpu:.3e} diff_vs_cpu={diff_cpu:.3e} atol={atol:.0e}"
     );
-    assert!(diff_gpu < atol, "{label}: f16kv vs f32-GPU diff {diff_gpu:.3e} >= {atol:.0e}");
-    assert!(diff_cpu < atol, "{label}: f16kv vs CPU diff {diff_cpu:.3e} >= {atol:.0e}");
+    assert!(
+        diff_gpu < atol,
+        "{label}: f16kv vs f32-GPU diff {diff_gpu:.3e} >= {atol:.0e}"
+    );
+    assert!(
+        diff_cpu < atol,
+        "{label}: f16kv vs CPU diff {diff_cpu:.3e} >= {atol:.0e}"
+    );
 }
 
 #[test]
@@ -157,11 +179,22 @@ fn run_f16kv_batched(label: &str, p0: usize, b: usize, atol: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_batched_tcb(
-            &mut tcb, &q_buf, &k_ref_buf, 0, &v_ref_buf, 0, &ref_out_buf,
-            p0, b, HEAD_DIM, N_HEADS, N_KV_HEADS,
+            &mut tcb,
+            &q_buf,
+            &k_ref_buf,
+            0,
+            &v_ref_buf,
+            0,
+            &ref_out_buf,
+            p0,
+            b,
+            HEAD_DIM,
+            N_HEADS,
+            N_KV_HEADS,
         )
         .expect("mha_decode_f32_batched_tcb encode");
-        tcb.commit_and_wait().expect("mha_decode_f32_batched_tcb commit");
+        tcb.commit_and_wait()
+            .expect("mha_decode_f32_batched_tcb commit");
     }
     let ref_gpu = read_f32_buf(&ref_out_buf, b * q_dim);
 
@@ -176,7 +209,11 @@ fn run_f16kv_batched(label: &str, p0: usize, b: usize, atol: f32) {
             q_bi,
             &k_rt[..seq_bi * kv_dim],
             &v_rt[..seq_bi * kv_dim],
-            N_HEADS, N_KV_HEADS, HEAD_DIM, seq_bi, out_bi,
+            N_HEADS,
+            N_KV_HEADS,
+            HEAD_DIM,
+            seq_bi,
+            out_bi,
         )
         .expect("cpu mha_decode_step (batched elem)");
     }
@@ -188,11 +225,12 @@ fn run_f16kv_batched(label: &str, p0: usize, b: usize, atol: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f16kv_batched_tcb(
-            &mut tcb, &q_buf, &k_f16_buf, 0, &v_f16_buf, 0, &out_buf,
-            p0, b, HEAD_DIM, N_HEADS, N_KV_HEADS,
+            &mut tcb, &q_buf, &k_f16_buf, 0, &v_f16_buf, 0, &out_buf, p0, b, HEAD_DIM, N_HEADS,
+            N_KV_HEADS,
         )
         .expect("mha_decode_f16kv_batched_tcb encode");
-        tcb.commit_and_wait().expect("mha_decode_f16kv_batched_tcb commit");
+        tcb.commit_and_wait()
+            .expect("mha_decode_f16kv_batched_tcb commit");
     }
     let actual = read_f32_buf(&out_buf, b * q_dim);
 
@@ -201,8 +239,14 @@ fn run_f16kv_batched(label: &str, p0: usize, b: usize, atol: f32) {
     println!(
         "[f16kv-batched] {label}: p0={p0} b={b} diff_vs_f32gpu={diff_gpu:.3e} diff_vs_cpu={diff_cpu:.3e} atol={atol:.0e}"
     );
-    assert!(diff_gpu < atol, "{label}: f16kv-batched vs f32-GPU diff {diff_gpu:.3e} >= {atol:.0e}");
-    assert!(diff_cpu < atol, "{label}: f16kv-batched vs CPU diff {diff_cpu:.3e} >= {atol:.0e}");
+    assert!(
+        diff_gpu < atol,
+        "{label}: f16kv-batched vs f32-GPU diff {diff_gpu:.3e} >= {atol:.0e}"
+    );
+    assert!(
+        diff_cpu < atol,
+        "{label}: f16kv-batched vs CPU diff {diff_cpu:.3e} >= {atol:.0e}"
+    );
 }
 
 #[test]
@@ -239,7 +283,12 @@ fn f16_kv_append_matches_cpu_round_trip() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::memcpy_f32_to_f16_off_tcb(
-            &mut tcb, &src_buf, &dst_buf, 0, seq_slot * kv_dim, kv_dim,
+            &mut tcb,
+            &src_buf,
+            &dst_buf,
+            0,
+            seq_slot * kv_dim,
+            kv_dim,
         )
         .expect("memcpy_f32_to_f16_off encode");
         tcb.commit_and_wait().expect("memcpy_f32_to_f16_off commit");
@@ -266,7 +315,9 @@ fn f16_kv_append_matches_cpu_round_trip() {
             continue;
         }
         let slot = &dst_bits[s * kv_dim..(s + 1) * kv_dim];
-        assert!(slot.iter().all(|&b| b == 0), "slot {s} was not supposed to be written");
+        assert!(
+            slot.iter().all(|&b| b == 0),
+            "slot {s} was not supposed to be written"
+        );
     }
 }
-

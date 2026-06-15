@@ -201,7 +201,10 @@ pub fn flush() {
     };
 
     s.push_str(&format!("  \"total_emitted\": {},\n", total_emitted));
-    s.push_str(&format!("  \"distinct_argmax_ids\": {},\n", distinct_argmax));
+    s.push_str(&format!(
+        "  \"distinct_argmax_ids\": {},\n",
+        distinct_argmax
+    ));
     s.push_str(&format!("  \"total_draft_accepted\": {},\n", total_acc));
     s.push_str(&format!("  \"total_draft_rejected\": {},\n", total_rej));
     s.push_str(&format!("  \"total_draft_cycles\": {},\n", total_cycles));
@@ -210,8 +213,7 @@ pub fn flush() {
     // (a) argmax histogram — top-K by frequency, descending.
     s.push_str("  \"argmax_freq_topk\": [\n");
     if let Some(st) = st_ref {
-        let mut pairs: Vec<(u32, u64)> =
-            st.argmax_freq.iter().map(|(&k, &v)| (k, v)).collect();
+        let mut pairs: Vec<(u32, u64)> = st.argmax_freq.iter().map(|(&k, &v)| (k, v)).collect();
         // Descending by count, then by id for stable output.
         pairs.sort_unstable_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
         let mut first = true;

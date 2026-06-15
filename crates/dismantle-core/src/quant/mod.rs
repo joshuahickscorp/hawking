@@ -152,7 +152,6 @@ fn dequant_q8_0(bytes: &[u8], out: &mut [f32]) -> Result<()> {
     Ok(())
 }
 
-
 // ---------- Inverse quantize helpers (Q8_0 / Q4_K / Q6_K) ---------------
 //
 // Required by mixed_quant_store re-quant + the Qwen-dense LM head /
@@ -172,7 +171,8 @@ pub fn quantize_q8_0(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if dst.len() < need {
         return Err(Error::Kernel(format!(
             "q8_0 quantize: dst {}B need {}B",
-            dst.len(), need
+            dst.len(),
+            need
         )));
     }
     for b in 0..nb {
@@ -196,35 +196,60 @@ pub const Q6_K_BLOCK_BYTES: usize = 210;
 
 pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if src.len() % Q_K != 0 {
-        return Err(Error::Kernel("q4_K quantize: src len not multiple of 256".into()));
+        return Err(Error::Kernel(
+            "q4_K quantize: src len not multiple of 256".into(),
+        ));
     }
     let nb = src.len() / Q_K;
     let need = nb * Q4_K_BLOCK_BYTES;
     if dst.len() < need {
-        return Err(Error::Kernel(format!("q4_K quantize: dst {}B need {}B", dst.len(), need)));
+        return Err(Error::Kernel(format!(
+            "q4_K quantize: dst {}B need {}B",
+            dst.len(),
+            need
+        )));
     }
     for b in 0..nb {
         let block = &src[b * Q_K..(b + 1) * Q_K];
         let off = b * Q4_K_BLOCK_BYTES;
-        for byte in &mut dst[off + 16..off + 144] { *byte = 0; }
+        for byte in &mut dst[off + 16..off + 144] {
+            *byte = 0;
+        }
         let mut sub_scale = [0.0f32; 8];
         let mut sub_min = [0.0f32; 8];
         for s in 0..8 {
             let vals = &block[s * 32..(s + 1) * 32];
             let mut mn = f32::INFINITY;
             let mut mx = f32::NEG_INFINITY;
-            for &v in vals { if v < mn { mn = v; } if v > mx { mx = v; } }
-            if mn > 0.0 { mn = 0.0; }
-            if mx < 0.0 { mx = 0.0; }
+            for &v in vals {
+                if v < mn {
+                    mn = v;
+                }
+                if v > mx {
+                    mx = v;
+                }
+            }
+            if mn > 0.0 {
+                mn = 0.0;
+            }
+            if mx < 0.0 {
+                mx = 0.0;
+            }
             if (mx - mn).abs() < 1e-30 {
-                sub_scale[s] = 0.0; sub_min[s] = -mn;
+                sub_scale[s] = 0.0;
+                sub_min[s] = -mn;
             } else {
-                sub_scale[s] = (mx - mn) / 15.0; sub_min[s] = -mn;
+                sub_scale[s] = (mx - mn) / 15.0;
+                sub_min[s] = -mn;
             }
         }
         let max_scale = sub_scale.iter().copied().fold(0.0f32, f32::max);
         let max_min = sub_min.iter().copied().fold(0.0f32, f32::max);
-        let d = if max_scale > 0.0 { max_scale / 63.0 } else { 0.0 };
+        let d = if max_scale > 0.0 {
+            max_scale / 63.0
+        } else {
+            0.0
+        };
         let dmin = if max_min > 0.0 { max_min / 63.0 } else { 0.0 };
         let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
         let inv_dmin = if dmin > 0.0 { 1.0 / dmin } else { 0.0 };
@@ -241,7 +266,11 @@ pub fn quantize_q4_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
         for s in 0..8 {
             let eff_scale = d * sc_u6[s] as f32;
             let eff_min = dmin * mn_u6[s] as f32;
-            let inv_eff = if eff_scale > 0.0 { 1.0 / eff_scale } else { 0.0 };
+            let inv_eff = if eff_scale > 0.0 {
+                1.0 / eff_scale
+            } else {
+                0.0
+            };
             let pair = s / 2;
             let upper = (s % 2) == 1;
             let qbase = pair * 32;
@@ -271,28 +300,44 @@ fn encode_q_k_scale_min(scales: &[u8; 8], mins: &[u8; 8], dst: &mut [u8]) {
 
 pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
     if src.len() % Q_K != 0 {
-        return Err(Error::Kernel("q6_K quantize: src len not multiple of 256".into()));
+        return Err(Error::Kernel(
+            "q6_K quantize: src len not multiple of 256".into(),
+        ));
     }
     let nb = src.len() / Q_K;
     let need = nb * Q6_K_BLOCK_BYTES;
     if dst.len() < need {
-        return Err(Error::Kernel(format!("q6_K quantize: dst {}B need {}B", dst.len(), need)));
+        return Err(Error::Kernel(format!(
+            "q6_K quantize: dst {}B need {}B",
+            dst.len(),
+            need
+        )));
     }
     for b in 0..nb {
         let block = &src[b * Q_K..(b + 1) * Q_K];
         let off = b * Q6_K_BLOCK_BYTES;
-        for byte in &mut dst[off..off + 208] { *byte = 0; }
+        for byte in &mut dst[off..off + 208] {
+            *byte = 0;
+        }
         let mut local_scale = [0.0f32; 16];
         for s in 0..16 {
             let mut amax = 0.0f32;
             for &v in &block[s * 16..(s + 1) * 16] {
                 let av = v.abs();
-                if av > amax { amax = av; }
+                if av > amax {
+                    amax = av;
+                }
             }
-            if amax > 0.0 { local_scale[s] = amax / 32.0; }
+            if amax > 0.0 {
+                local_scale[s] = amax / 32.0;
+            }
         }
         let max_scale = local_scale.iter().copied().fold(0.0f32, f32::max);
-        let d = if max_scale > 0.0 { max_scale / 127.0 } else { 0.0 };
+        let d = if max_scale > 0.0 {
+            max_scale / 127.0
+        } else {
+            0.0
+        };
         let inv_d = if d > 0.0 { 1.0 / d } else { 0.0 };
         let mut sc_i8 = [0i8; 16];
         for s in 0..16 {
@@ -333,7 +378,6 @@ pub fn quantize_q6_k(src: &[f32], dst: &mut [u8]) -> Result<()> {
     }
     Ok(())
 }
-
 
 // ---------- Q4_0 ---------------------------------------------------------
 //
@@ -558,7 +602,11 @@ pub fn dequant_q3_k_into(bytes: &[u8], out: &mut [f32]) -> Result<()> {
                     let q0 = ((qs[q0_idx] >> shift) & 0x03) as i8
                         - if (hmask[lane] & high_mask) != 0 { 0 } else { 4 };
                     let q1 = ((qs[q1_idx] >> shift) & 0x03) as i8
-                        - if (hmask[16 + lane] & high_mask) != 0 { 0 } else { 4 };
+                        - if (hmask[16 + lane] & high_mask) != 0 {
+                            0
+                        } else {
+                            4
+                        };
                     let s0 = d * scales[half * 8 + j * 2] as f32;
                     let s1 = d * scales[half * 8 + j * 2 + 1] as f32;
                     dst[elem_base + j * 32 + lane] = s0 * q0 as f32;
@@ -823,7 +871,11 @@ mod tests {
             let mut scales = [0i8; 16];
             decode_q3_k_scales(&bytes[off + 96..off + 108], &mut scales);
             for i in 0..16 {
-                assert_eq!(table[blk * 16 + i], d * scales[i] as f32, "block {blk} sub {i}");
+                assert_eq!(
+                    table[blk * 16 + i],
+                    d * scales[i] as f32,
+                    "block {blk} sub {i}"
+                );
             }
         }
     }

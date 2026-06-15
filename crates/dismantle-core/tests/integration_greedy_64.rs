@@ -9,12 +9,8 @@ use std::path::PathBuf;
 const PROMPT: &str = "Once upon a time";
 const MAX_NEW_TOKENS: usize = 64;
 
-fn run_greedy_64(
-    weights: &PathBuf,
-    cfg: dismantle_core::EngineConfig,
-) -> Vec<u32> {
-    let mut engine =
-        dismantle_core::model::load_engine(weights, cfg).expect("load engine");
+fn run_greedy_64(weights: &PathBuf, cfg: dismantle_core::EngineConfig) -> Vec<u32> {
+    let mut engine = dismantle_core::model::load_engine(weights, cfg).expect("load engine");
     let req = dismantle_core::GenerateRequest {
         prompt: PROMPT.into(),
         max_new_tokens: MAX_NEW_TOKENS,
@@ -79,8 +75,8 @@ fn greedy_64_f32_regression() {
         return;
     }
     let profile_path = PathBuf::from("../../profiles/deepseek-v2-lite-q4.m3pro18.json");
-    let profile = dismantle_core::profile::KernelProfile::load(&profile_path)
-        .expect("load profile");
+    let profile =
+        dismantle_core::profile::KernelProfile::load(&profile_path).expect("load profile");
 
     let cfg = dismantle_core::EngineConfig {
         kernel_profile: Some(profile),

@@ -67,15 +67,17 @@ fn tcb_add_inplace_matches_cpu() {
 
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
-        kernels::add_inplace_metal_tcb(&mut tcb, &a_buf, &b_buf, h)
-            .expect("add_inplace_metal_tcb");
+        kernels::add_inplace_metal_tcb(&mut tcb, &a_buf, &b_buf, h).expect("add_inplace_metal_tcb");
         tcb.commit_and_wait().expect("commit");
     }
 
     let gpu_a = read_f32_buf(&a_buf, h);
     let diff = max_abs_diff(&a_cpu, &gpu_a);
     println!("[WedgeB] add_inplace TCB vs CPU  max abs diff = {diff:.2e}");
-    assert!(diff < 1e-6, "add_inplace TCB vs CPU diff {diff:.2e} >= 1e-6");
+    assert!(
+        diff < 1e-6,
+        "add_inplace TCB vs CPU diff {diff:.2e} >= 1e-6"
+    );
 }
 
 /// Simulate the Wedge B staggered per-layer forward pass pattern for N_LAYERS

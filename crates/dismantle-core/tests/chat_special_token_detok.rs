@@ -38,12 +38,19 @@ fn streamed_decode_suppresses_special_tokens() {
     );
     assert!(tok.is_special(eos), "eos must be flagged special");
     assert!(tok.is_eog(eos), "eos must be end-of-generation");
-    assert_eq!(tok.decode_one(eos).unwrap(), "", "eos must not leak into output");
+    assert_eq!(
+        tok.decode_one(eos).unwrap(),
+        "",
+        "eos must not leak into output"
+    );
 
     // Qwen2.5 control ids: <|endoftext|>=151643, <|im_start|>=151644, <|im_end|>=151645.
     for id in [151643u32, 151644, 151645] {
         assert!((id as usize) < tok.vocab_size(), "id {id} in vocab");
-        assert!(tok.is_special(id), "control id {id} must be flagged special");
+        assert!(
+            tok.is_special(id),
+            "control id {id} must be flagged special"
+        );
         assert_eq!(
             tok.decode_one(id).unwrap(),
             "",

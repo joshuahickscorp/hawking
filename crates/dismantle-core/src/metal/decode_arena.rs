@@ -151,7 +151,8 @@ mod arena_imp {
                 x_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 x_norm_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
                 ffn_out_buf: ctx.new_buffer(hidden * std::mem::size_of::<f32>()),
-                moe_logits_buf: ctx.new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
+                moe_logits_buf: ctx
+                    .new_buffer(n_routed_experts.max(1) * std::mem::size_of::<f32>()),
                 moe_route_ids_buf: ctx.new_buffer(top_k_sz * std::mem::size_of::<u32>()),
                 moe_route_weights_buf: ctx.new_buffer(top_k_sz * std::mem::size_of::<f32>()),
                 shared_route_ids_buf: {
@@ -159,9 +160,12 @@ mod arena_imp {
                     MetalContext::write_buffer_bytes(&buf, bytemuck::cast_slice(&[0u32]));
                     buf
                 },
-                moe_routed_gate_out_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
-                moe_routed_up_out_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
-                moe_routed_act_buf: ctx.new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_gate_out_buf: ctx
+                    .new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_up_out_buf: ctx
+                    .new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
+                moe_routed_act_buf: ctx
+                    .new_buffer(top_k_sz * moe_intermediate * std::mem::size_of::<f32>()),
                 moe_routed_out_buf: ctx.new_buffer(top_k_sz * hidden * std::mem::size_of::<f32>()),
                 moe_shared_gate_out_buf: ctx.new_buffer(shared_mid * std::mem::size_of::<f32>()),
                 moe_shared_up_out_buf: ctx.new_buffer(shared_mid * std::mem::size_of::<f32>()),
@@ -174,9 +178,8 @@ mod arena_imp {
                 kv_a_out_buf: ctx.new_buffer(kv_a_dim * std::mem::size_of::<f32>()),
                 q_lora_normed_buf: ctx.new_buffer(q_lora_sz * std::mem::size_of::<f32>()),
                 c_kv_normed_buf: ctx.new_buffer(kv_lora_rank * std::mem::size_of::<f32>()),
-                route_history_buf: ctx.new_buffer(
-                    n_moe_layers.max(1) * top_k_sz * std::mem::size_of::<u32>()
-                ),
+                route_history_buf: ctx
+                    .new_buffer(n_moe_layers.max(1) * top_k_sz * std::mem::size_of::<u32>()),
                 batch_x_norm_buf: (0..max_batch_size.max(1))
                     .map(|_| ctx.new_buffer(hidden * std::mem::size_of::<f32>()))
                     .collect(),

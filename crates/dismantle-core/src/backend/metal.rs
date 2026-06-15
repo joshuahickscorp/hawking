@@ -61,8 +61,8 @@ use crate::{Error, Result};
 
 use super::{
     AttentionKind, Backend, BackendAttention, BackendElementwise, BackendEmbed, BackendGemv,
-    BackendKvCache, BackendMoe, BackendNorm, BackendQuant, BackendRope, BackendSample, CommandRecorder,
-    GemvSpec, Op, QuantScheme, RopeLayout, WeightKind,
+    BackendKvCache, BackendMoe, BackendNorm, BackendQuant, BackendRope, BackendSample,
+    CommandRecorder, GemvSpec, Op, QuantScheme, RopeLayout, WeightKind,
 };
 
 /// Concrete Metal [`Backend`].
@@ -367,14 +367,8 @@ impl BackendRope for MetalBackend {
             // rope_dim = head_dim rotates the entire head (matches
             // qwen_dense.rs:4119 for Q and :4129 for K).
             RopeLayout::Full { n_heads, head_dim } => kernels::rope_q_f32_inplace_tcb(
-                tcb,
-                buf,
-                n_heads,
-                /* q_head_dim     */ head_dim,
-                /* qk_nope_head_dim */ 0,
-                /* qk_rope_head_dim */ head_dim,
-                pos,
-                base,
+                tcb, buf, n_heads, /* q_head_dim     */ head_dim,
+                /* qk_nope_head_dim */ 0, /* qk_rope_head_dim */ head_dim, pos, base,
             ),
             // Partial (MLA nope/rope split): rotate only the trailing
             // `rope_dim` slice starting at `offset` floats into `buf`.
@@ -605,4 +599,3 @@ impl BackendMoe for MetalBackend {
         ))
     }
 }
-

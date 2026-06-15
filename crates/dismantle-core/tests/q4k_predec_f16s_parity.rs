@@ -47,13 +47,18 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-3.0_f32..3.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-3.0_f32..3.0_f32))
+        .collect()
 }
 
 /// Pin a Vec<f16> as raw little-endian bytes (no bytemuck Pod dependency on
 /// half::f16); the f16s kernel reads buffer(1) as `device const half*`.
 fn new_f16_buf(ctx: &MetalContext, data: &[f16]) -> PinnedBuffer {
-    let bytes: Vec<u8> = data.iter().flat_map(|h| h.to_bits().to_le_bytes()).collect();
+    let bytes: Vec<u8> = data
+        .iter()
+        .flat_map(|h| h.to_bits().to_le_bytes())
+        .collect();
     ctx.new_buffer_with_bytes(&bytes)
 }
 
@@ -76,27 +81,46 @@ fn q4k_v4_predec_f16s_relative_parity() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_v4_predec_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            &scales_f32_buf, 0,
-            rows, cols, &x_buf, &y_ref_buf,
-        ).expect("f32 predec encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_f32_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_ref_buf,
+        )
+        .expect("f32 predec encode");
         tcb.commit_and_wait().expect("f32 predec commit");
     }
     let y_ref = read_f32_buf(&y_ref_buf, rows);
 
     // f16-scales variant. f16 table = 16 halfs/block.
     let scales_f16 = predecode_q4_k_scale_table_f16(&w_bytes);
-    assert_eq!(scales_f16.len(), rows * (cols / 256) * 16,
-        "predecode_q4_k_scale_table_f16 length mismatch");
+    assert_eq!(
+        scales_f16.len(),
+        rows * (cols / 256) * 16,
+        "predecode_q4_k_scale_table_f16 length mismatch"
+    );
     let scales_f16_buf = new_f16_buf(ctx, &scales_f16);
     let y_f16_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::gemv_q4_k_v4_predec_2r_f16s_pinned_tcb(
-            &mut tcb, &model_buf, 0, w_bytes.len(),
-            &scales_f16_buf, 0,
-            rows, cols, &x_buf, &y_f16_buf,
-        ).expect("f16s predec encode");
+            &mut tcb,
+            &model_buf,
+            0,
+            w_bytes.len(),
+            &scales_f16_buf,
+            0,
+            rows,
+            cols,
+            &x_buf,
+            &y_f16_buf,
+        )
+        .expect("f16s predec encode");
         tcb.commit_and_wait().expect("f16s predec commit");
     }
     let y_f16 = read_f32_buf(&y_f16_buf, rows);
@@ -115,7 +139,8 @@ fn q4k_v4_predec_f16s_relative_parity() {
     let rel_l2 = (num / den.max(1e-30)).sqrt();
     eprintln!(
         "[q4k_v4_predec_f16s parity] rel_L2={rel_l2:.3e} max_abs={max_abs:.3e} \
-         (||ref||={:.3e})", den.sqrt()
+         (||ref||={:.3e})",
+        den.sqrt()
     );
     // f16 scale rounding (~5e-4 relative per scale) keeps the whole-vector
     // relative error well under 1%. A failure here means the f16 table or the

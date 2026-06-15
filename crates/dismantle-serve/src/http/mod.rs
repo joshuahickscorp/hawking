@@ -5,6 +5,8 @@
 //!   GET  /healthz
 //!   GET  /metrics               (Prometheus textfile)
 
+use crate::batch::driver::BatchDriver;
+use crate::system_kv_bank::SystemPromptKvBank;
 use axum::{
     body::Bytes,
     extract::State,
@@ -16,8 +18,6 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use crate::batch::driver::BatchDriver;
-use crate::system_kv_bank::SystemPromptKvBank;
 use dismantle_core::{Engine, GenerateRequest, SamplingParams};
 use futures::stream::Stream;
 use parking_lot::Mutex;
@@ -420,7 +420,9 @@ fn sse_response(
                     "error": {"message": "server busy — no batch slot available",
                               "type": "server_error", "code": "slot_exhausted"}
                 });
-                let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
+                let _ = sse_tx2
+                    .send(Ok(Event::default().data(body.to_string())))
+                    .await;
             });
             return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
         }
@@ -446,7 +448,11 @@ fn sse_response(
                             "object": "text_completion",
                         })
                     };
-                    if sse_tx.send(Ok(Event::default().data(chunk.to_string()))).await.is_err() {
+                    if sse_tx
+                        .send(Ok(Event::default().data(chunk.to_string())))
+                        .await
+                        .is_err()
+                    {
                         break;
                     }
                 }
@@ -490,7 +496,11 @@ pub fn map_dismantle_generate_req(req: &DismantleGenerateReq) -> GenerateRequest
     let sampling = SamplingParams {
         temperature: if greedy { 0.0 } else { temp },
         top_k: if greedy { 0 } else { 40 },
-        top_p: if greedy { 1.0 } else { req.top_p.unwrap_or(0.9) },
+        top_p: if greedy {
+            1.0
+        } else {
+            req.top_p.unwrap_or(0.9)
+        },
         repetition_penalty: 1.0,
         seed: req.seed,
     };
@@ -509,12 +519,19 @@ pub fn map_dismantle_generate_req(req: &DismantleGenerateReq) -> GenerateRequest
 /// q4k* branch is the live one). Mirrors QwenDense::lm_head_path env logic.
 /// Returns one of: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16".
 pub fn lm_head_path_from_env() -> &'static str {
-    let q4k = std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD").map(|v| v != "0").unwrap_or(false);
+    let q4k = std::env::var_os("DISMANTLE_QWEN_Q4K_LMHEAD")
+        .map(|v| v != "0")
+        .unwrap_or(false);
     if !q4k {
         return "f16";
     }
-    let predec = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC").map(|v| v != "0").unwrap_or(true);
-    let f16s = predec && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES").map(|v| v != "0").unwrap_or(false);
+    let predec = std::env::var_os("DISMANTLE_QWEN_Q4K_PREDEC")
+        .map(|v| v != "0")
+        .unwrap_or(true);
+    let f16s = predec
+        && std::env::var_os("DISMANTLE_QWEN_PREDEC_F16SCALES")
+            .map(|v| v != "0")
+            .unwrap_or(false);
     if f16s {
         "q4k-predec-f16s"
     } else if predec {
@@ -635,7 +652,9 @@ fn token_id_sse_response(
                     "error": {"message": "server busy — no batch slot available",
                               "type": "server_error", "code": "slot_exhausted"}
                 });
-                let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
+                let _ = sse_tx2
+                    .send(Ok(Event::default().data(body.to_string())))
+                    .await;
             });
             return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
         }
@@ -653,7 +672,11 @@ fn token_id_sse_response(
                     // Emit each non-empty text fragment as a raw SSE data line.
                     // We escape newlines so each event is a single line.
                     let escaped = text.replace('\n', "\\n");
-                    if sse_tx.send(Ok(Event::default().data(escaped))).await.is_err() {
+                    if sse_tx
+                        .send(Ok(Event::default().data(escaped)))
+                        .await
+                        .is_err()
+                    {
                         break;
                     }
                 }
@@ -694,11 +717,14 @@ fn dismantle_generate_sse(
     // tokenizes again internally — cheap, keeps admit's signature unchanged).
     let prompt_tokens = {
         let engine = state.engine.lock();
-        engine.encode_prompt_for_batch(&req.prompt).map(|v| v.len()).unwrap_or(0)
+        engine
+            .encode_prompt_for_batch(&req.prompt)
+            .map(|v| v.len())
+            .unwrap_or(0)
     };
     // Snapshot whether the greedy/token-only lane is in play for this request.
-    let token_only_snapshot = state.driver.lock().lane_stats.greedy_steps > 0
-        || req.sampling.temperature <= 0.0;
+    let token_only_snapshot =
+        state.driver.lock().lane_stats.greedy_steps > 0 || req.sampling.temperature <= 0.0;
     let lm_head = lm_head_path_from_env();
 
     let slot_id_opt = {
@@ -718,7 +744,9 @@ fn dismantle_generate_sse(
                     "error": {"message": "server busy — no batch slot available",
                               "type": "server_error", "code": "slot_exhausted"}
                 });
-                let _ = sse_tx2.send(Ok(Event::default().data(body.to_string()))).await;
+                let _ = sse_tx2
+                    .send(Ok(Event::default().data(body.to_string())))
+                    .await;
             });
             return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
         }
@@ -739,18 +767,27 @@ fn dismantle_generate_sse(
                         "text": text,
                     });
                     completion_tokens += 1;
-                    if sse_tx.send(Ok(Event::default().data(chunk.to_string()))).await.is_err() {
+                    if sse_tx
+                        .send(Ok(Event::default().data(chunk.to_string())))
+                        .await
+                        .is_err()
+                    {
                         break;
                     }
                 }
                 Err(()) => {
                     let decode_ms = start.elapsed().as_secs_f64() * 1000.0;
                     let stats = dismantle_generate_stats_json(
-                        prompt_tokens, completion_tokens, decode_ms,
-                        token_only_snapshot, lm_head,
+                        prompt_tokens,
+                        completion_tokens,
+                        decode_ms,
+                        token_only_snapshot,
+                        lm_head,
                     );
                     let final_obj = serde_json::json!({ "stats": stats });
-                    let _ = sse_tx.send(Ok(Event::default().data(final_obj.to_string()))).await;
+                    let _ = sse_tx
+                        .send(Ok(Event::default().data(final_obj.to_string())))
+                        .await;
                     let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
                     break;
                 }

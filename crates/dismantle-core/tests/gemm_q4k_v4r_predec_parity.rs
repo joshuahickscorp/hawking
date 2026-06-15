@@ -42,30 +42,42 @@ fn make_q4k_bytes(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 }
 
 fn run_v3w(
-    wbuf: &PinnedBuffer, wlen: usize, sbuf: &PinnedBuffer,
-    rows: usize, cols: usize, batch: usize, xbuf: &PinnedBuffer,
+    wbuf: &PinnedBuffer,
+    wlen: usize,
+    sbuf: &PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    batch: usize,
+    xbuf: &PinnedBuffer,
 ) -> Vec<f32> {
     let ctx = ctx();
     let ybuf = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemm_q4_k_m_batched_v3w_predec_pinned_tcb(
         &mut tcb, wbuf, 0, wlen, sbuf, 0, rows, cols, batch, xbuf, &ybuf,
-    ).expect("v3w encode");
+    )
+    .expect("v3w encode");
     tcb.commit_and_wait().expect("v3w commit");
     let p = ybuf.contents() as *const f32;
     unsafe { std::slice::from_raw_parts(p, batch * rows) }.to_vec()
 }
 
 fn run_v4r(
-    wbuf: &PinnedBuffer, wlen: usize, sbuf: &PinnedBuffer,
-    rows: usize, cols: usize, batch: usize, xbuf: &PinnedBuffer,
+    wbuf: &PinnedBuffer,
+    wlen: usize,
+    sbuf: &PinnedBuffer,
+    rows: usize,
+    cols: usize,
+    batch: usize,
+    xbuf: &PinnedBuffer,
 ) -> Vec<f32> {
     let ctx = ctx();
     let ybuf = ctx.new_buffer(batch * rows * std::mem::size_of::<f32>());
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemm_q4_k_m_batched_v4r_predec_pinned_tcb(
         &mut tcb, wbuf, 0, wlen, sbuf, 0, rows, cols, batch, xbuf, &ybuf,
-    ).expect("v4r encode");
+    )
+    .expect("v4r encode");
     tcb.commit_and_wait().expect("v4r commit");
     let p = ybuf.contents() as *const f32;
     unsafe { std::slice::from_raw_parts(p, batch * rows) }.to_vec()
@@ -76,7 +88,9 @@ fn check_parity(label: &str, rows: usize, cols: usize, batch: usize, a: &[f32], 
     let mut n_bit_diff = 0usize;
     let mut max_abs = 0.0f32;
     for (&av, &bv) in a.iter().zip(b.iter()) {
-        if av.to_bits() != bv.to_bits() { n_bit_diff += 1; }
+        if av.to_bits() != bv.to_bits() {
+            n_bit_diff += 1;
+        }
         max_abs = max_abs.max((av - bv).abs());
     }
     if max_abs > ATOL {
@@ -98,7 +112,9 @@ fn parity_shape(rows: usize, cols: usize, seed: u64) {
 
     let mut rng = Pcg64Mcg::new((seed ^ 0x1357_2468u64) as u128);
     for &batch in &[2usize, 4, 8] {
-        let x: Vec<f32> = (0..batch * cols).map(|_| rng.gen_range(-2.0f32..2.0)).collect();
+        let x: Vec<f32> = (0..batch * cols)
+            .map(|_| rng.gen_range(-2.0f32..2.0))
+            .collect();
         let xbuf = ctx.new_buffer_with_bytes(bytemuck::cast_slice(&x));
         let a = run_v3w(&wbuf, wlen, &sbuf, rows, cols, batch, &xbuf);
         let b = run_v4r(&wbuf, wlen, &sbuf, rows, cols, batch, &xbuf);

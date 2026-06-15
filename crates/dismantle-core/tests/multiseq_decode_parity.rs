@@ -16,7 +16,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -77,7 +79,9 @@ fn multiseq_batched_equals_solo_and_anchors_single() {
         engine.kv.reset();
         let single = engine.forward_token_greedy_tcb(s, 0).expect("single fwd");
         engine.multiseq_arena = None;
-        let ms = engine.forward_tokens_multiseq(&[s], &[0], max_seq).expect("ms anchor")[0];
+        let ms = engine
+            .forward_tokens_multiseq(&[s], &[0], max_seq)
+            .expect("ms anchor")[0];
         assert_eq!(
             single, ms,
             "anchor: B=1 multiseq token {ms} != single-stream {single} (seed {s})"
@@ -85,7 +89,10 @@ fn multiseq_batched_equals_solo_and_anchors_single() {
     }
 
     // Solo references: each seed decoded ALONE via the multi-seq path.
-    let solo: Vec<Vec<u32>> = seeds.iter().map(|&s| ms_solo(&mut engine, s, n, max_seq)).collect();
+    let solo: Vec<Vec<u32>> = seeds
+        .iter()
+        .map(|&s| ms_solo(&mut engine, s, n, max_seq))
+        .collect();
 
     // (1) CONSISTENCY: all B seeds decoded TOGETHER, lockstep positions.
     engine.multiseq_arena = None;

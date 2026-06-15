@@ -15,8 +15,7 @@
 use std::path::PathBuf;
 
 use dismantle_core::{
-    profile::fresh_test_profile,
-    EngineConfig, GenerateRequest, SamplingParams, StreamEvent,
+    profile::fresh_test_profile, EngineConfig, GenerateRequest, SamplingParams, StreamEvent,
 };
 
 const PROMPT: &str = "Once upon a time";
@@ -91,8 +90,7 @@ fn vocab_prune_matches_full_vocab_greedy() {
     // whitelist; at that position the pruned model cannot emit the same
     // token and divergence is expected. After divergence the input embed
     // for the next step differs, so subsequent positions are unrelated.
-    let whitelist_bytes =
-        std::fs::read(&pruned_path).expect("read vocab_whitelist_995.json");
+    let whitelist_bytes = std::fs::read(&pruned_path).expect("read vocab_whitelist_995.json");
     let raw: serde_json::Value =
         serde_json::from_slice(&whitelist_bytes).expect("parse whitelist json");
     let keep: std::collections::HashSet<u32> = raw["keep_token_ids"]

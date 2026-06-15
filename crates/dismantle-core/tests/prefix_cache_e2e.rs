@@ -77,7 +77,9 @@ fn run_generate(weights: &PathBuf, prompt: &str) -> (Vec<u32>, f64) {
 
 #[test]
 fn cache_disabled_baseline_matches_itself() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
     // Isolate the DISK tier: the in-RAM prefix cache is default-ON, so
     // disable it explicitly here (this file tests the disk tier only).
@@ -92,7 +94,9 @@ fn cache_disabled_baseline_matches_itself() {
 
 #[test]
 fn cache_miss_matches_no_cache() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
 
     let prompt = format!("{SYSTEM_PROMPT}{USER_TURN_1}");
@@ -103,7 +107,10 @@ fn cache_miss_matches_no_cache() {
     let (ids_nocache, _) = run_generate(&weights, &prompt);
 
     let tmp = tempfile::TempDir::new().unwrap();
-    std::env::set_var("DISMANTLE_PREFIX_CACHE_DIR", tmp.path().to_string_lossy().as_ref());
+    std::env::set_var(
+        "DISMANTLE_PREFIX_CACHE_DIR",
+        tmp.path().to_string_lossy().as_ref(),
+    );
     let (ids_miss, _) = run_generate(&weights, &prompt);
     std::env::remove_var("DISMANTLE_PREFIX_CACHE_DIR");
 
@@ -115,7 +122,9 @@ fn cache_miss_matches_no_cache() {
 
 #[test]
 fn cache_hit_matches_no_cache_and_speeds_prefill() {
-    let Some(weights) = weights_path() else { return };
+    let Some(weights) = weights_path() else {
+        return;
+    };
     let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
 
     let prompt_t1 = format!("{SYSTEM_PROMPT}{USER_TURN_1}");
@@ -131,7 +140,10 @@ fn cache_hit_matches_no_cache_and_speeds_prefill() {
 
     // Cache-enabled run: turn 1 populates; turn 2 + turn 3 should hit.
     let tmp = tempfile::TempDir::new().unwrap();
-    std::env::set_var("DISMANTLE_PREFIX_CACHE_DIR", tmp.path().to_string_lossy().as_ref());
+    std::env::set_var(
+        "DISMANTLE_PREFIX_CACHE_DIR",
+        tmp.path().to_string_lossy().as_ref(),
+    );
     let (_ids_t1, t1_warm_ms) = run_generate(&weights, &prompt_t1);
     let (ids_t2_cache, t2_warm_ms) = run_generate(&weights, &prompt_t2);
     let (ids_t3_cache, t3_warm_ms) = run_generate(&weights, &prompt_t3);

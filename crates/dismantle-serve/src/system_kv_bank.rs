@@ -132,7 +132,11 @@ impl SystemPromptKvBank {
         mix(&mut b, (n as u64).rotate_left(32), 0x9e3779b97f4a7c15);
         for &t in &tokens[..n] {
             mix(&mut a, t as u64, 0x100000001b3);
-            mix(&mut b, (t as u64).wrapping_add(0x632be59bd9b4e019), 0x9e3779b97f4a7c15);
+            mix(
+                &mut b,
+                (t as u64).wrapping_add(0x632be59bd9b4e019),
+                0x9e3779b97f4a7c15,
+            );
         }
         ((a as u128) << 64) | (b as u128)
     }
@@ -183,7 +187,12 @@ impl SystemPromptKvBank {
             None => {
                 self.entries.insert(
                     key,
-                    BankEntry { prefix_len, source_slot, last_tick: tick, hits: 0 },
+                    BankEntry {
+                        prefix_len,
+                        source_slot,
+                        last_tick: tick,
+                        hits: 0,
+                    },
                 );
                 RecordOutcome::Inserted
             }
