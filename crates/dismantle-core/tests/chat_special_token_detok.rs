@@ -76,3 +76,29 @@ fn streamed_decode_suppresses_special_tokens() {
         "plain text must contain no control markup, got: {text:?}"
     );
 }
+
+/// The chat template must `encode` `<|im_start|>` / `<|im_end|>` as ATOMIC control
+/// ids, not byte-level fragments. If they shatter, the chat prompt is malformed
+/// and the model generates `<|>` garbage — the real cause of the chat-endpoint
+/// bug (the brief mis-framed it as a detokenization leak).
+#[test]
+fn chat_template_encodes_control_tokens_atomically() {
+    let Some(tok) = qwen_tokenizer() else { return };
+    let template = "<|im_start|>user\nhi<|im_end|>\n<|im_start|>assistant\n";
+    let ids = tok.encode(template, false).expect("encode template");
+    eprintln!("[diag] template -> {} ids: {ids:?}", ids.len());
+    assert!(
+        ids.contains(&151644),
+        "<|im_start|> must encode as atomic id 151644, got {ids:?}"
+    );
+    assert!(
+        ids.contains(&151645),
+        "<|im_end|> must encode as atomic id 151645, got {ids:?}"
+    );
+    // A correctly-encoded 3-line template is short; a shattered one is long.
+    assert!(
+        ids.len() < 16,
+        "template shattered into {} tokens (control tokens not atomic): {ids:?}",
+        ids.len()
+    );
+}
