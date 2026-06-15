@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "harness_version": "1.0.0",
+  "harness_key": {
+    "harness_version": "1.0.0",
+    "device": "cpu",
+    "dtype": "bfloat16",
+    "ctx": 2048,
+    "chunks": 64,
+    "dataset_id": "wikitext"
+  },
+  "harness_key8": "bee28e82",
+  "model": "qwen-05b",
+  "model_path": "/Users/scammermike/Downloads/strand/scratch/qwen-05b",
+  "tag": "bf16_anchor",
+  "ppl": 12.535789392557929,
+  "ctx": 2048,
+  "chunks": 64,
+  "tokens": 131008,
+  "device": "cpu",
+  "device_mode": "cpu",
+  "dtype": "bfloat16",
+  "dataset_id": "wikitext",
+  "dataset_fp": "696cca6b65a171b0",
+  "eff_bpw": null,
+  "timestamp": "2026-06-11T23:44:16-0400",
+  "epoch": 1781235856,
+  "out_json": "/Users/scammermike/Downloads/strand/research/isobpw/ppl/ppl_qwen-05b_bf16_anchor.json",
+  "ce_slice": 0,
+  "torch": "2.6.0",
+  "transformers": "5.6.2"
+}

@@ -1,0 +1,14 @@
+{
+  "quant": "strand",
+  "bits": 2,
+  "steps": 300,
+  "lr": 0.0001,
+  "kd": true,
+  "ppl_before": 78.95219677501089,
+  "ppl_after": 34.55859952221674,
+  "wrapped": 168,
+  "eval_chunks": 64,
+  "eval_ctx": 2048,
+  "pv_tensors": "",
+  "pv_count": -1
+}
