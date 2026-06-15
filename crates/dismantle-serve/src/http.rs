@@ -368,6 +368,14 @@ fn render_chat_deepseek(msgs: &[ChatMessage]) -> String {
 
 fn render_chat_qwen2(msgs: &[ChatMessage]) -> String {
     let mut s = String::new();
+    // Qwen2.5's chat template injects a default system message when the caller
+    // gives none; without it the model can degenerate on short prompts.
+    if msgs.first().map(|m| m.role.as_str()) != Some("system") {
+        s.push_str(
+            "<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. \
+             You are a helpful assistant.<|im_end|>\n",
+        );
+    }
     for m in msgs {
         s.push_str(&format!(
             "<|im_start|>{}\n{}<|im_end|>\n",
