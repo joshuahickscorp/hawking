@@ -114,7 +114,7 @@ pub struct SidecarContents {
 ///
 /// SCAFFOLD ONLY: this is the FORMAT + loader-resolver. It does NOT pick
 /// tiers (selection needs AWQ/perplexity calibration — naive RTN mixed-prec
-/// is `reports/dead_levers.md` #16 Type-1 dead) and it does NOT itself
+/// is `docs/dead_levers.md` #16 Type-1 dead) and it does NOT itself
 /// re-quantize (that is `mixed_quant_store::MixedQuantStore`).
 ///
 /// Distinct from `quant_tier_map::TierMap`, which is per-`(layer, group)`

@@ -3,7 +3,7 @@
 //! Serial-verify speculation is **net-negative** on this engine when draft
 //! acceptance is low: every rejected draft token costs a wasted slot in the
 //! batched verify forward (`forward_tokens_verify`), so a stretch of misses
-//! makes spec slower than plain greedy decode (see `reports/dead_levers.md`:
+//! makes spec slower than plain greedy decode (see `docs/dead_levers.md`:
 //! EAGLE-3 net-negative tau=0.877; the free n-gram draft tau~1.43 only wins when
 //! the user's stream is actually predictable). This [`SpecGovernor`] is a
 //! self-contained state machine that watches the live accept/reject stream and

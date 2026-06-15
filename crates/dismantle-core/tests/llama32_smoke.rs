@@ -83,7 +83,7 @@ fn hash16(ids: &[u32]) -> String {
 }
 
 fn check_or_pin(label: &str, actual_hash: &str) {
-    let pin_path = PathBuf::from("../../tests/golden/_llama32_token_baseline.hashes");
+    let pin_path = PathBuf::from("tests/golden/_llama32_token_baseline.hashes");
     let actual_line = format!("{}: {}\n", label, actual_hash);
     let existing = std::fs::read_to_string(&pin_path).unwrap_or_default();
     let prior = existing
