@@ -49,13 +49,13 @@ fn run_parity(routes: usize, rows: usize, cols: usize, seed_base: u64) {
 
     // Build weight tensor: gate matrices followed by up matrices.
     let gate_bytes = synthetic_q4_k_bytes(n_experts, rows, cols, seed_base);
-    let up_bytes   = synthetic_q4_k_bytes(n_experts, rows, cols, seed_base ^ 0x1234_5678);
+    let up_bytes = synthetic_q4_k_bytes(n_experts, rows, cols, seed_base ^ 0x1234_5678);
 
     // Assemble with padding prefix to exercise non-zero offsets.
     let pad = 128usize;
     let mut w_all = vec![0xA5u8; pad + gate_bytes.len() + up_bytes.len()];
     let gate_offset = pad;
-    let up_offset   = pad + n_experts * bytes_per_expert;
+    let up_offset = pad + n_experts * bytes_per_expert;
     w_all[gate_offset..gate_offset + gate_bytes.len()].copy_from_slice(&gate_bytes);
     w_all[up_offset..up_offset + up_bytes.len()].copy_from_slice(&up_bytes);
 

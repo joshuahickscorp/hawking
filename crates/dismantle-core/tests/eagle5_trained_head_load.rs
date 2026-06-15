@@ -27,7 +27,9 @@ const Q1P5_HIDDEN: usize = 1536;
 const QWEN_VOCAB: usize = 151_936;
 
 fn head_path(env_var: &str) -> Option<PathBuf> {
-    std::env::var_os(env_var).map(PathBuf::from).filter(|p| p.exists())
+    std::env::var_os(env_var)
+        .map(PathBuf::from)
+        .filter(|p| p.exists())
 }
 
 #[test]

@@ -22,14 +22,22 @@ fn run_1r(
     cols: usize,
 ) -> Vec<f32> {
     let model_buf = ctx.new_buffer_with_bytes(w_q6);
-    let gate_buf  = new_f32_buf(ctx, gate);
-    let up_buf    = new_f32_buf(ctx, up);
-    let out_buf   = ctx.new_buffer(rows * std::mem::size_of::<f32>());
-    let mut tcb   = TokenCommandBuffer::new(ctx);
+    let gate_buf = new_f32_buf(ctx, gate);
+    let up_buf = new_f32_buf(ctx, up);
+    let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q6_k_swiglu_1r_direct_tcb(
-        &mut tcb, &model_buf, 0, w_q6.len(),
-        rows, cols, &gate_buf, &up_buf, &out_buf,
-    ).unwrap();
+        &mut tcb,
+        &model_buf,
+        0,
+        w_q6.len(),
+        rows,
+        cols,
+        &gate_buf,
+        &up_buf,
+        &out_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&out_buf, rows)
 }
@@ -44,14 +52,22 @@ fn run_2r(
     cols: usize,
 ) -> Vec<f32> {
     let model_buf = ctx.new_buffer_with_bytes(w_q6);
-    let gate_buf  = new_f32_buf(ctx, gate);
-    let up_buf    = new_f32_buf(ctx, up);
-    let out_buf   = ctx.new_buffer(rows * std::mem::size_of::<f32>());
-    let mut tcb   = TokenCommandBuffer::new(ctx);
+    let gate_buf = new_f32_buf(ctx, gate);
+    let up_buf = new_f32_buf(ctx, up);
+    let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+    let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q6_k_swiglu_2r_direct_tcb(
-        &mut tcb, &model_buf, 0, w_q6.len(),
-        rows, cols, &gate_buf, &up_buf, &out_buf,
-    ).unwrap();
+        &mut tcb,
+        &model_buf,
+        0,
+        w_q6.len(),
+        rows,
+        cols,
+        &gate_buf,
+        &up_buf,
+        &out_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&out_buf, rows)
 }
@@ -74,22 +90,22 @@ fn d7_q6k_swiglu_2r_bit_identical_to_1r() {
 
     let cases: &[(usize, usize, u64)] = &[
         // Exact multiples of 8 and 16.
-        (8,   256, 0xD700),
-        (16,  256, 0xD701),
-        (32,  256, 0xD702),
-        (64,  512, 0xD703),
+        (8, 256, 0xD700),
+        (16, 256, 0xD701),
+        (32, 256, 0xD702),
+        (64, 512, 0xD703),
         // Non-multiples-of-16: tests has1 guard.
-        (9,   256, 0xD704),
-        (17,  256, 0xD705),
-        (25,  256, 0xD706),
+        (9, 256, 0xD704),
+        (17, 256, 0xD705),
+        (25, 256, 0xD706),
         (128, 512, 0xD707),
         (256, 512, 0xD708),
     ];
 
     for &(rows, cols, seed) in cases {
-        let w_q6  = make_q6k(rows, cols, seed);
-        let gate  = fixed_f32(cols, seed ^ 0x1000);
-        let up    = fixed_f32(cols, seed ^ 0x2000);
+        let w_q6 = make_q6k(rows, cols, seed);
+        let gate = fixed_f32(cols, seed ^ 0x1000);
+        let up = fixed_f32(cols, seed ^ 0x2000);
 
         let ref_out = run_1r(ctx, &w_q6, &gate, &up, rows, cols);
         let got_out = run_2r(ctx, &w_q6, &gate, &up, rows, cols);
@@ -99,8 +115,10 @@ fn d7_q6k_swiglu_2r_bit_identical_to_1r() {
         // so results may differ by up to ~2 ULPs. Gate at 1e-4 (well below any
         // quantization error) to verify functional correctness.
         const MAX_DIFF: f32 = 1e-4;
-        assert!(diff <= MAX_DIFF,
-            "D7 rows={rows} cols={cols}: 2r vs 1r diff={diff:.2e} > {MAX_DIFF:.2e}");
+        assert!(
+            diff <= MAX_DIFF,
+            "D7 rows={rows} cols={cols}: 2r vs 1r diff={diff:.2e} > {MAX_DIFF:.2e}"
+        );
         eprintln!("D7 q6k_swiglu_2r rows={rows} cols={cols}: diff={diff:.2e} OK");
     }
 }

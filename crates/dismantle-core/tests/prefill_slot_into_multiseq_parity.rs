@@ -23,7 +23,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -56,7 +58,11 @@ fn argmax(l: &[f32]) -> u32 {
     l.iter()
         .enumerate()
         .fold((0u32, f32::NEG_INFINITY), |(bi, bv), (i, &v)| {
-            if v > bv { (i as u32, v) } else { (bi, bv) }
+            if v > bv {
+                (i as u32, v)
+            } else {
+                (bi, bv)
+            }
         })
         .0
 }
@@ -98,7 +104,9 @@ fn multiseq_decode_after_prefill(
     let prompt_len = prompt_ids.len();
     let last_prompt_tok = *prompt_ids.last().unwrap();
 
-    let returned = engine.prefill_slot(slot_id, prompt_ids).expect("prefill_slot");
+    let returned = engine
+        .prefill_slot(slot_id, prompt_ids)
+        .expect("prefill_slot");
     assert_eq!(
         returned, last_prompt_tok,
         "prefill_slot must return the last prompt token id"
@@ -185,7 +193,7 @@ fn prefill_slots_parallel_parity() {
         None => return,
     };
 
-    let prompt_a: &[u32] = &[1, 2, 3, 4];    // slot 0, 4 tokens
+    let prompt_a: &[u32] = &[1, 2, 3, 4]; // slot 0, 4 tokens
     let prompt_b: &[u32] = &[9707, 374, 100]; // slot 3, 3 tokens (ragged)
 
     // ── Reference: serial prefill_slot, then multiseq decode ──────────────
@@ -195,7 +203,9 @@ fn prefill_slots_parallel_parity() {
 
     let expected_a = multiseq_decode_after_prefill(&mut engine, 0, prompt_a);
     // serial prefill_slot for slot 3 — must not disturb slot 0's KV
-    let returned_b = engine.prefill_slot(3, prompt_b).expect("serial prefill slot 3");
+    let returned_b = engine
+        .prefill_slot(3, prompt_b)
+        .expect("serial prefill slot 3");
     assert_eq!(returned_b, *prompt_b.last().unwrap());
 
     // Decode 3 tokens from slot 3 with slot 0's KV still resident
@@ -210,9 +220,7 @@ fn prefill_slots_parallel_parity() {
         cur_b = tok;
     }
 
-    println!(
-        "[parallel-prefill-parity] reference: slot0={expected_a:?} slot3={expected_b:?}"
-    );
+    println!("[parallel-prefill-parity] reference: slot0={expected_a:?} slot3={expected_b:?}");
 
     // ── Parallel prefill: both slots at once ──────────────────────────────
     engine.multiseq_arena = None;
@@ -247,9 +255,7 @@ fn prefill_slots_parallel_parity() {
         cur_b2 = tok;
     }
 
-    println!(
-        "[parallel-prefill-parity] parallel: slot0={parallel_a:?} slot3={parallel_b:?}"
-    );
+    println!("[parallel-prefill-parity] parallel: slot0={parallel_a:?} slot3={parallel_b:?}");
 
     assert_eq!(
         expected_a, parallel_a,

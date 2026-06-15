@@ -9,9 +9,7 @@ mod common;
 use common::*;
 
 fn synthetic_input(cols: usize) -> Vec<f32> {
-    (0..cols)
-        .map(|i| ((i % 97) as f32 - 48.0) / 97.0)
-        .collect()
+    (0..cols).map(|i| ((i % 97) as f32 - 48.0) / 97.0).collect()
 }
 
 fn synthetic_q4_k_bytes(n_blocks: usize) -> Vec<u8> {

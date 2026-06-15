@@ -17,9 +17,9 @@
 use std::path::PathBuf;
 
 use dismantle_core::kernels::megakernel::{
-    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner,
-    MK_PROBE_ATTN_OUT, MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT,
-    MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0, MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
+    megakernel_2layer_dispatch, megakernel_nlayer_dispatch, MegakernelRunner, MK_PROBE_ATTN_OUT,
+    MK_PROBE_FFN_DOWN, MK_PROBE_O_PROJ, MK_PROBE_Q_ROT, MK_PROBE_RESIDUAL, MK_PROBE_RESIDUAL_L0,
+    MK_PROBE_XNORM_A, MK_PROBE_XNORM_FFN,
 };
 use dismantle_core::metal::MetalContext;
 use dismantle_core::model::qwen_dense::{MegakernelLayerWeightsF16, QwenDense};
@@ -387,12 +387,8 @@ fn megakernel_2layer_parity_qwen3b() {
 
         let residual_l0 = cpu_layer_forward(&x_in_f32, &layer0, POS as u32);
         let residual_l1 = cpu_layer_forward(&residual_l0, &layer1, POS as u32);
-        let (worst, idx, gv, wv) = max_violation_f16_vs_f32_tol(
-            &x_out,
-            &residual_l1,
-            ATOL_MULTILAYER,
-            RTOL_MULTILAYER,
-        );
+        let (worst, idx, gv, wv) =
+            max_violation_f16_vs_f32_tol(&x_out, &residual_l1, ATOL_MULTILAYER, RTOL_MULTILAYER);
         assert!(
             worst <= 0.0,
             "2-layer post-l1 residual parity FAIL: violation={worst:.3e} at i={idx} \
@@ -452,20 +448,13 @@ fn megakernel_nlayer_parity_qwen3b() {
             MK_PROBE_RESIDUAL,
         )
         .expect("2-layer dispatch");
-        let got = megakernel_nlayer_dispatch(
-            &ctx,
-            &two,
-            &x_in,
-            POS as u32,
-            (POS + 1) as u32,
-            MAX_SEQ,
-        )
-        .expect("n-layer dispatch (N=2)");
+        let got =
+            megakernel_nlayer_dispatch(&ctx, &two, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ)
+                .expect("n-layer dispatch (N=2)");
         assert_eq!(got.len(), h);
 
         let want_f32: Vec<f32> = want.iter().map(|v| v.to_f32()).collect();
-        let (worst, idx, gv, wv) =
-            max_violation_f16_vs_f32_tol(&got, &want_f32, ATOL, RTOL);
+        let (worst, idx, gv, wv) = max_violation_f16_vs_f32_tol(&got, &want_f32, ATOL, RTOL);
         assert!(
             worst <= 0.0,
             "N=2 megakernel vs 2-layer kernel FAIL: violation={worst:.3e} at i={idx} \
@@ -493,15 +482,9 @@ fn megakernel_nlayer_parity_qwen3b() {
             .map(|li| model.prep_megakernel_layer_f16(li).expect("prep"))
             .collect();
 
-        let got = megakernel_nlayer_dispatch(
-            &ctx,
-            &layers,
-            &x_in,
-            POS as u32,
-            (POS + 1) as u32,
-            MAX_SEQ,
-        )
-        .expect("n-layer dispatch (N=8)");
+        let got =
+            megakernel_nlayer_dispatch(&ctx, &layers, &x_in, POS as u32, (POS + 1) as u32, MAX_SEQ)
+                .expect("n-layer dispatch (N=8)");
         assert_eq!(got.len(), h);
         assert!(
             got.iter().all(|v| v.to_f32().is_finite()),
@@ -518,8 +501,7 @@ fn megakernel_nlayer_parity_qwen3b() {
         let scale = (N8 as f32) / 2.0;
         let atol = ATOL_MULTILAYER * scale;
         let rtol = RTOL_MULTILAYER * scale;
-        let (worst, idx, gv, wv) =
-            max_violation_f16_vs_f32_tol(&got, &ref_res, atol, rtol);
+        let (worst, idx, gv, wv) = max_violation_f16_vs_f32_tol(&got, &ref_res, atol, rtol);
         assert!(
             worst <= 0.0,
             "N=8 megakernel parity FAIL: violation={worst:.3e} at i={idx} \
@@ -638,10 +620,7 @@ fn cpu_layer_forward(
 
 /// CPU reference for layer-0 stage-F attn_out at pos=0/seq_len=1.
 /// Computes V (with bias, no rope) and replicates across grouped heads.
-fn cpu_layer0_attn_out_pos0(
-    x_in_f32: &[f32],
-    layer0: &MegakernelLayerWeightsF16,
-) -> Vec<f32> {
+fn cpu_layer0_attn_out_pos0(x_in_f32: &[f32], layer0: &MegakernelLayerWeightsF16) -> Vec<f32> {
     let x_norm = cpu_rmsnorm(x_in_f32, &layer0.attn_norm, RMS_EPS);
     let mut v = cpu_gemv_f16(&layer0.v_proj, KV_DIM, HIDDEN, &x_norm);
     for i in 0..KV_DIM {

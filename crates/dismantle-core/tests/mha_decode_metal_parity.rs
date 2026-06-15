@@ -34,7 +34,14 @@ fn mha_decode_metal_matches_cpu() {
     // CPU reference.
     let mut expected = vec![0.0f32; q_dim];
     mha_decode_step(
-        &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut expected,
+        &q,
+        &k,
+        &v,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut expected,
     )
     .expect("cpu mha_decode_step");
 
@@ -48,7 +55,8 @@ fn mha_decode_metal_matches_cpu() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_tcb(
-            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads, n_kv_heads,
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads,
+            n_kv_heads,
         )
         .expect("mha_decode_f32_tcb encode");
         tcb.commit_and_wait().expect("mha_decode_f32_tcb commit");
@@ -78,7 +86,14 @@ fn mha_decode_metal_seq_len_one() {
 
     let mut expected = vec![0.0f32; q_dim];
     mha_decode_step(
-        &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut expected,
+        &q,
+        &k,
+        &v,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut expected,
     )
     .unwrap();
 
@@ -90,7 +105,8 @@ fn mha_decode_metal_seq_len_one() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::mha_decode_f32_tcb(
-            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads, n_kv_heads,
+            &mut tcb, &q_buf, &k_buf, 0, &v_buf, 0, &out_buf, seq_len, head_dim, n_heads,
+            n_kv_heads,
         )
         .unwrap();
         tcb.commit_and_wait().unwrap();

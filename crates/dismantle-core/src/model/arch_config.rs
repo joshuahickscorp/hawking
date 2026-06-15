@@ -80,7 +80,10 @@ mod tests {
     use super::*;
 
     fn meta(pairs: &[(&str, MetaValue)]) -> HashMap<String, MetaValue> {
-        pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
+        pairs
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
+            .collect()
     }
 
     #[test]

@@ -226,7 +226,10 @@ impl SidecarCompat {
         matches!(self, Self::Compatible | Self::ShaderHashMismatch { .. })
     }
     pub fn is_fatal(&self) -> bool {
-        matches!(self, Self::GgufHashMismatch { .. } | Self::VersionTooNew { .. })
+        matches!(
+            self,
+            Self::GgufHashMismatch { .. } | Self::VersionTooNew { .. }
+        )
     }
 }
 
@@ -314,7 +317,8 @@ impl SidecarWriter {
                 .map_err(|e| crate::Error::Model(format!("sidecar write: {e}")))?;
             total_bytes += 8 + 4 + bytes.len();
         }
-        w.flush().map_err(|e| crate::Error::Model(format!("sidecar flush: {e}")))?;
+        w.flush()
+            .map_err(|e| crate::Error::Model(format!("sidecar flush: {e}")))?;
         Ok(total_bytes)
     }
 }
@@ -331,7 +335,10 @@ pub fn read_predec_entries(
     f.read_exact(&mut magic)
         .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
     if &magic != SIDECAR_MAGIC {
-        return Err(crate::Error::Model(format!("sidecar: bad magic in {:?}", path)));
+        return Err(crate::Error::Model(format!(
+            "sidecar: bad magic in {:?}",
+            path
+        )));
     }
     let mut len_buf = [0u8; 4];
     f.read_exact(&mut len_buf)
@@ -416,7 +423,8 @@ pub fn read_sidecar_header(path: &std::path::Path) -> crate::Result<SidecarHeade
         .map_err(|e| crate::Error::Model(format!("sidecar: read magic: {e}")))?;
     if &magic != SIDECAR_MAGIC {
         return Err(crate::Error::Model(format!(
-            "sidecar: bad magic in {:?}", path
+            "sidecar: bad magic in {:?}",
+            path
         )));
     }
     let mut len_buf = [0u8; 4];
@@ -461,9 +469,18 @@ mod tier_map_tests {
     fn tier_map_round_trips_through_sidecar_and_loader_reports_dtype() {
         let tm = SidecarTierMap {
             entries: vec![
-                SidecarTierEntry { tensor: "blk.0.ffn_down.weight".into(), dtype: "q8_0".into() },
-                SidecarTierEntry { tensor: "blk.5.attn_q.weight".into(), dtype: "q6_K".into() },
-                SidecarTierEntry { tensor: "blk.5.attn_k.weight".into(), dtype: "q4_K".into() },
+                SidecarTierEntry {
+                    tensor: "blk.0.ffn_down.weight".into(),
+                    dtype: "q8_0".into(),
+                },
+                SidecarTierEntry {
+                    tensor: "blk.5.attn_q.weight".into(),
+                    dtype: "q6_K".into(),
+                },
+                SidecarTierEntry {
+                    tensor: "blk.5.attn_k.weight".into(),
+                    dtype: "q4_K".into(),
+                },
             ],
         };
         // Pre-write resolver sanity + validation.
@@ -472,8 +489,14 @@ mod tier_map_tests {
             tm.dtype_for("blk.0.ffn_down.weight").unwrap(),
             Some(GgmlType::Q8_0)
         );
-        assert_eq!(tm.dtype_for("blk.5.attn_q.weight").unwrap(), Some(GgmlType::Q6_K));
-        assert_eq!(tm.dtype_for("blk.5.attn_k.weight").unwrap(), Some(GgmlType::Q4_K));
+        assert_eq!(
+            tm.dtype_for("blk.5.attn_q.weight").unwrap(),
+            Some(GgmlType::Q6_K)
+        );
+        assert_eq!(
+            tm.dtype_for("blk.5.attn_k.weight").unwrap(),
+            Some(GgmlType::Q4_K)
+        );
         // Absent tensor falls through.
         assert_eq!(tm.dtype_for("blk.9.ffn_up.weight").unwrap(), None);
 
@@ -492,15 +515,23 @@ mod tier_map_tests {
         // round-trip, then re-run the loader hook on the LOADED copy.
         let read_header = read_sidecar_header(&path).expect("read header");
         assert!(read_header.contents.mixed_quant_tier_map);
-        let loaded = read_header.tier_map.expect("tier_map present after round-trip");
+        let loaded = read_header
+            .tier_map
+            .expect("tier_map present after round-trip");
         assert_eq!(loaded, tm, "tier map not byte-identical after round-trip");
         assert!(loaded.validate().is_ok());
         assert_eq!(
             loaded.dtype_for("blk.0.ffn_down.weight").unwrap(),
             Some(GgmlType::Q8_0)
         );
-        assert_eq!(loaded.dtype_for("blk.5.attn_q.weight").unwrap(), Some(GgmlType::Q6_K));
-        assert_eq!(loaded.dtype_for("blk.5.attn_k.weight").unwrap(), Some(GgmlType::Q4_K));
+        assert_eq!(
+            loaded.dtype_for("blk.5.attn_q.weight").unwrap(),
+            Some(GgmlType::Q6_K)
+        );
+        assert_eq!(
+            loaded.dtype_for("blk.5.attn_k.weight").unwrap(),
+            Some(GgmlType::Q4_K)
+        );
         assert_eq!(loaded.dtype_for("nope.weight").unwrap(), None);
     }
 
@@ -558,8 +589,14 @@ mod tier_map_tests {
     fn duplicate_tensor_entry_rejected() {
         let tm = SidecarTierMap {
             entries: vec![
-                SidecarTierEntry { tensor: "blk.0.attn_q.weight".into(), dtype: "q4_K".into() },
-                SidecarTierEntry { tensor: "blk.0.attn_q.weight".into(), dtype: "q8_0".into() },
+                SidecarTierEntry {
+                    tensor: "blk.0.attn_q.weight".into(),
+                    dtype: "q4_K".into(),
+                },
+                SidecarTierEntry {
+                    tensor: "blk.0.attn_q.weight".into(),
+                    dtype: "q8_0".into(),
+                },
             ],
         };
         assert!(tm.validate().is_err());

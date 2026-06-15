@@ -146,9 +146,7 @@ fn w4a8_activation_distribution() {
     let max_of_max: f32 = max_abs.iter().cloned().fold(0.0f32, f32::max);
     let min_of_max: f32 = max_abs.iter().cloned().fold(f32::INFINITY, f32::min);
 
-    eprintln!(
-        "\n[w4a8-act] global max_abs distribution:"
-    );
+    eprintln!("\n[w4a8-act] global max_abs distribution:");
     eprintln!("  channel-wise max|x|:");
     eprintln!("    min:  {:.4}", min_of_max);
     eprintln!("    mean: {:.4}", mean_of_max);
@@ -167,7 +165,10 @@ fn w4a8_activation_distribution() {
         let n_top = (hidden * p / 100).max(1);
         let sum_top: f32 = sorted_max.iter().take(n_top).map(|&(_, v)| v).sum();
         let share = sum_top / total_max_abs * 100.0;
-        eprintln!("  top {:>2}% ({:>4} channels): {:.1}% of total max_abs", p, n_top, share);
+        eprintln!(
+            "  top {:>2}% ({:>4} channels): {:.1}% of total max_abs",
+            p, n_top, share
+        );
     }
 
     // The HYPOTHESIS: top 5% of channels carry >50% of max_abs.
@@ -201,14 +202,20 @@ fn w4a8_activation_distribution() {
     for c in 0..hidden {
         let mean_a = sum_abs[c] / n_samples as f64;
         let rms = (sum_sq[c] / n_samples as f64).sqrt();
-        report.push_str(&format!("{},{:.6},{:.6},{:.6}\n", c, max_abs[c], mean_a, rms));
+        report.push_str(&format!(
+            "{},{:.6},{:.6},{:.6}\n",
+            c, max_abs[c], mean_a, rms
+        ));
     }
     let out_path = PathBuf::from("reports/w4a8_activation_dist.csv");
     if let Some(parent) = out_path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
     let _ = std::fs::write(&out_path, &report);
-    eprintln!("\n[w4a8-act] full per-channel CSV written to {}", out_path.display());
+    eprintln!(
+        "\n[w4a8-act] full per-channel CSV written to {}",
+        out_path.display()
+    );
 
     // ── Per-block vs per-channel reconstruction-error analysis ──────────────
     //
@@ -243,10 +250,7 @@ fn w4a8_activation_distribution() {
     let outlier_blocks: Vec<usize> = {
         let nb = hidden / block_size;
         (0..nb)
-            .filter(|&b| {
-                (b * block_size..(b + 1) * block_size)
-                    .any(|c| max_abs[c] > 30.0)
-            })
+            .filter(|&b| (b * block_size..(b + 1) * block_size).any(|c| max_abs[c] > 30.0))
             .collect()
     };
     eprintln!(
@@ -265,7 +269,9 @@ fn w4a8_activation_distribution() {
             let mut bmax = 0.0f32;
             for c in lo..hi {
                 let a = sample[c].abs();
-                if a > bmax { bmax = a; }
+                if a > bmax {
+                    bmax = a;
+                }
             }
             let scale = if bmax > 0.0 { bmax / 127.0 } else { 1.0 };
             let inv = 1.0 / scale;
@@ -298,8 +304,7 @@ fn w4a8_activation_distribution() {
         // blocks that contain a super-outlier.
         for &b in &outlier_blocks {
             for c in b * block_size..(b + 1) * block_size {
-                sum_abs_err_block_per_outlier_block +=
-                    (recon_block[c] - sample[c]).abs() as f64;
+                sum_abs_err_block_per_outlier_block += (recon_block[c] - sample[c]).abs() as f64;
                 sum_abs_err_channel_per_outlier_block +=
                     (recon_channel[c] - sample[c]).abs() as f64;
                 outlier_block_elem_count += 1;
@@ -314,21 +319,42 @@ fn w4a8_activation_distribution() {
 
     eprintln!("\n[w4a8-act] global reconstruction RMSE (all blocks, all samples):");
     eprintln!("  signal RMS:        {:.4}", signal_rms);
-    eprintln!("  per-block RMSE:    {:.4e}   ({:.4}% of signal RMS)", rmse_block, rmse_block / signal_rms as f64 * 100.0);
-    eprintln!("  per-channel RMSE:  {:.4e}   ({:.4}% of signal RMS)", rmse_channel, rmse_channel / signal_rms as f64 * 100.0);
-    eprintln!("  improvement:       {:.2}×  (per-channel is {:.2}× lower error)", rmse_block / rmse_channel, rmse_block / rmse_channel);
+    eprintln!(
+        "  per-block RMSE:    {:.4e}   ({:.4}% of signal RMS)",
+        rmse_block,
+        rmse_block / signal_rms as f64 * 100.0
+    );
+    eprintln!(
+        "  per-channel RMSE:  {:.4e}   ({:.4}% of signal RMS)",
+        rmse_channel,
+        rmse_channel / signal_rms as f64 * 100.0
+    );
+    eprintln!(
+        "  improvement:       {:.2}×  (per-channel is {:.2}× lower error)",
+        rmse_block / rmse_channel,
+        rmse_block / rmse_channel
+    );
 
     let mae_block_outlier = sum_abs_err_block_per_outlier_block / outlier_block_elem_count as f64;
-    let mae_channel_outlier = sum_abs_err_channel_per_outlier_block / outlier_block_elem_count as f64;
+    let mae_channel_outlier =
+        sum_abs_err_channel_per_outlier_block / outlier_block_elem_count as f64;
     eprintln!("\n[w4a8-act] reconstruction MAE on OUTLIER blocks only:");
     eprintln!("  per-block MAE:     {:.4e}", mae_block_outlier);
     eprintln!("  per-channel MAE:   {:.4e}", mae_channel_outlier);
-    eprintln!("  improvement:       {:.2}× on outlier blocks", mae_block_outlier / mae_channel_outlier);
+    eprintln!(
+        "  improvement:       {:.2}× on outlier blocks",
+        mae_block_outlier / mae_channel_outlier
+    );
 
     let global_ratio = rmse_block / rmse_channel;
     if global_ratio > 3.0 {
-        eprintln!("\n[w4a8-act] VERDICT: per-channel recovers significantly more activation precision.");
-        eprintln!("  Recommendation: per-channel W4A8 kernel work is JUSTIFIED ({:.1}× lower error).", global_ratio);
+        eprintln!(
+            "\n[w4a8-act] VERDICT: per-channel recovers significantly more activation precision."
+        );
+        eprintln!(
+            "  Recommendation: per-channel W4A8 kernel work is JUSTIFIED ({:.1}× lower error).",
+            global_ratio
+        );
     } else if global_ratio > 1.5 {
         eprintln!("\n[w4a8-act] VERDICT: per-channel modestly better.");
         eprintln!("  Recommendation: per-channel W4A8 is WORTH TRYING but expected quality gain is modest.");

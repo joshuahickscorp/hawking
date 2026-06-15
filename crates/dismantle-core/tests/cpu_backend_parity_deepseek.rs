@@ -84,4 +84,3 @@ fn cpu_forward_deepseek_v2_lite_force_cpu_ok() {
         logits.len()
     );
 }
-

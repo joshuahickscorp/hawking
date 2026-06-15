@@ -24,8 +24,8 @@
 use anyhow::{bail, Context, Result};
 use dismantle_core::gguf::{GgmlType, GgufFile};
 use dismantle_core::q4k_fast::{
-    convert_q4k_tensor_to_fast, serialize_sidecar, src_hash_from_sha256_first8,
-    WrittenTensor, Q4K_BLOCK_BYTES, Q4K_BLOCK_ELEMS,
+    convert_q4k_tensor_to_fast, serialize_sidecar, src_hash_from_sha256_first8, WrittenTensor,
+    Q4K_BLOCK_BYTES, Q4K_BLOCK_ELEMS,
 };
 use dismantle_core::quant::{dequant_into, quantize_q4_k};
 use serde::Deserialize;
@@ -99,8 +99,8 @@ fn main() -> Result<()> {
     );
 
     eprintln!("[awq_bake] hashing source GGUF: {}", input_path.display());
-    let src_bytes = fs::read(&input_path)
-        .with_context(|| format!("read input {}", input_path.display()))?;
+    let src_bytes =
+        fs::read(&input_path).with_context(|| format!("read input {}", input_path.display()))?;
     let mut hasher = Sha256::new();
     hasher.update(&src_bytes);
     let digest = hasher.finalize();
@@ -124,16 +124,17 @@ fn main() -> Result<()> {
             continue;
         }
         if info.dims.len() != 2 {
-            eprintln!("[awq_bake] WARN: {name}: unexpected rank {}", info.dims.len());
+            eprintln!(
+                "[awq_bake] WARN: {name}: unexpected rank {}",
+                info.dims.len()
+            );
             n_warn_skip += 1;
             continue;
         }
         let cols = info.dims[0] as usize;
         let rows = info.dims[1] as usize;
         if cols % Q4K_BLOCK_ELEMS != 0 {
-            eprintln!(
-                "[awq_bake] WARN: {name}: cols {cols} not multiple of {Q4K_BLOCK_ELEMS}"
-            );
+            eprintln!("[awq_bake] WARN: {name}: cols {cols} not multiple of {Q4K_BLOCK_ELEMS}");
             n_warn_skip += 1;
             continue;
         }
@@ -157,9 +158,7 @@ fn main() -> Result<()> {
         let s = match awq.smoothing_factors.get(&key) {
             Some(v) => v,
             None => {
-                eprintln!(
-                    "[awq_bake] WARN: no AWQ entry for {key} (tensor {name}); skipping"
-                );
+                eprintln!("[awq_bake] WARN: no AWQ entry for {key} (tensor {name}); skipping");
                 n_no_awq_skip += 1;
                 continue;
             }
@@ -178,8 +177,7 @@ fn main() -> Result<()> {
             .with_context(|| format!("tensor_bytes for {name}"))?;
         let n_elems = rows * cols;
         let mut w = vec![0.0f32; n_elems];
-        dequant_into(GgmlType::Q4_K, bytes, &mut w)
-            .with_context(|| format!("dequant {name}"))?;
+        dequant_into(GgmlType::Q4_K, bytes, &mut w).with_context(|| format!("dequant {name}"))?;
 
         // 2. Apply smoothing: W'[r, c] = W[r, c] * s[c]
         for r in 0..rows {
@@ -192,8 +190,7 @@ fn main() -> Result<()> {
         // 3. Re-quantize to canonical Q4_K bytes.
         let q4_bytes_total = rows * blocks_per_row * Q4K_BLOCK_BYTES;
         let mut q4_bytes = vec![0u8; q4_bytes_total];
-        quantize_q4_k(&w, &mut q4_bytes)
-            .with_context(|| format!("requantize {name}"))?;
+        quantize_q4_k(&w, &mut q4_bytes).with_context(|| format!("requantize {name}"))?;
 
         // 4. Convert canonical Q4_K -> Q4K_FAST sub-block-contiguous layout.
         let fast_bytes = convert_q4k_tensor_to_fast(&q4_bytes, rows, cols);

@@ -14,9 +14,7 @@
 //! `qwen_dense::generate()` is correct: turn-2 chat will produce the
 //! same KV (and therefore the same next token) as a fresh prefill.
 
-use dismantle_core::cache::prefill_disk::{
-    restore_hit_into_kv, PrefillDiskCache, PrefillKey,
-};
+use dismantle_core::cache::prefill_disk::{restore_hit_into_kv, PrefillDiskCache, PrefillKey};
 use dismantle_core::cache::KvCache;
 use tempfile::TempDir;
 

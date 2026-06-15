@@ -30,7 +30,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -162,7 +164,11 @@ fn multiseq_q4k_lmhead_divergent_positions_equal_solo() {
         let logits = engine
             .forward_tokens_multiseq_logits(&[seeds[bi]], &[start_pos[bi]], &[0], max_seq)
             .expect("solo divergent logits");
-        assert_eq!(logits[0].len(), engine.config.vocab_size, "solo logits must be full-vocab");
+        assert_eq!(
+            logits[0].len(),
+            engine.config.vocab_size,
+            "solo logits must be full-vocab"
+        );
         solo.push(argmax(&logits[0]));
     }
 
@@ -173,7 +179,11 @@ fn multiseq_q4k_lmhead_divergent_positions_equal_solo() {
         .forward_tokens_multiseq_logits(&seeds, &start_pos, &regions, max_seq)
         .expect("batched divergent logits");
     for l in &logits {
-        assert_eq!(l.len(), engine.config.vocab_size, "batched logits must be full-vocab");
+        assert_eq!(
+            l.len(),
+            engine.config.vocab_size,
+            "batched logits must be full-vocab"
+        );
     }
     let batched: Vec<u32> = logits.iter().map(|l| argmax(l)).collect();
 

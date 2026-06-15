@@ -2,8 +2,8 @@
 //! Pure data structure; no model, no GPU, no process env.
 //!   cargo test -p dismantle-serve --test system_kv_bank
 
-use dismantle_serve::{BankConfig, SystemPromptKvBank};
 use dismantle_serve::system_kv_bank::RecordOutcome;
+use dismantle_serve::{BankConfig, SystemPromptKvBank};
 
 fn sys_prompt(n: usize) -> Vec<u32> {
     (0..n as u32).map(|i| 1000 + i).collect()
@@ -47,7 +47,9 @@ fn record_then_hit_returns_source_slot() {
     // A NEW request (system + user tail) probes the 32-tok leading span.
     let mut req = system.clone();
     req.extend([7u32, 8, 9]);
-    let hit = bank.lookup(&req, 32).expect("banked system prefix must hit");
+    let hit = bank
+        .lookup(&req, 32)
+        .expect("banked system prefix must hit");
     assert_eq!(hit.source_slot, 3);
     assert_eq!(hit.prefix_len, 32);
     let s = bank.stats();
@@ -80,7 +82,10 @@ fn never_matches_full_prompt() {
 
 #[test]
 fn too_short_is_rejected_both_ways() {
-    let cfg = BankConfig { min_prefix_tokens: 8, max_entries: 64 };
+    let cfg = BankConfig {
+        min_prefix_tokens: 8,
+        max_entries: 64,
+    };
     let mut bank = SystemPromptKvBank::with_config(cfg);
     let p = sys_prompt(20);
     // Recording a 4-tok prefix is rejected.
@@ -106,7 +111,10 @@ fn refresh_updates_source_slot() {
 
 #[test]
 fn lru_eviction_caps_entries_and_keeps_newest() {
-    let cfg = BankConfig { min_prefix_tokens: 4, max_entries: 2 };
+    let cfg = BankConfig {
+        min_prefix_tokens: 4,
+        max_entries: 2,
+    };
     let mut bank = SystemPromptKvBank::with_config(cfg);
     // Bank 4 distinct system prompts; cap is 2.
     for i in 0..4u32 {
@@ -119,12 +127,19 @@ fn lru_eviction_caps_entries_and_keeps_newest() {
     let p0: Vec<u32> = (0..9u32).map(|j| 0 * 100 + j).collect(); // 8-tok span + tail
     assert!(bank.lookup(&p0, 8).is_none(), "oldest evicted");
     let p3: Vec<u32> = (0..9u32).map(|j| 3 * 100 + j).collect();
-    assert_eq!(bank.lookup(&p3, 8).unwrap().source_slot, 3, "newest survives");
+    assert_eq!(
+        bank.lookup(&p3, 8).unwrap().source_slot,
+        3,
+        "newest survives"
+    );
 }
 
 #[test]
 fn lru_touch_on_hit_protects_entry() {
-    let cfg = BankConfig { min_prefix_tokens: 4, max_entries: 2 };
+    let cfg = BankConfig {
+        min_prefix_tokens: 4,
+        max_entries: 2,
+    };
     let mut bank = SystemPromptKvBank::with_config(cfg);
     let a: Vec<u32> = (0..8u32).map(|j| 10 + j).collect();
     let b: Vec<u32> = (0..8u32).map(|j| 20 + j).collect();
@@ -152,5 +167,8 @@ fn forget_slot_invalidates_its_entries() {
     q.push(1);
     assert!(bank.lookup(&q, 16).is_some());
     assert_eq!(bank.forget_slot(7), 1);
-    assert!(bank.lookup(&q, 16).is_none(), "forgotten slot no longer routable");
+    assert!(
+        bank.lookup(&q, 16).is_none(),
+        "forgotten slot no longer routable"
+    );
 }

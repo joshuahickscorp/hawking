@@ -31,7 +31,9 @@ fn make_q4k_predec(rows: usize, cols: usize, seed: u32) -> (Vec<u8>, Vec<f32>) {
     // rounding error is well-controlled (no catastrophic cancellation in scales).
     let s: Vec<f32> = (0..ns)
         .map(|i| {
-            let v = ((i as u32).wrapping_mul(2654435761u32).wrapping_add(seed ^ 0xAB)) as f32
+            let v = ((i as u32)
+                .wrapping_mul(2654435761u32)
+                .wrapping_add(seed ^ 0xAB)) as f32
                 / u32::MAX as f32;
             0.1 + v * 1.9 // in [0.1, 2.0]
         })
@@ -69,7 +71,10 @@ fn rel_l2(reference: &[f32], got: &[f32]) -> f64 {
 }
 
 fn max_abs_diff(a: &[f32], b: &[f32]) -> f32 {
-    a.iter().zip(b).map(|(&x, &y)| (x - y).abs()).fold(0.0_f32, f32::max)
+    a.iter()
+        .zip(b)
+        .map(|(&x, &y)| (x - y).abs())
+        .fold(0.0_f32, f32::max)
 }
 
 /// Run f32-scales 4r swiglu kernel → reference.
@@ -89,9 +94,19 @@ fn run_f32(
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_swiglu_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &s_buf, 0, rows, cols,
-        &g_buf, &u_buf, &y_buf,
-    ).unwrap();
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &s_buf,
+        0,
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -113,9 +128,19 @@ fn run_f16s(
     let y_buf = ctx.new_buffer(rows * 4);
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::gemv_q4_k_v4_predec_f16s_swiglu_pinned_tcb(
-        &mut tcb, &w_buf, 0, w.len(), &s_buf, 0, rows, cols,
-        &g_buf, &u_buf, &y_buf,
-    ).unwrap();
+        &mut tcb,
+        &w_buf,
+        0,
+        w.len(),
+        &s_buf,
+        0,
+        rows,
+        cols,
+        &g_buf,
+        &u_buf,
+        &y_buf,
+    )
+    .unwrap();
     tcb.commit_and_wait().unwrap();
     read_f32_buf(&y_buf, rows)
 }
@@ -130,7 +155,7 @@ fn predec_f16s_4r_swiglu_rel_l2_quality_gate() {
     // Production-like shapes with enough blocks to average out f16 rounding.
     // rows=hidden, cols=intermediate for Qwen-3B ffn_down.
     let cases: &[(usize, usize, u32)] = &[
-        (256,  2048, 0xD110),  // 8 blocks — enough to average
+        (256, 2048, 0xD110), // 8 blocks — enough to average
         (1024, 2048, 0xD111),
         (2048, 2048, 0xD112),
         (2048, 11008, 0xD113), // Qwen-3B production ffn_down shape
@@ -140,10 +165,10 @@ fn predec_f16s_4r_swiglu_rel_l2_quality_gate() {
         let (w, scales) = make_q4k_predec(rows, cols, seed);
         let scales_f16 = f32_to_f16_scales(&scales);
         let gate = rnd(cols, seed ^ 0x11);
-        let up   = rnd(cols, seed ^ 0x22);
+        let up = rnd(cols, seed ^ 0x22);
 
-        let ref_out = run_f32( &ctx, &w, &scales,      &gate, &up, rows, cols);
-        let got_out = run_f16s(&ctx, &w, &scales_f16,  &gate, &up, rows, cols);
+        let ref_out = run_f32(&ctx, &w, &scales, &gate, &up, rows, cols);
+        let got_out = run_f16s(&ctx, &w, &scales_f16, &gate, &up, rows, cols);
 
         let rel = rel_l2(&ref_out, &got_out);
         assert!(
@@ -161,19 +186,16 @@ fn predec_f16s_4r_swiglu_small_shapes_smoke() {
     let ctx = ctx();
     const MAX_ABS_FACTOR: f32 = 0.5; // allow 50% of the reference magnitude as abs diff
 
-    let cases: &[(usize, usize, u32)] = &[
-        (256, 256, 0xD100),
-        (512, 512, 0xD101),
-    ];
+    let cases: &[(usize, usize, u32)] = &[(256, 256, 0xD100), (512, 512, 0xD101)];
 
     for &(rows, cols, seed) in cases {
         let (w, scales) = make_q4k_predec(rows, cols, seed);
         let scales_f16 = f32_to_f16_scales(&scales);
         let gate = rnd(cols, seed ^ 0x11);
-        let up   = rnd(cols, seed ^ 0x22);
+        let up = rnd(cols, seed ^ 0x22);
 
-        let ref_out = run_f32( &ctx, &w, &scales,      &gate, &up, rows, cols);
-        let got_out = run_f16s(&ctx, &w, &scales_f16,  &gate, &up, rows, cols);
+        let ref_out = run_f32(&ctx, &w, &scales, &gate, &up, rows, cols);
+        let got_out = run_f16s(&ctx, &w, &scales_f16, &gate, &up, rows, cols);
 
         // Verify non-NaN, non-zero output.
         for &v in &got_out {
@@ -185,6 +207,8 @@ fn predec_f16s_4r_swiglu_small_shapes_smoke() {
             ref_norm == 0.0 || abs_diff < MAX_ABS_FACTOR * ref_norm.max(1.0),
             "rows={rows} cols={cols}: abs_diff={abs_diff:.4} too large vs ref_norm={ref_norm:.4}"
         );
-        eprintln!("D1 smoke rows={rows} cols={cols}: abs_diff={abs_diff:.4} ref_norm={ref_norm:.4} OK");
+        eprintln!(
+            "D1 smoke rows={rows} cols={cols}: abs_diff={abs_diff:.4} ref_norm={ref_norm:.4} OK"
+        );
     }
 }

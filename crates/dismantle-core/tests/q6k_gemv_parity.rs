@@ -36,12 +36,8 @@ fn q6k_gemv_matches_cpu_reference() {
     // Reconstruct CPU view of the matrix from the Q6_K bytes (so we
     // compare GPU GEMV vs a CPU GEMV that uses the *same* dequant).
     let mut w_recon = vec![0.0f32; rows * cols];
-    quant::dequant_into(
-        dismantle_core::gguf::GgmlType::Q6_K,
-        &w_q6,
-        &mut w_recon,
-    )
-    .expect("Q6_K dequant");
+    quant::dequant_into(dismantle_core::gguf::GgmlType::Q6_K, &w_q6, &mut w_recon)
+        .expect("Q6_K dequant");
 
     let x = fixed_f32(cols, 0xBEEFBEEF);
     let mut expected = vec![0.0f32; rows];

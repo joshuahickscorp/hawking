@@ -57,7 +57,10 @@ fn run_ref(
         .expect("rmsnorm");
     tcb.commit_and_wait().expect("ref commit");
 
-    (read_f32_buf(&x_buf, hidden), read_f32_buf(&x_norm_buf, hidden))
+    (
+        read_f32_buf(&x_buf, hidden),
+        read_f32_buf(&x_norm_buf, hidden),
+    )
 }
 
 /// Fused: embed_lookup_rmsnorm_f32_tcb (1 dispatch).
@@ -77,12 +80,22 @@ fn run_fused(
 
     let mut tcb = TokenCommandBuffer::new(ctx);
     kernels::embed_lookup_rmsnorm_f32_tcb(
-        &mut tcb, &embed_buf, &weight_buf, token, hidden, eps, &x_buf, &x_norm_buf,
+        &mut tcb,
+        &embed_buf,
+        &weight_buf,
+        token,
+        hidden,
+        eps,
+        &x_buf,
+        &x_norm_buf,
     )
     .expect("fused dispatch");
     tcb.commit_and_wait().expect("fused commit");
 
-    (read_f32_buf(&x_buf, hidden), read_f32_buf(&x_norm_buf, hidden))
+    (
+        read_f32_buf(&x_buf, hidden),
+        read_f32_buf(&x_norm_buf, hidden),
+    )
 }
 
 #[test]
@@ -93,12 +106,12 @@ fn embed_lookup_rmsnorm_fused_matches_two_dispatch() {
 
     // (hidden, token, seed) — Qwen-3B uses hidden=2048. Also test boundary shapes.
     let cases: &[(usize, u32, u32)] = &[
-        (256,  0, 0xE001),  // minimal hidden = tg_size
-        (512,  3, 0xE002),
+        (256, 0, 0xE001), // minimal hidden = tg_size
+        (512, 3, 0xE002),
         (1024, 7, 0xE003),
-        (2048, 0, 0xE004),  // Qwen-3B production shape
-        (2048, 5, 0xE005),  // different token
-        (4096, 1, 0xE006),  // max supported hidden = tg_size * 16
+        (2048, 0, 0xE004), // Qwen-3B production shape
+        (2048, 5, 0xE005), // different token
+        (4096, 1, 0xE006), // max supported hidden = tg_size * 16
     ];
 
     for &(hidden, token, seed) in cases {
@@ -110,8 +123,14 @@ fn embed_lookup_rmsnorm_fused_matches_two_dispatch() {
 
         let dx = max_abs_diff(&ref_x, &got_x);
         let dn = max_abs_diff(&ref_norm, &got_norm);
-        assert_eq!(dx, 0.0, "hidden={hidden} token={token}: x max_diff={dx:.2e}");
-        assert_eq!(dn, 0.0, "hidden={hidden} token={token}: x_norm max_diff={dn:.2e}");
+        assert_eq!(
+            dx, 0.0,
+            "hidden={hidden} token={token}: x max_diff={dx:.2e}"
+        );
+        assert_eq!(
+            dn, 0.0,
+            "hidden={hidden} token={token}: x_norm max_diff={dn:.2e}"
+        );
         eprintln!("B7 hidden={hidden} token={token}: x={dx:.0e} norm={dn:.0e} OK");
     }
 }

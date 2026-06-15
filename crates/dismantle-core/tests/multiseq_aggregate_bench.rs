@@ -21,7 +21,9 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -101,10 +103,19 @@ fn multiseq_aggregate_speedup() {
     // clean room, the absolute aggregate. R2+R3 are baked into both sides.
     println!("\n[multiseq-aggregate] R1 delta (flag-ON / flag-OFF, contamination-robust):");
     for (idx, b) in [1usize, 4, 8].iter().enumerate() {
-        let r = if off[idx] > 0.0 { on[idx] / off[idx] } else { 0.0 };
-        println!("  B={b}: {:.2} -> {:.2} aggregate tps  (x{r:.3})", off[idx], on[idx]);
+        let r = if off[idx] > 0.0 {
+            on[idx] / off[idx]
+        } else {
+            0.0
+        };
+        println!(
+            "  B={b}: {:.2} -> {:.2} aggregate tps  (x{r:.3})",
+            off[idx], on[idx]
+        );
     }
     println!("(ratio/delta cancel Claude's ~4-5x inflation; ABSOLUTE tps needs a clean room.)");
     println!("(batch_ceiling.py predicts ~3.5-5.6x realistic aggregate @ B=8.)");
-    println!("(R2+R3 are unconditional; to isolate their delta, A/B this bench vs commit 8aba79e.)\n");
+    println!(
+        "(R2+R3 are unconditional; to isolate their delta, A/B this bench vs commit 8aba79e.)\n"
+    );
 }

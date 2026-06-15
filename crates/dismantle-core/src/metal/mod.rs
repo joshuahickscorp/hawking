@@ -99,11 +99,11 @@ pub fn current_layer() -> Option<u32> {
 #[cfg(target_os = "macos")]
 mod imp {
     use super::*;
+    use metal::objc::{class, msg_send, sel, sel_impl};
     use metal::{
         Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineState,
         Device, Library, MTLDispatchType, MTLResourceOptions, MTLSize,
     };
-    use metal::objc::{class, msg_send, sel, sel_impl};
 
     /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
     /// objc msg_send. The `metal` 0.29 crate doesn't wrap these selectors,
@@ -172,7 +172,9 @@ mod imp {
         let desc_cls = class!(MTLResidencySetDescriptor);
         let desc: *mut Object = msg_send![desc_cls, new];
         if desc.is_null() {
-            return Err(Error::Metal("MTLResidencySetDescriptor alloc failed".into()));
+            return Err(Error::Metal(
+                "MTLResidencySetDescriptor alloc failed".into(),
+            ));
         }
         let cap: u64 = allocations.len() as u64;
         let _: () = msg_send![desc, setInitialCapacity: cap];
@@ -194,7 +196,9 @@ mod imp {
                 let c: *const std::os::raw::c_char = msg_send![d, UTF8String];
                 std::ffi::CStr::from_ptr(c).to_string_lossy().into_owned()
             };
-            return Err(Error::Metal(format!("newResidencySetWithDescriptor:error: {msg}")));
+            return Err(Error::Metal(format!(
+                "newResidencySetWithDescriptor:error: {msg}"
+            )));
         }
         // 3. Add each allocation (uncommitted), then commit in bulk.
         for buf in allocations {
@@ -262,7 +266,9 @@ mod imp {
             // Shared storage so we can read raw via resolveCounterRange:
             // without a separate blit-encoder resolve pass.
             desc.set_storage_mode(::metal::MTLStorageMode::Shared);
-            let sample_buf = device.new_counter_sample_buffer_with_descriptor(&desc).ok()?;
+            let sample_buf = device
+                .new_counter_sample_buffer_with_descriptor(&desc)
+                .ok()?;
             Some(Self {
                 sample_buf,
                 next_pair: AtomicUsize::new(0),
@@ -308,7 +314,10 @@ mod imp {
         /// nanoseconds for the timestamp counter set (per Apple docs).
         fn drain(&self) -> Vec<super::DispatchSample> {
             let pending = std::mem::take(&mut *self.pending.lock());
-            let pair_count = self.next_pair.load(Ordering::Relaxed).min(self.capacity_pairs);
+            let pair_count = self
+                .next_pair
+                .load(Ordering::Relaxed)
+                .min(self.capacity_pairs);
             if pair_count == 0 {
                 return pending
                     .into_iter()
@@ -402,8 +411,8 @@ mod imp {
                 wall_us,
                 layer_hint,
                 gpu_us: None,
-                        gpu_start_ns: None,
-                        gpu_end_ns: None,
+                gpu_start_ns: None,
+                gpu_end_ns: None,
             });
         }
 
@@ -668,7 +677,8 @@ mod imp {
                 .new_library_with_source(&src, &opts)
                 .map_err(|e| Error::Metal(format!("shader compile: {e}")))?;
             // Resolve at construction so hot-path checks are a single bool load.
-            let effective = trace_dispatch || std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
+            let effective =
+                trace_dispatch || std::env::var_os("DISMANTLE_TRACE_DISPATCH").is_some();
             Ok(Self {
                 inner: Arc::new(Inner {
                     device,
@@ -709,11 +719,8 @@ mod imp {
                 return Ok(());
             }
             // &Buffer derefs to &BufferRef (foreign_obj_type! Deref).
-            let refs: Vec<&metal::BufferRef> =
-                allocations.iter().map(|b| &***b).collect();
-            unsafe {
-                install_residency_set(&self.inner.device, &self.inner.queue, &refs)
-            }
+            let refs: Vec<&metal::BufferRef> = allocations.iter().map(|b| &***b).collect();
+            unsafe { install_residency_set(&self.inner.device, &self.inner.queue, &refs) }
         }
         pub fn library(&self) -> &Library {
             &self.inner.library
@@ -758,7 +765,9 @@ mod imp {
         pub fn new_buffer_with_bytes(&self, bytes: &[u8]) -> Buffer {
             if self.trace_dispatch {
                 self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
-                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+                self.stats
+                    .bytes_allocated
+                    .fetch_add(bytes.len(), Ordering::Relaxed);
             }
             self.inner.device.new_buffer_with_data(
                 bytes.as_ptr() as *const _,
@@ -821,7 +830,9 @@ mod imp {
             }
             if self.trace_dispatch {
                 self.stats.buffers_created.fetch_add(1, Ordering::Relaxed);
-                self.stats.bytes_allocated.fetch_add(bytes.len(), Ordering::Relaxed);
+                self.stats
+                    .bytes_allocated
+                    .fetch_add(bytes.len(), Ordering::Relaxed);
             }
             Ok(self.inner.device.new_buffer_with_data(
                 bytes.as_ptr() as *const _,
@@ -882,7 +893,11 @@ mod imp {
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
             let trace_enabled = self.trace_dispatch;
-            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+            let t0 = if trace_enabled {
+                Some(Instant::now())
+            } else {
+                None
+            };
 
             let pipe = self.pipeline(fn_name)?;
             let cmd = self.inner.queue.new_command_buffer();
@@ -903,11 +918,8 @@ mod imp {
 
             if let Some(t0) = t0 {
                 let wall_us = t0.elapsed().as_micros() as u64;
-                self.trace.record(
-                    static_kernel_name(fn_name),
-                    wall_us,
-                    super::current_layer(),
-                );
+                self.trace
+                    .record(static_kernel_name(fn_name), wall_us, super::current_layer());
             }
             Ok(())
         }
@@ -917,7 +929,11 @@ mod imp {
             encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
         ) -> Result<()> {
             let trace_enabled = self.trace_dispatch;
-            let t0 = if trace_enabled { Some(Instant::now()) } else { None };
+            let t0 = if trace_enabled {
+                Some(Instant::now())
+            } else {
+                None
+            };
 
             let cmd = self.inner.queue.new_command_buffer();
             let mut batch = CommandBatch { ctx: self, cmd };
@@ -932,7 +948,8 @@ mod imp {
             if let Some(t0) = t0 {
                 let wall_us = t0.elapsed().as_micros() as u64;
                 // dispatch_batch is used for mla_decode_and_o_proj_metal
-                self.trace.record("dispatch_batch", wall_us, super::current_layer());
+                self.trace
+                    .record("dispatch_batch", wall_us, super::current_layer());
             }
             Ok(())
         }
@@ -1124,8 +1141,7 @@ mod imp {
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
-            let enc =
-                cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
+            let enc = cmd.compute_command_encoder_with_dispatch_type(MTLDispatchType::Concurrent);
             enc.set_label("concurrent_group");
             self.concurrent_encoder = Some(enc.to_owned());
             Ok(())
@@ -1224,8 +1240,8 @@ mod imp {
                     wall_us: t0.elapsed().as_micros() as u64,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
-                        gpu_start_ns: None,
-                        gpu_end_ns: None,
+                    gpu_start_ns: None,
+                    gpu_end_ns: None,
                 });
             }
             Ok(())
@@ -1298,8 +1314,8 @@ mod imp {
                     wall_us: cpu_us,
                     layer_hint: super::current_layer(),
                     gpu_us: None,
-                        gpu_start_ns: None,
-                        gpu_end_ns: None,
+                    gpu_start_ns: None,
+                    gpu_end_ns: None,
                 });
             }
             Ok(())

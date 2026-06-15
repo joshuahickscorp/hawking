@@ -99,8 +99,16 @@ mod arena_imp {
             // Cost vs B=4: doubles the B-wide scratch buffer footprint,
             // still trivial vs weight memory.
             Self::new_with_batch(
-                ctx, n_layers, n_heads, n_kv_heads, head_dim,
-                hidden, intermediate, vocab_size, max_seq, 8,
+                ctx,
+                n_layers,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                hidden,
+                intermediate,
+                vocab_size,
+                max_seq,
+                8,
             )
         }
 
@@ -119,8 +127,7 @@ mod arena_imp {
         ) -> Self {
             let q_dim = n_heads * head_dim;
             let kv_dim = n_kv_heads * head_dim;
-            let kv_cache_bytes_per_layer =
-                max_seq * kv_dim * std::mem::size_of::<f32>();
+            let kv_cache_bytes_per_layer = max_seq * kv_dim * std::mem::size_of::<f32>();
             let total_kv_bytes = n_layers * kv_cache_bytes_per_layer;
             let f32_bytes = std::mem::size_of::<f32>();
             let b = max_batch.max(1);
@@ -191,7 +198,11 @@ mod arena_imp {
         /// the element size — callers pass this as k_off_bytes / v_off_bytes
         /// to `mha_decode_f16kv_tcb` / `mha_decode_f16kv_batched_tcb`.
         pub fn kv_f16_layer_byte_offset(&self, layer: usize) -> usize {
-            layer * self.max_seq * self.n_kv_heads * self.head_dim * std::mem::size_of::<half::f16>()
+            layer
+                * self.max_seq
+                * self.n_kv_heads
+                * self.head_dim
+                * std::mem::size_of::<half::f16>()
         }
 
         /// Lazy-init the W4A8 scratch buffers. Called once on the first
@@ -226,8 +237,7 @@ mod arena_imp {
             }
             let kv_dim = self.n_kv_heads * self.head_dim;
             let f16_bytes = std::mem::size_of::<half::f16>();
-            let total_kv_f16_bytes =
-                self.n_layers * self.max_seq * kv_dim * f16_bytes;
+            let total_kv_f16_bytes = self.n_layers * self.max_seq * kv_dim * f16_bytes;
             self.k_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
             self.v_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
         }

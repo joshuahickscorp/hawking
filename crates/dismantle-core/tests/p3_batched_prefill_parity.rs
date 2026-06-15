@@ -12,12 +12,10 @@
 use std::path::PathBuf;
 
 use dismantle_core::{
-    profile::fresh_test_profile,
-    EngineConfig, GenerateRequest, SamplingParams, StreamEvent,
+    profile::fresh_test_profile, EngineConfig, GenerateRequest, SamplingParams, StreamEvent,
 };
 
-const PROMPT: &str =
-    "Write a detailed explanation of how the attention mechanism in transformer \
+const PROMPT: &str = "Write a detailed explanation of how the attention mechanism in transformer \
      neural networks computes scaled dot-product attention scores using query, \
      key, and value matrices.";
 const MAX_NEW_TOKENS: usize = 16;
@@ -61,7 +59,10 @@ fn run_greedy() -> Vec<u32> {
 fn batched_prefill_matches_single_token_prefill() {
     let weights = weights_path();
     if !weights.exists() {
-        eprintln!("skipping p3_batched_prefill_parity: weights missing at {:?}", weights);
+        eprintln!(
+            "skipping p3_batched_prefill_parity: weights missing at {:?}",
+            weights
+        );
         return;
     }
 

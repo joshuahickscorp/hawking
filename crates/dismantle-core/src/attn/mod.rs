@@ -286,12 +286,31 @@ mod tests {
         let v = rng_vec(seq_len * n_kv_heads * head_dim, 3);
 
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
+        mha_decode_step(
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            &mut out_ref,
+        )
+        .unwrap();
 
         let mut out_gemma = vec![0.0f32; n_heads * head_dim];
         let scale = 1.0 / (head_dim as f32).sqrt();
         mha_decode_step_gemma(
-            &q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, scale, 0.0, &mut out_gemma,
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            scale,
+            0.0,
+            &mut out_gemma,
         )
         .unwrap();
 
@@ -331,7 +350,10 @@ mod tests {
             }
             for h in 0..n_heads {
                 let o = out[h * head_dim + d];
-                assert!(o >= lo - 1e-4 && o <= hi + 1e-4, "out {o} not in [{lo},{hi}]");
+                assert!(
+                    o >= lo - 1e-4 && o <= hi + 1e-4,
+                    "out {o} not in [{lo},{hi}]"
+                );
             }
         }
     }
@@ -348,7 +370,17 @@ mod tests {
         let v = rng_vec(seq_len * n_kv_heads * head_dim, 13);
 
         let mut out_ref = vec![0.0f32; n_heads * head_dim];
-        mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut out_ref).unwrap();
+        mha_decode_step(
+            &q,
+            &k,
+            &v,
+            n_heads,
+            n_kv_heads,
+            head_dim,
+            seq_len,
+            &mut out_ref,
+        )
+        .unwrap();
 
         let w = mha_decode_step_weights(&q, &k, n_heads, n_kv_heads, head_dim, seq_len);
         assert_eq!(w.len(), n_heads);

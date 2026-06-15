@@ -337,11 +337,28 @@ mod tests {
         let sliced = p.slice_lm_head_f16(&w, hidden).unwrap();
         assert_eq!(sliced.len(), 3 * 3);
         // pruned row 0 ← orig row 0: [0, 1, 2]
-        assert_eq!(sliced[0..3], [f16::from_f32(0.0), f16::from_f32(1.0), f16::from_f32(2.0)]);
+        assert_eq!(
+            sliced[0..3],
+            [f16::from_f32(0.0), f16::from_f32(1.0), f16::from_f32(2.0)]
+        );
         // pruned row 1 ← orig row 2: [20, 21, 22]
-        assert_eq!(sliced[3..6], [f16::from_f32(20.0), f16::from_f32(21.0), f16::from_f32(22.0)]);
+        assert_eq!(
+            sliced[3..6],
+            [
+                f16::from_f32(20.0),
+                f16::from_f32(21.0),
+                f16::from_f32(22.0)
+            ]
+        );
         // pruned row 2 ← orig row 3: [30, 31, 32]
-        assert_eq!(sliced[6..9], [f16::from_f32(30.0), f16::from_f32(31.0), f16::from_f32(32.0)]);
+        assert_eq!(
+            sliced[6..9],
+            [
+                f16::from_f32(30.0),
+                f16::from_f32(31.0),
+                f16::from_f32(32.0)
+            ]
+        );
     }
 
     #[test]

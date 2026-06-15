@@ -82,8 +82,7 @@ impl PrefillKey {
     ) -> Self {
         let model_hash = sha256_of(&[model_id.as_bytes()]);
         let tokenizer_hash = sha256_of(&[tokenizer_signature]);
-        let prefix_hash =
-            Self::rolling_prefix_hash(&model_hash, &tokenizer_hash, prompt_tokens);
+        let prefix_hash = Self::rolling_prefix_hash(&model_hash, &tokenizer_hash, prompt_tokens);
         Self {
             model_hash,
             tokenizer_hash,
@@ -414,7 +413,11 @@ impl PrefillDiskCache {
                 n_layers
             )));
         }
-        for (li, (k, v)) in keys_per_layer.iter().zip(values_per_layer.iter()).enumerate() {
+        for (li, (k, v)) in keys_per_layer
+            .iter()
+            .zip(values_per_layer.iter())
+            .enumerate()
+        {
             if k.len() < want || v.len() < want {
                 return Err(crate::Error::Model(format!(
                     "store_raw: layer {} too short (k={}, v={}, want {})",
@@ -558,18 +561,11 @@ impl PrefillDiskCache {
 /// to `hit.n_tokens`. The cache's `n_layers/n_kv_heads/head_dim` must
 /// match the hit's shape.
 pub fn restore_hit_into_kv(hit: &PrefillHit, kv: &mut KvCache) -> Result<()> {
-    if hit.n_layers != kv.n_layers
-        || hit.n_kv_heads != kv.n_kv_heads
-        || hit.head_dim != kv.head_dim
+    if hit.n_layers != kv.n_layers || hit.n_kv_heads != kv.n_kv_heads || hit.head_dim != kv.head_dim
     {
         return Err(crate::Error::Model(format!(
             "restore_hit_into_kv: shape mismatch (hit={}x{}x{}, kv={}x{}x{})",
-            hit.n_layers,
-            hit.n_kv_heads,
-            hit.head_dim,
-            kv.n_layers,
-            kv.n_kv_heads,
-            kv.head_dim,
+            hit.n_layers, hit.n_kv_heads, hit.head_dim, kv.n_layers, kv.n_kv_heads, kv.head_dim,
         )));
     }
     if hit.n_tokens > kv.max_seq {
@@ -744,7 +740,11 @@ mod tests {
         cache.store(&key_a, &kv_a).unwrap();
         cache.store(&key_b, &kv_b).unwrap();
         let hit = cache
-            .lookup_longest_prefix(&key_a.model_hash, &key_a.tokenizer_hash, &[10, 11, 12, 13, 14])
+            .lookup_longest_prefix(
+                &key_a.model_hash,
+                &key_a.tokenizer_hash,
+                &[10, 11, 12, 13, 14],
+            )
             .unwrap()
             .unwrap();
         assert_eq!(hit.n_tokens, 4);

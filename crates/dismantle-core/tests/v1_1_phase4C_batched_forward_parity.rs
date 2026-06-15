@@ -17,7 +17,10 @@ fn weights_path() -> PathBuf {
 fn load_engine() -> Option<Box<dyn dismantle_core::Engine>> {
     let p = weights_path();
     if !p.exists() {
-        eprintln!("v1_1_phase4C_batched_forward_parity: no weights at {:?}, skipping", p);
+        eprintln!(
+            "v1_1_phase4C_batched_forward_parity: no weights at {:?}, skipping",
+            p
+        );
         return None;
     }
     let cfg = dismantle_core::EngineConfig::default();
@@ -54,7 +57,11 @@ fn check_argmax_parity(
         .forward_tokens_batched_for_test(tokens, positions)
         .unwrap_or_else(|e| panic!("{label} batched: {e}"));
 
-    assert_eq!(seq_logits.len(), batch_logits.len(), "{label} result count mismatch");
+    assert_eq!(
+        seq_logits.len(),
+        batch_logits.len(),
+        "{label} result count mismatch"
+    );
     for m in 0..tokens.len() {
         let seq_top = argmax(&seq_logits[m]);
         let bat_top = argmax(&batch_logits[m]);
@@ -68,15 +75,12 @@ fn check_argmax_parity(
 /// K=4 and K=8 argmax parity, run sequentially to avoid Metal device interference.
 #[test]
 fn batched_argmax_matches_sequential_k4_k8() {
-    let Some(mut engine) = load_engine() else { return };
+    let Some(mut engine) = load_engine() else {
+        return;
+    };
 
     // K=4: BOS + 3 draft continuations
-    check_argmax_parity(
-        &mut engine,
-        &[1u32, 315, 1012, 297],
-        &[0, 1, 2, 3],
-        "K=4",
-    );
+    check_argmax_parity(&mut engine, &[1u32, 315, 1012, 297], &[0, 1, 2, 3], "K=4");
 
     engine.reset_kv_for_test();
 

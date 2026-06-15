@@ -21,18 +21,30 @@ fn sys_prompt(n: usize) -> Vec<u32> {
 fn serve_wiring_record_then_lookup_returns_source_slot() {
     let prompt = sys_prompt(40);
     let banked_len = banked_len_for(&prompt);
-    assert_eq!(banked_len, prompt.len() - 1, "bank one token short of full prompt");
+    assert_eq!(
+        banked_len,
+        prompt.len() - 1,
+        "bank one token short of full prompt"
+    );
 
     let mut bank = SystemPromptKvBank::new();
 
     // Turn 1: slot 3 just prefilled this prompt; serve loop records it.
     let outcome = bank.record(&prompt, banked_len, 3);
-    assert_eq!(outcome, dismantle_serve::system_kv_bank::RecordOutcome::Inserted);
+    assert_eq!(
+        outcome,
+        dismantle_serve::system_kv_bank::RecordOutcome::Inserted
+    );
 
     // Turn 2: identical prompt arrives in slot 1; live PrefixIndex MISSES
     // (slot 3 freed). Serve loop consults the bank with the SAME banked_len.
-    let hit = bank.lookup(&prompt, banked_len).expect("bank must hit on identical prompt");
-    assert_eq!(hit.source_slot, 3, "lookup must return the slot that recorded");
+    let hit = bank
+        .lookup(&prompt, banked_len)
+        .expect("bank must hit on identical prompt");
+    assert_eq!(
+        hit.source_slot, 3,
+        "lookup must return the slot that recorded"
+    );
     assert_eq!(hit.prefix_len, banked_len, "hit prefix_len == banked_len");
 }
 
@@ -45,7 +57,10 @@ fn wiring_banked_len_is_a_strict_prefix() {
         let p = sys_prompt(n);
         let bl = banked_len_for(&p);
         assert!(bl < p.len(), "banked_len must be < prompt len for n={n}");
-        assert!(bl >= 8, "for prompts >= 9 the banked span clears the min, n={n}");
+        assert!(
+            bl >= 8,
+            "for prompts >= 9 the banked span clears the min, n={n}"
+        );
     }
 }
 
@@ -57,16 +72,18 @@ fn wiring_banked_len_is_a_strict_prefix() {
 /// banking at a fixed system-span length and probing the same.
 #[test]
 fn wiring_shared_system_span_hits_across_suffix() {
-    let system_span_len = 24usize;            // the fixed leading system block
-    let mut a = sys_prompt(system_span_len);  // turn 1 prompt = system + suffix A
+    let system_span_len = 24usize; // the fixed leading system block
+    let mut a = sys_prompt(system_span_len); // turn 1 prompt = system + suffix A
     a.extend_from_slice(&[10, 11, 12]);
-    let mut b = sys_prompt(system_span_len);  // turn 2 prompt = system + suffix B
+    let mut b = sys_prompt(system_span_len); // turn 2 prompt = system + suffix B
     b.extend_from_slice(&[20, 21, 22, 23]);
 
     let mut bank = SystemPromptKvBank::new();
     // Record turn 1 at the fixed system-span length.
     bank.record(&a, system_span_len, 5);
     // Turn 2: probe the same fixed span length -> hit slot 5 despite suffix B.
-    let hit = bank.lookup(&b, system_span_len).expect("shared system span must hit");
+    let hit = bank
+        .lookup(&b, system_span_len)
+        .expect("shared system span must hit");
     assert_eq!(hit.source_slot, 5);
 }

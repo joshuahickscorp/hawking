@@ -37,12 +37,17 @@ fn scatter_per_slot(
         let mut tcb = TokenCommandBuffer::new(ctx);
         for bi in 0..b {
             let dst_off = layer_off + regions[bi] * slot_stride + positions[bi] * kv_dim;
-            kernels::memcpy_f32_off_tcb(&mut tcb, &sk, &kbuf, bi * kv_dim, dst_off, kv_dim).unwrap();
-            kernels::memcpy_f32_off_tcb(&mut tcb, &sv, &vbuf, bi * kv_dim, dst_off, kv_dim).unwrap();
+            kernels::memcpy_f32_off_tcb(&mut tcb, &sk, &kbuf, bi * kv_dim, dst_off, kv_dim)
+                .unwrap();
+            kernels::memcpy_f32_off_tcb(&mut tcb, &sv, &vbuf, bi * kv_dim, dst_off, kv_dim)
+                .unwrap();
         }
         tcb.commit_and_wait().unwrap();
     }
-    (read_f32_buf(&kbuf, cache_elems), read_f32_buf(&vbuf, cache_elems))
+    (
+        read_f32_buf(&kbuf, cache_elems),
+        read_f32_buf(&vbuf, cache_elems),
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -62,20 +67,38 @@ fn scatter_batched(
     let vbuf = new_f32_buf(ctx, &vec![0.0f32; cache_elems]);
     let sk = new_f32_buf(ctx, src_k);
     let sv = new_f32_buf(ctx, src_v);
-    let reg_bytes: Vec<u8> = regions.iter().flat_map(|&r| (r as u32).to_le_bytes()).collect();
-    let pos_bytes: Vec<u8> = positions.iter().flat_map(|&p| (p as u32).to_le_bytes()).collect();
+    let reg_bytes: Vec<u8> = regions
+        .iter()
+        .flat_map(|&r| (r as u32).to_le_bytes())
+        .collect();
+    let pos_bytes: Vec<u8> = positions
+        .iter()
+        .flat_map(|&p| (p as u32).to_le_bytes())
+        .collect();
     let reg_buf = ctx.new_buffer_with_bytes(&reg_bytes);
     let pos_buf = ctx.new_buffer_with_bytes(&pos_bytes);
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::kv_scatter_append_multiseq_tcb(
-            &mut tcb, &sk, &sv, &kbuf, &vbuf, &reg_buf, &pos_buf,
-            kv_dim, b, slot_stride, layer_off,
+            &mut tcb,
+            &sk,
+            &sv,
+            &kbuf,
+            &vbuf,
+            &reg_buf,
+            &pos_buf,
+            kv_dim,
+            b,
+            slot_stride,
+            layer_off,
         )
         .unwrap();
         tcb.commit_and_wait().unwrap();
     }
-    (read_f32_buf(&kbuf, cache_elems), read_f32_buf(&vbuf, cache_elems))
+    (
+        read_f32_buf(&kbuf, cache_elems),
+        read_f32_buf(&vbuf, cache_elems),
+    )
 }
 
 #[test]
@@ -99,8 +122,26 @@ fn kv_scatter_append_multiseq_matches_per_slot() {
     // Layer 0 (layer_off = 0).
     {
         let cache_elems = layer_kv_stride;
-        let (ek, ev) = scatter_per_slot(&src_k, &src_v, &regions, &positions, kv_dim, slot_stride, 0, cache_elems);
-        let (ak, av) = scatter_batched(&src_k, &src_v, &regions, &positions, kv_dim, slot_stride, 0, cache_elems);
+        let (ek, ev) = scatter_per_slot(
+            &src_k,
+            &src_v,
+            &regions,
+            &positions,
+            kv_dim,
+            slot_stride,
+            0,
+            cache_elems,
+        );
+        let (ak, av) = scatter_batched(
+            &src_k,
+            &src_v,
+            &regions,
+            &positions,
+            kv_dim,
+            slot_stride,
+            0,
+            cache_elems,
+        );
         assert_eq!(max_abs_diff(&ek, &ak), 0.0, "layer0 K: batched != per-slot");
         assert_eq!(max_abs_diff(&ev, &av), 0.0, "layer0 V: batched != per-slot");
     }
@@ -109,8 +150,26 @@ fn kv_scatter_append_multiseq_matches_per_slot() {
     {
         let layer_off = layer_kv_stride; // li = 1
         let cache_elems = 2 * layer_kv_stride; // room for 2 layers
-        let (ek, ev) = scatter_per_slot(&src_k, &src_v, &regions, &positions, kv_dim, slot_stride, layer_off, cache_elems);
-        let (ak, av) = scatter_batched(&src_k, &src_v, &regions, &positions, kv_dim, slot_stride, layer_off, cache_elems);
+        let (ek, ev) = scatter_per_slot(
+            &src_k,
+            &src_v,
+            &regions,
+            &positions,
+            kv_dim,
+            slot_stride,
+            layer_off,
+            cache_elems,
+        );
+        let (ak, av) = scatter_batched(
+            &src_k,
+            &src_v,
+            &regions,
+            &positions,
+            kv_dim,
+            slot_stride,
+            layer_off,
+            cache_elems,
+        );
         assert_eq!(max_abs_diff(&ek, &ak), 0.0, "layer1 K: batched != per-slot");
         assert_eq!(max_abs_diff(&ev, &av), 0.0, "layer1 V: batched != per-slot");
     }

@@ -14,7 +14,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -28,7 +30,11 @@ fn load() -> Option<QwenDense> {
     }
     // Enable the Q4K LM head so the GPU argmax path is active.
     std::env::set_var("DISMANTLE_QWEN_Q4K_LMHEAD", "1");
-    for v in ["DISMANTLE_QWEN_VOCAB_PRUNE", "DISMANTLE_QWEN_F16_KV", "DISMANTLE_QWEN_W4A8"] {
+    for v in [
+        "DISMANTLE_QWEN_VOCAB_PRUNE",
+        "DISMANTLE_QWEN_F16_KV",
+        "DISMANTLE_QWEN_W4A8",
+    ] {
         std::env::remove_var(v);
     }
     let profile = fresh_test_profile(&w).expect("fresh test profile");
@@ -40,12 +46,7 @@ fn load() -> Option<QwenDense> {
 }
 
 /// Run n decode steps via the FULL logits path → CPU argmax.
-fn logits_path(
-    engine: &mut QwenDense,
-    seeds: &[u32],
-    n: usize,
-    max_seq: usize,
-) -> Vec<Vec<u32>> {
+fn logits_path(engine: &mut QwenDense, seeds: &[u32], n: usize, max_seq: usize) -> Vec<Vec<u32>> {
     let b = seeds.len();
     // one sequence per slot, stable region = slot index
     let regions: Vec<usize> = (0..b).collect();
@@ -78,12 +79,7 @@ fn logits_path(
 }
 
 /// Run n decode steps via the GPU ARGMAX token-only path.
-fn greedy_path(
-    engine: &mut QwenDense,
-    seeds: &[u32],
-    n: usize,
-    max_seq: usize,
-) -> Vec<Vec<u32>> {
+fn greedy_path(engine: &mut QwenDense, seeds: &[u32], n: usize, max_seq: usize) -> Vec<Vec<u32>> {
     let b = seeds.len();
     let regions: Vec<usize> = (0..b).collect();
     let mut cur = seeds.to_vec();
@@ -111,9 +107,9 @@ fn greedy_token_only_matches_logits_argmax() {
     let n = 4usize;
     let max_seq = 32usize;
     let seed_sets: &[&[u32]] = &[
-        &[9707],          // B=1
-        &[9707, 374],     // B=2
-        &[9707, 374, 100, 151643], // B=4
+        &[9707],                               // B=1
+        &[9707, 374],                          // B=2
+        &[9707, 374, 100, 151643],             // B=4
         &[9707, 374, 100, 151643, 1, 2, 3, 4], // B=8
     ];
 
@@ -160,4 +156,3 @@ fn engine_trait_dispatch_matches_direct() {
     assert_eq!(direct, via_trait, "trait dispatch mismatch");
     eprintln!("engine trait dispatch parity OK: {:?}", direct);
 }
-

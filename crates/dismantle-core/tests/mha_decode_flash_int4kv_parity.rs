@@ -141,7 +141,11 @@ fn dequant_cache(
     let row_bytes = head_dim / 2;
     let mut out = vec![0f32; rows * head_dim];
     for r in 0..rows {
-        let row = dequant_row(&packed[r * row_bytes..(r + 1) * row_bytes], scales[r], head_dim);
+        let row = dequant_row(
+            &packed[r * row_bytes..(r + 1) * row_bytes],
+            scales[r],
+            head_dim,
+        );
         out[r * head_dim..(r + 1) * head_dim].copy_from_slice(&row);
     }
     out
@@ -175,8 +179,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
         eprintln!("[dbg] cosine(k_rt, k)={cos_kv:.5}");
     }
     let mut cpu_int4 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k_rt, &v_rt, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_int4)
-        .expect("cpu mha_decode_step (int4-rt)");
+    mha_decode_step(
+        &q,
+        &k_rt,
+        &v_rt,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_int4,
+    )
+    .expect("cpu mha_decode_step (int4-rt)");
 
     // 3. GPU int4 flash decode over the SAME packed/scales buffers.
     let k_packed_buf = ctx.new_buffer_with_bytes(k_packed);
@@ -230,8 +243,17 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
 
     // GATE 2 — int4 QUALITY: cosine vs the f32 reference on the ORIGINAL K/V.
     let mut cpu_f32 = vec![0f32; q_dim];
-    mha_decode_step(&q, &k, &v, n_heads, n_kv_heads, head_dim, seq_len, &mut cpu_f32)
-        .expect("cpu mha_decode_step (f32)");
+    mha_decode_step(
+        &q,
+        &k,
+        &v,
+        n_heads,
+        n_kv_heads,
+        head_dim,
+        seq_len,
+        &mut cpu_f32,
+    )
+    .expect("cpu mha_decode_step (f32)");
     let cos = cosine(&gpu_int4, &cpu_f32);
     // 0.996 robust floor for UNIFORM-RANDOM [-1,1] inputs — the adversarial case
     // for 15-level int4 (empirical output-cosine ~0.9969–0.9975 across seq draws;

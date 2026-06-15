@@ -50,8 +50,7 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     let mut rng = Pcg64Mcg::new(seed as u128);
     let x: Vec<f32> = (0..n).map(|_| rng.gen_range(-range..range)).collect();
     let s = make_smoothing(n, seed);
-    let (cpu_int8, cpu_scales) =
-        kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
+    let (cpu_int8, cpu_scales) = kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
 
     let x_buf = new_f32_buf(ctx, &x);
     let s_buf = new_f32_buf(ctx, &s);
@@ -60,7 +59,12 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::quantize_f32_to_int8_per_block_scaled_tcb(
-            &mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, n,
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            n,
         )
         .expect("encode");
         tcb.commit_and_wait().expect("commit");
@@ -78,14 +82,7 @@ fn run_one(ctx: &MetalContext, n: usize, seed: u64, range: f32) {
         if cpu_int8[i] != gpu_int8[i] {
             diffs += 1;
             if first_bad.is_none() {
-                first_bad = Some((
-                    i,
-                    cpu_int8[i],
-                    gpu_int8[i],
-                    x[i],
-                    s[i],
-                    cpu_scales[i / 256],
-                ));
+                first_bad = Some((i, cpu_int8[i], gpu_int8[i], x[i], s[i], cpu_scales[i / 256]));
             }
         }
     }
@@ -119,8 +116,7 @@ fn quantize_int8_scaled_kernel_handles_all_zero_block() {
         x[i] = 1.5 * ((i as f32) - 640.0) / 128.0;
     }
     let s = make_smoothing(2048, 0xD15EA5E);
-    let (cpu_int8, cpu_scales) =
-        kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
+    let (cpu_int8, cpu_scales) = kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
     let x_buf = new_f32_buf(ctx, &x);
     let s_buf = new_f32_buf(ctx, &s);
     let int8_buf = ctx.new_buffer(2048);
@@ -128,7 +124,12 @@ fn quantize_int8_scaled_kernel_handles_all_zero_block() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::quantize_f32_to_int8_per_block_scaled_tcb(
-            &mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, 2048,
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            2048,
         )
         .expect("encode");
         tcb.commit_and_wait().expect("commit");
@@ -152,8 +153,7 @@ fn quantize_int8_scaled_kernel_handles_zero_smoothing_channels() {
     for i in [3, 17, 100, 257, 600] {
         s[i] = 0.0;
     }
-    let (cpu_int8, cpu_scales) =
-        kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
+    let (cpu_int8, cpu_scales) = kernels::quantize_to_int8_per_block_scaled(&x, &s, 256);
     let x_buf = new_f32_buf(ctx, &x);
     let s_buf = new_f32_buf(ctx, &s);
     let int8_buf = ctx.new_buffer(n);
@@ -161,7 +161,12 @@ fn quantize_int8_scaled_kernel_handles_zero_smoothing_channels() {
     {
         let mut tcb = TokenCommandBuffer::new(ctx);
         kernels::quantize_f32_to_int8_per_block_scaled_tcb(
-            &mut tcb, &x_buf, &s_buf, &int8_buf, &scales_buf, n,
+            &mut tcb,
+            &x_buf,
+            &s_buf,
+            &int8_buf,
+            &scales_buf,
+            n,
         )
         .expect("encode");
         tcb.commit_and_wait().expect("commit");

@@ -13,9 +13,7 @@
 
 use dismantle_core::kernels;
 use dismantle_core::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
-use dismantle_core::q4k_fast::{
-    convert_q4k_tensor_to_fast, Q4K_BLOCK_BYTES, Q4K_FAST_BLOCK_BYTES,
-};
+use dismantle_core::q4k_fast::{convert_q4k_tensor_to_fast, Q4K_BLOCK_BYTES, Q4K_FAST_BLOCK_BYTES};
 use half::f16;
 use rand::Rng;
 use rand_pcg::Pcg64Mcg;
@@ -93,7 +91,9 @@ fn make_synthetic_q4k_tensor(rows: usize, cols: usize, seed: u64) -> Vec<u8> {
 
 fn make_x(cols: usize, seed: u64) -> Vec<f32> {
     let mut rng = Pcg64Mcg::new(seed as u128);
-    (0..cols).map(|_| rng.gen_range(-1.0_f32..1.0_f32)).collect()
+    (0..cols)
+        .map(|_| rng.gen_range(-1.0_f32..1.0_f32))
+        .collect()
 }
 
 #[test]
@@ -120,8 +120,7 @@ fn q4k_fast_v1_bit_identical_to_v3_8r_at_qproj_decode_shape() {
     // Pinned buffers.
     let q4k_buf: PinnedBuffer = ctx.new_buffer_with_bytes(&q4k_bytes);
     let fast_buf: PinnedBuffer = ctx.new_buffer_with_bytes(&fast_bytes);
-    let x_buf: PinnedBuffer =
-        ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+    let x_buf: PinnedBuffer = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
     let out_v3_buf: PinnedBuffer = ctx.new_buffer(rows * std::mem::size_of::<f32>());
     let out_fast_buf: PinnedBuffer = ctx.new_buffer(rows * std::mem::size_of::<f32>());
 
@@ -187,7 +186,5 @@ fn q4k_fast_v1_bit_identical_to_v3_8r_at_qproj_decode_shape() {
             b.to_bits()
         );
     }
-    println!(
-        "[q4k_fast_parity] rows={rows} cols={cols}: bit-identical (max_abs_diff=0)"
-    );
+    println!("[q4k_fast_parity] rows={rows} cols={cols}: bit-identical (max_abs_diff=0)");
 }

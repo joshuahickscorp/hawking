@@ -69,7 +69,8 @@ fn run_flash(
             n_kv_heads,
         )
         .expect("mha_decode_flash_f32_tcb encode");
-        tcb.commit_and_wait().expect("mha_decode_flash_f32_tcb commit");
+        tcb.commit_and_wait()
+            .expect("mha_decode_flash_f32_tcb commit");
     }
     read_f32_buf(&out_buf, q_dim)
 }
@@ -110,8 +111,7 @@ fn check_geometry(n_heads: usize, n_kv_heads: usize, head_dim: usize, seq_len: u
     let kv_dim = n_kv_heads * head_dim;
 
     // Distinct seeds per geometry so cases don't accidentally share inputs.
-    let seed = (seq_len as u64)
-        .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+    let seed = (seq_len as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15)
         ^ ((n_heads as u64) << 17)
         ^ ((head_dim as u64) << 33);
     let q = fixed_f32(q_dim, seed ^ 0xA1);
@@ -187,4 +187,3 @@ fn flash_full_mha_tile_boundary() {
 fn flash_long_context_4k() {
     check_geometry(16, 2, 128, 4096);
 }
-

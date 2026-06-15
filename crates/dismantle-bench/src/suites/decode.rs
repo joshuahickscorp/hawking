@@ -156,12 +156,18 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
         if stats.metal_buffers_created > 0 && stats.completion_tokens > 0 {
             let ct = stats.completion_tokens as f64;
             if let Some(obj) = ts.as_object_mut() {
-                obj.insert("metal_buffers_created_per_token".into(),
-                    serde_json::json!(stats.metal_buffers_created as f64 / ct));
-                obj.insert("cpu_alloc_bytes_per_token".into(),
-                    serde_json::json!(stats.metal_bytes_allocated as f64 / ct));
-                obj.insert("dispatch_commits_per_token".into(),
-                    serde_json::json!(stats.metal_commits as f64 / ct));
+                obj.insert(
+                    "metal_buffers_created_per_token".into(),
+                    serde_json::json!(stats.metal_buffers_created as f64 / ct),
+                );
+                obj.insert(
+                    "cpu_alloc_bytes_per_token".into(),
+                    serde_json::json!(stats.metal_bytes_allocated as f64 / ct),
+                );
+                obj.insert(
+                    "dispatch_commits_per_token".into(),
+                    serde_json::json!(stats.metal_commits as f64 / ct),
+                );
             }
         }
         trial_stats.push(ts);

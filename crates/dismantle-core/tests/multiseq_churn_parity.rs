@@ -15,7 +15,9 @@
 
 use std::path::PathBuf;
 
-use dismantle_core::{model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig};
+use dismantle_core::{
+    model::qwen_dense::QwenDense, profile::fresh_test_profile, Engine, EngineConfig,
+};
 
 fn weights_path() -> PathBuf {
     PathBuf::from("../../models/qwen2.5-3b-instruct-q4_k_m.gguf")
@@ -109,8 +111,14 @@ fn multiseq_survives_slot_eviction() {
     let churn_slot0 = vec![s0[0], s1[0], s2[0]]; // region 0, compacted idx 0 throughout
     let churn_slot2 = vec![s0[2], s1[2], s2[1]]; // region 2, compacted idx 2 then 1 after evict
 
-    println!("[multiseq-churn] solo0={:?} churn0={churn_slot0:?}", solo[0]);
-    println!("[multiseq-churn] solo2={:?} churn2={churn_slot2:?}", solo[2]);
+    println!(
+        "[multiseq-churn] solo0={:?} churn0={churn_slot0:?}",
+        solo[0]
+    );
+    println!(
+        "[multiseq-churn] solo2={:?} churn2={churn_slot2:?}",
+        solo[2]
+    );
     assert_eq!(solo[0], churn_slot0, "slot0 churned tokens != solo decode");
     assert_eq!(
         solo[2], churn_slot2,
