@@ -1,25 +1,41 @@
 # dismantle
 
-Pure-Rust inference engine for transformer language models on Apple Silicon — single binary, no Python at runtime, no llama.cpp dependency.
+A from-scratch LLM inference engine for Apple Silicon — a single pure-Rust binary that mmaps a GGUF model, decodes it through hand-written Metal compute kernels, and serves it over an OpenAI-compatible API. No Python at runtime, no `llama.cpp` dependency, no BLAS or MPSGraph.
+
+## What this is — and what it isn't
+
+A **systems project**. The goal is to own the entire inference stack end-to-end — GGUF parsing → zero-copy weight residency → Metal Q4_K GEMV / attention / RoPE / RMSNorm kernels → sampling → an OpenAI-compatible HTTP server — in one auditable Rust binary.
+
+It is **not** a `llama.cpp` replacement. llama.cpp is faster and supports far more models and quant formats (≈50 vs ≈31 decode tok/s on Qwen2.5-3B-Q4_K_M, M3 Pro). dismantle exists to build that stack from scratch and hold it to a strict correctness bar — not to win on model coverage or peak throughput.
+
+Where the actual work is:
+
+- **Hand-written Metal kernels** — Q4_K / Q6_K GEMV, flash-style attention, RoPE, RMSNorm, and fused variants, with no BLAS, MPSGraph, or external kernel library.
+- **Bit-parity discipline** — GPU kernels are gated against a CPU reference port (and, increasingly, an independent `llama.cpp` logit oracle), so a refactor can't silently change model outputs.
+- **A measured kill-ledger** — [`reports/dead_levers.md`](reports/dead_levers.md) records the optimizations that were tried and **rejected**, each with the measurement that killed it. The honest negative results are the most useful artifact here.
+
+[ARCHITECTURE.md](ARCHITECTURE.md) is the internal map.
 
 ## What it does
 
 - Loads GGUF weights via mmap with a zero-copy `MTLBuffer` over the mapping (no second allocation).
 - Runs dense and Mixture-of-Experts transformers through hand-rolled Metal compute kernels.
-- Exposes an OpenAI-compatible HTTP API (`dismantle serve`) and a benchmark harness (`dismantle bench`).
-- Architecture is auto-detected from GGUF metadata; unknown architectures error with the supported list.
+- Exposes an OpenAI-compatible HTTP API (`dismantle serve` — both `/v1/chat/completions` and `/v1/completions`) and a benchmark harness (`dismantle bench`).
+- Auto-detects the architecture from GGUF metadata; unknown architectures error with the supported list.
 
-## Supported families
+## Models
+
+Architecture is detected from GGUF metadata. The primary tuned and verified target is **Qwen2.5 dense (Q4_K_M)**. Other families load through the same path but are verified to varying degrees — check [MODELS.md](MODELS.md) for the exact *verified / loads / untested* status per family before relying on one.
 
 | Family | Kind |
 |---|---|
-| Qwen2.5 (`qwen2` / `qwen2.5`) | dense — primary tuned target |
-| Llama 3.x / Mistral (`llama3.x`, `mistral`) | dense |
-| Gemma 2 (`gemma2`) | dense |
-| Phi-3 / 3.5 (`phi3`) | dense |
-| DeepSeek-V2-Lite (`deepseek2-lite`) | MoE — 16B params, 2.4B active/token, MLA attention |
-| Mixtral 8×7B (`llama`+MoE) | MoE |
-| Qwen3-MoE (`qwen3moe`) | MoE |
+| Qwen2.5 (`qwen2`) | dense — primary tuned target |
+| Llama 3.x / Mistral | dense |
+| Gemma 2 | dense |
+| Phi-3 / 3.5 | dense |
+| DeepSeek-V2-Lite | MoE — MLA attention |
+| Mixtral 8×7B | MoE |
+| Qwen3-MoE | MoE |
 
 ## Build
 
@@ -39,7 +55,7 @@ Requirements: Apple Silicon Mac (M1–M4), Rust stable, ~4 GB RAM for Qwen2.5-3B
 ./tools/fetch-mixtral.sh      # Mixtral 8×7B Q3_K_M (~16 GB)
 ```
 
-Or place any GGUF in `models/` and pass it via `--weights`.
+Or place any GGUF in `models/` and pass it via `--weights`. The tuned target is Qwen2.5-3B-Instruct-Q4_K_M.
 
 ## Usage
 
@@ -68,7 +84,9 @@ dismantle serve \
 
 `/v1/chat/completions` and `/v1/completions` both stream via SSE. See [docs/serve.md](docs/serve.md).
 
-## Performance (M3 Pro 18 GB, clean-room, 2026-05-31)
+## Performance (M3 Pro 18 GB, clean-room)
+
+llama.cpp Metal reaches ≈50 decode tok/s on Qwen2.5-3B-Q4_K_M; dismantle reaches ≈31. That gap is the honest baseline: ≈31 is near the bandwidth-bound ceiling for batch-1 Q4_K GEMV on this GPU, and closing it further needs *fewer weight bytes* (sub-4-bit quant) or the speculative / stateful axes — not micro-optimization. The measurements that ruled out the micro-optimization paths are in [`reports/dead_levers.md`](reports/dead_levers.md).
 
 | model | quant | dec_tps | notes |
 |---|---|---:|---|
@@ -76,17 +94,19 @@ dismantle serve \
 | DeepSeek-V2-Lite-Chat | Q4_K_M | ~17 | TRIALS=4 TOKENS=24, 95% CI [16.6, 18.0] |
 | Mixtral-8×7B-Instruct | Q3_K_M | ~0.1 | SSD-bandwidth-limited on 18 GB |
 
-llama.cpp Metal reaches ~50 dec_tps on Qwen-3B-Q4_K_M. dismantle's ~31 is the bandwidth-bound ceiling for batch-1 Q4_K GEMV on this GPU; further gains require fewer weight bytes or the speculative/stateful axes.
+## Engineering depth — what survives clean measurement
 
-## Moat
+Three levers held up under contamination-controlled measurement (the rest are in the kill-ledger):
 
-Three levers that survive clean measurement:
-
-1. **Prefix-cache reuse** — default-on exact KV prefix cache; elides up to ~84% of prefill on warm shared-prefix workloads. On-disk variant persists across runs.
+1. **Prefix-cache reuse** — default-on exact KV prefix cache; elides up to ~84% of prefill on warm shared-prefix workloads. An on-disk variant persists across runs.
 2. **Speculative decode on code** — free n-gram draft (τ=1.43 on code) with pruned-vocab GPU verify; +148% decode on repetitive code, bit-identical to greedy.
-3. **Low-RAM footprint** — zero-copy loader keeps peak RSS near model size; a 3B runs alongside other GPU-heavy work on an 18 GB machine.
+3. **Low-RAM footprint** — the zero-copy loader keeps peak RSS near model size, so a 3B runs alongside other GPU-heavy work on an 18 GB machine.
 
-The rest is recorded in `reports/dead_levers.md`.
+## Known limitations
+
+- **Single-stream is the tuned path.** Continuous batching (the multi-sequence decode lane) is implemented and parity-gated bit-identical to single-stream, but it is less battle-tested and the batch scheduler does not yet honor `stop` strings.
+- **Model coverage is narrow** compared to llama.cpp — see [MODELS.md](MODELS.md) for what's actually verified.
+- **Off-macOS** builds compile the CPU path only (dense models); MoE CPU decode is out of scope.
 
 ## Named profiles — `--profile fast`
 
