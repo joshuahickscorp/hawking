@@ -224,6 +224,52 @@ pub struct GenStats {
     /// Track 3.1 alias matching the plan target label. Same value as
     /// `metal_dispatches`; both fields are populated together.
     pub dispatches_per_forward: usize,
+    /// Track 0.2 (observability): total bytes read back from the GPU across the
+    /// whole decode loop. Token-only greedy reads 4 B/step (argmax id); a
+    /// full-logits path reads vocab*4 B/step. 0 when no GPU readback occurred.
+    pub readback_bytes: u64,
+    /// Track 0.2: decode steps that materialized a full logit row on the CPU.
+    pub logits_materialized_rows: u64,
+    /// Track 0.2: the vocab width a materialized logit row spans (effective
+    /// vocab_size, post prune). × `logits_materialized_rows` = floats to CPU.
+    pub logits_materialized_vocab: usize,
+    /// Track 0.2: true when ≥1 decode step used the GPU token-only (4-byte
+    /// argmax readback) path rather than reading full logits back.
+    pub token_only_path_used: bool,
+    /// Track 0.2: which LM-head path the decode loop selected, for the banner /
+    /// stats line: "q4k-predec-f16s" | "q4k-predec" | "q4k" | "f16" | "cpu" | "".
+    pub lm_head_path: String,
+}
+
+impl GenStats {
+    /// Track 0.2 — derived decode throughput (tok/s; 0 when no decode elapsed).
+    pub fn dec_tps(&self) -> f64 {
+        (self.completion_tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
+    }
+
+    /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
+    /// small, parseable JSON object (omits the heavy `dispatch_samples` vec and
+    /// the raw trace counters). Needs no GPU/model/bench → unit-testable on a
+    /// busy machine via a hand-constructed `GenStats`.
+    pub fn stats_json(&self) -> serde_json::Value {
+        serde_json::json!({
+            "prompt_tokens": self.prompt_tokens,
+            "completion_tokens": self.completion_tokens,
+            "prefill_ms": self.prefill_ms,
+            "decode_ms": self.decode_ms,
+            "dec_tps": self.dec_tps(),
+            "dispatches_per_forward": self.dispatches_per_forward,
+            "draft_accepted": self.draft_accepted,
+            "draft_rejected": self.draft_rejected,
+            "profile_id": self.profile_id,
+            "device_id": self.device_id,
+            "readback_bytes": self.readback_bytes,
+            "logits_materialized_rows": self.logits_materialized_rows,
+            "logits_materialized_vocab": self.logits_materialized_vocab,
+            "token_only_path_used": self.token_only_path_used,
+            "lm_head_path": self.lm_head_path,
+        })
+    }
 }
 
 pub trait Engine: Send + Sync {
@@ -473,5 +519,54 @@ pub trait Engine: Send + Sync {
     /// layers are included as empty vecs.
     fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
         None
+    }
+}
+
+#[cfg(test)]
+mod gen_stats_observability_tests {
+    use super::GenStats;
+
+    #[test]
+    fn dec_tps_zero_when_no_decode() {
+        let s = GenStats::default();
+        assert_eq!(s.dec_tps(), 0.0);
+    }
+
+    #[test]
+    fn dec_tps_formula() {
+        let s = GenStats {
+            completion_tokens: 64,
+            decode_ms: 2000.0,
+            ..Default::default()
+        };
+        // 64 tokens / 2.0 s = 32 tok/s
+        assert!((s.dec_tps() - 32.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn stats_json_carries_observability_fields() {
+        let s = GenStats {
+            prompt_tokens: 14,
+            completion_tokens: 64,
+            decode_ms: 2000.0,
+            dispatches_per_forward: 255,
+            readback_bytes: 256,
+            logits_materialized_rows: 0,
+            logits_materialized_vocab: 32000,
+            token_only_path_used: true,
+            lm_head_path: "q4k-predec-f16s".to_string(),
+            ..Default::default()
+        };
+        let j = s.stats_json();
+        assert_eq!(j["dec_tps"].as_f64().unwrap().round(), 32.0);
+        assert_eq!(j["dispatches_per_forward"], 255);
+        assert_eq!(j["readback_bytes"], 256);
+        assert_eq!(j["token_only_path_used"], true);
+        assert_eq!(j["lm_head_path"], "q4k-predec-f16s");
+        assert_eq!(j["logits_materialized_vocab"], 32000);
+        // serializes to a compact, parseable object (no heavy dispatch_samples vec)
+        let s = serde_json::to_string(&j).unwrap();
+        assert!(!s.contains("dispatch_samples"));
+        assert!(serde_json::from_str::<serde_json::Value>(&s).is_ok());
     }
 }

@@ -20,6 +20,13 @@ mod arena_imp {
         // the f32 cache: layer-major, n_layers * max_seq * kv_dim halfs.
         pub k_cache_f16_buf: Option<PinnedBuffer>,
         pub v_cache_f16_buf: Option<PinnedBuffer>,
+        // int4 KV cache (DISMANTLE_QWEN_INT4_KV=1). Lazy-init via `ensure_int4_kv`.
+        // Per-row symmetric int4: each kv-head row is head_dim/2 packed bytes +
+        // one f16 scale. Layer-major: rows = n_layers * max_seq * n_kv_heads.
+        pub k_cache_int4_packed: Option<PinnedBuffer>,
+        pub v_cache_int4_packed: Option<PinnedBuffer>,
+        pub k_cache_int4_scales: Option<PinnedBuffer>,
+        pub v_cache_int4_scales: Option<PinnedBuffer>,
         pub attn_out_buf: PinnedBuffer,
         pub x_buf: PinnedBuffer,
         pub x_norm_buf: PinnedBuffer,
@@ -128,6 +135,10 @@ mod arena_imp {
                 // DISMANTLE_QWEN_F16_KV=1; None keeps the OFF path byte-identical.
                 k_cache_f16_buf: None,
                 v_cache_f16_buf: None,
+                k_cache_int4_packed: None,
+                v_cache_int4_packed: None,
+                k_cache_int4_scales: None,
+                v_cache_int4_scales: None,
                 attn_out_buf: ctx.new_buffer(q_dim * f32_bytes),
                 x_buf: ctx.new_buffer(hidden * f32_bytes),
                 x_norm_buf: ctx.new_buffer(hidden * f32_bytes),
@@ -219,6 +230,38 @@ mod arena_imp {
                 self.n_layers * self.max_seq * kv_dim * f16_bytes;
             self.k_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
             self.v_cache_f16_buf = Some(ctx.new_buffer(total_kv_f16_bytes));
+        }
+
+        /// Byte offset of `layer`'s window in an int4 PACKED plane (head_dim/2
+        /// bytes/row; rows = max_seq * n_kv_heads per layer).
+        pub fn kv_int4_layer_byte_offset(&self, layer: usize) -> usize {
+            layer * self.max_seq * self.n_kv_heads * (self.head_dim / 2)
+        }
+
+        /// ROW offset of `layer`'s window in an int4 SCALES plane (one f16/row).
+        pub fn kv_int4_layer_scale_offset(&self, layer: usize) -> usize {
+            layer * self.max_seq * self.n_kv_heads
+        }
+
+        /// First ROW index for a per-token int4 append at (layer, seq_slot):
+        /// (layer*max_seq + seq_slot) * n_kv_heads. Pass as `dst_row_base`.
+        pub fn kv_int4_dst_row_base(&self, layer: usize, seq_slot: usize) -> usize {
+            (layer * self.max_seq + seq_slot) * self.n_kv_heads
+        }
+
+        /// Lazy-init the int4 KV cache (DISMANTLE_QWEN_INT4_KV=1). ~1/4 the f32
+        /// cache: packed = 2 * rows * (head_dim/2) bytes + scales = 2 * rows * 2.
+        pub fn ensure_int4_kv(&mut self, ctx: &MetalContext) {
+            if self.k_cache_int4_packed.is_some() {
+                return;
+            }
+            let rows = self.n_layers * self.max_seq * self.n_kv_heads;
+            let packed_bytes = rows * (self.head_dim / 2);
+            let scales_bytes = rows * std::mem::size_of::<half::f16>();
+            self.k_cache_int4_packed = Some(ctx.new_buffer(packed_bytes));
+            self.v_cache_int4_packed = Some(ctx.new_buffer(packed_bytes));
+            self.k_cache_int4_scales = Some(ctx.new_buffer(scales_bytes));
+            self.v_cache_int4_scales = Some(ctx.new_buffer(scales_bytes));
         }
     }
 }
