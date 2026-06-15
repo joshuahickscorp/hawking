@@ -44,24 +44,26 @@ fn hash16(ids: &[u32]) -> String {
 }
 
 fn check_or_pin(pin_path: &PathBuf, label: &str, actual_hash: &str) {
-    let actual_line = format!("{}: {}\n", label, actual_hash);
-    if !pin_path.exists() {
-        std::fs::write(pin_path, &actual_line).expect("write pin");
-        eprintln!("PINNED first hash for {}: {}", label, actual_hash);
-        return;
-    }
-    let pinned = std::fs::read_to_string(pin_path).expect("read pin");
-    if !pinned.contains(actual_line.trim()) {
-        let prior = pinned
-            .lines()
-            .find(|l| l.starts_with(&format!("{}:", label)))
-            .unwrap_or("(no prior pin for this label)");
-        panic!(
-            "greedy 64 hash drift for {}:\n  pinned: {}\n  actual: {}",
-            label,
-            prior,
-            actual_line.trim()
-        );
+    let actual_line = format!("{label}: {actual_hash}");
+    let pinned = std::fs::read_to_string(pin_path).unwrap_or_default();
+    match pinned.lines().find(|l| l.starts_with(&format!("{label}:"))) {
+        // This label has a prior pin and it matches — the guard holds.
+        Some(prior) if prior.trim() == actual_line => {}
+        // This label drifted — a real regression.
+        Some(prior) => panic!(
+            "greedy 64 hash drift for {label}:\n  pinned: {prior}\n  actual: {actual_line}"
+        ),
+        // First sight of this label — pin it (append; create the file if absent).
+        None => {
+            use std::io::Write;
+            let mut f = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(pin_path)
+                .expect("open pin for append");
+            writeln!(f, "{actual_line}").expect("append pin");
+            eprintln!("PINNED first hash for {label}: {actual_hash}");
+        }
     }
 }
 
