@@ -1,17 +1,20 @@
-//! STRAND (`.strand` v2) CPU serving reference — behind the `strand` feature.
+//! TQ (Trellis-Quant) — dismantle's deterministic sub-4-bit weight-serving project,
+//! behind the `tq` feature. Reads `.tq` artifacts and serves them on CPU.
 //!
-//! Integer-deterministic Q12 decode (delegated to the absorbed `strand-quant`)
-//! plus the activation-RHT matvec, mirroring the reference runtime in
-//! `vendor/strand-decode-kernel/src/outlier_mac.rs`. This is the **contract
-//! dismantle's Metal GEMV must reproduce bit-for-bit** (wiring recipe Steps 5-9):
-//! decode the trellis-coded weights to Q12, then serve them against the
-//! RHT-transformed activation. The GPU bitslice kernel is staged; this CPU path
-//! is the parity oracle it will be gated against.
+//! TQ is the dismantle-side integration of the absorbed `strand-quant` codec: a
+//! `.tq` file is the strand-quant `STR2` wire format (the extension is TQ's project
+//! identity; the on-disk magic stays `STR2`). This module is the CPU serving
+//! reference — integer-deterministic Q12 decode (delegated to `strand-quant`) plus
+//! the activation-RHT matvec, mirroring `vendor/strand-decode-kernel/outlier_mac.rs`.
+//! It is the **contract dismantle's Metal GEMV must reproduce bit-for-bit** (wiring
+//! recipe Steps 5-9): decode the trellis-coded weights to Q12, then serve them
+//! against the RHT-transformed activation. The GPU bitslice kernel is staged; this
+//! CPU path is the parity oracle it will be gated against.
 //!
-//! Float only ever appears in the final MAC and the activation transform — the
-//! Q12 decode itself is integer-only and bit-identical across CPU/GPU/WASM (the
-//! STRAND determinism moat). Gated behind the `strand` cargo feature so the
-//! default dismantle build is byte-identical (no `strand-quant` dep pulled in).
+//! Float only ever appears in the final MAC and the activation transform — the Q12
+//! decode itself is integer-only and bit-identical across CPU/GPU/WASM (the
+//! determinism moat). Gated behind the `tq` cargo feature so the default dismantle
+//! build is byte-identical (no `strand-quant` dep pulled in).
 
 use strand_quant::decode::decode_tensor_fixed;
 use strand_quant::encode::EncodedTensor;
@@ -19,6 +22,11 @@ use strand_quant::rht::{
     rht_forward_cols_inplace, rht_forward_rows_inplace, rht_inverse_cols_inplace, RhtConfig,
 };
 use strand_quant::TrellisConfig;
+
+/// Canonical file extension for a TQ artifact (no leading dot). The baker writes
+/// `<name>.tq`; the loader recognises it. Centralised so the project can be
+/// rebranded by changing this one constant.
+pub const TQ_EXT: &str = "tq";
 
 /// Float scale of a decoded Q12 weight: `weight = q12 / 2^QUANTILE_SHIFT`.
 /// Matches `strand_quant::decode::decode_tensor`'s private `Q12_TO_F32` exactly
