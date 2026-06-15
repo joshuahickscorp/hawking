@@ -262,6 +262,15 @@ impl Tokenizer {
         self.eog_ids.contains(&id)
     }
 
+    /// Control/special token ids (sorted) that must never be pruned from the LM
+    /// head — the model must be able to emit them (e.g. `<|im_end|>` to end a
+    /// chat turn). A vocab-prune that drops these breaks chat generation.
+    pub fn control_token_ids(&self) -> Vec<u32> {
+        let mut v: Vec<u32> = self.special_ids.iter().copied().collect();
+        v.sort_unstable();
+        v
+    }
+
     pub fn vocab_size(&self) -> usize {
         if let Some(spm) = &self.llama_spm {
             return spm.vocab_size();
