@@ -168,7 +168,7 @@ fn build_kernel_summary(samples: &[serde_json::Value]) -> serde_json::Value {
         .map(|(name, times)| {
             let count = times.len() as u64;
             let total: u64 = times.iter().sum();
-            let mean = if count > 0 { total / count } else { 0 };
+            let mean = total.checked_div(count).unwrap_or(0);
             let mut sorted = times.clone();
             sorted.sort_unstable();
             let p50 = sorted[sorted.len() / 2];
