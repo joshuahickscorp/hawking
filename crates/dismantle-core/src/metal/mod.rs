@@ -13,6 +13,13 @@ pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
+/// RWKV-7 WKV-7 single-step decode recurrence (`rwkv7_wkv_decode`). The novel,
+/// tps-critical kernel of the RWKV-7 GPU decode path — threadgroup-per-head with
+/// the fixed `head_size×head_size` recurrent state in a persistent GPU buffer
+/// (no growing KV cache). Self-contained (its own `ArgbufRwkv7Wkv` struct, no
+/// shared symbols); appended after the megakernel so it cannot perturb any
+/// existing kernel's codegen.
+pub const SHADER_RWKV7: &str = include_str!("../../shaders/rwkv7.metal");
 /// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
 /// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
 /// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
@@ -37,6 +44,7 @@ pub fn all_shader_sources() -> String {
         SHADER_MATMUL,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
+        SHADER_RWKV7,
     ];
     // The TQ bitslice family is feature-gated: only compiled into the library
     // when `tq` is on.
@@ -673,6 +681,22 @@ mod imp {
             "qwen3b_megakernel_nlayer" => "qwen3b_megakernel_nlayer",
             "gpu_address_probe" => "gpu_address_probe",
             "use_resource_poc_add" => "use_resource_poc_add",
+            // RWKV-7 WKV-7 single-step decode recurrence (state-space model)
+            // plus the elementwise glue kernels for its time-mix/channel-mix.
+            "rwkv7_wkv_decode" => "rwkv7_wkv_decode",
+            "rwkv7_token_shift_lerp" => "rwkv7_token_shift_lerp",
+            "rwkv7_channel_mix_shift" => "rwkv7_channel_mix_shift",
+            "rwkv7_tanh_inplace" => "rwkv7_tanh_inplace",
+            "rwkv7_decay_act" => "rwkv7_decay_act",
+            "rwkv7_sigmoid_bias" => "rwkv7_sigmoid_bias",
+            "rwkv7_sigmoid_inplace" => "rwkv7_sigmoid_inplace",
+            "rwkv7_value_residual_mix" => "rwkv7_value_residual_mix",
+            "rwkv7_kk_kmix" => "rwkv7_kk_kmix",
+            "rwkv7_relu_sq_inplace" => "rwkv7_relu_sq_inplace",
+            "rwkv7_add_into" => "rwkv7_add_into",
+            "rwkv7_layernorm" => "rwkv7_layernorm",
+            "rwkv7_copy" => "rwkv7_copy",
+            "rwkv7_mul_inplace" => "rwkv7_mul_inplace",
             _ => "other",
         }
     }
@@ -1576,3 +1600,7 @@ pub use decode_arena::DecodeArena;
 
 pub mod dense_decode_arena;
 pub use dense_decode_arena::DenseDecodeArena;
+
+pub mod rwkv_decode_arena;
+#[cfg(target_os = "macos")]
+pub use rwkv_decode_arena::RwkvDecodeArena;
