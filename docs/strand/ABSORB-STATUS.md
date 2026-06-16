@@ -107,11 +107,35 @@ CPU path on main.
 **Default build byte-identical** throughout — `strand-quant` is not pulled without the `tq` feature
 (`cargo tree`: 0). The `tq` module is the parity oracle the GPU kernel will be gated against.
 
-**Remaining:**
-- **Baker (Step 4)** — `tq_bake`: GGUF → select projections → `encode_tensor` → `write_strand_v2` →
-  `<name>.tq`. Locally only a Q4_K model is present, so the f32 encode source comes from a Q4_K→f32
-  dequant (plumbing validation, not a quality artifact); a real bake needs an f16/f32 source.
-- **Metal kernel (Steps 5–9)** — port the G4 bitslice decode→GEMV, build the loader block table,
-  dispatch behind `DISMANTLE_QWEN_TQ` (default-off), pass the **GPU↔CPU bit-identity gate** against
-  `tq::matvec_rht`. Reference: `vendor/strand-decode-kernel/{outlier_mac.rs,shaders/strand_bitslice.metal}`.
-  The long pole — needs sustained GPU iteration.
+**Slice 3 — DONE (baker, `tq_bake`):** GGUF → select 2-D projections → `dequant_to_f32` →
+`encode_tensor` → `write_strand_v2` → `<name>.tq`, read back + decoded. Validated on the local Q4_K
+Qwen-3B. Hardened (wave): echoes the *realized* L/k/block_len (`--bpw` is a coarse round-to-k knob),
+clears + warns the strict flag for ragged (in_features % block_len ≠ 0) tensors, and a `--rht cols`
+mode that RHT-rotates the weights + sets `has_rht_seed`/`rht_cols` so col-RHT is reachable end-to-end.
+3 round-trip tests. (Q4_K source ⇒ quant-of-a-quant plumbing artifact; a real bake needs f16/f32.)
+
+**Slice 4 — DONE (Metal GPU kernel, `tq_gpu` + `strand_bitslice.metal`):** ported the STRAND G4
+bitslice decode kernel into dismantle behind the `tq` feature. `bake_bitslice_entries` builds the
+per-block table (the **84-byte** `#[repr(C)] BitsliceEntry`, runtime size-probed — the recipe's "80"
+was stale), `decode_strand_bitslice` dispatches it. **GPU↔CPU bit-identity gate PASSES on M3 Pro**
+(`tests/tq_trellis_parity.rs`, 2 tests, 322s sweep over k∈{2,3,4}×L∈{7,12}×encode-variants×edge-lengths):
+the GPU `Vec<i32>` decode == `strand_quant::decode_tensor_fixed` bit-for-bit. (Decode-only is landed;
+the fused-GEMV + general-x float-tolerance check vs `tq::matvec_rht` are a follow-up.)
+
+**Slice 5 — DONE (engine hybrid seam):** `qwen_dense.rs` wires the per-tensor hybrid — FFN gate/up/down
+served from a baked `.tq` (decode-once at load, `matvec_rht` per token) via a side-map keyed by GGUF
+offset in `matmul_q4_dispatch`, behind `DISMANTLE_QWEN_TQ` (`env_on`), default-off and byte-identical
+when unset; attention stays Q4_K. All `#[cfg(feature = "tq")]`. Wiring compiles + is gated; an
+end-to-end generation A/B needs a baked `.tq` for the served model.
+
+**tq.rs robustness (wave):** reader fail-fast (`enc.total == out·in`), OUTL section read + applied in
+the un-rotated weight domain (≤½-LSB requant caveat), col-RHT round-trip test through a real archive,
+Rows-path documented as eval-only. 8 `tq` unit tests + 5 `tq_gpu` tests green.
+
+**Verified together** (integration branch `tq/wave`): default build byte-identical (strand-quant 0),
+CI fmt/clippy/tests green, 138 `tq`-feature unit tests, the GPU bit-identity gate, and 3 baker tests
+all pass.
+
+**Remaining (smaller now):** fused-GEMV GPU kernels + the general-x float-tolerance gate; wiring the
+GPU kernel into the engine dispatch (Slice 5 is CPU `matvec_rht`); a live f16/f32 bake + end-to-end
+PPL/generation A/B. The global milestones (M1 ship-3-bit, M4 2-bit PV) are tracked separately.
