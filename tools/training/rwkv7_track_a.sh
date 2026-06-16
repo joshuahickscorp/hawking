@@ -33,7 +33,8 @@ if [ -f "$OUT/final/state_dict.pt" ]; then
   echo "[skip] $OUT/final/state_dict.pt already exists"
 else
   PYTORCH_ENABLE_MPS_FALLBACK=1 python3.12 tools/training/rwkv7_sft_torch.py \
-    --device mps --out "$OUT" --epochs 1 --grad-accum 16 --lr 1e-5 --max-length 512 \
+    --device mps --out "$OUT" --epochs 1 --grad-accum 16 --lr 2e-5 --max-length 448 \
+    --last-n-layers 16 \
     || { echo "!!! SFT FAILED — stopping"; exit 1; }
 fi
 [ -f "$OUT/final/state_dict.pt" ] || { echo "!!! no SFT checkpoint — stopping"; exit 1; }
