@@ -33,8 +33,8 @@
 //! auto-inserts it (verified: `llama-tokenize` output is identical with and
 //! without `--no-bos`). dismantle's `encode` likewise emits no BOS.
 
-use dismantle_core::tokenizer::Tokenizer;
 use dismantle_core::gguf::GgufFile;
+use dismantle_core::tokenizer::Tokenizer;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -181,9 +181,7 @@ fn rwkv_world_tokenizer_parity_vs_llamacpp() {
             if mine == oracle {
                 encode_match += 1;
             } else {
-                eprintln!(
-                    "  ENCODE MISMATCH {case:?}\n    mine  ={mine:?}\n    oracle={oracle:?}"
-                );
+                eprintln!("  ENCODE MISMATCH {case:?}\n    mine  ={mine:?}\n    oracle={oracle:?}");
             }
             assert_eq!(
                 mine, oracle,
@@ -197,7 +195,10 @@ fn rwkv_world_tokenizer_parity_vs_llamacpp() {
             "rwkv world tokenizer parity: encode ids match llama.cpp {encode_match}/{total}; \
              round-trip {roundtrip_ok}/{total}"
         );
-        assert_eq!(encode_match, total, "all cases must match the oracle exactly");
+        assert_eq!(
+            encode_match, total,
+            "all cases must match the oracle exactly"
+        );
     } else {
         eprintln!(
             "rwkv world tokenizer parity (round-trip only): {roundtrip_ok}/{total} \
