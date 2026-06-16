@@ -21,6 +21,11 @@ pub struct Tokenizer {
     pad_id: Option<u32>,
     decode_one_mode: DecodeOneMode,
     llama_spm: Option<LlamaSpmTokenizer>,
+    /// RWKV "World" greedy-trie tokenizer (raw-byte longest-match). Set when the
+    /// GGUF declares `tokenizer.ggml.model == "rwkv"`; this vocab is neither
+    /// BPE nor SPM, so the `tokenizers` crate cannot represent it. When present,
+    /// `encode`/`decode`/`decode_one`/`vocab_size`/`eos_id` short-circuit to it.
+    rwkv_world: Option<RwkvWorldTokenizer>,
     /// Control/special token ids (e.g. `<|im_end|>`, `<|im_start|>`). These are
     /// chat-template scaffolding and must never appear in streamed output.
     special_ids: HashSet<u32>,
@@ -128,6 +133,7 @@ impl Tokenizer {
             pad_id: None,
             decode_one_mode: DecodeOneMode::Hf,
             llama_spm: None,
+            rwkv_world: None,
             special_ids,
             eog_ids,
         })
@@ -192,7 +198,7 @@ impl Tokenizer {
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
-        let (inner, decode_one_mode, llama_spm) = build_tokenizer(
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
             model, &tokens, &merges, &scores, bos_id, eos_id, unk_id, add_bos, add_eos,
         )?;
 
@@ -205,12 +211,16 @@ impl Tokenizer {
             pad_id,
             decode_one_mode,
             llama_spm,
+            rwkv_world,
             special_ids,
             eog_ids,
         })
     }
 
     pub fn encode(&self, text: &str, add_special_tokens: bool) -> Result<Vec<u32>> {
+        if let Some(rwkv) = &self.rwkv_world {
+            return Ok(rwkv.encode(text, add_special_tokens));
+        }
         if let Some(spm) = &self.llama_spm {
             return spm.encode(text, add_special_tokens);
         }
@@ -222,6 +232,9 @@ impl Tokenizer {
     }
 
     pub fn decode(&self, ids: &[u32], skip_special: bool) -> Result<String> {
+        if let Some(rwkv) = &self.rwkv_world {
+            return Ok(rwkv.decode(ids, skip_special));
+        }
         if let Some(spm) = &self.llama_spm {
             return spm.decode(ids, skip_special);
         }
@@ -239,6 +252,9 @@ impl Tokenizer {
         // `<|im_start|>`, …) never leak into chat/completion output.
         if self.special_ids.contains(&id) {
             return Ok(String::new());
+        }
+        if let Some(rwkv) = &self.rwkv_world {
+            return Ok(rwkv.decode_one(id));
         }
         match self.decode_one_mode {
             DecodeOneMode::Hf => self
@@ -272,6 +288,9 @@ impl Tokenizer {
     }
 
     pub fn vocab_size(&self) -> usize {
+        if let Some(rwkv) = &self.rwkv_world {
+            return rwkv.vocab_size();
+        }
         if let Some(spm) = &self.llama_spm {
             return spm.vocab_size();
         }
@@ -282,6 +301,9 @@ impl Tokenizer {
         self.bos_id
     }
     pub fn eos_id(&self) -> Option<u32> {
+        if let Some(rwkv) = &self.rwkv_world {
+            return rwkv.eos_id();
+        }
         self.eos_id
     }
     pub fn pad_id(&self) -> Option<u32> {
@@ -524,6 +546,211 @@ impl LlamaSpmTokenizer {
     }
 }
 
+/// RWKV "World" tokenizer: a greedy longest-match trie over raw bytes.
+///
+/// Unlike BPE/SPM, the World vocab maps each token id to an arbitrary byte
+/// sequence and tokenizes by walking the input bytes, picking the longest vocab
+/// entry that matches at each position. The token strings in
+/// `tokenizer.ggml.tokens` are stored *escaped* (`\t \n \r \x##`, escaped
+/// backslash, etc.) and must be un-escaped to raw bytes before they enter the
+/// trie. This mirrors llama.cpp's `llm_tokenizer_rwkv` /
+/// `llama_unescape_rwkv_token` / `naive_trie` exactly, so the produced ids are
+/// bit-identical to `llama-tokenize` on the same GGUF.
+///
+/// No BOS/EOS is added by default (llama.cpp's RWKV path adds none, regardless
+/// of the `bos_token_id` declared in metadata).
+#[derive(Clone)]
+struct RwkvWorldTokenizer {
+    /// Decode table: token id -> raw bytes (already un-escaped).
+    id_to_bytes: Vec<Vec<u8>>,
+    /// Encode trie root over raw bytes.
+    trie: RwkvTrie,
+    /// `tokenizer.ggml.eos_token_id`, surfaced for generation stop.
+    eos_id: Option<u32>,
+    /// `tokenizer.ggml.unknown_token_id`. llama.cpp emits this when a byte has
+    /// no matching trie edge; World vocabs cover all 256 single bytes so it is
+    /// effectively never hit, but we mirror the fallback faithfully.
+    unk_id: Option<u32>,
+}
+
+impl RwkvWorldTokenizer {
+    fn new(tokens: &[String], eos_id: Option<u32>, unk_id: Option<u32>) -> Self {
+        let id_to_bytes: Vec<Vec<u8>> = tokens
+            .iter()
+            .map(|t| unescape_rwkv_token(t.as_bytes()))
+            .collect();
+        let mut trie = RwkvTrie::default();
+        for (id, bytes) in id_to_bytes.iter().enumerate() {
+            trie.insert(bytes, id as u32);
+        }
+        Self {
+            id_to_bytes,
+            trie,
+            eos_id,
+            unk_id,
+        }
+    }
+
+    fn vocab_size(&self) -> usize {
+        self.id_to_bytes.len()
+    }
+
+    fn eos_id(&self) -> Option<u32> {
+        self.eos_id
+    }
+
+    /// Greedy longest-match tokenize. `_add_special` is accepted for signature
+    /// parity with the other tokenizers; RWKV adds no BOS/EOS (matching
+    /// llama.cpp), so it is intentionally ignored.
+    fn encode(&self, text: &str, _add_special: bool) -> Vec<u32> {
+        let bytes = text.as_bytes();
+        let len = bytes.len();
+        let mut out = Vec::new();
+        let mut position = 0usize;
+        while position < len {
+            // Walk the trie from `position`, remembering the last id whose path
+            // terminates a vocab entry (longest match wins). Mirrors
+            // `llm_tokenizer_rwkv_session::tokenize`.
+            let mut node = self.trie.traverse_root(bytes[position]);
+            if node.is_none() {
+                // No edge for this byte: emit unk (if any) and advance one byte.
+                if let Some(unk) = self.unk_id {
+                    out.push(unk);
+                }
+                position += 1;
+                continue;
+            }
+            let mut token_id = 0u32;
+            let mut token_length = 0usize;
+            let mut p = position;
+            while let Some(n) = node {
+                if n.has_value {
+                    token_id = n.value;
+                    token_length = p + 1;
+                }
+                p += 1;
+                node = if p < len {
+                    n.traverse(bytes[p])
+                } else {
+                    None
+                };
+            }
+            out.push(token_id);
+            // `token_length` is always > position here: the first byte matched a
+            // trie edge, and World vocabs include every single byte, so at least
+            // a length-1 match is recorded before the walk ends.
+            position = token_length;
+        }
+        out
+    }
+
+    /// Concatenate each id's raw bytes, then lossily interpret as UTF-8. With
+    /// `skip_special`, the eos token is dropped (it decodes to a control byte).
+    fn decode(&self, ids: &[u32], skip_special: bool) -> String {
+        let mut bytes = Vec::new();
+        for &id in ids {
+            if skip_special && Some(id) == self.eos_id {
+                continue;
+            }
+            if let Some(b) = self.id_to_bytes.get(id as usize) {
+                bytes.extend_from_slice(b);
+            }
+        }
+        String::from_utf8_lossy(&bytes).into_owned()
+    }
+
+    /// Decode a single token to its raw bytes, lossily as UTF-8. A multi-byte
+    /// UTF-8 codepoint can straddle several World tokens, so a lone token may be
+    /// an incomplete sequence and lossy-decode to the replacement char; the
+    /// streaming caller reconstructs full text by concatenating the pieces.
+    fn decode_one(&self, id: u32) -> String {
+        match self.id_to_bytes.get(id as usize) {
+            Some(b) => String::from_utf8_lossy(b).into_owned(),
+            None => String::new(),
+        }
+    }
+}
+
+/// Un-escape a stored RWKV token string into its raw bytes. Faithful port of
+/// llama.cpp's `llama_unescape_rwkv_token`: `\t`/`\n`/`\r` map to the control
+/// bytes, `\x##` consumes two lowercase-or-digit hex chars, any other escaped
+/// character is taken literally (so `\\` -> `\`, `\'` -> `'`), and unescaped
+/// bytes pass through unchanged.
+fn unescape_rwkv_token(escaped: &[u8]) -> Vec<u8> {
+    let mut output = Vec::with_capacity(escaped.len());
+    let mut escaping = false;
+    let mut hex_remaining: u8 = 0;
+    let mut hex_acc: u8 = 0;
+    for &c in escaped {
+        if hex_remaining != 0 {
+            let value = if c >= b'a' { c - b'a' + 10 } else { c - b'0' };
+            hex_acc = (hex_acc << 4).wrapping_add(value);
+            hex_remaining -= 1;
+            if hex_remaining == 0 {
+                output.push(hex_acc);
+                hex_acc = 0;
+            }
+            continue;
+        }
+        if escaping {
+            match c {
+                b't' => output.push(b'\t'),
+                b'n' => output.push(b'\n'),
+                b'r' => output.push(b'\r'),
+                b'x' => hex_remaining = 2,
+                other => output.push(other),
+            }
+            escaping = false;
+            continue;
+        }
+        if c == b'\\' {
+            escaping = true;
+            continue;
+        }
+        output.push(c);
+    }
+    output
+}
+
+/// Minimal byte-keyed trie matching llama.cpp's `naive_trie` for the RWKV path.
+/// Children are kept sorted by byte for a binary-search `traverse`.
+#[derive(Clone, Default)]
+struct RwkvTrie {
+    /// (byte, child) pairs, sorted by byte.
+    children: Vec<(u8, RwkvTrie)>,
+    has_value: bool,
+    value: u32,
+}
+
+impl RwkvTrie {
+    fn insert(&mut self, key: &[u8], value: u32) {
+        match key.split_first() {
+            None => {
+                self.has_value = true;
+                self.value = value;
+            }
+            Some((&first, rest)) => match self.children.binary_search_by_key(&first, |(b, _)| *b) {
+                Ok(idx) => self.children[idx].1.insert(rest, value),
+                Err(idx) => {
+                    self.children.insert(idx, (first, RwkvTrie::default()));
+                    self.children[idx].1.insert(rest, value);
+                }
+            },
+        }
+    }
+
+    fn traverse(&self, byte: u8) -> Option<&RwkvTrie> {
+        self.children
+            .binary_search_by_key(&byte, |(b, _)| *b)
+            .ok()
+            .map(|idx| &self.children[idx].1)
+    }
+
+    fn traverse_root(&self, byte: u8) -> Option<&RwkvTrie> {
+        self.traverse(byte)
+    }
+}
+
 #[derive(Clone, Debug)]
 struct SpmSymbol {
     prev: Option<usize>,
@@ -565,6 +792,13 @@ impl Ord for SpmBigram {
     }
 }
 
+type BuiltTokenizer = (
+    HfTokenizer,
+    DecodeOneMode,
+    Option<LlamaSpmTokenizer>,
+    Option<RwkvWorldTokenizer>,
+);
+
 fn build_tokenizer(
     model: &str,
     tokens: &[String],
@@ -575,7 +809,7 @@ fn build_tokenizer(
     unk_id: Option<u32>,
     add_bos: bool,
     add_eos: bool,
-) -> Result<(HfTokenizer, DecodeOneMode, Option<LlamaSpmTokenizer>)> {
+) -> Result<BuiltTokenizer> {
     use tokenizers::decoders::byte_fallback::ByteFallback;
     use tokenizers::decoders::byte_level::ByteLevel as ByteLevelDecoder;
     use tokenizers::decoders::sequence::Sequence;
@@ -607,7 +841,16 @@ fn build_tokenizer(
             let mut t = HfTokenizer::new(unigram);
             t.with_pre_tokenizer(Some(metaspace));
             t.with_decoder(Some(decoder));
-            Ok((t, DecodeOneMode::SentencePiece, Some(spm)))
+            Ok((t, DecodeOneMode::SentencePiece, Some(spm), None))
+        }
+        // RWKV "World" vocab: raw-byte greedy-longest-match trie. Not BPE/SPM,
+        // so the `tokenizers` crate cannot represent it — we carry a custom
+        // `RwkvWorldTokenizer` and route all dispatch to it. `inner` is a stub
+        // (an empty byte-level BPE) that is never exercised.
+        "rwkv" => {
+            let rwkv = RwkvWorldTokenizer::new(tokens, eos_id, unk_id);
+            let stub = HfTokenizer::new(BPE::default());
+            Ok((stub, DecodeOneMode::Hf, None, Some(rwkv)))
         }
         // llama.cpp's GPT-2-style BPE, used by Qwen and DeepSeek's English vocab.
         "gpt2" | "llama" => {
@@ -654,7 +897,7 @@ fn build_tokenizer(
             if !specials.is_empty() {
                 t.add_special_tokens(&specials);
             }
-            Ok((t, DecodeOneMode::Hf, None))
+            Ok((t, DecodeOneMode::Hf, None, None))
         }
         other => Err(Error::Model(format!(
             "tokenizer.ggml.model = {other:?} not supported by gguf-fallback path; \
@@ -681,7 +924,7 @@ mod tests {
             "<0x21>".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, -10.0, -10.0, 0.0, -10.0, 0.0, -1.0];
-        let (tokenizer, mode, _spm) = build_tokenizer(
+        let (tokenizer, mode, _spm, _rwkv) = build_tokenizer(
             "llama",
             &tokens,
             &[],
@@ -710,7 +953,7 @@ mod tests {
             "▁upon".to_string(),
         ];
         let scores = vec![-100.0, 0.0, 0.0, 0.0, 0.0];
-        let (inner, decode_one_mode, llama_spm) = build_tokenizer(
+        let (inner, decode_one_mode, llama_spm, rwkv_world) = build_tokenizer(
             "llama",
             &tokens,
             &[],
@@ -729,10 +972,47 @@ mod tests {
             pad_id: None,
             decode_one_mode,
             llama_spm,
+            rwkv_world,
             special_ids: HashSet::new(),
             eog_ids: HashSet::new(),
         };
 
         assert_eq!(tokenizer.decode_one(4).unwrap(), " upon");
+    }
+
+    #[test]
+    fn rwkv_unescape_handles_all_escape_forms() {
+        // `\t \n \r`, `\x##` (lowercase hex), escaped backslash, and a literal
+        // byte all round-trip exactly like llama.cpp's llama_unescape_rwkv_token.
+        assert_eq!(unescape_rwkv_token(b"\\t"), vec![b'\t']);
+        assert_eq!(unescape_rwkv_token(b"\\n\\n"), vec![b'\n', b'\n']);
+        assert_eq!(unescape_rwkv_token(b"\\r"), vec![b'\r']);
+        assert_eq!(unescape_rwkv_token(b"\\x00"), vec![0u8]);
+        assert_eq!(unescape_rwkv_token(b"\\x1b"), vec![0x1bu8]);
+        assert_eq!(unescape_rwkv_token(b"\\xff"), vec![0xffu8]);
+        assert_eq!(unescape_rwkv_token(b"\\\\"), vec![b'\\']);
+        assert_eq!(unescape_rwkv_token(b" "), vec![b' ']);
+        assert_eq!(unescape_rwkv_token(b"abc"), b"abc".to_vec());
+    }
+
+    #[test]
+    fn rwkv_world_greedy_longest_match() {
+        // Minimal vocab: single bytes plus a multi-byte entry. Greedy
+        // longest-match must prefer the 2-byte "ab" (id 3) over "a"+"b".
+        let tokens = vec![
+            "<s>".to_string(), // 0
+            "a".to_string(),   // 1
+            "b".to_string(),   // 2
+            "ab".to_string(),  // 3
+            "c".to_string(),   // 4
+        ];
+        let tok = RwkvWorldTokenizer::new(&tokens, Some(0), None);
+        assert_eq!(tok.encode("abc", false), vec![3, 4]);
+        assert_eq!(tok.encode("ba", false), vec![2, 1]);
+        assert_eq!(tok.decode(&[3, 4], false), "abc");
+        assert_eq!(tok.decode_one(3), "ab");
+        assert_eq!(tok.vocab_size(), 5);
+        // skip_special drops the eos id (0 here).
+        assert_eq!(tok.decode(&[0, 1], true), "a");
     }
 }
