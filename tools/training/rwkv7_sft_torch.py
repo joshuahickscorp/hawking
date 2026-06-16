@@ -165,6 +165,8 @@ def main():
             seen_tok += len(ids)
             l = loss.item() * args.grad_accum
             loss_ema = l if loss_ema is None else 0.98 * loss_ema + 0.02 * l
+            if args.device == "mps":
+                torch.mps.empty_cache()  # release the per-example graph cache (peak control)
             if (i + 1) % args.grad_accum == 0:
                 torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
                 opt.step(); opt.zero_grad()
