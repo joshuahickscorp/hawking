@@ -629,11 +629,7 @@ impl RwkvWorldTokenizer {
                     token_length = p + 1;
                 }
                 p += 1;
-                node = if p < len {
-                    n.traverse(bytes[p])
-                } else {
-                    None
-                };
+                node = if p < len { n.traverse(bytes[p]) } else { None };
             }
             out.push(token_id);
             // `token_length` is always > position here: the first byte matched a
