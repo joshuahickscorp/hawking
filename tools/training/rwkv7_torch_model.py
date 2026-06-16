@@ -282,11 +282,15 @@ class RWKV7Model(nn.Module):
         # the long WKV-7 recurrence graph). Only active in training mode.
         self.grad_checkpoint = False
 
-    def forward(self, input_ids: torch.Tensor, return_hidden: bool = False):
+    def forward(self, input_ids: torch.Tensor, return_hidden: bool = False,
+                return_final_hidden: bool = False):
         """input_ids: [B, T] long. Returns logits [B, T, vocab].
 
         If return_hidden, also returns the list of per-block hidden states (post
         each block) for the layerwise parity harness.
+        If return_final_hidden, returns the post-final-norm hidden [B, T, n_embd]
+        WITHOUT the lm_head — lets the SFT loss apply the 65K-vocab projection only
+        on supervised positions (same loss, far less compute/memory).
         """
         hidden = self.embeddings(input_ids)  # raw embedding (LN0 applied inside block 0)
         v_first = None
@@ -304,6 +308,8 @@ class RWKV7Model(nn.Module):
             if return_hidden:
                 hidden_states.append(hidden)
         hidden = _layernorm(hidden, self.norm_w, self.norm_b, self.cfg.ln_eps)
+        if return_final_hidden:
+            return hidden
         logits = self.lm_head(hidden)
         if return_hidden:
             return logits, hidden_states

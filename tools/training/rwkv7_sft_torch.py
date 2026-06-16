@@ -69,11 +69,15 @@ def build_examples(rows, tok, max_length: int):
 def lm_loss(model, ids, labels, device):
     x = torch.tensor([ids], dtype=torch.long, device=device)
     y = torch.tensor([labels], dtype=torch.long, device=device)
-    logits = model(x)  # [1, T, V]
-    # next-token: predict token t+1 from position t
-    shift_logits = logits[:, :-1, :].reshape(-1, logits.size(-1))
+    # Run the model WITHOUT the lm_head, then project only the supervised positions
+    # (the prompt is masked, so ~half the 65K-vocab matmul is otherwise wasted). Same
+    # loss as a full cross_entropy(logits, labels, ignore_index=-100).
+    hidden = model(x, return_final_hidden=True)  # [1, T, n_embd]
+    shift_hidden = hidden[:, :-1, :].reshape(-1, hidden.size(-1))  # predict t+1 from t
     shift_labels = y[:, 1:].reshape(-1)
-    return F.cross_entropy(shift_logits.float(), shift_labels, ignore_index=-100)
+    mask = shift_labels != -100
+    sel_logits = model.lm_head(shift_hidden[mask])  # [num_supervised, vocab]
+    return F.cross_entropy(sel_logits.float(), shift_labels[mask])
 
 
 def freeze_to_last_n(model, n: int):
@@ -165,11 +169,12 @@ def main():
             seen_tok += len(ids)
             l = loss.item() * args.grad_accum
             loss_ema = l if loss_ema is None else 0.98 * loss_ema + 0.02 * l
-            if args.device == "mps":
-                torch.mps.empty_cache()  # release the per-example graph cache (peak control)
             if (i + 1) % args.grad_accum == 0:
                 torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
                 opt.step(); opt.zero_grad()
+                if args.device == "mps":
+                    torch.mps.empty_cache()  # per-opt-step: peak is per-example (autograd frees
+                    # the graph itself); this only trims the allocator cache, no per-example churn
                 n_steps += 1
                 if n_steps % args.log_every == 0:
                     dt = time.time() - t0
