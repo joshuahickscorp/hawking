@@ -155,6 +155,20 @@ pub struct QwenLayerPinned {
     pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
 
+/// One FFN projection served from a baked `.tq` artifact: the Q12 weights
+/// (decoded ONCE at cache-build, reused across every token) plus the shape and
+/// activation-RHT serving params `crate::tq::matvec_rht` needs. Stored in
+/// `QwenDense::tq_ffn` keyed by GGUF source offset (the TQ per-tensor HYBRID).
+#[cfg(feature = "tq")]
+pub(crate) struct TqServe {
+    /// Integer-deterministic Q12 weights, row-major `out_features * in_features`.
+    pub q12: Vec<i32>,
+    pub out_features: usize,
+    pub in_features: usize,
+    pub rht_mode: crate::tq::RhtMode,
+    pub rht_seed: u64,
+}
+
 pub struct QwenDense {
     pub config: QwenConfig,
     pub tokenizer: Tokenizer,
@@ -276,6 +290,18 @@ pub struct QwenDense {
     pub(crate) q4k_fast_buf: Option<crate::metal::PinnedBuffer>,
     #[cfg(target_os = "macos")]
     pub(crate) q4k_fast_offsets: Option<std::collections::HashMap<usize, (usize, usize)>>,
+
+    /// TQ per-tensor HYBRID (DISMANTLE_QWEN_TQ): the three FFN projections
+    /// served from a baked `.tq` artifact via `crate::tq`, while attention
+    /// stays Q4_K. Keyed by GGUF source OFFSET (same key space as
+    /// `q4k_fast_offsets`) so `matmul_q4_dispatch` can override exactly the
+    /// FFN GEMVs by `t.offset`. Built lazily by `ensure_tq_cache` on first
+    /// forward when the flag is set AND a `<weights>.tq` (or `models/<stem>.tq`)
+    /// is present; `None` = flag off or no artifact (feature stays inert,
+    /// byte-identical to the un-flagged Q4_K path). Not macOS-gated: this is
+    /// the CPU serving reference and runs under DISMANTLE_FORCE_CPU=1.
+    #[cfg(feature = "tq")]
+    pub(crate) tq_ffn: Option<std::collections::HashMap<usize, TqServe>>,
 
     /// Track E: pinned per-channel f32 scales for the LM_HEAD W4A8 path.
     /// Loaded once at model init from `reports/w4a8_lmhead_calibration_*.json`
@@ -1301,6 +1327,8 @@ impl Engine for QwenDense {
             q4k_fast_buf: None,
             #[cfg(target_os = "macos")]
             q4k_fast_offsets: None,
+            #[cfg(feature = "tq")]
+            tq_ffn: None,
             #[cfg(target_os = "macos")]
             lmhead_per_channel_scales_buf: None,
             #[cfg(target_os = "macos")]
@@ -3516,6 +3544,26 @@ impl QwenDense {
         out: &mut [f32],
         scratch: &mut Vec<f32>,
     ) -> Result<()> {
+        // TQ per-tensor HYBRID: serve the three FFN projections from the baked
+        // `.tq` (decoded Q12 + activation-RHT) when present. The map holds ONLY
+        // the FFN GGUF offsets, so attention/o_proj/lm_head fall through to the
+        // Q4_K path below — and it overrides any predec/q4k_fast lever by offset.
+        #[cfg(feature = "tq")]
+        if let Some(map) = &self.tq_ffn {
+            if let Some(s) = map.get(&t.offset) {
+                debug_assert_eq!((s.out_features, s.in_features), (rows, cols));
+                let y = crate::tq::matvec_rht(
+                    &s.q12,
+                    x,
+                    s.out_features,
+                    s.in_features,
+                    s.rht_mode,
+                    s.rht_seed,
+                );
+                out.copy_from_slice(&y);
+                return Ok(());
+            }
+        }
         #[cfg(target_os = "macos")]
         if let Some(ctx) = &self.metal_ctx {
             if t.dtype == GgmlType::Q4_K {
@@ -3529,6 +3577,11 @@ impl QwenDense {
     }
 
     fn forward_token(&mut self, token: u32, pos: usize) -> Result<Vec<f32>> {
+        // TQ per-tensor HYBRID: build the FFN `.tq` side map on first forward
+        // (mutable borrow) before any immutable borrow of `self` below. No-op
+        // unless DISMANTLE_QWEN_TQ=1 and a `.tq` artifact is present.
+        #[cfg(feature = "tq")]
+        self.ensure_tq_cache()?;
         let cfg = &self.config;
         let h = cfg.hidden;
         let head_dim = cfg.head_dim;
@@ -3961,6 +4014,142 @@ impl QwenDense {
         let buf = ctx.new_buffer_with_bytes(&bytes);
         self.q4k_fast_buf = Some(buf);
         self.q4k_fast_offsets = Some(offsets);
+        Ok(())
+    }
+
+    /// TQ per-tensor HYBRID loader (DISMANTLE_QWEN_TQ): build the side map that
+    /// serves the three FFN projections from a baked `.tq` artifact via
+    /// `crate::tq`, leaving attention on Q4_K. Modeled on `ensure_q4k_fast_cache`
+    /// but NOT macOS-gated (this is the CPU serving reference) and keyed by GGUF
+    /// source offset so `matmul_q4_dispatch` overrides exactly the FFN GEMVs.
+    ///
+    /// Returns early (Ok, feature inert) when already built, the flag is off, or
+    /// no `.tq` is found at `<weights>.tq` or `models/<stem>.tq`. The `.tq`
+    /// tensor names may be GGUF-style (`blk.N.ffn_down.weight`) or HF-style
+    /// (`model.layers.N.mlp.down_proj.weight`); we classify each StrandTensor by
+    /// (layer index, FFN kind) via substring match and prefer the per-tensor
+    /// `rht_seed` carried in the header over recomputing it.
+    #[cfg(feature = "tq")]
+    fn ensure_tq_cache(&mut self) -> Result<()> {
+        if self.tq_ffn.is_some() {
+            return Ok(());
+        }
+        if !crate::env_on("DISMANTLE_QWEN_TQ") {
+            return Ok(());
+        }
+        // Probe `<weights>.tq` next to the model, then a `models/<stem>.tq`
+        // fallback. Absent → Ok, the feature stays inert (byte-identical Q4_K).
+        let weights_path = &self._weights_path;
+        let mut candidates: Vec<std::path::PathBuf> =
+            vec![weights_path.with_extension(crate::tq::TQ_EXT)];
+        if let Some(stem) = weights_path.file_stem().and_then(|s| s.to_str()) {
+            candidates.push(std::path::PathBuf::from(format!(
+                "models/{stem}.{}",
+                crate::tq::TQ_EXT
+            )));
+        }
+        let tq_path = match candidates.iter().find(|p| p.exists()).cloned() {
+            Some(p) => p,
+            None => return Ok(()),
+        };
+        let bytes = std::fs::read(&tq_path)
+            .map_err(|e| Error::Model(format!("read TQ artifact {}: {e}", tq_path.display())))?;
+        let tensors = crate::tq::read_strand(&bytes)
+            .map_err(|e| Error::Model(format!("parse TQ artifact {}: {e}", tq_path.display())))?;
+
+        // FFN kind classification by robust substring match (handles both
+        // GGUF `ffn_gate`/`ffn_up`/`ffn_down` and HF `gate_proj`/`up_proj`/
+        // `down_proj`). Returns the kind tag used to pair with a layer's
+        // projection. Order matters only in that the three substrings are
+        // mutually exclusive, so a simple contains() per kind is unambiguous.
+        fn ffn_kind(name: &str) -> Option<&'static str> {
+            if name.contains("ffn_down") || name.contains("down_proj") {
+                Some("down")
+            } else if name.contains("ffn_gate") || name.contains("gate_proj") {
+                Some("gate")
+            } else if name.contains("ffn_up") || name.contains("up_proj") {
+                Some("up")
+            } else {
+                None
+            }
+        }
+        // Layer index: prefer the digits right after a known marker
+        // (`blk.` for GGUF, `layers.` for HF), else fall back to the first
+        // run of digits anywhere in the name.
+        fn layer_index(name: &str) -> Option<usize> {
+            let after = name
+                .find("blk.")
+                .map(|i| i + "blk.".len())
+                .or_else(|| name.find("layers.").map(|i| i + "layers.".len()));
+            let start = after.unwrap_or(0);
+            let rest = &name[start..];
+            let digits: String = rest
+                .chars()
+                .skip_while(|c| !c.is_ascii_digit())
+                .take_while(|c| c.is_ascii_digit())
+                .collect();
+            digits.parse::<usize>().ok()
+        }
+
+        // Index StrandTensors by (layer, kind) → tensor (borrow into `tensors`).
+        let mut by_key: std::collections::HashMap<(usize, &'static str), &crate::tq::StrandTensor> =
+            std::collections::HashMap::new();
+        for st in &tensors {
+            if let (Some(li), Some(kind)) = (layer_index(&st.name), ffn_kind(&st.name)) {
+                by_key.insert((li, kind), st);
+            }
+        }
+
+        // Walk layers; for each FFN projection present in the artifact, decode
+        // its Q12 ONCE and map the GGUF source offset → TqServe. Validate the
+        // shape against the live TensorRef so a mismatched artifact fails loud
+        // rather than silently serving garbage.
+        let mut map: std::collections::HashMap<usize, TqServe> = std::collections::HashMap::new();
+        for li in 0..self.config.n_layers {
+            let projs: [(usize, usize, usize, &'static str); 3] = [
+                (
+                    self.layers[li].ffn_gate.offset,
+                    self.config.intermediate,
+                    self.config.hidden,
+                    "gate",
+                ),
+                (
+                    self.layers[li].ffn_up.offset,
+                    self.config.intermediate,
+                    self.config.hidden,
+                    "up",
+                ),
+                (
+                    self.layers[li].ffn_down.offset,
+                    self.config.hidden,
+                    self.config.intermediate,
+                    "down",
+                ),
+            ];
+            for (src_off, rows, cols, kind) in projs {
+                let st = match by_key.get(&(li, kind)) {
+                    Some(st) => *st,
+                    None => continue,
+                };
+                if (st.out_features, st.in_features) != (rows, cols) {
+                    return Err(Error::Model(format!(
+                        "TQ tensor {:?} shape ({},{}) != layer {li} {kind} ({rows},{cols})",
+                        st.name, st.out_features, st.in_features
+                    )));
+                }
+                map.insert(
+                    src_off,
+                    TqServe {
+                        q12: st.decode_q12(),
+                        out_features: st.out_features,
+                        in_features: st.in_features,
+                        rht_mode: st.rht_mode,
+                        rht_seed: st.rht_seed,
+                    },
+                );
+            }
+        }
+        self.tq_ffn = Some(map);
         Ok(())
     }
 
