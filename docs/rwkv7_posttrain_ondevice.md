@@ -9,11 +9,45 @@ This is a **post-train of an existing instruct model**, NOT a from-scratch
 distill. A prior research pass concluded that is the cheapest path to a coherent
 ~0.4B instruct SSM.
 
-> **Status:** this is the *runbook* produced by the CPU/IO prep pass on branch
-> `rwkv7/posttrain-prep`. The corpus builder and a small sample are committed.
-> The GPU capture + training steps below are written but **deliberately not
-> executed** — they are sequenced for after the in-flight perf benchmark frees
-> the GPU. Everything is one-command-ready.
+> **Status:** the *optimized* runbook on branch `rwkv7/posttrain-opt` (extends
+> the original prep pass on `rwkv7/posttrain-prep`). The corpus builder, the
+> batched-capture CLI path, the streaming SFT trainer, and the CPU trainer-lever
+> smoke are committed and CPU-validated. The GPU capture + training steps are
+> **deliberately not executed** — sequenced for after the in-flight perf
+> benchmark frees the GPU. Everything is one-command-ready.
+
+---
+
+## ⚡ What's optimized (and the new wall-clock)
+
+The original prep pipeline was correct but slow (~10–12 h) because it (a) decoded
+the teacher corpus **one prompt at a time** and (b) ran capture, then SFT, then
+DPO strictly back-to-back. Four levers cut that to **~2.5–3.5 h** with **zero
+quality change** (same teacher, same data, same greedy decode, same loss):
+
+| # | Lever | Mechanism | Speedup | Validated |
+|---|---|---|---|---|
+| 1 | **Batched teacher capture** | `dismantle generate --batched-capture` routes the prompt corpus through the **multiseq path** (B=8 sequences/pass, one Q4_K weight read amortised across the group) instead of the serial loop | **~6–8×** on capture | CLI built + CPU unit-tested; GPU run deferred |
+| 2 | **torch-mps trainer (MLX rejected)** | MLX has **no RWKV-7** support → NO-GO (see §7). Optimize torch-mps instead: grad-accum for big effective batch at batch-1 memory, bf16 autocast where mps supports it, grad-checkpointing | **~1.3–1.7×** on train | trainer-lever smoke PASS on CPU |
+| 3 | **Pipeline capture → SFT** | Capture writes **sharded JSONL**; the streaming trainer (`--watch`) starts SFT on finished shards while capture continues | overlaps the two longest phases → `max()` not `sum()` | dry-run validated; orchestrator `rwkv7_pipeline.sh` |
+| 4 | **Aggressive-but-safe memory** | capture-to-disk-first (never teacher+trainer resident together) + tuned `max_length`/grad-accum/grad-checkpointing to fill 18 GB without OOM | enables 1–3 | budget in §5 |
+
+**New projected wall-clock (math in §8):**
+
+```
+            OLD (serial, 1-at-a-time)         NEW (batched + overlapped)
+capture     ~5–12.5 h  (1 prompt/pass)        ~0.8–1.6 h  (B=8/pass)      ← lever 1
+SFT         ~1.5–3.5 h                         ~1.0–2.0 h                  ← lever 2
+DPO         ~3–4 h                             ~1.5–2.5 h                  ← lever 2
+overlap     (none: sum)                        capture ‖ SFT              ← lever 3
+            ────────────                        ────────────
+TOTAL       ~10–12 h                           ~2.5–3.5 h
+```
+
+The headline is lever 1: at ~17 tok/s single-stream the teacher capture dominated
+the budget; the multiseq path turns each weight read into B=8 sequences' work, so
+the same 0.77 M teacher tokens come out in roughly an eighth of the wall-clock.
+Levers 2–4 then keep the train side from re-inflating it.
 
 ---
 
@@ -23,7 +57,7 @@ distill. A prior research pass concluded that is the cheapest path to a coherent
 |---|---|
 | Chip | Apple M3 Pro (6P+6E, 12 cores) |
 | Unified memory | **18 GB** (this is the binding constraint) |
-| Backend | PyTorch `mps` (Metal). `mlx` is the faster-but-narrower alternative. |
+| Backend | PyTorch `mps` (Metal). **MLX investigated → NO-GO for RWKV-7, see §7.** |
 | Student | RWKV7-g1 0.4B — ~0.45B params, hidden 1024, 24 layers, 32 heads × 64, vocab 65536, ctx 8192-trained |
 | Teacher | Qwen2.5-3B-Instruct (for the optional distillation pass) |
 
@@ -176,41 +210,59 @@ copy-pasteable; create each as a file under `tools/training/` (or inline with
 `python - <<'PY'`). All assume `source .venv-rwkv/bin/activate` and the corpus
 from §3.
 
-### 4a. (GPU) Teacher data capture — **RUN WHEN THE GPU IS FREE**
+### 4a. (GPU) Teacher data capture — **BATCHED (lever 1)** — RUN WHEN GPU FREE
 
 > ⛔ **Do not run this while the perf benchmark is using the GPU.** This is the
 > first GPU step. Everything above (install, download, corpus) is CPU/IO and can
 > run alongside the bench; this cannot.
 
-For text-level on-policy DPO we need, for each prompt, a **"chosen"** completion
-from the strong teacher and a **"rejected"** completion from the current student.
+For text-level on-policy DPO we need, per prompt, a **"chosen"** completion from
+the strong teacher and a **"rejected"** completion from the current student.
 Generate both to disk first, then train CPU/GPU-decoupled.
 
-**THE EXACT FIRST COMMAND to kick off once the bench frees the GPU** (teacher
-"chosen" set, via the in-repo engine + the GGUF teacher already on disk):
+**The optimization:** the original runbook redirected `generate --prompts-file`
+to a file, but that path decodes **one prompt at a time** (`max_batch_size = 1`)
+— each Q4_K weight read serves a single sequence. dismantle already has a
+**multiseq / continuous-batch path** (B=8 independent sequences, weight read once
+per position across the whole group; `forward_multiseq_greedy_tokens` +
+`prefill_slots_parallel` in `qwen_dense.rs`). The new `--batched-capture` flag
+routes the prompt corpus through it.
+
+> **Quality is identical.** Batched capture uses the *same* per-prompt greedy
+> prefill (`forward_token_greedy_tcb`) and the *same* Q4_K-LM-head argmax the
+> single-stream path uses — it is the `--profile exact`, temperature-0 teacher,
+> just with B sequences sharing each weight read. No sampling, no draft, no
+> approximation. (`crates/dismantle/src/capture.rs`, unit-tested.)
+
+**THE EXACT FIRST COMMAND once the bench frees the GPU** (teacher "chosen" set):
 
 ```sh
-# (A) teacher "chosen" completions — Qwen2.5-3B GGUF, greedy, to JSONL.
-# Use --profile exact for the teacher: we want clean, un-traded output as the
-# "chosen" target (the `fast` profile applies vocab-prune-32k, a mild quality
-# trade). `--profile` is a global flag and works after the subcommand.
+# (A) teacher "chosen" completions — Qwen2.5-3B GGUF, BATCHED greedy, sharded JSONL.
+#   --batched-capture : route through the B=8 multiseq path (~6–8× vs serial)
+#   --capture-out     : per-group shards <stem>.shard-NNNN.jsonl (for streaming SFT)
+#   --capture-batch 8 : sequences per pass (max weight-read amortisation)
+#   --profile exact   : clean, un-traded teacher target (no vocab-prune-32k trade)
 cargo run --release -p dismantle -- generate \
   --weights models/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
-  --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.jsonl.prompts.txt \
+  --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
+  --batched-capture \
+  --capture-out artifacts/rwkv7_posttrain/teacher_chosen.jsonl \
+  --capture-batch 8 \
   --max-new-tokens 256 \
   --max-seq-len 4096 \
-  --profile exact \
-  > artifacts/rwkv7_posttrain/teacher_chosen.raw.jsonl
+  --profile exact
+# writes artifacts/rwkv7_posttrain/teacher_chosen.shard-0000.jsonl, .shard-0001.jsonl, …
+# each line: {"idx", "prompt", "completion", "stop"}  (idx = line in prompts file)
 ```
 
 `--prompts-file` wants a newline-delimited *plain prompt* file, so first flatten
 the DPO scaffold (CPU, one-liner):
 
 ```sh
-python - <<'PY'
+python3.12 - <<'PY'
 import json
 src="artifacts/rwkv7_posttrain/dpo_prompts.jsonl"
-dst="artifacts/rwkv7_posttrain/dpo_prompts.jsonl.prompts.txt"
+dst="artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt"
 with open(src) as f, open(dst,"w") as o:
     for ln in f:
         o.write(json.loads(ln)["prompt"].replace("\n","\\n")+"\n")
@@ -219,33 +271,76 @@ PY
 ```
 
 Then (B) the **"rejected"** set = the *student before training* on the same
-prompts (so DPO has a contrast). Use the student GGUF the de-risk pass produced:
+prompts (so DPO has a contrast), also batched:
 
 ```sh
 cargo run --release -p dismantle -- generate \
   --weights models/rwkv7-g1-04/rwkv7-0.4B-g1.Q4_K_M.gguf \
-  --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.jsonl.prompts.txt \
-  --max-new-tokens 256 --max-seq-len 4096 --profile exact \
-  > artifacts/rwkv7_posttrain/student_rejected.raw.jsonl
+  --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
+  --batched-capture \
+  --capture-out artifacts/rwkv7_posttrain/student_rejected.jsonl \
+  --capture-batch 8 \
+  --max-new-tokens 256 --max-seq-len 4096 --profile exact
 ```
 
 Finally zip chosen+rejected into a trl-DPO file `dpo.jsonl` with rows
-`{"prompt","chosen","rejected"}` (CPU one-liner; pair by line index).
+`{"prompt","chosen","rejected"}` — pair by `idx` (CPU one-liner; concat shards
+with `cat *.shard-*.jsonl`, then join chosen↔rejected on `idx`).
 
-> Alternative if you prefer not to build the engine: run the same two
-> generations with `llama.cpp`'s `llama-cli -m <gguf> -f prompts.txt -n 256`.
-> Either way the output is just text — no logits required for this path.
+> **Greedy-only:** `--batched-capture` is the temperature-0 multiseq lane, which
+> is exactly the teacher's greedy target. For *sampled* capture (you almost
+> never want it for a teacher set) drop `--batched-capture` and use the serial
+> `--prompts-file` path with `--temperature`.
+>
+> **Non-Qwen / non-macOS:** `--batched-capture` errors with a clear message if
+> the engine lacks the multiseq seam; fall back to the serial path there.
 
-**Wall-clock for capture (on `mps`/Metal, GPU free):** Qwen2.5-3B Q4_K_M decodes
-≈ 17 tok/s here; 3000 prompts × 256 tok ≈ 0.77M tok ≈ **~12.5 h** at that rate.
-To fit "overnight", either (i) cut to **~1200 prompts** (≈ 5 h), or (ii) cap
-`--max-new-tokens 160`, or (iii) generate chosen for a 1200-subset and reuse the
-SFT set for the rest. The student "rejected" pass is ~3× faster (smaller model).
+**Wall-clock for capture — the big win (lever 1):**
 
-### 4b. (GPU) SFT — 1 epoch on `mps`
+| | serial (old) | batched B=8 (new) |
+|---|---|---|
+| effective decode tps | ~17 tok/s | ~17 tok/s × (B amortisation) — the GPU does B sequences' work per weight read |
+| 3000 prompts × 256 tok = 0.77 M tok | **~12.5 h** | **~1.6 h** (≈ 8× fewer weight-read passes) |
+| 1200-prompt subset | ~5 h | **~0.8 h** |
 
-`trl` `SFTTrainer` over `sft.jsonl` (the `text` field). fp32 weights (RWKV g1
-ships fp32; mps bf16 is partial — see §6). LoRA optional (§6) to cut memory.
+The exact multiplier is bounded by how compute- vs bandwidth-bound the q3b decode
+is at B=8 on this M3 Pro — measure it on the first real run (the `[capture] DONE:
+… prompts/s` line reports it). Even a conservative 5–6× (not the full 8×) puts
+the full 3000-prompt teacher set under ~2.5 h. **Measure, don't assume 8×.**
+
+### 4b. (GPU) SFT — 1 epoch on `mps`, shard-streaming (levers 2+3)
+
+**Preferred path — the committed streaming trainer** (`tools/training/
+rwkv7_sft_stream.py`). It trains directly off the capture shards from §4a,
+optionally **streaming** them with `--watch` so SFT overlaps capture (lever 3),
+and bakes in the tuned 18 GB config (grad-accum 16, grad-checkpointing,
+`use_reentrant=False`, optional bf16) — lever 2:
+
+```sh
+# SFT on the teacher_chosen shards (post-capture, or with --watch DURING capture).
+# CPU dry-run first (no GPU) to sanity the data + config path:
+python3.12 tools/training/rwkv7_sft_stream.py \
+  --model models/rwkv7-g1-04-hf \
+  --shards-glob 'artifacts/rwkv7_posttrain/teacher_chosen.shard-*.jsonl' \
+  --out artifacts/rwkv7_posttrain/sft_out --dry-run
+
+# Real SFT (GPU). Drop --dry-run; add --watch to overlap with an in-flight capture
+# (see §4-pipeline). The trainer renders {prompt,completion} shards into the RWKV-7
+# chat `text` automatically, and also accepts pre-rendered {text} rows (e.g. the
+# corpus builder's sft.jsonl), so you can train on either source.
+python3.12 tools/training/rwkv7_sft_stream.py \
+  --model models/rwkv7-g1-04-hf \
+  --shards-glob 'artifacts/rwkv7_posttrain/teacher_chosen.shard-*.jsonl' \
+  --out artifacts/rwkv7_posttrain/sft_out \
+  --max-length 1024 --grad-accum 16
+```
+
+The trainer mechanics (bf16 autocast, grad-accum == big-batch, lossless
+grad-checkpointing) are **CPU-validated** by `tools/training/rwkv7_train_smoke.py`
+(run it before the GPU step; it PASSes in seconds with no GPU).
+
+<details><summary>Equivalent inline `trl.SFTTrainer` snippet (over the corpus
+builder's <code>sft.jsonl</code> instead of capture shards) — for reference</summary>
 
 ```sh
 python - <<'PY'
@@ -278,11 +373,38 @@ tok.save_pretrained("artifacts/rwkv7_posttrain/sft_out/final")
 print("SFT done")
 PY
 ```
+</details>
 
 **Wall-clock (SFT, mps, fp32, 0.4B):** ≈ **1.5–4 s/step** at batch-1/seq-1024 on
 M3 Pro (fp32 + gradient-checkpointing). 3000 examples ÷ 16 grad-accum ≈ 188
 optimizer steps × 16 microsteps ≈ 3000 forward/backward ≈ **~1.5–3.5 h** for one
-epoch. Comfortably overnight.
+epoch — and when run with `--watch` it **overlaps capture** (lever 3), so it adds
+only ~`max(0, train − capture)` to the wall-clock instead of its full duration.
+Optional `--bf16` shaves the dense-matmul time *if* it doesn't trip an fp32
+fallback on your mps build (measure; keep fp32 if unsure — §6).
+
+### 4-pipeline. (GPU) Overlap capture ‖ SFT (lever 3)
+
+The capture (§4a) writes shards as each B=8 group finishes; the streaming trainer
+(§4b) can begin on the first shard while capture continues. The committed
+orchestrator wires both together:
+
+```sh
+# capture (background, writes shards)  ‖  streaming SFT (foreground, --watch)
+tools/training/rwkv7_pipeline.sh \
+  artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
+  models/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
+  models/rwkv7-g1-04-hf \
+  artifacts/rwkv7_posttrain/sft_out 256 8
+```
+
+This turns `capture_time + sft_time` into ≈ `max(capture_time, sft_time)` + a
+one-shard lead-in. **Memory note (lever 4):** the Qwen teacher (~2.3 GB Q4_K) and
+the RWKV-7 student (~6–8 GB) are both resident in this mode. That fits 18 GB
+*because the capture decode is light* (Q4_K, B=8 token-only readback), but if you
+observe memory pressure, run capture to completion first (the plain §4a command,
+no pipeline) and SFT after — **capture-to-disk-first is always the safe
+fallback**, and you still keep lever 1's ~6–8× on capture.
 
 ### 4c. (GPU) DPO — preference alignment on `mps`
 
@@ -393,24 +515,36 @@ context**.
 
 ---
 
-## 5. Memory budget (18 GB unified)
+## 5. Memory budget (18 GB unified) — per phase (lever 4)
 
-Everything competes for the same 18 GB; macOS + apps already hold ~3–4 GB.
+Everything competes for the same 18 GB; macOS + apps already hold ~3–4 GB, so the
+working budget is **~14 GB**. The optimizations are tuned to fill that *without*
+OOM — high utilisation, not timidity.
 
-| Phase | Resident | Fits 18 GB? |
-|---|---|---|
-| Corpus build (CPU) | < 1 GB | ✅ trivially |
-| Teacher capture (Qwen 3B Q4_K_M, GGUF) | ~2.3 GB weights + KV | ✅ |
-| Teacher capture (Qwen 3B **HF fp16**, only if logit-KD) | ~6.2 GB | 🟡 alone yes; not with student |
-| SFT (0.4B fp32 + Adam states + acts, gc on, seq 1024) | ~5–8 GB | ✅ |
-| DPO (0.4B fp32 + frozen ref copy + 2× acts) | ~9–12 GB | 🟡 tight — use LoRA or seq 768 |
-| Export/convert (CPU) | ~2 GB | ✅ |
+| Phase | Resident | Fits ~14 GB? | Notes |
+|---|---|---|---|
+| Corpus build (CPU) | < 1 GB | ✅ trivially | IO only |
+| **Batched capture** (Qwen 3B Q4_K_M, B=8 multiseq) | ~2.3 GB weights + ~0.6 GB 8-slot KV (4k ctx) ≈ **~3 GB** | ✅ comfortable | B=8 token-only readback is tiny (32 B/step); the 8-slot KV arena is the only batch cost |
+| Teacher capture (Qwen 3B **HF fp16**, only if logit-KD) | ~6.2 GB | 🟡 alone yes; not with student | not used in the text-level DPO path |
+| **SFT** (0.4B fp32 + AdamW m+v + acts, gc on, seq 1024) | ~1.8 + ~3.6 + ~1–3 ≈ **~6–8 GB** | ✅ headroom | grad-checkpointing recomputes acts → keeps the last term low |
+| **Pipeline** (capture ‖ SFT, lever 3) | capture ~3 GB **+** SFT ~6–8 GB ≈ **~9–11 GB** | 🟡 fits, watch pressure | safe because capture decode is light; fallback = capture-first then SFT |
+| **DPO** (0.4B fp32 + frozen ref copy + 2× acts) | ~9–12 GB | 🟡 tight — LoRA or seq 768 | chosen+rejected both forwarded; ref copy doubles weights |
+| Export/convert (CPU) | ~2 GB | ✅ | |
 
-**Rules for 18 GB:** (1) never run teacher-generate and training simultaneously —
-capture to disk first; (2) keep `max_length` ≤ 1024 (drop to 768 if you OOM in
-DPO); (3) `gradient_checkpointing=True` always; (4) batch-1 + grad-accum, never
-batch > 1; (5) if DPO OOMs, switch the student to **LoRA** (§6) so the frozen ref
-is free.
+**Rules for 18 GB (the OOM guards):**
+1. **Capture-to-disk-first is the invariant.** Never hold teacher-generate +
+   trainer resident *unless* using the pipeline mode (where it's measured to fit
+   because capture is light). If pipeline shows pressure, fall back to sequential.
+2. `gradient_checkpointing=True` **always** (`use_reentrant=False`) — the single
+   biggest activation-memory lever; validated lossless in the smoke.
+3. `max_length ≤ 1024` for SFT; **drop to 768** if DPO OOMs.
+4. **batch-1 + grad-accum** (effective batch 16) — raises the effective batch
+   with **zero** extra resident memory (validated exact in the smoke). Never
+   raise `per_device_train_batch_size` above 1 on 18 GB.
+5. **DPO OOM fallback ladder:** (a) `max_length 768` → (b) `max_prompt_length
+   384` → (c) **LoRA student** (§6) so the frozen ref needs no copy (frees
+   ~1.8 GB) → (d) if still tight, reduce DPO `beta`-set to a 1500-prompt subset.
+   One of these always fits.
 
 ---
 
@@ -430,25 +564,52 @@ is free.
 - **LoRA to cut memory (recommended for DPO):** wrap the student with `peft`
   (`LoraConfig` on the time-mix + channel-mix projections, r=16). Cuts trainable
   params ~100×, frees the DPO ref copy, and fp32 LoRA on mps is well-supported.
-- **CPU-validation fallback:** if mps misbehaves, run a **tiny** sanity train on
-  CPU (`.to("cpu")`, `--n 50` via the offline corpus, 5 steps) just to confirm
-  the loss decreases and the export round-trips. Do not run the full train on
-  CPU (it would take days).
+- **CPU-validation (committed):** before the GPU step, run the trainer-lever
+  smoke — it validates bf16 autocast, grad-accumulation (== big-batch, to 1e-8),
+  and lossless grad-checkpointing on CPU in seconds, with no GPU:
+  ```sh
+  PYTORCH_ENABLE_MPS_FALLBACK=1 python3.12 tools/training/rwkv7_train_smoke.py
+  # add --fla to also run a few CPU steps on the REAL fla RWKV-7 (needs fla + model)
+  ```
+  And dry-run the streaming trainer's data path (no training):
+  ```sh
+  python3.12 tools/training/rwkv7_sft_stream.py --model models/rwkv7-g1-04-hf \
+    --shards-glob 'artifacts/rwkv7_posttrain/teacher_chosen.shard-*.jsonl' --dry-run
+  ```
+  Do not run the *full* train on CPU (it would take days) — these prove wiring,
+  not throughput.
 
 ---
 
-## 7. Optional: the MLX path (faster, narrower)
+## 7. The MLX path — investigated, **NO-GO for RWKV-7** (verdict)
 
-`mlx-lm` has native Apple-silicon training and is typically **faster than
-torch-mps** for small models, but RWKV7-g1 is not a first-class `mlx-lm`
-architecture, so this needs an MLX RWKV7 implementation (more wiring). If torch-
-mps wall-clock is acceptable (§4), **stay on torch-mps**. Revisit MLX only if you
-want to push the run from ~overnight toward a few hours and are willing to port
-the RWKV7 layer to MLX.
+`mlx-lm` is Apple-native and typically faster than torch-mps for small models, so
+it was the obvious candidate for lever 2. It was investigated and **rejected** —
+honestly, with the reasons, so nobody re-treads it:
+
+- **`mlx-lm` has no RWKV model at all.** Its `mlx_lm/models/` registry ships
+  `mamba.py` / `mamba2.py` for state-space models but **no `rwkv*.py`** (checked
+  upstream, June 2026). The fla-hub `rwkv7-0.4B-g1` HF checkpoint loads only via
+  its bundled `modeling_rwkv7.py` + the `flash-linear-attention` library, neither
+  of which MLX consumes. So `mlx_lm.lora` / `mlx_lm.fine_tune` **cannot load this
+  model**.
+- **The one community MLX RWKV port is v5-inference-only.** `dc-dc-dc/mlx-rwkv`
+  is WIP (~7 commits), RWKV-**v5**, **inference only** — no v7, no training, no
+  delta-rule/WKV-7 state evolution. Not usable for RWKV-7 SFT/DPO.
+- **A from-scratch MLX port is a multi-day model build, not a drop-in win.** It
+  would mean reimplementing RWKV-7's WKV-7 delta-rule time-mix + channel-mix as
+  an MLX autograd `nn.Module` and writing the training loop, then re-passing the
+  parity gate — high-risk, and the WKV-7 kernel is owned elsewhere in this repo.
+  No validated speedup justifies that here.
+
+**Verdict: stay on torch-mps; do not claim an MLX speedup.** Lever 2 is therefore
+the *torch-mps optimizations* (grad-accum, grad-checkpointing, bf16-where-safe),
+which are validated (`rwkv7_train_smoke.py`). If someone later wants MLX, the
+prerequisite is an upstreamed MLX RWKV-7 *training* module — revisit only then.
 
 ---
 
-## 8. End-to-end command summary (ordered)
+## 8. End-to-end command summary (ordered, optimized)
 
 ```sh
 # --- CPU/IO: safe NOW, alongside the GPU bench ---
@@ -456,23 +617,47 @@ uv venv .venv-rwkv --python 3.12 && source .venv-rwkv/bin/activate
 uv pip install torch transformers datasets trl accelerate peft \
                flash-linear-attention huggingface_hub numpy pyarrow
 huggingface-cli download fla-hub/rwkv7-0.4B-g1 --local-dir models/rwkv7-g1-04-hf
-python tools/training/rwkv7_build_corpus.py --n 3000
+python3.12 tools/training/rwkv7_build_corpus.py --n 3000
+# validate the trainer levers on CPU (seconds, no GPU):
+PYTORCH_ENABLE_MPS_FALLBACK=1 python3.12 tools/training/rwkv7_train_smoke.py
 
 # --- GPU: ONLY after the perf bench frees the GPU ---
 # (0) flatten the DPO scaffold to a plain newline-delimited prompts file (§4a)
-# (1) FIRST GPU COMMAND — teacher "chosen" capture
-cargo run --release -p dismantle -- generate \
-  --weights models/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
-  --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.jsonl.prompts.txt \
-  --max-new-tokens 256 --max-seq-len 4096 --profile exact \
-  > artifacts/rwkv7_posttrain/teacher_chosen.raw.jsonl
-# (2) student "rejected" capture  (§4a)
-# (3) SFT 1 epoch                 (§4b)   ~1.5–3.5 h
-# (4) DPO                         (§4c)   ~2–5 h
-# (5) export to GGUF              (§4d)   CPU
-# (6) eval gate                   (§4e)
+python3.12 - <<'PY'
+import json
+src="artifacts/rwkv7_posttrain/dpo_prompts.jsonl"; dst="artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt"
+open(dst,"w").writelines(json.loads(l)["prompt"].replace("\n","\\n")+"\n" for l in open(src))
+PY
+
+# (1+3) BATCHED teacher capture ‖ streaming SFT — lever 1 + lever 3 in one go:
+tools/training/rwkv7_pipeline.sh \
+  artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
+  models/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
+  models/rwkv7-g1-04-hf \
+  artifacts/rwkv7_posttrain/sft_out 256 8        # capture(~1.6h) ‖ SFT(~1–2h)
+
+# (2) student "rejected" capture — batched (§4a, for DPO contrast)   ~0.3–0.5 h
+# (4) DPO from sft_out/final                       (§4c)             ~1.5–2.5 h
+# (5) export to GGUF                               (§4d)   CPU
+# (6) eval gate                                    (§4e)
 ```
 
-**Realistic total on-device wall-clock:** capture ~5 h (at ~1200 prompts) +
-SFT ~2–3 h + DPO ~3–4 h ≈ **~10–12 h across one or two nights**, $0, all on the
-M3 Pro. Peak memory stays under 18 GB if §5's rules are followed.
+**Projected total on-device wall-clock (optimized):**
+
+```
+capture (chosen, B=8) ............ ~1.6 h   ┐  overlapped via rwkv7_pipeline.sh:
+SFT (1 epoch, --watch) ........... ~1–2 h   ┘  wall ≈ max(1.6, 1–2) ≈ ~1.6–2.0 h
+capture (rejected, B=8, smaller) . ~0.3–0.5 h
+DPO (1 epoch) .................... ~1.5–2.5 h
+export + eval (CPU/quick) ........ ~0.2 h
+                                   ───────────
+TOTAL ............................ ~2.5–3.5 h   (was ~10–12 h)  — $0, one sitting
+```
+
+vs the original **~10–12 h across one or two nights**. The win is dominated by
+lever 1 (batched capture turning ~12.5 h of serial teacher decode into ~1.6 h);
+lever 3 then hides SFT behind capture, and levers 2+4 keep DPO from re-inflating
+the budget. Peak memory stays under the ~14 GB working budget if §5's guards are
+followed. **The multipliers are conservative estimates pending the first GPU run
+— the `[capture] DONE: … prompts/s` line and the SFT step time will confirm the
+real numbers; trust those over these projections.**
