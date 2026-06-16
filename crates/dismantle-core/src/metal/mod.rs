@@ -13,11 +13,22 @@ pub const SHADER_SAMPLE: &str = include_str!("../../shaders/sample.metal");
 pub const SHADER_MATMUL: &str = include_str!("../../shaders/matmul.metal");
 pub const SHADER_MHA: &str = include_str!("../../shaders/mha.metal");
 pub const SHADER_MEGAKERNEL: &str = include_str!("../../shaders/megakernel_qwen3b.metal");
+/// TQ G4 bitslice decode→GEMV kernel family (`tq` feature). Ported verbatim from
+/// `vendor/strand-decode-kernel/shaders/strand_bitslice.metal`. Compiled into the
+/// runtime library so `pipeline("strand_bitslice_decode")` etc. resolve by name.
+/// Self-contained (its own `bs_*` helpers, no shared symbols) — appended last so
+/// it cannot perturb any existing kernel's codegen.
+#[cfg(feature = "tq")]
+pub const SHADER_STRAND_BITSLICE: &str = include_str!("../../shaders/strand_bitslice.metal");
 
 /// Concatenation of all shader sources for a single library compile.
 /// Cheaper than separate compile units; lets common helpers be shared.
 pub fn all_shader_sources() -> String {
-    [
+    // `mut` is only exercised on the `tq` path below; the default build pushes
+    // nothing, so suppress the unused-mut lint there (and keep the golden shader
+    // set — and the profile.rs shader-hash cache key — byte-for-byte unchanged).
+    #[cfg_attr(not(feature = "tq"), allow(unused_mut))]
+    let mut srcs = vec![
         SHADER_COMMON,
         SHADER_QUANT,
         SHADER_MOE,
@@ -26,8 +37,12 @@ pub fn all_shader_sources() -> String {
         SHADER_MATMUL,
         SHADER_MHA,
         SHADER_MEGAKERNEL,
-    ]
-    .join("\n\n")
+    ];
+    // The TQ bitslice family is feature-gated: only compiled into the library
+    // when `tq` is on.
+    #[cfg(feature = "tq")]
+    srcs.push(SHADER_STRAND_BITSLICE);
+    srcs.join("\n\n")
 }
 
 pub fn current_device_name() -> Option<String> {
