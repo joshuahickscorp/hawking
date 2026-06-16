@@ -1,0 +1,27 @@
+# tq_bake — offline TQ (Trellis-Quant) weight baker. Converts a GGUF model into a
+# `.tq` v2 artifact (STR2 wire format) via the absorbed strand-quant encoder.
+#
+# A real workspace member: it deps dismantle-core (default features, for GGUF read +
+# dequant) and strand-quant (the encoder + writer). The dismantle PRODUCT binary does
+# not depend on this tool and links dismantle-core with default features, so the
+# product build stays byte-identical; building this tool additionally compiles
+# strand-quant. Run: cargo run -p tq_bake_tool -- <in.gguf> <out.tq> [--bpw 3.34] [--match ffn_]
+[package]
+name = "tq_bake_tool"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Offline TQ (Trellis-Quant) weight baker — GGUF -> .tq via the absorbed strand-quant encoder."
+
+[[bin]]
+name = "tq_bake"
+path = "src/main.rs"
+
+[dependencies]
+dismantle-core = { path = "../../crates/dismantle-core" }
+strand-quant = { path = "../../vendor/strand-quant" }
+anyhow = { workspace = true }
+sha2 = { workspace = true }
