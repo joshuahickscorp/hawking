@@ -1,5 +1,6 @@
 mod bench_kernel;
 mod bench_server;
+mod capture;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -275,6 +276,28 @@ enum Cmd {
         /// `serve --explain-performance`.
         #[arg(long, default_value_t = false)]
         explain_performance: bool,
+        /// BATCHED teacher-capture mode. Requires --prompts-file. Instead of
+        /// decoding one prompt at a time, runs up to --capture-batch sequences
+        /// through the multiseq path per pass (one Q4_K weight read amortised
+        /// across the group) and writes per-prompt completions as sharded JSONL
+        /// to --capture-out. Greedy only (temperature 0) — bit-identical to the
+        /// single-stream greedy capture, just ~B× faster. The #1 throughput
+        /// lever for building the RWKV-7 teacher corpus (see
+        /// docs/rwkv7_posttrain_ondevice.md). Qwen/macOS only; falls back with a
+        /// clear error on engines without the multiseq seam.
+        #[arg(long, default_value_t = false)]
+        batched_capture: bool,
+        /// Output path for --batched-capture. Each batch-group is flushed to
+        /// `<stem>.shard-NNNN.<ext>` immediately so a streaming trainer can
+        /// consume finished shards while later groups capture (pipeline overlap).
+        /// Required when --batched-capture is set.
+        #[arg(long)]
+        capture_out: Option<PathBuf>,
+        /// Concurrent sequences per multiseq pass for --batched-capture
+        /// (1..=8). Default 8 (max weight-read amortisation). Lower it only if
+        /// you hit the per-slot KV ceiling on very long prompts.
+        #[arg(long, default_value_t = 8)]
+        capture_batch: usize,
     },
     /// Run a benchmark suite.
     Bench {
@@ -675,6 +698,9 @@ fn main() -> Result<()> {
             user_draft,
             user_draft_propose_first,
             explain_performance,
+            batched_capture,
+            capture_out,
+            capture_batch,
         } => generate_main(
             weights,
             prompt,
@@ -699,6 +725,9 @@ fn main() -> Result<()> {
             user_draft,
             user_draft_propose_first,
             explain_performance,
+            batched_capture,
+            capture_out,
+            capture_batch,
         ),
         Cmd::Bench {
             weights,
@@ -1782,6 +1811,9 @@ fn generate_main(
     user_draft: bool,
     user_draft_propose_first: bool,
     explain_performance: bool,
+    batched_capture: bool,
+    capture_out: Option<PathBuf>,
+    capture_batch: usize,
 ) -> Result<()> {
     use dismantle_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -1832,9 +1864,50 @@ fn generate_main(
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
     };
+
+    // Batched teacher-capture mode validation. This is the ~B× throughput lever
+    // for the RWKV-7 teacher corpus: it routes --prompts-file through the
+    // multiseq path (up to capture_batch sequences per pass) instead of the
+    // serial one-prompt-at-a-time loop. Greedy only — bit-identical to the
+    // single-stream greedy capture (same prefill + Q4_K-LM-head argmax), just
+    // amortising each weight read across the group.
+    let capture_batch_eff = capture::MAX_CAPTURE_BATCH.min(capture_batch.max(1));
+    if batched_capture {
+        if prompts_file.is_none() {
+            return Err(anyhow::anyhow!(
+                "--batched-capture requires --prompts-file (the corpus of prompts to capture)"
+            ));
+        }
+        if capture_out.is_none() {
+            return Err(anyhow::anyhow!(
+                "--batched-capture requires --capture-out (sharded JSONL output path)"
+            ));
+        }
+        if temperature > 0.0 {
+            return Err(anyhow::anyhow!(
+                "--batched-capture is greedy-only (temperature 0); got temperature={temperature}. \
+                 The teacher corpus is greedy by construction — drop --temperature or use the \
+                 serial --prompts-file path for sampled capture."
+            ));
+        }
+        if speculate_mode != SpeculateMode::Off {
+            return Err(anyhow::anyhow!(
+                "--batched-capture does not combine with --speculate (the multiseq greedy lane is \
+                 already the batched fast path)"
+            ));
+        }
+    }
+
     let cfg = EngineConfig {
         max_seq_len,
-        max_batch_size: 1,
+        // Batched capture decodes up to capture_batch_eff sequences at once, so
+        // the multiseq KV arena must be sized for that many slots. Single-stream
+        // generate stays at batch 1.
+        max_batch_size: if batched_capture {
+            capture_batch_eff
+        } else {
+            1
+        },
         speculate: speculate_mode != SpeculateMode::Off,
         speculate_mode,
         verify_window,
@@ -1886,6 +1959,32 @@ fn generate_main(
             vec![prompt]
         }
     };
+
+    // ── Batched teacher-capture fast path ─────────────────────────────────
+    // Routes the whole prompt corpus through the multiseq path (capture_batch
+    // sequences/pass) and writes per-prompt completions as sharded JSONL.
+    // Returns before the serial per-prompt loop below.
+    if batched_capture {
+        let out_path = capture_out.expect("validated above: --capture-out required");
+        let t0 = std::time::Instant::now();
+        let cfg = capture::CaptureConfig {
+            batch: capture_batch_eff,
+            max_new_tokens,
+            out_path,
+            // Cap prompts at the per-slot KV ceiling (MAX_MULTISEQ_CTX); leave
+            // headroom for the generated tokens.
+            max_prompt_tokens: 4096usize.saturating_sub(max_new_tokens).max(256),
+        };
+        let n = capture::run_batched_capture(engine.as_mut(), &prompts, &cfg, &abort)?;
+        let secs = t0.elapsed().as_secs_f64();
+        eprintln!(
+            "[capture] DONE: {n} records in {:.1}s ({:.1} prompts/s wall) — sharded JSONL written.",
+            secs,
+            (n as f64) / secs.max(1e-6)
+        );
+        dismantle_core::stateful::attn_capture::flush();
+        return Ok(());
+    }
 
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
