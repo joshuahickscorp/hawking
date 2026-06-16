@@ -21,6 +21,7 @@ from dataclasses import dataclass
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint
 
 
 @dataclass
@@ -277,6 +278,9 @@ class RWKV7Model(nn.Module):
         self.norm_w = nn.Parameter(torch.ones(cfg.n_embd))
         self.norm_b = nn.Parameter(torch.zeros(cfg.n_embd))
         self.lm_head = nn.Linear(cfg.n_embd, cfg.vocab_size, bias=False)
+        # Set True to recompute each block in backward (saves activation memory for
+        # the long WKV-7 recurrence graph). Only active in training mode.
+        self.grad_checkpoint = False
 
     def forward(self, input_ids: torch.Tensor, return_hidden: bool = False):
         """input_ids: [B, T] long. Returns logits [B, T, vocab].
@@ -287,8 +291,16 @@ class RWKV7Model(nn.Module):
         hidden = self.embeddings(input_ids)  # raw embedding (LN0 applied inside block 0)
         v_first = None
         hidden_states = []
+        ckpt = self.grad_checkpoint and self.training and not return_hidden
         for block in self.layers:
-            hidden, v_first = block(hidden, v_first)
+            if ckpt:
+                # v_first is None at block 0 (a non-tensor arg checkpoint passes
+                # through). use_reentrant=False handles that and is the lossless mode.
+                hidden, v_first = torch.utils.checkpoint.checkpoint(
+                    block, hidden, v_first, use_reentrant=False
+                )
+            else:
+                hidden, v_first = block(hidden, v_first)
             if return_hidden:
                 hidden_states.append(hidden)
         hidden = _layernorm(hidden, self.norm_w, self.norm_b, self.cfg.ln_eps)
