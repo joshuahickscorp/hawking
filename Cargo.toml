@@ -7,6 +7,7 @@ members = [
     "crates/dismantle-bench",
     "tools/q4k_fast",
     "tools/awq_bake",
+    "tools/tq_bake",
 ]
 # Absorbed STRAND quant track (from ~/Downloads/strand, tag `quant-handoff`). These are
 # self-contained packages (concrete deps, no workspace inheritance) consumed by path
