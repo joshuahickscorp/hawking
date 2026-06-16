@@ -52,6 +52,9 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Instant;
 
+#[cfg(target_os = "macos")]
+use crate::metal::MetalContext;
+
 /// Static architecture parameters read from the `rwkv7.*` GGUF metadata.
 #[derive(Debug, Clone)]
 pub struct RwkvConfig {
@@ -254,6 +257,16 @@ pub struct RwkvSeven {
     pub state: RwkvState,
     pub sampler: Sampler,
     pub _weights_path: PathBuf,
+
+    /// Metal context (None on non-macOS or when Metal init fails / is forced
+    /// off). Present ⇒ the GPU decode path (`forward_token_gpu`) is available.
+    #[cfg(target_os = "macos")]
+    pub metal_ctx: Option<MetalContext>,
+    /// GPU-resident weights + recurrent-state arena for the decode path. Built
+    /// once in `load` when `metal_ctx` is `Some`. The CPU `state`/weights stay
+    /// as the correctness oracle and the fallback.
+    #[cfg(target_os = "macos")]
+    pub gpu: Option<gpu::RwkvGpu>,
 }
 
 /// LayerNorm with weight + bias over the whole vector (population variance,
@@ -614,6 +627,20 @@ impl RwkvSeven {
         gemv_f32(&layer.channel_mix_value, n, cfg.n_ff, &k, &mut out);
         Ok(out)
     }
+
+    /// Route one decode step to the GPU path when `use_gpu`, else the CPU
+    /// reference. The two states are advanced independently, so callers MUST run
+    /// a whole sequence on ONE path (they reset both up front). On non-macOS
+    /// `use_gpu` is always false and this is exactly `forward_token`.
+    #[inline]
+    fn forward_token_routed(&mut self, token: u32, use_gpu: bool) -> Result<Vec<f32>> {
+        #[cfg(target_os = "macos")]
+        if use_gpu {
+            return self.forward_token_gpu(token);
+        }
+        let _ = use_gpu;
+        self.forward_token(token)
+    }
 }
 
 impl Engine for RwkvSeven {
@@ -692,6 +719,47 @@ impl Engine for RwkvSeven {
         let state = RwkvState::new(&cfg);
         let sampler = Sampler::new(0);
 
+        // ── GPU decode path (macOS/Metal) ─────────────────────────────────────
+        // Build the Metal context + upload the (already-dequantized) f32 weights
+        // into a RwkvDecodeArena once. The arena holds the FIXED recurrent state
+        // (no growing KV) and is advanced in place each decode step. Forcing CPU
+        // (`force_cpu` / DISMANTLE_FORCE_CPU=1) or any init failure leaves the
+        // engine on the validated CPU reference path.
+        #[cfg(target_os = "macos")]
+        let (metal_ctx, gpu) = {
+            let force_cpu = _config.force_cpu || crate::env_on("DISMANTLE_FORCE_CPU");
+            if force_cpu {
+                (None, None)
+            } else {
+                match MetalContext::new_with_trace(_config.trace_dispatch) {
+                    Ok(ctx) => {
+                        let built = gpu::RwkvGpu::build(
+                            &ctx,
+                            &cfg,
+                            &embed,
+                            &tok_norm_w,
+                            &tok_norm_b,
+                            &output_norm_w,
+                            &output_norm_b,
+                            &output,
+                            &layers,
+                        );
+                        match built {
+                            Ok(g) => (Some(ctx), Some(g)),
+                            Err(e) => {
+                                eprintln!("[rwkv7] GPU arena build failed ({e}); CPU path only");
+                                (None, None)
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("[rwkv7] Metal unavailable ({e}); CPU path only");
+                        (None, None)
+                    }
+                }
+            }
+        };
+
         Ok(Self {
             config: cfg,
             model_id,
@@ -707,6 +775,10 @@ impl Engine for RwkvSeven {
             state,
             sampler,
             _weights_path: weights.to_path_buf(),
+            #[cfg(target_os = "macos")]
+            metal_ctx,
+            #[cfg(target_os = "macos")]
+            gpu,
         })
     }
 
@@ -747,7 +819,16 @@ impl Engine for RwkvSeven {
                 .unwrap_or(false)
         };
 
-        self.state.reset();
+        // Reset BOTH the CPU reference state and (if present) the GPU arena
+        // state, then run the whole sequence on a single path so the recurrent
+        // state stays coherent. The GPU path is used end-to-end when Metal is
+        // available; otherwise the CPU reference path. (RWKV-7 prefill is the
+        // same per-step kernel as decode — no separate batched prefill here.)
+        self.reset_kv_for_test();
+        #[cfg(target_os = "macos")]
+        let use_gpu = self.has_gpu();
+        #[cfg(not(target_os = "macos"))]
+        let use_gpu = false;
 
         // Prefill: run the whole prompt through the recurrence (state carries).
         let prefill_start = Instant::now();
@@ -759,7 +840,7 @@ impl Engine for RwkvSeven {
                 });
                 return Ok(stats);
             }
-            let _ = self.forward_token(t)?;
+            let _ = self.forward_token_routed(t, use_gpu)?;
         }
         stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
 
@@ -773,7 +854,7 @@ impl Engine for RwkvSeven {
                 reason = StopReason::Aborted;
                 break;
             }
-            let mut logits = self.forward_token(last_id)?;
+            let mut logits = self.forward_token_routed(last_id, use_gpu)?;
             let next_id = self.sampler.sample(&mut logits, &req.sampling);
             self.sampler.record(next_id);
             let text = self
@@ -831,5 +912,480 @@ impl Engine for RwkvSeven {
 
     fn reset_kv_for_test(&mut self) {
         self.state.reset();
+        #[cfg(target_os = "macos")]
+        if let Some(g) = self.gpu.as_mut() {
+            g.reset();
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl RwkvSeven {
+    /// Whether the GPU decode path is wired and available.
+    pub fn has_gpu(&self) -> bool {
+        self.metal_ctx.is_some() && self.gpu.is_some()
+    }
+
+    /// GPU counterpart of [`forward_token`]: one RWKV-7 decode step on Metal,
+    /// advancing the GPU-resident recurrent state in place. Bit-for-bit (within
+    /// f32 tolerance) against [`forward_token`] — it reuses the same f32 weights
+    /// and the same op order. Returns the `vocab`-sized logit row. Falls back to
+    /// the CPU path when the GPU is unavailable.
+    pub fn forward_token_gpu(&mut self, token: u32) -> Result<Vec<f32>> {
+        if self.metal_ctx.is_none() || self.gpu.is_none() {
+            return self.forward_token(token);
+        }
+        // Split borrows: ctx (immutable) + gpu (mutable) + cfg/embed (immutable).
+        let RwkvSeven {
+            config,
+            metal_ctx,
+            gpu,
+            embed,
+            ..
+        } = self;
+        let ctx = metal_ctx.as_ref().unwrap();
+        let g = gpu.as_mut().unwrap();
+        let logits = gpu::forward_token_gpu(ctx, g, config, embed, token)?;
+        Ok(logits)
+    }
+}
+
+/// RWKV-7 GPU decode path: weight upload, the recurrent-state arena, and the
+/// single-step forward that drives the WKV-7 kernel + glue kernels. macOS-only.
+#[cfg(target_os = "macos")]
+pub mod gpu {
+    use super::{RwkvConfig, RwkvLayer};
+    use crate::metal::rwkv_decode_arena::{
+        rwkv7_add_into_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_tcb,
+        rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
+        rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
+        rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_tcb,
+    };
+    use crate::metal::{MetalContext, PinnedBuffer, RwkvDecodeArena, TokenCommandBuffer};
+    use crate::{Error, Result};
+
+    /// Group-norm epsilon used inside the WKV-7 per-head norm (matches the CPU
+    /// reference `time_mix`: `gn_eps = 64e-5`).
+    const GN_EPS: f32 = 64e-5;
+
+    /// GPU-resident f32 weights for one RWKV-7 layer (uploaded once from the
+    /// already-dequantized CPU `RwkvLayer`). All matrices are row-major `[out,in]`
+    /// exactly as the CPU `gemv_f32` expects, so the GPU `gemv_f32_attn` kernel
+    /// reproduces the CPU MAC.
+    pub struct RwkvGpuLayer {
+        pub attn_norm_w: PinnedBuffer,
+        pub attn_norm_b: PinnedBuffer,
+        pub attn_norm2_w: PinnedBuffer,
+        pub attn_norm2_b: PinnedBuffer,
+        pub lerp_fused: PinnedBuffer,
+        pub channel_mix_lerp_k: PinnedBuffer,
+        pub receptance: PinnedBuffer,
+        pub key: PinnedBuffer,
+        pub value: PinnedBuffer,
+        pub output: PinnedBuffer,
+        pub w0: PinnedBuffer,
+        pub w1: PinnedBuffer,
+        pub w2: PinnedBuffer,
+        pub a0: PinnedBuffer,
+        pub a1: PinnedBuffer,
+        pub a2: PinnedBuffer,
+        pub v0: PinnedBuffer,
+        pub v1: PinnedBuffer,
+        pub v2: PinnedBuffer,
+        pub g1: Option<PinnedBuffer>,
+        pub g2: Option<PinnedBuffer>,
+        pub k_k: PinnedBuffer,
+        pub k_a: PinnedBuffer,
+        pub r_k: PinnedBuffer,
+        pub ln_w: PinnedBuffer,
+        pub ln_b: PinnedBuffer,
+        pub channel_mix_key: PinnedBuffer,
+        pub channel_mix_value: PinnedBuffer,
+        pub has_gate: bool,
+    }
+
+    /// GPU decode bundle: per-layer weights, global weights, the recurrent-state
+    /// arena, and the `fresh` flag (mirrors `RwkvState::fresh`).
+    pub struct RwkvGpu {
+        pub layers: Vec<RwkvGpuLayer>,
+        pub tok_norm_w: PinnedBuffer,
+        pub tok_norm_b: PinnedBuffer,
+        pub output_norm_w: PinnedBuffer,
+        pub output_norm_b: PinnedBuffer,
+        pub lm_head: PinnedBuffer,
+        pub arena: RwkvDecodeArena,
+        pub fresh: bool,
+    }
+
+    impl RwkvGpu {
+        /// Reset the recurrent state to zero and mark the sequence fresh.
+        pub fn reset(&mut self) {
+            self.arena.reset_state();
+            self.fresh = true;
+        }
+
+        #[allow(clippy::too_many_arguments)]
+        pub fn build(
+            ctx: &MetalContext,
+            cfg: &RwkvConfig,
+            embed: &[f32],
+            tok_norm_w: &[f32],
+            tok_norm_b: &[f32],
+            output_norm_w: &[f32],
+            output_norm_b: &[f32],
+            lm_head: &[f32],
+            layers: &[RwkvLayer],
+        ) -> Result<Self> {
+            let _ = embed; // embed gather is a host memcpy of one row (see forward).
+            let up = |v: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(v));
+            let up_opt = |v: &Option<Vec<f32>>| v.as_ref().map(|x| up(x));
+
+            let gpu_layers = layers
+                .iter()
+                .map(|l| RwkvGpuLayer {
+                    attn_norm_w: up(&l.attn_norm_w),
+                    attn_norm_b: up(&l.attn_norm_b),
+                    attn_norm2_w: up(&l.attn_norm2_w),
+                    attn_norm2_b: up(&l.attn_norm2_b),
+                    lerp_fused: up(&l.time_mix_lerp_fused),
+                    channel_mix_lerp_k: up(&l.channel_mix_lerp_k),
+                    receptance: up(&l.time_mix_receptance),
+                    key: up(&l.time_mix_key),
+                    value: up(&l.time_mix_value),
+                    output: up(&l.time_mix_output),
+                    w0: up(&l.time_mix_w0),
+                    w1: up(&l.time_mix_w1),
+                    w2: up(&l.time_mix_w2),
+                    a0: up(&l.time_mix_a0),
+                    a1: up(&l.time_mix_a1),
+                    a2: up(&l.time_mix_a2),
+                    v0: up(&l.time_mix_v0),
+                    v1: up(&l.time_mix_v1),
+                    v2: up(&l.time_mix_v2),
+                    g1: up_opt(&l.time_mix_g1),
+                    g2: up_opt(&l.time_mix_g2),
+                    k_k: up(&l.time_mix_k_k),
+                    k_a: up(&l.time_mix_k_a),
+                    r_k: up(&l.time_mix_r_k),
+                    ln_w: up(&l.time_mix_ln_w),
+                    ln_b: up(&l.time_mix_ln_b),
+                    channel_mix_key: up(&l.channel_mix_key),
+                    channel_mix_value: up(&l.channel_mix_value),
+                    has_gate: l.time_mix_g1.is_some() && l.time_mix_g2.is_some(),
+                })
+                .collect();
+
+            let arena = RwkvDecodeArena::new(
+                ctx,
+                cfg.n_layer,
+                cfg.n_embd,
+                cfg.n_ff,
+                cfg.head_size,
+                cfg.head_count,
+                cfg.vocab_size,
+                cfg.decay_lora,
+                cfg.iclr_lora,
+                cfg.value_res_lora,
+                cfg.gate_lora,
+            );
+            arena.reset_state();
+
+            Ok(Self {
+                layers: gpu_layers,
+                tok_norm_w: up(tok_norm_w),
+                tok_norm_b: up(tok_norm_b),
+                output_norm_w: up(output_norm_w),
+                output_norm_b: up(output_norm_b),
+                lm_head: up(lm_head),
+                arena,
+                fresh: true,
+            })
+        }
+    }
+
+    /// Copy `n` f32 from a host slice into the head of a shared GPU buffer.
+    fn write_row(buf: &PinnedBuffer, src: &[f32]) {
+        let ptr = buf.contents() as *mut f32;
+        unsafe { std::ptr::copy_nonoverlapping(src.as_ptr(), ptr, src.len()) };
+    }
+
+    /// Read `n` f32 from the head of a shared GPU buffer into a fresh Vec.
+    fn read_vec(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
+        let ptr = buf.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+    }
+
+    /// One RWKV-7 decode step on the GPU. Mirrors `RwkvSeven::forward_token` +
+    /// `time_mix` + `channel_mix` op-for-op; advances `g.arena` state in place.
+    pub fn forward_token_gpu(
+        ctx: &MetalContext,
+        g: &mut RwkvGpu,
+        cfg: &RwkvConfig,
+        embed: &[f32],
+        token: u32,
+    ) -> Result<Vec<f32>> {
+        let n = cfg.n_embd;
+        let eps = cfg.ln_eps;
+        let a = &g.arena;
+
+        // Embedding lookup (host gather of one f32 row into the shared x buffer).
+        let row = token as usize * n;
+        if row + n > embed.len() {
+            return Err(Error::Model(format!("rwkv7: token {token} out of vocab")));
+        }
+        write_row(&a.x, &embed[row..row + n]);
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // LN0 (embedding norm): x_norm = layernorm(x, tok_norm); x <- x_norm.
+        rwkv7_layernorm_tcb(
+            &mut tcb,
+            &a.x,
+            0,
+            &g.tok_norm_w,
+            &g.tok_norm_b,
+            &a.x_norm,
+            0,
+            n,
+            eps,
+        )?;
+        rwkv7_copy_tcb(&mut tcb, &a.x_norm, &a.x, 0, n)?;
+
+        // v_first established on layer 0, reused by deeper layers.
+        let mut have_v_first = false;
+        // byte offset of slot `s` in the slot-major xs buffer.
+        let f32b = std::mem::size_of::<f32>();
+        let slot_off = |s: usize| s * n * f32b;
+
+        for li in 0..cfg.n_layer {
+            let layer = &g.layers[li];
+            let shift_off = a.shift_layer_byte_offset(li);
+            let wkv_off = a.wkv_layer_byte_offset(li);
+
+            // ── time-mix ──
+            // att_in = layernorm(x, attn_norm)
+            rwkv7_layernorm_tcb(
+                &mut tcb,
+                &a.x,
+                0,
+                &layer.attn_norm_w,
+                &layer.attn_norm_b,
+                &a.att_in,
+                0,
+                n,
+                eps,
+            )?;
+            // token-shift lerp using stored att_shift[li] (x_prev) → xs slot-major.
+            let n_slots = if layer.has_gate { 6 } else { 5 };
+            rwkv7_token_shift_lerp_tcb(
+                &mut tcb,
+                &a.att_in,
+                &a.att_shift,
+                shift_off,
+                &layer.lerp_fused,
+                &a.xs,
+                n,
+                n_slots,
+                g.fresh,
+            )?;
+
+            // r = Wr @ xr   (slot 0)
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.receptance, n, n, &a.xs, slot_off(0), &a.r)?;
+
+            // w = exp(-0.606531 * sigmoid(w0 + W2 @ tanh(W1 @ xw)))  (slot 1)
+            rwkv7_gemv_f32_off_tcb(
+                &mut tcb,
+                &layer.w1,
+                cfg.decay_lora,
+                n,
+                &a.xs,
+                slot_off(1),
+                &a.w_lo,
+            )?;
+            rwkv7_tanh_inplace_tcb(&mut tcb, &a.w_lo, cfg.decay_lora)?;
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.w2, n, cfg.decay_lora, &a.w_lo, 0, &a.w_raw)?;
+            rwkv7_decay_act_tcb(&mut tcb, &a.w_raw, &layer.w0, &a.w, n)?;
+
+            // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3)
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.key, n, n, &a.xs, slot_off(2), &a.k)?;
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.value, n, n, &a.xs, slot_off(3), &a.v)?;
+
+            // value-residual mix (skip on layer 0 where v_first is established).
+            if !have_v_first {
+                rwkv7_copy_tcb(&mut tcb, &a.v, &a.v_first, 0, n)?;
+                have_v_first = true;
+            } else {
+                rwkv7_gemv_f32_off_tcb(
+                    &mut tcb,
+                    &layer.v1,
+                    cfg.value_res_lora,
+                    n,
+                    &a.xs,
+                    slot_off(3),
+                    &a.v_lo,
+                )?;
+                rwkv7_gemv_f32_off_tcb(
+                    &mut tcb,
+                    &layer.v2,
+                    n,
+                    cfg.value_res_lora,
+                    &a.v_lo,
+                    0,
+                    &a.v_mix,
+                )?;
+                rwkv7_value_residual_mix_tcb(&mut tcb, &a.v, &a.v_first, &a.v_mix, &layer.v0, n)?;
+            }
+
+            // gate g = G2 @ sigmoid(G1 @ xg)   (slot 5; only if gated)
+            if layer.has_gate {
+                let g1 = layer.g1.as_ref().unwrap();
+                let g2 = layer.g2.as_ref().unwrap();
+                rwkv7_gemv_f32_off_tcb(
+                    &mut tcb,
+                    g1,
+                    cfg.gate_lora,
+                    n,
+                    &a.xs,
+                    slot_off(5),
+                    &a.g_lo,
+                )?;
+                rwkv7_sigmoid_inplace_tcb(&mut tcb, &a.g_lo, cfg.gate_lora)?;
+                rwkv7_gemv_f32_off_tcb(&mut tcb, g2, n, cfg.gate_lora, &a.g_lo, 0, &a.gate)?;
+            }
+
+            // a = sigmoid(a0 + A2 @ (A1 @ xa))   (slot 4)
+            rwkv7_gemv_f32_off_tcb(
+                &mut tcb,
+                &layer.a1,
+                cfg.iclr_lora,
+                n,
+                &a.xs,
+                slot_off(4),
+                &a.a_lo,
+            )?;
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.a2, n, cfg.iclr_lora, &a.a_lo, 0, &a.a)?;
+            rwkv7_sigmoid_bias_tcb(&mut tcb, &a.a, &layer.a0, n)?;
+
+            // kk = l2norm_per_head(k*k_k); k += (a-1)*(k*k_a); a_op=-kk; b_op=kk*a.
+            rwkv7_kk_kmix_tcb(
+                &mut tcb,
+                &a.k,
+                &layer.k_k,
+                &layer.k_a,
+                &a.a,
+                &a.a_op,
+                &a.b_op,
+                cfg.head_size,
+                cfg.head_count,
+            )?;
+
+            // WKV-7 recurrence + per-head group-norm + bonus + gate (folded).
+            rwkv7_wkv_decode_tcb(
+                &mut tcb,
+                &a.wkv_state,
+                wkv_off,
+                &a.r,
+                &a.w,
+                &a.k,
+                &a.v,
+                &a.a_op,
+                &a.b_op,
+                &layer.r_k,
+                &layer.ln_w,
+                &layer.ln_b,
+                &a.gate,
+                &a.out_wkv,
+                cfg.head_size,
+                cfg.head_count,
+                GN_EPS,
+                layer.has_gate,
+            )?;
+
+            // y = Wo @ out  → cur
+            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.output, n, n, &a.out_wkv, 0, &a.cur)?;
+
+            // store att_in as next token-shift for this layer.
+            rwkv7_copy_tcb(&mut tcb, &a.att_in, &a.att_shift, shift_off, n)?;
+
+            // ffn_inp = cur + x
+            rwkv7_add_into_tcb(&mut tcb, &a.cur, &a.x, &a.ffn_inp, n)?;
+
+            // ── channel-mix ──
+            // ffn_in = layernorm(ffn_inp, attn_norm_2)
+            rwkv7_layernorm_tcb(
+                &mut tcb,
+                &a.ffn_inp,
+                0,
+                &layer.attn_norm2_w,
+                &layer.attn_norm2_b,
+                &a.ffn_in,
+                0,
+                n,
+                eps,
+            )?;
+            // xk = ffn_in + (x_prev - ffn_in) * lerp_k  (per-layer ffn_shift[li]).
+            rwkv7_channel_mix_shift_tcb(
+                &mut tcb,
+                &a.ffn_in,
+                &a.ffn_shift,
+                shift_off,
+                &layer.channel_mix_lerp_k,
+                &a.xk_ffn,
+                n,
+                g.fresh,
+            )?;
+            // k = relu(Wk @ xk)^2
+            rwkv7_gemv_f32_off_tcb(
+                &mut tcb,
+                &layer.channel_mix_key,
+                cfg.n_ff,
+                n,
+                &a.xk_ffn,
+                0,
+                &a.ffn_k,
+            )?;
+            rwkv7_relu_sq_inplace_tcb(&mut tcb, &a.ffn_k, cfg.n_ff)?;
+            // cmix = Wv @ k
+            rwkv7_gemv_f32_off_tcb(
+                &mut tcb,
+                &layer.channel_mix_value,
+                n,
+                cfg.n_ff,
+                &a.ffn_k,
+                0,
+                &a.cmix,
+            )?;
+            // store ffn_in as next token-shift.
+            rwkv7_copy_tcb(&mut tcb, &a.ffn_in, &a.ffn_shift, shift_off, n)?;
+
+            // x = cmix + ffn_inp
+            rwkv7_add_into_tcb(&mut tcb, &a.cmix, &a.ffn_inp, &a.x, n)?;
+        }
+
+        // final norm + LM head.
+        rwkv7_layernorm_tcb(
+            &mut tcb,
+            &a.x,
+            0,
+            &g.output_norm_w,
+            &g.output_norm_b,
+            &a.x_norm,
+            0,
+            n,
+            eps,
+        )?;
+        rwkv7_gemv_f32_off_tcb(
+            &mut tcb,
+            &g.lm_head,
+            cfg.vocab_size,
+            n,
+            &a.x_norm,
+            0,
+            &a.logits,
+        )?;
+
+        tcb.commit_and_wait()?;
+        g.fresh = false;
+        Ok(read_vec(&a.logits, cfg.vocab_size))
     }
 }
