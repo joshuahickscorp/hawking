@@ -11583,6 +11583,123 @@ mod metal_dispatch {
             },
         )
     }
+
+    // ── TQ G4 bitslice decode (the `tq` feature) ────────────────────────────
+    //
+    // Host driver for `shaders/strand_bitslice.metal::strand_bitslice_decode`,
+    // ported from `vendor/strand-decode-kernel/src/metal.rs::BitsliceGpu::decode_q12`.
+    // Decode-only (Q12 ints out) — the cleanest identity surface: no MAC/reduce
+    // float confound, so the GPU output is held byte-for-byte equal to the CPU
+    // oracle `strand_quant::decode::decode_tensor_fixed` (see
+    // `tests/tq_trellis_parity.rs`). The fused GEMV/GEMM kernels in the same
+    // shader family are a follow-on; this is the bit-identity gate.
+
+    /// GPU `sizeof(BitsliceEntry)` via the `strand_bitslice_entry_sizeof` probe
+    /// kernel. The host asserts this equals `size_of::<crate::tq_gpu::BitsliceEntry>()`
+    /// before any decode dispatch — the table stride is NEVER hardcoded (the MSL
+    /// struct and the Rust `#[repr(C)]` mirror must agree or the row-major table
+    /// read diverges). Mirrors `BitsliceGpu::gpu_entry_sizeof`.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_entry_sizeof(ctx: &MetalContext) -> Result<u32> {
+        let out = ctx.new_buffer(std::mem::size_of::<u32>());
+        ctx.dispatch_threads(
+            "strand_bitslice_entry_sizeof",
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&out), 0);
+            },
+        )?;
+        Ok(unsafe { *(out.contents() as *const u32) })
+    }
+
+    /// Decode a STRAND/TQ tensor's trellis-coded payload to its Q12 weights on the
+    /// GPU via the G4 bitslice kernel, returning a `Vec<i32>` of length `total`.
+    ///
+    /// `payload` is the tensor's contiguous k-bit symbol stream (LSB-first); `tbl`
+    /// is the per-block table from [`crate::tq_gpu::bake_bitslice_entries`]; `lut`
+    /// is the `2^L` Q12 codebook (`strand_quant::codebook::codebook_lut(l_bits)`,
+    /// which equals `TrellisConfig::codebook()` for the default `StoredLut` mode).
+    ///
+    /// Grid = all blocks (one thread owns one block-stream end-to-end), 256
+    /// threads/threadgroup, `2^L` Q12 LUT staged once into threadgroup memory. The
+    /// payload buffer is zero-padded to a 4-byte word boundary + 8 bytes (the
+    /// `WordReader` contract — the kernel's whole-word tail loads must stay in
+    /// bounds). Output is bit-identical to `decode_tensor_fixed`.
+    ///
+    /// Errors if the GPU/host `sizeof(BitsliceEntry)` probe disagrees, or if `lut`
+    /// is not exactly `2^l_bits` long.
+    #[cfg(feature = "tq")]
+    pub(crate) fn decode_strand_bitslice(
+        ctx: &MetalContext,
+        payload: &[u8],
+        tbl: &[crate::tq_gpu::BitsliceEntry],
+        lut: &[i32],
+        total: usize,
+        k_bits: u32,
+        l_bits: u32,
+    ) -> Result<Vec<i32>> {
+        if lut.len() != (1usize << l_bits) {
+            return Err(Error::Kernel(format!(
+                "decode_strand_bitslice: LUT has {} entries, expected 2^{l_bits} = {}",
+                lut.len(),
+                1usize << l_bits
+            )));
+        }
+        // The un-hardcoded stride probe: GPU sizeof(BitsliceEntry) must equal the
+        // host #[repr(C)] size or the row-major table read diverges silently.
+        let gpu_sz = strand_bitslice_entry_sizeof(ctx)? as usize;
+        let host_sz = std::mem::size_of::<crate::tq_gpu::BitsliceEntry>();
+        if gpu_sz != host_sz {
+            return Err(Error::Kernel(format!(
+                "decode_strand_bitslice: GPU sizeof(BitsliceEntry)={gpu_sz} != host {host_sz}; \
+                 table stride would diverge"
+            )));
+        }
+
+        // buffer(0): payload, padded to a word boundary + 8 zero bytes.
+        let padded_len = payload.len().div_ceil(4) * 4 + 8;
+        let mut padded = vec![0u8; padded_len];
+        padded[..payload.len()].copy_from_slice(payload);
+        let w_buf = ctx.new_buffer_with_bytes(&padded);
+
+        // buffer(1): decode-only Q12 output, total i32s.
+        let out_buf = ctx.new_buffer(total.max(1) * std::mem::size_of::<i32>());
+
+        // buffer(2): the BitsliceEntry table. #[repr(C)], all-POD fields → a flat
+        // byte reinterpret is the upload (matches the reference `upload`).
+        let tbl_bytes: &[u8] = unsafe {
+            std::slice::from_raw_parts(tbl.as_ptr() as *const u8, std::mem::size_of_val(tbl))
+        };
+        let tbl_buf = ctx.new_buffer_with_bytes(tbl_bytes);
+
+        // buffer(6): the 2^L Q12 codebook.
+        let lut_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(lut));
+
+        let n_blocks = tbl.len() as u32;
+        const TG: u32 = 256;
+        let n_tg = n_blocks.div_ceil(TG).max(1);
+        let shmem_bytes = ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64;
+
+        ctx.dispatch_threads(
+            "strand_bitslice_decode",
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&w_buf), 0);
+                enc.set_buffer(1, Some(&out_buf), 0);
+                enc.set_buffer(2, Some(&tbl_buf), 0);
+                enc.set_u32(3, n_blocks);
+                enc.set_u32(4, k_bits);
+                enc.set_u32(5, l_bits);
+                enc.set_buffer(6, Some(&lut_buf), 0);
+                enc.set_threadgroup_memory_length(0, shmem_bytes);
+            },
+        )?;
+
+        let ptr = out_buf.contents() as *const i32;
+        Ok(unsafe { std::slice::from_raw_parts(ptr, total) }.to_vec())
+    }
 }
 
 #[cfg(target_os = "macos")]
