@@ -1096,6 +1096,13 @@ impl RwkvSeven {
         self.metal_ctx.is_some() && self.gpu.is_some()
     }
 
+    /// Metal compute dispatches encoded by the most recent `forward_token_gpu`
+    /// step (0 before the first GPU step). Used by the bench/probe to track the
+    /// per-step dispatch count — the headline figure for the LoRA-fusion lever.
+    pub fn last_gpu_dispatch_count(&self) -> usize {
+        self.gpu.as_ref().map(|g| g.last_dispatch_count).unwrap_or(0)
+    }
+
     /// GPU counterpart of [`forward_token`]: one RWKV-7 decode step on Metal,
     /// advancing the GPU-resident recurrent state in place. Bit-for-bit (within
     /// f32 tolerance) against [`forward_token`] — it reuses the same f32 weights
@@ -1217,7 +1224,8 @@ pub mod gpu {
         rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb,
         rwkv7_decay_act_tcb, rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb,
         rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb,
-        rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
+        rwkv7_layernorm_tcb, rwkv7_lora_grouped_gemv_tcb, rwkv7_lora_mid_act_tcb,
+        rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
         rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb,
         rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
         rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
@@ -1452,16 +1460,18 @@ pub mod gpu {
         pub value: ProjWeight,
         pub output: ProjWeight,
         pub w0: PinnedBuffer,
-        pub w1: PinnedBuffer,
-        pub w2: PinnedBuffer,
         pub a0: PinnedBuffer,
-        pub a1: PinnedBuffer,
-        pub a2: PinnedBuffer,
         pub v0: PinnedBuffer,
-        pub v1: PinnedBuffer,
-        pub v2: PinnedBuffer,
-        pub g1: Option<PinnedBuffer>,
-        pub g2: Option<PinnedBuffer>,
+        /// LoRA-fusion: the down-projections (W1) stacked row-major into one
+        /// buffer `[w1 | a1 | v1 (| g1)]` (each `rank_i × n`), and the
+        /// up-projections (W2) stacked `[w2 | a2 | v2 (| g2)]` (each
+        /// `n × rank_i`), in the group order w,a,v,g. The gate group is included
+        /// iff `has_gate`. Fed to `rwkv7_lora_grouped_gemv` so the (up to) eight
+        /// tiny LoRA GEMVs collapse to two batched dispatches. The per-LoRA W1/W2
+        /// are no longer uploaded separately — these stacks are their sole GPU
+        /// home.
+        pub lora_w1_stacked: PinnedBuffer,
+        pub lora_w2_stacked: PinnedBuffer,
         pub k_k: PinnedBuffer,
         pub k_a: PinnedBuffer,
         pub r_k: PinnedBuffer,
@@ -1485,7 +1495,37 @@ pub mod gpu {
         pub lm_head: ProjWeight,
         pub arena: RwkvDecodeArena,
         pub fresh: bool,
+        /// Number of Metal compute dispatches encoded by the most recent
+        /// `forward_token_gpu` step. Set just before `commit_and_wait`; read by
+        /// the bench/probe to track the per-step dispatch count (the LoRA-fusion
+        /// headline). Not used by the forward math.
+        pub last_dispatch_count: usize,
+        /// LoRA-fusion group tables (`RwkvLoraGroup[ngroups]`), built ONCE — their
+        /// offsets depend only on the (per-model constant) ranks/n/has_gate, so
+        /// the same two buffers serve every layer. `lora_down_table` drives the
+        /// stacked W1 GEMV (each group reads a different xs slot, all cols=n);
+        /// `lora_up_table` drives the stacked W2 GEMV (rows=n, cols=rank_i).
+        pub lora_down_table: PinnedBuffer,
+        pub lora_up_table: PinnedBuffer,
+        /// Number of LoRA groups (3 without gate, 4 with) and the total stacked
+        /// down-output rows (== sum of ranks) and up-output rows (== ngroups * n).
+        pub lora_groups: usize,
+        pub lora_down_rows: usize,
+        pub lora_up_rows: usize,
     }
+
+    /// Host mirror of the shader `RwkvLoraGroup` (5 × u32, tightly packed).
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct LoraGroup {
+        row_start: u32,
+        w_off: u32,
+        x_off: u32,
+        out_off: u32,
+        cols: u32,
+    }
+    unsafe impl bytemuck::Zeroable for LoraGroup {}
+    unsafe impl bytemuck::Pod for LoraGroup {}
 
     impl RwkvGpu {
         /// Reset the recurrent state to zero and mark the sequence fresh.
@@ -1547,9 +1587,52 @@ pub mod gpu {
         ) -> Result<Self> {
             let _ = embed; // embed gather is a host memcpy of one row (see forward).
             let up = |v: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(v));
-            let up_opt = |v: &Option<Vec<f32>>| v.as_ref().map(|x| up(x));
             let n = cfg.n_embd;
             let n_ff = cfg.n_ff;
+
+            // Stack the LoRA down-(W1) and up-(W2) projections of one layer into
+            // two contiguous buffers in group order w,a,v,(g). W1 rows are
+            // `rank_i × n`; W2 rows are `n × rank_i`. Concatenating the row-major
+            // f32 slices reproduces the exact per-LoRA layout the grouped-GEMV
+            // kernel indexes by `(w_off + local_row*cols)`. Gate is appended iff
+            // present (the shipped World models always have it).
+            //
+            // NB: layer 0's value-residual `v1`/`v2` are a dummy copy of the iclr
+            // `a` tensors (iclr_lora rows, not value_res_lora) and are unused; the
+            // CPU reference truncates them to `value_res_lora` via the GEMV dims.
+            // We MUST take exactly `value_res_lora` rows here too (leading
+            // `rows*n` floats, since W1 is `[rank, n]` row-major), otherwise the
+            // gate block's offset in the stack shifts and the grouped-GEMV reads
+            // the wrong gate weights.
+            let stack_w1 = |l: &RwkvLayer| -> PinnedBuffer {
+                let mut v =
+                    Vec::with_capacity((cfg.decay_lora + cfg.iclr_lora + cfg.value_res_lora) * n);
+                v.extend_from_slice(&l.time_mix_w1[..cfg.decay_lora * n]);
+                v.extend_from_slice(&l.time_mix_a1[..cfg.iclr_lora * n]);
+                v.extend_from_slice(&l.time_mix_v1[..cfg.value_res_lora * n]);
+                if let Some(g1) = &l.time_mix_g1 {
+                    v.extend_from_slice(&g1[..cfg.gate_lora * n]);
+                }
+                up(&v)
+            };
+            // W2 is `[n, rank]` row-major (n*rank floats). The CPU reference reads
+            // v2 with `gemv_f32(v2, n, value_res_lora, ..)`, i.e. it reinterprets
+            // the leading `n*value_res_lora` flat floats as `[n, value_res_lora]`
+            // — true for both the canonical layers and the dummy layer-0 v2
+            // (`[n, iclr]`). Mirroring that flat truncation keeps the stack
+            // bit-identical to the CPU and keeps the gate block at the right
+            // offset.
+            let stack_w2 = |l: &RwkvLayer| -> PinnedBuffer {
+                let mut v =
+                    Vec::with_capacity((cfg.decay_lora + cfg.iclr_lora + cfg.value_res_lora) * n);
+                v.extend_from_slice(&l.time_mix_w2[..n * cfg.decay_lora]);
+                v.extend_from_slice(&l.time_mix_a2[..n * cfg.iclr_lora]);
+                v.extend_from_slice(&l.time_mix_v2[..n * cfg.value_res_lora]);
+                if let Some(g2) = &l.time_mix_g2 {
+                    v.extend_from_slice(&g2[..n * cfg.gate_lora]);
+                }
+                up(&v)
+            };
 
             let gpu_layers = layers
                 .iter()
@@ -1572,16 +1655,10 @@ pub mod gpu {
                         value: proj("time_mix_value.weight", n, n),
                         output: proj("time_mix_output.weight", n, n),
                         w0: up(&l.time_mix_w0),
-                        w1: up(&l.time_mix_w1),
-                        w2: up(&l.time_mix_w2),
                         a0: up(&l.time_mix_a0),
-                        a1: up(&l.time_mix_a1),
-                        a2: up(&l.time_mix_a2),
                         v0: up(&l.time_mix_v0),
-                        v1: up(&l.time_mix_v1),
-                        v2: up(&l.time_mix_v2),
-                        g1: up_opt(&l.time_mix_g1),
-                        g2: up_opt(&l.time_mix_g2),
+                        lora_w1_stacked: stack_w1(l),
+                        lora_w2_stacked: stack_w2(l),
                         k_k: up(&l.time_mix_k_k),
                         k_a: up(&l.time_mix_k_a),
                         r_k: up(&l.time_mix_r_k),
@@ -1613,6 +1690,57 @@ pub mod gpu {
             // LM head from its native GGUF precision (Q6_K on the World models).
             let lm_head = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
 
+            // ── LoRA-fusion group tables (built once; constant offsets) ──
+            // Group order w,a,v,(g). Ranks and the xs slot each group's input
+            // lives in (time-mix slots r=0,w=1,k=2,v=3,a=4,g=5).
+            let has_gate = layers
+                .first()
+                .map(|l| l.time_mix_g1.is_some() && l.time_mix_g2.is_some())
+                .unwrap_or(false);
+            // (rank, xs_slot) per group, in stack order.
+            let mut groups: Vec<(usize, usize)> = vec![
+                (cfg.decay_lora, 1),     // w  ← xw (slot 1)
+                (cfg.iclr_lora, 4),      // a  ← xa (slot 4)
+                (cfg.value_res_lora, 3), // v  ← xv (slot 3)
+            ];
+            if has_gate {
+                groups.push((cfg.gate_lora, 5)); // g ← xg (slot 5)
+            }
+            // Down table: cols=n; output stacked by rank into `lora_lo`.
+            let mut down = Vec::with_capacity(groups.len());
+            let mut w_off = 0usize; // W1 element offset (rows are rank×n)
+            let mut lo_off = 0usize; // stacked low-buffer offset
+            for &(rank, slot) in &groups {
+                down.push(LoraGroup {
+                    row_start: lo_off as u32,
+                    w_off: w_off as u32,
+                    x_off: (slot * n) as u32,
+                    out_off: lo_off as u32,
+                    cols: n as u32,
+                });
+                w_off += rank * n;
+                lo_off += rank;
+            }
+            let lora_down_rows = lo_off; // == sum of ranks
+            // Up table: rows=n each; cols=rank_i; reads `lora_lo` segments; writes
+            // stacked `lora_up` = [w_raw | a | v_mix | gate], each n.
+            let mut up_tbl = Vec::with_capacity(groups.len());
+            let mut w2_off = 0usize; // W2 element offset (rows are n×rank)
+            let mut lo_in = 0usize; // low-buffer input segment offset
+            for (gi, &(rank, _)) in groups.iter().enumerate() {
+                up_tbl.push(LoraGroup {
+                    row_start: (gi * n) as u32,
+                    w_off: w2_off as u32,
+                    x_off: lo_in as u32,
+                    out_off: (gi * n) as u32,
+                    cols: rank as u32,
+                });
+                w2_off += n * rank;
+                lo_in += rank;
+            }
+            let lora_up_rows = groups.len() * n;
+            let tbl_bytes = |t: &[LoraGroup]| ctx.new_buffer_with_bytes(bytemuck::cast_slice(t));
+
             Ok(Self {
                 layers: gpu_layers,
                 tok_norm_w: up(tok_norm_w),
@@ -1622,6 +1750,12 @@ pub mod gpu {
                 lm_head,
                 arena,
                 fresh: true,
+                last_dispatch_count: 0,
+                lora_down_table: tbl_bytes(&down),
+                lora_up_table: tbl_bytes(&up_tbl),
+                lora_groups: groups.len(),
+                lora_down_rows,
+                lora_up_rows,
             })
         }
     }
@@ -1715,19 +1849,41 @@ pub mod gpu {
             // r = Wr @ xr   (slot 0) — Q4_K projection
             layer.receptance.gemv(&mut tcb, &a.xs, slot_off(0), &a.r)?;
 
-            // w = exp(-0.606531 * sigmoid(w0 + W2 @ tanh(W1 @ xw)))  (slot 1)
-            rwkv7_gemv_f32_off_tcb(
+            // ── fused LoRA: 4 down-GEMVs + 2 inter-acts + 4 up-GEMVs → 3 dispatches.
+            // down: W1_stacked @ {xw,xa,xv,xg slots} → lora_lo = [w_lo|a_lo|v_lo|g_lo]
+            // mid : tanh(w_lo) + sigmoid(g_lo) in place (a/v identity)
+            // up  : W2_stacked @ lora_lo segments → lora_up = [w_raw|a|v_mix|gate] (each n)
+            // The per-row arithmetic is bit-identical to the standalone GEMVs.
+            rwkv7_lora_grouped_gemv_tcb(
                 &mut tcb,
-                &layer.w1,
-                cfg.decay_lora,
-                n,
+                &layer.lora_w1_stacked,
                 &a.xs,
-                slot_off(1),
-                &a.w_lo,
+                &a.lora_lo,
+                &g.lora_down_table,
+                g.lora_groups,
+                g.lora_down_rows,
             )?;
-            rwkv7_tanh_inplace_tcb(&mut tcb, &a.w_lo, cfg.decay_lora)?;
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.w2, n, cfg.decay_lora, &a.w_lo, 0, &a.w_raw)?;
-            rwkv7_decay_act_tcb(&mut tcb, &a.w_raw, &layer.w0, &a.w, n)?;
+            // w segment [0,decay); g segment [decay+iclr+vres, +gate).
+            let w_end = cfg.decay_lora;
+            let g_begin = cfg.decay_lora + cfg.iclr_lora + cfg.value_res_lora;
+            rwkv7_lora_mid_act_tcb(&mut tcb, &a.lora_lo, w_end, g_begin, g.lora_down_rows)?;
+            rwkv7_lora_grouped_gemv_tcb(
+                &mut tcb,
+                &layer.lora_w2_stacked,
+                &a.lora_lo,
+                &a.lora_up,
+                &g.lora_up_table,
+                g.lora_groups,
+                g.lora_up_rows,
+            )?;
+            // lora_up segment byte offsets: w_raw@0, a@n, v_mix@2n, gate@3n.
+            // (`f32b` is the f32 byte size declared above for `slot_off`.)
+            let up_a_off = n * f32b;
+            let up_vmix_off = 2 * n * f32b;
+            let up_gate_off = 3 * n * f32b;
+
+            // w = exp(-0.606531 * sigmoid(w0 + w_raw))   (w_raw = lora_up[0..n])
+            rwkv7_decay_act_tcb(&mut tcb, &a.lora_up, &layer.w0, &a.w, n)?;
 
             // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — Q4_K projections
             layer.key.gemv(&mut tcb, &a.xs, slot_off(2), &a.k)?;
@@ -1738,64 +1894,30 @@ pub mod gpu {
                 rwkv7_copy_tcb(&mut tcb, &a.v, &a.v_first, 0, n)?;
                 have_v_first = true;
             } else {
-                rwkv7_gemv_f32_off_tcb(
+                // v_mix = lora_up[2n..3n]; v += (v_first - v) * sigmoid(v_mix + v0).
+                rwkv7_value_residual_mix_tcb(
                     &mut tcb,
-                    &layer.v1,
-                    cfg.value_res_lora,
+                    &a.v,
+                    &a.v_first,
+                    &a.lora_up,
+                    up_vmix_off,
+                    &layer.v0,
                     n,
-                    &a.xs,
-                    slot_off(3),
-                    &a.v_lo,
                 )?;
-                rwkv7_gemv_f32_off_tcb(
-                    &mut tcb,
-                    &layer.v2,
-                    n,
-                    cfg.value_res_lora,
-                    &a.v_lo,
-                    0,
-                    &a.v_mix,
-                )?;
-                rwkv7_value_residual_mix_tcb(&mut tcb, &a.v, &a.v_first, &a.v_mix, &layer.v0, n)?;
             }
 
-            // gate g = G2 @ sigmoid(G1 @ xg)   (slot 5; only if gated)
-            if layer.has_gate {
-                let g1 = layer.g1.as_ref().unwrap();
-                let g2 = layer.g2.as_ref().unwrap();
-                rwkv7_gemv_f32_off_tcb(
-                    &mut tcb,
-                    g1,
-                    cfg.gate_lora,
-                    n,
-                    &a.xs,
-                    slot_off(5),
-                    &a.g_lo,
-                )?;
-                rwkv7_sigmoid_inplace_tcb(&mut tcb, &a.g_lo, cfg.gate_lora)?;
-                rwkv7_gemv_f32_off_tcb(&mut tcb, g2, n, cfg.gate_lora, &a.g_lo, 0, &a.gate)?;
-            }
-
-            // a = sigmoid(a0 + A2 @ (A1 @ xa))   (slot 4)
-            rwkv7_gemv_f32_off_tcb(
-                &mut tcb,
-                &layer.a1,
-                cfg.iclr_lora,
-                n,
-                &a.xs,
-                slot_off(4),
-                &a.a_lo,
-            )?;
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.a2, n, cfg.iclr_lora, &a.a_lo, 0, &a.a)?;
-            rwkv7_sigmoid_bias_tcb(&mut tcb, &a.a, &layer.a0, n)?;
+            // a = sigmoid(a0 + a_raw)   (a_raw = lora_up[n..2n], in place)
+            rwkv7_sigmoid_bias_tcb(&mut tcb, &a.lora_up, up_a_off, &layer.a0, n)?;
 
             // kk = l2norm_per_head(k*k_k); k += (a-1)*(k*k_a); a_op=-kk; b_op=kk*a.
+            // `a` is read from lora_up[n..2n].
             rwkv7_kk_kmix_tcb(
                 &mut tcb,
                 &a.k,
                 &layer.k_k,
                 &layer.k_a,
-                &a.a,
+                &a.lora_up,
+                up_a_off,
                 &a.a_op,
                 &a.b_op,
                 cfg.head_size,
@@ -1816,7 +1938,8 @@ pub mod gpu {
                 &layer.r_k,
                 &layer.ln_w,
                 &layer.ln_b,
-                &a.gate,
+                &a.lora_up,
+                up_gate_off,
                 &a.out_wkv,
                 cfg.head_size,
                 cfg.head_count,
@@ -1888,6 +2011,7 @@ pub mod gpu {
         // LM head — Q6_K on the World models (reads x_norm at offset 0).
         g.lm_head.gemv(&mut tcb, &a.x_norm, 0, &a.logits)?;
 
+        g.last_dispatch_count = tcb.dispatch_count();
         tcb.commit_and_wait()?;
         g.fresh = false;
         Ok(read_vec(&a.logits, cfg.vocab_size))

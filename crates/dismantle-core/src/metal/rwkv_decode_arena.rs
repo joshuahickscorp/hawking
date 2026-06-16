@@ -22,10 +22,10 @@ pub use imp::{
     rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb,
     rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb, rwkv7_kk_kmix_multiseq_tcb,
     rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb,
-    rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb,
-    rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
-    rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
-    rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+    rwkv7_lora_grouped_gemv_tcb, rwkv7_lora_mid_act_tcb, rwkv7_relu_sq_inplace_tcb,
+    rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
+    rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
+    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
     rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb, RwkvDecodeArena,
 };
 
@@ -99,6 +99,13 @@ mod imp {
         pub a_lo: PinnedBuffer,
         pub v_lo: PinnedBuffer,
         pub g_lo: PinnedBuffer,
+        /// LoRA-fusion stacked scratch. `lora_lo` holds the four (or three)
+        /// concatenated low-rank vectors `[w_lo | a_lo | v_lo (| g_lo)]` produced
+        /// by the batched down-GEMV; `lora_up` holds the concatenated
+        /// up-projection outputs `[w_raw | a | v_mix (| gate)]` (each n) produced
+        /// by the batched up-GEMV. Sized for the max (4-group) case.
+        pub lora_lo: PinnedBuffer,
+        pub lora_up: PinnedBuffer,
         /// Channel-mix intermediate `[n_ff]`.
         pub ffn_k: PinnedBuffer,
         /// LM-head output `[vocab]` and greedy argmax token.
@@ -218,10 +225,11 @@ mod imp {
                 a_lo: nb(b * iclr_lora),
                 v_lo: nb(b * value_res_lora),
                 g_lo: nb(b * gate_lora),
+                lora_lo: nb(decay_lora + iclr_lora + value_res_lora + gate_lora),
+                lora_up: nb(4 * n_embd),
                 ffn_k: nb(b * n_ff),
                 logits: nb(b * vocab_size),
                 token: ctx.new_buffer(b * std::mem::size_of::<u32>()),
-
                 n_layer,
                 n_embd,
                 n_ff,
@@ -380,6 +388,63 @@ mod imp {
         )
     }
 
+    /// Grouped LoRA GEMV: one dispatch over `total_rows` global output rows
+    /// across all (≤4) stacked groups. `w` is the stacked W block, `x` the shared
+    /// activation source (slot-major xs for the down-projection, the stacked low
+    /// buffer for the up-projection), `out` the stacked destination. `table` is
+    /// the `RwkvLoraGroup[ngroups]` buffer (built once on `RwkvGpu`). Each row's
+    /// reduction is bit-identical to the standalone `gemv_f32_attn` it replaces.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_lora_grouped_gemv_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w: &PinnedBuffer,
+        x: &PinnedBuffer,
+        out: &PinnedBuffer,
+        table: &PinnedBuffer,
+        ngroups: usize,
+        total_rows: usize,
+    ) -> Result<()> {
+        let total_u32 = total_rows as u32;
+        let shmem = (LN_TG as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, ngroups as u32);
+        ab.set_u32(1, total_u32);
+        // One threadgroup per global output row; LN_TG threads stride the cols.
+        tcb.dispatch_threads(
+            "rwkv7_lora_grouped_gemv",
+            (total_u32 * LN_TG, 1, 1),
+            (LN_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w), 0);
+                enc.set_buffer(1, Some(x), 0);
+                enc.set_buffer(2, Some(out), 0);
+                enc.set_buffer(3, Some(table), 0);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// Fused LoRA mid-activation over the stacked low buffer: tanh on the w
+    /// segment `[0,w_end)`, sigmoid on the g segment `[g_begin,total)`, identity
+    /// on a/v. Replaces the separate tanh_inplace + sigmoid_inplace dispatches.
+    pub fn rwkv7_lora_mid_act_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        lo: &PinnedBuffer,
+        w_end: usize,
+        g_begin: usize,
+        total: usize,
+    ) -> Result<()> {
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, w_end as u32);
+        ab.set_u32(1, g_begin as u32);
+        ab.set_u32(2, total as u32);
+        dispatch_n(tcb, "rwkv7_lora_mid_act", total as u32, |enc| {
+            enc.set_buffer(0, Some(lo), 0);
+            enc.set_buffer(1, Some(ab.handle()), 0);
+        })
+    }
     /// token-shift + per-slot lerp (time-mix). Writes `xs` slot-major. `x_prev`
     /// is the per-layer token-shift state plane, read at `x_prev_off_bytes`.
     #[allow(clippy::too_many_arguments)]
@@ -463,15 +528,17 @@ mod imp {
         })
     }
 
-    /// sigmoid-with-bias in place: x = sigmoid(x + bias).
+    /// sigmoid-with-bias in place: x = sigmoid(x + bias). `x` is read/written at
+    /// `x_off_bytes` so it can target a segment of the stacked LoRA up-buffer.
     pub fn rwkv7_sigmoid_bias_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         x: &PinnedBuffer,
+        x_off_bytes: usize,
         bias: &PinnedBuffer,
         n: usize,
     ) -> Result<()> {
         dispatch_n(tcb, "rwkv7_sigmoid_bias", n as u32, |enc| {
-            enc.set_buffer(0, Some(x), 0);
+            enc.set_buffer(0, Some(x), x_off_bytes as u64);
             enc.set_buffer(1, Some(bias), 0);
             enc.set_u32(2, n as u32);
         })
@@ -489,20 +556,22 @@ mod imp {
         })
     }
 
-    /// value-residual mix: v += (v_first - v) * sigmoid(v_mix + v0).
+    /// value-residual mix: v += (v_first - v) * sigmoid(v_mix + v0). `v_mix` is
+    /// read at `v_mix_off_bytes` (a segment of the stacked LoRA up-buffer).
     #[allow(clippy::too_many_arguments)]
     pub fn rwkv7_value_residual_mix_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         v: &PinnedBuffer,
         v_first: &PinnedBuffer,
         v_mix: &PinnedBuffer,
+        v_mix_off_bytes: usize,
         v0: &PinnedBuffer,
         n: usize,
     ) -> Result<()> {
         dispatch_n(tcb, "rwkv7_value_residual_mix", n as u32, |enc| {
             enc.set_buffer(0, Some(v), 0);
             enc.set_buffer(1, Some(v_first), 0);
-            enc.set_buffer(2, Some(v_mix), 0);
+            enc.set_buffer(2, Some(v_mix), v_mix_off_bytes as u64);
             enc.set_buffer(3, Some(v0), 0);
             enc.set_u32(4, n as u32);
         })
@@ -517,6 +586,7 @@ mod imp {
         k_k: &PinnedBuffer,
         k_a: &PinnedBuffer,
         a: &PinnedBuffer,
+        a_off_bytes: usize,
         a_op: &PinnedBuffer,
         b_op: &PinnedBuffer,
         head_size: usize,
@@ -534,7 +604,7 @@ mod imp {
                 enc.set_buffer(0, Some(k), 0);
                 enc.set_buffer(1, Some(k_k), 0);
                 enc.set_buffer(2, Some(k_a), 0);
-                enc.set_buffer(3, Some(a), 0);
+                enc.set_buffer(3, Some(a), a_off_bytes as u64);
                 enc.set_buffer(4, Some(a_op), 0);
                 enc.set_buffer(5, Some(b_op), 0);
                 enc.set_buffer(6, Some(ab.handle()), 0);
@@ -562,6 +632,7 @@ mod imp {
         ln_w: &PinnedBuffer,
         ln_b: &PinnedBuffer,
         gate: &PinnedBuffer,
+        gate_off_bytes: usize,
         out: &PinnedBuffer,
         head_size: usize,
         head_count: usize,
@@ -590,7 +661,7 @@ mod imp {
                 enc.set_buffer(7, Some(r_k), 0);
                 enc.set_buffer(8, Some(ln_w), 0);
                 enc.set_buffer(9, Some(ln_b), 0);
-                enc.set_buffer(10, Some(gate), 0);
+                enc.set_buffer(10, Some(gate), gate_off_bytes as u64);
                 enc.set_buffer(11, Some(out), 0);
                 enc.set_buffer(12, Some(ab.handle()), 0);
                 enc.set_threadgroup_memory_length(0, shmem);
