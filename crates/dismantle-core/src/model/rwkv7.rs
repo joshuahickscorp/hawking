@@ -736,12 +736,12 @@ impl Engine for RwkvSeven {
                         let built = gpu::RwkvGpu::build(
                             &ctx,
                             &cfg,
+                            &gguf,
                             &embed,
                             &tok_norm_w,
                             &tok_norm_b,
                             &output_norm_w,
                             &output_norm_b,
-                            &output,
                             &layers,
                         );
                         match built {
@@ -955,6 +955,10 @@ impl RwkvSeven {
 #[cfg(target_os = "macos")]
 pub mod gpu {
     use super::{RwkvConfig, RwkvLayer};
+    use crate::gguf::{GgmlType, GgufFile};
+    use crate::kernels::{
+        gemv_q4_k_v4_predec_xoff_pinned_tcb, gemv_q6_k_pinned_tcb, predecode_q4_k_scale_table,
+    };
     use crate::metal::rwkv_decode_arena::{
         rwkv7_add_into_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_tcb,
         rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
@@ -968,10 +972,133 @@ pub mod gpu {
     /// reference `time_mix`: `gn_eps = 64e-5`).
     const GN_EPS: f32 = 64e-5;
 
-    /// GPU-resident f32 weights for one RWKV-7 layer (uploaded once from the
-    /// already-dequantized CPU `RwkvLayer`). All matrices are row-major `[out,in]`
-    /// exactly as the CPU `gemv_f32` expects, so the GPU `gemv_f32_attn` kernel
-    /// reproduces the CPU MAC.
+    /// One large projection weight, GPU-resident in whatever precision the GGUF
+    /// stored it. The RWKV-7 World GGUFs ship the six big per-layer projections
+    /// (r/k/v/o time-mix + channel-mix key/value) as Q4_K and the LM head as
+    /// Q6_K; streaming those QUANTIZED (4× / 2.46× fewer bytes than f32) is the
+    /// headline decode-bandwidth lever. An all-F32 GGUF (used by the exact-parity
+    /// gate) keeps the bit-identical f32 GEMV path. `rows = out`, `cols = in`,
+    /// matching the row-major `[out,in]` ggml layout the GEMV kernels expect.
+    pub enum ProjWeight {
+        /// Q4_K bytes + the pre-decoded (ds, dm) f32 scale sidecar.
+        Q4k {
+            q4: PinnedBuffer,
+            scales: PinnedBuffer,
+            rows: usize,
+            cols: usize,
+        },
+        /// Q6_K bytes (decoded inline by `gemm_q6_k_fused_v2`).
+        Q6k {
+            q6: PinnedBuffer,
+            rows: usize,
+            cols: usize,
+        },
+        /// f32-dequantized fallback (F32/F16/BF16 tensors, or any non-Q4_K/Q6_K).
+        F32 {
+            w: PinnedBuffer,
+            rows: usize,
+            cols: usize,
+        },
+    }
+
+    impl ProjWeight {
+        /// Build a `ProjWeight` for tensor `name`, serving it quantized when the
+        /// GGUF stores Q4_K/Q6_K (the fast path) and falling back to an
+        /// f32-dequant upload otherwise. `rows`/`cols` are the logical GEMV dims
+        /// (`rows = out`, `cols = in`); both quant kernels require `cols % 256 == 0`.
+        fn build(ctx: &MetalContext, g: &GgufFile, name: &str, rows: usize, cols: usize) -> Self {
+            let info = g
+                .tensor(name)
+                .unwrap_or_else(|| panic!("rwkv7 gpu: missing tensor {name}"));
+            let bytes = g.tensor_bytes(name).unwrap();
+            // Quant kernels need cols (the reduction dim) block-aligned; every
+            // RWKV-7 projection has cols ∈ {768,1024,4096} (all %256==0), but
+            // guard so a non-aligned tensor cleanly takes the f32 path.
+            let aligned = cols % 256 == 0;
+            match info.dtype {
+                GgmlType::Q4_K if aligned => {
+                    let scales = predecode_q4_k_scale_table(bytes);
+                    ProjWeight::Q4k {
+                        q4: ctx.new_buffer_with_bytes(bytes),
+                        scales: ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&scales)),
+                        rows,
+                        cols,
+                    }
+                }
+                GgmlType::Q6_K if aligned => ProjWeight::Q6k {
+                    q6: ctx.new_buffer_with_bytes(bytes),
+                    rows,
+                    cols,
+                },
+                _ => {
+                    // F32/F16/BF16 (or unaligned): dequantize to f32 and serve via
+                    // the bit-identical f32 GEMV (preserves the exact-parity gate
+                    // on all-F32 GGUFs).
+                    let w = crate::model::weights::dequant_f32(g, name)
+                        .unwrap_or_else(|e| panic!("rwkv7 gpu: dequant {name}: {e}"));
+                    ProjWeight::F32 {
+                        w: ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&w)),
+                        rows,
+                        cols,
+                    }
+                }
+            }
+        }
+
+        /// GEMV reading the activation at byte offset `x_off` into `x`, writing
+        /// `out` at offset 0. Dispatches the quantized kernel for Q4_K/Q6_K, else
+        /// the f32 kernel — all numerically equal to the CPU reference's
+        /// `gemv_f32` over the same dequantized weights (the Q4_K/Q6_K inline
+        /// decode reproduces the CPU dequant value-for-value, so only GEMV
+        /// reduction order differs).
+        fn gemv(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            x: &PinnedBuffer,
+            x_off: usize,
+            out: &PinnedBuffer,
+        ) -> Result<()> {
+            match self {
+                ProjWeight::Q4k {
+                    q4,
+                    scales,
+                    rows,
+                    cols,
+                } => gemv_q4_k_v4_predec_xoff_pinned_tcb(
+                    tcb,
+                    q4,
+                    0,
+                    q4.length() as usize,
+                    scales,
+                    0,
+                    *rows,
+                    *cols,
+                    x,
+                    x_off,
+                    out,
+                ),
+                ProjWeight::Q6k { q6, rows, cols } => {
+                    // The Q6_K kernel reads x from offset 0; the only Q6_K user
+                    // (the LM head) reads x_norm at offset 0, so assert rather
+                    // than silently read the wrong slice.
+                    debug_assert_eq!(x_off, 0, "Q6_K GEMV has no x-offset variant");
+                    gemv_q6_k_pinned_tcb(tcb, q6, 0, q6.length() as usize, *rows, *cols, x, out)
+                }
+                ProjWeight::F32 { w, rows, cols } => {
+                    rwkv7_gemv_f32_off_tcb(tcb, w, *rows, *cols, x, x_off, out)
+                }
+            }
+        }
+    }
+
+    /// GPU-resident weights for one RWKV-7 layer. The six big projections
+    /// (r/k/v/o time-mix + channel-mix key/value) are served from their NATIVE
+    /// GGUF precision via [`ProjWeight`] — Q4_K on the shipped World models — so
+    /// decode streams ~4× fewer projection bytes than the old f32-dequant upload.
+    /// The small norm/lerp/vector tensors and the LoRA matrices (F32/F16 in the
+    /// GGUF) stay as f32 `PinnedBuffer`s; they are tiny and feed the
+    /// `gemv_f32_attn` / glue kernels unchanged. All projection matrices are
+    /// row-major `[out,in]`, matching what the GEMV kernels expect.
     pub struct RwkvGpuLayer {
         pub attn_norm_w: PinnedBuffer,
         pub attn_norm_b: PinnedBuffer,
@@ -979,10 +1106,10 @@ pub mod gpu {
         pub attn_norm2_b: PinnedBuffer,
         pub lerp_fused: PinnedBuffer,
         pub channel_mix_lerp_k: PinnedBuffer,
-        pub receptance: PinnedBuffer,
-        pub key: PinnedBuffer,
-        pub value: PinnedBuffer,
-        pub output: PinnedBuffer,
+        pub receptance: ProjWeight,
+        pub key: ProjWeight,
+        pub value: ProjWeight,
+        pub output: ProjWeight,
         pub w0: PinnedBuffer,
         pub w1: PinnedBuffer,
         pub w2: PinnedBuffer,
@@ -999,20 +1126,22 @@ pub mod gpu {
         pub r_k: PinnedBuffer,
         pub ln_w: PinnedBuffer,
         pub ln_b: PinnedBuffer,
-        pub channel_mix_key: PinnedBuffer,
-        pub channel_mix_value: PinnedBuffer,
+        pub channel_mix_key: ProjWeight,
+        pub channel_mix_value: ProjWeight,
         pub has_gate: bool,
     }
 
     /// GPU decode bundle: per-layer weights, global weights, the recurrent-state
-    /// arena, and the `fresh` flag (mirrors `RwkvState::fresh`).
+    /// arena, and the `fresh` flag (mirrors `RwkvState::fresh`). The LM head is a
+    /// [`ProjWeight`] too — Q6_K on the shipped models (served inline, ~2.46× the
+    /// f32 bandwidth saving on the single largest GEMV of the step).
     pub struct RwkvGpu {
         pub layers: Vec<RwkvGpuLayer>,
         pub tok_norm_w: PinnedBuffer,
         pub tok_norm_b: PinnedBuffer,
         pub output_norm_w: PinnedBuffer,
         pub output_norm_b: PinnedBuffer,
-        pub lm_head: PinnedBuffer,
+        pub lm_head: ProjWeight,
         pub arena: RwkvDecodeArena,
         pub fresh: bool,
     }
@@ -1024,54 +1153,71 @@ pub mod gpu {
             self.fresh = true;
         }
 
+        /// Build the GPU decode bundle. The six big projections + LM head are
+        /// read in their NATIVE precision straight from the GGUF (`g`) via
+        /// [`ProjWeight::build`] (Q4_K/Q6_K fast path; f32 fallback on all-F32
+        /// GGUFs). The small norm/lerp/vector + LoRA tensors come from the
+        /// already-dequantized CPU `layers` (they are F32/F16 in the GGUF and
+        /// tiny, so f32 on the GPU is both correct and cheap). `g` MUST be the
+        /// same GGUF the CPU `layers` were loaded from.
         #[allow(clippy::too_many_arguments)]
         pub fn build(
             ctx: &MetalContext,
             cfg: &RwkvConfig,
+            g: &GgufFile,
             embed: &[f32],
             tok_norm_w: &[f32],
             tok_norm_b: &[f32],
             output_norm_w: &[f32],
             output_norm_b: &[f32],
-            lm_head: &[f32],
             layers: &[RwkvLayer],
         ) -> Result<Self> {
             let _ = embed; // embed gather is a host memcpy of one row (see forward).
             let up = |v: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(v));
             let up_opt = |v: &Option<Vec<f32>>| v.as_ref().map(|x| up(x));
+            let n = cfg.n_embd;
+            let n_ff = cfg.n_ff;
 
             let gpu_layers = layers
                 .iter()
-                .map(|l| RwkvGpuLayer {
-                    attn_norm_w: up(&l.attn_norm_w),
-                    attn_norm_b: up(&l.attn_norm_b),
-                    attn_norm2_w: up(&l.attn_norm2_w),
-                    attn_norm2_b: up(&l.attn_norm2_b),
-                    lerp_fused: up(&l.time_mix_lerp_fused),
-                    channel_mix_lerp_k: up(&l.channel_mix_lerp_k),
-                    receptance: up(&l.time_mix_receptance),
-                    key: up(&l.time_mix_key),
-                    value: up(&l.time_mix_value),
-                    output: up(&l.time_mix_output),
-                    w0: up(&l.time_mix_w0),
-                    w1: up(&l.time_mix_w1),
-                    w2: up(&l.time_mix_w2),
-                    a0: up(&l.time_mix_a0),
-                    a1: up(&l.time_mix_a1),
-                    a2: up(&l.time_mix_a2),
-                    v0: up(&l.time_mix_v0),
-                    v1: up(&l.time_mix_v1),
-                    v2: up(&l.time_mix_v2),
-                    g1: up_opt(&l.time_mix_g1),
-                    g2: up_opt(&l.time_mix_g2),
-                    k_k: up(&l.time_mix_k_k),
-                    k_a: up(&l.time_mix_k_a),
-                    r_k: up(&l.time_mix_r_k),
-                    ln_w: up(&l.time_mix_ln_w),
-                    ln_b: up(&l.time_mix_ln_b),
-                    channel_mix_key: up(&l.channel_mix_key),
-                    channel_mix_value: up(&l.channel_mix_value),
-                    has_gate: l.time_mix_g1.is_some() && l.time_mix_g2.is_some(),
+                .enumerate()
+                .map(|(li, l)| {
+                    let p = |suf: &str| format!("blk.{li}.{suf}");
+                    // Projection dims are (rows = out, cols = in).
+                    let proj = |suf: &str, rows: usize, cols: usize| {
+                        ProjWeight::build(ctx, g, &p(suf), rows, cols)
+                    };
+                    RwkvGpuLayer {
+                        attn_norm_w: up(&l.attn_norm_w),
+                        attn_norm_b: up(&l.attn_norm_b),
+                        attn_norm2_w: up(&l.attn_norm2_w),
+                        attn_norm2_b: up(&l.attn_norm2_b),
+                        lerp_fused: up(&l.time_mix_lerp_fused),
+                        channel_mix_lerp_k: up(&l.channel_mix_lerp_k),
+                        receptance: proj("time_mix_receptance.weight", n, n),
+                        key: proj("time_mix_key.weight", n, n),
+                        value: proj("time_mix_value.weight", n, n),
+                        output: proj("time_mix_output.weight", n, n),
+                        w0: up(&l.time_mix_w0),
+                        w1: up(&l.time_mix_w1),
+                        w2: up(&l.time_mix_w2),
+                        a0: up(&l.time_mix_a0),
+                        a1: up(&l.time_mix_a1),
+                        a2: up(&l.time_mix_a2),
+                        v0: up(&l.time_mix_v0),
+                        v1: up(&l.time_mix_v1),
+                        v2: up(&l.time_mix_v2),
+                        g1: up_opt(&l.time_mix_g1),
+                        g2: up_opt(&l.time_mix_g2),
+                        k_k: up(&l.time_mix_k_k),
+                        k_a: up(&l.time_mix_k_a),
+                        r_k: up(&l.time_mix_r_k),
+                        ln_w: up(&l.time_mix_ln_w),
+                        ln_b: up(&l.time_mix_ln_b),
+                        channel_mix_key: proj("channel_mix_key.weight", n_ff, n),
+                        channel_mix_value: proj("channel_mix_value.weight", n, n_ff),
+                        has_gate: l.time_mix_g1.is_some() && l.time_mix_g2.is_some(),
+                    }
                 })
                 .collect();
 
@@ -1090,13 +1236,16 @@ pub mod gpu {
             );
             arena.reset_state();
 
+            // LM head from its native GGUF precision (Q6_K on the World models).
+            let lm_head = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
+
             Ok(Self {
                 layers: gpu_layers,
                 tok_norm_w: up(tok_norm_w),
                 tok_norm_b: up(tok_norm_b),
                 output_norm_w: up(output_norm_w),
                 output_norm_b: up(output_norm_b),
-                lm_head: up(lm_head),
+                lm_head,
                 arena,
                 fresh: true,
             })
@@ -1189,8 +1338,8 @@ pub mod gpu {
                 g.fresh,
             )?;
 
-            // r = Wr @ xr   (slot 0)
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.receptance, n, n, &a.xs, slot_off(0), &a.r)?;
+            // r = Wr @ xr   (slot 0) — Q4_K projection
+            layer.receptance.gemv(&mut tcb, &a.xs, slot_off(0), &a.r)?;
 
             // w = exp(-0.606531 * sigmoid(w0 + W2 @ tanh(W1 @ xw)))  (slot 1)
             rwkv7_gemv_f32_off_tcb(
@@ -1206,9 +1355,9 @@ pub mod gpu {
             rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.w2, n, cfg.decay_lora, &a.w_lo, 0, &a.w_raw)?;
             rwkv7_decay_act_tcb(&mut tcb, &a.w_raw, &layer.w0, &a.w, n)?;
 
-            // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3)
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.key, n, n, &a.xs, slot_off(2), &a.k)?;
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.value, n, n, &a.xs, slot_off(3), &a.v)?;
+            // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — Q4_K projections
+            layer.key.gemv(&mut tcb, &a.xs, slot_off(2), &a.k)?;
+            layer.value.gemv(&mut tcb, &a.xs, slot_off(3), &a.v)?;
 
             // value-residual mix (skip on layer 0 where v_first is established).
             if !have_v_first {
@@ -1301,8 +1450,8 @@ pub mod gpu {
                 layer.has_gate,
             )?;
 
-            // y = Wo @ out  → cur
-            rwkv7_gemv_f32_off_tcb(&mut tcb, &layer.output, n, n, &a.out_wkv, 0, &a.cur)?;
+            // y = Wo @ out  → cur — Q4_K projection (x from out_wkv, offset 0)
+            layer.output.gemv(&mut tcb, &a.out_wkv, 0, &a.cur)?;
 
             // store att_in as next token-shift for this layer.
             rwkv7_copy_tcb(&mut tcb, &a.att_in, &a.att_shift, shift_off, n)?;
@@ -1334,27 +1483,15 @@ pub mod gpu {
                 n,
                 g.fresh,
             )?;
-            // k = relu(Wk @ xk)^2
-            rwkv7_gemv_f32_off_tcb(
-                &mut tcb,
-                &layer.channel_mix_key,
-                cfg.n_ff,
-                n,
-                &a.xk_ffn,
-                0,
-                &a.ffn_k,
-            )?;
+            // k = relu(Wk @ xk)^2 — Q4_K projection
+            layer
+                .channel_mix_key
+                .gemv(&mut tcb, &a.xk_ffn, 0, &a.ffn_k)?;
             rwkv7_relu_sq_inplace_tcb(&mut tcb, &a.ffn_k, cfg.n_ff)?;
-            // cmix = Wv @ k
-            rwkv7_gemv_f32_off_tcb(
-                &mut tcb,
-                &layer.channel_mix_value,
-                n,
-                cfg.n_ff,
-                &a.ffn_k,
-                0,
-                &a.cmix,
-            )?;
+            // cmix = Wv @ k — Q4_K projection
+            layer
+                .channel_mix_value
+                .gemv(&mut tcb, &a.ffn_k, 0, &a.cmix)?;
             // store ffn_in as next token-shift.
             rwkv7_copy_tcb(&mut tcb, &a.ffn_in, &a.ffn_shift, shift_off, n)?;
 
@@ -1374,15 +1511,8 @@ pub mod gpu {
             n,
             eps,
         )?;
-        rwkv7_gemv_f32_off_tcb(
-            &mut tcb,
-            &g.lm_head,
-            cfg.vocab_size,
-            n,
-            &a.x_norm,
-            0,
-            &a.logits,
-        )?;
+        // LM head — Q6_K on the World models (reads x_norm at offset 0).
+        g.lm_head.gemv(&mut tcb, &a.x_norm, 0, &a.logits)?;
 
         tcb.commit_and_wait()?;
         g.fresh = false;

@@ -1671,6 +1671,106 @@ mod metal_dispatch {
         )
     }
 
+    /// Q4_K predec GEMV reading the activation vector at a byte OFFSET into
+    /// `x_buf` (everything else identical to [`gemv_q4_k_v4_predec_pinned_tcb`]).
+    ///
+    /// The predec kernels index `x[b*256 + k*32 + lane]` from the bound buffer
+    /// base, so binding `x_buf` at `x_off_bytes` makes the kernel consume the
+    /// `cols`-wide slice starting there with no copy. This lets a slot-major
+    /// activation block (e.g. the RWKV-7 time-mix `xs` buffer, where slot `s`
+    /// lives at `s*cols` floats) feed each projection directly. Same 2r/4r
+    /// auto-selection and the same bit-identical per-row MAC.
+    #[allow(clippy::too_many_arguments)]
+    pub fn gemv_q4_k_v4_predec_xoff_pinned_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        model_buf: &PinnedBuffer,
+        w_offset: usize,
+        w_byte_size: usize,
+        scales_buf: &PinnedBuffer,
+        scales_offset: usize,
+        rows: usize,
+        cols: usize,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        const KERNEL: &str = "gemm_q4_k_v4_predec";
+        if cols % 256 != 0 {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_xoff_pinned_tcb requires cols % 256 == 0; got cols={cols}"
+            )));
+        }
+        let blocks_per_row = cols / 256;
+        let expected_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(144))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_xoff_pinned_tcb overflow")))?;
+        if w_byte_size != expected_bytes {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_xoff_pinned_tcb bytes mismatch: got {w_byte_size} expected {expected_bytes}"
+            )));
+        }
+        if w_offset + w_byte_size > model_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_xoff_pinned_tcb oob: {w_offset}+{w_byte_size} > {}",
+                model_buf.length()
+            )));
+        }
+        let expected_scale_bytes = rows
+            .checked_mul(blocks_per_row)
+            .and_then(|v| v.checked_mul(16))
+            .and_then(|v| v.checked_mul(std::mem::size_of::<f32>()))
+            .ok_or_else(|| Error::Kernel(format!("{KERNEL}_xoff_pinned_tcb scale overflow")))?;
+        if scales_offset + expected_scale_bytes > scales_buf.length() as usize {
+            return Err(Error::Kernel(format!(
+                "{KERNEL}_xoff_pinned_tcb scales oob: {scales_offset}+{expected_scale_bytes} > {}",
+                scales_buf.length()
+            )));
+        }
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        const V3_TG: u32 = 256;
+        // Match the default-on 2r / opt-in 4r selection of the non-offset path
+        // (bit-identical per-row math; geometry only).
+        let use_2r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_2R")
+                    .map(|v| v != "0")
+                    .unwrap_or(true)
+            })
+        };
+        let use_4r = {
+            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+            *E.get_or_init(|| {
+                std::env::var_os("DISMANTLE_QWEN_PREDEC_4R")
+                    .map(|v| v != "0")
+                    .unwrap_or(false)
+            })
+        };
+        let (dispatch_kernel, rows_per_tg): (&str, u32) = if use_4r {
+            ("gemm_q4_k_v4_predec_4r", 32)
+        } else if use_2r {
+            ("gemm_q4_k_v4_predec_2r", 16)
+        } else {
+            (KERNEL, 8)
+        };
+        let n_tg = rows_u32.div_ceil(rows_per_tg);
+        tcb.dispatch_threads(
+            dispatch_kernel,
+            (n_tg * V3_TG, 1, 1),
+            (V3_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(model_buf), w_offset as u64);
+                enc.set_buffer(1, Some(scales_buf), scales_offset as u64);
+                enc.set_buffer(2, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(3, Some(out_buf), 0);
+                enc.set_u32(4, rows_u32);
+                enc.set_u32(5, cols_u32);
+            },
+        )
+    }
+
     /// Track 3.14 tail fusion: Q4_K predec GEMV plus residual add.
     ///
     /// Dispatches `gemm_q4_k_v4_predec_2r_add`, which is the same 2-row-ILP
