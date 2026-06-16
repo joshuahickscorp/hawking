@@ -23,6 +23,14 @@ pub mod tokenizer;
 /// are byte-identical.
 #[cfg(feature = "tq")]
 pub mod tq;
+/// TQ GPU bitslice decode→GEMV: the Metal port of the STRAND G4 bitslice kernel,
+/// held bit-identical to the `tq`/strand-quant CPU oracle. Behind `tq`.
+#[cfg(feature = "tq")]
+pub(crate) mod tq_gpu;
+/// Public, `BitsliceEntry`-free entry point to the TQ GPU bitslice decode (the
+/// parity gate's surface). macOS + `tq` only.
+#[cfg(all(feature = "tq", target_os = "macos"))]
+pub use tq_gpu::gpu_decode_q12;
 pub mod vocab_prune;
 
 mod error;
