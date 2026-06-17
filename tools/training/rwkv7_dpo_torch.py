@@ -74,6 +74,7 @@ def main():
     ap.add_argument("--last-n-layers", type=int, default=16)
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--max-rows", type=int, default=0)
+    ap.add_argument("--save-every", type=int, default=50, help="opt steps; overwrites <out>/latest")
     ap.add_argument("--log-every", type=int, default=10)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -130,19 +131,26 @@ def main():
             loss, lc, lr = simpo_loss(pair)
             (loss / args.grad_accum).backward()
             ema = loss.item() if ema is None else 0.98 * ema + 0.02 * loss.item()
+            if args.device == "mps":
+                torch.mps.empty_cache()  # per-example: same OOM guard as SFT hardening
             if (i + 1) % args.grad_accum == 0:
                 torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
                 opt.step(); opt.zero_grad()
-                if args.device == "mps":
-                    torch.mps.empty_cache()
                 n_steps += 1
                 if n_steps % args.log_every == 0:
                     print(f"[ep{epoch} step {n_steps}] loss={ema:.4f} margin_acc={'win' if lc>lr else 'lose'} "
                           f"({i+1}/{len(pairs)} pairs, {(time.time()-t0)/60:.0f}min)", flush=True)
-    d = Path(args.out) / "final"
+                if args.save_every and n_steps % args.save_every == 0:
+                    _save_ckpt(model, args.out, "latest")
+    _save_ckpt(model, args.out, "final")
+    print(f"[done] DPO {n_steps} steps, final loss={ema:.4f}")
+
+
+def _save_ckpt(model, out, tag):
+    d = Path(out) / tag
     d.mkdir(parents=True, exist_ok=True)
     torch.save({k: v.detach().cpu().float() for k, v in model.state_dict().items()}, d / "state_dict.pt")
-    print(f"[done] DPO {n_steps} steps, final loss={ema:.4f} -> {d/'state_dict.pt'}")
+    print(f"  [save] {d/'state_dict.pt'}", flush=True)
 
 
 if __name__ == "__main__":
