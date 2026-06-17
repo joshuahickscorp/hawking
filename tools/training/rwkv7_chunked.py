@@ -244,3 +244,57 @@ def wkv7_chunked(
     # back to [B, T, H, D] and drop the padding.
     out = out.permute(0, 2, 3, 1, 4).reshape(B, Tp, H, D)
     return out[:, :T]
+
+
+def _bench(B=2, T=512, H=16, D=64, chunks=(8, 16, 32, 64), iters=5):
+    """CPU wall-clock benchmark: sequential vs chunked forward+backward.
+
+    Run with ``python tools/training/rwkv7_chunked.py`` to reproduce the
+    measured speedup. CPU-only (the GPU is reserved for training).
+    """
+    import time
+
+    torch.manual_seed(0)
+
+    def mk(requires_grad=True):
+        f = torch.float32
+
+        def rn():
+            return torch.randn(B, T, H, D, dtype=f)
+
+        kk = rn()
+        kk = kk / kk.norm(dim=-1, keepdim=True)
+        a = torch.sigmoid(rn())
+        w = torch.exp(-0.606531 * torch.sigmoid(rn()))
+        ts = [rn(), w, rn(), rn(), -kk, kk * a]  # r, w, k, v, a_op, b_op
+        if requires_grad:
+            ts = [t.requires_grad_(True) for t in ts]
+        return ts
+
+    def timeit(fn):
+        for _ in range(2):  # warmup
+            o = fn(mk())
+            o.sum().backward()
+        samples = []
+        for _ in range(iters):
+            ins = mk()
+            t0 = time.perf_counter()
+            fn(ins).sum().backward()
+            samples.append(time.perf_counter() - t0)
+        return sorted(samples)[len(samples) // 2]
+
+    t_seq = timeit(lambda ins: wkv7_sequential_ref(*ins))
+    print(f"sequential fwd+bwd  B={B} T={T} H={H} D={D}: {t_seq*1e3:8.1f} ms (median/{iters})")
+    print(f"{'chunk':>6} {'ms':>9} {'speedup':>8} {'fwd max_abs':>12}")
+    fixed = [t.detach() for t in mk(False)]
+    ref = wkv7_sequential_ref(*fixed)
+    for c in chunks:
+        if c > T:
+            continue
+        t = timeit((lambda c: lambda ins: wkv7_chunked(*ins, chunk_size=c))(c))
+        md = (wkv7_chunked(*fixed, chunk_size=c) - ref).abs().max().item()
+        print(f"{c:>6} {t*1e3:>9.1f} {t_seq/t:>7.2f}x {md:>12.2e}")
+
+
+if __name__ == "__main__":
+    _bench()
