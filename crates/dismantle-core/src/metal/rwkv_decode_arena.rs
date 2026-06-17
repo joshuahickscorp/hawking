@@ -52,7 +52,8 @@ mod imp {
         }
     }
 
-    /// Per-layer recurrent state + per-token scratch for the RWKV-7 GPU decode.
+    /// Per-layer recurrent state + per-token scratch for the RWKV-7 GPU decode
+    /// (single-stream or B-stream continuous batch — see `new_with_batch`).
     ///
     /// The three `*_state` buffers are PERSISTENT across tokens (the KV-cache
     /// replacement); everything else is per-token scratch, overwritten each step.
@@ -111,9 +112,15 @@ mod imp {
         pub iclr_lora: usize,
         pub value_res_lora: usize,
         pub gate_lora: usize,
+        /// Number of independent streams the arena is sized for (1 = the
+        /// single-stream decode; B = the continuous-batch multiseq decode).
+        /// EVERY buffer above is sized for `batch` streams; the single-stream
+        /// dispatchers index slot 0 (offset 0) and are unchanged.
+        pub batch: usize,
     }
 
     impl RwkvDecodeArena {
+        /// Single-stream arena (B = 1). Thin wrapper over `new_with_batch`.
         #[allow(clippy::too_many_arguments)]
         pub fn new(
             ctx: &MetalContext,
@@ -128,42 +135,88 @@ mod imp {
             value_res_lora: usize,
             gate_lora: usize,
         ) -> Self {
+            Self::new_with_batch(
+                ctx,
+                n_layer,
+                n_embd,
+                n_ff,
+                head_size,
+                head_count,
+                vocab_size,
+                decay_lora,
+                iclr_lora,
+                value_res_lora,
+                gate_lora,
+                1,
+            )
+        }
+
+        /// Continuous-batch arena for `batch` INDEPENDENT streams.
+        ///
+        /// Buffer layouts (the single-stream `new` is exactly `batch = 1`):
+        /// - State planes (`wkv_state`, `att_shift`, `ffn_shift`): STREAM-major,
+        ///   `[stream][layer][..]`. The WKV recurrence + token-shift select one
+        ///   `(stream, layer)` window; per-stream state never mixes.
+        /// - Activation scratch that feeds the batched projection GEMV (`x`,
+        ///   `att_in`, `out_wkv`, `xk_ffn`, `ffn_k`, `r`, `w`, `k`, `v`, `a`, …):
+        ///   `(B, dim)` ROW-major, i.e. `buf[b*dim + i]` — exactly the layout
+        ///   `gemm_q4_k_m_batched_v3w_predec` reads (`x_batch[b*cols + off]`).
+        /// - `xs` (the 6-slot lerp output): `(slot, B, n)` so each slot's
+        ///   `(B, n)` block is contiguous and feeds one batched GEMV directly
+        ///   (slot byte offset = `slot * B * n * 4`).
+        /// - `logits`: `(B, vocab)`.
+        #[allow(clippy::too_many_arguments)]
+        pub fn new_with_batch(
+            ctx: &MetalContext,
+            n_layer: usize,
+            n_embd: usize,
+            n_ff: usize,
+            head_size: usize,
+            head_count: usize,
+            vocab_size: usize,
+            decay_lora: usize,
+            iclr_lora: usize,
+            value_res_lora: usize,
+            gate_lora: usize,
+            batch: usize,
+        ) -> Self {
             let f = std::mem::size_of::<f32>();
+            let b = batch.max(1);
             let nb = |elems: usize| ctx.new_buffer(elems.max(1) * f);
             let s_per_layer = head_count * head_size * head_size;
             Self {
-                wkv_state: nb(n_layer * s_per_layer),
-                att_shift: nb(n_layer * n_embd),
-                ffn_shift: nb(n_layer * n_embd),
+                wkv_state: nb(b * n_layer * s_per_layer),
+                att_shift: nb(b * n_layer * n_embd),
+                ffn_shift: nb(b * n_layer * n_embd),
 
-                x: nb(n_embd),
-                att_in: nb(n_embd),
-                ffn_inp: nb(n_embd),
-                ffn_in: nb(n_embd),
-                x_norm: nb(n_embd),
-                xs: nb(6 * n_embd),
-                xk_ffn: nb(n_embd),
-                r: nb(n_embd),
-                w: nb(n_embd),
-                w_raw: nb(n_embd),
-                k: nb(n_embd),
-                v: nb(n_embd),
-                a: nb(n_embd),
-                a_op: nb(n_embd),
-                b_op: nb(n_embd),
-                gate: nb(n_embd),
-                out_wkv: nb(n_embd),
-                cur: nb(n_embd),
-                cmix: nb(n_embd),
-                v_first: nb(n_embd),
-                v_mix: nb(n_embd),
-                w_lo: nb(decay_lora),
-                a_lo: nb(iclr_lora),
-                v_lo: nb(value_res_lora),
-                g_lo: nb(gate_lora),
-                ffn_k: nb(n_ff),
-                logits: nb(vocab_size),
-                token: ctx.new_buffer(std::mem::size_of::<u32>()),
+                x: nb(b * n_embd),
+                att_in: nb(b * n_embd),
+                ffn_inp: nb(b * n_embd),
+                ffn_in: nb(b * n_embd),
+                x_norm: nb(b * n_embd),
+                xs: nb(6 * b * n_embd),
+                xk_ffn: nb(b * n_embd),
+                r: nb(b * n_embd),
+                w: nb(b * n_embd),
+                w_raw: nb(b * n_embd),
+                k: nb(b * n_embd),
+                v: nb(b * n_embd),
+                a: nb(b * n_embd),
+                a_op: nb(b * n_embd),
+                b_op: nb(b * n_embd),
+                gate: nb(b * n_embd),
+                out_wkv: nb(b * n_embd),
+                cur: nb(b * n_embd),
+                cmix: nb(b * n_embd),
+                v_first: nb(b * n_embd),
+                v_mix: nb(b * n_embd),
+                w_lo: nb(b * decay_lora),
+                a_lo: nb(b * iclr_lora),
+                v_lo: nb(b * value_res_lora),
+                g_lo: nb(b * gate_lora),
+                ffn_k: nb(b * n_ff),
+                logits: nb(b * vocab_size),
+                token: ctx.new_buffer(b * std::mem::size_of::<u32>()),
 
                 n_layer,
                 n_embd,
@@ -175,32 +228,67 @@ mod imp {
                 iclr_lora,
                 value_res_lora,
                 gate_lora,
+                batch: b,
             }
         }
 
-        /// Byte offset of `layer`'s window in the WKV state plane.
+        /// Byte offset of `layer`'s window in the (single-stream) WKV state
+        /// plane. For the multiseq arena use `wkv_slot_layer_byte_offset`.
         pub fn wkv_layer_byte_offset(&self, layer: usize) -> usize {
             layer * self.head_count * self.head_size * self.head_size * std::mem::size_of::<f32>()
         }
-        /// Byte offset of `layer`'s window in a token-shift state plane.
+        /// Byte offset of `layer`'s window in a (single-stream) token-shift plane.
         pub fn shift_layer_byte_offset(&self, layer: usize) -> usize {
             layer * self.n_embd * std::mem::size_of::<f32>()
         }
 
-        /// Zero the persistent recurrent state (start of a fresh sequence).
-        /// Shared-storage buffers on Apple Silicon are CPU-visible, so this is a
-        /// plain memset on the unified-memory backing.
+        /// Per-stream WKV state window: byte offset of `(slot, layer)` in the
+        /// stream-major `wkv_state` plane. `slot` in `0..batch`.
+        pub fn wkv_slot_layer_byte_offset(&self, slot: usize, layer: usize) -> usize {
+            let s_per_layer = self.head_count * self.head_size * self.head_size;
+            (slot * self.n_layer + layer) * s_per_layer * std::mem::size_of::<f32>()
+        }
+        /// Per-stream token-shift window: byte offset of `(slot, layer)` in a
+        /// stream-major `att_shift`/`ffn_shift` plane. `slot` in `0..batch`.
+        pub fn shift_slot_layer_byte_offset(&self, slot: usize, layer: usize) -> usize {
+            (slot * self.n_layer + layer) * self.n_embd * std::mem::size_of::<f32>()
+        }
+        /// Byte offset of `slot`'s `(B, n)` block within the `(slot, B, n)` `xs`
+        /// lerp buffer — the contiguous activation block feeding one batched
+        /// projection GEMV for projection-slot `proj_slot` (r,w,k,v,a,g).
+        pub fn xs_proj_slot_byte_offset(&self, proj_slot: usize) -> usize {
+            proj_slot * self.batch * self.n_embd * std::mem::size_of::<f32>()
+        }
+
+        /// Zero the persistent recurrent state for ALL `batch` streams (start of
+        /// B fresh sequences). Shared-storage buffers on Apple Silicon are
+        /// CPU-visible, so this is a plain memset on the unified-memory backing.
         pub fn reset_state(&self) {
+            let s_per_layer = self.head_count * self.head_size * self.head_size;
             for (buf, elems) in [
-                (
-                    &self.wkv_state,
-                    self.n_layer * self.head_count * self.head_size * self.head_size,
-                ),
-                (&self.att_shift, self.n_layer * self.n_embd),
-                (&self.ffn_shift, self.n_layer * self.n_embd),
+                (&self.wkv_state, self.batch * self.n_layer * s_per_layer),
+                (&self.att_shift, self.batch * self.n_layer * self.n_embd),
+                (&self.ffn_shift, self.batch * self.n_layer * self.n_embd),
             ] {
                 let ptr = buf.contents() as *mut f32;
                 unsafe { std::ptr::write_bytes(ptr, 0, elems) };
+            }
+        }
+
+        /// Zero the recurrent state of ONE stream (its sequence finished; reuse
+        /// the slot for a new sequence without disturbing the other streams —
+        /// the continuous-batch reuse path). `slot` in `0..batch`.
+        pub fn reset_slot(&self, slot: usize) {
+            let s_per_layer = self.head_count * self.head_size * self.head_size;
+            // wkv: stream-major, the slot's whole n_layer window is contiguous.
+            unsafe {
+                let base = (self.wkv_state.contents() as *mut f32)
+                    .add(slot * self.n_layer * s_per_layer);
+                std::ptr::write_bytes(base, 0, self.n_layer * s_per_layer);
+                for buf in [&self.att_shift, &self.ffn_shift] {
+                    let p = (buf.contents() as *mut f32).add(slot * self.n_layer * self.n_embd);
+                    std::ptr::write_bytes(p, 0, self.n_layer * self.n_embd);
+                }
             }
         }
     }
