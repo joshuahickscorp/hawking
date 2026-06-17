@@ -107,7 +107,7 @@ def main():
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--last-n-layers", type=int, default=0, help="0 = full fine-tune")
     ap.add_argument("--max-rows", type=int, default=0, help="0 = all")
-    ap.add_argument("--save-every", type=int, default=400, help="optimizer steps")
+    ap.add_argument("--save-every", type=int, default=25, help="optimizer steps; overwrites <out>/latest")
     ap.add_argument("--log-every", type=int, default=10)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -169,12 +169,12 @@ def main():
             seen_tok += len(ids)
             l = loss.item() * args.grad_accum
             loss_ema = l if loss_ema is None else 0.98 * loss_ema + 0.02 * l
+            if args.device == "mps":
+                torch.mps.empty_cache()  # per-EXAMPLE: max peak control. Reliability > speed for an
+                # unattended run (per-opt-step held too much cache and OOM'd a long late example).
             if (i + 1) % args.grad_accum == 0:
                 torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
                 opt.step(); opt.zero_grad()
-                if args.device == "mps":
-                    torch.mps.empty_cache()  # per-opt-step: peak is per-example (autograd frees
-                    # the graph itself); this only trims the allocator cache, no per-example churn
                 n_steps += 1
                 if n_steps % args.log_every == 0:
                     dt = time.time() - t0
@@ -182,7 +182,7 @@ def main():
                           f"ppl={math.exp(min(loss_ema,20)):.1f} "
                           f"{seen_tok/dt:.0f} tok/s ({i+1}/{len(order)} ex)", flush=True)
                 if args.save_every and n_steps % args.save_every == 0:
-                    _save(model, args.out, f"step{n_steps}")
+                    _save(model, args.out, "latest")  # overwrite — always a recent checkpoint to fall back on
     _save(model, args.out, "final")
     print(f"[done] {n_steps} opt-steps, final loss_ema={loss_ema:.4f}, {(time.time()-t0)/3600:.2f}h")
 

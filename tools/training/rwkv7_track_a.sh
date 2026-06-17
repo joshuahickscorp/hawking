@@ -33,16 +33,20 @@ if [ -f "$OUT/final/state_dict.pt" ]; then
   echo "[skip] $OUT/final/state_dict.pt already exists"
 else
   PYTORCH_ENABLE_MPS_FALLBACK=1 python3.12 tools/training/rwkv7_sft_torch.py \
-    --device mps --out "$OUT" --epochs 1 --grad-accum 16 --lr 2e-5 --max-length 448 \
-    --last-n-layers 16 \
-    || { echo "!!! SFT FAILED — stopping"; exit 1; }
+    --device mps --out "$OUT" --epochs 1 --grad-accum 16 --lr 2e-5 --max-length 384 \
+    --last-n-layers 16 --save-every 25 \
+    || echo "SFT exited nonzero — will try the latest checkpoint (saved every 25 steps)"
 fi
-[ -f "$OUT/final/state_dict.pt" ] || { echo "!!! no SFT checkpoint — stopping"; exit 1; }
+# Prefer the final checkpoint; fall back to the most recent (a near-complete run is still usable).
+CKPT="$OUT/final/state_dict.pt"
+[ -f "$CKPT" ] || CKPT="$OUT/latest/state_dict.pt"
+[ -f "$CKPT" ] || { echo "!!! no usable checkpoint (final or latest) — stopping"; exit 1; }
+echo "using checkpoint: $CKPT"
 
 # ---- Stage 2: export -> GGUF f16 ----
-stage "2/4 export trained checkpoint -> GGUF f16"
+stage "2/4 export trained checkpoint -> GGUF Q4_K_M"
 python3.12 tools/training/rwkv7_export_hf.py \
-  --state-dict "$OUT/final/state_dict.pt" --out-dir "$HFOUT" --gguf "$SFT_GGUF" \
+  --state-dict "$CKPT" --out-dir "$HFOUT" --gguf "$SFT_GGUF" \
   || { echo "!!! EXPORT FAILED — stopping"; exit 1; }
 [ -f "$SFT_GGUF" ] || { echo "!!! no SFT GGUF — stopping"; exit 1; }
 
