@@ -31,18 +31,18 @@ stage(){ echo ""; echo "============ [$(date +%H:%M:%S)] $* ============"; }
 stage "TRACK B START — DPO (SimPO) on SFT checkpoint"
 
 # ---- Stage 1: build preference pairs ----
-stage "1/4 build DPO pairs (SFT rejected samples at temp 0.7)"
+stage "1/4 build DPO pairs (SFT rejected @ temp 0.7, 4 parallel workers)"
 if [ -f "$PAIRS" ] && [ "$(wc -l < "$PAIRS")" -ge 2000 ]; then
   echo "[skip] $PAIRS already has $(wc -l < "$PAIRS") rows"
 else
-  PYTORCH_ENABLE_MPS_FALLBACK=1 python3.12 tools/training/rwkv7_dpo_build_pairs.py \
+  python3.12 tools/training/rwkv7_dpo_build_pairs.py \
     --chosen "$CHOSEN" \
     --gguf "$SFT_GGUF" \
     --bin "$BIN" \
     --out "$PAIRS" \
+    --workers 4 \
     --max-new-tokens 200 \
     --temperature 0.7 \
-    --resume \
     || { echo "!!! pair build failed — stopping"; exit 1; }
 fi
 N_PAIRS=$(wc -l < "$PAIRS")
@@ -66,6 +66,8 @@ else
     --beta 2.0 \
     --gamma 0.5 \
     --save-every 50 \
+    --use-chunked \
+    --chunk-size 32 \
     --epochs 1 \
     || echo "DPO exited nonzero — will try latest checkpoint"
 fi

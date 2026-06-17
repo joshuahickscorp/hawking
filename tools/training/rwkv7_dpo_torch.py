@@ -76,6 +76,8 @@ def main():
     ap.add_argument("--max-rows", type=int, default=0)
     ap.add_argument("--save-every", type=int, default=50, help="opt steps; overwrites <out>/latest")
     ap.add_argument("--log-every", type=int, default=10)
+    ap.add_argument("--use-chunked", action="store_true", help="chunked-scan WKV-7 (7-9x faster fwd+bwd)")
+    ap.add_argument("--chunk-size", type=int, default=32)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -95,7 +97,10 @@ def main():
         pairs.append((ci, cs, ri, rs))
     print(f"[data] {len(pairs)} usable preference pairs")
 
-    model = load_rwkv7(args.hf_dir + "/model.safetensors", RWKV7Config(), device=args.device, dtype=torch.float32)
+    cfg = RWKV7Config(use_chunked=args.use_chunked, chunk_size=args.chunk_size)
+    if args.use_chunked:
+        print(f"[model] chunked-scan enabled (chunk_size={args.chunk_size}) — 7-9x faster fwd+bwd")
+    model = load_rwkv7(args.hf_dir + "/model.safetensors", cfg, device=args.device, dtype=torch.float32)
     model.load_state_dict(torch.load(args.sft_state, map_location=args.device), strict=True)
     print(f"[model] loaded SFT weights from {args.sft_state}")
     model.grad_checkpoint = True
