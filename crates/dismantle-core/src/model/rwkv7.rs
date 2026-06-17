@@ -235,6 +235,45 @@ impl RwkvState {
     }
 }
 
+/// B INDEPENDENT recurrent states for the continuous-batch (multi-seq) decode —
+/// the RWKV-7 analogue of B per-slot KV caches in the Qwen multiseq path. Each
+/// slot carries its own `RwkvState` (per-head S matrices + token-shift planes +
+/// `fresh`); decode advances all B in one pass while every projection/LM-head
+/// weight is read ONCE across the B activation columns (the bandwidth win).
+///
+/// State is per-stream and never shared; only the weights are. A slot can be
+/// reset independently (`reset_slot`) so a finished stream's slot can be reused
+/// by a new sequence without disturbing the others (continuous batching).
+pub struct RwkvMultiState {
+    pub slots: Vec<RwkvState>,
+}
+
+impl RwkvMultiState {
+    /// `b` fresh (zeroed) states sized for `cfg`.
+    pub fn new(cfg: &RwkvConfig, b: usize) -> Self {
+        Self {
+            slots: (0..b).map(|_| RwkvState::new(cfg)).collect(),
+        }
+    }
+
+    /// Number of streams.
+    pub fn batch(&self) -> usize {
+        self.slots.len()
+    }
+
+    /// Reset all slots to the zero state (start of B fresh sequences).
+    pub fn reset(&mut self) {
+        for s in &mut self.slots {
+            s.reset();
+        }
+    }
+
+    /// Reset a single slot (its stream finished; reuse it for a new sequence).
+    pub fn reset_slot(&mut self, slot: usize) {
+        self.slots[slot].reset();
+    }
+}
+
 pub struct RwkvSeven {
     pub config: RwkvConfig,
     pub model_id: String,
@@ -303,22 +342,67 @@ impl RwkvSeven {
     /// The full per-token RWKV-7 forward. Returns the `vocab`-sized logit row.
     /// Mutates `self.state` (the recurrent state replaces the KV cache).
     pub fn forward_token(&mut self, token: u32) -> Result<Vec<f32>> {
-        // Copy the scalar config out so no borrow of `self.config` persists
-        // across the `&mut self` time_mix/channel_mix calls below.
-        let n = self.config.n_embd;
-        let n_layer = self.config.n_layer;
-        let vocab_size = self.config.vocab_size;
-        let eps = self.config.ln_eps;
+        // Single-stream decode is exactly the per-stream core advancing the
+        // engine's own state. The multi-stream path (`forward_tokens_multiseq_cpu`)
+        // calls the SAME core per stream with each stream's state, so a B-stream
+        // batch is bit-for-bit B independent `forward_token` runs.
+        let RwkvSeven {
+            config,
+            layers,
+            embed,
+            tok_norm_w,
+            tok_norm_b,
+            output_norm_w,
+            output_norm_b,
+            output,
+            state,
+            ..
+        } = self;
+        Self::forward_token_core(
+            config,
+            layers,
+            embed,
+            tok_norm_w,
+            tok_norm_b,
+            output_norm_w,
+            output_norm_b,
+            output,
+            state,
+            token,
+        )
+    }
+
+    /// Per-stream RWKV-7 forward core: advances `state` (any `RwkvState`) by one
+    /// token and returns the `vocab` logit row. All weight tensors are borrowed
+    /// read-only so MANY streams can share one weight set while each owns its
+    /// recurrent state — the CPU oracle for the multiseq continuous-batch path.
+    #[allow(clippy::too_many_arguments)]
+    fn forward_token_core(
+        config: &RwkvConfig,
+        layers: &[RwkvLayer],
+        embed: &[f32],
+        tok_norm_w: &[f32],
+        tok_norm_b: &[f32],
+        output_norm_w: &[f32],
+        output_norm_b: &[f32],
+        output: &[f32],
+        state: &mut RwkvState,
+        token: u32,
+    ) -> Result<Vec<f32>> {
+        let n = config.n_embd;
+        let n_layer = config.n_layer;
+        let vocab_size = config.vocab_size;
+        let eps = config.ln_eps;
 
         // Embedding lookup + LN0.
         let row = token as usize * n;
-        if row + n > self.embed.len() {
+        if row + n > embed.len() {
             return Err(Error::Model(format!("rwkv7: token {token} out of vocab")));
         }
-        let mut x = self.embed[row..row + n].to_vec();
+        let mut x = embed[row..row + n].to_vec();
         {
             let mut tmp = vec![0.0f32; n];
-            layernorm(&x, &self.tok_norm_w, &self.tok_norm_b, eps, &mut tmp);
+            layernorm(&x, tok_norm_w, tok_norm_b, eps, &mut tmp);
             x = tmp;
         }
 
@@ -330,13 +414,13 @@ impl RwkvSeven {
             // ---- token-shift for the time-mix branch ----
             let mut att_in = vec![0.0f32; n];
             {
-                let layer = &self.layers[li];
+                let layer = &layers[li];
                 layernorm(&x, &layer.attn_norm_w, &layer.attn_norm_b, eps, &mut att_in);
             }
             // x_prev = previous token's att_in (zero on the first token).
-            let cur = self.time_mix(li, &att_in, &mut v_first)?;
+            let cur = Self::time_mix_with_state(config, layers, state, li, &att_in, &mut v_first)?;
             // store att_in as the next token-shift for this layer.
-            self.state.att_shift[li].copy_from_slice(&att_in);
+            state.att_shift[li].copy_from_slice(&att_in);
 
             // residual: ffn_inp = cur + x
             let mut ffn_inp = x.clone();
@@ -347,7 +431,7 @@ impl RwkvSeven {
             // ---- channel-mix branch ----
             let mut ffn_in = vec![0.0f32; n];
             {
-                let layer = &self.layers[li];
+                let layer = &layers[li];
                 layernorm(
                     &ffn_inp,
                     &layer.attn_norm2_w,
@@ -356,8 +440,8 @@ impl RwkvSeven {
                     &mut ffn_in,
                 );
             }
-            let cmix = self.channel_mix(li, &ffn_in)?;
-            self.state.ffn_shift[li].copy_from_slice(&ffn_in);
+            let cmix = Self::channel_mix_with_state(config, layers, state, li, &ffn_in)?;
+            state.ffn_shift[li].copy_from_slice(&ffn_in);
 
             // residual: x = cmix + ffn_inp
             x = ffn_inp;
@@ -368,32 +452,108 @@ impl RwkvSeven {
 
         // final norm + LM head.
         let mut x_norm = vec![0.0f32; n];
-        layernorm(
-            &x,
-            &self.output_norm_w,
-            &self.output_norm_b,
-            eps,
-            &mut x_norm,
-        );
+        layernorm(&x, output_norm_w, output_norm_b, eps, &mut x_norm);
         let mut logits = vec![0.0f32; vocab_size];
-        gemv_f32(&self.output, vocab_size, n, &x_norm, &mut logits);
+        gemv_f32(output, vocab_size, n, &x_norm, &mut logits);
 
-        self.state.fresh = false;
+        state.fresh = false;
         Ok(logits)
+    }
+
+    /// CPU multi-stream decode: advance B streams by one token each against the
+    /// shared weights, returning B `vocab`-sized logit rows (slot order matches
+    /// `tokens`). `tokens[b]` feeds slot `b`'s `multi.slots[b]` state.
+    ///
+    /// This is the CORRECTNESS ORACLE for the continuous-batch path: it is, by
+    /// construction, B independent `forward_token` runs that happen to share the
+    /// weight set — so it is bit-for-bit identical to decoding each stream alone.
+    /// The GPU path (`forward_token_gpu_multiseq`) reproduces these exact logits
+    /// while reading each weight ONCE across the B columns; this method is what
+    /// the multiseq parity gate diffs against.
+    pub fn forward_tokens_multiseq_cpu(
+        &mut self,
+        tokens: &[u32],
+        multi: &mut RwkvMultiState,
+    ) -> Result<Vec<Vec<f32>>> {
+        if tokens.len() != multi.batch() {
+            return Err(Error::Model(format!(
+                "rwkv7 multiseq: tokens={} != states={}",
+                tokens.len(),
+                multi.batch()
+            )));
+        }
+        let RwkvSeven {
+            config,
+            layers,
+            embed,
+            tok_norm_w,
+            tok_norm_b,
+            output_norm_w,
+            output_norm_b,
+            output,
+            ..
+        } = self;
+        let mut out = Vec::with_capacity(tokens.len());
+        for (b, &tok) in tokens.iter().enumerate() {
+            out.push(Self::forward_token_core(
+                config,
+                layers,
+                embed,
+                tok_norm_w,
+                tok_norm_b,
+                output_norm_w,
+                output_norm_b,
+                output,
+                &mut multi.slots[b],
+                tok,
+            )?);
+        }
+        Ok(out)
+    }
+
+    /// CPU multi-stream greedy step: [`forward_tokens_multiseq_cpu`] followed by
+    /// a per-slot argmax — the slot-major decode token for each stream. Mirrors
+    /// the Qwen `forward_tokens_multiseq_greedy` shape so the bench/serve seam is
+    /// uniform across architectures.
+    pub fn forward_tokens_multiseq_greedy_cpu(
+        &mut self,
+        tokens: &[u32],
+        multi: &mut RwkvMultiState,
+    ) -> Result<Vec<u32>> {
+        let logits = self.forward_tokens_multiseq_cpu(tokens, multi)?;
+        Ok(logits
+            .iter()
+            .map(|row| {
+                let mut bi = 0u32;
+                let mut bv = f32::NEG_INFINITY;
+                for (i, &x) in row.iter().enumerate() {
+                    if x > bv {
+                        bv = x;
+                        bi = i as u32;
+                    }
+                }
+                bi
+            })
+            .collect())
     }
 
     /// Time-mix: token-shift lerp → r/w/k/v/a/g projections (+ LoRA paths) →
     /// WKV-7 recurrence → group-norm → r·k·r_k bonus → gate → output proj.
-    fn time_mix(&mut self, li: usize, att_in: &[f32], v_first: &mut Vec<f32>) -> Result<Vec<f32>> {
-        // Disjoint field borrows so the immutable `layer`/config reads coexist
-        // with the in-place mutable update of `state.wkv[li]` in the recurrence.
-        let RwkvSeven {
-            config,
-            layers,
-            state,
-            ..
-        } = self;
-        let cfg = &*config;
+    ///
+    /// Operates on an EXPLICIT recurrent `state` (not necessarily `self.state`),
+    /// so the multi-stream path can advance B independent states with the SAME
+    /// op order — single-stream `forward_token` passes `&mut self.state`, the
+    /// reference oracle for the multiseq parity gate passes each stream's state.
+    /// `config`/`layers` are borrowed read-only, disjoint from `state`.
+    fn time_mix_with_state(
+        config: &RwkvConfig,
+        layers: &[RwkvLayer],
+        state: &mut RwkvState,
+        li: usize,
+        att_in: &[f32],
+        v_first: &mut Vec<f32>,
+    ) -> Result<Vec<f32>> {
+        let cfg = config;
         let n = cfg.n_embd;
         let hs = cfg.head_size;
         let hc = cfg.head_count;
@@ -597,15 +757,25 @@ impl RwkvSeven {
     }
 
     /// Channel-mix (FFN): token-shift lerp → ReLU(Wk@xk)^2 → Wv@k.
-    fn channel_mix(&self, li: usize, ffn_in: &[f32]) -> Result<Vec<f32>> {
-        let cfg = &self.config;
+    ///
+    /// Reads the channel-mix token-shift from an EXPLICIT `state` (mirrors
+    /// `time_mix_with_state`) so B streams share the weights but carry their own
+    /// `ffn_shift`. The `fresh` flag is read off the same `state`.
+    fn channel_mix_with_state(
+        config: &RwkvConfig,
+        layers: &[RwkvLayer],
+        state: &RwkvState,
+        li: usize,
+        ffn_in: &[f32],
+    ) -> Result<Vec<f32>> {
+        let cfg = config;
         let n = cfg.n_embd;
-        let layer = &self.layers[li];
+        let layer = &layers[li];
 
-        let x_prev = &self.state.ffn_shift[li];
+        let x_prev = &state.ffn_shift[li];
         // xk = ffn_in + (x_prev - ffn_in) * lerp_k
         let mut xk = vec![0.0f32; n];
-        if self.state.fresh {
+        if state.fresh {
             for i in 0..n {
                 xk[i] = ffn_in[i] + (-ffn_in[i]) * layer.channel_mix_lerp_k[i];
             }
