@@ -703,6 +703,7 @@ mod imp {
             "rwkv7_kk_kmix_multiseq" => "rwkv7_kk_kmix_multiseq",
             "rwkv7_token_shift_lerp_multiseq" => "rwkv7_token_shift_lerp_multiseq",
             "rwkv7_channel_mix_shift_multiseq" => "rwkv7_channel_mix_shift_multiseq",
+            "rwkv7_shift_writeback_multiseq" => "rwkv7_shift_writeback_multiseq",
             "rwkv7_layernorm_multiseq" => "rwkv7_layernorm_multiseq",
             "rwkv7_decay_act_multiseq" => "rwkv7_decay_act_multiseq",
             "rwkv7_sigmoid_bias_multiseq" => "rwkv7_sigmoid_bias_multiseq",

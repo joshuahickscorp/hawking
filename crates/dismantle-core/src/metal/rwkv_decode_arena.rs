@@ -18,11 +18,14 @@
 
 #[cfg(target_os = "macos")]
 pub use imp::{
-    rwkv7_add_into_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_tcb,
-    rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
-    rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
-    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_tcb,
-    RwkvDecodeArena,
+    rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
+    rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb,
+    rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb,
+    rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
+    rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
+    rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
+    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+    rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb, RwkvDecodeArena,
 };
 
 #[cfg(target_os = "macos")]
@@ -629,6 +632,372 @@ mod imp {
             enc.set_buffer(0, Some(src), 0);
             enc.set_buffer(1, Some(dst), dst_off_bytes as u64);
             enc.set_u32(2, n as u32);
+        })
+    }
+
+    // ── RWKV-7 CONTINUOUS-BATCH (multi-seq) dispatchers ──────────────────────
+    //
+    // Each is the B-stream twin of one of the single-stream dispatchers above.
+    // The LAYOUT CONTRACT (see `RwkvDecodeArena::new_with_batch`):
+    //   - activation buffers (att_in, r, w, k, v, a, a_op, b_op, gate, out, ffn_in,
+    //     xk, ...) are (B, dim) ROW-major and passed at offset 0.
+    //   - the WKV state plane is STREAM-major; the multiseq WKV kernel indexes the
+    //     stream itself, so it takes the whole plane + the per-stream/per-layer
+    //     strides (`state_stream_stride`, `state_layer_base`).
+    //   - the two token-shift state planes are STREAM-major [stream][layer][n];
+    //     the shift kernels read them with the per-stream stride `n_layer*n` from
+    //     the (stream 0, layer li) base, and the write-back scatters (B,n) back.
+    //   - xs (lerp output) is (slot, B, n).
+    // The pure-elementwise glue (tanh / sigmoid_inplace / relu_sq / copy / add)
+    // needs NO multiseq variant — the single-stream dispatcher already takes `n`,
+    // so the caller passes `n = B*dim` and the op is identical per element.
+
+    /// B-stream token-shift + per-slot lerp. `att_in` is (B,n); `shift_plane` is
+    /// the STREAM-major att_shift plane passed at the (stream 0, layer li) byte
+    /// base; `stream_stride_elems` = n_layer*n strides between streams. Writes
+    /// `xs` in (slot, B, n) layout.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_token_shift_lerp_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        att_in: &PinnedBuffer,
+        shift_plane: &PinnedBuffer,
+        shift_base_bytes: usize,
+        stream_stride_elems: usize,
+        lerp: &PinnedBuffer,
+        xs: &PinnedBuffer,
+        n: usize,
+        n_slots: usize,
+        batch: usize,
+        fresh: bool,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+            ],
+        )?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, n_slots as u32);
+        ab.set_u32(2, batch as u32);
+        ab.set_u32(3, fresh as u32);
+        ab.set_u32(4, stream_stride_elems as u32);
+        dispatch_n(tcb, "rwkv7_token_shift_lerp_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(att_in), 0);
+            enc.set_buffer(1, Some(shift_plane), shift_base_bytes as u64);
+            enc.set_buffer(2, Some(lerp), 0);
+            enc.set_buffer(3, Some(xs), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
+    }
+
+    /// B-stream channel-mix token-shift + single lerp. Same stream-major `x_prev`
+    /// contract as `rwkv7_token_shift_lerp_multiseq_tcb`; writes `xk` (B,n).
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_channel_mix_shift_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        ffn_in: &PinnedBuffer,
+        shift_plane: &PinnedBuffer,
+        shift_base_bytes: usize,
+        stream_stride_elems: usize,
+        lerp_k: &PinnedBuffer,
+        xk: &PinnedBuffer,
+        n: usize,
+        batch: usize,
+        fresh: bool,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+            ],
+        )?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, 1);
+        ab.set_u32(2, batch as u32);
+        ab.set_u32(3, fresh as u32);
+        ab.set_u32(4, stream_stride_elems as u32);
+        dispatch_n(tcb, "rwkv7_channel_mix_shift_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(ffn_in), 0);
+            enc.set_buffer(1, Some(shift_plane), shift_base_bytes as u64);
+            enc.set_buffer(2, Some(lerp_k), 0);
+            enc.set_buffer(3, Some(xk), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Scatter a (B,n) row-major plane (`src` = att_in/ffn_in) into the
+    /// STREAM-major token-shift state plane for layer li (the B-stream analogue of
+    /// `rwkv7_copy_tcb` into a per-layer window). `dst_plane` is passed at the
+    /// (stream 0, layer li) byte base; `stream_stride_elems` = n_layer*n.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_shift_writeback_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        src: &PinnedBuffer,
+        dst_plane: &PinnedBuffer,
+        dst_base_bytes: usize,
+        stream_stride_elems: usize,
+        n: usize,
+        batch: usize,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, batch as u32);
+        ab.set_u32(2, stream_stride_elems as u32);
+        dispatch_n(tcb, "rwkv7_shift_writeback_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(src), 0);
+            enc.set_buffer(1, Some(dst_plane), dst_base_bytes as u64);
+            enc.set_buffer(2, Some(ab.handle()), 0);
+        })
+    }
+
+    /// B independent LayerNorms (one threadgroup per stream). `x`/`out` are (B,n)
+    /// row-major; `weight`/`bias` are (n,) shared. The `x_off_bytes`/`out_off_bytes`
+    /// select a layer window when the buffer is a multi-layer plane.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_layernorm_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x: &PinnedBuffer,
+        x_off_bytes: usize,
+        weight: &PinnedBuffer,
+        bias: &PinnedBuffer,
+        out: &PinnedBuffer,
+        out_off_bytes: usize,
+        hidden: usize,
+        batch: usize,
+        eps: f32,
+    ) -> Result<()> {
+        let shmem = (LN_TG as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden as u32);
+        ab.set_u32(1, batch as u32);
+        ab.set_f32(2, eps);
+        // One threadgroup per stream → grid = (batch * LN_TG).
+        tcb.dispatch_threads(
+            "rwkv7_layernorm_multiseq",
+            (batch as u32 * LN_TG, 1, 1),
+            (LN_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(x), x_off_bytes as u64);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_buffer(2, Some(bias), 0);
+                enc.set_buffer(3, Some(out), out_off_bytes as u64);
+                enc.set_buffer(4, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// B-stream kk / k-mix. One threadgroup per (stream, head). `k`/`a`/`a_op`/
+    /// `b_op` are (B,n); `k_k`/`k_a` are (n,) shared.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_kk_kmix_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        k: &PinnedBuffer,
+        k_k: &PinnedBuffer,
+        k_a: &PinnedBuffer,
+        a: &PinnedBuffer,
+        a_op: &PinnedBuffer,
+        b_op: &PinnedBuffer,
+        head_size: usize,
+        head_count: usize,
+        batch: usize,
+    ) -> Result<()> {
+        let hs = head_size as u32;
+        let shmem = (hs as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab =
+            KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, hs);
+        ab.set_u32(1, head_count as u32);
+        ab.set_u32(2, batch as u32);
+        // Grid: (B * head_count * hs); threadgroup = hs; tg index = b*head_count+head.
+        tcb.dispatch_threads(
+            "rwkv7_kk_kmix_multiseq",
+            (batch as u32 * head_count as u32 * hs, 1, 1),
+            (hs, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(k), 0);
+                enc.set_buffer(1, Some(k_k), 0);
+                enc.set_buffer(2, Some(k_a), 0);
+                enc.set_buffer(3, Some(a), 0);
+                enc.set_buffer(4, Some(a_op), 0);
+                enc.set_buffer(5, Some(b_op), 0);
+                enc.set_buffer(6, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// B-stream WKV-7 recurrence + per-head group-norm + bonus + gate. `state` is
+    /// the whole STREAM-major plane; `state_stream_stride_elems` strides between
+    /// streams (= n_layer*head_count*hs*hs) and `state_layer_base_elems` is this
+    /// layer's element offset within a stream window (= layer*head_count*hs*hs).
+    /// All activation inputs/outputs are (B,n); `r_k`/`ln_w`/`ln_b` are (n,) shared.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_wkv_decode_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        state: &PinnedBuffer,
+        state_stream_stride_elems: usize,
+        state_layer_base_elems: usize,
+        r: &PinnedBuffer,
+        w: &PinnedBuffer,
+        k: &PinnedBuffer,
+        v: &PinnedBuffer,
+        a_op: &PinnedBuffer,
+        b_op: &PinnedBuffer,
+        r_k: &PinnedBuffer,
+        ln_w: &PinnedBuffer,
+        ln_b: &PinnedBuffer,
+        gate: &PinnedBuffer,
+        out: &PinnedBuffer,
+        n: usize,
+        head_size: usize,
+        head_count: usize,
+        batch: usize,
+        gn_eps: f32,
+        has_gate: bool,
+    ) -> Result<()> {
+        let hs = head_size as u32;
+        let shmem = (hs as u64) * std::mem::size_of::<f32>() as u64;
+        // ArgbufRwkv7WkvMs { head_size, head_count, n, batch, state_stream_stride,
+        //                    state_layer_base, gn_eps, has_gate }
+        let mut ab = KernelArgBuffer::new(
+            tcb.ctx,
+            &[
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::U32,
+                ArgLayout::F32,
+                ArgLayout::U32,
+            ],
+        )?;
+        ab.set_u32(0, hs);
+        ab.set_u32(1, head_count as u32);
+        ab.set_u32(2, n as u32);
+        ab.set_u32(3, batch as u32);
+        ab.set_u32(4, state_stream_stride_elems as u32);
+        ab.set_u32(5, state_layer_base_elems as u32);
+        ab.set_f32(6, gn_eps);
+        ab.set_u32(7, has_gate as u32);
+        // Grid: (B * head_count * hs); threadgroup = hs; tg index = b*head_count+head.
+        tcb.dispatch_threads(
+            "rwkv7_wkv_decode_multiseq",
+            (batch as u32 * head_count as u32 * hs, 1, 1),
+            (hs, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(state), 0);
+                enc.set_buffer(1, Some(r), 0);
+                enc.set_buffer(2, Some(w), 0);
+                enc.set_buffer(3, Some(k), 0);
+                enc.set_buffer(4, Some(v), 0);
+                enc.set_buffer(5, Some(a_op), 0);
+                enc.set_buffer(6, Some(b_op), 0);
+                enc.set_buffer(7, Some(r_k), 0);
+                enc.set_buffer(8, Some(ln_w), 0);
+                enc.set_buffer(9, Some(ln_b), 0);
+                enc.set_buffer(10, Some(gate), 0);
+                enc.set_buffer(11, Some(out), 0);
+                enc.set_buffer(12, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// B-stream decay activation: w = exp(-0.606531 * sigmoid(w_raw + w0[i%n])).
+    /// `w_raw`/`w` are (B,n); `w0` is (n,) shared.
+    pub fn rwkv7_decay_act_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w_raw: &PinnedBuffer,
+        w0: &PinnedBuffer,
+        w: &PinnedBuffer,
+        n: usize,
+        batch: usize,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, batch as u32);
+        dispatch_n(tcb, "rwkv7_decay_act_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(w_raw), 0);
+            enc.set_buffer(1, Some(w0), 0);
+            enc.set_buffer(2, Some(w), 0);
+            enc.set_buffer(3, Some(ab.handle()), 0);
+        })
+    }
+
+    /// B-stream sigmoid-with-bias in place: x = sigmoid(x + bias[i%n]). `x` is
+    /// (B,n); `bias` is (n,) shared.
+    pub fn rwkv7_sigmoid_bias_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        x: &PinnedBuffer,
+        bias: &PinnedBuffer,
+        n: usize,
+        batch: usize,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, batch as u32);
+        dispatch_n(tcb, "rwkv7_sigmoid_bias_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(x), 0);
+            enc.set_buffer(1, Some(bias), 0);
+            enc.set_buffer(2, Some(ab.handle()), 0);
+        })
+    }
+
+    /// B-stream value-residual mix: v += (v_first - v) * sigmoid(v_mix + v0[i%n]).
+    /// `v`/`v_first`/`v_mix` are (B,n) (v_first is per-stream); `v0` is (n,) shared.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_value_residual_mix_multiseq_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        v: &PinnedBuffer,
+        v_first: &PinnedBuffer,
+        v_mix: &PinnedBuffer,
+        v0: &PinnedBuffer,
+        n: usize,
+        batch: usize,
+    ) -> Result<()> {
+        let total = (batch * n) as u32;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, n as u32);
+        ab.set_u32(1, batch as u32);
+        dispatch_n(tcb, "rwkv7_value_residual_mix_multiseq", total, |enc| {
+            enc.set_buffer(0, Some(v), 0);
+            enc.set_buffer(1, Some(v_first), 0);
+            enc.set_buffer(2, Some(v_mix), 0);
+            enc.set_buffer(3, Some(v0), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
+    }
+
+    /// out[g] = a[g] + b[g] over a flat (B*n) range — B-stream residual add.
+    pub fn rwkv7_add_into_flat_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a: &PinnedBuffer,
+        b: &PinnedBuffer,
+        out: &PinnedBuffer,
+        total: usize,
+    ) -> Result<()> {
+        dispatch_n(tcb, "rwkv7_add_into_flat", total as u32, |enc| {
+            enc.set_buffer(0, Some(a), 0);
+            enc.set_buffer(1, Some(b), 0);
+            enc.set_buffer(2, Some(out), 0);
+            enc.set_u32(3, total as u32);
         })
     }
 }

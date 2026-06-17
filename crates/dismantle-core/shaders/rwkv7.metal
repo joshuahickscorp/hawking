@@ -578,14 +578,16 @@ kernel void rwkv7_kk_kmix_multiseq(
 }
 
 // ── token-shift + per-slot lerp for B streams. ──
-// att_in is (B, n); x_prev is the per-stream token-shift window for THIS layer,
-// stream-major so x_prev[b*n + i] (host passes the (slot0,layer) base; the
-// kernel strides by stream). lerp is (n_slots, n) shared. xs is (n_slots, B, n):
-// slot s, stream b, channel i lands at (s*B + b)*n + i. Grid: (B*n, 1, 1).
-struct ArgbufRwkv7LerpMs { uint n; uint n_slots; uint batch; uint fresh; };
+// att_in is (B, n) ROW-major (att_in[b*n + i]). x_prev is the token-shift STATE
+// plane, which is STREAM-major [stream][layer][n] (see RwkvDecodeArena): the host
+// passes it offset to (stream 0, layer li), and the kernel reaches stream b's
+// window with the per-stream element stride `x_prev_stride` (= n_layer*n). lerp
+// is (n_slots, n) shared. xs is (n_slots, B, n): slot s, stream b, channel i
+// lands at (s*B + b)*n + i. Grid: (B*n, 1, 1).
+struct ArgbufRwkv7LerpMs { uint n; uint n_slots; uint batch; uint fresh; uint x_prev_stride; };
 kernel void rwkv7_token_shift_lerp_multiseq(
-    device const float* att_in [[buffer(0)]],   // (B, n)
-    device const float* x_prev [[buffer(1)]],   // (B, n) stream-major layer window
+    device const float* att_in [[buffer(0)]],   // (B, n) row-major
+    device const float* x_prev [[buffer(1)]],   // stream-major plane @ (s0,li); stride x_prev_stride
     device const float* lerp   [[buffer(2)]],   // (n_slots, n) shared
     device       float* xs      [[buffer(3)]],  // (n_slots, B, n)
     constant ArgbufRwkv7LerpMs& args [[buffer(4)]],
@@ -596,7 +598,9 @@ kernel void rwkv7_token_shift_lerp_multiseq(
     const uint b = gid / args.n;
     const uint i = gid - b * args.n;
     float av = att_in[gid];
-    float sx = (args.fresh != 0u) ? (-av) : (x_prev[gid] - av);
+    // x_prev is stream-major: stream b's layer window starts at b*x_prev_stride.
+    float xp = x_prev[b * args.x_prev_stride + i];
+    float sx = (args.fresh != 0u) ? (-av) : (xp - av);
     for (uint s = 0; s < args.n_slots; ++s) {
         // slot coeff is shared per-channel; output is (slot, B, n).
         xs[(s * args.batch + b) * args.n + i] = av + sx * lerp[s * args.n + i];
@@ -604,11 +608,11 @@ kernel void rwkv7_token_shift_lerp_multiseq(
 }
 
 // ── channel-mix token-shift + single lerp for B streams. ──
-// ffn_in (B,n); x_prev (B,n) stream-major layer window; lerp_k (n,) shared;
-// xk (B,n). Grid: (B*n, 1, 1).
+// ffn_in (B,n) row-major; x_prev the STREAM-major ffn token-shift plane @ (s0,li)
+// with per-stream stride x_prev_stride; lerp_k (n,) shared; xk (B,n). Grid: (B*n).
 kernel void rwkv7_channel_mix_shift_multiseq(
-    device const float* ffn_in [[buffer(0)]],   // (B, n)
-    device const float* x_prev [[buffer(1)]],   // (B, n)
+    device const float* ffn_in [[buffer(0)]],   // (B, n) row-major
+    device const float* x_prev [[buffer(1)]],   // stream-major plane @ (s0,li); stride x_prev_stride
     device const float* lerp_k [[buffer(2)]],   // (n,) shared
     device       float* xk      [[buffer(3)]],  // (B, n)
     constant ArgbufRwkv7LerpMs& args [[buffer(4)]],
@@ -616,10 +620,31 @@ kernel void rwkv7_channel_mix_shift_multiseq(
 {
     const uint total = args.batch * args.n;
     if (gid >= total) return;
-    const uint i = gid % args.n;
+    const uint b = gid / args.n;
+    const uint i = gid - b * args.n;
     float f = ffn_in[gid];
-    float dd = (args.fresh != 0u) ? (-f) : (x_prev[gid] - f);
+    float xp = x_prev[b * args.x_prev_stride + i];
+    float dd = (args.fresh != 0u) ? (-f) : (xp - f);
     xk[gid] = f + dd * lerp_k[i];
+}
+
+// ── write a (B, n) row-major plane back into the STREAM-major token-shift state
+// plane for layer `li`. src is att_in/ffn_in (B,n); dst is the whole state plane
+// (host passes it offset to (stream 0, layer li)); stream b lands at
+// b*dst_stride + i (dst_stride = n_layer*n). This is the B-stream analogue of the
+// single-stream `rwkv7_copy` into a per-layer window. Grid: (B*n, 1, 1).
+struct ArgbufRwkv7ShiftWb { uint n; uint batch; uint dst_stride; };
+kernel void rwkv7_shift_writeback_multiseq(
+    device const float* src [[buffer(0)]],   // (B, n) row-major
+    device       float* dst [[buffer(1)]],   // stream-major plane @ (s0,li)
+    constant ArgbufRwkv7ShiftWb& args [[buffer(2)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint b = gid / args.n;
+    const uint i = gid - b * args.n;
+    dst[b * args.dst_stride + i] = src[gid];
 }
 
 // ── B independent LayerNorms. One threadgroup per stream; grid-strided over n. ──
