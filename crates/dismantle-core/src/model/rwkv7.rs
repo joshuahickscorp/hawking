@@ -1118,6 +1118,88 @@ impl RwkvSeven {
         let logits = gpu::forward_token_gpu(ctx, g, config, embed, token)?;
         Ok(logits)
     }
+
+    /// Ensure the GPU decode bundle is sized for `batch` independent streams,
+    /// rebuilding (re-uploading weights into a B-stream arena) only when the
+    /// current bundle's batch differs. A rebuild starts all B streams fresh
+    /// (zeroed state). No-op when the GPU is unavailable. Returns whether the GPU
+    /// path is active.
+    pub fn ensure_gpu_batch(&mut self, batch: usize) -> Result<bool> {
+        if self.metal_ctx.is_none() || self.gpu.is_none() {
+            return Ok(false);
+        }
+        let need = batch.max(1);
+        if self.gpu.as_ref().unwrap().arena.batch == need {
+            return Ok(true);
+        }
+        let ctx = self.metal_ctx.as_ref().unwrap();
+        let rebuilt = gpu::RwkvGpu::build_with_batch(
+            ctx,
+            &self.config,
+            &self.gguf,
+            &self.embed,
+            &self.tok_norm_w,
+            &self.tok_norm_b,
+            &self.output_norm_w,
+            &self.output_norm_b,
+            &self.layers,
+            need,
+        )?;
+        self.gpu = Some(rebuilt);
+        Ok(true)
+    }
+
+    /// Reset all B streams of the GPU multiseq bundle to the zero state (start of
+    /// B fresh sequences). No-op when the GPU is unavailable.
+    pub fn reset_gpu_multiseq(&mut self) {
+        if let Some(g) = self.gpu.as_mut() {
+            g.reset();
+        }
+    }
+
+    /// Reset ONE stream's GPU recurrent state (its sequence finished; reuse the
+    /// slot for a new sequence — the continuous-batch reuse path).
+    pub fn reset_gpu_slot(&mut self, slot: usize) {
+        if let Some(g) = self.gpu.as_mut() {
+            g.arena.reset_slot(slot);
+        }
+    }
+
+    /// B-STREAM (continuous-batch) GPU decode: advance B independent streams by
+    /// one token each in ONE pass, returning B `vocab`-sized logit rows (slot
+    /// order matches `tokens`). Sizes the GPU bundle for `tokens.len()` streams on
+    /// first use (or batch change). Falls back to B sequential CPU `forward_token`
+    /// runs (over independent states) when the GPU is unavailable — still correct,
+    /// just no bandwidth win.
+    ///
+    /// This is the GPU realization of the CPU oracle
+    /// [`forward_tokens_multiseq_cpu`]: by construction the two agree
+    /// stream-for-stream (within f32 reduction tolerance), which the multiseq
+    /// parity gate checks.
+    pub fn forward_token_gpu_multiseq(&mut self, tokens: &[u32]) -> Result<Vec<Vec<f32>>> {
+        if !self.ensure_gpu_batch(tokens.len())? {
+            // CPU fallback: B independent fresh-less single-stream forwards. The
+            // caller owns sequencing/state via the GPU bundle on the fast path, so
+            // here we advance the engine's own state per stream is NOT valid;
+            // instead require the GPU for the batched path and surface clearly.
+            return Err(Error::Model(
+                "rwkv7 forward_token_gpu_multiseq: GPU unavailable (use the CPU \
+                 multiseq oracle forward_tokens_multiseq_cpu with an explicit \
+                 RwkvMultiState)"
+                    .into(),
+            ));
+        }
+        let RwkvSeven {
+            config,
+            metal_ctx,
+            gpu,
+            embed,
+            ..
+        } = self;
+        let ctx = metal_ctx.as_ref().unwrap();
+        let g = gpu.as_mut().unwrap();
+        gpu::forward_token_gpu_multiseq(ctx, g, config, embed, tokens)
+    }
 }
 
 /// RWKV-7 GPU decode path: weight upload, the recurrent-state arena, and the
@@ -1127,13 +1209,19 @@ pub mod gpu {
     use super::{RwkvConfig, RwkvLayer};
     use crate::gguf::{GgmlType, GgufFile};
     use crate::kernels::{
-        gemv_q4_k_v4_predec_xoff_pinned_tcb, gemv_q6_k_pinned_tcb, predecode_q4_k_scale_table,
+        gemm_q4_k_m_batched_v3w_predec_xoff_pinned_tcb, gemv_q4_k_v4_predec_xoff_pinned_tcb,
+        gemv_q6_k_pinned_off_tcb, gemv_q6_k_pinned_tcb, predecode_q4_k_scale_table,
     };
     use crate::metal::rwkv_decode_arena::{
-        rwkv7_add_into_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_tcb,
-        rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
-        rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
-        rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_tcb,
+        rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
+        rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb,
+        rwkv7_decay_act_tcb, rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb,
+        rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb,
+        rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
+        rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
+        rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
+        rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb,
+        rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
     };
     use crate::metal::{MetalContext, PinnedBuffer, RwkvDecodeArena, TokenCommandBuffer};
     use crate::{Error, Result};
@@ -1259,6 +1347,89 @@ pub mod gpu {
                 }
             }
         }
+
+        /// B-stream projection: y_batch (B, rows) = W · x_batch (B, cols).
+        ///
+        /// `x` must hold a CONTIGUOUS (B, cols) f32 block whose first element is at
+        /// byte offset `x_off` (so `x[x_off ..]` is exactly the (B, cols) the
+        /// batched GEMM reads); `out` is written as a contiguous (B, rows) block at
+        /// offset 0. For Q4_K this is ONE `gemm_q4_k_m_batched_v3w_predec` dispatch
+        /// — the weight is read once across the B columns (the bandwidth win). The
+        /// Q6_K LM head and the f32 LoRA/fallback projections have no batched
+        /// kernel, so they loop B single-vector GEMVs over the SAME resident weight
+        /// buffer (still one upload; per-stream x/out offsets `bi*cols` / `bi*rows`).
+        /// Every path is numerically equal to `gemv` per stream, so the B-stream
+        /// result is bit-for-bit B independent single-stream projections.
+        fn gemv_batched(
+            &self,
+            tcb: &mut TokenCommandBuffer<'_>,
+            x: &PinnedBuffer,
+            x_off: usize,
+            out: &PinnedBuffer,
+            batch: usize,
+        ) -> Result<()> {
+            let f = std::mem::size_of::<f32>();
+            match self {
+                ProjWeight::Q4k {
+                    q4,
+                    scales,
+                    rows,
+                    cols,
+                } => {
+                    // ONE dispatch reads the weight across the B columns (the BW
+                    // win). The kernel reads its (B, cols) input starting at the
+                    // byte offset `x_off` (the slot block in the (slot,B,n) xs
+                    // buffer) and writes (B, rows) at offset 0. The dispatcher caps
+                    // batch at 8 and validates the contiguous-stride contract.
+                    gemm_q4_k_m_batched_v3w_predec_xoff_pinned_tcb(
+                        tcb,
+                        q4,
+                        0,
+                        q4.length() as usize,
+                        scales,
+                        0,
+                        *rows,
+                        *cols,
+                        batch,
+                        x,
+                        x_off,
+                        out,
+                    )
+                }
+                ProjWeight::Q6k { q6, rows, cols } => {
+                    for bi in 0..batch {
+                        gemv_q6_k_pinned_off_tcb(
+                            tcb,
+                            q6,
+                            0,
+                            q6.length() as usize,
+                            *rows,
+                            *cols,
+                            x,
+                            x_off + bi * *cols * f,
+                            out,
+                            bi * *rows * f,
+                        )?;
+                    }
+                    Ok(())
+                }
+                ProjWeight::F32 { w, rows, cols } => {
+                    for bi in 0..batch {
+                        rwkv7_gemv_f32_xoff_yoff_tcb(
+                            tcb,
+                            w,
+                            *rows,
+                            *cols,
+                            x,
+                            x_off + bi * *cols * f,
+                            out,
+                            bi * *rows * f,
+                        )?;
+                    }
+                    Ok(())
+                }
+            }
+        }
     }
 
     /// GPU-resident weights for one RWKV-7 layer. The six big projections
@@ -1342,6 +1513,38 @@ pub mod gpu {
             output_norm_b: &[f32],
             layers: &[RwkvLayer],
         ) -> Result<Self> {
+            Self::build_with_batch(
+                ctx,
+                cfg,
+                g,
+                embed,
+                tok_norm_w,
+                tok_norm_b,
+                output_norm_w,
+                output_norm_b,
+                layers,
+                1,
+            )
+        }
+
+        /// Build the GPU decode bundle sized for `batch` INDEPENDENT streams (the
+        /// continuous-batch path). Identical weight upload to [`build`]; only the
+        /// arena scales — every per-token scratch + the three state planes are
+        /// sized for B streams (`RwkvDecodeArena::new_with_batch`). `batch == 1`
+        /// is exactly the single-stream bundle.
+        #[allow(clippy::too_many_arguments)]
+        pub fn build_with_batch(
+            ctx: &MetalContext,
+            cfg: &RwkvConfig,
+            g: &GgufFile,
+            embed: &[f32],
+            tok_norm_w: &[f32],
+            tok_norm_b: &[f32],
+            output_norm_w: &[f32],
+            output_norm_b: &[f32],
+            layers: &[RwkvLayer],
+            batch: usize,
+        ) -> Result<Self> {
             let _ = embed; // embed gather is a host memcpy of one row (see forward).
             let up = |v: &[f32]| ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(v));
             let up_opt = |v: &Option<Vec<f32>>| v.as_ref().map(|x| up(x));
@@ -1391,7 +1594,7 @@ pub mod gpu {
                 })
                 .collect();
 
-            let arena = RwkvDecodeArena::new(
+            let arena = RwkvDecodeArena::new_with_batch(
                 ctx,
                 cfg.n_layer,
                 cfg.n_embd,
@@ -1403,6 +1606,7 @@ pub mod gpu {
                 cfg.iclr_lora,
                 cfg.value_res_lora,
                 cfg.gate_lora,
+                batch,
             );
             arena.reset_state();
 
@@ -1687,5 +1891,390 @@ pub mod gpu {
         tcb.commit_and_wait()?;
         g.fresh = false;
         Ok(read_vec(&a.logits, cfg.vocab_size))
+    }
+
+    /// Write B embedding rows (one per stream) into the `(B, n)` row-major `x`
+    /// buffer: stream b's row lands at `x[b*n .. b*n+n]`.
+    fn write_rows_batch(buf: &PinnedBuffer, rows: &[&[f32]], n: usize) {
+        let ptr = buf.contents() as *mut f32;
+        for (b, row) in rows.iter().enumerate() {
+            debug_assert_eq!(row.len(), n);
+            unsafe { std::ptr::copy_nonoverlapping(row.as_ptr(), ptr.add(b * n), n) };
+        }
+    }
+
+    /// Read B `vocab`-sized logit rows from the `(B, vocab)` row-major `logits`
+    /// buffer: stream b's row is `logits[b*vocab .. b*vocab+vocab]`.
+    fn read_rows_batch(buf: &PinnedBuffer, batch: usize, vocab: usize) -> Vec<Vec<f32>> {
+        let ptr = buf.contents() as *const f32;
+        (0..batch)
+            .map(|b| unsafe { std::slice::from_raw_parts(ptr.add(b * vocab), vocab) }.to_vec())
+            .collect()
+    }
+
+    /// B-STREAM (continuous-batch) RWKV-7 decode step on the GPU. Advances B
+    /// INDEPENDENT recurrent states by one token each in ONE pass, mirroring
+    /// [`forward_token_gpu`] op-for-op — so stream b is bit-for-bit its own
+    /// single-stream GPU decode. The bandwidth win: every big projection + the LM
+    /// head reads its weight ONCE across the B activation columns (`gemv_batched`
+    /// → the Q4_K `gemm_q4_k_m_batched_v3w_predec` for r/k/v/o/channel-mix; the
+    /// Q6_K LM head + f32 LoRA loop B vectors over the SINGLE resident weight).
+    ///
+    /// Buffers follow the [`RwkvDecodeArena::new_with_batch`] contract:
+    /// activations are `(B, dim)` row-major, the `xs` lerp output is `(slot,B,n)`,
+    /// and the three state planes are stream-major (per-stream/per-layer windows).
+    /// `tokens.len()` must equal the arena batch. Returns B `vocab` logit rows.
+    pub fn forward_token_gpu_multiseq(
+        ctx: &MetalContext,
+        g: &mut RwkvGpu,
+        cfg: &RwkvConfig,
+        embed: &[f32],
+        tokens: &[u32],
+    ) -> Result<Vec<Vec<f32>>> {
+        let n = cfg.n_embd;
+        let eps = cfg.ln_eps;
+        let b = g.arena.batch;
+        if tokens.len() != b {
+            return Err(Error::Model(format!(
+                "rwkv7 gpu multiseq: tokens={} != arena batch={}",
+                tokens.len(),
+                b
+            )));
+        }
+        let f32b = std::mem::size_of::<f32>();
+        // Per-stream element strides into the stream-major state planes.
+        let s_per_layer = cfg.head_count * cfg.head_size * cfg.head_size;
+        let wkv_stream_stride = cfg.n_layer * s_per_layer; // elems / stream
+        let shift_stream_stride = cfg.n_layer * n; // elems / stream
+
+        // Embedding gather: write B rows into the (B, n) x buffer.
+        let mut rows: Vec<&[f32]> = Vec::with_capacity(b);
+        for &tok in tokens {
+            let row = tok as usize * n;
+            if row + n > embed.len() {
+                return Err(Error::Model(format!("rwkv7: token {tok} out of vocab")));
+            }
+            rows.push(&embed[row..row + n]);
+        }
+        let a = &g.arena;
+        write_rows_batch(&a.x, &rows, n);
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+
+        // LN0 over all B rows: x_norm = layernorm(x); x <- x_norm (copy B*n).
+        rwkv7_layernorm_multiseq_tcb(
+            &mut tcb,
+            &a.x,
+            0,
+            &g.tok_norm_w,
+            &g.tok_norm_b,
+            &a.x_norm,
+            0,
+            n,
+            b,
+            eps,
+        )?;
+        rwkv7_copy_tcb(&mut tcb, &a.x_norm, &a.x, 0, b * n)?;
+
+        let mut have_v_first = false;
+        // byte offset of slot `s` in the (slot, B, n) xs buffer.
+        let xs_slot = |s: usize| s * b * n * f32b;
+
+        for li in 0..cfg.n_layer {
+            let layer = &g.layers[li];
+            // (stream 0, layer li) byte bases into the stream-major planes.
+            let shift_base = a.shift_slot_layer_byte_offset(0, li);
+            let wkv_layer_base = li * s_per_layer; // elems within a stream window
+
+            // ── time-mix ──
+            // att_in = layernorm(x, attn_norm)   over (B, n)
+            rwkv7_layernorm_multiseq_tcb(
+                &mut tcb,
+                &a.x,
+                0,
+                &layer.attn_norm_w,
+                &layer.attn_norm_b,
+                &a.att_in,
+                0,
+                n,
+                b,
+                eps,
+            )?;
+            // token-shift lerp from the stream-major att_shift window → xs (slot,B,n).
+            let n_slots = if layer.has_gate { 6 } else { 5 };
+            rwkv7_token_shift_lerp_multiseq_tcb(
+                &mut tcb,
+                &a.att_in,
+                &a.att_shift,
+                shift_base,
+                shift_stream_stride,
+                &layer.lerp_fused,
+                &a.xs,
+                n,
+                n_slots,
+                b,
+                g.fresh,
+            )?;
+
+            // r = Wr @ xr   (slot 0) — batched Q4_K projection
+            layer.receptance.gemv_batched(&mut tcb, &a.xs, xs_slot(0), &a.r, b)?;
+
+            // w = exp(-0.606531 * sigmoid(w0 + W2 @ tanh(W1 @ xw)))  (slot 1).
+            // LoRA: per-stream f32 GEMVs into (B, decay_lora) then (B, n).
+            for bi in 0..b {
+                rwkv7_gemv_f32_xoff_yoff_tcb(
+                    &mut tcb,
+                    &layer.w1,
+                    cfg.decay_lora,
+                    n,
+                    &a.xs,
+                    xs_slot(1) + bi * n * f32b,
+                    &a.w_lo,
+                    bi * cfg.decay_lora * f32b,
+                )?;
+            }
+            rwkv7_tanh_inplace_tcb(&mut tcb, &a.w_lo, b * cfg.decay_lora)?;
+            for bi in 0..b {
+                rwkv7_gemv_f32_xoff_yoff_tcb(
+                    &mut tcb,
+                    &layer.w2,
+                    n,
+                    cfg.decay_lora,
+                    &a.w_lo,
+                    bi * cfg.decay_lora * f32b,
+                    &a.w_raw,
+                    bi * n * f32b,
+                )?;
+            }
+            rwkv7_decay_act_multiseq_tcb(&mut tcb, &a.w_raw, &layer.w0, &a.w, n, b)?;
+
+            // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — batched Q4_K projections
+            layer.key.gemv_batched(&mut tcb, &a.xs, xs_slot(2), &a.k, b)?;
+            layer.value.gemv_batched(&mut tcb, &a.xs, xs_slot(3), &a.v, b)?;
+
+            // value-residual mix (skip on layer 0 where v_first is established).
+            if !have_v_first {
+                rwkv7_copy_tcb(&mut tcb, &a.v, &a.v_first, 0, b * n)?;
+                have_v_first = true;
+            } else {
+                for bi in 0..b {
+                    rwkv7_gemv_f32_xoff_yoff_tcb(
+                        &mut tcb,
+                        &layer.v1,
+                        cfg.value_res_lora,
+                        n,
+                        &a.xs,
+                        xs_slot(3) + bi * n * f32b,
+                        &a.v_lo,
+                        bi * cfg.value_res_lora * f32b,
+                    )?;
+                }
+                for bi in 0..b {
+                    rwkv7_gemv_f32_xoff_yoff_tcb(
+                        &mut tcb,
+                        &layer.v2,
+                        n,
+                        cfg.value_res_lora,
+                        &a.v_lo,
+                        bi * cfg.value_res_lora * f32b,
+                        &a.v_mix,
+                        bi * n * f32b,
+                    )?;
+                }
+                rwkv7_value_residual_mix_multiseq_tcb(
+                    &mut tcb,
+                    &a.v,
+                    &a.v_first,
+                    &a.v_mix,
+                    &layer.v0,
+                    n,
+                    b,
+                )?;
+            }
+
+            // gate g = G2 @ sigmoid(G1 @ xg)   (slot 5; only if gated)
+            if layer.has_gate {
+                let g1 = layer.g1.as_ref().unwrap();
+                let g2 = layer.g2.as_ref().unwrap();
+                for bi in 0..b {
+                    rwkv7_gemv_f32_xoff_yoff_tcb(
+                        &mut tcb,
+                        g1,
+                        cfg.gate_lora,
+                        n,
+                        &a.xs,
+                        xs_slot(5) + bi * n * f32b,
+                        &a.g_lo,
+                        bi * cfg.gate_lora * f32b,
+                    )?;
+                }
+                rwkv7_sigmoid_inplace_tcb(&mut tcb, &a.g_lo, b * cfg.gate_lora)?;
+                for bi in 0..b {
+                    rwkv7_gemv_f32_xoff_yoff_tcb(
+                        &mut tcb,
+                        g2,
+                        n,
+                        cfg.gate_lora,
+                        &a.g_lo,
+                        bi * cfg.gate_lora * f32b,
+                        &a.gate,
+                        bi * n * f32b,
+                    )?;
+                }
+            }
+
+            // a = sigmoid(a0 + A2 @ (A1 @ xa))   (slot 4)
+            for bi in 0..b {
+                rwkv7_gemv_f32_xoff_yoff_tcb(
+                    &mut tcb,
+                    &layer.a1,
+                    cfg.iclr_lora,
+                    n,
+                    &a.xs,
+                    xs_slot(4) + bi * n * f32b,
+                    &a.a_lo,
+                    bi * cfg.iclr_lora * f32b,
+                )?;
+            }
+            for bi in 0..b {
+                rwkv7_gemv_f32_xoff_yoff_tcb(
+                    &mut tcb,
+                    &layer.a2,
+                    n,
+                    cfg.iclr_lora,
+                    &a.a_lo,
+                    bi * cfg.iclr_lora * f32b,
+                    &a.a,
+                    bi * n * f32b,
+                )?;
+            }
+            rwkv7_sigmoid_bias_multiseq_tcb(&mut tcb, &a.a, &layer.a0, n, b)?;
+
+            // kk = l2norm_per_head(k*k_k); k += (a-1)*(k*k_a); a_op=-kk; b_op=kk*a.
+            rwkv7_kk_kmix_multiseq_tcb(
+                &mut tcb,
+                &a.k,
+                &layer.k_k,
+                &layer.k_a,
+                &a.a,
+                &a.a_op,
+                &a.b_op,
+                cfg.head_size,
+                cfg.head_count,
+                b,
+            )?;
+
+            // WKV-7 recurrence + per-head group-norm + bonus + gate, for B streams.
+            rwkv7_wkv_decode_multiseq_tcb(
+                &mut tcb,
+                &a.wkv_state,
+                wkv_stream_stride,
+                wkv_layer_base,
+                &a.r,
+                &a.w,
+                &a.k,
+                &a.v,
+                &a.a_op,
+                &a.b_op,
+                &layer.r_k,
+                &layer.ln_w,
+                &layer.ln_b,
+                &a.gate,
+                &a.out_wkv,
+                n,
+                cfg.head_size,
+                cfg.head_count,
+                b,
+                GN_EPS,
+                layer.has_gate,
+            )?;
+
+            // y = Wo @ out → cur — batched Q4_K projection (x from out_wkv, off 0)
+            layer.output.gemv_batched(&mut tcb, &a.out_wkv, 0, &a.cur, b)?;
+
+            // store att_in as next token-shift for this layer (scatter into the
+            // stream-major att_shift plane).
+            rwkv7_shift_writeback_multiseq_tcb(
+                &mut tcb,
+                &a.att_in,
+                &a.att_shift,
+                shift_base,
+                shift_stream_stride,
+                n,
+                b,
+            )?;
+
+            // ffn_inp = cur + x   (flat B*n)
+            rwkv7_add_into_flat_tcb(&mut tcb, &a.cur, &a.x, &a.ffn_inp, b * n)?;
+
+            // ── channel-mix ──
+            // ffn_in = layernorm(ffn_inp, attn_norm_2)   over (B, n)
+            rwkv7_layernorm_multiseq_tcb(
+                &mut tcb,
+                &a.ffn_inp,
+                0,
+                &layer.attn_norm2_w,
+                &layer.attn_norm2_b,
+                &a.ffn_in,
+                0,
+                n,
+                b,
+                eps,
+            )?;
+            // xk = ffn_in + (x_prev - ffn_in) * lerp_k   (stream-major ffn_shift)
+            rwkv7_channel_mix_shift_multiseq_tcb(
+                &mut tcb,
+                &a.ffn_in,
+                &a.ffn_shift,
+                shift_base,
+                shift_stream_stride,
+                &layer.channel_mix_lerp_k,
+                &a.xk_ffn,
+                n,
+                b,
+                g.fresh,
+            )?;
+            // k = relu(Wk @ xk)^2 — batched Q4_K projection (B, n_ff)
+            layer
+                .channel_mix_key
+                .gemv_batched(&mut tcb, &a.xk_ffn, 0, &a.ffn_k, b)?;
+            rwkv7_relu_sq_inplace_tcb(&mut tcb, &a.ffn_k, b * cfg.n_ff)?;
+            // cmix = Wv @ k — batched Q4_K projection (B, n)
+            layer
+                .channel_mix_value
+                .gemv_batched(&mut tcb, &a.ffn_k, 0, &a.cmix, b)?;
+            // store ffn_in as next token-shift (scatter into stream-major plane).
+            rwkv7_shift_writeback_multiseq_tcb(
+                &mut tcb,
+                &a.ffn_in,
+                &a.ffn_shift,
+                shift_base,
+                shift_stream_stride,
+                n,
+                b,
+            )?;
+
+            // x = cmix + ffn_inp   (flat B*n)
+            rwkv7_add_into_flat_tcb(&mut tcb, &a.cmix, &a.ffn_inp, &a.x, b * n)?;
+        }
+
+        // final norm (B, n) + LM head (batched: Q6_K loops B over one weight).
+        rwkv7_layernorm_multiseq_tcb(
+            &mut tcb,
+            &a.x,
+            0,
+            &g.output_norm_w,
+            &g.output_norm_b,
+            &a.x_norm,
+            0,
+            n,
+            b,
+            eps,
+        )?;
+        g.lm_head.gemv_batched(&mut tcb, &a.x_norm, 0, &a.logits, b)?;
+
+        tcb.commit_and_wait()?;
+        g.fresh = false;
+        Ok(read_rows_batch(&a.logits, b, cfg.vocab_size))
     }
 }

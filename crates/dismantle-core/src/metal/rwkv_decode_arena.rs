@@ -20,8 +20,8 @@
 pub use imp::{
     rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
     rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb,
-    rwkv7_gemv_f32_off_tcb, rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb,
-    rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
+    rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb, rwkv7_kk_kmix_multiseq_tcb,
+    rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
     rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
     rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
     rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
@@ -338,6 +338,41 @@ mod imp {
                 enc.set_buffer(0, Some(w), 0);
                 enc.set_buffer(1, Some(x), x_off_bytes as u64);
                 enc.set_buffer(2, Some(out), 0);
+                enc.set_buffer(3, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
+    }
+
+    /// `rwkv7_gemv_f32_off_tcb` with a y (output) byte offset too, so a (B,rows)
+    /// output block can be filled one stream at a time (`out[bi*rows ..]`). Used
+    /// by the B-stream F32 projection loop (LoRA + the all-F32 GGUF fallback);
+    /// the single-stream callers keep the zero-output-offset helper above.
+    #[allow(clippy::too_many_arguments)]
+    pub fn rwkv7_gemv_f32_xoff_yoff_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        w: &PinnedBuffer,
+        rows: usize,
+        cols: usize,
+        x: &PinnedBuffer,
+        x_off_bytes: usize,
+        out: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        let rows_u32 = rows as u32;
+        let cols_u32 = cols as u32;
+        let shmem = (LN_TG as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, rows_u32);
+        ab.set_u32(1, cols_u32);
+        tcb.dispatch_threads(
+            "gemv_f32_attn",
+            (rows_u32 * LN_TG, 1, 1),
+            (LN_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(w), 0);
+                enc.set_buffer(1, Some(x), x_off_bytes as u64);
+                enc.set_buffer(2, Some(out), out_off_bytes as u64);
                 enc.set_buffer(3, Some(ab.handle()), 0);
                 enc.set_threadgroup_memory_length(0, shmem);
             },
