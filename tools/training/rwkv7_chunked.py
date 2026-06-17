@@ -128,5 +128,119 @@ def wkv7_chunked(
     with inert steps and the output is sliced back to ``T``).
 
     Returns ``out`` of shape ``[B, T, H, D]``.
+
+    Numerical note: the intra-chunk attention uses the factored decay
+    ``exp(gk_cs[t]) * exp(-gk_cs[s])`` form. With ``w in (0.5, 1)`` we have
+    ``gk in (-0.694, 0)``, so ``exp(-gk_cs[s])`` is bounded by
+    ``exp(0.694 * chunk_size)``; this stays within fp32 range for
+    ``chunk_size`` up to ~120 and comfortably so for the practical sizes used
+    here (<= 64).
     """
-    raise NotImplementedError("chunked WKV-7 not implemented yet")
+    B, T, H, D = r.shape
+    c = int(chunk_size)
+    assert c >= 1
+
+    # --- right-pad T up to a multiple of c with inert steps ---
+    # The recurrence is causal, so padded tail steps never affect earlier
+    # outputs; we slice the output back to T at the end. Pad value 0 for
+    # r/k/v/alpha/beta is inert; w-pad = 1 (gk-pad = 0) keeps state finite.
+    pad = (c - T % c) % c
+    if pad:
+        zpad = (0, 0, 0, 0, 0, pad)  # pad along the T axis (dim=1) at the end
+        r = F.pad(r, zpad)
+        k = F.pad(k, zpad)
+        v = F.pad(v, zpad)
+        a_op = F.pad(a_op, zpad)
+        b_op = F.pad(b_op, zpad)
+        w = F.pad(w, zpad, value=1.0)  # decay 1.0 -> gk 0.0 (no decay, inert)
+    Tp = T + pad
+    N = Tp // c
+
+    # gk = log(w) is the additive log-decay fla operates on.
+    gk = torch.log(w)
+
+    # --- reshape to per-chunk [B, H, N, c, D] (fla layout: heads before time) ---
+    def chunkify(x):
+        # [B, T, H, D] -> [B, H, N, c, D]
+        return x.view(B, N, c, H, D).permute(0, 3, 1, 2, 4).contiguous()
+
+    q = chunkify(r)
+    kc = chunkify(k)
+    vc = chunkify(v)
+    alpha = chunkify(a_op)
+    beta = chunkify(b_op)
+    gkc = chunkify(gk)
+
+    # cumulative log-decay within each chunk (inclusive): gk_cs[t] = sum_{s<=t} gk[s]
+    gk_cs = gkc.cumsum(dim=-2)  # [B,H,N,c,D]
+    exp_cs = gk_cs.exp()              # exp(gk_cs[t])           (<= 1)
+    exp_neg_cs = (-gk_cs).exp()       # exp(-gk_cs[s])          (>= 1, bounded)
+    exp_cs_excl = (gk_cs - gkc).exp() # exp(gk_cs[t] - gk[t]) = exp(gk_cs[t-1])
+
+    # Decay-weighted factors so that A[t,s] = <x_t * exp(gk_cs[t]), y_s * exp(-gk_cs[s])>
+    # == sum_d x[t,d] y[s,d] exp(gk_cs[t,d] - gk_cs[s,d]).
+    q_dec = q * exp_cs            # query decayed from chunk start
+    a_dec = alpha * exp_cs_excl  # alpha decayed (one step short: uses gk_cs[t-1])
+    k_inv = kc * exp_neg_cs      # key   decayed by -gk_cs[s]
+    b_inv = beta * exp_neg_cs    # beta  decayed by -gk_cs[s]
+
+    # Causal masks over the (c x c) chunk attention.
+    tri_le = torch.tril(torch.ones(c, c, dtype=torch.bool, device=r.device))   # s <= t
+    tri_lt = torch.tril(torch.ones(c, c, dtype=torch.bool, device=r.device), -1)  # s < t
+
+    def masked_attn(x_dec, y_inv, mask):
+        # [B,H,N,c,D] x [B,H,N,c,D] -> [B,H,N,c,c]  (A[t,s]), then mask.
+        A = torch.einsum("bhntd,bhnsd->bhnts", x_dec, y_inv)
+        return A * mask  # mask is [c,c] broadcast over leading dims
+
+    A_qk = masked_attn(q_dec, k_inv, tri_le)  # s <= t
+    A_qb = masked_attn(q_dec, b_inv, tri_le)  # s <= t
+    A_ak = masked_attn(a_dec, k_inv, tri_lt)  # s <  t
+    A_ab = masked_attn(a_dec, b_inv, tri_lt)  # s <  t  (strictly lower-tri)
+
+    # --- T_ab = (I - A_ab)^{-1}, A_ab strictly lower-triangular (nilpotent) ---
+    # Solve L @ T_ab = I with L = I - A_ab by forward substitution, building the
+    # result row-by-row out-of-place so autograd flows (no in-place index writes).
+    # Row t:  T[t] = e_t + sum_{s<t} A_ab[t,s] * T[s].
+    eye = torch.eye(c, dtype=q.dtype, device=r.device).expand(B, H, N, c, c)
+    rows = [eye[..., 0, :]]  # T[0] = e_0 (A_ab row 0 is all-zero)
+    for t in range(1, c):
+        coeff = A_ab[..., t, :t]                       # [B,H,N,t]
+        prev = torch.stack(rows, dim=-2)               # [B,H,N,t,c]
+        rows.append(eye[..., t, :] + torch.einsum("bhns,bhnsc->bhnc", coeff, prev))
+    T_ab = torch.stack(rows, dim=-2)                   # [B,H,N,c,c]
+
+    # u and wmat (fla: u = T_ab @ (A_ak @ v); wmat = T_ab @ (exp(gk_cs-gk)*alpha))
+    u = T_ab @ (A_ak @ vc)               # [B,H,N,c,D]   in-chunk value contrib
+    wmat = T_ab @ (exp_cs_excl * alpha)  # [B,H,N,c,D]   in-chunk -> state proj
+
+    # decay from each position to the chunk end (for the inter-chunk state update)
+    gk_last = gk_cs[..., -1:, :]               # [B,H,N,1,D]
+    decay_to_end = (gk_last - gk_cs).exp()     # exp(gk_cs[-1] - gk_cs[t])  (<= 1)
+    k_end = kc * decay_to_end
+    b_end = beta * decay_to_end
+    chunk_decay = gk_last[..., 0, :].exp()     # exp(gk_cs[-1]) total chunk decay [B,H,N,D]
+
+    # --- sequential scan over the N chunks, carrying the SxS state S[j,i] ---
+    # (fla state layout: rows = key dim j, cols = value dim i. dismantle's S[i][j]
+    #  is the transpose; the chunked algebra is the fla one throughout.)
+    S = torch.zeros(B, H, D, D, dtype=q.dtype, device=r.device)
+    outs = []
+    for n in range(N):
+        v2 = u[:, :, n] + wmat[:, :, n] @ S          # [B,H,c,D] effective values
+        o = (
+            A_qk[:, :, n] @ vc[:, :, n]              # intra: query x key x value
+            + A_qb[:, :, n] @ v2                     # intra: query x beta x v2
+            + (q[:, :, n] * exp_cs[:, :, n]) @ S     # inter: carry-in state
+        )
+        outs.append(o)
+        S = (
+            S * chunk_decay[:, :, n].unsqueeze(-1)             # decay whole state
+            + k_end[:, :, n].transpose(-1, -2) @ vc[:, :, n]   # key  outer value
+            + b_end[:, :, n].transpose(-1, -2) @ v2            # beta outer v2
+        )
+
+    out = torch.stack(outs, dim=2)                  # [B,H,N,c,D]
+    # back to [B, T, H, D] and drop the padding.
+    out = out.permute(0, 2, 3, 1, 4).reshape(B, Tp, H, D)
+    return out[:, :T]
