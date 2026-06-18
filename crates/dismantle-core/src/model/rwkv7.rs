@@ -1100,7 +1100,10 @@ impl RwkvSeven {
     /// step (0 before the first GPU step). Used by the bench/probe to track the
     /// per-step dispatch count — the headline figure for the LoRA-fusion lever.
     pub fn last_gpu_dispatch_count(&self) -> usize {
-        self.gpu.as_ref().map(|g| g.last_dispatch_count).unwrap_or(0)
+        self.gpu
+            .as_ref()
+            .map(|g| g.last_dispatch_count)
+            .unwrap_or(0)
     }
 
     /// GPU counterpart of [`forward_token`]: one RWKV-7 decode step on Metal,
@@ -1426,6 +1429,7 @@ pub mod gpu {
                         rwkv7_gemv_f32_xoff_yoff_tcb(
                             tcb,
                             w,
+                            0,
                             *rows,
                             *cols,
                             x,
@@ -1722,8 +1726,8 @@ pub mod gpu {
                 lo_off += rank;
             }
             let lora_down_rows = lo_off; // == sum of ranks
-            // Up table: rows=n each; cols=rank_i; reads `lora_lo` segments; writes
-            // stacked `lora_up` = [w_raw | a | v_mix | gate], each n.
+                                         // Up table: rows=n each; cols=rank_i; reads `lora_lo` segments; writes
+                                         // stacked `lora_up` = [w_raw | a | v_mix | gate], each n.
             let mut up_tbl = Vec::with_capacity(groups.len());
             let mut w2_off = 0usize; // W2 element offset (rows are n×rank)
             let mut lo_in = 0usize; // low-buffer input segment offset
@@ -2110,6 +2114,17 @@ pub mod gpu {
             let shift_base = a.shift_slot_layer_byte_offset(0, li);
             let wkv_layer_base = li * s_per_layer; // elems within a stream window
 
+            // Byte offsets of each LoRA group within lora_w1_stacked / lora_w2_stacked.
+            // Stack order: [w | a | v | g?], matching stack_w1/stack_w2 at GPU-load time.
+            let lw1_w = 0;
+            let lw1_a = cfg.decay_lora * n * f32b;
+            let lw1_v = lw1_a + cfg.iclr_lora * n * f32b;
+            let lw1_g = lw1_v + cfg.value_res_lora * n * f32b;
+            let lw2_w = 0;
+            let lw2_a = n * cfg.decay_lora * f32b;
+            let lw2_v = lw2_a + n * cfg.iclr_lora * f32b;
+            let lw2_g = lw2_v + n * cfg.value_res_lora * f32b;
+
             // ── time-mix ──
             // att_in = layernorm(x, attn_norm)   over (B, n)
             rwkv7_layernorm_multiseq_tcb(
@@ -2150,7 +2165,8 @@ pub mod gpu {
             for bi in 0..b {
                 rwkv7_gemv_f32_xoff_yoff_tcb(
                     &mut tcb,
-                    &layer.w1,
+                    &layer.lora_w1_stacked,
+                    lw1_w,
                     cfg.decay_lora,
                     n,
                     &a.xs,
@@ -2163,7 +2179,8 @@ pub mod gpu {
             for bi in 0..b {
                 rwkv7_gemv_f32_xoff_yoff_tcb(
                     &mut tcb,
-                    &layer.w2,
+                    &layer.lora_w2_stacked,
+                    lw2_w,
                     n,
                     cfg.decay_lora,
                     &a.w_lo,
@@ -2190,7 +2207,8 @@ pub mod gpu {
                 for bi in 0..b {
                     rwkv7_gemv_f32_xoff_yoff_tcb(
                         &mut tcb,
-                        &layer.v1,
+                        &layer.lora_w1_stacked,
+                        lw1_v,
                         cfg.value_res_lora,
                         n,
                         &a.xs,
@@ -2202,7 +2220,8 @@ pub mod gpu {
                 for bi in 0..b {
                     rwkv7_gemv_f32_xoff_yoff_tcb(
                         &mut tcb,
-                        &layer.v2,
+                        &layer.lora_w2_stacked,
+                        lw2_v,
                         n,
                         cfg.value_res_lora,
                         &a.v_lo,
@@ -2218,12 +2237,11 @@ pub mod gpu {
 
             // gate g = G2 @ sigmoid(G1 @ xg)   (slot 5; only if gated)
             if layer.has_gate {
-                let g1 = layer.g1.as_ref().unwrap();
-                let g2 = layer.g2.as_ref().unwrap();
                 for bi in 0..b {
                     rwkv7_gemv_f32_xoff_yoff_tcb(
                         &mut tcb,
-                        g1,
+                        &layer.lora_w1_stacked,
+                        lw1_g,
                         cfg.gate_lora,
                         n,
                         &a.xs,
@@ -2236,7 +2254,8 @@ pub mod gpu {
                 for bi in 0..b {
                     rwkv7_gemv_f32_xoff_yoff_tcb(
                         &mut tcb,
-                        g2,
+                        &layer.lora_w2_stacked,
+                        lw2_g,
                         n,
                         cfg.gate_lora,
                         &a.g_lo,
@@ -2251,7 +2270,8 @@ pub mod gpu {
             for bi in 0..b {
                 rwkv7_gemv_f32_xoff_yoff_tcb(
                     &mut tcb,
-                    &layer.a1,
+                    &layer.lora_w1_stacked,
+                    lw1_a,
                     cfg.iclr_lora,
                     n,
                     &a.xs,
@@ -2263,7 +2283,8 @@ pub mod gpu {
             for bi in 0..b {
                 rwkv7_gemv_f32_xoff_yoff_tcb(
                     &mut tcb,
-                    &layer.a2,
+                    &layer.lora_w2_stacked,
+                    lw2_a,
                     n,
                     cfg.iclr_lora,
                     &a.a_lo,

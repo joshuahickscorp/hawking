@@ -25,8 +25,9 @@ pub use imp::{
     rwkv7_lora_grouped_gemv_tcb, rwkv7_lora_mid_act_tcb, rwkv7_relu_sq_inplace_tcb,
     rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
     rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
-    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
-    rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb, RwkvDecodeArena,
+    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb,
+    rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
+    RwkvDecodeArena,
 };
 
 #[cfg(target_os = "macos")]
@@ -361,6 +362,7 @@ mod imp {
     pub fn rwkv7_gemv_f32_xoff_yoff_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
         w: &PinnedBuffer,
+        w_off_bytes: usize,
         rows: usize,
         cols: usize,
         x: &PinnedBuffer,
@@ -379,7 +381,7 @@ mod imp {
             (rows_u32 * LN_TG, 1, 1),
             (LN_TG, 1, 1),
             |enc| {
-                enc.set_buffer(0, Some(w), 0);
+                enc.set_buffer(0, Some(w), w_off_bytes as u64);
                 enc.set_buffer(1, Some(x), x_off_bytes as u64);
                 enc.set_buffer(2, Some(out), out_off_bytes as u64);
                 enc.set_buffer(3, Some(ab.handle()), 0);
