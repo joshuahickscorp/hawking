@@ -136,6 +136,12 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--keep-requant-tmp", action="store_true",
                     help="(strand-pv) keep intermediate requant safetensors for debugging")
 
+    # Resume
+    ap.add_argument("--resume-from", default=None,
+                    help="checkpoint directory containing state_dict.pt to resume from")
+    ap.add_argument("--resume-step", type=int, default=0,
+                    help="optimizer step recorded in checkpoint (0 = infer from dirname step_NNNNNN)")
+
     return ap.parse_args()
 
 
@@ -731,6 +737,34 @@ def train(args: argparse.Namespace) -> None:
         print("[dry-run] OK — loss is finite; grad flowed.")
         return
 
+    events_path = out_dir / "events.jsonl"
+
+    # --- Resume from checkpoint ----------------------------------------------
+    resume_opt_step = 0
+    resume_loss_ema: Optional[float] = None
+    if args.resume_from:
+        ckpt = Path(args.resume_from) / "state_dict.pt"
+        print(f"[resume] loading {ckpt}", flush=True)
+        sd = torch.load(str(ckpt), map_location=args.device)
+        model.load_state_dict(sd, strict=True)
+        resume_opt_step = args.resume_step
+        if resume_opt_step == 0:
+            import re as _re
+            m = _re.search(r"step_0*(\d+)", Path(args.resume_from).name)
+            if m:
+                resume_opt_step = int(m.group(1))
+        if resume_opt_step > 0 and events_path.exists():
+            for line in events_path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line:
+                    try:
+                        ev = json.loads(line)
+                        if ev.get("loss_ema") is not None:
+                            resume_loss_ema = float(ev["loss_ema"])
+                    except json.JSONDecodeError:
+                        pass
+        print(f"[resume] opt_step={resume_opt_step}  loss_ema={resume_loss_ema}", flush=True)
+
     # --- Optimizer -----------------------------------------------------------
     opt = torch.optim.AdamW(
         [p for p in model.parameters() if p.requires_grad],
@@ -762,15 +796,16 @@ def train(args: argparse.Namespace) -> None:
         tmp_dir.mkdir(parents=True, exist_ok=True)
 
     # --- Training loop -------------------------------------------------------
-    events_path = out_dir / "events.jsonl"
-    global_step = 0
-    opt_step = 0
-    loss_ema: Optional[float] = None
+    global_step = resume_opt_step * args.grad_accum
+    opt_step = resume_opt_step
+    loss_ema = resume_loss_ema
     t0 = time.time()
     seen_tok = 0
 
     print(f"[train] starting  epochs={args.epochs}  grad_accum={args.grad_accum}  "
-          f"lr={args.lr}  device={args.device}", flush=True)
+          f"lr={args.lr}  device={args.device}"
+          + (f"  resumed_from_step={resume_opt_step}" if resume_opt_step else ""),
+          flush=True)
 
     opt.zero_grad()
 
@@ -780,7 +815,12 @@ def train(args: argparse.Namespace) -> None:
         if epoch % 2 == 1:
             order = order[::-1]
 
+        # On the first epoch of a resumed run, skip rows already consumed.
+        row_skip = global_step if epoch == 0 else 0
+
         for local_i, row_idx in enumerate(order):
+            if local_i < row_skip:
+                continue
             rec = rows[row_idx]
             batch = build_batch(rec, encode, args.max_length, args.device)
             if batch is None:
