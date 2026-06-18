@@ -373,3 +373,434 @@ fn rwkv7_multiseq_gpu_matches_serial_gpu() {
         "GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
     );
 }
+
+/// DIAGNOSTIC: Read GPU arena buffers to find where B=2 stream 0 first diverges
+/// from single-stream GPU. Reads x_norm (output norm input) after each forward.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_buffer_inspect() {
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, 1);
+    let tok0 = streams[0][0];
+
+    // B=2 multiseq step.
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
+    let b2_x_norm: Vec<f32> = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let ptr = g.arena.x_norm.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+    };
+
+    // Serial GPU step (rebuild B=1 first).
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    engine.forward_token_gpu(tok0).expect("serial gpu");
+    let b1_x_norm: Vec<f32> = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let ptr = g.arena.x_norm.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+    };
+
+    let d = max_abs_diff(&b2_x_norm, &b1_x_norm);
+    eprintln!("x_norm max|Δ| (B=2 stream 0 vs B=1 serial): {d:.5}");
+    assert!(
+        d < 0.05,
+        "x_norm diverges at B=2: max|Δ|={d:.5} — bug is before final LayerNorm"
+    );
+}
+
+/// DIAGNOSTIC: Per-layer shift state comparison.
+/// att_shift and ffn_shift are WRITTEN per-layer (stream-major) during the forward.
+/// After the full pass, att_shift[li*n..(li+1)*n] = stream 0's att_in at layer li.
+/// Finding the first divergent layer points directly at the buggy kernel.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_per_layer_shift_inspect() {
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, 1);
+    let tok0 = streams[0][0];
+
+    // B=2 multiseq step — read att_shift and ffn_shift (all layers, stream 0).
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
+    let (b2_att, b2_ffn, n_layer, n_embd) = {
+        let g = engine.gpu.as_ref().unwrap();
+        let nl = g.arena.n_layer;
+        let n = g.arena.n_embd;
+        // att_shift is stream-major: stream 0 elems = [0..nl*n], stream 1 = [nl*n..2*nl*n]
+        let att = unsafe {
+            std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        let ffn = unsafe {
+            std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        (att, ffn, nl, n)
+    };
+
+    // B=1 serial GPU step.
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    engine.forward_token_gpu(tok0).expect("serial gpu");
+    let (b1_att, b1_ffn) = {
+        let g = engine.gpu.as_ref().unwrap();
+        let nl = g.arena.n_layer;
+        let n = g.arena.n_embd;
+        let att = unsafe {
+            std::slice::from_raw_parts(g.arena.att_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        let ffn = unsafe {
+            std::slice::from_raw_parts(g.arena.ffn_shift.contents() as *const f32, nl * n)
+        }
+        .to_vec();
+        (att, ffn)
+    };
+
+    let mut first_divergent: Option<usize> = None;
+    for li in 0..n_layer {
+        let lo = li * n_embd;
+        let hi = lo + n_embd;
+        let d_att = max_abs_diff(&b2_att[lo..hi], &b1_att[lo..hi]);
+        let d_ffn = max_abs_diff(&b2_ffn[lo..hi], &b1_ffn[lo..hi]);
+        eprintln!("layer {li:2}: att_shift max|Δ|={d_att:.5}  ffn_shift max|Δ|={d_ffn:.5}");
+        if first_divergent.is_none() && (d_att > 0.05 || d_ffn > 0.05) {
+            first_divergent = Some(li);
+        }
+    }
+    if let Some(li) = first_divergent {
+        panic!("first divergent layer: {li}  (see per-layer log above)");
+    }
+}
+
+/// DIAGNOSTIC: WKV state per-layer for stream 0 after B=2 vs B=1 forward.
+/// wkv_state is stream-major: stream b at [b * n_layer * s_per_layer].
+/// Layer 0, stream 0 starts at offset 0 for both B=1 and B=2.
+/// If this matches, the WKV recurrence is correct and the bug is in the
+/// output projection (Wo @ out_wkv → cur) or the residual add/LN after it.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_wkv_state_inspect() {
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, 1);
+    let tok0 = streams[0][0];
+
+    // B=2 multiseq step — read wkv_state for stream 0 (at offset 0).
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
+    let (b2_wkv, s_per_layer, n_layer) = {
+        let g = engine.gpu.as_ref().unwrap();
+        let hc = g.arena.head_count;
+        let hs = g.arena.head_size;
+        let nl = g.arena.n_layer;
+        let spl = hc * hs * hs;
+        // stream 0 wkv_state = wkv_state[0 .. n_layer * spl]
+        let ptr = g.arena.wkv_state.contents() as *const f32;
+        let s0 = unsafe { std::slice::from_raw_parts(ptr, nl * spl) }.to_vec();
+        (s0, spl, nl)
+    };
+
+    // B=1 serial GPU step.
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    engine.forward_token_gpu(tok0).expect("serial gpu");
+    let b1_wkv = {
+        let g = engine.gpu.as_ref().unwrap();
+        let hc = g.arena.head_count;
+        let hs = g.arena.head_size;
+        let nl = g.arena.n_layer;
+        let spl = hc * hs * hs;
+        let ptr = g.arena.wkv_state.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, nl * spl) }.to_vec()
+    };
+
+    let mut first_wkv_divergent: Option<usize> = None;
+    for li in 0..n_layer {
+        let lo = li * s_per_layer;
+        let hi = lo + s_per_layer;
+        let d = max_abs_diff(&b2_wkv[lo..hi], &b1_wkv[lo..hi]);
+        eprintln!("layer {li:2}: wkv_state max|Δ|={d:.5}");
+        if first_wkv_divergent.is_none() && d > 1e-4 {
+            first_wkv_divergent = Some(li);
+        }
+    }
+    if let Some(li) = first_wkv_divergent {
+        panic!("wkv_state first divergent layer {li} — bug in WKV recurrence or its r/w/k/v inputs");
+    }
+    eprintln!("wkv_state MATCHES for all layers → bug is in output projection (Wo@out_wkv) or residual+LN");
+}
+
+/// DIAGNOSTIC: Compare `v_first[0..n_embd]` (the layer-0 value projection,
+/// stream 0) between B=2 multiseq and B=1 serial GPU decode.
+///
+/// v_first is written once per forward pass at layer 0 via
+/// `rwkv7_copy_tcb(&mut tcb, &a.v, &a.v_first, 0, b * n)`.
+/// In the B=2 arena it is sized `(2 * n_embd)` with stream 0 at `[0..n_embd]`,
+/// exactly matching the B=1 layout.
+///
+/// If max|Δ| ≈ 0 → the value-GEMV (Wv @ xs[slot3]) and the preceding lerp
+/// kernel both wrote the correct activations for stream 0.  The bug must be
+/// downstream (WKV recurrence, Wo projection, or residual/LN).
+///
+/// If max|Δ| > 0 → the value-GEMV or the lerp (xs[slot3]) produced wrong
+/// activations for stream 0 at B=2 — the bug is in the batched GEMM or the
+/// token-shift kernel.
+///
+/// This test never panics; it is purely diagnostic.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_vfirst_inspect() {
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, 1);
+    let tok0 = streams[0][0];
+
+    // B=2 multiseq step — read v_first[0..n_embd] (stream 0).
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
+    let b2_vfirst: Vec<f32> = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let ptr = g.arena.v_first.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+    };
+
+    // B=1 serial GPU step (rebuild arena so state is isolated).
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    engine.forward_token_gpu(tok0).expect("serial gpu");
+    let b1_vfirst: Vec<f32> = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let ptr = g.arena.v_first.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(ptr, n) }.to_vec()
+    };
+
+    let d = max_abs_diff(&b2_vfirst, &b1_vfirst);
+    eprintln!("v_first[0..n_embd] max|Δ| (B=2 stream 0 vs B=1 serial): {d:.6}");
+    // Diagnostic only — never panic.
+}
+
+/// DIAGNOSTIC: Compare r, k, a, a_op arena buffers between B=2 multiseq
+/// (stream 0) and B=1 serial GPU after a single 1-step forward.
+///
+/// After the full N-layer forward these buffers hold layer N-1 values.
+/// Any divergence introduced at layer 0 in k (post kk_kmix) propagates
+/// through layers, so N-1 diffs are still diagnostic.  Never panics —
+/// purely prints max|Δ| for each buffer.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_k_inspect() {
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping rwkv7_multiseq_gpu_b2_k_inspect: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping rwkv7_multiseq_gpu_b2_k_inspect: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, 1);
+    let tok0 = streams[0][0];
+
+    // B=2 multiseq step — read r, k, a, a_op for stream 0 (first n_embd elements).
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    engine
+        .forward_token_gpu_multiseq(&[tok0, streams[1][0]])
+        .expect("b2 multiseq");
+    let (b2_r, b2_k, b2_a, b2_a_op) = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        (r, k, a, a_op)
+    };
+
+    // B=1 serial GPU step.
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    engine.forward_token_gpu(tok0).expect("serial gpu");
+    let (b1_r, b1_k, b1_a, b1_a_op) = {
+        let g = engine.gpu.as_ref().unwrap();
+        let n = g.arena.n_embd;
+        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        (r, k, a, a_op)
+    };
+
+    let d_r = max_abs_diff(&b2_r, &b1_r);
+    let d_k = max_abs_diff(&b2_k, &b1_k);
+    let d_a = max_abs_diff(&b2_a, &b1_a);
+    let d_a_op = max_abs_diff(&b2_a_op, &b1_a_op);
+
+    eprintln!("r[0..n_embd]    max|Δ| (B=2 stream 0 vs B=1 serial): {d_r:.6}");
+    eprintln!("k[0..n_embd]    max|Δ| (B=2 stream 0 vs B=1 serial): {d_k:.6}");
+    eprintln!("a[0..n_embd]    max|Δ| (B=2 stream 0 vs B=1 serial): {d_a:.6}");
+    eprintln!("a_op[0..n_embd] max|Δ| (B=2 stream 0 vs B=1 serial): {d_a_op:.6}");
+    // Diagnostic only — never panic.
+}
+
+/// DIAGNOSTIC: B=2 multiseq stream 0 vs single-stream GPU — narrows whether
+/// the bug starts at B=2 or only at B=3+.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b2_stream0_matches_serial_gpu() {
+    const LOGIT_TOL: f32 = 0.05;
+    const STEPS: usize = 4;
+
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping: Metal GPU not available");
+        return;
+    }
+    let streams = make_streams(2, STEPS);
+
+    // Serial GPU reference for stream 0.
+    engine.ensure_gpu_batch(1).expect("B=1");
+    engine.reset_gpu_multiseq();
+    let serial: Vec<Vec<f32>> = streams[0]
+        .iter()
+        .map(|&t| engine.forward_token_gpu(t).expect("serial gpu"))
+        .collect();
+
+    // B=2 multiseq: stream 0's logits.
+    engine.ensure_gpu_batch(2).expect("B=2");
+    engine.reset_gpu_multiseq();
+    for (t, _) in streams[0].iter().enumerate() {
+        let col: Vec<u32> = (0..2).map(|s| streams[s][t]).collect();
+        let rows = engine
+            .forward_token_gpu_multiseq(&col)
+            .expect("b2 multiseq gpu");
+        let d = max_abs_diff(&rows[0], &serial[t]);
+        let (ag, ac) = (argmax(&rows[0]), argmax(&serial[t]));
+        eprintln!(
+            "step {t}: argmax B2-s0={ag} serial={ac} max|Δ|={d:.4} {}",
+            if ag != ac { "MISMATCH" } else { "ok" }
+        );
+        assert!(
+            d < LOGIT_TOL,
+            "B=2 multiseq stream 0 step {t}: max|Δlogit|={d:.5} exceeds tol"
+        );
+    }
+    eprintln!("B=2 multiseq stream 0 OK");
+}
+
+/// DIAGNOSTIC: B=1 multiseq (batched GEMM kernel path) vs single-stream GPU
+/// (GEMV kernel path). If B=1 multiseq fails, the bug is in the batched-GEMM
+/// kernel arithmetic itself, not in multi-stream interactions.
+#[cfg(target_os = "macos")]
+#[test]
+fn rwkv7_multiseq_gpu_b1_matches_serial_gpu() {
+    const LOGIT_TOL: f32 = 0.05;
+    const STEPS: usize = 8;
+
+    let Some(weights) = locate_model() else {
+        eprintln!("skipping rwkv7_multiseq_gpu_b1_matches_serial_gpu: no rwkv7 weights");
+        return;
+    };
+    let mut engine = RwkvSeven::load(&weights, EngineConfig::default()).expect("load rwkv7");
+    if !engine.has_gpu() {
+        eprintln!("skipping rwkv7_multiseq_gpu_b1_matches_serial_gpu: Metal GPU not available");
+        return;
+    }
+
+    let streams = make_streams(1, STEPS);
+    let tok = &streams[0];
+
+    // Serial GPU: single-stream path (gemv_q4_k_v4_predec kernel).
+    engine.ensure_gpu_batch(1).expect("init B=1 arena");
+    engine.reset_gpu_multiseq();
+    let serial: Vec<Vec<f32>> = tok
+        .iter()
+        .map(|&t| engine.forward_token_gpu(t).expect("serial gpu"))
+        .collect();
+
+    // B=1 multiseq: batched GEMM kernel path (gemm_q4_k_m_batched_v3w_predec).
+    // ensure_gpu_batch(1) is a no-op here (already B=1), so we need to force
+    // a rebuild to a different batch then back to 1 to pick up the multiseq path.
+    engine.ensure_gpu_batch(2).expect("force B=2 rebuild");
+    engine.ensure_gpu_batch(1).expect("rebuild B=1");
+    engine.reset_gpu_multiseq();
+    let mut worst = 0.0f32;
+    let mut argmax_mismatches = 0;
+    for (t, &tok_id) in tok.iter().enumerate() {
+        let rows = engine
+            .forward_token_gpu_multiseq(&[tok_id])
+            .expect("b1 multiseq gpu");
+        let d = max_abs_diff(&rows[0], &serial[t]);
+        worst = worst.max(d);
+        let (ag, ac) = (argmax(&rows[0]), argmax(&serial[t]));
+        if ag != ac {
+            argmax_mismatches += 1;
+            eprintln!("step {t}: argmax B1-multiseq={ag} serial={ac} (max|Δ|={d:.4})");
+        }
+    }
+    eprintln!(
+        "rwkv7 B=1 multiseq vs serial GPU: {STEPS} steps, worst max|Δlogit|={worst:.5}, \
+         argmax mismatches={argmax_mismatches}"
+    );
+    assert_eq!(
+        argmax_mismatches, 0,
+        "B=1 GPU multiseq argmax must match serial GPU every step"
+    );
+    assert!(
+        worst < LOGIT_TOL,
+        "B=1 GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
+    );
+}

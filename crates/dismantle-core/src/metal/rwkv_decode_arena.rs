@@ -856,7 +856,7 @@ mod imp {
             KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32, ArgLayout::U32])?;
         ab.set_u32(0, hs);
         ab.set_u32(1, head_count as u32);
-        ab.set_u32(2, batch as u32);
+        ab.set_u32(2, (head_count * head_size) as u32); // args.n = n_embd, not batch
         // Grid: (B * head_count * hs); threadgroup = hs; tg index = b*head_count+head.
         tcb.dispatch_threads(
             "rwkv7_kk_kmix_multiseq",
