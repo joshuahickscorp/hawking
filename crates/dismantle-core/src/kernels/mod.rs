@@ -11989,6 +11989,52 @@ mod metal_dispatch {
         })
     }
 
+    /// TCB-compatible TQ GEMV: encodes both bitslice-GEMV passes into `tcb` using
+    /// pre-uploaded Metal buffers from [`crate::tq_gpu::TqGpuReady`]. Zero
+    /// per-inference allocations. `x_off_bytes` / `out_off_bytes` are Metal buffer
+    /// byte offsets for the activation input and output slices.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_gemv_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        const TG: u32 = 256;
+        // Pass 1: strand_bitslice_gemv_partials
+        tcb.dispatch_threads(
+            "strand_bitslice_gemv_partials",
+            (gpu.n_tg_partials * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
+                enc.set_u32(4, gpu.n_blocks);
+                enc.set_u32(5, gpu.cols);
+                enc.set_u32(6, gpu.k_bits);
+                enc.set_u32(7, gpu.l_bits);
+                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+                enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
+            },
+        )?;
+        // Pass 2: strand_bitslice_reduce_rows
+        tcb.dispatch_threads(
+            "strand_bitslice_reduce_rows",
+            (gpu.n_tg_reduce * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(1, Some(out_buf), out_off_bytes as u64);
+                enc.set_u32(2, gpu.rows);
+                enc.set_u32(3, gpu.bpr);
+            },
+        )
+    }
+
     /// Fused TQ decode-and-GEMM: decode a STRAND-encoded weight matrix from
     /// `prepared` and multiply by the `batch`-wide activation matrix in
     /// `xt_buf` (column-major / transposed: row = feature, stride = batch), writing

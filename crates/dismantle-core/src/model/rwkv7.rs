@@ -1384,7 +1384,7 @@ pub mod gpu {
     use crate::{Error, Result};
 
     #[cfg(feature = "tq")]
-    use crate::tq_gpu::TqPreparedGpu;
+    use crate::tq_gpu::TqGpuReady;
 
     /// Group-norm epsilon used inside the WKV-7 per-head norm (matches the CPU
     /// reference `time_mix`: `gn_eps = 64e-5`).
@@ -1417,10 +1417,11 @@ pub mod gpu {
             rows: usize,
             cols: usize,
         },
-        /// Low-bit STRAND/TQ weight served via bitslice GEMV.
+        /// Low-bit STRAND/TQ weight served via bitslice GEMV. Pre-uploaded to
+        /// GPU at load time; every decode step encodes directly from live buffers.
         #[cfg(feature = "tq")]
         Tq {
-            prepared: TqPreparedGpu,
+            gpu: TqGpuReady,
             rows: usize,
             cols: usize,
         },
@@ -1516,8 +1517,8 @@ pub mod gpu {
                     rwkv7_gemv_f32_off_tcb(tcb, w, *rows, *cols, x, x_off, out)
                 }
                 #[cfg(feature = "tq")]
-                ProjWeight::Tq { .. } => {
-                    todo!("ProjWeight::Tq: not yet dispatched — implement strand_bitslice_gemv")
+                ProjWeight::Tq { gpu, .. } => {
+                    crate::kernels::strand_bitslice_gemv_tcb(tcb, gpu, x, x_off, out, 0)
                 }
             }
         }
@@ -1604,8 +1605,19 @@ pub mod gpu {
                     Ok(())
                 }
                 #[cfg(feature = "tq")]
-                ProjWeight::Tq { .. } => {
-                    todo!("ProjWeight::Tq: not yet dispatched — implement strand_bitslice_gemv")
+                ProjWeight::Tq { gpu, cols, rows } => {
+                    let f = std::mem::size_of::<f32>();
+                    for bi in 0..batch {
+                        crate::kernels::strand_bitslice_gemv_tcb(
+                            tcb,
+                            gpu,
+                            x,
+                            x_off + bi * *cols * f,
+                            out,
+                            bi * *rows * f,
+                        )?;
+                    }
+                    Ok(())
                 }
             }
         }
@@ -1620,6 +1632,7 @@ pub mod gpu {
             self,
             name: &str,
             tq_store: &std::collections::HashMap<String, crate::tq::StrandTensor>,
+            ctx: &MetalContext,
         ) -> crate::Result<Self> {
             let Some(st) = tq_store.get(name) else {
                 return Ok(self);
@@ -1642,8 +1655,9 @@ pub mod gpu {
                 )));
             }
             let prepared = crate::tq_gpu::TqPreparedGpu::from_strand_tensor(st)?;
+            let gpu = prepared.upload_to_gpu(ctx)?;
             Ok(ProjWeight::Tq {
-                prepared,
+                gpu,
                 rows: r,
                 cols: c,
             })
@@ -1891,7 +1905,7 @@ pub mod gpu {
                     #[cfg(feature = "tq")]
                     let tq_swap = |w: ProjWeight, suf: &str| -> Result<ProjWeight> {
                         if let Some(ref store) = tq_store_opt {
-                            w.try_replace_with_tq(&p(suf), store)
+                            w.try_replace_with_tq(&p(suf), store, ctx)
                         } else {
                             Ok(w)
                         }
@@ -1964,7 +1978,7 @@ pub mod gpu {
                 let w = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
                 #[cfg(feature = "tq")]
                 let w = if let Some(ref store) = tq_store_opt {
-                    w.try_replace_with_tq("output.weight", store)?
+                    w.try_replace_with_tq("output.weight", store, ctx)?
                 } else {
                     w
                 };

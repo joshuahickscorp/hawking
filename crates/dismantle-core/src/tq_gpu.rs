@@ -391,6 +391,83 @@ impl TqPreparedGpu {
     }
 }
 
+/// GPU-resident pre-uploaded buffers and dispatch constants for one STRAND
+/// projection. Built once at model-load via [`TqPreparedGpu::upload_to_gpu`];
+/// every decode step binds the already-live Metal buffers with no allocation.
+#[cfg(target_os = "macos")]
+pub struct TqGpuReady {
+    /// Baked per-block BitsliceEntry seek table, uploaded to GPU.
+    pub tbl_buf: crate::metal::PinnedBuffer,
+    /// Q12 Gaussian codebook LUT (2^l_bits entries), uploaded to GPU.
+    pub lut_buf: crate::metal::PinnedBuffer,
+    /// Padded payload bitstream, uploaded to GPU.
+    pub w_buf: crate::metal::PinnedBuffer,
+    /// Scratch partial-dot-products (n_blocks × f32), pre-allocated.
+    pub partials_buf: crate::metal::PinnedBuffer,
+    pub n_blocks: u32,
+    pub cols: u32,
+    pub rows: u32,
+    pub k_bits: u32,
+    pub l_bits: u32,
+    pub bpr: u32,
+    pub shmem_bytes: u64,
+    pub n_tg_partials: u32,
+    pub n_tg_reduce: u32,
+}
+
+#[cfg(target_os = "macos")]
+impl TqPreparedGpu {
+    /// Upload all weight buffers to GPU memory and pre-compute dispatch constants.
+    /// Call once at model-load; the returned [`TqGpuReady`] is reused every step.
+    pub fn upload_to_gpu(
+        &self,
+        ctx: &crate::metal::MetalContext,
+    ) -> crate::Result<TqGpuReady> {
+        let tbl_bytes: &[u8] = unsafe {
+            std::slice::from_raw_parts(
+                self.entries.as_ptr() as *const u8,
+                std::mem::size_of_val(self.entries.as_slice()),
+            )
+        };
+        let tbl_buf = ctx.new_buffer_with_bytes(tbl_bytes);
+        let lut_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&self.lut_q12));
+        // Pad payload to 4-byte word boundary + 8 zero bytes (WordReader safety).
+        let padded_len = self.payload.len().div_ceil(4) * 4 + 8;
+        let mut padded = vec![0u8; padded_len];
+        padded[..self.payload.len()].copy_from_slice(&self.payload);
+        let w_buf = ctx.new_buffer_with_bytes(&padded);
+
+        let n_blocks = self.entries.len() as u32;
+        let cols = self.cols as u32;
+        let rows = self.rows as u32;
+        let k_bits = self.k_bits;
+        let l_bits = self.l_bits;
+        let bpr = cols / 256;
+        let shmem_bytes = ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64;
+        const TG: u32 = 256;
+        let n_tg_partials = n_blocks.div_ceil(TG).max(1);
+        let n_tg_reduce = rows.div_ceil(TG).max(1);
+        let partials_buf = ctx.new_buffer(n_blocks as usize * std::mem::size_of::<f32>());
+
+        Ok(TqGpuReady {
+            tbl_buf,
+            lut_buf,
+            w_buf,
+            partials_buf,
+            n_blocks,
+            cols,
+            rows,
+            k_bits,
+            l_bits,
+            bpr,
+            shmem_bytes,
+            n_tg_partials,
+            n_tg_reduce,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
