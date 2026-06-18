@@ -49,6 +49,7 @@ fn run_greedy(weights: &PathBuf) -> Vec<u32> {
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut ids: Vec<u32> = Vec::new();
     engine

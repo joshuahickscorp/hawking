@@ -61,6 +61,7 @@ fn run_generate(weights: &PathBuf, prompt: &str) -> (Vec<u32>, f64) {
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut ids: Vec<u32> = Vec::new();
     let mut prefill_ms = 0.0f64;

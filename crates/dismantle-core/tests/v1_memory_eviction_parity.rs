@@ -27,6 +27,7 @@ fn run_ids(max_routed_expert_ram_mb: Option<usize>) -> Vec<u32> {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 60_000,
+        json_mode: false,
     };
     let mut ids = Vec::new();
     engine

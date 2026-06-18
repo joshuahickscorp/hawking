@@ -83,6 +83,7 @@ fn gen_on_n(
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut ids: Vec<u32> = Vec::new();
     let mut accepted = 0usize;

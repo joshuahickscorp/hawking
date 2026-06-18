@@ -61,6 +61,7 @@ fn collect_tokens(
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut tokens = Vec::new();
     engine

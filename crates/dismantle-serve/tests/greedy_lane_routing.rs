@@ -116,6 +116,7 @@ fn greedy_req(max_new_tokens: usize) -> GenerateRequest {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     }
 }
 
@@ -136,6 +137,7 @@ fn logits_lane_req(max_new_tokens: usize) -> GenerateRequest {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     }
 }
 

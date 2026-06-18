@@ -129,6 +129,7 @@ fn dismantle_greedy(model: &PathBuf) -> String {
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut text = String::new();
     engine

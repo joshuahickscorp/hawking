@@ -78,6 +78,7 @@ fn gen_on(engine: &mut dyn dismantle_core::Engine, prompt: &str) -> (Vec<u32>, f
         stop: vec![],
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     let mut ids: Vec<u32> = Vec::new();
     let mut prefill_ms = 0.0f64;
