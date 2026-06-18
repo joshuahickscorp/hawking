@@ -404,3 +404,359 @@ kernel void rwkv7_mul_inplace(
     if (gid >= n) return;
     out[gid] *= gate[gid];
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+// RWKV-7 CONTINUOUS-BATCH (multi-seq) DECODE kernels.
+//
+// B INDEPENDENT streams advanced in ONE pass. Every projection/LM-head weight is
+// read ONCE across the B activation columns by the existing batched Q4_K GEMV
+// (gemm_q4_k_m_batched_v3w_predec, x_batch[b*cols+off] / y_batch[b*rows+row]) —
+// that is the bandwidth win. These kernels cover the RWKV-specific,
+// non-GEMM steps for B streams. Each is byte-for-byte the single-stream kernel
+// above with a stream index `b` added, so stream b is bit-for-bit its own
+// single-stream decode (the multiseq parity oracle).
+//
+// LAYOUT CONTRACT (matches RwkvDecodeArena::new_with_batch):
+//   - per-token activation buffers (att_in, k, v, a, a_op, b_op, r, w, gate,
+//     out, ffn_in, xk, ...) are (B, n) ROW-major:  buf[b*n + i].
+//   - the WKV state plane is STREAM-major; the host passes a per-(stream,layer)
+//     byte offset so `state` already points at stream b's layer window... EXCEPT
+//     the multiseq WKV kernel below indexes the stream itself (one dispatch for
+//     all B), so it takes the per-LAYER stride and the slot base offset.
+//   - xs (lerp output) is (slot, B, n); slot s lands at xs + s*B*n.
+//   - per-channel vectors (lerp coeffs, w0/a0/v0, k_k/k_a/r_k, ln_w/ln_b,
+//     v_first) are SHARED across streams → indexed by the channel i = gid % n.
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── WKV-7 recurrence + per-head group-norm + bonus + gate, for B streams ──
+// One threadgroup processes ONE (stream, head); `head_size` threads, thread i
+// owns row i of that (stream, head) state. Grid: (B*head_count*hs, 1, 1),
+// threadgroups (hs,1,1); threadgroup index = b*head_count + head.
+// `state` is the stream-major plane; `state_layer_stride` is the per-stream
+// per-layer element stride (head_count*hs*hs) and `state_base` the element
+// offset of THIS layer within each stream's window — so stream b's state for
+// this layer starts at b*n_layer*state_layer_stride*... handled via base+stride.
+struct ArgbufRwkv7WkvMs {
+    uint  head_size;
+    uint  head_count;
+    uint  n;                 // n_embd (per-stream activation width)
+    uint  batch;             // B
+    uint  state_stream_stride; // elems per stream in the wkv plane (= n_layer*head_count*hs*hs)
+    uint  state_layer_base;    // elems offset of this layer within a stream window (= layer*head_count*hs*hs)
+    float gn_eps;
+    uint  has_gate;
+};
+kernel void rwkv7_wkv_decode_multiseq(
+    device       float* state [[buffer(0)]],   // stream-major S plane (whole buffer)
+    device const float* r     [[buffer(1)]],   // (B, n)
+    device const float* w     [[buffer(2)]],   // (B, n)
+    device const float* k     [[buffer(3)]],   // (B, n)
+    device const float* v     [[buffer(4)]],   // (B, n)
+    device const float* a_op  [[buffer(5)]],   // (B, n)
+    device const float* b_op  [[buffer(6)]],   // (B, n)
+    device const float* r_k   [[buffer(7)]],   // (n,) shared
+    device const float* ln_w  [[buffer(8)]],   // (n,) shared
+    device const float* ln_b  [[buffer(9)]],   // (n,) shared
+    device const float* gate  [[buffer(10)]],  // (B, n)
+    device       float* out   [[buffer(11)]],  // (B, n)
+    constant ArgbufRwkv7WkvMs& args [[buffer(12)]],
+    threadgroup  float* red   [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],   // row i within the head
+    uint tg      [[threadgroup_position_in_grid]],     // b*head_count + head
+    uint tg_size [[threads_per_threadgroup]])           // == head_size
+{
+    const uint hs = args.head_size;
+    if (tid >= hs) return;
+
+    const uint b    = tg / args.head_count;            // stream index
+    const uint head = tg - b * args.head_count;        // head within the stream
+    const uint ho   = b * args.n + head * hs;          // (B,n) offset for this (stream,head)
+
+    // State row for (stream b, this layer, head, row tid).
+    const uint s_base = b * args.state_stream_stride + args.state_layer_base
+                      + head * hs * hs;
+    const uint row    = s_base + tid * hs;
+
+    const float v_i = v[ho + tid];
+
+    // sa[i] = sum_j a_op[j] * S_prev[i][j]
+    float sa = 0.0f;
+    for (uint j = 0; j < hs; ++j) {
+        sa += a_op[ho + j] * state[row + j];
+    }
+
+    // S[i][j] = S_prev[i][j]*w[j] + v[i]*k[j] + sa*b_op[j]  (in place)
+    // out_raw[i] = sum_j S[i][j] * r[j]
+    float result = 0.0f;
+    for (uint j = 0; j < hs; ++j) {
+        float s_new = state[row + j] * w[ho + j]
+                    + v_i * k[ho + j]
+                    + sa * b_op[ho + j];
+        state[row + j] = s_new;
+        result += s_new * r[ho + j];
+    }
+
+    // per-head group-norm (population variance, eps=gn_eps)
+    red[tid] = result;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float mean = red[0] / (float)hs;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    float d = result - mean;
+    red[tid] = d * d;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float var = red[0] / (float)hs;
+    float inv = 1.0f / sqrt(var + args.gn_eps);
+    // ln_w / ln_b are SHARED (per-channel): index by the within-stream channel.
+    const uint ch = head * hs + tid;
+    float o = (result - mean) * inv * ln_w[ch] + ln_b[ch];
+
+    // bonus: out += v * rowsum_per_head(k * r * r_k)   (r_k shared per-channel)
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    red[tid] = k[ho + tid] * r[ho + tid] * r_k[ch];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float rk = red[0];
+    o += v_i * rk;
+
+    if (args.has_gate != 0u) {
+        o *= gate[ho + tid];
+    }
+    out[ho + tid] = o;
+}
+
+// ── kk / k-mix for B streams. One threadgroup per (stream, head). ──
+// k/a/a_op/b_op are (B, n); k_k/k_a are (n,) shared. Grid: (B*head_count*hs).
+struct ArgbufRwkv7KkMs { uint head_size; uint head_count; uint n; };
+kernel void rwkv7_kk_kmix_multiseq(
+    device       float* k    [[buffer(0)]],   // (B, n)
+    device const float* k_k  [[buffer(1)]],   // (n,) shared
+    device const float* k_a  [[buffer(2)]],   // (n,) shared
+    device const float* a    [[buffer(3)]],   // (B, n)
+    device       float* a_op [[buffer(4)]],   // (B, n)
+    device       float* b_op [[buffer(5)]],   // (B, n)
+    constant ArgbufRwkv7KkMs& args [[buffer(6)]],
+    threadgroup  float* red  [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg      [[threadgroup_position_in_grid]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    const uint hs = args.head_size;
+    if (tid >= hs) return;
+    const uint b    = tg / args.head_count;
+    const uint head = tg - b * args.head_count;
+    const uint ch   = head * hs + tid;           // within-stream channel (shared vecs)
+    const uint idx  = b * args.n + ch;           // (B,n) index
+
+    float kk = k[idx] * k_k[ch];
+
+    red[tid] = kk * kk;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float scale = 1.0f / max(sqrt(red[0]), 1e-12f);
+    kk *= scale;
+
+    float ka = k[idx] * k_a[ch];
+    float av = a[idx];
+    k[idx] = k[idx] + av * ka - ka;
+
+    a_op[idx] = -kk;
+    b_op[idx] = kk * av;
+}
+
+// ── token-shift + per-slot lerp for B streams. ──
+// att_in is (B, n) ROW-major (att_in[b*n + i]). x_prev is the token-shift STATE
+// plane, which is STREAM-major [stream][layer][n] (see RwkvDecodeArena): the host
+// passes it offset to (stream 0, layer li), and the kernel reaches stream b's
+// window with the per-stream element stride `x_prev_stride` (= n_layer*n). lerp
+// is (n_slots, n) shared. xs is (n_slots, B, n): slot s, stream b, channel i
+// lands at (s*B + b)*n + i. Grid: (B*n, 1, 1).
+struct ArgbufRwkv7LerpMs { uint n; uint n_slots; uint batch; uint fresh; uint x_prev_stride; };
+kernel void rwkv7_token_shift_lerp_multiseq(
+    device const float* att_in [[buffer(0)]],   // (B, n) row-major
+    device const float* x_prev [[buffer(1)]],   // stream-major plane @ (s0,li); stride x_prev_stride
+    device const float* lerp   [[buffer(2)]],   // (n_slots, n) shared
+    device       float* xs      [[buffer(3)]],  // (n_slots, B, n)
+    constant ArgbufRwkv7LerpMs& args [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint b = gid / args.n;
+    const uint i = gid - b * args.n;
+    float av = att_in[gid];
+    // x_prev is stream-major: stream b's layer window starts at b*x_prev_stride.
+    float xp = x_prev[b * args.x_prev_stride + i];
+    float sx = (args.fresh != 0u) ? (-av) : (xp - av);
+    for (uint s = 0; s < args.n_slots; ++s) {
+        // slot coeff is shared per-channel; output is (slot, B, n).
+        xs[(s * args.batch + b) * args.n + i] = av + sx * lerp[s * args.n + i];
+    }
+}
+
+// ── channel-mix token-shift + single lerp for B streams. ──
+// ffn_in (B,n) row-major; x_prev the STREAM-major ffn token-shift plane @ (s0,li)
+// with per-stream stride x_prev_stride; lerp_k (n,) shared; xk (B,n). Grid: (B*n).
+kernel void rwkv7_channel_mix_shift_multiseq(
+    device const float* ffn_in [[buffer(0)]],   // (B, n) row-major
+    device const float* x_prev [[buffer(1)]],   // stream-major plane @ (s0,li); stride x_prev_stride
+    device const float* lerp_k [[buffer(2)]],   // (n,) shared
+    device       float* xk      [[buffer(3)]],  // (B, n)
+    constant ArgbufRwkv7LerpMs& args [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint b = gid / args.n;
+    const uint i = gid - b * args.n;
+    float f = ffn_in[gid];
+    float xp = x_prev[b * args.x_prev_stride + i];
+    float dd = (args.fresh != 0u) ? (-f) : (xp - f);
+    xk[gid] = f + dd * lerp_k[i];
+}
+
+// ── write a (B, n) row-major plane back into the STREAM-major token-shift state
+// plane for layer `li`. src is att_in/ffn_in (B,n); dst is the whole state plane
+// (host passes it offset to (stream 0, layer li)); stream b lands at
+// b*dst_stride + i (dst_stride = n_layer*n). This is the B-stream analogue of the
+// single-stream `rwkv7_copy` into a per-layer window. Grid: (B*n, 1, 1).
+struct ArgbufRwkv7ShiftWb { uint n; uint batch; uint dst_stride; };
+kernel void rwkv7_shift_writeback_multiseq(
+    device const float* src [[buffer(0)]],   // (B, n) row-major
+    device       float* dst [[buffer(1)]],   // stream-major plane @ (s0,li)
+    constant ArgbufRwkv7ShiftWb& args [[buffer(2)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint b = gid / args.n;
+    const uint i = gid - b * args.n;
+    dst[b * args.dst_stride + i] = src[gid];
+}
+
+// ── B independent LayerNorms. One threadgroup per stream; grid-strided over n. ──
+// x / out are (B, n); weight / bias are (n,) shared. Grid: (B*TG, 1, 1),
+// threadgroups (TG, 1, 1) → threadgroup index = stream.
+struct ArgbufRwkv7LnMs { uint hidden; uint batch; float eps; };
+kernel void rwkv7_layernorm_multiseq(
+    device const float* x      [[buffer(0)]],   // (B, n)
+    device const float* weight [[buffer(1)]],   // (n,) shared
+    device const float* bias   [[buffer(2)]],   // (n,) shared
+    device       float* out    [[buffer(3)]],   // (B, n)
+    constant ArgbufRwkv7LnMs& args [[buffer(4)]],
+    threadgroup  float* red    [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint b       [[threadgroup_position_in_grid]],   // stream index
+    uint tg_size [[threads_per_threadgroup]])
+{
+    const uint n = args.hidden;
+    if (b >= args.batch) return;
+    device const float* xb = x   + (uint64_t)b * n;
+    device       float* ob = out + (uint64_t)b * n;
+    float partial = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) partial += xb[i];
+    red[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float mean = red[0] / (float)n;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    partial = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        float d = xb[i] - mean;
+        partial += d * d;
+    }
+    red[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv = 1.0f / sqrt(red[0] / (float)n + args.eps);
+    for (uint i = tid; i < n; i += tg_size) {
+        ob[i] = (xb[i] - mean) * inv * weight[i] + bias[i];
+    }
+}
+
+// ── per-channel-bias elementwise kernels for B streams ──
+// These mirror rwkv7_decay_act / rwkv7_sigmoid_bias / rwkv7_value_residual_mix
+// but the bias/residual vectors (w0, a0, v0, v_first) are SHARED per-channel, so
+// index them by i = gid % n. Grid: (B*n, 1, 1).
+struct ArgbufRwkv7ElemMs { uint n; uint batch; };
+
+// w[i] = exp(-0.606531 * sigmoid(w_raw[i] + w0[i%n])).  (B,n) over w_raw/w.
+kernel void rwkv7_decay_act_multiseq(
+    device const float* w_raw [[buffer(0)]],   // (B, n)
+    device const float* w0    [[buffer(1)]],   // (n,) shared
+    device       float* w     [[buffer(2)]],   // (B, n)
+    constant ArgbufRwkv7ElemMs& args [[buffer(3)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint i = gid % args.n;
+    float s = 1.0f / (1.0f + exp(-(w_raw[gid] + w0[i])));
+    w[gid] = exp(-0.606531f * s);
+}
+
+// x[i] = sigmoid(x[i] + bias[i%n]).  (B,n) over x.
+kernel void rwkv7_sigmoid_bias_multiseq(
+    device       float* x    [[buffer(0)]],   // (B, n)
+    device const float* bias [[buffer(1)]],   // (n,) shared
+    constant ArgbufRwkv7ElemMs& args [[buffer(2)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint i = gid % args.n;
+    x[gid] = 1.0f / (1.0f + exp(-(x[gid] + bias[i])));
+}
+
+// v[i] += (v_first[i%n] - v[i]) * sigmoid(v_mix[i] + v0[i%n]).  (B,n) over v/v_mix.
+// NOTE: v_first is SHARED per-channel here — it is layer 0's value projection,
+// which on the multiseq path is established PER STREAM. To keep v_first per
+// stream the host stages a (B,n) v_first; this kernel then needs v_first indexed
+// by gid (not i). We expose the per-stream form (v_first is (B,n)).
+kernel void rwkv7_value_residual_mix_multiseq(
+    device       float* v       [[buffer(0)]],   // (B, n)
+    device const float* v_first [[buffer(1)]],   // (B, n) per-stream
+    device const float* v_mix   [[buffer(2)]],   // (B, n)
+    device const float* v0      [[buffer(3)]],   // (n,) shared
+    constant ArgbufRwkv7ElemMs& args [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    const uint total = args.batch * args.n;
+    if (gid >= total) return;
+    const uint i = gid % args.n;
+    float g = 1.0f / (1.0f + exp(-(v_mix[gid] + v0[i])));
+    float vi = v[gid];
+    v[gid] = vi + (v_first[gid] - vi) * g;
+}
+
+// out[i] = a[i] + b[i] over a flat (B*n) range — residual adds for B streams.
+// (a/b/out all (B,n); the op is purely elementwise so no per-stream indexing.)
+kernel void rwkv7_add_into_flat(
+    device const float* a   [[buffer(0)]],
+    device const float* bb  [[buffer(1)]],
+    device       float* out [[buffer(2)]],
+    constant     uint&  total [[buffer(3)]],
+    uint gid [[thread_position_in_grid]])
+{
+    if (gid >= total) return;
+    out[gid] = a[gid] + bb[gid];
+}
