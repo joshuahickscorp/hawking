@@ -840,6 +840,87 @@ kernel void rwkv7_lora_grouped_gemv(
     if (tid == 0) out[table[g].out_off + local_row] = red[0];
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FUSED decode kernels (Task #8 dispatch reduction)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Fused w/a activation prep — replaces two separate dispatches per layer:
+//   decay_act   : w[i]            = exp(-0.606531 * sigmoid(w_raw[i] + w0[i]))
+//   sigmoid_bias: lora_up[a_off+i] = sigmoid(lora_up[a_off+i] + a0[i])
+// `lora_up` is the LoRA-up output buffer; w_raw lives at [0..n), a_raw at
+// [a_off..a_off+n) (float indices).  Both regions are non-overlapping so
+// Metal allows the same buffer at buffer(0) with two distinct regions.
+// Grid: (n, 1, 1) — one thread per element.
+struct ArgbufRwkv7WaPrep { uint a_off; uint n; };
+kernel void rwkv7_wa_prep(
+    device       float* lora_up [[buffer(0)]],  // w_raw (r-only at [0..n)), a (r/w at [a_off..))
+    device const float* w0      [[buffer(1)]],  // decay bias [n]
+    device       float* w_out   [[buffer(2)]],  // output: w [n]
+    device const float* a0      [[buffer(3)]],  // a bias [n]
+    constant ArgbufRwkv7WaPrep& args [[buffer(4)]],
+    uint gid [[thread_position_in_grid]])
+{
+    if (gid >= args.n) return;
+    // decay_act: w = exp(-0.606531 * sigmoid(w_raw + w0))
+    float s = 1.0f / (1.0f + exp(-(lora_up[gid] + w0[gid])));
+    w_out[gid] = exp(-0.606531f * s);
+    // sigmoid_bias in-place: a = sigmoid(a_raw + a0)
+    uint ai = args.a_off + gid;
+    lora_up[ai] = 1.0f / (1.0f + exp(-(lora_up[ai] + a0[gid])));
+}
+
+// Fused residual-add + layer-norm — replaces two dispatches per layer:
+//   add_into   : sum[i] = a[i] + b[i]        (kept for downstream cmix exit)
+//   layernorm  : out[i] = LN(sum, w, bias)[i]
+// Single threadgroup (LN_TG threads), grid-strided over n elements.
+// `sum` is written first so the cmix residual can read it later.
+struct ArgbufRwkv7AddLn { uint n; float eps; };
+kernel void rwkv7_add_into_layernorm(
+    device const float* a       [[buffer(0)]],  // first addend  [n]
+    device const float* b       [[buffer(1)]],  // second addend [n]
+    device       float* sum     [[buffer(2)]],  // output: a+b   [n]  (needed downstream)
+    device const float* weight  [[buffer(3)]],  // LN weight     [n]
+    device const float* bias_ln [[buffer(4)]],  // LN bias       [n]
+    device       float* out     [[buffer(5)]],  // output: LN(a+b) [n]
+    constant ArgbufRwkv7AddLn& args [[buffer(6)]],
+    threadgroup  float* red     [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    const uint n = args.n;
+    // Pass 1: compute sum = a + b, accumulate mean.
+    float partial = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        float s = a[i] + b[i];
+        sum[i] = s;
+        partial += s;
+    }
+    red[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float mean = red[0] / (float)n;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    // Pass 2: variance.
+    partial = 0.0f;
+    for (uint i = tid; i < n; i += tg_size) {
+        float d = sum[i] - mean;
+        partial += d * d;
+    }
+    red[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1u) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv = 1.0f / sqrt(red[0] / (float)n + args.eps);
+    for (uint i = tid; i < n; i += tg_size) {
+        out[i] = (sum[i] - mean) * inv * weight[i] + bias_ln[i];
+    }
+}
+
 // Fused LoRA mid-activation over the stacked low-rank buffer
 // `lo = [w_lo | a_lo | v_lo | g_lo]`:
 //   * tanh    on the w segment  [0, decay)

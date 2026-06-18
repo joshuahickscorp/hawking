@@ -1223,19 +1223,22 @@ pub mod gpu {
         gemv_q6_k_pinned_off_tcb, gemv_q6_k_pinned_tcb, predecode_q4_k_scale_table,
     };
     use crate::metal::rwkv_decode_arena::{
-        rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
-        rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb,
-        rwkv7_decay_act_tcb, rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb,
+        rwkv7_add_into_flat_tcb, rwkv7_add_into_layernorm_tcb, rwkv7_add_into_tcb,
+        rwkv7_channel_mix_shift_multiseq_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb,
+        rwkv7_decay_act_multiseq_tcb, rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb,
         rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb,
         rwkv7_layernorm_tcb, rwkv7_lora_grouped_gemv_tcb, rwkv7_lora_mid_act_tcb,
         rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
-        rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb,
-        rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
-        rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+        rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
+        rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
+        rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb, rwkv7_wa_prep_tcb,
         rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
     };
     use crate::metal::{MetalContext, PinnedBuffer, RwkvDecodeArena, TokenCommandBuffer};
     use crate::{Error, Result};
+
+    #[cfg(feature = "tq")]
+    use crate::tq_gpu::TqPreparedGpu;
 
     /// Group-norm epsilon used inside the WKV-7 per-head norm (matches the CPU
     /// reference `time_mix`: `gn_eps = 64e-5`).
@@ -1265,6 +1268,13 @@ pub mod gpu {
         /// f32-dequantized fallback (F32/F16/BF16 tensors, or any non-Q4_K/Q6_K).
         F32 {
             w: PinnedBuffer,
+            rows: usize,
+            cols: usize,
+        },
+        /// Low-bit STRAND/TQ weight served via bitslice GEMV.
+        #[cfg(feature = "tq")]
+        Tq {
+            prepared: TqPreparedGpu,
             rows: usize,
             cols: usize,
         },
@@ -1312,6 +1322,9 @@ pub mod gpu {
                     }
                 }
             }
+            // TODO: add a TQ override here once a `.tq` sidecar loading path is
+            // wired into `RwkvGpu::build_with_batch`. For now, all tensors that
+            // should be served as TQ must be swapped in after `build` returns.
         }
 
         /// GEMV reading the activation at byte offset `x_off` into `x`, writing
@@ -1355,6 +1368,10 @@ pub mod gpu {
                 }
                 ProjWeight::F32 { w, rows, cols } => {
                     rwkv7_gemv_f32_off_tcb(tcb, w, *rows, *cols, x, x_off, out)
+                }
+                #[cfg(feature = "tq")]
+                ProjWeight::Tq { .. } => {
+                    todo!("ProjWeight::Tq: not yet dispatched — implement strand_bitslice_gemv")
                 }
             }
         }
@@ -1440,7 +1457,50 @@ pub mod gpu {
                     }
                     Ok(())
                 }
+                #[cfg(feature = "tq")]
+                ProjWeight::Tq { .. } => {
+                    todo!("ProjWeight::Tq: not yet dispatched — implement strand_bitslice_gemv")
+                }
             }
+        }
+
+        /// Attempt to swap this `ProjWeight` out for a TQ-backed weight read from
+        /// `tq_store`.  If `name` is not present in the store the original weight
+        /// is returned unchanged (the fall-through path).  A shape mismatch or a
+        /// cols alignment problem is a hard error — it means the artifact was built
+        /// against a different model or a different projection.
+        #[cfg(feature = "tq")]
+        pub fn try_replace_with_tq(
+            self,
+            name: &str,
+            tq_store: &std::collections::HashMap<String, crate::tq::StrandTensor>,
+        ) -> crate::Result<Self> {
+            let Some(st) = tq_store.get(name) else {
+                return Ok(self);
+            };
+            let (r, c) = match &self {
+                ProjWeight::Q4k { rows, cols, .. } => (*rows, *cols),
+                ProjWeight::Q6k { rows, cols, .. } => (*rows, *cols),
+                ProjWeight::F32 { rows, cols, .. } => (*rows, *cols),
+                ProjWeight::Tq { rows, cols, .. } => (*rows, *cols),
+            };
+            if st.out_features != r || st.in_features != c {
+                return Err(crate::Error::Model(format!(
+                    "TQ override shape mismatch for {name}: artifact ({},{}) vs GGUF ({r},{c})",
+                    st.out_features, st.in_features
+                )));
+            }
+            if c % 256 != 0 {
+                return Err(crate::Error::Model(format!(
+                    "TQ override alignment error for {name}: cols={c} is not a multiple of 256"
+                )));
+            }
+            let prepared = crate::tq_gpu::TqPreparedGpu::from_strand_tensor(st)?;
+            Ok(ProjWeight::Tq {
+                prepared,
+                rows: r,
+                cols: c,
+            })
         }
     }
 
@@ -1594,6 +1654,36 @@ pub mod gpu {
             let n = cfg.n_embd;
             let n_ff = cfg.n_ff;
 
+            // ── TQ artifact discovery ──────────────────────────────────────────
+            // When DISMANTLE_RWKV7_TQ is set we try to load a `.tq` sidecar that
+            // overrides selected projection weights with low-bit STRAND/TQ tensors.
+            // The sidecar path is taken from DISMANTLE_RWKV7_TQ_PATH when set;
+            // otherwise a PathBuf::new() placeholder is used (non-existent, so
+            // TQ is silently skipped unless DISMANTLE_RWKV7_TQ_STRICT is also set).
+            // Set DISMANTLE_RWKV7_TQ_PATH explicitly to point at the `.tq` file.
+            #[cfg(feature = "tq")]
+            let tq_store_opt: Option<
+                std::collections::HashMap<String, crate::tq::StrandTensor>,
+            > = {
+                if std::env::var("DISMANTLE_RWKV7_TQ").is_ok() {
+                    let tq_path = std::env::var("DISMANTLE_RWKV7_TQ_PATH")
+                        .map(std::path::PathBuf::from)
+                        .unwrap_or_else(|_| std::path::PathBuf::new());
+                    if tq_path.exists() {
+                        Some(load_tq_artifact(&tq_path)?)
+                    } else if std::env::var("DISMANTLE_RWKV7_TQ_STRICT").is_ok() {
+                        return Err(crate::Error::Model(format!(
+                            "DISMANTLE_RWKV7_TQ_STRICT: TQ artifact not found at {}",
+                            tq_path.display()
+                        )));
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            };
+
             // Stack the LoRA down-(W1) and up-(W2) projections of one layer into
             // two contiguous buffers in group order w,a,v,(g). W1 rows are
             // `rank_i × n`; W2 rows are `n × rank_i`. Concatenating the row-major
@@ -1638,26 +1728,51 @@ pub mod gpu {
                 up(&v)
             };
 
-            let gpu_layers = layers
+            let gpu_layers: Vec<RwkvGpuLayer> = layers
                 .iter()
                 .enumerate()
-                .map(|(li, l)| {
+                .map(|(li, l)| -> Result<RwkvGpuLayer> {
                     let p = |suf: &str| format!("blk.{li}.{suf}");
                     // Projection dims are (rows = out, cols = in).
                     let proj = |suf: &str, rows: usize, cols: usize| {
                         ProjWeight::build(ctx, g, &p(suf), rows, cols)
                     };
-                    RwkvGpuLayer {
+                    // Build each big projection then (when the TQ artifact is
+                    // present) attempt to swap it for a STRAND/TQ-backed weight.
+                    // The swap is a no-op (returns the original) when the tensor
+                    // name is absent from the store; a shape/alignment mismatch
+                    // is a hard error.
+                    #[cfg(feature = "tq")]
+                    let tq_swap = |w: ProjWeight, suf: &str| -> Result<ProjWeight> {
+                        if let Some(ref store) = tq_store_opt {
+                            w.try_replace_with_tq(&p(suf), store)
+                        } else {
+                            Ok(w)
+                        }
+                    };
+                    #[cfg(not(feature = "tq"))]
+                    let tq_swap = |w: ProjWeight, _suf: &str| -> Result<ProjWeight> { Ok(w) };
+
+                    Ok(RwkvGpuLayer {
                         attn_norm_w: up(&l.attn_norm_w),
                         attn_norm_b: up(&l.attn_norm_b),
                         attn_norm2_w: up(&l.attn_norm2_w),
                         attn_norm2_b: up(&l.attn_norm2_b),
                         lerp_fused: up(&l.time_mix_lerp_fused),
                         channel_mix_lerp_k: up(&l.channel_mix_lerp_k),
-                        receptance: proj("time_mix_receptance.weight", n, n),
-                        key: proj("time_mix_key.weight", n, n),
-                        value: proj("time_mix_value.weight", n, n),
-                        output: proj("time_mix_output.weight", n, n),
+                        receptance: tq_swap(
+                            proj("time_mix_receptance.weight", n, n),
+                            "time_mix_receptance.weight",
+                        )?,
+                        key: tq_swap(proj("time_mix_key.weight", n, n), "time_mix_key.weight")?,
+                        value: tq_swap(
+                            proj("time_mix_value.weight", n, n),
+                            "time_mix_value.weight",
+                        )?,
+                        output: tq_swap(
+                            proj("time_mix_output.weight", n, n),
+                            "time_mix_output.weight",
+                        )?,
                         w0: up(&l.time_mix_w0),
                         a0: up(&l.time_mix_a0),
                         v0: up(&l.time_mix_v0),
@@ -1668,12 +1783,18 @@ pub mod gpu {
                         r_k: up(&l.time_mix_r_k),
                         ln_w: up(&l.time_mix_ln_w),
                         ln_b: up(&l.time_mix_ln_b),
-                        channel_mix_key: proj("channel_mix_key.weight", n_ff, n),
-                        channel_mix_value: proj("channel_mix_value.weight", n, n_ff),
+                        channel_mix_key: tq_swap(
+                            proj("channel_mix_key.weight", n_ff, n),
+                            "channel_mix_key.weight",
+                        )?,
+                        channel_mix_value: tq_swap(
+                            proj("channel_mix_value.weight", n, n_ff),
+                            "channel_mix_value.weight",
+                        )?,
                         has_gate: l.time_mix_g1.is_some() && l.time_mix_g2.is_some(),
-                    }
+                    })
                 })
-                .collect();
+                .collect::<Result<Vec<_>>>()?;
 
             let arena = RwkvDecodeArena::new_with_batch(
                 ctx,
@@ -1692,7 +1813,17 @@ pub mod gpu {
             arena.reset_state();
 
             // LM head from its native GGUF precision (Q6_K on the World models).
-            let lm_head = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
+            // Apply the TQ override when a matching "output.weight" entry exists.
+            let lm_head = {
+                let w = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
+                #[cfg(feature = "tq")]
+                let w = if let Some(ref store) = tq_store_opt {
+                    w.try_replace_with_tq("output.weight", store)?
+                } else {
+                    w
+                };
+                w
+            };
 
             // ── LoRA-fusion group tables (built once; constant offsets) ──
             // Group order w,a,v,(g). Ranks and the xs slot each group's input
@@ -1762,6 +1893,26 @@ pub mod gpu {
                 lora_up_rows,
             })
         }
+    }
+
+    /// Load a `.tq` artifact file and return its tensors keyed by name.
+    ///
+    /// Reads the bytes from `path`, delegates to [`crate::tq::read_strand`] for
+    /// the STR2 parse, and maps the resulting [`crate::tq::StrandTensor`] slice
+    /// into a `HashMap<String, StrandTensor>` for O(1) look-up by tensor name
+    /// (e.g. `"blk.0.time_mix_receptance.weight"`).
+    ///
+    /// Error handling: an IO failure surfaces as [`crate::Error::Io`]; a
+    /// malformed/truncated artifact surfaces as [`crate::Error::Model`] with the
+    /// strand parser's diagnostic message.
+    #[cfg(feature = "tq")]
+    pub fn load_tq_artifact(
+        path: &std::path::Path,
+    ) -> crate::Result<std::collections::HashMap<String, crate::tq::StrandTensor>> {
+        let bytes = std::fs::read(path).map_err(crate::Error::Io)?;
+        let tensors = crate::tq::read_strand(&bytes)
+            .map_err(|e| crate::Error::Model(format!("TQ artifact parse: {}", e)))?;
+        Ok(tensors.into_iter().map(|st| (st.name.clone(), st)).collect())
     }
 
     /// Copy `n` f32 from a host slice into the head of a shared GPU buffer.
@@ -1886,8 +2037,9 @@ pub mod gpu {
             let up_vmix_off = 2 * n * f32b;
             let up_gate_off = 3 * n * f32b;
 
-            // w = exp(-0.606531 * sigmoid(w0 + w_raw))   (w_raw = lora_up[0..n])
-            rwkv7_decay_act_tcb(&mut tcb, &a.lora_up, &layer.w0, &a.w, n)?;
+            // Fused: w = exp(-0.606531*sigmoid(w0+w_raw)) AND a = sigmoid(a0+a_raw)
+            // Both read/write lora_up (w_raw@[0..n), a_raw@[n..2n)); saves 1 dispatch/layer.
+            rwkv7_wa_prep_tcb(&mut tcb, &a.lora_up, up_a_off, &layer.w0, &a.w, &layer.a0, n)?;
 
             // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — Q4_K projections
             layer.key.gemv(&mut tcb, &a.xs, slot_off(2), &a.k)?;
@@ -1909,9 +2061,7 @@ pub mod gpu {
                     n,
                 )?;
             }
-
-            // a = sigmoid(a0 + a_raw)   (a_raw = lora_up[n..2n], in place)
-            rwkv7_sigmoid_bias_tcb(&mut tcb, &a.lora_up, up_a_off, &layer.a0, n)?;
+            // a is now ready in lora_up[n..2n] (computed by wa_prep above).
 
             // kk = l2norm_per_head(k*k_k); k += (a-1)*(k*k_a); a_op=-kk; b_op=kk*a.
             // `a` is read from lora_up[n..2n].
@@ -1957,19 +2107,17 @@ pub mod gpu {
             // store att_in as next token-shift for this layer.
             rwkv7_copy_tcb(&mut tcb, &a.att_in, &a.att_shift, shift_off, n)?;
 
-            // ffn_inp = cur + x
-            rwkv7_add_into_tcb(&mut tcb, &a.cur, &a.x, &a.ffn_inp, n)?;
-
             // ── channel-mix ──
-            // ffn_in = layernorm(ffn_inp, attn_norm_2)
-            rwkv7_layernorm_tcb(
+            // Fused: ffn_inp = cur + x  AND  ffn_in = LN(ffn_inp); saves 1 dispatch/layer.
+            // ffn_inp is written to scratch (needed by the cmix residual add below).
+            rwkv7_add_into_layernorm_tcb(
                 &mut tcb,
+                &a.cur,
+                &a.x,
                 &a.ffn_inp,
-                0,
                 &layer.attn_norm2_w,
                 &layer.attn_norm2_b,
                 &a.ffn_in,
-                0,
                 n,
                 eps,
             )?;

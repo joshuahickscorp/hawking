@@ -18,15 +18,16 @@
 
 #[cfg(target_os = "macos")]
 pub use imp::{
-    rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
-    rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb,
-    rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb, rwkv7_kk_kmix_multiseq_tcb,
-    rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb,
-    rwkv7_lora_grouped_gemv_tcb, rwkv7_lora_mid_act_tcb, rwkv7_relu_sq_inplace_tcb,
-    rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
-    rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
-    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb,
-    rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
+    rwkv7_add_into_flat_tcb, rwkv7_add_into_layernorm_tcb, rwkv7_add_into_tcb,
+    rwkv7_channel_mix_shift_multiseq_tcb, rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb,
+    rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb, rwkv7_gemv_f32_off_tcb,
+    rwkv7_gemv_f32_xoff_yoff_tcb, rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb,
+    rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb, rwkv7_lora_grouped_gemv_tcb,
+    rwkv7_lora_mid_act_tcb, rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
+    rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb,
+    rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
+    rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+    rwkv7_wa_prep_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
     RwkvDecodeArena,
 };
 
@@ -512,6 +513,66 @@ mod imp {
             enc.set_buffer(0, Some(x), 0);
             enc.set_u32(1, n as u32);
         })
+    }
+
+    /// Fused w/a activation prep — replaces separate decay_act + sigmoid_bias dispatches.
+    /// w[i] = exp(-0.606531 * sigmoid(lora_up[i] + w0[i]))
+    /// lora_up[a_off_bytes/4 + i] = sigmoid(lora_up[a_off_bytes/4 + i] + a0[i])
+    /// `a_off_bytes` is the byte offset of the a-raw segment within `lora_up`.
+    pub fn rwkv7_wa_prep_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        lora_up: &PinnedBuffer,
+        a_off_bytes: usize,
+        w0: &PinnedBuffer,
+        w_out: &PinnedBuffer,
+        a0: &PinnedBuffer,
+        n: usize,
+    ) -> Result<()> {
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::U32])?;
+        ab.set_u32(0, (a_off_bytes / std::mem::size_of::<f32>()) as u32);
+        ab.set_u32(1, n as u32);
+        dispatch_n(tcb, "rwkv7_wa_prep", n as u32, |enc| {
+            enc.set_buffer(0, Some(lora_up), 0);
+            enc.set_buffer(1, Some(w0), 0);
+            enc.set_buffer(2, Some(w_out), 0);
+            enc.set_buffer(3, Some(a0), 0);
+            enc.set_buffer(4, Some(ab.handle()), 0);
+        })
+    }
+
+    /// Fused residual-add + layer-norm — replaces separate add_into + layernorm dispatches.
+    /// sum[i] = a[i] + b[i]  (written out for downstream cmix residual)
+    /// out[i] = LN(sum, weight, bias_ln)[i]
+    pub fn rwkv7_add_into_layernorm_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        a: &PinnedBuffer,
+        b: &PinnedBuffer,
+        sum: &PinnedBuffer,
+        weight: &PinnedBuffer,
+        bias_ln: &PinnedBuffer,
+        out: &PinnedBuffer,
+        hidden: usize,
+        eps: f32,
+    ) -> Result<()> {
+        let shmem = (LN_TG as u64) * std::mem::size_of::<f32>() as u64;
+        let mut ab = KernelArgBuffer::new(tcb.ctx, &[ArgLayout::U32, ArgLayout::F32])?;
+        ab.set_u32(0, hidden as u32);
+        ab.set_f32(1, eps);
+        tcb.dispatch_threads(
+            "rwkv7_add_into_layernorm",
+            (LN_TG, 1, 1),
+            (LN_TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(a), 0);
+                enc.set_buffer(1, Some(b), 0);
+                enc.set_buffer(2, Some(sum), 0);
+                enc.set_buffer(3, Some(weight), 0);
+                enc.set_buffer(4, Some(bias_ln), 0);
+                enc.set_buffer(5, Some(out), 0);
+                enc.set_buffer(6, Some(ab.handle()), 0);
+                enc.set_threadgroup_memory_length(0, shmem);
+            },
+        )
     }
 
     /// decay activation: w = exp(-0.606531 * sigmoid(w_raw + w0)).
