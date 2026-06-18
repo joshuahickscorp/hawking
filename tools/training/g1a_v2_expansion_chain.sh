@@ -170,4 +170,31 @@ REPORT
 
 log "Report written: $REPORT_OUT"
 log "=== G1a v2 expansion chain complete ==="
+
+# ---------------------------------------------------------------------------
+# Draft-sweep: train 100M/150M/200M/300M RWKV-7 variants for spec-decode.
+# Runs after all architecture checks so a Rust build failure cannot block it.
+# EPOCHS=1 gives enough signal to rank variants; extend the winner manually.
+# ACCEPT_SEQS=50 keeps the per-checkpoint watcher eval under ~8 min on CPU.
+# ---------------------------------------------------------------------------
+DRAFT_SWEEP="$ROOT/tools/training/launch_draft_sweep.sh"
+if [[ -f "$DRAFT_SWEEP" ]]; then
+    log "=== launching draft sweep (100M/150M/200M/300M) ==="
+    DRAFT_LOG="$ROOT/artifacts/lowbit_rwkv7/draft_sweep.log"
+    mkdir -p "$(dirname "$DRAFT_LOG")"
+    EPOCHS="${DRAFT_EPOCHS:-1}" \
+    ACCEPT_SEQS="${DRAFT_ACCEPT_SEQS:-50}" \
+    PYTHON="${PYTHON:-.venv-rwkv/bin/python}" \
+        bash "$DRAFT_SWEEP" >> "$DRAFT_LOG" 2>&1
+    rc=$?
+    if [[ $rc -eq 0 ]]; then
+        log "Draft sweep complete — results in $ROOT/artifacts/lowbit_rwkv7/runs/custom_*/eval_log.jsonl"
+    else
+        log "Draft sweep exited with code $rc — check $DRAFT_LOG"
+        FINAL_EXIT=1
+    fi
+else
+    log "Draft sweep script not found at $DRAFT_SWEEP — skipping"
+fi
+
 exit "$FINAL_EXIT"

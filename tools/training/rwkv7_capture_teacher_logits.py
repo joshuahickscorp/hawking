@@ -25,15 +25,24 @@ from pathlib import Path
 
 import torch
 import torch.nn.functional as F
-from transformers import AutoTokenizer
 
 from rwkv7_load_weights import load_rwkv7
+from rwkv7_sft_torch import load_tokenizer
 from rwkv7_torch_model import RWKV7Config
 
 
 # ---------------------------------------------------------------------------
 # Tokenisation helpers
 # ---------------------------------------------------------------------------
+
+def encode_text(tokenizer, text: str) -> list[int]:
+    if hasattr(tokenizer, "encodeBytes"):
+        return tokenizer.encodeBytes(text.encode("utf-8"))
+    try:
+        return tokenizer.encode(text, add_special_tokens=False)
+    except TypeError:
+        return tokenizer.encode(text)
+
 
 def tokenize_sequence(
     tokenizer,
@@ -45,22 +54,31 @@ def tokenize_sequence(
     Returns None if the result has no supervised tokens (e.g. completion
     is empty after truncation).
 
-    Handles two input shapes:
+    Handles three input shapes:
+      {"messages": [{"role": "user", ...}, {"role": "assistant", ...}]}
       {"prompt": "...", "completion": "..."}
       {"text": "..."}  — treated as pure completion (prompt_len=0)
     """
-    if "text" in item:
-        ids = tokenizer.encode(item["text"])
+    if "messages" in item:
+        msgs = item.get("messages") or []
+        user = next((m["content"] for m in msgs if m.get("role") == "user"), "")
+        assistant = next((m["content"] for m in msgs if m.get("role") == "assistant"), "")
+        if not user or not assistant:
+            return None
+        prompt_ids = [0] + encode_text(tokenizer, f"User: {user}\n\nAssistant:")
+        completion_ids = encode_text(tokenizer, f" {assistant}") + [0]
+    elif "text" in item:
+        ids = encode_text(tokenizer, item["text"])
         ids = ids[:max_seq_len]
         if len(ids) < 1:
             return None
         return ids, 0
+    else:
+        prompt_text = item.get("prompt", "")
+        completion_text = item.get("completion", "")
 
-    prompt_text = item.get("prompt", "")
-    completion_text = item.get("completion", "")
-
-    prompt_ids = tokenizer.encode(prompt_text)
-    completion_ids = tokenizer.encode(completion_text)
+        prompt_ids = encode_text(tokenizer, prompt_text)
+        completion_ids = encode_text(tokenizer, completion_text)
 
     # Truncate the combined sequence to max_seq_len.  Preserve as many
     # completion tokens as possible — only trim the prompt from the front.
@@ -154,7 +172,7 @@ def main() -> None:
 
     # ---- Load tokenizer ----
     print(f"Loading tokenizer from {args.hf_dir} ...")
-    tokenizer = AutoTokenizer.from_pretrained(args.hf_dir, trust_remote_code=True)
+    tokenizer = load_tokenizer(Path(args.hf_dir))
 
     # ---- Load model ----
     print(f"Loading model from {args.model} onto {args.device} ...")
