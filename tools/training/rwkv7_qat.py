@@ -846,13 +846,6 @@ def train(args: argparse.Namespace) -> None:
 
             (loss / args.grad_accum).backward()
 
-            l_item = loss.item()
-            loss_ema = l_item if loss_ema is None else 0.98 * loss_ema + 0.02 * l_item
-
-            # Release MPS fragmentation.
-            if args.device == "mps":
-                torch.mps.empty_cache()
-
             # Optimizer step every grad_accum micro-batches.
             if global_step % args.grad_accum == 0:
                 torch.nn.utils.clip_grad_norm_(
@@ -860,7 +853,16 @@ def train(args: argparse.Namespace) -> None:
                 )
                 opt.step()
                 opt.zero_grad()
+                # Flush MPS cache once per optimizer step, not per micro-batch.
+                if args.device == "mps":
+                    torch.mps.empty_cache()
                 opt_step += 1
+
+                # Resolve loss scalar once per step (avoids per-micro-batch GPU sync).
+                l_item = loss.item()
+                ce_item = ce_loss.item()
+                kd_item = kd_loss.item() if isinstance(kd_loss, torch.Tensor) else 0.0
+                loss_ema = l_item if loss_ema is None else 0.98 * loss_ema + 0.02 * l_item
 
                 dt = time.time() - t0
                 event = {
@@ -869,8 +871,8 @@ def train(args: argparse.Namespace) -> None:
                     "loss": round(l_item, 6),
                     "loss_ema": round(loss_ema, 6),
                     "ppl_ema": round(math.exp(min(loss_ema, 20.0)), 2),
-                    "ce_loss": round(ce_loss.item(), 6),
-                    "kd_loss": round(kd_loss.item() if isinstance(kd_loss, torch.Tensor) else 0.0, 6),
+                    "ce_loss": round(ce_item, 6),
+                    "kd_loss": round(kd_item, 6),
                     "tok_s": round(seen_tok / dt, 1),
                     "run_id": args.run_id,
                     "timestamp": datetime.now(timezone.utc).isoformat(),
