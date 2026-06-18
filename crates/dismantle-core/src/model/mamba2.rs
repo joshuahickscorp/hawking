@@ -498,6 +498,21 @@ impl Engine for Mamba2 {
 
         let mut stop_reason = StopReason::MaxTokens;
 
+        let vocab_index = if req.json_mode {
+            let tok = &self.tokenizer;
+            let vs = self.config.vocab_size;
+            Some(crate::json_constrain::JsonVocabIndex::build(vs, |id| {
+                tok.decode_one(id).unwrap_or_default()
+            }))
+        } else {
+            None
+        };
+        let mut constraint = if req.json_mode {
+            Some(crate::json_constrain::JsonConstraint::new())
+        } else {
+            None
+        };
+
         loop {
             if let Some(sig) = &req.abort {
                 if sig.load(Ordering::Relaxed) {
@@ -510,6 +525,9 @@ impl Engine for Mamba2 {
             }
 
             let mut logits = self.forward_token(last_tok)?;
+            if let (Some(vi), Some(c)) = (&vocab_index, &constraint) {
+                c.mask_logits(vi, &mut logits);
+            }
             let tok = self.sampler.sample(&mut logits, &req.sampling);
             n_gen += 1;
 
@@ -519,7 +537,17 @@ impl Engine for Mamba2 {
             }
 
             let text = self.tokenizer.decode_one(tok)?;
+            let json_done = if let Some(c) = &mut constraint {
+                c.advance(&text);
+                c.is_done()
+            } else {
+                false
+            };
             sink(StreamEvent::Token { id: tok, text });
+            if json_done {
+                stop_reason = StopReason::Eos;
+                break;
+            }
             last_tok = tok;
         }
 
