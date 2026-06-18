@@ -10,6 +10,7 @@ pub mod gemma2;
 pub mod llama;
 pub mod mamba2;
 pub mod mixtral;
+pub mod olmoe;
 pub mod phi3;
 pub mod qwen_dense;
 pub mod qwen_moe;
@@ -106,8 +107,12 @@ pub fn load_engine(weights: &Path, mut config: EngineConfig) -> Result<Box<dyn E
             let e = mamba2::Mamba2::load(weights, config)?;
             Ok(Box::new(e))
         }
+        "olmoe" => {
+            let e = olmoe::OlmoeEngine::load(weights, config)?;
+            Ok(Box::new(e))
+        }
         other => Err(Error::Model(format!(
-            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe + gemma2 + phi3 + rwkv7 + mamba2"
+            "unknown architecture {other:?}; supports llama (dense + mixtral) + deepseek2 + qwen2 + qwen-moe + gemma2 + phi3 + rwkv7 + mamba2 + olmoe"
         ))),
     }
 }
