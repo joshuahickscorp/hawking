@@ -760,3 +760,106 @@ kernel void rwkv7_add_into_flat(
     if (gid >= total) return;
     out[gid] = a[gid] + bb[gid];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RWKV-7 LoRA fusion: grouped GEMV + fused mid-activation.
+//
+// The time-mix has four low-rank (LoRA) paths — w (decay), a (iclr), v (value-
+// residual), g (gate) — each `x @ W1 → act → @ W2`. Run as eight tiny separate
+// GEMV dispatches per layer, they dominated the GPU-time profile (≈190 tiny
+// dispatches/step at ≈39% of GPU time), dispatch-overhead-bound not bandwidth-
+// bound. These two kernels collapse the eight GEMVs + two inter-activations into
+// THREE dispatches/layer: one grouped down-GEMV, one fused mid-act, one grouped
+// up-GEMV.
+//
+// PARITY: each output row's arithmetic is bit-identical to the standalone
+// `gemv_f32_attn` / `rwkv7_gemv_f32_off` it replaces — same f32 `row[c]*x[c]`
+// MAC, same tree reduction over the same `cols`. Only the *dispatch* that carries
+// the row changes, never the math, so the GPU↔CPU parity gate is preserved.
+//
+// A "group" is one LoRA's W1 (or W2). The host stacks the per-LoRA weight rows
+// into one contiguous buffer and passes a small group table (≤4 entries). Each
+// threadgroup owns one GLOBAL output row across all stacked groups; it scans the
+// (tiny, ≤4) table to find its group, recovers the local row, then runs the
+// reduction GEMV reading `x` at the group's input offset and writing `out` at
+// the group's output offset.
+//
+// One threadgroup per output row; `tg_size` threads stride the reduction.
+// Grid: (total_rows * tg_size, 1, 1), threadgroups (tg_size, 1, 1).
+//
+// Bindings:
+//   0  w        stacked W rows (all groups), row-major f32
+//   1  x        activation source (slot-major xs for down; stacked lo for up)
+//   2  out      stacked outputs (all groups), f32
+//   3  table    RwkvLoraGroup[ngroups]  (row_start, w_off, x_off, out_off, cols)
+//   4  args     { ngroups; total_rows }
+//   threadgroup(0): red (tg_size floats) reduction scratch
+struct RwkvLoraGroup {
+    uint row_start;  // first global row index of this group
+    uint w_off;      // element offset of this group's W block in `w`
+    uint x_off;      // element offset of this group's input in `x`
+    uint out_off;    // element offset of this group's output in `out`
+    uint cols;       // reduction length (== n for down, == rank for up)
+};
+struct ArgbufRwkv7Lora { uint ngroups; uint total_rows; };
+
+kernel void rwkv7_lora_grouped_gemv(
+    device const float*          w     [[buffer(0)]],
+    device const float*          x     [[buffer(1)]],
+    device       float*          out   [[buffer(2)]],
+    device const RwkvLoraGroup*  table [[buffer(3)]],
+    constant ArgbufRwkv7Lora&    args  [[buffer(4)]],
+    threadgroup  float*          red   [[threadgroup(0)]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint gid     [[threadgroup_position_in_grid]],   // global output row
+    uint tg_size [[threads_per_threadgroup]])
+{
+    if (gid >= args.total_rows) return;
+
+    // Locate the group owning this global row (≤4 groups → linear scan). Pick
+    // the last group whose row_start <= gid.
+    uint g = 0;
+    for (uint i = 1; i < args.ngroups; ++i) {
+        if (table[i].row_start <= gid) g = i; else break;
+    }
+    const uint local_row = gid - table[g].row_start;
+    const uint cols      = table[g].cols;
+    device const float* row  = w + (uint64_t)table[g].w_off + (uint64_t)local_row * (uint64_t)cols;
+    device const float* xin  = x + table[g].x_off;
+
+    float partial = 0.0f;
+    for (uint c = tid; c < cols; c += tg_size) {
+        partial += row[c] * xin[c];
+    }
+    red[tid] = partial;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2; stride > 0; stride >>= 1) {
+        if (tid < stride) red[tid] += red[tid + stride];
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    if (tid == 0) out[table[g].out_off + local_row] = red[0];
+}
+
+// Fused LoRA mid-activation over the stacked low-rank buffer
+// `lo = [w_lo | a_lo | v_lo | g_lo]`:
+//   * tanh    on the w segment  [0, decay)
+//   * sigmoid on the g segment  [decay+iclr+vres, decay+iclr+vres+gate)
+//   * identity on the a and v segments
+// Mirrors the CPU reference exactly (w: tanh before W2; g: sigmoid before G2;
+// a/v: no inter-activation). Replaces the separate tanh_inplace + sigmoid_inplace
+// dispatches. Grid: (decay+iclr+vres+gate, 1, 1).
+struct ArgbufRwkv7LoraAct { uint w_end; uint g_begin; uint total; };
+kernel void rwkv7_lora_mid_act(
+    device float* lo [[buffer(0)]],
+    constant ArgbufRwkv7LoraAct& args [[buffer(1)]],
+    uint gid [[thread_position_in_grid]])
+{
+    if (gid >= args.total) return;
+    float v = lo[gid];
+    if (gid < args.w_end) {
+        lo[gid] = tanh(v);
+    } else if (gid >= args.g_begin) {
+        lo[gid] = 1.0f / (1.0f + exp(-v));
+    }
+    // a and v segments: identity (leave as-is).
+}
