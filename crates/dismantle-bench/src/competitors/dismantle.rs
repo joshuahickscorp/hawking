@@ -63,6 +63,7 @@ impl Competitor for DismantleBackend {
             stop: Vec::new(),
             abort: None,
             max_stall_ms: 0,
+            json_mode: false,
         };
 
         let start = Instant::now();

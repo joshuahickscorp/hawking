@@ -123,6 +123,7 @@ pub fn run(opts: BenchServerOptions) -> Result<()> {
             stop: Vec::new(),
             abort: None,
             max_stall_ms: 60_000,
+            json_mode: false,
         };
 
         let mut completion_text = String::new();

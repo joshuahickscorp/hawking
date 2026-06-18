@@ -122,6 +122,7 @@ fn run_dismantle(opts: &BenchOptions) -> Result<serde_json::Value> {
             stop: Vec::new(),
             abort: None,
             max_stall_ms: 0,
+            json_mode: false,
         };
         let mut produced = 0usize;
         let mut sink = |ev: StreamEvent| {

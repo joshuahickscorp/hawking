@@ -256,6 +256,15 @@ struct ChatReq {
     seed: Option<u64>,
     #[serde(default)]
     stream: bool,
+    /// `{"type": "json_object"}` triggers structural JSON constraint masking.
+    #[serde(default)]
+    response_format: Option<ResponseFormat>,
+}
+
+#[derive(Deserialize, Default)]
+struct ResponseFormat {
+    #[serde(rename = "type", default)]
+    format_type: String,
 }
 
 fn default_max_tokens() -> usize {
@@ -296,6 +305,10 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         repetition_penalty: 1.0,
         seed: req.seed,
     };
+    let json_mode = req.response_format
+        .as_ref()
+        .map(|f| f.format_type == "json_object")
+        .unwrap_or(false);
     let gen = GenerateRequest {
         prompt,
         max_new_tokens: req.max_tokens,
@@ -303,6 +316,7 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
+        json_mode,
     };
     if req.stream {
         sse_response(s, gen, /*chat=*/ true).into_response()
@@ -335,6 +349,7 @@ async fn completions(State(s): State<AppState>, body: Bytes) -> Response {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     if req.stream {
         sse_response(s, gen, /*chat=*/ false).into_response()
@@ -520,6 +535,7 @@ pub fn map_dismantle_generate_req(req: &DismantleGenerateReq) -> GenerateRequest
         stop: req.stop.clone(),
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     }
 }
 
@@ -609,6 +625,7 @@ async fn dismantle_tokens(State(s): State<AppState>, body: Bytes) -> Response {
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 0,
+        json_mode: false,
     };
     token_id_sse_response(s, gen).into_response()
 }

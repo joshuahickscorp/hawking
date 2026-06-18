@@ -161,7 +161,7 @@ impl Default for SamplingParams {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct GenerateRequest {
     pub prompt: String,
     pub max_new_tokens: usize,
@@ -177,6 +177,11 @@ pub struct GenerateRequest {
     /// disables the watchdog. Useful as a kill-switch when CPU paths
     /// stall on huge models.
     pub max_stall_ms: u64,
+    /// When true, apply JSON structural constraint masking before each
+    /// sample step. Engines that implement this check the flag and feed
+    /// logits through `JsonConstraint::mask_logits` before sampling.
+    /// Default false (no masking).
+    pub json_mode: bool,
 }
 
 #[derive(Debug, Clone)]

@@ -26,6 +26,7 @@ pub fn run(opts: &BenchOptions) -> Result<serde_json::Value> {
             stop: Vec::new(),
             abort: None,
             max_stall_ms: 0,
+            json_mode: false,
         };
         let start = Instant::now();
         let mut first_token: Option<f64> = None;

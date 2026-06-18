@@ -1198,6 +1198,7 @@ fn stats_main(
         stop: Vec::new(),
         abort: None,
         max_stall_ms: 60_000,
+        json_mode: false,
     };
     let mut decoded = String::new();
     let mut final_done = None;
@@ -1626,6 +1627,7 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
                 stop: Vec::new(),
                 abort: None,
                 max_stall_ms: 30_000,
+            json_mode: false,
             };
             let mut decode_ms = 0.0f64;
             let mut completion_tokens = 0usize;
@@ -2009,6 +2011,7 @@ fn generate_main(
             stop: Vec::new(),
             abort: Some(Arc::clone(&abort)),
             max_stall_ms,
+            json_mode: false,
         };
         let mut sink = |ev: StreamEvent| match ev {
             StreamEvent::Token { text, .. } => {
@@ -2134,6 +2137,7 @@ fn batch_hash_main(
             stop: Vec::new(),
             abort: None,
             max_stall_ms,
+            json_mode: false,
         };
 
         let mut decoded = String::new();
