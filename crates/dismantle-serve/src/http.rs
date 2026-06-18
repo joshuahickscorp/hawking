@@ -163,6 +163,7 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/models", get(list_models))
         .route("/v1/chat/completions", post(chat_completions))
         .route("/v1/completions", post(completions))
+        .route("/v1/embeddings", post(embeddings))
         .route("/v1/dismantle/tokens", post(dismantle_tokens))
         .route("/v1/dismantle/generate", post(dismantle_generate))
         .route("/metrics", get(metrics))
@@ -868,4 +869,74 @@ async fn json_full_response(
     .map_err(|_| ApiError::internal("generation task panicked"))?
     .map_err(ApiError::internal)?;
     Ok(Json(res))
+}
+
+// ── POST /v1/embeddings ───────────────────────────────────────────────────────
+
+#[derive(Deserialize)]
+struct EmbeddingsReq {
+    input: EmbeddingsInput,
+    #[allow(dead_code)]
+    #[serde(default)]
+    model: Option<String>,
+    #[serde(default = "default_embedding_encoding")]
+    encoding_format: String,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum EmbeddingsInput {
+    Single(String),
+    Batch(Vec<String>),
+}
+
+fn default_embedding_encoding() -> String {
+    "float".to_string()
+}
+
+async fn embeddings(State(s): State<AppState>, body: Bytes) -> Response {
+    let req: EmbeddingsReq = match parse_json(&body) {
+        Ok(req) => req,
+        Err(e) => return e.into_response(),
+    };
+    let inputs: Vec<String> = match req.input {
+        EmbeddingsInput::Single(t) => vec![t],
+        EmbeddingsInput::Batch(v) => v,
+    };
+    if inputs.is_empty() {
+        return ApiError::missing_parameter("'input' must not be empty").into_response();
+    }
+    if req.encoding_format != "float" {
+        return ApiError::invalid_json("only encoding_format=float is supported").into_response();
+    }
+
+    let model_id = s.engine.lock().model_id().to_string();
+    let engine = s.engine.clone();
+
+    let result = tokio::task::spawn_blocking(move || {
+        let mut eng = engine.lock();
+        let mut data = Vec::with_capacity(inputs.len());
+        for (idx, text) in inputs.iter().enumerate() {
+            let vec = eng.embed(text)?;
+            data.push(serde_json::json!({
+                "object": "embedding",
+                "index": idx,
+                "embedding": vec,
+            }));
+        }
+        dismantle_core::Result::Ok(data)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(data)) => Json(serde_json::json!({
+            "object": "list",
+            "data": data,
+            "model": model_id,
+            "usage": { "prompt_tokens": 0, "total_tokens": 0 },
+        }))
+        .into_response(),
+        Ok(Err(e)) => ApiError::internal(e.to_string()).into_response(),
+        Err(_) => ApiError::internal("embedding task panicked").into_response(),
+    }
 }

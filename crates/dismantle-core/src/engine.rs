@@ -521,6 +521,28 @@ pub trait Engine: Send + Sync {
     fn expert_access_counts(&self) -> Option<Vec<Vec<u64>>> {
         None
     }
+
+    /// OpenAI-compatible text embedding: tokenize `text`, run it through the
+    /// model, and return a unit-normalized embedding vector.
+    ///
+    /// Default: runs the last token's forward pass and L2-normalizes the
+    /// output logits as a proxy embedding. Not ideal for semantic search but
+    /// produces a fixed-size vector. Override in engines that expose hidden
+    /// states (e.g. RWKV-7 via its recurrent SSM output).
+    ///
+    /// Returns `Err(Unimplemented("embed"))` when the engine has no tokenizer
+    /// (token-ID-only mode).
+    fn embed(&mut self, text: &str) -> Result<Vec<f32>> {
+        let ids = self.encode_prompt_for_batch(text)?;
+        if ids.is_empty() {
+            return Err(crate::Error::Model("embed: empty tokenization".into()));
+        }
+        let positions: Vec<usize> = (0..ids.len()).collect();
+        let rows = self.forward_tokens_for_test(&ids, &positions)?;
+        let last = rows.last().ok_or_else(|| crate::Error::Model("embed: no output rows".into()))?;
+        let norm: f32 = last.iter().map(|v| v * v).sum::<f32>().sqrt().max(1e-8);
+        Ok(last.iter().map(|v| v / norm).collect())
+    }
 }
 
 #[cfg(test)]
