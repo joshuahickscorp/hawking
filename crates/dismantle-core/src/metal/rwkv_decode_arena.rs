@@ -21,10 +21,11 @@ pub use imp::{
     rwkv7_add_into_flat_tcb, rwkv7_add_into_tcb, rwkv7_channel_mix_shift_multiseq_tcb,
     rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb, rwkv7_decay_act_tcb,
     rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb, rwkv7_kk_kmix_multiseq_tcb,
-    rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
-    rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
-    rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
-    rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+    rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb, rwkv7_layernorm_tcb,
+    rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb,
+    rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb,
+    rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
+    rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
     rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb, RwkvDecodeArena,
 };
 
@@ -285,8 +286,8 @@ mod imp {
             let s_per_layer = self.head_count * self.head_size * self.head_size;
             // wkv: stream-major, the slot's whole n_layer window is contiguous.
             unsafe {
-                let base = (self.wkv_state.contents() as *mut f32)
-                    .add(slot * self.n_layer * s_per_layer);
+                let base =
+                    (self.wkv_state.contents() as *mut f32).add(slot * self.n_layer * s_per_layer);
                 std::ptr::write_bytes(base, 0, self.n_layer * s_per_layer);
                 for buf in [&self.att_shift, &self.ffn_shift] {
                     let p = (buf.contents() as *mut f32).add(slot * self.n_layer * self.n_embd);
@@ -857,7 +858,7 @@ mod imp {
         ab.set_u32(0, hs);
         ab.set_u32(1, head_count as u32);
         ab.set_u32(2, (head_count * head_size) as u32); // args.n = n_embd, not batch
-        // Grid: (B * head_count * hs); threadgroup = hs; tg index = b*head_count+head.
+                                                        // Grid: (B * head_count * hs); threadgroup = hs; tg index = b*head_count+head.
         tcb.dispatch_threads(
             "rwkv7_kk_kmix_multiseq",
             (batch as u32 * head_count as u32 * hs, 1, 1),

@@ -1217,11 +1217,11 @@ pub mod gpu {
         rwkv7_channel_mix_shift_tcb, rwkv7_copy_tcb, rwkv7_decay_act_multiseq_tcb,
         rwkv7_decay_act_tcb, rwkv7_gemv_f32_off_tcb, rwkv7_gemv_f32_xoff_yoff_tcb,
         rwkv7_kk_kmix_multiseq_tcb, rwkv7_kk_kmix_tcb, rwkv7_layernorm_multiseq_tcb,
-        rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb,
-        rwkv7_shift_writeback_multiseq_tcb, rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb,
-        rwkv7_sigmoid_inplace_tcb, rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb,
-        rwkv7_token_shift_lerp_tcb, rwkv7_value_residual_mix_multiseq_tcb,
-        rwkv7_value_residual_mix_tcb, rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
+        rwkv7_layernorm_tcb, rwkv7_relu_sq_inplace_tcb, rwkv7_shift_writeback_multiseq_tcb,
+        rwkv7_sigmoid_bias_multiseq_tcb, rwkv7_sigmoid_bias_tcb, rwkv7_sigmoid_inplace_tcb,
+        rwkv7_tanh_inplace_tcb, rwkv7_token_shift_lerp_multiseq_tcb, rwkv7_token_shift_lerp_tcb,
+        rwkv7_value_residual_mix_multiseq_tcb, rwkv7_value_residual_mix_tcb,
+        rwkv7_wkv_decode_multiseq_tcb, rwkv7_wkv_decode_tcb,
     };
     use crate::metal::{MetalContext, PinnedBuffer, RwkvDecodeArena, TokenCommandBuffer};
     use crate::{Error, Result};
@@ -2017,7 +2017,9 @@ pub mod gpu {
             )?;
 
             // r = Wr @ xr   (slot 0) — batched Q4_K projection
-            layer.receptance.gemv_batched(&mut tcb, &a.xs, xs_slot(0), &a.r, b)?;
+            layer
+                .receptance
+                .gemv_batched(&mut tcb, &a.xs, xs_slot(0), &a.r, b)?;
 
             // w = exp(-0.606531 * sigmoid(w0 + W2 @ tanh(W1 @ xw)))  (slot 1).
             // LoRA: per-stream f32 GEMVs into (B, decay_lora) then (B, n).
@@ -2049,8 +2051,12 @@ pub mod gpu {
             rwkv7_decay_act_multiseq_tcb(&mut tcb, &a.w_raw, &layer.w0, &a.w, n, b)?;
 
             // k = Wk @ xk (slot 2) ; v = Wv @ xv (slot 3) — batched Q4_K projections
-            layer.key.gemv_batched(&mut tcb, &a.xs, xs_slot(2), &a.k, b)?;
-            layer.value.gemv_batched(&mut tcb, &a.xs, xs_slot(3), &a.v, b)?;
+            layer
+                .key
+                .gemv_batched(&mut tcb, &a.xs, xs_slot(2), &a.k, b)?;
+            layer
+                .value
+                .gemv_batched(&mut tcb, &a.xs, xs_slot(3), &a.v, b)?;
 
             // value-residual mix (skip on layer 0 where v_first is established).
             if !have_v_first {
@@ -2082,13 +2088,7 @@ pub mod gpu {
                     )?;
                 }
                 rwkv7_value_residual_mix_multiseq_tcb(
-                    &mut tcb,
-                    &a.v,
-                    &a.v_first,
-                    &a.v_mix,
-                    &layer.v0,
-                    n,
-                    b,
+                    &mut tcb, &a.v, &a.v_first, &a.v_mix, &layer.v0, n, b,
                 )?;
             }
 
@@ -2190,7 +2190,9 @@ pub mod gpu {
             )?;
 
             // y = Wo @ out → cur — batched Q4_K projection (x from out_wkv, off 0)
-            layer.output.gemv_batched(&mut tcb, &a.out_wkv, 0, &a.cur, b)?;
+            layer
+                .output
+                .gemv_batched(&mut tcb, &a.out_wkv, 0, &a.cur, b)?;
 
             // store att_in as next token-shift for this layer (scatter into the
             // stream-major att_shift plane).
@@ -2271,7 +2273,8 @@ pub mod gpu {
             b,
             eps,
         )?;
-        g.lm_head.gemv_batched(&mut tcb, &a.x_norm, 0, &a.logits, b)?;
+        g.lm_head
+            .gemv_batched(&mut tcb, &a.x_norm, 0, &a.logits, b)?;
 
         tcb.commit_and_wait()?;
         g.fresh = false;

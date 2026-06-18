@@ -224,7 +224,9 @@ fn rwkv7_multiseq_cpu_slot_reset_is_isolated() {
             "slot 0 after reset_slot must match a fresh sequence at step {t}"
         );
     }
-    eprintln!("rwkv7 multiseq CPU oracle: reset_slot(0) isolated; slot 0 decoded fresh, others kept");
+    eprintln!(
+        "rwkv7 multiseq CPU oracle: reset_slot(0) isolated; slot 0 decoded fresh, others kept"
+    );
 }
 
 /// GATE 2 (macOS + Metal; skips otherwise — EXECUTES the GPU): the B-stream GPU
@@ -275,10 +277,19 @@ fn rwkv7_multiseq_gpu_matches_cpu_oracle() {
         let rows = engine
             .forward_token_gpu_multiseq(&col)
             .expect("gpu multiseq forward");
-        assert_eq!(rows.len(), B, "gpu multiseq returned {} rows != B", rows.len());
+        assert_eq!(
+            rows.len(),
+            B,
+            "gpu multiseq returned {} rows != B",
+            rows.len()
+        );
         for s in 0..B {
             let (gl, cl) = (&rows[s], &cpu[t][s]);
-            assert_eq!(gl.len(), cl.len(), "logit width mismatch stream {s} step {t}");
+            assert_eq!(
+                gl.len(),
+                cl.len(),
+                "logit width mismatch stream {s} step {t}"
+            );
             let d = max_abs_diff(gl, cl);
             if d > worst {
                 worst = d;
@@ -367,7 +378,9 @@ fn rwkv7_multiseq_gpu_matches_serial_gpu() {
             );
         }
     }
-    eprintln!("rwkv7 multiseq GPU == serial GPU: B={B}×{STEPS} steps, worst max|Δlogit|={worst:.5}");
+    eprintln!(
+        "rwkv7 multiseq GPU == serial GPU: B={B}×{STEPS} steps, worst max|Δlogit|={worst:.5}"
+    );
     assert!(
         worst < LOGIT_TOL,
         "GPU multiseq vs serial-GPU max-abs logit diff {worst:.5} exceeds tol {LOGIT_TOL}"
@@ -562,7 +575,9 @@ fn rwkv7_multiseq_gpu_b2_wkv_state_inspect() {
         }
     }
     if let Some(li) = first_wkv_divergent {
-        panic!("wkv_state first divergent layer {li} — bug in WKV recurrence or its r/w/k/v inputs");
+        panic!(
+            "wkv_state first divergent layer {li} — bug in WKV recurrence or its r/w/k/v inputs"
+        );
     }
     eprintln!("wkv_state MATCHES for all layers → bug is in output projection (Wo@out_wkv) or residual+LN");
 }
@@ -659,10 +674,14 @@ fn rwkv7_multiseq_gpu_b2_k_inspect() {
     let (b2_r, b2_k, b2_a, b2_a_op) = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
-        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
-        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
-        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
-        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        let r =
+            unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k =
+            unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a =
+            unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }
+            .to_vec();
         (r, k, a, a_op)
     };
 
@@ -673,10 +692,14 @@ fn rwkv7_multiseq_gpu_b2_k_inspect() {
     let (b1_r, b1_k, b1_a, b1_a_op) = {
         let g = engine.gpu.as_ref().unwrap();
         let n = g.arena.n_embd;
-        let r = unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
-        let k = unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
-        let a = unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
-        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }.to_vec();
+        let r =
+            unsafe { std::slice::from_raw_parts(g.arena.r.contents() as *const f32, n) }.to_vec();
+        let k =
+            unsafe { std::slice::from_raw_parts(g.arena.k.contents() as *const f32, n) }.to_vec();
+        let a =
+            unsafe { std::slice::from_raw_parts(g.arena.a.contents() as *const f32, n) }.to_vec();
+        let a_op = unsafe { std::slice::from_raw_parts(g.arena.a_op.contents() as *const f32, n) }
+            .to_vec();
         (r, k, a, a_op)
     };
 
