@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch all four custom RWKV-7 draft variants sequentially.
+# Launch custom RWKV-7 draft variants sequentially.
 #
 # Expected wall time on an M3 Pro is roughly 8-16h total for the default
 # 3-epoch sweep, depending on prompt lengths, chunked WKV settings, and whether
@@ -22,6 +22,7 @@ Environment:
   GRAD_ACCUM=16
   LR=5e-4
   POLL_SECONDS=300
+  DRAFT_VARIANTS="draft_100m draft_150m draft_200m draft_300m"
   TEACHER_LOGITS=/path/to/teacher_logits   # optional KD shards
 EOF
         exit 0
@@ -31,7 +32,11 @@ EOF
     exit 2
 fi
 
-variants=(draft_100m draft_150m draft_200m draft_300m)
+read -r -a variants <<< "${DRAFT_VARIANTS:-draft_100m draft_150m draft_200m draft_300m}"
+if [[ "${#variants[@]}" -eq 0 ]]; then
+    echo "DRAFT_VARIANTS resolved to an empty list" >&2
+    exit 2
+fi
 DEVICE="${DEVICE:-mps}"
 EPOCHS="${EPOCHS:-3}"
 GRAD_ACCUM="${GRAD_ACCUM:-16}"
@@ -66,7 +71,14 @@ for variant in "${variants[@]}"; do
         "${teacher_args[@]}" &
     train_pid=$!
 
-    wait "$train_pid"
+    wait "$train_pid" && train_rc=0 || train_rc=$?
+    if [[ $train_rc -ne 0 ]]; then
+        echo "=== [$variant] trainer FAILED (exit $train_rc); killing watcher ===" >&2
+        kill "$watcher_pid" 2>/dev/null || true
+        wait "$watcher_pid" 2>/dev/null || true
+        echo "=== [$variant] aborted at $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
+        continue
+    fi
     wait "$watcher_pid"
     echo "=== [$variant] complete at $(date -u '+%Y-%m-%dT%H:%M:%SZ') ==="
 done

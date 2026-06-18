@@ -15,10 +15,51 @@ except ImportError:  # scripts are usually run from tools/training/
 
 
 VOCAB_SIZE = 65536
-VARIANT_ORDER = ("draft_100m", "draft_150m", "draft_200m", "draft_300m")
+BASE_SWEEP_VARIANTS = ("draft_100m", "draft_150m", "draft_200m", "draft_300m")
+SHRINK_PROBE_VARIANTS = ("draft_35m_probe", "draft_50m_probe", "draft_75m_probe")
+VARIANT_ORDER = SHRINK_PROBE_VARIANTS + BASE_SWEEP_VARIANTS
 
 
 CUSTOM_VARIANTS: dict[str, RWKV7Config] = {
+    # Architectural floor probe: 2 layers at 256-wide cannot learn language; expected
+    # wikitext2 PPL ~100k and accept rate ~5%. Trains in <30 min. The only value is
+    # establishing where the coherence cliff sits so the shrink policy knows not to go here.
+    "draft_35m_probe": RWKV7Config(
+        n_embd=256,
+        n_layer=2,
+        n_ff=512,
+        head_dim=64,
+        n_head=4,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=32,
+    ),
+    "draft_50m_probe": RWKV7Config(
+        n_embd=256,
+        n_layer=15,
+        n_ff=1536,
+        head_dim=64,
+        n_head=4,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=32,
+    ),
+    "draft_75m_probe": RWKV7Config(
+        n_embd=512,
+        n_layer=4,
+        n_ff=1024,
+        head_dim=64,
+        n_head=8,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=32,
+        iclr_lora=32,
+        value_res_lora=16,
+        gate_lora=64,
+    ),
     "draft_100m": RWKV7Config(
         n_embd=512,
         n_layer=10,
@@ -106,4 +147,3 @@ def _assert_config(name: str, cfg: RWKV7Config) -> None:
 
 for _name, _cfg in CUSTOM_VARIANTS.items():
     _assert_config(_name, _cfg)
-
