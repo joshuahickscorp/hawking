@@ -201,3 +201,59 @@ fn bitslice_gpu_decode_matches_cpu_oracle_wide_shape() {
     }
     println!("[tq_trellis_parity] wide-shape GPU decode bit-identical to oracle");
 }
+
+// ── k=1 (1-bit) configuration tests ─────────────────────────────────────────
+//
+// k=1 is the lowest valid trellis depth. `for_bpw(1.0)` resolves to k=1,
+// L=5 (= k+4 = 5, well within [MIN_L=4, MAX_L=14]). These tests verify the
+// config constructor and field values; the GPU parity test is #[ignore] until
+// the G4 kernel is validated against the k=1 trellis path.
+
+/// `TrellisConfig::for_bpw(1.0)` must give k=1 and L=5 (= k+4).
+#[test]
+fn trellis_k1_l5_config_valid() {
+    let cfg = TrellisConfig::for_bpw(1.0);
+    assert_eq!(cfg.k_bits, 1, "for_bpw(1.0) must give k=1");
+    assert_eq!(cfg.l_bits, 5, "for_bpw(1.0) must give L=k+4=5");
+    assert_eq!(cfg.block_len, 256, "default block_len must be 256");
+}
+
+/// `TrellisConfig::new(7, 1, 256)` must produce k=1, L=7, block_len=256.
+#[test]
+fn trellis_k1_l7_explicit() {
+    let cfg = TrellisConfig::new(7, 1, 256);
+    assert_eq!(cfg.k_bits, 1, "explicit k=1 must be stored");
+    assert_eq!(cfg.l_bits, 7, "explicit L=7 must be stored");
+    assert_eq!(cfg.block_len, 256);
+    // num_states() = 2^L = 128
+    assert_eq!(cfg.num_states(), 128, "2^7 = 128 trellis states");
+}
+
+/// `TrellisConfig::new(9, 1, 256)` must produce k=1, L=9.
+#[test]
+fn trellis_k1_l9_config() {
+    let cfg = TrellisConfig::new(9, 1, 256);
+    assert_eq!(cfg.k_bits, 1);
+    assert_eq!(cfg.l_bits, 9);
+    assert_eq!(cfg.num_states(), 512, "2^9 = 512 trellis states");
+}
+
+/// Placeholder for a future GPU bit-identity gate at k=1. Marked #[ignore]
+/// because the G4 Metal kernel has not yet been validated against the k=1
+/// trellis path — enable once `strand_bitslice_decode` handles k=1 without
+/// register-pressure divergence.
+#[test]
+#[ignore = "k=1 GPU path not yet validated — enable after kernel confirms k=1 coverage"]
+fn trellis_k1_gpu_decode_parity() {
+    let Ok(ctx) = MetalContext::new() else {
+        eprintln!("[tq_trellis_parity] no Metal device; skipping k=1 GPU gate");
+        return;
+    };
+    let cfg = TrellisConfig::new(7, 1, 256);
+    let w = (0..256usize)
+        .map(|i| ((i as f32) * 0.0137).sin() * 0.5)
+        .collect::<Vec<_>>();
+    let enc = strand_quant::encode::encode_tensor(&w, &cfg);
+    assert_gpu_eq_cpu(&ctx, &enc, &cfg, "k=1 L=7 n=256 plain");
+    println!("[tq_trellis_parity] k=1 GPU parity PASSED");
+}

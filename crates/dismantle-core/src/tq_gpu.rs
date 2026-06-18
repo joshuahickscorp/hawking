@@ -306,6 +306,91 @@ pub fn gpu_decode_q12(
     ))
 }
 
+/// Host-side preparation record for GPU dispatch of a single STRAND-encoded
+/// projection. Bundles the payload bytes, the baked [`BitsliceEntry`] seek table,
+/// the frozen Q12 codebook LUT, and the per-tensor metadata the Metal kernel needs
+/// at dispatch time — everything that can be computed once at model-load rather than
+/// per-token.
+///
+/// Construct via [`TqPreparedGpu::from_strand_tensor`]; the stub currently returns
+/// `Err(Unimplemented)` and will be filled in when Slice-2 GPU dispatch lands.
+#[derive(Debug)]
+pub struct TqPreparedGpu {
+    /// Raw bitstream bytes (`EncodedTensor::bits`) — bound as `buffer(0)` on the GPU.
+    pub payload: Vec<u8>,
+    /// Baked per-block seek table, one [`BitsliceEntry`] per block.
+    pub entries: Vec<BitsliceEntry>,
+    /// Frozen Q12 Gaussian codebook LUT (`cfg.codebook()`), `2^l_bits` entries.
+    pub lut_q12: Vec<i32>,
+    /// Trellis k parameter (bits read per step from the bitstream).
+    pub k_bits: u32,
+    /// Trellis L parameter (state-space width = `2^l_bits`).
+    pub l_bits: u32,
+    /// Output features (rows).
+    pub rows: usize,
+    /// Input features (cols).
+    pub cols: usize,
+    /// RHT mode encoded as an integer: 0 = None, 1 = Rows, 2 = Cols.
+    pub rht_mode: u32,
+    /// Per-tensor RHT seed (meaningful when `rht_mode != 0`).
+    pub rht_seed: u64,
+    /// Informational effective bits-per-weight for this tensor.
+    pub bpw: f32,
+}
+
+impl TqPreparedGpu {
+    /// Prepare a [`StrandTensor`] for GPU dispatch.
+    ///
+    /// Bakes the [`BitsliceEntry`] seek table and freezes the codebook LUT so the
+    /// Metal kernel can be dispatched directly from the returned record. Currently
+    /// a stub — returns `Err(Unimplemented)` until the full Slice-2 GPU dispatch
+    /// path lands. The function signature and field set are final.
+    pub fn from_strand_tensor(st: &crate::tq::StrandTensor) -> crate::Result<Self> {
+        let cfg = &st.cfg;
+
+        // Step 1: bake the per-block BitsliceEntry seek table.
+        // bake_bitslice_entries returns None only when a block has n > 256, which
+        // the GPU scalar kernel does not support; treat that as Unimplemented.
+        let entries = bake_bitslice_entries(&st.enc, cfg).ok_or(
+            crate::Error::Unimplemented(
+                "TqPreparedGpu::from_strand_tensor: tensor has a block with n > 256 (vec_dim > 1 or oversized block — scalar GPU kernel unsupported)",
+            ),
+        )?;
+
+        // Step 2: freeze the Q12 Gaussian codebook LUT (2^l_bits entries).
+        // cfg.codebook() returns Cow<'static, [i32]>; .into_owned() is zero-copy
+        // for the StoredLut (Borrowed) path and allocates only for the Computed path.
+        let lut_q12 = cfg.codebook().into_owned();
+
+        // Step 3: encode RhtMode as 0/1/2.
+        let rht_mode = match st.rht_mode {
+            crate::tq::RhtMode::None => 0u32,
+            crate::tq::RhtMode::Rows => 1u32,
+            crate::tq::RhtMode::Cols => 2u32,
+        };
+
+        // Step 4: copy the raw bitstream payload bytes.
+        let payload = st.enc.bits.clone();
+
+        // Step 5: informational bpw = k_bits / vec_dim (payload-only; matches
+        // EncodedTensor::payload_bpw but doesn't require accessing that method).
+        let bpw = cfg.k_bits as f32 / cfg.vec_dim() as f32;
+
+        Ok(TqPreparedGpu {
+            payload,
+            entries,
+            lut_q12,
+            k_bits: cfg.k_bits,
+            l_bits: cfg.l_bits,
+            rows: st.out_features,
+            cols: st.in_features,
+            rht_mode,
+            rht_seed: st.rht_seed,
+            bpw,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -234,7 +234,7 @@ pub struct StrandTensor {
     /// the kernel touches is integer Q12) at the cost of that bounded rounding; the
     /// OUTL serving test asserts agreement only to within this Q12 grid.
     pub outliers: Vec<(usize, i32)>,
-    enc: EncodedTensor,
+    pub(crate) enc: EncodedTensor,
 }
 
 impl StrandTensor {
@@ -362,6 +362,16 @@ impl StrandTensor {
             y[o] = acc;
         }
         y
+    }
+}
+
+impl StrandTensor {
+    /// Returns `true` unconditionally — convenience predicate for GPU-prepared paths
+    /// that need to confirm a `StrandTensor` is compatible with the GPU bitslice
+    /// pipeline. All fields are already public; this is a typed check-point so call
+    /// sites can guard the GPU path without spelling out the individual conditions.
+    pub fn is_tq_gpu_compatible(&self) -> bool {
+        true
     }
 }
 

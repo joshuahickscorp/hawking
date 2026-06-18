@@ -11874,6 +11874,230 @@ mod metal_dispatch {
         let ptr = out_buf.contents() as *const i32;
         Ok(unsafe { std::slice::from_raw_parts(ptr, total) }.to_vec())
     }
+
+    // ── TQ G4 bitslice GEMV / GEMM stubs ────────────────────────────────────
+    //
+    // Placeholder entry points for the fused decode-and-GEMV / decode-and-GEMM
+    // kernels that will replace the two-pass (decode then GEMV) path once the
+    // fused `strand_bitslice_gemv` / `strand_bitslice_gemm` Metal shaders land
+    // in `vendor/strand-decode-kernel/src/metal.rs`. The signatures are frozen;
+    // only the bodies are stubs — callers can wire up the dispatch paths without
+    // waiting for the kernel to exist.
+
+    /// Fused TQ decode-and-GEMV: decode a STRAND-encoded weight matrix from
+    /// `prepared` and multiply by the activations in `x_buf`, writing the result
+    /// to `out_buf`. `partials_buf` is a scratch buffer of at least
+    /// `n_blocks * sizeof(f32)` bytes (one partial sum per block).
+    ///
+    /// Two-pass Metal dispatch in a single `dispatch_batch` (one command buffer,
+    /// one commit):
+    ///   1. `strand_bitslice_gemv_partials` — one thread per block, accumulates a
+    ///      partial dot-product into `partials_buf`.
+    ///   2. `strand_bitslice_reduce_rows`   — sums the per-block partials for each
+    ///      row into `out_buf`.
+    ///
+    /// Buffer layout mirrors `BitsliceGpu::matvec_dispatch` in
+    /// `vendor/strand-decode-kernel/src/metal.rs`.
+    #[cfg(feature = "tq")]
+    #[allow(dead_code)]
+    pub(crate) fn strand_bitslice_gemv(
+        ctx: &MetalContext,
+        prepared: &crate::tq_gpu::TqPreparedGpu,
+        x_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        partials_buf: &PinnedBuffer,
+    ) -> Result<()> {
+        // Upload the per-block seek table and the Q12 codebook LUT.
+        let tbl_bytes: &[u8] = unsafe {
+            std::slice::from_raw_parts(
+                prepared.entries.as_ptr() as *const u8,
+                std::mem::size_of_val(prepared.entries.as_slice()),
+            )
+        };
+        let tbl_buf = ctx.new_buffer_with_bytes(tbl_bytes);
+        let lut_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&prepared.lut_q12));
+
+        // Upload the payload (bit-stream), padded to a 4-byte word boundary + 8
+        // zero bytes so the WordReader's whole-word tail loads stay in bounds.
+        let padded_len = prepared.payload.len().div_ceil(4) * 4 + 8;
+        let mut padded = vec![0u8; padded_len];
+        padded[..prepared.payload.len()].copy_from_slice(&prepared.payload);
+        let w_buf = ctx.new_buffer_with_bytes(&padded);
+
+        let n_blocks = prepared.entries.len() as u32;
+        let cols = prepared.cols as u32;
+        let rows = prepared.rows as u32;
+        let k_bits = prepared.k_bits;
+        let l_bits = prepared.l_bits;
+        let bpr = cols / 256; // blocks per row
+
+        // threadgroup shmem: stage the 2^L Q12 LUT once per threadgroup.
+        let shmem_bytes = ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64;
+
+        // Pass 1: gemv_partials — grid = one thread per block, tg = 256.
+        const TG: u32 = 256;
+        let n_tg_partials = n_blocks.div_ceil(TG).max(1);
+        // Pass 2: reduce_rows — grid = one thread per row, tg = 256.
+        let n_tg_reduce = rows.div_ceil(TG).max(1);
+
+        ctx.dispatch_batch(|batch| {
+            // ── Pass 1: strand_bitslice_gemv_partials ──────────────────────
+            // buffer(0): w_bits  (payload)
+            // buffer(1): x       (activation f32 vector, length = cols)
+            // buffer(2): partials (scratch f32, one per block)
+            // buffer(3): tbl     (BitsliceEntry seek table)
+            // buffer(4): n_blocks (constant u32)
+            // buffer(5): cols    (constant u32)
+            // buffer(6): k_bits  (constant u32)
+            // buffer(7): l_bits  (constant u32)
+            // buffer(8): lut_q12 (2^L i32 codebook)
+            // shmem(0):  2^L * sizeof(i32) — staged codebook
+            batch.dispatch_threads(
+                "strand_bitslice_gemv_partials",
+                (n_tg_partials * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&w_buf), 0);
+                    enc.set_buffer(1, Some(x_buf), 0);
+                    enc.set_buffer(2, Some(partials_buf), 0);
+                    enc.set_buffer(3, Some(&tbl_buf), 0);
+                    enc.set_u32(4, n_blocks);
+                    enc.set_u32(5, cols);
+                    enc.set_u32(6, k_bits);
+                    enc.set_u32(7, l_bits);
+                    enc.set_buffer(8, Some(&lut_buf), 0);
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+            // ── Pass 2: strand_bitslice_reduce_rows ───────────────────────
+            // buffer(0): partials (one f32 per block, from pass 1)
+            // buffer(1): y       (output f32, length = rows)
+            // buffer(2): rows    (constant u32)
+            // buffer(3): bpr     (blocks per row = cols / 256, constant u32)
+            batch.dispatch_threads(
+                "strand_bitslice_reduce_rows",
+                (n_tg_reduce * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(partials_buf), 0);
+                    enc.set_buffer(1, Some(out_buf), 0);
+                    enc.set_u32(2, rows);
+                    enc.set_u32(3, bpr);
+                },
+            )
+        })
+    }
+
+    /// Fused TQ decode-and-GEMM: decode a STRAND-encoded weight matrix from
+    /// `prepared` and multiply by the `batch`-wide activation matrix in
+    /// `xt_buf` (column-major / transposed: row = feature, stride = batch), writing
+    /// `rows * batch` f32 results to `out_buf`. `partials_buf` is scratch of at
+    /// least `n_blocks * batch * sizeof(f32)` bytes.
+    ///
+    /// Selects the right kernel variant based on `batch`:
+    ///   4  → `strand_bitslice_gemm_partials_b4`
+    ///   16 → `strand_bitslice_gemm_partials_b16`
+    ///   64 → `strand_bitslice_gemm_partials_b64`
+    ///
+    /// Two-pass Metal dispatch in a single `dispatch_batch`, mirroring
+    /// `BitsliceGpu::gemm_dispatch` in `vendor/strand-decode-kernel/src/metal.rs`.
+    #[cfg(feature = "tq")]
+    #[allow(dead_code)]
+    pub(crate) fn strand_bitslice_gemm(
+        ctx: &MetalContext,
+        prepared: &crate::tq_gpu::TqPreparedGpu,
+        xt_buf: &PinnedBuffer,
+        out_buf: &PinnedBuffer,
+        partials_buf: &PinnedBuffer,
+        batch: u32,
+    ) -> Result<()> {
+        let kernel_name = match batch {
+            4 => "strand_bitslice_gemm_partials_b4",
+            16 => "strand_bitslice_gemm_partials_b16",
+            64 => "strand_bitslice_gemm_partials_b64",
+            _ => {
+                return Err(Error::Kernel(format!(
+                    "strand_bitslice_gemm: batch must be 4, 16, or 64 (got {batch})"
+                )))
+            }
+        };
+
+        // Upload the per-block seek table and the Q12 codebook LUT.
+        let tbl_bytes: &[u8] = unsafe {
+            std::slice::from_raw_parts(
+                prepared.entries.as_ptr() as *const u8,
+                std::mem::size_of_val(prepared.entries.as_slice()),
+            )
+        };
+        let tbl_buf = ctx.new_buffer_with_bytes(tbl_bytes);
+        let lut_buf =
+            ctx.new_buffer_with_bytes(bytemuck::cast_slice::<i32, u8>(&prepared.lut_q12));
+
+        // Payload padded to word boundary + 8 zero bytes (WordReader contract).
+        let padded_len = prepared.payload.len().div_ceil(4) * 4 + 8;
+        let mut padded = vec![0u8; padded_len];
+        padded[..prepared.payload.len()].copy_from_slice(&prepared.payload);
+        let w_buf = ctx.new_buffer_with_bytes(&padded);
+
+        let n_blocks = prepared.entries.len() as u32;
+        let cols = prepared.cols as u32;
+        let rows = prepared.rows as u32;
+        let k_bits = prepared.k_bits;
+        let l_bits = prepared.l_bits;
+        let bpr = cols / 256; // blocks per row
+
+        // threadgroup shmem: 2^L Q12 LUT staged once per threadgroup.
+        let shmem_bytes = ((1usize << l_bits) * std::mem::size_of::<i32>()) as u64;
+
+        const TG: u32 = 256;
+        // Pass 1 grid: one thread per block (same as GEMV).
+        let n_tg_partials = n_blocks.div_ceil(TG).max(1);
+        // Pass 2 grid: one thread per output element (rows × batch).
+        let n_out = (rows as u64) * (batch as u64);
+        let n_tg_reduce = (n_out as u32).div_ceil(TG).max(1);
+
+        ctx.dispatch_batch(|batch_cb| {
+            // ── Pass 1: strand_bitslice_gemm_partials_b{4,16,64} ──────────
+            // Same buffer layout as gemv_partials; xt_buf carries the
+            // column-major activation matrix (col = one activation vector).
+            batch_cb.dispatch_threads(
+                kernel_name,
+                (n_tg_partials * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&w_buf), 0);
+                    enc.set_buffer(1, Some(xt_buf), 0);
+                    enc.set_buffer(2, Some(partials_buf), 0);
+                    enc.set_buffer(3, Some(&tbl_buf), 0);
+                    enc.set_u32(4, n_blocks);
+                    enc.set_u32(5, cols);
+                    enc.set_u32(6, k_bits);
+                    enc.set_u32(7, l_bits);
+                    enc.set_buffer(8, Some(&lut_buf), 0);
+                    enc.set_threadgroup_memory_length(0, shmem_bytes);
+                },
+            )?;
+            // ── Pass 2: strand_bitslice_reduce_rows_gemm ──────────────────
+            // buffer(0): partials (n_blocks * batch f32)
+            // buffer(1): y       (rows * batch f32)
+            // buffer(2): rows    (constant u32)
+            // buffer(3): bpr     (blocks per row, constant u32)
+            // buffer(4): batch   (constant u32)
+            batch_cb.dispatch_threads(
+                "strand_bitslice_reduce_rows_gemm",
+                (n_tg_reduce * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(partials_buf), 0);
+                    enc.set_buffer(1, Some(out_buf), 0);
+                    enc.set_u32(2, rows);
+                    enc.set_u32(3, bpr);
+                    enc.set_u32(4, batch);
+                },
+            )
+        })
+    }
 }
 
 #[cfg(target_os = "macos")]

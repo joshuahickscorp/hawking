@@ -420,7 +420,7 @@ fn parse_args() -> Args {
             "-h" | "--help" => {
                 eprintln!(
                     "quantize-model --input/--in <safetensors> --output/--out <safetensors> \
-                     --bits <2|3|4|5|6> [--l <4..14>] \
+                     --bits <1|2|3|4|5|6> [--l <4..14>] \
                      [--tail-biting] [--affine-min auto|on|off] [--no-rht] [--rht-cols] [--threads N] \
                      [--only <substr>] [--measure-only] [--quality]\n\
                      [--mp-config <json>] [--rung-config <json>] [--dump-indices <path>] \
@@ -488,7 +488,7 @@ fn parse_args() -> Args {
     }
     assert!(!input.is_empty(), "--in is required");
     assert!(measure_only || !output.is_empty() || packed_out.is_some() || packed_v2_out.is_some(), "--out is required (unless --measure-only, --packed-out, or --packed-v2-out)");
-    assert!((2..=6).contains(&bits), "--bits must be 2, 3, 4, 5, or 6 (used as mp-config fallback when --mp-config is set)");
+    assert!((1..=6).contains(&bits), "--bits must be 1, 2, 3, 4, 5, or 6 (used as mp-config fallback when --mp-config is set)");
     // DETERMINISM GUARD: the v2 archive now records the col-RHT mode (flag bit 3) and the
     // decoder (strand-decode-kernel::outlier_mac) serves it, so --rht-cols + --packed-v2-out
     // is supported. The v1 .strand writer has no col-RHT flag, so --packed-out stays blocked.
