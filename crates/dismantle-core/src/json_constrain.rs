@@ -50,7 +50,7 @@ pub enum JsonState {
     ObjectAfterValue,
     ArrayValue,
     ArrayAfterValue,
-    InString { escape: bool },
+    InString { escape: bool, is_key: bool },
     InNumber,
     InKeyword { remaining: u8 },
     Done,
@@ -90,24 +90,28 @@ impl JsonConstraint {
                 _ => Start,
             },
             ObjectKey => match ch {
-                '"' => InString { escape: false },
+                '"' => InString { escape: false, is_key: true },
                 '}' => { self.depth.pop(); self.pop_or_done() }
                 ' ' | '\n' | '\t' => ObjectKey,
                 _ => ObjectKey,
             },
-            InString { escape } => {
+            InString { escape, is_key } => {
                 if *escape {
-                    InString { escape: false }
+                    InString { escape: false, is_key: *is_key }
                 } else if ch == '\\' {
-                    InString { escape: true }
+                    InString { escape: true, is_key: *is_key }
                 } else if ch == '"' {
-                    match self.depth.last() {
-                        Some(&b'O') => ObjectColon,
-                        Some(&b'A') => ArrayAfterValue,
-                        _ => Done,
+                    if *is_key {
+                        ObjectColon
+                    } else {
+                        match self.depth.last() {
+                            Some(&b'O') => ObjectAfterValue,
+                            Some(&b'A') => ArrayAfterValue,
+                            _ => Done,
+                        }
                     }
                 } else {
-                    InString { escape: false }
+                    InString { escape: false, is_key: *is_key }
                 }
             }
             ObjectColon => if ch == ':' { ObjectValue } else { ObjectColon },
@@ -157,7 +161,7 @@ impl JsonConstraint {
     fn start_value(&mut self, ch: char) -> JsonState {
         use JsonState::*;
         match ch {
-            '"' => InString { escape: false },
+            '"' => InString { escape: false, is_key: false },
             '{' => { self.depth.push(b'O'); ObjectKey }
             '[' => { self.depth.push(b'A'); ArrayValue }
             '0'..='9' | '-' => InNumber,

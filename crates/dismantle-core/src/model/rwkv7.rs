@@ -1014,6 +1014,19 @@ impl Engine for RwkvSeven {
         }
         stats.prefill_ms = prefill_start.elapsed().as_secs_f64() * 1000.0;
 
+        let json_vocab_index = if req.json_mode {
+            self.tokenizer.as_ref().map(|tok| {
+                let vs = tok.vocab_size();
+                crate::json_constrain::JsonVocabIndex::build(vs, |id| {
+                    tok.decode_one(id).unwrap_or_default()
+                })
+            })
+        } else {
+            None
+        };
+        let mut json_constraint =
+            req.json_mode.then(|| crate::json_constrain::JsonConstraint::new());
+
         // Decode.
         let decode_start = Instant::now();
         let mut last_id = *prompt_ids.last().unwrap();
@@ -1025,6 +1038,9 @@ impl Engine for RwkvSeven {
                 break;
             }
             let mut logits = self.forward_token_routed(last_id, use_gpu)?;
+            if let (Some(vi), Some(c)) = (&json_vocab_index, &json_constraint) {
+                c.mask_logits(vi, &mut logits);
+            }
             let next_id = self.sampler.sample(&mut logits, &req.sampling);
             self.sampler.record(next_id);
             let text = self
@@ -1032,8 +1048,18 @@ impl Engine for RwkvSeven {
                 .as_ref()
                 .and_then(|t| t.decode_one(next_id).ok())
                 .unwrap_or_default();
+            let json_done = if let Some(c) = json_constraint.as_mut() {
+                c.advance(&text);
+                c.is_done()
+            } else {
+                false
+            };
             sink(StreamEvent::Token { id: next_id, text });
             produced += 1;
+            if json_done {
+                reason = StopReason::Eos;
+                break;
+            }
             if Some(next_id) == eos {
                 reason = StopReason::Eos;
                 break;

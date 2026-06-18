@@ -517,6 +517,7 @@ mod tests {
             stop: Vec::new(),
             abort: None,
             max_stall_ms: 0,
+            json_mode: false,
         }
     }
 

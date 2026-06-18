@@ -2789,6 +2789,16 @@ impl Engine for QwenDense {
                 }
                 None => false,
             };
+            let json_vocab_index = if req.json_mode {
+                Some(crate::json_constrain::JsonVocabIndex::build(
+                    self.config.vocab_size,
+                    |id| self.tokenizer.decode_one(id).unwrap_or_default(),
+                ))
+            } else {
+                None
+            };
+            let mut json_constraint =
+                req.json_mode.then(|| crate::json_constrain::JsonConstraint::new());
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
@@ -2796,10 +2806,13 @@ impl Engine for QwenDense {
                 }
                 let pos = prompt_len + step;
                 let step_start = Instant::now();
-                let next_id = if use_tcb && !ffn_capturing {
+                let next_id = if use_tcb && !ffn_capturing && !req.json_mode {
                     self.forward_token_greedy_tcb(last_id, pos)?
                 } else {
                     let mut logits = self.forward_token(last_id, pos)?;
+                    if let (Some(vi), Some(c)) = (&json_vocab_index, &json_constraint) {
+                        c.mask_logits(vi, &mut logits);
+                    }
                     self.sampler.sample(&mut logits, &req.sampling)
                 };
                 if stall_active && step_start.elapsed() > stall_limit {
@@ -2833,11 +2846,21 @@ impl Engine for QwenDense {
                     }
                 }
                 let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+                let json_done = if let Some(c) = json_constraint.as_mut() {
+                    c.advance(&text);
+                    c.is_done()
+                } else {
+                    false
+                };
                 // L3.1 §2.2 usage_capture: observe the emitted argmax id (no-op
                 // unless DISMANTLE_QWEN_USAGE_CAPTURE=1; never changes output).
                 crate::stateful::usage_capture::record_argmax(next_id);
                 sink(StreamEvent::Token { id: next_id, text });
                 produced += 1;
+                if json_done {
+                    reason = StopReason::Eos;
+                    break;
+                }
                 if Some(next_id) == eos {
                     reason = StopReason::Eos;
                     break;
@@ -2864,6 +2887,9 @@ impl Engine for QwenDense {
             let pos = prompt_len + step;
             let step_start = Instant::now();
             let mut logits = self.forward_token(last_id, pos)?;
+            if let (Some(vi), Some(c)) = (&json_vocab_index, &json_constraint) {
+                c.mask_logits(vi, &mut logits);
+            }
             let next_id = self.sampler.sample(&mut logits, &req.sampling);
             if stall_active && step_start.elapsed() > stall_limit {
                 reason = StopReason::Aborted;
@@ -2872,8 +2898,18 @@ impl Engine for QwenDense {
             self.sampler.record(next_id);
             crate::stateful::usage_capture::record_argmax(next_id);
             let text = self.tokenizer.decode_one(next_id).unwrap_or_default();
+            let json_done = if let Some(c) = json_constraint.as_mut() {
+                c.advance(&text);
+                c.is_done()
+            } else {
+                false
+            };
             sink(StreamEvent::Token { id: next_id, text });
             produced += 1;
+            if json_done {
+                reason = StopReason::Eos;
+                break;
+            }
             if Some(next_id) == eos {
                 reason = StopReason::Eos;
                 break;

@@ -186,13 +186,13 @@ fi
 # ---------------------------------------------------------------------------
 # Step 4: Mamba2 parity test (gated on test file existence)
 # ---------------------------------------------------------------------------
-log "=== Step 4: Mamba2 parity test ==="
-MAMBA2_TEST="$ROOT/crates/dismantle-core/tests/mamba2_parity.rs"
+log "=== Step 4: Mamba2 smoke/parity test ==="
+MAMBA2_TEST="$ROOT/crates/dismantle-core/tests/mamba2_smoke.rs"
 if [[ -f "$MAMBA2_TEST" ]]; then
-    run_step "mamba2_parity" MAMBA2_PARITY_STATUS MAMBA2_PARITY_OUTPUT \
-        cargo test -p dismantle-core --test mamba2_parity -- --nocapture
+    run_step "mamba2_smoke" MAMBA2_PARITY_STATUS MAMBA2_PARITY_OUTPUT \
+        cargo test -p dismantle-core --test mamba2_smoke -- --nocapture
 else
-    log "Skipping mamba2_parity: $MAMBA2_TEST not found (Phase 2 Mamba2 feature not yet built)"
+    log "Skipping mamba2_smoke: $MAMBA2_TEST not found (Phase 2 Mamba2 feature not yet built)"
     MAMBA2_PARITY_STATUS="skipped (test file absent)"
 fi
 
@@ -273,7 +273,7 @@ cat > "$REPORT_OUT" << REPORT_EOF
 | TQ export | ${TQ_EXPORT_STATUS} |
 | cargo build (tq) | ${TQ_BUILD_STATUS} |
 | rwkv7_tq_parity | ${TQ_PARITY_STATUS} |
-| mamba2_parity | ${MAMBA2_PARITY_STATUS} |
+| mamba2_smoke | ${MAMBA2_PARITY_STATUS} |
 | rwkv7_flatness_bench (64k) | ${RWKV7_FLATNESS_STATUS} |
 | rwkv7_tps_bench (Task #8) | ${RWKV7_TPS_STATUS} |
 | **Overall** | **${CHAIN_RESULT}** |
@@ -300,7 +300,7 @@ ${TQ_BUILD_OUTPUT:-skipped}
 ${TQ_PARITY_OUTPUT:-skipped}
 \`\`\`
 
-### mamba2_parity
+### mamba2_smoke
 
 \`\`\`
 ${MAMBA2_PARITY_OUTPUT:-skipped}
@@ -357,6 +357,28 @@ else:
 REPORT_EOF
 
 log "Report written: $REPORT_OUT"
+
+# ---------------------------------------------------------------------------
+# Step 8: launch the expanded v2 chain.
+#
+# This intentionally runs even when one of the phase2 gates failed: most v2
+# checks are independent of TQ quality/artifacts and should still produce useful
+# architecture coverage for the final bench wave.
+# ---------------------------------------------------------------------------
+V2_CHAIN="$ROOT/tools/training/g1a_v2_expansion_chain.sh"
+if [[ -f "$V2_CHAIN" ]]; then
+    log "=== Step 8: launching G1a v2 expansion chain ==="
+    V2_LOG="$ROOT/artifacts/lowbit_rwkv7/g1a_v2_expansion_chain.log"
+    FINAL_PPL="$FINAL_PPL" GATE_RESULT="$GATE_RESULT" PHASE2_REPORT="$REPORT_OUT" \
+        bash "$V2_CHAIN" >> "$V2_LOG" 2>&1 || {
+            rc=$?
+            log "G1a v2 expansion chain FAILED (exit $rc); see $V2_LOG"
+            FINAL_EXIT=1
+        }
+    log "G1a v2 expansion chain log: $V2_LOG"
+else
+    log "G1a v2 expansion chain not found at $V2_CHAIN — skipping"
+fi
 
 # ---------------------------------------------------------------------------
 # Final exit
