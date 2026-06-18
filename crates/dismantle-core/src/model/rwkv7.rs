@@ -1087,6 +1087,126 @@ impl Engine for RwkvSeven {
             g.reset();
         }
     }
+
+    fn forward_multiseq_batched(
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
+        regions: &[usize],
+    ) -> Result<Vec<Vec<f32>>> {
+        #[cfg(target_os = "macos")]
+        {
+            // Fixed serve-side batch: size arena to SERVE_BATCH once, then keep it.
+            // The scheduler assigns slot_ids 0..max_batch; we use them as arena indices
+            // directly. Idle slots (gaps in `regions`) receive token 0 — their stale
+            // state is harmless; `reset_gpu_slot` zeroes a slot before reuse.
+            const SERVE_BATCH: usize = 8;
+            if self.ensure_gpu_batch(SERVE_BATCH)? {
+                let mut slot_tokens = [0u32; SERVE_BATCH];
+                for (i, &r) in regions.iter().enumerate() {
+                    if r < SERVE_BATCH {
+                        slot_tokens[r] = tokens[i];
+                    }
+                }
+                let all = self.forward_token_gpu_multiseq(&slot_tokens)?;
+                return regions
+                    .iter()
+                    .map(|&r| {
+                        all.get(r).cloned().ok_or_else(|| {
+                            Error::Model(format!(
+                                "rwkv7 multiseq: region {r} >= SERVE_BATCH {SERVE_BATCH}"
+                            ))
+                        })
+                    })
+                    .collect();
+            }
+        }
+        // CPU fallback (off-macOS or GPU unavailable).
+        let _ = regions;
+        self.forward_tokens_for_test(tokens, positions)
+    }
+
+    fn prefill_slot(&mut self, slot_id: usize, prompt_ids: &[u32]) -> Result<u32> {
+        #[cfg(target_os = "macos")]
+        {
+            const SERVE_BATCH: usize = 8;
+            if self.ensure_gpu_batch(SERVE_BATCH)? {
+                // Zero the target slot's recurrent state.
+                if let Some(g) = self.gpu.as_ref() {
+                    g.arena.reset_slot(slot_id);
+                }
+                // Run prompt through CPU forward with a fresh temporary state.
+                let mut tmp = RwkvState::new(&self.config);
+                let mut last_logits = vec![0.0f32; self.config.vocab_size];
+                for &tok in prompt_ids {
+                    last_logits = Self::forward_token_core(
+                        &self.config,
+                        &self.layers,
+                        &self.embed,
+                        &self.tok_norm_w,
+                        &self.tok_norm_b,
+                        &self.output_norm_w,
+                        &self.output_norm_b,
+                        &self.output,
+                        &mut tmp,
+                        tok,
+                    )?;
+                }
+                // Copy CPU recurrent state into the GPU arena at slot_id.
+                self.copy_cpu_state_to_gpu_slot(&tmp, slot_id);
+                return Ok(last_logits
+                    .iter()
+                    .copied()
+                    .enumerate()
+                    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Less))
+                    .map(|(i, _)| i as u32)
+                    .unwrap_or(0));
+            }
+        }
+        Err(crate::Error::Unimplemented("rwkv7 prefill_slot: GPU unavailable"))
+    }
+
+}
+
+#[cfg(target_os = "macos")]
+impl RwkvSeven {
+    /// Copy a CPU recurrent state into the GPU arena's slot-major buffers at `slot`.
+    /// Called by `prefill_slot` after running the prompt through the CPU forward.
+    ///
+    /// Buffer layout (matches `RwkvDecodeArena::reset_slot`):
+    ///   wkv_state  : [slot * n_layer * s_per_layer | ...]  (stream-major)
+    ///   att_shift  : [(slot * n_layer + l) * n_embd | ...]
+    ///   ffn_shift  : [(slot * n_layer + l) * n_embd | ...]
+    fn copy_cpu_state_to_gpu_slot(&self, cpu: &RwkvState, slot: usize) {
+        let Some(g) = self.gpu.as_ref() else {
+            return;
+        };
+        let arena = &g.arena;
+        let n_layer = arena.n_layer;
+        let n_embd = arena.n_embd;
+        let s_per_layer = arena.head_count * arena.head_size * arena.head_size;
+        unsafe {
+            let wkv_base =
+                (arena.wkv_state.contents() as *mut f32).add(slot * n_layer * s_per_layer);
+            for (l, wkv_l) in cpu.wkv.iter().enumerate() {
+                std::ptr::copy_nonoverlapping(
+                    wkv_l.as_ptr(),
+                    wkv_base.add(l * s_per_layer),
+                    s_per_layer,
+                );
+            }
+            for (l, shift_l) in cpu.att_shift.iter().enumerate() {
+                let p = (arena.att_shift.contents() as *mut f32)
+                    .add((slot * n_layer + l) * n_embd);
+                std::ptr::copy_nonoverlapping(shift_l.as_ptr(), p, n_embd);
+            }
+            for (l, shift_l) in cpu.ffn_shift.iter().enumerate() {
+                let p = (arena.ffn_shift.contents() as *mut f32)
+                    .add((slot * n_layer + l) * n_embd);
+                std::ptr::copy_nonoverlapping(shift_l.as_ptr(), p, n_embd);
+            }
+        }
+    }
 }
 
 #[cfg(target_os = "macos")]
