@@ -160,6 +160,7 @@ def main() -> None:
     ap.add_argument("--log-every", type=int, default=10)
     ap.add_argument("--use-chunked", action="store_true", help="Enable chunked WKV training path")
     ap.add_argument("--chunk-size", type=int, default=32)
+    ap.add_argument("--seed", type=int, default=1337, help="seed for reproducible from-scratch init + data order")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -169,6 +170,21 @@ def main() -> None:
     device = resolve_device(args.device)
     out = Path(args.out) if args.out else ROOT / "artifacts/lowbit_rwkv7/runs" / f"custom_{args.variant}"
     out.mkdir(parents=True, exist_ok=True)
+
+    # Determinism: seed before from-scratch init so a re-run reproduces the same model.
+    import os as _os, random as _random
+    _os.environ.setdefault("PYTHONHASHSEED", str(args.seed))
+    _random.seed(args.seed)
+    try:
+        import numpy as _np
+        _np.random.seed(args.seed)
+    except Exception:
+        pass
+    torch.manual_seed(args.seed)
+    _mps_seed = getattr(getattr(torch, "mps", None), "manual_seed", None)
+    if callable(_mps_seed):
+        _mps_seed(args.seed)
+    print(f"[seed] {args.seed}", flush=True)
 
     cfg = replace(CUSTOM_VARIANTS[args.variant], use_chunked=args.use_chunked, chunk_size=args.chunk_size)
     model = RWKV7Model(cfg)

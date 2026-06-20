@@ -46,6 +46,7 @@ POLL_SECONDS="${POLL_SECONDS:-300}"
 # Verified bit-identical forward / machine-eps gradient on RWKV7Model. Default on.
 USE_CHUNKED="${USE_CHUNKED:-1}"
 CHUNK_SIZE="${CHUNK_SIZE:-32}"
+SEED="${SEED:-1337}"
 PYTHON="${PYTHON:-$ROOT/.venv-rwkv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
@@ -77,6 +78,7 @@ for variant in "${variants[@]}"; do
         --grad-accum "$GRAD_ACCUM" \
         --lr "$LR" \
         --out "$out" \
+        --seed "$SEED" \
         "${chunk_args[@]}" \
         "${teacher_args[@]}" &
     train_pid=$!
