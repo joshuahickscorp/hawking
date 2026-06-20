@@ -29,7 +29,7 @@
 #
 # --profile fast: this is a CLI flag (--profile fast), NOT an env var.
 # It sets HAWKING_QWEN_VOCAB_PRUNE, Q4K_LMHEAD, FFN_DOWN_Q4K, Q4K_PREDEC,
-# and PREDEC_F16SCALES internally (crates/dismantle/src/main.rs:35-51).
+# and PREDEC_F16SCALES internally (crates/hawking/src/main.rs:35-51).
 # Explicitly-set env vars take precedence over --profile. Use --cli-b for the B arm.
 #
 # USAGE
@@ -215,7 +215,7 @@ run_arm() {
   # shellcheck disable=SC2086
   env $bench_env nice -n 19 taskpolicy -b \
     "$BIN" $extra_cli bench \
-      --backend dismantle --suite decode \
+      --backend hawking --suite decode \
       --weights "$WEIGHTS" \
       --trials 1 \
       --max-new-tokens "$TOKENS" \

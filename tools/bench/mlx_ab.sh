@@ -189,7 +189,7 @@ MLX_VERSION="$("$PY312" -c 'import mlx_lm; print(mlx_lm.__version__)' 2>/dev/nul
 # ---------------------------------------------------------------------------
 # dismantle guards
 # ---------------------------------------------------------------------------
-[[ -x "$BIN" ]]    || die "dismantle binary not found: $BIN (run: cargo build --release -p dismantle)"
+[[ -x "$BIN" ]]    || die "dismantle binary not found: $BIN (run: cargo build --release -p hawking)"
 [[ -f "$WEIGHTS" ]] || die "weights not found: $WEIGHTS"
 [[ -f "$PROFILE" ]] || die "kernel profile not found: $PROFILE"
 

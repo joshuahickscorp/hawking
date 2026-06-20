@@ -46,7 +46,7 @@ BIN="./target/release/hawking"
 QUALITY_TOKENS=16
 
 if [[ ! -x "$BIN" ]]; then
-    echo "binary not found: $BIN — run 'cargo build --release -p dismantle' first" >&2
+    echo "binary not found: $BIN — run 'cargo build --release -p hawking' first" >&2
     exit 2
 fi
 if [[ ! -f "$WEIGHTS" ]]; then

@@ -288,9 +288,9 @@ read_metrics() {  # $1=url  → sets METRIC_GREEDY METRIC_LOGITS METRIC_READBACK
     METRIC_GREEDY=0; METRIC_LOGITS=0; METRIC_READBACK_BYTES=0
     local raw
     raw=$(curl -sf "${1}/metrics" 2>/dev/null) || return
-    METRIC_GREEDY=$(printf '%s\n' "$raw" | grep '^dismantle_greedy_decode_steps_total' | awk '{print $2}')
-    METRIC_LOGITS=$(printf '%s\n' "$raw" | grep '^dismantle_logits_decode_steps_total' | awk '{print $2}')
-    METRIC_READBACK_BYTES=$(printf '%s\n' "$raw" | grep '^dismantle_gpu_readback_bytes_total' | awk '{print $2}')
+    METRIC_GREEDY=$(printf '%s\n' "$raw" | grep '^hawking_greedy_decode_steps_total' | awk '{print $2}')
+    METRIC_LOGITS=$(printf '%s\n' "$raw" | grep '^hawking_logits_decode_steps_total' | awk '{print $2}')
+    METRIC_READBACK_BYTES=$(printf '%s\n' "$raw" | grep '^hawking_gpu_readback_bytes_total' | awk '{print $2}')
     METRIC_GREEDY="${METRIC_GREEDY:-0}"
     METRIC_LOGITS="${METRIC_LOGITS:-0}"
     METRIC_READBACK_BYTES="${METRIC_READBACK_BYTES:-0}"

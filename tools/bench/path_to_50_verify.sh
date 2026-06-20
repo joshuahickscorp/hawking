@@ -52,7 +52,7 @@ if [[ "$mode" == "bench" || "$mode" == "all" ]]; then
     for c in A B C; do
       j="/tmp/p50_bench_${c}_${t}.json"
       env $(env_for $c) nice -n 19 taskpolicy -b "$BIN" bench --trace-dispatch \
-        --backend dismantle --suite decode --weights "$WEIGHTS" --trials 1 \
+        --backend hawking --suite decode --weights "$WEIGHTS" --trials 1 \
         --max-new-tokens "$TOKENS" --kernel-profile "$PROFILE" --json "$j" \
         >/dev/null 2>&1
       v=$(jq -r '.results.trial_stats[0].decode_tps // "0"' "$j" 2>/dev/null)

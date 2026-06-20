@@ -23,7 +23,7 @@
 #   2. Quit any `claude` CLI sessions     (incl. any MASTER_LOOP / loop).
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
-#   5. cd /Users/scammermike/Downloads/dismantle
+#   5. cd /Users/scammermike/Downloads/hawking
 #   6. ./tools/bench/clean_room_batch.sh
 #   7. Read the three section verdicts printed at the end.
 #

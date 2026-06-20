@@ -94,7 +94,7 @@ _headbank_upload/
 eagle4/
 *.npz
 *.parquet
-crates/dismantle-core/reports/
+crates/hawking-core/reports/
 *.bak
 
 # Training notebooks (provenance kept on disk, not shipped)

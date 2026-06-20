@@ -107,9 +107,9 @@ trap "kill $WATCH_PID 2>/dev/null || true" EXIT
 log "=== overnight_6h chain start (pid=$$, auto_commit=$AUTO_COMMIT) ==="
 
 # -------- Pre-flight --------
-log "preflight: cargo build --release -p dismantle"
+log "preflight: cargo build --release -p hawking"
 write_status "preflight" "running"
-if ! cargo build --release -p dismantle >>"$LOG" 2>&1; then
+if ! cargo build --release -p hawking >>"$LOG" 2>&1; then
     log "❌ preflight build failed; aborting"
     write_status "preflight" "failed"
     exit 1
@@ -266,7 +266,7 @@ else
             echo ""
             echo "## Patch applied cleanly — rebuild + smoke"
             echo '```'
-            if cargo build --release -p dismantle 2>&1 | tail -10; then
+            if cargo build --release -p hawking 2>&1 | tail -10; then
                 echo ""
                 echo "(rebuild OK)"
                 if ./target/release/hawking generate --help 2>&1 | grep -E "q8-kv|q8_kv" ; then
@@ -306,7 +306,7 @@ else
                          crates/hawking-core/src/engine.rs; do
                     [[ -f "$M2_BACKUP/$(basename "$f").orig" ]] && cp "$M2_BACKUP/$(basename "$f").orig" "$f"
                 done
-                cargo build --release -p dismantle >>"$LOG" 2>&1 || log "post-restore build also failed (!!)"
+                cargo build --release -p hawking >>"$LOG" 2>&1 || log "post-restore build also failed (!!)"
             fi
             echo '```'
         fi

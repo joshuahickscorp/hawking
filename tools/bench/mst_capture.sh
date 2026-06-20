@@ -49,7 +49,7 @@ BIN="${BIN:-./target/release/hawking}"
 TRACES_DIR="${TRACES_DIR:-traces}"
 
 if [ ! -x "$BIN" ]; then
-    echo "error: $BIN not built. Run: cargo build --release -p dismantle" >&2
+    echo "error: $BIN not built. Run: cargo build --release -p hawking" >&2
     exit 1
 fi
 
@@ -66,7 +66,7 @@ if [ "$#" -gt 0 ] && [ "$1" = "--" ]; then
     shift
     CMD=("$BIN" "$@")
 else
-    CMD=("$BIN" bench --backend dismantle --suite decode \
+    CMD=("$BIN" bench --backend hawking --suite decode \
         --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
         --kernel-profile "$PROFILE")
 fi

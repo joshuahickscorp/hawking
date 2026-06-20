@@ -78,7 +78,7 @@ trap cleanup EXIT
 
 # ── Optional server start ─────────────────────────────────────────────────────
 if [[ "$START_SERVER" -eq 1 ]]; then
-    [[ -x "$DBIN" ]] || { echo "FAIL: $DBIN not built — cargo build --release -p dismantle"; exit 3; }
+    [[ -x "$DBIN" ]] || { echo "FAIL: $DBIN not built — cargo build --release -p hawking"; exit 3; }
     [[ -f "$WEIGHTS" ]] || { echo "FAIL: weights not found: $WEIGHTS"; exit 3; }
     MAX_B=1
     for b in $BATCH_SIZES; do [[ "$b" -gt "$MAX_B" ]] && MAX_B="$b"; done

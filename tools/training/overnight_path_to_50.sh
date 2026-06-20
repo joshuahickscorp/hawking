@@ -62,7 +62,7 @@ log() {
 # --- Stage 1: cargo build --release ---
 log "=== STAGE 1: cargo build --release ==="
 write_status "build" "running"
-if ! cargo build --release -p dismantle >> "$PIPELINE_LOG" 2>&1; then
+if ! cargo build --release -p hawking >> "$PIPELINE_LOG" 2>&1; then
     log "FAIL stage 1 (cargo build). Aborting."
     write_status "build" "failed" "cargo build failed"
     exit 1

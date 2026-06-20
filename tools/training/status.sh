@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Live corpus build status. Run from anywhere:
-#   bash /Users/scammermike/Downloads/dismantle/tools/training/status.sh
+#   bash /Users/scammermike/Downloads/hawking/tools/training/status.sh
 # Defaults to refreshing every 60s. Override:
 #   INTERVAL=30 bash .../status.sh
 # Press Ctrl-C to stop. Doesn't affect the build.

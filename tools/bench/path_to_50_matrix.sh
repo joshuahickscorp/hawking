@@ -70,7 +70,7 @@ fi
 
 if [[ ! -f "$BIN" ]]; then
     echo "Building dismantle release binary…"
-    if ! cargo build --release -p dismantle >> "$RUN_DIR/cargo_build.log" 2>&1; then
+    if ! cargo build --release -p hawking >> "$RUN_DIR/cargo_build.log" 2>&1; then
         echo "❌ cargo build failed — see $RUN_DIR/cargo_build.log"
         exit 1
     fi
@@ -104,7 +104,7 @@ run_bench() {
         printf "  trial %d/%d... " "$i" "$TRIALS"
         if perl -e 'alarm 600; exec @ARGV' \
             "$BIN" bench --trace-dispatch \
-            --backend dismantle --suite decode \
+            --backend hawking --suite decode \
             --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
             --kernel-profile "$PROFILE" \
             --json "$trial_json" \

@@ -91,7 +91,7 @@ echo "[overnight]   WINNER = $WINNER (K=4 = $BEST%)"
 echo "[overnight] ◀ pick_winner rc=0  $(date -u +%FT%TZ)"
 
 # Build + paired benches
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 step paired_bench_64 \
   bash -c "EAGLE5_HEAD=$WINNER_CKPT TOKENS=64 TRIALS=10 \

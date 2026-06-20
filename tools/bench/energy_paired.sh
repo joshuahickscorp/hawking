@@ -177,10 +177,10 @@ run_lane() {
 
     local n_greedy_after n_greedy_before n_logits_after n_logits_before
     local rb_after rb_before dec_steps_after dec_steps_before
-    n_greedy_after=$(grep  'dismantle_greedy_decode_steps_total' "$after_f"  | grep -oE '[0-9]+$' | tail -1 || echo 0)
-    n_greedy_before=$(grep 'dismantle_greedy_decode_steps_total' "$before_f" | grep -oE '[0-9]+$' | tail -1 || echo 0)
-    rb_after=$(grep  'dismantle_gpu_readback_bytes_total' "$after_f"  | grep -oE '[0-9]+$' | tail -1 || echo 0)
-    rb_before=$(grep 'dismantle_gpu_readback_bytes_total' "$before_f" | grep -oE '[0-9]+$' | tail -1 || echo 0)
+    n_greedy_after=$(grep  'hawking_greedy_decode_steps_total' "$after_f"  | grep -oE '[0-9]+$' | tail -1 || echo 0)
+    n_greedy_before=$(grep 'hawking_greedy_decode_steps_total' "$before_f" | grep -oE '[0-9]+$' | tail -1 || echo 0)
+    rb_after=$(grep  'hawking_gpu_readback_bytes_total' "$after_f"  | grep -oE '[0-9]+$' | tail -1 || echo 0)
+    rb_before=$(grep 'hawking_gpu_readback_bytes_total' "$before_f" | grep -oE '[0-9]+$' | tail -1 || echo 0)
 
     local eff_tok=$(( (n_greedy_after - n_greedy_before) ))
     [[ "$eff_tok" -le 0 ]] && eff_tok="$TOKENS"

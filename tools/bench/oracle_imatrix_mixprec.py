@@ -98,10 +98,10 @@ import numpy as np
 # ----------------------------------------------------------------------------
 MODEL = os.environ.get(
     "IMATRIX_MODEL",
-    "/Users/scammermike/Downloads/dismantle/models/qwen2.5-3b-instruct-q4_k_m.gguf",
+    "/Users/scammermike/Downloads/hawking/models/qwen2.5-3b-instruct-q4_k_m.gguf",
 )
-REPORT_MD = "/Users/scammermike/Downloads/dismantle/reports/oracle_imatrix_mixprec.md"
-REPORT_JSON = "/Users/scammermike/Downloads/dismantle/reports/oracle/imatrix_mixprec.json"
+REPORT_MD = "/Users/scammermike/Downloads/hawking/reports/oracle_imatrix_mixprec.md"
+REPORT_JSON = "/Users/scammermike/Downloads/hawking/reports/oracle/imatrix_mixprec.json"
 RSS_CEIL_GB = 3.0
 
 # Same representative real-tensor sample as oracle_qtip_quality.py (attn + ffn

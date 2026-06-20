@@ -101,7 +101,7 @@ perl -e 'alarm 120; exec @ARGV' \
     caffeinate -di \
     taskpolicy -t 0 -l 0 \
     "$BIN" bench \
-        --backend dismantle --suite decode \
+        --backend hawking --suite decode \
         --weights "$WEIGHTS" --trials 1 --max-new-tokens 4 \
         --kernel-profile "$PROFILE" \
         --json "$WARMUP_JSON" \
@@ -134,7 +134,7 @@ for i in $(seq 1 "$TRIALS"); do
         caffeinate -di \
         taskpolicy -t 0 -l 0 \
         "$BIN" bench --trace-dispatch \
-            --backend dismantle --suite decode \
+            --backend hawking --suite decode \
             --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
             --kernel-profile "$PROFILE" \
             --json "$OUT_JSON" \

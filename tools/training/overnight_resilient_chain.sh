@@ -91,7 +91,7 @@ log "log: tail -f $LOG"
 if [[ ! -x ./target/release/hawking ]]; then
     log "no binary — building"
     write_status "build" "running"
-    cargo build --release -p dismantle >> "$LOG" 2>&1 || {
+    cargo build --release -p hawking >> "$LOG" 2>&1 || {
         log "❌ cargo build failed; aborting"
         write_status "build" "failed"
         exit 1
@@ -131,7 +131,7 @@ elif [[ -f reports/patches/session_C_q8_kv_wiring.patch ]]; then
         git apply reports/patches/session_C_q8_kv_wiring.patch >> "$LOG" 2>&1 || \
             log "patch apply failed; continuing without Q8 KV"
         log "rebuilding dismantle with Q8 KV..."
-        cargo build --release -p dismantle >> "$LOG" 2>&1 || \
+        cargo build --release -p hawking >> "$LOG" 2>&1 || \
             log "rebuild failed; continuing"
     else
         log "Q8 KV patch already applied or conflicts; skipping apply"

@@ -105,7 +105,7 @@ HIGH_PROMPT="${HIGH_PROMPT:-$(synth_high)}"
 LOW_PROMPT="${LOW_PROMPT:-$(synth_low)}"
 
 # ---- pre-flight -------------------------------------------------------------
-[[ -x "$BIN" ]]     || die "binary not found/executable: $BIN (cargo build --release -p dismantle)."
+[[ -x "$BIN" ]]     || die "binary not found/executable: $BIN (cargo build --release -p hawking)."
 [[ -f "$WEIGHTS" ]] || die "weights not found: $WEIGHTS"
 [[ -f "$PROFILE" ]] || die "kernel profile not found: $PROFILE"
 "$PY" -c 'import json' 2>/dev/null || die "python3 missing for the JSON summary."

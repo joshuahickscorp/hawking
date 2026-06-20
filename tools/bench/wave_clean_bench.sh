@@ -71,7 +71,7 @@ prof_tps() {  # $1 = profile name
   echo "################################################################"
 
   run_step "BUILD (release bin, ensure current vs restamped profiles)" \
-    cargo build --release --bin dismantle -q
+    cargo build --release --bin hawking -q
 
   # ── [A] PROFILE LADDER ──────────────────────────────────────────────────────
   echo; echo "######## [A] PROFILE LADDER  (single-stream, ${LADDER_TOKENS}-tok greedy) ########"

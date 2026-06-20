@@ -71,10 +71,10 @@ import numpy as np
 # ----------------------------------------------------------------------------
 MODEL = os.environ.get(
     "QTIP_MODEL",
-    "/Users/scammermike/Downloads/dismantle/models/qwen2.5-3b-instruct-q4_k_m.gguf",
+    "/Users/scammermike/Downloads/hawking/models/qwen2.5-3b-instruct-q4_k_m.gguf",
 )
-REPORT_MD = "/Users/scammermike/Downloads/dismantle/reports/oracle_qtip_quality.md"
-REPORT_JSON = "/Users/scammermike/Downloads/dismantle/reports/oracle/qtip_quality.json"
+REPORT_MD = "/Users/scammermike/Downloads/hawking/reports/oracle_qtip_quality.md"
+REPORT_JSON = "/Users/scammermike/Downloads/hawking/reports/oracle/qtip_quality.json"
 RSS_CEIL_GB = 3.0
 
 # Representative real tensors (attn + ffn across early/mid/late), mirrors

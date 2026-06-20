@@ -32,7 +32,7 @@ if [[ ! -f "$WEIGHTS" ]]; then
     exit 1
 fi
 if [[ ! -x ./target/release/hawking ]]; then
-    echo "❌ dismantle binary not built — run 'cargo build --release -p dismantle' first" >&2
+    echo "❌ dismantle binary not built — run 'cargo build --release -p hawking' first" >&2
     exit 1
 fi
 

@@ -8,7 +8,7 @@
   "decode_tokens": 128,
   "temperature": 0.0,
   "shared_context": [
-    "Repository map: crates/dismantle-core, crates/dismantle-serve, tools/bench, tools/training, docs/plans.",
+    "Repository map: crates/hawking-core, crates/hawking-serve, tools/bench, tools/training, docs/plans.",
     "Project policy: Apple-first serving, Metal-focused runtime work, no unsupported backend assumptions.",
     "Agent memory: preserve existing user edits, measure before public claims, report P95 latency.",
     "Serving goal: repeated turns should reuse prompt state rather than rebuilding the shared context."

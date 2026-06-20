@@ -50,8 +50,8 @@ except Exception:  # pragma: no cover
 from gguf import GGUFReader, GGMLQuantizationType, dequantize, quantize
 from gguf.quants import GGML_QUANT_SIZES
 
-MODEL = "/Users/scammermike/Downloads/dismantle/models/qwen2.5-3b-instruct-q4_k_m.gguf"
-REPORT = "/Users/scammermike/Downloads/dismantle/reports/oracle_lowrank_codebook.md"
+MODEL = "/Users/scammermike/Downloads/hawking/models/qwen2.5-3b-instruct-q4_k_m.gguf"
+REPORT = "/Users/scammermike/Downloads/hawking/reports/oracle_lowrank_codebook.md"
 
 RSS_CEIL_GB = 3.0
 

@@ -90,7 +90,7 @@ elif [[ -f "$PATCH" ]]; then
         log "patch already applied or conflicts; continuing"
     fi
     log "rebuilding..."
-    if cargo build --release -p dismantle >>"$LOG" 2>&1; then
+    if cargo build --release -p hawking >>"$LOG" 2>&1; then
         log "rebuild OK"
         # Verify --q8-kv now present
         if ./target/release/hawking generate --help 2>&1 | grep -q '\-\-q8-kv'; then

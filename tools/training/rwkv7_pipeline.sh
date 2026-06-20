@@ -52,7 +52,7 @@ echo "[pipeline] $N_PROMPTS prompts -> ~$EXPECTED_SHARDS shards at B=$BATCH"
 # Greedy, --profile exact (clean teacher target). Writes shards as groups finish.
 (
   cd "$REPO_ROOT"
-  cargo run --release -p dismantle -- generate \
+  cargo run --release -p hawking -- generate \
     --weights "$TEACHER" \
     --prompts-file "$PROMPTS" \
     --batched-capture \

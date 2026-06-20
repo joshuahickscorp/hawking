@@ -88,7 +88,7 @@ step tau_eval \
     > reports/eagle5_tau_2026_05_26.txt 2>&1"
 
 # (3) build release dismantle
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 # (4) Paired bench — short-output regime (64 tok, n=10)
 step paired_bench_64 \

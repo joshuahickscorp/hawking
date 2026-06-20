@@ -113,7 +113,7 @@ step tau_eval \
     > reports/eagle5_tau_2026_05_26.txt 2>&1"
 
 # (4) build release dismantle for the paired bench
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 # (5) Eagle5 paired bench — short-output regime (64 tok, n=10)
 #     Catches per-token overhead amortization; should give tightest

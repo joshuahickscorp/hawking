@@ -137,7 +137,7 @@ hr "STAGE 1: dismantle MST capture (HAWKING_TCB_TRACE=gpu_prod)"
 # xctrace --launch needs an ABSOLUTE first executable (no PATH lookup), so lead
 # with /usr/bin/env — it sets BASE_ENV and PATH-resolves nice/taskpolicy/$BIN.
 DM_CMD=(/usr/bin/env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench
-        --backend dismantle --suite decode
+        --backend hawking --suite decode
         --weights "$WEIGHTS" --kernel-profile "$PROFILE"
         --trials 1 --max-new-tokens "$TOKENS")
 note "command: ${DM_CMD[*]}"

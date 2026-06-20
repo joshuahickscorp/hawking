@@ -178,7 +178,7 @@ def _find_bin() -> str:
     for c in candidates:
         if c.exists():
             return str(c)
-    sys.exit("[star] dismantle binary not found — run: cargo build -p dismantle --release")
+    sys.exit("[star] dismantle binary not found — run: cargo build -p hawking --release")
 
 
 def _run_sft(model_path: str, hf_dir: str, data_path: str, out_dir: str,

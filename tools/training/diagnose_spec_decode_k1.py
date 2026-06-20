@@ -108,7 +108,7 @@ def _median(xs: list[float]) -> float:
 def diagnose(args) -> int:
     bin_path = Path(args.bin)
     if not bin_path.exists():
-        print(f"ERROR: {bin_path} missing. Run `cargo build --release -p dismantle` first.",
+        print(f"ERROR: {bin_path} missing. Run `cargo build --release -p hawking` first.",
               file=sys.stderr)
         return 2
     if not args.weights.exists():

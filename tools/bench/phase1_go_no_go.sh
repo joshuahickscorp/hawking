@@ -53,7 +53,7 @@ if pgrep -f "claude" 2>/dev/null | grep -vq "$$"; then
 fi
 
 if [ ! -x "$BIN" ]; then
-    echo "error: $BIN not built. Run: cargo build --release -p dismantle" >&2
+    echo "error: $BIN not built. Run: cargo build --release -p hawking" >&2
     exit 2
 fi
 if [ ! -f "$WEIGHTS" ]; then
@@ -95,7 +95,7 @@ for i in $(seq 1 "$TRIALS"); do
     OUT_JSON="$OUT_DIR/trial_${i}.json"
     echo "--- trial $i / $TRIALS ---"
     "$BIN" bench \
-        --backend dismantle --suite decode \
+        --backend hawking --suite decode \
         --weights "$WEIGHTS" \
         --kernel-profile "$PROFILE" \
         --trials 1 --max-new-tokens "$TOKENS" \

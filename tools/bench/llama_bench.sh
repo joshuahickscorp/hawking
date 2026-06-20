@@ -31,7 +31,7 @@ if [[ ! -f "$WEIGHTS" ]]; then
     exit 66
 fi
 if [[ ! -x "$BIN" ]]; then
-    echo "❌ $BIN not built. Run: cargo build --release -p dismantle" >&2
+    echo "❌ $BIN not built. Run: cargo build --release -p hawking" >&2
     exit 69
 fi
 
@@ -75,7 +75,7 @@ for i in 1 2 3; do
     OUT_JSON="/tmp/llama_bench_t${i}.json"
     echo "trial $i..."
     perl -e 'alarm 600; exec @ARGV' "$BIN" bench --trace-dispatch \
-        --backend dismantle --suite decode \
+        --backend hawking --suite decode \
         --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
         --kernel-profile "$PROFILE" \
         --json "$OUT_JSON" >/dev/null 2>&1

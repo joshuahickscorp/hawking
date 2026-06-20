@@ -18,7 +18,7 @@
 #   2. Quit any `claude` CLI / loop sessions.
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
-#   5. cd /Users/scammermike/Downloads/dismantle
+#   5. cd /Users/scammermike/Downloads/hawking
 #   6. ./tools/bench/clean_room_queue.sh
 #   7. Read the per-section verdicts; the JSON artifacts land under reports/bench/.
 #
@@ -58,7 +58,7 @@ else
 fi
 
 if [[ ! -x "$BIN" ]]; then
-  echo "  build the release binary first:  cargo build --release -p dismantle" >&2
+  echo "  build the release binary first:  cargo build --release -p hawking" >&2
   echo "  (then re-run this queue)." >&2
   [[ "$GATES_ONLY" -eq 0 ]] && exit 1
 fi

@@ -26,7 +26,7 @@
 #   ORACLE_C=<measured> to collapse the [lo,hi] bracket.
 #
 # THE EXPORT MECHANISM  (read this — it is the crux)
-#   `dismantle generate` has NO logit-export path (confirmed: crates/dismantle/
+#   `dismantle generate` has NO logit-export path (confirmed: crates/hawking/
 #   src/main.rs Generate has no --dump-logits / --save-logits flag, and no .npy
 #   writer exists anywhere in crates/). The only full-vocab logit exporter on
 #   this machine is llama.cpp's `llama-perplexity --save-all-logits FNAME`,

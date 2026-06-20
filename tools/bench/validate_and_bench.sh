@@ -107,7 +107,7 @@ if [[ ! -f "$WEIGHTS_ABS" ]]; then
     skip "Weights absent — skipping bake-sidecar"
     (( SKIPS++ )) || true
 else
-    SIDECAR="${WEIGHTS%.gguf}.dismantle"
+    SIDECAR="${WEIGHTS%.gguf}.hawking"
     run_step "bake-sidecar → $SIDECAR" \
         "$DBIN" bake-sidecar --weights "$WEIGHTS"
     if [[ -f "$SIDECAR" ]]; then

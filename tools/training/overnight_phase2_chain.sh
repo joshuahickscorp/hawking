@@ -106,7 +106,7 @@ done
 # Pre-flight rebuild (in case patches landed)
 if ! [[ -x ./target/release/hawking ]]; then
     log "binary missing; rebuilding"
-    cargo build --release -p dismantle >> "$LOG" 2>&1 || { log "build failed; aborting"; exit 1; }
+    cargo build --release -p hawking >> "$LOG" 2>&1 || { log "build failed; aborting"; exit 1; }
 fi
 
 # ============================================================

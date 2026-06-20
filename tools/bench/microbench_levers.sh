@@ -29,7 +29,7 @@ TRIALS="${TRIALS:-3}"
 SEED="${SEED:-0}"
 
 if [[ ! -x "$BIN" ]]; then
-    echo "❌ binary missing at $BIN — run 'cargo build --release -p dismantle' first"
+    echo "❌ binary missing at $BIN — run 'cargo build --release -p hawking' first"
     exit 1
 fi
 
@@ -207,7 +207,7 @@ echo "" >> "$REPORT"
 echo "## Notes" >> "$REPORT"
 echo "" >> "$REPORT"
 echo "- Absolute tps is contaminated 4-5× by Claude (per memory bench_contamination.md). Δ vs L0 is the trustworthy column." >> "$REPORT"
-[[ "$HAS_Q8_KV" = "0" ]] && echo "- **Q8 KV skipped:** binary lacks the flag. Session C may have landed Rust changes but the binary needs \`cargo build --release -p dismantle\` to surface them." >> "$REPORT"
+[[ "$HAS_Q8_KV" = "0" ]] && echo "- **Q8 KV skipped:** binary lacks the flag. Session C may have landed Rust changes but the binary needs \`cargo build --release -p hawking\` to surface them." >> "$REPORT"
 
 echo
 echo "=== microbench complete ==="

@@ -31,7 +31,7 @@ HEAD_DIM="${HEAD_DIM:-128}"
 KV_DTYPE_BYTES="${KV_DTYPE_BYTES:-2}"          # f16 KV cache
 WEIGHT_BYTES_PER_TOKEN="${WEIGHT_BYTES_PER_TOKEN:-2072821924}"  # ~1.93 GiB
 
-[[ -x "$BIN" ]] || { echo "error: build first (cargo build --release -p dismantle)"; exit 1; }
+[[ -x "$BIN" ]] || { echo "error: build first (cargo build --release -p hawking)"; exit 1; }
 [[ -f "$WEIGHTS" ]] || { echo "error: weights not found: $WEIGHTS"; exit 1; }
 mkdir -p "$(dirname "$OUT")"
 

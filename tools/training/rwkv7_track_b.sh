@@ -10,7 +10,7 @@
 #   nohup bash tools/training/rwkv7_track_b.sh >> artifacts/rwkv7_posttrain/track_b.log 2>&1 &
 # ============================================================================
 set -uo pipefail
-cd /Users/scammermike/Downloads/dismantle
+cd /Users/scammermike/Downloads/hawking
 source .venv-rwkv/bin/activate 2>/dev/null
 
 ART=artifacts/rwkv7_posttrain

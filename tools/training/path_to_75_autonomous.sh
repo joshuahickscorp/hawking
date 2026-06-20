@@ -86,9 +86,9 @@ PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
 VOCAB=artifacts/calibration/analysis/vocab_whitelist_995.json
 
 # Pre-flight: rebuild binary fresh so any pending changes surface
-log "preflight: cargo build --release -p dismantle"
+log "preflight: cargo build --release -p hawking"
 write_status "preflight" "running"
-if ! cargo build --release -p dismantle >>"$LOG" 2>&1; then
+if ! cargo build --release -p hawking >>"$LOG" 2>&1; then
     log "❌ preflight build failed; aborting"
     write_status "preflight" "failed"
     exit 1
@@ -179,7 +179,7 @@ else
         echo ""
         echo "## Search the codebase for q8_kv plumbing"
         grep -rn "q8_kv\|Q8KV\|kv_cache_quant\|kv-cache-quant" \
-            crates/dismantle/src/main.rs \
+            crates/hawking/src/main.rs \
             crates/hawking-core/src/engine.rs 2>/dev/null | head -10 || echo "(no matches)"
         echo ""
         echo "## Recommendation"

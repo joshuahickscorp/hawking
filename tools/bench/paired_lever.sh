@@ -100,7 +100,7 @@ if [[ "$MODE" == bench || "$MODE" == all ]]; then
   for t in $(seq 1 "$TRIALS"); do
     for c in "${VARIANTS[@]}"; do
       j="/tmp/pl_${LABEL}_bench_${c}_${t}.json"
-      run "$c" bench --backend dismantle --suite decode --weights "$WEIGHTS" \
+      run "$c" bench --backend hawking --suite decode --weights "$WEIGHTS" \
         --trials 1 --max-new-tokens "$TOKENS" --kernel-profile "$PROFILE" \
         --json "$j" >/dev/null 2>&1
       v=$(jq -r '(.results.decode_tps // .results.trial_stats[0].decode_tps // 0)' "$j" 2>/dev/null)
@@ -120,7 +120,7 @@ if [[ "$MODE" == gate || "$MODE" == all ]]; then
   echo "=== §1 METHODOLOGY GATE (instrumented B run; NOT the ship tps) ==="
   GATE_TRACE="/tmp/pl_${LABEL}_gate.json"
   env $BASE_ENV $(env_for B) HAWKING_TCB_TRACE=gpu HAWKING_TRACE_DISPATCH=1 \
-    nice -n 19 taskpolicy -b "$BIN" bench --trace-dispatch --backend dismantle \
+    nice -n 19 taskpolicy -b "$BIN" bench --trace-dispatch --backend hawking \
     --suite decode --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
     --kernel-profile "$PROFILE" --json "$GATE_TRACE" >/dev/null 2>&1
   PY="$([[ -x .venv/bin/python ]] && echo .venv/bin/python || echo python3)"

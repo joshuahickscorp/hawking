@@ -71,7 +71,7 @@ import time
 import numpy as np
 
 # ----------------------------------------------------------------------------
-REPORT_JSON = "/Users/scammermike/Downloads/dismantle/reports/oracle/small_draft_accept.json"
+REPORT_JSON = "/Users/scammermike/Downloads/hawking/reports/oracle/small_draft_accept.json"
 SEED = 0
 
 # Byte-ratio-grounded forward-cost ESTIMATES (draft cost in units of one 3B

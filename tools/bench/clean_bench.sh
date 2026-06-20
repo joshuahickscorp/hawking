@@ -7,7 +7,7 @@
 #   1. Quit the Claude Code desktop app (Cmd+Q in the menu bar).
 #   2. Quit any 'claude' CLI sessions (incl. MASTER_LOOP).
 #   3. Open a fresh Terminal.app window.
-#   4. cd /Users/scammermike/Downloads/dismantle
+#   4. cd /Users/scammermike/Downloads/hawking
 #   5. ./tools/bench/clean_bench.sh
 #   6. Wait ~30–45 min for all 6 trials. Results appear in
 #      bench_results/v0.3.6/. Read summary.md.
@@ -201,7 +201,7 @@ for entry in "${TRIAL_ORDER[@]}"; do
         set +e
         HAWKING_TRACE_DISPATCH=1 run_with_timeout 600 \
             nice -n 19 taskpolicy -b "$BIN" bench \
-            --backend dismantle --suite decode \
+            --backend hawking --suite decode \
             --weights "$WEIGHTS" \
             --trials 1 --max-new-tokens 64 \
             --kernel-profile "$RESULTS_DIR/profile_${PROFILE}.json" \

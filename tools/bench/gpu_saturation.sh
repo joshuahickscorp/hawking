@@ -123,7 +123,7 @@ printf 'running production pass (no HAWKING_TCB_TRACE)...\n'
 
 set +e
 env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench \
-    --backend dismantle --suite decode \
+    --backend hawking --suite decode \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
     --trials 1 --max-new-tokens "$TOKENS" \
     --json "$PROD_JSON" \
@@ -158,7 +158,7 @@ printf 'running trace pass...\n'
 set +e
 env $BASE_ENV HAWKING_TCB_TRACE=gpu HAWKING_TRACE_DISPATCH=1 \
   nice -n 19 taskpolicy -b "$BIN" bench \
-    --backend dismantle --suite decode \
+    --backend hawking --suite decode \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
     --trials 1 --max-new-tokens "$TOKENS" \
     --trace-json "$TRACE_JSON" \

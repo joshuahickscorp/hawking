@@ -111,7 +111,7 @@ wait_if_paused() {
 wait_if_paused "before-build"
 log "=== build ==="
 write_status "build" "running"
-if ! cargo build --release -p dismantle >> "$LOG_PATH" 2>&1; then
+if ! cargo build --release -p hawking >> "$LOG_PATH" 2>&1; then
     log "❌ cargo build failed"
     write_status "build" "failed" "see log"
     exit 1

@@ -120,7 +120,7 @@ echo "[overnight]   WINNER = $WINNER (K=4 = $BEST%)"
 echo "[overnight] ◀ pick_winner rc=0  $(date -u +%FT%TZ)"
 
 # (4) build release dismantle for paired bench
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 # (5) Paired bench — winner @ 64 tokens
 step paired_bench_64 \
