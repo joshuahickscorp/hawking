@@ -1,6 +1,6 @@
 # Metal kernels
 
-This document maps every kernel in `crates/dismantle-core/shaders/`
+This document maps every kernel in `crates/hawking-core/shaders/`
 to its purpose, the phase it lands in, and the wedge it implements
 (if any).
 

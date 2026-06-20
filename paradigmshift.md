@@ -1,6 +1,6 @@
 # paradigmshift.md
 
-> The new north star for dismantle. Two metrics rule everything here:
+> The new north star for hawking. Two metrics rule everything here:
 > **tokens/sec ↑** and **joules/token ↓**. Everything else (features, model
 > coverage, server surface) exists to stay competitive — but these two are
 > what we optimize.
@@ -19,16 +19,16 @@
 
 ## Part I — Reality check (what the audit actually found)
 
-### What dismantle is
+### What hawking is
 
 A pure-Rust + Metal inference engine for Apple Silicon. Single binary, no
 Python/C++ at runtime. mmaps GGUF weights and runs them through hand-written
 `.metal` kernels. Three layers: a decorative axum server → a per-architecture
-model layer ([`model/`](crates/dismantle-core/src/model/)) → a pure-Metal
-runtime ([`kernels/`](crates/dismantle-core/src/kernels/),
-[`shaders/`](crates/dismantle-core/shaders/)). Primary tuned target:
+model layer ([`model/`](crates/hawking-core/src/model/)) → a pure-Metal
+runtime ([`kernels/`](crates/hawking-core/src/kernels/),
+[`shaders/`](crates/hawking-core/shaders/)). Primary tuned target:
 **Qwen2.5-3B-Instruct Q4_K_M** (dense). The decode hot path
-(`forward_token_greedy_tcb`, [qwen_dense.rs:3819](crates/dismantle-core/src/model/qwen_dense.rs:3819))
+(`forward_token_greedy_tcb`, [qwen_dense.rs:3819](crates/hawking-core/src/model/qwen_dense.rs:3819))
 is genuinely tight: ~180 Metal dispatches queued into **one** `TokenCommandBuffer`
 per token, one commit, one wait. Fused gate+up, hoisted norms, zero-copy mmap.
 
@@ -46,33 +46,33 @@ per token from a 1.93 GB model. Dense decode reads every weight once ⇒
 **2. "Decode is at the Apple-GPU memory-model optimum (~56% peak), micro-opt
 exhausted" — not supported by the engine's own evidence.**
 - The README itself states llama.cpp does **~50 dec_tps** on the *same
-  hardware + model*; dismantle does **~31**. Same bytes, 1.6× faster. A
+  hardware + model*; hawking does **~31**. Same bytes, 1.6× faster. A
   bandwidth wall can't be beaten 60% by a competitor reading the same data.
 - The default `gemm_q4_k_v4_predec` kernel
-  ([quant.metal:2162](crates/dismantle-core/shaders/quant.metal:2162)) reads
+  ([quant.metal:2162](crates/hawking-core/shaders/quant.metal:2162)) reads
   **128 nibble bytes + 64 predec-scale bytes = 192 B/block** vs the on-disk
-  144 ([loop at :2177–2201](crates/dismantle-core/shaders/quant.metal:2177)).
+  144 ([loop at :2177–2201](crates/hawking-core/shaders/quant.metal:2177)).
   It moves **+33% more DRAM traffic** than plain Q4_K and is *still faster*.
   That is only possible if the binding constraint was **per-element compute /
   dispatch latency**, not bandwidth. Decode is **mixed compute/latency-bound**,
   not a pure bandwidth wall.
 
   Net: llama.cpp moves **fewer** bytes/token (no predec table, inline unpack)
-  **and** is faster. dismantle is currently both heavier *and* slower than the
+  **and** is faster. hawking is currently both heavier *and* slower than the
   reference. The 1.6× gap is **recoverable headroom**, not a wall. The
   micro-opt track was parked at a local optimum of one kernel family, not
   proven exhausted.
 
 **3. "Attention runs on the CPU" is FALSE for the live fast path.**
-The module doc-comment ([attn/mod.rs:8](crates/dismantle-core/src/attn/mod.rs:8))
+The module doc-comment ([attn/mod.rs:8](crates/hawking-core/src/attn/mod.rs:8))
 says "Phase 0 ships a CPU reference … Phase 3 Metal kernels live in
 shaders/attn.metal" — implying attention is still CPU. It is not, in the
 default path. `forward_token_greedy_tcb` dispatches the **GPU** kernel
-`mha_decode_f32` ([mha.metal:34](crates/dismantle-core/shaders/mha.metal:34),
+`mha_decode_f32` ([mha.metal:34](crates/hawking-core/shaders/mha.metal:34),
 one threadgroup per head) at
-[qwen_dense.rs:4147](crates/dismantle-core/src/model/qwen_dense.rs:4147).
+[qwen_dense.rs:4147](crates/hawking-core/src/model/qwen_dense.rs:4147).
 The CPU `mha_decode_step` is only the non-TCB fallback (temp>0 sampling,
-[lines 620](crates/dismantle-core/src/model/qwen_dense.rs:620)/[2905](crates/dismantle-core/src/model/qwen_dense.rs:2905))
+[lines 620](crates/hawking-core/src/model/qwen_dense.rs:620)/[2905](crates/hawking-core/src/model/qwen_dense.rs:2905))
 and a capture oracle. **No per-token CPU bubble in the fast path.** (The GPU
 attention kernel is, however, a naive materialize-all-scores design with an
 **f32 KV cache** — a real long-context bandwidth lever, see Part II.)
@@ -86,9 +86,9 @@ attention kernel is, however, a naive materialize-all-scores design with an
 | Lever | Evidence | Why it's headroom |
 |---|---|---|
 | **Dispatch count / fusion** | ~180 dispatches/token, one per projection per layer | llama.cpp fuses far more aggressively. 180 sequential compute encodings/token carry real argument-encoding + scheduling latency. Most likely single chunk of the gap. |
-| **f32 activations & f32 KV cache** | activations f32; KV appended f32 ([qwen_dense.rs:4128](crates/dismantle-core/src/model/qwen_dense.rs:4128)); `mha_decode_f32` reads f32 K/V | f16 activations/KV ~halve activation + attention traffic. `--q8-kv` exists but opt-in, tuned for long context. |
-| **The predec table tax** | +33% weight bytes for a compute win | f16-scales variant (160 B/block) recovers most of it: **+9.3% tps** — but opt-in (`DISMANTLE_QWEN_PREDEC_F16SCALES`, not bit-identical, [qwen_dense.rs:3868](crates/dismantle-core/src/model/qwen_dense.rs:3868)). A kernel that unpacks the native 144-B block efficiently beats both. |
-| **GPU sampling** | logits copied to CPU for argmax/softmax ([sample/mod.rs](crates/dismantle-core/src/sample/mod.rs)); GPU `sample_argmax_f32` exists ([sample.metal:48](crates/dismantle-core/shaders/sample.metal:48)) but isn't default | ~600 KB logit copy + CPU sort every token; eliminable for greedy. |
+| **f32 activations & f32 KV cache** | activations f32; KV appended f32 ([qwen_dense.rs:4128](crates/hawking-core/src/model/qwen_dense.rs:4128)); `mha_decode_f32` reads f32 K/V | f16 activations/KV ~halve activation + attention traffic. `--q8-kv` exists but opt-in, tuned for long context. |
+| **The predec table tax** | +33% weight bytes for a compute win | f16-scales variant (160 B/block) recovers most of it: **+9.3% tps** — but opt-in (`HAWKING_QWEN_PREDEC_F16SCALES`, not bit-identical, [qwen_dense.rs:3868](crates/hawking-core/src/model/qwen_dense.rs:3868)). A kernel that unpacks the native 144-B block efficiently beats both. |
+| **GPU sampling** | logits copied to CPU for argmax/softmax ([sample/mod.rs](crates/hawking-core/src/sample/mod.rs)); GPU `sample_argmax_f32` exists ([sample.metal:48](crates/hawking-core/shaders/sample.metal:48)) but isn't default | ~600 KB logit copy + CPU sort every token; eliminable for greedy. |
 | **Speculation realism** | n-gram + eagle5 wired but **off by default**; trained eagle5 head is NO-GO (accept ≈ 1/vocab) | Honest spec win today is n-gram-on-code (+148% on repetitive code, bit-identical). Workload-shaped multiplier, not general. |
 
 ### J/token: NOT the same objective as TPS
@@ -117,9 +117,9 @@ un-instrumented as a first-class target (no per-byte or per-kernel attribution).
 
 ### What we have (the "scaffolding")
 
-- **Portable GGUF reader** — pure Rust + mmap ([gguf/](crates/dismantle-core/src/gguf/)),
+- **Portable GGUF reader** — pure Rust + mmap ([gguf/](crates/hawking-core/src/gguf/)),
   compiles and runs anywhere.
-- **A model-level `Engine` trait** ([engine.rs:200](crates/dismantle-core/src/engine.rs:200)):
+- **A model-level `Engine` trait** ([engine.rs:200](crates/hawking-core/src/engine.rs:200)):
   `load / generate / forward_tokens_batched`. This is a *model* seam, **not** a
   compute-backend seam.
 - A handful of `cfg(not(target_os = "macos"))` stubs (main.rs, model/mod.rs,
@@ -128,7 +128,7 @@ un-instrumented as a first-class target (no per-byte or per-kernel attribution).
 
 ### What we DON'T have (the real gap)
 
-- **Metal is hard-gated to macOS** ([Cargo.toml:27](crates/dismantle-core/Cargo.toml:27),
+- **Metal is hard-gated to macOS** ([Cargo.toml:27](crates/hawking-core/Cargo.toml:27),
   `[target.'cfg(target_os = "macos")'.dependencies]`). Off-macOS the GPU deps
   aren't even compiled.
 - **No compute-backend abstraction.** Model code calls `crate::kernels::*` and
@@ -137,7 +137,7 @@ un-instrumented as a first-class target (no per-byte or per-kernel attribution).
   seam to swap in CPU / cloud-GPU / Vulkan. The engine is **structurally
   Metal-only**.
 
-So the honest portability statement: **dismantle today runs on exactly one
+So the honest portability statement: **hawking today runs on exactly one
 platform.** llama.cpp runs on ~all of them because GGML has a backend
 abstraction (`ggml-backend`) with a registry, buffer types, and a scheduler
 that offloads ops to whatever backend is present (CPU SIMD, cloud-GPU, Metal,
@@ -157,17 +157,17 @@ Vulkan, SYCL, cross-vendor GPU stacks, CANN, OpenCL, WebGPU). Reaching that bar 
 **Real lever, but secondary — and necessary-not-sufficient for the big prize.**
 
 **What a custom format genuinely buys (grounded in the loader,
-[qwen_dense.rs:812–953](crates/dismantle-core/src/model/qwen_dense.rs:812)):**
+[qwen_dense.rs:812–953](crates/hawking-core/src/model/qwen_dense.rs:812)):**
 1. **Make the both-metrics-optimal config the free default.** Today the engine
    has a *zoo* of opt-in, load-time repacks — predec tables, f16-scales,
-   Q4K-requantized LM head (`DISMANTLE_QWEN_Q4K_LMHEAD`), Q4K-requantized
-   FFN-down (`DISMANTLE_QWEN_FFN_DOWN_Q4K`), vocab-prune, the
-   [Q4K_FAST](crates/dismantle-core/src/q4k_fast.rs) 160-B sidecar — each
+   Q4K-requantized LM head (`HAWKING_QWEN_Q4K_LMHEAD`), Q4K-requantized
+   FFN-down (`HAWKING_QWEN_FFN_DOWN_Q4K`), vocab-prune, the
+   [Q4K_FAST](crates/hawking-core/src/q4k_fast.rs) 160-B sidecar — each
    off-by-default because it costs load time or fails bit-identity. A
    pre-baked, page-aligned, mmap-ready archive collapses them into one
    artifact: the best config becomes zero-cost and default. For MoE it also
    kills the **30–60 s** mixed-quant requant at load
-   ([mixed_quant_store.rs](crates/dismantle-core/src/mixed_quant_store.rs)).
+   ([mixed_quant_store.rs](crates/hawking-core/src/mixed_quant_store.rs)).
 2. **Shave ~17% bytes/token off the default** by baking the f16-scales /
    contiguous layout on disk (160 B/block vs predec-f32's 192) — helps *both*
    metrics.
@@ -217,11 +217,11 @@ implements every op." It is two mechanisms:
 > **The unlock:** the *scheduler + CPU fallback* is what makes a partial backend
 > useful on day one. You don't need a complete Vulkan/cloud-GPU op set to ship it —
 > missing ops route to CPU. This is the single most important architectural
-> lesson for dismantle, which today has neither a seam nor a fallback.
+> lesson for hawking, which today has neither a seam nor a fallback.
 
 **The Rust landscape — what to copy, what to avoid:**
 
-| Project | Portability model | Verdict for dismantle |
+| Project | Portability model | Verdict for hawking |
 |---|---|---|
 | **Burn** | Whole library generic over **one `Backend` trait** (a supertrait bundle: `BackendTypes + FloatTensorOps + … + QTensorOps`); backends swap by type alias, even at runtime. ([burn.dev](https://burn.dev/docs/burn/), [Backend trait](https://burn.dev/docs/burn/tensor/backend/trait.Backend.html)) | **Copy the seam *shape*** — small user surface (one bound), large implementer surface (the op traits). Don't adopt the whole framework (it's a full training stack, far heavier than an inference engine needs). |
 | **CubeCL** | **Single-source `#[cube]` kernels** in type/borrow-checked Rust (not a shader language), JIT-lowered to **6 targets: cloud-GPU, cross-vendor GPU stacks, Metal (direct MSL since 0.5, *with simdgroup_matrix*), Vulkan, WebGPU, CPU**. `cubek` ships matmul/attention/quant/reduce. ([cubecl](https://github.com/tracel-ai/cubecl), [cubek](https://github.com/tracel-ai/cubek)) | **The most promising single-source portable-kernel path** — one kernel codebase reaching every vendor incl. Apple. **Caveats:** alpha, evolving API; quant is *symmetric per-block* only (q2/q4/q8/fp4) — **not** K-quant or trellis; CPU backend unoptimized; an M3 attention shmem bug (#4530) shows it's not Apple-hardened. Watch, prototype, don't bet the hot path yet. |
@@ -291,7 +291,7 @@ quality-at-speed frontier** for 2–4-bit weight-only PTQ:
 > and re-validated for a custom Metal kernel before trusting it.** If the
 > trellis decode turns out compute-heavy on Apple's SIMD model, a 2-bit format
 > could be *slower* than Q4_K despite moving fewer bytes — **exactly the trap
-> dismantle's own Q3_K kernel already fell into** ("compute-bound at 24% peak").
+> hawking's own Q3_K kernel already fell into** ("compute-bound at 24% peak").
 > Validate the kernel before committing the format.
 
 **Quality vs *our* Q4_K_M baseline specifically** was not in the verified set
@@ -345,7 +345,7 @@ questions (decode mechanism, energy) are **empirical, not literature** tasks.
 2. **Introduce the `trait Backend` / `Device` / `Buffer` seam** (Burn-shape:
    one user-facing bound, op-traits behind it). **No behavior change on Metal.**
    This is the prerequisite for *both* portability *and* clean experimentation,
-   and it's the single highest-leverage structural move — dismantle has no seam
+   and it's the single highest-leverage structural move — hawking has no seam
    today.
 3. **Empirically settle the 31→50 gap** (V.2): read `ggml-metal` + profile both
    engines with Metal System Trace; then attack **dispatch count** and **f16

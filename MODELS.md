@@ -39,8 +39,8 @@ What has actually been run and checked on this hardware (Apple M3 Pro, 18 GB), v
 ## Verify a model yourself
 
 ```sh
-dismantle doctor   --weights <model.gguf>                 # fit + metadata
-dismantle generate --weights <model.gguf> --prompt "..." --max-new-tokens 64
+hawking doctor   --weights <model.gguf>                 # fit + metadata
+hawking generate --weights <model.gguf> --prompt "..." --max-new-tokens 64
 ```
 
-To add a parity gate for a new model, follow `crates/dismantle-core/tests/greedy_token_only_parity.rs` — it skips cleanly when the weights are absent, so it stays CI-safe.
+To add a parity gate for a new model, follow `crates/hawking-core/tests/greedy_token_only_parity.rs` — it skips cleanly when the weights are absent, so it stays CI-safe.

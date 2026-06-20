@@ -1,21 +1,19 @@
-# Session Handoff — Hawking rename COMPLETE (incl. folder + GitHub) — 2026-06-20
+# Session Handoff — Hawking (rename finalized + docs consolidated) — 2026-06-20
 
-This is the continuity anchor. The previous session renamed everything to **Hawking**,
-including the on-disk folder (`~/Downloads/hawking`) and the GitHub repo
-(`joshuahickscorp/hawking`). Open your new chat **inside `~/Downloads/hawking`**.
+Continuity anchor. The project is **Hawking** (folder `~/Downloads/hawking`, repo
+`github.com/joshuahickscorp/hawking`). Open new chats **inside `~/Downloads/hawking`**.
 
-## FIRST THING TO DO (the chain is ALREADY RUNNING — just verify)
+## FIRST THING TO DO — the chain is RUNNING, just verify (do NOT relaunch)
 
-The 7-model draft-sweep chain was relaunched from the renamed folder and is running
-detached (`nohup caffeinate`, reparented to launchd, survives terminal close). Do NOT
-launch a second one. Verify it's alive + actually training:
+The 7-model RWKV-7 draft-sweep chain is running detached (`nohup caffeinate`, survives
+terminal close). Confirm it's alive + actually training:
 ```bash
 cd ~/Downloads/hawking
-pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"
-tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log   # expect [ep0 opt=N] lines (real training)
-tail -n 10 artifacts/lowbit_rwkv7/master_chain.log  # current stage
+pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"      # expect 2-3 procs
+tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log         # expect [ep0 opt=N] loss=… lines
+tail -n 10 artifacts/lowbit_rwkv7/master_chain.log
 ```
-If it died, relaunch:
+If (and only if) it died, relaunch:
 ```bash
 DRAFT_VARIANTS="draft_35m_probe draft_50m_probe draft_75m_probe draft_100m draft_150m draft_200m draft_300m" \
 DRAFT_EPOCHS=1 DRAFT_ACCEPT_SEQS=50 SEED=1337 USE_CHUNKED=1 \
@@ -23,72 +21,69 @@ PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 PYTHON=.venv-rwkv/bin/python \
   nohup caffeinate -dimsu bash tools/training/g1a_v2_expansion_chain.sh 3.4489 pass \
   > artifacts/lowbit_rwkv7/master_chain.log 2>&1 &
 ```
+The chain runs cargo/parity gates → 7-model draft sweep (chunked, seeded, EPOCHS=1,
+~20–30h) → spec hardening → competitive scorecard. The draft sweep launches
+**unconditionally** (a Rust gate failure cannot block it — by design).
 
-## State
+## State (2026-06-20)
 
 - **G1a DONE**: RWKV-7 0.4B ternary-QAT hit ema 5.92 ≤ 6.0 at step 90; exported HF model,
   candidate ppl 3.449 vs fp32 base 3.356 (**+2.7%**, near-lossless).
-- **Rename FULLY COMPLETE**: code, CLI, env (`HAWKING_*`), endpoints (`/v1/hawking/*`),
-  metrics (`hawking_*`), `.hawking` sidecar, public docs, **the folder (`~/Downloads/hawking`),
-  and the GitHub repo (`github.com/joshuahickscorp/hawking`)**. `cargo check --workspace`
-  + 167 lib tests green at rename time.
-- **Storage cleaned**: `cargo clean` + dead-artifact prune (was 36 GB → 20 GB; `target/`
-  will rebuild on first cargo run).
-- **Chain**: relaunch it (above). Draft-sweep bash-3.2 empty-array bug fixed + verified.
+- **Rename is now TRULY complete.** The prior session renamed code/CLI/env(`HAWKING_*`)/
+  endpoints/metrics/`.hawking` sidecar/folder/GitHub repo, but the **folder rename left
+  stale state** that this session found and fixed:
+  - **44 runtime-breaking dead refs in `tools/` scripts** (`--backend dismantle`,
+    `cargo build -p/--bin dismantle`, dead `/Downloads/dismantle` paths, `dismantle_*`
+    Prometheus metric greps). Fixed: **78 precise substitutions across 50 files**; all
+    `bash -n` / `py_compile` / JSON-valid.
+  - **The RWKV-7 GPU parity test was a false-negative**, not a regression — see GOTCHA below.
+- **Binary validated**: `cargo build --release` green; `hawking --help` / `version` OK.
+- **RWKV-7 GPU↔CPU parity green**: 2/2, argmax mismatches=0, worst |Δlogit|=0.00015.
+- **Docs consolidated 214 → 21** for a clean slate. Pruned working-logs are indexed in
+  `docs/ARCHIVE_INDEX.md` and fully recoverable (`git checkout pre-hawking-rename -- <path>`).
 
-## Key locations (all under ~/Downloads/hawking)
+## ⚠️ GOTCHA — folder rename leaves a stale Cargo build cache
+
+Renaming the project folder moves `target/` and its fingerprints intact, so `cargo` thinks
+everything is up-to-date and does **not** recompile. Any test that locates fixtures via
+`env!("CARGO_MANIFEST_DIR")` / `file!()` then keeps the **old baked path** and false-fails
+(e.g. `rwkv7_metal_parity` panicked reading `/Downloads/dismantle/.../fixtures/...`). Fix =
+force a rebuild of the affected crate/test (`touch` the source or `cargo clean -p hawking-core`)
+so the path re-bakes. After any future folder move, do a clean rebuild before trusting tests.
+
+## Key locations (under ~/Downloads/hawking)
 
 - Finished 0.4B model: `artifacts/lowbit_rwkv7/hawking_arc/ema6p0_step_000090_20260620_041225/`
-  (`hf/` loadable export, `report.md`, `ppl.jsonl`, `samples.jsonl`).
+  (`hf/` export, `report.md`, `ppl.jsonl`, `samples.jsonl`).
 - Training tools: `tools/training/` (`g1a_v2_expansion_chain.sh`, `launch_draft_sweep.sh`,
-  `rwkv7_train_draft.py`, `rwkv7_progress.py`, `autocycle_step50_ozempic.sh`,
-  `hawking_after_ema.py`).
-- Rename kit/plan (history): `docs/plans/hawking_rename_execution_kit_2026_06_19.md`,
-  `docs/plans/hawking_total_rename_plan_2026_06_19.md`.
-
-## Monitor the chain
-```bash
-tail -f artifacts/lowbit_rwkv7/master_chain.log     # stage-by-stage
-tail -f artifacts/lowbit_rwkv7/draft_sweep.log      # current draft model + step lines
-ls -t artifacts/lowbit_rwkv7/runs/custom_*/eval_log.jsonl
-```
-Chain = cargo checks (cold rebuild ~10 min, also revalidates the rename) → 7-model draft
-sweep (chunked, seeded, EPOCHS=1, ~20–30h) → spec hardening → competitive scorecard.
+  `rwkv7_train_draft.py`, `rwkv7_progress.py`, `hawking_after_ema.py`).
+- Current chain reports: `docs/plans/{g1a_v2_expansion_results,rwkv7_competitive_scorecard,rwkv7_spec_hardening}_2026_06_20.md`.
+- Throughput strategy: `docs/plans/bible_active.md` (+ `bible_archive.md`). Kill-ledger
+  (do-not-respawn): `docs/dead_levers.md`.
 
 ## Git
-- Local `main` == `origin/main`, remote = `github.com/joshuahickscorp/hawking.git`.
-- Safety tag `pre-hawking-rename` marks the last pre-rename commit if you ever need it.
-- 9 stale feature branches remain (21–31 behind main) — decide merge/delete.
 
-## Verify the rename build (optional but recommended)
-```bash
-cd ~/Downloads/hawking
-cargo build --release            # produces target/release/hawking
-./target/release/hawking --help
-cargo test --workspace --lib     # expect ~167 pass
-```
-
-## What was deliberately NOT done
-- Deep logic refactor — prior dead-code audit shows the codebase is curated (Metal kernels
-  are string-referenced; they look dead to the compiler but aren't). Condensing logic risks
-  parity. Storage was the safe "lightening".
-- Dated internal docs (`docs/plans|reports|strand`) keep old `dismantle` mentions + absolute
-  `/Downloads/dismantle` paths as historical records. Fix opportunistically if desired.
+- This session's work (script fixes + doc rename/consolidation) was committed and merged
+  to `main`, remote = `github.com/joshuahickscorp/hawking.git`.
+- Safety tag `pre-hawking-rename` = the last pre-rename commit; holds all pruned docs.
+- **Stale branches**: ~25 local/remote feature + `worktree-agent-*` branches remain. Many
+  are fully merged (0 ahead of main → safe to delete); the rest carry unmerged rwkv7/tq/
+  strand work. Decide merge-or-delete (not done automatically — destructive).
 
 ## Open items
-- [ ] Restart + babysit the chain (above) — confirm real training this time.
-- [ ] `cargo build --release` to validate the renamed binary end-to-end.
-- [ ] Decide on the 9 stale feature branches.
-- [ ] Re-run draft accept-rate vs the real 3B/7B target once downloaded.
-- [ ] (cosmetic) sweep `/Downloads/dismantle` → `/Downloads/hawking` in internal docs/fixtures.
+
+- [ ] Babysit the sweep to completion (~20–30h); winner ranked by accept-rate in
+      `artifacts/lowbit_rwkv7/runs/custom_*/eval_log.jsonl`.
+- [ ] Decide on the stale feature branches (inventory above).
+- [ ] Re-run draft accept-rate vs the real 3B/7B target once that model is downloaded.
+- [ ] (optional) Sweep remaining `dismantle` mentions in `crates/` **code comments** +
+      dated `docs/strand` history — deliberately left (cosmetic; editing `.metal` comments
+      churns the shader-hash that kernel-profile JSON validates against).
 
 ## Opening prompt (paste into a new chat opened in ~/Downloads/hawking)
 
-> Resuming the Hawking project (renamed from dismantle last session — folder is now
-> ~/Downloads/hawking, GitHub repo is joshuahickscorp/hawking). Read
-> `docs/plans/SESSION_HANDOFF_2026_06_19.md` first. G1a 0.4B QAT is done + exported; the
-> full dismantle→hawking rename (code + folder + repo) is complete and was build-green
-> (167 lib tests). The 7-model draft-sweep chain was stopped for the folder rename and
-> needs restarting — run the "FIRST THING TO DO" command block in the handoff, then
-> confirm it trains via `tail artifacts/lowbit_rwkv7/draft_sweep.log` (expect [ep0 opt=N]
-> lines). After that: build the release binary, then keep an eye on the sweep.
+> Resuming Hawking. Read `docs/plans/SESSION_HANDOFF_2026_06_19.md` first. G1a 0.4B QAT is
+> done + exported; the dismantle→hawking rename is fully complete (code + folder + repo +
+> tools + docs), build-green, parity green, docs consolidated. The 7-model draft-sweep
+> chain is running detached — run "FIRST THING TO DO" to verify it's training (expect
+> `[ep0 opt=N]` lines), then babysit it to completion.
