@@ -1,0 +1,1115 @@
+//! hawking-serve: OpenAI-compatible HTTP server.
+//!
+//! Drives a `hawking_core::Engine` through axum. Continuous
+//! batching lives in [`batch`]; the HTTP surface in [`http`].
+
+pub mod batch;
+pub mod http;
+pub mod spec_gov;
+pub mod system_kv_bank;
+
+pub use batch::scheduler::BatchPolicy;
+pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};
+
+use anyhow::Result;
+use std::net::SocketAddr;
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
+
+/// Runtime profile controlling quality/throughput trade-offs.
+///
+/// `Default` — bit-identical conservative path; no env var changes.
+/// `Fast`    — validated fast-path (vocab-prune + Q4K LM-head + predec + f16-scales).
+/// `Race`    — same as Fast; explicitly signals "maximum throughput, quality trade-offs OK".
+/// `Efficient` — same as Fast plus sets HAWKING_ENERGY_EFFICIENT=1 for energy-aware batching.
+/// `Exact`   — clears any quality-trade vars; forces bit-identical output.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RuntimeProfile {
+    Default,
+    Fast,
+    Race,
+    Efficient,
+    Exact,
+}
+
+impl RuntimeProfile {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "default" => Some(Self::Default),
+            "fast" => Some(Self::Fast),
+            "race" => Some(Self::Race),
+            "efficient" => Some(Self::Efficient),
+            "exact" => Some(Self::Exact),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Default => "default",
+            Self::Fast => "fast",
+            Self::Race => "race",
+            Self::Efficient => "efficient",
+            Self::Exact => "exact",
+        }
+    }
+}
+
+impl std::fmt::Display for RuntimeProfile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Data-only description of the env-var levers a [`RuntimeProfile`] activates.
+///
+/// Pure: building it touches no process state. Both the CLI generate path
+/// (`apply_profile` in the `hawking` bin) and `serve::run` consume it, so
+/// there is exactly ONE source of truth for the profile → lever mapping.
+///
+/// Caller contract:
+///   * `set_if_unset` — set each (key,val) ONLY when the var is currently absent
+///     (explicit `HAWKING_QWEN_*` env always wins → opt-out honoured).
+///   * `force_off`    — set each var to "0" UNCONDITIONALLY (`Exact` uses this to
+///     guarantee bit-identity even if a quality-trade var was set upstream).
+///   * `f16_kv`       — profile default for the f16 KV cache (None = leave to a
+///     more specific override such as `--f16-kv`).
+///   * `concurrent_qkv` — whether the profile wants concurrent Q/K/V encode.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LeverPlan {
+    pub set_if_unset: Vec<(&'static str, &'static str)>,
+    pub force_off: Vec<&'static str>,
+    pub f16_kv: Option<bool>,
+    pub concurrent_qkv: bool,
+}
+
+impl RuntimeProfile {
+    /// The validated fast-path lever bundle shared by Fast / Race / Efficient.
+    /// Bit-identical EXCEPT PREDEC_F16SCALES (f16 scale rounding) and VOCAB_PRUNE
+    /// (drops rare tokens) — mild quality trades; FFN_DOWN_Q4K requants Q6_K→Q4_K.
+    fn fast_bundle() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("HAWKING_QWEN_Q4K_LMHEAD", "1"),
+            ("HAWKING_QWEN_Q4K_PREDEC", "1"),
+            ("HAWKING_QWEN_PREDEC_F16SCALES", "1"),
+            ("HAWKING_QWEN_VOCAB_PRUNE", "32000"),
+            ("HAWKING_QWEN_FFN_DOWN_Q4K", "1"),
+        ]
+    }
+
+    /// Policy: which profile an UNSET `--profile` resolves to on the CLI front
+    /// door. The ONE place the "fast is the default" decision lives. The library
+    /// default (`RuntimeProfile::Default`) is deliberately NOT changed — embedders
+    /// and serve integration tests keep the conservative bit-identical default;
+    /// only the CLI `generate`/`bench` front door flips.
+    pub fn default_when_unset() -> Self {
+        Self::Fast
+    }
+
+    /// Levers to force OFF when resolving an UNSET `--profile` (the MIDDLE
+    /// variant): keep every fast lever EXCEPT `PREDEC_F16SCALES`, which failed
+    /// quality_oracle at 0.792/11.46% (e613dde). Net ≈ 38–39 t/s at low quality
+    /// risk. To ship FULL fast (~42) after the oracle re-passes f16-scales,
+    /// return `&[]` here.
+    pub fn default_unset_force_off() -> &'static [&'static str] {
+        &["HAWKING_QWEN_PREDEC_F16SCALES"]
+    }
+
+    /// Pure profile → lever mapping. Touches no env state.
+    pub fn lever_plan(&self) -> LeverPlan {
+        match self {
+            Self::Default => LeverPlan {
+                set_if_unset: Vec::new(),
+                force_off: Vec::new(),
+                f16_kv: None,
+                concurrent_qkv: false,
+            },
+            Self::Fast => LeverPlan {
+                set_if_unset: Self::fast_bundle(),
+                force_off: Vec::new(),
+                f16_kv: Some(false),
+                concurrent_qkv: true,
+            },
+            // Max t/s: fast bundle + f16 KV (frees bandwidth) + concurrent QKV.
+            Self::Race => LeverPlan {
+                set_if_unset: Self::fast_bundle(),
+                force_off: Vec::new(),
+                f16_kv: Some(true),
+                concurrent_qkv: true,
+            },
+            // Min J/tok under a t/s floor: fast bundle + energy mode + f16 KV.
+            Self::Efficient => {
+                let mut s = Self::fast_bundle();
+                s.push(("HAWKING_ENERGY_EFFICIENT", "1"));
+                LeverPlan {
+                    set_if_unset: s,
+                    force_off: Vec::new(),
+                    f16_kv: Some(true),
+                    concurrent_qkv: true,
+                }
+            }
+            // Bit-identical conservative path. Bit-identical default-ON levers
+            // (predec/pair/gate-up-fuse) stay on; force OFF every quality-trade
+            // var so output matches the golden default even if one was set upstream.
+            Self::Exact => LeverPlan {
+                set_if_unset: Vec::new(),
+                force_off: vec![
+                    "HAWKING_QWEN_PREDEC_F16SCALES", // f16 scale rounding
+                    "HAWKING_QWEN_FFN_DOWN_Q4K",     // Q6_K→Q4_K requant
+                    "HAWKING_QWEN_VOCAB_PRUNE",      // drops rare tokens
+                ],
+                f16_kv: Some(false),
+                concurrent_qkv: false,
+            },
+        }
+    }
+
+    /// One-line human contract: lever set + quality + J/tok statement. Printed
+    /// at startup so every profile "prints its active levers" (Track 2.2 gate).
+    pub fn contract(&self) -> String {
+        match self {
+            Self::Default => {
+                "profile=default: locked bit-identical default decode \
+                (predec + pair + gate/up-fuse, all bit-identical). quality: exact. J/tok: baseline."
+                    .to_string()
+            }
+            Self::Fast => "profile=fast: vocab-prune-32k + Q4K LM-head + Q4K FFN-down + predec \
+                + f16-scales. quality: mild trade (f16 scale rounding, rare-token prune). \
+                J/tok: lower than default (fewer bytes/token)."
+                .to_string(),
+            Self::Race => "profile=race: fast bundle + f16 KV + concurrent Q/K/V. \
+                quality: same mild trade as fast. goal: MAX tokens/sec."
+                .to_string(),
+            Self::Efficient => "profile=efficient: fast bundle + f16 KV + energy-efficient gather \
+                window. quality: same mild trade as fast. goal: MIN J/tok under a t/s floor."
+                .to_string(),
+            Self::Exact => "profile=exact: bit-identical conservative path. Forces OFF f16-scales \
+                / Q4K-FFN-down / vocab-prune. quality: EXACT (greedy bit-identical to default). \
+                J/tok: baseline."
+                .to_string(),
+        }
+    }
+}
+
+/// Energy-mode controls gather-window sizing and future energy-aware batching.
+///
+/// `Off`       — no gather window (lowest latency).
+/// `Balanced`  — 3 ms gather window (default tradeoff).
+/// `Efficient` — 8 ms gather window (maximise batch fill for lower J/tok).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnergyMode {
+    Off,
+    Balanced,
+    Efficient,
+}
+
+impl EnergyMode {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "off" => Some(Self::Off),
+            "balanced" => Some(Self::Balanced),
+            "efficient" => Some(Self::Efficient),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Off => "off",
+            Self::Balanced => "balanced",
+            Self::Efficient => "efficient",
+        }
+    }
+
+    /// Gather window in milliseconds.
+    pub fn gather_window_ms(&self) -> u64 {
+        match self {
+            Self::Off => 0,
+            Self::Balanced => 3,
+            Self::Efficient => 8,
+        }
+    }
+
+    /// Pure gather/admission decision — the predicate the continuous-batch
+    /// loop uses to decide whether to wait (sleep up to `gather_window_ms()`)
+    /// for more requests before committing a prefill batch.
+    ///
+    /// Returns `true` ONLY when waiting can help AND is safe:
+    ///   * `ready > 0`              — at least one slot is queued (never wait on empty),
+    ///   * `max_batch > 1`          — single-slot servers can't batch → never wait
+    ///     (a latency-sensitive single is NEVER delayed),
+    ///   * `ready < max_batch`      — batch already full → commit now, don't wait,
+    ///   * `gather_window_ms() > 0` — `Off` disables the window entirely.
+    ///
+    /// This is the extracted, unit-testable form of the inline predicate in
+    /// `serve::run()` (the `prefilling.len() < max_batch && gather_window_ms > 0`
+    /// guard). Keep the two in sync: the loop should call this helper.
+    pub fn should_gather(&self, ready: usize, max_batch: usize) -> bool {
+        ready > 0 && max_batch > 1 && ready < max_batch && self.gather_window_ms() > 0
+    }
+}
+
+impl std::fmt::Display for EnergyMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Track 9.3 — workload packs.
+///
+/// A workload pack sets sensible defaults for a class of serving workload.
+/// Individual flags (`--profile`, `--energy-mode`, `--batch-policy`,
+/// `--f16-kv`) always override the pack's defaults.
+///
+/// `Default`            — no change; individual flags apply as-is.
+/// `CodeCompletion`     — Race profile + energy off + GreedyFirst batching.
+/// `ChatSharedPrompt`   — Fast profile + Balanced energy + PrefixGrouped batching.
+/// `BatchSummarization` — Efficient profile + Efficient energy + GreedyFirst batching.
+/// `LocalAgentLoop`     — Fast profile + energy off + GreedyFirst batching.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum WorkloadPack {
+    #[default]
+    Default,
+    CodeCompletion,
+    ChatSharedPrompt,
+    BatchSummarization,
+    LocalAgentLoop,
+}
+
+impl WorkloadPack {
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "default" => Some(Self::Default),
+            "code-completion" => Some(Self::CodeCompletion),
+            "chat-shared-prompt" => Some(Self::ChatSharedPrompt),
+            "batch-summarization" => Some(Self::BatchSummarization),
+            "local-agent-loop" => Some(Self::LocalAgentLoop),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Default => "default",
+            Self::CodeCompletion => "code-completion",
+            Self::ChatSharedPrompt => "chat-shared-prompt",
+            Self::BatchSummarization => "batch-summarization",
+            Self::LocalAgentLoop => "local-agent-loop",
+        }
+    }
+
+    /// Return the (profile, energy, batch_policy) defaults for this pack.
+    ///
+    /// Callers apply these ONLY when the corresponding flag was not explicitly
+    /// set — pack defaults lose to explicit flags.
+    pub fn defaults(&self) -> (RuntimeProfile, EnergyMode, BatchPolicy) {
+        match self {
+            Self::Default => (
+                RuntimeProfile::Default,
+                EnergyMode::Off,
+                BatchPolicy::Default,
+            ),
+            Self::CodeCompletion => (
+                RuntimeProfile::Race,
+                EnergyMode::Off,
+                BatchPolicy::GreedyFirst,
+            ),
+            Self::ChatSharedPrompt => (
+                RuntimeProfile::Fast,
+                EnergyMode::Balanced,
+                BatchPolicy::PrefixGrouped,
+            ),
+            Self::BatchSummarization => (
+                RuntimeProfile::Efficient,
+                EnergyMode::Efficient,
+                BatchPolicy::GreedyFirst,
+            ),
+            Self::LocalAgentLoop => (
+                RuntimeProfile::Fast,
+                EnergyMode::Off,
+                BatchPolicy::GreedyFirst,
+            ),
+        }
+    }
+}
+
+impl std::fmt::Display for WorkloadPack {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ServeOptions {
+    pub weights: PathBuf,
+    pub addr: SocketAddr,
+    pub max_batch_size: usize,
+    pub speculate: Option<String>,
+    pub verify_window: usize,
+    pub kernel_profile: Option<PathBuf>,
+    pub prefill_cache_dir: Option<PathBuf>,
+    pub max_routed_expert_ram_mb: Option<usize>,
+    pub memory_limit_mb: Option<usize>,
+    /// Runtime profile for quality/throughput trade-offs.
+    pub runtime_profile: RuntimeProfile,
+    /// Energy mode controlling gather-window sizing.
+    pub energy_mode: EnergyMode,
+    /// When true, print a human-readable performance summary at startup.
+    pub explain_performance: bool,
+    /// Track 6.3: spec governor rolling-window size (default 20).
+    pub spec_window: usize,
+    /// Track 6.3: minimum acceptance rate to keep spec enabled (default 0.35).
+    pub spec_min_accept_rate: f32,
+    /// Track 5.3: f16 KV cache override.
+    ///
+    /// `None`       — defer to profile/workload default.
+    /// `Some(true)` — force HAWKING_QWEN_F16_KV=1 (halves KV footprint;
+    ///                wins at long context, footprint-neutral for short ctx).
+    /// `Some(false)` — explicitly disable (leave env var unset).
+    pub f16_kv: Option<bool>,
+    /// Track 5.4: batch admission policy.
+    pub batch_policy: BatchPolicy,
+    /// Track 9.3: workload pack (sets profile/energy/policy defaults).
+    pub workload: WorkloadPack,
+}
+
+impl Default for ServeOptions {
+    fn default() -> Self {
+        Self {
+            weights: PathBuf::new(),
+            addr: "0.0.0.0:8080".parse().unwrap(),
+            max_batch_size: 1,
+            speculate: None,
+            verify_window: 4,
+            kernel_profile: None,
+            prefill_cache_dir: None,
+            max_routed_expert_ram_mb: None,
+            memory_limit_mb: None,
+            runtime_profile: RuntimeProfile::Default,
+            energy_mode: EnergyMode::Off,
+            explain_performance: false,
+            spec_window: 20,
+            spec_min_accept_rate: 0.35,
+            f16_kv: None,
+            batch_policy: BatchPolicy::Default,
+            workload: WorkloadPack::Default,
+        }
+    }
+}
+
+fn hawking_serve_system_kv_bank_default() -> system_kv_bank::SystemPromptKvBank {
+    system_kv_bank::SystemPromptKvBank::new()
+}
+
+pub async fn run(opts: ServeOptions) -> Result<()> {
+    use hawking_core::{profile::KernelProfile, EngineConfig, SpeculateMode};
+
+    // ── Track 9.3: apply workload-pack defaults ───────────────────────────────
+    // Pack defaults are applied FIRST so that explicit per-flag values (profile,
+    // energy_mode, batch_policy, f16_kv) set later always win over them.
+    // The pack only influences fields that are still at their zero-values
+    // (Default/Off/None) — this is expressed by the caller setting fields to
+    // non-default values to override. Because opts is already parsed before
+    // run() is called, we derive an "effective" set here and shadow opts.
+    let (effective_profile, effective_energy, effective_batch_policy) = {
+        let (pack_profile, pack_energy, pack_policy) = opts.workload.defaults();
+        // Explicit flags win: use opts value when it is non-Default/non-Off/non-None.
+        let profile = if opts.runtime_profile != RuntimeProfile::Default {
+            opts.runtime_profile.clone()
+        } else {
+            pack_profile
+        };
+        let energy = if opts.energy_mode != EnergyMode::Off {
+            opts.energy_mode.clone()
+        } else {
+            pack_energy
+        };
+        let policy = if opts.batch_policy != BatchPolicy::Default {
+            opts.batch_policy.clone()
+        } else {
+            pack_policy
+        };
+        (profile, energy, policy)
+    };
+
+    // ── Serve-mode optimisation defaults ─────────────────────────────────────
+    // These are the same knobs that `hawking generate --kernel-profile` uses.
+    // Each can be overridden by the caller's environment (set var before invoking
+    // the server). We only set them when the variable is absent so that explicit
+    // HAWKING_QWEN_*=0 opt-outs are honoured.
+    for (var, val) in [
+        ("HAWKING_QWEN_Q4K_PREDEC", "1"), // pre-decoded scales → fast GEMV
+        ("HAWKING_QWEN_Q4K_LMHEAD", "1"), // GPU Q4K LM-head (vs CPU f16)
+        ("HAWKING_QWEN_VOCAB_PRUNE", "32000"), // prune to 32K most-frequent tokens
+        ("HAWKING_QWEN_TCB", "1"),        // token command buffers
+        ("HAWKING_QWEN_FFN_DOWN_Q4K", "1"), // FFN down Q4K path
+    ] {
+        if std::env::var_os(var).is_none() {
+            std::env::set_var(var, val);
+        }
+    }
+
+    // ── Apply runtime profile env overrides ──────────────────────────────────
+    // Fast / Race / Efficient: opt into the both-metrics-optimal fast-path.
+    // Exact: clear quality-trade vars so the path is bit-identical.
+    // All of these respect explicit HAWKING_QWEN_*=0 opt-outs set before launch.
+    // Single source of truth = RuntimeProfile::lever_plan() (shared with the CLI
+    // generate path). set_if_unset respects explicit HAWKING_QWEN_*=0 opt-outs;
+    // force_off enforces Exact's bit-identity even if a quality-trade var was set.
+    let plan = effective_profile.lever_plan();
+    for (k, v) in &plan.set_if_unset {
+        if std::env::var_os(k).is_none() {
+            std::env::set_var(k, v);
+        }
+    }
+    for k in &plan.force_off {
+        std::env::set_var(k, "0");
+    }
+
+    // ── Track 5.3: f16 KV cache env var ─────────────────────────────────────
+    // Race and Efficient profiles enable f16 KV by default: halves KV memory
+    // and frees bandwidth for long-context workloads. Fast/Exact/Default leave
+    // it off to preserve bit-identity with the exact path.
+    //
+    // The per-field override (`opts.f16_kv`) wins over the profile default:
+    //   Some(true)  → force on regardless of profile
+    //   Some(false) → force off regardless of profile
+    //   None        → use the profile/workload default
+    {
+        let profile_wants_f16_kv = plan.f16_kv.unwrap_or(false);
+        let enable = match opts.f16_kv {
+            Some(v) => v,
+            None => profile_wants_f16_kv,
+        };
+        if enable && std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
+            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
+        }
+    }
+
+    let speculate_mode = SpeculateMode::from_cli(opts.speculate.as_deref(), false)
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
+    let kernel_profile = match opts.kernel_profile.as_ref() {
+        Some(path) => Some(KernelProfile::load(path)?),
+        None => None,
+    };
+    // concurrent_qkv: ON for fast/race/efficient — overlaps Q/K/V projections
+    // on-GPU via MTLDispatchTypeConcurrent. +1.68% at B=1 (below prior +5% gate)
+    // but valuable for the race/efficient profile throughput maximization.
+    let concurrent_qkv = plan.concurrent_qkv
+        || std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+
+    let cfg = EngineConfig {
+        max_seq_len: 4096,
+        max_batch_size: opts.max_batch_size,
+        speculate: speculate_mode != SpeculateMode::Off,
+        speculate_mode,
+        verify_window: opts.verify_window,
+        prefill_cache_dir: opts.prefill_cache_dir,
+        kernel_profile,
+        trace_dispatch: false,
+        max_routed_expert_ram_mb: opts.max_routed_expert_ram_mb,
+        memory_limit_mb: opts.memory_limit_mb,
+        concurrent_qkv,
+        ..Default::default()
+    };
+
+    let engine = hawking_core::model::load_engine(&opts.weights, cfg)
+        .map_err(|e| anyhow::anyhow!("load engine: {e}"))?;
+    let model_id = engine.model_id().to_string();
+    let model_arch = engine.model_arch().to_string();
+    let max_batch = opts.max_batch_size;
+
+    // ── --explain-performance startup summary ─────────────────────────────
+    if opts.explain_performance {
+        let token_only_active = effective_profile == RuntimeProfile::Fast
+            || effective_profile == RuntimeProfile::Race
+            || effective_profile == RuntimeProfile::Efficient
+            || std::env::var_os("HAWKING_QWEN_Q4K_LMHEAD")
+                .map(|v| v == "1")
+                .unwrap_or(false);
+        let token_only_str = if token_only_active {
+            "active (Q4K LM head loaded)"
+        } else {
+            "inactive (fallback to full logits)"
+        };
+        let hw_profile_str = opts
+            .kernel_profile
+            .as_ref()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|| "none".to_string());
+        let gather_ms = effective_energy.gather_window_ms();
+        let f16_kv_active = std::env::var_os("HAWKING_QWEN_F16_KV")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        let full_logits_mb = max_batch as f64 * 151936.0 * 4.0 / 1_048_576.0;
+        let greedy_bytes = max_batch * 4;
+        eprintln!(
+            "hawking serve — performance summary\n\
+             \x20 model:              {model_id}\n\
+             \x20 profile:            {effective_profile}\n\
+             \x20 workload pack:      {}\n\
+             \x20 hardware-profile:   {hw_profile_str}\n\
+             \x20 token-only lane:    {token_only_str}\n\
+             \x20 f16 KV cache:       {f16_kv_active}\n\
+             \x20 batch policy:       {effective_batch_policy:?}\n\
+             \x20 energy mode:        {effective_energy}\n\
+             \x20 gather window:      {gather_ms} ms\n\
+             \x20 expected lanes:     greedy → token-only, sampled → full logits\n\
+             \x20 full-logits cost:   B×vocab×4 bytes per step (~{full_logits_mb:.1} MB at B={max_batch}, Qwen)\n\
+             \x20 greedy-lane cost:   B×4 bytes per step ({greedy_bytes} bytes at B={max_batch})",
+            opts.workload,
+        );
+    }
+
+    // Build the BatchDriver and install the effective batch policy.
+    let batch_driver = {
+        let mut d = batch::driver::BatchDriver::new(max_batch);
+        d.scheduler.policy = effective_batch_policy.clone();
+        d
+    };
+
+    let state = http::AppState {
+        engine: Arc::new(parking_lot::Mutex::new(engine)),
+        driver: Arc::new(parking_lot::Mutex::new(batch_driver)),
+        slot_senders: Arc::new(parking_lot::Mutex::new(std::collections::HashMap::new())),
+        wait_queue: Arc::new(parking_lot::Mutex::new(std::collections::VecDeque::new())),
+        model_arch,
+        max_batch,
+        requests_admitted: Arc::new(AtomicU64::new(0)),
+        tokens_generated: Arc::new(AtomicU64::new(0)),
+        requests_queued: Arc::new(AtomicU64::new(0)),
+        system_kv_bank: Arc::new(parking_lot::Mutex::new(
+            hawking_serve_system_kv_bank_default(),
+        )),
+    };
+
+    // ── Background continuous-batching loop ───────────────────────────────
+    // Single blocking thread: Phase A prefills pending slots, Phase B runs
+    // one decode step across all ready slots, Phase C streams tokens to SSE.
+    // All GPU kernel dispatches happen here under the engine lock; HTTP
+    // handlers only hold the lock briefly for the admit tokenization step.
+    let gather_window_ms = effective_energy.gather_window_ms();
+    {
+        let state2 = state.clone();
+        tokio::task::spawn_blocking(move || {
+            loop {
+                // ── Phase A: parallel-prefill all pending slots ───────────
+                // Collect all Prefilling slots and their prompts, then issue
+                // a single prefill_slots_parallel call so weights are read
+                // once per position across all B slots rather than once per
+                // slot (serial). On any error, release every slot in the batch.
+                //
+                // Gather window: when max_batch > 1 and the first Prefilling
+                // slot arrives, sleep briefly WITHOUT the engine lock so that
+                // concurrent HTTP admits (which also need engine.lock() for
+                // tokenization) can land before we hold the lock for the full
+                // prefill duration. The window duration is set by --energy-mode
+                // (off=0ms, balanced=3ms, efficient=8ms). 0ms disables the
+                // window entirely. Non-zero values allow co-arriving requests
+                // to be batched together.
+                // Track 5: dispatch on scheduler.policy. prefill_slots_prefix_grouped
+                // returns the same-prefix cohort (group_by_prefix, min_shared=8) when
+                // policy == PrefixGrouped, else delegates to prefill_slots_bucketed —
+                // byte-for-byte identical for Default/GreedyFirst. The policy was
+                // installed at startup (`d.scheduler.policy = effective_batch_policy`),
+                // so no extra binding is captured here.
+                let mut prefilling: Vec<u32> = state2
+                    .driver
+                    .lock()
+                    .scheduler
+                    .prefill_slots_prefix_grouped(max_batch);
+                if effective_energy.should_gather(prefilling.len(), max_batch) {
+                    std::thread::sleep(std::time::Duration::from_millis(gather_window_ms));
+                    prefilling = state2
+                        .driver
+                        .lock()
+                        .scheduler
+                        .prefill_slots_prefix_grouped(max_batch);
+                }
+                if !prefilling.is_empty() {
+                    let slots_data: Vec<(usize, Vec<u32>)> = prefilling
+                        .iter()
+                        .filter_map(|&id| {
+                            let ids = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter()
+                                .find(|s| s.id == id)
+                                .map(|s| s.prompt_ids.clone())
+                                .unwrap_or_default();
+                            if ids.is_empty() {
+                                None
+                            } else {
+                                Some((id as usize, ids))
+                            }
+                        })
+                        .collect();
+                    let slot_refs: Vec<(usize, &[u32])> = slots_data
+                        .iter()
+                        .map(|(s, ids)| (*s, ids.as_slice()))
+                        .collect();
+                    // Snapshot prefix_skip for every slot in this batch before
+                    // touching any slot state, so we can partition without holding
+                    // both the driver and engine locks simultaneously.
+                    let skip_map: Vec<(usize, usize)> = slot_refs
+                        .iter()
+                        .map(|(slot_id, _)| {
+                            let skip = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter()
+                                .find(|s| s.id == *slot_id as u32)
+                                .map(|s| s.prefix_skip)
+                                .unwrap_or(0);
+                            (*slot_id, skip)
+                        })
+                        .collect();
+
+                    // Reset all non-zero prefix_skip values upfront so retries
+                    // don't re-skip regardless of which path runs below.
+                    for &(slot_id, skip) in &skip_map {
+                        if skip > 0 {
+                            if let Some(s) = state2
+                                .driver
+                                .lock()
+                                .scheduler
+                                .slots
+                                .iter_mut()
+                                .find(|s| s.id == slot_id as u32)
+                            {
+                                s.prefix_skip = 0;
+                            }
+                        }
+                    }
+
+                    let prefill_result = {
+                        let mut engine = state2.engine.lock();
+                        if slot_refs.len() == 1 {
+                            let (slot_id, prompt_ids) = slot_refs[0];
+                            let skip = skip_map
+                                .iter()
+                                .find(|(id, _)| *id == slot_id)
+                                .map(|(_, s)| *s)
+                                .unwrap_or(0);
+                            if skip > 0 {
+                                engine
+                                    .prefill_slot_from_pos(slot_id, prompt_ids, skip)
+                                    .map(|ft| vec![(slot_id, ft)])
+                            } else {
+                                engine
+                                    .prefill_slot(slot_id, prompt_ids)
+                                    .map(|ft| vec![(slot_id, ft)])
+                            }
+                        } else {
+                            // Track 5.2: partition into slots that have a prefix_skip
+                            // (handle individually with prefill_slot_from_pos) and those
+                            // that don't (run in parallel).
+                            let with_skip: Vec<(usize, &[u32], usize)> = slot_refs
+                                .iter()
+                                .filter_map(|(slot_id, prompt_ids)| {
+                                    let skip = skip_map
+                                        .iter()
+                                        .find(|(id, _)| id == slot_id)
+                                        .map(|(_, s)| *s)
+                                        .unwrap_or(0);
+                                    if skip > 0 {
+                                        Some((*slot_id, *prompt_ids, skip))
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect();
+                            let without_skip: Vec<(usize, &[u32])> = slot_refs
+                                .iter()
+                                .filter(|(slot_id, _)| {
+                                    skip_map
+                                        .iter()
+                                        .find(|(id, _)| id == slot_id)
+                                        .map(|(_, s)| *s)
+                                        .unwrap_or(0)
+                                        == 0
+                                })
+                                .map(|(slot_id, prompt_ids)| (*slot_id, *prompt_ids))
+                                .collect();
+
+                            // Sequentially prefill the skip slots, collecting each
+                            // slot's first generated token to seed decode with.
+                            let mut firsts: Vec<(usize, u32)> = Vec::new();
+                            let mut result: Result<(), hawking_core::Error> = Ok(());
+                            for (slot_id, prompt_ids, skip) in with_skip {
+                                if result.is_ok() {
+                                    match engine.prefill_slot_from_pos(slot_id, prompt_ids, skip) {
+                                        Ok(ft) => firsts.push((slot_id, ft)),
+                                        Err(e) => result = Err(e),
+                                    }
+                                }
+                            }
+                            // Parallel-prefill the remaining slots (only if no error so far).
+                            if result.is_ok() && !without_skip.is_empty() {
+                                match engine.prefill_slots_parallel(&without_skip) {
+                                    Ok(fts) => {
+                                        for ((sid, _), ft) in without_skip.iter().zip(fts) {
+                                            firsts.push((*sid, ft));
+                                        }
+                                    }
+                                    Err(e) => result = Err(e),
+                                }
+                            }
+                            result.map(|()| firsts)
+                        }
+                    };
+                    match prefill_result {
+                        Ok(firsts) => {
+                            // Mark each prefilled slot ready, then SEED it with the
+                            // first generated token (from the prefill's last-position
+                            // logits) and stream that token immediately. The decode
+                            // loop then continues from the SECOND token. This avoids
+                            // re-feeding the last prompt token through the decode
+                            // path, which produced a spurious leading word.
+                            let eos = { state2.engine.lock().eos_id_for_batch() };
+                            for (slot_id, first_token) in firsts {
+                                let sid = slot_id as u32;
+                                let decoded = {
+                                    let mut driver = state2.driver.lock();
+                                    driver.scheduler.mark_prefill_complete(sid);
+                                    driver.scheduler.seed_first_token(sid, first_token, eos)
+                                };
+                                let Some(decoded) = decoded else { continue };
+                                let text = {
+                                    state2
+                                        .engine
+                                        .lock()
+                                        .decode_token_for_batch(first_token)
+                                        .unwrap_or_default()
+                                };
+                                let tx = state2.slot_senders.lock().get(&sid).cloned();
+                                if let Some(tx) = tx {
+                                    let _ = tx.blocking_send(Ok(text));
+                                    state2.tokens_generated.fetch_add(1, Ordering::Relaxed);
+                                    if decoded.finished {
+                                        state2.slot_senders.lock().remove(&sid);
+                                        state2.driver.lock().scheduler.release_slot(sid);
+                                    }
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            tracing::warn!(err = %e, "prefill_slots_parallel failed");
+                            for &slot_id in &prefilling {
+                                let tx = state2.slot_senders.lock().remove(&slot_id);
+                                if let Some(tx) = tx {
+                                    let _ = tx.blocking_send(Err(()));
+                                }
+                                state2.driver.lock().scheduler.release_slot(slot_id);
+                            }
+                        }
+                    }
+                }
+
+                // ── Phase B: one decode step across all ready slots ───────
+                let outputs = {
+                    let mut engine = state2.engine.lock();
+                    let mut driver = state2.driver.lock();
+                    driver.decode_ready_once(&mut **engine, max_batch)
+                };
+                let outputs = match outputs {
+                    Ok(v) => v,
+                    Err(e) => {
+                        tracing::error!(err = %e, "decode_ready_once failed");
+                        std::thread::sleep(std::time::Duration::from_millis(1));
+                        continue;
+                    }
+                };
+                if outputs.is_empty() {
+                    std::thread::sleep(std::time::Duration::from_millis(1));
+                    continue;
+                }
+
+                // ── Phase C: stream tokens + release finished slots ───────
+                for out in outputs {
+                    let tx = state2.slot_senders.lock().get(&out.slot_id).cloned();
+                    if let Some(tx) = tx {
+                        let send_ok = tx.blocking_send(Ok(out.text)).is_ok();
+                        if send_ok {
+                            state2.tokens_generated.fetch_add(1, Ordering::Relaxed);
+                        }
+                        if out.finished || !send_ok {
+                            // Release on normal EOS *or* client disconnect.
+                            state2.slot_senders.lock().remove(&out.slot_id);
+                            state2.driver.lock().scheduler.release_slot(out.slot_id);
+
+                            // Drain one waiter into the newly-freed slot.
+                            let waiter = state2.wait_queue.lock().pop_front();
+                            if let Some((waiter_req, waiter_tx, _chat)) = waiter {
+                                let new_slot = {
+                                    let engine = state2.engine.lock();
+                                    let mut driver = state2.driver.lock();
+                                    driver.admit(&**engine, waiter_req).ok().flatten()
+                                };
+                                if let Some(sid) = new_slot {
+                                    state2.requests_admitted.fetch_add(1, Ordering::Relaxed);
+                                    // Track 5.2: prefix-reuse detection. After admission the
+                                    // new slot is already in the prefix_index; search for a
+                                    // different slot whose KV we can copy into this one.
+                                    {
+                                        let prompt_ids = state2
+                                            .driver
+                                            .lock()
+                                            .scheduler
+                                            .slots
+                                            .iter()
+                                            .find(|s| s.id == sid)
+                                            .map(|s| s.prompt_ids.clone())
+                                            .unwrap_or_default();
+                                        if !prompt_ids.is_empty() {
+                                            let banked_len = http::banked_len_for(&prompt_ids);
+                                            // 1) Live-slot match (Track 5.1): a DIFFERENT active slot.
+                                            let mut src: Option<(u32, usize)> = state2
+                                                .driver
+                                                .lock()
+                                                .scheduler
+                                                .prefix_index
+                                                .find_prefix_match_excluding(&prompt_ids, 8, sid);
+                                            // 2) On a live MISS, consult the cross-request bank
+                                            //    (Track 5.2): a slot that previously held this fixed
+                                            //    system prefix even though it has since freed. Pure
+                                            //    CPU lookup; the bank stores no KV.
+                                            if src.is_none() {
+                                                if let Some(entry) = state2
+                                                    .system_kv_bank
+                                                    .lock()
+                                                    .lookup(&prompt_ids, banked_len)
+                                                {
+                                                    if entry.source_slot != sid {
+                                                        src = Some((
+                                                            entry.source_slot,
+                                                            entry.prefix_len,
+                                                        ));
+                                                    }
+                                                }
+                                            }
+                                            if let Some((src_slot, shared_len)) = src {
+                                                tracing::debug!(
+                                                    "[prefix-reuse] request matched slot {} at prefix_len={}",
+                                                    src_slot, shared_len
+                                                );
+                                                let copy_result =
+                                                    state2.engine.lock().copy_kv_prefix_to_slot(
+                                                        src_slot as usize,
+                                                        sid as usize,
+                                                        shared_len,
+                                                    );
+                                                if copy_result.is_ok() {
+                                                    {
+                                                        let mut driver = state2.driver.lock();
+                                                        driver.lane_stats.prefix_reuse_count += 1;
+                                                        // prefix_skip so prefill can call
+                                                        // prefill_slot_from_pos instead of full prefill.
+                                                        if let Some(slot) = driver
+                                                            .scheduler
+                                                            .slots
+                                                            .iter_mut()
+                                                            .find(|s| s.id == sid)
+                                                        {
+                                                            slot.prefix_skip = shared_len;
+                                                        }
+                                                    }
+                                                    // Bank that THIS slot now holds copyable KV for the
+                                                    // fixed leading span, so the NEXT serial turn (after
+                                                    // this slot frees) still finds a source.
+                                                    state2.system_kv_bank.lock().record(
+                                                        &prompt_ids,
+                                                        banked_len,
+                                                        sid,
+                                                    );
+                                                }
+                                                // copy Err (e.g. Unimplemented / stale banked slot):
+                                                // silently skip — normal prefill proceeds from pos 0.
+                                            } else {
+                                                // No source yet, but this freshly-prefilled slot will
+                                                // hold the span shortly — bank it so a later serial turn
+                                                // can reuse it. (record() rejects sub-min spans itself.)
+                                                state2.system_kv_bank.lock().record(
+                                                    &prompt_ids,
+                                                    banked_len,
+                                                    sid,
+                                                );
+                                            }
+                                        }
+                                    }
+                                    state2.slot_senders.lock().insert(sid, waiter_tx);
+                                }
+                                // If admit fails (should not — slot was just freed),
+                                // waiter_tx is dropped, which sends Err(()) on the
+                                // tokio receiver, closing the SSE stream gracefully.
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    let app = http::router(state);
+    tracing::info!(addr = %opts.addr, "hawking-serve listening");
+    let listener = tokio::net::TcpListener::bind(opts.addr).await?;
+    axum::serve(listener, app).await?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod profile_lever_tests {
+    use super::RuntimeProfile as RP;
+
+    fn has(plan_keys: &[(&'static str, &'static str)], k: &str) -> bool {
+        plan_keys.iter().any(|(kk, _)| *kk == k)
+    }
+
+    #[test]
+    fn default_touches_nothing() {
+        let p = RP::Default.lever_plan();
+        assert!(p.set_if_unset.is_empty());
+        assert!(p.force_off.is_empty());
+        assert_eq!(p.f16_kv, None);
+        assert!(!p.concurrent_qkv);
+    }
+
+    #[test]
+    fn fast_sets_full_bundle_no_f16kv() {
+        let p = RP::Fast.lever_plan();
+        for k in [
+            "HAWKING_QWEN_Q4K_LMHEAD",
+            "HAWKING_QWEN_Q4K_PREDEC",
+            "HAWKING_QWEN_PREDEC_F16SCALES",
+            "HAWKING_QWEN_VOCAB_PRUNE",
+            "HAWKING_QWEN_FFN_DOWN_Q4K",
+        ] {
+            assert!(has(&p.set_if_unset, k), "fast must set {k}");
+        }
+        assert_eq!(p.f16_kv, Some(false), "fast leaves f16-KV off");
+        assert!(p.concurrent_qkv);
+        assert!(p.force_off.is_empty());
+    }
+
+    #[test]
+    fn race_is_fast_plus_f16kv() {
+        let p = RP::Race.lever_plan();
+        assert!(has(&p.set_if_unset, "HAWKING_QWEN_VOCAB_PRUNE"));
+        assert_eq!(p.f16_kv, Some(true), "race enables f16-KV");
+        assert!(p.concurrent_qkv);
+        assert!(!has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"));
+    }
+
+    #[test]
+    fn efficient_adds_energy_and_f16kv() {
+        let p = RP::Efficient.lever_plan();
+        assert!(
+            has(&p.set_if_unset, "HAWKING_ENERGY_EFFICIENT"),
+            "efficient sets energy mode"
+        );
+        assert_eq!(p.f16_kv, Some(true), "efficient enables f16-KV");
+        assert!(has(&p.set_if_unset, "HAWKING_QWEN_Q4K_PREDEC"));
+    }
+
+    #[test]
+    fn exact_force_offs_every_quality_trade() {
+        let p = RP::Exact.lever_plan();
+        for k in [
+            "HAWKING_QWEN_PREDEC_F16SCALES",
+            "HAWKING_QWEN_FFN_DOWN_Q4K",
+            "HAWKING_QWEN_VOCAB_PRUNE",
+        ] {
+            assert!(p.force_off.contains(&k), "exact must force-off {k}");
+        }
+        assert!(p.set_if_unset.is_empty(), "exact sets no quality-trade var");
+        assert_eq!(
+            p.f16_kv,
+            Some(false),
+            "exact leaves f16-KV off (bit-identity)"
+        );
+        assert!(!p.concurrent_qkv);
+    }
+
+    #[test]
+    fn contracts_are_nonempty_and_self_label() {
+        for rp in [RP::Default, RP::Fast, RP::Race, RP::Efficient, RP::Exact] {
+            let c = rp.contract();
+            assert!(
+                c.contains(rp.as_str()),
+                "contract for {rp} must name itself"
+            );
+            assert!(c.len() > 20);
+        }
+    }
+
+    #[test]
+    fn from_str_roundtrips_all_known() {
+        for s in ["default", "fast", "race", "efficient", "exact"] {
+            assert_eq!(RP::from_str(s).unwrap().as_str(), s);
+        }
+        assert!(
+            RP::from_str("m3-pro-18gb").is_none(),
+            "hardware string is not a runtime profile"
+        );
+    }
+
+    /// Track 0/9 lock-in: the "fast is the CLI default" decision must keep
+    /// resolving an UNSET `--profile` to `Fast`. Validated GPU-side once
+    /// (~38-39 t/s middle variant); pin it on CPU so a refactor can't silently
+    /// flip the default back to the conservative bit-identical path.
+    #[test]
+    fn default_when_unset_is_fast() {
+        assert_eq!(
+            RP::default_when_unset(),
+            RP::Fast,
+            "unset --profile must resolve to fast (the shipped CLI default)"
+        );
+    }
+
+    /// Track 0/9 lock-in: the UNSET-default contract is exactly
+    /// "fast bundle MINUS PREDEC_F16SCALES". i.e. the MIDDLE variant keeps the
+    /// 4 bit-identical-ish fast levers (Q4K LM-head, predec, vocab-prune,
+    /// Q4K FFN-down) but force-OFFs f16-scales (it failed quality_oracle
+    /// 0.792/11.46% @ e613dde). This pins both halves so neither can drift.
+    #[test]
+    fn unset_default_is_fast_minus_f16scales() {
+        let bundle = RP::Fast.lever_plan().set_if_unset; // == fast_bundle()
+        let force_off = RP::default_unset_force_off();
+
+        // (i) f16-scales is the one-and-only lever the unset default disables.
+        assert_eq!(
+            force_off,
+            &["HAWKING_QWEN_PREDEC_F16SCALES"],
+            "unset default must force-off exactly PREDEC_F16SCALES"
+        );
+
+        // (ii) the 4 kept fast levers remain in the bundle (so unset still
+        //      runs the fast path minus f16-scales, not the conservative path).
+        for k in [
+            "HAWKING_QWEN_Q4K_LMHEAD",
+            "HAWKING_QWEN_Q4K_PREDEC",
+            "HAWKING_QWEN_VOCAB_PRUNE",
+            "HAWKING_QWEN_FFN_DOWN_Q4K",
+        ] {
+            assert!(
+                has(&bundle, k),
+                "fast bundle must keep {k} (a kept lever under the unset default)"
+            );
+        }
+
+        // (iii) f16-scales IS in the full fast bundle (so the force-off is what
+        //       removes it for the unset default — not its absence). This is the
+        //       load-bearing invariant: unset = fast bundle XOR-removed of f16s.
+        assert!(
+            has(&bundle, force_off[0]),
+            "the force-off lever must exist in the fast bundle (else force-off is a no-op)"
+        );
+    }
+}

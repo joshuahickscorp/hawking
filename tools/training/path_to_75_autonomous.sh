@@ -12,7 +12,7 @@
 #                          actually commit.
 #   M2 Q8 KV debug      — re-applies patch, rebuilds, verifies --q8-kv
 #                          flag surfaces, runs parity + microbench
-#   M3 MoE GEMM trace   — DISMANTLE_TCB_TRACE on baseline, parses per-kernel
+#   M3 MoE GEMM trace   — HAWKING_TCB_TRACE on baseline, parses per-kernel
 #                          ms, identifies top-3 hot spots for kernel work
 #   M4 stack hi-conf    — TRIALS=30 variance hunt × 3 prompts on best
 #                          stack, gives release-grade confidence interval
@@ -86,9 +86,9 @@ PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
 VOCAB=artifacts/calibration/analysis/vocab_whitelist_995.json
 
 # Pre-flight: rebuild binary fresh so any pending changes surface
-log "preflight: cargo build --release -p dismantle"
+log "preflight: cargo build --release -p hawking"
 write_status "preflight" "running"
-if ! cargo build --release -p dismantle >>"$LOG" 2>&1; then
+if ! cargo build --release -p hawking >>"$LOG" 2>&1; then
     log "❌ preflight build failed; aborting"
     write_status "preflight" "failed"
     exit 1
@@ -119,14 +119,14 @@ else
         echo "## Files staged in DRY-RUN (no actual commit)"
         echo ""
         echo "### Commit 1 — new modules"
-        for f in crates/dismantle-core/src/vocab_prune.rs \
-                 crates/dismantle-core/src/quant_tier_map.rs \
-                 crates/dismantle-core/src/mixed_quant_store.rs \
-                 crates/dismantle-core/tests/vocab_prune_parity.rs \
-                 crates/dismantle-core/tests/mixed_quant_store_build.rs \
-                 crates/dismantle-core/tests/q8_kv_parity.rs \
-                 crates/dismantle-core/src/lib.rs \
-                 crates/dismantle-core/src/engine.rs; do
+        for f in crates/hawking-core/src/vocab_prune.rs \
+                 crates/hawking-core/src/quant_tier_map.rs \
+                 crates/hawking-core/src/mixed_quant_store.rs \
+                 crates/hawking-core/tests/vocab_prune_parity.rs \
+                 crates/hawking-core/tests/mixed_quant_store_build.rs \
+                 crates/hawking-core/tests/q8_kv_parity.rs \
+                 crates/hawking-core/src/lib.rs \
+                 crates/hawking-core/src/engine.rs; do
             [[ -e "$f" ]] && echo "- $f" || echo "- (missing) $f"
         done
         echo ""
@@ -137,7 +137,7 @@ else
         log "running cargo test --lib (no actual commit)"
         echo ""
         echo '```'
-        cargo test --release -p dismantle-core --lib 2>&1 | tail -20
+        cargo test --release -p hawking-core --lib 2>&1 | tail -20
         echo '```'
     } > "$M1_OUT" 2>&1
     log "M1 commit plan: $M1_OUT"
@@ -175,12 +175,12 @@ else
         fi
         echo ""
         echo "## Current binary's flag list (where would --q8-kv go?)"
-        ./target/release/dismantle generate --help 2>&1 | grep -E '^\s+--' | head -20
+        ./target/release/hawking generate --help 2>&1 | grep -E '^\s+--' | head -20
         echo ""
         echo "## Search the codebase for q8_kv plumbing"
         grep -rn "q8_kv\|Q8KV\|kv_cache_quant\|kv-cache-quant" \
-            crates/dismantle/src/main.rs \
-            crates/dismantle-core/src/engine.rs 2>/dev/null | head -10 || echo "(no matches)"
+            crates/hawking/src/main.rs \
+            crates/hawking-core/src/engine.rs 2>/dev/null | head -10 || echo "(no matches)"
         echo ""
         echo "## Recommendation"
         echo ""
@@ -211,7 +211,7 @@ else
         echo ""
         echo "Per memory per_kernel_time_breakdown.md, MoE GEMMs are 50.5% of decode time. This module captures a trace and identifies the top-3 hot kernels."
         echo ""
-        DISMANTLE_TCB_TRACE=1 ./target/release/dismantle generate \
+        HAWKING_TCB_TRACE=1 ./target/release/hawking generate \
             --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
             --prompt "Once upon a time" --max-new-tokens 16 --seed 0 \
             > "$TRACE_RAW" 2>&1 || echo "(trace generation failed)"
@@ -257,7 +257,7 @@ else
                 vals=""
                 for t in $(seq 1 30); do
                     [[ -f artifacts/runs/PAUSE ]] && break
-                    tps=$(./target/release/dismantle generate \
+                    tps=$(./target/release/hawking generate \
                         --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
                         --prompt "$p" --max-new-tokens 64 --seed $t $flags 2>&1 \
                         | grep -oE 'dec_tps=[0-9]+\.[0-9]+' | head -1 | cut -d= -f2)

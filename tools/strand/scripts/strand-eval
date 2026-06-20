@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# strand-eval — thin CLI over tools/strand_eval (THE canon eval + results ledger).
+# Self-locates via its own resolved path (symlink-safe, cwd-independent), PROVES
+# the repo root (audit 3.3: Cargo.toml must mention strand-quant) or dies loudly,
+# then execs the canon python. Ledger subcommands need no torch (any python3).
+#
+#   scripts/strand-eval run --model scratch/qwen-05b --tag baseline --chunks 64
+#   scripts/strand-eval ledger check
+#   scripts/strand-eval ledger ingest scratch/pod-results --quiet
+#   scripts/strand-eval where
+set -euo pipefail
+
+# resolve symlinks to THIS script without requiring GNU readlink -f
+SRC="${BASH_SOURCE[0]}"
+while [ -h "$SRC" ]; do
+    DIR="$(cd -P "$(dirname "$SRC")" && pwd)"
+    SRC="$(readlink "$SRC")"
+    case "$SRC" in /*) ;; *) SRC="$DIR/$SRC" ;; esac
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SRC")" && pwd)"
+REPO_ROOT="${STRAND_ROOT:-$(dirname "$SCRIPT_DIR")}"
+
+# LOCATION PROOF — fail at line ~20, not 90 minutes in (the REPO_ROOT incident)
+if ! { [ -f "$REPO_ROOT/Cargo.toml" ] && grep -q 'strand-quant' "$REPO_ROOT/Cargo.toml"; }; then
+    echo "[strand-eval] FATAL: '$REPO_ROOT' is not the strand repo root" >&2
+    echo "[strand-eval] (no Cargo.toml mentioning strand-quant). Set STRAND_ROOT." >&2
+    exit 3
+fi
+
+# python: STRAND_PYTHON wins; /usr/local/bin/python3 is THE box python with the
+# HF stack (will.md §7); plain python3 covers torch-free ledger subcommands.
+PY="${STRAND_PYTHON:-}"
+if [ -z "$PY" ]; then
+    for cand in /usr/local/bin/python3 python3; do
+        if command -v "$cand" >/dev/null 2>&1; then PY="$cand"; break; fi
+    done
+fi
+[ -n "$PY" ] || { echo "[strand-eval] FATAL: no python3 found (set STRAND_PYTHON)" >&2; exit 3; }
+
+exec "$PY" "$REPO_ROOT/tools/strand_eval/cli.py" "$@"

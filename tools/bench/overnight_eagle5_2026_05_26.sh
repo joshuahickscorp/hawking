@@ -113,7 +113,7 @@ step tau_eval \
     > reports/eagle5_tau_2026_05_26.txt 2>&1"
 
 # (4) build release dismantle for the paired bench
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 # (5) Eagle5 paired bench — short-output regime (64 tok, n=10)
 #     Catches per-token overhead amortization; should give tightest
@@ -142,16 +142,16 @@ step paired_bench_256 \
 #     ~16 sec. Refreshes reports/w4a8_lmhead_calibration_2026_05_26.json
 #     for tomorrow's attended wire-up session.
 soft_step w4a8_calibration \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test w4a8_per_channel_calibrate -- --nocapture --ignored \
     > reports/w4a8_per_channel_calibration_2026_05_26.txt 2>&1"
 
 # (8) Lookahead n-gram parity sweep on Qwen-3B
 #     ~10 min. Confirms the parity-bug fix (memory/lookahead_resurrected
 #     _2026_05_26.md) isn't prompt-dependent — currently only validated
-#     on 2 prompts. Test runs DISMANTLE_LOOKAHEAD=N greedy vs baseline.
+#     on 2 prompts. Test runs HAWKING_LOOKAHEAD=N greedy vs baseline.
 soft_step lookahead_parity \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test qwen_lookahead_parity -- --nocapture --ignored \
     > reports/qwen_lookahead_parity_2026_05_26.txt 2>&1"
 

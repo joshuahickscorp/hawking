@@ -1,0 +1,4 @@
+[
+  {"pattern": "self_attn", "bits": 4},
+  {"pattern": "down_proj", "bits": 4}
+]

@@ -107,7 +107,7 @@ ln -sf "eagle5_v2_${WINNER}" checkpoints/eagle5_v2_winner
 echo "[overnight] ◀ pick_winner rc=0  $(date -u +%FT%TZ)"
 
 # (4) build release dismantle for paired bench
-step build_release nice -n 19 cargo build --release -p dismantle
+step build_release nice -n 19 cargo build --release -p hawking
 
 # (5) Paired bench — winner @ 64 tokens
 step paired_bench_64 \
@@ -123,12 +123,12 @@ step paired_bench_256 \
 
 # ── Ride-along (soft) ────────────────────────────────────────────────
 soft_step w4a8_calibration \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test w4a8_per_channel_calibrate -- --nocapture --ignored \
     > reports/w4a8_per_channel_calibration_2026_05_26.txt 2>&1"
 
 soft_step lookahead_parity \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test qwen_lookahead_parity -- --nocapture --ignored \
     > reports/qwen_lookahead_parity_2026_05_26.txt 2>&1"
 

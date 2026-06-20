@@ -88,10 +88,10 @@ log "pause: touch artifacts/runs/PAUSE  ·  resume: bash tools/bench/resume_benc
 log "log: tail -f $LOG"
 
 # Pre-flight: ensure binary exists; rebuild if not
-if [[ ! -x ./target/release/dismantle ]]; then
+if [[ ! -x ./target/release/hawking ]]; then
     log "no binary — building"
     write_status "build" "running"
-    cargo build --release -p dismantle >> "$LOG" 2>&1 || {
+    cargo build --release -p hawking >> "$LOG" 2>&1 || {
         log "❌ cargo build failed; aborting"
         write_status "build" "failed"
         exit 1
@@ -131,7 +131,7 @@ elif [[ -f reports/patches/session_C_q8_kv_wiring.patch ]]; then
         git apply reports/patches/session_C_q8_kv_wiring.patch >> "$LOG" 2>&1 || \
             log "patch apply failed; continuing without Q8 KV"
         log "rebuilding dismantle with Q8 KV..."
-        cargo build --release -p dismantle >> "$LOG" 2>&1 || \
+        cargo build --release -p hawking >> "$LOG" 2>&1 || \
             log "rebuild failed; continuing"
     else
         log "Q8 KV patch already applied or conflicts; skipping apply"
@@ -148,7 +148,7 @@ elif [[ -f reports/patches/session_C_q8_kv_wiring.patch ]]; then
                 flags=""
                 [[ "$mode" = "on" ]] && flags="--q8-kv"
                 for trial in 1 2 3; do
-                    ./target/release/dismantle generate \
+                    ./target/release/hawking generate \
                         --weights models/deepseek-v2-lite-q4.gguf \
                         --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                         --prompt "Once upon a time" \
@@ -208,7 +208,7 @@ else
                 esac
                 row="| $lever_id |"
                 for trial in 1 2 3; do
-                    tps=$(./target/release/dismantle generate \
+                    tps=$(./target/release/hawking generate \
                         --weights models/deepseek-v2-lite-q4.gguf \
                         --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                         --prompt "$prompt" --max-new-tokens 64 --seed $trial $flags 2>&1 \

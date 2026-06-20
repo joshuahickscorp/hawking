@@ -5,7 +5,7 @@
 # code-completion workload (high copy-rate: the model re-emits chunks of the
 # prompt/context) may clear the GO threshold τ≥2.5. This decides GO/NO-GO
 # BEFORE investing in any speculator wiring. The lossless PLD/n-gram runtime
-# itself ALREADY EXISTS (opt-in DISMANTLE_LOOKAHEAD=N, see memory
+# itself ALREADY EXISTS (opt-in HAWKING_LOOKAHEAD=N, see memory
 # lookahead_resurrected) — this only re-measures the acceptance ceiling on the
 # right distribution.
 #
@@ -47,5 +47,5 @@ for transcript in "$@"; do
 done
 
 echo
-echo "GO (τ≥2.5) on real transcripts ⇒ wire the existing DISMANTLE_LOOKAHEAD runtime"
+echo "GO (τ≥2.5) on real transcripts ⇒ wire the existing HAWKING_LOOKAHEAD runtime"
 echo "into the default serve path; NO-GO ⇒ spec stays the trained-EAGLE-head path only."

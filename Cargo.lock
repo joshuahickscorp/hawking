@@ -78,7 +78,7 @@ name = "awq_bake_tool"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "dismantle-core",
+ "hawking-core",
  "serde",
  "serde_json",
  "sha2",
@@ -330,15 +330,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crossbeam-channel"
-version = "0.5.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
-dependencies = [
- "crossbeam-utils",
-]
-
-[[package]]
 name = "crossbeam-deque"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -464,79 +455,6 @@ checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
  "block-buffer",
  "crypto-common",
-]
-
-[[package]]
-name = "dismantle"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "clap",
- "ctrlc",
- "dismantle-bench",
- "dismantle-core",
- "dismantle-serve",
- "half",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "dismantle-bench"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "clap",
- "dismantle-core",
- "serde",
- "serde_json",
- "sha2",
- "tracing",
-]
-
-[[package]]
-name = "dismantle-core"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "bytemuck",
- "half",
- "memmap2",
- "metal",
- "objc2 0.5.2",
- "objc2-foundation",
- "objc2-metal",
- "once_cell",
- "parking_lot",
- "rand",
- "rand_pcg",
- "serde",
- "serde_json",
- "sha2",
- "tempfile",
- "thiserror 2.0.18",
- "tokenizers",
- "tracing",
-]
-
-[[package]]
-name = "dismantle-serve"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "axum",
- "crossbeam-channel",
- "dismantle-core",
- "futures",
- "parking_lot",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tracing",
 ]
 
 [[package]]
@@ -789,6 +707,77 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
 
 [[package]]
+name = "hawking"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "clap",
+ "ctrlc",
+ "hawking-bench",
+ "hawking-core",
+ "hawking-serve",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "hawking-bench"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "hawking-core",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "hawking-core"
+version = "0.2.2"
+dependencies = [
+ "bytemuck",
+ "half",
+ "memmap2",
+ "metal 0.29.0",
+ "objc2 0.5.2",
+ "objc2-foundation",
+ "objc2-metal",
+ "once_cell",
+ "parking_lot",
+ "rand",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "sha2",
+ "strand-quant",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokenizers",
+]
+
+[[package]]
+name = "hawking-serve"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "axum",
+ "bytes",
+ "futures",
+ "hawking-core",
+ "http-body-util",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tower",
+ "tracing",
+]
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1024,6 +1013,21 @@ dependencies = [
 
 [[package]]
 name = "metal"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c43f73953f8cbe511f021b58f18c3ce1c3d1ae13fe953293e13345bf83217f25"
+dependencies = [
+ "bitflags 2.11.1",
+ "block",
+ "core-graphics-types",
+ "foreign-types",
+ "log",
+ "objc",
+ "paste",
+]
+
+[[package]]
+name = "metal"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ecfd3296f8c56b7c1f6fbac3c71cefa9d78ce009850c45000015f206dc7fa21"
@@ -1120,6 +1124,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
 dependencies = [
  "malloc_buf",
+ "objc_exception",
 ]
 
 [[package]]
@@ -1175,6 +1180,15 @@ dependencies = [
  "block2 0.5.1",
  "objc2 0.5.2",
  "objc2-foundation",
+]
+
+[[package]]
+name = "objc_exception"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad970fb455818ad6cba4c122ad012fae53ae8b4795f86378bce65e4f6bab2ca4"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1291,7 +1305,7 @@ name = "q4k_fast_tool"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "dismantle-core",
+ "hawking-core",
  "sha2",
 ]
 
@@ -1436,6 +1450,15 @@ name = "ryu"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
+
+[[package]]
+name = "safe_arch"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96b02de82ddbe1b636e6170c21be622223aea188ef2e139be0a5b219ec215323"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "scopeguard"
@@ -1583,6 +1606,15 @@ dependencies = [
  "nom",
  "serde",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "strand-quant"
+version = "0.1.0"
+dependencies = [
+ "metal 0.27.0",
+ "objc",
+ "wide",
 ]
 
 [[package]]
@@ -1769,6 +1801,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 
 [[package]]
+name = "tq_bake_tool"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "hawking-core",
+ "sha2",
+ "strand-quant",
+]
+
+[[package]]
 name = "tracing"
 version = "0.1.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1943,6 +1985,16 @@ dependencies = [
  "hashbrown 0.15.5",
  "indexmap",
  "semver",
+]
+
+[[package]]
+name = "wide"
+version = "0.7.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce5da8ecb62bcd8ec8b7ea19f69a51275e91299be594ea5cc6ef7819e16cd03"
+dependencies = [
+ "bytemuck",
+ "safe_arch",
 ]
 
 [[package]]

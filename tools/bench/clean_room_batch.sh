@@ -23,7 +23,7 @@
 #   2. Quit any `claude` CLI sessions     (incl. any MASTER_LOOP / loop).
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
-#   5. cd /Users/scammermike/Downloads/dismantle
+#   5. cd /Users/scammermike/Downloads/hawking
 #   6. ./tools/bench/clean_room_batch.sh
 #   7. Read the three section verdicts printed at the end.
 #
@@ -47,11 +47,12 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-256}"          # decode length for sections B + C
-PROMPT="${PROMPT:-fn fibonacci(n: u64) -> u64 {}"
+PROMPT_DEFAULT='fn fibonacci(n: u64) -> u64 {'
+PROMPT="${PROMPT:-$PROMPT_DEFAULT}"
 PEAK_GBPS="${PEAK_GBPS:-150}"    # M3 Pro memory bandwidth peak (bible §0)
 ANCHOR_HIGH="${ANCHOR_HIGH:-39}" # older clean anchor (bible §3 envelope)
 ANCHOR_LOW="${ANCHOR_LOW:-31}"   # most-recent clean anchor (A1/A4, bible §3.0)
@@ -60,11 +61,11 @@ GATES_ONLY=0
 [[ "${1:-}" == "--gates-only" ]] && GATES_ONLY=1
 
 # Locked Qwen fast-path (matches quick_bench.sh / measure_joules.sh / path_to_50).
-export DISMANTLE_QWEN_TCB=1 \
-       DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-       DISMANTLE_QWEN_Q4K_LMHEAD=1 \
-       DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-       DISMANTLE_QWEN_Q4K_PREDEC=1
+export HAWKING_QWEN_TCB=1 \
+       HAWKING_QWEN_VOCAB_PRUNE=32000 \
+       HAWKING_QWEN_Q4K_LMHEAD=1 \
+       HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+       HAWKING_QWEN_Q4K_PREDEC=1
 
 hr()  { printf '%s\n' "================================================================================"; }
 die() { echo "error: $*" >&2; exit 64; }
@@ -96,7 +97,12 @@ else
 fi
 
 # Gate 3: no slm (co-existence partner — its load contaminates absolute numbers).
-SLM_PIDS="$(pgrep -i slm 2>/dev/null | grep -v aslmanager || true)"
+# Exact process-name match: `pgrep -i slm` returns PIDs only, so the old
+# `| grep -v aslmanager` never filtered (PIDs aren't names) and the macOS daemon
+# `aslmanager` (Apple System Log manager) false-FAILed the gate. `-x` matches the
+# executable name exactly, so it catches a process literally named `slm` and
+# never `aslmanager`/`asl*`/anything-containing-slm.
+SLM_PIDS="$(pgrep -xi slm 2>/dev/null || true)"
 if [[ -n "$SLM_PIDS" ]]; then
   echo "  [GATE slm]         FAIL — slm is running (pids: $SLM_PIDS). Exit slm, then re-run." >&2
   PREFLIGHT_FAIL=1
@@ -125,13 +131,18 @@ echo "    (B) decode-tps anchor recon  -> clean dec_tps vs anchors ~${ANCHOR_HIG
 echo "    (C) energy baseline          -> joules/token via measure_joules.sh (macmon)"
 echo ""
 
+if [[ "$GATES_ONLY" == 1 ]]; then
+  if [[ "$PREFLIGHT_FAIL" == 1 ]]; then
+    echo "  --gates-only: printed the pre-flight failures and plan. Not running benches."
+    echo "  Re-run without the flag only after the FAIL gates pass."
+  else
+    echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (Claude quit)."
+  fi
+  exit 0
+fi
 if [[ "$PREFLIGHT_FAIL" == 1 ]]; then
   echo "  PRE-FLIGHT FAILED — fix the FAIL gates above and re-run. (Absolutes would be garbage.)" >&2
   exit 1
-fi
-if [[ "$GATES_ONLY" == 1 ]]; then
-  echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (Claude quit)."
-  exit 0
 fi
 echo "  PRE-FLIGHT PASSED — running the clean-room batch."
 echo ""
@@ -151,12 +162,12 @@ echo "        -> QTIP (gather-free trellis) is the ONLY remaining byte-cut path.
 hr
 
 A_LOG="$(mktemp -t q3kbytecut.XXXXXX)"
-echo "  running: cargo test -p dismantle-core --release --test q3k_bytecut_bench -- --ignored --nocapture"
+echo "  running: cargo test -p hawking-core --release --test q3k_bytecut_bench -- --ignored --nocapture"
 echo "  (the bench test is #[ignore]-marked, so --ignored is required to run it)"
-echo "  ... this builds dismantle-core in release if needed, then runs 200 iters/shape x 3 shapes."
+echo "  ... this builds hawking-core in release if needed, then runs 200 iters/shape x 3 shapes."
 echo ""
 # The bench prints to stderr (eprintln!); capture both streams.
-cargo test -p dismantle-core --release --test q3k_bytecut_bench -- --ignored --nocapture \
+cargo test -p hawking-core --release --test q3k_bytecut_bench -- --ignored --nocapture \
   >"$A_LOG" 2>&1
 A_RC=$?
 

@@ -24,7 +24,7 @@
 #   PROFILE   default kernel profile
 #   TOKENS    default token count for the default invocation
 #   TRACES_DIR  output dir (default: traces/)
-#   BIN       dismantle binary path (default: target/release/dismantle)
+#   BIN       dismantle binary path (default: target/release/hawking)
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -45,11 +45,11 @@ fi
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 TRACES_DIR="${TRACES_DIR:-traces}"
 
 if [ ! -x "$BIN" ]; then
-    echo "error: $BIN not built. Run: cargo build --release -p dismantle" >&2
+    echo "error: $BIN not built. Run: cargo build --release -p hawking" >&2
     exit 1
 fi
 
@@ -66,7 +66,7 @@ if [ "$#" -gt 0 ] && [ "$1" = "--" ]; then
     shift
     CMD=("$BIN" "$@")
 else
-    CMD=("$BIN" bench --backend dismantle --suite decode \
+    CMD=("$BIN" bench --backend hawking --suite decode \
         --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
         --kernel-profile "$PROFILE")
 fi

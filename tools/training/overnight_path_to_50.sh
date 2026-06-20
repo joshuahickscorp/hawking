@@ -62,7 +62,7 @@ log() {
 # --- Stage 1: cargo build --release ---
 log "=== STAGE 1: cargo build --release ==="
 write_status "build" "running"
-if ! cargo build --release -p dismantle >> "$PIPELINE_LOG" 2>&1; then
+if ! cargo build --release -p hawking >> "$PIPELINE_LOG" 2>&1; then
     log "FAIL stage 1 (cargo build). Aborting."
     write_status "build" "failed" "cargo build failed"
     exit 1
@@ -166,11 +166,11 @@ BENCH_OUT="$LOG_DIR/vocab_bench_results.md"
     echo "# Vocab-prune paired bench"
     echo "Run: $(stamp)"
     echo ""
-    if [ -x "./target/release/dismantle" ]; then
+    if [ -x "./target/release/hawking" ]; then
         echo "### baseline trials"
         for trial in 1 2 3; do
             echo "#### baseline trial $trial"
-            ./target/release/dismantle generate \
+            ./target/release/hawking generate \
                 --weights models/deepseek-v2-lite-q4.gguf \
                 --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                 --prompt "Once upon a time" \
@@ -181,7 +181,7 @@ BENCH_OUT="$LOG_DIR/vocab_bench_results.md"
         echo "### pruned trials"
         for trial in 1 2 3; do
             echo "#### pruned trial $trial"
-            ./target/release/dismantle generate \
+            ./target/release/hawking generate \
                 --weights models/deepseek-v2-lite-q4.gguf \
                 --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                 --vocab-prune-path artifacts/calibration/analysis/vocab_whitelist_995.json \

@@ -2,8 +2,8 @@
 """pack_corpus — convert dismantle's raw quantized-residual capture stream
 into the Eagle5 trainer's compact parquet shards.
 
-dismantle's `generate` (with DISMANTLE_QWEN_EAGLE5_CAPTURE=1 and
-DISMANTLE_QWEN_CAPTURE_CORPUS_PATH=<file>) appends a little-endian binary
+dismantle's `generate` (with HAWKING_QWEN_EAGLE5_CAPTURE=1 and
+HAWKING_QWEN_CAPTURE_CORPUS_PATH=<file>) appends a little-endian binary
 stream of the residuals the *quantized* (Q4_K_M) runtime actually serves.
 This is the key fix for the fp16→Q4_K_M distribution shift: the head trains
 on the same residuals it will see at inference instead of the fp16 capture

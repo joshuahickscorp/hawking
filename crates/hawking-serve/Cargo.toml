@@ -1,0 +1,28 @@
+[package]
+name = "hawking-serve"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "OpenAI-compatible HTTP server for hawking-core"
+
+[dependencies]
+hawking-core = { path = "../hawking-core" }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+futures = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+parking_lot = { workspace = true }
+
+[dev-dependencies]
+# All three are already in the workspace lockfile via axum's tree, so this
+# exposes them to the integration test without pulling new crates.
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+bytes = "1"

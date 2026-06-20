@@ -7,7 +7,7 @@
 #   1. Quit the Claude Code desktop app (Cmd+Q in the menu bar).
 #   2. Quit any 'claude' CLI sessions (incl. MASTER_LOOP).
 #   3. Open a fresh Terminal.app window.
-#   4. cd /Users/scammermike/Downloads/dismantle
+#   4. cd /Users/scammermike/Downloads/hawking
 #   5. ./tools/bench/clean_bench.sh
 #   6. Wait ~30–45 min for all 6 trials. Results appear in
 #      bench_results/v0.3.6/. Read summary.md.
@@ -23,7 +23,7 @@ GATES_ONLY="${1:-}"
 RESULTS_DIR="bench_results/v0.3.6"
 PROFILE_BASE="profiles/deepseek-v2-lite-q4.m3pro18.json"
 WEIGHTS="models/deepseek-v2-lite-q4.gguf"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 ts()  { date -u +%FT%TZ; }
 log() { printf '%s %s\n' "$(ts)" "$*"; }
@@ -199,9 +199,9 @@ for entry in "${TRIAL_ORDER[@]}"; do
         fi
 
         set +e
-        DISMANTLE_TRACE_DISPATCH=1 run_with_timeout 600 \
+        HAWKING_TRACE_DISPATCH=1 run_with_timeout 600 \
             nice -n 19 taskpolicy -b "$BIN" bench \
-            --backend dismantle --suite decode \
+            --backend hawking --suite decode \
             --weights "$WEIGHTS" \
             --trials 1 --max-new-tokens 64 \
             --kernel-profile "$RESULTS_DIR/profile_${PROFILE}.json" \

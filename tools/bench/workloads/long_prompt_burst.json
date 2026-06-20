@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "name": "long_prompt_burst",
+  "kind": "shared_agent",
+  "description": "Many concurrent long prompts to expose prefill monopolization and cache pressure.",
+  "prompt_token_targets": [8192, 32768, 65536],
+  "concurrency": [1, 2, 4, 8, 16, 32],
+  "decode_tokens": 64,
+  "temperature": 0.0,
+  "shared_context": [
+    "Long-context document shard: design notes, benchmark output, issue triage, and implementation constraints.",
+    "Repeated system instruction: answer precisely, preserve code behavior, cite metrics, avoid unsupported claims.",
+    "Apple UMA constraint: model memory, KV memory, and cached state all share the same physical memory budget."
+  ],
+  "user_templates": [
+    "Request {request_id}: answer a narrow question from this large shared context in less than 10 bullets.",
+    "Request {request_id}: extract the highest-risk scheduler issue from the long context.",
+    "Request {request_id}: state whether this long prompt should block short interactive requests."
+  ],
+  "success_metrics": [
+    "prefill_queue_wait_p95_ms",
+    "ttft_p95_ms",
+    "chunk_count",
+    "short_request_starvation_ms"
+  ]
+}

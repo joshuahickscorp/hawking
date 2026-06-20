@@ -44,14 +44,14 @@ from pathlib import Path
 # profile's locked_env. DeepSeek uses a different set; pass --arch deepseek2
 # to switch.
 QWEN_LOCKED_ENV = {
-    "DISMANTLE_QWEN_TCB": "1",
-    "DISMANTLE_QWEN_VOCAB_PRUNE": "32000",
-    "DISMANTLE_QWEN_Q4K_LMHEAD": "1",
-    "DISMANTLE_QWEN_FFN_DOWN_Q4K": "1",
-    "DISMANTLE_QWEN_Q4K_PREDEC": "1",
+    "HAWKING_QWEN_TCB": "1",
+    "HAWKING_QWEN_VOCAB_PRUNE": "32000",
+    "HAWKING_QWEN_Q4K_LMHEAD": "1",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "1",
+    "HAWKING_QWEN_Q4K_PREDEC": "1",
 }
 DEEPSEEK_LOCKED_ENV = {
-    "DISMANTLE_DSV2_TCB": "1",
+    "HAWKING_DSV2_TCB": "1",
 }
 
 # Fixed prompt set — varied enough that decode tps + acceptance aren't a
@@ -132,7 +132,7 @@ def main() -> int:
     ap.add_argument("--slug", required=True, help="model label for output (q7b, q3b, ...)")
     ap.add_argument("--head", default=None, help="Eagle5 head safetensors; omit for baseline-only")
     ap.add_argument("--arch", choices=["qwen2", "deepseek2"], default="qwen2")
-    ap.add_argument("--binary", default="./target/release/dismantle")
+    ap.add_argument("--binary", default="./target/release/hawking")
     ap.add_argument("--verify-windows", default="2,4,6,8")
     ap.add_argument("--max-new-tokens", type=int, default=128)
     ap.add_argument("--out", default=None)

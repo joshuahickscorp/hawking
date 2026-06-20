@@ -1,12 +1,12 @@
 # HTTP API Reference
 
-`dismantle serve` exposes an OpenAI-compatible HTTP API on the address you
+`hawking serve` exposes an OpenAI-compatible HTTP API on the address you
 specify. All endpoints are synchronous or SSE-streaming; no WebSocket.
 
 ## Starting the server
 
 ```sh
-dismantle serve \
+hawking serve \
   --weights models/deepseek-v2-lite-q4.gguf \
   --addr 127.0.0.1:8080
 ```
@@ -140,7 +140,7 @@ Prometheus text format metrics stub. Real metrics arrive in v0.2.
 
 ```sh
 curl http://127.0.0.1:8080/metrics
-# # dismantle_metrics 1
+# # hawking_metrics 1
 ```
 
 ## Chat template

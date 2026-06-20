@@ -95,7 +95,7 @@ log "=== EXT STAGE 9: autotune kernel profile ==="
 write_status "autotune" "running"
 AUTOTUNE_OUT="$LOG_DIR/autotune_output.log"
 # Use a short max-hours so we don't burn all night; current profile is recently regenerated, this just refreshes.
-if ./target/release/dismantle autotune --max-hours 0.5 >> "$AUTOTUNE_OUT" 2>&1; then
+if ./target/release/hawking autotune --max-hours 0.5 >> "$AUTOTUNE_OUT" 2>&1; then
     write_status "autotune" "done"
     log "autotune done; see $AUTOTUNE_OUT"
 else

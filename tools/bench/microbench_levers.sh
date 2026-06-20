@@ -2,7 +2,7 @@
 # tools/bench/microbench_levers.sh
 #
 # RAM-light single-binary microbench for path-to-50 levers.
-# Uses the existing ./target/release/dismantle binary as-is — does NOT
+# Uses the existing ./target/release/hawking binary as-is — does NOT
 # rebuild — so it doesn't compete with running worktree agents for RAM.
 #
 # Each lever is N trials of `dismantle generate` with different flags.
@@ -20,7 +20,7 @@ set -o pipefail
 # `${empty_array[@]}` even when the array is intentionally empty.
 cd "$(dirname "$0")/../.."
 
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 PROMPT="${PROMPT:-Once upon a time}"
@@ -29,7 +29,7 @@ TRIALS="${TRIALS:-3}"
 SEED="${SEED:-0}"
 
 if [[ ! -x "$BIN" ]]; then
-    echo "❌ binary missing at $BIN — run 'cargo build --release -p dismantle' first"
+    echo "❌ binary missing at $BIN — run 'cargo build --release -p hawking' first"
     exit 1
 fi
 
@@ -207,7 +207,7 @@ echo "" >> "$REPORT"
 echo "## Notes" >> "$REPORT"
 echo "" >> "$REPORT"
 echo "- Absolute tps is contaminated 4-5× by Claude (per memory bench_contamination.md). Δ vs L0 is the trustworthy column." >> "$REPORT"
-[[ "$HAS_Q8_KV" = "0" ]] && echo "- **Q8 KV skipped:** binary lacks the flag. Session C may have landed Rust changes but the binary needs \`cargo build --release -p dismantle\` to surface them." >> "$REPORT"
+[[ "$HAS_Q8_KV" = "0" ]] && echo "- **Q8 KV skipped:** binary lacks the flag. Session C may have landed Rust changes but the binary needs \`cargo build --release -p hawking\` to surface them." >> "$REPORT"
 
 echo
 echo "=== microbench complete ==="

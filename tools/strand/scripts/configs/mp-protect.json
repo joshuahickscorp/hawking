@@ -1,0 +1,6 @@
+[
+  {"pattern": "layers.0.",  "bits": 4},
+  {"pattern": "layers.1.",  "bits": 4},
+  {"pattern": "layers.26.", "bits": 4},
+  {"pattern": "layers.27.", "bits": 4}
+]

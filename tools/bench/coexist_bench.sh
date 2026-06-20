@@ -43,7 +43,7 @@ PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
 TRIALS="${TRIALS:-6}"
 ANCHOR="${ANCHOR:-2.207}"   # last clean-bench dec_tps measured
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 QUIET=0
 
 # ─── ARGUMENT PARSING ─────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ perl -e 'alarm 120; exec @ARGV' \
     caffeinate -di \
     taskpolicy -t 0 -l 0 \
     "$BIN" bench \
-        --backend dismantle --suite decode \
+        --backend hawking --suite decode \
         --weights "$WEIGHTS" --trials 1 --max-new-tokens 4 \
         --kernel-profile "$PROFILE" \
         --json "$WARMUP_JSON" \
@@ -129,12 +129,12 @@ for i in $(seq 1 "$TRIALS"); do
     # Priority elevation, no-sudo:
     #   taskpolicy -t 0 -l 0 → best throughput + latency tier
     #   caffeinate -di       → no idle/display sleep, no throttle
-    DISMANTLE_TRACE_DISPATCH=1 \
+    HAWKING_TRACE_DISPATCH=1 \
     perl -e 'alarm 600; exec @ARGV' \
         caffeinate -di \
         taskpolicy -t 0 -l 0 \
         "$BIN" bench --trace-dispatch \
-            --backend dismantle --suite decode \
+            --backend hawking --suite decode \
             --weights "$WEIGHTS" --trials 1 --max-new-tokens "$TOKENS" \
             --kernel-profile "$PROFILE" \
             --json "$OUT_JSON" \

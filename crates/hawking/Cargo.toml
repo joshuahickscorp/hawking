@@ -1,0 +1,30 @@
+[package]
+name = "hawking"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "hawking CLI for Apple Silicon LLM inference"
+
+[[bin]]
+name = "hawking"
+path = "src/main.rs"
+
+[[bin]]
+name = "hawking-spec-acceptance-measure"
+path = "src/spec_acceptance_measure.rs"
+
+[dependencies]
+hawking-core = { path = "../hawking-core" }
+hawking-serve = { path = "../hawking-serve" }
+hawking-bench = { path = "../hawking-bench" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+tracing-subscriber = { workspace = true }
+ctrlc = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }

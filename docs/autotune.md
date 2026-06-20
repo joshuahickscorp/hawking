@@ -1,6 +1,6 @@
 # Autotune
 
-dismantle ships a kernel-selection autotuner that benchmarks candidate
+hawking ships a kernel-selection autotuner that benchmarks candidate
 dispatch strategies on your specific hardware and locks the winner into a
 profile JSON. Subsequent `generate`, `serve`, and `bench` runs load that
 profile and skip re-benchmarking.
@@ -8,7 +8,7 @@ profile and skip re-benchmarking.
 ## Running autotune
 
 ```sh
-dismantle autotune \
+hawking autotune \
   --weights models/deepseek-v2-lite-q4.gguf \
   --profile m3-pro-18gb \
   --max-hours 8 \
@@ -27,14 +27,14 @@ line-delimited candidate log suitable for diffing across runs or machines.
 Pass `--kernel-profile` to any subcommand that dispatches kernels:
 
 ```sh
-dismantle generate \
+hawking generate \
   --weights models/deepseek-v2-lite-q4.gguf \
   --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
   --prompt "Hello" \
   --max-new-tokens 16
 
-dismantle bench \
-  --backend dismantle \
+hawking bench \
+  --backend hawking \
   --suite decode \
   --weights models/deepseek-v2-lite-q4.gguf \
   --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
@@ -46,8 +46,8 @@ dismantle bench \
 Or via environment variable:
 
 ```sh
-export DISMANTLE_KERNEL_PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
-dismantle generate --weights models/deepseek-v2-lite-q4.gguf --prompt "Hello" --max-new-tokens 16
+export HAWKING_KERNEL_PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
+hawking generate --weights models/deepseek-v2-lite-q4.gguf --prompt "Hello" --max-new-tokens 16
 ```
 
 ## When to re-run autotune
@@ -61,7 +61,7 @@ dismantle generate --weights models/deepseek-v2-lite-q4.gguf --prompt "Hello" --
 ## Checking the shader hash
 
 ```sh
-dismantle shader-hash
+hawking shader-hash
 ```
 
 Compare this against the `shader_hash` field in your profile JSON. A mismatch
@@ -74,8 +74,8 @@ deterministic default.
 The 50-prompt token baseline can run through a profiled path:
 
 ```sh
-DISMANTLE_KERNEL_PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json \
-DISMANTLE_SPECULATE=exact-shared \
-DISMANTLE_VERIFY_WINDOW=4 \
+HAWKING_KERNEL_PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json \
+HAWKING_SPECULATE=exact-shared \
+HAWKING_VERIFY_WINDOW=4 \
 tools/haul/token-regression.sh tests/golden/_phase2_token_baseline_50.hashes
 ```

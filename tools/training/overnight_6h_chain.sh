@@ -7,7 +7,7 @@
 #                                        parity test, microbench. Writes a fix patch if
 #                                        conflicts; documents failure mode if not.
 #   M3  kernel hot-spot map  ~60 min   — `bench --trace-json` (the documented path —
-#                                        prior chain's DISMANTLE_TCB_TRACE env returned
+#                                        prior chain's HAWKING_TCB_TRACE env returned
 #                                        4 lines, that's a dead method). Parses top-N
 #                                        kernels by total ms; writes kernel_sketch_targets.md
 #   M4  autotune sweep       ~90 min   — sweeps gemm_q4_k_schedule, gemm_q6_k_schedule,
@@ -51,7 +51,7 @@ AUTO_COMMIT="${CHAIN_AUTO_COMMIT:-0}"  # default DRY-RUN
 WEIGHTS=models/deepseek-v2-lite-q4.gguf
 PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
 VOCAB=artifacts/calibration/analysis/vocab_whitelist_995.json
-BIN=./target/release/dismantle
+BIN=./target/release/hawking
 
 stamp() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 log() { echo "[$(stamp)] $*" | tee -a "$LOG"; }
@@ -107,9 +107,9 @@ trap "kill $WATCH_PID 2>/dev/null || true" EXIT
 log "=== overnight_6h chain start (pid=$$, auto_commit=$AUTO_COMMIT) ==="
 
 # -------- Pre-flight --------
-log "preflight: cargo build --release -p dismantle"
+log "preflight: cargo build --release -p hawking"
 write_status "preflight" "running"
-if ! cargo build --release -p dismantle >>"$LOG" 2>&1; then
+if ! cargo build --release -p hawking >>"$LOG" 2>&1; then
     log "❌ preflight build failed; aborting"
     write_status "preflight" "failed"
     exit 1
@@ -140,9 +140,9 @@ else
         echo "## Current dirty-file count"
         git status --porcelain | wc -l | tr -d ' '
         echo ""
-        echo "## Test gate (cargo test --lib -p dismantle-core)"
+        echo "## Test gate (cargo test --lib -p hawking-core)"
         echo '```'
-        cargo test --release -p dismantle-core --lib 2>&1 | tail -30
+        cargo test --release -p hawking-core --lib 2>&1 | tail -30
         echo '```'
     } > "$M1_OUT" 2>&1
 
@@ -150,12 +150,12 @@ else
     if [[ "$AUTO_COMMIT" = "1" ]]; then
         log "AUTO_COMMIT=1 — attempting commit sequence"
         # Commit 1: new modules + their tests + lib.rs export + engine.rs flag fields
-        git add crates/dismantle-core/src/vocab_prune.rs \
-                crates/dismantle-core/src/quant_tier_map.rs \
-                crates/dismantle-core/src/mixed_quant_store.rs \
-                crates/dismantle-core/tests/vocab_prune_parity.rs \
-                crates/dismantle-core/tests/mixed_quant_store_build.rs \
-                crates/dismantle-core/tests/q8_kv_parity.rs 2>>"$LOG" || true
+        git add crates/hawking-core/src/vocab_prune.rs \
+                crates/hawking-core/src/quant_tier_map.rs \
+                crates/hawking-core/src/mixed_quant_store.rs \
+                crates/hawking-core/tests/vocab_prune_parity.rs \
+                crates/hawking-core/tests/mixed_quant_store_build.rs \
+                crates/hawking-core/tests/q8_kv_parity.rs 2>>"$LOG" || true
         # lib.rs + engine.rs are PARTIAL files — let the user stage the right hunks.
         # We add-p them conceptually by erroring out if hunks aren't pre-staged:
         if git diff --cached --stat | grep -q "src/vocab_prune.rs"; then
@@ -209,11 +209,11 @@ else
         echo ""
         echo "## Pre-patch state snapshot"
         mkdir -p "$M2_BACKUP"
-        for f in crates/dismantle-core/shaders/attn.metal \
-                 crates/dismantle-core/src/attn/mod.rs \
-                 crates/dismantle-core/src/cache/mod.rs \
-                 crates/dismantle-core/src/cache/prefill_disk.rs \
-                 crates/dismantle-core/src/engine.rs; do
+        for f in crates/hawking-core/shaders/attn.metal \
+                 crates/hawking-core/src/attn/mod.rs \
+                 crates/hawking-core/src/cache/mod.rs \
+                 crates/hawking-core/src/cache/prefill_disk.rs \
+                 crates/hawking-core/src/engine.rs; do
             if [[ -f "$f" ]]; then
                 cp "$f" "$M2_BACKUP/$(basename "$f").orig"
                 echo "- snapshot $f"
@@ -236,7 +236,7 @@ else
 
         # Look for conflict residue (only meaningful if --3way partially applied)
         echo "## Conflict residue check"
-        RJ_COUNT=$(find crates/dismantle-core -name "*.rej" 2>/dev/null | wc -l | tr -d ' ')
+        RJ_COUNT=$(find crates/hawking-core -name "*.rej" 2>/dev/null | wc -l | tr -d ' ')
         CM_COUNT=$(git diff --check 2>&1 | wc -l | tr -d ' ')
         echo "- \`.rej\` files: $RJ_COUNT"
         echo "- conflict-marker lines (\`git diff --check\`): $CM_COUNT"
@@ -247,17 +247,17 @@ else
             echo "## ⚠️  Patch did not apply — main is structurally divergent"
             echo ""
             echo "Q8 KV remains UNWIRED. Next session: HUMAN-DRIVEN port — read \`reports/all_parallel_session_prompts.md\` 'Session C-completion' and port hunk-by-hunk to current main. Patch hunks of interest are in \`$PATCH\` (search for \`q8_kv\`)."
-        elif [[ "$RJ_COUNT" -gt 0 ]] || grep -lE '^<<<<<<< |^=======$|^>>>>>>> ' crates/dismantle-core/src/engine.rs crates/dismantle-core/src/cache/mod.rs 2>/dev/null | head -1 > /dev/null; then
+        elif [[ "$RJ_COUNT" -gt 0 ]] || grep -lE '^<<<<<<< |^=======$|^>>>>>>> ' crates/hawking-core/src/engine.rs crates/hawking-core/src/cache/mod.rs 2>/dev/null | head -1 > /dev/null; then
             echo ""
             echo "## ⚠️  Conflicts detected — restoring originals to keep tree clean"
-            for f in crates/dismantle-core/shaders/attn.metal \
-                     crates/dismantle-core/src/attn/mod.rs \
-                     crates/dismantle-core/src/cache/mod.rs \
-                     crates/dismantle-core/src/cache/prefill_disk.rs \
-                     crates/dismantle-core/src/engine.rs; do
+            for f in crates/hawking-core/shaders/attn.metal \
+                     crates/hawking-core/src/attn/mod.rs \
+                     crates/hawking-core/src/cache/mod.rs \
+                     crates/hawking-core/src/cache/prefill_disk.rs \
+                     crates/hawking-core/src/engine.rs; do
                 [[ -f "$M2_BACKUP/$(basename "$f").orig" ]] && cp "$M2_BACKUP/$(basename "$f").orig" "$f"
             done
-            find crates/dismantle-core -name "*.rej" -delete 2>/dev/null
+            find crates/hawking-core -name "*.rej" -delete 2>/dev/null
             echo ""
             echo "## Disposition"
             echo "Q8 KV remains UNWIRED. The patch has partial-apply residue. Restored originals; tree clean."
@@ -266,10 +266,10 @@ else
             echo ""
             echo "## Patch applied cleanly — rebuild + smoke"
             echo '```'
-            if cargo build --release -p dismantle 2>&1 | tail -10; then
+            if cargo build --release -p hawking 2>&1 | tail -10; then
                 echo ""
                 echo "(rebuild OK)"
-                if ./target/release/dismantle generate --help 2>&1 | grep -E "q8-kv|q8_kv" ; then
+                if ./target/release/hawking generate --help 2>&1 | grep -E "q8-kv|q8_kv" ; then
                     echo ""
                     echo "✓ --q8-kv flag PRESENT"
                     echo ""
@@ -299,14 +299,14 @@ else
                 fi
             else
                 echo "(rebuild FAILED — restoring originals)"
-                for f in crates/dismantle-core/shaders/attn.metal \
-                         crates/dismantle-core/src/attn/mod.rs \
-                         crates/dismantle-core/src/cache/mod.rs \
-                         crates/dismantle-core/src/cache/prefill_disk.rs \
-                         crates/dismantle-core/src/engine.rs; do
+                for f in crates/hawking-core/shaders/attn.metal \
+                         crates/hawking-core/src/attn/mod.rs \
+                         crates/hawking-core/src/cache/mod.rs \
+                         crates/hawking-core/src/cache/prefill_disk.rs \
+                         crates/hawking-core/src/engine.rs; do
                     [[ -f "$M2_BACKUP/$(basename "$f").orig" ]] && cp "$M2_BACKUP/$(basename "$f").orig" "$f"
                 done
-                cargo build --release -p dismantle >>"$LOG" 2>&1 || log "post-restore build also failed (!!)"
+                cargo build --release -p hawking >>"$LOG" 2>&1 || log "post-restore build also failed (!!)"
             fi
             echo '```'
         fi
@@ -331,10 +331,10 @@ else
     {
         echo "# Kernel hot-spot map — $(stamp)"
         echo ""
-        echo "Capture via the documented \`bench --trace-json\` path. Prior chain's \`DISMANTLE_TCB_TRACE\` env approach produced 4 lines — that wasn't the right knob. This module uses the actual flag."
+        echo "Capture via the documented \`bench --trace-json\` path. Prior chain's \`HAWKING_TCB_TRACE\` env approach produced 4 lines — that wasn't the right knob. This module uses the actual flag."
         echo ""
-        log "running bench --trace-json (decode, 64 tok) with DISMANTLE_TCB_TRACE=gpu"
-        DISMANTLE_TCB_TRACE=gpu $BIN bench --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
+        log "running bench --trace-json (decode, 64 tok) with HAWKING_TCB_TRACE=gpu"
+        HAWKING_TCB_TRACE=gpu $BIN bench --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
                    --suite decode --trials 3 --max-new-tokens 64 \
                    --json "$M3_BENCH" --trace-json "$M3_TRACE" \
                    --trace-dispatch \
@@ -529,7 +529,7 @@ else
         echo "Configs:"
         echo "- **baseline** — no flags"
         echo "- **L1** — vocab-prune"
-        echo "- **L1+Jw2** — vocab-prune + DISMANTLE_MOE_DOWN_Q8_V2T_W2=1 (env-gated kernel)"
+        echo "- **L1+Jw2** — vocab-prune + HAWKING_MOE_DOWN_Q8_V2T_W2=1 (env-gated kernel)"
         if [[ -f "$M4_PROFILE_OUT" ]]; then
             echo "- **L1+M4** — vocab-prune + M4 candidate profile"
         fi
@@ -562,7 +562,7 @@ else
 
             run_cfg "baseline"   ""                                    ""
             run_cfg "L1"         "--vocab-prune-path $VOCAB"           ""
-            run_cfg "L1+Jw2"     "--vocab-prune-path $VOCAB"           "DISMANTLE_MOE_DOWN_Q8_V2T_W2=1"
+            run_cfg "L1+Jw2"     "--vocab-prune-path $VOCAB"           "HAWKING_MOE_DOWN_Q8_V2T_W2=1"
             if [[ -f "$M4_PROFILE_OUT" ]]; then
                 run_cfg "L1+M4"  "--vocab-prune-path $VOCAB"           ""  "$M4_PROFILE_OUT"
             fi

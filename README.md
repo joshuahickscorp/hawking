@@ -1,115 +1,107 @@
-# dismantle
+# hawking
 
-Pure-Rust inference engine for Mixture-of-Experts language models on Apple Silicon. Single binary. No Python at runtime. No llama.cpp dependency. Loads GGUF weights via mmap and runs them through hand-rolled Metal compute kernels.
+`hawking` is a from-scratch LLM inference engine for Apple Silicon. It loads
+GGUF models with mmap, runs hand-written Metal kernels from Rust, and exposes a
+small CLI plus an OpenAI-compatible HTTP server.
 
-Currently supports:
-- **DeepSeek-V2-Lite Q4_K_M** (16B params, 2.4B active per token) — primary tuning target
-- **Mixtral 8×7B Q3_K_M** (~16 GB) — runs on 18 GB Macs via memory-conscious expert dispatch
-- Generic GGUF loading for Llama / Qwen / DeepSeek architectures
+It is a systems project first: no Python runtime, no `llama.cpp` dependency, no
+BLAS, and no MPSGraph. The goal is an auditable inference stack that can be
+measured, tested, and changed without hiding work in external runtimes.
 
-## What's distinctive
+## Status
 
-- **Pure Rust + Metal** — single binary, no Python in the runtime, no C++ shim. Source-build with `cargo`.
-- **MoE-first architecture** — built around expert routing semantics from the kernel level up rather than retrofitting MoE onto a dense engine.
-- **Open methodology** — every perf claim in this README is reproducible with the `dismantle bench-server` + `dismantle bench-kernel` tooling included in tree. Statistical CIs, kernel-level timing, cross-commit diffing all built in.
-- **Reproducible kernel autotune** — `dismantle autotune` deterministically picks kernel variants for your specific GPU.
-- **OpenAI-compatible HTTP API** — `dismantle serve` exposes `/v1/chat/completions`.
+- Primary tuned target: Qwen2.5 dense GGUF, especially Q4_K_M.
+- Dense and MoE families share the same runtime, but verification varies by
+  model. Check [MODELS.md](MODELS.md) before relying on a family.
+- Current clean-room baseline on an M3 Pro 18 GB: about 31 decode tok/s on
+  Qwen2.5-3B-Q4_K_M.
+- Active development. Expect sharp edges.
 
-## Measured performance (M3 Pro 18 GB, May 2026)
+## Features
 
-| model | quant | dec_tps (default) | notes |
-|---|---|---:|---|
-| Qwen2.5-3B-Instruct | Q4_K_M | **~26.6** | n=5 paired median, locked default config (predec + vocab-prune-32K + Q4K-LM-head + ffn_down-Q4K) |
-| DeepSeek-V2-Lite-Chat | Q4_K_M | **~17** | TRIALS=4 TOKENS=24 coexist, 95% CI [16.6, 18.0] |
-| Mixtral-8x7B-Instruct-v0.1 | Q3_K_M | **~0.1** | functional, SSD-bandwidth-limited on 18 GB |
+- Zero-copy GGUF weight loading through mmap-backed Metal buffers.
+- Hand-written Metal kernels for Q4_K / Q6_K GEMV, attention, RoPE, RMSNorm,
+  sampling, and fused paths.
+- OpenAI-compatible `/v1/chat/completions` and `/v1/completions` endpoints.
+- `generate`, `serve`, `bench`, `doctor`, and `autotune` CLI workflows.
+- CPU reference path for off-macOS builds and Metal parity checks.
+- Prefix-cache reuse, speculative decode experiments, and benchmark tooling.
 
-llama.cpp Metal on Qwen-3B-Q4_K_M on the same hardware lands around **50 dec_tps**; dismantle's gap is **1.88×** as of 2026-05-26 (first sub-2× measurement on M3 Pro). For DeepSeek-V2-Lite the gap is roughly 3×. dismantle prioritizes a small, auditable Rust codebase over matching every C++ kernel optimization. The gap is honest engineering work; it's not a fundamental architectural limit. See [reports/v1.1.0_architecture_audit.md](reports/v1.1.0_architecture_audit.md) for the bandwidth/utilization breakdown and the composition decision matrix in `memory/composition_decision_matrix_2026_05_26.md` for the Qwen-3B optimization path.
-
-## Requirements
-
-- Apple Silicon Mac (M1, M2, M3, or M4)
-- Rust stable
-- ~12 GB free memory for DeepSeek-V2-Lite Q4_K_M (model + KV cache)
-- ~16 GB free disk + ~14 GB RAM for Mixtral 8×7B Q3_K_M
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map.
 
 ## Build
 
+Requirements:
+
+- Apple Silicon Mac for the Metal path
+- Rust stable 1.80 or newer
+- Xcode Command Line Tools
+- About 4 GB RAM for Qwen2.5-3B Q4_K_M
+
 ```sh
-git clone https://github.com/joshuahickscorp/dismantle.git
-cd dismantle
+git clone https://github.com/joshuahickscorp/hawking.git
+cd hawking
 cargo build --release --workspace
-# Binary: target/release/dismantle
 ```
 
-## Get a model
+The binary is written to `target/release/hawking`.
+
+## Get A Model
 
 ```sh
-./tools/fetch-model.sh        # downloads DeepSeek-V2-Lite Q4_K_M (~9.7 GB)
-./tools/fetch-mixtral.sh      # downloads Mixtral 8×7B Q3_K_M (~16 GB)
+./tools/fetch-model.sh
+./tools/fetch-mixtral.sh
 ```
 
-Or pass any GGUF file via `--weights`. The architecture is detected from metadata.
+You can also place any GGUF file in `models/` and pass it with `--weights`.
+The best-tested target is Qwen2.5-3B-Instruct-Q4_K_M.
 
 ## Usage
 
-**Check fit before loading:**
-
 ```sh
-dismantle doctor --weights models/deepseek-v2-lite-q4.gguf
-```
+# Check whether the model fits before loading it.
+hawking doctor --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
 
-**Pick the fastest kernels for your machine** (run once, takes 1–2 min):
-
-```sh
-dismantle autotune \
-  --weights models/deepseek-v2-lite-q4.gguf \
+# Tune kernels for this machine.
+hawking autotune \
+  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --out profiles/my-mac.json
-```
 
-**Generate:**
-
-```sh
-dismantle generate \
-  --weights models/deepseek-v2-lite-q4.gguf \
+# Generate text.
+hawking generate \
+  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
-  --prompt "Once upon a time" \
+  --prompt "Write a Rust function that reverses a linked list." \
   --max-new-tokens 256
-```
 
-**Serve as OpenAI-compatible HTTP API:**
-
-```sh
-dismantle serve \
-  --weights models/deepseek-v2-lite-q4.gguf \
+# Serve an OpenAI-compatible API.
+hawking serve \
+  --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
   --addr 127.0.0.1:8080
 ```
 
-```sh
-curl http://127.0.0.1:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "DeepSeek-V2-Lite-Chat",
-    "messages": [{"role": "user", "content": "Write a haiku about Metal kernels."}],
-    "max_tokens": 64
-  }'
-```
+See [docs/serve.md](docs/serve.md) for API details.
 
-**Reproduce the perf numbers in this README:**
+## Performance
+
+The headline number is intentionally modest and measured: Qwen2.5-3B-Q4_K_M
+runs at about 31 decode tok/s on an M3 Pro 18 GB in clean-room runs. The project
+keeps a kill-ledger of optimizations that were tested and rejected in
+[docs/dead_levers.md](docs/dead_levers.md).
+
+Useful bench entry points:
 
 ```sh
 TRIALS=4 TOKENS=24 bash tools/bench/coexist_bench.sh
+bash tools/bench/clean_room_batch.sh
 ```
 
-The script reports median, 95% confidence interval, and IQR. Run with `TRIALS=6 TOKENS=64` for a tighter authoritative number (~15 min total). See [tools/bench/README.md](tools/bench/README.md) for the standardized bench parameter conventions.
+See [tools/bench/README.md](tools/bench/README.md) for conventions.
 
-## Mixtral 8×7B support
+## Contributors
 
-Mixtral Q3_K_M is supported as a secondary target. See [docs/mixtral.md](docs/mixtral.md) for fetch + run instructions and expected throughput. Performance is limited by SSD bandwidth on 18 GB machines (expert weights page-fault from disk between layers); 32+ GB machines run faster because more weights stay resident.
-
-## Project status
-
-**Pre-v2.0, active development.** v2.0 launch focuses on shipping the engine at its current honest performance with a clean, auditable codebase. Future work toward llama.cpp-class throughput (Apple Neural Engine integration, true K-parallel batched verify for speculative decoding) is post-v2.0 and not gating this release.
+- Joshua Hicks
 
 ## License
 

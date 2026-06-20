@@ -29,10 +29,10 @@ PROMPT="${PROMPT:-Once upon a time}"
 TOKENS="${TOKENS:-64}"
 TRIALS="${TRIALS:-5}"
 EAGLE5_HEAD="${EAGLE5_HEAD:-}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 if [[ ! -x "$BIN" ]]; then
-    echo "❌ binary not found: $BIN — run 'cargo build --release -p dismantle' first" >&2
+    echo "❌ binary not found: $BIN — run 'cargo build --release -p hawking' first" >&2
     exit 2
 fi
 if [[ ! -f "$WEIGHTS" ]]; then

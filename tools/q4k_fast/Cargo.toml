@@ -15,4 +15,4 @@ path = "src/main.rs"
 [dependencies]
 anyhow = { workspace = true }
 sha2 = { workspace = true }
-dismantle-core = { path = "../../crates/dismantle-core" }
+hawking-core = { path = "../../crates/hawking-core" }

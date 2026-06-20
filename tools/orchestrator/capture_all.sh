@@ -9,9 +9,9 @@ cd "$(dirname "$0")/../.."
 PROMPTS=_capture/corpus_prompts.txt
 MAXTOK=64
 PY=/tmp/eagle5venv/bin/python
-BIN=./target/release/dismantle
+BIN=./target/release/hawking
 
-LOCKED="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 DISMANTLE_QWEN_Q4K_PREDEC=1"
+LOCKED="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 HAWKING_QWEN_Q4K_PREDEC=1"
 
 # slug:model:capture_layer(n-1)
 for entry in "q05b:0.5b:23" "q1p5b:1.5b:27" "q7b:7b:27"; do
@@ -21,9 +21,9 @@ for entry in "q05b:0.5b:23" "q1p5b:1.5b:27" "q7b:7b:27"; do
   echo "=== capturing $slug (layer $layer) from $gguf ==="
   rm -f "$bin"
   env $LOCKED \
-      DISMANTLE_QWEN_EAGLE5_CAPTURE=1 \
-      DISMANTLE_QWEN_EAGLE5_CAPTURE_LAYER=$layer \
-      DISMANTLE_QWEN_CAPTURE_CORPUS_PATH="$bin" \
+      HAWKING_QWEN_EAGLE5_CAPTURE=1 \
+      HAWKING_QWEN_EAGLE5_CAPTURE_LAYER=$layer \
+      HAWKING_QWEN_CAPTURE_CORPUS_PATH="$bin" \
     $BIN generate --weights "$gguf" --prompts-file "$PROMPTS" \
       --max-new-tokens $MAXTOK --temperature 0 >/dev/null 2>"_capture/${slug}_capture.log"
   echo "  packing $slug..."

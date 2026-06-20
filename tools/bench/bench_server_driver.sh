@@ -20,7 +20,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TRIALS="${TRIALS:-6}"
