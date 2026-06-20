@@ -79,8 +79,8 @@ for variant in "${variants[@]}"; do
         --lr "$LR" \
         --out "$out" \
         --seed "$SEED" \
-        "${chunk_args[@]}" \
-        "${teacher_args[@]}" &
+        ${chunk_args[@]+"${chunk_args[@]}"} \
+        ${teacher_args[@]+"${teacher_args[@]}"} &
     train_pid=$!
 
     wait "$train_pid" && train_rc=0 || train_rc=$?
