@@ -74,6 +74,8 @@ MPS_MEM_FRACTION="${MPS_MEM_FRACTION:-0}"
 GRAD_CKPT="${GRAD_CKPT:-1}"
 # empty_cache() every N opt steps (0 = never). Per-example flush was the throughput bug.
 EMPTY_CACHE_EVERY="${EMPTY_CACHE_EVERY:-0}"
+# Progress log cadence (opt steps between [ep0 opt=N] lines).
+LOG_EVERY="${LOG_EVERY:-5}"
 PYTHON="${PYTHON:-$ROOT/.venv-rwkv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
@@ -112,6 +114,7 @@ for variant in "${variants[@]}"; do
         --grad-checkpoint "$GRAD_CKPT" \
         --mps-mem-fraction "$MPS_MEM_FRACTION" \
         --empty-cache-every "$EMPTY_CACHE_EVERY" \
+        --log-every "$LOG_EVERY" \
         ${chunk_args[@]+"${chunk_args[@]}"} \
         ${teacher_args[@]+"${teacher_args[@]}"} &
     train_pid=$!
