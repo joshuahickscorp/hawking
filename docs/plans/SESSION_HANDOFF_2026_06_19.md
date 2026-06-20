@@ -28,7 +28,11 @@ If PIDs are stale (new session), re-find: `pgrep -fl rwkv7_qat.py` and
   sequence steps spike to ~20 min — normal, not a stall (check `%CPU` oscillates,
   not zero).
 - loss_ema ~6.0–6.12 (target the hawking handoff fires at **ema ≤ 6.0**, min_step 60).
-- **ETA full G1a ~Sat Jun 20 ~8:50 PM EDT** (~21h from restart), barring crashes.
+- **ETA full G1a: a RANGE, ~Sat Jun 20 → Mon Jun 22.** Clean chunked steps are ~6 min,
+  but the corpus has long-sequence clusters that run ~18–22 min/step and inflate the
+  live estimate (it read "Mon" at step 78 during one such cluster). The true finish
+  depends on the sequence-length distribution over the remaining ~220 steps. Trust
+  `rwkv7_progress.py`'s live number but expect it to swing.
 
 ### Monitor
 ```bash
@@ -75,9 +79,15 @@ Then re-attach autocycle (one shot, with handoff) — see its env block in
 - `f0880a9` vendor/strand + crates: removed dead CUDA backend.
 - `22ad5c6` tools: removed retired colab notebooks; strand/bench updates.
 - `df96833` docs: hawking plans, serve-matrix reports.
-- Branch cleanup: 38 → 14 (deleted 17 `worktree-agent-*` cruft + 8 already-merged
-  feature branches). 10 unmerged feature branches LEFT (all 21–31 commits behind main,
-  likely stale) — user to decide merge/delete. Nothing pushed.
+- `e76fc86` docs: rename execution kit + this handoff.
+- `773f7f5` test: salvaged chunked-scan parity test (forward+gradient+ref-loop, ALL
+  PASS against main) from `rwkv7/chunked-scan`, then deleted that branch as redundant
+  (its chunked kernel was byte-identical to main; it was 23 commits behind and would
+  have resurrected the deleted CUDA backend).
+- **main PUSHED to origin at `773f7f5`** (clean fast-forward, joshuahickscorp/dismantle).
+- Branch cleanup: 38 → 13 (deleted 17 `worktree-agent-*` cruft + 8 merged + the stale
+  `rwkv7/chunked-scan`). **9 unmerged feature branches LEFT** (all 21–31 behind main,
+  likely stale) — decide merge/delete. They are NOT worth pushing (behind main).
 
 ### Chunked-scan = the headline win
 `use_chunked=True` (parallel-scan WKV-7) is **bit-identical forward / machine-eps
@@ -97,8 +107,8 @@ in the trainers but the launchers/QAT never passed it.
 ## Open items / next decisions
 
 - [ ] Let G1a + chain finish (~Sat eve), then execute rename Phase 1 → 3 → 4 from the kit.
-- [ ] Decide on 10 unmerged feature branches (merge selectively or delete — they're stale).
-- [ ] Push main to origin? (nothing pushed this session — was deliberate.)
+- [ ] Decide on 9 remaining unmerged feature branches (all 21–31 behind main, stale).
+- [x] main pushed to origin (773f7f5). Future commits: `git push origin main`.
 - [ ] Re-run draft accept-rate eval vs the real 3B/7B target once downloaded (current
       eval uses 0.4B as teacher proxy).
 - [ ] `tools/training/rwkv7_qat.py` etc. are committed but `cargo`/Rust crates were not
