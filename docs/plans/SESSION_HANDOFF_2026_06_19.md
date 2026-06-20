@@ -1,26 +1,27 @@
 # Session Handoff — Hawking rename COMPLETE (incl. folder + GitHub) — 2026-06-20
 
 This is the continuity anchor. The previous session renamed everything to **Hawking**,
-including the on-disk folder and the GitHub repo, then ended (the folder move severs the
-old session's paths). Open your new chat **inside `~/Downloads/hawking`**.
+including the on-disk folder (`~/Downloads/hawking`) and the GitHub repo
+(`joshuahickscorp/hawking`). Open your new chat **inside `~/Downloads/hawking`**.
 
-## FIRST THING TO DO (restart the training chain)
+## FIRST THING TO DO (the chain is ALREADY RUNNING — just verify)
 
-The 7-model draft sweep was STOPPED for the folder rename (it had only reached the
-cargo-check stage — no models trained yet, nothing lost). Restart it from the new folder:
-
+The 7-model draft-sweep chain was relaunched from the renamed folder and is running
+detached (`nohup caffeinate`, reparented to launchd, survives terminal close). Do NOT
+launch a second one. Verify it's alive + actually training:
 ```bash
 cd ~/Downloads/hawking
+pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"
+tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log   # expect [ep0 opt=N] lines (real training)
+tail -n 10 artifacts/lowbit_rwkv7/master_chain.log  # current stage
+```
+If it died, relaunch:
+```bash
 DRAFT_VARIANTS="draft_35m_probe draft_50m_probe draft_75m_probe draft_100m draft_150m draft_200m draft_300m" \
 DRAFT_EPOCHS=1 DRAFT_ACCEPT_SEQS=50 SEED=1337 USE_CHUNKED=1 \
 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 PYTHON=.venv-rwkv/bin/python \
   nohup caffeinate -dimsu bash tools/training/g1a_v2_expansion_chain.sh 3.4489 pass \
   > artifacts/lowbit_rwkv7/master_chain.log 2>&1 &
-```
-Then CONFIRM it really trains (the earlier bash-3.2 bug is fixed, but verify):
-```bash
-sleep 600 && tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log   # must show [ep0 opt=N] lines
-pgrep -fl rwkv7_train_draft
 ```
 
 ## State
