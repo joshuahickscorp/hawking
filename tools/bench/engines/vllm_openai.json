@@ -1,0 +1,8 @@
+{
+  "name": "vllm_openai",
+  "kind": "openai_compatible",
+  "base_url": "http://127.0.0.1:8000/v1",
+  "health_url": "http://127.0.0.1:8000/health",
+  "model": "local-model",
+  "launch_command": "python -m vllm.entrypoints.openai.api_server --model ${MODEL_ID} --host 127.0.0.1 --port 8000"
+}

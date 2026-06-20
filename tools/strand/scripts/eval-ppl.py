@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 # eval-ppl.py — COMPATIBILITY SHIM over tools/strand_eval (the canon eval module).
-# The eval math no longer lives here; this preserves the pod-side argv contract
-# exactly while delegating to the single canonical implementation:
-#   argv: <load_dir> <ctx> <limit_chunks> <device: cuda|cpu|mps|offload|auto> <dtype> <tag> <out_json>
-#   env:  EVAL_GPU_GB (offload mode GPU budget, default 21)
+# The eval math no longer lives here; this preserves the legacy argv contract
+# while delegating to the single canonical implementation:
+#   argv: <load_dir> <ctx> <limit_chunks> <device: cpu|mps|auto> <dtype> <tag> <out_json>
 # Behavior preserved: RESULT_JSON line on stdout; <out_json> written at the exact
 # requested path. Added by the module: a canonically-named ppl_<model>_<tag>.json
 # next to it (collision-impossible), a harness_key in every record, and a
 # results-ledger append (skipped silently when no repo/ledger is reachable).
-# NOTE: not shipped to the pod during the live campaign — pod migration is
-# POST-campaign (run-frozen rule).
 import json
 import os
 import sys

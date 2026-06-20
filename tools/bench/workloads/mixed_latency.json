@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "name": "mixed_latency",
+  "kind": "mixed_latency",
+  "description": "One long prefill class mixed with short interactive requests to test starvation and fairness.",
+  "prompt_token_targets": [1024, 65536],
+  "concurrency": [2, 4, 8, 16],
+  "decode_tokens": 96,
+  "temperature": 0.0,
+  "shared_context": [
+    "Short chat context: user asks a small local coding question.",
+    "Long agent context: full repo summary, previous tool traces, benchmark instructions, and serving roadmap.",
+    "Fairness target: short requests should continue to receive decode turns while long prefills progress in chunks."
+  ],
+  "user_templates": [
+    "Request {request_id}: give the next action only.",
+    "Request {request_id}: produce a concise status update.",
+    "Request {request_id}: explain whether chunked prefill would help this case."
+  ],
+  "success_metrics": [
+    "short_ttft_p95_ms",
+    "long_ttft_p95_ms",
+    "queue_wait_p95_ms",
+    "aggregate_tokens_per_second"
+  ]
+}

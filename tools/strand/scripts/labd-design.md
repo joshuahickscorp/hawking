@@ -234,7 +234,7 @@ The process table is an API with platform-dependent semantics. Three sub-traps, 
    'sleep 2 # tag'` exec-optimizes the wrapper away, so the tag never enters the process
    table; only the multi-command form `bash -c 'sleep 2; true # tag'` stays resident and
    matches). When the name is unreliable, kill by resource handle instead (GPU occupancy:
-   `nvidia-smi --query-compute-apps=pid`). Same family: the runbook's `pkill -f strand-qat.py`
+   process-level GPU monitors). Same family: the runbook's `pkill -f strand-qat.py`
    issued through a `bash -c` wrapper is ancestor-safe on macOS and would kill its own wrapper
    first on Linux.
 

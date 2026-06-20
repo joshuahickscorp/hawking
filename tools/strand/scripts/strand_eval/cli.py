@@ -2,8 +2,8 @@
 # strand_eval.cli — the one CLI over the canon eval + ledger.
 #
 #   strand-eval run    --model DIR --tag TAG [--ctx 2048] [--chunks 64]
-#                      [--device auto|cpu|cuda|mps|offload] [--dtype bfloat16]
-#                      [--out-dir DIR] [--gpu-gb N] [--ce-slice N] [--no-ledger]
+#                      [--device auto|cpu|mps] [--dtype bfloat16]
+#                      [--out-dir DIR] [--ce-slice N] [--no-ledger]
 #   strand-eval ledger check  [--ledger PATH]
 #   strand-eval ledger ingest DIR [--ledger PATH] [--quiet]
 #   strand-eval where         (self-location proof: prints module + repo root)
@@ -31,15 +31,13 @@ def main(argv=None):
     r.add_argument("--chunks", type=int, default=64,
                    help="window cap: 64=screening, 146=anchor, 0=all")
     r.add_argument("--device", default="auto",
-                   choices=["auto", "cpu", "cuda", "mps", "offload"])
+                   choices=["auto", "cpu", "mps"])
     r.add_argument("--dtype", default="bfloat16",
                    choices=["bfloat16", "float16", "float32"])
     r.add_argument("--out-dir", default=None,
                    help="result dir (default: the model dir); NAME is always derived")
-    r.add_argument("--gpu-gb", type=float, default=None,
-                   help="offload mode GPU budget GiB (default env EVAL_GPU_GB or 21)")
     r.add_argument("--ce-slice", type=int, default=None,
-                   help="CE row-slice size (default: 0 on cpu/cuda, 512 on mps)")
+                   help="CE row-slice size (default: 0 on cpu, 512 on mps)")
     r.add_argument("--ledger", default=None, help="ledger path override")
     r.add_argument("--no-ledger", action="store_true")
 
@@ -68,7 +66,7 @@ def main(argv=None):
         from strand_eval.core import run_eval
         run_eval(a.model, a.tag, ctx=a.ctx, limit_chunks=a.chunks, device=a.device,
                  dtype=a.dtype, out_dir=a.out_dir, ledger_path=a.ledger,
-                 gpu_gb=a.gpu_gb, ce_slice=a.ce_slice, no_ledger=a.no_ledger)
+                 ce_slice=a.ce_slice, no_ledger=a.no_ledger)
         return 0
 
     if a.cmd == "ledger":

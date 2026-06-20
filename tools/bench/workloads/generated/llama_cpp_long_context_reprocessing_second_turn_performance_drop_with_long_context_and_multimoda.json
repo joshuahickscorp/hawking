@@ -1,0 +1,42 @@
+{
+  "concurrency": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "decode_tokens": 128,
+  "description": "Repeated long shared prefix plus small user deltas.",
+  "kind": "shared_agent",
+  "name": "llama_cpp_long_context_reprocessing_second_turn_performance_drop_with_long_context_and_multimoda",
+  "prompt_token_targets": [
+    8192,
+    32768,
+    65536
+  ],
+  "schema_version": 1,
+  "shared_context": [
+    "Repository map: src/, crates/, tools/, docs/.",
+    "Recent transcript: user asks for iterative code changes and benchmark evidence.",
+    "Constraint: Apple-local, deterministic, no unsupported backend assumptions."
+  ],
+  "source_issue": {
+    "engine": "llama.cpp",
+    "pain_class": "long_context_reprocessing",
+    "score": 15,
+    "title": "Second-turn performance drop with long context and multimodal state",
+    "url": "https://github.com/ggml-org/llama.cpp/issues/20133"
+  },
+  "success_metrics": [
+    "ttft_p95_ms",
+    "aggregate_tokens_per_second",
+    "per_user_tokens_per_second",
+    "prefix_cache_hit_rate",
+    "resident_state_bytes"
+  ],
+  "temperature": 0.0,
+  "user_templates": [
+    "Turn {request_id}: answer the issue-derived task while preserving the shared context.",
+    "Turn {request_id}: summarize what changed since the previous turn and continue."
+  ]
+}

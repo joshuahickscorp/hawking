@@ -53,7 +53,7 @@
 #   --threads N         Quantizer threads (default: all cores).
 #   --ctx N             PPL context length in tokens (default: 2048).
 #   --limit-chunks N    Eval only the first N non-overlapping windows; 0 = all.
-#   --device D          auto|cpu|mps|cuda for the PPL eval (default: auto).
+#   --device D          auto|cpu|mps for the PPL eval (default: auto).
 #   --eval-dtype D      bfloat16 (default), float16, or float32 for the forward pass.
 #                       Keep bfloat16 — Qwen2.5 overflows fp16 to NaN.
 #   --recon-dtype D     bf16 (default), f16, or f32 for the on-disk reconstructed shards.
@@ -330,9 +330,7 @@ load_dir, ctx_s, limit_s, device_s, dtype_s, tag, out_json = sys.argv[1:8]
 ctx = int(ctx_s); limit = int(limit_s)
 
 if device_s == "auto":
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
-    elif getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
+    if getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
         device = torch.device("mps")
     else:
         device = torch.device("cpu")

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "name": "cache_miss_taxonomy",
+  "kind": "cache_miss_taxonomy",
+  "description": "Exact, near-prefix, and divergent-prefix requests to force explicit cache-hit/miss reasons.",
+  "prompt_token_targets": [4096, 8192, 32768],
+  "concurrency": [1, 2, 4],
+  "decode_tokens": 64,
+  "temperature": 0.0,
+  "shared_context": [
+    "Exact prefix block: same repo context and same system instruction.",
+    "Near prefix block: one metadata field changes while most tokens remain identical.",
+    "Divergent prefix block: early tokens differ so the prefix cache must reject reuse."
+  ],
+  "user_templates": [
+    "Request {request_id}: classify this as exact, near, or divergent prefix reuse.",
+    "Request {request_id}: explain which cache miss reason should be recorded."
+  ],
+  "success_metrics": [
+    "prefix_cache_hit_rate",
+    "cache_miss_reason_counts",
+    "saved_prefill_tokens",
+    "output_parity"
+  ]
+}

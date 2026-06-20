@@ -25,7 +25,7 @@ DATASET_CONFIG = "wikitext-2-raw-v1"
 DATASET_IDS = ("wikitext", "Salesforce/wikitext")
 
 DTYPES = ("bfloat16", "float16", "float32")
-DEVICES = ("auto", "cpu", "cuda", "mps", "offload")
+DEVICES = ("auto", "cpu", "mps")
 
 # Leaf dir names that carry no model identity (recon dumps, HF export dirs, ...).
 _GENERIC_LEAVES = {
@@ -154,19 +154,15 @@ def sidecar_eff_bpw(load_dir):
 # ---------------------------------------------------------------------------
 
 def resolve_device(device_s):
-    """'auto'|'cpu'|'cuda[:N]'|'mps'|'offload' -> (mode, resolved torch.device str).
+    """'auto'|'cpu'|'mps' -> (mode, resolved torch.device str).
 
     The RECORDED device is the resolved placement, never the mode string (the
     eval-ppl.py divergence the audit flagged)."""
     import torch
     if device_s == "auto":
-        if torch.cuda.is_available():
-            return "auto", "cuda"
         if getattr(torch.backends, "mps", None) is not None and torch.backends.mps.is_available():
             return "auto", "mps"
         return "auto", "cpu"
-    if device_s == "offload":
-        return "offload", ("cuda:0" if torch.cuda.is_available() else "cpu")
     return device_s, device_s
 
 
@@ -193,14 +189,6 @@ def load_model_and_tokenizer(load_dir, device_s, dtype_s, gpu_gb=None):
         import transformers.modeling_utils as mu
         mu.caching_allocator_warmup = lambda *a, **k: None
         model = AutoModelForCausalLM.from_pretrained(load_dir, device_map=resolved, **kw)
-        input_device = torch.device(resolved)
-    elif mode == "offload":
-        gb = str(gpu_gb if gpu_gb is not None else os.environ.get("EVAL_GPU_GB", "21"))
-        print(f"[ppl] loading '{load_dir}' offload (gpu={gb}GiB, rest on cpu, {dtype_s})",
-              flush=True)
-        model = AutoModelForCausalLM.from_pretrained(
-            load_dir, device_map="auto",
-            max_memory={0: f"{gb}GiB", "cpu": "800GiB"}, **kw)
         input_device = torch.device(resolved)
     elif dev == "cpu":
         model = AutoModelForCausalLM.from_pretrained(load_dir, **kw)
@@ -308,7 +296,7 @@ def run_eval(load_dir, tag, ctx=2048, limit_chunks=64, device="auto",
         raise SystemExit(f"[ppl] ctx={ctx} too large for {enc.shape[0]} tokens")
     chunk_list = [enc[i * ctx:(i + 1) * ctx] for i in range(n_chunks)]
 
-    # MPS defaults to sliced CE (memory law); cpu/cuda keep the canon whole-window CE.
+    # MPS defaults to sliced CE (memory law); CPU keeps the canon whole-window CE.
     if ce_slice is None:
         ce_slice = 512 if str(resolved).startswith("mps") else 0
 
@@ -330,7 +318,7 @@ def run_eval(load_dir, tag, ctx=2048, limit_chunks=64, device="auto",
     with open(out_json, "w") as f:
         json.dump(rec, f, indent=2)
 
-    # Legacy-shape RESULT_JSON stdout line (pod-chain / drivers grep for it).
+    # Legacy-shape RESULT_JSON stdout line for older drivers that grep for it.
     legacy = {"tag": tag, "ppl": ppl, "ctx": ctx, "chunks": n_chunks, "tokens": ntok,
               "device": resolved, "dtype": dtype, "model": load_dir}
     print("RESULT_JSON " + json.dumps(legacy), flush=True)

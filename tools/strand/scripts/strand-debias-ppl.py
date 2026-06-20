@@ -169,7 +169,7 @@ def main():
     ap.add_argument("--out", default="research/debias-ppl-ab.json")
     ap.add_argument("--ctx", type=int, default=2048)
     ap.add_argument("--chunks", type=int, default=64)
-    ap.add_argument("--device", default="cpu", choices=["cpu", "mps", "cuda", "auto"])
+    ap.add_argument("--device", default="cpu", choices=["cpu", "mps", "auto"])
     ap.add_argument("--dtype", default="bfloat16",
                     choices=["bfloat16", "float16", "float32"])
     ap.add_argument("--mode", default="vector", choices=["vector", "scalar"],

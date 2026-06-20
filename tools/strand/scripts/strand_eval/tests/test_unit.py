@@ -145,7 +145,7 @@ class TestLedger(unittest.TestCase):
         src = os.path.join(self.tmp, "pod-results")
         os.makedirs(src)
         legacy = {"tag": "q2_l12_out1", "ppl": 10.538037609591512, "ctx": 2048,
-                  "chunks": 64, "tokens": 131008, "device": "cuda",
+                  "chunks": 64, "tokens": 131008, "device": "mps",
                   "dtype": "bfloat16", "model": "scratch/qwen-7b/reopen/q2_l12_out1/recon"}
         with open(os.path.join(src, "ppl_qwen-7b_q2_l12_out1.json"), "w") as f:
             json.dump(legacy, f)

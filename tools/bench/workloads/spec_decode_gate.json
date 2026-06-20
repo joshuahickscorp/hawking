@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "name": "spec_decode_gate",
+  "kind": "spec_decode_gate",
+  "description": "Speculative decoding on/off matrix for Apple-local net-win gating.",
+  "prompt_token_targets": [1024, 8192],
+  "concurrency": [1, 2, 4],
+  "decode_tokens": 256,
+  "temperature": 0.0,
+  "shared_context": [
+    "Spec decode gate: drafting must improve accepted tokens/sec and must not regress P95 latency.",
+    "Apple-local caveat: small fast models may not amortize draft overhead on Metal."
+  ],
+  "user_templates": [
+    "Request {request_id}: continue this deterministic text with a concise technical explanation.",
+    "Request {request_id}: repeat the relevant constraint and finish the sentence."
+  ],
+  "success_metrics": [
+    "accepted_tokens_per_second",
+    "draft_accept_rate",
+    "ttft_p95_ms",
+    "output_parity"
+  ]
+}

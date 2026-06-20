@@ -1,0 +1,42 @@
+{
+  "concurrency": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "decode_tokens": 128,
+  "description": "Exact, near, and divergent prefix cases with miss reasons.",
+  "kind": "cache_miss_taxonomy",
+  "name": "llama_cpp_cache_invalidation_opacity_prompt_cache_state_drift_in_multi_turn_conversations",
+  "prompt_token_targets": [
+    4096,
+    8192,
+    32768
+  ],
+  "schema_version": 1,
+  "shared_context": [
+    "Repository map: src/, crates/, tools/, docs/.",
+    "Recent transcript: user asks for iterative code changes and benchmark evidence.",
+    "Constraint: Apple-local, deterministic, no unsupported backend assumptions."
+  ],
+  "source_issue": {
+    "engine": "llama.cpp",
+    "pain_class": "cache_invalidation_opacity",
+    "score": 14,
+    "title": "Prompt-cache state drift in multi-turn conversations",
+    "url": "https://github.com/ggml-org/llama.cpp/issues/21681"
+  },
+  "success_metrics": [
+    "ttft_p95_ms",
+    "aggregate_tokens_per_second",
+    "per_user_tokens_per_second",
+    "prefix_cache_hit_rate",
+    "resident_state_bytes"
+  ],
+  "temperature": 0.0,
+  "user_templates": [
+    "Turn {request_id}: answer the issue-derived task while preserving the shared context.",
+    "Turn {request_id}: summarize what changed since the previous turn and continue."
+  ]
+}

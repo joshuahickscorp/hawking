@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "name": "shared_agent",
+  "kind": "shared_agent",
+  "description": "Repeated coding-agent turns with a large shared system/repo prefix and small user deltas.",
+  "prompt_token_targets": [8192, 32768, 65536],
+  "concurrency": [1, 2, 4, 8, 16],
+  "decode_tokens": 128,
+  "temperature": 0.0,
+  "shared_context": [
+    "Repository map: crates/dismantle-core, crates/dismantle-serve, tools/bench, tools/training, docs/plans.",
+    "Project policy: Apple-first serving, Metal-focused runtime work, no unsupported backend assumptions.",
+    "Agent memory: preserve existing user edits, measure before public claims, report P95 latency.",
+    "Serving goal: repeated turns should reuse prompt state rather than rebuilding the shared context."
+  ],
+  "user_templates": [
+    "Turn {request_id}: inspect the serving plan and identify the next concrete implementation step.",
+    "Turn {request_id}: continue from the previous turn and explain what cache/state should be reused.",
+    "Turn {request_id}: summarize risks for this Apple-local long-context workload."
+  ],
+  "success_metrics": [
+    "ttft_p95_ms",
+    "aggregate_tokens_per_second",
+    "prefix_cache_hit_rate",
+    "prompt_tokens_recomputed",
+    "resident_state_bytes"
+  ]
+}

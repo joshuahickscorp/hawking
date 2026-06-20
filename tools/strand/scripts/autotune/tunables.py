@@ -236,7 +236,7 @@ TUNABLES = [
         "metric": "seconds per offload PPL eval (ops/eval-ppl.py) per EVAL_GPU_GB on the pod",
         "requires": [],
         "cmd": None, "parse": None, "guard": None, "invariance": None,
-        "notes": "DISABLED: pod-side (CUDA offload split) — not measurable on this machine at all; "
+        "notes": "DISABLED: cloud offload split — not measurable on this Apple machine; "
                  "the local profile must never claim it. Listed so the registry is the complete "
                  "census of hand-picked constants.",
     },

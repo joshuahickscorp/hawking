@@ -85,7 +85,7 @@ def main():
                     help="non-overlapping windows to forward; 0 means all")
     ap.add_argument("--layers", default="all",
                     help="all, comma list, or ranges like 0,3,10-12")
-    ap.add_argument("--device", default="cpu", choices=["cpu", "mps", "cuda"])
+    ap.add_argument("--device", default="cpu", choices=["cpu", "mps"])
     ap.add_argument("--dtype", default="float32",
                     choices=["float32", "bfloat16", "float16"])
     ap.add_argument("--no-feature-means", action="store_true",
