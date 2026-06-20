@@ -2,24 +2,49 @@
 
 Paste the "Opening prompt" at the bottom into a new chat to resume.
 
-## One-paragraph state
+## One-paragraph state (updated 2026-06-20 ~10:40 EDT)
 
-RWKV-7 0.4B low-bit QAT ("G1a", FFN ternary, last-8 layers) is running on MPS,
-now ~6x faster after wiring the **chunked-scan WKV-7** kernel through the trainer.
-The working tree was committed clean (4 commits) and 25 dead branches deleted. A
-full `dismantle → hawking` rename is **designed and prepped but NOT executed** —
-it must wait until training + the post-G1a chain finish, because the live
-`autocycle` relaunches the trainer every ~5 steps using current paths.
+**G1a is DONE** — RWKV-7 0.4B ternary-QAT (FFN last-8) hit its EMA gate (loss_ema
+5.92 ≤ 6.0) at **step 90**, the hawking handoff fired, and it **exported a full HF
+model** at `artifacts/lowbit_rwkv7/hawking_arc/ema6p0_step_000090_20260620_041225/`
+(candidate ppl 3.449 vs fp32 base 3.356 = **+2.7%**, near-lossless low-bit; samples
+coherent with expected 0.4B repetition). Now the **master autonomous chain is running**
+(see below): build/parity checks → 7-model draft sweep → hardening → scorecard. The
+`dismantle → hawking` rename is still **prepped but NOT executed** (kit ready; wait
+until the chain finishes — it uses live training paths).
 
-## Live processes (as of 2026-06-19 ~23:33 EDT)
+## Master autonomous chain (launched 2026-06-20 ~10:40 EDT, pid 55871)
 
-| What | PID | Notes |
-|---|---|---|
-| G1a trainer (chunked) | 23689 | `nohup caffeinate` python `rwkv7_qat.py … --use-chunked --chunk-size 32 --resume-from step_000075` |
-| autocycle orchestrator | 24703 | targets 80..150 every 5, handoff→hawking armed at ema≤6.0, keep_last 8 |
+One sequential MPS job at a time (18 GB). Detached (`nohup caffeinate`), chunked +
+seeded (1337), watermark 0.0. Command was:
+`DRAFT_VARIANTS="<7 variants>" DRAFT_EPOCHS=1 SEED=1337 USE_CHUNKED=1 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 nohup caffeinate -dimsu bash tools/training/g1a_v2_expansion_chain.sh 3.4489 pass`
 
-If PIDs are stale (new session), re-find: `pgrep -fl rwkv7_qat.py` and
-`pgrep -fl autocycle_step50_ozempic`.
+Stages (each soft-fails — one failure never stops the rest):
+1. cargo check core/serve/bench/tq (✓ all PASS at launch), json/mamba2 tests, rwkv7
+   parity + flatness (skip if no GGUF), TQ synthetic parity, TQ artifact gates,
+   Qwen3B llama baseline (soft).
+2. **Draft sweep** — 7 RWKV-7 drafts trained from scratch, small→large, chunked,
+   EPOCHS=1: `draft_35m_probe 50m 75m 100m 150m 200m 300m`. Per-model eval (ppl +
+   accept-rate vs 0.4B) appended to `runs/custom_<v>/eval_log.jsonl`.
+3. `rwkv7_spec_hardening.py` (spec physics gate) → `rwkv7_competitive_scorecard.py`.
+
+ETA: ~20–30h (the 300M is the long pole). Runs as long as it needs; not time-boxed.
+
+### Monitor the chain
+```bash
+tail -f artifacts/lowbit_rwkv7/master_chain.log          # stage-by-stage
+tail -f artifacts/lowbit_rwkv7/draft_sweep.log           # which draft model is training
+ls -t artifacts/lowbit_rwkv7/runs/custom_*/eval_log.jsonl # per-model results as they land
+pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"      # is it alive? (master pid 55871)
+```
+If it dies mid-sweep, re-launch just the sweep:
+`DRAFT_VARIANTS="<remaining>" EPOCHS=1 SEED=1337 USE_CHUNKED=1 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 bash tools/training/launch_draft_sweep.sh`
+
+## G1a output (the finished 0.4B model)
+`artifacts/lowbit_rwkv7/hawking_arc/ema6p0_step_000090_20260620_041225/` — `hf/`
+(loadable HF export), `state_dict.pt`, `report.md`, `ppl.jsonl`, `samples.jsonl`,
+`frontier_queue.sh` (optional recipes to push the 0.4B further: 512_g8 / 768_g8 / 1024_g16).
+The autocycle + G1a trainer are STOPPED (by design — gate reached), not crashed.
 
 ## Training status
 
