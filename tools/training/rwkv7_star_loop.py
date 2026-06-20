@@ -172,7 +172,7 @@ def _worker(args: tuple) -> None:
 
 def _find_bin() -> str:
     candidates = [
-        ROOT / "target/release/dismantle",
+        ROOT / "target/release/hawking",
         ROOT / "target/debug/dismantle",
     ]
     for c in candidates:

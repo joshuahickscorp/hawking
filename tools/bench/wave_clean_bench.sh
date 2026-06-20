@@ -51,7 +51,7 @@ run_step() {  # run_step "label" cmd...
 # [stats] line (with dec_tps) to STDERR only when --json is NOT passed.
 prof_tps() {  # $1 = profile name
   local prof="$1" serr dec disp con
-  serr=$(./target/release/dismantle --profile "$prof" generate \
+  serr=$(./target/release/hawking --profile "$prof" generate \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE" --prompt "$PROMPT" \
     --max-new-tokens "$LADDER_TOKENS" --temperature 0 --seed 0 2>&1 >/dev/null) || true
   dec=$(printf '%s\n' "$serr" | sed -n 's/.*dec_tps=\([0-9.][0-9.]*\).*/\1/p' | head -1)
@@ -65,7 +65,7 @@ prof_tps() {  # $1 = profile name
   echo "################################################################"
   echo "# WAVE CLEAN BENCH (slim: only un-measured lanes)   ${STAMP}"
   echo "# git: $(git rev-parse --short HEAD 2>/dev/null)  +$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ') local edits"
-  echo "# binary shader-hash:  $(./target/release/dismantle shader-hash 2>/dev/null)"
+  echo "# binary shader-hash:  $(./target/release/hawking shader-hash 2>/dev/null)"
   echo "# profile shader-hash: $(grep '\"shader_hash\"' "$PROFILE" 2>/dev/null | grep -oE '[a-f0-9]{24}')"
   echo "# CTXS=${CTXS}  LADDER_TOKENS=${LADDER_TOKENS}  SKIP_LONGCTX=${SKIP_LONGCTX}"
   echo "################################################################"
@@ -87,7 +87,7 @@ prof_tps() {  # $1 = profile name
     run_step "[C] #6 long-ctx  f32-KV baseline (CTXS=$CTXS)" \
       env CTXS="$CTXS" tools/bench/long_context_bench.sh
     echo; echo "---- [C] #6 long-ctx  F16_KV + FLASH_F16KV (CTXS=$CTXS) ----"
-    env CTXS="$CTXS" DISMANTLE_QWEN_F16_KV=1 DISMANTLE_QWEN_FLASH_F16KV=1 \
+    env CTXS="$CTXS" HAWKING_QWEN_F16_KV=1 HAWKING_QWEN_FLASH_F16KV=1 \
       tools/bench/long_context_bench.sh \
       || echo "!!!! STEP FAILED (continuing): #6 ON !!!!"
   else

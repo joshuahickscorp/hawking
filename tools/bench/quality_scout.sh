@@ -13,7 +13,7 @@
 set -o pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 WEIGHTS_LIST="${1:-${WEIGHTS_LIST:-}}"
 TOKENS="${TOKENS:-80}"
 SEED="${SEED:-0}"
@@ -24,11 +24,11 @@ if [[ -z "$WEIGHTS_LIST" ]]; then
 fi
 
 # Locked Qwen fast-path env (set if missing) — same as quick_bench.sh.
-: "${DISMANTLE_QWEN_TCB:=1}"
-: "${DISMANTLE_QWEN_VOCAB_PRUNE:=32000}"
-: "${DISMANTLE_QWEN_Q4K_LMHEAD:=1}"
-: "${DISMANTLE_QWEN_FFN_DOWN_Q4K:=1}"
-export DISMANTLE_QWEN_TCB DISMANTLE_QWEN_VOCAB_PRUNE DISMANTLE_QWEN_Q4K_LMHEAD DISMANTLE_QWEN_FFN_DOWN_Q4K
+: "${HAWKING_QWEN_TCB:=1}"
+: "${HAWKING_QWEN_VOCAB_PRUNE:=32000}"
+: "${HAWKING_QWEN_Q4K_LMHEAD:=1}"
+: "${HAWKING_QWEN_FFN_DOWN_Q4K:=1}"
+export HAWKING_QWEN_TCB HAWKING_QWEN_VOCAB_PRUNE HAWKING_QWEN_Q4K_LMHEAD HAWKING_QWEN_FFN_DOWN_Q4K
 
 # 6 prompts spanning chat, code, math, factual recall, creative, instruction follow.
 PROMPTS=(

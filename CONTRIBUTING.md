@@ -1,6 +1,6 @@
 # Contributing
 
-`dismantle` is owner-maintained. Public contributor credit in the project docs is
+`hawking` is owner-maintained. Public contributor credit in the project docs is
 kept to the maintainer:
 
 - Joshua Hicks

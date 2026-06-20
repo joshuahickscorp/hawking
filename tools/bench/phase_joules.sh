@@ -11,7 +11,7 @@
 # METHOD (the 0.3 proxy):
 #   Energy tracks GPU time. GPU time is proportional to CPU-encode time in
 #   the single-CB-per-token model (one MTLCommandBuffer per token, no split).
-#   We measure CPU-encode time per kernel via DISMANTLE_TCB_TRACE=cpu on a
+#   We measure CPU-encode time per kernel via HAWKING_TCB_TRACE=cpu on a
 #   short bench warm-up pass, compute phase fractions, then multiply total
 #   J/tok (from a normal power-measured decode) by those fractions.
 #
@@ -20,7 +20,7 @@
 # CAVEATS:
 #   1. The trace pass and the energy pass are SEPARATE runs; minor variance.
 #   2. CPU-encode time is a proxy for GPU time, not a direct GPU measurement.
-#      For direct GPU-time fractions use DISMANTLE_TCB_TRACE=gpu_prod on the
+#      For direct GPU-time fractions use HAWKING_TCB_TRACE=gpu_prod on the
 #      bench pass (slower; changes absolute tps but preserves relative ratios).
 #   3. The energy measurement step runs the binary WITHOUT the trace overhead
 #      so measured tps/J/tok are production-representative.
@@ -34,17 +34,17 @@
 #   tools/bench/phase_joules.sh --domains             # + per-domain GPU/DRAM J/tok (macmon, no dep)
 #   tools/bench/phase_joules.sh --trace-mode gpu_prod  # real GPU fractions
 #   tools/bench/phase_joules.sh --source powermetrics  # force power source
-#   DISMANTLE_QWEN_PREDEC_F16SCALES=1 tools/bench/phase_joules.sh
+#   HAWKING_QWEN_PREDEC_F16SCALES=1 tools/bench/phase_joules.sh
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 TOKENS=256
 PROMPT='fn fibonacci(n: u64) -> u64 {'
@@ -164,17 +164,17 @@ mean_of() {
 
 # ---------------------------------------------------------------------------
 # STEP 1: Trace pass — collect CPU-encode-time fractions per kernel.
-# Uses DISMANTLE_TCB_TRACE=$TRACE_MODE + bench --trace-json.
+# Uses HAWKING_TCB_TRACE=$TRACE_MODE + bench --trace-json.
 # A short run (TRACE_TOKENS) suffices; fractions stabilize over ~20 tokens.
 # ---------------------------------------------------------------------------
 echo ""
-echo "--- Step 1: trace pass (${TRACE_TOKENS} tokens, DISMANTLE_TCB_TRACE=${TRACE_MODE}) ---"
+echo "--- Step 1: trace pass (${TRACE_TOKENS} tokens, HAWKING_TCB_TRACE=${TRACE_MODE}) ---"
 TRACEF="$(mktemp /tmp/phase_joules_trace.XXXXXX.json)"
 
 # We use 'bench --suite decode' which writes dispatch_samples to --trace-json.
 # Extra env is passed verbatim; the trace env var is added here.
 env $BASE_ENV \
-  DISMANTLE_TCB_TRACE="$TRACE_MODE" \
+  HAWKING_TCB_TRACE="$TRACE_MODE" \
   nice -n 19 taskpolicy -b "$BIN" bench \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
     --suite decode --trials 1 --max-new-tokens "$TRACE_TOKENS" \

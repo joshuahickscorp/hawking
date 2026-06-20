@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/bench/ab_lever.sh — balanced ABBA paired A/B for any DISMANTLE_QWEN_*
+# tools/bench/ab_lever.sh — balanced ABBA paired A/B for any HAWKING_QWEN_*
 # flag (or --profile fast) at configurable context length.
 #
 # DESIGN RATIONALE
@@ -15,33 +15,33 @@
 # cancels this: each 4-trial block runs A B B A, so position bias cancels across
 # the block in both the A and B pools.
 #
-# Long-ctx: f16-KV (DISMANTLE_QWEN_F16_KV) and flash-attn
-# (DISMANTLE_QWEN_FLASH_ATTN) pay at long context where KV-cache read traffic
+# Long-ctx: f16-KV (HAWKING_QWEN_F16_KV) and flash-attn
+# (HAWKING_QWEN_FLASH_ATTN) pay at long context where KV-cache read traffic
 # rivals weight read traffic. Use --long-ctx to synthesize a ~2K-token prompt
-# (≈8192 chars of a Rust fn snippet) and pass it via DISMANTLE_BENCH_PROMPT_FILE,
+# (≈8192 chars of a Rust fn snippet) and pass it via HAWKING_BENCH_PROMPT_FILE,
 # which the decode suite already honors (crates/dismantle-bench/src/suites/decode.rs:17).
 # At short context (~16 prompt tokens), both levers contribute <3% — within the
 # noise floor — so --long-ctx is mandatory to see a signal.
 #
-# MUTUAL EXCLUSION: DISMANTLE_QWEN_F16_KV and DISMANTLE_QWEN_FLASH_ATTN are
+# MUTUAL EXCLUSION: HAWKING_QWEN_F16_KV and HAWKING_QWEN_FLASH_ATTN are
 # mutually exclusive (crates/dismantle-core/src/model/qwen_dense.rs:3545 —
 # the binary returns an error if both are set). Test them separately.
 #
 # --profile fast: this is a CLI flag (--profile fast), NOT an env var.
-# It sets DISMANTLE_QWEN_VOCAB_PRUNE, Q4K_LMHEAD, FFN_DOWN_Q4K, Q4K_PREDEC,
+# It sets HAWKING_QWEN_VOCAB_PRUNE, Q4K_LMHEAD, FFN_DOWN_Q4K, Q4K_PREDEC,
 # and PREDEC_F16SCALES internally (crates/dismantle/src/main.rs:35-51).
 # Explicitly-set env vars take precedence over --profile. Use --cli-b for the B arm.
 #
 # USAGE
 # =====
-#   tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV --long-ctx
-#   tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_FLASH_ATTN --long-ctx
+#   tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV --long-ctx
+#   tools/bench/ab_lever.sh --lever HAWKING_QWEN_FLASH_ATTN --long-ctx
 #   tools/bench/ab_lever.sh --cli-b "--profile fast"
-#   tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV --long-ctx \
+#   tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV --long-ctx \
 #       --blocks 3 --tokens 32
 #
 # OPTIONS
-#   --lever VAR       DISMANTLE_QWEN_* env var name to toggle (A=0, B=1).
+#   --lever VAR       HAWKING_QWEN_* env var name to toggle (A=0, B=1).
 #                     Cannot be combined with --cli-b.
 #   --cli-b FLAGS     CLI flags to append to the B arm invocation (e.g.
 #                     "--profile fast"). A arm receives no extra CLI flags.
@@ -63,12 +63,12 @@
 # ======================================================
 # f16-KV at long ctx (energy/long-ctx lever, paradigm plan 2.1-a):
 #   bash tools/bench/ab_lever.sh \
-#       --lever DISMANTLE_QWEN_F16_KV \
+#       --lever HAWKING_QWEN_F16_KV \
 #       --long-ctx
 #
 # flash-attn at long ctx (paradigm plan 2.3):
 #   bash tools/bench/ab_lever.sh \
-#       --lever DISMANTLE_QWEN_FLASH_ATTN \
+#       --lever HAWKING_QWEN_FLASH_ATTN \
 #       --long-ctx
 #
 # --profile fast at short ctx (+7.4% prior, f16-scales bundle, Phase 1.2):
@@ -89,16 +89,16 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 KERNEL_PROFILE="${KERNEL_PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 
 # Locked Qwen fast-path (constant across A/B). Match paired_lever.sh default.
-BASE_ENV_DEFAULT="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV_DEFAULT="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
-LEVER=""          # DISMANTLE_QWEN_* env var name
+LEVER=""          # HAWKING_QWEN_* env var name
 CLI_B=""          # Extra CLI flags for B arm (e.g. "--profile fast")
 LONG_CTX=0
 CTX_TOKENS=2048   # Approximate prompt token count for --long-ctx
@@ -130,11 +130,11 @@ done
 [[ -z "$LEVER" && -z "$CLI_B" ]] && die "one of --lever or --cli-b is required"
 
 # Warn about F16_KV + FLASH_ATTN incompatibility if both appear in env or lever
-if [[ "$LEVER" == "DISMANTLE_QWEN_F16_KV" ]] && [[ -n "${DISMANTLE_QWEN_FLASH_ATTN:-}" ]]; then
-  die "DISMANTLE_QWEN_F16_KV and DISMANTLE_QWEN_FLASH_ATTN are mutually exclusive (binary will error)"
+if [[ "$LEVER" == "HAWKING_QWEN_F16_KV" ]] && [[ -n "${HAWKING_QWEN_FLASH_ATTN:-}" ]]; then
+  die "HAWKING_QWEN_F16_KV and HAWKING_QWEN_FLASH_ATTN are mutually exclusive (binary will error)"
 fi
-if [[ "$LEVER" == "DISMANTLE_QWEN_FLASH_ATTN" ]] && [[ -n "${DISMANTLE_QWEN_F16_KV:-}" ]]; then
-  die "DISMANTLE_QWEN_F16_KV and DISMANTLE_QWEN_FLASH_ATTN are mutually exclusive (binary will error)"
+if [[ "$LEVER" == "HAWKING_QWEN_FLASH_ATTN" ]] && [[ -n "${HAWKING_QWEN_F16_KV:-}" ]]; then
+  die "HAWKING_QWEN_F16_KV and HAWKING_QWEN_FLASH_ATTN are mutually exclusive (binary will error)"
 fi
 
 [[ -x "$BIN" ]] || die "binary not found/executable: $BIN (cargo build --release?)"
@@ -142,7 +142,7 @@ fi
 
 # Build label
 if [[ -n "$LEVER" ]]; then
-  LABEL="${LEVER//DISMANTLE_QWEN_/}"
+  LABEL="${LEVER//HAWKING_QWEN_/}"
   LABEL="${LABEL,,}"  # lowercase
 else
   # Sanitize --cli-b into a label (e.g. "--profile fast" -> "profile_fast")
@@ -209,7 +209,7 @@ run_arm() {
 
   if [[ -n "$PROMPT_FILE" ]]; then
     # Pass the long prompt via the env var that the decode suite reads.
-    bench_env="$bench_env DISMANTLE_BENCH_PROMPT_FILE=$PROMPT_FILE"
+    bench_env="$bench_env HAWKING_BENCH_PROMPT_FILE=$PROMPT_FILE"
   fi
 
   # shellcheck disable=SC2086
@@ -356,23 +356,23 @@ PYEOF
 # EXACT RUN_COMMAND EXAMPLES REQUESTED IN WAVE-5b
 # ================================================
 
-# (1) f16-KV at long context (DISMANTLE_QWEN_F16_KV, energy/long-ctx lever, plan 2.1-a):
+# (1) f16-KV at long context (HAWKING_QWEN_F16_KV, energy/long-ctx lever, plan 2.1-a):
 
 #     bash tools/bench/ab_lever.sh \
-#         --lever DISMANTLE_QWEN_F16_KV \
+#         --lever HAWKING_QWEN_F16_KV \
 #         --long-ctx
 
 #   This synthesizes a ~2048-token (~8192-char) Rust fn prompt, passes it via
-#   DISMANTLE_BENCH_PROMPT_FILE, and runs 2 ABBA blocks (8 trials: A B B A A B B A).
-#   A arm: DISMANTLE_QWEN_F16_KV=0 (disabled)
-#   B arm: DISMANTLE_QWEN_F16_KV=1 (enabled)
-#   NOTE: cannot combine with DISMANTLE_QWEN_FLASH_ATTN in the environment
+#   HAWKING_BENCH_PROMPT_FILE, and runs 2 ABBA blocks (8 trials: A B B A A B B A).
+#   A arm: HAWKING_QWEN_F16_KV=0 (disabled)
+#   B arm: HAWKING_QWEN_F16_KV=1 (enabled)
+#   NOTE: cannot combine with HAWKING_QWEN_FLASH_ATTN in the environment
 #   (binary will error at startup: mutual exclusion check in qwen_dense.rs:3545).
 
-# (2) flash-attn at long context (DISMANTLE_QWEN_FLASH_ATTN, plan 2.3):
+# (2) flash-attn at long context (HAWKING_QWEN_FLASH_ATTN, plan 2.3):
 
 #     bash tools/bench/ab_lever.sh \
-#         --lever DISMANTLE_QWEN_FLASH_ATTN \
+#         --lever HAWKING_QWEN_FLASH_ATTN \
 #         --long-ctx
 
 #   Same prompt synthesis as above. Flash-attn also only wins at long context:
@@ -402,14 +402,14 @@ PYEOF
 # ======================
 
 #   More blocks for tighter statistics:
-#     bash tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV --long-ctx --blocks 3
+#     bash tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV --long-ctx --blocks 3
     # 12 trials total, 6 per arm
 
 #   Longer decode for larger per-trial signal:
-#     bash tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV --long-ctx --tokens 64
+#     bash tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV --long-ctx --tokens 64
 
 #   Override ctx (e.g. 4K tokens where KV share is ~25%):
-#     bash tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV \
+#     bash tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV \
 #         --long-ctx --ctx-tokens 4096 --tokens 32
 
 # NOISE FLOOR / INTERPRETATION GUIDE

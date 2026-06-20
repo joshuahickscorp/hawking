@@ -113,11 +113,11 @@ MLX_MODEL_ID="mlx-community/Qwen2.5-3B-Instruct-4bit"
 PROMPT="Write a haiku about silicon."
 TOKENS=256
 MLX_TRIALS=3
-DISMANTLE_TRIALS=3
+HAWKING_TRIALS=3
 
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 
 # Python 3.12 framework (the build that ships Metal/MLX support).
 # The homebrew python3 (3.14 as of 2026-06-02) does not include mlx.
@@ -143,7 +143,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --tokens)           TOKENS="$2";          shift 2;;
     --mlx-trials)       MLX_TRIALS="$2";      shift 2;;
-    --dismantle-trials) DISMANTLE_TRIALS="$2"; shift 2;;
+    --dismantle-trials) HAWKING_TRIALS="$2"; shift 2;;
     --prompt)           PROMPT="$2";          shift 2;;
     --model)            MLX_MODEL_ID="$2";    shift 2;;
     --weights)          WEIGHTS="$2";         shift 2;;
@@ -194,7 +194,7 @@ MLX_VERSION="$("$PY312" -c 'import mlx_lm; print(mlx_lm.__version__)' 2>/dev/nul
 [[ -f "$PROFILE" ]] || die "kernel profile not found: $PROFILE"
 
 # Dismantle version
-DISMANTLE_VERSION="$("$BIN" --version 2>&1 | head -1 | awk '{print $2}' || echo unknown)"
+HAWKING_VERSION="$("$BIN" --version 2>&1 | head -1 | awk '{print $2}' || echo unknown)"
 
 # ---------------------------------------------------------------------------
 # Contamination check (informational, does NOT block)
@@ -208,9 +208,9 @@ fi
 # Locked Qwen fast-path env (matches the 30.5 tps baseline)
 # Mirrors measure_joules.sh / ab_lever.sh BASE_ENV_DEFAULT.
 # ---------------------------------------------------------------------------
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 # ---------------------------------------------------------------------------
 # Header
@@ -218,7 +218,7 @@ DISMANTLE_QWEN_Q4K_PREDEC=1"
 printf '\n'
 printf '=== MLX CEILING TEST — Qwen2.5-3B-Instruct-4bit / M3 Pro ===\n'
 printf 'mlx_lm version : %s  (Python 3.12 framework)\n' "$MLX_VERSION"
-printf 'dismantle      : v%s  (locked fast-path)\n' "$DISMANTLE_VERSION"
+printf 'dismantle      : v%s  (locked fast-path)\n' "$HAWKING_VERSION"
 printf 'mlx model id   : %s\n' "$MLX_MODEL_ID"
 printf 'dismantle wts  : %s\n' "$WEIGHTS"
 printf 'tokens         : %s\n' "$TOKENS"
@@ -340,8 +340,8 @@ printf '\n'
 # Runs under nice -n 19 taskpolicy -b (background QoS) for co-existence safety.
 # max_stall_ms=0 (off) — same as measure_joules.sh defaults.
 printf '[dismantle trials]\n'
-DISMANTLE_TPS_LIST=""
-for i in $(seq 1 "$DISMANTLE_TRIALS"); do
+HAWKING_TPS_LIST=""
+for i in $(seq 1 "$HAWKING_TRIALS"); do
   tmpout="/tmp/mlx_ab_dismantle_trial_${i}.txt"
   set +e
   # shellcheck disable=SC2086
@@ -362,7 +362,7 @@ for i in $(seq 1 "$DISMANTLE_TRIALS"); do
   if [[ $dis_ec -ne 0 ]]; then
     printf '  trial %d : FAILED (exit %d)\n' "$i" "$dis_ec"
     tail -5 "$tmpout" >&2
-    DISMANTLE_TPS_LIST="$DISMANTLE_TPS_LIST 0"
+    HAWKING_TPS_LIST="$HAWKING_TPS_LIST 0"
     continue
   fi
 
@@ -373,11 +373,11 @@ for i in $(seq 1 "$DISMANTLE_TRIALS"); do
     | grep -oE '[0-9.]+' || echo 0)"
   [[ -z "$dec_tps" ]] && dec_tps=0
   printf '  trial %d : %s tok/s\n' "$i" "$dec_tps"
-  DISMANTLE_TPS_LIST="$DISMANTLE_TPS_LIST $dec_tps"
+  HAWKING_TPS_LIST="$HAWKING_TPS_LIST $dec_tps"
 done
 
-DISMANTLE_MEDIAN="$(median_of "$DISMANTLE_TPS_LIST")"
-printf '  median  : %s tok/s\n' "$DISMANTLE_MEDIAN"
+HAWKING_MEDIAN="$(median_of "$HAWKING_TPS_LIST")"
+printf '  median  : %s tok/s\n' "$HAWKING_MEDIAN"
 printf '\n'
 
 # ---------------------------------------------------------------------------
@@ -385,12 +385,12 @@ printf '\n'
 # ---------------------------------------------------------------------------
 printf '=== RESULT ===\n'
 printf 'MLX median     : %s tok/s\n' "$MLX_MEDIAN"
-printf 'dismantle med  : %s tok/s\n' "$DISMANTLE_MEDIAN"
+printf 'dismantle med  : %s tok/s\n' "$HAWKING_MEDIAN"
 printf '\n'
 
 awk \
   -v mlx="$MLX_MEDIAN" \
-  -v dis="$DISMANTLE_MEDIAN" \
+  -v dis="$HAWKING_MEDIAN" \
   -v contaminated="$CLAUDE_RUNNING" \
   -v llamacpp="49" \
 'BEGIN {
@@ -448,15 +448,15 @@ OUT_JSON="/tmp/mlx_ab_result.json"
 import json, sys
 
 mlx_trials  = [float(x) for x in """$MLX_TPS_LIST""".split() if float(x) > 0]
-dis_trials  = [float(x) for x in """$DISMANTLE_TPS_LIST""".split() if float(x) > 0]
+dis_trials  = [float(x) for x in """$HAWKING_TPS_LIST""".split() if float(x) > 0]
 mlx_med  = float("$MLX_MEDIAN")  if "$MLX_MEDIAN"  not in ("", "0") else 0.0
-dis_med  = float("$DISMANTLE_MEDIAN") if "$DISMANTLE_MEDIAN" not in ("", "0") else 0.0
+dis_med  = float("$HAWKING_MEDIAN") if "$HAWKING_MEDIAN" not in ("", "0") else 0.0
 ratio    = mlx_med / dis_med if dis_med > 0 else None
 
 result = {
     "mlx_model_id":       "$MLX_MODEL_ID",
     "mlx_version":        "$MLX_VERSION",
-    "dismantle_version":  "$DISMANTLE_VERSION",
+    "dismantle_version":  "$HAWKING_VERSION",
     "tokens":             $TOKENS,
     "prompt":             "$PROMPT",
     "contaminated":       bool($CLAUDE_RUNNING),

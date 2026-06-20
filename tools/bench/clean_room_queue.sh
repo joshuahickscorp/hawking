@@ -33,12 +33,12 @@
 #   (2) prefill_mma_ttft_bench.sh — the Q4_K simdgroup-MMA prefill-TTFT verdict
 #       (P1-A, silicon #8), MMA-on vs MMA-off, BOTH predec-ON (the shipped
 #       config). GUARDED: only runs if the built binary recognizes
-#       DISMANTLE_QWEN_Q4K_MMA (i.e. P1-A landed); otherwise prints SKIP.
+#       HAWKING_QWEN_Q4K_MMA (i.e. P1-A landed); otherwise prints SKIP.
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 GATES_ONLY=0
 [[ "${1:-}" == "--gates-only" ]] && GATES_ONLY=1
 
@@ -83,7 +83,7 @@ hr
 echo "  SECTION 2 — Q4_K MMA prefill TTFT (P1-A; tools/bench/prefill_mma_ttft_bench.sh)"
 echo "  GO/NO-GO rule: MMA-on prefill_ms < MMA-off on the LONG prompt, predec-ON."
 hr
-# NOTE: dismantle reads DISMANTLE_QWEN_Q4K_MMA at runtime (not validated by
+# NOTE: dismantle reads HAWKING_QWEN_Q4K_MMA at runtime (not validated by
 # clap), so there is no cheap "is it landed" probe from the shell. Instead we
 # rely on prefill_mma_ttft_bench.sh's own SWAP-FIRED preflight, which reports
 # whether the MMA twin actually engaged the predec branch (a "+0% flat" result

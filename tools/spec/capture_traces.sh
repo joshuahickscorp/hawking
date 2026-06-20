@@ -22,7 +22,7 @@
 #   TOKENS        generation length per prompt (default: 200)
 #   OUT_DIR       directory for output traces.jsonl + per-prompt logs
 #                 (default: traces)
-#   BIN           dismantle binary (default: ./target/release/dismantle)
+#   BIN           dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS       GGUF model file (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
 #   PROFILE       kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
 #   PY            python3 binary (default: .venv/bin/python or /usr/bin/python3)
@@ -48,7 +48,7 @@ cd "$(dirname "$0")/../.."
 SAMPLE_FILE="${SAMPLE_FILE:-tools/spec/sample_prompts.txt}"
 TOKENS="${TOKENS:-200}"
 OUT_DIR="${OUT_DIR:-traces}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 
@@ -60,9 +60,9 @@ else
 fi
 
 # Locked fast-path env (same as ngram_baseline.sh)
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 die()  { printf 'error: %s\n' "$*" >&2; exit 64; }
 warn() { printf 'warn: %s\n'  "$*" >&2; }

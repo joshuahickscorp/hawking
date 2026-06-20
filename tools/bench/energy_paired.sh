@@ -19,14 +19,14 @@
 #
 # USAGE:
 #   # env-var style (recommended):
-#   COMMAND_A="./target/release/dismantle generate --weights models/... --profile fast"  \
-#   COMMAND_B="./target/release/dismantle generate --weights models/... --profile race"  \
+#   COMMAND_A="./target/release/hawking generate --weights models/... --profile fast"  \
+#   COMMAND_B="./target/release/hawking generate --weights models/... --profile race"  \
 #   tools/bench/energy_paired.sh
 #
 #   # or pass directly:
 #   tools/bench/energy_paired.sh \
-#     --cmd-a "./target/release/dismantle generate --weights models/... --profile fast" \
-#     --cmd-b "./target/release/dismantle generate --weights models/... --profile race"
+#     --cmd-a "./target/release/hawking generate --weights models/... --profile fast" \
+#     --cmd-b "./target/release/hawking generate --weights models/... --profile race"
 #
 # ENVIRONMENT (all optional):
 #   COMMAND_A / COMMAND_B  full shell command strings for the two variants

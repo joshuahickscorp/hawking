@@ -74,7 +74,7 @@ def _run_bench(
     if speculate is not None:
         cmd += ["--speculate", speculate, "--verify-window", str(verify_window)]
     env = os.environ.copy()
-    env["DISMANTLE_SPEC_LOG"] = "1"
+    env["HAWKING_SPEC_LOG"] = "1"
     if env_extra:
         env.update(env_extra)
     try:
@@ -194,7 +194,7 @@ def diagnose(args) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(prog="diagnose_spec_decode_k1")
-    p.add_argument("--bin", type=Path, default=Path("target/release/dismantle"))
+    p.add_argument("--bin", type=Path, default=Path("target/release/hawking"))
     p.add_argument("--weights", type=Path, required=True)
     p.add_argument("--profile", type=Path, required=True)
     p.add_argument("--tokens", type=int, default=32)

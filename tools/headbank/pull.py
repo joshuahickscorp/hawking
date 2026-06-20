@@ -3,7 +3,7 @@
 
 Reads a ``headbank_manifest.json`` (either a local copy or one downloaded
 from Drive / GitHub release) and stages the artifacts for a given model
-slug into ``$DISMANTLE_HOME/headbank/<slug>/``. Emits a shell snippet you
+slug into ``$HAWKING_HOME/headbank/<slug>/``. Emits a shell snippet you
 can ``source`` to set the runtime env vars.
 
 Usage
@@ -36,7 +36,7 @@ from pathlib import Path
 
 
 def _dismantle_home() -> Path:
-    return Path(os.environ.get("DISMANTLE_HOME") or (Path.home() / ".dismantle")).resolve()
+    return Path(os.environ.get("HAWKING_HOME") or (Path.home() / ".dismantle")).resolve()
 
 
 def _sha256_file(path: Path) -> str:
@@ -114,13 +114,13 @@ def _stage_entry(entry: dict, headbank_root: Path, manifest_dir: Path, *, verify
     _copy_local(profile_src, profile_dst)
     staged["runtime_profile"] = str(profile_dst)
 
-    # Patch the staged runtime profile so EAGLE5_HEAD / DISMANTLE_AWQ_SCALES
+    # Patch the staged runtime profile so EAGLE5_HEAD / HAWKING_AWQ_SCALES
     # point at the local copies, not the Drive original.
     payload = json.loads(profile_dst.read_text())
     env = dict(payload.get("runtime_env") or {})
     env["EAGLE5_HEAD"] = str(head_dst)
     if staged["awq_scales"]:
-        env["DISMANTLE_AWQ_SCALES"] = staged["awq_scales"]
+        env["HAWKING_AWQ_SCALES"] = staged["awq_scales"]
     payload["runtime_env"] = env
     payload["head"] = str(head_dst)
     payload["awq_scales"] = staged["awq_scales"]
@@ -139,7 +139,7 @@ def main() -> int:
     p.add_argument("--env-file", type=Path,
                    help="if set, write a sh-compatible env file you can `source`")
     p.add_argument("--home", type=Path, default=None,
-                   help="override DISMANTLE_HOME (defaults to $DISMANTLE_HOME or ~/.dismantle)")
+                   help="override HAWKING_HOME (defaults to $HAWKING_HOME or ~/.dismantle)")
     p.add_argument("--no-verify-sha", action="store_true",
                    help="skip sha256 check after copy")
     args = p.parse_args()

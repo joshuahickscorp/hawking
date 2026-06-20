@@ -112,11 +112,11 @@ BENCH_OUT="$LOG_DIR/vocab_bench_results.md"
     echo "# Vocab-prune paired bench"
     echo "Run: $(stamp)"
     echo ""
-    if [ -x "./target/release/dismantle" ]; then
+    if [ -x "./target/release/hawking" ]; then
         echo "## Baseline (no prune)"
         for trial in 1 2; do
             echo "### baseline trial $trial"
-            ./target/release/dismantle generate \
+            ./target/release/hawking generate \
                 --weights models/deepseek-v2-lite-q4.gguf \
                 --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                 --prompt "Once upon a time" \
@@ -127,7 +127,7 @@ BENCH_OUT="$LOG_DIR/vocab_bench_results.md"
         echo "## Pruned (--vocab-prune-path)"
         for trial in 1 2; do
             echo "### pruned trial $trial"
-            ./target/release/dismantle generate \
+            ./target/release/hawking generate \
                 --weights models/deepseek-v2-lite-q4.gguf \
                 --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                 --vocab-prune-path artifacts/calibration/analysis/vocab_whitelist_995.json \

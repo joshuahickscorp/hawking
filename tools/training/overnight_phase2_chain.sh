@@ -104,7 +104,7 @@ done
 [[ $WAITED -ge $WAIT_LIMIT_S ]] && { log "❌ phase 1 didn't finish in 6h; aborting phase 2"; write_status "aborted" "failed" "phase1 timeout"; exit 1; }
 
 # Pre-flight rebuild (in case patches landed)
-if ! [[ -x ./target/release/dismantle ]]; then
+if ! [[ -x ./target/release/hawking ]]; then
     log "binary missing; rebuilding"
     cargo build --release -p dismantle >> "$LOG" 2>&1 || { log "build failed; aborting"; exit 1; }
 fi
@@ -121,17 +121,17 @@ M5_OUT="$LOG_DIR/M5_rmsnorm_sites.md"
     echo ""
     echo "Per memory rmsnorm_fusion_sketch.md, 1/6 sites wired (FFN-norm). This module enumerates the remaining 5 sites for future wiring (the actual wiring is per-site Rust work; this module produces the work list)."
     echo ""
-    echo "## Existing wired site (gated by DISMANTLE_FUSED_ADD_RMSNORM=1)"
-    grep -rn "add_rmsnorm_fused\|DISMANTLE_FUSED_ADD_RMSNORM" crates/dismantle-core/src/ 2>/dev/null | head -10
+    echo "## Existing wired site (gated by HAWKING_FUSED_ADD_RMSNORM=1)"
+    grep -rn "add_rmsnorm_fused\|HAWKING_FUSED_ADD_RMSNORM" crates/dismantle-core/src/ 2>/dev/null | head -10
     echo ""
     echo "## All rmsnorm call sites (candidates for future wiring)"
     echo '```'
     grep -rn "rmsnorm\|RmsNorm\|rms_norm" crates/dismantle-core/src/model/ 2>/dev/null | grep -vi "test\|mock" | head -30
     echo '```'
     echo ""
-    echo "## Bench: with DISMANTLE_FUSED_ADD_RMSNORM=1 (existing 1/6)"
+    echo "## Bench: with HAWKING_FUSED_ADD_RMSNORM=1 (existing 1/6)"
     for trial in 1 2 3; do
-        DISMANTLE_FUSED_ADD_RMSNORM=1 ./target/release/dismantle generate \
+        HAWKING_FUSED_ADD_RMSNORM=1 ./target/release/hawking generate \
             --weights models/deepseek-v2-lite-q4.gguf \
             --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
             --prompt "Once upon a time" --max-new-tokens 64 --seed $trial 2>&1 \
@@ -160,16 +160,16 @@ M6_OUT="$LOG_DIR/M6_w2_shape_sweep.md"
     echo "Note: w2 is gated via env var (check J's patch). If not env-gated, this module just runs the default kernel selection sweep."
     echo ""
     # kernel_bench reports per-kernel timings
-    if ./target/release/dismantle bench-kernel --help 2>&1 | grep -q "shape"; then
+    if ./target/release/hawking bench-kernel --help 2>&1 | grep -q "shape"; then
         for shape in "1408x2048" "2048x1408" "4096x1024" "1024x4096"; do
             echo "## shape: $shape"
-            ./target/release/dismantle bench-kernel --shape "$shape" 2>&1 | tail -15
+            ./target/release/hawking bench-kernel --shape "$shape" 2>&1 | tail -15
             echo ""
         done
     else
         echo "(bench-kernel --shape not available in this binary; falling back to e2e)"
         for trial in 1 2 3; do
-            ./target/release/dismantle generate \
+            ./target/release/hawking generate \
                 --weights models/deepseek-v2-lite-q4.gguf \
                 --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                 --prompt "Once upon a time" --max-new-tokens 64 --seed $trial 2>&1 \
@@ -205,7 +205,7 @@ M7_OUT="$LOG_DIR/M7_stacked_multi_prompt.md"
             esac
             row="| $cfg |"
             for trial in 1 2 3 4 5; do
-                tps=$(./target/release/dismantle generate \
+                tps=$(./target/release/hawking generate \
                     --weights models/deepseek-v2-lite-q4.gguf \
                     --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                     --prompt "$p" --max-new-tokens 64 --seed $trial $extra 2>&1 \
@@ -244,7 +244,7 @@ M8_OUT="$LOG_DIR/M8_long_form_bench.md"
             [[ "$mode" = "on" ]] && extra="--q8-kv"
             row="| Q8 KV $mode |"
             for trial in 1 2 3; do
-                tps=$(./target/release/dismantle generate \
+                tps=$(./target/release/hawking generate \
                     --weights models/deepseek-v2-lite-q4.gguf \
                     --kernel-profile profiles/deepseek-v2-lite-q4.m3pro18.json \
                     --prompt "Once upon a time" --max-new-tokens $tokens --seed $trial $extra 2>&1 \

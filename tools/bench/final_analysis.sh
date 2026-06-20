@@ -62,7 +62,7 @@ fi
 banner "A  --profile fast  paired A/B  (the banked tps win)"
 tools/bench/ab_lever.sh --cli-b "--profile fast" || echo "[note] ab_lever profile-fast non-zero"
 echo "------ residency (held lever; expect ~neutral on 3B) ------"
-tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_RESIDENCY || echo "[note] ab_lever residency non-zero"
+tools/bench/ab_lever.sh --lever HAWKING_QWEN_RESIDENCY || echo "[note] ab_lever residency non-zero"
 
 banner "B  ENERGY  (measured per-domain J/tok + f16-KV footprint check)"
 echo "------ MEASURED per-domain J/tok (zeus IOReport energy model) ------"
@@ -73,15 +73,15 @@ echo "------ f16-KV relative J/tok @1024 (off vs on — is f16-KV an energy leve
 echo "  baseline (f16-KV OFF):"
 tools/bench/phase_joules.sh --tokens 1024 || echo "[note] phase_joules baseline non-zero"
 echo "  f16-KV ON:"
-DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --tokens 1024 || echo "[note] phase_joules f16-KV non-zero"
+HAWKING_QWEN_F16_KV=1 tools/bench/phase_joules.sh --tokens 1024 || echo "[note] phase_joules f16-KV non-zero"
 
 banner "C  f16-KV + flash  paired A/B --long-ctx  (long-context tps)"
-tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_F16_KV   --long-ctx || echo "[note] ab_lever f16-KV non-zero"
-tools/bench/ab_lever.sh --lever DISMANTLE_QWEN_FLASH_ATTN --long-ctx || echo "[note] ab_lever flash non-zero"
+tools/bench/ab_lever.sh --lever HAWKING_QWEN_F16_KV   --long-ctx || echo "[note] ab_lever f16-KV non-zero"
+tools/bench/ab_lever.sh --lever HAWKING_QWEN_FLASH_ATTN --long-ctx || echo "[note] ab_lever flash non-zero"
 
 banner "D  QUALITY (SHORT tier — fast, no long hang)"
-tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_PREDEC_F16SCALES --label f16scales --short-only || echo "[note] quality f16scales returned non-zero (FAIL/WARN is data, not an error)"
-tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_F16_KV --label f16kv --short-only || echo "[note] quality f16kv returned non-zero"
+tools/bench/quality_oracle.sh --lever HAWKING_QWEN_PREDEC_F16SCALES --label f16scales --short-only || echo "[note] quality f16scales returned non-zero (FAIL/WARN is data, not an error)"
+tools/bench/quality_oracle.sh --lever HAWKING_QWEN_F16_KV --label f16kv --short-only || echo "[note] quality f16kv returned non-zero"
 
 if [[ "$DIAG" == 1 ]]; then
   banner "DIAG-1  GPU-SATURATION TRACE  (kernel-bound vs inter-dispatch idle)"

@@ -2,7 +2,7 @@
 """pack_ffn — convert dismantle's raw FFN-sparsity capture stream into the
 sparsity predictor trainer's int8 parquet shards.
 
-dismantle's `generate` (with DISMANTLE_QWEN_CAPTURE_FFN_PATH=<file>) appends a
+dismantle's `generate` (with HAWKING_QWEN_CAPTURE_FFN_PATH=<file>) appends a
 little-endian binary stream. At every transformer layer of every greedy decode
 step it records (a) `norm_in` = the `ffn_norm` RMSNorm output (the gate/up
 input, i.e. the predictor's input) and (b) per 256-channel block of the

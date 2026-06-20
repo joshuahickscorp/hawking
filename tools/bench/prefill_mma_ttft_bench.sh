@@ -29,9 +29,9 @@
 #   This script prints a SWAP-FIRED preflight reminder.
 #
 # TWO REQUIRED FLAGS  (build plan §2/§7 — name BOTH)
-#   DISMANTLE_QWEN_BATCH_PREFILL — default-OFF; the MMA only runs under batched
+#   HAWKING_QWEN_BATCH_PREFILL — default-OFF; the MMA only runs under batched
 #     prefill, so this bench turns it ON for both arms (held constant).
-#   DISMANTLE_QWEN_Q4K_MMA       — the lever: 0 (arm A) vs 1 (arm B).
+#   HAWKING_QWEN_Q4K_MMA       — the lever: 0 (arm A) vs 1 (arm B).
 #   predec is held ON (the shipped config) so Option B is the path under test.
 #
 # CONTAMINATION  (feedback_bench_with_claude_open.md + build plan §7)
@@ -55,7 +55,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 PROMPT_TOKENS="${PROMPT_TOKENS:-256}"     # >= 256 so the batched prefill GEMM dominates
@@ -91,10 +91,10 @@ PROMPT_CHARS=${#PROMPT}
 
 # ---- arm env (predec held ON = shipped; BATCH_PREFILL held ON; MMA = lever) -
 # The locked Qwen fast-path (shipped decode config) + batched prefill on.
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1 DISMANTLE_QWEN_BATCH_PREFILL=1"
-env_for() { case "$1" in A) echo "DISMANTLE_QWEN_Q4K_MMA=0";; B) echo "DISMANTLE_QWEN_Q4K_MMA=1";; esac; }
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1 HAWKING_QWEN_BATCH_PREFILL=1"
+env_for() { case "$1" in A) echo "HAWKING_QWEN_Q4K_MMA=0";; B) echo "HAWKING_QWEN_Q4K_MMA=1";; esac; }
 arm_label() { case "$1" in A) echo "A MMA=0 (v3w/predec scalar)";; B) echo "B MMA=1 (predec-MMA twin)";; esac; }
 
 # One run -> emits "<prefill_ms> <dec_tps> <completion>". TTFT proxy = prefill_ms
@@ -181,9 +181,9 @@ doc = {
     "bench": "prefill_mma_ttft",
     "note": tag,
     "prompt_tokens": int(ptok), "decode_tokens": int(dtok), "runs": int(runs),
-    "env_held": ["DISMANTLE_QWEN_Q4K_PREDEC=1 (shipped)",
-                 "DISMANTLE_QWEN_BATCH_PREFILL=1"],
-    "lever": "DISMANTLE_QWEN_Q4K_MMA  (A=0, B=1)",
+    "env_held": ["HAWKING_QWEN_Q4K_PREDEC=1 (shipped)",
+                 "HAWKING_QWEN_BATCH_PREFILL=1"],
+    "lever": "HAWKING_QWEN_Q4K_MMA  (A=0, B=1)",
     "prefill_ms": {
         "A_mma_off": {"median": mPA, "spread": [f(loPA), f(hiPA)],
                       "runs": [f(x) for x in preA.split()]},

@@ -17,7 +17,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 CTXS="${CTXS:-4096 16384 32768}"

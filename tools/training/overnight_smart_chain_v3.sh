@@ -93,7 +93,7 @@ elif [[ -f "$PATCH" ]]; then
     if cargo build --release -p dismantle >>"$LOG" 2>&1; then
         log "rebuild OK"
         # Verify --q8-kv now present
-        if ./target/release/dismantle generate --help 2>&1 | grep -q '\-\-q8-kv'; then
+        if ./target/release/hawking generate --help 2>&1 | grep -q '\-\-q8-kv'; then
             log "✓ --q8-kv flag NOW available"
             touch "$M0_DONE"
         else
@@ -109,7 +109,7 @@ fi
 
 # Detect Q8 KV availability for downstream modules
 Q8_KV_ARG=""
-if ./target/release/dismantle generate --help 2>&1 | grep -q '\-\-q8-kv'; then
+if ./target/release/hawking generate --help 2>&1 | grep -q '\-\-q8-kv'; then
     Q8_KV_ARG="--q8-kv"
     log "Q8 KV available: $Q8_KV_ARG"
 fi
@@ -123,7 +123,7 @@ TIER_DEF=artifacts/calibration/tier_maps/v2_lite_default.json
 
 run_trial() {
     local prompt="$1"; local tokens="$2"; local seed="$3"; shift 3
-    ./target/release/dismantle generate \
+    ./target/release/hawking generate \
         --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
         --prompt "$prompt" --max-new-tokens "$tokens" --seed "$seed" \
         "$@" 2>&1 | grep -oE 'dec_tps=[0-9]+\.[0-9]+' | head -1 | cut -d= -f2
@@ -276,8 +276,8 @@ else
     {
         echo "# Kernel survey — $(stamp)"
         echo ""
-        if ./target/release/dismantle bench-kernel --help 2>&1 | head -1 | grep -q "bench-kernel\|usage"; then
-            ./target/release/dismantle bench-kernel 2>&1 | head -80
+        if ./target/release/hawking bench-kernel --help 2>&1 | head -1 | grep -q "bench-kernel\|usage"; then
+            ./target/release/hawking bench-kernel 2>&1 | head -80
         else
             echo "bench-kernel subcommand not available; survey skipped."
         fi

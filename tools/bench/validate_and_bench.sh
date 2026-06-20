@@ -17,7 +17,7 @@
 #
 # Env overrides:
 #   WEIGHTS   path to GGUF (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
-#   DBIN      dismantle binary (default: ./target/release/dismantle)
+#   DBIN      dismantle binary (default: ./target/release/hawking)
 #   SKIP_BENCH=1   skip report_card (run tests + bake only)
 #   ONLY_BENCH=1   skip all tests, jump straight to report_card
 
@@ -27,7 +27,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
-DBIN="${DBIN:-./target/release/dismantle}"
+DBIN="${DBIN:-./target/release/hawking}"
 SKIP_BENCH="${SKIP_BENCH:-0}"
 ONLY_BENCH="${ONLY_BENCH:-0}"
 

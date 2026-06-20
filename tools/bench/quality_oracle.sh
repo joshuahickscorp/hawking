@@ -12,7 +12,7 @@
 #   flips the whole hash), 5 prompts, one length. It answers WHETHER a prompt
 #   diverged, never HOW MUCH.
 #
-#   This oracle measures HOW MUCH, for any DISMANTLE_QWEN_* flag, at short AND
+#   This oracle measures HOW MUCH, for any HAWKING_QWEN_* flag, at short AND
 #   long ctx, over N=24 diverse prompts:
 #     - token_identical_fraction  (# prompts with identical OFF/ON text / N)
 #     - mean first-divergence position (frac of OFF text before the first diff)
@@ -42,14 +42,14 @@
 #   logit-dump flag built into `dismantle generate` first. This oracle prints
 #   that gate as REQUIRED-BUT-UNMEASURED rather than faking it.
 #
-# F16-KV INCOMPATIBILITY (qwen_dense.rs:3539): DISMANTLE_QWEN_F16_KV=1 HARD-
+# F16-KV INCOMPATIBILITY (qwen_dense.rs:3539): HAWKING_QWEN_F16_KV=1 HARD-
 #   ERRORS if combined with W4A8=1 or FLASH_ATTN=1. The locked base below holds
 #   neither, and we assert the chosen lever isn't a conflicting pair.
 #
 # USAGE (the orchestrator/user runs this — never an agent, never GPU here):
-#   tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_PREDEC_F16SCALES --label f16scales
-#   tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_F16_KV          --label f16kv --long
-#   tools/bench/quality_oracle.sh --lever DISMANTLE_QWEN_FLASH_ATTN      --label flashattn --long
+#   tools/bench/quality_oracle.sh --lever HAWKING_QWEN_PREDEC_F16SCALES --label f16scales
+#   tools/bench/quality_oracle.sh --lever HAWKING_QWEN_F16_KV          --label f16kv --long
+#   tools/bench/quality_oracle.sh --lever HAWKING_QWEN_FLASH_ATTN      --label flashattn --long
 #
 #   --long           also run the long-ctx tier (longctx_prompt.txt prefix);
 #                    f16-KV/flash-attn only change KV/attention so long ctx is
@@ -65,7 +65,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-48}"
@@ -76,11 +76,11 @@ LONGCTX_PREFIX="${LONGCTX_PREFIX:-reports/bench/longctx_prompt.txt}"
 # minus the lever under test). Contains NO W4A8 and NO FLASH_ATTN so f16-KV is
 # legal to toggle on top of it (qwen_dense.rs:3539 guard).
 LOCKED_ENV=(
-  DISMANTLE_QWEN_TCB=1
-  DISMANTLE_QWEN_VOCAB_PRUNE=32000
-  DISMANTLE_QWEN_Q4K_LMHEAD=1
-  DISMANTLE_QWEN_FFN_DOWN_Q4K=1
-  DISMANTLE_QWEN_Q4K_PREDEC=1
+  HAWKING_QWEN_TCB=1
+  HAWKING_QWEN_VOCAB_PRUNE=32000
+  HAWKING_QWEN_Q4K_LMHEAD=1
+  HAWKING_QWEN_FFN_DOWN_Q4K=1
+  HAWKING_QWEN_Q4K_PREDEC=1
 )
 
 # Gate thresholds (plan 1.2 + the f16s KEEP-OPT-IN finding). Overridable.
@@ -103,7 +103,7 @@ while [[ $# -gt 0 ]]; do
     *) die "unknown arg: $1";;
   esac
 done
-[[ -n "$LEVER" ]] || die "--lever DISMANTLE_QWEN_* required (the flag to A/B)"
+[[ -n "$LEVER" ]] || die "--lever HAWKING_QWEN_* required (the flag to A/B)"
 [[ -n "$LABEL" ]] || LABEL="$(echo "$LEVER" | tr 'A-Z' 'a-z' | sed 's/^dismantle_qwen_//')"
 [[ -x "$BIN" ]]   || die "binary not found/executable: $BIN (cargo build --release?)"
 [[ -f "$WEIGHTS" ]] || die "weights not found: $WEIGHTS"
@@ -113,16 +113,16 @@ done
 # and for flash-attn unless the caller forced --short-only.
 if [[ "$LONG_SET" == 0 ]]; then
   case "$LEVER" in
-    DISMANTLE_QWEN_F16_KV|DISMANTLE_QWEN_FLASH_ATTN) DO_LONG=1;;
+    HAWKING_QWEN_F16_KV|HAWKING_QWEN_FLASH_ATTN) DO_LONG=1;;
   esac
 fi
 
 # Guard: never co-set an incompatible pair (would HARD-ERROR in the ON run).
 for kv in "${LOCKED_ENV[@]}"; do :; done
-if [[ "$LEVER" == DISMANTLE_QWEN_F16_KV ]]; then
+if [[ "$LEVER" == HAWKING_QWEN_F16_KV ]]; then
   for kv in "${LOCKED_ENV[@]}"; do
     case "$kv" in
-      DISMANTLE_QWEN_W4A8=1|DISMANTLE_QWEN_FLASH_ATTN=1)
+      HAWKING_QWEN_W4A8=1|HAWKING_QWEN_FLASH_ATTN=1)
         die "f16-KV is incompatible with $kv (qwen_dense.rs:3539); fix LOCKED_ENV";;
     esac
   done

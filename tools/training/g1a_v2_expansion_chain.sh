@@ -118,15 +118,15 @@ run_capture "mamba2 smoke" \
     cargo test -p dismantle-core --test mamba2_smoke -- --nocapture
 
 # 3. RWKV-7 breadth and flatness. These skip cleanly if weights are absent.
-RWKV7_MODEL="${DISMANTLE_RWKV7_GGUF:-$ROOT/models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf}"
+RWKV7_MODEL="${HAWKING_RWKV7_GGUF:-$ROOT/models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf}"
 run_skip_if_missing "rwkv7 metal parity" "$RWKV7_MODEL" \
     "$OUT_DIR/rwkv7_metal_parity.log" \
-    env DISMANTLE_RWKV7_GGUF="$RWKV7_MODEL" \
+    env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" \
     cargo test -p dismantle-core --test rwkv7_metal_parity -- --nocapture --test-threads=1
 
 run_skip_if_missing "rwkv7 flatness quick 16k" "$RWKV7_MODEL" \
     "$OUT_DIR/rwkv7_flatness_16k.log" \
-    env DISMANTLE_RWKV7_GGUF="$RWKV7_MODEL" DISMANTLE_RWKV7_MAX_DEPTH="${DISMANTLE_RWKV7_MAX_DEPTH:-16000}" \
+    env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" HAWKING_RWKV7_MAX_DEPTH="${HAWKING_RWKV7_MAX_DEPTH:-16000}" \
     cargo test -p dismantle-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
 
 run_capture "tq trellis synthetic parity" \
@@ -136,7 +136,7 @@ run_capture "tq trellis synthetic parity" \
 if [[ "${G1A_V2_FULL_BENCH:-0}" == "1" ]]; then
     run_skip_if_missing "rwkv7 flatness full 64k" "$RWKV7_MODEL" \
         "$OUT_DIR/rwkv7_flatness_64k.log" \
-        env DISMANTLE_RWKV7_GGUF="$RWKV7_MODEL" DISMANTLE_RWKV7_MAX_DEPTH=64000 \
+        env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" HAWKING_RWKV7_MAX_DEPTH=64000 \
         cargo test -p dismantle-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
 else
     RESULT_ROWS+=("| rwkv7 flatness full 64k | skipped: set G1A_V2_FULL_BENCH=1 | $OUT_DIR/rwkv7_flatness_64k.log |")
@@ -162,8 +162,8 @@ fi
 # Qwen3B Q4_K_M is the repo's current measured competition baseline; RWKV-3B
 # target head-to-head becomes meaningful after that artifact is downloaded.
 if [[ "${G1A_V2_LLAMA_BASELINE:-1}" == "1" ]]; then
-    QWEN_MODEL="${DISMANTLE_QWEN_GGUF:-$ROOT/models/Qwen2.5-3B-Instruct-Q4_K_M.gguf}"
-    QWEN_PROFILE="${DISMANTLE_QWEN_PROFILE:-$ROOT/profiles/qwen3b-instruct-q4k.m3pro18.json}"
+    QWEN_MODEL="${HAWKING_QWEN_GGUF:-$ROOT/models/Qwen2.5-3B-Instruct-Q4_K_M.gguf}"
+    QWEN_PROFILE="${HAWKING_QWEN_PROFILE:-$ROOT/profiles/qwen3b-instruct-q4k.m3pro18.json}"
     run_skip_if_missing_soft "llama.cpp qwen3b head-to-head" "$QWEN_MODEL" \
         "$OUT_DIR/llama_qwen_head_to_head.log" \
         env GGUF="$QWEN_MODEL" PROFILE="$QWEN_PROFILE" SKIP_BATCH="${SKIP_BATCH:-1}" TOKENS="${TOKENS:-128}" \

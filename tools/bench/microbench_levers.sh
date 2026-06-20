@@ -2,7 +2,7 @@
 # tools/bench/microbench_levers.sh
 #
 # RAM-light single-binary microbench for path-to-50 levers.
-# Uses the existing ./target/release/dismantle binary as-is — does NOT
+# Uses the existing ./target/release/hawking binary as-is — does NOT
 # rebuild — so it doesn't compete with running worktree agents for RAM.
 #
 # Each lever is N trials of `dismantle generate` with different flags.
@@ -20,7 +20,7 @@ set -o pipefail
 # `${empty_array[@]}` even when the array is intentionally empty.
 cd "$(dirname "$0")/../.."
 
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 PROMPT="${PROMPT:-Once upon a time}"

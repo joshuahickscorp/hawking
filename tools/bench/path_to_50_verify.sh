@@ -2,13 +2,13 @@
 # Verify + paired-bench the uncommitted path-to-50 Stage-1 work on Qwen-3B.
 #   A = predec base, fusions OFF   (pre-path-to-50 baseline)
 #   B = dirty-tree defaults        (gate+up fuse + ffn_down predec ON)
-#   C = B + 2-row ILP              (DISMANTLE_QWEN_PREDEC_2R=1)
+#   C = B + 2-row ILP              (HAWKING_QWEN_PREDEC_2R=1)
 # Parity: greedy output of B and C must be bit-identical to A.
 # Bench: interleaved paired dec_tps (cancels thermal drift); Claude-open is
 # fine for paired deltas (memory/feedback_bench_with_claude_open.md).
 set -uo pipefail
 cd "$(dirname "$0")/../.."
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 WEIGHTS="models/qwen2.5-3b-instruct-q4_k_m.gguf"
 PROFILE="profiles/qwen3b-instruct-q4k.m3pro18.json"
 TOKENS="${TOKENS:-32}"
@@ -16,14 +16,14 @@ TRIALS="${TRIALS:-5}"
 PROMPT='fn fibonacci(n: u64) -> u64 {'
 
 # locked Qwen fast-path (same as quick_bench.sh)
-export DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-       DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-       DISMANTLE_QWEN_Q4K_PREDEC=1
+export HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+       HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+       HAWKING_QWEN_Q4K_PREDEC=1
 
 env_for () { case "$1" in
-  A) echo "DISMANTLE_QWEN_FFN_GATEUP_FUSE=0 DISMANTLE_QWEN_FFN_DOWN_PREDEC=0 DISMANTLE_QWEN_PREDEC_2R=0";;
-  B) echo "DISMANTLE_QWEN_FFN_GATEUP_FUSE=1 DISMANTLE_QWEN_FFN_DOWN_PREDEC=1 DISMANTLE_QWEN_PREDEC_2R=0";;
-  C) echo "DISMANTLE_QWEN_FFN_GATEUP_FUSE=1 DISMANTLE_QWEN_FFN_DOWN_PREDEC=1 DISMANTLE_QWEN_PREDEC_2R=1";;
+  A) echo "HAWKING_QWEN_FFN_GATEUP_FUSE=0 HAWKING_QWEN_FFN_DOWN_PREDEC=0 HAWKING_QWEN_PREDEC_2R=0";;
+  B) echo "HAWKING_QWEN_FFN_GATEUP_FUSE=1 HAWKING_QWEN_FFN_DOWN_PREDEC=1 HAWKING_QWEN_PREDEC_2R=0";;
+  C) echo "HAWKING_QWEN_FFN_GATEUP_FUSE=1 HAWKING_QWEN_FFN_DOWN_PREDEC=1 HAWKING_QWEN_PREDEC_2R=1";;
 esac; }
 
 mode="${1:-all}"

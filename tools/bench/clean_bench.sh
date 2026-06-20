@@ -23,7 +23,7 @@ GATES_ONLY="${1:-}"
 RESULTS_DIR="bench_results/v0.3.6"
 PROFILE_BASE="profiles/deepseek-v2-lite-q4.m3pro18.json"
 WEIGHTS="models/deepseek-v2-lite-q4.gguf"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 ts()  { date -u +%FT%TZ; }
 log() { printf '%s %s\n' "$(ts)" "$*"; }
@@ -199,7 +199,7 @@ for entry in "${TRIAL_ORDER[@]}"; do
         fi
 
         set +e
-        DISMANTLE_TRACE_DISPATCH=1 run_with_timeout 600 \
+        HAWKING_TRACE_DISPATCH=1 run_with_timeout 600 \
             nice -n 19 taskpolicy -b "$BIN" bench \
             --backend dismantle --suite decode \
             --weights "$WEIGHTS" \

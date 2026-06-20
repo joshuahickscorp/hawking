@@ -23,7 +23,7 @@ cd "$(dirname "$0")/../.."
 THRESHOLD="${1:-17.0}"
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${BISECT_PROFILE:-/tmp/dismantle_bisect_profile.json}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 log() { printf '[bisect] %s\n' "$*" >&2; }
 

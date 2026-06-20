@@ -16,12 +16,12 @@
 # METHOD (two-pass)
 # =================
 # Pass A — PRODUCTION baseline (no trace overhead):
-#   Run bench --suite decode --max-new-tokens 32 WITHOUT DISMANTLE_TCB_TRACE.
+#   Run bench --suite decode --max-new-tokens 32 WITHOUT HAWKING_TCB_TRACE.
 #   This gives decode_tps_production → the true per-token wall time.
 #   decode_wall_per_token_us = 1e6 / decode_tps_production
 #
 # Pass B — SplitCbGpu trace:
-#   Run bench --suite decode --max-new-tokens 32 WITH DISMANTLE_TCB_TRACE=gpu
+#   Run bench --suite decode --max-new-tokens 32 WITH HAWKING_TCB_TRACE=gpu
 #   (SplitCbGpu mode: each dispatch in its own CB with gpuStartTime/gpuEndTime).
 #   Wall semantics in SplitCbGpu:
 #     wall_us = CPU pipeline-lookup + encode + end_encoding time ONLY
@@ -83,15 +83,15 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
 
 # Locked Qwen fast-path (matches clean_room_batch.sh / ab_lever.sh / measure_joules.sh).
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 TS=$(date +%Y%m%dT%H%M%S)
 TRACE_JSON="/tmp/gpu_sat_trace_${TS}.json"
@@ -119,7 +119,7 @@ hr "PASS A: production decode_tps (no trace)"
 printf 'weights  : %s\n' "$WEIGHTS"
 printf 'profile  : %s\n' "$PROFILE"
 printf 'tokens   : %s\n' "$TOKENS"
-printf 'running production pass (no DISMANTLE_TCB_TRACE)...\n'
+printf 'running production pass (no HAWKING_TCB_TRACE)...\n'
 
 set +e
 env $BASE_ENV nice -n 19 taskpolicy -b "$BIN" bench \
@@ -147,7 +147,7 @@ printf 'per_token_wall_us     = %.1f us (= 1e6 / tps)\n' \
 # ---------------------------------------------------------------------------
 # PASS B — SplitCbGpu trace
 # ---------------------------------------------------------------------------
-hr "PASS B: SplitCbGpu trace (DISMANTLE_TCB_TRACE=gpu)"
+hr "PASS B: SplitCbGpu trace (HAWKING_TCB_TRACE=gpu)"
 printf 'trace output : %s\n' "$TRACE_JSON"
 printf 'SplitCbGpu mode: each dispatch in its own CB; gpuStartTime/gpuEndTime read\n'
 printf 'per kernel.  wall_us = encode-only (before commit); gpu_us = real GPU kernel time.\n'
@@ -156,7 +156,7 @@ printf 'This run is ~%dx slower than production (one commit/wait per dispatch).\
 printf 'running trace pass...\n'
 
 set +e
-env $BASE_ENV DISMANTLE_TCB_TRACE=gpu DISMANTLE_TRACE_DISPATCH=1 \
+env $BASE_ENV HAWKING_TCB_TRACE=gpu HAWKING_TRACE_DISPATCH=1 \
   nice -n 19 taskpolicy -b "$BIN" bench \
     --backend dismantle --suite decode \
     --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
@@ -168,7 +168,7 @@ TRACE_RC=$?
 set -e
 
 if [[ $TRACE_RC -ne 0 || ! -f "$TRACE_JSON" ]]; then
-    die "trace bench failed (exit=$TRACE_RC). Check that DISMANTLE_TCB_TRACE=gpu is\n"\
+    die "trace bench failed (exit=$TRACE_RC). Check that HAWKING_TCB_TRACE=gpu is\n"\
         "supported (requires macos + Metal; the trace JSON must be non-empty)."
 fi
 printf 'trace JSON written: %s\n' "$TRACE_JSON"
@@ -240,7 +240,7 @@ if traced_tokens == 0:
     # Fallback: use tokens_arg (less accurate; note it)
     traced_tokens = tokens_arg
     print(f"[warn] no sample_* dispatches found; using --max-new-tokens={tokens_arg} as token count.")
-    print(f"       Per-token math may be off. Re-run with DISMANTLE_QWEN_TCB=1 set.")
+    print(f"       Per-token math may be off. Re-run with HAWKING_QWEN_TCB=1 set.")
 else:
     if traced_tokens != tokens_arg:
         print(f"[note] trace covers {traced_tokens} tokens (sample_* count), not {tokens_arg}."
@@ -259,8 +259,8 @@ total_wall_us = sum(v["wall_us"] for v in by_k.values())
 n_with_gpu    = sum(1 for s in samples if s.get("gpu_us") is not None)
 
 if total_gpu_us == 0:
-    sys.exit("error: total_gpu_us == 0. Is DISMANTLE_TCB_TRACE=gpu set? "
-             "Run with DISMANTLE_TCB_TRACE=gpu to get per-kernel GPU times.")
+    sys.exit("error: total_gpu_us == 0. Is HAWKING_TCB_TRACE=gpu set? "
+             "Run with HAWKING_TCB_TRACE=gpu to get per-kernel GPU times.")
 
 per_token_gpu_us    = total_gpu_us  / traced_tokens
 per_token_wall_us   = total_wall_us / traced_tokens   # encode-only (SplitCbGpu)

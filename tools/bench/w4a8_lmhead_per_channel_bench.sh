@@ -4,12 +4,12 @@
 #
 # Compares three W4A8 LM_HEAD configurations on Qwen-3B:
 #   1. Baseline           — predec default-on, no W4A8
-#                           (DISMANTLE_QWEN_Q4K_PREDEC=1 is default)
+#                           (HAWKING_QWEN_Q4K_PREDEC=1 is default)
 #   2. W4A8 per-block     — held-but-not-shipped path
-#                           (DISMANTLE_QWEN_W4A8=1)
+#                           (HAWKING_QWEN_W4A8=1)
 #   3. W4A8 per-channel   — Track E new path
-#                           (DISMANTLE_QWEN_W4A8=1
-#                            DISMANTLE_QWEN_W4A8_PER_CHANNEL=1)
+#                           (HAWKING_QWEN_W4A8=1
+#                            HAWKING_QWEN_W4A8_PER_CHANNEL=1)
 #
 # For each condition: N trials of `dismantle generate`, report
 # median dec_tps + ms/tok. Quality check: greedy 16-token output from
@@ -41,7 +41,7 @@ TRIALS="${TRIALS:-5}"
 PROMPT="${PROMPT:-Once upon a time}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 QUALITY_TOKENS=16
 
@@ -192,8 +192,8 @@ echo
 # in the current build (per memory: composition_decision_matrix
 # 2026-05-26, predec flipped default-on in 6f0209e).
 ENV_BASELINE=""
-ENV_W4A8_PER_BLOCK="DISMANTLE_QWEN_W4A8=1"
-ENV_W4A8_PER_CHANNEL="DISMANTLE_QWEN_W4A8=1 DISMANTLE_QWEN_W4A8_PER_CHANNEL=1"
+ENV_W4A8_PER_BLOCK="HAWKING_QWEN_W4A8=1"
+ENV_W4A8_PER_CHANNEL="HAWKING_QWEN_W4A8=1 HAWKING_QWEN_W4A8_PER_CHANNEL=1"
 
 echo "--- perf trials ---" >&2
 

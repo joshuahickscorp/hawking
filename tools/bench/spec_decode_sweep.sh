@@ -13,7 +13,7 @@ cd "$(dirname "$0")/../.."
 OUT="artifacts/runs/overnight/spec_decode_sweep.md"
 WEIGHTS="models/deepseek-v2-lite-q4.gguf"
 PROFILE="profiles/deepseek-v2-lite-q4.m3pro18.json"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 if [ ! -x "$BIN" ]; then
     echo "FAIL: $BIN missing" | tee -a "$OUT"

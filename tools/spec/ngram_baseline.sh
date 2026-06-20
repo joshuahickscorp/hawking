@@ -41,7 +41,7 @@
 #   TOKENS           generation length per prompt (default: 200)
 #   N_GRAMS          space-separated n-gram orders (default: "2 3 4")
 #   MIN_FREQ         minimum n-gram frequency to count as a prediction (default: 1)
-#   BIN              dismantle binary (default: ./target/release/dismantle)
+#   BIN              dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS          GGUF model file (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
 #   PROFILE          kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
 #   OUT_JSON         write aggregate JSON to this path (default: reports/ngram_oracle.json)
@@ -60,7 +60,7 @@ SAMPLE_FILE="${SAMPLE_FILE:-tools/spec/sample_prompts.txt}"
 TOKENS="${TOKENS:-200}"
 N_GRAMS="${N_GRAMS:-2 3 4}"
 MIN_FREQ="${MIN_FREQ:-1}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 OUT_JSON="${OUT_JSON:-reports/ngram_oracle.json}"
@@ -108,9 +108,9 @@ mkdir -p "$(dirname "$OUT_JSON")"
 [[ -n "$OUT_SEQ_DIR" ]] && mkdir -p "$OUT_SEQ_DIR"
 
 # Locked fast-path env (same as paired_lever.sh baseline)
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 # ── Read prompts ──────────────────────────────────────────────────────────────
 mapfile -t PROMPTS < <(grep -v '^\s*#' "$SAMPLE_FILE" | grep -v '^\s*$')

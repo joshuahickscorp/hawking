@@ -34,7 +34,7 @@
 #       --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
 #
 # ENVIRONMENT (all optional):
-#   BIN       dismantle binary (default: ./target/release/dismantle)
+#   BIN       dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS   GGUF model path  (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
 #   PROFILE   kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
 #   POLL_MS   RSS poll interval in ms (default: 500)
@@ -47,7 +47,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 POLL_MS="${POLL_MS:-500}"
@@ -55,9 +55,9 @@ TOKENS="${TOKENS:-200}"
 PROMPT="${PROMPT:-fn fibonacci(n: u64) -> u64 {}"
 MODE="generate"
 
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 RSS_SENTINEL_MB=5000
 

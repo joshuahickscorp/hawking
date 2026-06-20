@@ -203,7 +203,7 @@ log "=== Step 5: RWKV-7 flatness bench (depth sweep) ==="
 METAL_BENCH_TEST="$ROOT/crates/dismantle-core/tests/rwkv7_metal_bench.rs"
 if [[ -f "$METAL_BENCH_TEST" ]]; then
     run_step "rwkv7_flatness_bench" RWKV7_FLATNESS_STATUS RWKV7_FLATNESS_OUTPUT \
-        env DISMANTLE_RWKV7_MAX_DEPTH=64000 \
+        env HAWKING_RWKV7_MAX_DEPTH=64000 \
         cargo test -p dismantle-core --test rwkv7_metal_bench -- \
             --ignored --nocapture --test-threads=1
 else
@@ -306,7 +306,7 @@ ${TQ_PARITY_OUTPUT:-skipped}
 ${MAMBA2_PARITY_OUTPUT:-skipped}
 \`\`\`
 
-### rwkv7_flatness_bench (DISMANTLE_RWKV7_MAX_DEPTH=64000)
+### rwkv7_flatness_bench (HAWKING_RWKV7_MAX_DEPTH=64000)
 
 \`\`\`
 ${RWKV7_FLATNESS_OUTPUT:-skipped}

@@ -78,7 +78,7 @@ json.dump(d, open('$tmp_profile', 'w'), indent=2)
 "
     # Run the bench. Plain quick_bench-style invocation; trim to dec_tps.
     bench_json=$(mktemp /tmp/dismantle_sweep_bench_XXXXX.json)
-    "./target/release/dismantle" bench \
+    "./target/release/hawking" bench \
         --weights "$WEIGHTS" \
         --kernel-profile "$tmp_profile" \
         --suite decode \

@@ -12,7 +12,7 @@
 #                          actually commit.
 #   M2 Q8 KV debug      — re-applies patch, rebuilds, verifies --q8-kv
 #                          flag surfaces, runs parity + microbench
-#   M3 MoE GEMM trace   — DISMANTLE_TCB_TRACE on baseline, parses per-kernel
+#   M3 MoE GEMM trace   — HAWKING_TCB_TRACE on baseline, parses per-kernel
 #                          ms, identifies top-3 hot spots for kernel work
 #   M4 stack hi-conf    — TRIALS=30 variance hunt × 3 prompts on best
 #                          stack, gives release-grade confidence interval
@@ -175,7 +175,7 @@ else
         fi
         echo ""
         echo "## Current binary's flag list (where would --q8-kv go?)"
-        ./target/release/dismantle generate --help 2>&1 | grep -E '^\s+--' | head -20
+        ./target/release/hawking generate --help 2>&1 | grep -E '^\s+--' | head -20
         echo ""
         echo "## Search the codebase for q8_kv plumbing"
         grep -rn "q8_kv\|Q8KV\|kv_cache_quant\|kv-cache-quant" \
@@ -211,7 +211,7 @@ else
         echo ""
         echo "Per memory per_kernel_time_breakdown.md, MoE GEMMs are 50.5% of decode time. This module captures a trace and identifies the top-3 hot kernels."
         echo ""
-        DISMANTLE_TCB_TRACE=1 ./target/release/dismantle generate \
+        HAWKING_TCB_TRACE=1 ./target/release/hawking generate \
             --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
             --prompt "Once upon a time" --max-new-tokens 16 --seed 0 \
             > "$TRACE_RAW" 2>&1 || echo "(trace generation failed)"
@@ -257,7 +257,7 @@ else
                 vals=""
                 for t in $(seq 1 30); do
                     [[ -f artifacts/runs/PAUSE ]] && break
-                    tps=$(./target/release/dismantle generate \
+                    tps=$(./target/release/hawking generate \
                         --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
                         --prompt "$p" --max-new-tokens 64 --seed $t $flags 2>&1 \
                         | grep -oE 'dec_tps=[0-9]+\.[0-9]+' | head -1 | cut -d= -f2)

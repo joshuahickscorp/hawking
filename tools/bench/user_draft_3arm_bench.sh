@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # =============================================================================
 # user_draft_3arm_bench.sh — 3-arm paired bench for the user-ngram draft loop.
-#   A = plain fast decode          (DISMANTLE_QWEN_USER_DRAFT off)
-#   B = bonus-first  user-draft    (DISMANTLE_QWEN_USER_DRAFT=1)
-#   C = propose-first user-draft   (+ DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST=1)
+#   A = plain fast decode          (HAWKING_QWEN_USER_DRAFT off)
+#   B = bonus-first  user-draft    (HAWKING_QWEN_USER_DRAFT=1)
+#   C = propose-first user-draft   (+ HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST=1)
 # =============================================================================
 #
 # WHAT THIS DECIDES  (reports/move2_user_draft_diagnosis.md §6 — the single
 #   decisive gate for whether propose-first is a real tps win)
 #   The diagnosis pinned that the prior "draft_accepted=0, zero [verify-timing]"
 #   non-result was a HARNESS gap: no script in the repo exported
-#   DISMANTLE_QWEN_USER_DRAFT (clean_room_batch.sh / paired_lever.sh both omit
-#   it) or DISMANTLE_QWEN_VERIFY_TIMING. This script closes that gap: it turns
+#   HAWKING_QWEN_USER_DRAFT (clean_room_batch.sh / paired_lever.sh both omit
+#   it) or HAWKING_QWEN_VERIFY_TIMING. This script closes that gap: it turns
 #   the draft ON for arms B/C, sets VERIFY_TIMING, and reports the mechanism
 #   check (forward count via the [verify-timing] line count) alongside dec_tps.
 #
@@ -52,8 +52,8 @@
 # ENV  (the locked Qwen fast-path = the SHIPPED decode config, + the draft flags)
 #   base : TCB=1 VOCAB_PRUNE=32000 Q4K_LMHEAD=1 FFN_DOWN_Q4K=1 Q4K_PREDEC=1
 #   A    : (base only)
-#   B    : base + DISMANTLE_QWEN_USER_DRAFT=1            DISMANTLE_QWEN_VERIFY_TIMING=1
-#   C    : base + DISMANTLE_QWEN_USER_DRAFT=1 + _PROPOSE_FIRST=1  + VERIFY_TIMING=1
+#   B    : base + HAWKING_QWEN_USER_DRAFT=1            HAWKING_QWEN_VERIFY_TIMING=1
+#   C    : base + HAWKING_QWEN_USER_DRAFT=1 + _PROPOSE_FIRST=1  + VERIFY_TIMING=1
 #   USER_DRAFT_K override via DRAFT_K (default: engine default).
 #
 # USAGE
@@ -66,12 +66,12 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-160}"                # >= 128 decode tokens (diagnosis §6)
 TRIALS="${TRIALS:-20}"                 # M5 stack-matrix discipline (diagnosis §6 step 5)
-DRAFT_K="${DRAFT_K:-}"                 # optional DISMANTLE_QWEN_USER_DRAFT_K
+DRAFT_K="${DRAFT_K:-}"                 # optional HAWKING_QWEN_USER_DRAFT_K
 OUT="${OUT:-reports/bench/user_draft_3arm.json}"
 ALLOW_DIRTY="${ALLOW_DIRTY:-0}"
 PY="$([[ -x .venv/bin/python ]] && echo .venv/bin/python || echo python3)"
@@ -132,17 +132,17 @@ if [[ "$DIRTY" == 1 ]]; then
 fi
 
 # ---- arm env builders -------------------------------------------------------
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
-[[ -n "$DRAFT_K" ]] && DRAFTK_ENV="DISMANTLE_QWEN_USER_DRAFT_K=$DRAFT_K" || DRAFTK_ENV=""
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
+[[ -n "$DRAFT_K" ]] && DRAFTK_ENV="HAWKING_QWEN_USER_DRAFT_K=$DRAFT_K" || DRAFTK_ENV=""
 
 env_for() {  # $1 = arm A|B|C
   case "$1" in
     A) echo "" ;;
-    B) echo "DISMANTLE_QWEN_USER_DRAFT=1 DISMANTLE_QWEN_VERIFY_TIMING=1 $DRAFTK_ENV" ;;
-    C) echo "DISMANTLE_QWEN_USER_DRAFT=1 DISMANTLE_QWEN_USER_DRAFT_PROPOSE_FIRST=1 \
-DISMANTLE_QWEN_VERIFY_TIMING=1 $DRAFTK_ENV" ;;
+    B) echo "HAWKING_QWEN_USER_DRAFT=1 HAWKING_QWEN_VERIFY_TIMING=1 $DRAFTK_ENV" ;;
+    C) echo "HAWKING_QWEN_USER_DRAFT=1 HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST=1 \
+HAWKING_QWEN_VERIFY_TIMING=1 $DRAFTK_ENV" ;;
   esac
 }
 arm_label() { case "$1" in A) echo "A plain";; B) echo "B bonus-first";; C) echo "C propose-first";; esac; }

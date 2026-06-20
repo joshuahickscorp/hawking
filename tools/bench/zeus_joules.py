@@ -36,18 +36,18 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-BIN = os.environ.get("BIN", str(REPO / "target/release/dismantle"))
+BIN = os.environ.get("BIN", str(REPO / "target/release/hawking"))
 WEIGHTS = os.environ.get("WEIGHTS", str(REPO / "models/qwen2.5-3b-instruct-q4_k_m.gguf"))
 PROFILE = os.environ.get("PROFILE", str(REPO / "profiles/qwen3b-instruct-q4k.m3pro18.json"))
 
 # LOCKED fast-path env — MUST stay byte-identical to measure_joules.sh L42-44 and
 # phase_joules.sh L44-46 so the measured energy describes the SHIPPED decode.
 BASE_ENV = {
-    "DISMANTLE_QWEN_TCB": "1",
-    "DISMANTLE_QWEN_VOCAB_PRUNE": "32000",
-    "DISMANTLE_QWEN_Q4K_LMHEAD": "1",
-    "DISMANTLE_QWEN_FFN_DOWN_Q4K": "1",
-    "DISMANTLE_QWEN_Q4K_PREDEC": "1",
+    "HAWKING_QWEN_TCB": "1",
+    "HAWKING_QWEN_VOCAB_PRUNE": "32000",
+    "HAWKING_QWEN_Q4K_LMHEAD": "1",
+    "HAWKING_QWEN_FFN_DOWN_Q4K": "1",
+    "HAWKING_QWEN_Q4K_PREDEC": "1",
 }
 
 DEFAULT_PROMPT = "fn fibonacci(n: u64) -> u64 {"

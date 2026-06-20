@@ -24,7 +24,7 @@
 #   PROFILE   default kernel profile
 #   TOKENS    default token count for the default invocation
 #   TRACES_DIR  output dir (default: traces/)
-#   BIN       dismantle binary path (default: target/release/dismantle)
+#   BIN       dismantle binary path (default: target/release/hawking)
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -45,7 +45,7 @@ fi
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 TRACES_DIR="${TRACES_DIR:-traces}"
 
 if [ ! -x "$BIN" ]; then

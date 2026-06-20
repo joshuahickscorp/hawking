@@ -1,6 +1,6 @@
-# dismantle
+# hawking
 
-`dismantle` is a from-scratch LLM inference engine for Apple Silicon. It loads
+`hawking` is a from-scratch LLM inference engine for Apple Silicon. It loads
 GGUF models with mmap, runs hand-written Metal kernels from Rust, and exposes a
 small CLI plus an OpenAI-compatible HTTP server.
 
@@ -39,12 +39,12 @@ Requirements:
 - About 4 GB RAM for Qwen2.5-3B Q4_K_M
 
 ```sh
-git clone https://github.com/joshuahickscorp/dismantle.git
-cd dismantle
+git clone https://github.com/joshuahickscorp/hawking.git
+cd hawking
 cargo build --release --workspace
 ```
 
-The binary is written to `target/release/dismantle`.
+The binary is written to `target/release/hawking`.
 
 ## Get A Model
 
@@ -60,22 +60,22 @@ The best-tested target is Qwen2.5-3B-Instruct-Q4_K_M.
 
 ```sh
 # Check whether the model fits before loading it.
-dismantle doctor --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
+hawking doctor --weights models/qwen2.5-3b-instruct-q4_k_m.gguf
 
 # Tune kernels for this machine.
-dismantle autotune \
+hawking autotune \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --out profiles/my-mac.json
 
 # Generate text.
-dismantle generate \
+hawking generate \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
   --prompt "Write a Rust function that reverses a linked list." \
   --max-new-tokens 256
 
 # Serve an OpenAI-compatible API.
-dismantle serve \
+hawking serve \
   --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
   --kernel-profile profiles/my-mac.json \
   --addr 127.0.0.1:8080

@@ -47,7 +47,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-256}"          # decode length for sections B + C
@@ -61,11 +61,11 @@ GATES_ONLY=0
 [[ "${1:-}" == "--gates-only" ]] && GATES_ONLY=1
 
 # Locked Qwen fast-path (matches quick_bench.sh / measure_joules.sh / path_to_50).
-export DISMANTLE_QWEN_TCB=1 \
-       DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-       DISMANTLE_QWEN_Q4K_LMHEAD=1 \
-       DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-       DISMANTLE_QWEN_Q4K_PREDEC=1
+export HAWKING_QWEN_TCB=1 \
+       HAWKING_QWEN_VOCAB_PRUNE=32000 \
+       HAWKING_QWEN_Q4K_LMHEAD=1 \
+       HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+       HAWKING_QWEN_Q4K_PREDEC=1
 
 hr()  { printf '%s\n' "================================================================================"; }
 die() { echo "error: $*" >&2; exit 64; }

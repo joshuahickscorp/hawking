@@ -26,7 +26,7 @@
 #   TOKENS          tokens per trial (default: 128 for stable signal)
 #   TRIALS          number of trials (default: 5; reports trimmed median)
 #   THRESHOLD_TPS   GO/NO-GO cutoff (default: 40)
-#   BIN             dismantle binary (default: target/release/dismantle)
+#   BIN             dismantle binary (default: target/release/hawking)
 #   REPORTS_DIR     where to write JSON traces (default: reports/)
 
 set -euo pipefail
@@ -37,7 +37,7 @@ PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-128}"
 TRIALS="${TRIALS:-5}"
 THRESHOLD_TPS="${THRESHOLD_TPS:-40}"
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 REPORTS_DIR="${REPORTS_DIR:-reports}"
 
 # Bench hygiene — refuse if Claude is running (4-5× contamination,

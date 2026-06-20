@@ -22,7 +22,7 @@ cd "$(dirname "$0")/../.."
 
 WEIGHTS="${WEIGHTS:-models/llama-3.2-3b-instruct-q4_k_m.gguf}"
 TOKENS="${TOKENS:-32}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 if [[ ! -f "$WEIGHTS" ]]; then
     echo "❌ weights not found: $WEIGHTS" >&2

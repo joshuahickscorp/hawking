@@ -37,7 +37,7 @@ WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-64}"
 TRIALS="${TRIALS:-3}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 # Pick the most recent calibration artifact if user hasn't pinned one.
 VOCAB_PRUNE_PATH="${VOCAB_PRUNE_PATH:-$(ls -1t artifacts/vocab_prune/*.json 2>/dev/null | head -1)}"

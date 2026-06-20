@@ -15,7 +15,7 @@ cd "$(dirname "$0")/../.."
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
-BIN="./target/release/dismantle"
+BIN="./target/release/hawking"
 
 CLAUDE_RUNNING=0
 if pgrep -f "Claude.app" > /dev/null 2>&1; then
@@ -40,15 +40,15 @@ fi
 if [[ "$(basename "$WEIGHTS")" == qwen2.5-3b-instruct-q4_k_m.gguf ]]; then
     # README's Qwen headline is the locked fast stack, not the raw
     # CPU/Metal-hybrid fallback path. Keep explicit user overrides intact.
-    : "${DISMANTLE_QWEN_TCB:=1}"
-    : "${DISMANTLE_QWEN_VOCAB_PRUNE:=32000}"
-    : "${DISMANTLE_QWEN_Q4K_LMHEAD:=1}"
-    : "${DISMANTLE_QWEN_FFN_DOWN_Q4K:=1}"
-    export DISMANTLE_QWEN_TCB
-    export DISMANTLE_QWEN_VOCAB_PRUNE
-    export DISMANTLE_QWEN_Q4K_LMHEAD
-    export DISMANTLE_QWEN_FFN_DOWN_Q4K
-    echo "Qwen locked fast-path env: TCB=$DISMANTLE_QWEN_TCB vocab=$DISMANTLE_QWEN_VOCAB_PRUNE q4k_lmhead=$DISMANTLE_QWEN_Q4K_LMHEAD ffn_down_q4k=$DISMANTLE_QWEN_FFN_DOWN_Q4K" >&2
+    : "${HAWKING_QWEN_TCB:=1}"
+    : "${HAWKING_QWEN_VOCAB_PRUNE:=32000}"
+    : "${HAWKING_QWEN_Q4K_LMHEAD:=1}"
+    : "${HAWKING_QWEN_FFN_DOWN_Q4K:=1}"
+    export HAWKING_QWEN_TCB
+    export HAWKING_QWEN_VOCAB_PRUNE
+    export HAWKING_QWEN_Q4K_LMHEAD
+    export HAWKING_QWEN_FFN_DOWN_Q4K
+    echo "Qwen locked fast-path env: TCB=$HAWKING_QWEN_TCB vocab=$HAWKING_QWEN_VOCAB_PRUNE q4k_lmhead=$HAWKING_QWEN_Q4K_LMHEAD ffn_down_q4k=$HAWKING_QWEN_FFN_DOWN_Q4K" >&2
 fi
 
 echo "=== quick_bench: 3 trials × ${TOKENS} tokens ==="

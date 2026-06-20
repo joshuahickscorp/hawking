@@ -31,7 +31,7 @@
 #            does llama's mul_mv sustain higher GiB/s per call?).
 #   batch    continuous-batching AGGREGATE tps (B=1/4/8) for BOTH the default
 #            (flag-OFF: per-slot CPU LM head; reflects R2 batched-RoPE + R3
-#            batched-KV-append) and R1 ON (DISMANTLE_QWEN_Q4K_LMHEAD=1: GPU-batched
+#            batched-KV-append) and R1 ON (HAWKING_QWEN_Q4K_LMHEAD=1: GPU-batched
 #            Q4_K LM head) — prints absolute aggregate tps + the contamination-
 #            robust R1 flag delta. Runs once the multi-seq path is built; else PENDING.
 #
@@ -119,7 +119,7 @@ echo "log: $LOG"
 # shader_hash, so every generate-based section (anchor/energy) hard-refuses with
 # a "shader hash mismatch". autotune is DETERMINISTIC + ~instant, so always
 # regenerate to match the current shader build before the sections run.
-QBIN="${BIN:-./target/release/dismantle}"
+QBIN="${BIN:-./target/release/hawking}"
 QWEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 QPROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 if [[ -x "$QBIN" && -f "$QWEIGHTS" ]]; then
@@ -143,7 +143,7 @@ if want energy; then
   tools/bench/phase_joules.sh --domains --tokens "$ENERGY_TOKENS" \
     && RESULTS+=("energy/baseline: OK (${ENERGY_TOKENS} tok)") || RESULTS+=("energy/baseline: non-zero")
   echo "--- 2b f16-KV (${ENERGY_TOKENS_F16KV} tok; does halving KV bytes win on ENERGY at depth?) ---"
-  DISMANTLE_QWEN_F16_KV=1 tools/bench/phase_joules.sh --domains --tokens "$ENERGY_TOKENS_F16KV" \
+  HAWKING_QWEN_F16_KV=1 tools/bench/phase_joules.sh --domains --tokens "$ENERGY_TOKENS_F16KV" \
     && RESULTS+=("energy/f16kv: OK (${ENERGY_TOKENS_F16KV} tok)") || RESULTS+=("energy/f16kv: non-zero")
   echo "COMPARE: f16-KV total J/tok < baseline => real energy lever; >= => footprint-only."
 fi

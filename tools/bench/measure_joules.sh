@@ -26,22 +26,22 @@
 #   tools/bench/measure_joules.sh                       # baseline, 256 tok
 #   tools/bench/measure_joules.sh --tokens 512
 #   tools/bench/measure_joules.sh --f16s                # also run the A6.5 f16s lever and compare
-#   DISMANTLE_QWEN_PREDEC_F16SCALES=1 tools/bench/measure_joules.sh   # single run with f16s on
+#   HAWKING_QWEN_PREDEC_F16SCALES=1 tools/bench/measure_joules.sh   # single run with f16s on
 #   tools/bench/measure_joules.sh --source powermetrics # force powermetrics (needs sudo)
 #
 # Co-existence: dismantle runs under `nice -n 19 taskpolicy -b` (background QoS).
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 
 # Locked Qwen fast-path (the shipped decode config). f16s (A6.5) is opt-in and
 # passed through from the environment / --f16s flag, not baked in here.
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 TOKENS=256
 PROMPT='fn fibonacci(n: u64) -> u64 {'
@@ -164,7 +164,7 @@ mean_of() {  # mean of newline-separated numbers; 0 if empty
 # One measured run: returns (via globals) dec_tps, tokens, decode_wall_s,
 # avg_pkg_W, avg_gpu_W, joules_per_tok.
 # ---------------------------------------------------------------------------
-run_one() {  # $1 = label, $2 = extra-env (e.g. "DISMANTLE_QWEN_PREDEC_F16SCALES=1")
+run_one() {  # $1 = label, $2 = extra-env (e.g. "HAWKING_QWEN_PREDEC_F16SCALES=1")
   local label="$1" extra="$2"
   local wfile gfile statf
   wfile="$(mktemp)"; gfile="$(mktemp)"; statf="$(mktemp)"
@@ -239,12 +239,12 @@ run_one() {  # $1 = label, $2 = extra-env (e.g. "DISMANTLE_QWEN_PREDEC_F16SCALES
 
 LAST_JTOK=""; LAST_TPS=""; LAST_PKG=""
 
-# baseline (locked fast-path; honors DISMANTLE_QWEN_PREDEC_F16SCALES if set in env)
+# baseline (locked fast-path; honors HAWKING_QWEN_PREDEC_F16SCALES if set in env)
 run_one "baseline (locked fast-path)" ""
 BASE_JTOK="$LAST_JTOK"; BASE_TPS="$LAST_TPS"
 
 if [[ "$DO_F16S" == 1 ]]; then
-  run_one "f16s ON (A6.5 lever)" "DISMANTLE_QWEN_PREDEC_F16SCALES=1"
+  run_one "f16s ON (A6.5 lever)" "HAWKING_QWEN_PREDEC_F16SCALES=1"
   F_JTOK="$LAST_JTOK"; F_TPS="$LAST_TPS"
   echo ""
   echo "=== comparison: does the faster path also sip less? (finish-sooner-and-idle) ==="

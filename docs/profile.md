@@ -31,7 +31,7 @@ without re-benchmarking.
 
 - **`shader_hash`** — SHA-256 prefix of all compiled Metal sources. If this
   does not match the running binary's shader hash (check with
-  `dismantle shader-hash`), the runtime logs a warning and falls back to the
+  `hawking shader-hash`), the runtime logs a warning and falls back to the
   compiled-in default. It does **not** crash.
 - **`selected.moe_schedule`** — the active MoE dispatch strategy:
   - `"indexed-no-pack-one-cb"` — production default; batched expert GEMV,
@@ -57,14 +57,14 @@ reference hardware for all v0.1.0 benchmarks:
 The profile is valid as long as the shader hash matches your binary. Check:
 
 ```sh
-dismantle shader-hash
+hawking shader-hash
 # compare with profiles/deepseek-v2-lite-q4.m3pro18.json .shader_hash
 ```
 
 To regenerate for your hardware:
 
 ```sh
-dismantle autotune \
+hawking autotune \
   --weights models/deepseek-v2-lite-q4.gguf \
   --profile <your-hardware-name> \
   --max-hours 8 \

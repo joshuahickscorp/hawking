@@ -23,7 +23,7 @@ HFOUT=$ART/dpo_hf
 DPO_GGUF=models/rwkv7-g1-04-dpo-Q4_K_M.gguf
 SFT_GGUF=models/rwkv7-g1-04-sft-Q4_K_M.gguf
 EVAL=$ART/eval_prompts.jsonl
-BIN=target/release/dismantle
+BIN=target/release/hawking
 exec > >(tee -a "$LOG") 2>&1
 
 stage(){ echo ""; echo "============ [$(date +%H:%M:%S)] $* ============"; }

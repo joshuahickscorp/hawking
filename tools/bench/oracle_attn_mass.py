@@ -2,7 +2,7 @@
 """L1.1 attention-mass concentration oracle — reader / verdict.
 
 Consumes the JSON written by the in-engine capture instrument
-(`crate::stateful::attn_capture`, gated behind DISMANTLE_QWEN_ATTN_CAPTURE=1)
+(`crate::stateful::attn_capture`, gated behind HAWKING_QWEN_ATTN_CAPTURE=1)
 and prints the §2.5 verdict for the KV-working-set lever:
 
   Does a small bounded set of cached positions hold >=99% of the attention
@@ -32,7 +32,7 @@ def main() -> int:
     layers = d.get("layers", [])
     if not layers:
         print(f"no captured layers in {path} — did you run with "
-              f"DISMANTLE_QWEN_ATTN_CAPTURE=1 on a long prompt?")
+              f"HAWKING_QWEN_ATTN_CAPTURE=1 on a long prompt?")
         return 2
 
     thr = d["mass_thresholds"]            # e.g. [0.90, 0.99, 0.999]

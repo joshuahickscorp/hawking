@@ -31,7 +31,7 @@ if [[ ! -f "$WEIGHTS" ]]; then
     echo "❌ weights missing: $WEIGHTS" >&2
     exit 1
 fi
-if [[ ! -x ./target/release/dismantle ]]; then
+if [[ ! -x ./target/release/hawking ]]; then
     echo "❌ dismantle binary not built — run 'cargo build --release -p dismantle' first" >&2
     exit 1
 fi
@@ -44,7 +44,7 @@ echo "[autotune] max-hours: $MAX_HOURS"
 echo "[autotune] log:       $LOG"
 echo "[autotune] start:     $(date -u +%FT%TZ)"
 
-nice -n 19 taskpolicy -b ./target/release/dismantle autotune \
+nice -n 19 taskpolicy -b ./target/release/hawking autotune \
     --weights "$WEIGHTS" \
     --profile m3-pro-18gb \
     --max-hours "$MAX_HOURS" \

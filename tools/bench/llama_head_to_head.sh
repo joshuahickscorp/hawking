@@ -16,7 +16,7 @@
 #
 # ENVIRONMENT OVERRIDES:
 #   GGUF              path to Q4_K_M GGUF (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
-#   DBIN              dismantle binary (default: ./target/release/dismantle)
+#   DBIN              dismantle binary (default: ./target/release/hawking)
 #   LLAMA_BIN         llama-completion/llama-cli binary; auto-detected if unset
 #   LLAMA_SERVER_BIN  llama-server binary; auto-detected if unset
 #   PROFILE           kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
@@ -33,7 +33,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 GGUF="${GGUF:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
-DBIN="${DBIN:-./target/release/dismantle}"
+DBIN="${DBIN:-./target/release/hawking}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 TOKENS="${TOKENS:-256}"
 TRIALS="${TRIALS:-3}"

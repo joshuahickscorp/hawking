@@ -4,7 +4,7 @@
 # Usage: bash tools/bench/clean_room_small_tps.sh [llama_bench_path]
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-DM=./target/release/dismantle
+DM=./target/release/hawking
 LB="${1:-/tmp/llamacpp/build/bin/llama-bench}"
 PROMPT="Write a haiku about the ocean, then list 3 prime numbers."
 N=128

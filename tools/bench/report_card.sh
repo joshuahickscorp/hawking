@@ -21,7 +21,7 @@
 #   TOKENS           decode tokens per lane (default: 200)
 #   PROMPT           prompt text (default: "Tell me about the history of machine learning.")
 #   GGUF             path to Q4_K_M GGUF (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
-#   DBIN             dismantle binary (default: ./target/release/dismantle)
+#   DBIN             dismantle binary (default: ./target/release/hawking)
 #   PROFILE          kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
 #   LLAMA_BIN        llama-cli/llama-completion binary; auto-detected if unset
 #   LLAMA_SERVER_BIN llama-server binary; auto-detected if unset
@@ -46,7 +46,7 @@
 #   - For dismantle serve lanes, /metrics is polled after the run to determine
 #     readback_bytes/tok and whether the greedy or full-logits path was used.
 #   - macmon is required for J/tok; if missing, J/tok columns show "N/A".
-#   - DISMANTLE_SERVE_FORCE_LOGITS=1 overrides greedy routing for the
+#   - HAWKING_SERVE_FORCE_LOGITS=1 overrides greedy routing for the
 #     "dismantle-serve-full-logits" lane so you can measure the old path.
 # =============================================================================
 set -uo pipefail
@@ -56,7 +56,7 @@ cd "$(dirname "$0")/../.."
 TOKENS="${TOKENS:-200}"
 PROMPT="${PROMPT:-Tell me about the history of machine learning.}"
 GGUF="${GGUF:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
-DBIN="${DBIN:-./target/release/dismantle}"
+DBIN="${DBIN:-./target/release/hawking}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 SAMPLE_MS="${SAMPLE_MS:-200}"
 RUN_TIMEOUT_SEC="${RUN_TIMEOUT_SEC:-600}"
@@ -308,12 +308,12 @@ run_serve_full_logits() {
     [[ -f "$GGUF"  ]] || { warn "GGUF $GGUF not found — skipping $lane"; return; }
 
     printf '\n[%s]\n' "$lane"
-    # DISMANTLE_SERVE_FORCE_LOGITS=1 disables the greedy-lane routing so even
+    # HAWKING_SERVE_FORCE_LOGITS=1 disables the greedy-lane routing so even
     # temperature=0 requests materialise full logits. If the env var is not
     # wired in the binary it's a no-op and the server may still take the greedy
     # lane; the /metrics readback column will reveal the actual path taken.
-    start_dismantle_serve "$SERVE_PORT" 1 "DISMANTLE_SERVE_FORCE_LOGITS=1" || {
-        record_lane "$lane" "?" "N/A" "N/A" "?" "N/A" "serve/full-logits" "DISMANTLE_SERVE_FORCE_LOGITS=1"
+    start_dismantle_serve "$SERVE_PORT" 1 "HAWKING_SERVE_FORCE_LOGITS=1" || {
+        record_lane "$lane" "?" "N/A" "N/A" "?" "N/A" "serve/full-logits" "HAWKING_SERVE_FORCE_LOGITS=1"
         return
     }
     local url="http://127.0.0.1:${SERVE_PORT}"
@@ -362,7 +362,7 @@ run_serve_full_logits() {
     printf '  metrics: greedy_steps=%s  logits_steps=%s  readback_bytes=%s\n' \
         "$greedy_delta" "$logits_delta" "$rb_delta"
 
-    local flags="DISMANTLE_SERVE_FORCE_LOGITS=1 kernel-profile=$(basename "${PROFILE:-none}")"
+    local flags="HAWKING_SERVE_FORCE_LOGITS=1 kernel-profile=$(basename "${PROFILE:-none}")"
     record_lane "$lane" "$tps" "$jg" "$jp" "$wall" "$rb_per_tok" "$ltype" "$flags"
 }
 
@@ -662,7 +662,7 @@ echo "   wall_s               = total wall seconds for the run"
 echo "   readback_bytes/tok   = GPU→CPU bytes per token (serve lanes: from /metrics; generate/llama: N/A)"
 echo "                          B=1 greedy: 4 bytes/tok  |  B=1 full-logits: ~128K bytes/tok (32K vocab×f32)"
 echo "   lane_type            = routing path taken (from /metrics greedy_steps vs logits_steps)"
-echo "   feature_flags        = active DISMANTLE_* lever bundle and kernel profile"
+echo "   feature_flags        = active HAWKING_* lever bundle and kernel profile"
 echo "   git_sha              = HEAD commit (first 7 chars)"
 echo
 echo " --kernel-profile (hardware autotune JSON) is distinct from --profile fast (lever bundle)."

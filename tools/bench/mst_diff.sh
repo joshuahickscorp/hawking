@@ -27,7 +27,7 @@
 #   GEMV_MATCH="q4_K,mul_mv,mul_mm,gemm_q4" tools/bench/mst_diff.sh
 #
 # Env:
-#   BIN        dismantle binary (default ./target/release/dismantle)
+#   BIN        dismantle binary (default ./target/release/hawking)
 #   LLAMA      llama-cli binary (default: $(command -v llama-cli))
 #   WEIGHTS    gguf (default models/qwen2.5-3b-instruct-q4_k_m.gguf)
 #   PROFILE    dismantle kernel profile (default qwen3b-instruct-q4k.m3pro18.json)
@@ -43,7 +43,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 # --- knobs -----------------------------------------------------------------
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 LLAMA="${LLAMA:-$(command -v llama-cli || true)}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
@@ -58,9 +58,9 @@ GAP_PY="tools/bench/mst_gap.py"
 # Locked Qwen fast-path (matches gpu_saturation.sh / clean_room_batch.sh /
 # measure_joules.sh) + gpu_prod tracer so dismantle's encoders are LABELED in
 # the trace (matches its per-kernel names to the right XML rows).
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1 DISMANTLE_TCB_TRACE=gpu_prod"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1 HAWKING_TCB_TRACE=gpu_prod"
 
 PY="$([[ -x .venv/bin/python ]] && echo .venv/bin/python || echo python3)"
 STAMP="$(date +%Y%m%dT%H%M%S)"
@@ -130,7 +130,7 @@ note "report    :  $REPORT"
 # ===========================================================================
 # STAGE 1 — dismantle MST capture (gpu_prod labeled encoders, fast path)
 # ===========================================================================
-hr "STAGE 1: dismantle MST capture (DISMANTLE_TCB_TRACE=gpu_prod)"
+hr "STAGE 1: dismantle MST capture (HAWKING_TCB_TRACE=gpu_prod)"
 # We trace `dismantle bench --suite decode`; the locked env + gpu_prod tracer
 # label every compute encoder so the XML kernel-name column carries the real
 # names (gemm_q4_k_v4_predec_pair, etc.). nice+taskpolicy keep it cooperative.

@@ -10,7 +10,7 @@
 # produces at capacity, vs llama.cpp single-stream baseline.
 #
 # USAGE (server pre-started):
-#   ./target/release/dismantle serve \
+#   ./target/release/hawking serve \
 #       --weights models/qwen2.5-3b-instruct-q4_k_m.gguf \
 #       --max-batch-size 8 &
 #   tools/bench/multiseq_bench.sh
@@ -46,7 +46,7 @@ WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-}"
 LLAMA_BASELINE_TPS="${LLAMA_BASELINE_TPS:-55}"
 REQUEST_TIMEOUT_SEC="${REQUEST_TIMEOUT_SEC:-600}"
-DBIN="${DBIN:-./target/release/dismantle}"
+DBIN="${DBIN:-./target/release/hawking}"
 START_SERVER=0
 SERVER_PID=""
 TMPDIR_BENCH="/tmp/multiseq_bench_$$"
@@ -98,7 +98,7 @@ if [[ "$START_SERVER" -eq 1 ]]; then
 else
     curl -sf "${SERVE_URL}/healthz" >/dev/null 2>&1 || {
         echo "FAIL: server not reachable at ${SERVE_URL}/healthz"
-        echo "      Either pre-start: ./target/release/dismantle serve --weights <gguf> --max-batch-size 8"
+        echo "      Either pre-start: ./target/release/hawking serve --weights <gguf> --max-batch-size 8"
         echo "      Or pass:          --start-server"
         exit 3
     }

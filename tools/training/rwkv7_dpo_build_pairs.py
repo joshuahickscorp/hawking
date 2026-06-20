@@ -75,7 +75,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--chosen", default=str(ROOT / "artifacts/rwkv7_posttrain/dpo_chosen.jsonl"))
     ap.add_argument("--gguf", default=str(ROOT / "models/rwkv7-g1-04-sft-Q4_K_M.gguf"))
-    ap.add_argument("--bin", default=str(ROOT / "target/release/dismantle"))
+    ap.add_argument("--bin", default=str(ROOT / "target/release/hawking"))
     ap.add_argument("--out", default=str(ROOT / "artifacts/rwkv7_posttrain/dpo.jsonl"))
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-new-tokens", type=int, default=200)

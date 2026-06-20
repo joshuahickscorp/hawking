@@ -149,7 +149,7 @@ soft_step w4a8_calibration \
 # (8) Lookahead n-gram parity sweep on Qwen-3B
 #     ~10 min. Confirms the parity-bug fix (memory/lookahead_resurrected
 #     _2026_05_26.md) isn't prompt-dependent — currently only validated
-#     on 2 prompts. Test runs DISMANTLE_LOOKAHEAD=N greedy vs baseline.
+#     on 2 prompts. Test runs HAWKING_LOOKAHEAD=N greedy vs baseline.
 soft_step lookahead_parity \
   bash -c "nice -n 19 cargo test --release -p dismantle-core \
     --test qwen_lookahead_parity -- --nocapture --ignored \

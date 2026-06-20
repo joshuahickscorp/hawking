@@ -42,7 +42,7 @@
 #   tools/bench/race_vs_steady.sh --no-start
 #
 # ENVIRONMENT:
-#   BIN             dismantle binary (default: ./target/release/dismantle)
+#   BIN             dismantle binary (default: ./target/release/hawking)
 #   WEIGHTS         GGUF model path  (default: models/qwen2.5-3b-instruct-q4_k_m.gguf)
 #   PROFILE         kernel profile JSON (default: profiles/qwen3b-instruct-q4k.m3pro18.json)
 #   BATCH           concurrent requests per strategy (default: 8)
@@ -67,7 +67,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 
-BIN="${BIN:-./target/release/dismantle}"
+BIN="${BIN:-./target/release/hawking}"
 WEIGHTS="${WEIGHTS:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
 PROFILE="${PROFILE:-profiles/qwen3b-instruct-q4k.m3pro18.json}"
 BATCH="${BATCH:-8}"
@@ -82,9 +82,9 @@ RACE_URL="${RACE_URL:-http://127.0.0.1:${RACE_PORT}}"
 STEADY_URL="${STEADY_URL:-http://127.0.0.1:${STEADY_PORT}}"
 NO_START=0
 
-BASE_ENV="DISMANTLE_QWEN_TCB=1 DISMANTLE_QWEN_VOCAB_PRUNE=32000 \
-DISMANTLE_QWEN_Q4K_LMHEAD=1 DISMANTLE_QWEN_FFN_DOWN_Q4K=1 \
-DISMANTLE_QWEN_Q4K_PREDEC=1"
+BASE_ENV="HAWKING_QWEN_TCB=1 HAWKING_QWEN_VOCAB_PRUNE=32000 \
+HAWKING_QWEN_Q4K_LMHEAD=1 HAWKING_QWEN_FFN_DOWN_Q4K=1 \
+HAWKING_QWEN_Q4K_PREDEC=1"
 
 SAMPLE_S=$(awk -v ms="$SAMPLE_MS" 'BEGIN{printf "%.3f", ms/1000}')
 

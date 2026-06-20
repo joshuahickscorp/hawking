@@ -318,8 +318,8 @@ def main():
     if tokens:
         print(f"per-token GPU time:       {total_gpu_us/tokens/1000:.2f} ms")
     if not has_gpu:
-        print("\nWARNING: no gpu_us values populated. Run with DISMANTLE_TCB_TRACE=gpu.")
-        print("With DISMANTLE_TCB_TRACE=cpu (or =1) you get CPU encode times only.")
+        print("\nWARNING: no gpu_us values populated. Run with HAWKING_TCB_TRACE=gpu.")
+        print("With HAWKING_TCB_TRACE=cpu (or =1) you get CPU encode times only.")
 
     print_per_kernel(by_k, total_gpu_us, tokens)
     if has_gpu:

@@ -7,7 +7,7 @@
 #                                        parity test, microbench. Writes a fix patch if
 #                                        conflicts; documents failure mode if not.
 #   M3  kernel hot-spot map  ~60 min   — `bench --trace-json` (the documented path —
-#                                        prior chain's DISMANTLE_TCB_TRACE env returned
+#                                        prior chain's HAWKING_TCB_TRACE env returned
 #                                        4 lines, that's a dead method). Parses top-N
 #                                        kernels by total ms; writes kernel_sketch_targets.md
 #   M4  autotune sweep       ~90 min   — sweeps gemm_q4_k_schedule, gemm_q6_k_schedule,
@@ -51,7 +51,7 @@ AUTO_COMMIT="${CHAIN_AUTO_COMMIT:-0}"  # default DRY-RUN
 WEIGHTS=models/deepseek-v2-lite-q4.gguf
 PROFILE=profiles/deepseek-v2-lite-q4.m3pro18.json
 VOCAB=artifacts/calibration/analysis/vocab_whitelist_995.json
-BIN=./target/release/dismantle
+BIN=./target/release/hawking
 
 stamp() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 log() { echo "[$(stamp)] $*" | tee -a "$LOG"; }
@@ -269,7 +269,7 @@ else
             if cargo build --release -p dismantle 2>&1 | tail -10; then
                 echo ""
                 echo "(rebuild OK)"
-                if ./target/release/dismantle generate --help 2>&1 | grep -E "q8-kv|q8_kv" ; then
+                if ./target/release/hawking generate --help 2>&1 | grep -E "q8-kv|q8_kv" ; then
                     echo ""
                     echo "✓ --q8-kv flag PRESENT"
                     echo ""
@@ -331,10 +331,10 @@ else
     {
         echo "# Kernel hot-spot map — $(stamp)"
         echo ""
-        echo "Capture via the documented \`bench --trace-json\` path. Prior chain's \`DISMANTLE_TCB_TRACE\` env approach produced 4 lines — that wasn't the right knob. This module uses the actual flag."
+        echo "Capture via the documented \`bench --trace-json\` path. Prior chain's \`HAWKING_TCB_TRACE\` env approach produced 4 lines — that wasn't the right knob. This module uses the actual flag."
         echo ""
-        log "running bench --trace-json (decode, 64 tok) with DISMANTLE_TCB_TRACE=gpu"
-        DISMANTLE_TCB_TRACE=gpu $BIN bench --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
+        log "running bench --trace-json (decode, 64 tok) with HAWKING_TCB_TRACE=gpu"
+        HAWKING_TCB_TRACE=gpu $BIN bench --weights "$WEIGHTS" --kernel-profile "$PROFILE" \
                    --suite decode --trials 3 --max-new-tokens 64 \
                    --json "$M3_BENCH" --trace-json "$M3_TRACE" \
                    --trace-dispatch \
@@ -529,7 +529,7 @@ else
         echo "Configs:"
         echo "- **baseline** — no flags"
         echo "- **L1** — vocab-prune"
-        echo "- **L1+Jw2** — vocab-prune + DISMANTLE_MOE_DOWN_Q8_V2T_W2=1 (env-gated kernel)"
+        echo "- **L1+Jw2** — vocab-prune + HAWKING_MOE_DOWN_Q8_V2T_W2=1 (env-gated kernel)"
         if [[ -f "$M4_PROFILE_OUT" ]]; then
             echo "- **L1+M4** — vocab-prune + M4 candidate profile"
         fi
@@ -562,7 +562,7 @@ else
 
             run_cfg "baseline"   ""                                    ""
             run_cfg "L1"         "--vocab-prune-path $VOCAB"           ""
-            run_cfg "L1+Jw2"     "--vocab-prune-path $VOCAB"           "DISMANTLE_MOE_DOWN_Q8_V2T_W2=1"
+            run_cfg "L1+Jw2"     "--vocab-prune-path $VOCAB"           "HAWKING_MOE_DOWN_Q8_V2T_W2=1"
             if [[ -f "$M4_PROFILE_OUT" ]]; then
                 run_cfg "L1+M4"  "--vocab-prune-path $VOCAB"           ""  "$M4_PROFILE_OUT"
             fi

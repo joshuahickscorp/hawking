@@ -1,32 +1,32 @@
 # tools/headbank/
 
-Stages Eagle5 spec-decode heads from a Drive export into local `$DISMANTLE_HOME/headbank/<slug>/` directories and emits the runtime env block.
+Stages Eagle5 spec-decode heads from a Drive export into local `$HAWKING_HOME/headbank/<slug>/` directories and emits the runtime env block.
 
-The Colab notebook `colab/maximal_spec_headbank_500u.ipynb` trains heads for each model dismantle serves and emits a `headbank_manifest.json` indexing every head, AWQ scales, and runtime profile.
+The Colab notebook `colab/maximal_spec_headbank_500u.ipynb` trains heads for each model hawking serves and emits a `headbank_manifest.json` indexing every head, AWQ scales, and runtime profile.
 
 ## Usage
 
 ```sh
 # List available models in the bank
 python3 tools/headbank/pull.py \
-    --manifest /path/to/dismantle_export/headbank_500u_v2/headbank_manifest.json \
+    --manifest /path/to/hawking_export/headbank_500u_v2/headbank_manifest.json \
     --list
 
 # Stage a head (e.g. Qwen-7B: tau 7.76, 97.7% depth-1 accept)
 python3 tools/headbank/pull.py \
-    --manifest /path/to/dismantle_export/headbank_500u_v2/headbank_manifest.json \
+    --manifest /path/to/hawking_export/headbank_500u_v2/headbank_manifest.json \
     --slug q7b \
-    --env-file ~/.dismantle/q7b.env
+    --env-file ~/.hawking/q7b.env
 
 # Source the env and bench
-source ~/.dismantle/q7b.env
-./target/release/dismantle bench --prompt 'why is the sky blue?'
+source ~/.hawking/q7b.env
+./target/release/hawking bench --prompt 'why is the sky blue?'
 ```
 
 ## Layout produced
 
 ```
-$DISMANTLE_HOME/          (defaults to ~/.dismantle)
+$HAWKING_HOME/          (defaults to ~/.hawking)
   headbank/
     q3b/
       head.safetensors    # Eagle5 head
@@ -36,15 +36,15 @@ $DISMANTLE_HOME/          (defaults to ~/.dismantle)
       ...
 ```
 
-The `runtime_profile.json` `runtime_env` block contains every `DISMANTLE_*` / `EAGLE5_*` env var the runtime expects.
+The `runtime_profile.json` `runtime_env` block contains every `HAWKING_*` / `EAGLE5_*` env var the runtime expects.
 
 ## Manifest schema
 
-`dismantle-headbank-manifest-v1` (produced by the Colab notebook):
+`hawking-headbank-manifest-v1` (produced by the Colab notebook):
 
 ```json
 {
-  "schema": "dismantle-headbank-manifest-v1",
+  "schema": "hawking-headbank-manifest-v1",
   "repo_sha": "abc1234",
   "entries": [
     {
