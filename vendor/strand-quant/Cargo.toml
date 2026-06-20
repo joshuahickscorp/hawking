@@ -16,15 +16,8 @@ repository = "https://github.com/strand-compress/strand"
 # to use floating point — it is offline preprocessing. The DECODE side lives in
 # the `decode` module and is integer-only (see its module docs); it carries the
 # workspace determinism guarantee.
-[features]
-# Enable the CUDA GPU Viterbi backend.  Requires CUDA toolkit (nvcc + nvrtc).
-# Activate with: --features cuda
-# On macOS Metal takes precedence; CUDA is the Windows/Linux GPU path.
-cuda = ["dep:cudarc"]
-
 [dependencies]
 wide      = "0.7"   # concrete (not workspace-inherited): see the self-contained note above
-cudarc    = { version = "0.12", features = ["driver", "nvrtc", "cuda-version-from-build-system"], optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 metal = "0.27"

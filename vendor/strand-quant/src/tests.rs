@@ -834,12 +834,12 @@ fn computed_codebook_exhaustive_small_trellis_equivalence() {
 #[test]
 fn computed_codebook_gpu_eligible_path_identical() {
     // GPU-eligible configs (no tail-biting / diag_h / affine_min) are routed
-    // through the Metal (macOS) or CUDA backend by `encode_tensor_with`. On this
+    // through the Metal backend on macOS by `encode_tensor_with`. On this
     // branch the GPU backend is the *encode-side* Viterbi: it receives f32
     // reconstruction levels built host-side from the codebook, so under
     // ComputedAcklam those levels are byte-identical to StoredLut and the GPU
     // result must match. This test makes that coverage explicit (it silently
-    // runs on the CPU fallback where no GPU is present — still a valid identity
+    // runs on the CPU fallback where Metal is not present — still a valid identity
     // check). It does NOT touch a decode-side GPU gather (none exists here; that
     // kernel lives in the separate strand-decode-kernel crate).
     let weights = normal_vec(2000, 0x6907_C0DE_F00Du64);

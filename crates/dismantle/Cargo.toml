@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "dismantle CLI — Apple Silicon MoE inference"
+description = "dismantle CLI for Apple Silicon LLM inference"
 
 [[bin]]
 name = "dismantle"

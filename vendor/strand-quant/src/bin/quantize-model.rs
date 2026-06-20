@@ -429,8 +429,8 @@ fn parse_args() -> Args {
                      [--skip-manifest <manifest.json> [--reuse-from <prior-recon.safetensors>]]\n\
                      [--packed-out <strand>] [--packed-v2-out <strand> [--ragged-v2]]\n\
                      \n\
-                     Default: L=k+4 (fast mode). GPU (Metal/CUDA) auto-selected when available.\n\
-                     --quality:    use L=k+6 (4× slower on CPU; ~1-2× on GPU; lower PPL).\n\
+                     Default: L=k+4 (fast mode). Metal is auto-selected on macOS when available.\n\
+                     --quality:    use L=k+6 (4× slower on CPU; ~1-2× on Metal; lower PPL).\n\
                      --mp-config:  JSON array of {{pattern, bits}} rules for per-layer bit depths.\n\
                      \t      E.g. scripts/mp-4a3f.json (4-bit attn, 3-bit FFN).\n\
                      \t      --bits sets the fallback for tensors matching no rule.\n\

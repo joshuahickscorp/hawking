@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
-description = "Apple Silicon MoE inference engine — kernels, model, runtime"
+description = "Apple Silicon LLM inference engine core"
 
 [features]
 # TQ (Trellis-Quant): dismantle's deterministic sub-4-bit weight-serving project,

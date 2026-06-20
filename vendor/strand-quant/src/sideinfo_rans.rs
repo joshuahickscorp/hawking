@@ -30,7 +30,7 @@
 //! - The rANS core is the proven Ryg-style 32-bit construction already shipping
 //!   in `strand-container::coder::rans` (same `L`, same `SCALE_BITS`), reused
 //!   here *without* taking a dependency on `strand-core`/`strand-container`
-//!   (this crate's only deps are `wide`/`metal`/`cudarc`).
+//!   (this crate's only deps are `wide` plus macOS `metal`/`objc`).
 //! - Encode may use floats to *choose* the model (it does not, here — counts are
 //!   integers), but decode is integer-only. This matches the crate's
 //!   encode-float / decode-integer split (see `lib.rs`).

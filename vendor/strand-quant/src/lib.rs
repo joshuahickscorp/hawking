@@ -1,8 +1,5 @@
 
-#![cfg_attr(
-    not(any(target_os = "macos", feature = "cuda")),
-    forbid(unsafe_code)
-)]
+#![cfg_attr(not(target_os = "macos"), forbid(unsafe_code))]
 
 pub mod c2_final;
 pub mod codebook;
@@ -19,15 +16,13 @@ pub mod learned_codebook;
 pub mod lut_tables;
 pub mod outlier_wire;
 
-#[cfg(any(target_os = "macos", feature = "cuda"))]
+#[cfg(target_os = "macos")]
 pub(crate) mod gpu_types;
 #[cfg(target_os = "macos")]
 pub(crate) mod metal_backend;
 
 #[cfg(target_os = "macos")]
 pub mod metal_encode;
-#[cfg(feature = "cuda")]
-pub(crate) mod cuda_backend;
 pub mod provenance;
 pub mod provenance_io;
 pub mod rht;

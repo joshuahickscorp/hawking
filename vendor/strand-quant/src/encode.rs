@@ -5,7 +5,7 @@ use crate::codebook::QUANTILE_SHIFT;
 use crate::decode::{eff_scale_q, reconstruct_q, SCALE_SHIFT};
 use crate::trellis::{push_bits, read_bits, TrellisConfig};
 
-#[cfg(any(target_os = "macos", feature = "cuda"))]
+#[cfg(target_os = "macos")]
 use std::sync::OnceLock;
 
 #[cfg(target_os = "macos")]
@@ -13,13 +13,6 @@ static METAL: OnceLock<Option<crate::metal_backend::MetalViterbi>> = OnceLock::n
 #[cfg(target_os = "macos")]
 fn metal_viterbi() -> Option<&'static crate::metal_backend::MetalViterbi> {
     METAL.get_or_init(|| crate::metal_backend::MetalViterbi::new()).as_ref()
-}
-
-#[cfg(feature = "cuda")]
-static CUDA: OnceLock<Option<crate::cuda_backend::CudaViterbi>> = OnceLock::new();
-#[cfg(feature = "cuda")]
-fn cuda_viterbi() -> Option<&'static crate::cuda_backend::CudaViterbi> {
-    CUDA.get_or_init(|| crate::cuda_backend::CudaViterbi::new()).as_ref()
 }
 
 pub const SUB_BLOCK: usize = 32;
@@ -272,13 +265,6 @@ pub fn encode_tensor_with(weights: &[f32], cfg: &TrellisConfig, opts: &EncodeOpt
     #[cfg(target_os = "macos")]
     if gpu_eligible {
         if let Some(enc) = encode_tensor_with_metal(weights, cfg, opts) {
-            return enc;
-        }
-    }
-
-    #[cfg(feature = "cuda")]
-    if gpu_eligible {
-        if let Some(enc) = encode_tensor_with_cuda(weights, cfg, opts) {
             return enc;
         }
     }
@@ -664,131 +650,6 @@ fn encode_tensor_with_metal(
         let sub_levels: Vec<f32> = preps[bi_base..bi_end]
             .iter().flat_map(|p| p.levels_f32.iter().copied()).collect();
         let gpu = m.run_blocks(
-            batch_weights, &sub_levels, &batch_lens, cfg.block_len, num_states, cfg.k_bits as u32,
-        )?;
-        let mbl = gpu.max_block_len;
-
-        for (i, prep) in preps[bi_base..bi_end].iter().enumerate() {
-            let blen = prep.chunk_len;
-            let fc_base = i * num_states;
-            let back_base = i * mbl * num_states;
-            let terminal = (0..num_states)
-                .min_by(|&a, &b| {
-                    gpu.final_cost[fc_base + a]
-                        .partial_cmp(&gpu.final_cost[fc_base + b])
-                        .unwrap_or(std::cmp::Ordering::Equal)
-                })
-                .unwrap_or(0);
-            let mut path = vec![0u32; blen];
-            let mut state = terminal;
-            for step in (0..blen).rev() {
-                path[step] = (state & input_mask) as u32;
-                state = gpu.back_flat[back_base + step * num_states + state] as usize;
-            }
-            all_paths[bi_base + i] = path;
-            all_init_states[bi_base + i] = state;
-        }
-        bi_base = bi_end;
-    }
-
-    let mut bits = Vec::new();
-    let mut bit_cursor = 0usize;
-    let mut blocks = Vec::new();
-    for (bi, prep) in preps.iter().enumerate() {
-        for &sym in &all_paths[bi] {
-            push_bits(&mut bits, &mut bit_cursor, sym as usize, cfg.k_bits);
-        }
-        blocks.push(BlockMeta {
-            scale_q: prep.scale_q,
-            sub_scales: pack_sub_scales(&prep.mults),
-            min_base_q: 0,
-            mins: Vec::new(),
-            init_state: all_init_states[bi] as u32,
-            n: prep.chunk_len as u32,
-        });
-    }
-
-    Some(EncodedTensor {
-        bits,
-        blocks,
-        total: weights.len(),
-        has_rht_seed: false,
-        tail_biting: false,
-        has_affine_min: false,
-    })
-}
-
-#[cfg(feature = "cuda")]
-fn encode_tensor_with_cuda(
-    weights: &[f32],
-    cfg: &TrellisConfig,
-    opts: &EncodeOpts,
-) -> Option<EncodedTensor> {
-    let cu = cuda_viterbi()?;
-    // Codebook sourced per `cfg.codebook_mode`. Under `ComputedAcklam` this is a
-    // freshly materialised `Vec` whose entries are byte-identical to the frozen
-    // table (Variant A), so every encode metric below is unchanged. The encoder
-    // keeps the `&[i32]` interface; only the *source* of the array differs.
-    let lut_cb = cfg.codebook();
-    let lut: &[i32] = &lut_cb;
-    let num_states = cfg.num_states();
-    let n_sub_per_block = cfg.block_len.div_ceil(SUB_BLOCK);
-    let q_to_real = 1.0f32 / (1u32 << QUANTILE_SHIFT) as f32;
-
-    struct BlockPrep {
-        chunk_offset: usize,
-        chunk_len: usize,
-        scale_q: i32,
-        mults: Vec<u8>,
-        levels_f32: Vec<f32>,
-    }
-
-    let build_levels = |scale_q: i32, mults: &[u8]| -> Vec<f32> {
-        let mut lv = vec![0.0f32; n_sub_per_block * num_states];
-        for (j, &mult) in mults.iter().enumerate() {
-            let es = eff_scale_q(scale_q, mult);
-            let base = j * num_states;
-            for s in 0..num_states {
-                lv[base + s] = (reconstruct_q(es, lut[s]) as f32) * q_to_real;
-            }
-        }
-        lv
-    };
-
-    let n_blocks = weights.len().div_ceil(cfg.block_len);
-    let mut preps: Vec<BlockPrep> = Vec::with_capacity(n_blocks);
-    let mut offset = 0usize;
-    for chunk in weights.chunks(cfg.block_len) {
-        let scale_q = choose_scale_q(chunk, lut, cfg);
-        let mults = if opts.adaptive {
-            choose_sub_scales(chunk, scale_q, lut, cfg)
-        } else {
-            vec![SUB_SCALE_UNITY; n_sub_blocks(chunk.len())]
-        };
-        let levels_f32 = build_levels(scale_q, &mults);
-        preps.push(BlockPrep { chunk_offset: offset, chunk_len: chunk.len(), scale_q, mults, levels_f32 });
-        offset += chunk.len();
-    }
-
-    const MAX_BACK_BYTES_CUDA: usize = 512 * 1024 * 1024; 
-    let bytes_per_block = cfg.block_len * num_states * std::mem::size_of::<u32>();
-    let batch_size = (MAX_BACK_BYTES_CUDA / bytes_per_block.max(1)).max(64).min(n_blocks);
-
-    let input_mask = (1usize << cfg.k_bits) - 1;
-    let mut all_paths: Vec<Vec<u32>> = vec![Vec::new(); n_blocks];
-    let mut all_init_states: Vec<usize> = vec![0usize; n_blocks];
-
-    let mut bi_base = 0;
-    while bi_base < n_blocks {
-        let bi_end = (bi_base + batch_size).min(n_blocks);
-        let w_start = preps[bi_base].chunk_offset;
-        let w_end = if bi_end < n_blocks { preps[bi_end].chunk_offset } else { weights.len() };
-        let batch_weights = &weights[w_start..w_end];
-        let batch_lens: Vec<usize> = preps[bi_base..bi_end].iter().map(|p| p.chunk_len).collect();
-
-        let sub_levels: Vec<f32> = preps[bi_base..bi_end]
-            .iter().flat_map(|p| p.levels_f32.iter().copied()).collect();
-        let gpu = cu.run_blocks(
             batch_weights, &sub_levels, &batch_lens, cfg.block_len, num_states, cfg.k_bits as u32,
         )?;
         let mbl = gpu.max_block_len;
