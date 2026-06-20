@@ -3,7 +3,7 @@
 Goal: take the already-instruct-pretrained **`BlinkDL/rwkv7-g1` 0.4B** state-space
 model and post-train it (light SFT → DPO → optional Qwen2.5-3B on-policy
 distillation) **entirely on this M3 Pro** — no RunPod, no cloud, ~overnight, $0.
-Capture is local; training runs on `mps` (slower than CUDA, but free).
+Capture is local; training runs on `mps` (slower than cloud-GPU, but free).
 
 This is a **post-train of an existing instruct model**, NOT a from-scratch
 distill. A prior research pass concluded that is the cheapest path to a coherent
@@ -117,7 +117,7 @@ python -c "import torch; print('torch', torch.__version__, 'mps', torch.backends
 #   must print mps True
 ```
 
-> If `flash-linear-attention` pulls a CUDA-only Triton path, that's fine — on
+> If `flash-linear-attention` pulls a cloud-GPU-only Triton path, that's fine — on
 > `mps` the fla RWKV7 layer falls back to its native/torch recurrence. We are
 > not using Triton kernels here. If import fails, pin `triton` out:
 > `uv pip install flash-linear-attention --no-deps` then add `einops`

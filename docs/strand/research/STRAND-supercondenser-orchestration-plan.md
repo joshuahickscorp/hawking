@@ -75,7 +75,7 @@ Expected-Δtax is a **[modeled]** estimate unless noted. "Side" = where it hooks
 | ID | Lever | Side | Why | Hook |
 |---|---|---|---|---|
 | **I1** | **bf16 shadow + 8-bit Adam** | training | **GATES the 32B leg** — fp32 shadow = ~238 GB @ 32B → OOM (same class as the 70B encode OOM) | `strand-qat.py:QuantLinear.weight:65` fp32→bf16; `AdamW:576`→bitsandbytes `Adam8bit`. **Both greenfield** (no bf16 shadow, no bitsandbytes import) |
-| **I2** | **CUDA block-batched encode** (validate-only) | pod | unblocks >32B/70B/405B GPU encode (per-thread host levels 30 GB→16.8 MB @ batch512) | kernels exist, `#[ignore]`d; CPU stays canonical; parity oracle = **f32 CPU reference** |
+| **I2** | **cloud-GPU block-batched encode** (validate-only) | pod | unblocks >32B/70B/405B GPU encode (per-thread host levels 30 GB→16.8 MB @ batch512) | kernels exist, `#[ignore]`d; CPU stays canonical; parity oracle = **f32 CPU reference** |
 | **I3** | **Staged-tile bitslice decode** | decode/GPU | speed (≥90% mem-BW), NOT quality | GPU-blocked until PV exits; out of this plan's scope, listed for non-collision |
 
 ---
@@ -108,10 +108,10 @@ Each is a 0.5B A/B isolating one variable; `promote.py` scores it. Winners compo
 
 **WAVE 3 — Cloud. Gated on `PROMOTE_CLOUD`. No premature spend.**
 - **3a. Pre-flight** (partly done): rebuild on-pod `quantize-model` (was 937-byte broken), stage 7B shards. **Land I1 (bf16 shadow + 8-bit Adam) before the 32B leg.**
-- **3b. 7B selective-PV** with the assembled recipe (KL-route ⊕ STRAND-PVT ⊕ relation-distill-if-passed ⊕ cooldown ⊕ DBIA). **CPU-canonical** (CUDA validate-only). Success = `ppl_selpv_7b.json` tax **≤0.15-0.18** [modeled].
+- **3b. 7B selective-PV** with the assembled recipe (KL-route ⊕ STRAND-PVT ⊕ relation-distill-if-passed ⊕ cooldown ⊕ DBIA). **CPU-canonical** (cloud-GPU validate-only). Success = `ppl_selpv_7b.json` tax **≤0.15-0.18** [modeled].
 - **3c. 32B selective-PV** — ONLY after I1. `touch /workspace/SKIP-32B` until then.
 
-**WAVE 4 — Speed (GPU-blocked, after PV exits; independent track).** I3 bitslice staged decode + I2 CUDA encode validate. Listed for completeness / non-collision; not on the quality/density critical path.
+**WAVE 4 — Speed (GPU-blocked, after PV exits; independent track).** I3 bitslice staged decode + I2 cloud-GPU encode validate. Listed for completeness / non-collision; not on the quality/density critical path.
 
 ---
 
@@ -123,7 +123,7 @@ Each is a 0.5B A/B isolating one variable; `promote.py` scores it. Winners compo
 | 1 | **serial queue + parallel analysis** | 1 box-conductor (runs the MPS A/Bs in sequence, self-guards on `pgrep`), 1-2 analyst agents scoring via `promote.py` as each lands | none (single box) |
 | 2 | **serial on shared files** | 1 section-chain owner (the HOT edits in §2.2 order), 1 auditor running `sprint_section_chain_audit` + `verify_archive` after each step | **worktree** per editor; merge in strict order |
 | 3 | **gated, sequential** | 1 cloud-conductor honoring `require_promoted`; 7B before 32B | pod |
-| 4 | parallel after PV exits | bitslice + CUDA validators | pod / GPU |
+| 4 | parallel after PV exits | bitslice + cloud-GPU validators | pod / GPU |
 
 **Collision protocol restated:** executor chat owns `lib.rs` + walkers + cloud + pod. All concurrent edits → worktree. Shared walker/provenance files → serialize, never parallel. Rebuilds while PV runs → worktree `target/` only.
 

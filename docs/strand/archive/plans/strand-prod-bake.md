@@ -64,7 +64,7 @@ is the determinism / staleness key a consumer checks at load
 - No hashing crate is a dependency (`sha2`/`ring`/`blake3`/`digest` absent from every
   `crates/*/Cargo.toml` and from `Cargo.lock`).
 - `strand-quant` is deliberately near-zero-dep (deps: `strand-gguf`, `wide`, optional
-  `cudarc`, and macOS `metal`/`objc`) and the bin is `#![forbid(unsafe_code)]`
+  `cloud-gpu dependency`, and macOS `metal`/`objc`) and the bin is `#![forbid(unsafe_code)]`
   (quantize-model.rs:54) with its own hand-rolled zero-dep safetensors + JSON parsers.
 
 **Decision: vendor a ~70-line pure-safe-Rust SHA-256 in a new module

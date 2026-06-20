@@ -16,7 +16,7 @@ Scope: the three recent Bible Colabs:
      before any expensive model work.
 
 2. `01_awq_bytecut` installed unbounded `gptqmodel`. Current GPTQModel releases
-   can pull incompatible NumPy/Transformers versions and may compile CUDA
+   can pull incompatible NumPy/Transformers versions and may compile cloud-GPU
    extensions on older GPUs.
    - Fixed by making GPTQ W3 lazy and disabled by default on cc < 8.0. AWQ W4
      now always runs first as the cheap quality signal.

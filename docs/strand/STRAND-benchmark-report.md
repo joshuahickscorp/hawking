@@ -37,7 +37,7 @@ comparisons are not made. Two harness regimes appear, each internally consistent
 - **Pod scale tiers (7B / 14B / 32B / Llama2-7B).** WikiText, ctx 2048, 64 chunks,
   131,008 tokens, dtype bf16 (per the `ctx`/`chunks`/`tokens`/`dtype` fields in each
   `scratch/pod-results/ppl_*.json`). The 7B and Llama2 baselines/q2 ran on
-  `device: "cuda"`; the 14B and 32B ran on `device: "offload"` (the `device` field in
+  `device: "cloud-gpu"`; the 14B and 32B ran on `device: "offload"` (the `device` field in
   each JSON). The eval token set and dtype are identical across all six runs.
 - **0.5B local canon (de-bias, PV, C2, KL, iso-bpw).** Qwen2.5-0.5B (`scratch/qwen-05b`),
   WikiText (`dataset_id: "wikitext"`, `dataset_fp 696cca6b65a171b0`), ctx 2048, 64
@@ -99,7 +99,7 @@ is the best of the three and large models can tolerate 2-bit**," not "damage fal
 monotonically as size grows." The 14B regression is unexplained by these three points
 alone.
 
-**Device caveat.** The 7B baseline/q2 ran on `device: "cuda"`; the 14B and 32B ran on
+**Device caveat.** The 7B baseline/q2 ran on `device: "cloud-gpu"`; the 14B and 32B ran on
 `device: "offload"` (the `device` field in each JSON). The eval token set and dtype
 are identical, so this should not move PPL, but the runs were not all on the same
 execution path and that has not been independently cross-checked.
@@ -500,8 +500,8 @@ a 6× lift over single-thread (`docs/will.md` line 115).
 one ffn tensor on one M3 Pro. The fused B=1 token path is ALU-bound, not
 bandwidth-bound (**29.8%/21.7% of peak moved**, `docs/STRAND-speed-roadmap.md` lines
 326–327), so "% of bandwidth peak" applies to the decode-to-buffer shape, not
-end-to-end token generation. No CUDA decode number exists — the speed roadmap forbids
-claiming CUDA from arithmetic (`docs/STRAND-compression-map.md` line 602).
+end-to-end token generation. No cloud-GPU decode number exists — the speed roadmap forbids
+claiming cloud-GPU from arithmetic (`docs/STRAND-compression-map.md` line 602).
 
 ### GPU encode lane (2.36×)
 
@@ -555,29 +555,29 @@ than changing selected winners, so the gain is real but concentrated in the medi
 that were paying for unlikely candidates (`docs/STRAND-media-speed-roadmap.md` lines
 46–47). Compression ratios were unchanged across all fixtures.
 
-### The CUDA big-tensor wall
+### The cloud-GPU big-tensor wall
 
-The CUDA encode lane is **validated correct but blocked above 32B**
+The cloud-GPU encode lane is **validated correct but blocked above 32B**
 (`docs/STRAND-quality-density-frontier.md` lines 642–661):
 
-- The lane builds and runs (`--features cuda`, cudarc pinned `cuda-12060` for CUDA
+- The lane builds and runs (`--features cloud-gpu`, cloud-gpu dependency pinned `cloud-gpu-12060` for cloud-GPU
   12.7+; kernel fixed for nvrtc — no `<float.h>`, `COST_INF` as a macro), and a
-  tiny-tensor parity gate (`cuda-tiny-gate.sh`) confirmed correct output (lines 650–652).
+  tiny-tensor parity gate (`cloud-gpu-tiny-gate.sh`) confirmed correct output (lines 650–652).
 - **But on 70B's 235M-param FFN tensors at L12, the GPU back-buffer host-staging pushes
   memory past the 125GB cgroup and gets OOM-killed repeatedly.** The CPU completes
   (≈64GB) but takes ~4–6 days on these tensors. 32B tensors fit; 70B does not (lines
   653–655).
 - **The fix is known but unbuilt:** batch the GPU block dispatch in
-  `encode_tensor_with_cuda` (bounded block batches, like the CPU path) so back-buffer
+  `encode_tensor_with_cloud-gpu` (bounded block batches, like the CPU path) so back-buffer
   staging fits 24GB/125GB. Until then the GPU lane is **for ≤32B only**, and it is the
   prerequisite for both 70B-on-GPU and the 405B flagship (lines 656–658).
 
 As a consequence, **70B q2 is DEFERRED** — not for lack of capability but because the
 32B q2 result (6.609, +38% over bf16 4.778) already confirms the scale-tolerance thesis,
 making 70B "diminishing information for multi-day cost" against the memory wall (lines
-644–647). An auto-routing scaffold (`qm-wrapper.sh` + `.cuda-verdict`) is left in place
+644–647). An auto-routing scaffold (`qm-wrapper.sh` + `.cloud-gpu-verdict`) is left in place
 on the pod but pinned off until the batching fix plus a real-tensor parity check land
-(lines 659–661). The compression-map adds the standing rule that CUDA throughput must
+(lines 659–661). The compression-map adds the standing rule that cloud-GPU throughput must
 be **measured, not inferred** — the 3090-class "25–35 tok/s 7B primitive" is an
 arithmetic estimate only and is explicitly not a claim
 (`docs/STRAND-compression-map.md` lines 429–430, 602).
@@ -698,7 +698,7 @@ decode-only bitslice already reaches **74.0%** at 2-bit and **60.6%** at 3-bit (
 explicit lever. **Limitation:** the 60.6%/74.0% figures are *decode-only*; the fused
 B=1 token path is ALU-bound, not bandwidth-bound (29.8%/21.7% of peak *moved*), so
 "90% of bandwidth peak" applies to the decode-to-buffer shape, not end-to-end token
-generation. No CUDA decode number exists.
+generation. No cloud-GPU decode number exists.
 
 ### Target 5 — encode 5× current `[target — not a file quote]`
 
@@ -849,12 +849,12 @@ Llama2-family, at this recipe.
   `docs/STRAND-compression-map.md` lines 389–390 and frontier line 646). The doc calls
   70B "diminishing information for multi-day cost" (lines 646–647). [Note: the doc lines
   645/647 round 32B q2 to "6.609"; the JSON value is 6.6092402908416155.]
-- **A hard memory wall on the GPU encode lane.** The CUDA Viterbi lane is validated
+- **A hard memory wall on the GPU encode lane.** The cloud-GPU Viterbi lane is validated
   *correct* (tiny-tensor parity gate passed), but "on 70B's 235M-param FFN tensors at
   L12, the GPU back-buffer host-staging pushes memory past the 125GB cgroup →
   **OOM-killed** repeatedly" (lines 653–654). CPU completes (≈64GB) but is ~4–6 days.
   32B fit; 70B does not. The stated prerequisite is to **batch the GPU block dispatch**
-  in `encode_tensor_with_cuda` (lines 656–658).
+  in `encode_tensor_with_cloud-gpu` (lines 656–658).
 
 So the 32B q2 result (PPL **6.6092**, +38% over bf16 4.7785) is the current top of the
 scale ladder; everything above it is a memory-bound IOU, not a measured point.
@@ -967,8 +967,8 @@ prose was off):**
    (grep-confirmed); each is a synthesis pinned to a measured anchor, flagged `[target]`.
 5. **70B / 405B quality.** 70B q2 DEFERRED (memory wall); 405B is a gated flagship, not
    a measured point.
-6. **CUDA decode/encode throughput at scale.** The CUDA encode lane is parity-correct on
-   tiny tensors only; no CUDA decode number exists and the project forbids claiming CUDA
+6. **cloud-GPU decode/encode throughput at scale.** The cloud-GPU encode lane is parity-correct on
+   tiny tensors only; no cloud-GPU decode number exists and the project forbids claiming cloud-GPU
    from arithmetic.
 
 The single load-bearing honest framing: **STRAND's measured wins are 0.5B (levers) and

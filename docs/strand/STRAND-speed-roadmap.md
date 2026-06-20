@@ -393,7 +393,7 @@ binding.
 ### Tokens/s arithmetic (decode-primitive ceilings — NOT end-to-end inference)
 
 Basis: measured M3 fused B=1 effective rates (40.6 / 35.7 Gw/s at 3-/2-bit); tok/s =
-rate ÷ nominal Gw/token. 3090-class column = arithmetic only (no CUDA port exists):
+rate ÷ nominal Gw/token. 3090-class column = arithmetic only (no cloud-GPU port exists):
 the fused kernel is ALU-bound on M3, so scale by ~5-6× integer-ALU class ratio; the
 936 GB/s bandwidth ceiling sits far higher and never binds.
 

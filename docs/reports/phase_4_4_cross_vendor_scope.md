@@ -6,7 +6,7 @@
 
 ## 0. Why this document exists
 
-Phase 3.1 landed `backend/mod.rs` (commit 728ab6d) — the platform-neutral `Backend` / `ComputeBackend` trait seam. Phase 3.3 (CPU backend) is the cheapest non-Metal reach rung. Phase 4.4 is the next question: which crate or approach should the *GPU* portability rung use to reach AMD, Intel, NVIDIA, and Android beyond the hand-tuned Metal path? The two serious candidates named in paradigmshift.md Part V.1 and plan 4.4 are **CubeCL** and **WGPU+CPU (Ratchet model)**.
+Phase 3.1 landed `backend/mod.rs` (commit 728ab6d) — the platform-neutral `Backend` / `ComputeBackend` trait seam. Phase 3.3 (CPU backend) is the cheapest non-Metal reach rung. Phase 4.4 is the next question: which crate or approach should the *GPU* portability rung use to reach AMD, Intel, external-GPU, and Android beyond the hand-tuned Metal path? The two serious candidates named in paradigmshift.md Part V.1 and plan 4.4 are **CubeCL** and **WGPU+CPU (Ratchet model)**.
 
 This document scopes their current maturity, the exact Cargo.toml lines each would add, the rough effort per rung, how each maps onto `backend/mod.rs`, and the recommended order. It does **not** build anything.
 
@@ -31,7 +31,7 @@ The blanket impl `impl<T: Backend + BackendGemv + … + BackendMoe> ComputeBacke
 
 ### What it is
 
-CubeCL (`github.com/tracel-ai/cubecl`) is a single-source portable GPU kernel framework for Rust. Kernels are written in a `#[cube]`-annotated Rust subset (type-checked, borrow-checked), then JIT-lowered to six targets: CUDA, HIP/ROCm, Metal (direct MSL since 0.5, including `simdgroup_matrix`), Vulkan, WebGPU, and a CPU backend. The companion `cubek` crate ships matmul, attention, and quantized-compute primitives built with CubeCL.
+CubeCL (`github.com/tracel-ai/cubecl`) is a single-source portable GPU kernel framework for Rust. Kernels are written in a `#[cube]`-annotated Rust subset (type-checked, borrow-checked), then JIT-lowered to six targets: cloud-GPU, cross-vendor GPU stacks, Metal (direct MSL since 0.5, including `simdgroup_matrix`), Vulkan, WebGPU, and a CPU backend. The companion `cubek` crate ships matmul, attention, and quantized-compute primitives built with CubeCL.
 
 ### Current maturity (as of 2026-06-02)
 
@@ -48,11 +48,11 @@ Adding CubeCL would require at minimum the following in the workspace `Cargo.tom
 
 ```toml
 # workspace Cargo.toml [workspace.dependencies]
-cubecl = { version = "0.5", features = ["wgpu", "cuda", "hip"] }
+cubecl = { version = "0.5", features = ["wgpu"] }
 cubecl-core = "0.5"
 ```
 
-The Metal target is produced via the existing `metal` crate path (MSL output from CubeCL is handed to the Metal compiler), so no new `metal`-family crate is added. The `wgpu` feature pulls in the wgpu device stack transitively. The `cuda` and `hip` features pull in cuda-sys / hip-sys build scripts that require the respective vendor SDK on the build host. **These are large, platform-specific build dependencies and represent non-trivial supply-chain additions.** Do not add to Cargo.toml without explicit user approval per CLAUDE.md.
+The Metal target is produced via the existing `metal` crate path (MSL output from CubeCL is handed to the Metal compiler), so no new `metal`-family crate is added. The `wgpu` feature pulls in the wgpu device stack transitively. Extra vendor-SDK features are intentionally out of scope for an Apple-first build. **Those are large, platform-specific build dependencies and represent non-trivial supply-chain additions.** Do not add them to Cargo.toml without explicit user approval per CLAUDE.md.
 
 ### How it maps onto backend/mod.rs
 
@@ -79,7 +79,7 @@ Total realistic first-ship estimate for a CubeCL backend that handles all ops ex
 - Alpha crate: API churn expected.
 - M3 shmem bug (#4530): attention path on Apple hardware is unvalidated.
 - Q4_K is not in `cubek`: biggest effort item is also the bottleneck op.
-- CUDA/HIP build deps: heavy supply-chain additions that gate on vendor SDK availability at build time.
+- cloud-GPU/cross-vendor GPU stack build deps: heavy supply-chain additions that gate on vendor SDK availability at build time.
 - **Verdict (paradigmshift.md):** "Watch, prototype, don't bet the hot path yet."
 
 ---
@@ -88,13 +88,13 @@ Total realistic first-ship estimate for a CubeCL backend that handles all ops ex
 
 ### What it is
 
-WGPU (`github.com/gfx-rs/wgpu`) is a cross-platform graphics/compute API implementation in Rust, covering Vulkan, Metal, D3D12, OpenGL ES, and browser WebGPU behind a single API surface. Combined with a CPU scalar fallback backend (Phase 3.3, already landed/scoped), this two-backend combination is exactly what the Ratchet project (`github.com/huggingface/ratchet`) uses to reach NVIDIA, AMD, Intel, Apple, Android, iOS, and browser WebGPU from one codebase.
+WGPU (`github.com/gfx-rs/wgpu`) is a cross-platform graphics/compute API implementation in Rust, covering Vulkan, Metal, D3D12, OpenGL ES, and browser WebGPU behind a single API surface. Combined with a CPU scalar fallback backend (Phase 3.3, already landed/scoped), this two-backend combination is exactly what the Ratchet project (`github.com/huggingface/ratchet`) uses to reach external-GPU, AMD, Intel, Apple, Android, iOS, and browser WebGPU from one codebase.
 
 ### Current maturity (as of 2026-06-02)
 
 WGPU is **production-stable** (0.20+ series). Ratchet is a running inference engine with real models on it. Confirmed status points:
 
-- wgpu covers every GPU target dismantle needs without vendor SDK dependencies at build time: Metal, Vulkan (AMD/Intel/NVIDIA/Android), D3D12 (Windows), WebGPU (browser).
+- wgpu covers every GPU target dismantle needs without vendor SDK dependencies at build time: Metal, Vulkan (AMD/Intel/external-GPU/Android), D3D12 (Windows), WebGPU (browser).
 - Ratchet forked wgpu to add subgroup operations and multi-dimensional workgroup compute not yet in upstream — these are needed for performant attention and GEMV kernels. Upstream wgpu's `Features::SUBGROUP_COMPUTE` support varies by backend.
 - Shaders are written in WGSL (WebGPU Shading Language), not Rust. This is a different authoring model from CubeCL's `#[cube]` and from Metal Shading Language.
 - Per-backend performance will trail the hand-tuned Metal path; the plan explicitly accepts this ("reach, not speed").
@@ -133,16 +133,16 @@ Total realistic first-ship estimate for a WGPU backend handling all ops except M
 
 ### Risk summary
 
-- WGSL performance ceiling is lower than MSL/CUDA per vendor. Accepted for a portability rung.
+- WGSL performance ceiling is lower than MSL/cloud-GPU per vendor. Accepted for a portability rung.
 - Subgroup compute for flash-decode attention is backend-dependent; the simple tiled attention works everywhere but is slower at long context.
 - Ratchet's subgroup fork diverges from upstream wgpu; if dismantle needs subgroup ops it may need to track gfx-rs upstream progress or carry a local patch. For a v1 portability rung, tiled (non-subgroup) is sufficient.
-- **Verdict (paradigmshift.md):** "The verified minimal portable set. Covers NVIDIA/AMD/Intel/Apple across Linux/Win/Android/macOS/iOS/web with two backends."
+- **Verdict (paradigmshift.md):** "The verified minimal portable set. Covers external-GPU/AMD/Intel/Apple across Linux/Win/Android/macOS/iOS/web with two backends."
 
 ---
 
 ## 4. Candidates explicitly excluded and why
 
-**Candle / mistral.rs (Candle backend stack):** CUDA + Metal + MKL + Accelerate only. No Vulkan/wgpu/ROCm. Explicitly labelled a "cautionary counter-model" in paradigmshift.md — it caps portability short of the llama.cpp standard. Do not copy this architecture.
+**Candle / mistral.rs (Candle backend stack):** cloud-GPU + Metal + MKL + Accelerate only. No Vulkan/wgpu/cross-vendor GPU stack. Explicitly labelled a "cautionary counter-model" in paradigmshift.md — it caps portability short of the llama.cpp standard. Do not copy this architecture.
 
 **Luminal:** Not evaluated in the deep-research pass; excluded from scope.
 
@@ -165,8 +165,8 @@ Total realistic first-ship estimate for a WGPU backend handling all ops except M
 **The recommended next GPU rung**, ahead of CubeCL, for these reasons:
 
 1. **Stable API.** wgpu 0.20 is production-grade with no alpha caveats; API churn risk is low.
-2. **Lighter dep addition.** One crate, feature-flagged, no vendor SDK build scripts. Smaller Cargo.toml footprint than CubeCL's cuda-sys/hip-sys pull.
-3. **Broadest reach.** Vulkan + Metal + D3D12 + WebGPU in one dep covers every target in the Phase 4.4 goal (AMD/Intel/NVIDIA/Android).
+2. **Lighter dep addition.** One crate, feature-flagged, no vendor SDK build scripts. Smaller Cargo.toml footprint than CubeCL's vendor-SDK feature pull.
+3. **Broadest reach.** Vulkan + Metal + D3D12 + WebGPU in one dep covers every target in the Phase 4.4 goal (AMD/Intel/external-GPU/Android).
 4. **Validated reference.** Ratchet is a running inference engine on this exact stack; its architecture is directly legible for reference.
 5. **Q4_K portability.** WGSL is a mature, well-specified shading language. Porting the nibble+scale Q4_K decode inner loop to WGSL is a known-scope engineering task, unlike writing a `#[cube]` K-quant decode kernel against an alpha API.
 
@@ -183,16 +183,16 @@ Note: the `metal` feature in wgpu does not conflict with `metal = "0.29"` (they 
 
 ### Rung 2 — CubeCL (future, evaluate once it hardens)
 
-CubeCL is the right long-term bet if it closes the Apple M3 shmem bugs and adds K-quant support in `cubek`. The single-source `#[cube]` model — one kernel codebase producing MSL, CUDA, HIP, WGSL simultaneously — is architecturally cleaner than maintaining a WGSL shader library alongside the existing `.metal` shader library. But the current alpha status and the missing Q4_K primitive make it a higher-risk choice for a near-term GPU rung.
+CubeCL is the right long-term bet if it closes the Apple M3 shmem bugs and adds K-quant support in `cubek`. The single-source `#[cube]` model — one kernel codebase producing MSL, cloud-GPU, cross-vendor GPU stack, WGSL simultaneously — is architecturally cleaner than maintaining a WGSL shader library alongside the existing `.metal` shader library. But the current alpha status and the missing Q4_K primitive make it a higher-risk choice for a near-term GPU rung.
 
 Evaluate CubeCL when: (a) the M3 attention bug (#4530) is closed and confirmed fixed, (b) `cubek` adds K-quant decode or dismantle has capacity to upstream it, and (c) the CubeCL API has reached a stable release series. Until then, treat this as "watch, prototype, don't bet the hot path."
 
 **Cargo.toml dep to add when evaluating (user approval required):**
 ```toml
 # [workspace.dependencies]
-cubecl = { version = "0.5", features = ["wgpu"] }   # minimal: wgpu target only, avoids cuda-sys/hip-sys
+cubecl = { version = "0.5", features = ["wgpu"] }   # minimal: wgpu target only, avoids vendor SDK build scripts
 ```
-Add `features = ["cuda"]` and `features = ["hip"]` only when building on a host with the respective vendor SDK installed; these are build-time optional, not runtime-required.
+Extra vendor SDK features stay out of the Apple-first build; evaluate them only in a separate portability branch.
 
 ---
 
@@ -234,4 +234,3 @@ The `Backend::supports(op)` method is the scheduler hook: a wgpu `BackendGemv` t
 - `crates/dismantle-core/src/backend/wgpu.rs` (new file) — `WgpuBackend` impl satisfying `Backend + all op-traits`
 - `crates/dismantle-core/shaders/` — WGSL shader assets for the wgpu path (parallel to `*.metal`)
 - `crates/dismantle-core/src/backend/cpu.rs` (Phase 3.3 deliverable, prerequisite) — `CpuBackend` impl, the CPU-fallback substrate
-

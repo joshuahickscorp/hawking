@@ -100,7 +100,7 @@ Path-dep mechanics (the two workspaces are siblings under `~/Downloads/`):
 `wide` (strand-quant/Cargo.toml) and, on macOS, `metal 0.27` + `objc 0.2`. dismantle pins
 `metal 0.29` / `objc2`. Cargo allows two `metal` major-0 minors to coexist (they are distinct
 crates as far as resolution is concerned), but it inflates the build. If that is unwanted, gate
-strand-quant's macOS metal/cuda deps so the *format + decode* path (which is what dismantle needs)
+strand-quant's macOS metal/cloud-gpu deps so the *format + decode* path (which is what dismantle needs)
 compiles without them — those deps exist for strand-quant's own GPU Viterbi *encoder*, which
 dismantle never invokes. A minimal `default-features` split in strand-quant (feature-gate the
 `[target.'cfg(target_os = "macos")'.dependencies] metal`/`objc`) is the clean fix; out of scope for

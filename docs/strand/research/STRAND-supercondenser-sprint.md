@@ -80,9 +80,9 @@ The honest "densest" story is the Shannon one.
    at 3-bit DENSITY; it FIGHTS the 2.40-bpw target. NEVER report a combined "smaller AND better" from this
    arm; density comes from levers 1–2 separately. Code is ZERO (`cloud-selective-pv.sh` written +
    self-gated via `require_promoted`).
-7. **[CLOUD] CUDA block-batched encode** — wire `cuda_dispatch.rs` (per-thread host levels 30.06 GB→~16.8 MB
+7. **[CLOUD] cloud-GPU block-batched encode** — wire `cloud-gpu_dispatch.rs` (per-thread host levels 30.06 GB→~16.8 MB
    at batch=512) to unblock >32B/70B/405B GPU encode (the exact wall the 70B hit). VALIDATE-ONLY; CPU stays
-   canonical; parity oracle MUST be the f32 CPU reference (CUDA computes f32 distance). Separate pod leg.
+   canonical; parity oracle MUST be the f32 CPU reference (cloud-GPU computes f32 distance). Separate pod leg.
 
 ## Discarded as redundant (do NOT revisit)
 

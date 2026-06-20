@@ -243,13 +243,13 @@ Attack plan:
 - one command buffer per token, or grouped by shader/config, never per tensor.
 - B=16 prompt tiling on M3-class GPUs; B=64 regresses from register pressure.
 - lean side-info entry so fused kernels do not stream fat metadata after removing Q12 writes.
-- CUDA bitslice for the server lane after the pod scale chain finishes.
+- cloud-GPU bitslice for the server lane after the pod scale chain finishes.
 
 Gate:
 
 - every runtime path must assert Q12 identity before perf.
 - whole-token batching must save at least 20% on multi-tensor synthetic models.
-- CUDA must be measured, not inferred from M3 arithmetic.
+- cloud-GPU must be measured, not inferred from M3 arithmetic.
 
 ### 3.8 Evaluation methodology
 
@@ -426,7 +426,7 @@ Planning estimates:
   multi-projection execution if the synthetic overhead carries over.
 - Lean side-info entry is likely a **5-15% fused B=1 speed win**, because the 80 B/block
   entry is 43-53% of remaining fused-kernel traffic but the kernel is not purely bandwidth-bound.
-- CUDA bitslice on a 3090-class card is arithmetic-estimated at **25-35 tok/s 7B primitive**;
+- cloud-GPU bitslice on a 3090-class card is arithmetic-estimated at **25-35 tok/s 7B primitive**;
   this must be measured before any claim.
 - Wired GPU encode turns local 0.5B iteration from "minutes per arm" toward **2-5x faster**
   depending on rung, which directly increases how many allocator/PV/C2 experiments we can run.
@@ -574,7 +574,7 @@ Speed session order:
 2. whole-token/grouped command buffer dispatch.
 3. B=16 prompt tiling.
 4. lean side-info entry.
-5. CUDA bitslice decode-only, then fused B=1/B=16.
+5. cloud-GPU bitslice decode-only, then fused B=1/B=16.
 6. rank-convergence measurement before any exact-scan implementation.
 
 ## 8. Post-run hardening order
@@ -587,7 +587,7 @@ Speed session order:
 5. **Build lean side-info entry.** Only after the bit ledger says what to remove.
 6. **Finish PV verdicts.** WSD cooldown, then 0.5B down_proj selective-PV.
 7. **Allocator PPL sweep.** Down-protect, gate/up, attention control, depth variants.
-8. **CUDA bitslice.** Port once pod is free from scale quantization.
+8. **cloud-GPU bitslice.** Port once pod is free from scale quantization.
 9. **Moonshots.** Rank convergence, basis search, live-Fisher only after their cheap gates pass.
 
 ## 9. What not to do
@@ -599,7 +599,7 @@ Speed session order:
 - Do not quote natural silence as a lever; only trained silence counts.
 - Do not optimize for seek-mode if the deployment path streams.
 - Do not rent large PV before the 0.5B selective-PV concentration gate.
-- Do not claim CUDA from arithmetic estimates.
+- Do not claim cloud-GPU from arithmetic estimates.
 - Do not let bf16 reconstruction become the product path by inertia.
 
 ## 10. The claim we are trying to earn

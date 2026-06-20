@@ -1279,7 +1279,7 @@ go/no-go on this silicon generation is GO.
 
 Basis: the measured M3 fused-B=1 effective rates (3-bit 40.6 Gw/s, 2-bit 35.7 Gw/s, §5.4);
 tok/s = rate ÷ nominal Gw/token. The 3090-class column is **arithmetic, not a measurement** —
-no CUDA port of the bitslice kernel exists. The fused kernel is ALU-bound on M3 (21.7-29.8% of
+no cloud-GPU port of the bitslice kernel exists. The fused kernel is ALU-bound on M3 (21.7-29.8% of
 peak bytes moved), so the 3090 column scales by ~5-6× integer-ALU class ratio; the 936 GB/s
 bandwidth ceiling sits far above and never binds. Deduct from every ceiling: attention/KV/
 norms/sampling, the activation-RHT route (§5.5), OUTL ~3-5% (§5.6), and ~0.23-0.25 ms per

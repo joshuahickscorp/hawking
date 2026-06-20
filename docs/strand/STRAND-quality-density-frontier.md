@@ -639,25 +639,25 @@ Verdict: schedule the 405B as a **gated flagship leg**, not a research necessity
 how we *cement* leadership once 70B + the 0.5B winners clear — the biggest possible
 deterministic-2-bit showcase, run only after the cheap gates earn it.
 
-## 11. 70B deferred + CUDA memory wall (2026-06-13)
+## 11. 70B deferred + cloud-GPU memory wall (2026-06-13)
 
 Decision: **70B q2 DEFERRED** (revisit only as the 405B-class flagship). The 32B q2
 result (6.609, +38% over bf16 4.778) already confirms the scale-tolerance thesis
 (7B +59%, 14B +75%, 32B +38% — NOT monotone: 14B is worse than 7B, but 32B is clearly best; the trend is "large models tolerate 2-bit well", not strict monotonicity), so the 70B is
 diminishing information for multi-day cost. The 1 completed recon shard is kept.
 
-**CUDA encode lane — validated correct, but hits a memory wall above 32B:**
-- The lane works: `--features cuda` (cudarc pinned `cuda-12060` for CUDA 12.7+),
-  kernel fixed for nvrtc (no `<float.h>`, `COST_INF` as macro), "CUDA GPU ready".
-  A tiny-tensor parity gate (`cuda-tiny-gate.sh`) confirmed correct output.
+**cloud-GPU encode lane — validated correct, but hits a memory wall above 32B:**
+- The lane works: `--features cloud-gpu` (cloud-gpu dependency pinned `cloud-gpu-12060` for cloud-GPU 12.7+),
+  kernel fixed for nvrtc (no `<float.h>`, `COST_INF` as macro), "cloud-GPU GPU ready".
+  A tiny-tensor parity gate (`cloud-gpu-tiny-gate.sh`) confirmed correct output.
 - BUT on 70B's 235M-param FFN tensors at L12, the GPU back-buffer host-staging pushes
   memory past the 125GB cgroup → **OOM-killed** repeatedly. CPU completes (≈64GB) but
   is ~4-6 days on these tensors. 32B fit (smaller tensors); 70B does not.
 - **Prerequisite for both 70B-on-GPU AND the 405B flagship: batch the GPU block
-  dispatch** in `encode_tensor_with_cuda` (bounded block batches, like the CPU path)
+  dispatch** in `encode_tensor_with_cloud-gpu` (bounded block batches, like the CPU path)
   so the back-buffer staging fits 24GB/125GB. Until then the GPU lane is for <=32B.
-- Auto-routing scaffold left in place on the pod (`qm-wrapper.sh` + `.cuda-verdict`):
-  flip the verdict to OK and the chain auto-uses CUDA — but only safe after the
+- Auto-routing scaffold left in place on the pod (`qm-wrapper.sh` + `.cloud-gpu-verdict`):
+  flip the verdict to OK and the chain auto-uses cloud-GPU — but only safe after the
   batching fix + a real-tensor parity check.
 
 Operational lesson re-learned (hard): the self-match `pkill -f` trap silently kills
@@ -765,7 +765,7 @@ The supercondenser fleet is done (~42M tokens across both sessions). Net: the sp
 
 **quality leg — bounded, gated on the free local PV.** Honest 2-bit target ≤0.25 (de-bias-only floor) / ≤0.15 (only if selective-PV works at scale, §12/§12.1). De-bias adopted (k≈0.28, orthogonal to PV on the bias-free MLP path). Best new lever: **progressive 3→2-bit PV init** (UPQ-validated, zero new code — fold into the cloud recipe). 3-bit 0.056 proven.
 
-**speed leg — measured wins ready.** Media: video-decode CDF fusion 1.42–1.65× + image 1.27–1.47×, both bit-identical, patch-ready (apply-pass, needs go-ahead). Decode→90% of bandwidth + CUDA decode/encode = GPU-gated, deferred. Moat formally hardened (Kani-proven primitives), with the tested 896-width even-power-of-2 RHT limit (§17).
+**speed leg — measured wins ready.** Media: video-decode CDF fusion 1.42–1.65× + image 1.27–1.47×, both bit-identical, patch-ready (apply-pass, needs go-ahead). Decode→90% of bandwidth + cloud-GPU decode/encode = GPU-gated, deferred. Moat formally hardened (Kani-proven primitives), with the tested 896-width even-power-of-2 RHT limit (§17).
 
 **The two cloud bugs to fix before any pod $:** fp32 PV-shadow OOMs 32B (→bf16+8bit-Adam); gate regex over-matches + wrong mechanism (§13).
 

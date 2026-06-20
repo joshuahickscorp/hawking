@@ -23,7 +23,7 @@ Primary references checked during this wave:
 | BitNet / 1.58-bit deployment | https://github.com/microsoft/BitNet | Native ternary/binary training plus special kernels are viable. Dismantle should treat ternary STE as a training pressure and STRAND-1/2 as the first deployable target; literal ternary kernels remain a separate bet. |
 | llama.cpp grammar surface | https://github.com/ggml-org/llama.cpp/blob/master/grammars/README.md | JSON-mode is only the first rung. A GBNF-compatible parser/mask cache is the feature-parity target. |
 | llama.cpp server surface | https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md | Embeddings and LoRA adapter controls are expected serve features; Dismantle now has a first embeddings route and should add real hidden-state pooling/hot adapters. |
-| llama.cpp backend breadth | https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md | The cross-platform gap is concrete: CPU, BLAS, Metal, SYCL, CUDA, HIP, Vulkan, CANN, OpenCL, Android, OpenVINO. Dismantle should not chase all at once; it needs one portable-kernel spike. |
+| llama.cpp backend breadth | https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md | The cross-platform gap is concrete: CPU, BLAS, Metal, SYCL, cloud-GPU, cross-vendor GPU stack, Vulkan, CANN, OpenCL, Android, OpenVINO. Dismantle should not chase all at once; it needs one portable-kernel spike. |
 | CubeCL | https://github.com/tracel-ai/cubecl | Best-looking Rust-native portability candidate: one low-risk spike should target RMSNorm + Q4-like GEMV shapes, not the whole engine. |
 
 ## Current Codebase Position

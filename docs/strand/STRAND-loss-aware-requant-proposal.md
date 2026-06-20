@@ -329,7 +329,7 @@ by absolute path — it is never discovered, never inherited from a previous run
   None ⇒ unweighted (byte-identical to today) */ pub loss_map: Option<&'a [f32]> }`.
   Still `Clone + Copy` (a shared slice ref is Copy). Default `None`.
 - `encode_tensor_with` (the dispatcher, line ~346): `gpu_eligible &=
-  opts.loss_map.is_none()` — Metal/CUDA kernels bind the unweighted SSE and stay that way;
+  opts.loss_map.is_none()` — Metal/cloud-GPU kernels bind the unweighted SSE and stay that way;
   weighted encode is CPU-only in v1. No perf cliff in the target path: PV requants already
   run `STRAND_NO_GPU=1` (the 7B-wide-tensor SIGKILL trap) and 12-way CPU beats the
   serialized GPU encode ~8× anyway.

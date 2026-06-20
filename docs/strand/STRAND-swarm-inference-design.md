@@ -499,7 +499,7 @@ on our side of the line:
 | float-free node (MCU/WASM as verifier or shard host) | no | no | no | **yes (decode is integer; WASM build exists)** |
 | attest final logits/tokens | no | no | no | **no — same as them; honesty §2** |
 
-¹ Not carelessness: their backends (CUDA/MLX/tinygrad/Metal) fuse dequant-into-matmul and
+¹ Not carelessness: their backends (cloud-GPU/MLX/tinygrad/Metal) fuse dequant-into-matmul and
 never materialize a canonical weight tensor; dequant scales are f16/f32; different
 backends legitimately produce different bits. There is no stable object to hash even if
 they wanted one. Petals' published trust posture is redundancy + reputation with

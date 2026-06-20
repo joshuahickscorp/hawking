@@ -68,18 +68,18 @@ All `$SSH ...` / `$SCP ...` lines below run **from the dev box** (network only, 
 $SSH 'echo POD_OK; hostname; uptime'
 
 # GPU present, idle, and the right card (want an A100-80; >=80 GB for fp32-shadow 7B down-only)
-$SSH 'nvidia-smi --query-gpu=name,memory.total,memory.used,utilization.gpu --format=csv'
+$SSH 'vendor-gpu-smi --query-gpu=name,memory.total,memory.used,utilization.gpu --format=csv'
 
 # /workspace volume free space — need headroom for: 7B bf16 weights (~15 GB) + recon dumps
 # + tuned HF dir + recon dir. Want >= ~50 GB free (sprint reported ~68 GB free pre-flight).
 $SSH 'df -h /workspace; echo "---"; du -sh /workspace/strand 2>/dev/null; du -sh /workspace/.hf 2>/dev/null'
 
-# CUDA torch sanity (the harness needs torch+cuda + transformers + datasets + safetensors)
-$SSH 'cd /workspace/strand && python3 -c "import torch,transformers,datasets,safetensors; print(\"torch\",torch.__version__,\"cuda\",torch.cuda.is_available(),torch.cuda.get_device_name(0))"'
+# cloud-GPU torch sanity (the harness needs torch+cloud-gpu + transformers + datasets + safetensors)
+$SSH 'cd /workspace/strand && python3 -c "import torch,transformers,datasets,safetensors; print(\"torch\",torch.__version__,\"cloud-gpu\",torch.cloud-gpu.is_available(),torch.cloud-gpu.get_device_name(0))"'
 ```
 
-**GO criteria:** `POD_OK` prints; `nvidia-smi` shows an A100-80 (>=80 GB total) at ~0 % util;
-`/workspace` has >= ~50 GB free; `torch.cuda.is_available()` is `True`. If the card is an A100-40
+**GO criteria:** `POD_OK` prints; `vendor-gpu-smi` shows an A100-80 (>=80 GB total) at ~0 % util;
+`/workspace` has >= ~50 GB free; `torch.cloud-gpu.is_available()` is `True`. If the card is an A100-40
 or smaller, you MUST use the 8-bit-Adam path (see §H) — do **not** launch fp32-shadow 7B on <80 GB.
 
 ---
@@ -201,10 +201,10 @@ $SSH 'cd /workspace/strand && export HF_HOME=/workspace/.hf HF_HUB_DISABLE_XET=1
       [ -f scratch/qwen-05b/config.json ] || bash scripts/download-model.sh Qwen/Qwen2.5-0.5B --out scratch/qwen-05b'
 
 # ARM A — FULL PV (train all wrapped QuantLinears): the gain denominator
-$SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True; \
+$SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH PYTORCH_cloud-GPU_ALLOC_CONF=expandable_segments:True; \
   nohup python3 scripts/strand-qat.py --model scratch/qwen-05b --quant strand --bits 2 --l 12 \
     --steps 300 --lr 1e-4 --ctx 512 --requant-every 75 --kd --grad-checkpoint \
-    --warmup-frac 0.05 --cooldown-frac 0.2 --device cuda \
+    --warmup-frac 0.05 --cooldown-frac 0.2 --device cloud-gpu \
     --strand-flags "--bits 2 --l 12 --outlier-channel 1 --threads 96" \
     --strand-dir scratch/qwen-05b/strand-pv-full \
     --eval-chunks 64 --eval-ctx 2048 \
@@ -213,10 +213,10 @@ $SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH PYTORCH_CU
     > /workspace/pvt_gate_full.log 2>&1 & echo "full-PV pid $!"'
 
 # ARM B — down_proj-ONLY PV (the concentration arm). Run after A finishes (or on a 2nd GPU).
-$SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True; \
+$SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH PYTORCH_cloud-GPU_ALLOC_CONF=expandable_segments:True; \
   nohup python3 scripts/strand-qat.py --model scratch/qwen-05b --quant strand --bits 2 --l 12 \
     --steps 300 --lr 1e-4 --ctx 512 --requant-every 75 --kd --grad-checkpoint \
-    --warmup-frac 0.05 --cooldown-frac 0.2 --device cuda \
+    --warmup-frac 0.05 --cooldown-frac 0.2 --device cloud-gpu \
     --pv-tensors down_proj \
     --strand-flags "--bits 2 --l 12 --outlier-channel 1 --threads 96" \
     --strand-dir scratch/qwen-05b/strand-pv-down \
@@ -269,7 +269,7 @@ honest PVT number — NO RED@4 mixed precision for this arm).
 # launch DETACHED on the pod (survives SSH drop; ~2-4 h, ~$6 on A100-80 @ $1.5/hr)
 $SSH 'cd /workspace/strand && \
   export PATH=/workspace/.cargo/bin:$PATH \
-         PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True HF_HUB_DISABLE_XET=1; \
+         PYTORCH_cloud-GPU_ALLOC_CONF=expandable_segments:True HF_HUB_DISABLE_XET=1; \
   [ -f /workspace/HF_TOKEN ] && export HF_TOKEN=$(cat /workspace/HF_TOKEN); \
   nohup python3 scripts/strand-qat.py \
     --model scratch/qwen-7b --quant strand --bits 2 --l 12 \
@@ -278,7 +278,7 @@ $SSH 'cd /workspace/strand && \
     --pv-tensors down_proj \
     --kd --grad-checkpoint \
     --warmup-frac 0.05 --cooldown-frac 0.2 \
-    --device cuda \
+    --device cloud-gpu \
     --strand-flags "--bits 2 --l 12 --outlier-channel 1 --threads 96" \
     --strand-dir scratch/qwen-7b/strand-pvt-down \
     --eval-chunks 64 --eval-ctx 2048 \
@@ -314,7 +314,7 @@ path. The cleanest reuse is `strand-7b-ppl.sh` on the tuned dir (it forwards `--
 $SSH 'cd /workspace/strand && export PATH=/workspace/.cargo/bin:$PATH; \
   bash scripts/strand-7b-ppl.sh scratch/qwen-7b/pvt-down-hf \
     --bits 2 --outlier-channel 1 --label pvt_selpv_7b_canon \
-    --device cuda --limit-chunks 64 --resume --out-dir scratch/qwen-7b/reopen/pvt_canon \
+    --device cloud-gpu --limit-chunks 64 --resume --out-dir scratch/qwen-7b/reopen/pvt_canon \
     > /workspace/pvt_7b_canon.log 2>&1 & echo "canon-eval pid $!"'
 ```
 
@@ -424,7 +424,7 @@ is **a code change to `strand-qat.py`**, not just a flag — today the QuantLine
 - add a `--shadow-dtype {fp32,bf16}` flag → cast the trainable `self.weight` accordingly (keep the
   STE math; the recon dump already casts to bf16 at requant);
 - add a `--optim {adamw,adamw8bit}` flag → `import bitsandbytes as bnb; bnb.optim.AdamW8bit(...)`
-  when selected (verify `bitsandbytes` is pip-installable on the pod's CUDA image);
+  when selected (verify `bitsandbytes` is pip-installable on the pod's cloud-GPU image);
 - A/B the 8-bit-Adam path on the 0.5B (kill bar |dPPL| < 0.5 %) before trusting it at 32B.
 Then 32B runs via `cloud-selective-pv.sh` (which has `SKIP-32B`/sentinel plumbing) OR a 32B
 down_proj-only `strand-qat.py` invocation mirroring §E with `--shadow-dtype bf16 --optim adamw8bit`.
@@ -434,7 +434,7 @@ down_proj-only `strand-qat.py` invocation mirroring §E with `--shadow-dtype bf1
 ## One-screen execution order
 
 1. Set `POD/PORT/KEY/SSH/SCP` with the owner's new endpoint.
-2. §A reachability + GPU(A100-80) + `/workspace` >=50 GB + torch.cuda.
+2. §A reachability + GPU(A100-80) + `/workspace` >=50 GB + torch.cloud-gpu.
 3. §B rebuild `quantize-model` (rm the 937-byte stale first) + tiny-tensor smoke → bpw ~2.0–2.3.
 4. §C download + verify Qwen2.5-7B **base** → `WEIGHTS_OK` (28 down_proj).
 5. §D 0.5B down-only vs full A/B → **GO iff ratio ≥ ~90 %**; else STOP/escalate.

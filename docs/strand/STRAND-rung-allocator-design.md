@@ -439,7 +439,7 @@ number re-run serially before it enters will.md (§5.8).
 | E3 | allocator validation: 2–3 λ-sweep configs at ~2.9–3.3 bpw, real 64-ch PPL | each ≈ quant 15 min + eval | beat mp-2bit-down3 (2.95 bpw, finally measured here) AND the q2↔q3 interpolation line at iso-bpw | cannot beat the hand class-split → per-tensor allocator DEAD; screen survives for PV selection only |
 | E4 | selective-PV pilot, 0.5B, 300 steps, alloc config from E3: arms (a) no-PV, (b) full-PV, (c) selective-PV RED@1e-4 | (b) is the priciest arm (~hours, the pv re-pass protocol); (c) ≈ half | (c) ≥ (b) quality at ≤ 0.6× wall-clock AND (c) > (a) | (c) damages vs (a) — the pv3bit failure mode survives per-tensor freezing → per-tensor PV DEAD; PV stays whole-model-at-collapsed-rungs (sub-2-bit) only |
 | E4d | (optional rider) train ALL biases at 3e-5 with weights per (c) | +ε | free PPL (the de-biasing-adjacent lever, §4 queue #3) | no movement → drop |
-| E5 | 7B transfer on the pod: screen (cuda swap-KL is fast) → allocate → confirm | pod-hours | beat mp_light 8.45 @ 3.67 bpw at iso-bpw, or match at lower bpw | no win at 7B → bank the 0.5B method, do not block the marathon on it |
+| E5 | 7B transfer on the pod: screen (cloud-gpu swap-KL is fast) → allocate → confirm | pod-hours | beat mp_light 8.45 @ 3.67 bpw at iso-bpw, or match at lower bpw | no win at 7B → bank the 0.5B method, do not block the marathon on it |
 
 Decision dependencies: E2 gates E3 gates E4 gates E5. E2b/E2c can only *simplify* the
 pipeline, never block it. The 2-bit re-pass verdict (in flight) slots into §2.3's τ_r and
@@ -475,7 +475,7 @@ pipeline, never block it. The 2-bit re-pass verdict (in flight) slots into §2.3
 8. **Bias handling.** STRAND quantizes weights only; biases ride frozen/trained with their
    tensor in v1. Whether bias-only training of FROZEN tensors is free quality (it is
    de-biasing-shaped, queue #3) is E4d's question.
-9. **Eval-protocol drift at 7B.** The screen's 2-chunk KL at 7B runs on cuda (pod). The
+9. **Eval-protocol drift at 7B.** The screen's 2-chunk KL at 7B runs on cloud-gpu (pod). The
    bf16 reference-logit cache is the same size class as 0.5B (vocab matches: 2 × 2047 ×
    152,064 × 2 B ≈ 1.25 GB) — fine on a 3090. It becomes 5 GB-class only at the 4-chunk
    fp32 fallback (§8.4); chunked or top-k KL covers that case. Decide when E5 is reached,

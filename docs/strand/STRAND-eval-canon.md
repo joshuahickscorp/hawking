@@ -32,7 +32,7 @@ this file is the measurement reference.*
 
 ## 3. Device notes
 
-- `auto` resolves cuda → mps → cpu. **Records always carry the RESOLVED device**, never
+- `auto` resolves cloud-gpu → mps → cpu. **Records always carry the RESOLVED device**, never
   the mode string (an eval-ppl.py divergence the audit caught).
 - **mps:** eager attention is mandatory (MPS SDPA cannot broadcast Qwen GQA); the
   whole-model allocator warmup is disabled (fails on 7B even when tensor-by-tensor
@@ -40,7 +40,7 @@ this file is the measurement reference.*
   is a ~2.5GB transient) — CE-sum is additive over rows, so Σnll is the same quantity;
   defrag+retry once on allocator-fragmentation OOM. 18 GB is a hard ceiling: evals run
   ALONE next to nothing heavy (will.md §7 freeze trap).
-- **cpu / cuda:** whole-window CE (bit-faithful to the historical heredoc; A/B-proven
+- **cpu / cloud-gpu:** whole-window CE (bit-faithful to the historical heredoc; A/B-proven
   bit-identical, 2026-06-11, cpu/bf16/2ch: 11.839819038689043 old == new).
 - **offload:** `device_map=auto` with a GPU budget (`--gpu-gb`, or env `EVAL_GPU_GB`,
   default 21 GiB) — for models larger than VRAM (the 14B/32B/70B pod legs).

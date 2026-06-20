@@ -40,10 +40,10 @@ and weight-RMSE is not the functional metric. Killing QTIP from it would be a
 |---|---|
 | 0 (md) | states the exact pass/fail criterion up front |
 | 1 (code) | config + GPU preflight + **baked-in decision constants** (`GATE_BITS_NEEDED=0.0`, `PROXY_BITS_NEEDED=1.20`, `GATE_PPL_RATIO=1.10`); sets `RUN_REAL_QTIP = vram>=24` |
-| 2 (code) | pip-installs deps **and builds llama.cpp** (CUDA) — the gold Q4_K_M quantizer (gguf-python has no K-quant quantizer) |
+| 2 (code) | pip-installs deps **and builds llama.cpp** (cloud-GPU) — the gold Q4_K_M quantizer (gguf-python has no K-quant quantizer) |
 | 3 (code) | fetches the **f16 Qwen** (HF snapshot + a near-lossless q8_0/f16 GGUF), quantizes the gold **Q4_K_M from that near-lossless source** (from-f16-class, NOT requant-from-an-already-Q4 file), fetches the **code** corpora |
 | 4 (code, 3a) | the **faithful bracket** codec — RHT (exact) + Lloyd-Max {K, K+1}-bit scalar at the same stored ~K bits; byte-identical to the committed oracle's `qtip_quantize` (verified 98 B/256-blk, bracket-ordered). Self-contained (scipy `erfinv` with a NumPy Winitzki fallback). |
-| 5 (code, 3b) | the **REAL upstream QTIP codec** (Cornell-RelaxML/QTIP): builds Hessians on the **code calib** corpus, quantizes Qwen with the **bitshift trellis K=3** (lane-parallel `td_x=td_y=16` sub-blocks), HF-izes the result. Guarded: if the QTIP CUDA kernels fail to build, it falls back to the bracket and the verdict downgrades (it does **not** fabricate a trellis number). |
+| 5 (code, 3b) | the **REAL upstream QTIP codec** (Cornell-RelaxML/QTIP): builds Hessians on the **code calib** corpus, quantizes Qwen with the **bitshift trellis K=3** (lane-parallel `td_x=td_y=16` sub-blocks), HF-izes the result. Guarded: if the QTIP cloud-GPU kernels fail to build, it falls back to the bracket and the verdict downgrades (it does **not** fabricate a trellis number). |
 | 6 (code) | **LEG 1** — per-tensor weight-RMSE vs f16 for gold Q4_K_M, the bracket [lower, upper], and (if it ran) the real QTIP decode; computes the **measured** `bits_needed = log2(rmse_qtip / rmse_q4km)` |
 | 7 (code) | **LEG 2 (decisive)** — forward-pass f16 / gold Q4_K_M / real QTIP on held-out **code** tokens; logit-cosine, KL(f16‖·), greedy argmax-agreement. Q4_K_M logits via `llama-cpp-python` (faithful GGUF forward), with a transformers-GGUF fallback. |
 | 8 (code) | **LEG 3 (corroborating)** — code PPL: gold Q4_K_M via `llama-perplexity` (same tool as the local oracle, directly comparable), f16 + QTIP via transformers |

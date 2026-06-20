@@ -68,7 +68,7 @@ Notes:
   dependency lean (drops GL / WebGPU-on-native / angle unless wanted). Add
   `"webgpu"` to the feature list to also target browser/WASM later.
 - `wgsl` is required (the skeleton ships WGSL source, not SPIR-V).
-- No `cuda-sys`/`hip-sys`: wgpu loads vendor drivers at runtime, so there
+- No vendor SDK build scripts: wgpu loads vendor drivers at runtime, so there
   is **no vendor SDK build dependency** (the lighter Cargo.toml addition
   the scope recommends over CubeCL).
 
@@ -149,4 +149,3 @@ The eight stubbed verbs are never numerically compared (they route to the
 already-parity-gated CPU path via `supports()->false`). This backend is
 NOT held to the bit-identical golden gate — WGSL gives no MSL-identical
 fp-contraction guarantee.
-

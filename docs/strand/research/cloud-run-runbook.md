@@ -28,7 +28,7 @@ We do NOT need an 80GB card for 7B. (32B WOULD need ≥80GB OR the bf16 fix — 
   Extrapolate gate_step_rate × (14× model / GPU-speedup) × steps → the 7B cost is KNOWN before any
   pod dollar. Commit only if the extrapolated cost ≤ budget. Never run 7B blind.
 - Cost levers (empirical): `--kd-cache` (kills the 2nd 7B forward), selective-PV (small shadow/requant),
-  flip CUDA→OK so PV uses the GPU not the slow CPU-canonical path, community/spot pricing,
+  flip cloud-GPU→OK so PV uses the GPU not the slow CPU-canonical path, community/spot pricing,
   TERMINATE-on-done (the killer cost is idle: $10 ≈ ~25h idle = the whole gate wait).
 
 ## ORCHESTRATION SEQUENCING (the gated runbook)

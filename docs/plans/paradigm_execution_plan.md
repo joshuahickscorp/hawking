@@ -191,7 +191,7 @@ macOS gate `crates/dismantle-core/Cargo.toml:27`; model
 ### PHASE 4 — High-ceiling bets (explicit gates + Kill Protocol)
 
 **4.1 — QTIP-on-Metal spike (GATE before any format work)** `[tps][quality] [serial]`
-- Goal: settle the load-bearing risk — does trellis decode stay **bandwidth-bound** on Apple's cache/simdgroup model? (All QTIP numbers are NVIDIA; HYB is tuned to NVIDIA's ~4 KB L1 / 32× duplication.)
+- Goal: settle the load-bearing risk — does trellis decode stay **bandwidth-bound** on Apple's cache/simdgroup model? (All QTIP numbers are external-GPU; HYB is tuned to external-GPU's ~4 KB L1 / 32× duplication.)
 - Do: port `3INST`/`HYB` trellis decode to a Metal microbench kernel; measure achieved % of peak BW at batch-1.
 - **GATE:** if it lands compute-bound (à la the dead Q3_K kernel, ~24% peak) → **STOP**, record a Kill (Type-1 if the simdgroup model can't hide it; Type-2 with a named reframe if a different kernel layout might) in `dead_levers.md`, and skip 4.2–4.3. Only if it stays BW-bound (target >~60% peak) → proceed.
 
@@ -206,7 +206,7 @@ macOS gate `crates/dismantle-core/Cargo.toml:27`; model
 - Ship gate: quality within the agreed envelope of Q4_K_M AND a clear paired tps/J win. Else Kill Protocol.
 
 **4.4 — Cross-vendor GPU backend** `[portability] [parallel-ok once 3.x lands]`
-- Goal: reach AMD/Intel/NVIDIA/Android. Spike **CubeCL** (single-source `#[cube]`, incl. direct MSL) maturity first; if not ready, **WGPU+CPU** (Ratchet model).
+- Goal: reach AMD/Intel/external-GPU/Android. Spike **CubeCL** (single-source `#[cube]`, incl. direct MSL) maturity first; if not ready, **WGPU+CPU** (Ratchet model).
 - Gate: runs on a non-Apple GPU with parity-correct output. Perf will trail hand-tuned Metal — that's expected and acceptable (reach, not speed).
 
 ---
@@ -250,7 +250,7 @@ macOS gate `crates/dismantle-core/Cargo.toml:27`; model
 ## 4. THE RUNNING LEDGER (`reports/paradigm_execution_log.md`)
 `reports/` is gitignored — this is your on-disk working log. One row per step:
 
-| step | branch@commit | parity (test / hashes / atol) | paired Δtps (range, CI, meas/proxy) | Δ J/tok | gate verdict (SHIP/HOLD/KILL) | CLEAN-ROOM TODO | notes |
+| step | branch@commit | parity (test / hashes / atol) | paired Δtps (range, CI, meas/proxy) | Δ J/tok | gate verdict (Scross-vendor GPU stack/HOLD/KILL) | CLEAN-ROOM TODO | notes |
 
 Keep a top section: current baseline reference, the 0.2 gap-anatomy, and the
 list of queued clean-room absolutes. When a lever dies, also write it to
@@ -261,7 +261,7 @@ list of queued clean-room absolutes. When a lever dies, also write it to
 ## 5. DEFINITION OF DONE
 - **Per step:** builds, lib tests green, its parity gate green, paired-benched
   with the verdict + ledger row, committed (if SHIP) as Joshua Hicks, local.
-- **Per phase:** all steps resolved (SHIP/HOLD/KILL recorded); moats still
+- **Per phase:** all steps resolved (Scross-vendor GPU stack/HOLD/KILL recorded); moats still
   bit-identical (0.4 guards green); a clean-room absolute queued for the phase.
 - **Overall:** Phases 0–3 complete (instrumented, free wins banked, structural
   throughput attacked, backend seam + CPU backend landed so the engine runs

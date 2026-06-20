@@ -134,14 +134,14 @@ un-instrumented as a first-class target (no per-byte or per-kernel attribution).
 - **No compute-backend abstraction.** Model code calls `crate::kernels::*` and
   `crate::metal::*` (Metal command buffers, `tcb.commit_and_wait`, etc.)
   **directly**. There is no `trait Backend` / `trait Device` / `trait Buffer`
-  seam to swap in CPU / CUDA / Vulkan. The engine is **structurally
+  seam to swap in CPU / cloud-GPU / Vulkan. The engine is **structurally
   Metal-only**.
 
 So the honest portability statement: **dismantle today runs on exactly one
 platform.** llama.cpp runs on ~all of them because GGML has a backend
 abstraction (`ggml-backend`) with a registry, buffer types, and a scheduler
-that offloads ops to whatever backend is present (CPU SIMD, CUDA, Metal,
-Vulkan, SYCL, HIP/ROCm, CANN, OpenCL, WebGPU). Reaching that bar means
+that offloads ops to whatever backend is present (CPU SIMD, cloud-GPU, Metal,
+Vulkan, SYCL, cross-vendor GPU stacks, CANN, OpenCL, WebGPU). Reaching that bar means
 **introducing a backend seam and implementing at least one non-Metal backend.**
 
 > The detailed `ggml-backend` interface anatomy, the realistic Rust portability
@@ -215,7 +215,7 @@ implements every op." It is two mechanisms:
    (sources: ggml-backend.h master lines 264-268/316-317; [discussion #10182](https://github.com/ggml-org/llama.cpp/discussions/10182))
 
 > **The unlock:** the *scheduler + CPU fallback* is what makes a partial backend
-> useful on day one. You don't need a complete Vulkan/CUDA op set to ship it —
+> useful on day one. You don't need a complete Vulkan/cloud-GPU op set to ship it —
 > missing ops route to CPU. This is the single most important architectural
 > lesson for dismantle, which today has neither a seam nor a fallback.
 
@@ -224,9 +224,9 @@ implements every op." It is two mechanisms:
 | Project | Portability model | Verdict for dismantle |
 |---|---|---|
 | **Burn** | Whole library generic over **one `Backend` trait** (a supertrait bundle: `BackendTypes + FloatTensorOps + … + QTensorOps`); backends swap by type alias, even at runtime. ([burn.dev](https://burn.dev/docs/burn/), [Backend trait](https://burn.dev/docs/burn/tensor/backend/trait.Backend.html)) | **Copy the seam *shape*** — small user surface (one bound), large implementer surface (the op traits). Don't adopt the whole framework (it's a full training stack, far heavier than an inference engine needs). |
-| **CubeCL** | **Single-source `#[cube]` kernels** in type/borrow-checked Rust (not a shader language), JIT-lowered to **6 targets: CUDA, HIP/ROCm, Metal (direct MSL since 0.5, *with simdgroup_matrix*), Vulkan, WebGPU, CPU**. `cubek` ships matmul/attention/quant/reduce. ([cubecl](https://github.com/tracel-ai/cubecl), [cubek](https://github.com/tracel-ai/cubek)) | **The most promising single-source portable-kernel path** — one kernel codebase reaching every vendor incl. Apple. **Caveats:** alpha, evolving API; quant is *symmetric per-block* only (q2/q4/q8/fp4) — **not** K-quant or trellis; CPU backend unoptimized; an M3 attention shmem bug (#4530) shows it's not Apple-hardened. Watch, prototype, don't bet the hot path yet. |
-| **Ratchet** | **WGPU + CPU only** (explicit design principle); wgpu alone covers Vulkan/Metal/D3D12/GL + browser WebGPU. ([ratchet](https://github.com/huggingface/ratchet)) | **The verified "minimal portable set."** Covers NVIDIA/AMD/Intel/Apple across Linux/Win/Android/macOS/iOS/web with two backends. **Price (documented):** WebGPU's compute feature set instead of hand-tuned vendor kernels — they even forked wgpu for subgroup/multi-dim-workgroup compute. |
-| **mistral.rs / Candle** | Built on Candle → capped at **CUDA + Metal + MKL + Accelerate** (NVIDIA + Apple + x86). No Vulkan/wgpu/ROCm. ([mistral.rs](https://github.com/EricLBuehler/mistral.rs)) | **Cautionary counter-model.** Copying the Candle architecture caps you *short of* the llama.cpp standard — no AMD/Intel GPU, no Android. Avoid if portability is the goal. |
+| **CubeCL** | **Single-source `#[cube]` kernels** in type/borrow-checked Rust (not a shader language), JIT-lowered to **6 targets: cloud-GPU, cross-vendor GPU stacks, Metal (direct MSL since 0.5, *with simdgroup_matrix*), Vulkan, WebGPU, CPU**. `cubek` ships matmul/attention/quant/reduce. ([cubecl](https://github.com/tracel-ai/cubecl), [cubek](https://github.com/tracel-ai/cubek)) | **The most promising single-source portable-kernel path** — one kernel codebase reaching every vendor incl. Apple. **Caveats:** alpha, evolving API; quant is *symmetric per-block* only (q2/q4/q8/fp4) — **not** K-quant or trellis; CPU backend unoptimized; an M3 attention shmem bug (#4530) shows it's not Apple-hardened. Watch, prototype, don't bet the hot path yet. |
+| **Ratchet** | **WGPU + CPU only** (explicit design principle); wgpu alone covers Vulkan/Metal/D3D12/GL + browser WebGPU. ([ratchet](https://github.com/huggingface/ratchet)) | **The verified "minimal portable set."** Covers external-GPU/AMD/Intel/Apple across Linux/Win/Android/macOS/iOS/web with two backends. **Price (documented):** WebGPU's compute feature set instead of hand-tuned vendor kernels — they even forked wgpu for subgroup/multi-dim-workgroup compute. |
+| **mistral.rs / Candle** | Built on Candle → capped at **cloud-GPU + Metal + MKL + Accelerate** (external-GPU + Apple + x86). No Vulkan/wgpu/cross-vendor GPU stack. ([mistral.rs](https://github.com/EricLBuehler/mistral.rs)) | **Cautionary counter-model.** Copying the Candle architecture caps you *short of* the llama.cpp standard — no AMD/Intel GPU, no Android. Avoid if portability is the goal. |
 
 **The core conflict (you asked me to flag it):** *generic-backend portability
 vs hand-tuned Metal speed.* A single WGPU/CubeCL kernel set will not match a
@@ -239,7 +239,7 @@ allows vendor-specialized backends rather than forcing one generic kernel.
 **Effort-per-rung** was *not* quantified by any verified source (logged as an
 open question). **[judgment]** ladder: CPU backend (std::simd / `gemm` /
 `matrixmultiply`) is the cheapest correctness-everywhere rung; a wgpu rung buys
-all GPU vendors at once but at a perf discount; native CUDA/Metal are the
+all GPU vendors at once but at a perf discount; native cloud-GPU/Metal are the
 expensive, fast rungs.
 
 ### V.2 — Closing the batch-1 decode gap (31→50) ⚠️ research empty → empirical
@@ -284,8 +284,8 @@ quality-at-speed frontier** for 2–4-bit weight-only PTQ:
   dim). ([together.ai](https://www.together.ai/blog/even-better-even-faster-quantized-llms-with-qtip))
 
 > **⚠️ The Metal asterisk (load-bearing).** *Every* QTIP speed number is
-> **NVIDIA-measured** (RTX 3090/4090/6000 Ada/H100). The paper makes **no
-> Apple/Metal claim.** The `HYB` codebook is tuned to NVIDIA's **~4 KB L1 cache
+> **external-GPU-measured** (RTX 3090/4090/6000 Ada/H100). The paper makes **no
+> Apple/Metal claim.** The `HYB` codebook is tuned to external-GPU's **~4 KB L1 cache
 > with 32× duplication** to avoid bank conflicts — Apple's cache hierarchy and
 > simdgroup model differ, so the bandwidth-bound property **must be re-derived
 > and re-validated for a custom Metal kernel before trusting it.** If the

@@ -1,6 +1,6 @@
 {
   "model": "Qwen/Qwen2.5-3B-Instruct",
-  "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "gpu": "external-GPU RTX PRO 6000 Blackwell Server Edition",
   "vram_gb": 102.0,
   "gate": {
     "recon_floor": "mixed_bytes <= uniform_Q4_K_M bytes",

@@ -160,7 +160,7 @@ Additional work:
 
 ### Clearly ahead
 
-**RWKV-7 GPU optimization on Apple Silicon** — With probability >90%, dismantle has the most optimized RWKV-7 Metal backend that exists publicly. The official RWKV team uses PyTorch + CUDA A100s. llama.cpp has a Metal path but no dispatch fusion, no TCB pipeline, no continuous-batch arena. This is not a marginal lead.
+**RWKV-7 GPU optimization on Apple Silicon** — With probability >90%, dismantle has the most optimized RWKV-7 Metal backend that exists publicly. The official RWKV team uses PyTorch + cloud-GPU A100s. llama.cpp has a Metal path but no dispatch fusion, no TCB pipeline, no continuous-batch arena. This is not a marginal lead.
 
 **On-device SSM training** — SFT + DPO + QAT all fitting in 19GB unified memory for a 0.4B SSM. The RWKV team's QAT work runs on cloud A100s. There are no public examples of RWKV-7 QAT on Apple Silicon.
 

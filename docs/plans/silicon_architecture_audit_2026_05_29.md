@@ -450,7 +450,7 @@ Cache topology:
 **Silicon basis:**
 - M3 GPU command processor supports parallel kernel execution if resources don't conflict.
 - Metal queue model: one command queue = serial. Multiple queues = parallel, synchronized via MTLEvent.
-- NVIDIA equivalent: CUDA streams + CUDA Graphs.
+- external-GPU equivalent: cloud-GPU streams + cloud-GPU Graphs.
 - Apple lacks built-in graph DAG API but supports per-stage MTLSharedEvent fencing.
 
 **Current dismantle state:**

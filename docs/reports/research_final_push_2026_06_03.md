@@ -7,7 +7,7 @@
 > Anchor: M3 Pro 18 GB (~150 GB/s), Qwen2.5-3B-Instruct Q4_K_M, ~30.5 dec_tps /
 > ~0.197 J/tok clean; llama.cpp ~49 tps same machine (1.6× gap).
 >
-> Where a source's numbers are from other hardware (CUDA 4090/5090, M2 Ultra
+> Where a source's numbers are from other hardware (cloud-GPU 4090/5090, M2 Ultra
 > 800 GB/s), it is tagged — those magnitudes DO NOT transfer to M3 Pro. The
 > Type-1 kills in `reports/dead_levers.md` were fed to the research so it would
 > not re-propose dead axes; none were.
@@ -38,7 +38,7 @@ loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-mea
   dominant tps lever** (cuts both memory traffic AND launch overhead). Primary:
   llama.cpp [discussion #17621](https://github.com/ggml-org/llama.cpp/discussions/17621)
   (collaborator am17an): *"TG is memory-bound … fusing kernels reduces memory
-  traffic and kernel launch time."* **[CUDA-backend; the source itself warns the
+  traffic and kernel launch time."* **[cloud-GPU-backend; the source itself warns the
   win shrinks at low bandwidth — M3 Pro is 6–7× lower BW than the 4090/5090 it
   was measured on, so the Metal magnitude is UNKNOWN until traced locally.]**
 - **The copyable Metal mechanism:** llama.cpp Metal
@@ -56,7 +56,7 @@ loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-mea
   was neutral and residency is Type-1-dead on unified memory.
 
 ### Lever 2 — portability / compute-backend seam
-- **CubeCL** = single-source `#[cube]` JIT to 6 targets (CUDA/HIP/Metal/Vulkan/
+- **CubeCL** = single-source `#[cube]` JIT to 6 targets (cloud-GPU/cross-vendor GPU stack/Metal/Vulkan/
   WebGPU/CPU), shape-adaptive heuristics ([burn.dev matmul blog](https://burn.dev/blog/sota-multiplatform-matmul/)).
   **Metal support is ALPHA** (documented M3 shared-memory bug `burn#4530`:
   40960 B requested vs Metal's 32768 B cap). **The claim that CubeCL's Metal
@@ -90,7 +90,7 @@ loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-mea
 ### Lever 4 — flip the f16-scales default off bit-identity
 - **Shipping a quality-equivalent (not bit-identical) default kernel is the
   industry norm, not a quality risk.** Three independent authoritative sources:
-  - NVIDIA TensorRT ([docs](https://docs.nvidia.com/deeplearning/tensorrt/10.12.0/inference-library/work-quantized-types.html)):
+  - external-GPU TensorRT ([docs](https://docs.vendor-gpu.com/deeplearning/tensorrt/10.12.0/inference-library/work-quantized-types.html)):
     *"results will not be bitwise identical … bit-level accuracy is rarely
     possible … (a·s)+(b·s) → (a+b)·s is a valid optimization."*
   - Google LiteRT/TFLite 8-bit [spec](https://ai.google.dev/edge/litert/conversion/tensorflow/quantization/quantization_spec):
@@ -161,7 +161,7 @@ loop** and **(⑥) a CPU backend rung**. Everything else is flip-default-and-mea
 
 ## What the literature CANNOT answer → measure on our M3 Pro
 - (a) The actual Metal fusion payoff magnitude at 150 GB/s (all quantified wins
-  are CUDA/high-BW). → System Trace + fused-kernel paired A/B.
+  are cloud-GPU/high-BW). → System Trace + fused-kernel paired A/B.
 - (b) The ~24%-idle attribution (dispatch-count vs commit/wait vs scheduling). →
   the Instruments trace is the only settling measurement.
 - (c) Per-token logit D2H + CPU-argmax cost at vocab 152K / pruned 32K. → paired

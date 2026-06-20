@@ -183,10 +183,10 @@ Drive-resumable + opt-in via `ALLOW_FRESH_QTIP_CODEC`). Fixes landed across
 pushes `a093c2c..22b9a82`: bf16-safe weight load (numpy can't read Qwen's bf16),
 glog/primefac install + captured QTIP subprocess errors, SDPA fallback (no
 Blackwell sm_120 flash-attn wheel), LEG1 GGUF↔HF transpose auto-pick,
-CMAKE_CUDA_ARCHITECTURES=native, and `--allow-requantize` on the q8-source
+CMAKE_cloud-GPU_ARCHITECTURES=native, and `--allow-requantize` on the q8-source
 quantizes. All colab/ artifacts pushed to origin (colab/ + reports/ otherwise
-gitignored). No prebuilt Linux-CUDA llama.cpp exists (only win-cuda / linux
-cpu+vulkan); the ~10-15 min CUDA build is unavoidable from source (Vulkan
+gitignored). No prebuilt Linux-cloud-GPU llama.cpp exists (only win-cloud-gpu / linux
+cpu+vulkan); the ~10-15 min cloud-GPU build is unavoidable from source (Vulkan
 prebuilt is a possible instant-GPU swap if re-running — investigated, not wired).
 
 **VERDICTS RETURNED** — persisted at `reports/colab_verdicts/{qtip_3bit_results.json, imatrix_mixprec_results.json}`:

@@ -407,7 +407,7 @@ The remaining speed bets are system-level:
   accepted tokens per full STRAND weight pass.
 - **C2F stream-mode:** density win first; speed win only if the runtime stops streaming
   redundant side-info in the deployed path.
-- **CUDA bitslice:** still a separate pod/GPU bet; do not claim from arithmetic.
+- **cloud-GPU bitslice:** still a separate pod/GPU bet; do not claim from arithmetic.
 
 ### Updated build order
 

@@ -289,7 +289,7 @@ the ad-hoc bin (G2).
 
 Nothing built/run locally (PV training run PID 28690 holds ~15/18 GB). Route to the pending pod:
 
-1. `cargo build -p strand-bridge --release` (new crate; CPU-only, no Metal/CUDA).
+1. `cargo build -p strand-bridge --release` (new crate; CPU-only, no Metal/cloud-GPU).
 2. Functional check on the existing 0.5B sealed archive:
    `strand-export <qwen05b.strand> <base_hf> --emit safetensors --out /tmp/derived.safetensors`,
    then diff against `archive-to-safetensors` output → **byte-identical** (proves the lift changed
@@ -365,7 +365,7 @@ In order of moat-importance:
    across devices/builds (depend on CPU/GPU rounding, SIMD width, FMA contraction). STRAND's single
    defining property dies the instant weights enter ggml.
 2. **Cross-device determinism / reproducibility — GONE.** Float dequant + non-associative inference
-   accumulation → same GGUF gives subtly different logits on CPU vs Metal vs CUDA vs different
+   accumulation → same GGUF gives subtly different logits on CPU vs Metal vs cloud-GPU vs different
    llama.cpp builds. STRAND's `gpu_q12_matches_cpu_decode_lean` (GPU==CPU bit-exact) has no analogue.
 3. **Attestability — GONE.** `SPRV` trailer, `tensor_root`/`model_root`, `verify_archive` chain do
    not survive conversion. Best we can do is the §C.2 label pointing back at the source `.strand`.
