@@ -210,9 +210,6 @@ def render(segment: list[dict[str, Any]], target_step: int | None) -> str:
 
     if pct_completed is None:
         pct = "?"
-    elif target_step is not None and step < target_step and sec_per_step is not None:
-        live_pct = min((step + in_step_fraction) / target_step * 100, 99.9)
-        pct = f"{pct_completed:.1f}%, live {live_pct:.1f}%"
     else:
         pct = f"{pct_completed:.1f}%"
 
@@ -237,7 +234,7 @@ def render(segment: list[dict[str, Any]], target_step: int | None) -> str:
         trend = f"{trend_label} {trend_delta:+.3f}/5"
 
     return (
-        f"step {progress} ({pct}) | {step_phase} | batch_loss {loss:.3f} | ema {loss_ema:.3f} | trend {trend} | "
+        f"step {progress} ({pct}) | batch_loss {loss:.3f} | ema {loss_ema:.3f} | "
         f"ppl {ppl:.0f} | tok/s {tok_s:.1f} | step_time {step_time} | "
         f"ETA {eta} ({left} left)"
     )
