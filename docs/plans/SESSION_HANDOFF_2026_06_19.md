@@ -13,9 +13,9 @@ pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"      # expect 2-3 procs
 tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log         # expect [ep0 opt=N] loss=… lines
 tail -n 10 artifacts/lowbit_rwkv7/master_chain.log
 ```
-If (and only if) it died, relaunch with the FAST preset (~16x — see docs/SPEED.md):
+If (and only if) it died, relaunch with the AUTO_BATCH preset (fast + no OOM — docs/SPEED.md):
 ```bash
-BATCH_SIZE=16 GRAD_ACCUM=1 GRAD_CKPT=0 MPS_MEM_FRACTION=0.9 EMPTY_CACHE_EVERY=0 \
+AUTO_BATCH=1 BATCH_SIZE=16 MEM_CEILING_GB=17 GRAD_CKPT=1 GRAD_ACCUM=1 \
 DRAFT_VARIANTS="draft_35m_probe draft_50m_probe draft_75m_probe draft_100m draft_150m draft_200m draft_300m" \
 DRAFT_EPOCHS=1 DRAFT_ACCEPT_SEQS=50 SEED=1337 USE_CHUNKED=1 \
 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 PYTHON=.venv-rwkv/bin/python \

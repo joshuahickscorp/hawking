@@ -62,7 +62,13 @@ SEED="${SEED:-1337}"
 # dynamics (BATCH_SIZE=16 GRAD_ACCUM=1 has the same effective batch as the old
 # BATCH_SIZE=1 GRAD_ACCUM=16, but runs as one batched step).
 BATCH_SIZE="${BATCH_SIZE:-1}"
-# Cap MPS at this fraction of unified RAM (0.9 = use up to 90%). 0 = no explicit cap.
+# AUTO_BATCH=1: per-variant, probe the largest batch that fits MEM_CEILING_GB, then size
+# batches by sequence length. Small models -> big batch, big models -> small; no OOM.
+# BATCH_SIZE is the probe ceiling when AUTO_BATCH=1.
+AUTO_BATCH="${AUTO_BATCH:-0}"
+# Target unified-RAM ceiling in GB (e.g. 17 on an 18 GB box). Drives AUTO_BATCH + the MPS cap.
+MEM_CEILING_GB="${MEM_CEILING_GB:-0}"
+# Cap MPS at this fraction of recommended RAM (0.9 = ~90%). 0 = none. Ignored if MEM_CEILING_GB>0.
 MPS_MEM_FRACTION="${MPS_MEM_FRACTION:-0}"
 # 1 = grad-checkpoint (less RAM, ~33% more compute). 0 = off (more RAM, faster).
 GRAD_CKPT="${GRAD_CKPT:-1}"
@@ -101,6 +107,8 @@ for variant in "${variants[@]}"; do
         --out "$out" \
         --seed "$SEED" \
         --batch-size "$BATCH_SIZE" \
+        --auto-batch "$AUTO_BATCH" \
+        --mem-ceiling-gb "$MEM_CEILING_GB" \
         --grad-checkpoint "$GRAD_CKPT" \
         --mps-mem-fraction "$MPS_MEM_FRACTION" \
         --empty-cache-every "$EMPTY_CACHE_EVERY" \

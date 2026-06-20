@@ -31,27 +31,38 @@ defaults reproduce the old behaviour exactly):
 3. **Grad-checkpoint off (`--grad-checkpoint 0`)** + **`--mps-mem-fraction 0.9`** — skip
    activation recompute (faster, more RAM) and let MPS use up to 90% of unified RAM.
 
-### Run a fast sweep
+### ⚠️ A fixed batch OOMs across a size sweep — use AUTO_BATCH
 
-Same *effective* batch as the current default (so training dynamics are preserved —
-`BATCH_SIZE*GRAD_ACCUM` held at 16), just far faster:
+A *fixed* `BATCH_SIZE` cannot work across variants that span 35M (2 layers) to 300M (15
+layers, n_embd 1024): `BATCH_SIZE=16` fits the small ones but **OOMs every deep variant**,
+and `GRAD_CKPT=0` makes it worse (it hoards activations) — at the real seq length (1024,
+not the bench's 256) even the 50M dies. A 12 GB cap from `MPS_MEM_FRACTION=0.9` made it
+fail fast. **Lesson: pushing RAM harder is not free speed — past the ceiling you just
+crash.** The fix is to size the batch *per model*.
+
+### Run a fast sweep (AUTO_BATCH — recommended)
+
+`AUTO_BATCH=1` probes, per variant, the largest batch that fits `MEM_CEILING_GB` (worst
+case = a full-length, fully-supervised batch), then **token-budget batches** so long
+sequences automatically shrink the batch. Small models take the full ceiling; the 300M
+auto-drops (probed to batch 6 @ 17 GB). No OOM, no hand-tuning.
 
 ```bash
-BATCH_SIZE=16 GRAD_ACCUM=1 GRAD_CKPT=0 MPS_MEM_FRACTION=0.9 \
+AUTO_BATCH=1 BATCH_SIZE=16 MEM_CEILING_GB=17 GRAD_CKPT=1 GRAD_ACCUM=1 \
 DRAFT_VARIANTS="draft_35m_probe draft_50m_probe draft_75m_probe draft_100m draft_150m draft_200m draft_300m" \
 DRAFT_EPOCHS=1 USE_CHUNKED=1 SEED=1337 \
   nohup caffeinate -dimsu bash tools/training/g1a_v2_expansion_chain.sh 3.4489 pass \
   > artifacts/lowbit_rwkv7/master_chain.log 2>&1 &
 ```
 
-To push RAM toward 90% (≈16 GB on the 18 GB box) for the larger variants, raise
-`BATCH_SIZE` (e.g. 32) and lower `GRAD_ACCUM` to match; `MPS_MEM_FRACTION=0.9` caps it
-safely. Bigger `BATCH_SIZE` changes the effective batch (a mild dynamics change), unlike the
-16×1 preset which is dynamics-neutral.
+`BATCH_SIZE` is the probe **ceiling** under AUTO_BATCH. `MEM_CEILING_GB=17` uses ~94% of an
+18 GB box (aggressive — leaves ~1 GB for the OS; the probe + a defensive in-loop OOM-skip
+keep it from crashing the run). Lower to 14–15 if the system feels starved. A safety
+in-loop OOM handler skips + flushes any batch that still overruns.
 
-> NOTE: batching changes training results vs `batch=1` (token-level vs example-level loss
-> mean), so a **fast sweep should start fresh** for consistent cross-variant accept-rate
-> comparison — don't splice it into a `batch=1` run mid-flight.
+> NOTE: batching (and per-model batch size) changes training results vs `batch=1`, so a
+> fast sweep should start **fresh** for consistent cross-variant accept-rate comparison —
+> don't splice it into a `batch=1` run mid-flight.
 
 ## 2. Unmerged-branch consolidation — manifest + hazard
 

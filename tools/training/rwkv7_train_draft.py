@@ -102,6 +102,57 @@ def lm_loss_from_batch(model: RWKV7Model, batch: list, device: str, pad_id: int 
     return F.cross_entropy(logits.float(), shift_labels[mask]), n_supervised
 
 
+def _is_oom(e: Exception) -> bool:
+    return isinstance(e, RuntimeError) and "out of memory" in str(e).lower()
+
+
+def probe_max_batch(model: RWKV7Model, opt, max_length: int, ceiling: int, device: str) -> int:
+    """Largest batch (count of full-length, FULLY-supervised sequences) that fits one
+    fwd+bwd+step under the active MPS cap. Worst case by construction, so any real
+    batch with <= chosen*max_length PADDED tokens is safe. Halves on OOM. Corrupts
+    weights + optimizer state (garbage input) — the caller must restore both."""
+    if device != "mps":
+        return max(1, ceiling)
+    bs = max(1, ceiling)
+    while True:
+        worst = [([1] * max_length, [1] * max_length) for _ in range(bs)]
+        try:
+            opt.zero_grad(set_to_none=True)
+            loss, sup = lm_loss_from_batch(model, worst, device)
+            if loss is not None and sup > 0:
+                loss.backward()
+            opt.step()
+            opt.zero_grad(set_to_none=True)
+            torch.mps.synchronize()
+            torch.mps.empty_cache()
+            return bs
+        except Exception as e:  # noqa: BLE001
+            if not _is_oom(e):
+                raise
+            opt.zero_grad(set_to_none=True)
+            torch.mps.empty_cache()
+            if bs <= 1:
+                return 1
+            bs = max(1, bs // 2)
+
+
+def token_budget_groups(order: list, train_items: list, token_budget: int) -> list:
+    """Pack a (shuffled) index order into variable-size batches whose PADDED token
+    count (n * longest-in-batch) stays <= token_budget. Long sequences -> fewer per
+    batch, short -> more — automatic memory balancing. Preserves the given order."""
+    groups, cur, cur_max = [], [], 0
+    for idx in order:
+        L = len(train_items[idx][0])
+        if cur and (len(cur) + 1) * max(cur_max, L) > token_budget:
+            groups.append(cur)
+            cur, cur_max = [], 0
+        cur.append(idx)
+        cur_max = max(cur_max, L)
+    if cur:
+        groups.append(cur)
+    return groups
+
+
 def load_teacher_records(path: Path) -> list[dict]:
     shard_paths = sorted(path.glob("shard_*.pt"))
     if not shard_paths:
@@ -208,6 +259,14 @@ def main() -> None:
                     help="Call torch.mps.empty_cache() every N optimizer steps "
                          "(0 = never). Previously every example, which serialised MPS "
                          "and capped RAM — the main throughput bug.")
+    ap.add_argument("--auto-batch", type=int, default=0, choices=(0, 1),
+                    help="1 = probe the largest batch this model fits under --mem-ceiling-gb "
+                         "(worst-case max-length batch), then token-budget batch so long "
+                         "sequences shrink the batch automatically. --batch-size is the probe "
+                         "ceiling. Small models get big batches, big models small — no OOM.")
+    ap.add_argument("--mem-ceiling-gb", type=float, default=0.0,
+                    help="Target unified-RAM ceiling in GB for --auto-batch + the MPS cap "
+                         "(e.g. 17 on an 18 GB box). 0 = fall back to --mps-mem-fraction.")
     ap.add_argument("--seed", type=int, default=1337, help="seed for reproducible from-scratch init + data order")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -216,11 +275,19 @@ def main() -> None:
         raise ValueError("--alpha must be in [0, 1]")
 
     device = resolve_device(args.device)
-    if args.mps_mem_fraction and device == "mps":
+    if device == "mps" and (args.mem_ceiling_gb > 0 or args.mps_mem_fraction):
         _set_frac = getattr(getattr(torch, "mps", None), "set_per_process_memory_fraction", None)
         if callable(_set_frac):
-            _set_frac(args.mps_mem_fraction)
-            print(f"[mps] per-process memory cap = {args.mps_mem_fraction:.0%} of unified RAM", flush=True)
+            if args.mem_ceiling_gb > 0:
+                _rmm = getattr(torch.mps, "recommended_max_memory", None)
+                base_gb = (_rmm() / 1e9) if callable(_rmm) else 13.3
+                frac = args.mem_ceiling_gb / base_gb  # fraction is of recommendedMax; may exceed 1.0
+                _set_frac(frac)
+                print(f"[mps] memory ceiling {args.mem_ceiling_gb:.1f} GB "
+                      f"(fraction {frac:.2f} of {base_gb:.1f} GB recommended)", flush=True)
+            else:
+                _set_frac(args.mps_mem_fraction)
+                print(f"[mps] per-process memory cap = {args.mps_mem_fraction:.0%} of recommended RAM", flush=True)
         else:
             print("[mps] set_per_process_memory_fraction unavailable in this torch; skipping cap", flush=True)
     out = Path(args.out) if args.out else ROOT / "artifacts/lowbit_rwkv7/runs" / f"custom_{args.variant}"
@@ -296,10 +363,24 @@ def main() -> None:
 
     # KD mode stays per-example (not used by the draft sweep); SFT batches.
     bs = 1 if mode == "kd" else max(1, args.batch_size)
+    token_budget = 0
+    if args.auto_batch and mode != "kd" and device == "mps":
+        snapshot = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        chosen = probe_max_batch(model, opt, args.max_length, args.batch_size, device)
+        model.load_state_dict(snapshot)  # undo the probe's garbage weight update
+        del snapshot
+        opt = torch.optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.0)
+        token_budget = chosen * args.max_length
+        print(f"[auto-batch] probed max batch = {chosen} seqs "
+              f"(token budget {token_budget}); batches sized by length", flush=True)
+
     for epoch in range(args.epochs):
         generator = torch.Generator().manual_seed(1000 + epoch)
         order = torch.randperm(len(train_items), generator=generator).tolist()
-        groups = [order[k:k + bs] for k in range(0, len(order), bs)]
+        if token_budget > 0:
+            groups = token_budget_groups(order, train_items, token_budget)
+        else:
+            groups = [order[k:k + bs] for k in range(0, len(order), bs)]
         opt.zero_grad(set_to_none=True)
 
         for j, group in enumerate(groups):
@@ -309,7 +390,17 @@ def main() -> None:
                 seen_tok += len(item["input_ids"])
             else:
                 batch = [train_items[idx] for idx in group]
-                loss, supervised = lm_loss_from_batch(model, batch, device)
+                try:
+                    loss, supervised = lm_loss_from_batch(model, batch, device)
+                except Exception as e:  # noqa: BLE001 — defensive net; probe should prevent this
+                    if not _is_oom(e):
+                        raise
+                    if device == "mps":
+                        torch.mps.empty_cache()
+                    opt.zero_grad(set_to_none=True)
+                    pending = 0
+                    print(f"[auto-batch] OOM on batch of {len(batch)} seqs — skipped + flushed", flush=True)
+                    continue
                 seen_tok += sum(len(ids) for ids, _ in batch)
             if loss is None or supervised == 0:
                 continue
