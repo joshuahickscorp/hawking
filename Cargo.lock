@@ -78,7 +78,7 @@ name = "awq_bake_tool"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "dismantle-core",
+ "hawking-core",
  "serde",
  "serde_json",
  "sha2",
@@ -458,77 +458,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dismantle"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "clap",
- "ctrlc",
- "dismantle-bench",
- "dismantle-core",
- "dismantle-serve",
- "serde",
- "serde_json",
- "sha2",
- "tokio",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "dismantle-bench"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "dismantle-core",
- "serde",
- "serde_json",
- "sha2",
-]
-
-[[package]]
-name = "dismantle-core"
-version = "0.2.2"
-dependencies = [
- "bytemuck",
- "half",
- "memmap2",
- "metal 0.29.0",
- "objc2 0.5.2",
- "objc2-foundation",
- "objc2-metal",
- "once_cell",
- "parking_lot",
- "rand",
- "rand_pcg",
- "serde",
- "serde_json",
- "sha2",
- "strand-quant",
- "tempfile",
- "thiserror 2.0.18",
- "tokenizers",
-]
-
-[[package]]
-name = "dismantle-serve"
-version = "0.2.2"
-dependencies = [
- "anyhow",
- "axum",
- "bytes",
- "dismantle-core",
- "futures",
- "http-body-util",
- "parking_lot",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tower",
- "tracing",
-]
-
-[[package]]
 name = "dispatch2"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -776,6 +705,77 @@ name = "hashbrown"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
+
+[[package]]
+name = "hawking"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "clap",
+ "ctrlc",
+ "hawking-bench",
+ "hawking-core",
+ "hawking-serve",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "hawking-bench"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "hawking-core",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "hawking-core"
+version = "0.2.2"
+dependencies = [
+ "bytemuck",
+ "half",
+ "memmap2",
+ "metal 0.29.0",
+ "objc2 0.5.2",
+ "objc2-foundation",
+ "objc2-metal",
+ "once_cell",
+ "parking_lot",
+ "rand",
+ "rand_pcg",
+ "serde",
+ "serde_json",
+ "sha2",
+ "strand-quant",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokenizers",
+]
+
+[[package]]
+name = "hawking-serve"
+version = "0.2.2"
+dependencies = [
+ "anyhow",
+ "axum",
+ "bytes",
+ "futures",
+ "hawking-core",
+ "http-body-util",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tower",
+ "tracing",
+]
 
 [[package]]
 name = "heck"
@@ -1305,7 +1305,7 @@ name = "q4k_fast_tool"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "dismantle-core",
+ "hawking-core",
  "sha2",
 ]
 
@@ -1805,7 +1805,7 @@ name = "tq_bake_tool"
 version = "0.2.2"
 dependencies = [
  "anyhow",
- "dismantle-core",
+ "hawking-core",
  "sha2",
  "strand-quant",
 ]

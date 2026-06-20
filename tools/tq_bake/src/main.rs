@@ -2,7 +2,7 @@
 //!
 //! Reads a GGUF model, dequantises the selected projection tensors to f32, encodes
 //! them with the absorbed strand-quant trellis quantiser, and writes a `.tq` v2
-//! artifact (STR2 wire format). See `docs/strand/STRAND-dismantle-wiring.md` Step 4.
+//! artifact (STR2 wire format). See `docs/strand/STRAND-hawking-wiring.md` Step 4.
 //!
 //! Quality note: when the source GGUF is itself quantised (e.g. Q4_K), the f32 encode
 //! source is the dequantised reconstruction, so the `.tq` is a quant-of-a-quant —
@@ -17,8 +17,8 @@
 //!   cargo run -p tq_bake_tool -- <in.gguf> <out.tq> [--bpw 3.34] [--match ffn_] [--limit N] [--rht none|cols]
 
 use anyhow::{bail, Context, Result};
-use dismantle_core::gguf::GgufFile;
-use dismantle_core::quant::dequant_to_f32;
+use hawking_core::gguf::GgufFile;
+use hawking_core::quant::dequant_to_f32;
 use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use strand_quant::encode::{encode_tensor, EncodedTensor};

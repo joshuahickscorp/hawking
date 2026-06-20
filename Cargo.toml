@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/dismantle",
-    "crates/dismantle-core",
-    "crates/dismantle-serve",
-    "crates/dismantle-bench",
+    "crates/hawking",
+    "crates/hawking-core",
+    "crates/hawking-serve",
+    "crates/hawking-bench",
     "tools/q4k_fast",
     "tools/awq_bake",
     "tools/tq_bake",
@@ -14,7 +14,7 @@ members = [
 # dependency where wired — kept OUT of the default workspace build so `cargo build
 # --workspace` and all golden hashes are unchanged. Build/test them standalone with
 # `cargo test --manifest-path vendor/strand-quant/Cargo.toml`. strand-decode-kernel is
-# strand's reference runtime + gate harness (not a dismantle build dep; mirror source).
+# strand's reference runtime + gate harness (not a hawking build dep; mirror source).
 exclude = [
     "vendor/strand-quant",
     "vendor/strand-decode-kernel",
@@ -25,7 +25,7 @@ version = "0.2.2"
 edition = "2021"
 rust-version = "1.80"
 license = "MIT"
-repository = "https://github.com/joshuahickscorp/dismantle"
+repository = "https://github.com/joshuahickscorp/hawking"
 authors = ["Joshua Hicks <joshuahicksboba@gmail.com>"]
 
 [workspace.dependencies]

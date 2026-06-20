@@ -1,9 +1,9 @@
 //! q4k_fast_recompute — convert all Q4_K tensors in a GGUF file to the
-//! Q4K_FAST sub-block-contiguous re-layout, and emit a `.dismantle`
+//! Q4K_FAST sub-block-contiguous re-layout, and emit a `.hawking`
 //! sidecar file alongside the original.
 //!
 //! Usage:
-//!     q4k_fast_recompute <input.gguf> <output.dismantle>
+//!     q4k_fast_recompute <input.gguf> <output.hawking>
 //!
 //! The output file contains every Q4_K tensor from the input, re-laid into
 //! the Q4K_FAST format (160 bytes per 256-element block). Non-Q4_K tensors
@@ -14,8 +14,8 @@
 //! model in this session. Build-only validation.
 
 use anyhow::{bail, Context, Result};
-use dismantle_core::gguf::{GgmlType, GgufFile};
-use dismantle_core::q4k_fast::{
+use hawking_core::gguf::{GgmlType, GgufFile};
+use hawking_core::q4k_fast::{
     convert_q4k_tensor_to_fast, serialize_sidecar, src_hash_from_sha256_first8, WrittenTensor,
     Q4K_BLOCK_BYTES, Q4K_BLOCK_ELEMS, Q4K_FAST_BLOCK_BYTES,
 };
@@ -26,10 +26,10 @@ use std::path::PathBuf;
 fn main() -> Result<()> {
     let mut args = std::env::args().skip(1);
     let input = args.next().context("missing <input.gguf>")?;
-    let output = args.next().context("missing <output.dismantle>")?;
+    let output = args.next().context("missing <output.hawking>")?;
     if args.next().is_some() {
         bail!(
-            "unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.dismantle>"
+            "unexpected extra argument; usage: q4k_fast_recompute <input.gguf> <output.hawking>"
         );
     }
     let input_path = PathBuf::from(input);
