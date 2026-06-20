@@ -13,14 +13,18 @@ pgrep -fl "g1a_v2_expansion_chain|rwkv7_train_draft"      # expect 2-3 procs
 tail -n 30 artifacts/lowbit_rwkv7/draft_sweep.log         # expect [ep0 opt=N] loss=… lines
 tail -n 10 artifacts/lowbit_rwkv7/master_chain.log
 ```
-If (and only if) it died, relaunch:
+If (and only if) it died, relaunch with the FAST preset (~16x — see docs/SPEED.md):
 ```bash
+BATCH_SIZE=16 GRAD_ACCUM=1 GRAD_CKPT=0 MPS_MEM_FRACTION=0.9 EMPTY_CACHE_EVERY=0 \
 DRAFT_VARIANTS="draft_35m_probe draft_50m_probe draft_75m_probe draft_100m draft_150m draft_200m draft_300m" \
 DRAFT_EPOCHS=1 DRAFT_ACCEPT_SEQS=50 SEED=1337 USE_CHUNKED=1 \
 PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 PYTHON=.venv-rwkv/bin/python \
   nohup caffeinate -dimsu bash tools/training/g1a_v2_expansion_chain.sh 3.4489 pass \
   > artifacts/lowbit_rwkv7/master_chain.log 2>&1 &
 ```
+To FULLY stop the sweep, killing the top bash is NOT enough — `launch_draft_sweep.sh`
+is a separate child that will advance to the next variant. Kill all of:
+`pkill -9 -f 'g1a_v2_expansion_chain|launch_draft_sweep|rwkv7_train_draft|rwkv7_draft_watcher'`.
 The chain runs cargo/parity gates → 7-model draft sweep (chunked, seeded, EPOCHS=1,
 ~20–30h) → spec hardening → competitive scorecard. The draft sweep launches
 **unconditionally** (a Rust gate failure cannot block it — by design).
@@ -41,6 +45,10 @@ The chain runs cargo/parity gates → 7-model draft sweep (chunked, seeded, EPOC
 - **RWKV-7 GPU↔CPU parity green**: 2/2, argmax mismatches=0, worst |Δlogit|=0.00015.
 - **Docs consolidated 214 → 21** for a clean slate. Pruned working-logs are indexed in
   `docs/ARCHIVE_INDEX.md` and fully recoverable (`git checkout pre-hawking-rename -- <path>`).
+- **Training is now ~16x faster** (merged to main). The trainer was batch=1 + per-example
+  `empty_cache()`; now batched + RAM-hungry. The CURRENT sweep was restarted with the fast
+  preset. Details: `docs/SPEED.md` + [[../SPEED.md]]. The draft sweep was RESTARTED fresh
+  (old slow run archived under `artifacts/lowbit_rwkv7/_slow_batch1_archive/`).
 
 ## ⚠️ GOTCHA — folder rename leaves a stale Cargo build cache
 
@@ -63,12 +71,13 @@ so the path re-bakes. After any future folder move, do a clean rebuild before tr
 
 ## Git
 
-- This session's work (script fixes + doc rename/consolidation) was committed and merged
-  to `main`, remote = `github.com/joshuahickscorp/hawking.git`.
-- Safety tag `pre-hawking-rename` = the last pre-rename commit; holds all pruned docs.
-- **Stale branches**: ~25 local/remote feature + `worktree-agent-*` branches remain. Many
-  are fully merged (0 ahead of main → safe to delete); the rest carry unmerged rwkv7/tq/
-  strand work. Decide merge-or-delete (not done automatically — destructive).
+- All this session's work is on `main`, remote = `github.com/joshuahickscorp/hawking.git`.
+- Safety tag `pre-hawking-rename` = the last pre-rename commit; holds all pruned docs +
+  the deleted feature branches' content.
+- **Branches cleaned to a clean slate**: the remote now has **only `main`** (16 stale
+  pre-rename feature/worktree-agent branches deleted). 6 LOCAL-only experiments were kept
+  (unpushed unique work): `bench/dense-frontier`, `bench/ssm-moe`, `perf/dispatch-fusion`,
+  `rwkv7/posttrain-opt`, `rwkv7/posttrain-prep`, `ssm/derisk` — review/delete at leisure.
 
 ## Open items
 
