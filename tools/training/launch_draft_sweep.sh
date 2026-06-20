@@ -24,6 +24,14 @@ Environment:
   POLL_SECONDS=300
   DRAFT_VARIANTS="draft_100m draft_150m draft_200m draft_300m"
   TEACHER_LOGITS=/path/to/teacher_logits   # optional KD shards
+  # --- speed / max-RAM ---
+  BATCH_SIZE=1            # >1 batches sequences (faster + more RAM). eff batch = BATCH_SIZE*GRAD_ACCUM
+  MPS_MEM_FRACTION=0      # 0.9 = let MPS use up to 90% of unified RAM
+  GRAD_CKPT=1             # 0 = no grad-checkpoint (more RAM, faster)
+  EMPTY_CACHE_EVERY=0     # 0 = never flush MPS cache (old per-example flush was the bottleneck)
+
+Fast preset (same effective batch as the default, much faster):
+  BATCH_SIZE=16 GRAD_ACCUM=1 GRAD_CKPT=0 MPS_MEM_FRACTION=0.9 bash tools/training/launch_draft_sweep.sh
 EOF
         exit 0
     fi
@@ -47,6 +55,19 @@ POLL_SECONDS="${POLL_SECONDS:-300}"
 USE_CHUNKED="${USE_CHUNKED:-1}"
 CHUNK_SIZE="${CHUNK_SIZE:-32}"
 SEED="${SEED:-1337}"
+# --- Speed / max-RAM knobs (the 'speed' branch) ---
+# BATCH_SIZE>1 batches sequences per fwd/bwd: replaces N serial forwards with one
+# padded batch -> far better GPU utilisation + higher RAM use = faster. Effective
+# batch = BATCH_SIZE * GRAD_ACCUM; keep the product ~constant to preserve training
+# dynamics (BATCH_SIZE=16 GRAD_ACCUM=1 has the same effective batch as the old
+# BATCH_SIZE=1 GRAD_ACCUM=16, but runs as one batched step).
+BATCH_SIZE="${BATCH_SIZE:-1}"
+# Cap MPS at this fraction of unified RAM (0.9 = use up to 90%). 0 = no explicit cap.
+MPS_MEM_FRACTION="${MPS_MEM_FRACTION:-0}"
+# 1 = grad-checkpoint (less RAM, ~33% more compute). 0 = off (more RAM, faster).
+GRAD_CKPT="${GRAD_CKPT:-1}"
+# empty_cache() every N opt steps (0 = never). Per-example flush was the throughput bug.
+EMPTY_CACHE_EVERY="${EMPTY_CACHE_EVERY:-0}"
 PYTHON="${PYTHON:-$ROOT/.venv-rwkv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
@@ -79,6 +100,10 @@ for variant in "${variants[@]}"; do
         --lr "$LR" \
         --out "$out" \
         --seed "$SEED" \
+        --batch-size "$BATCH_SIZE" \
+        --grad-checkpoint "$GRAD_CKPT" \
+        --mps-mem-fraction "$MPS_MEM_FRACTION" \
+        --empty-cache-every "$EMPTY_CACHE_EVERY" \
         ${chunk_args[@]+"${chunk_args[@]}"} \
         ${teacher_args[@]+"${teacher_args[@]}"} &
     train_pid=$!

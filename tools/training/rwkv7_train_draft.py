@@ -69,6 +69,39 @@ def lm_loss_from_example(model: RWKV7Model, ids: list[int], labels: list[int], d
     return F.cross_entropy(logits.float(), shift_labels[mask]), n_supervised
 
 
+def lm_loss_from_batch(model: RWKV7Model, batch: list, device: str, pad_id: int = 0):
+    """Batched generalization of lm_loss_from_example.
+
+    `batch` is a list of (ids, labels). Sequences are right-padded to the batch
+    max length; the pad id is arbitrary (0 = EOS) because pad positions carry
+    label -100 and are dropped from the loss. RWKV-7's recurrence is strictly
+    left-to-right, so right-padding cannot perturb earlier real positions — the
+    per-position logits at real tokens are identical to running each sequence
+    alone (verified by tools/training/test_rwkv7_batch_equiv.py). One padded
+    forward over B sequences replaces B serial forwards: far better GPU
+    utilisation and higher RAM use = the speed win. Token-level mean CE over all
+    supervised positions in the batch.
+    """
+    B = len(batch)
+    maxlen = max(len(ids) for ids, _ in batch)
+    x = torch.full((B, maxlen), pad_id, dtype=torch.long)
+    y = torch.full((B, maxlen), -100, dtype=torch.long)
+    for i, (ids, labels) in enumerate(batch):
+        x[i, : len(ids)] = torch.tensor(ids, dtype=torch.long)
+        y[i, : len(labels)] = torch.tensor(labels, dtype=torch.long)
+    x = x.to(device)
+    y = y.to(device)
+    hidden = model(x, return_final_hidden=True)
+    shift_hidden = hidden[:, :-1, :].reshape(-1, hidden.size(-1))
+    shift_labels = y[:, 1:].reshape(-1)
+    mask = shift_labels != -100
+    n_supervised = int(mask.sum().item())
+    if n_supervised == 0:
+        return None, 0
+    logits = model.lm_head(shift_hidden[mask])
+    return F.cross_entropy(logits.float(), shift_labels[mask]), n_supervised
+
+
 def load_teacher_records(path: Path) -> list[dict]:
     shard_paths = sorted(path.glob("shard_*.pt"))
     if not shard_paths:
@@ -160,6 +193,21 @@ def main() -> None:
     ap.add_argument("--log-every", type=int, default=10)
     ap.add_argument("--use-chunked", action="store_true", help="Enable chunked WKV training path")
     ap.add_argument("--chunk-size", type=int, default=32)
+    ap.add_argument("--batch-size", type=int, default=1,
+                    help="Sequences per forward/backward. >1 right-pads + masks, "
+                         "replacing N serial forwards with one padded batch: much "
+                         "better GPU utilisation + higher RAM use = faster. "
+                         "Effective batch = batch_size * grad_accum.")
+    ap.add_argument("--grad-checkpoint", type=int, default=1, choices=(0, 1),
+                    help="1 = recompute each block in backward (less RAM, ~33%% more "
+                         "compute). Set 0 for speed when RAM allows (uses more RAM).")
+    ap.add_argument("--mps-mem-fraction", type=float, default=0.0,
+                    help="If >0, cap MPS at this fraction of unified RAM (0.9 = up to "
+                         "90%%). 0 = PyTorch default (no explicit cap).")
+    ap.add_argument("--empty-cache-every", type=int, default=0,
+                    help="Call torch.mps.empty_cache() every N optimizer steps "
+                         "(0 = never). Previously every example, which serialised MPS "
+                         "and capped RAM — the main throughput bug.")
     ap.add_argument("--seed", type=int, default=1337, help="seed for reproducible from-scratch init + data order")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -168,6 +216,13 @@ def main() -> None:
         raise ValueError("--alpha must be in [0, 1]")
 
     device = resolve_device(args.device)
+    if args.mps_mem_fraction and device == "mps":
+        _set_frac = getattr(getattr(torch, "mps", None), "set_per_process_memory_fraction", None)
+        if callable(_set_frac):
+            _set_frac(args.mps_mem_fraction)
+            print(f"[mps] per-process memory cap = {args.mps_mem_fraction:.0%} of unified RAM", flush=True)
+        else:
+            print("[mps] set_per_process_memory_fraction unavailable in this torch; skipping cap", flush=True)
     out = Path(args.out) if args.out else ROOT / "artifacts/lowbit_rwkv7/runs" / f"custom_{args.variant}"
     out.mkdir(parents=True, exist_ok=True)
 
@@ -189,7 +244,7 @@ def main() -> None:
     cfg = replace(CUSTOM_VARIANTS[args.variant], use_chunked=args.use_chunked, chunk_size=args.chunk_size)
     model = RWKV7Model(cfg)
     initialise_from_scratch(model)
-    model.grad_checkpoint = True
+    model.grad_checkpoint = bool(args.grad_checkpoint)
     model = model.to(device=device, dtype=torch.float32)
     model.train()
 
@@ -239,20 +294,23 @@ def main() -> None:
     t0 = time.time()
     stop = False
 
+    # KD mode stays per-example (not used by the draft sweep); SFT batches.
+    bs = 1 if mode == "kd" else max(1, args.batch_size)
     for epoch in range(args.epochs):
         generator = torch.Generator().manual_seed(1000 + epoch)
         order = torch.randperm(len(train_items), generator=generator).tolist()
+        groups = [order[k:k + bs] for k in range(0, len(order), bs)]
         opt.zero_grad(set_to_none=True)
 
-        for j, idx in enumerate(order):
-            item = train_items[idx]
+        for j, group in enumerate(groups):
             if mode == "kd":
+                item = train_items[group[0]]
                 loss, supervised = kd_loss_from_record(model, item, device, args.alpha)
                 seen_tok += len(item["input_ids"])
             else:
-                ids, labels = item
-                loss, supervised = lm_loss_from_example(model, ids, labels, device)
-                seen_tok += len(ids)
+                batch = [train_items[idx] for idx in group]
+                loss, supervised = lm_loss_from_batch(model, batch, device)
+                seen_tok += sum(len(ids) for ids, _ in batch)
             if loss is None or supervised == 0:
                 continue
 
@@ -261,16 +319,20 @@ def main() -> None:
 
             l = float(loss.detach().item())
             loss_ema = l if loss_ema is None else 0.98 * loss_ema + 0.02 * l
-            if device == "mps":
-                torch.mps.empty_cache()
 
-            is_last = j == len(order) - 1
+            is_last = j == len(groups) - 1
             if pending >= args.grad_accum or is_last:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 opt.step()
                 opt.zero_grad(set_to_none=True)
                 pending = 0
                 n_steps += 1
+                # Safety-valve cache flush (default never). The old per-example
+                # empty_cache() serialised MPS and capped RAM — the throughput bug.
+                if device == "mps" and args.empty_cache_every and n_steps % args.empty_cache_every == 0:
+                    _ec = getattr(getattr(torch, "mps", None), "empty_cache", None)
+                    if callable(_ec):
+                        _ec()
 
                 if n_steps % args.log_every == 0 or n_steps == 1:
                     dt = max(time.time() - t0, 1e-6)
