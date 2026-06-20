@@ -288,7 +288,7 @@ def main() -> None:
     parser.add_argument("--text-file", default=None, help="Path to text file (--corpus text-file)")
     parser.add_argument("--tokens", type=int, default=8192, help="Number of tokens to evaluate")
     parser.add_argument("--stride", type=int, default=512, help="Sliding window stride")
-    parser.add_argument("--device", default=None, help="mps | cpu | cuda (auto-detect if omitted)")
+    parser.add_argument("--device", default=None, help="mps | cpu (auto-detect if omitted)")
     parser.add_argument("--out", default=None, help="JSONL output file (append mode)")
     parser.add_argument("--run-id", default=None, help="Optional identifier for this run")
     parser.add_argument(

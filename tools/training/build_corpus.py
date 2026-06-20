@@ -65,8 +65,6 @@ class Args:
     capture: tuple[str, ...]
     batch_size: int
     skip_rows: int
-    load_4bit: bool
-    cuda_max_vram_gb: float | None
     no_trust_remote_code: bool
 
 
@@ -82,18 +80,8 @@ def parse_args() -> Args:
     p.add_argument("--out", type=Path,
                    default=Path("artifacts/calibration/v2_lite_corpus"))
     p.add_argument("--device", default="mps",
-                   choices=["mps", "cpu", "cuda"],
-                   help="MPS is the default on M3 Pro; CUDA for cross-machine runs")
-    p.add_argument("--load-4bit", action="store_true", default=False,
-                   help="quantize model to 4-bit at load via bitsandbytes "
-                        "nf4 (requires CUDA + bitsandbytes). Brings DeepSeek-"
-                        "V2-Lite from 32 GB fp16 → 8 GB nf4 so it fits on a "
-                        "T4 (16 GB) without offload. CUDA-only.")
-    p.add_argument("--cuda-max-vram-gb", type=float, default=None,
-                   help="cap CUDA memory at this many GiB; spillover goes to "
-                        "CPU via accelerate. Use when T4 (14.5 GB usable) is "
-                        "almost-but-not-quite full after model load; pass "
-                        "12-13 to leave headroom for activations.")
+                   choices=["mps", "cpu"],
+                   help="MPS is the default on Apple Silicon; CPU is the fallback")
     p.add_argument("--no-trust-remote-code", action="store_true", default=False,
                    help="disable trust_remote_code in from_pretrained. Forces "
                         "transformers to use its NATIVE DeepSeek-V2 loader "
@@ -144,8 +132,6 @@ def parse_args() -> Args:
         capture=capture,
         batch_size=a.batch_size,
         skip_rows=a.skip_rows,
-        load_4bit=a.load_4bit,
-        cuda_max_vram_gb=a.cuda_max_vram_gb,
         no_trust_remote_code=a.no_trust_remote_code,
     )
 
@@ -551,46 +537,8 @@ def main() -> int:
     offload_folder.mkdir(parents=True, exist_ok=True)
     if args.device == "mps":
         max_memory = {"mps": "3GiB", "cpu": "11GiB"}
-    elif args.device == "cuda":
-        if args.cuda_max_vram_gb is not None:
-            max_memory = {0: f"{args.cuda_max_vram_gb:.2f}GiB",
-                          "cpu": "32GiB"}
-            print(f"capping CUDA at {args.cuda_max_vram_gb:.2f} GiB; "
-                  f"spillover → CPU", file=sys.stderr)
-        else:
-            max_memory = None
     else:
         max_memory = {"cpu": "12GiB"}
-
-    # 4-bit loading via bitsandbytes nf4 — for low-VRAM GPUs like Colab T4
-    # (16 GB). Brings DeepSeek-V2-Lite from ~32 GB fp16 → ~8 GB nf4 so it
-    # fits entirely on-device without offload.
-    quantization_config = None
-    if args.load_4bit:
-        if args.device != "cuda":
-            print(f"warn: --load-4bit requires --device cuda; got {args.device}",
-                  file=sys.stderr)
-        try:
-            from transformers import BitsAndBytesConfig  # type: ignore[import-not-found]
-            quantization_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_compute_dtype=dtype_map[args.dtype],
-                bnb_4bit_use_double_quant=True,
-                # CRITICAL: without this, bnb 4-bit IGNORES the max_memory
-                # device_map="auto" cap and stuffs everything on GPU 0,
-                # OOMing on T4 (14.5 GB usable, model + bnb overhead =
-                # 14.55 GB needed). With this flag, accelerate spills the
-                # overflow to CPU (as fp32 since CPU can't run 4-bit ops),
-                # respecting max_memory.
-                llm_int8_enable_fp32_cpu_offload=True,
-            )
-            print(f"loading in 4-bit (nf4, compute_dtype={args.dtype}, "
-                  f"CPU-offload enabled)", file=sys.stderr)
-        except ImportError:
-            print("error: --load-4bit requires bitsandbytes — `pip install bitsandbytes`",
-                  file=sys.stderr)
-            return 2
 
     model_kwargs = dict(
         torch_dtype=dtype_map[args.dtype],
@@ -606,11 +554,6 @@ def main() -> int:
         # peak FLOPs. SDPA is fused and O(S) memory.
         attn_implementation="sdpa",
     )
-    if quantization_config is not None:
-        model_kwargs["quantization_config"] = quantization_config
-        # When 4-bit, transformers ignores torch_dtype for the linear
-        # weights; the compute_dtype on the bnb_config governs.
-        del model_kwargs["torch_dtype"]
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
         **model_kwargs,
@@ -622,8 +565,8 @@ def main() -> int:
         print(f"hf_device_map sample: {list(model.hf_device_map.items())[:4]} …",
               file=sys.stderr)
     except (AttributeError, Exception):
-        # Single-device load (e.g., 102 GB GPU fits whole model on cuda:0):
-        # transformers doesn't set hf_device_map when no offload was needed.
+        # Single-device load: transformers does not set hf_device_map when no
+        # offload was needed.
         input_device = args.device
         print(f"hf_device_map: not set (model is single-device on {input_device})",
               file=sys.stderr)

@@ -25,10 +25,13 @@ Usage
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import importlib.util
 import json
 import math
 import os
+import random
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -106,13 +109,26 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--eval-tokens", type=int, default=4096,
                     help="tokens to use for in-training PPL eval")
     ap.add_argument("--device", default="mps",
-                    help="mps | cpu | cuda")
+                    help="mps | cpu")
     ap.add_argument("--dry-run", action="store_true",
                     help="print wrapped modules + 3 train steps, then exit")
     ap.add_argument("--max-rows", type=int, default=0,
                     help="if >0, limit data to first N rows (dry-run helper)")
     ap.add_argument("--run-id", default=None,
                     help="optional identifier stamped in event logs")
+    ap.add_argument("--seed", type=int, default=1337,
+                    help="seed for Python, NumPy, and Torch")
+    ap.add_argument("--deterministic", action="store_true",
+                    help="request deterministic Torch kernels where available")
+    ap.add_argument("--pretokenize-workers", type=int, default=0,
+                    help="CPU worker threads for up-front tokenization; 0 = serial")
+    ap.add_argument("--mps-empty-cache-every", type=int, default=1,
+                    help="MPS optimizer-step interval for torch.mps.empty_cache; 0 = never")
+    ap.add_argument("--use-chunked", action="store_true",
+                    help="use the parallel-scan WKV-7 kernel (~8x faster fwd+bwd, "
+                         "numerically equal to the sequential loop)")
+    ap.add_argument("--chunk-size", type=int, default=32,
+                    help="chunk length for --use-chunked (32 is the measured sweet spot)")
 
     # Knowledge distillation
     ap.add_argument("--teacher", default=None,
@@ -143,6 +159,32 @@ def parse_args() -> argparse.Namespace:
                     help="optimizer step recorded in checkpoint (0 = infer from dirname step_NNNNNN)")
 
     return ap.parse_args()
+
+
+def configure_determinism(args: argparse.Namespace) -> None:
+    """Seed the training process and request deterministic kernels if asked."""
+    if args.seed is None:
+        return
+
+    os.environ.setdefault("PYTHONHASHSEED", str(args.seed))
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    mps_manual_seed = getattr(getattr(torch, "mps", None), "manual_seed", None)
+    if callable(mps_manual_seed):
+        mps_manual_seed(args.seed)
+
+    if args.deterministic:
+        try:
+            torch.use_deterministic_algorithms(True, warn_only=True)
+        except TypeError:
+            torch.use_deterministic_algorithms(True)
+        except Exception as exc:
+            print(f"[determinism] warning: could not force deterministic kernels: {exc}",
+                  flush=True)
+
+    print(f"[determinism] seed={args.seed} deterministic={args.deterministic}",
+          flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -234,16 +276,18 @@ def load_jsonl(path: str) -> List[dict]:
     return records
 
 
-def build_batch(
+EncodedBatch = Tuple[List[int], List[int]]
+
+
+def encode_record(
     record: dict,
     encode,
     max_length: int,
-    device: str,
-) -> Optional[Tuple[torch.Tensor, torch.Tensor]]:
-    """Tokenise one record.
+) -> Optional[EncodedBatch]:
+    """Tokenise one record into Python lists.
 
-    Returns (input_ids [1,T], labels [1,T]) where prompt tokens are masked
-    with -100.  Returns None if there is no supervised signal.
+    Returns (input_ids, labels) where prompt tokens are masked with -100.
+    Returns None if there is no supervised signal.
 
     Accepted formats
     ----------------
@@ -286,9 +330,59 @@ def build_batch(
     if all(l == -100 for l in labels):
         return None  # prompt filled window, no signal
 
+    return ids, labels
+
+
+def tensorize_batch(
+    encoded: EncodedBatch,
+    device: str,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    ids, labels = encoded
     input_ids = torch.tensor([ids], dtype=torch.long, device=device)
     label_ids = torch.tensor([labels], dtype=torch.long, device=device)
     return input_ids, label_ids
+
+
+def build_batch(
+    record: dict,
+    encode,
+    max_length: int,
+    device: str,
+) -> Optional[Tuple[torch.Tensor, torch.Tensor]]:
+    encoded = encode_record(record, encode, max_length)
+    if encoded is None:
+        return None
+    return tensorize_batch(encoded, device)
+
+
+def pretokenize_rows(
+    rows: List[dict],
+    encode,
+    max_length: int,
+    workers: int,
+) -> List[Optional[EncodedBatch]]:
+    """Build token/label lists before the MPS loop.
+
+    This is intentionally CPU-only and preserves one slot per source row so
+    resume skip math stays aligned with the original JSONL order.
+    """
+    if workers <= 1:
+        encoded_rows = [encode_record(row, encode, max_length) for row in rows]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            encoded_rows = list(pool.map(
+                lambda row: encode_record(row, encode, max_length),
+                rows,
+            ))
+    valid = [item for item in encoded_rows if item is not None]
+    n_tokens = sum(len(ids) for ids, _labels in valid)
+    n_supervised = sum(sum(label != -100 for label in labels) for _ids, labels in valid)
+    print(
+        f"[data] pretokenized {len(valid)}/{len(rows)} rows "
+        f"({n_tokens} tokens, {n_supervised} supervised, workers={workers})",
+        flush=True,
+    )
+    return encoded_rows
 
 
 # ---------------------------------------------------------------------------
@@ -627,6 +721,8 @@ def run_eval(
 # ---------------------------------------------------------------------------
 
 def train(args: argparse.Namespace) -> None:
+    configure_determinism(args)
+
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -639,6 +735,12 @@ def train(args: argparse.Namespace) -> None:
     # --- Load model -----------------------------------------------------------
     print(f"[model] loading {args.model} on {args.device} (fp32) ...", flush=True)
     model = load_rwkv7(args.model, device=args.device, dtype=torch.float32)
+    # WKV-7 path: the cfg is read dynamically each forward, so flipping it here
+    # (post-load) selects the parallel-scan kernel without touching weight load.
+    model.cfg.use_chunked = args.use_chunked
+    model.cfg.chunk_size = args.chunk_size
+    if args.use_chunked:
+        print(f"[model] WKV-7 parallel-scan ON (chunk_size={args.chunk_size})", flush=True)
     model.train()
 
     # --- Freeze layers --------------------------------------------------------
@@ -780,6 +882,12 @@ def train(args: argparse.Namespace) -> None:
     if args.max_rows:
         rows = rows[: args.max_rows]
     print(f"[data] {len(rows)} rows", flush=True)
+    encoded_rows = pretokenize_rows(
+        rows,
+        encode,
+        args.max_length,
+        args.pretokenize_workers,
+    )
 
     # --- Teacher model (optional) -------------------------------------------
     teacher_model: Optional[RWKV7Model] = None
@@ -821,11 +929,11 @@ def train(args: argparse.Namespace) -> None:
         for local_i, row_idx in enumerate(order):
             if local_i < row_skip:
                 continue
-            rec = rows[row_idx]
-            batch = build_batch(rec, encode, args.max_length, args.device)
-            if batch is None:
+            encoded = encoded_rows[row_idx]
+            if encoded is None:
                 continue
 
+            batch = tensorize_batch(encoded, args.device)
             input_ids, labels = batch
             seen_tok += input_ids.shape[1]
             global_step += 1
@@ -854,7 +962,9 @@ def train(args: argparse.Namespace) -> None:
                 opt.step()
                 opt.zero_grad()
                 # Flush MPS cache once per optimizer step, not per micro-batch.
-                if args.device == "mps":
+                if (args.device == "mps"
+                        and args.mps_empty_cache_every > 0
+                        and opt_step % args.mps_empty_cache_every == 0):
                     torch.mps.empty_cache()
                 opt_step += 1
 
@@ -887,8 +997,8 @@ def train(args: argparse.Namespace) -> None:
 
                 # Checkpoint.
                 if args.save_every and opt_step % args.save_every == 0:
-                    _save_checkpoint(model, out_dir, f"step_{opt_step:06d}")
-                    _save_checkpoint(model, out_dir, "latest")
+                    state_path = _save_checkpoint(model, out_dir, f"step_{opt_step:06d}")
+                    _publish_checkpoint_alias(state_path, out_dir / "latest")
 
                 # Eval.
                 if args.eval_every and opt_step % args.eval_every == 0:
@@ -911,12 +1021,28 @@ def train(args: argparse.Namespace) -> None:
 # Save helper
 # ---------------------------------------------------------------------------
 
-def _save_checkpoint(model: RWKV7Model, out_dir: Path, tag: str) -> None:
+def _save_checkpoint(model: RWKV7Model, out_dir: Path, tag: str) -> Path:
     dest = out_dir / tag
     dest.mkdir(parents=True, exist_ok=True)
     sd = {k: v.detach().cpu().float() for k, v in model.state_dict().items()}
-    torch.save(sd, dest / "state_dict.pt")
-    print(f"  [save] {dest / 'state_dict.pt'}", flush=True)
+    state_path = dest / "state_dict.pt"
+    torch.save(sd, state_path)
+    print(f"  [save] {state_path}", flush=True)
+    return state_path
+
+
+def _publish_checkpoint_alias(source_state_path: Path, alias_dir: Path) -> None:
+    alias_dir.mkdir(parents=True, exist_ok=True)
+    alias_state_path = alias_dir / "state_dict.pt"
+    tmp_path = alias_dir / ".state_dict.pt.tmp"
+    if tmp_path.exists():
+        tmp_path.unlink()
+    try:
+        os.link(source_state_path, tmp_path)
+    except OSError:
+        shutil.copy2(source_state_path, tmp_path)
+    os.replace(tmp_path, alias_state_path)
+    print(f"  [save] {alias_state_path}", flush=True)
 
 
 # ---------------------------------------------------------------------------

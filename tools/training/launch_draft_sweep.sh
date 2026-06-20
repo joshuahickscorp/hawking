@@ -42,6 +42,10 @@ EPOCHS="${EPOCHS:-3}"
 GRAD_ACCUM="${GRAD_ACCUM:-16}"
 LR="${LR:-5e-4}"
 POLL_SECONDS="${POLL_SECONDS:-300}"
+# Parallel-scan WKV-7: ~5-8x faster fwd+bwd, numerically identical to the loop.
+# Verified bit-identical forward / machine-eps gradient on RWKV7Model. Default on.
+USE_CHUNKED="${USE_CHUNKED:-1}"
+CHUNK_SIZE="${CHUNK_SIZE:-32}"
 PYTHON="${PYTHON:-$ROOT/.venv-rwkv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
@@ -50,6 +54,11 @@ fi
 teacher_args=()
 if [[ -n "${TEACHER_LOGITS:-}" ]]; then
     teacher_args=(--teacher-logits "$TEACHER_LOGITS")
+fi
+
+chunk_args=()
+if [[ "$USE_CHUNKED" == "1" ]]; then
+    chunk_args=(--use-chunked --chunk-size "$CHUNK_SIZE")
 fi
 
 for variant in "${variants[@]}"; do
@@ -68,6 +77,7 @@ for variant in "${variants[@]}"; do
         --grad-accum "$GRAD_ACCUM" \
         --lr "$LR" \
         --out "$out" \
+        "${chunk_args[@]}" \
         "${teacher_args[@]}" &
     train_pid=$!
 

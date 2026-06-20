@@ -1,6 +1,5 @@
 """On-device SFT for RWKV-7-0.4B on Apple MPS, using the parity-verified pure-torch
-forward (rwkv7_torch_model.py) — fla's RWKV7 recurrence is triton/CUDA-only and
-cannot train on MPS.
+forward (rwkv7_torch_model.py) instead of external fused recurrence kernels.
 
 Trains the g1-0.4B instruct base on the gold corpus (artifacts/rwkv7_posttrain/
 sft.jsonl). Prompt-masked causal-LM loss (loss only on the assistant completion +
