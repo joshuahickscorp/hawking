@@ -142,7 +142,7 @@ step paired_bench_256 \
 #     ~16 sec. Refreshes reports/w4a8_lmhead_calibration_2026_05_26.json
 #     for tomorrow's attended wire-up session.
 soft_step w4a8_calibration \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test w4a8_per_channel_calibrate -- --nocapture --ignored \
     > reports/w4a8_per_channel_calibration_2026_05_26.txt 2>&1"
 
@@ -151,7 +151,7 @@ soft_step w4a8_calibration \
 #     _2026_05_26.md) isn't prompt-dependent — currently only validated
 #     on 2 prompts. Test runs HAWKING_LOOKAHEAD=N greedy vs baseline.
 soft_step lookahead_parity \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test qwen_lookahead_parity -- --nocapture --ignored \
     > reports/qwen_lookahead_parity_2026_05_26.txt 2>&1"
 

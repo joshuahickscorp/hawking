@@ -54,9 +54,9 @@ pass "dry-parse: synthetic record renders through the 9-column layout"
 for lane in \
     dismantle-default \
     dismantle-fast \
-    dismantle-serve-full-logits \
-    dismantle-serve-greedy-b1 \
-    dismantle-serve-greedy-b8 \
+    hawking-serve-full-logits \
+    hawking-serve-greedy-b1 \
+    hawking-serve-greedy-b8 \
     llama-cli \
     llama-server-b8
 do

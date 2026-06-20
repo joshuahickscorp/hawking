@@ -150,12 +150,12 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2: cargo build dismantle-core with tq feature (only after successful export)
+# Step 2: cargo build hawking-core with tq feature (only after successful export)
 # ---------------------------------------------------------------------------
 if [[ "$TQ_EXPORT_STATUS" == "PASS" ]]; then
-    log "=== Step 2: cargo build dismantle-core --features tq ==="
+    log "=== Step 2: cargo build hawking-core --features tq ==="
     run_step "cargo build tq" TQ_BUILD_STATUS TQ_BUILD_OUTPUT \
-        cargo build -p dismantle-core --features tq --release
+        cargo build -p hawking-core --features tq --release
 else
     if [[ "$GATE_RESULT" == "PASS_G1B" && "$TQ_EXPORT_STATUS" != "skipped" ]]; then
         log "Skipping cargo build: TQ export did not pass ($TQ_EXPORT_STATUS)"
@@ -169,10 +169,10 @@ if [[ "$TQ_BUILD_STATUS" == "PASS" ]]; then
     log "=== Step 3: RWKV-7 TQ parity test ==="
 
     # Check test file exists before attempting
-    TQ_PARITY_TEST="$ROOT/crates/dismantle-core/tests/rwkv7_tq_parity.rs"
+    TQ_PARITY_TEST="$ROOT/crates/hawking-core/tests/rwkv7_tq_parity.rs"
     if [[ -f "$TQ_PARITY_TEST" ]]; then
         run_step "rwkv7_tq_parity" TQ_PARITY_STATUS TQ_PARITY_OUTPUT \
-            cargo test -p dismantle-core --features tq --test rwkv7_tq_parity -- --nocapture
+            cargo test -p hawking-core --features tq --test rwkv7_tq_parity -- --nocapture
     else
         log "Skipping rwkv7_tq_parity: test file not found at $TQ_PARITY_TEST"
         TQ_PARITY_STATUS="skipped (test file absent)"
@@ -187,10 +187,10 @@ fi
 # Step 4: Mamba2 parity test (gated on test file existence)
 # ---------------------------------------------------------------------------
 log "=== Step 4: Mamba2 smoke/parity test ==="
-MAMBA2_TEST="$ROOT/crates/dismantle-core/tests/mamba2_smoke.rs"
+MAMBA2_TEST="$ROOT/crates/hawking-core/tests/mamba2_smoke.rs"
 if [[ -f "$MAMBA2_TEST" ]]; then
     run_step "mamba2_smoke" MAMBA2_PARITY_STATUS MAMBA2_PARITY_OUTPUT \
-        cargo test -p dismantle-core --test mamba2_smoke -- --nocapture
+        cargo test -p hawking-core --test mamba2_smoke -- --nocapture
 else
     log "Skipping mamba2_smoke: $MAMBA2_TEST not found (Phase 2 Mamba2 feature not yet built)"
     MAMBA2_PARITY_STATUS="skipped (test file absent)"
@@ -200,11 +200,11 @@ fi
 # Step 5: RWKV-7 flatness bench (context depth sweep to 64k)
 # ---------------------------------------------------------------------------
 log "=== Step 5: RWKV-7 flatness bench (depth sweep) ==="
-METAL_BENCH_TEST="$ROOT/crates/dismantle-core/tests/rwkv7_metal_bench.rs"
+METAL_BENCH_TEST="$ROOT/crates/hawking-core/tests/rwkv7_metal_bench.rs"
 if [[ -f "$METAL_BENCH_TEST" ]]; then
     run_step "rwkv7_flatness_bench" RWKV7_FLATNESS_STATUS RWKV7_FLATNESS_OUTPUT \
         env HAWKING_RWKV7_MAX_DEPTH=64000 \
-        cargo test -p dismantle-core --test rwkv7_metal_bench -- \
+        cargo test -p hawking-core --test rwkv7_metal_bench -- \
             --ignored --nocapture --test-threads=1
 else
     log "Skipping rwkv7_flatness_bench: $METAL_BENCH_TEST not found"
@@ -217,7 +217,7 @@ fi
 log "=== Step 6: RWKV-7 Task #8 tps bench ==="
 if [[ -f "$METAL_BENCH_TEST" ]]; then
     run_step "rwkv7_tps_bench" RWKV7_TPS_STATUS RWKV7_TPS_OUTPUT \
-        cargo test -p dismantle-core --test rwkv7_metal_bench -- \
+        cargo test -p hawking-core --test rwkv7_metal_bench -- \
             --ignored --nocapture --test-threads=1
 else
     log "Skipping rwkv7_tps_bench: $METAL_BENCH_TEST not found"
@@ -288,7 +288,7 @@ cat > "$REPORT_OUT" << REPORT_EOF
 ${TQ_EXPORT_OUTPUT:-skipped — not applicable for gate $GATE_RESULT}
 \`\`\`
 
-### cargo build dismantle-core --features tq
+### cargo build hawking-core --features tq
 
 \`\`\`
 ${TQ_BUILD_OUTPUT:-skipped}
@@ -328,7 +328,7 @@ ppl = float('${FINAL_PPL}')
 gate = '${GATE_RESULT}'
 if gate == 'PASS_G1B':
     print('TQ export ran. If rwkv7_tq_parity is green:')
-    print('1. Fill any remaining stubs in crates/dismantle-core/src/tq.rs')
+    print('1. Fill any remaining stubs in crates/hawking-core/src/tq.rs')
     print('2. Wire TQ dispatch into the RWKV-7 serving path')
     print('3. Run full integration bench vs Q4_K_M baseline')
     print('4. Commit and push (do not skip TQ parity gate)')

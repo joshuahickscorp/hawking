@@ -108,13 +108,13 @@ step paired_bench_256 \
 
 # (6) W4A8 LM_HEAD per-channel calibration on Qwen-3B
 soft_step w4a8_calibration \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test w4a8_per_channel_calibrate -- --nocapture --ignored \
     > reports/w4a8_per_channel_calibration_2026_05_26.txt 2>&1"
 
 # (7) Lookahead n-gram parity sweep on Qwen-3B
 soft_step lookahead_parity \
-  bash -c "nice -n 19 cargo test --release -p dismantle-core \
+  bash -c "nice -n 19 cargo test --release -p hawking-core \
     --test qwen_lookahead_parity -- --nocapture --ignored \
     > reports/qwen_lookahead_parity_2026_05_26.txt 2>&1"
 

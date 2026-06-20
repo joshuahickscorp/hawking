@@ -4,4 +4,4 @@
 # ABSOLUTE tps needs a clean room. Auto-detected by clean_bench_queue.sh.
 set -uo pipefail
 cd "$(dirname "$0")/../.."
-exec cargo test --release -p dismantle-core --test multiseq_aggregate_bench -- --ignored --nocapture
+exec cargo test --release -p hawking-core --test multiseq_aggregate_bench -- --ignored --nocapture

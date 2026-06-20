@@ -92,52 +92,52 @@ log "=== G1a v2 expansion chain start ==="
 log "FINAL_PPL=$FINAL_PPL GATE_RESULT=$GATE_RESULT PHASE2_REPORT=${PHASE2_REPORT:-none}"
 
 # 1. Compile surfaces that the expansion touches: core, serve, and bench.
-run_capture "cargo check dismantle-core" \
+run_capture "cargo check hawking-core" \
     "$OUT_DIR/cargo_check_core.log" \
-    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p dismantle-core
+    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p hawking-core
 
-run_capture "cargo check dismantle-serve" \
+run_capture "cargo check hawking-serve" \
     "$OUT_DIR/cargo_check_serve.log" \
-    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p dismantle-serve
+    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p hawking-serve
 
-run_capture "cargo check dismantle-bench" \
+run_capture "cargo check hawking-bench" \
     "$OUT_DIR/cargo_check_bench.log" \
-    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p dismantle-bench
+    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p hawking-bench
 
-run_capture "cargo check dismantle-core tq" \
+run_capture "cargo check hawking-core tq" \
     "$OUT_DIR/cargo_check_core_tq.log" \
-    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p dismantle-core --features tq
+    env CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" cargo check -p hawking-core --features tq
 
 # 2. llama.cpp gap reducers already/partially in-tree.
 run_capture "json constraint unit tests" \
     "$OUT_DIR/json_constraint_tests.log" \
-    cargo test -p dismantle-core json_constrain --lib
+    cargo test -p hawking-core json_constrain --lib
 
 run_capture "mamba2 smoke" \
     "$OUT_DIR/mamba2_smoke.log" \
-    cargo test -p dismantle-core --test mamba2_smoke -- --nocapture
+    cargo test -p hawking-core --test mamba2_smoke -- --nocapture
 
 # 3. RWKV-7 breadth and flatness. These skip cleanly if weights are absent.
 RWKV7_MODEL="${HAWKING_RWKV7_GGUF:-$ROOT/models/rwkv7-04/rwkv7-0.4B-world.Q4_K_M.gguf}"
 run_skip_if_missing "rwkv7 metal parity" "$RWKV7_MODEL" \
     "$OUT_DIR/rwkv7_metal_parity.log" \
     env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" \
-    cargo test -p dismantle-core --test rwkv7_metal_parity -- --nocapture --test-threads=1
+    cargo test -p hawking-core --test rwkv7_metal_parity -- --nocapture --test-threads=1
 
 run_skip_if_missing "rwkv7 flatness quick 16k" "$RWKV7_MODEL" \
     "$OUT_DIR/rwkv7_flatness_16k.log" \
     env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" HAWKING_RWKV7_MAX_DEPTH="${HAWKING_RWKV7_MAX_DEPTH:-16000}" \
-    cargo test -p dismantle-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
+    cargo test -p hawking-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
 
 run_capture "tq trellis synthetic parity" \
     "$OUT_DIR/tq_trellis_parity.log" \
-    cargo test -p dismantle-core --features tq --test tq_trellis_parity -- --nocapture
+    cargo test -p hawking-core --features tq --test tq_trellis_parity -- --nocapture
 
 if [[ "${G1A_V2_FULL_BENCH:-0}" == "1" ]]; then
     run_skip_if_missing "rwkv7 flatness full 64k" "$RWKV7_MODEL" \
         "$OUT_DIR/rwkv7_flatness_64k.log" \
         env HAWKING_RWKV7_GGUF="$RWKV7_MODEL" HAWKING_RWKV7_MAX_DEPTH=64000 \
-        cargo test -p dismantle-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
+        cargo test -p hawking-core --test rwkv7_metal_bench -- --ignored --nocapture --test-threads=1
 else
     RESULT_ROWS+=("| rwkv7 flatness full 64k | skipped: set G1A_V2_FULL_BENCH=1 | $OUT_DIR/rwkv7_flatness_64k.log |")
 fi
@@ -148,10 +148,10 @@ TQ_ARTIFACT="${RWKV7_TQ_MODEL:-$ROOT/artifacts/lowbit_rwkv7/export/g1a/model.tq}
 if [[ -f "$TQ_ARTIFACT" ]]; then
     run_capture "rwkv7 tq loader" "$OUT_DIR/rwkv7_tq_loader.log" \
         env RWKV7_TQ_TEST_ARTIFACT="$TQ_ARTIFACT" \
-        cargo test -p dismantle-core --features tq --test rwkv7_tq_loader -- --ignored --nocapture --test-threads=1
+        cargo test -p hawking-core --features tq --test rwkv7_tq_loader -- --ignored --nocapture --test-threads=1
     run_capture "rwkv7 tq bench" "$OUT_DIR/rwkv7_tq_bench.log" \
         env RWKV7_TQ_MODEL="$TQ_ARTIFACT" RWKV7_Q4K_MODEL="$RWKV7_MODEL" \
-        cargo test -p dismantle-core --features tq --test rwkv7_tq_bench -- --ignored --nocapture --test-threads=1
+        cargo test -p hawking-core --features tq --test rwkv7_tq_bench -- --ignored --nocapture --test-threads=1
 else
     RESULT_ROWS+=("| rwkv7 tq loader | skipped: no TQ artifact at $TQ_ARTIFACT | $OUT_DIR/rwkv7_tq_loader.log |")
     RESULT_ROWS+=("| rwkv7 tq bench | skipped: no TQ artifact at $TQ_ARTIFACT | $OUT_DIR/rwkv7_tq_bench.log |")

@@ -1,5 +1,5 @@
 """Pure-PyTorch RWKV-7 ("Goose") forward, faithful to dismantle's validated Rust
-oracle (`crates/dismantle-core/src/model/rwkv7.rs`, bit-exact vs llama.cpp).
+oracle (`crates/hawking-core/src/model/rwkv7.rs`, bit-exact vs llama.cpp).
 
 This is the correctness/training-shape forward: a full-sequence prefill that
 runs the WKV-7 recurrence over time with the per-head SxS state, matching the

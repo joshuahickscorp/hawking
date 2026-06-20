@@ -134,15 +134,15 @@ PARITY_TESTS=(
 
 # Optional parity tests for A and C — included only if the test file exists
 # (so this script doesn't have to be edited when A/C land).
-[[ -f crates/dismantle-core/tests/mixed_precision_parity.rs ]] && \
+[[ -f crates/hawking-core/tests/mixed_precision_parity.rs ]] && \
     PARITY_TESTS+=("mixed_precision_parity")
-[[ -f crates/dismantle-core/tests/q8_kv_parity.rs ]] && \
+[[ -f crates/hawking-core/tests/q8_kv_parity.rs ]] && \
     PARITY_TESTS+=("q8_kv_parity")
 
 parity_fail=0
 for t in "${PARITY_TESTS[@]}"; do
     log "  parity: $t"
-    if ! cargo test --release -p dismantle-core --test "$t" >> "$LOG_PATH" 2>&1; then
+    if ! cargo test --release -p hawking-core --test "$t" >> "$LOG_PATH" 2>&1; then
         log "  ❌ parity FAILED: $t"
         parity_fail=$((parity_fail + 1))
     else

@@ -119,14 +119,14 @@ else
         echo "## Files staged in DRY-RUN (no actual commit)"
         echo ""
         echo "### Commit 1 — new modules"
-        for f in crates/dismantle-core/src/vocab_prune.rs \
-                 crates/dismantle-core/src/quant_tier_map.rs \
-                 crates/dismantle-core/src/mixed_quant_store.rs \
-                 crates/dismantle-core/tests/vocab_prune_parity.rs \
-                 crates/dismantle-core/tests/mixed_quant_store_build.rs \
-                 crates/dismantle-core/tests/q8_kv_parity.rs \
-                 crates/dismantle-core/src/lib.rs \
-                 crates/dismantle-core/src/engine.rs; do
+        for f in crates/hawking-core/src/vocab_prune.rs \
+                 crates/hawking-core/src/quant_tier_map.rs \
+                 crates/hawking-core/src/mixed_quant_store.rs \
+                 crates/hawking-core/tests/vocab_prune_parity.rs \
+                 crates/hawking-core/tests/mixed_quant_store_build.rs \
+                 crates/hawking-core/tests/q8_kv_parity.rs \
+                 crates/hawking-core/src/lib.rs \
+                 crates/hawking-core/src/engine.rs; do
             [[ -e "$f" ]] && echo "- $f" || echo "- (missing) $f"
         done
         echo ""
@@ -137,7 +137,7 @@ else
         log "running cargo test --lib (no actual commit)"
         echo ""
         echo '```'
-        cargo test --release -p dismantle-core --lib 2>&1 | tail -20
+        cargo test --release -p hawking-core --lib 2>&1 | tail -20
         echo '```'
     } > "$M1_OUT" 2>&1
     log "M1 commit plan: $M1_OUT"
@@ -180,7 +180,7 @@ else
         echo "## Search the codebase for q8_kv plumbing"
         grep -rn "q8_kv\|Q8KV\|kv_cache_quant\|kv-cache-quant" \
             crates/dismantle/src/main.rs \
-            crates/dismantle-core/src/engine.rs 2>/dev/null | head -10 || echo "(no matches)"
+            crates/hawking-core/src/engine.rs 2>/dev/null | head -10 || echo "(no matches)"
         echo ""
         echo "## Recommendation"
         echo ""

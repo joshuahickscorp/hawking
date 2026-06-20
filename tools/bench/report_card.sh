@@ -32,9 +32,9 @@
 #   ONLY             comma-separated subset of lane names to run, e.g.
 #                    "dismantle-default,dismantle-fast,llama-cli"
 #                    Valid names: dismantle-default  dismantle-fast
-#                                 dismantle-serve-full-logits
-#                                 dismantle-serve-greedy-b1
-#                                 dismantle-serve-greedy-b8
+#                                 hawking-serve-full-logits
+#                                 hawking-serve-greedy-b1
+#                                 hawking-serve-greedy-b8
 #                                 llama-cli  llama-server-b8
 #
 # NOTES:
@@ -47,7 +47,7 @@
 #     readback_bytes/tok and whether the greedy or full-logits path was used.
 #   - macmon is required for J/tok; if missing, J/tok columns show "N/A".
 #   - HAWKING_SERVE_FORCE_LOGITS=1 overrides greedy routing for the
-#     "dismantle-serve-full-logits" lane so you can measure the old path.
+#     "hawking-serve-full-logits" lane so you can measure the old path.
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
@@ -301,9 +301,9 @@ readback_per_tok() {  # $1=readback_bytes  $2=token_count
     awk -v b="$1" -v t="$2" 'BEGIN{if(t+0>0&&b+0>0)printf "%.0f",b/t; else print "N/A"}'
 }
 
-# ── Lane 3: dismantle-serve-full-logits (B=1, temperature=0, force full logits)
+# ── Lane 3: hawking-serve-full-logits (B=1, temperature=0, force full logits)
 run_serve_full_logits() {
-    local lane="dismantle-serve-full-logits"
+    local lane="hawking-serve-full-logits"
     [[ -x "$DBIN" ]] || { warn "$DBIN not found — skipping $lane"; return; }
     [[ -f "$GGUF"  ]] || { warn "GGUF $GGUF not found — skipping $lane"; return; }
 
@@ -366,9 +366,9 @@ run_serve_full_logits() {
     record_lane "$lane" "$tps" "$jg" "$jp" "$wall" "$rb_per_tok" "$ltype" "$flags"
 }
 
-# ── Lane 4 & 5: dismantle-serve-greedy-b1 / b8 ───────────────────────────────
+# ── Lane 4 & 5: hawking-serve-greedy-b1 / b8 ───────────────────────────────
 run_serve_greedy() {
-    local lane="$1"   # "dismantle-serve-greedy-b1" or "dismantle-serve-greedy-b8"
+    local lane="$1"   # "hawking-serve-greedy-b1" or "hawking-serve-greedy-b8"
     local bsize="$2"  # 1 or 8
 
     [[ -x "$DBIN" ]] || { warn "$DBIN not found — skipping $lane"; return; }
@@ -633,9 +633,9 @@ echo "============================================================="
 # ── Run lanes ─────────────────────────────────────────────────────────────────
 want "dismantle-default"          && run_dismantle_generate "dismantle-default" "0"
 want "dismantle-fast"             && run_dismantle_generate "dismantle-fast" "1"
-want "dismantle-serve-full-logits" && run_serve_full_logits
-want "dismantle-serve-greedy-b1"  && run_serve_greedy "dismantle-serve-greedy-b1" 1
-want "dismantle-serve-greedy-b8"  && run_serve_greedy "dismantle-serve-greedy-b8" 8
+want "hawking-serve-full-logits" && run_serve_full_logits
+want "hawking-serve-greedy-b1"  && run_serve_greedy "hawking-serve-greedy-b1" 1
+want "hawking-serve-greedy-b8"  && run_serve_greedy "hawking-serve-greedy-b8" 8
 want "llama-cli"                  && run_llama_cli
 want "llama-server-b8"            && run_llama_server_b8
 

@@ -19,12 +19,12 @@
 # (HAWKING_QWEN_FLASH_ATTN) pay at long context where KV-cache read traffic
 # rivals weight read traffic. Use --long-ctx to synthesize a ~2K-token prompt
 # (≈8192 chars of a Rust fn snippet) and pass it via HAWKING_BENCH_PROMPT_FILE,
-# which the decode suite already honors (crates/dismantle-bench/src/suites/decode.rs:17).
+# which the decode suite already honors (crates/hawking-bench/src/suites/decode.rs:17).
 # At short context (~16 prompt tokens), both levers contribute <3% — within the
 # noise floor — so --long-ctx is mandatory to see a signal.
 #
 # MUTUAL EXCLUSION: HAWKING_QWEN_F16_KV and HAWKING_QWEN_FLASH_ATTN are
-# mutually exclusive (crates/dismantle-core/src/model/qwen_dense.rs:3545 —
+# mutually exclusive (crates/hawking-core/src/model/qwen_dense.rs:3545 —
 # the binary returns an error if both are set). Test them separately.
 #
 # --profile fast: this is a CLI flag (--profile fast), NOT an env var.
@@ -429,7 +429,7 @@ PYEOF
 
 # SCHEMA NOTE — WHY FLAT .results.decode_tps
 # ==========================================
-#   The bench suite finalize() function (crates/dismantle-bench/src/suites/decode.rs:62)
+#   The bench suite finalize() function (crates/hawking-bench/src/suites/decode.rs:62)
 #   emits .results.decode_tps as the first field, always equal to the median tps.
 #   .results.trial_stats[0].decode_tps is also present in the current schema
 #   (each trial object has decode_tps) but is fragile if trial_stats is empty.

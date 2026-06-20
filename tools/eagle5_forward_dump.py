@@ -14,7 +14,7 @@ acceptable as a test fixture.
 Example:
   python3 tools/eagle5_forward_dump.py \\
     --head $HOME/Downloads/head_final.safetensors \\
-    --out crates/dismantle-core/tests/fixtures/eagle5_parity_q3b.json \\
+    --out crates/hawking-core/tests/fixtures/eagle5_parity_q3b.json \\
     --seed 0xea91e5
 """
 from __future__ import annotations

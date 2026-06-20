@@ -6,7 +6,7 @@ Question
 The f16-scales lever narrows the PRE-DECODED per-32-elem-group products of a
 Q4_K weight tensor — `ds = d * scale[sub]` and `dm = dmin * min[sub]` — from f32
 to f16 in the predec scale table (see
-`crates/dismantle-core/src/kernels/mod.rs::predecode_q4_k_scale_table` /
+`crates/hawking-core/src/kernels/mod.rs::predecode_q4_k_scale_table` /
 `..._f16`). As the DEFAULT it gave +9% tps but FAILED the quality gate
 (token-identical 0.792, drift 11.46%) and was reverted (e613dde). It stays
 opt-in. This oracle settles, OFFLINE and CPU-only, whether a *default-safe*
@@ -71,7 +71,7 @@ BLOCK_BYTES = 144  # Q4_K super-block
 # --------------------------------------------------------------------------
 # Q4_K predec scale-table dequant, vectorized, with selectable scale precision.
 #
-# Mirrors crates/dismantle-core/src/kernels/mod.rs::predecode_q4_k_scale_table:
+# Mirrors crates/hawking-core/src/kernels/mod.rs::predecode_q4_k_scale_table:
 #   per 32-elem sub-block `sub` (0..7):
 #       ds = d * scale6[sub]      (f32 reference; f16-rounded if scale_f16)
 #       dm = dmin * min6[sub]     (f32 reference; f16-rounded if dmin_f16)

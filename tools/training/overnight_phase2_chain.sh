@@ -122,11 +122,11 @@ M5_OUT="$LOG_DIR/M5_rmsnorm_sites.md"
     echo "Per memory rmsnorm_fusion_sketch.md, 1/6 sites wired (FFN-norm). This module enumerates the remaining 5 sites for future wiring (the actual wiring is per-site Rust work; this module produces the work list)."
     echo ""
     echo "## Existing wired site (gated by HAWKING_FUSED_ADD_RMSNORM=1)"
-    grep -rn "add_rmsnorm_fused\|HAWKING_FUSED_ADD_RMSNORM" crates/dismantle-core/src/ 2>/dev/null | head -10
+    grep -rn "add_rmsnorm_fused\|HAWKING_FUSED_ADD_RMSNORM" crates/hawking-core/src/ 2>/dev/null | head -10
     echo ""
     echo "## All rmsnorm call sites (candidates for future wiring)"
     echo '```'
-    grep -rn "rmsnorm\|RmsNorm\|rms_norm" crates/dismantle-core/src/model/ 2>/dev/null | grep -vi "test\|mock" | head -30
+    grep -rn "rmsnorm\|RmsNorm\|rms_norm" crates/hawking-core/src/model/ 2>/dev/null | grep -vi "test\|mock" | head -30
     echo '```'
     echo ""
     echo "## Bench: with HAWKING_FUSED_ADD_RMSNORM=1 (existing 1/6)"
@@ -282,7 +282,7 @@ M9_OUT="$LOG_DIR/M9_commit_audit.md"
     echo "## Recommended commit groupings"
     echo ""
     echo "### Group 1 — Session K (spec-decode revert) [READY TO COMMIT]"
-    echo "- crates/dismantle-core/src/model/deepseek_v2.rs (the K revert hunks)"
+    echo "- crates/hawking-core/src/model/deepseek_v2.rs (the K revert hunks)"
     echo "- Documented in reports/session_b_revert*.md if present"
     echo "- Measured: L0 +2.18 tps, L4_K4 +4.65 tps"
     echo ""

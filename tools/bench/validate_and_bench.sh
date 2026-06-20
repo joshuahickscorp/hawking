@@ -78,7 +78,7 @@ run_step "cargo test --workspace --lib" \
 step "3/7  GPU-only integration tests (synthetic data, macOS only)"
 for test_name in rope_qk_fused_parity swiglu_fused_ffn_parity; do
     run_step "  $test_name" \
-        cargo test -p dismantle-core --test "$test_name" --release
+        cargo test -p hawking-core --test "$test_name" --release
 done
 
 # ── 4. Weight-gated integration tests ─────────────────────────────────────────
@@ -97,7 +97,7 @@ else
         prefill_slot_into_multiseq_parity
     do
         run_step "  $test_name" \
-            cargo test -p dismantle-core --test "$test_name" --release
+            cargo test -p hawking-core --test "$test_name" --release
     done
 fi
 

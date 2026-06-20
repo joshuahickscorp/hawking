@@ -162,12 +162,12 @@ echo "        -> QTIP (gather-free trellis) is the ONLY remaining byte-cut path.
 hr
 
 A_LOG="$(mktemp -t q3kbytecut.XXXXXX)"
-echo "  running: cargo test -p dismantle-core --release --test q3k_bytecut_bench -- --ignored --nocapture"
+echo "  running: cargo test -p hawking-core --release --test q3k_bytecut_bench -- --ignored --nocapture"
 echo "  (the bench test is #[ignore]-marked, so --ignored is required to run it)"
-echo "  ... this builds dismantle-core in release if needed, then runs 200 iters/shape x 3 shapes."
+echo "  ... this builds hawking-core in release if needed, then runs 200 iters/shape x 3 shapes."
 echo ""
 # The bench prints to stderr (eprintln!); capture both streams.
-cargo test -p dismantle-core --release --test q3k_bytecut_bench -- --ignored --nocapture \
+cargo test -p hawking-core --release --test q3k_bytecut_bench -- --ignored --nocapture \
   >"$A_LOG" 2>&1
 A_RC=$?
 
