@@ -9,6 +9,27 @@ use super::governor::SpecGovernor;
 pub const MAX_VERIFY_BATCH: usize = 8;
 pub const MAX_DRAFT_LEN: usize = MAX_VERIFY_BATCH - 1; // 7, matches k_la cap
 
+/// Cost of a B-token batched verify in canonical-greedy-forward units, from the
+/// `verify_cost_vs_k` microbench (qwen_dense.rs). B=1 routes to the greedy kernel
+/// (=1.0); B>=2 amortizes sub-linearly (B=8 ≈ 4.15, the 1.93x ideal-speedup
+/// point). A spec cycle emits ~accepted_prefix tokens for ~verify_cost(B) extra
+/// forwards, so it only pays when the accepted prefix exceeds this. THIS is why
+/// the free market was net-negative: short drafts (low B / low accept) never
+/// clear the curve, and the old confidence-based plan_shape ignored it.
+fn verify_cost_forwards(b: usize) -> f32 {
+    match b {
+        0 => 0.0,
+        1 => 1.0,
+        2 => 2.20,
+        3 => 2.70,
+        4 => 3.25,
+        5 => 3.62,
+        6 => 3.77,
+        7 => 4.00,
+        _ => 4.15,
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProposerId {
     UserNgram,
@@ -68,7 +89,10 @@ struct CostModel {
 }
 impl CostModel {
     fn new() -> Self {
-        Self { ewma_accept_len: 1.0, ewma_draft_ns: 0.0, ewma_verify_extra_ns: 0.0,
+        // ewma_accept_len seeded optimistically (4.0, mid-curve) so a fresh slot
+        // explores (specs at B≈4) and converges to its real accept; a cold 1.0
+        // seed would clear no payoff and the slot would never spec → never learn.
+        Self { ewma_accept_len: 4.0, ewma_draft_ns: 0.0, ewma_verify_extra_ns: 0.0,
                ewma_retok_ns: 0.0, ewma_sync_ns: 0.0, ewma_hit_frac: 1.0, seen: 0 }
     }
     fn update(&mut self, o: &StepObservation, alpha: f32) {
@@ -100,7 +124,12 @@ struct Slot {
 pub struct ProposalRouter {
     slots: Vec<Slot>,
     alpha: f32,
+    #[allow(dead_code)]
     margin_ns: f32,
+    /// Payoff floor in greedy-forward units: a slot specs only when its best B
+    /// saves more than this per cycle (avoids marginal specs the per-cycle
+    /// overhead/variance would eat). Tunable; 0.5 ≈ "must clearly pay".
+    margin_forwards: f32,
     #[allow(dead_code)]
     bandit: crate::speculate::policy::BanditPolicy,
 }
@@ -115,7 +144,7 @@ impl ProposalRouter {
         };
         let mut bandit = crate::speculate::policy::BanditPolicy::new();
         bandit.push_arm(); // one arm for the initial UserNgram slot
-        Self { slots: vec![base], alpha: 0.10, margin_ns, bandit }
+        Self { slots: vec![base], alpha: 0.10, margin_ns, margin_forwards: 0.5, bandit }
     }
 
     /// Register a gated proposer. REFUSES any hidden/text-bridge slot whose
@@ -136,12 +165,23 @@ impl ProposalRouter {
         Ok(())
     }
 
-    fn expected_gain_ns(&self, slot: &Slot, ctx: &RouterCtx, planned_len: usize) -> f32 {
-        let c = &slot.cost;
-        let e_accepted = c.ewma_accept_len.min(planned_len as f32);
-        let benefit = e_accepted * ctx.target_ns_per_token;
-        let cost = c.ewma_draft_ns + c.ewma_verify_extra_ns + c.ewma_retok_ns + c.ewma_sync_ns;
-        benefit - cost
+    /// Cost-aware draft sizing from the measured verify-cost curve. Returns the
+    /// B in 2..=MAX_DRAFT_LEN maximizing payoff = min(ewma_accept_len, B) -
+    /// verify_cost_forwards(B), or None if no B clears margin_forwards. B=1 is
+    /// skipped — it never pays (verify_cost(1)=1.0 ≥ accept≤1), which is exactly
+    /// the short-draft net-negative case that sank the free market.
+    fn best_payoff_b(&self, slot: &Slot) -> Option<(usize, f32)> {
+        let acc = slot.cost.ewma_accept_len;
+        let mut best: Option<(usize, f32)> = None;
+        for b in 2..=MAX_DRAFT_LEN {
+            let payoff = acc.min(b as f32) - verify_cost_forwards(b);
+            if payoff > self.margin_forwards
+                && best.map_or(true, |(_, bp)| payoff > bp)
+            {
+                best = Some((b, payoff));
+            }
+        }
+        best
     }
 
     fn plan_shape(&self, slot: &Slot, ctx: &RouterCtx) -> (usize, usize) {
@@ -153,22 +193,25 @@ impl ProposalRouter {
     /// Two-tier: (1) governor health gate, (2) wall-clock arbiter — max positive
     /// expected_gain - margin among healthy slots. None clears ⇒ NoSpec.
     pub fn plan(&self, ctx: &RouterCtx) -> RouterPlan {
-        let mut best: Option<(ProposerId, usize, usize, f32)> = None;
+        // Cost-aware arbitration: among healthy slots, pick the (slot, B) with the
+        // largest payoff = accepted_prefix - verify_cost(B). NoSpec if none clears
+        // the floor — this stops EH being net-negative on short drafts / weak
+        // acceptance (the eff-TPS finding). Long-exact-span proposers
+        // (suffix/SAM/retrieval) win naturally: their per-slot ewma_accept_len is
+        // high when they match, so they out-payoff n-gram's low-confidence tails.
+        let mut best: Option<(ProposerId, usize, f32)> = None;
         for slot in &self.slots {
             if !slot.oracle_cleared { continue; }
             if slot.requires_hidden && !ctx.hidden_available { continue; }
             if !slot.gov.is_enabled() { continue; }
-            let (draft_len, tree_width) = self.plan_shape(slot, ctx);
-            let gain = self.expected_gain_ns(slot, ctx, draft_len);
-            if gain <= self.margin_ns { continue; }
-            let score = gain - self.margin_ns;
-            if best.map_or(true, |(_, _, _, bs)| score > bs) {
-                best = Some((slot.id, draft_len, tree_width, score));
+            if let Some((b, payoff)) = self.best_payoff_b(slot) {
+                if best.map_or(true, |(_, _, bp)| payoff > bp) {
+                    best = Some((slot.id, b, payoff));
+                }
             }
         }
         match best {
-            Some((id, draft_len, tree_width, _)) =>
-                RouterPlan::Spec { id, draft_len, tree_width },
+            Some((id, draft_len, _)) => RouterPlan::Spec { id, draft_len, tree_width: 1 },
             None => RouterPlan::NoSpec,
         }
     }
@@ -235,21 +278,33 @@ mod tests {
     use super::*;
 
     #[test]
-    fn fast_target_auto_kills_spec() {
-        // target_ns_per_token tiny ⇒ benefit < margin ⇒ NoSpec (the Qwen-3B kill).
+    fn weak_accept_no_spec() {
+        // Recent accepted-prefix collapses to ~1 → no B clears the verify-cost
+        // payoff floor → NoSpec. This is the cure for the net-negative short-draft
+        // case: the router declines to spec when it won't pay.
         let mut r = ProposalRouter::new(16, 0.35, 1.0);
-        // Seed a non-trivial draft cost so benefit must clear it.
-        r.record(ProposerId::UserNgram, &StepObservation {
-            accepted: 1, drafted: 4, draft_ns: 1000, ..Default::default() });
+        for _ in 0..50 {
+            r.record(ProposerId::UserNgram, &StepObservation {
+                accepted: 1, drafted: 4, ..Default::default() });
+        }
         let plan = r.plan(&RouterCtx { target_ns_per_token: 1.0, context_confidence: 0.5, hidden_available: false });
         assert_eq!(plan, RouterPlan::NoSpec);
     }
 
     #[test]
-    fn slow_target_enables_spec() {
-        let r = ProposalRouter::new(16, 0.35, 1.0);
-        let plan = r.plan(&RouterCtx { target_ns_per_token: 1_000_000.0, context_confidence: 0.9, hidden_available: false });
-        assert!(matches!(plan, RouterPlan::Spec { id: ProposerId::UserNgram, .. }));
+    fn strong_accept_specs_long() {
+        // Recent accepted-prefix is long (~6) → spec with a large B that clears
+        // the verify-cost curve (payoff > floor).
+        let mut r = ProposalRouter::new(16, 0.35, 1.0);
+        for _ in 0..50 {
+            r.record(ProposerId::UserNgram, &StepObservation {
+                accepted: 6, drafted: 7, ..Default::default() });
+        }
+        match r.plan(&RouterCtx { target_ns_per_token: 1.0, context_confidence: 0.5, hidden_available: false }) {
+            RouterPlan::Spec { id: ProposerId::UserNgram, draft_len, .. } =>
+                assert!(draft_len >= 5, "expected long draft, got B={draft_len}"),
+            other => panic!("expected long Spec, got {other:?}"),
+        }
     }
 
     #[test]
