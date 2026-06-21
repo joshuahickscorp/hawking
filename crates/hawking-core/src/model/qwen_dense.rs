@@ -2366,27 +2366,14 @@ impl Engine for QwenDense {
                 None
             };
 
-            // ── Bootstrap: ONE forward of the last prompt token yields the
-            // first true next token (carried_true). Unlike the eagle5 bootstrap
-            // there is no residual to read — the n-gram needs none. This is the
-            // single non-amortized forward; every steady cycle below is 1 fwd.
+            // No bootstrap: cycle 0 handles the first GEMV(last_id, prompt_len)
+            // as its stage-1, emitting T1 = first greedy token. This keeps KV
+            // slot assignments identical to 'ud_loop (no offset).
             let mut anchor_tok = last_id;
             let mut anchor_pos = prompt_len;
-            let mut carried_true = self.forward_token_greedy_tcb(anchor_tok, anchor_pos)?;
-            {
-                let text = self.tokenizer.decode_one(carried_true).unwrap_or_default();
-                self.sampler.record(carried_true);
-                crate::stateful::usage_capture::record_argmax(carried_true);
-                sink(StreamEvent::Token {
-                    id: carried_true,
-                    text,
-                });
-                draft_index.note_token(carried_true);
-                produced += 1;
-            }
-            if Some(carried_true) == eos {
-                reason = StopReason::Eos;
-            }
+            // carried_true for cycle 0 = last_id (the last prompt token).
+            // Cycle 0 stage-1: GEMV(last_id, prompt_len) → T1 = bonus = first greedy.
+            let mut carried_true = last_id;
 
             'udpf_loop: while produced < req.max_new_tokens
                 && matches!(reason, StopReason::MaxTokens)
@@ -2397,21 +2384,53 @@ impl Engine for QwenDense {
                 }
                 let step_start = Instant::now();
 
-                // Propose lookahead from the 2-gram (anchor_tok, carried_true).
-                // These are the predicted successors of carried_true onward —
-                // i.e. the eagle5 `drafts[1..]` lookahead, the bonus-first
-                // `draft[..]`. The n-gram may return FEWER than requested
-                // (chaining stops on a miss); a length-0 result degenerates to a
-                // plain 1-token decode through the same verify primitive below.
-                let ctx_buf: [u32; 2] = [anchor_tok, carried_true];
-                // Governor gate: when disabled, propose nothing. An empty
-                // `lookahead` makes vtoks = [carried_true] and the single verify
-                // forward below degenerates to a plain 1-token decode (preds[0] is
-                // carried_true's true successor) — byte-identical. step(false) per
-                // skipped cycle keeps the window/cooldown advancing.
+                // Stage-1: GEMV(carried_true, anchor_pos).
+                // Mirrors 'ud_loop stage-1: GEMV(last_id, pos).
+                // KV INVARIANT: kv.seq_len = anchor_pos at start of each cycle
+                // (set by the advance block or no-op if already correct).
+                // Writes carried_true at KV slot anchor_pos. Returns bonus.
+                // kv.seq_len = anchor_pos+1 after.
+                self.kv.seq_len = anchor_pos;
+                let bonus = self.forward_token_greedy_tcb(carried_true, anchor_pos)?;
+                let bonus_pos = anchor_pos + 1;
+
+                // Emit bonus (the true next token). Mirrors 'ud_loop stage-1 emit.
+                {
+                    let text = self.tokenizer.decode_one(bonus).unwrap_or_default();
+                    sink(StreamEvent::Token { id: bonus, text });
+                    self.sampler.record(bonus);
+                    crate::stateful::usage_capture::record_argmax(bonus);
+                    draft_index.note_token(bonus);
+                    produced += 1;
+                    if Some(bonus) == eos {
+                        reason = StopReason::Eos;
+                        break 'udpf_loop;
+                    }
+                    if produced >= req.max_new_tokens {
+                        break 'udpf_loop;
+                    }
+                }
+
+                // Stage-2: propose lookahead from the 2-gram (anchor_tok, bonus).
+                // Mirrors 'ud_loop stage-2: ctx_buf = [ctx_prev, bonus].
+                // Propose AFTER stage-1 so bonus is known — identical context to
+                // 'ud_loop, guaranteeing the same draft sequence and accept/reject
+                // decisions at every cycle, which is required for bit-identity.
+                // Cap k_la by remaining budget (mirrors 'ud_loop k_avail logic).
+                let remaining = req.max_new_tokens - produced;
+                let k_avail = k_la.min(remaining).min(8);
+                if k_avail == 0 {
+                    anchor_tok = carried_true;
+                    anchor_pos = bonus_pos;
+                    carried_true = bonus;
+                    continue 'udpf_loop;
+                }
+                let ctx_buf: [u32; 2] = [anchor_tok, bonus];
+                // Governor gate: when disabled, propose nothing.
+                // step(false) per skipped cycle keeps the window/cooldown advancing.
                 let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
                 let lookahead = if gov_propose {
-                    draft_index.propose(&ctx_buf, k_la)
+                    draft_index.propose(&ctx_buf, k_avail)
                 } else {
                     if let Some(g) = spec_gov.as_mut() {
                         let _ = g.step(false);
@@ -2420,22 +2439,33 @@ impl Engine for QwenDense {
                 };
                 let dlen = lookahead.len();
 
-                // ONE batched verify forward: [carried_true, lookahead[0..dlen]]
-                // at positions [anchor_pos+1 .. anchor_pos+1+dlen]. preds[j] is
-                // the model's true token after consuming vtoks[j]; preds[0] is
-                // the true successor of carried_true. The batch is dlen+1 <= 8.
-                let mut vtoks = Vec::with_capacity(dlen + 1);
-                vtoks.push(carried_true);
-                vtoks.extend_from_slice(&lookahead);
-                let vpos: Vec<usize> = (0..vtoks.len()).map(|j| anchor_pos + 1 + j).collect();
+                // Stage-3: batch-verify [bonus, la[0..dlen-2]] at
+                // [bonus_pos..bonus_pos+dlen-1]. Mirrors 'ud_loop stage-3.
+                // vtoks = [bonus, la[0..dlen-2]], vpos = [bonus_pos..bonus_pos+dlen].
+                // preds[j] = model's prediction after consuming vtoks[j].
+                // Accept la[j] iff la[j] == preds[j].
+                if dlen == 0 {
+                    // No lookahead: bonus already emitted above; advance.
+                    anchor_tok = carried_true;
+                    anchor_pos = bonus_pos;
+                    carried_true = bonus;
+                    // kv.seq_len = bonus_pos from stage-1 GEMV = new anchor_pos. ✓
+                    if stall_active && step_start.elapsed() > stall_limit {
+                        reason = StopReason::Aborted;
+                        break 'udpf_loop;
+                    }
+                    continue 'udpf_loop;
+                }
+
+                let mut vtoks = Vec::with_capacity(dlen);
+                vtoks.push(bonus);
+                if dlen > 1 {
+                    vtoks.extend_from_slice(&lookahead[..dlen - 1]);
+                }
+                let vpos: Vec<usize> = (0..dlen).map(|j| bonus_pos + j).collect();
                 let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
 
-                // Accept lookahead[j] while it matches preds[j]. `na` is the
-                // accepted lookahead count (0..=dlen); preds[na] is the
-                // correction / next carried_true (always valid: na <= dlen and
-                // preds has dlen+1 entries — the extra verify slot is what lets
-                // one forward both verify AND produce the next carry, exactly as
-                // the eagle5 'pf_loop does).
+                // Accept lookahead[j] while it matches preds[j].
                 let mut na = dlen;
                 for j in 0..dlen {
                     if lookahead[j] != preds[j] {
@@ -2443,31 +2473,26 @@ impl Engine for QwenDense {
                         break;
                     }
                 }
+
                 stats.draft_accepted += na;
                 stats.draft_rejected += dlen - na;
-                // Governor: accepted >=1 lookahead iff na > 0. Proposed cycles
-                // only; disabled cycles stepped above.
+                // Governor: accepted >=1 lookahead iff na > 0.
                 if let Some(g) = spec_gov.as_mut() {
                     let _ = g.step(na > 0);
                 }
-                // L3.1 §2.2 usage_capture: draft proposed under (anchor_tok,
-                // carried_true); na accepted, dlen-na rejected; verifier emits
-                // preds[0] next.
+                // L3.1 §2.2 usage_capture.
                 crate::stateful::usage_capture::record_draft(
                     (anchor_tok, carried_true),
-                    preds.first().copied(),
+                    Some(bonus),
                     na,
                     dlen - na,
                 );
 
-                // Emit the verified-new tokens preds[0..=na] (na accepted
-                // lookahead, equal to the drafts by construction, + 1
-                // correction). carried_true was emitted last cycle (invariant),
-                // so it is never re-emitted — the stream stays bit-identical to
-                // the bonus-first loop.
+                // Emit accepted drafts la[0..na-1] (no correction for full accept;
+                // correction preds[na] only for partial reject). Mirrors 'ud_loop.
                 let mut stop = false;
-                for j in 0..=na {
-                    let id = preds[j];
+                for k in 0..na {
+                    let id = lookahead[k];
                     let text = self.tokenizer.decode_one(id).unwrap_or_default();
                     sink(StreamEvent::Token { id, text });
                     self.sampler.record(id);
@@ -2484,27 +2509,45 @@ impl Engine for QwenDense {
                         break;
                     }
                 }
+                if !stop && na < dlen {
+                    // Partial reject: emit correction preds[na].
+                    let id = preds[na];
+                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                    sink(StreamEvent::Token { id, text });
+                    self.sampler.record(id);
+                    crate::stateful::usage_capture::record_argmax(id);
+                    draft_index.note_token(id);
+                    produced += 1;
+                    if Some(id) == eos {
+                        reason = StopReason::Eos;
+                        stop = true;
+                    } else if produced >= req.max_new_tokens {
+                        stop = true;
+                    }
+                }
                 if stop {
                     break 'udpf_loop;
                 }
 
-                // Advance the anchor to the last correctly-processed position
-                // (anchor_pos+1+na, the slot vtoks[na] was consumed at) and the
-                // KV through it. The new 2-gram context is (vtoks[na],
-                // preds[na]) = (token at the new anchor_pos, its true
-                // successor). Mirror of the eagle5 'pf_loop advance, minus the
-                // residual carry.
-                anchor_tok = if na == 0 {
-                    carried_true
+                // Advance anchor and carry.
+                // Mirrors 'ud_loop advance exactly:
+                //   full accept: last_id = la[dlen-1]; pos = bonus_pos+dlen = anchor_pos+dlen+1
+                //   partial reject at na: last_id = preds[na]; pos = bonus_pos+na+1 = anchor_pos+na+2
+                //                         kv.seq_len reset to pos (= anchor_pos_next)
+                anchor_tok = if na == 0 { carried_true } else { lookahead[na - 1] };
+                if na < dlen {
+                    // Partial reject: correction is the next carried_true.
+                    carried_true = preds[na];
+                    anchor_pos = anchor_pos + na + 2;
+                    // kv.seq_len after batch = anchor_pos_old+dlen+1 (wrong for reject).
+                    // Reset to anchor_pos_new, matching 'ud_loop: self.kv.seq_len = pos.
+                    self.kv.seq_len = anchor_pos;
                 } else {
-                    lookahead[na - 1]
-                };
-                anchor_pos = anchor_pos + 1 + na;
-                carried_true = preds[na];
-                // KV: valid through anchor_pos (last accepted). Next cycle's
-                // verify writes from anchor_pos+1 (where carried_true lives, not
-                // yet committed).
-                self.kv.seq_len = anchor_pos + 1;
+                    // Full accept: last accepted draft is the next carried_true.
+                    carried_true = lookahead[dlen - 1];
+                    anchor_pos = anchor_pos + dlen + 1;
+                    // kv.seq_len = anchor_pos_old+dlen+1 from batch = new anchor_pos. ✓
+                }
 
                 if stall_active && step_start.elapsed() > stall_limit {
                     reason = StopReason::Aborted;
@@ -9146,6 +9189,20 @@ impl QwenDense {
         let b = tokens.len();
         let h = self.config.hidden;
 
+        // B==1 degenerate fix (losslessness): the batched verify path returns the
+        // INPUT token for a single-token batch instead of the model's argmax —
+        // proven by the b-size matrix (B=1 wrong with top-2 margin 3.5-5.6, B>=2
+        // exactly == greedy). It also mis-writes KV[pos], corrupting the next
+        // cycle. Route a 1-token verify through the canonical greedy kernel: same
+        // KV side-effect (write[pos] + seq_len += 1) but exact greedy argmax, so
+        // spec-decode (EH-ON AND the existing OFF user-draft path) is bit-identical
+        // to plain greedy. Residuals are empty here — the spec verify callers run
+        // want_residuals=false; any future EAGLE residual tap uses B>=2.
+        if b == 1 {
+            let g = self.forward_token_greedy_tcb(tokens[0], positions[0])?;
+            return Ok((vec![g], vec![Vec::new()]));
+        }
+
         // FAST path: GPU batched Q4_K GEMM over the pruned LM head.
         let fast = self.vocab_pruned_is_q4k
             && self.lm_head_pruned_buf.is_some()
@@ -9313,4 +9370,113 @@ fn tokenizer_signature(tok: &Tokenizer) -> Vec<u8> {
     sig.extend_from_slice(&tok.eos_id().unwrap_or(u32::MAX).to_le_bytes());
     sig.extend_from_slice(&tok.pad_id().unwrap_or(u32::MAX).to_le_bytes());
     sig
+}
+
+#[cfg(test)]
+mod bsize_verify_diag {
+    //! Losslessness-sprint diagnostic: does the verify-kernel mismatch with
+    //! canonical greedy happen ONLY at B=1, or can any batch size diverge?
+    //! Compares forward_token_greedy_tcb (canonical) vs forward_tokens_verify
+    //! for B=1..8 at an identical KV state / position, with the top-2 logit margin.
+    use super::*;
+    use std::path::Path;
+
+    fn top2_margin(logits: &[f32]) -> f32 {
+        let (mut t1, mut t2) = (f32::NEG_INFINITY, f32::NEG_INFINITY);
+        for &x in logits {
+            if x > t1 {
+                t2 = t1;
+                t1 = x;
+            } else if x > t2 {
+                t2 = x;
+            }
+        }
+        t1 - t2
+    }
+
+    #[test]
+    fn bsize_matrix() {
+        let weights = Path::new("../../models/qwen2.5-3b-instruct-q4_k_m.gguf");
+        if !weights.exists() {
+            eprintln!("bsize_matrix: skip — no weights at {weights:?}");
+            return;
+        }
+        std::env::set_var("HAWKING_QWEN_TCB", "1");
+        std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
+        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+        std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+
+        // Repeating-cycle KV state — where the near-ties (and the observed
+        // EH divergences on [30,77,...]) live. Build a firm cycle, then sweep.
+        let (a, b) = (30u32, 77u32);
+        let n = 64usize;
+        let prompt: Vec<u32> = (0..n).map(|i| if i % 2 == 0 { a } else { b }).collect();
+        // Prefill in <=8-token chunks (forward_tokens_batch_tcb caps at B=8).
+        m.kv.seq_len = 0;
+        for cs in (0..n).step_by(8) {
+            let ce = (cs + 8).min(n);
+            let pos: Vec<usize> = (cs..ce).collect();
+            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos)
+                .expect("prefill");
+        }
+
+        let (mut div_b1, mut div_bge2, mut checked) = (0usize, 0usize, 0usize);
+        println!("=== B-SIZE VERIFY MATRIX: greedy vs forward_tokens_verify[0], B=1..8 ===");
+        for p in (n - 28)..n {
+            let q = if p % 2 == 0 { a } else { b };
+
+            m.kv.seq_len = p;
+            let greedy = m.forward_token_greedy_tcb(q, p).expect("greedy");
+
+            m.kv.seq_len = p;
+            let logits = m
+                .forward_tokens_batched_with_logits(&[q], &[p])
+                .expect("logits");
+            let margin = top2_margin(&logits[0]);
+
+            let (mut any_b1, mut any_bge2) = (false, false);
+            let mut row = String::new();
+            for bsz in 1..=8usize {
+                m.kv.seq_len = p;
+                let vtoks: Vec<u32> =
+                    (0..bsz).map(|j| if (p + j) % 2 == 0 { a } else { b }).collect();
+                let vpos: Vec<usize> = (0..bsz).map(|j| p + j).collect();
+                let (preds, _) = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
+                let bad = preds[0] != greedy;
+                if bad {
+                    if bsz == 1 {
+                        any_b1 = true;
+                    } else {
+                        any_bge2 = true;
+                    }
+                }
+                row.push_str(&format!("B{bsz}:{}{} ", preds[0], if bad { "✗" } else { "" }));
+            }
+            checked += 1;
+            if any_b1 {
+                div_b1 += 1;
+            }
+            if any_bge2 {
+                div_bge2 += 1;
+            }
+            if any_b1 || any_bge2 {
+                println!("p={p:3} q={q:5} greedy={greedy:5} margin={margin:.5}  {row}");
+            }
+        }
+        println!(
+            "=== SUMMARY: {checked} positions checked | {div_b1} with B=1 mismatch | {div_bge2} with B>=2 mismatch ==="
+        );
+        // Regression guard: after the B==1->greedy routing fix in
+        // forward_tokens_verify, EVERY batch size B=1..8 verify must equal the
+        // canonical greedy kernel. (Pre-fix: B=1 always wrong, B>=2 always right.)
+        assert_eq!(
+            div_bge2, 0,
+            "forward_tokens_verify B>=2 diverged from greedy — batched verify kernel regressed"
+        );
+        assert_eq!(
+            div_b1, 0,
+            "forward_tokens_verify B==1 diverged from greedy — the B==1->greedy routing fix regressed"
+        );
+    }
 }

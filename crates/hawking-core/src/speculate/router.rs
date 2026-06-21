@@ -18,6 +18,7 @@ pub enum ProposerId {
     CrossTokenizer,
     Retrieval,      // Phase 2 — REST-style retrieval proposer
     Tree,           // Phase 6 — token-tree CPU fallback
+    ParallelDraft,  // Phase 5 — parallel-head scaffold (HAWKING_EH_PARALLEL_DRAFT; kill-ledger: τ≥2.5 required)
 }
 impl ProposerId {
     pub fn as_str(self) -> &'static str {
@@ -29,6 +30,7 @@ impl ProposerId {
             ProposerId::CrossTokenizer => "cross_tokenizer",
             ProposerId::Retrieval => "retrieval",
             ProposerId::Tree => "tree",
+            ProposerId::ParallelDraft => "parallel_draft",
         }
     }
 }
