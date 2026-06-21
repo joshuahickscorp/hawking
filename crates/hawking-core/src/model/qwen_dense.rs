@@ -2554,6 +2554,26 @@ impl Engine for QwenDense {
             } else {
                 None
             };
+            // ── Event Horizon (P0.4-P0.7 / P1.3-P1.4) — behind HAWKING_QWEN_EVENT_HORIZON.
+            // Default OFF; the existing 'ud_loop accept path is the untouched fallback
+            // and the parity oracle. Never flip this default without the human-run
+            // bit-identity gate in user_draft_parity_e2e.rs.
+            use crate::speculate::proposal::Proposer as _;
+            let eh_on = std::env::var("HAWKING_QWEN_EVENT_HORIZON").is_ok();
+            let mut ngram_proposer = crate::speculate::user_ngram::NgramProposer::new();
+            let mut suffix_proposer = crate::speculate::suffix_array::SuffixArrayDraft::new();
+            let mut router = crate::speculate::router::ProposalRouter::new(
+                spec_gov_window, spec_gov_min_rate, 0.0,
+            );
+            if eh_on {
+                ngram_proposer.warm(&prompt_ids);
+                suffix_proposer.warm(&prompt_ids);
+                // P1.4: register the suffix-array as a second always-on free slot.
+                router.add_free_slot(
+                    crate::speculate::router::ProposerId::SuffixArray,
+                    spec_gov_window, spec_gov_min_rate,
+                );
+            }
 
             'ud_loop: while produced < req.max_new_tokens {
                 if abort_set(&req) {
@@ -2574,6 +2594,10 @@ impl Engine for QwenDense {
                 produced += 1;
                 // Grow the index with the emitted bonus token.
                 draft_index.note_token(bonus);
+                if eh_on {
+                    ngram_proposer.observe(&[bonus]);
+                    suffix_proposer.observe(&[bonus]);
+                }
                 last_emit = bonus;
                 if Some(bonus) == eos {
                     reason = StopReason::Eos;
@@ -2595,114 +2619,226 @@ impl Engine for QwenDense {
                     continue;
                 }
                 let ctx_buf: [u32; 2] = [ctx_prev, bonus];
-                // Governor gate: when disabled, skip proposing this cycle. An
-                // empty `draft` falls through the proven degenerate branch below
-                // (Stage-1 bonus already emitted the true token), so the emitted
-                // stream is byte-identical — the governor only suppresses
-                // speculation. We still step(false) per disabled cycle so the
-                // window/cooldown advance.
-                let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
-                let draft = if gov_propose {
-                    draft_index.propose(&ctx_buf, k_avail)
-                } else {
-                    if let Some(g) = spec_gov.as_mut() {
-                        let _ = g.step(false);
+                // Stage 2: propose. P0.7: route through ProposalRouter when EH is ON;
+                // fall back to the original gov_propose + draft_index path when OFF.
+                let mut eh_proposer_id = crate::speculate::router::ProposerId::UserNgram;
+                let draft = if eh_on {
+                    use crate::speculate::router::{ProposerId, RouterCtx, RouterPlan};
+                    use crate::speculate::proposal::{Budget, Ctx as PCtx, Proposal, Telemetry};
+                    let rctx = RouterCtx {
+                        // 1ms placeholder: router always proposes on the parity gate
+                        // (benefit > 0 with zero costs). Tune with real timing in P0.7+.
+                        target_ns_per_token: 1_000_000.0,
+                        context_confidence: 0.5,
+                        hidden_available: false,
+                    };
+                    match router.plan(&rctx) {
+                        RouterPlan::NoSpec => {
+                            router.observe_disabled(ProposerId::UserNgram);
+                            router.observe_disabled(ProposerId::SuffixArray);
+                            pos = bonus_pos;
+                            continue;
+                        }
+                        RouterPlan::Spec { id, draft_len: k, .. } => {
+                            eh_proposer_id = id;
+                            let pctx = PCtx { tokens: &ctx_buf, pos: bonus_pos, hidden: None };
+                            let tel = Telemetry::default();
+                            match id {
+                                ProposerId::SuffixArray => {
+                                    match suffix_proposer.propose(&pctx, Budget::line(k.min(k_avail)), &tel) {
+                                        Proposal::TokenLine(v) => v,
+                                        _ => Vec::new(),
+                                    }
+                                }
+                                _ => {
+                                    match ngram_proposer.propose(&pctx, Budget::line(k.min(k_avail)), &tel) {
+                                        Proposal::TokenLine(v) => v,
+                                        _ => Vec::new(),
+                                    }
+                                }
+                            }
+                        }
                     }
-                    Vec::new()
+                } else {
+                    // Original path: governor gate + draft_index propose.
+                    // Governor gate: when disabled, skip proposing this cycle. An
+                    // empty `draft` falls through the proven degenerate branch below
+                    // (Stage-1 bonus already emitted the true token), so the emitted
+                    // stream is byte-identical — the governor only suppresses
+                    // speculation. We still step(false) per disabled cycle so the
+                    // window/cooldown advance.
+                    let gov_propose = spec_gov.as_ref().map_or(true, |g| g.is_enabled());
+                    if gov_propose {
+                        draft_index.propose(&ctx_buf, k_avail)
+                    } else {
+                        if let Some(g) = spec_gov.as_mut() {
+                            let _ = g.step(false);
+                        }
+                        Vec::new()
+                    }
                 };
                 let draft_len = draft.len();
                 if draft_len == 0 {
-                    // No prediction (or governor-suppressed) → next cycle's
+                    // No prediction (or router/governor-suppressed) → next cycle's
                     // stage-1 forward emits the next token (still exact).
                     pos = bonus_pos;
                     continue;
                 }
 
-                // Stage 3: batched verify. preds[i] = model argmax after
-                // consuming verify_tokens[i] at bonus_pos+i. verify_tokens =
-                // [bonus, draft[0..draft_len-1]]. Accept draft[i] while
-                // preds[i] == draft[i]; first mismatch is the correction.
-                let mut vtoks = Vec::with_capacity(draft_len);
-                vtoks.push(bonus);
-                if draft_len > 1 {
-                    vtoks.extend_from_slice(&draft[..draft_len - 1]);
-                }
-                let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
-                let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
-                let mut first_reject = draft_len;
-                let mut correction: Option<u32> = None;
-                for i in 0..draft_len {
-                    if preds[i] != draft[i] {
-                        first_reject = i;
-                        correction = Some(preds[i]);
-                        break;
+                // Stage 3: batched verify — P0.6: route through Verifier::verify_line
+                // when EH is ON (bit-identical by construction); original inline accept
+                // block when OFF (the untouched fallback and parity oracle).
+                if eh_on {
+                    let outcome = {
+                        let v = crate::speculate::verifier::Verifier::new(8, false);
+                        v.verify_line(self, bonus, bonus_pos, &draft)?
+                    };
+                    let na = outcome.accepted.len();
+                    stats.draft_accepted += na;
+                    stats.draft_rejected += draft_len - na;
+                    // Router feedback replaces spec_gov.step() in the EH path.
+                    router.record(
+                        eh_proposer_id,
+                        &crate::speculate::router::StepObservation {
+                            accepted: na,
+                            drafted: draft_len,
+                            ..Default::default()
+                        },
+                    );
+                    // L3.1 §2.2 usage_capture: same inputs as the original block.
+                    crate::stateful::usage_capture::record_draft(
+                        (ctx_prev, bonus),
+                        draft.first().copied().or(outcome.correction),
+                        na,
+                        draft_len - na,
+                    );
+                    let mut stop = false;
+                    for &id in &outcome.accepted {
+                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                        sink(StreamEvent::Token { id, text });
+                        self.sampler.record(id);
+                        crate::stateful::usage_capture::record_argmax(id);
+                        draft_index.note_token(id);
+                        ngram_proposer.observe(&[id]);
+                        suffix_proposer.observe(&[id]);
+                        last_emit = id;
+                        produced += 1;
+                        if Some(id) == eos {
+                            reason = StopReason::Eos;
+                            stop = true;
+                            break;
+                        }
+                        if produced >= req.max_new_tokens {
+                            stop = true;
+                            break;
+                        }
                     }
-                }
-                stats.draft_accepted += first_reject;
-                stats.draft_rejected += draft_len - first_reject;
-                // Governor: accepted >=1 draft iff first_reject > 0. Reached only
-                // on a proposed cycle (the real accept signal); disabled cycles
-                // were stepped above.
-                if let Some(g) = spec_gov.as_mut() {
-                    let _ = g.step(first_reject > 0);
-                }
-                // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
-                crate::stateful::usage_capture::record_draft(
-                    (ctx_prev, bonus),
-                    draft.first().copied().or(correction),
-                    first_reject,
-                    draft_len - first_reject,
-                );
-
-                // Emit accepted drafts. Each is a model-verified token, so the
-                // stream stays bit-identical to plain greedy.
-                let mut stop = false;
-                for k in 0..first_reject {
-                    let id = draft[k];
-                    let text = self.tokenizer.decode_one(id).unwrap_or_default();
-                    sink(StreamEvent::Token { id, text });
-                    self.sampler.record(id);
-                    crate::stateful::usage_capture::record_argmax(id);
-                    draft_index.note_token(id);
-                    last_emit = id;
-                    produced += 1;
-                    if Some(id) == eos {
-                        reason = StopReason::Eos;
-                        stop = true;
-                        break;
-                    }
-                    if produced >= req.max_new_tokens {
-                        stop = true;
-                        break;
-                    }
-                }
-                if stop {
-                    break 'ud_loop;
-                }
-
-                // Emit correction (if any) and advance state. KV bookkeeping is
-                // identical to the eagle5 batched path: on a reject at i, the
-                // verify wrote KV through bonus_pos+i, the correction sits at
-                // bonus_pos+i+1 (not yet written); on full accept, KV is valid
-                // through bonus_pos+draft_len.
-                if let Some(corr) = correction {
-                    let text = self.tokenizer.decode_one(corr).unwrap_or_default();
-                    sink(StreamEvent::Token { id: corr, text });
-                    self.sampler.record(corr);
-                    crate::stateful::usage_capture::record_argmax(corr);
-                    draft_index.note_token(corr);
-                    last_emit = corr;
-                    produced += 1;
-                    last_id = corr;
-                    pos = bonus_pos + first_reject + 1;
-                    self.kv.seq_len = pos;
-                    if Some(corr) == eos {
-                        reason = StopReason::Eos;
+                    if stop {
                         break 'ud_loop;
                     }
+                    if let Some(corr) = outcome.correction {
+                        let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                        sink(StreamEvent::Token { id: corr, text });
+                        self.sampler.record(corr);
+                        crate::stateful::usage_capture::record_argmax(corr);
+                        draft_index.note_token(corr);
+                        ngram_proposer.observe(&[corr]);
+                        suffix_proposer.observe(&[corr]);
+                        last_emit = corr;
+                        produced += 1;
+                        last_id = corr;
+                        pos = outcome.next_seq_len;
+                        self.kv.seq_len = pos;
+                        if Some(corr) == eos {
+                            reason = StopReason::Eos;
+                            break 'ud_loop;
+                        }
+                    } else {
+                        last_id = *outcome.accepted.last().expect("non-empty on full accept");
+                        pos = outcome.next_seq_len;
+                    }
                 } else {
-                    last_id = draft[draft_len - 1];
-                    pos = bonus_pos + draft_len;
+                    // Original inline accept block (unchanged — the parity oracle).
+                    let mut vtoks = Vec::with_capacity(draft_len);
+                    vtoks.push(bonus);
+                    if draft_len > 1 {
+                        vtoks.extend_from_slice(&draft[..draft_len - 1]);
+                    }
+                    let vpos: Vec<usize> = (0..draft_len).map(|j| bonus_pos + j).collect();
+                    let (preds, _resids) = self.forward_tokens_verify(&vtoks, &vpos)?;
+                    let mut first_reject = draft_len;
+                    let mut correction: Option<u32> = None;
+                    for i in 0..draft_len {
+                        if preds[i] != draft[i] {
+                            first_reject = i;
+                            correction = Some(preds[i]);
+                            break;
+                        }
+                    }
+                    stats.draft_accepted += first_reject;
+                    stats.draft_rejected += draft_len - first_reject;
+                    // Governor: accepted >=1 draft iff first_reject > 0. Reached only
+                    // on a proposed cycle (the real accept signal); disabled cycles
+                    // were stepped above.
+                    if let Some(g) = spec_gov.as_mut() {
+                        let _ = g.step(first_reject > 0);
+                    }
+                    // L3.1 §2.2 usage_capture: draft proposed under (ctx_prev, bonus).
+                    crate::stateful::usage_capture::record_draft(
+                        (ctx_prev, bonus),
+                        draft.first().copied().or(correction),
+                        first_reject,
+                        draft_len - first_reject,
+                    );
+                    // Emit accepted drafts. Each is a model-verified token, so the
+                    // stream stays bit-identical to plain greedy.
+                    let mut stop = false;
+                    for k in 0..first_reject {
+                        let id = draft[k];
+                        let text = self.tokenizer.decode_one(id).unwrap_or_default();
+                        sink(StreamEvent::Token { id, text });
+                        self.sampler.record(id);
+                        crate::stateful::usage_capture::record_argmax(id);
+                        draft_index.note_token(id);
+                        last_emit = id;
+                        produced += 1;
+                        if Some(id) == eos {
+                            reason = StopReason::Eos;
+                            stop = true;
+                            break;
+                        }
+                        if produced >= req.max_new_tokens {
+                            stop = true;
+                            break;
+                        }
+                    }
+                    if stop {
+                        break 'ud_loop;
+                    }
+                    // Emit correction (if any) and advance state. KV bookkeeping is
+                    // identical to the eagle5 batched path: on a reject at i, the
+                    // verify wrote KV through bonus_pos+i, the correction sits at
+                    // bonus_pos+i+1 (not yet written); on full accept, KV is valid
+                    // through bonus_pos+draft_len.
+                    if let Some(corr) = correction {
+                        let text = self.tokenizer.decode_one(corr).unwrap_or_default();
+                        sink(StreamEvent::Token { id: corr, text });
+                        self.sampler.record(corr);
+                        crate::stateful::usage_capture::record_argmax(corr);
+                        draft_index.note_token(corr);
+                        last_emit = corr;
+                        produced += 1;
+                        last_id = corr;
+                        pos = bonus_pos + first_reject + 1;
+                        self.kv.seq_len = pos;
+                        if Some(corr) == eos {
+                            reason = StopReason::Eos;
+                            break 'ud_loop;
+                        }
+                    } else {
+                        last_id = draft[draft_len - 1];
+                        pos = bonus_pos + draft_len;
+                    }
                 }
 
                 if stall_active && step_start.elapsed() > stall_limit {
@@ -9094,6 +9230,23 @@ impl QwenDense {
             .map(|l| crate::kernels::argmax_f32(l) as u32)
             .collect();
         Ok((argmax, residuals))
+    }
+}
+
+// ── Event Horizon: ExactTarget impl for QwenDense ────────────────────────
+// UFCS (fully-qualified path) avoids self-recursion: `QwenDense::forward_*`
+// resolves to the inherent method, not this trait impl.
+#[cfg(target_os = "macos")]
+impl crate::speculate::verifier::ExactTarget for QwenDense {
+    fn forward_tokens_verify(
+        &mut self, tokens: &[u32], positions: &[usize],
+    ) -> crate::Result<(Vec<u32>, Vec<Vec<f32>>)> {
+        QwenDense::forward_tokens_verify(self, tokens, positions)
+    }
+    fn forward_token_greedy(
+        &mut self, token: u32, pos: usize,
+    ) -> crate::Result<u32> {
+        QwenDense::forward_token_greedy_tcb(self, token, pos)
     }
 }
 

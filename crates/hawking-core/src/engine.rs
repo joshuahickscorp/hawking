@@ -252,6 +252,14 @@ impl GenStats {
         (self.completion_tokens as f64) / (self.decode_ms / 1000.0).max(1e-6)
     }
 
+    /// Track 0.2 — derived draft accept rate (0.0 when no drafts proposed).
+    /// P1.1: per-proposer diagnostic; in Phase 0/1 only UserNgram proposes so
+    /// this is equivalent to the "user_ngram" accept rate.
+    pub fn draft_accept_rate(&self) -> f32 {
+        let total = self.draft_accepted + self.draft_rejected;
+        if total == 0 { 0.0 } else { self.draft_accepted as f32 / total as f32 }
+    }
+
     /// Track 0.2 / 8.3 — serialize ONLY the scalar observability fields to a
     /// small, parseable JSON object (omits the heavy `dispatch_samples` vec and
     /// the raw trace counters). Needs no GPU/model/bench → unit-testable on a
@@ -266,6 +274,8 @@ impl GenStats {
             "dispatches_per_forward": self.dispatches_per_forward,
             "draft_accepted": self.draft_accepted,
             "draft_rejected": self.draft_rejected,
+            // P1.1: per-proposer accept rate (Phase 0/1 has UserNgram only).
+            "ngram_accept_rate": self.draft_accept_rate(),
             "profile_id": self.profile_id,
             "device_id": self.device_id,
             "readback_bytes": self.readback_bytes,
