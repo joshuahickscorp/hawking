@@ -10,7 +10,15 @@ pub const MAX_VERIFY_BATCH: usize = 8;
 pub const MAX_DRAFT_LEN: usize = MAX_VERIFY_BATCH - 1; // 7, matches k_la cap
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ProposerId { UserNgram, SuffixArray, Eagle5, Rest, CrossTokenizer }
+pub enum ProposerId {
+    UserNgram,
+    SuffixArray,
+    Eagle5,
+    Rest,
+    CrossTokenizer,
+    Retrieval,      // Phase 2 — REST-style retrieval proposer
+    Tree,           // Phase 6 — token-tree CPU fallback
+}
 impl ProposerId {
     pub fn as_str(self) -> &'static str {
         match self {
@@ -19,6 +27,8 @@ impl ProposerId {
             ProposerId::Eagle5 => "eagle5",
             ProposerId::Rest => "rest",
             ProposerId::CrossTokenizer => "cross_tokenizer",
+            ProposerId::Retrieval => "retrieval",
+            ProposerId::Tree => "tree",
         }
     }
 }
@@ -85,7 +95,13 @@ struct Slot {
     oracle_cleared: bool,
 }
 
-pub struct ProposalRouter { slots: Vec<Slot>, alpha: f32, margin_ns: f32 }
+pub struct ProposalRouter {
+    slots: Vec<Slot>,
+    alpha: f32,
+    margin_ns: f32,
+    #[allow(dead_code)]
+    bandit: crate::speculate::policy::BanditPolicy,
+}
 
 impl ProposalRouter {
     /// Build with the always-on n-gram base. Neural/cross slots via enable_neural_slot.
@@ -95,7 +111,9 @@ impl ProposalRouter {
             cost: CostModel::new(), requires_hidden: false, requires_text_bridge: false,
             oracle_cleared: true,
         };
-        Self { slots: vec![base], alpha: 0.10, margin_ns }
+        let mut bandit = crate::speculate::policy::BanditPolicy::new();
+        bandit.push_arm(); // one arm for the initial UserNgram slot
+        Self { slots: vec![base], alpha: 0.10, margin_ns, bandit }
     }
 
     /// Register a gated proposer. REFUSES any hidden/text-bridge slot whose
@@ -112,6 +130,7 @@ impl ProposalRouter {
             id, gov: SpecGovernor::new(window, min_accept_rate), cost: CostModel::new(),
             requires_hidden, requires_text_bridge, oracle_cleared: true,
         });
+        self.bandit.push_arm();
         Ok(())
     }
 
@@ -156,9 +175,13 @@ impl ProposalRouter {
     /// (the existing g.step(na>0) contract).
     pub fn record(&mut self, id: ProposerId, o: &StepObservation) {
         let alpha = self.alpha;
-        if let Some(slot) = self.slots.iter_mut().find(|s| s.id == id) {
-            slot.cost.update(o, alpha);
-            slot.gov.step(o.accepted > 0);
+        // Find the slot index first (immutable borrow), then mutate.
+        let slot_idx = self.slots.iter().position(|s| s.id == id);
+        if let Some(idx) = slot_idx {
+            self.slots[idx].cost.update(o, alpha);
+            self.slots[idx].gov.step(o.accepted > 0);
+            let reward = (o.accepted as f64 / o.drafted.max(1) as f64).clamp(0.0, 1.0);
+            self.bandit.update(idx, reward);
         }
     }
 
@@ -185,6 +208,23 @@ impl ProposalRouter {
             requires_text_bridge: false,
             oracle_cleared: true,
         });
+        self.bandit.push_arm();
+    }
+
+    /// Bandit-driven plan: UCB1 arm selection over all enabled, oracle-cleared slots.
+    /// Additive alongside plan() — never replaces it in production code paths.
+    pub fn plan_bandit(&self, ctx: &RouterCtx) -> RouterPlan {
+        let candidates: Vec<(usize, f64)> = self.slots.iter().enumerate()
+            .filter(|(_, s)| s.oracle_cleared && s.gov.is_enabled())
+            .filter(|(_, s)| !s.requires_hidden || ctx.hidden_available)
+            .map(|(i, s)| (i, s.cost.ewma_hit_frac as f64))
+            .collect();
+        let Some(slot_idx) = self.bandit.pick_ucb1(&candidates) else {
+            return RouterPlan::NoSpec;
+        };
+        let slot = &self.slots[slot_idx];
+        let (draft_len, tree_width) = self.plan_shape(slot, ctx);
+        RouterPlan::Spec { id: slot.id, draft_len, tree_width }
     }
 }
 
