@@ -31,6 +31,8 @@ from rwkv7_custom_configs import CUSTOM_VARIANTS, VARIANT_ORDER, estimated_param
 from rwkv7_sft_torch import build_examples, load_tokenizer
 from rwkv7_torch_model import RWKV7Model
 
+PAD_LENGTH_MULTIPLE = 256
+
 
 def resolve_device(requested: str) -> str:
     if requested == "mps" and not torch.backends.mps.is_available():
@@ -69,6 +71,10 @@ def lm_loss_from_example(model: RWKV7Model, ids: list[int], labels: list[int], d
     return F.cross_entropy(logits.float(), shift_labels[mask]), n_supervised
 
 
+def rounded_pad_len(length: int) -> int:
+    return ((max(1, length) + PAD_LENGTH_MULTIPLE - 1) // PAD_LENGTH_MULTIPLE) * PAD_LENGTH_MULTIPLE
+
+
 def lm_loss_from_batch(model: RWKV7Model, batch: list, device: str, pad_id: int = 0):
     """Batched generalization of lm_loss_from_example.
 
@@ -83,7 +89,12 @@ def lm_loss_from_batch(model: RWKV7Model, batch: list, device: str, pad_id: int 
     supervised positions in the batch.
     """
     B = len(batch)
-    maxlen = max(len(ids) for ids, _ in batch)
+    raw = max(len(ids) for ids, _ in batch)
+    # Pad length up to a 256-grid so only ~4 distinct [B,T] shapes ever occur
+    # (raw is already <= max_length). MPS hoards per-shape Metal resources
+    # ("other allocations") that empty_cache cannot free; a unique shape per step
+    # leaks ~40 MB/step until OOM. Gridding bounds it.
+    maxlen = rounded_pad_len(raw)
     x = torch.full((B, maxlen), pad_id, dtype=torch.long)
     y = torch.full((B, maxlen), -100, dtype=torch.long)
     for i, (ids, labels) in enumerate(batch):
@@ -106,51 +117,107 @@ def _is_oom(e: Exception) -> bool:
     return isinstance(e, RuntimeError) and "out of memory" in str(e).lower()
 
 
+def flush_mps_cache(device: str) -> None:
+    if device != "mps":
+        return
+    mps = getattr(torch, "mps", None)
+    if mps is None:
+        return
+    _sync = getattr(mps, "synchronize", None)
+    if callable(_sync):
+        try:
+            _sync()
+        except RuntimeError:
+            pass
+    _empty = getattr(mps, "empty_cache", None)
+    if callable(_empty):
+        try:
+            _empty()
+        except RuntimeError:
+            pass
+
+
+def mps_driver_gb(device: str) -> float | None:
+    if device != "mps":
+        return None
+    _drv = getattr(getattr(torch, "mps", None), "driver_allocated_memory", None)
+    if not callable(_drv):
+        return None
+    return _drv() / 1e9
+
+
+def probe_batch_fits(model: RWKV7Model, opt, max_length: int, bs: int, device: str) -> bool:
+    worst = [([1] * max_length, [1] * max_length) for _ in range(bs)]
+    loss = None
+    try:
+        opt.zero_grad(set_to_none=True)
+        loss, sup = lm_loss_from_batch(model, worst, device)
+        if loss is not None and sup > 0:
+            loss.backward()
+        opt.step()
+        opt.zero_grad(set_to_none=True)
+        loss = None
+        flush_mps_cache(device)
+        return True
+    except Exception as e:  # noqa: BLE001
+        opt.zero_grad(set_to_none=True)
+        if not _is_oom(e):
+            raise
+        loss = None
+        flush_mps_cache(device)
+        return False
+    finally:
+        del loss
+        del worst
+
+
 def probe_max_batch(model: RWKV7Model, opt, max_length: int, ceiling: int, device: str) -> int:
     """Largest batch (count of full-length, FULLY-supervised sequences) that fits one
     fwd+bwd+step under the active MPS cap. Worst case by construction, so any real
-    batch with <= chosen*max_length PADDED tokens is safe. Halves on OOM. Corrupts
-    weights + optimizer state (garbage input) — the caller must restore both."""
+    batch within the same rounded padded-token budget is safe. Corrupts weights +
+    optimizer state (garbage input) — the caller must restore both."""
     if device != "mps":
         return max(1, ceiling)
-    bs = max(1, ceiling)
-    while True:
-        worst = [([1] * max_length, [1] * max_length) for _ in range(bs)]
-        try:
-            opt.zero_grad(set_to_none=True)
-            loss, sup = lm_loss_from_batch(model, worst, device)
-            if loss is not None and sup > 0:
-                loss.backward()
-            opt.step()
-            opt.zero_grad(set_to_none=True)
-            torch.mps.synchronize()
-            torch.mps.empty_cache()
-            return bs
-        except Exception as e:  # noqa: BLE001
-            if not _is_oom(e):
-                raise
-            opt.zero_grad(set_to_none=True)
-            torch.mps.empty_cache()
-            if bs <= 1:
-                return 1
-            bs = max(1, bs // 2)
+    lo, hi = 1, max(1, ceiling)
+    best = 0
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if probe_batch_fits(model, opt, max_length, mid, device):
+            best = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    if best == 0:
+        raise RuntimeError(
+            "auto-batch could not fit even one full-length sequence under the active MPS cap; "
+            "raise --mem-ceiling-gb/--mps-mem-fraction, shorten --max-length, or keep "
+            "--grad-checkpoint=1"
+        )
+    return best
 
 
-def token_budget_groups(order: list, train_items: list, token_budget: int) -> list:
-    """Pack a (shuffled) index order into variable-size batches whose PADDED token
-    count (n * longest-in-batch) stays <= token_budget. Long sequences -> fewer per
-    batch, short -> more — automatic memory balancing. Preserves the given order."""
-    groups, cur, cur_max = [], [], 0
+def bucketed_fixed_groups(order: list, train_items: list, batch_size: int, generator: torch.Generator) -> list:
+    """Build fixed-B, length-bucketed batches.
+
+    The MPS backend retains resources for each distinct input shape. Dynamic
+    token-budget batching produced a near-unique [B,T] each optimizer step and
+    grew `other allocations` until OOM. This keeps B fixed and buckets T onto the
+    same 256-token grid used by lm_loss_from_batch, bounding the shape set.
+    """
+    buckets: dict[int, list[int]] = {}
     for idx in order:
-        L = len(train_items[idx][0])
-        if cur and (len(cur) + 1) * max(cur_max, L) > token_budget:
-            groups.append(cur)
-            cur, cur_max = [], 0
-        cur.append(idx)
-        cur_max = max(cur_max, L)
-    if cur:
-        groups.append(cur)
-    return groups
+        bucket = rounded_pad_len(len(train_items[idx][0]))
+        buckets.setdefault(bucket, []).append(idx)
+
+    groups = []
+    for bucket in sorted(buckets):
+        ids = buckets[bucket]
+        groups.extend(ids[k:k + batch_size] for k in range(0, len(ids), batch_size))
+
+    if len(groups) <= 1:
+        return groups
+    perm = torch.randperm(len(groups), generator=generator).tolist()
+    return [groups[i] for i in perm]
 
 
 def load_teacher_records(path: Path) -> list[dict]:
@@ -185,7 +252,16 @@ def kd_loss_from_record(model: RWKV7Model, record: dict, device: str, alpha: flo
     pos_idx = torch.tensor([p[1] for p in pairs], dtype=torch.long, device=device)
     labels = torch.tensor([ids[p[1] + 1] for p in pairs], dtype=torch.long, device=device)
 
-    x = torch.tensor([ids], dtype=torch.long, device=device)
+    # Pad the [1, T] input up to the 256-grid, exactly like lm_loss_from_batch.
+    # RWKV-7's recurrence is strictly left-to-right, so right-pad tokens cannot
+    # perturb earlier real positions; pos_idx only indexes real (< len(ids))
+    # positions, so the KD loss is bit-identical to the unpadded version. But the
+    # input shape is now one of ~4 values instead of one-per-record, which stops
+    # the MPS per-shape "other allocations" leak that OOM'd the batch=1 KD path
+    # (mps climbed 21->24G on a 26M model before this fix).
+    maxlen = rounded_pad_len(len(ids))
+    x = torch.full((1, maxlen), 0, dtype=torch.long, device=device)
+    x[0, : len(ids)] = torch.tensor(ids, dtype=torch.long, device=device)
     hidden = model(x, return_final_hidden=True)[0]
     logits = model.lm_head(hidden.index_select(0, pos_idx))
     ce = F.cross_entropy(logits.float(), labels)
@@ -255,15 +331,16 @@ def main() -> None:
     ap.add_argument("--mps-mem-fraction", type=float, default=0.0,
                     help="If >0, cap MPS at this fraction of unified RAM (0.9 = up to "
                          "90%%). 0 = PyTorch default (no explicit cap).")
-    ap.add_argument("--empty-cache-every", type=int, default=0,
+    ap.add_argument("--empty-cache-every", type=int, default=5,
                     help="Call torch.mps.empty_cache() every N optimizer steps "
-                         "(0 = never). Previously every example, which serialised MPS "
-                         "and capped RAM — the main throughput bug.")
+                         "(0 = never). The draft sweep defaults to 5 on MPS: frequent "
+                         "enough to stop retained-cache OOMs, unlike the old per-example "
+                         "flush that serialized training.")
     ap.add_argument("--auto-batch", type=int, default=0, choices=(0, 1),
                     help="1 = probe the largest batch this model fits under --mem-ceiling-gb "
-                         "(worst-case max-length batch), then token-budget batch so long "
-                         "sequences shrink the batch automatically. --batch-size is the probe "
-                         "ceiling. Small models get big batches, big models small — no OOM.")
+                         "(worst-case max-length batch), then build fixed-B length buckets "
+                         "on the same padded shape grid. --batch-size is the probe ceiling. "
+                         "Small models get big batches, big models small — no OOM.")
     ap.add_argument("--mem-ceiling-gb", type=float, default=0.0,
                     help="Target unified-RAM ceiling in GB for --auto-batch + the MPS cap "
                          "(e.g. 17 on an 18 GB box). 0 = fall back to --mps-mem-fraction.")
@@ -363,74 +440,107 @@ def main() -> None:
 
     # KD mode stays per-example (not used by the draft sweep); SFT batches.
     bs = 1 if mode == "kd" else max(1, args.batch_size)
-    token_budget = 0
+    use_bucketed_batches = False
     if args.auto_batch and mode != "kd" and device == "mps":
         snapshot = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
         chosen = probe_max_batch(model, opt, args.max_length, args.batch_size, device)
         model.load_state_dict(snapshot)  # undo the probe's garbage weight update
         del snapshot
         opt = torch.optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.0)
-        token_budget = chosen * args.max_length
+        bs = chosen
+        use_bucketed_batches = True
         print(f"[auto-batch] probed max batch = {chosen} seqs "
-              f"(token budget {token_budget}); batches sized by length", flush=True)
+              f"(fixed-B length buckets on {PAD_LENGTH_MULTIPLE}-token grid)", flush=True)
 
     for epoch in range(args.epochs):
         generator = torch.Generator().manual_seed(1000 + epoch)
         order = torch.randperm(len(train_items), generator=generator).tolist()
-        if token_budget > 0:
-            groups = token_budget_groups(order, train_items, token_budget)
+        if use_bucketed_batches:
+            groups = bucketed_fixed_groups(order, train_items, bs, generator)
         else:
             groups = [order[k:k + bs] for k in range(0, len(order), bs)]
         opt.zero_grad(set_to_none=True)
 
-        for j, group in enumerate(groups):
+        j = 0
+        while j < len(groups):
+            group = groups[j]
+            group_tokens = 0
+            loss = None
             if mode == "kd":
                 item = train_items[group[0]]
-                loss, supervised = kd_loss_from_record(model, item, device, args.alpha)
-                seen_tok += len(item["input_ids"])
+                group_tokens = len(item["input_ids"])
+                try:
+                    loss, supervised = kd_loss_from_record(model, item, device, args.alpha)
+                    if loss is not None and supervised > 0:
+                        (loss / args.grad_accum).backward()
+                except Exception as e:  # noqa: BLE001
+                    if not _is_oom(e):
+                        raise
+                    loss = None
+                    opt.zero_grad(set_to_none=True)
+                    pending = 0
+                    flush_mps_cache(device)
+                    raise RuntimeError("OOM on a single KD record; reduce --max-length or memory cap") from e
             else:
                 batch = [train_items[idx] for idx in group]
+                group_tokens = sum(len(ids) for ids, _ in batch)
                 try:
                     loss, supervised = lm_loss_from_batch(model, batch, device)
+                    if loss is not None and supervised > 0:
+                        (loss / args.grad_accum).backward()
                 except Exception as e:  # noqa: BLE001 — defensive net; probe should prevent this
                     if not _is_oom(e):
                         raise
-                    if device == "mps":
-                        torch.mps.empty_cache()
+                    loss = None
                     opt.zero_grad(set_to_none=True)
                     pending = 0
-                    print(f"[auto-batch] OOM on batch of {len(batch)} seqs — skipped + flushed", flush=True)
+                    flush_mps_cache(device)
+                    if len(group) <= 1:
+                        raise RuntimeError(
+                            "OOM on a single SFT sequence; reduce --max-length or memory cap"
+                        ) from e
+                    mid = len(group) // 2
+                    groups[j:j + 1] = [group[:mid], group[mid:]]
+                    mem = mps_driver_gb(device)
+                    mem_s = f" mps={mem:.1f}G" if mem is not None else ""
+                    print(
+                        f"[auto-batch] OOM on {len(group)} seqs; split "
+                        f"{len(group[:mid])}+{len(group[mid:])}, flushed, retrying{mem_s}",
+                        flush=True,
+                    )
                     continue
-                seen_tok += sum(len(ids) for ids, _ in batch)
             if loss is None or supervised == 0:
+                j += 1
                 continue
 
-            (loss / args.grad_accum).backward()
             pending += 1
+            seen_tok += group_tokens
 
             l = float(loss.detach().item())
             loss_ema = l if loss_ema is None else 0.98 * loss_ema + 0.02 * l
 
             is_last = j == len(groups) - 1
             if pending >= args.grad_accum or is_last:
+                if device == "mps" and args.empty_cache_every and (n_steps + 1) % args.empty_cache_every == 0:
+                    flush_mps_cache(device)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 opt.step()
                 opt.zero_grad(set_to_none=True)
                 pending = 0
                 n_steps += 1
-                # Safety-valve cache flush (default never). The old per-example
-                # empty_cache() serialised MPS and capped RAM — the throughput bug.
+                # Safety-valve cache flush. The old per-example empty_cache()
+                # serialized MPS; periodic per-opt-step flushing bounds cache growth.
                 if device == "mps" and args.empty_cache_every and n_steps % args.empty_cache_every == 0:
-                    _ec = getattr(getattr(torch, "mps", None), "empty_cache", None)
-                    if callable(_ec):
-                        _ec()
+                    flush_mps_cache(device)
 
                 if n_steps % args.log_every == 0 or n_steps == 1:
                     dt = max(time.time() - t0, 1e-6)
                     ppl = math.exp(min(loss_ema if loss_ema is not None else 0.0, 20.0))
+                    mem = mps_driver_gb(device)
+                    _mps = f" mps={mem:.1f}G" if mem is not None else ""
                     print(
                         f"[ep{epoch} opt={n_steps}] loss={loss_ema:.4f} "
-                        f"ppl={ppl:.1f} tok/s={seen_tok/dt:.0f}",
+                        f"ppl={ppl:.1f} tok/s={seen_tok/dt:.0f}{_mps}",
                         flush=True,
                     )
 
@@ -441,6 +551,7 @@ def main() -> None:
                 if args.max_steps and n_steps >= args.max_steps:
                     stop = True
                     break
+            j += 1
 
         if stop:
             break
