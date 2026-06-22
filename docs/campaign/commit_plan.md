@@ -31,6 +31,12 @@ git commit -m "test(ci): SSM serve smoke, product gate, quality suite, overnight
 ## Lane 3 — Campaign documentation  (MINE + Codex · docs only)
 - `docs/campaign/` (all standing artifacts), `docs/architecture.md`, `docs/env_flags.md`,
   `docs/plans/{q6k_predec_design,ratios_roadmap_2026_06_21,rwkv7_dynamic_batch_hardening_2026_06_20,rwkv7_micro_frontier_prompt_2026_06_20}.md`.
+- Ship-finalization docs added after the original split:
+  `docs/campaign/hawking_ship_finalization_prompt.md`,
+  `docs/campaign/hawking_ship_goal_prompts.md`,
+  `docs/plans/hawking_shippability_masterplan_2026_06_22.md`, and
+  `docs/plans/condense_frontier_2026_06_22.md`,
+  `docs/plans/condense_naming_migration_2026_06_22.md`.
 - **Gate:** docs only.
 ```bash
 git add docs/campaign/ docs/architecture.md docs/env_flags.md docs/plans/q6k_predec_design.md \

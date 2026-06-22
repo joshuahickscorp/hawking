@@ -1,5 +1,5 @@
 # G1a V2 Expansion Chain Results
-**Date:** 2026-06-20 19:14 UTC
+**Date:** 2026-06-20 21:23 UTC
 
 ## Gate Context
 
@@ -20,7 +20,7 @@
 | cargo check hawking-core tq | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/cargo_check_core_tq.log |
 | json constraint unit tests | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/json_constraint_tests.log |
 | mamba2 smoke | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/mamba2_smoke.log |
-| rwkv7 metal parity | FAIL exit 101 | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/rwkv7_metal_parity.log |
+| rwkv7 metal parity | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/rwkv7_metal_parity.log |
 | rwkv7 flatness quick 16k | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/rwkv7_flatness_16k.log |
 | tq trellis synthetic parity | PASS | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/tq_trellis_parity.log |
 | rwkv7 flatness full 64k | skipped: set G1A_V2_FULL_BENCH=1 | /Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/rwkv7_flatness_64k.log |
@@ -32,7 +32,7 @@
 
 This chain is deliberately wider than the G1a promote ladder. It keeps
 result-dependent TQ work behind artifact checks, while still advancing the
-independent surfaces that improve Hawking against llama.cpp: JSON-mode
+independent surfaces that improve Dismantle against llama.cpp: JSON-mode
 constraint scaffolding, Mamba2 architecture breadth, core/serve/bench compile
 health, synthetic TQ parity, RWKV-7 parity, and context-depth flatness.
 

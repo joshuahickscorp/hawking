@@ -14,6 +14,7 @@ Ranked by (impact × validation-confidence ÷ effort/risk). Full detail + eviden
 | 7 | **Column-split GEMV** for under-occupied k/v_proj | speed | +17% (SpQt) on a small byte share | med | low | 📐 design | e2e delta (k/v_proj is small fraction); atol 1e-4 |
 | 8 | **Trellis sub-4-bit full bake** (`tq_bake --bpw 3.34 --match ffn_`) | compression | ~30% smaller weights | high | high (decode-SLOWER) | 🟡 deferred | size/quality/speed; existing `.tq` is a 19 MB partial |
 | 9 | **Fused-epilogue default-on** (GEMV+add/rmsnorm/silu) | speed | small (intermediate traffic) | low | low | 📐 design | dispatch-count + GB/s; bounded win |
+| 10 | **Condense Model Press** (memory-budgeted out-of-core quantization) | product/compression | quantize parents too large to fit resident; 4/3/2/1-bit ladder | high | med-high | 🧭 post-finalization frontier | dry-run planner, resumable small-model out-of-core proof, then GLM-class MoE dry-run with owner-approved storage/cloud |
 
 ## Infrastructure / testing backlog (goal-mandated)
 - ✅ Durable artifacts created (`docs/campaign/{findings_summary,kill_ledger,roadmap,test_matrix,autonomous_run_log}.md`)
@@ -30,7 +31,9 @@ Ranked by (impact × validation-confidence ÷ effort/risk). Full detail + eviden
 The ENV/CONFIG speed ceiling is small and noisy (`--profile fast` ~+3–7%, mild quality trade). The live frontier is
 **(1) productionizing the RWKV-7 / SSM long-context path** (validated moat), **(2) per-channel int4-KV compression**
 (concrete, mostly-built, hot-path wiring gated), and **(3) the MLX-diffable 1.6× kernel gap** only as a deferred,
-high-risk research lane.
+high-risk research lane. After core finalization, the product frontier becomes **Condense Model Press**: make the
+quantization pipeline memory-budgeted and out-of-core so Hawking can condense open-weight parents that ordinary local
+machines cannot load fully enough to quantize.
 
 ## Wiring spec — per-channel int4-KV (roadmap #1, ready-to-implement)
 Kernels parity-validated (`mha_decode_perchannel_int4kv_parity` ✅). Wire behind a NEW `HAWKING_QWEN_INT4_KV_PC`

@@ -1,5 +1,10 @@
 # Claude Moonshot Goal Prompt - SSM Production Campaign
 
+> **SUPERSEDED (2026-06-22):** use
+> `docs/campaign/hawking_ship_finalization_prompt.md` plus
+> `docs/campaign/hawking_ship_goal_prompts.md` for future ship-finalization
+> work. This file is kept for provenance and older SSM campaign context.
+
 Copy/paste this into Claude when the current focused loop finishes too quickly
 and you want a longer autonomous production run. For the final condensation pass
 before stopping the loop, use

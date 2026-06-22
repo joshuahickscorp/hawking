@@ -6,8 +6,8 @@ Candidates for deletion, condensation, or archival. **No code is deleted in this
 ## SAFE-DOC-CLEANUP (do-able now or trivially)
 | Item | Action | Evidence |
 |---|---|---|
-| `docs/campaign/claude_goal_prompt.md`, `claude_moonshot_goal_prompt.md` | Mark **SUPERSEDED** by `claude_final_hardening_condensation_goal_prompt.md` (header note); keep for provenance | Each is a restart prompt; the later subsumes the earlier. Don't delete (cheap, useful history). |
-| Three `claude_*goal_prompt.md` files | Optionally archive under `docs/campaign/archive/` | They're handoff prompts, not standing docs. Condensation only. |
+| `docs/campaign/claude_goal_prompt.md`, `claude_moonshot_goal_prompt.md`, `claude_final_hardening_condensation_goal_prompt.md` | Mark **SUPERSEDED** by `hawking_ship_finalization_prompt.md` + `hawking_ship_goal_prompts.md`; keep for provenance | The new prompt pair is the canonical ship-finalization surface. Don't delete the old prompts (cheap, useful history). |
+| Three `claude_*goal_prompt.md` files | Optionally archive under `docs/campaign/archive/` after the new prompt pair is adopted | They're handoff prompts, not standing docs. Condensation only. |
 | `docs/campaign/change_manifest.md` | Fold into `commit_plan.md` (now the canonical lane split) | `commit_plan.md` supersedes it; mark change_manifest superseded. |
 | `docs/plans/throughput_pivot_campaign.md` | Mark **SUPERSEDED** by `docs/campaign/` artifacts (findings/roadmap/kill_ledger) | The campaign/ set is the consolidated source of truth. |
 

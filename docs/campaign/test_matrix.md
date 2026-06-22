@@ -78,3 +78,37 @@ differentiator: RWKV-7 short→8k is ~0% change; Qwen short→8k is −78%. The 
 | SSM serve smoke (post-fix) | `rwkv7-g1-04-sft` | **ADMISSION FIXED, decode bug remains** | `reports/serve-smoke/20260622T023814Z/` | Added RWKV's 3 batch trait methods (`encode_prompt_for_batch`/`decode_token_for_batch`/`eos_id_for_batch`, rwkv7.rs). Now `admitted=1` (was 0), `queued=0`, **no 180s hang** — request admitted + decode-stepped in ~7s. **Remaining (separate, higher-care):** produces 1 token, empty text (immediate EOS) vs `generate`'s coherent 119-tps → multiseq serve decode / prefill-state-handoff or EOS/template bug. Flagged in run-log Phase 5. |
 | RWKV prefill→multiseq parity gate | `rwkv7-g1-04-sft` | **✅ PASSES (R1 FIXED)** | `tests/rwkv7_prefill_slot_multiseq_parity.rs` | Pre-fix reproduced the bug (`multi=[37138,45,21265]`≠solo); **post-fix GREEN both slots: solo==multi==[37138,47,11]**. Root cause was the **stale bundle-wide `fresh` flag** (NOT a layout bug — proven identical); fix clears `g.fresh=false` in `prefill_slot` after the state copy (`rwkv7.rs:1222`). Run: `cargo test --release -p hawking-core --test rwkv7_prefill_slot_multiseq_parity -- --ignored --test-threads=1`. |
 | SSM serve smoke (FIXED) | `rwkv7-g1-04-sft` | **✅ fail=0 — coherent e2e** | `reports/serve-smoke/20260622T121046Z/` | With R1 + the SSE stream-terminator fix (`{stats}`/`[DONE]` on any stream end): **16 coherent tokens** (" Paris. The capital of the United Kingdom is…") + `{stats}` + `[DONE]`; admitted=1, tokens_generated=16, queued=0. NB serve dec_tps ~7.8 = B=8-arena overhead (perf follow-up R1b). The "Summarize…" prompt yields 1 eos token = raw-completion chat-template gap (R3), not a bug. |
+
+## Regression gate — ENFORCED floors (2026-06-22, Lane A.5)
+`tools/ci/regression_gate.sh` vs committed `tools/ci/baselines/regression_baseline.json`. Floors are CATEGORY-regression
+thresholds set ~10–15% below the measured warm median (the fresh-process median has a ±several-% noise floor — see above), so
+the gate catches a lever silently disabled (e.g. predec OFF = −46.7%) without flapping. Footprint is CPU-safe/deterministic;
+tps + quality need a free GPU + the release binary + models. Exits non-zero on breach. Wired into `preflight.sh` +
+`overnight_hardening.sh` (`RUN_REGRESSION=1`).
+
+| Check | Floor / ceiling | Measured (live 2026-06-22) | Result | Source of baseline |
+|---|---|---|---|---|
+| footprint Qwen-3B Q4_K_M | ≤ 1,929,903,264 B +1% | 1,929,903,264 B | ✅ PASS | measured `stat -f%z` |
+| footprint RWKV-7-SFT Q4_K_M | ≤ 300,694,944 B +1% | 300,694,944 B | ✅ PASS | measured `stat -f%z` |
+| decode_tps qwen3b_short | ≥ 34.0 | 39.42 (warm median n=3) | ✅ PASS | test_matrix warm 38.3–40.6; predec-OFF 21.6 is the regression it catches |
+| decode_tps rwkv7_sft_short | ≥ 100.0 | 119.42 (warm median n=3) | ✅ PASS | test_matrix 114.6–118.6 |
+| quality profile_fast (argmax-identity) | ≥ 0.80 | 90% | ✅ PASS | adversarial suite 0.83–0.90 |
+| quality f16_kv (argmax-identity) | ≥ 0.85 | 100% | ✅ PASS | adversarial suite 0.88–1.00 |
+
+**Evidence:** full gate `reports/regression/20260622T140213Z/summary.md` (6 enforced, fail=0, exit 0). Red path proven
+(too-tight ceiling → exit 1). **Not yet enforced (honest):** serve_decode_tps (R1b), int4-KV-PC
+perplexity (R2), instruct quality (R3/R5). These are listed in the baseline's `pending_not_enforced` and printed by the gate.
+
+## R1b serve throughput — measurement that DISPROVED the arena-width hypothesis (2026-06-22)
+| Path | model | tokens | dec_tps | note |
+|---|---|---|---|---|
+| single-stream `generate` | rwkv7-g1-04-sft | warm | **~119** | the moat number (regression-gate floor 100) |
+| serve `/v1/hawking/generate` (1 stream, B=8 arena) | rwkv7-g1-04-sft | 96 | **9.94** | the pathological gap |
+| serve, with dispatch bounded to `active=1` (built, parity-green, then reverted) | rwkv7-g1-04-sft | 96 | **9.94** | **NO change** → stream width is NOT the bottleneck |
+
+Method: fresh `hawking serve` (rebuilt `-p hawking`), 96-token continuation prompt, `temperature=0 seed=5`, dec_tps from the
+SSE `{stats}`. The `active=max(region)+1` change kept `rwkv7_prefill_slot_multiseq_parity` (slot0/slot3) + all 11
+`rwkv7_multiseq_parity` GREEN, but serve tps was unchanged → reverted (rwkv7.rs == HEAD). **Re-aimed R1b** = per-token fixed
+overhead (multiseq path ~12× slower/token than single-stream even at b=1); next = profile one serve token vs one generate
+token + diff multiseq vs single-stream GEMV kernels. Gotcha logged: `cargo build -p hawking-core` does NOT rebuild the
+`hawking` serve binary (parity tests recompile the lib, so they were valid; the serve binary needs `-p hawking`).

@@ -8,10 +8,23 @@ Each risk: what it is, evidence required to close it, and the current best next 
   `att_shift`/`ffn_shift`. **Fix:** clear `g.fresh=false` in `prefill_slot` after the copy (`rwkv7.rs:1222`) + emit the SSE
   `{stats}`/`[DONE]` terminator on any stream end (`http.rs`). **Parity gate GREEN; `ssm_serve_smoke.sh` fail=0** (16 coherent tokens).
 
-## R1b — RWKV serve THROUGHPUT (NEW top gate) 🟡
-- **Risk:** serve dec_tps ~7.8 vs ~119 single-stream — the B=8 multiseq arena does 8-stream work for 1 active stream.
-- **Evidence to close:** size the multiseq decode arena to the number of ACTIVE slots; re-bench serve tps toward single-stream.
-  **Higher-care** (the multiseq arena) — keep `rwkv7_prefill_slot_multiseq_parity` green through the change.
+## R1b — RWKV serve THROUGHPUT (NEW top gate) 🟡 — hypothesis CORRECTED 2026-06-22
+- **Risk:** single-stream serve dec_tps ~10 vs ~119 single-stream `generate` (~12×) for the SAME 0.4B model.
+- **❌ DISPROVEN hypothesis (was the assumed cause):** "the B=8 multiseq arena does 8-stream work for 1 active stream; size
+  it to active slots." A parity-safe change was built that bounds decode dispatch to `active = max(region)+1` (so 1 stream at
+  slot 0 → dispatch 1 stream, not 8), with `rwkv7_prefill_slot_multiseq_parity` GREEN (slot0 active=1, slot3 active=4).
+  **Measured result: serve stayed ~9.9 tps (96-token continuation, fresh binary) — NO improvement.** If stream-width were the
+  bottleneck, `active=1` would have approached ~119. It did not → **the cost is per-token FIXED overhead, independent of `b`.**
+  The change was REVERTED (no measured benefit; rails forbid unmeasured hot-path deltas). rwkv7.rs == HEAD.
+- **Real bottleneck (re-aimed):** the multiseq decode path is ~12× slower PER TOKEN than the single-stream `forward_token_gpu`
+  path even at b=1. Candidate causes, in order to check: (a) the multiseq layer GEMVs may not use the optimized predec/fused
+  Q4K kernels the single-stream path uses (generic per-stream `gemv_batched`/bi-loop dequant GEMV); (b) per-token dispatch
+  count / `commit_and_wait` latency in the multiseq glue; (c) serve-loop CPU overhead per token (scheduler, channel sends, SSE,
+  detok). NOTE: prefill is CPU (`prefill_slot` runs the prompt through `forward_token_core`) — separate TTFT issue.
+- **Evidence to close:** profile ONE serve decode token vs ONE `generate` token — count kernel dispatches + commit_and_wait +
+  CPU serve overhead, and diff the multiseq GEMV kernels against the single-stream predec GEMV. Fix the dominant term; re-bench
+  serve dec_tps toward single-stream; THEN (if multi-stream matters) re-land active-sizing WITH a measured aggregate-tps gain.
+  Keep `rwkv7_prefill_slot_multiseq_parity` green throughout.
 
 <details><summary>(historical R1 detail, pre-fix)</summary>
 
@@ -63,6 +76,52 @@ Each risk: what it is, evidence required to close it, and the current best next 
 - **Risk:** KD beat SFT (75M ~19.4% vs 17.7% top-1 agreement) but both are far from converged (~60% target). Not a no-go.
 - **Evidence to close:** a separate, longer KD training campaign with more corpus (out of scope for the inference runtime).
 
+## R8b — Condense Model Press is documented but not built 🟢 — C1 PLANNER LANDED (2026-06-22)
+- **Risk:** the condensation frontier depends on a memory-budgeted dry-run planner, resumable out-of-core shard/tensor
+  pressing, and output-damage-ranked bit allocation. Today the legacy STRAND/TQ ingredients exist; the product claim
+  ("quantize a parent that cannot fit fully resident on this machine") is being built piece by piece.
+- **DONE (C1, the first piece):** `hawking press --dry-run --memory-budget <SIZE> --target <BITS> --weights <gguf>` is
+  implemented (`crates/hawking/src/main.rs` `press_main`) — GGUF-metadata-only (no weights/GPU/network), prints a truthful
+  Press Plan and a budget verdict that names the **wedge** (out-of-core peak vs full-resident). MEASURED: Qwen-3B at a 2 GB
+  budget → out-of-core press FITS (1.32 GiB) while naive full-resident EXCEEDS (11.50 GiB). Parser unit tests `press_tests`
+  GREEN; the planner code is build- + clippy-clean. See `condense_frontier_2026_06_22.md` C1 STATUS.
+- **Still open:** safetensors (fp16 HF parent) metadata reader (today GGUF-only); scratch/thread/resume fields; then C2
+  out-of-core writer, C3 damage-ranked allocation, C4 condense-then-recover. **Owner-gated:** no frontier downloads, cloud
+  spend, or published derivatives. The bake path itself is NOT implemented (`--dry-run` only; non-dry-run prints a gated notice).
+- **Naming:** Condense is the public name; STRAND stays legacy/internal until aliases land
+  (`condense_naming_migration_2026_06_22.md`).
+- **Pre-existing (unrelated to Condense):** `cargo clippy -D warnings` flags dead-code in `hawking-core/json_constrain.rs`
+  (`ValidFirstBytes::None` never constructed) — on HEAD, not from this work; would fail a strict workspace clippy gate.
+
+## R8c — Apple Fit (Lane H): A1/A2/A3 + A8-invariant LANDED 🟢 (2026-06-22)
+- **DONE:** `hawking fit` (A2) per-Mac context/KV envelope + intent recs; `detect_mac()` (A1) reads real chip/RAM/OS via
+  sysctl, wired into `hawking doctor` (was hardcoded M3-Pro) + `doctor --json`; **`hawking serve --auto [--intent]` (A3)** —
+  picks + announces + applies the strongest stable config (KV/profile/energy), expert flags override; **anti-throttle
+  invariant (A8, pick level)** baked into `auto_serve_pick` (non-safety intent never below max-capability without an explicit
+  `safety_downgrade`). Gates: `fit_tests` (kv_cache, fit_zone, **auto_pick anti-throttle**) GREEN; serve --auto validated e2e
+  (max-capability/safe-fit/SSM). CPU-only/opt-in; default serve unchanged. See `apple_fit_frontier_2026_06_22.md` A1/A2/A3/A8.
+- **Risk / still open:** the A8 gate is enforced at the *chooser* level (unit-tested), NOT yet as a *measured serving*
+  regression (run auto vs best-manual and fail on unstated material tps/quality/context loss) — that needs A6 measurements +
+  a serving harness. Also pending: A4 live memory-pressure engine, A5 measured long-ctx routing, A6 energy/thermal cards, A7
+  Mac-native model experience (pull/registry/hawkingd), serve context-cap wiring (today the cap is announced/advisory).
+- **Evidence to close:** add the measured A8 serving gate; e2e expert-override tests; A4/A5/A6/A7. Do NOT let auto become a
+  performance ceiling.
+
+## R9 — speed/compression/quality could regress silently — 🟢 PARTIALLY CLOSED (2026-06-22)
+- **Was:** CI enforced only fmt/clippy/build/test; correctness was locked by 193 golden hashes but **speed, footprint, and
+  quality had no enforced floor** — any could regress between manual overnight measurements. Master-plan §7 ranked this the
+  #2 critical-path risk; the owner flagged it explicitly ("ensure our wins persist").
+- **Now (built + proven):** `tools/ci/regression_gate.sh` + committed `tools/ci/baselines/regression_baseline.json` enforce
+  footprint ceilings (measured exact bytes), decode_tps floors, and lever argmax-identity floors; exit non-zero on breach;
+  wired into `preflight.sh` + `overnight_hardening.sh` (`RUN_REGRESSION=1`). Floors are CATEGORY-regression thresholds
+  (~10–15% below the warm median) calibrated to the noise floor so the gate does not flap. Live GREEN (6 enforced, fail=0,
+  `reports/regression/20260622T140213Z/`); red path proven (too-tight ceiling → exit 1). This now protects the decode path,
+  making the R1b hot-path change safe to take.
+- **Still open (in the baseline's `pending_not_enforced`):** serve_decode_tps floor (add after R1b), int4-KV-PC perplexity
+  (R2), instruct-quality (R3/R5), and wiring the perf job into GitHub CI (currently local/overnight only).
+
 ## Current best next gate
-**R1's parity test.** It is the lynchpin: green → coherent RWKV serve → unblocks the SSM serve product (R-snapshot) AND a
-valid quality gate (R3/R5).
+**R1b RWKV serve throughput.** R1's correctness parity is already green; keep it green while resizing the multiseq decode
+arena to active slots, then re-run `ssm_serve_smoke.sh` and `ssm_product_gate.sh`. The parallel unblocked gate is R3/R5:
+run valid chat-templated quality through `/v1/chat/completions` so RWKV routing decisions rest on measured quality, not tps
+alone.

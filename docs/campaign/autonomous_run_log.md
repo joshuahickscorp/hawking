@@ -215,3 +215,169 @@ RUN_SERVE_SMOKE=0 tools/ci/overnight_hardening.sh
 - **Serve perf NOTE (follow-up, not correctness):** serve dec_tps ~7.8 vs single-stream ~119 — the B=8 multiseq arena does
   8-stream work for 1 active stream. Size the arena to active slots to recover it. Separate from this checkpoint.
 - **Checkpoint:** serve admission + R1 decode + stream terminator all FIXED + TESTED (parity green, serve smoke fail=0). Committing the clean lanes.
+
+## Phase 9 — regression gates wired (Lane A.5: make the speed/compression/quality wins persist)
+- **Why this lane:** master-plan §7 ranks "no perf/compression/quality regression gates" as the #2 critical-path risk and
+  the owner's explicit "ensure our wins persist" ask. Correctness was already locked (193 golden hashes); the missing half
+  was an enforced floor. Per the prompt's own algorithm ("add the gate before changing risky behavior") this is the
+  prerequisite for the next lane (serve-throughput hot-path change, R1b).
+- **Built (narrow, reversible, no product behavior changed):**
+  - `tools/ci/baselines/regression_baseline.json` — committed floors. Footprints are MEASURED exact bytes (Qwen-3B
+    1,929,903,264; RWKV-7-SFT 300,694,944). tps/quality floors sit ~10–15% below the measured warm median so the gate
+    catches CATEGORY regressions (a lever silently disabled) without flapping on the documented ±several-% noise floor.
+  - `tools/ci/regression_gate.sh` — measures (reusing `tools/bench/ratios.sh` + `stat` + `jq`), compares to baseline, and
+    EXITS NON-ZERO on a breach. Footprint check is CPU-safe/always-on; tps + quality run when the GPU/binary/model are
+    available (else reported SKIPPED, never a false PASS). Honestly lists `pending_not_enforced` (serve-tps, int4-KV
+    perplexity, instruct-quality).
+  - Wired into `tools/ci/preflight.sh` (footprint always; full gate in the bench block) and `tools/ci/overnight_hardening.sh`
+    (`RUN_REGRESSION=1` default; a breach sets the run's FAIL=1).
+- **Evidence (MEASURED 2026-06-22):**
+  - Full gate GREEN end-to-end — `reports/regression/20260622T140213Z/summary.md`: footprint 2/2 PASS; `tps qwen3b_short=39.42
+    ≥34.0`; `tps rwkv7_sft_short=119.42 ≥100.0`; `quality f16_kv=100% ≥0.85`; `quality profile_fast=90% ≥0.80`. **6 enforced,
+    fail=0, exit 0.** Numbers reproduce the baseline's cited sources (test_matrix), so the baseline is honest.
+  - Red path PROVEN — a deliberately-too-tight ceiling makes the gate exit 1 (footprint FAIL). A gate that cannot go red is useless.
+  - Wiring PROVEN — `bash -n` clean on both scripts; CPU-only overnight smoke ran the regression phase and nested its report
+    under the run's OUT (`reports/overnight/smoke-regression-wire/regression/summary.md`), rc=0.
+- **Lane hygiene:** touches only `tools/ci/` (2 edits + 2 new files); no source/kernel/output change; `reports/` is gitignored.
+- **Exact commands:**
+  ```bash
+  FOOTPRINT_ONLY=1 tools/ci/regression_gate.sh      # CPU-safe, always enforceable
+  tools/ci/regression_gate.sh                        # full (needs free GPU + release binary + models)
+  RUN_REGRESSION=1 tools/ci/overnight_hardening.sh   # enforced inside the unattended runner
+  ```
+- **NEXT:** with the floors in place it is now safe to take the serve-throughput hot-path change (R1b) — size the RWKV/Qwen
+  multiseq decode arena to ACTIVE slots, keep `rwkv7_prefill_slot_multiseq_parity` green, and add a `serve_decode_tps` floor
+  to the baseline to lock the recovered throughput.
+
+## Phase 10 — Condense frontier added (post-finalization Model Press expansion)
+- **Why this lane:** the owner asked to carry the condensation mentality beyond runtime finalization: make Hawking
+  able to quantize/condense models that ordinary local machines cannot fully load, with GLM-5.2-class open weights as the
+  current market signal.
+- **Built (docs/strategy only; no code behavior changed):**
+  - `docs/plans/condense_frontier_2026_06_22.md` — new post-finalization frontier plan: memory-budgeted
+    press planner, out-of-core resumable tensor pipeline, output-damage-ranked bit allocation, 4/3/2/1-bit ladder,
+    condense-then-recover loop, GLM-class MoE dry-run support, and artifact proof requirements.
+  - `docs/plans/condense_naming_migration_2026_06_22.md` — public rename plan: Condense replaces STRAND in product
+    language; current `strand` function symbols and aliases are inventoried.
+  - `docs/campaign/hawking_ship_finalization_prompt.md` — P2 renamed/framed as Model Press / Condense; added
+    condensation doctrine and Lane G.
+  - `docs/campaign/hawking_ship_goal_prompts.md` — added a copy-paste Lane G prompt and strengthened Lane B/C wording.
+  - `docs/plans/hawking_shippability_masterplan_2026_06_22.md` — added §3.8-§3.13 and §3.A; sequenced Phase E after core
+    finalization.
+  - Standing packet updated: `project_standing_snapshot.md`, `open_risks_and_gates.md`, `summary_seed_for_new_chat.md`,
+    `roadmap.md`, and `commit_plan.md`.
+- **Evidence checked:** external GLM-5.2 state was verified on 2026-06-22 from Z.ai/Hugging Face/Together/arXiv sources:
+  public weights/MIT, 1M context, GLM-5 backbone around 744B total / 40B active MoE. Treat GLM-5.2 as the current proof of
+  demand, not as the only target.
+- **Gate/rails:** no frontier downloads, paid cloud, or public derivatives without owner approval. Start with dry-run planner
+  and small-model out-of-core proofs before GLM-class work.
+
+## Phase 10 — R1b serve throughput: hypothesis tested + DISPROVEN (evidence-driven pivot)
+- **Lane:** with the regression floors in place (Phase 9), took the top runtime gap R1b (serve tps ≪ single-stream).
+- **Hypothesis (from the standing docs):** the B=8 multiseq decode arena does 8-stream work for 1 active stream → size it to
+  active slots to recover throughput.
+- **Built + parity-proven, then REVERTED:** a surgical, parity-safe change bounding decode dispatch to `active=max(region)+1`
+  while keeping the arena `SERVE_BATCH`-wide (absolute slot state preserved; strides are config-derived). 3 edits in `rwkv7.rs`
+  (`forward_token_gpu_multiseq` gained an `active` bound; the serve path computed it; the compacted method path passed
+  `tokens.len()` unchanged). Gates GREEN: `rwkv7_prefill_slot_multiseq_parity` (slot0 active=1, slot3 active=4) + all 11
+  `rwkv7_multiseq_parity` (b1/b2 isolation, CPU-oracle, serial-GPU).
+- **MEASURED (fresh binary, 96-token continuation via `/v1/hawking/generate`):** serve dec_tps **9.94** — essentially
+  unchanged. With 1 active stream at slot 0 → `active=1` → 1-stream dispatch, yet still ~10 tps vs `generate` ~119 for the same
+  0.4B model. **Conclusion: stream width is NOT the bottleneck; the cost is per-token FIXED overhead independent of `b`.**
+  (First measurement also caught a process trap: building `-p hawking-core` does NOT rebuild the `hawking` serve binary — must
+  `cargo build --release -p hawking`; the parity TESTS recompile the lib so they were always valid.)
+- **Action:** reverted the change (rwkv7.rs == HEAD; verified empty diff; parity re-confirmed GREEN). No measured benefit →
+  no unmeasured hot-path delta left in the tree (rails). The deliverable is the corrected diagnosis.
+- **Re-aimed R1b (open_risks_and_gates.md R1b):** the multiseq decode path is ~12× slower per token than single-stream even at
+  b=1. Next diagnostic: profile ONE serve token vs ONE generate token (dispatch count + `commit_and_wait` + serve-loop CPU),
+  and diff the multiseq layer GEMVs vs the single-stream predec/fused Q4K GEMVs — fix the dominant term, then (only if
+  multi-stream matters) re-land active-sizing WITH a measured aggregate gain.
+- **Lane hygiene:** engine source unchanged from HEAD; the only tracked deltas this session are the Phase-9 regression-gate
+  tooling (`tools/ci/`) + campaign docs.
+
+## Phase 11 — R3 valid quality eval: chat path works, harness bug (no quality recorded)
+- **Built** `tools/ci/ssm_quality_chat.sh` — a valid instruct eval driving serve `/v1/chat/completions` (vs the raw-`generate`
+  suite that is explicitly NOT valid), comparing RWKV-7 vs Qwen-3B across 5 task classes (bash 3.2-safe).
+- **KEY FINDING:** RWKV-7's chat endpoint ALREADY produces coherent instruct output under the generic template — manual
+  `/v1/chat/completions` returned "The capital of France is Paris." So R3 was less blocked than assumed; no RWKV chat-template
+  fix is needed for a valid eval (RWKV falls to `render_chat_generic` and still answers).
+- **HARNESS BUG (honest):** the suite returned all-empty (0/5) for BOTH models — a measurement artifact, NOT a quality result
+  (a manual curl with the same body returns valid JSON with non-empty content). Root cause not fully pinned (likely the
+  script's curl/parse or the long retrieval prompt's CPU-prefill timeout on RWKV). **No quality numbers recorded.** Also spotted
+  a separate concern: a raw Qwen-3B chat response showed garbage + apparent template leakage ("caffein\nuser\n…multiply 1 by 2").
+  Both flagged for a separate session (`spawn_task` task_e50ba5ae). R3 remains open pending the harness fix.
+
+## Phase 12 — Lane G / Condense: C1 memory-budgeted Press Planner (dry-run) LANDED
+- **Gate-safety check (required before Lane G):** core finalization gates are safe to leave — R1 serve-correctness CLOSED,
+  R9 regression gates green+wired, parity green, engine source == HEAD (R1b probe cleanly reverted), lib 182/182. Proceeded.
+- **Built** `hawking press --dry-run --memory-budget <SIZE> --target <BITS> --weights <gguf>` (`crates/hawking/src/main.rs`
+  `press_main` + `parse_size_arg`/`parse_tier_arg`/`fmt_bytes_h`/`fmt_count_h`). GGUF-metadata-only: no weights resident, no
+  GPU, no network, no writes. Prints a truthful **Press Plan**: arch, params/tensors, weight bytes + bpw, largest tensor, peak
+  CREATION memory (out-of-core tensor-at-a-time vs full-resident-f32), the Condense ladder (4/3/2/1-bit) output sizes, and a
+  budget verdict naming the **wedge**.
+- **MEASURED (truthful):** Qwen-3B-Q4_K_M — 3.09B params, largest `token_embd` 311.2M elems (f32 1.16 GiB), out-of-core peak
+  1.32 GiB vs full-resident 11.50 GiB (~9×); at `--memory-budget 2gb` → out-of-core FITS, full-resident EXCEEDS → **WEDGE**
+  (the "press a parent that can't fit fully resident" product claim, demonstrated). RWKV-7 — 450.9M, 292 MiB vs 1.68 GiB.
+  Weight-bytes vs file `stat` differ only by the ~6 MB GGUF header (excluded). Non-`--dry-run` prints a gated notice (bake is
+  owner-gated, not implemented).
+- **safetensors (fp16/bf16 PARENT) support added same session (✅):** `read_inventory` now auto-detects GGUF vs safetensors
+  (8-byte LE header + JSON, metadata only). MEASURED on local HF parents (no download): `rwkv7-g1-04-hf` (BF16×795, 450.8M,
+  ~16 bpw) → out-of-core 292 MiB vs full-resident 1.68 GiB, WEDGE at `--memory-budget 1gb`, ladder 3.56×/5.33×/8.00×;
+  `mamba2-370m-hf` (F16×434) also planned; weight-bytes vs file `stat` differ by exactly the 84,584-byte safetensors header.
+- **Gates:** `cargo test -p hawking --bins press_tests` GREEN (3: parse_size_arg, parse_tier_arg, safetensors_header); build
+  clean; the planner code is clippy-clean (PRE-EXISTING `hawking-core/json_constrain.rs` dead-code is unrelated — flagged in R8b).
+- **Remaining (C1):** multi-shard safetensors (`*-00001-of-000NN.safetensors` + index.json — frontier parents are sharded;
+  reader handles a single file today); scratch/thread/resume fields; then C2 out-of-core writer. The bake stays owner-gated.
+  Docs: `condense_frontier_2026_06_22.md` C1 STATUS, `open_risks_and_gates.md` R8b.
+- **Lane hygiene:** Lane G change is confined to `crates/hawking/src/main.rs` (new `press` subcommand + GGUF/safetensors
+  inventory readers + 3 test fns) + docs; no engine/kernel/output change; read-only dry-run with no side effects.
+
+## Phase 13 — Lane H / Apple Fit: A1 Mac profiler + A2 `hawking fit` (capability-first) LANDED
+- **Gate-safety check:** prior lanes safe to leave (R9 regression gates green, Condense C1 done+gated, R1 closed, engine ==
+  HEAD). Proceeded to Lane H.
+- **A1 (Mac profiler):** `detect_mac()` reads chip / unified memory / OS via `sysctl` (hw.memsize, machdep.cpu.brand_string,
+  kern.osproductversion). MEASURED here: "Apple M3 Pro | 18.00 GiB | macOS 26.6". Wired into `hawking doctor`: the swap-risk
+  was **hardcoded to an 18 GB M3 Pro** (`m3_pro_18gb_swap_risk`) → now machine-relative (`fit_zone` vs detected RAM) + a
+  `machine:` line. REMAINING: `doctor --json`, live pressure/thermal (A4), Metal limits.
+- **A2 (`hawking fit`):** `hawking fit --weights <gguf> [--intent <I>] [--max-context N] [--concurrency C]` (`fit_main`).
+  CPU-only (metadata + sysctl; no weights/GPU/network). Prints the **context × KV-policy fit envelope** (FITS/TIGHT/SWAP/OOM
+  vs detected RAM), envelope ceilings (longest stable / f32-quality / safe-comfort / native), and an **intent recommendation**
+  (capability-first default) with explicit alternatives + override hints. SSM models get the **flat-KV moat row**.
+- **Capability doctrine honored:** reports the MAX envelope, never caps; safety-biased intents (safe-fit/max-battery) print an
+  explicit **anti-throttle note** naming the stronger max-capability option. (The enforcing anti-throttle GATE — A8 — comes
+  with `serve --auto` A3, which isn't built yet; `fit` is informational/read-only so there's no run to throttle.)
+- **MEASURED:** Qwen2.5-3B on M3-Pro-18GB → 4k–32k all FITS (f16 KV 144 MiB→1.12 GiB; f32 up to 2.25 GiB), max-capability =
+  native 32k @ f32; longest stable 262k @ f16. RWKV-7 → ~887 MiB at ANY context (flat). `doctor` swap_risk now machine-aware.
+- **Gates:** `cargo test -p hawking --bins` GREEN — `fit_tests` (kv_cache_bytes scaling + precision/concurrency, fit_zone
+  thresholds) + `press_tests` (3); build clean; clippy clean for this code (fixed a `useless_format`; the PRE-EXISTING
+  `hawking-core/json_constrain.rs` dead-code remains unrelated).
+- **Remaining (Lane H):** A3 `serve --auto` (intent policy over the planner) + A8 anti-throttle regression gate; A4 memory-
+  pressure engine; A5 long-context routing (transformer vs SSM, measured); A6 energy/thermal cards; A7 Mac-native model
+  experience (pull/registry/hawkingd). Docs: `apple_fit_frontier_2026_06_22.md` A1/A2 STATUS.
+- **Lane hygiene:** Lane H change confined to `crates/hawking/src/main.rs` (new `fit` subcommand + `detect_mac`/`kv_cache_bytes`/
+  `fit_zone` helpers + 2 test fns + the doctor real-RAM wire) + docs; no engine/kernel/output change; read-only.
+
+## Phase 14 — Lane H continued: doctor --json (A1) + serve --auto (A3) + anti-throttle invariant (A8)
+- **Required-docs note:** read `docs/env_flags.md` + `docs/architecture.md` in full this turn (the prior turn had not). Key:
+  hawking-serve honors the same `HAWKING_*` flags as the CLI; KV policy = `HAWKING_QWEN_F16_KV` (f32 default), energy =
+  `HAWKING_ENERGY_EFFICIENT`/`--energy-mode`, speed = `--profile fast` — so `serve --auto` chooses among these.
+- **A1 finish — `doctor --json`:** added `--json` to `doctor`; emits machine{chip,total_unified_bytes,os} + model{layers,
+  kv_heads,head_dim,context,…} + kv_cache_estimate + swap_risk for repeatable fit decisions. Validated on Qwen-3B.
+- **A3 — `hawking serve --auto [--intent]`:** `auto_serve_pick` + Serve dispatch. On `--auto` it detects the Mac, reads model
+  facts (`read_model_facts`), picks the strongest stable config for the intent, ANNOUNCES machine + chosen (ctx/KV/profile/
+  energy) + anti-throttle verdict, and APPLIES the safe levers (KV policy, fast profile for max-speed, efficient energy for
+  max-battery) ONLY where the user didn't set them (expert flags win). MEASURED e2e: Qwen `max-capability` → ctx 32768 @ f32
+  ("anti-throttle OK"); `safe-fit` → ctx 32768 @ f16 + "EXPLICIT DOWNGRADE: max-capability would serve … @ f32 KV"; RWKV-7 →
+  flat SSM full native. (Fixed a logic bug found in validation: safe-fit/max-battery now cap context at native — "comfortable"
+  context can exceed native on a roomy Mac, which is not safer — and the downgrade note names the real giveback, f16-vs-f32.)
+- **A8 — anti-throttle invariant (pick level):** baked into `auto_serve_pick` — a non-safety intent never returns below
+  max-capability without `safety_downgrade` set; a hard-RAM reduction is the capability ceiling (not a flagged downgrade).
+  Unit-tested (`fit_tests::auto_pick_is_capability_first_and_anti_throttle`): roomy → native@f32 no-downgrade; safety intents
+  flag + cap ≤ native; tight-RAM → f16 forced (no false flag); SSM flat. The MEASURED regression gate (auto vs best-manual
+  serve) needs A6 + a serving harness — deferred.
+- **Gates:** `cargo test -p hawking --bins` **15/15 GREEN**; build + clippy clean (fixed a `useless_format`); serve --auto
+  validated e2e across 3 intents/2 models. PRE-EXISTING `hawking-core/json_constrain.rs` dead-code still unrelated.
+- **Remaining (Lane H):** A4 live memory-pressure engine; A5 measured long-context routing; A6 energy/thermal cards; A7
+  Mac-native model experience (pull/registry/hawkingd); the measured A8 serving regression gate; serve context-cap wiring.
+- **Lane hygiene:** confined to `crates/hawking/src/main.rs` (doctor --json, fit/auto helpers, serve --auto wiring, 1 test fn)
+  + docs; `--auto` is opt-in so default serve is unchanged; engine/kernels untouched.

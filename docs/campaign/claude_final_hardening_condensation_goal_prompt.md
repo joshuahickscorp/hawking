@@ -1,5 +1,10 @@
 # Claude Final Hardening / Pruning / Condensation Goal Prompt
 
+> **SUPERSEDED (2026-06-22):** use
+> `docs/campaign/hawking_ship_finalization_prompt.md` plus
+> `docs/campaign/hawking_ship_goal_prompts.md` for future ship-finalization
+> work. This file is kept for provenance and contains older campaign state.
+
 Copy/paste this into Claude for one last autonomous pass before stopping the
 loop and asking for a clean project-standing summary.
 

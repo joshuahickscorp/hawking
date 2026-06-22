@@ -11,7 +11,9 @@ win). **RWKV serve is now correct end-to-end** (2026-06-22): admission + the GPU
 `fresh`-flag fix, parity-gated) + the SSE stream terminator are all fixed — `ssm_serve_smoke.sh` is **fail=0** with coherent
 multi-token output. The validated frontier shifts from *serve correctness* to *serve throughput* (the B=8 arena does
 8-stream work for 1 active stream → ~7.8 vs ~119 single-stream tps) and *valid instruct quality eval* (now unblocked via
-`/v1/chat/completions`).
+`/v1/chat/completions`). A new post-finalization strategy doc now frames the Model Press as **Condense**:
+make quantization itself memory-budgeted, resumable, and out-of-core so Hawking can create artifacts from parents that do
+not fit fully resident on the user's machine.
 
 ## Speed table (warm, measured)
 | Model / config | short | ~2.5k | ~8k | note |
@@ -31,7 +33,8 @@ multi-token output. The validated frontier shifts from *serve correctness* to *s
   end-to-end (admission + decode + stream terminator; `ssm_serve_smoke.sh` fail=0)**, throughput-limited (see below).
 - **EXPERIMENTAL / partial:** per-channel int4-KV (numerics pass, NOT wired end-to-end); KD drafts (undertrained; KD>SFT,
   best 75M ~19.4% vs SFT 17.7%); **RWKV serve THROUGHPUT** (~7.8 vs ~119 single-stream — the B=8 arena does 8-stream work
-  for 1 active stream; size the arena to active slots).
+  for 1 active stream; size the arena to active slots); memory-budgeted/out-of-core Model Press (documented frontier, not
+  built yet).
 - **NEWLY UNBLOCKED:** valid instruct quality eval via `/v1/chat/completions` (the serve fix removed the gate).
 - **BLOCKED:** mamba2 long-ctx (8k kernel bug).
 - **DEAD (evidence in `kill_ledger.md`):** spec-decode for speed (per-cycle overhead wall); per-ROW int4-KV (collapse);
@@ -43,15 +46,23 @@ multi-token output. The validated frontier shifts from *serve correctness* to *s
 - Lib unit suite **182/182 pass**; representative parity **3/3** (per-channel int4-KV outlier numerics, Q6_K 2r/4r).
 - **Raw `hawking generate` is NOT a valid instruct/Q&A quality gate** (no chat template → garbage on Q&A prompts).
   Valid instruct eval needs `/v1/chat/completions` (gated on the RWKV serve fix) or manual per-model templates.
+- **Regression floors are now ENFORCED (2026-06-22):** `tools/ci/regression_gate.sh` + committed
+  `tools/ci/baselines/regression_baseline.json` gate footprint (measured bytes), decode_tps, and lever argmax-identity, and
+  exit non-zero on a category regression (e.g. predec silently OFF = −46.7%). Live GREEN: 6 enforced, fail=0
+  (`reports/regression/20260622T140213Z/`). Wired into `preflight.sh` + `overnight_hardening.sh` (`RUN_REGRESSION=1`). This
+  closes the master-plan §7 "wins can regress silently" hole for speed/footprint/lever-quality (serve-tps, perplexity, and
+  instruct-quality floors remain pending — see the baseline's `pending_not_enforced`).
 
 ## Exact next commands
 ```bash
-# The single highest-value gate (RWKV serve decode correctness):
+# Keep the now-closed RWKV serve correctness proof green while changing serve throughput:
 cargo test --release -p hawking-core --test rwkv7_prefill_slot_multiseq_parity -- --ignored --test-threads=1
-# After it is green, confirm the serve path end-to-end:
+# Confirm the RWKV serve path remains coherent end-to-end:
 tools/ci/ssm_serve_smoke.sh models/rwkv7-g1-04-sft-Q4_K_M.gguf
-# Low-risk repeatable validation (CPU + sequential GPU; skips the known-failing serve gate):
-RUN_SERVE_SMOKE=0 tools/ci/overnight_hardening.sh
+# Broader SSM product gate after throughput or quality-gate edits:
+tools/ci/ssm_product_gate.sh models/rwkv7-g1-04-sft-Q4_K_M.gguf
+# Low-risk repeatable validation while avoiding GPU work:
+RUN_GPU=0 RUN_PREFLIGHT=0 tools/ci/overnight_hardening.sh
 ```
 
 ## The one fix that unlocked the most value — DONE (2026-06-22)
@@ -65,10 +76,14 @@ arena does 8-stream work for 1 active stream (~7.8 vs ~119 tps); size the arena 
   speed-priority option and `F16_KV` for long-context footprint. RWKV-7 single-stream `generate` as the **long-context
   throughput** option (it is coherent and ~13–14× faster than Qwen at 8k).
 - **Keep researching:** per-channel int4-KV wiring (deeper KV compression, gated); RWKV-7 instruct quality per task class
-  (needs the chat-template gate); a converged KD training campaign (separate effort).
+  (needs the chat-template gate); a converged KD training campaign (separate effort); Condense frontier work after
+  finalization: dry-run planner, out-of-core press, 4/3/2/1-bit ladder, and GLM-class MoE support with owner-approved
+  storage/cloud budgets.
 - **Stop doing:** spec-decode-for-speed; decode-kernel micro-optimization (tapped); FFN_DOWN_Q4K / Q6_K-predec / per-ROW
   int4-KV / Q3_K-decode (all dead with evidence). Do not chase the 1.6× llama gap for decode — it is structural at M=1.
-- **Single next technical fix (highest leverage):** RWKV serve THROUGHPUT — size the multiseq decode arena to the number of
-  ACTIVE slots (it does B=8 work for 1 active stream → ~7.8 vs ~119 tps). The serve is now *correct* (R1 fixed, smoke fail=0);
-  recovering throughput makes the SSM long-context moat shippable as a *server*, not just single-stream `generate`.
-
+- **Single next technical fix (highest leverage):** RWKV serve THROUGHPUT — single-stream serve ~10 tps vs ~119 `generate`.
+  **Note (2026-06-22): the "arena does 8-stream work" theory was TESTED and DISPROVEN** — bounding decode dispatch to
+  `active=1` (parity-green) did NOT move serve tps, so the cost is per-token *fixed* overhead, not stream width (the change was
+  reverted; rwkv7.rs == HEAD). Re-aimed: profile one serve token vs one `generate` token and diff the multiseq GEMV kernels vs
+  the single-stream predec GEMVs (the multiseq path is ~12× slower/token even at b=1). See `open_risks_and_gates.md` R1b. The
+  serve is *correct* (R1 fixed, smoke fail=0); recovering throughput makes the SSM moat shippable as a *server*.

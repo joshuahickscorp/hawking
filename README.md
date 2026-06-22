@@ -23,11 +23,18 @@ measured, tested, and changed without hiding work in external runtimes.
 - Hand-written Metal kernels for Q4_K / Q6_K GEMV, attention, RoPE, RMSNorm,
   sampling, and fused paths.
 - OpenAI-compatible `/v1/chat/completions` and `/v1/completions` endpoints.
-- `generate`, `serve`, `bench`, `doctor`, and `autotune` CLI workflows.
+- `generate`, `serve`, `bench`, `doctor`, `autotune`, `fit`, and `press` CLI workflows.
+- Apple Fit: `hawking fit` and `doctor --json` predict the strongest usable
+  configuration for the current Mac; `serve --auto --intent <…>` selects it
+  (capability-first — it reports the full envelope and never hides a throttle).
+- Condense (low-bit model press): `hawking press --dry-run --memory-budget` plans
+  out-of-core artifact creation for parent models too large to hold fully resident.
 - CPU reference path for off-macOS builds and Metal parity checks.
 - Prefix-cache reuse, speculative decode experiments, and benchmark tooling.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the internal map and
+[docs/BENCHMARKS.md](docs/BENCHMARKS.md) for the SOTA comparison harness
+(Hawking vs llama.cpp vs MLX).
 
 ## Build
 

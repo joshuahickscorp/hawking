@@ -1,5 +1,10 @@
 # Claude Goal Prompt - Hawking Autonomous Production Run
 
+> **SUPERSEDED (2026-06-22):** use
+> `docs/campaign/hawking_ship_finalization_prompt.md` plus
+> `docs/campaign/hawking_ship_goal_prompts.md` for future ship-finalization
+> work. This file is kept for provenance and older campaign context.
+
 Copy/paste this into Claude when starting or resuming the next autonomous run.
 For a longer, more aggressive campaign prompt, use
 `docs/campaign/claude_moonshot_goal_prompt.md`.

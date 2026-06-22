@@ -1,5 +1,5 @@
 # RWKV-7 Spec-Decode Hardening
-**Date:** 2026-06-20 14:54 UTC
+**Date:** 2026-06-20 22:52 UTC
 
 ## Assumptions
 
@@ -16,10 +16,10 @@
 
 | Variant | Params M | Draft TPS est | Accept | PPL | Effective TPS | vs llama | Status |
 |---|---:|---:|---:|---:|---:|---:|---|
-| draft_35m_probe | 34.7 | 400 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
-| draft_50m_probe | 49.9 | 400 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
-| draft_75m_probe | 76.1 | 400 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
-| draft_100m | 100.1 | 400 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
+| draft_35m_probe | 34.7 | 400 | 13.50% | 6972.59 | 24.5 | 0.49x | **FAIL**: accept 13.50% below floor 60% |
+| draft_50m_probe | 49.9 | 400 | 5.00% | 7314.31 | 22.4 | 0.45x | **FAIL**: accept 5.00% below floor 60% |
+| draft_75m_probe | 76.1 | 400 | 29.50% | 6345.90 | 30.1 | 0.60x | **FAIL**: accept 29.50% below floor 60% |
+| draft_100m | 100.1 | 400 | 0.50% | 9392.86 | 21.3 | 0.43x | **FAIL**: accept 0.50% below floor 60% |
 | draft_150m | 166.2 | 375 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
 | draft_200m | 200.2 | 246 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
 | draft_300m | 300.5 | 146 | pending | pending | pending | pending | **PENDING**: no accept-rate eval yet |
