@@ -176,6 +176,17 @@ enum Cmd {
         /// Individual flags always override the workload pack's defaults.
         #[arg(long, default_value = "default", value_name = "PACK")]
         workload: Option<String>,
+        /// Apple Fit auto mode (Lane H / A3): inspect this Mac and choose the
+        /// strongest STABLE config for `--intent` (KV policy, energy, profile),
+        /// announce it + alternatives, then serve. Capability-first; never a
+        /// hidden throttle (downgrades are printed). Explicit flags
+        /// (--f16-kv/--no-f16-kv/--profile/--energy-mode) always override.
+        #[arg(long, default_value_t = false)]
+        auto: bool,
+        /// Intent for `--auto`: max-capability (default), max-context, max-quality,
+        /// max-speed, max-battery, safe-fit.
+        #[arg(long, default_value = "max-capability", value_name = "INTENT")]
+        intent: String,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -361,12 +372,16 @@ enum Cmd {
         #[arg(long)]
         out: Option<PathBuf>,
     },
-    /// Inspect model size, KV-cache budget, current RSS, and M3-Pro fit.
+    /// Inspect model size, KV-cache budget, current RSS, and per-Mac fit.
     Doctor {
         #[arg(long)]
         weights: PathBuf,
         #[arg(long, default_value_t = 4096)]
         max_seq_len: usize,
+        /// Emit a machine-readable JSON object (machine + model + kv + fit) for
+        /// repeatable fit decisions (Apple Fit A1).
+        #[arg(long, default_value_t = false)]
+        json: bool,
     },
     /// Rank a kernel-profile's recorded autotune evidence using the shipped
     /// offline scorer (profile::select_best / score_measurement). Loads the
@@ -540,6 +555,58 @@ enum Cmd {
         #[arg(long, value_name = "PATH")]
         tier_map_json: Option<PathBuf>,
     },
+    /// Condense Model Press — plan (and, later, create) a low-bit Hawking artifact
+    /// from a parent model under a declared memory budget.
+    ///
+    /// Only `--dry-run` is implemented today: it inspects model metadata (GGUF or
+    /// safetensors; no weights, GPU, or network) and prints a Press Plan — peak CREATION
+    /// memory for out-of-core (tensor-at-a-time) pressing vs full-resident, the
+    /// Condense ladder (4/3/2/1-bit) output sizes, and whether it fits the budget.
+    /// The bake itself is owner-gated and not performed here.
+    ///
+    ///   hawking press --dry-run --memory-budget 18gb --target 4,3,2 --weights model.gguf
+    Press {
+        /// Source model file (GGUF) to plan a press for.
+        #[arg(long)]
+        weights: PathBuf,
+        /// Plan only — inspect metadata and print the Press Plan. REQUIRED today
+        /// (the bake path is owner-gated and not yet implemented).
+        #[arg(long, default_value_t = false)]
+        dry_run: bool,
+        /// Declared local memory budget for artifact creation, e.g. `18gb`, `64gb`,
+        /// `2tb`, `1500mb`, or a raw byte count. Drives the fit verdict.
+        #[arg(long, value_name = "SIZE")]
+        memory_budget: Option<String>,
+        /// Comma-separated Condense ladder target bit-widths to estimate, e.g.
+        /// `4,3,2,1`. Default reports the full ladder.
+        #[arg(long, default_value = "4,3,2,1", value_name = "BITS")]
+        target: String,
+    },
+    /// Apple Fit — inspect THIS Mac and report the strongest usable run
+    /// configuration for a model (Lane H / A2). CPU-only: detects chip + unified
+    /// memory, reads the model's attention config from metadata, and predicts the
+    /// context/KV-policy fit envelope (FITS/TIGHT/SWAP/OOM) for the current machine.
+    /// Capability-first: it shows the MAX usable envelope + stronger/safer
+    /// alternatives and never silently caps. GGUF models only (runnable); use
+    /// `hawking press` to plan condensing a safetensors parent.
+    ///
+    ///   hawking fit --weights model.gguf [--intent max-capability] [--max-context 32768]
+    Fit {
+        /// Model file to fit (GGUF — a runnable model).
+        #[arg(long)]
+        weights: PathBuf,
+        /// Declared intent: max-capability (default), max-context, max-quality,
+        /// max-speed, max-battery, or safe-fit. Capability-first by default.
+        #[arg(long, default_value = "max-capability", value_name = "INTENT")]
+        intent: String,
+        /// Cap the context length considered (tokens). Default: the model's native
+        /// trained context. Use to explore a specific target.
+        #[arg(long, value_name = "TOKENS")]
+        max_context: Option<usize>,
+        /// Concurrent streams (KV scales with this). Default 1.
+        #[arg(long, default_value_t = 1, value_name = "N")]
+        concurrency: usize,
+    },
     /// Track 6: offline spec replay-oracle (pure CPU — no Metal, no model
     /// forward). Tokenizes a text corpus with the model's OWN tokenizer
     /// (GGUF-embedded vocab, or a sibling tokenizer.json), then replays the
@@ -605,19 +672,21 @@ fn main() -> Result<()> {
             no_f16_kv,
             batch_policy,
             workload,
+            auto,
+            intent,
         } => {
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
 
             // Parse --profile (global flag) into RuntimeProfile.
-            let runtime_profile = cli
+            let mut runtime_profile = cli
                 .profile
                 .as_deref()
                 .and_then(hawking_serve::RuntimeProfile::from_str)
                 .unwrap_or(hawking_serve::RuntimeProfile::Default);
 
             // Parse --energy-mode.
-            let resolved_energy_mode = energy_mode
+            let mut resolved_energy_mode = energy_mode
                 .as_deref()
                 .and_then(hawking_serve::EnergyMode::from_str)
                 .unwrap_or(hawking_serve::EnergyMode::Off);
@@ -646,13 +715,78 @@ fn main() -> Result<()> {
                 .unwrap_or(hawking_serve::WorkloadPack::Default);
 
             // Resolve --f16-kv / --no-f16-kv into Option<bool>.
-            let resolved_f16_kv = if f16_kv {
+            let mut resolved_f16_kv = if f16_kv {
                 Some(true)
             } else if no_f16_kv {
                 Some(false)
             } else {
                 None
             };
+
+            // Apple Fit auto mode (A3): choose the strongest STABLE config for the
+            // intent, announce it (capability-first; downgrades printed — never hidden),
+            // and apply the safe levers ONLY where the user did not set them explicitly.
+            if auto {
+                let mac = detect_mac();
+                match read_model_facts(&weights) {
+                    Ok((facts, fb)) => {
+                        let pick = auto_serve_pick(&facts, fb, mac.total_mem, &intent);
+                        println!(
+                            "[serve --auto] {} | {} unified | model {} [{}]",
+                            mac.chip,
+                            if mac.total_mem > 0 {
+                                fmt_bytes_h(mac.total_mem)
+                            } else {
+                                "?".into()
+                            },
+                            facts.name,
+                            facts.arch
+                        );
+                        println!("[serve --auto] intent={intent}: {}", pick.rationale);
+                        println!(
+                            "[serve --auto] chosen: ctx {} | KV {} | profile {} | energy {}",
+                            pick.context,
+                            if pick.kv_f16 { "f16" } else { "f32" },
+                            if pick.profile_fast { "fast" } else { "default" },
+                            if pick.energy_efficient { "efficient" } else { "off" }
+                        );
+                        match &pick.safety_downgrade {
+                            Some(reason) => println!(
+                                "[serve --auto] EXPLICIT DOWNGRADE: {reason} (override: --intent max-capability)"
+                            ),
+                            None => println!(
+                                "[serve --auto] anti-throttle OK: strongest stable config, no hidden downgrade."
+                            ),
+                        }
+                        if resolved_f16_kv.is_none() {
+                            resolved_f16_kv = Some(pick.kv_f16);
+                        }
+                        if pick.profile_fast
+                            && cli.profile.is_none()
+                            && matches!(runtime_profile, hawking_serve::RuntimeProfile::Default)
+                        {
+                            if let Some(rp) = hawking_serve::RuntimeProfile::from_str("fast") {
+                                runtime_profile = rp;
+                            }
+                        }
+                        if pick.energy_efficient
+                            && matches!(resolved_energy_mode, hawking_serve::EnergyMode::Off)
+                        {
+                            if let Some(em) = hawking_serve::EnergyMode::from_str("efficient") {
+                                resolved_energy_mode = em;
+                            }
+                        }
+                        println!(
+                            "[serve --auto] context cap {} is advisory (serve KV capacity is set elsewhere); \
+                             KV/profile/energy applied. Live pressure (A4) + measured tps/energy (A6) are future work.",
+                            pick.context
+                        );
+                    }
+                    Err(e) => eprintln!(
+                        "[serve --auto] could not plan ({e}); serving with explicit/default settings."
+                    ),
+                }
+            }
 
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(hawking_serve::run(hawking_serve::ServeOptions {
@@ -768,7 +902,8 @@ fn main() -> Result<()> {
         Cmd::Doctor {
             weights,
             max_seq_len,
-        } => doctor_main(weights, max_seq_len),
+            json,
+        } => doctor_main(weights, max_seq_len, json),
         Cmd::ProfileRank {
             profile,
             quality_floor,
@@ -859,6 +994,18 @@ fn main() -> Result<()> {
             weights,
             expected_sha256,
         } => verify_main(weights, expected_sha256),
+        Cmd::Press {
+            weights,
+            dry_run,
+            memory_budget,
+            target,
+        } => press_main(weights, dry_run, memory_budget, target),
+        Cmd::Fit {
+            weights,
+            intent,
+            max_context,
+            concurrency,
+        } => fit_main(weights, intent, max_context, concurrency),
         Cmd::SpecOracle {
             corpus,
             tokenizer_from,
@@ -866,6 +1013,875 @@ fn main() -> Result<()> {
             warm_frac,
             json,
         } => spec_oracle_main(corpus, tokenizer_from, k, warm_frac, json),
+    }
+}
+
+/// `hawking press --dry-run`: the Condense Planner. Reads GGUF or safetensors
+/// metadata ONLY (no weights resident, no GPU, no network) and prints a Press Plan:
+/// peak CREATION memory for out-of-core (tensor-at-a-time) pressing vs
+/// full-resident, the Condense ladder (4/3/2/1-bit) output sizes, and the budget
+/// fit verdict. The bake/condense path is owner-gated and not performed here.
+/// See `docs/plans/condense_frontier_2026_06_22.md` (work package C1).
+fn press_main(
+    weights: PathBuf,
+    dry_run: bool,
+    memory_budget: Option<String>,
+    target: String,
+) -> Result<()> {
+    if !dry_run {
+        eprintln!(
+            "[press] only --dry-run is implemented. The bake/condense path is owner-gated \
+             (no downloads, cloud spend, or artifact writes here). Re-run with --dry-run \
+             for a truthful Press Plan."
+        );
+        return Ok(());
+    }
+
+    let budget = match memory_budget.as_deref() {
+        Some(s) => Some(parse_size_arg(s).map_err(|e| anyhow::anyhow!("--memory-budget: {e}"))?),
+        None => None,
+    };
+    let tiers = parse_tier_arg(&target).map_err(|e| anyhow::anyhow!("--target: {e}"))?;
+
+    // Metadata-only inventory (GGUF or safetensors): (name, dims, on-disk bytes).
+    let (source, dtype_summary, inv) = read_inventory(&weights)?;
+
+    let mut total_bytes: u64 = 0;
+    let mut total_elems: u64 = 0;
+    let mut n_tensors: usize = 0;
+    let mut largest_elems: u64 = 0;
+    let mut largest_name = String::new();
+    let mut largest_dims: Vec<u64> = vec![];
+    for (name, dims, bytes) in &inv {
+        let elems: u64 = dims.iter().product::<u64>().max(1);
+        total_elems += elems;
+        total_bytes += bytes;
+        n_tensors += 1;
+        if elems > largest_elems {
+            largest_elems = elems;
+            largest_name = name.clone();
+            largest_dims = dims.clone();
+        }
+    }
+    if n_tensors == 0 {
+        return Err(anyhow::anyhow!("no tensors found in {}", weights.display()));
+    }
+
+    let cur_bpw = (total_bytes as f64 * 8.0) / total_elems as f64;
+    let f32b: u64 = 4;
+    // Out-of-core peak (tensor-at-a-time): the largest tensor materialized to f32
+    // (a dequant working copy) plus its largest output block. THIS is the wedge.
+    let max_out_bytes = tiers
+        .iter()
+        .map(|(_, bpw)| ((largest_elems as f64) * bpw / 8.0).ceil() as u64)
+        .max()
+        .unwrap_or(0);
+    let ooc_peak = largest_elems * f32b + max_out_bytes;
+    // Full-resident peak (what naive post-hoc quant needs): the whole parent as f32.
+    let full_resident_f32 = total_elems * f32b;
+
+    println!("== Condense Press Plan (dry-run) ==");
+    println!("model:            {}", weights.display());
+    println!("source:           {source}");
+    println!("dtypes:           {dtype_summary}");
+    println!("tensors:          {n_tensors}");
+    println!("parameters:       {} ({} elems)", fmt_count_h(total_elems), total_elems);
+    println!(
+        "weight bytes:     {} ({} bytes of tensor data, header excluded, ~{cur_bpw:.2} bpw)",
+        fmt_bytes_h(total_bytes),
+        total_bytes
+    );
+    println!(
+        "largest tensor:   {largest_name} {:?} = {} elems (f32 = {})",
+        largest_dims,
+        fmt_count_h(largest_elems),
+        fmt_bytes_h(largest_elems * f32b)
+    );
+    println!();
+    println!("-- peak CREATION memory (the wedge) --");
+    println!(
+        "  out-of-core (tensor-at-a-time): {:>10}   <- Hawking Press target",
+        fmt_bytes_h(ooc_peak)
+    );
+    println!(
+        "  full-resident parent as f32:    {:>10}   <- naive post-hoc quant",
+        fmt_bytes_h(full_resident_f32)
+    );
+    if ooc_peak > 0 {
+        println!(
+            "  out-of-core is ~{:.0}x smaller peak than full-resident",
+            full_resident_f32 as f64 / ooc_peak as f64
+        );
+    }
+    println!();
+    println!("-- Condense ladder (estimated output; flat per-tensor bpw) --");
+    println!("  {:<8} {:>8} {:>12} {:>9}", "tier", "bpw", "out size", "vs now");
+    for (label, bpw) in &tiers {
+        let out_bytes = ((total_elems as f64) * bpw / 8.0).ceil() as u64;
+        let ratio = total_bytes as f64 / out_bytes as f64;
+        println!(
+            "  {:<8} {:>8.2} {:>12} {:>8.2}x",
+            label,
+            bpw,
+            fmt_bytes_h(out_bytes),
+            ratio
+        );
+    }
+    println!();
+    match budget {
+        Some(b) => {
+            println!("-- budget verdict (--memory-budget {}) --", fmt_bytes_h(b));
+            let ooc_ok = ooc_peak <= b;
+            let full_ok = full_resident_f32 <= b;
+            println!(
+                "  out-of-core press:  {:<7} (needs {})",
+                if ooc_ok { "FITS" } else { "EXCEEDS" },
+                fmt_bytes_h(ooc_peak)
+            );
+            println!(
+                "  full-resident:      {:<7} (needs {})",
+                if full_ok { "FITS" } else { "EXCEEDS" },
+                fmt_bytes_h(full_resident_f32)
+            );
+            if ooc_ok && !full_ok {
+                println!("  => WEDGE: Hawking can press this out-of-core under the budget; naive full-resident quant cannot.");
+            } else if ooc_ok && full_ok {
+                println!("  => both fit; out-of-core still lowers peak creation memory.");
+            } else {
+                println!("  => even out-of-core exceeds the budget; raise it or split the largest tensor.");
+            }
+        }
+        None => println!("(no --memory-budget given; pass one for a fit verdict.)"),
+    }
+    println!();
+    println!("NOTE: estimates from model metadata only (GGUF or safetensors) — no weights, GPU, or network.");
+    println!("      Output sizes use a flat per-tensor bpw; the real damage-ranked allocator (C3)");
+    println!("      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here).");
+    Ok(())
+}
+
+/// Read a tensor inventory (name, dims, on-disk bytes) + a source label + a dtype
+/// summary from a model file's METADATA ONLY — GGUF or safetensors. No weights are
+/// loaded, no GPU, no network. Used by `hawking press --dry-run`.
+fn read_inventory(
+    path: &std::path::Path,
+) -> Result<(String, String, Vec<(String, Vec<u64>, u64)>)> {
+    use std::io::Read;
+    let mut f =
+        std::fs::File::open(path).map_err(|e| anyhow::anyhow!("open {}: {e}", path.display()))?;
+    let mut magic = [0u8; 4];
+    f.read_exact(&mut magic)
+        .map_err(|e| anyhow::anyhow!("read {}: {e}", path.display()))?;
+    if &magic == b"GGUF" {
+        read_gguf_inventory(path)
+    } else if path.extension().and_then(|e| e.to_str()) == Some("safetensors") {
+        read_safetensors_inventory(path)
+    } else {
+        Err(anyhow::anyhow!(
+            "unsupported model format for {} (expected GGUF magic or a .safetensors file)",
+            path.display()
+        ))
+    }
+}
+
+fn read_gguf_inventory(
+    path: &std::path::Path,
+) -> Result<(String, String, Vec<(String, Vec<u64>, u64)>)> {
+    use hawking_core::gguf::GgufFile;
+    use std::collections::BTreeMap;
+    let gguf = GgufFile::open(path)?;
+    let arch = gguf.architecture().unwrap_or("unknown").to_string();
+    let mut dt: BTreeMap<String, u64> = BTreeMap::new();
+    let mut inv = Vec::with_capacity(gguf.tensors.len());
+    for (name, t) in &gguf.tensors {
+        *dt.entry(format!("{:?}", t.dtype)).or_insert(0) += 1;
+        inv.push((name.clone(), t.dims.clone(), t.byte_size));
+    }
+    let dtype_summary = dt
+        .iter()
+        .map(|(k, n)| format!("{k}×{n}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    Ok((format!("GGUF ({arch})"), dtype_summary, inv))
+}
+
+/// Parse a safetensors header (8-byte LE length + JSON) WITHOUT reading weights.
+/// Header JSON maps tensor name -> {dtype, shape, data_offsets:[start,end]}.
+fn read_safetensors_inventory(
+    path: &std::path::Path,
+) -> Result<(String, String, Vec<(String, Vec<u64>, u64)>)> {
+    use std::collections::BTreeMap;
+    use std::io::Read;
+    let mut f = std::fs::File::open(path)?;
+    let mut len_buf = [0u8; 8];
+    f.read_exact(&mut len_buf)?;
+    let hlen = u64::from_le_bytes(len_buf);
+    // Sanity cap: a metadata header should never be hundreds of MB; refuse to alloc.
+    if hlen == 0 || hlen > 512 * 1024 * 1024 {
+        return Err(anyhow::anyhow!(
+            "safetensors: implausible header length {hlen}"
+        ));
+    }
+    let mut hbuf = vec![0u8; hlen as usize];
+    f.read_exact(&mut hbuf)?;
+    let json: serde_json::Value =
+        serde_json::from_slice(&hbuf).map_err(|e| anyhow::anyhow!("safetensors header JSON: {e}"))?;
+    let obj = json
+        .as_object()
+        .ok_or_else(|| anyhow::anyhow!("safetensors: header is not a JSON object"))?;
+    let mut dt: BTreeMap<String, u64> = BTreeMap::new();
+    let mut inv: Vec<(String, Vec<u64>, u64)> = Vec::new();
+    for (name, v) in obj {
+        if name == "__metadata__" {
+            continue;
+        }
+        let dtype = v
+            .get("dtype")
+            .and_then(|d| d.as_str())
+            .unwrap_or("?")
+            .to_string();
+        let dims: Vec<u64> = v
+            .get("shape")
+            .and_then(|s| s.as_array())
+            .map(|a| a.iter().map(|x| x.as_u64().unwrap_or(1)).collect())
+            .unwrap_or_default();
+        let bytes: u64 = match v.get("data_offsets").and_then(|o| o.as_array()) {
+            Some(a) if a.len() == 2 => a[1]
+                .as_u64()
+                .unwrap_or(0)
+                .saturating_sub(a[0].as_u64().unwrap_or(0)),
+            _ => 0,
+        };
+        *dt.entry(dtype).or_insert(0) += 1;
+        inv.push((name.clone(), dims, bytes));
+    }
+    let dtype_summary = dt
+        .iter()
+        .map(|(k, n)| format!("{k}×{n}"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    Ok((
+        "safetensors (fp16/bf16 parent)".to_string(),
+        dtype_summary,
+        inv,
+    ))
+}
+
+/// Parse a human size like `18gb`, `64GB`, `2tb`, `1500mb`, `512kb`, `4096b`, or a
+/// raw byte count, into bytes (binary multipliers). Used by `hawking press`.
+fn parse_size_arg(s: &str) -> std::result::Result<u64, String> {
+    let s = s.trim().to_lowercase();
+    let (num, mult): (&str, u64) = if let Some(p) = s.strip_suffix("tb") {
+        (p, 1u64 << 40)
+    } else if let Some(p) = s.strip_suffix("gb") {
+        (p, 1u64 << 30)
+    } else if let Some(p) = s.strip_suffix("mb") {
+        (p, 1u64 << 20)
+    } else if let Some(p) = s.strip_suffix("kb") {
+        (p, 1u64 << 10)
+    } else if let Some(p) = s.strip_suffix('b') {
+        (p, 1)
+    } else {
+        (s.as_str(), 1)
+    };
+    let v: f64 = num.trim().parse().map_err(|_| format!("bad size '{s}'"))?;
+    if !(v.is_finite()) || v < 0.0 {
+        return Err(format!("bad size '{s}'"));
+    }
+    Ok((v * mult as f64) as u64)
+}
+
+/// Parse a Condense ladder target list like `4,3,2,1` into (label, nominal bpw).
+/// Known rungs map to the doctrine's bpw; any other integer is taken as literal bpw.
+fn parse_tier_arg(s: &str) -> std::result::Result<Vec<(String, f64)>, String> {
+    let mut out = vec![];
+    for part in s.split(',') {
+        let p = part.trim();
+        if p.is_empty() {
+            continue;
+        }
+        let bits: f64 = p
+            .parse()
+            .map_err(|_| format!("bad tier '{p}' (use bit-widths like 4,3,2,1)"))?;
+        let bpw = match bits as i64 {
+            4 => 4.5, // Q4_K compatibility floor
+            3 => 3.0, // first extreme public tier (TQ3)
+            2 => 2.0, // recovery tier
+            1 => 1.0, // 1-bit/ternary research tier (ternary ~1.58)
+            _ => bits, // any other value: treat as literal target bpw
+        };
+        out.push((format!("{}-bit", bits as i64), bpw));
+    }
+    if out.is_empty() {
+        return Err("no tiers parsed".into());
+    }
+    Ok(out)
+}
+
+fn fmt_bytes_h(b: u64) -> String {
+    let bf = b as f64;
+    if bf >= (1u64 << 40) as f64 {
+        format!("{:.2} TiB", bf / (1u64 << 40) as f64)
+    } else if bf >= (1u64 << 30) as f64 {
+        format!("{:.2} GiB", bf / (1u64 << 30) as f64)
+    } else if bf >= (1u64 << 20) as f64 {
+        format!("{:.1} MiB", bf / (1u64 << 20) as f64)
+    } else if bf >= (1u64 << 10) as f64 {
+        format!("{:.1} KiB", bf / (1u64 << 10) as f64)
+    } else {
+        format!("{b} B")
+    }
+}
+
+fn fmt_count_h(n: u64) -> String {
+    let nf = n as f64;
+    if nf >= 1e9 {
+        format!("{:.2}B", nf / 1e9)
+    } else if nf >= 1e6 {
+        format!("{:.1}M", nf / 1e6)
+    } else if nf >= 1e3 {
+        format!("{:.1}K", nf / 1e3)
+    } else {
+        format!("{n}")
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Apple Fit (Lane H): A1 hardware profiler + A2 fit planner. CPU-only — detect
+// the Mac and predict the strongest usable run config WITHOUT loading weights or
+// touching the GPU. Capability-first: report the MAX envelope, never cap silently.
+// ----------------------------------------------------------------------------
+
+struct MacProfile {
+    chip: String,
+    total_mem: u64,
+    os: String,
+}
+
+fn sysctl_str(key: &str) -> Option<String> {
+    let out = std::process::Command::new("sysctl")
+        .arg("-n")
+        .arg(key)
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8(out.stdout).ok()?.trim().to_string();
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
+}
+
+fn detect_mac() -> MacProfile {
+    let total_mem = sysctl_str("hw.memsize")
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(0);
+    let chip = sysctl_str("machdep.cpu.brand_string")
+        .or_else(|| sysctl_str("hw.model"))
+        .unwrap_or_else(|| "unknown".to_string());
+    let os = sysctl_str("kern.osproductversion").unwrap_or_else(|| "unknown".to_string());
+    MacProfile {
+        chip,
+        total_mem,
+        os,
+    }
+}
+
+/// Transformer KV-cache bytes: K and V, all layers, all kv-heads, for `ctx`
+/// tokens at `elem_bytes` per element and `concurrency` streams. SSM models have
+/// no per-token KV growth (the caller treats them as flat).
+fn kv_cache_bytes(
+    layers: u64,
+    kv_heads: u64,
+    head_dim: u64,
+    ctx: u64,
+    elem_bytes: u64,
+    concurrency: u64,
+) -> u64 {
+    layers
+        .saturating_mul(ctx)
+        .saturating_mul(kv_heads)
+        .saturating_mul(head_dim)
+        .saturating_mul(2)
+        .saturating_mul(elem_bytes)
+        .saturating_mul(concurrency.max(1))
+}
+
+/// Fit zone for a resident estimate vs total unified memory. Heuristic thresholds
+/// (live pressure refines them — A4). Capability-first: zones describe risk, they
+/// never cap; `hawking fit` shows the whole envelope including SWAP/OOM rows.
+fn fit_zone(resident: u64, total: u64) -> &'static str {
+    if total == 0 {
+        return "unknown";
+    }
+    if resident > total {
+        "OOM"
+    } else if resident as f64 / total as f64 > 0.85 {
+        "SWAP"
+    } else if resident as f64 / total as f64 > 0.70 {
+        "TIGHT"
+    } else {
+        "FITS"
+    }
+}
+
+fn zone_stable(z: &str) -> bool {
+    z == "FITS" || z == "TIGHT"
+}
+
+/// `hawking fit`: A2 fit planner. Detects the Mac, reads model config from GGUF
+/// metadata (no weights/GPU), and reports the context/KV fit envelope + an
+/// intent-driven recommendation with explicit alternatives.
+fn fit_main(
+    weights: PathBuf,
+    intent: String,
+    max_context: Option<usize>,
+    concurrency: usize,
+) -> Result<()> {
+    use hawking_core::gguf::GgufFile;
+
+    let mac = detect_mac();
+
+    // `fit` is for runnable GGUF models (it needs the attention config for KV math).
+    {
+        use std::io::Read;
+        let mut magic = [0u8; 4];
+        std::fs::File::open(&weights)
+            .map_err(|e| anyhow::anyhow!("open {}: {e}", weights.display()))?
+            .read_exact(&mut magic)
+            .ok();
+        if &magic != b"GGUF" {
+            return Err(anyhow::anyhow!(
+                "hawking fit expects a runnable GGUF model. To plan how to CONDENSE a \
+                 safetensors parent, use `hawking press --dry-run`."
+            ));
+        }
+    }
+
+    let file_bytes = std::fs::metadata(&weights)?.len();
+    let gguf = GgufFile::open(&weights)?;
+    let arch = gguf.architecture().unwrap_or("unknown").to_string();
+    let name = gguf.name().unwrap_or("unknown").to_string();
+    let get_u32 = |keys: &[&str]| {
+        keys.iter()
+            .find_map(|k| gguf.metadata.get(*k).and_then(|v| v.as_u32()))
+            .map(|v| v as u64)
+    };
+
+    let layers = get_u32(&[&format!("{arch}.block_count")]).unwrap_or(0);
+    let hidden = get_u32(&[&format!("{arch}.embedding_length")]).unwrap_or(0);
+    let heads = get_u32(&[&format!("{arch}.attention.head_count")]).unwrap_or(0);
+    let kv_heads = get_u32(&[&format!("{arch}.attention.head_count_kv")]).unwrap_or(heads);
+    let head_dim = if heads > 0 { hidden / heads } else { 0 };
+    let native_ctx = get_u32(&[&format!("{arch}.context_length")]).unwrap_or(8192);
+
+    let is_ssm = matches!(
+        arch.as_str(),
+        "rwkv7" | "rwkv-7" | "rwkv" | "rwkv6" | "mamba2" | "mamba"
+    );
+    // Runtime scratch/activations/decode-arena headroom (estimate, not the KV).
+    let overhead: u64 = 600 * 1024 * 1024;
+    let conc = concurrency.max(1) as u64;
+    let total = mac.total_mem;
+
+    println!("== Apple Fit ==");
+    println!(
+        "machine:    {} | {} unified | macOS {}",
+        mac.chip,
+        if total > 0 { fmt_bytes_h(total) } else { "?".into() },
+        mac.os
+    );
+    println!(
+        "model:      {name}  [{arch}{}]",
+        if is_ssm { ", SSM" } else { "" }
+    );
+    println!(
+        "weights:    {} on disk | {layers} layers, {kv_heads} kv-heads, head_dim {head_dim} | native ctx {native_ctx}",
+        fmt_bytes_h(file_bytes)
+    );
+    println!("intent:     {intent} | concurrency {conc}");
+    println!();
+    if total == 0 {
+        println!("(could not read unified memory via `sysctl hw.memsize`; fit zones unavailable)");
+    }
+
+    if is_ssm {
+        let resident = file_bytes + overhead;
+        println!("-- fit envelope (SSM: recurrent state is FLAT — no per-token KV growth) --");
+        println!(
+            "  any context (4k → 128k+):  resident ~{}  [{}]",
+            fmt_bytes_h(resident),
+            fit_zone(resident, total)
+        );
+        println!();
+        println!("-- recommendation --");
+        println!("  Apple Fit MOAT: context length does NOT grow memory on this SSM. The usable");
+        println!("  context is bounded by model QUALITY, not by this Mac's RAM. Pick context by the");
+        println!("  quality card (`tools/ci/ssm_quality_chat.sh`), not by fit.");
+        println!("  Strongest stable: the full model at any context the task needs.");
+        println!();
+        println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything.");
+        println!("      Live memory pressure (A4) and measured tps/energy (A6) refine this estimate.");
+        return Ok(());
+    }
+
+    if layers == 0 || kv_heads == 0 || head_dim == 0 {
+        println!("(model attention config not found in GGUF metadata; cannot compute KV envelope.)");
+        return Ok(());
+    }
+
+    // Context ladder to display: standard rungs up to the requested cap (default native).
+    let cap = max_context.map(|c| c as u64).unwrap_or(native_ctx).max(4096);
+    let mut ctxs: Vec<u64> = [4096u64, 8192, 16384, 32768, 65536, 131072]
+        .into_iter()
+        .filter(|&c| c <= cap)
+        .collect();
+    if !ctxs.contains(&cap) {
+        ctxs.push(cap);
+    }
+    ctxs.sort_unstable();
+    ctxs.dedup();
+
+    let resident_at = |ctx: u64, elem: u64| -> u64 {
+        file_bytes + kv_cache_bytes(layers, kv_heads, head_dim, ctx, elem, conc) + overhead
+    };
+
+    println!(
+        "-- fit envelope (resident = {} weights + KV + ~{} runtime) --",
+        fmt_bytes_h(file_bytes),
+        fmt_bytes_h(overhead)
+    );
+    println!(
+        "  {:>9}  {:>10} {:>6}  {:>10} {:>6}",
+        "context", "KV f16", "zone", "KV f32", "zone"
+    );
+    for &c in &ctxs {
+        let kv16 = kv_cache_bytes(layers, kv_heads, head_dim, c, 2, conc);
+        let kv32 = kv_cache_bytes(layers, kv_heads, head_dim, c, 4, conc);
+        println!(
+            "  {:>9}  {:>10} {:>6}  {:>10} {:>6}",
+            c,
+            fmt_bytes_h(kv16),
+            fit_zone(resident_at(c, 2), total),
+            fmt_bytes_h(kv32),
+            fit_zone(resident_at(c, 4), total)
+        );
+    }
+    println!();
+
+    // Envelope ceilings: largest ctx (over a wide ladder) that stays stable.
+    let ladder: [u64; 9] = [4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576];
+    let max_stable = |elem: u64| -> u64 {
+        ladder
+            .iter()
+            .copied()
+            .filter(|&c| zone_stable(fit_zone(resident_at(c, elem), total)))
+            .max()
+            .unwrap_or(0)
+    };
+    let comfortable = |elem: u64| -> u64 {
+        ladder
+            .iter()
+            .copied()
+            .filter(|&c| fit_zone(resident_at(c, elem), total) == "FITS")
+            .max()
+            .unwrap_or(0)
+    };
+
+    if total > 0 {
+        let max16 = max_stable(2);
+        let max32 = max_stable(4);
+        let safe16 = comfortable(2);
+        println!("-- envelope (this Mac) --");
+        println!(
+            "  longest context  : {} tokens (f16 KV, stable)  | {} tokens (f32 KV)",
+            max16, max32
+        );
+        println!("  highest-quality  : f32 KV up to {} tokens", max32);
+        println!("  safest (comfort) : {} tokens (f16 KV, FITS zone)", safe16);
+        println!(
+            "  native trained   : {} tokens{}",
+            native_ctx,
+            if max16 >= native_ctx {
+                " (fits)"
+            } else {
+                " (exceeds RAM — would SWAP/OOM)"
+            }
+        );
+        println!();
+
+        // Intent-driven pick (capability-first), with explicit alternatives.
+        let (pick, why) = match intent.as_str() {
+            "max-context" => (
+                format!("ctx {} @ f16 KV", max16),
+                "largest stable context; f16 KV to reach it".to_string(),
+            ),
+            "max-quality" => (
+                format!("ctx {} @ f32 KV", native_ctx.min(max32)),
+                "f32 KV (highest fidelity); context at native or the f32 ceiling".to_string(),
+            ),
+            "max-speed" => (
+                "ctx 8192 @ f16 KV + `--profile fast`".to_string(),
+                "fit is not the speed lever — decode tps is; keep context modest and use --profile fast"
+                    .to_string(),
+            ),
+            "max-battery" => (
+                format!("ctx {} @ f16 KV", safe16.max(8192)),
+                "energy not yet measured here (A6); pick a comfortable footprint to limit power"
+                    .to_string(),
+            ),
+            "safe-fit" => (
+                format!("ctx {} @ f16 KV (SAFETY-BIASED)", safe16),
+                "comfortable FITS zone only".to_string(),
+            ),
+            _ => {
+                // max-capability (default): strongest stable = best KV that still
+                // reaches a strong context. Prefer f32 at native if stable, else f16.
+                if zone_stable(fit_zone(resident_at(native_ctx, 4), total)) {
+                    (
+                        format!("ctx {} @ f32 KV", native_ctx),
+                        "native context at full-precision KV fits stably".to_string(),
+                    )
+                } else {
+                    (
+                        format!("ctx {} @ f16 KV", max16),
+                        "largest stable context; f16 KV to maximize capability".to_string(),
+                    )
+                }
+            }
+        };
+        println!("-- recommendation for --intent {intent} --");
+        println!("  choose: {pick}");
+        println!("  why:    {why}");
+        if intent == "safe-fit" || intent == "max-battery" {
+            println!(
+                "  NOTE (anti-throttle): this is safety-biased. max-capability would allow ctx {} @ f16.",
+                max16
+            );
+        }
+        println!(
+            "  alternatives: longest={}@f16  quality={}@f32  safe={}@f16",
+            max16, max32, safe16
+        );
+        println!("  override: --max-context <N>, --intent <mode>, or set KV policy at serve time.");
+    }
+    println!();
+    println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything. Estimates");
+    println!("      are weights+KV+overhead from metadata; live pressure (A4) and measured tps/energy");
+    println!("      (A6) refine them. `serve --auto` (A3) must not pick below max-capability without a");
+    println!("      stated --intent or hard pressure (anti-throttle gate A8).");
+    Ok(())
+}
+
+/// Minimal model facts needed for fit/auto decisions (GGUF metadata only).
+struct ModelFacts {
+    arch: String,
+    name: String,
+    layers: u64,
+    kv_heads: u64,
+    head_dim: u64,
+    native_ctx: u64,
+    is_ssm: bool,
+}
+
+fn read_model_facts(path: &std::path::Path) -> Result<(ModelFacts, u64)> {
+    use hawking_core::gguf::GgufFile;
+    {
+        use std::io::Read;
+        let mut magic = [0u8; 4];
+        std::fs::File::open(path)?.read_exact(&mut magic).ok();
+        if &magic != b"GGUF" {
+            return Err(anyhow::anyhow!("auto/fit requires a runnable GGUF model"));
+        }
+    }
+    let file_bytes = std::fs::metadata(path)?.len();
+    let gguf = GgufFile::open(path)?;
+    let arch = gguf.architecture().unwrap_or("unknown").to_string();
+    let name = gguf.name().unwrap_or("unknown").to_string();
+    let get_u32 = |keys: &[&str]| {
+        keys.iter()
+            .find_map(|k| gguf.metadata.get(*k).and_then(|v| v.as_u32()))
+            .map(|v| v as u64)
+    };
+    let layers = get_u32(&[&format!("{arch}.block_count")]).unwrap_or(0);
+    let hidden = get_u32(&[&format!("{arch}.embedding_length")]).unwrap_or(0);
+    let heads = get_u32(&[&format!("{arch}.attention.head_count")]).unwrap_or(0);
+    let kv_heads = get_u32(&[&format!("{arch}.attention.head_count_kv")]).unwrap_or(heads);
+    let head_dim = if heads > 0 { hidden / heads } else { 0 };
+    let native_ctx = get_u32(&[&format!("{arch}.context_length")]).unwrap_or(8192);
+    let is_ssm = matches!(
+        arch.as_str(),
+        "rwkv7" | "rwkv-7" | "rwkv" | "rwkv6" | "mamba2" | "mamba"
+    );
+    Ok((
+        ModelFacts {
+            arch,
+            name,
+            layers,
+            kv_heads,
+            head_dim,
+            native_ctx,
+            is_ssm,
+        },
+        file_bytes,
+    ))
+}
+
+const FIT_OVERHEAD_BYTES: u64 = 600 * 1024 * 1024;
+
+/// Largest context (over a wide ladder) whose resident estimate stays in a usable
+/// zone. `comfortable_only` → FITS only; else FITS|TIGHT (stable).
+fn max_stable_ctx(
+    file_bytes: u64,
+    f: &ModelFacts,
+    elem: u64,
+    conc: u64,
+    total: u64,
+    comfortable_only: bool,
+) -> u64 {
+    const LADDER: [u64; 9] = [
+        4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576,
+    ];
+    LADDER
+        .iter()
+        .copied()
+        .filter(|&c| {
+            let r =
+                file_bytes + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, c, elem, conc) + FIT_OVERHEAD_BYTES;
+            let z = fit_zone(r, total);
+            if comfortable_only {
+                z == "FITS"
+            } else {
+                zone_stable(z)
+            }
+        })
+        .max()
+        .unwrap_or(0)
+}
+
+/// Auto-serve configuration choice for a declared intent. CAPABILITY-FIRST +
+/// ANTI-THROTTLE: non-safety intents never return a config weaker than
+/// max-capability without `safety_downgrade` being set (the explicit reason).
+struct AutoPick {
+    kv_f16: bool,
+    context: u64,
+    energy_efficient: bool,
+    profile_fast: bool,
+    rationale: String,
+    /// Some(reason) iff this intent intentionally serves BELOW max-capability.
+    /// None means "this is the strongest stable config" (a hard-RAM reduction is
+    /// still None — it is the capability ceiling, not a bias).
+    safety_downgrade: Option<String>,
+}
+
+fn auto_serve_pick(f: &ModelFacts, file_bytes: u64, total_mem: u64, intent: &str) -> AutoPick {
+    if f.is_ssm {
+        return AutoPick {
+            kv_f16: false,
+            context: f.native_ctx,
+            energy_efficient: intent == "max-battery",
+            profile_fast: intent == "max-speed",
+            rationale: "SSM: flat recurrent state — context is not RAM-bound; serving full model"
+                .to_string(),
+            safety_downgrade: None,
+        };
+    }
+
+    let stable16 = max_stable_ctx(file_bytes, f, 2, 1, total_mem, false);
+    let stable32 = max_stable_ctx(file_bytes, f, 4, 1, total_mem, false);
+    let comfort16 = max_stable_ctx(file_bytes, f, 2, 1, total_mem, true);
+    let f32_native_stable = {
+        let r = file_bytes
+            + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, f.native_ctx, 4, 1)
+            + FIT_OVERHEAD_BYTES;
+        zone_stable(fit_zone(r, total_mem))
+    };
+    // max-capability ceiling: f32@native if stable, else f16 up to the stable ceiling.
+    let cap_ctx = if f32_native_stable {
+        f.native_ctx
+    } else {
+        f.native_ctx.min(stable16)
+    };
+    let cap_kv = if f32_native_stable { "f32" } else { "f16" };
+
+    match intent {
+        "max-context" => AutoPick {
+            kv_f16: true,
+            context: stable16,
+            energy_efficient: false,
+            profile_fast: false,
+            rationale: format!(
+                "max-context: f16 KV to reach {stable16} tokens (largest stable){}",
+                if stable16 > f.native_ctx {
+                    format!("; beyond native {} — quality may degrade", f.native_ctx)
+                } else {
+                    String::new()
+                }
+            ),
+            safety_downgrade: None,
+        },
+        "max-quality" => AutoPick {
+            kv_f16: false,
+            context: f.native_ctx.min(stable32),
+            energy_efficient: false,
+            profile_fast: false,
+            rationale: format!("max-quality: f32 KV at {} tokens", f.native_ctx.min(stable32)),
+            safety_downgrade: None,
+        },
+        "max-speed" => AutoPick {
+            kv_f16: true,
+            context: f.native_ctx.min(8192),
+            energy_efficient: false,
+            profile_fast: true,
+            rationale: "max-speed: `--profile fast` (mild quality trade, stated intent) + modest context"
+                .to_string(),
+            safety_downgrade: None,
+        },
+        "max-battery" => {
+            let ctx = comfort16.min(f.native_ctx);
+            AutoPick {
+                kv_f16: true,
+                context: ctx,
+                energy_efficient: true,
+                profile_fast: false,
+                rationale: format!("max-battery: efficient energy + f16 KV, ctx {ctx}"),
+                safety_downgrade: Some(format!(
+                    "battery-biased; max-capability would serve ctx {cap_ctx} @ {cap_kv} KV (no energy cap)"
+                )),
+            }
+        }
+        "safe-fit" => {
+            let ctx = comfort16.min(f.native_ctx);
+            AutoPick {
+                kv_f16: true,
+                context: ctx,
+                energy_efficient: false,
+                profile_fast: false,
+                rationale: format!("safe-fit: comfortable FITS zone, f16 KV, ctx {ctx}"),
+                safety_downgrade: Some(format!(
+                    "safety-biased; max-capability would serve ctx {cap_ctx} @ {cap_kv} KV"
+                )),
+            }
+        }
+        _ => {
+            // max-capability (default): strongest stable. A reduction here is forced
+            // by HARD RAM (the capability ceiling), not a bias → safety_downgrade None.
+            let kv_f16 = !f32_native_stable;
+            AutoPick {
+                kv_f16,
+                context: cap_ctx,
+                energy_efficient: false,
+                profile_fast: false,
+                rationale: format!(
+                    "max-capability: ctx {cap_ctx} @ {} KV (strongest stable for this Mac)",
+                    if kv_f16 { "f16" } else { "f32" }
+                ),
+                safety_downgrade: None,
+            }
+        }
     }
 }
 
@@ -1018,7 +2034,7 @@ fn rank_profile_json(
     Ok(serde_json::to_string_pretty(&obj)?)
 }
 
-fn doctor_main(weights: PathBuf, max_seq_len: usize) -> Result<()> {
+fn doctor_main(weights: PathBuf, max_seq_len: usize, json: bool) -> Result<()> {
     use hawking_core::gguf::GgufFile;
 
     let rss_before = current_rss_mb();
@@ -1084,13 +2100,44 @@ fn doctor_main(weights: PathBuf, max_seq_len: usize) -> Result<()> {
         .saturating_mul(2)
         .saturating_mul(std::mem::size_of::<f32>());
     let total_working_bytes = file_bytes.saturating_add(kv_cache_bytes as u64);
-    let swap_risk = if total_working_bytes > 16_u64 * 1024 * 1024 * 1024 {
-        "high"
-    } else if total_working_bytes > 14_u64 * 1024 * 1024 * 1024 {
-        "watch"
-    } else {
-        "low"
+    let mac = detect_mac();
+    // Machine-relative swap risk (was hardcoded to an 18 GB M3 Pro). Uses the
+    // detected unified memory so the verdict is correct on any Apple Silicon Mac.
+    let swap_risk = match fit_zone(total_working_bytes, mac.total_mem) {
+        "OOM" | "SWAP" => "high",
+        "TIGHT" => "watch",
+        "FITS" => "low",
+        _ => "unknown",
     };
+
+    if json {
+        let obj = serde_json::json!({
+            "machine": {
+                "chip": mac.chip,
+                "total_unified_bytes": mac.total_mem,
+                "os": mac.os,
+            },
+            "model": {
+                "name": name,
+                "arch": arch,
+                "weights": weights.display().to_string(),
+                "weights_bytes": file_bytes,
+                "tensors": gguf.tensor_count,
+                "layers": layers,
+                "hidden": hidden,
+                "kv_heads": kv_heads,
+                "head_dim_estimate": head_dim,
+                "context_estimate": context,
+            },
+            "kv_cache_estimate_bytes": kv_cache_bytes,
+            "weights_plus_kv_bytes": total_working_bytes,
+            "rss_before_mmap_mb": rss_before,
+            "rss_after_mmap_mb": rss_after,
+            "swap_risk": swap_risk,
+        });
+        println!("{}", serde_json::to_string_pretty(&obj)?);
+        return Ok(());
+    }
 
     println!("hawking doctor");
     println!("model: {name}");
@@ -1124,7 +2171,17 @@ fn doctor_main(weights: PathBuf, max_seq_len: usize) -> Result<()> {
     if let Some(v) = rss_after {
         println!("rss_after_mmap_mb: {v:.1}");
     }
-    println!("m3_pro_18gb_swap_risk: {swap_risk}");
+    println!(
+        "machine: {} | {} unified | macOS {}",
+        mac.chip,
+        if mac.total_mem > 0 {
+            fmt_bytes_h(mac.total_mem)
+        } else {
+            "?".into()
+        },
+        mac.os
+    );
+    println!("swap_risk: {swap_risk}");
     Ok(())
 }
 
@@ -2375,6 +3432,146 @@ fn verify_main(weights: PathBuf, expected_sha256: Option<String>) -> Result<()> 
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod press_tests {
+    use super::{parse_size_arg, parse_tier_arg, read_safetensors_inventory};
+
+    #[test]
+    fn parse_size_handles_units_and_raw_and_rejects_garbage() {
+        assert_eq!(parse_size_arg("1024").unwrap(), 1024);
+        assert_eq!(parse_size_arg("1b").unwrap(), 1);
+        assert_eq!(parse_size_arg("1kb").unwrap(), 1 << 10);
+        assert_eq!(parse_size_arg("1mb").unwrap(), 1 << 20);
+        assert_eq!(parse_size_arg("2gb").unwrap(), 2 * (1u64 << 30));
+        assert_eq!(parse_size_arg("18GB").unwrap(), 18 * (1u64 << 30));
+        assert_eq!(parse_size_arg(" 2tb ").unwrap(), 2 * (1u64 << 40));
+        assert_eq!(parse_size_arg("1.5gb").unwrap(), 1_610_612_736);
+        assert!(parse_size_arg("abc").is_err());
+        assert!(parse_size_arg("-5gb").is_err());
+        assert!(parse_size_arg("gb").is_err());
+    }
+
+    #[test]
+    fn parse_tiers_maps_known_rungs_and_literals() {
+        let t = parse_tier_arg("4,3,2,1").unwrap();
+        assert_eq!(t.len(), 4);
+        assert_eq!(t[0], ("4-bit".to_string(), 4.5));
+        assert_eq!(t[1], ("3-bit".to_string(), 3.0));
+        assert_eq!(t[2], ("2-bit".to_string(), 2.0));
+        assert_eq!(t[3], ("1-bit".to_string(), 1.0));
+        assert_eq!(parse_tier_arg(" 3 , 2 ").unwrap().len(), 2); // whitespace + tolerated
+        assert_eq!(parse_tier_arg("6").unwrap()[0], ("6-bit".to_string(), 6.0)); // literal bpw
+        assert!(parse_tier_arg("").is_err());
+        assert!(parse_tier_arg("x").is_err());
+    }
+
+    #[test]
+    fn safetensors_header_inventory_metadata_only() {
+        use std::io::Write;
+        // Synthetic safetensors: 8-byte LE header length + JSON. __metadata__ skipped.
+        let json = br#"{"__metadata__":{"format":"pt"},"a.weight":{"dtype":"F16","shape":[4,8],"data_offsets":[0,64]},"b.weight":{"dtype":"BF16","shape":[2,2],"data_offsets":[64,72]}}"#;
+        let mut buf = Vec::new();
+        buf.extend_from_slice(&(json.len() as u64).to_le_bytes());
+        buf.extend_from_slice(json);
+        let p = std::env::temp_dir()
+            .join(format!("hawking_press_st_{}.safetensors", std::process::id()));
+        std::fs::File::create(&p).unwrap().write_all(&buf).unwrap();
+        let res = read_safetensors_inventory(&p);
+        std::fs::remove_file(&p).ok();
+        let (src, dtypes, inv) = res.unwrap();
+        assert!(src.contains("safetensors"));
+        assert_eq!(inv.len(), 2); // __metadata__ excluded
+        let a = inv.iter().find(|(n, _, _)| n == "a.weight").unwrap();
+        assert_eq!(a.1, vec![4, 8]); // shape
+        assert_eq!(a.2, 64); // data_offsets[1]-data_offsets[0]
+        assert!(dtypes.contains("F16×1") && dtypes.contains("BF16×1"));
+    }
+}
+
+#[cfg(test)]
+mod fit_tests {
+    use super::{auto_serve_pick, fit_zone, kv_cache_bytes, ModelFacts};
+
+    fn qwen3b() -> ModelFacts {
+        ModelFacts {
+            arch: "qwen2".into(),
+            name: "q".into(),
+            layers: 36,
+            kv_heads: 2,
+            head_dim: 128,
+            native_ctx: 32768,
+            is_ssm: false,
+        }
+    }
+
+    #[test]
+    fn kv_cache_scales_with_context_concurrency_and_precision() {
+        // Qwen2.5-3B-ish geometry: 36 layers, 2 kv-heads (GQA), head_dim 128.
+        let base = kv_cache_bytes(36, 2, 128, 8192, 2, 1);
+        assert_eq!(base, 36u64 * 8192 * 2 * 128 * 2 * 2); // layers*ctx*kvh*hd*2(K+V)*elem
+        assert_eq!(kv_cache_bytes(36, 2, 128, 16384, 2, 1), 2 * base); // 2x context
+        assert_eq!(kv_cache_bytes(36, 2, 128, 8192, 2, 2), 2 * base); // 2x concurrency
+        assert_eq!(kv_cache_bytes(36, 2, 128, 8192, 4, 1), 2 * base); // f32 = 2x f16
+    }
+
+    #[test]
+    fn fit_zone_thresholds_and_unknown() {
+        let total = 100u64;
+        assert_eq!(fit_zone(50, total), "FITS");
+        assert_eq!(fit_zone(75, total), "TIGHT"); // >70%
+        assert_eq!(fit_zone(90, total), "SWAP"); // >85%
+        assert_eq!(fit_zone(120, total), "OOM"); // > total
+        assert_eq!(fit_zone(50, 0), "unknown"); // no machine info
+    }
+
+    #[test]
+    fn auto_pick_is_capability_first_and_anti_throttle() {
+        let f = qwen3b();
+        let file = 1_900_000_000u64;
+        let total18 = 18u64 << 30;
+
+        // Roomy Mac: max-capability serves native context at FULL-PRECISION KV,
+        // with NO downgrade flag.
+        let cap = auto_serve_pick(&f, file, total18, "max-capability");
+        assert!(cap.safety_downgrade.is_none());
+        assert_eq!(cap.context, 32768);
+        assert!(!cap.kv_f16);
+
+        // Safety-biased intents MUST flag the explicit downgrade (no hidden throttle)
+        // and must NOT push context beyond native (that would not be "safe").
+        let sf = auto_serve_pick(&f, file, total18, "safe-fit");
+        assert!(sf.safety_downgrade.is_some());
+        assert!(sf.context <= f.native_ctx);
+        let bat = auto_serve_pick(&f, file, total18, "max-battery");
+        assert!(bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx);
+
+        // max-context reaches the largest stable context via f16, no hidden downgrade.
+        let mc = auto_serve_pick(&f, file, total18, "max-context");
+        assert!(mc.kv_f16 && mc.safety_downgrade.is_none() && mc.context >= 32768);
+
+        // Tight Mac: max-capability is FORCED to f16 + reduced context by HARD RAM.
+        // That is the capability ceiling, not a bias → no safety_downgrade flag.
+        let total3 = 3u64 << 30;
+        let tight = auto_serve_pick(&f, file, total3, "max-capability");
+        assert!(tight.kv_f16);
+        assert!(tight.safety_downgrade.is_none());
+        assert!(tight.context < f.native_ctx);
+
+        // SSM: flat KV, full native context, no downgrade, even on a tiny Mac.
+        let s = ModelFacts {
+            arch: "rwkv7".into(),
+            name: "r".into(),
+            layers: 24,
+            kv_heads: 0,
+            head_dim: 0,
+            native_ctx: 1_048_576,
+            is_ssm: true,
+        };
+        let ssm = auto_serve_pick(&s, 300_000_000, total3, "max-capability");
+        assert!(!ssm.kv_f16 && ssm.context == 1_048_576 && ssm.safety_downgrade.is_none());
+    }
 }
 
 #[cfg(test)]
