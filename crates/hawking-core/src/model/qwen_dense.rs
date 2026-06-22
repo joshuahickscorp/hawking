@@ -9479,4 +9479,118 @@ mod bsize_verify_diag {
             "forward_tokens_verify B==1 diverged from greedy — the B==1->greedy routing fix regressed"
         );
     }
+
+    fn median_ms(xs: &mut [f64]) -> f64 {
+        xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mid = xs.len() / 2;
+        if xs.len() % 2 == 0 {
+            (xs[mid - 1] + xs[mid]) * 0.5
+        } else {
+            xs[mid]
+        }
+    }
+
+    #[test]
+    #[ignore = "microbench — run with --ignored --nocapture; needs a free GPU"]
+    fn verify_cost_vs_k_curve() {
+        let weights = Path::new("../../models/qwen2.5-3b-instruct-q4_k_m.gguf");
+        if !weights.exists() {
+            eprintln!("verify_cost_vs_k_curve: skip — no weights at {weights:?}");
+            return;
+        }
+
+        // Match the production fast path used by eh_market_bench.py.
+        std::env::set_var("HAWKING_QWEN_TCB", "1");
+        std::env::set_var("HAWKING_QWEN_PREFIX_CACHE", "0");
+        std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+        std::env::set_var("HAWKING_QWEN_PAIR_2R_INLINE", "0");
+        std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
+        std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
+        std::env::set_var("HAWKING_QWEN_FFN_DOWN_Q4K", "1");
+        std::env::set_var("HAWKING_QWEN_Q4K_PREDEC", "1");
+        std::env::remove_var("HAWKING_QWEN_VERIFY_TIMING");
+
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+
+        let h = m.config.hidden;
+        let fast = m.vocab_pruned_is_q4k
+            && m.lm_head_pruned_buf.is_some()
+            && m.vocab_pruned.is_some()
+            && h % 256 == 0;
+        assert!(
+            fast,
+            "verify_cost_vs_k_curve must exercise the production pruned-Q4K verify fast path"
+        );
+
+        let (a, b) = (30u32, 77u32);
+        let prefill_len = 96usize;
+        let measure_pos = 72usize;
+        let prompt: Vec<u32> = (0..prefill_len)
+            .map(|i| if i % 2 == 0 { a } else { b })
+            .collect();
+
+        m.kv.seq_len = 0;
+        for cs in (0..prefill_len).step_by(8) {
+            let ce = (cs + 8).min(prefill_len);
+            let pos: Vec<usize> = (cs..ce).collect();
+            m.forward_tokens_batch_tcb(&prompt[cs..ce], &pos)
+                .expect("prefill");
+        }
+
+        const WARMUP: usize = 3;
+        const ITERS: usize = 12;
+
+        println!("=== VERIFY COST VS K CURVE ===");
+        println!(
+            "fast_path=pruned-q4k prefill_len={prefill_len} measure_pos={measure_pos} warmup={WARMUP} iters={ITERS}"
+        );
+        println!(
+            "B,greedy_seq_ms,verify_ms,verify/greedy,ideal_speedup,greedy_ms_per_tok,verify_ms_per_tok"
+        );
+
+        for bsz in 1..=8usize {
+            let vtoks: Vec<u32> = (0..bsz)
+                .map(|j| if (measure_pos + j) % 2 == 0 { a } else { b })
+                .collect();
+            let vpos: Vec<usize> = (0..bsz).map(|j| measure_pos + j).collect();
+
+            for _ in 0..WARMUP {
+                m.kv.seq_len = measure_pos;
+                for (&tok, &pos) in vtoks.iter().zip(vpos.iter()) {
+                    let _ = m.forward_token_greedy_tcb(tok, pos).expect("warm greedy");
+                }
+                m.kv.seq_len = measure_pos;
+                let _ = m
+                    .forward_tokens_verify(&vtoks, &vpos)
+                    .expect("warm verify");
+            }
+
+            let mut greedy_ms = Vec::with_capacity(ITERS);
+            let mut verify_ms = Vec::with_capacity(ITERS);
+            for _ in 0..ITERS {
+                m.kv.seq_len = measure_pos;
+                let t0 = std::time::Instant::now();
+                for (&tok, &pos) in vtoks.iter().zip(vpos.iter()) {
+                    let _ = m.forward_token_greedy_tcb(tok, pos).expect("greedy");
+                }
+                greedy_ms.push(t0.elapsed().as_secs_f64() * 1e3);
+
+                m.kv.seq_len = measure_pos;
+                let t1 = std::time::Instant::now();
+                let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
+                verify_ms.push(t1.elapsed().as_secs_f64() * 1e3);
+            }
+
+            let g = median_ms(&mut greedy_ms);
+            let v = median_ms(&mut verify_ms);
+            let ratio = v / g;
+            let ideal_speedup = g / v;
+            println!(
+                "{bsz},{g:.3},{v:.3},{ratio:.3},{ideal_speedup:.3},{:.3},{:.3}",
+                g / bsz as f64,
+                v / bsz as f64
+            );
+        }
+        println!("=== END VERIFY COST VS K CURVE ===");
+    }
 }

@@ -126,13 +126,18 @@ def draft_summaries(runs_dir: Path) -> list[dict[str, Any]]:
         latest["eval_log"] = str(eval_log)
         rows.append(latest)
     order = {
-        "draft_35m_probe": 0,
-        "draft_50m_probe": 1,
-        "draft_75m_probe": 2,
-        "draft_100m": 3,
-        "draft_150m": 4,
-        "draft_200m": 5,
-        "draft_300m": 6,
+        "draft_17m_probe": 0,
+        "draft_18m_probe": 1,
+        "draft_20m_probe": 2,
+        "draft_26m_probe": 3,
+        "draft_29m_probe": 4,
+        "draft_35m_probe": 5,
+        "draft_50m_probe": 6,
+        "draft_75m_probe": 7,
+        "draft_100m": 8,
+        "draft_150m": 9,
+        "draft_200m": 10,
+        "draft_300m": 11,
     }
     rows.sort(key=lambda r: order.get(str(r.get("variant")), 99))
     return rows
