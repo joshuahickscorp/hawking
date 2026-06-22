@@ -24,6 +24,8 @@ Useful variants:
 QUICK=1 bash tools/bench/compare_sota.sh            # fewer trials/contexts/prompts
 STRICT_CLEAN=1 bash tools/bench/compare_sota.sh     # abort if Claude is still running
 TRIALS=5 TOK=256 bash tools/bench/compare_sota.sh   # heavier, lower-variance
+BIT_TARGETS=8,6,5,4,3,2,1 bash tools/bench/compare_sota.sh
+RUN_KERNEL_BENCH=0 RUN_HAWKING_BENCH=0 bash tools/bench/compare_sota.sh  # skip extra Hawking probes
 ```
 
 The report lands in `reports/sota-compare/<timestamp>/report.md` (plus per-task
@@ -33,12 +35,18 @@ answers and the full diagnostic transcript). `reports/` is git-ignored.
 
 | # | Dimension | How |
 |---|---|---|
-| 1 | **Footprint / compression** | on-disk bpw; Hawking + llama.cpp share the GGUF (identical), MLX uses its own 4-bit. Plus the Hawking-only out-of-core `press` planner. |
-| 2 | **Speed** | warm-median decode tps + prefill on the **same** Qwen2.5-3B-Q4_K_M (Hawking `generate` vs `llama-bench` vs `mlx_lm.generate`). |
-| 3 | **Long context (the moat)** | decode tps vs context: the RWKV-7 **SSM** path stays flat (no KV cache) while transformers fall off the KV wall. |
-| 4 | **Quality** | deterministic task prompts (math/JSON/retrieval), greedy, side-by-side, pass/fail on the expected answer. |
-| 5 | **Hawking diagnostic** | every subcommand (`version`/`doctor --json`/`fit`/`press`/`stats`/…) with the nearest SOTA equivalent for the unique ones. |
-| 6 | **Energy** (optional) | J/tok via `macmon` (`tools/bench/energy_paired.sh` / `phase_joules.sh`). |
+| 0 | **Setup / detection** | chooses the portable Qwen GGUF/MLX artifacts, detects llama.cpp/MLX/ollama, records versions and clean-room warnings. |
+| 1 | **Capability map** | full Hawking CLI/research surface vs nearest local SOTA equivalents. |
+| 2 | **Local model inventory** | local GGUF/safetensors artifacts and their sizes, with support caveats. |
+| 3 | **Footprint / compression** | on-disk bpw; Hawking + llama.cpp share the GGUF (identical), MLX uses its own 4-bit. Plus the Hawking-only out-of-core `press` planner. |
+| 4 | **Quantization / bit ladder** | runtime format coverage plus `press --dry-run --target "$BIT_TARGETS"` for all requested bpw tiers. |
+| 5 | **Speed** | warm-median decode tps + prefill on the **same detected Qwen GGUF** (Hawking `generate` vs `llama-bench` vs `mlx_lm.generate`). |
+| 6 | **Hawking bench battery** | optional `hawking bench --suite decode`, `bench-kernel`, and `bench-q4k-shapes` probes. |
+| 7 | **Long context (the moat)** | decode tps vs context: the RWKV-7 **SSM** path stays flat (no KV cache) while transformers fall off the KV wall. |
+| 8 | **Quality** | deterministic task prompts (math/JSON/retrieval), greedy, side-by-side, pass/fail on the expected answer. |
+| 9 | **Distill / post-train** | inventory of RWKV/QAT/KD/DPO tooling and the honest gap: no finished `press --distill` artifact flow yet. |
+| 10 | **Hawking diagnostic** | CLI help/probes plus safe runs (`version`/`verify`/`doctor --json`/`fit`/`press`/`stats`/…) with nearest SOTA equivalents. |
+| 11 | **Energy** (optional) | J/tok via `macmon` (`tools/bench/energy_paired.sh` / `phase_joules.sh`). |
 
 ## Robustness notes (why this harness does not hang)
 
@@ -94,6 +102,10 @@ MLX_PYTHON=python3.12 bash tools/bench/compare_sota.sh   # pin a specific interp
   capability-first. llama.cpp/MLX/ollama have no equivalent.
 - **Out-of-core condense** — `hawking press` plans quantizing a parent that does not
   fit fully resident; `llama-quantize`/AWQ/GPTQ require the full parent in memory.
+- **Diagnostic depth** — Hawking exposes fit planning, artifact verification,
+  shader/profile hashes, kernel microbenches, spec-oracle replay, and local
+  post-train tooling in one report. Some of that is research tooling rather than
+  shipped product surface, and the report labels it that way.
 
 The other axes (short-context decode tps, compression at a given bpw, instruct
 quality) are head-to-head on the same artifact — that is the honest comparison the

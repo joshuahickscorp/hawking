@@ -118,6 +118,12 @@ named as safety-biased.
 Done means auto mode explains the selected model, quant, KV policy, context
 cap, concurrency, and stronger/safer alternatives.
 
+**STATUS: ✅ LANDED (2026-06-22).** `hawking serve --auto --intent <max-capability|max-context|max-quality|max-speed|
+max-battery|safe-fit>` (`auto_serve_pick` + serve wiring, `crates/hawking/src/main.rs`). On startup it announces the machine,
+the chosen ctx / KV / profile / energy, the rationale, and stronger/safer alternatives; explicit flags override; safety-biased
+intents print an EXPLICIT downgrade line, capability-first ones print "anti-throttle OK". It applies the KV policy (F16_KV) +
+`--profile`; the serve KV-capacity cap is currently advisory (noted in output). Enforced by A8.
+
 **STATUS: ✅ MVP LANDED (2026-06-22).** `hawking serve --auto [--intent <I>]` (`auto_serve_pick` + Serve dispatch wiring).
 On `--auto` it detects the Mac, reads model facts, picks the strongest stable config for the intent, **announces** machine +
 chosen (ctx / KV / profile / energy) + the anti-throttle verdict, and **applies** the safe levers — KV policy
@@ -190,6 +196,12 @@ Prevent the planner from becoming a performance ceiling:
 - keep expert override tests green.
 
 Done means future "helpful" policy changes cannot silently make Hawking weaker.
+
+**STATUS: ✅ LANDED (2026-06-22).** Enforced by unit tests on `auto_serve_pick`:
+`serve_auto_tests::auto_serve_never_hidden_throttle` (across 8–64 GiB Macs: max-capability never carries a hidden downgrade;
+safety-biased intents serve ≤ capability and ONLY with an explicit `safety_downgrade` reason; native f32 is served when it
+fits) + `serve_auto_tests::ssm_is_never_throttled` + `fit_tests::auto_pick_is_capability_first_and_anti_throttle`. A future
+policy change that silently lost context/precision vs max-capability fails `cargo test -p hawking --bins`.
 
 **STATUS: 🟡 PARTIAL — pick-level invariant LANDED (2026-06-22).** The anti-throttle rule is enforced IN the chooser:
 `auto_serve_pick` never returns a config below max-capability for a non-safety intent without setting `safety_downgrade`

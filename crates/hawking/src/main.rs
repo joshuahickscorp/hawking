@@ -3575,6 +3575,85 @@ mod fit_tests {
 }
 
 #[cfg(test)]
+mod serve_auto_tests {
+    use super::{auto_serve_pick, ModelFacts};
+
+    fn qwen(layers: u64, kv_heads: u64, head_dim: u64, native: u64) -> ModelFacts {
+        ModelFacts {
+            arch: "qwen2".into(),
+            name: "test".into(),
+            layers,
+            kv_heads,
+            head_dim,
+            native_ctx: native,
+            is_ssm: false,
+        }
+    }
+
+    /// A8 — anti-throttle gate. `serve --auto` must never SILENTLY lose context vs
+    /// max-capability: the default/auto config carries no hidden downgrade, and any
+    /// safety-biased reduction is explicit (a `safety_downgrade` reason) and never
+    /// exceeds the capability ceiling. Stated-intent axes are the user's choice.
+    #[test]
+    fn auto_serve_never_hidden_throttle() {
+        // Qwen2.5-3B geometry (~1.93 GB weights), across a range of Macs.
+        let f = qwen(36, 2, 128, 32768);
+        let bytes = 1_930_000_000u64;
+        for gib in [8u64, 12, 18, 36, 64] {
+            let mem = gib << 30;
+            let cap = auto_serve_pick(&f, bytes, mem, "max-capability");
+            assert!(
+                cap.safety_downgrade.is_none(),
+                "max-capability must never hide a throttle ({gib} GiB)"
+            );
+            for intent in ["safe-fit", "max-battery"] {
+                let p = auto_serve_pick(&f, bytes, mem, intent);
+                assert!(
+                    p.context <= cap.context,
+                    "{intent} must not exceed capability ({gib} GiB)"
+                );
+                if p.context < cap.context {
+                    assert!(
+                        p.safety_downgrade.is_some(),
+                        "{intent} reduction below capability must be EXPLICIT ({gib} GiB)"
+                    );
+                }
+            }
+            for intent in ["max-quality", "max-context", "max-speed"] {
+                assert!(
+                    auto_serve_pick(&f, bytes, mem, intent)
+                        .safety_downgrade
+                        .is_none(),
+                    "{intent} is a stated intent, not a hidden safety throttle ({gib} GiB)"
+                );
+            }
+        }
+        // On an 18 GiB Mac a 3B model fits at native context + full-precision KV →
+        // max-capability must serve exactly that (no throttle-down).
+        let cap18 = auto_serve_pick(&f, bytes, 18u64 << 30, "max-capability");
+        assert_eq!(cap18.context, 32768, "native ctx should be served when it fits");
+        assert!(!cap18.kv_f16, "f32 KV fits at 18 GiB → must not drop to f16");
+    }
+
+    /// SSM: flat recurrent state → context is not RAM-bound; never throttled.
+    #[test]
+    fn ssm_is_never_throttled() {
+        let s = ModelFacts {
+            arch: "rwkv7".into(),
+            name: "ssm".into(),
+            layers: 24,
+            kv_heads: 0,
+            head_dim: 0,
+            native_ctx: 1_048_576,
+            is_ssm: true,
+        };
+        let p = auto_serve_pick(&s, 300_000_000, 18u64 << 30, "max-capability");
+        assert!(p.safety_downgrade.is_none());
+        assert_eq!(p.context, s.native_ctx, "SSM context is not RAM-bound");
+    }
+}
+
+#[cfg(test)]
 mod profile_rank_tests {
     use super::{rank_profile_json, rank_profile_report};
     use hawking_core::profile::{
