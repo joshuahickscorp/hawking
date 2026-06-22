@@ -215,8 +215,8 @@ press_demo="$($HBIN press --dry-run --memory-budget 2gb --target 4,3,2 --weights
 [ -n "$press_demo" ] && { md '```'; md "$press_demo"; md '```'; }
 
 # ============================================================= 2. SPEED
-say ""; say "-- [2/6] speed (warm decode tps, same Qwen-3B-Q4_K_M) --"
-md ""; md "## 2. Speed — warm decode tps (same Qwen2.5-3B-Q4_K_M GGUF)"
+say ""; say "-- [2/6] speed (warm decode tps, same $(basename "$QWEN_GGUF")) --"
+md ""; md "## 2. Speed — warm decode tps (same model: \`$(basename "$QWEN_GGUF")\` for Hawking+llama; MLX 4bit equivalent)"
 md ""
 hk="$(hawking_tps "$QWEN_GGUF" "$SHORTP" "$TOK")"; say "  hawking: $hk tps"
 read -r lpp ltg <<<"$(llama_tps "$QWEN_GGUF" 512 "$TOK")"; say "  llama.cpp: tg=$ltg pp=$lpp"
