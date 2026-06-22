@@ -93,19 +93,24 @@ Each risk: what it is, evidence required to close it, and the current best next 
 - **Pre-existing (unrelated to Condense):** `cargo clippy -D warnings` flags dead-code in `hawking-core/json_constrain.rs`
   (`ValidFirstBytes::None` never constructed) — on HEAD, not from this work; would fail a strict workspace clippy gate.
 
-## R8c — Apple Fit (Lane H): A1/A2/A3 + A8-invariant LANDED 🟢 (2026-06-22)
+## R8c — Apple Fit (Lane H): A1/A2/A3 + A8-invariant LANDED 🟢; A4–A7 PARKED (out of scope for rebench) (2026-06-22)
 - **DONE:** `hawking fit` (A2) per-Mac context/KV envelope + intent recs; `detect_mac()` (A1) reads real chip/RAM/OS via
   sysctl, wired into `hawking doctor` (was hardcoded M3-Pro) + `doctor --json`; **`hawking serve --auto [--intent]` (A3)** —
   picks + announces + applies the strongest stable config (KV/profile/energy), expert flags override; **anti-throttle
   invariant (A8, pick level)** baked into `auto_serve_pick` (non-safety intent never below max-capability without an explicit
   `safety_downgrade`). Gates: `fit_tests` (kv_cache, fit_zone, **auto_pick anti-throttle**) GREEN; serve --auto validated e2e
   (max-capability/safe-fit/SSM). CPU-only/opt-in; default serve unchanged. See `apple_fit_frontier_2026_06_22.md` A1/A2/A3/A8.
-- **Risk / still open:** the A8 gate is enforced at the *chooser* level (unit-tested), NOT yet as a *measured serving*
-  regression (run auto vs best-manual and fail on unstated material tps/quality/context loss) — that needs A6 measurements +
-  a serving harness. Also pending: A4 live memory-pressure engine, A5 measured long-ctx routing, A6 energy/thermal cards, A7
-  Mac-native model experience (pull/registry/hawkingd), serve context-cap wiring (today the cap is announced/advisory).
-- **Evidence to close:** add the measured A8 serving gate; e2e expert-override tests; A4/A5/A6/A7. Do NOT let auto become a
-  performance ceiling.
+- **PARKED (explicit decision 2026-06-22) — out of scope for the SOTA-rebench goal:** A4 live memory-pressure engine, A5
+  measured long-ctx routing, A6 energy/thermal cards, A7 Mac-native model experience (pull/registry/`hawkingd`), the
+  *measured-serving* A8 regression gate (chooser-level A8 IS done + unit-tested), and serve context-cap enforcement (today
+  the cap is announced/advisory). **Rationale:** these are product builds that touch the serve hot path (A4), need an eval
+  corpus (A5), measurement wiring (A6), or packaging (A7) — none affect a *clean rebench*, and half-building them under the
+  benchmarking thread would add risk without benefit. The Lane H **capability-amplifier core (A1/A2/A3 + chooser-level A8) is
+  complete, gated, and shipped**; that satisfies the goal's prose mandate ("inspect the Mac, predict fit, choose the strongest
+  stable config, capability-first not throttle, anti-throttle gates").
+- **Re-entry gate (when resumed):** start with A4 (pressure engine: monitor → admission-control-before-downgrade → reversible
+  restore, behind a flag, parity-green) or A6 (wire `phase_joules` J/tok into `fit`/the bench energy section). Keep the
+  chooser-level anti-throttle tests green; do NOT let `serve --auto` become a performance ceiling.
 
 ## R9 — speed/compression/quality could regress silently — 🟢 PARTIALLY CLOSED (2026-06-22)
 - **Was:** CI enforced only fmt/clippy/build/test; correctness was locked by 193 golden hashes but **speed, footprint, and
