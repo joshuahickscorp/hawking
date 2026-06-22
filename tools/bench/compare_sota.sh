@@ -48,9 +48,25 @@ REPO="$(pwd)"
 
 QUICK="${QUICK:-0}"
 HBIN="${HBIN:-./target/release/hawking}"
-QWEN_GGUF="${QWEN_GGUF:-models/Qwen2.5-3B-Instruct-Q4_K_M.gguf}"
+# Transformer model — prefer the bigger 7B PORTABLE model if present (same base in
+# all three: GGUF for Hawking+llama.cpp, MLX 4bit for MLX); else fall back to 3B.
+if [ -z "${QWEN_GGUF:-}" ]; then
+  if [ -f models/Qwen2.5-7B-Instruct-Q4_K_M.gguf ]; then
+    QWEN_GGUF=models/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+  else
+    QWEN_GGUF=models/Qwen2.5-3B-Instruct-Q4_K_M.gguf
+  fi
+fi
+if [ -z "${MLX_MODEL:-}" ]; then
+  if [ -d models/mlx-Qwen2.5-7B-Instruct-4bit ]; then
+    MLX_MODEL=models/mlx-Qwen2.5-7B-Instruct-4bit
+  elif [ -f models/Qwen2.5-7B-Instruct-Q4_K_M.gguf ]; then
+    MLX_MODEL=mlx-community/Qwen2.5-7B-Instruct-4bit
+  else
+    MLX_MODEL=mlx-community/Qwen2.5-3B-Instruct-4bit
+  fi
+fi
 RWKV_GGUF="${RWKV_GGUF:-models/rwkv7-g1-04-sft-Q4_K_M.gguf}"
-MLX_MODEL="${MLX_MODEL:-mlx-community/Qwen2.5-3B-Instruct-4bit}"
 TRIALS="${TRIALS:-3}"; [ "$QUICK" = 1 ] && TRIALS=2
 TOK="${TOK:-128}";     [ "$QUICK" = 1 ] && TOK=64
 CTX_LONG="${CTX_LONG:-8192}"

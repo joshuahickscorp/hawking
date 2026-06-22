@@ -53,15 +53,35 @@ Earlier comparison runs hung in an endless `>>>>>` loop. Root causes, both handl
 
 A missing engine is **skipped with a clear note + install hint**, never a failure.
 
-## Enabling MLX
+## Models (portable across all three frameworks)
 
-MLX lives in a Python env (often a separate `python3.12`). The harness auto-probes
-`$MLX_PYTHON`, `python3.12`, `~/.mlxenv/bin/python`, then `python3`. To enable it:
+The harness auto-prefers the **Qwen2.5-7B-Instruct** portable model when present
+(same base model in each framework's native quant), else falls back to the 3B:
+
+| framework | artifact | path / id |
+|---|---|---|
+| Hawking + llama.cpp | GGUF Q4_K_M | `models/Qwen2.5-7B-Instruct-Q4_K_M.gguf` |
+| MLX | MLX 4-bit | `models/mlx-Qwen2.5-7B-Instruct-4bit` (or `mlx-community/Qwen2.5-7B-Instruct-4bit`) |
+| Hawking (SSM moat) | GGUF | `models/rwkv7-g1-04-sft-Q4_K_M.gguf` |
+
+Fetch the 7B (the CLI is `hf`, not the deprecated `huggingface-cli`):
 
 ```bash
-python3.12 -m pip install mlx-lm          # or into your preferred env
-# then re-run; or point the harness at a specific interpreter:
-MLX_PYTHON=~/.mlxenv/bin/python bash tools/bench/compare_sota.sh
+hf download bartowski/Qwen2.5-7B-Instruct-GGUF Qwen2.5-7B-Instruct-Q4_K_M.gguf --local-dir models
+hf download mlx-community/Qwen2.5-7B-Instruct-4bit --local-dir models/mlx-Qwen2.5-7B-Instruct-4bit
+```
+
+Override either with `QWEN_GGUF=… MLX_MODEL=… bash tools/bench/compare_sota.sh`.
+
+## MLX
+
+MLX runs from a Python env that has `mlx_lm` (on this machine: **`python3.12`,
+mlx_lm 0.31.3**). The harness auto-probes `$MLX_PYTHON`, `python3.12`,
+`~/.mlxenv/bin/python`, then `python3`. To (re)install or pin:
+
+```bash
+python3.12 -m pip install -U mlx-lm
+MLX_PYTHON=python3.12 bash tools/bench/compare_sota.sh   # pin a specific interpreter
 ```
 
 ## Where Hawking is differentiated
