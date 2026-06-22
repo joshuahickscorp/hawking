@@ -1114,6 +1114,37 @@ impl Engine for RwkvSeven {
         }
     }
 
+    // Continuous-batching serve helpers. RWKV already implements per-slot decode
+    // (`prefill_slot` + `forward_multiseq_batched`, which isolate per-slot recurrent
+    // state); these three tokenizer wrappers are all the serve admit/stream path
+    // needs. Without them the Engine-trait default `encode_prompt_for_batch` returns
+    // Unimplemented, which `http.rs` admit silently maps to "no free slot" → the
+    // request queues forever (admitted=0, tokens=0). Mirrors the qwen_dense impl,
+    // guarding the `Option<Tokenizer>` the same way `generate()` does.
+    fn encode_prompt_for_batch(&self, prompt: &str) -> Result<Vec<u32>> {
+        let tokenizer = self.tokenizer.as_ref().ok_or_else(|| {
+            Error::Model(
+                "rwkv7: World tokenizer not available from GGUF; serve path needs a tokenizer"
+                    .into(),
+            )
+        })?;
+        tokenizer.encode(prompt, true)
+    }
+
+    fn decode_token_for_batch(&self, token: u32) -> Result<String> {
+        let tokenizer = self.tokenizer.as_ref().ok_or_else(|| {
+            Error::Model(
+                "rwkv7: World tokenizer not available from GGUF; serve path needs a tokenizer"
+                    .into(),
+            )
+        })?;
+        tokenizer.decode_one(token)
+    }
+
+    fn eos_id_for_batch(&self) -> Option<u32> {
+        self.tokenizer.as_ref().and_then(|t| t.eos_id())
+    }
+
     fn forward_multiseq_batched(
         &mut self,
         tokens: &[u32],
@@ -1180,6 +1211,15 @@ impl Engine for RwkvSeven {
                 }
                 // Copy CPU recurrent state into the GPU arena at slot_id.
                 self.copy_cpu_state_to_gpu_slot(&tmp, slot_id);
+                // The slot now holds the prompt's last token-shift state (non-zero
+                // att_shift/ffn_shift). The multiseq token-shift kernels honor the
+                // bundle-wide `fresh` flag (`sx = fresh ? -x : x_prev - x`); leaving
+                // it `true` would discard this carried `x_prev` on the first decode
+                // step, diverging at token 2. A real prefill always consumes >=1
+                // token, so there IS a previous token: clear `fresh`. (Single-user
+                // B=1 product; for B>1 prefill-while-streaming this flag should be
+                // promoted to per-slot — see rwkv7_prefill_slot_multiseq_parity.)
+                self.gpu.as_mut().unwrap().fresh = false;
                 return Ok(last_logits
                     .iter()
                     .copied()
