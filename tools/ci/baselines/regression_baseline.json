@@ -1,0 +1,60 @@
+{
+  "_doc": "Committed regression baseline for tools/ci/regression_gate.sh. Locks the speed/compression/quality wins so they cannot regress silently. Update ONLY with attended review + fresh warm-median evidence, and record the change in docs/campaign/test_matrix.md.",
+  "_method": "CATEGORY-regression gate, not a micro-benchmark. The fresh-process warm-median has a +-several-percent noise floor (per-process cold-PSO residual); sub-10% deltas are NOT cleanly resolvable this way (test_matrix.md 2026-06-21). Floors are therefore set ~10-15% below the measured warm median: they catch a lever being silently disabled (e.g. predec OFF = -46.7%) or a quant path regressing, while staying above the noise so the gate does not flap red. For fine (<10%) deltas use a single long warm run, not this gate.",
+  "_updated": "2026-06-22",
+
+  "footprint_ceilings_bytes": {
+    "models/Qwen2.5-3B-Instruct-Q4_K_M.gguf": {
+      "bytes": 1929903264,
+      "tol_pct": 1.0,
+      "source": "measured 2026-06-22 (stat -f%z)",
+      "guards": "Qwen-3B Q4_K_M weight footprint; a swap to a larger/un-quantized file or a disabled compression default would breach this."
+    },
+    "models/rwkv7-g1-04-sft-Q4_K_M.gguf": {
+      "bytes": 300694944,
+      "tol_pct": 1.0,
+      "source": "measured 2026-06-22 (stat -f%z)",
+      "guards": "RWKV-7-0.4B-SFT Q4_K_M footprint (the SSM long-context moat SKU)."
+    }
+  },
+
+  "decode_tps_floors": {
+    "qwen3b_short": {
+      "model": "models/Qwen2.5-3B-Instruct-Q4_K_M.gguf",
+      "ctx": "short",
+      "floor": 34.0,
+      "measured_warm": "38.3-40.6 (test_matrix 2026-06-21)",
+      "rationale": "predec-OFF = 21.6 tps (-46.7%) is the canonical silent regression this floor must catch; 34.0 sits ~11% below the worst warm median (38.3) and far above the predec-off failure, so it catches category regressions without flapping on noise."
+    },
+    "rwkv7_sft_short": {
+      "model": "models/rwkv7-g1-04-sft-Q4_K_M.gguf",
+      "ctx": "short",
+      "floor": 100.0,
+      "measured_warm": "114.6 (overnight 3-trial) - 118.6 (single bench)",
+      "rationale": "Floor ~13% below the overnight warm median (114.6). Guards the SSM decode path; a kernel/state regression that halved RWKV throughput would breach this."
+    }
+  },
+
+  "quality_identity_floors": {
+    "_note": "These are argmax-IDENTITY floors for Qwen quality-affecting LEVERS (greedy diff vs the bit-identical default over the adversarial suite in tools/bench/ratios.sh). They are a LEVER-SAFETY gate, NOT an instruct/product-quality gate (that needs chat-templated eval via /v1/chat/completions - see open_risks_and_gates.md R3). A breach means a lever got materially less faithful to the default than when it was measured.",
+    "profile_fast": {
+      "floor": 0.80,
+      "measured": "0.83 (12-prompt) / 0.90 (adversarial 10-prompt)",
+      "eval": "tools/bench/ratios.sh qual \"\" fast",
+      "rationale": "--profile fast is a known mild quant trade; 0.80 catches a real fidelity collapse without flapping on the 1-2 prompts that legitimately diverge."
+    },
+    "f16_kv": {
+      "floor": 0.85,
+      "measured": "0.88 (8-prompt) / 1.00 (adversarial 10-prompt)",
+      "eval": "tools/bench/ratios.sh qual \"HAWKING_QWEN_F16_KV=1\"",
+      "rationale": "F16_KV quality is high; 0.85 catches a collapse (per-ROW int4-KV was 0%) while leaving headroom for rare prompt-specific divergence."
+    }
+  },
+
+  "pending_not_enforced": {
+    "_note": "Honestly tracked gaps. These are NOT yet gated; do not read their absence as 'covered'.",
+    "serve_decode_tps": "RWKV serve throughput (R1b) is ~7.8 tps vs ~119 single-stream (B=8 arena overhead). Add a serve-tps floor AFTER the arena-sizing fix lands, so the recovered throughput is locked.",
+    "perplexity_int4kv_pc": "Real-model perplexity gate for per-channel int4-KV is the documented ship gate and has never been run (test_matrix.md). Add when the path is wired e2e (open_risks_and_gates.md R2).",
+    "instruct_quality": "Product instruct-quality (chat-templated, per task class) is not gated here; R3/R5. This gate only protects lever argmax-identity + speed + footprint."
+  }
+}

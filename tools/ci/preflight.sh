@@ -32,14 +32,15 @@ if [ "${FAST:-0}" != 1 ]; then
   T="${TESTS:-greedy_token_only_parity integration_greedy_64 gemm_q4k_v4r_predec_parity q6k_swiglu_2r_parity q6k_swiglu_4r_parity mha_decode_perchannel_int4kv_parity event_horizon_parity_prop}"
   for t in $T; do run cargo test -p hawking-core --release --test "$t"; done
 
+  step "regression gate — footprint (CPU-safe; enforces compression floors)"
+  [ -x tools/ci/regression_gate.sh ] && run env FOOTPRINT_ONLY=1 tools/ci/regression_gate.sh
+
   if [ "${SKIP_BENCH:-0}" != 1 ]; then
     if [ -x ./target/release/hawking ] && [ -f models/qwen2.5-3b-instruct-q4_k_m.gguf ]; then
-      step "bench smoke (warm tps + adversarial quality, tools/bench/ratios.sh)"
-      run ./tools/bench/ratios.sh ab "" short 3
-      PROFILE=fast run ./tools/bench/ratios.sh ab "" short 3
-      run ./tools/bench/ratios.sh qual "HAWKING_QWEN_F16_KV=1" "" 60
+      step "regression gate — full (warm tps + quality floors, enforced)"
+      run tools/ci/regression_gate.sh
     else
-      echo "(bench smoke skipped — need ./target/release/hawking + the Qwen-3B gguf)"
+      echo "(bench/regression smoke skipped — need ./target/release/hawking + the Qwen-3B gguf)"
     fi
   fi
 fi

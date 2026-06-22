@@ -12,6 +12,7 @@
 #   RUN_PARITY=0             skip representative parity tests
 #   RUN_CARGO_CHECK=0        skip `cargo check`
 #   RUN_PREFLIGHT=0          skip tools/ci/preflight.sh
+#   RUN_REGRESSION=0         skip the perf/footprint/quality regression gate
 #   RUN_GPU=0                skip all model/bench jobs
 #   RUN_SERVE_SMOKE=0        skip SSM serve smoke after SSM benches
 #   RUN_MAMBA_SERVE_SMOKE=1  also serve-smoke mamba2 (RWKV is default)
@@ -185,6 +186,17 @@ if [ "${RUN_PARITY:-1}" = "1" ]; then
   run "perchannel_int4kv_parity" cargo test -p hawking-core --test mha_decode_perchannel_int4kv_parity
   run "q6k_2r_parity" cargo test -p hawking-core --test q6k_swiglu_2r_parity
   run "q6k_4r_parity" cargo test -p hawking-core --test q6k_swiglu_4r_parity
+fi
+
+if [ "${RUN_REGRESSION:-1}" = "1" ] && [ -x tools/ci/regression_gate.sh ]; then
+  # Enforcing layer: footprint always; tps + quality floors when the GPU is enabled.
+  # A breach sets FAIL=1 so the whole overnight run reports FAIL/ATTENTION.
+  if [ "${RUN_GPU:-1}" = "1" ] && [ -x ./target/release/hawking ]; then
+    wait_gpu_slot
+    run_shell "regression_gate" "OUT='$OUT/regression' GPU_WAIT=1 TRIALS=${TRIALS:-3} tools/ci/regression_gate.sh"
+  else
+    run_shell "regression_gate_footprint" "OUT='$OUT/regression' FOOTPRINT_ONLY=1 tools/ci/regression_gate.sh"
+  fi
 fi
 
 if [ "${RUN_PREFLIGHT:-1}" = "1" ] && [ -x tools/ci/preflight.sh ]; then
