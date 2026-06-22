@@ -381,3 +381,21 @@ RUN_SERVE_SMOKE=0 tools/ci/overnight_hardening.sh
   Mac-native model experience (pull/registry/hawkingd); the measured A8 serving regression gate; serve context-cap wiring.
 - **Lane hygiene:** confined to `crates/hawking/src/main.rs` (doctor --json, fit/auto helpers, serve --auto wiring, 1 test fn)
   + docs; `--auto` is opt-in so default serve is unchanged; engine/kernels untouched.
+
+## Phase 14 — finish gates + clean the SOTA rebench (goal: "finih all gates and lanes for a cleaner rebench")
+- **GATE: workspace clippy GREEN.** The one blocker was a pre-existing dead variant `ValidFirstBytes::None`
+  (`hawking-core/json_constrain.rs`) — the state machine never produces it. Removed the variant + its dead match arm →
+  `cargo clippy --workspace -- -D warnings <CI allowlist>` is now clean (commit 55dac35). Non-behavioral.
+- **BENCH CLEANED (cleaner rebench):** diagnosed from the owner's runs (`reports/sota-compare/20260622T204811Z`):
+  - Hawking showed **NA** in §5 speed AND §7 long-ctx (all rows) — root cause: `hawking generate` prints `dec_tps=` to
+    **stderr** and `hawking_tps()` discarded it (`2>/dev/null`). Fix: capture `2>&1` (commit 158116e). Verified 20.59 tps.
+  - §4 bit-ladder showed **EXCEEDS/EXCEEDS** (no wedge) because the press demo hardcoded `--memory-budget 2gb`, below the 7B
+    out-of-core peak (2.5 GiB). Fix: `PRESS_BUDGET` (default 8gb, sits between out-of-core and full-resident) → WEDGE shows
+    (out-of-core FITS 2.32 GiB vs full-resident EXCEEDS 28.37 GiB) (commit bd96f64).
+  - §11 energy is a deliberate pointer (macmon present) — not a gap.
+- **GATES re-verified GREEN:** workspace clippy ✅; `cargo build` ✅; `cargo test -p hawking --bins` ✅ (17, incl. A8
+  `serve_auto_tests`); `regression_gate.sh` footprint ✅ (2 enforced); `rwkv7_prefill_slot_multiseq_parity` ✅ (slot0+slot3);
+  full lib suite (182) re-running to confirm the json_constrain change.
+- **Result:** the rebench now produces complete data — Hawking tps in §5/§7, the wedge in §4, all engines (llama.cpp +
+  MLX 7B). Rerun clean (Claude closed): `BIT_TARGETS=8,6,5,4,3,2,1 TRIALS=5 TOK=256 bash tools/bench/compare_sota.sh`.
+- **Lane hygiene:** json_constrain (1 dead-variant removal) + bench .sh + this log; engine decode/serve paths untouched.
