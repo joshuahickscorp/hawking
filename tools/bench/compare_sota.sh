@@ -82,6 +82,10 @@ TOK="${TOK:-128}";     [ "$QUICK" = 1 ] && TOK=64
 CTX_LONG="${CTX_LONG:-8192}"
 RUN_TIMEOUT="${RUN_TIMEOUT:-300}"
 BIT_TARGETS="${BIT_TARGETS:-8,6,5,4,3,2,1}"
+# Press-demo memory budget: must sit BETWEEN the out-of-core peak and the
+# full-resident-f32 size to demonstrate the wedge. 8 GiB wedges both 3B (~1.3 ooc /
+# ~11.5 resident) and 7B (~2.5 ooc / ~28 resident). Bump for >7B parents.
+PRESS_BUDGET="${PRESS_BUDGET:-8gb}"
 RUN_HAWKING_BENCH="${RUN_HAWKING_BENCH:-1}"
 RUN_KERNEL_BENCH="${RUN_KERNEL_BENCH:-1}"
 KERNEL_ITERS="${KERNEL_ITERS:-100}"; [ "$QUICK" = 1 ] && KERNEL_ITERS=25
@@ -274,7 +278,7 @@ md "| $QWEN_BASE (MLX 4bit equivalent) | MLX | (HF/local MLX artifact) | ~4.5 | 
 md ""
 md "**Hawking-unique:** \`hawking press --dry-run --memory-budget\` plans an OUT-OF-CORE condense (quantize a parent that does"
 md "not fit fully resident). Closest SOTA: \`llama-quantize\` (in-memory only) / AutoAWQ / GPTQ (need the full parent resident)."
-press_demo="$($HBIN press --dry-run --memory-budget 2gb --target 4,3,2 --weights "$QWEN_GGUF" 2>/dev/null | grep -E 'WEDGE|out-of-core|full-resident' | head -3 || true)"
+press_demo="$($HBIN press --dry-run --memory-budget "$PRESS_BUDGET" --target 4,3,2 --weights "$QWEN_GGUF" 2>/dev/null | grep -E 'WEDGE|out-of-core|full-resident' | head -3 || true)"
 [ -n "$press_demo" ] && { md '```'; md "$press_demo"; md '```'; }
 
 # ============================================================= 4. QUANTIZATION / BIT LADDER
@@ -292,7 +296,7 @@ md "| compress-then-recover | QAT/KD/DPO scripts exist; no finished \`press --di
 md ""
 press_all="$OUT/press_ladder_${BIT_TARGETS//,/ _}.txt"
 press_all="${press_all// /}"
-TO "$RUN_TIMEOUT" "$HBIN" press --dry-run --memory-budget 2gb --target "$BIT_TARGETS" --weights "$QWEN_GGUF" >"$press_all" 2>&1 || true
+TO "$RUN_TIMEOUT" "$HBIN" press --dry-run --memory-budget "$PRESS_BUDGET" --target "$BIT_TARGETS" --weights "$QWEN_GGUF" >"$press_all" 2>&1 || true
 md "**All-bit dry-run ladder** for \`$QWEN_BASE\` with \`--target $BIT_TARGETS\` saved to \`$press_all\`:"
 md '```'
 grep -E 'Condense ladder|tier|bit|out-of-core|full-resident|WEDGE|FITS|EXCEEDS|bpw|out size|vs now' "$press_all" | head -40 >>"$REPORT" || true
@@ -482,7 +486,7 @@ run_diag "verify"             "$HBIN" verify --weights "$QWEN_GGUF"
 run_diag "doctor --json"      "$HBIN" doctor --weights "$QWEN_GGUF" --json --max-seq-len 32768
 run_diag "fit (max-capability)" "$HBIN" fit --weights "$QWEN_GGUF" --intent max-capability
 run_diag "fit (max-context, RWKV/SSM)" "$HBIN" fit --weights "$RWKV_GGUF" --intent max-context
-run_diag "press --dry-run (out-of-core all-bit condense planner)" "$HBIN" press --dry-run --memory-budget 2gb --target "$BIT_TARGETS" --weights "$QWEN_GGUF"
+run_diag "press --dry-run (out-of-core all-bit condense planner)" "$HBIN" press --dry-run --memory-budget "$PRESS_BUDGET" --target "$BIT_TARGETS" --weights "$QWEN_GGUF"
 run_diag "stats"             "$HBIN" stats --weights "$QWEN_GGUF" --prompt "$SHORTP" --max-new-tokens 16
 if ls profiles/*.json >/dev/null 2>&1; then
   first_profile="$(ls profiles/*.json | head -1)"
