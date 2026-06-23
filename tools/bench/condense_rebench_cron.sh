@@ -42,3 +42,7 @@ LOG="reports/cron/rebench_${STAMP}.log"
     OUT="reports/sota-compare/cron-${STAMP}" bash tools/bench/compare_sota.sh
   echo "[cron] done ${STAMP} — reports/sota-compare/cron-${STAMP}/report.md + reports/condense/"
 } >>"$LOG" 2>&1
+
+# clean morning summary (reads the log's JSON lines + the ppl sweep)
+python3.12 tools/condense/overnight_summary.py "$LOG" reports/condense/ppl_sweep.jsonl >> "$LOG" 2>&1 || true
+echo "[cron] summary -> reports/condense/OVERNIGHT_RESULTS.md" >> "$LOG" 2>&1
