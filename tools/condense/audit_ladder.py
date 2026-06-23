@@ -119,7 +119,7 @@ def measure(override):
         with safe_open(override, framework="pt") as f:
             for k in f.keys():
                 if k in sd and tuple(sd[k].shape) == tuple(f.get_slice(k).get_shape()):
-                    sd[k].copy_(f.get_tensor(k).to(DTYPE, DEV))
+                    sd[k].copy_(f.get_tensor(k).to(DEV, DTYPE))
     text = open(PT, errors="ignore").read()
     ids = tok(text, return_tensors="pt").input_ids[:, :2048].to(DEV)
     with torch.no_grad():
