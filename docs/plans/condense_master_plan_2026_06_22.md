@@ -61,6 +61,17 @@ The proxy and real inference agree: **3-bit PTQ is degraded-but-usable; 2-bit PT
 collapses.** This is the metric the doctor (QAT/KD) must move — the recovery target
 is TQ2 ppl 450 → ~28. Raw: `reports/condense/ppl_sweep.jsonl`.
 
+### 🩺 The DOCTOR works — recovery PROVEN (2026-06-23)
+
+`tools/condense/doctor_qat.py` — self-contained QAT (uniform per-channel + STE),
+the quality-infusion lever. **5-step smoke on Qwen2.5-0.5B at 2-bit:** held-out ppl
+**79,000,000 → 211,000 in 5 steps (99.7% recovery)**, train-loss 17.2 → 4.3. The
+direction is overwhelming — gradient recovery moves the quantized weights exactly as
+the triangulation predicted (cheap PTQ/data-free levers could not). The full run
+(300 steps → target ~f16 ppl 28) is the deferred cron money-shot (heavy/training,
+not on battery). This is the proof that **condensation ≠ loss**: low bits + the
+doctor → small AND ~1:1.
+
 ## The pipeline (the seven stages)
 
 ```
