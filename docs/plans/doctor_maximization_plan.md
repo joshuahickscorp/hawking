@@ -176,3 +176,10 @@ the real test of the redundancy hypothesis: does the floor descend?** → report
 - **The one structural constraint:** two chats share this 19 GB box; heavy condense jobs (15 GB baker
   input + a 14 GB model load) cannot co-reside, so the findings/validations serialize on machine
   availability — that's the only thing between here and "all local targets met."
+
+## Validation batch (0.5B, train-free levers) — MEASURED, honest (incl. non-wins)
+- **V3 mixed-precision: WIN** — iso ~2.7 bpw, mixed +292% vs uniform-2bit +1001% (+708 pts). Spend bits where the output hurts. Lever validated (matters more where there's redundancy).
+- **V4 AWQ×residual: NON-WIN** — AWQ-base res3+2 = +3.72% vs PLAIN res3+2 +1.4% at the SAME 6.30 bpw. Residual already captures the full-rank error; AWQ's column-scaling only distorts → plain residual is the quality path; don't stack AWQ under it.
+- **V5 multi-domain calib: NON-WIN on a domain eval** — diverse-calib +17.7% vs domain-matched(prose) +14.6% on the prose eval → calib should MATCH the deployment domain, not maximize diversity.
+- **V6 capability tripwire: ~1:1 ppl == capability PRESERVED** — AWQ-residual (+3.72% ppl) aggregate 0.77 = identical to f16 (qa .83/cloze 1.0/math 1.0/code .2).
+- **NET validated doctor defaults:** AWQ(domain-matched calib)@3–4-bit · PLAIN residual for ~1:1 · mixed-precision allocation. AWQ×residual + diverse-calib are measured non-wins (kept as tools, not defaults).
