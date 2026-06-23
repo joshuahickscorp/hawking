@@ -120,12 +120,17 @@ def main():
 
     if SAVE:
         from safetensors.torch import save_file
-        sd = {}
+        sd, raw = {}, {}
         for name, m in model.named_modules():
             if isinstance(m, nn.Linear) and hasattr(m, "_qbits"):
                 sd[name + ".weight"] = fakequant(m.weight.detach(), m._qbits).cpu().to(torch.float16)
+                raw[name + ".weight"] = m.weight.detach().cpu().to(torch.float16)
         save_file(sd, SAVE)
-        print(f"# saved healed weights: {SAVE} ({len(sd)} tensors)", file=sys.stderr)
+        print(f"# saved healed (uniform-quantized) weights: {SAVE} ({len(sd)} tensors)", file=sys.stderr)
+        # RAW healed shadow (un-quantized) so the cron can STRAND-bake it -> product TQ quality
+        raw_path = SAVE.replace(".safetensors", ".raw.safetensors")
+        save_file(raw, raw_path)
+        print(f"# saved RAW healed shadow (for STRAND re-bake): {raw_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

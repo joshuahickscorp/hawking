@@ -26,6 +26,11 @@ LOG="reports/cron/rebench_${STAMP}.log"
   bash tools/condense/quality_sweep.sh scratch/qwen-05b 3,2 2>&1 | tail -20
   echo "[cron] === DOCTOR (self-CE): QAT recovery 2-bit, 300 steps (the money shot) ==="
   python3.12 tools/condense/doctor_qat.py 2 300 2e-5 scratch/qwen-05b-healed2.safetensors 2>&1 | tail -30 || echo "[cron] doctor-2 failed"
+  echo "[cron] === PRODUCT bridge: STRAND-bake the healed shadow -> real TQ2 ppl ==="
+  vendor/strand-quant/target/release/quantize-model --in scratch/qwen-05b-healed2.raw.safetensors \
+    --out scratch/qwen-05b-healed2-strand.safetensors --bits 2 --quality --rht-cols \
+    --outlier-channel 1 --outlier-bits 8 2>&1 | tail -2 || echo "[cron] strand re-bake failed"
+  python3.12 tools/condense/ppl_bench.py scratch/qwen-05b scratch/qwen-05b-healed2-strand.safetensors "tq2+doctor+STRAND" 2>/dev/null || echo "[cron] strand ppl failed"
   echo "[cron] === DOCTOR (KD): distillation 2-bit, 300 steps ==="
   KD=1 python3.12 tools/condense/doctor_qat.py 2 300 2e-5 scratch/qwen-05b-healed2kd.safetensors 2>&1 | tail -12 || echo "[cron] doctor-2-kd failed"
   echo "[cron] === DOCTOR: 3-bit, 200 steps ==="
