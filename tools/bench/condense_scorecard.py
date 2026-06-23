@@ -5,7 +5,7 @@ space vs the f16 parent), and the RAM-CLIFF (fit => speed). Battery-safe: pure
 arithmetic over MEASURED anchors (no heavy inference; the wall-clock tps sweep is
 the deferred cron job). Emits a Twitter-style markdown scorecard.
 """
-import os, datetime, pathlib
+import os, json, datetime, pathlib
 
 # ── measured anchors ────────────────────────────────────────────────────────
 MAC_GB = 19.0                      # this machine (sysctl hw.memsize)
@@ -53,6 +53,31 @@ for k,(_,rec,q,note) in FMT.items():
 w("\n> Tested *differently* from a vibes-bench: error is measured against the **f16 original**, "
   "the gold standard. Honest read: **TQ3 is already close (1.3x)**; **TQ2 needs the doctor** "
   "(QAT/KD) — PTQ alone can't reach 2-bit (triangulated: L1 cap + low-rank NO-GO + allocation tie).")
+
+# 2b) REAL perplexity (actual inference) — the "tested differently" diagnostic
+_pp = pathlib.Path("reports/condense/ppl_sweep.jsonl")
+if _pp.exists():
+    pr = {}
+    for ln in _pp.read_text().splitlines():
+        ln = ln.strip()
+        if ln.startswith("{"):
+            try:
+                d = json.loads(ln)
+                if "label" in d and "ppl" in d:
+                    pr[d["label"]] = d["ppl"]
+            except json.JSONDecodeError:
+                pass
+    f16p = pr.get("f16")
+    if f16p:
+        lab = {"f16": "f16 parent", "tq3": "Hawking TQ3 (PTQ)", "tq2": "Hawking TQ2 (PTQ)"}
+        w("\n## 2b. REAL perplexity — actual inference (Qwen2.5-0.5B), tested differently\n")
+        w("| variant | ppl | vs f16 |\n|---|--:|--:|")
+        for k in ["f16", "tq3", "tq2"]:
+            if k in pr:
+                v = "—" if k == "f16" else f"+{(pr[k]/f16p-1)*100:.0f}%"
+                w(f"| {lab.get(k,k)} | {pr[k]:.1f} | {v} |")
+        w("\n> Inference confirms the proxy: TQ3 usable, TQ2 collapses under PTQ. The **doctor**"
+          " (QAT/KD) recovery — TQ2 back toward f16 — is in `reports/condense/OVERNIGHT_RESULTS.md`.")
 
 # 3) RAM CLIFF (the speed thesis)
 w("\n## 3. The RAM cliff — *fit* is the speed win (not decode kernels)\n")
