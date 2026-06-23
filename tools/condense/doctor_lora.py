@@ -73,6 +73,7 @@ def main():
 
     model.train()
     opt = torch.optim.AdamW(params, lr=LR)  # tiny param set -> AdamW is cheap here
+    best_ppl, best_step, best_state = base_ppl, -1, None
     for step in range(STEPS):
         cids = chunks[step % len(chunks)]
         opt.zero_grad()
@@ -81,10 +82,24 @@ def main():
         loss.backward()
         opt.step()
         if step % 25 == 0 or step == STEPS - 1:
-            print(f"#  step {step:4d} ce {loss.item():.4f}", file=sys.stderr)
+            model.eval()
+            hp = ppl(model, tok, EVAL)  # held-out — early-stop on THIS, not train loss
+            model.train()
+            tag = ""
+            if hp < best_ppl:
+                best_ppl, best_step = hp, step
+                best_state = {n: (m._A.detach().clone(), m._B.detach().clone()) for n, m in ADAPT}
+                tag = " *best"
+            print(f"#  step {step:4d} ce {loss.item():.4f}  held-out {hp:.1f}{tag}", file=sys.stderr)
 
+    # early-stopping: restore the best held-out checkpoint (LoRA diverges if over-trained)
+    if best_state is not None:
+        for n, m in ADAPT:
+            a, b = best_state[n]
+            m._A.data, m._B.data = a, b
     model.eval()
     lora_ppl = ppl(model, tok, EVAL)
+    print(f"# best held-out ppl {best_ppl:.3f} @ step {best_step}", file=sys.stderr)
     print(json.dumps({"base_ppl": base_ppl, "lora_ppl": lora_ppl, "rank": RANK, "steps": STEPS,
                       "recovery_pct": (base_ppl - lora_ppl) / base_ppl * 100 if base_ppl else 0}))
 
