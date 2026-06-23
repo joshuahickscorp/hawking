@@ -75,3 +75,17 @@ CONCLUSION: the doctor = **AWQ + LoRA-KD on the frozen STRAND base**. Path to ~1
 LoRA (tuned LR), AWQ alpha-sweep, more steps, and bigger models (more redundancy => the gap shrinks).
 Uniform-proxy QAT (global/block-wise) and STRAND-in-loop full-rank are dead-ends for this codec.
 1-bit: catastrophic on 0.5B (AWQ +2.5M%, +doctor +28K%) -> validates per-model bit-floor discrimination.
+
+## ★★★ CEILING BROKEN (2026-06-23): RESIDUAL QUANT = the full-rank, codec-native fix → ~1:1
+The LoRA ceiling (+14.8%) and the uniform-QAT dead-ends are SOLVED by residual quantization:
+  W ≈ STRAND_b1(W) + STRAND_b2(W − STRAND_b1(W))   (tools/condense/residual_bake.py)
+The residual term is FULL-RANK (captures the high-rank quant error LoRA can't) and uses the SAME
+STRAND codec (no transfer gap — unlike uniform-proxy QAT). Measured, 0.5B (HARDEST case, vs f16):
+- 3-bit RHT base:            +42.9%
+- AWQ + LoRA-doctor:         +14.8%  @3.6 bpw
+- 2+2-bit residual:          +8.9%   @~4 bpw  (DENSER than llama Q4_K @4.5, MATCHES its ~+9%)
+- 3+2-bit residual:          +1.6%   @~5 bpw  (≈ 1:1 — NEAR-LOSSLESS on the worst case)
+This is THE ceiling-breaker. bpw is tunable per quality target (the discrimination): 2+2 for
+max density at Q4_K-quality, 3+2 for ~1:1. NEXT: stack AWQ + residual (lower bpw for same
+quality); measure effective .tq bpw (RHT/outlier overhead per pass); apply at 7B (should need
+FEWER residual bits — more redundancy). Supersedes the LoRA-only doctor as the quality path.
