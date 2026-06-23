@@ -58,7 +58,12 @@ def main():
               file=sys.stderr)
 
     model = model.to(dev).eval()
-    ids = tok(TEXT, return_tensors="pt").input_ids.to(dev)
+    import os as _os
+    text = TEXT
+    tf = _os.environ.get("PPL_TEXT")
+    if tf and _os.path.exists(tf):
+        text = open(tf, errors="ignore").read()
+    ids = tok(text, return_tensors="pt").input_ids[:, :2048].to(dev)  # cap for single-pass mem
     with torch.no_grad():
         out = model(ids, labels=ids)
     loss = float(out.loss.item())

@@ -31,6 +31,8 @@ LOG="reports/cron/rebench_${STAMP}.log"
     --out scratch/qwen-05b-healed2-strand.safetensors --bits 2 --quality --rht-cols \
     --outlier-channel 1 --outlier-bits 8 2>&1 | tail -2 || echo "[cron] strand re-bake failed"
   python3.12 tools/condense/ppl_bench.py scratch/qwen-05b scratch/qwen-05b-healed2-strand.safetensors "tq2+doctor+STRAND" 2>/dev/null || echo "[cron] strand ppl failed"
+  echo "[cron] === 3-WAY QUALITY: healed TQ2 vs llama Q4_K (the win check) ==="
+  bash tools/condense/quality_3way.sh scratch/qwen-05b-healed2-strand.safetensors "tq2+doctor" 2>&1 | tail -10 || echo "[cron] 3way failed"
   echo "[cron] === DOCTOR (KD): distillation 2-bit, 300 steps ==="
   KD=1 python3.12 tools/condense/doctor_qat.py 2 300 2e-5 scratch/qwen-05b-healed2kd.safetensors 2>&1 | tail -12 || echo "[cron] doctor-2-kd failed"
   echo "[cron] === DOCTOR: 3-bit, 200 steps ==="
