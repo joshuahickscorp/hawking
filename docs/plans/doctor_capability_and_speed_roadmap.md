@@ -61,3 +61,17 @@ fixes that unlocked it: AWQ base (was missing from real bakes); doctor stability
 higher rank (rank256/lr3e-4 DIVERGED; rank128/lr1e-4/top-128 KD is stable). Full-rank STRAND-QAT
 DIVERGES (base-add STE drift — abandoned). Next: bigger models (1.5B+) should WIN; tune doctor
 steps/alpha further; fold AWQ into the baker (--awq); then 2-bit, ternary, 1-bit same treatment.
+
+## Measured method-comparison (the science, 0.5B 3-bit, ppl vs f16 36.7)
+WHAT WORKS (operates WITH the STRAND codec):
+- AWQ (activation-aware, training-free, scale-before-bake): +42.9% -> +18.7%  ★ biggest lever
+- LoRA-doctor on the FROZEN STRAND base (KD, stable: low lr / high rank): +18.7% -> +14.8%
+  => 3.6 bpw at +14.8%, 20% denser than llama Q4_K (~+9-10% @4.9bpw) on the HARDEST case.
+WHAT FAILS (uniform-proxy, doesn't transfer to STRAND's trellis):
+- Global full-weight STRAND-QAT (base-add periodic re-bake STE): DIVERGES (drift).
+- Block-wise QAT (per-layer, uniform fake-quant, local MSE) -> STRAND-bake: +140,000% (CATASTROPHIC).
+  Root cause: weights optimized for UNIFORM quant are WRONG for STRAND (confirmed global + block-wise).
+CONCLUSION: the doctor = **AWQ + LoRA-KD on the frozen STRAND base**. Path to ~1:1: higher-rank
+LoRA (tuned LR), AWQ alpha-sweep, more steps, and bigger models (more redundancy => the gap shrinks).
+Uniform-proxy QAT (global/block-wise) and STRAND-in-loop full-rank are dead-ends for this codec.
+1-bit: catastrophic on 0.5B (AWQ +2.5M%, +doctor +28K%) -> validates per-model bit-floor discrimination.
