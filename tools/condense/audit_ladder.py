@@ -26,7 +26,27 @@ BAKER = "vendor/strand-quant/target/release/quantize-model"
 DEV = os.environ.get("DOCTOR_DEVICE") or ("mps" if torch.backends.mps.is_available() else "cpu")
 DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))
 PT = os.environ.get("PPL_TEXT", "/tmp/ppl24k.txt")
-SRC = os.path.join(MODEL, "model.safetensors")
+def _resolve_src():
+    """The baker needs ONE safetensors. 0.5B is single-file; 7B+ is sharded -> consolidate once."""
+    single = os.path.join(MODEL, "model.safetensors")
+    if os.path.exists(single):
+        return single
+    cons = f"/tmp/aud_{LABEL}_src.safetensors"
+    if not os.path.exists(cons):
+        idxp = os.path.join(MODEL, "model.safetensors.index.json")
+        shards = sorted(set(json.load(open(idxp))["weight_map"].values()))
+        merged = {}
+        for sh in shards:
+            with safe_open(os.path.join(MODEL, sh), framework="pt") as f:
+                for k in f.keys():
+                    merged[k] = f.get_tensor(k)
+        save_file(merged, cons)
+        del merged
+        gc.collect()
+    return cons
+
+
+SRC = _resolve_src()
 T = f"/tmp/aud_{LABEL}"                     # reused temp prefix (overwritten per config)
 SIGPATH = f"{T}_sigma.safetensors"
 
