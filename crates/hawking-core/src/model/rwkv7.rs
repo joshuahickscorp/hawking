@@ -1459,9 +1459,16 @@ pub mod gpu {
         },
         /// Low-bit STRAND/TQ weight served via bitslice GEMV. Pre-uploaded to
         /// GPU at load time; every decode step encodes directly from live buffers.
+        ///
+        /// `res` is the optional RESIDUAL second STRAND pass (HAWKING_TQ_RESIDUAL):
+        /// when present the GEMV runs base into `out` then accumulates the residual
+        /// pass on top, serving `y = decode(base)·x + decode(residual)·x` — the
+        /// decoded-sum the residual bake (`STRAND_b1(W) + STRAND_b2(W−STRAND_b1(W))`)
+        /// targets, with both passes kept compressed in RAM (the density point).
         #[cfg(feature = "tq")]
         Tq {
             gpu: TqGpuReady,
+            res: Option<TqGpuReady>,
             rows: usize,
             cols: usize,
         },
@@ -1557,8 +1564,14 @@ pub mod gpu {
                     rwkv7_gemv_f32_off_tcb(tcb, w, *rows, *cols, x, x_off, out)
                 }
                 #[cfg(feature = "tq")]
-                ProjWeight::Tq { gpu, .. } => {
-                    crate::kernels::strand_bitslice_gemv_tcb(tcb, gpu, x, x_off, out, 0)
+                ProjWeight::Tq { gpu, res, .. } => {
+                    // Base pass seeds `out`; the residual pass (if present)
+                    // accumulates on top → y = base·x + residual·x.
+                    crate::kernels::strand_bitslice_gemv_tcb(tcb, gpu, x, x_off, out, 0)?;
+                    if let Some(res) = res {
+                        crate::kernels::strand_bitslice_gemv_tcb_accum(tcb, res, x, x_off, out, 0)?;
+                    }
+                    Ok(())
                 }
             }
         }
@@ -1645,17 +1658,25 @@ pub mod gpu {
                     Ok(())
                 }
                 #[cfg(feature = "tq")]
-                ProjWeight::Tq { gpu, cols, rows } => {
-                    let f = std::mem::size_of::<f32>();
+                ProjWeight::Tq {
+                    gpu,
+                    res,
+                    cols,
+                    rows,
+                } => {
                     for bi in 0..batch {
+                        let x_off_b = x_off + bi * *cols * f;
+                        let out_off_b = bi * *rows * f;
+                        // Base pass seeds this stream's out slice; residual (if
+                        // present) accumulates on top.
                         crate::kernels::strand_bitslice_gemv_tcb(
-                            tcb,
-                            gpu,
-                            x,
-                            x_off + bi * *cols * f,
-                            out,
-                            bi * *rows * f,
+                            tcb, gpu, x, x_off_b, out, out_off_b,
                         )?;
+                        if let Some(res) = res {
+                            crate::kernels::strand_bitslice_gemv_tcb_accum(
+                                tcb, res, x, x_off_b, out, out_off_b,
+                            )?;
+                        }
                     }
                     Ok(())
                 }
@@ -1667,14 +1688,29 @@ pub mod gpu {
         /// is returned unchanged (the fall-through path).  A shape mismatch or a
         /// cols alignment problem is a hard error — it means the artifact was built
         /// against a different model or a different projection.
+        ///
+        /// `res_store` is the optional RESIDUAL second-pass store
+        /// (HAWKING_TQ_RESIDUAL): when it carries `name`, that residual STRAND
+        /// tensor is uploaded too and the served weight becomes the two-part sum
+        /// `decode(base) + decode(residual)` (summed at GEMV time, both compressed).
+        /// A residual entry for a tensor the base store doesn't override, or a
+        /// residual whose shape/alignment disagrees, is a hard error.
         #[cfg(feature = "tq")]
         pub fn try_replace_with_tq(
             self,
             name: &str,
             tq_store: &std::collections::HashMap<String, crate::tq::StrandTensor>,
+            res_store: Option<&std::collections::HashMap<String, crate::tq::StrandTensor>>,
             ctx: &MetalContext,
         ) -> crate::Result<Self> {
             let Some(st) = tq_store.get(name) else {
+                // A residual without a matching base is a configuration error: the
+                // residual is meaningless on its own (it encodes W − decode(base)).
+                if res_store.is_some_and(|m| m.contains_key(name)) {
+                    return Err(crate::Error::Model(format!(
+                        "TQ residual override for {name} has no matching base TQ tensor"
+                    )));
+                }
                 return Ok(self);
             };
             let (r, c) = match &self {
@@ -1696,8 +1732,23 @@ pub mod gpu {
             }
             let prepared = crate::tq_gpu::TqPreparedGpu::from_strand_tensor(st)?;
             let gpu = prepared.upload_to_gpu(ctx)?;
+            // Optional residual second pass — same shape/alignment contract.
+            let res = match res_store.and_then(|m| m.get(name)) {
+                Some(rst) => {
+                    if rst.out_features != r || rst.in_features != c {
+                        return Err(crate::Error::Model(format!(
+                            "TQ residual shape mismatch for {name}: artifact ({},{}) vs GGUF ({r},{c})",
+                            rst.out_features, rst.in_features
+                        )));
+                    }
+                    let rprep = crate::tq_gpu::TqPreparedGpu::from_strand_tensor(rst)?;
+                    Some(rprep.upload_to_gpu(ctx)?)
+                }
+                None => None,
+            };
             Ok(ProjWeight::Tq {
                 gpu,
+                res,
                 rows: r,
                 cols: c,
             })
@@ -1884,6 +1935,41 @@ pub mod gpu {
                 }
             };
 
+            // ── Residual TQ artifact discovery (HAWKING_TQ_RESIDUAL) ────────────
+            // The optional second STRAND pass. When HAWKING_TQ_RESIDUAL is set,
+            // load a residual `.tq` (default `<base>.res.tq`, overridable via
+            // HAWKING_RWKV7_TQ_RES_PATH) whose tensors encode `W − decode(base)`.
+            // Each tensor present here is summed with its base at GEMV time
+            // (`decode(base)·x + decode(residual)·x`), both kept compressed.
+            // No-op unless a base store is also loaded.
+            #[cfg(feature = "tq")]
+            let tq_res_store_opt: Option<
+                std::collections::HashMap<String, crate::tq::StrandTensor>,
+            > = {
+                if tq_store_opt.is_some() && crate::env_on("HAWKING_TQ_RESIDUAL") {
+                    let res_path = std::env::var("HAWKING_RWKV7_TQ_RES_PATH")
+                        .map(std::path::PathBuf::from)
+                        .unwrap_or_else(|_| {
+                            // Default: sibling `<base>.res.tq` next to the base artifact.
+                            std::env::var("HAWKING_RWKV7_TQ_PATH")
+                                .map(|p| std::path::PathBuf::from(format!("{p}.res.tq")))
+                                .unwrap_or_else(|_| std::path::PathBuf::new())
+                        });
+                    if res_path.exists() {
+                        Some(load_tq_artifact(&res_path)?)
+                    } else if std::env::var("HAWKING_RWKV7_TQ_STRICT").is_ok() {
+                        return Err(crate::Error::Model(format!(
+                            "HAWKING_RWKV7_TQ_STRICT: residual TQ artifact not found at {}",
+                            res_path.display()
+                        )));
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            };
+
             // Stack the LoRA down-(W1) and up-(W2) projections of one layer into
             // two contiguous buffers in group order w,a,v,(g). W1 rows are
             // `rank_i × n`; W2 rows are `n × rank_i`. Concatenating the row-major
@@ -1945,7 +2031,7 @@ pub mod gpu {
                     #[cfg(feature = "tq")]
                     let tq_swap = |w: ProjWeight, suf: &str| -> Result<ProjWeight> {
                         if let Some(ref store) = tq_store_opt {
-                            w.try_replace_with_tq(&p(suf), store, ctx)
+                            w.try_replace_with_tq(&p(suf), store, tq_res_store_opt.as_ref(), ctx)
                         } else {
                             Ok(w)
                         }
@@ -2018,7 +2104,12 @@ pub mod gpu {
                 let w = ProjWeight::build(ctx, g, "output.weight", cfg.vocab_size, cfg.n_embd);
                 #[cfg(feature = "tq")]
                 let w = if let Some(ref store) = tq_store_opt {
-                    w.try_replace_with_tq("output.weight", store, ctx)?
+                    w.try_replace_with_tq(
+                        "output.weight",
+                        store,
+                        tq_res_store_opt.as_ref(),
+                        ctx,
+                    )?
                 } else {
                     w
                 };

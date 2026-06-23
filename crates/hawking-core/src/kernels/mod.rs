@@ -12033,6 +12033,59 @@ mod metal_dispatch {
         )
     }
 
+    /// TCB-compatible TQ GEMV that ACCUMULATES into `out` (the residual second
+    /// pass of the two-part serving recipe — see `strand_bitslice_reduce_rows_accum`).
+    /// Identical to [`strand_bitslice_gemv_tcb`] except the reduce pass adds into
+    /// `out[gidx]` instead of overwriting it, so calling
+    ///   strand_bitslice_gemv_tcb(base, x, out);          // seeds out
+    ///   strand_bitslice_gemv_tcb_accum(residual, x, out) // out += residual·x
+    /// yields `y = decode(base)·x + decode(residual)·x`, the decoded-sum the
+    /// residual STRAND bake targets, with both passes kept compressed in RAM.
+    /// `out` MUST already hold the base pass's result (or be zeroed). Zero
+    /// per-inference allocations — uses pre-uploaded [`crate::tq_gpu::TqGpuReady`]
+    /// buffers. `x_off_bytes` / `out_off_bytes` are Metal buffer byte offsets.
+    #[cfg(feature = "tq")]
+    pub(crate) fn strand_bitslice_gemv_tcb_accum(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        const TG: u32 = 256;
+        // Pass 1: strand_bitslice_gemv_partials (writes this pass's partials).
+        tcb.dispatch_threads(
+            "strand_bitslice_gemv_partials",
+            (gpu.n_tg_partials * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.w_buf), 0);
+                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
+                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
+                enc.set_u32(4, gpu.n_blocks);
+                enc.set_u32(5, gpu.cols);
+                enc.set_u32(6, gpu.k_bits);
+                enc.set_u32(7, gpu.l_bits);
+                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+                enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
+            },
+        )?;
+        // Pass 2: strand_bitslice_reduce_rows_accum (y[gidx] += acc).
+        tcb.dispatch_threads(
+            "strand_bitslice_reduce_rows_accum",
+            (gpu.n_tg_reduce * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(1, Some(out_buf), out_off_bytes as u64);
+                enc.set_u32(2, gpu.rows);
+                enc.set_u32(3, gpu.bpr);
+            },
+        )
+    }
+
     /// Fused TQ decode-and-GEMM: decode a STRAND-encoded weight matrix from
     /// `prepared` and multiply by the `batch`-wide activation matrix in
     /// `xt_buf` (column-major / transposed: row = feature, stride = batch), writing
@@ -12374,6 +12427,358 @@ mod tests {
         assert!(
             saw_unscaled && saw_scaled && saw_smooth,
             "test did not cover all three regimes"
+        );
+    }
+}
+
+/// Residual two-part STRAND **serving** parity gate (HAWKING_TQ_RESIDUAL).
+///
+/// The quality breakthrough bakes `W ≈ STRAND_b1(W) + STRAND_b2(W − STRAND_b1(W))`
+/// and `residual_bake.py` materialises the DECODED SUM `decode(base) + decode(res)`
+/// as f16. For SERVING we keep BOTH passes COMPRESSED and sum them at GEMV time:
+/// `y = bitslice_gemv(base, x) + bitslice_gemv(residual, x)` — base via
+/// `strand_bitslice_gemv_tcb` (seeds `out`), residual via
+/// `strand_bitslice_gemv_tcb_accum` (`out += residual·x`). This gate asserts that
+/// GPU two-part result equals the CPU decoded-sum GEMV (the exact quantity
+/// `residual_bake.py` yields) within fp tolerance, on a synthetic tensor with
+/// `in_features % 256 == 0` (the deploy alignment invariant).
+///
+/// Both passes use `RhtMode::None` (raw, unrotated) — which is exactly what the
+/// bitslice GEMV kernel serves (it decodes raw Q12 and dots directly; it does NOT
+/// apply the RHT-cols activation transform or OUTL overwrites). So a `--no-rht`,
+/// no-outlier two-part bake is the artifact this serving path reproduces
+/// bit-faithfully; an RHT-cols/OUTL bake (what `residual_bake.py` emits today)
+/// would need those serving steps wired separately — see the report.
+#[cfg(all(target_os = "macos", feature = "tq"))]
+mod residual_serve_tests {
+    use crate::metal::{MetalContext, PinnedBuffer, TokenCommandBuffer};
+    use crate::tq_gpu::{bake_bitslice_entries, TqGpuReady, TqPreparedGpu};
+    use strand_quant::decode::decode_tensor_fixed;
+    use strand_quant::encode::{encode_tensor, EncodedTensor};
+    use strand_quant::TrellisConfig;
+
+    fn synth_w(n: usize, seed: u64) -> Vec<f32> {
+        (0..n)
+            .map(|i| ((i as f32 + seed as f32) * 0.0137).sin() * 0.5)
+            .collect()
+    }
+    fn synth_x(n: usize, seed: u64) -> Vec<f32> {
+        (0..n)
+            .map(|i| ((i as f32 + seed as f32) * 0.07).cos())
+            .collect()
+    }
+
+    /// Build a `TqPreparedGpu` straight from a raw `EncodedTensor` (RhtMode::None),
+    /// mirroring `TqPreparedGpu::from_strand_tensor` without needing a StrandTensor.
+    fn prepare(enc: &EncodedTensor, cfg: &TrellisConfig, rows: usize, cols: usize) -> TqPreparedGpu {
+        let entries = bake_bitslice_entries(enc, cfg).expect("scalar bake (n<=256 per block)");
+        TqPreparedGpu {
+            payload: enc.bits.clone(),
+            entries,
+            lut_q12: cfg.codebook().into_owned(),
+            k_bits: cfg.k_bits,
+            l_bits: cfg.l_bits,
+            rows,
+            cols,
+            rht_mode: 0,
+            rht_seed: 0,
+            bpw: cfg.k_bits as f32 / cfg.vec_dim() as f32,
+        }
+    }
+
+    /// Decode an EncodedTensor to f32 weights (Q12 → f32) the way the decoded-sum
+    /// reference (residual_bake.py) does: `decode_tensor_fixed` then `* 1/2^shift`.
+    fn decode_f32(enc: &EncodedTensor, cfg: &TrellisConfig) -> Vec<f32> {
+        let inv = crate::tq::q12_to_f32();
+        decode_tensor_fixed(enc, cfg)
+            .into_iter()
+            .map(|q| q as f32 * inv)
+            .collect()
+    }
+
+    fn read_back(buf: &PinnedBuffer, n: usize) -> Vec<f32> {
+        let p = buf.contents() as *const f32;
+        unsafe { std::slice::from_raw_parts(p, n) }.to_vec()
+    }
+
+    /// Core gate: GPU two-part GEMV == CPU decoded-sum GEMV within fp tolerance.
+    /// Returns (max_abs_err, max_rel_err) for reporting.
+    fn run_case(
+        ctx: &MetalContext,
+        rows: usize,
+        cols: usize,
+        b1: f64,
+        b2: f64,
+        seed: u64,
+    ) -> (f32, f32) {
+        assert_eq!(cols % 256, 0, "deploy invariant: in_features % 256 == 0");
+        let total = rows * cols;
+
+        // ── Residual bake (in-process), RhtMode::None ──────────────────────────
+        // Pass 1: base STRAND of W.
+        let w = synth_w(total, seed);
+        let cfg_b = TrellisConfig::for_bpw(b1);
+        let enc_base = encode_tensor(&w, &cfg_b);
+        let wh1 = decode_f32(&enc_base, &cfg_b); // decode(base)
+
+        // Pass 2: residual STRAND of (W − decode(base)).
+        let resid: Vec<f32> = w.iter().zip(&wh1).map(|(a, b)| a - b).collect();
+        let cfg_r = TrellisConfig::for_bpw(b2);
+        let enc_res = encode_tensor(&resid, &cfg_r);
+        let rh = decode_f32(&enc_res, &cfg_r); // decode(residual)
+
+        // Decoded SUM — exactly what residual_bake.py writes (out = Wh1 + Rh).
+        let w_sum: Vec<f32> = wh1.iter().zip(&rh).map(|(a, b)| a + b).collect();
+
+        // CPU reference: y_ref = W_sum · x  (one summed-weight dot per row).
+        let x = synth_x(cols, seed ^ 0x5a5a);
+        let mut y_ref = vec![0.0f32; rows];
+        for o in 0..rows {
+            let row = &w_sum[o * cols..(o + 1) * cols];
+            let mut acc = 0.0f32;
+            for i in 0..cols {
+                acc += row[i] * x[i];
+            }
+            y_ref[o] = acc;
+        }
+
+        // ── GPU two-part serve: base (overwrite) then residual (accumulate) ────
+        let prep_base = prepare(&enc_base, &cfg_b, rows, cols);
+        let prep_res = prepare(&enc_res, &cfg_r, rows, cols);
+        let gpu_base: TqGpuReady = prep_base.upload_to_gpu(ctx).expect("upload base");
+        let gpu_res: TqGpuReady = prep_res.upload_to_gpu(ctx).expect("upload residual");
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        // base pass seeds out; residual pass accumulates: out = base·x + res·x.
+        super::strand_bitslice_gemv_tcb(&mut tcb, &gpu_base, &x_buf, 0, &out_buf, 0)
+            .expect("base gemv");
+        super::strand_bitslice_gemv_tcb_accum(&mut tcb, &gpu_res, &x_buf, 0, &out_buf, 0)
+            .expect("residual gemv accum");
+        tcb.commit_and_wait().expect("commit");
+
+        let y_gpu = read_back(&out_buf, rows);
+
+        // Error vs the decoded-sum reference (only fp reduction order differs:
+        // two per-pass accumulations on GPU vs one summed-weight dot on CPU).
+        let mut max_abs = 0.0f32;
+        let mut max_rel = 0.0f32;
+        for o in 0..rows {
+            let abs = (y_gpu[o] - y_ref[o]).abs();
+            let rel = abs / (1.0 + y_ref[o].abs());
+            max_abs = max_abs.max(abs);
+            max_rel = max_rel.max(rel);
+        }
+        (max_abs, max_rel)
+    }
+
+    /// The two-part GPU serve matches the decoded-sum across the deploy bit-pairs
+    /// and a 7B-shaped projection (cols ∈ {3584, 18944} are %256==0; we use a few
+    /// rows to keep the synthetic encode fast). Tolerance is generous-but-tight:
+    /// these are f32 dot products differing only in reduction grouping.
+    #[test]
+    fn residual_two_part_gemv_matches_decoded_sum() {
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[residual_serve] no Metal device; skipping two-part serve gate");
+            return;
+        };
+
+        // (rows, cols, b1, b2): the proven residual pairs (3+2, 2+2) and a couple
+        // of shapes including 7B in_features (3584) and FFN width (18944).
+        let cases: [(usize, usize, f64, f64); 5] = [
+            (8, 256, 3.0, 2.0),
+            (8, 512, 3.0, 2.0),
+            (8, 256, 2.0, 2.0),
+            (4, 3584, 3.0, 2.0),  // 7B attn in_features
+            (2, 18944, 3.0, 2.0), // 7B FFN in_features
+        ];
+        // Per-element relative tolerance. A summed dot of `cols` f32 terms vs two
+        // per-pass dots accumulates ~cols * eps rounding; 2e-3 covers cols≈19k.
+        const REL_TOL: f32 = 2e-3;
+
+        let mut worst_abs = 0.0f32;
+        let mut worst_rel = 0.0f32;
+        for &(rows, cols, b1, b2) in &cases {
+            let (max_abs, max_rel) = run_case(&ctx, rows, cols, b1, b2, 0xC0FFEE);
+            println!(
+                "[residual_serve] {rows}x{cols} base{b1}+res{b2}: max_abs={max_abs:.3e} max_rel={max_rel:.3e}"
+            );
+            assert!(
+                max_rel <= REL_TOL,
+                "{rows}x{cols} base{b1}+res{b2}: max_rel {max_rel:.3e} > {REL_TOL:.1e} (GPU two-part vs decoded-sum)"
+            );
+            worst_abs = worst_abs.max(max_abs);
+            worst_rel = worst_rel.max(max_rel);
+        }
+        println!(
+            "[residual_serve] PASS — GPU two-part GEMV == decoded-sum across {} cases; worst max_abs={worst_abs:.3e} worst max_rel={worst_rel:.3e}",
+            cases.len()
+        );
+    }
+
+    /// Guard that the residual term is actually LIVE: the two-part serve must
+    /// differ from the base-only serve (otherwise an accidental no-op residual
+    /// would pass the sum test trivially when the residual is tiny). We assert the
+    /// residual changes the output by more than fp noise.
+    #[test]
+    fn residual_pass_is_not_a_noop() {
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[residual_serve] no Metal device; skipping residual-live gate");
+            return;
+        };
+        let (rows, cols) = (8usize, 512usize);
+        let total = rows * cols;
+        let seed = 7u64;
+        let w = synth_w(total, seed);
+        let cfg_b = TrellisConfig::for_bpw(2.0); // coarse base ⇒ meaningful residual
+        let enc_base = encode_tensor(&w, &cfg_b);
+        let wh1 = decode_f32(&enc_base, &cfg_b);
+        let resid: Vec<f32> = w.iter().zip(&wh1).map(|(a, b)| a - b).collect();
+        let cfg_r = TrellisConfig::for_bpw(2.0);
+        let enc_res = encode_tensor(&resid, &cfg_r);
+
+        let x = synth_x(cols, seed ^ 0x1234);
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+
+        let gpu_base = prepare(&enc_base, &cfg_b, rows, cols)
+            .upload_to_gpu(&ctx)
+            .unwrap();
+        let gpu_res = prepare(&enc_res, &cfg_r, rows, cols)
+            .upload_to_gpu(&ctx)
+            .unwrap();
+
+        // base-only.
+        let out_base = ctx.new_buffer(rows * 4);
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        super::strand_bitslice_gemv_tcb(&mut tcb, &gpu_base, &x_buf, 0, &out_base, 0).unwrap();
+        tcb.commit_and_wait().unwrap();
+        let y_base = read_back(&out_base, rows);
+
+        // base + residual.
+        let out_sum = ctx.new_buffer(rows * 4);
+        let mut tcb2 = TokenCommandBuffer::new(&ctx);
+        super::strand_bitslice_gemv_tcb(&mut tcb2, &gpu_base, &x_buf, 0, &out_sum, 0).unwrap();
+        super::strand_bitslice_gemv_tcb_accum(&mut tcb2, &gpu_res, &x_buf, 0, &out_sum, 0).unwrap();
+        tcb2.commit_and_wait().unwrap();
+        let y_sum = read_back(&out_sum, rows);
+
+        let max_delta = (0..rows)
+            .map(|o| (y_sum[o] - y_base[o]).abs())
+            .fold(0.0f32, f32::max);
+        println!("[residual_serve] residual contribution max_delta={max_delta:.3e}");
+        assert!(
+            max_delta > 1e-5,
+            "residual pass changed output by only {max_delta:.3e} — residual term is a no-op?"
+        );
+    }
+
+    /// Full file→loader→serve loop: write base + residual `.tq` STR2 archives (the
+    /// SAME format residual_tq.py emits), read them back through the production
+    /// loader `crate::tq::read_strand`, build `TqPreparedGpu::from_strand_tensor`
+    /// for each, run the GPU two-part GEMV, and assert it equals the CPU decoded-sum
+    /// GEMV over `decode_q12_raw(base) + decode_q12_raw(residual)`. This exercises
+    /// the loader path (task step 2), not just raw EncodedTensors.
+    #[test]
+    fn residual_file_round_trip_two_part_serves_decoded_sum() {
+        use strand_quant::format::{write_strand_v2, PackedTensor, PackedTensorV2};
+
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[residual_serve] no Metal device; skipping file round-trip gate");
+            return;
+        };
+
+        let name = "model.layers.0.mlp.down_proj.weight";
+        let (rows, cols) = (8usize, 512usize); // cols % 256 == 0
+        let total = rows * cols;
+        let w = synth_w(total, 0xBEEF);
+
+        // base pass.
+        let cfg_b = TrellisConfig::for_bpw(3.0);
+        let enc_base = encode_tensor(&w, &cfg_b);
+        let wh1 = decode_f32(&enc_base, &cfg_b);
+        // residual pass on W − decode(base).
+        let resid: Vec<f32> = w.iter().zip(&wh1).map(|(a, b)| a - b).collect();
+        let cfg_r = TrellisConfig::for_bpw(2.0);
+        let enc_res = encode_tensor(&resid, &cfg_r);
+
+        // Write two real STR2 archives (no RHT, no OUTL — the served contract).
+        let shape = [rows as u64, cols as u64];
+        let pack = |enc: &EncodedTensor, cfg: &TrellisConfig| {
+            write_strand_v2(
+                &[PackedTensorV2 {
+                    base: PackedTensor {
+                        name,
+                        shape: &shape,
+                        rht_seed: 0,
+                        l_bits: cfg.l_bits as u8,
+                        k_bits: cfg.k_bits as u8,
+                        vec_dim: cfg.vec_dim() as u8,
+                        enc,
+                    },
+                    block_len: cfg.block_len as u32,
+                }],
+                [0u8; 32],
+                true,
+            )
+            .expect("write_strand_v2")
+        };
+        let base_bytes = pack(&enc_base, &cfg_b);
+        let res_bytes = pack(&enc_res, &cfg_r);
+
+        // Read both back through the PRODUCTION loader.
+        let base_store = crate::tq::read_strand(&base_bytes).expect("read base .tq");
+        let res_store = crate::tq::read_strand(&res_bytes).expect("read residual .tq");
+        assert_eq!(base_store.len(), 1);
+        assert_eq!(res_store.len(), 1);
+        let st_base = &base_store[0];
+        let st_res = &res_store[0];
+        assert_eq!((st_base.out_features, st_base.in_features), (rows, cols));
+        assert_eq!(st_base.rht_mode, crate::tq::RhtMode::None);
+
+        // CPU decoded-sum reference from the LOADED tensors (decode_q12_raw → f32).
+        let inv = crate::tq::q12_to_f32();
+        let qb = st_base.decode_q12_raw();
+        let qr = st_res.decode_q12_raw();
+        let x = synth_x(cols, 0x1357);
+        let mut y_ref = vec![0.0f32; rows];
+        for o in 0..rows {
+            let mut acc = 0.0f32;
+            for i in 0..cols {
+                let wsum = (qb[o * cols + i] as f32 + qr[o * cols + i] as f32) * inv;
+                acc += wsum * x[i];
+            }
+            y_ref[o] = acc;
+        }
+
+        // GPU two-part serve from the LOADED tensors via from_strand_tensor.
+        let gpu_base = TqPreparedGpu::from_strand_tensor(st_base)
+            .expect("prep base")
+            .upload_to_gpu(&ctx)
+            .expect("upload base");
+        let gpu_res = TqPreparedGpu::from_strand_tensor(st_res)
+            .expect("prep res")
+            .upload_to_gpu(&ctx)
+            .expect("upload res");
+
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(&ctx);
+        super::strand_bitslice_gemv_tcb(&mut tcb, &gpu_base, &x_buf, 0, &out_buf, 0).unwrap();
+        super::strand_bitslice_gemv_tcb_accum(&mut tcb, &gpu_res, &x_buf, 0, &out_buf, 0).unwrap();
+        tcb.commit_and_wait().unwrap();
+        let y_gpu = read_back(&out_buf, rows);
+
+        let mut max_rel = 0.0f32;
+        for o in 0..rows {
+            let abs = (y_gpu[o] - y_ref[o]).abs();
+            max_rel = max_rel.max(abs / (1.0 + y_ref[o].abs()));
+        }
+        println!("[residual_serve] file round-trip {rows}x{cols} 3+2: max_rel={max_rel:.3e}");
+        assert!(
+            max_rel <= 2e-3,
+            "file-loaded two-part serve max_rel {max_rel:.3e} > 2e-3 vs decoded-sum"
         );
     }
 }

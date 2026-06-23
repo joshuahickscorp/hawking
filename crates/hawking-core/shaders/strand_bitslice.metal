@@ -454,6 +454,30 @@ kernel void strand_bitslice_reduce_rows(
     y[gidx] = acc;
 }
 
+// Residual two-part serving (HAWKING_TQ_RESIDUAL): identical to
+// strand_bitslice_reduce_rows but ACCUMULATES into y instead of overwriting it
+// (`y[gidx] += acc`). The serving recipe runs the base STRAND pass through the
+// plain reduce (which seeds/overwrites y) and the residual STRAND pass through
+// this accumulate reduce, so the final output is
+//   y = bitslice_gemv(base, x) + bitslice_gemv(residual, x)
+// = (decode(base) + decode(residual)) · x — the decoded-sum the residual bake
+// (W ≈ STRAND_b1(W) + STRAND_b2(W − STRAND_b1(W))) targets, with the two passes
+// kept COMPRESSED in RAM and summed at GEMV time. y MUST be pre-seeded by the
+// base pass (or zeroed) before this kernel runs.
+kernel void strand_bitslice_reduce_rows_accum(
+    device const float* partials [[buffer(0)]],
+    device       float* y        [[buffer(1)]],
+    constant     uint&  rows     [[buffer(2)]],
+    constant     uint&  bpr      [[buffer(3)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= rows) return;
+    float acc = 0.0f;
+    uint base = gidx * bpr;
+    for (uint b = 0; b < bpr; ++b) acc += partials[base + b];
+    y[gidx] += acc;
+}
+
 template <uint B>
 static inline void bs_gemm_partials_impl(
     device   const uchar*          w_bits,
