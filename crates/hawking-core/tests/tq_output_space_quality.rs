@@ -183,6 +183,30 @@ fn recon_tq_awq_rht(
     wh
 }
 
+/// Outlier protection: keep the top `pct` of input columns (highest σ) at EXACT
+/// (f16) precision in the recon, low-bit the rest. The residual output-err is
+/// dominated by these high-σ channels, so protecting ~1% of them is the cheap
+/// lever that should close the AWQ residual to Q4_K. Returns the effective bpw.
+fn protect_outliers(
+    wh: &mut [f32],
+    w: &[f32],
+    r: usize,
+    c: usize,
+    sigma: &[f32],
+    pct: f64,
+    base_bpw: f32,
+) -> f32 {
+    let k = (((c as f64) * pct).ceil() as usize).clamp(1, c);
+    let mut idx: Vec<usize> = (0..c).collect();
+    idx.sort_by(|&a, &b| sigma[b].partial_cmp(&sigma[a]).unwrap_or(std::cmp::Ordering::Equal));
+    for &j in idx.iter().take(k) {
+        for i in 0..r {
+            wh[i * c + j] = w[i * c + j]; // exact (f16) restore of the outlier column
+        }
+    }
+    ((c - k) as f32 * base_bpw + k as f32 * 16.0) / c as f32
+}
+
 /// Regularized AWQ: importance d_j = clamp((σ_j/geomean(σ))^α, 1/clip, clip).
 /// Geometric-mean normalization makes a FLAT σ (benign/Gaussian acts) map to
 /// d_j≈1 → harmless, so the lever only spends bits where there is real outlier
@@ -476,6 +500,15 @@ fn awq_sweep() {
                 print!("  |α{:.2} {:.5}{}", a, o, tag);
             }
             println!();
+            if *slabel == "real-w4a8" {
+                let mut wh = recon_tq_awq_reg(w, r, c, &cfg, name, &sigma, 0.5, clip);
+                let eff_bpw = protect_outliers(&mut wh, w, r, c, &sigma, 0.01, 3.348);
+                let o = out_rel_err(&wh, w, r, c, &x_eval, b_eval);
+                println!(
+                    "  {:<16} +awq α0.5 +outlier(top1%@f16): o={:.5}  eff_bpw={:.2}  (Q4_K o≈0.079 @4.50)",
+                    "  └─protected", o, eff_bpw
+                );
+            }
         }
         println!();
     }

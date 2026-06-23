@@ -120,11 +120,25 @@ rms-mass — not synthetic). But **AWQ-scale alone is NOT near-lossless on real 
 GO would claim "TQ3 = Q4_K" from the synthetic row; the real row says ~1.37×. Evidence:
 `reports/condense/{L0_output_space,L1_real_acts_awq_sweep}_20260622.txt`.
 
-**NEXT LEVER (the custom "extra effort"):** the **Hessian-diagonal metric** in
-`encode_tensor_with_lut_metric` — minimize `Σ h_jj (w_j-ŵ_j)²` with `h_jj` = per-input-channel
-activation energy (from the real σ) instead of unweighted `Σ (w_j-ŵ_j)²`. This is the piece
-that makes output-err < weight-err (beats the weight-space verdict beyond what column-scaling
-can). Then `--actmean` debias, then L2 (2-bit + QAT/KD + damage-ranked allocation).
+**+ OUTLIER PROTECTION tested (top-1% σ columns at f16):** key 0.114→**0.108**, value 0.102→**0.095**
+at eff_bpw≈3.48 — only marginal. The residual output-err is **spread across many channels**
+(the measured tail: 1.3% ≥5×, not just the top 1%), so 1%-outlier-protection can't close it.
+Net PTQ result: AWQ+outlier removes **~70% of naive TQ3's excess** vs Q4_K → **~1.28× Q4_K
+output-err @ ~3.48 bpw (26% denser)**. Real but NOT near-lossless.
+
+**REVISED NEXT-LEVER GUIDANCE (honest, after testing the cheap PTQ levers):**
+- `encode_tensor_with_lut_metric` exposes only an f32/int *precision* flag — NOT a per-column
+  weight. A true Hessian-diagonal metric = real trellis-DP surgery; AND **AWQ-scale already
+  approximates the diagonal objective** (it's the standard AWQ trick), so the marginal gain of
+  the weighted DP over AWQ is expected to be small. Deprioritize vs:
+- **L2 RECOVERY is the path to near-lossless 3-bit.** PTQ alone (AWQ+outlier, no retrain) caps
+  at ~1.28× Q4_K. To reach ≤1.0× at 3.35 bpw, do QAT/KD (`strand-qat.py`): re-fit the
+  low-bit weights to the f16 teacher logits + damage-ranked mixed-precision (`rung-kl.py`,
+  attn/lm_head high-bit). This is the heavy lever the goal demands.
+- **OR validate "good enough" first:** ~1.28× per-tensor output-err may be an acceptable PPL
+  bump for the RAM-cliff win (3-bit fits a 32B on 18 GB where Q4_K swaps). Add a full-model
+  logits/PPL gate (handoff §L1 note) and measure real PPL of TQ3+AWQ+outlier vs Q4_K — if the
+  PPL delta is small, the density wedge already wins WITHOUT recovery. **Cheapest decisive next step.**
 
 ## L1 — the custom lever: activation-aware (output-space) encode
 
