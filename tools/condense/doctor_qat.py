@@ -13,7 +13,7 @@ Usage: doctor_qat.py [bits] [steps] [lr] [save.safetensors]
 Heavy (training) — run plugged in / via the cron, not on battery. A 5-step smoke
 validates it runs.
 """
-import sys, math, json, torch, torch.nn as nn, torch.nn.functional as F
+import sys, os, math, json, torch, torch.nn as nn, torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODEL = "scratch/qwen-05b"
@@ -82,16 +82,35 @@ def main():
     ptq = ppl(model, tok, EVAL)
     print(f"# PTQ {BITS}-bit held-out ppl (no training): {ptq:.3f}", file=sys.stderr)
 
+    # KD (distillation) mode: KL against a frozen f16 teacher — a richer signal than
+    # self-CE, which the user explicitly wants. Env KD=1.
+    KD = os.environ.get("KD") == "1"
+    cids = tok(CALIB, return_tensors="pt").input_ids.to(dev)
+    t_logp = None
+    if KD:
+        teacher = AutoModelForCausalLM.from_pretrained(
+            MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
+        for p in teacher.parameters():
+            p.requires_grad_(False)
+        with torch.no_grad():
+            t_logp = torch.log_softmax(teacher(cids).logits, dim=-1)
+        print(f"# KD on: distilling frozen f16 teacher logits", file=sys.stderr)
+
     model.train()
     opt = torch.optim.AdamW([m.weight for m in LINEARS], lr=LR)
-    cids = tok(CALIB, return_tensors="pt").input_ids.to(dev)
     for step in range(STEPS):
         opt.zero_grad()
-        loss = model(cids, labels=cids).loss
+        s_logits = model(cids).logits
+        if KD:
+            s_logp = torch.log_softmax(s_logits, dim=-1)
+            loss = (t_logp.exp() * (t_logp - s_logp)).sum(-1).mean()  # forward KL
+        else:
+            loss = F.cross_entropy(
+                s_logits[:, :-1].reshape(-1, s_logits.size(-1)), cids[:, 1:].reshape(-1))
         loss.backward()
         opt.step()
         if step % 20 == 0 or step == STEPS - 1:
-            print(f"#  step {step:4d} train_loss {loss.item():.4f}", file=sys.stderr)
+            print(f"#  step {step:4d} {'kl' if KD else 'ce'}_loss {loss.item():.4f}", file=sys.stderr)
 
     model.eval()
     qat = ppl(model, tok, EVAL)
