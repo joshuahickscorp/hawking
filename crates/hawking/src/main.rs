@@ -5,7 +5,7 @@ mod capture;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::collections::BTreeMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 #[derive(Parser, Debug)]
@@ -227,6 +227,9 @@ enum Cmd {
         /// counters. Equivalent to setting HAWKING_TRACE_DISPATCH=1.
         #[arg(long, default_value_t = false)]
         trace_dispatch: bool,
+        /// Print generated token ids to stderr for parity debugging.
+        #[arg(long, default_value_t = false)]
+        trace_tokens: bool,
         #[arg(long)]
         max_routed_expert_ram_mb: Option<usize>,
         /// Total memory budget for weights + KV cache in MiB. Engine errors at
@@ -309,6 +312,26 @@ enum Cmd {
         /// you hit the per-slot KV ceiling on very long prompts.
         #[arg(long, default_value_t = 8)]
         capture_batch: usize,
+    },
+    /// CPU-only tokenizer parity diagnostic using the same tokenizer path as generate.
+    Tokenize {
+        #[arg(long)]
+        weights: PathBuf,
+        /// Prompt text to tokenize. Ignored when --prompt-file is supplied.
+        #[arg(long, default_value = "")]
+        prompt: String,
+        /// Read the prompt from a UTF-8 file.
+        #[arg(long)]
+        prompt_file: Option<PathBuf>,
+        /// Disable adding model-declared special tokens.
+        #[arg(long, default_value_t = false)]
+        no_special_tokens: bool,
+        /// Also print the token count.
+        #[arg(long, default_value_t = false)]
+        show_count: bool,
+        /// Emit a compact JSON object instead of the llama-tokenize-style list.
+        #[arg(long, default_value_t = false)]
+        json: bool,
     },
     /// Run a benchmark suite.
     Bench {
@@ -822,6 +845,7 @@ fn main() -> Result<()> {
             verify_window,
             max_stall_ms,
             trace_dispatch,
+            trace_tokens,
             max_routed_expert_ram_mb,
             memory_limit_mb,
             vocab_prune_path,
@@ -849,6 +873,7 @@ fn main() -> Result<()> {
             verify_window,
             max_stall_ms,
             trace_dispatch,
+            trace_tokens,
             max_routed_expert_ram_mb,
             memory_limit_mb,
             vocab_prune_path,
@@ -862,6 +887,21 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+        ),
+        Cmd::Tokenize {
+            weights,
+            prompt,
+            prompt_file,
+            no_special_tokens,
+            show_count,
+            json,
+        } => tokenize_main(
+            weights,
+            prompt,
+            prompt_file,
+            !no_special_tokens,
+            show_count,
+            json,
         ),
         Cmd::Bench {
             weights,
@@ -2860,6 +2900,7 @@ fn generate_main(
     verify_window: usize,
     max_stall_ms: u64,
     trace_dispatch: bool,
+    trace_tokens: bool,
     max_routed_expert_ram_mb: Option<usize>,
     memory_limit_mb: Option<usize>,
     vocab_prune_path: Option<PathBuf>,
@@ -3071,7 +3112,10 @@ fn generate_main(
             json_mode: false,
         };
         let mut sink = |ev: StreamEvent| match ev {
-            StreamEvent::Token { text, .. } => {
+            StreamEvent::Token { id, text } => {
+                if trace_tokens {
+                    eprintln!("[token] id={} text={:?}", id, text);
+                }
                 let _ = out.write_all(text.as_bytes());
                 let _ = out.flush();
             }
@@ -3793,6 +3837,74 @@ fn spec_oracle_parse_k_list(s: &str) -> Result<Vec<usize>> {
     Ok(ks)
 }
 
+fn tokenizer_from_model_path(tokenizer_from: &Path) -> Result<hawking_core::tokenizer::Tokenizer> {
+    use hawking_core::gguf::GgufFile;
+    use hawking_core::tokenizer::Tokenizer;
+
+    let sidecar_json = tokenizer_from.parent().map(|d| d.join("tokenizer.json"));
+    match sidecar_json {
+        Some(p) if p.exists() => {
+            Tokenizer::from_file(&p).map_err(|e| anyhow::anyhow!("tokenizer.json load: {e}"))
+        }
+        _ => {
+            let gguf = GgufFile::open(tokenizer_from)
+                .map_err(|e| anyhow::anyhow!("open {}: {e}", tokenizer_from.display()))?;
+            Tokenizer::from_gguf(&gguf).map_err(|e| anyhow::anyhow!("tokenizer from gguf: {e}"))
+        }
+    }
+}
+
+fn format_token_ids(ids: &[u32]) -> String {
+    let mut out = String::from("[");
+    for (i, id) in ids.iter().enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(&id.to_string());
+    }
+    out.push(']');
+    out
+}
+
+/// CPU-only tokenizer parity handler. Mirrors the `generate` tokenizer path
+/// (sibling tokenizer.json preferred, else GGUF-embedded vocab) WITHOUT
+/// constructing the Metal engine.
+fn tokenize_main(
+    weights: PathBuf,
+    prompt: String,
+    prompt_file: Option<PathBuf>,
+    add_special_tokens: bool,
+    show_count: bool,
+    json: bool,
+) -> Result<()> {
+    let text = if let Some(path) = prompt_file {
+        std::fs::read_to_string(&path)
+            .map_err(|e| anyhow::anyhow!("read prompt file {}: {e}", path.display()))?
+    } else {
+        prompt
+    };
+    let tokenizer = tokenizer_from_model_path(&weights)?;
+    let ids = tokenizer
+        .encode(&text, add_special_tokens)
+        .map_err(|e| anyhow::anyhow!("encode prompt: {e}"))?;
+    let ids_s = format_token_ids(&ids);
+
+    if json {
+        println!(
+            "{{\"count\":{},\"add_special_tokens\":{},\"ids\":{}}}",
+            ids.len(),
+            add_special_tokens,
+            ids_s
+        );
+    } else {
+        println!("{ids_s}");
+        if show_count {
+            println!("count: {}", ids.len());
+        }
+    }
+    Ok(())
+}
+
 /// CPU-only spec replay-oracle handler. Mirrors the `generate` tokenizer path
 /// (sibling tokenizer.json preferred, else GGUF-embedded vocab) WITHOUT
 /// constructing the Metal engine, encodes the corpus, and replays through the
@@ -3804,26 +3916,12 @@ fn spec_oracle_main(
     warm_frac: f64,
     json: bool,
 ) -> Result<()> {
-    use hawking_core::gguf::GgufFile;
     use hawking_core::speculate::replay_oracle::replay_grid;
-    use hawking_core::tokenizer::Tokenizer;
 
     let text = std::fs::read_to_string(&corpus)
         .map_err(|e| anyhow::anyhow!("read corpus {}: {e}", corpus.display()))?;
 
-    // Same tokenizer resolution as the live generate path (qwen_dense.rs):
-    // prefer a sibling tokenizer.json, else the GGUF-embedded vocab. Both CPU.
-    let sidecar_json = tokenizer_from.parent().map(|d| d.join("tokenizer.json"));
-    let tokenizer = match sidecar_json {
-        Some(p) if p.exists() => {
-            Tokenizer::from_file(&p).map_err(|e| anyhow::anyhow!("tokenizer.json load: {e}"))?
-        }
-        _ => {
-            let gguf = GgufFile::open(&tokenizer_from)
-                .map_err(|e| anyhow::anyhow!("open {}: {e}", tokenizer_from.display()))?;
-            Tokenizer::from_gguf(&gguf).map_err(|e| anyhow::anyhow!("tokenizer from gguf: {e}"))?
-        }
-    };
+    let tokenizer = tokenizer_from_model_path(&tokenizer_from)?;
 
     let ids: Vec<u32> = tokenizer
         .encode(&text, true)
