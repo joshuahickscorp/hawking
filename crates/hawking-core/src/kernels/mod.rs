@@ -11987,10 +11987,124 @@ mod metal_dispatch {
         })
     }
 
-    /// TCB-compatible TQ GEMV: encodes both bitslice-GEMV passes into `tcb` using
-    /// pre-uploaded Metal buffers from [`crate::tq_gpu::TqGpuReady`]. Zero
-    /// per-inference allocations. `x_off_bytes` / `out_off_bytes` are Metal buffer
-    /// byte offsets for the activation input and output slices.
+    /// Shared inner of the TCB TQ GEMV: the (optional) RHT-cols activation
+    /// transform plus the `strand_bitslice_gemv_partials` pass. Returns the byte
+    /// offset the partials pass actually read its activation from — 0 when the RHT
+    /// transform ran (it writes the transformed vector to `gpu.rht_x_buf` at
+    /// element 0), else the caller's `x_off_bytes`. The reduce pass differs between
+    /// the base (overwrite) and residual (accumulate) wrappers, so it is NOT done
+    /// here. (GAP 1: serves the `--rht-cols` quality recipe — the bitslice GEMV
+    /// dots rotated weights against `T(x)`, exactly `outlier_mac::matvec_rht`'s
+    /// col path, with the activation transform computed ONCE on GPU.)
+    #[cfg(feature = "tq")]
+    fn strand_bitslice_partials_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+    ) -> Result<()> {
+        const TG: u32 = 256;
+        // RHT-cols: transform the activation ONCE (x@x_off → rht_x_buf@0). The
+        // partials pass then reads rht_x_buf at offset 0 (rht_x_buf is cols-long).
+        if gpu.rht_mode == 2 {
+            let rht_x = gpu.rht_x_buf.as_ref().ok_or_else(|| {
+                crate::Error::Metal("RhtMode::Cols TqGpuReady missing rht_x_buf".into())
+            })?;
+            let seed_lo = (gpu.rht_seed & 0xffff_ffff) as u32;
+            let seed_hi = (gpu.rht_seed >> 32) as u32;
+            let x_base_elems = (x_off_bytes / std::mem::size_of::<f32>()) as u32;
+            let n_blocks = gpu.rht_n_blocks.max(1);
+            tcb.dispatch_threads(
+                "strand_rht_forward_cols",
+                (n_blocks * TG, 1, 1),
+                (TG, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(x_buf), 0);
+                    enc.set_buffer(1, Some(rht_x), 0);
+                    enc.set_u32(2, gpu.cols);
+                    enc.set_u32(3, seed_lo);
+                    enc.set_u32(4, seed_hi);
+                    enc.set_u32(5, x_base_elems);
+                },
+            )?;
+        }
+        // The activation the partials pass dots against: the transformed scratch
+        // (offset 0) when RHT ran, else the caller's raw slice.
+        let (act_buf, act_off): (&PinnedBuffer, u64) = if gpu.rht_mode == 2 {
+            (gpu.rht_x_buf.as_ref().unwrap(), 0)
+        } else {
+            (x_buf, x_off_bytes as u64)
+        };
+        tcb.dispatch_threads(
+            "strand_bitslice_gemv_partials",
+            (gpu.n_tg_partials * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.w_buf), 0);
+                enc.set_buffer(1, Some(act_buf), act_off);
+                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
+                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
+                enc.set_u32(4, gpu.n_blocks);
+                enc.set_u32(5, gpu.cols);
+                enc.set_u32(6, gpu.k_bits);
+                enc.set_u32(7, gpu.l_bits);
+                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
+                enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
+            },
+        )
+    }
+
+    /// The OUTL sparse-correction pass (GAP 1): `y[row] += resid * x_raw[col]` over
+    /// this tensor's pre-resolved outliers, using the RAW (un-transformed)
+    /// activation — exactly `outlier_mac::matvec_rht`'s residual loop. No-op when
+    /// the tensor has no outliers. `x_off_bytes` / `out_off_bytes` are byte offsets
+    /// into the raw activation and the output (same slices the GEMV used).
+    #[cfg(feature = "tq")]
+    fn strand_outlier_correct_tcb(
+        tcb: &mut TokenCommandBuffer<'_>,
+        gpu: &crate::tq_gpu::TqGpuReady,
+        x_buf: &PinnedBuffer,
+        x_off_bytes: usize,
+        out_buf: &PinnedBuffer,
+        out_off_bytes: usize,
+    ) -> Result<()> {
+        if gpu.n_outl == 0 {
+            return Ok(());
+        }
+        const TG: u32 = 256;
+        let n_tg = gpu.n_outl.div_ceil(TG).max(1);
+        // Bind BOTH buffers at offset 0 and carry the element offsets as constants:
+        // the kernel indexes `x_raw[x_base_elems + col]` / `y[y_base_elems + row]`,
+        // so the offset must NOT also be applied at bind time (that would
+        // double-count it). This matters for the residual/multiseq paths where
+        // out_off_bytes != 0.
+        let x_base_elems = (x_off_bytes / std::mem::size_of::<f32>()) as u32;
+        let y_base_elems = (out_off_bytes / std::mem::size_of::<f32>()) as u32;
+        tcb.dispatch_threads(
+            "strand_outlier_correct",
+            (n_tg * TG, 1, 1),
+            (TG, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(&gpu.outl_buf), 0);
+                enc.set_buffer(1, Some(out_buf), 0);
+                enc.set_buffer(2, Some(x_buf), 0);
+                enc.set_u32(3, gpu.n_outl);
+                enc.set_u32(4, x_base_elems);
+                enc.set_u32(5, y_base_elems);
+            },
+        )
+    }
+
+    /// TCB-compatible TQ GEMV: encodes the (optional) RHT-cols transform, the
+    /// bitslice-GEMV partials + reduce (OVERWRITE), and the (optional) OUTL sparse
+    /// correction into `tcb` using pre-uploaded [`crate::tq_gpu::TqGpuReady`]
+    /// buffers. Zero per-inference allocations. `x_off_bytes` / `out_off_bytes` are
+    /// Metal buffer byte offsets for the activation input and output slices.
+    ///
+    /// Serves the FULL quality recipe: raw Q12 (RhtMode::None), `--rht-cols`
+    /// (RhtMode::Cols → activation transformed once on GPU), and `--outlier-channel`
+    /// (sparse correction in the un-rotated domain) — bit-faithful (within fp
+    /// reduction grouping) to `crate::tq::StrandTensor::matvec` / `outlier_mac`.
     #[cfg(feature = "tq")]
     pub(crate) fn strand_bitslice_gemv_tcb(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -12001,25 +12115,8 @@ mod metal_dispatch {
         out_off_bytes: usize,
     ) -> Result<()> {
         const TG: u32 = 256;
-        // Pass 1: strand_bitslice_gemv_partials
-        tcb.dispatch_threads(
-            "strand_bitslice_gemv_partials",
-            (gpu.n_tg_partials * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&gpu.w_buf), 0);
-                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
-                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
-                enc.set_u32(4, gpu.n_blocks);
-                enc.set_u32(5, gpu.cols);
-                enc.set_u32(6, gpu.k_bits);
-                enc.set_u32(7, gpu.l_bits);
-                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
-                enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
-            },
-        )?;
-        // Pass 2: strand_bitslice_reduce_rows
+        strand_bitslice_partials_tcb(tcb, gpu, x_buf, x_off_bytes)?;
+        // Reduce (OVERWRITE): seeds `out`.
         tcb.dispatch_threads(
             "strand_bitslice_reduce_rows",
             (gpu.n_tg_reduce * TG, 1, 1),
@@ -12030,7 +12127,9 @@ mod metal_dispatch {
                 enc.set_u32(2, gpu.rows);
                 enc.set_u32(3, gpu.bpr);
             },
-        )
+        )?;
+        // OUTL sparse correction (+=) on the RAW activation, after `out` is seeded.
+        strand_outlier_correct_tcb(tcb, gpu, x_buf, x_off_bytes, out_buf, out_off_bytes)
     }
 
     /// TCB-compatible TQ GEMV that ACCUMULATES into `out` (the residual second
@@ -12041,9 +12140,9 @@ mod metal_dispatch {
     ///   strand_bitslice_gemv_tcb_accum(residual, x, out) // out += residual·x
     /// yields `y = decode(base)·x + decode(residual)·x`, the decoded-sum the
     /// residual STRAND bake targets, with both passes kept compressed in RAM.
-    /// `out` MUST already hold the base pass's result (or be zeroed). Zero
-    /// per-inference allocations — uses pre-uploaded [`crate::tq_gpu::TqGpuReady`]
-    /// buffers. `x_off_bytes` / `out_off_bytes` are Metal buffer byte offsets.
+    /// `out` MUST already hold the base pass's result (or be zeroed). Each pass
+    /// applies its own RHT-cols transform and OUTL correction. Zero per-inference
+    /// allocations. `x_off_bytes` / `out_off_bytes` are Metal buffer byte offsets.
     #[cfg(feature = "tq")]
     pub(crate) fn strand_bitslice_gemv_tcb_accum(
         tcb: &mut TokenCommandBuffer<'_>,
@@ -12054,25 +12153,8 @@ mod metal_dispatch {
         out_off_bytes: usize,
     ) -> Result<()> {
         const TG: u32 = 256;
-        // Pass 1: strand_bitslice_gemv_partials (writes this pass's partials).
-        tcb.dispatch_threads(
-            "strand_bitslice_gemv_partials",
-            (gpu.n_tg_partials * TG, 1, 1),
-            (TG, 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&gpu.w_buf), 0);
-                enc.set_buffer(1, Some(x_buf), x_off_bytes as u64);
-                enc.set_buffer(2, Some(&gpu.partials_buf), 0);
-                enc.set_buffer(3, Some(&gpu.tbl_buf), 0);
-                enc.set_u32(4, gpu.n_blocks);
-                enc.set_u32(5, gpu.cols);
-                enc.set_u32(6, gpu.k_bits);
-                enc.set_u32(7, gpu.l_bits);
-                enc.set_buffer(8, Some(&gpu.lut_buf), 0);
-                enc.set_threadgroup_memory_length(0, gpu.shmem_bytes);
-            },
-        )?;
-        // Pass 2: strand_bitslice_reduce_rows_accum (y[gidx] += acc).
+        strand_bitslice_partials_tcb(tcb, gpu, x_buf, x_off_bytes)?;
+        // Reduce (ACCUMULATE): y[gidx] += acc.
         tcb.dispatch_threads(
             "strand_bitslice_reduce_rows_accum",
             (gpu.n_tg_reduce * TG, 1, 1),
@@ -12083,7 +12165,8 @@ mod metal_dispatch {
                 enc.set_u32(2, gpu.rows);
                 enc.set_u32(3, gpu.bpr);
             },
-        )
+        )?;
+        strand_outlier_correct_tcb(tcb, gpu, x_buf, x_off_bytes, out_buf, out_off_bytes)
     }
 
     /// Fused TQ decode-and-GEMM: decode a STRAND-encoded weight matrix from
@@ -12482,6 +12565,7 @@ mod residual_serve_tests {
             cols,
             rht_mode: 0,
             rht_seed: 0,
+            outliers: Vec::new(),
             bpw: cfg.k_bits as f32 / cfg.vec_dim() as f32,
         }
     }
@@ -12780,5 +12864,281 @@ mod residual_serve_tests {
             max_rel <= 2e-3,
             "file-loaded two-part serve max_rel {max_rel:.3e} > 2e-3 vs decoded-sum"
         );
+    }
+
+    /// GAP 1: a tensor baked WITH `--rht-cols` + `--outlier-channel` (the ACTUAL
+    /// quality recipe `residual_bake.py` / the audit ladder use) serves on the GPU
+    /// bitslice path bit-faithfully vs the CPU decode.
+    ///
+    /// Builds a real STR2 `Cols` archive with an OUTL section in-process (the same
+    /// wire `write_strand_v2_rht` + `append_outl` produce), reads it back through
+    /// the production loader (`crate::tq::read_strand`) → `StrandTensor` with
+    /// `RhtMode::Cols` + outliers, takes `StrandTensor::matvec(x)` as the CPU
+    /// reference, then serves the same tensor on GPU via `from_strand_tensor` →
+    /// `upload_to_gpu` → `strand_bitslice_gemv_tcb` (which now runs the GPU RHT-cols
+    /// activation transform + the OUTL sparse correction). `in_features % 256 == 0`
+    /// (the deploy/GPU-FWHT invariant). This is the gate that the actual quality
+    /// recipe can be served on GPU — the unlock GAP 1 targets.
+    #[test]
+    fn rht_cols_outlier_serves_bit_faithfully_vs_cpu() {
+        use crate::tq::{read_strand, RhtMode};
+        use strand_quant::format::{write_strand_v2_rht, PackedTensor, PackedTensorV2};
+        use strand_quant::outlier_wire::{append_outl, OutlierWire};
+        use strand_quant::rht::{rht_forward_cols, RhtConfig};
+        use std::io::Write as _;
+
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[residual_serve] no Metal device; skipping rht-cols+OUTL gate");
+            return;
+        };
+
+        // 7B-shaped in_features (3584 attn, both % 256 == 0); a few rows to keep the
+        // synthetic encode fast. (896 — the 0.5B width — is NOT %256, so the GPU
+        // RHT-cols path intentionally refuses it; that refusal is asserted below.)
+        for &(out_f, in_f) in &[(6usize, 256usize), (4usize, 3584usize)] {
+            let name = "model.layers.0.mlp.down_proj.weight";
+            let n = out_f * in_f;
+            let seed = strand_quant::gate_utils::rht_seed_for(name);
+            let gt = synth_w(n, 0xC0FFEE);
+
+            // Outlier selection: top-|w| 1%, quantised exactly like the baker.
+            let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize;
+            let mut order: Vec<usize> = (0..n).collect();
+            order.sort_unstable_by(|&a, &b| {
+                gt[b]
+                    .abs()
+                    .partial_cmp(&gt[a].abs())
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+            let idx: Vec<usize> = order[..k].to_vec();
+            let ob = 8u32;
+            let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
+            let levels = ((1i64 << (ob - 1)) - 1) as f32;
+            let codes: Vec<i32> = idx
+                .iter()
+                .map(|&i| (gt[i] / omax * levels).round() as i32)
+                .collect();
+
+            // Bulk = ground truth with outlier positions zeroed, column-rotated.
+            let mut bulk = gt.clone();
+            for &i in &idx {
+                bulk[i] = 0.0;
+            }
+            let rcfg = RhtConfig::from_seed(seed);
+            let work = rht_forward_cols(&bulk, &rcfg, in_f);
+            let cfg = TrellisConfig::for_bpw(3.0);
+            let mut enc = encode_tensor(&work, &cfg);
+            enc.has_rht_seed = true;
+
+            let shape = [out_f as u64, in_f as u64];
+            let packed = PackedTensorV2 {
+                base: PackedTensor {
+                    name,
+                    shape: &shape,
+                    rht_seed: seed,
+                    l_bits: cfg.l_bits as u8,
+                    k_bits: cfg.k_bits as u8,
+                    vec_dim: cfg.vec_dim() as u8,
+                    enc: &enc,
+                },
+                block_len: cfg.block_len as u32,
+            };
+            let buf = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true])
+                .expect("write_strand_v2_rht");
+            let mut path = std::env::temp_dir();
+            path.push(format!(
+                "tq_gpu_rhtcols_outl_{}_{}_{in_f}.tq",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_nanos())
+                    .unwrap_or(0)
+            ));
+            {
+                let mut f = std::fs::File::create(&path).expect("create temp .tq");
+                f.write_all(&buf).expect("write temp .tq");
+                f.sync_all().ok();
+            }
+            let wire = OutlierWire::from_selection(n, idx.clone(), codes, omax, ob);
+            append_outl(&path, &[Some(wire)]).expect("append outl");
+            let bytes = std::fs::read(&path).expect("re-read .tq");
+            let _ = std::fs::remove_file(&path);
+
+            let tensors = read_strand(&bytes).expect("read_strand cols+OUTL");
+            let st = &tensors[0];
+            assert_eq!(st.rht_mode, RhtMode::Cols, "must be a Cols archive");
+            assert_eq!(st.outliers.len(), k, "OUTL must round-trip");
+
+            // CPU reference: the production StrandTensor serve (un-rotated patched).
+            let x = synth_x(in_f, 0x1357);
+            let y_ref = st.matvec(&x);
+
+            // GPU serve: from_strand_tensor (precomputes outlier resids + RHT seed)
+            // → upload → strand_bitslice_gemv_tcb (RHT-cols transform + GEMV + OUTL).
+            let prep = TqPreparedGpu::from_strand_tensor(st).expect("prep cols+OUTL");
+            assert_eq!(prep.rht_mode, 2, "RhtMode::Cols → 2");
+            assert_eq!(prep.outliers.len(), k, "outlier resids precomputed");
+            let gpu: TqGpuReady = prep.upload_to_gpu(&ctx).expect("upload cols+OUTL");
+            assert!(gpu.rht_x_buf.is_some(), "Cols needs the rht_x scratch");
+            assert_eq!(gpu.n_outl, k as u32);
+
+            let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+            let out_buf = ctx.new_buffer(out_f * std::mem::size_of::<f32>());
+            let mut tcb = TokenCommandBuffer::new(&ctx);
+            super::strand_bitslice_gemv_tcb(&mut tcb, &gpu, &x_buf, 0, &out_buf, 0)
+                .expect("gpu cols+OUTL gemv");
+            tcb.commit_and_wait().expect("commit");
+            let y_gpu = read_back(&out_buf, out_f);
+
+            let mut max_rel = 0.0f32;
+            for o in 0..out_f {
+                let abs = (y_gpu[o] - y_ref[o]).abs();
+                max_rel = max_rel.max(abs / (1.0 + y_ref[o].abs()));
+            }
+            println!(
+                "[residual_serve] rht-cols+OUTL {out_f}x{in_f}: max_rel={max_rel:.3e} (k={k} outliers)"
+            );
+            // f32 FWHT + GEMV reduction grouping vs the CPU's row-major dot: same
+            // 2e-3 budget as the other serve gates (cols up to ~3584).
+            assert!(
+                max_rel <= 2e-3,
+                "{out_f}x{in_f} rht-cols+OUTL GPU serve max_rel {max_rel:.3e} > 2e-3 vs CPU matvec"
+            );
+        }
+
+        // The GPU RHT-cols path is 256-wide; an unaligned in_features (the 0.5B's
+        // 896) must REFUSE the GPU upload rather than serve a divergent transform.
+        // (The STR2 writer ALSO enforces in_features % block_len == 0, so such an
+        // archive can't even be written today — the upload guard is the defensive
+        // backstop. We exercise it by hand-building a Cols TqPreparedGpu at cols=896
+        // from a `--no-rht` 896-wide encode and flipping rht_mode to Cols.)
+        {
+            let (out_f, in_f) = (4usize, 896usize); // 896 % 256 == 128 ≠ 0
+            let cfg = TrellisConfig::for_bpw(3.0);
+            let enc = encode_tensor(&synth_w(out_f * in_f, 7), &cfg);
+            let mut prep = prepare(&enc, &cfg, out_f, in_f);
+            prep.rht_mode = 2; // pretend Cols on an unaligned width
+            prep.rht_seed = 0xABCD;
+            let res = prep.upload_to_gpu(&ctx);
+            assert!(
+                res.is_err(),
+                "Cols with in_features%256!=0 (896) must refuse the GPU RHT path"
+            );
+        }
+    }
+
+    /// GAP 1/2 offset guard: the RHT-cols transform + OUTL correction must honour a
+    /// NON-ZERO `out_off_bytes` (and `x_off_bytes`) — the layout the rwkv7/Qwen
+    /// multiseq batched path uses (`out_off_b = bi*rows*f`). Serves one Cols+OUTL
+    /// tensor into the SECOND row-slot of a 2-slot output buffer (and from the
+    /// second slot of a 2-slot x buffer) and asserts it equals the offset-0 serve.
+    /// This catches a double-applied offset (binding at the byte offset AND adding
+    /// the element offset in-kernel).
+    #[test]
+    fn rht_cols_outlier_honours_output_offset() {
+        use crate::tq::{read_strand, RhtMode};
+        use strand_quant::format::{write_strand_v2_rht, PackedTensor, PackedTensorV2};
+        use strand_quant::outlier_wire::{append_outl, OutlierWire};
+        use strand_quant::rht::{rht_forward_cols, RhtConfig};
+        use std::io::Write as _;
+
+        let Ok(ctx) = MetalContext::new() else {
+            eprintln!("[residual_serve] no Metal device; skipping offset guard");
+            return;
+        };
+        let name = "model.layers.0.mlp.down_proj.weight";
+        let (out_f, in_f) = (6usize, 512usize);
+        let n = out_f * in_f;
+        let seed = strand_quant::gate_utils::rht_seed_for(name);
+        let gt = synth_w(n, 0xD00D);
+        let k = ((1.0f64 / 100.0) * n as f64).round().max(1.0) as usize;
+        let mut order: Vec<usize> = (0..n).collect();
+        order.sort_unstable_by(|&a, &b| {
+            gt[b].abs().partial_cmp(&gt[a].abs()).unwrap_or(std::cmp::Ordering::Equal)
+        });
+        let idx: Vec<usize> = order[..k].to_vec();
+        let ob = 8u32;
+        let omax = idx.iter().fold(0f32, |m, &i| m.max(gt[i].abs())).max(1e-12);
+        let levels = ((1i64 << (ob - 1)) - 1) as f32;
+        let codes: Vec<i32> = idx.iter().map(|&i| (gt[i] / omax * levels).round() as i32).collect();
+        let mut bulk = gt.clone();
+        for &i in &idx {
+            bulk[i] = 0.0;
+        }
+        let rcfg = RhtConfig::from_seed(seed);
+        let work = rht_forward_cols(&bulk, &rcfg, in_f);
+        let cfg = TrellisConfig::for_bpw(3.0);
+        let mut enc = encode_tensor(&work, &cfg);
+        enc.has_rht_seed = true;
+        let shape = [out_f as u64, in_f as u64];
+        let packed = PackedTensorV2 {
+            base: PackedTensor {
+                name,
+                shape: &shape,
+                rht_seed: seed,
+                l_bits: cfg.l_bits as u8,
+                k_bits: cfg.k_bits as u8,
+                vec_dim: cfg.vec_dim() as u8,
+                enc: &enc,
+            },
+            block_len: cfg.block_len as u32,
+        };
+        let buf = write_strand_v2_rht(&[packed], [0u8; 32], true, false, &[true]).expect("write");
+        let mut path = std::env::temp_dir();
+        path.push(format!("tq_offset_guard_{}.tq", std::process::id()));
+        {
+            let mut f = std::fs::File::create(&path).expect("create");
+            f.write_all(&buf).expect("write");
+            f.sync_all().ok();
+        }
+        let wire = OutlierWire::from_selection(n, idx.clone(), codes, omax, ob);
+        append_outl(&path, &[Some(wire)]).expect("append outl");
+        let bytes = std::fs::read(&path).expect("read");
+        let _ = std::fs::remove_file(&path);
+        let tensors = read_strand(&bytes).expect("read_strand");
+        let st = &tensors[0];
+        assert_eq!(st.rht_mode, RhtMode::Cols);
+        assert!(!st.outliers.is_empty());
+
+        let gpu = TqPreparedGpu::from_strand_tensor(st)
+            .unwrap()
+            .upload_to_gpu(&ctx)
+            .unwrap();
+        let x = synth_x(in_f, 0x2468);
+
+        // Offset-0 baseline.
+        let x0 = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out0 = ctx.new_buffer(out_f * 4);
+        let mut t0 = TokenCommandBuffer::new(&ctx);
+        super::strand_bitslice_gemv_tcb(&mut t0, &gpu, &x0, 0, &out0, 0).unwrap();
+        t0.commit_and_wait().unwrap();
+        let y0 = read_back(&out0, out_f);
+
+        // Slot-1 serve: x in the second of two cols-slots, out into the second of
+        // two rows-slots (the multiseq stride layout). Must equal y0 exactly.
+        let f = std::mem::size_of::<f32>();
+        let mut x2 = vec![0.0f32; 2 * in_f];
+        x2[in_f..].copy_from_slice(&x);
+        let x2b = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x2));
+        let out2 = ctx.new_buffer(2 * out_f * 4);
+        let mut t1 = TokenCommandBuffer::new(&ctx);
+        super::strand_bitslice_gemv_tcb(&mut t1, &gpu, &x2b, in_f * f, &out2, out_f * f).unwrap();
+        t1.commit_and_wait().unwrap();
+        let y2_all = read_back(&out2, 2 * out_f);
+        let y2 = &y2_all[out_f..];
+
+        for o in 0..out_f {
+            assert!(
+                (y2[o] - y0[o]).abs() <= 1e-5 * (1.0 + y0[o].abs()),
+                "row {o}: offset serve {} != offset-0 {} (double-applied offset?)",
+                y2[o],
+                y0[o]
+            );
+        }
+        // Slot-0 of out2 must be untouched (the offset serve wrote only slot 1).
+        for o in 0..out_f {
+            assert_eq!(y2_all[o], 0.0, "slot 0 must be untouched by an offset serve");
+        }
+        println!("[residual_serve] offset guard {out_f}x{in_f}: slot-1 serve == slot-0 baseline");
     }
 }

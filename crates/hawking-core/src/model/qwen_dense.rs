@@ -162,11 +162,31 @@ pub struct QwenLayerPinned {
 #[cfg(feature = "tq")]
 pub(crate) struct TqServe {
     /// Integer-deterministic Q12 weights, row-major `out_features * in_features`.
+    /// The CPU serving reference (`crate::tq::matvec_rht`). Includes any OUTL
+    /// overwrites in the un-rotated domain (it is `StrandTensor::decode_q12()`).
     pub q12: Vec<i32>,
     pub out_features: usize,
     pub in_features: usize,
     pub rht_mode: crate::tq::RhtMode,
     pub rht_seed: u64,
+    /// GPU-resident bitslice GEMV buffers (HAWKING_QWEN_TQ on macOS). `Some` when
+    /// the per-linear `TqPreparedGpu` uploaded successfully — the GEMV then runs on
+    /// the GPU via `strand_bitslice_gemv_tcb` (RHT-cols transform + OUTL correction
+    /// folded in, GAP 1) instead of the CPU `matvec_rht`. `None` when the GPU path
+    /// is unavailable (no Metal, or `in_features % 256 != 0` for a Cols tensor —
+    /// e.g. the 0.5B's 896 width — in which case serving falls back to CPU).
+    #[cfg(target_os = "macos")]
+    pub gpu: Option<crate::tq_gpu::TqGpuReady>,
+    /// Optional RESIDUAL second-pass GPU buffers (HAWKING_TQ_RESIDUAL): the served
+    /// weight becomes `decode(base)·x + decode(residual)·x` (both compressed),
+    /// matching the rwkv7 `ProjWeight::Tq` two-part serve.
+    #[cfg(target_os = "macos")]
+    pub gpu_res: Option<crate::tq_gpu::TqGpuReady>,
+    /// CPU residual second pass for the CPU fallback serve: `(q12, rht_mode,
+    /// rht_seed)`. Same decoded-sum identity as the GPU path, summed on CPU. The
+    /// residual carries its OWN rht mode/seed (in practice equal to the base's,
+    /// since both share the tensor name → same `rht_seed_for`). `None` = no residual.
+    pub res_cpu: Option<(Vec<i32>, crate::tq::RhtMode, u64)>,
 }
 
 pub struct QwenDense {
@@ -3767,7 +3787,32 @@ impl QwenDense {
         if let Some(map) = &self.tq_ffn {
             if let Some(s) = map.get(&t.offset) {
                 debug_assert_eq!((s.out_features, s.in_features), (rows, cols));
-                let y = crate::tq::matvec_rht(
+                // GPU bitslice serve (GAP 2): one-shot TCB GEMV from the pre-uploaded
+                // per-linear buffers (base + optional residual accumulate), with the
+                // RHT-cols transform + OUTL correction folded into the kernel (GAP 1).
+                // The CPU forward path round-trips x/out through GPU buffers per call;
+                // the fused arena path is the remaining throughput step (see report).
+                #[cfg(target_os = "macos")]
+                if let (Some(gpu), Some(ctx)) = (s.gpu.as_ref(), self.metal_ctx.as_ref()) {
+                    use crate::metal::TokenCommandBuffer;
+                    let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
+                    let out_buf = ctx.new_buffer(s.out_features * std::mem::size_of::<f32>());
+                    let mut tcb = TokenCommandBuffer::new(ctx);
+                    crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0)?;
+                    if let Some(res) = s.gpu_res.as_ref() {
+                        crate::kernels::strand_bitslice_gemv_tcb_accum(
+                            &mut tcb, res, &x_buf, 0, &out_buf, 0,
+                        )?;
+                    }
+                    tcb.commit_and_wait()?;
+                    let p = out_buf.contents() as *const f32;
+                    out.copy_from_slice(unsafe {
+                        std::slice::from_raw_parts(p, s.out_features)
+                    });
+                    return Ok(());
+                }
+                // CPU fallback: bulk matvec_rht (+ residual decoded-sum when present).
+                let mut y = crate::tq::matvec_rht(
                     &s.q12,
                     x,
                     s.out_features,
@@ -3775,6 +3820,19 @@ impl QwenDense {
                     s.rht_mode,
                     s.rht_seed,
                 );
+                if let Some((res_q12, res_mode, res_seed)) = s.res_cpu.as_ref() {
+                    let yr = crate::tq::matvec_rht(
+                        res_q12,
+                        x,
+                        s.out_features,
+                        s.in_features,
+                        *res_mode,
+                        *res_seed,
+                    );
+                    for (a, b) in y.iter_mut().zip(yr.iter()) {
+                        *a += *b;
+                    }
+                }
                 out.copy_from_slice(&y);
                 return Ok(());
             }
@@ -4272,6 +4330,33 @@ impl QwenDense {
         let tensors = crate::tq::read_strand(&bytes)
             .map_err(|e| Error::Model(format!("parse TQ artifact {}: {e}", tq_path.display())))?;
 
+        // ── Residual second-pass artifact (HAWKING_TQ_RESIDUAL) ─────────────────
+        // The optional residual STRAND pass (`W − decode(base)`); summed with the
+        // base at GEMV time → `decode(base)·x + decode(residual)·x`, both kept
+        // compressed. Default sibling `<base>.res.tq`, overridable via
+        // HAWKING_QWEN_TQ_RES_PATH. No-op unless the flag is set.
+        let res_tensors: Vec<crate::tq::StrandTensor> = if crate::env_on("HAWKING_TQ_RESIDUAL") {
+            let res_path = std::env::var("HAWKING_QWEN_TQ_RES_PATH")
+                .map(std::path::PathBuf::from)
+                .unwrap_or_else(|_| {
+                    let mut p = tq_path.clone().into_os_string();
+                    p.push(".res.tq");
+                    std::path::PathBuf::from(p)
+                });
+            if res_path.exists() {
+                let rb = std::fs::read(&res_path).map_err(|e| {
+                    Error::Model(format!("read residual TQ {}: {e}", res_path.display()))
+                })?;
+                crate::tq::read_strand(&rb).map_err(|e| {
+                    Error::Model(format!("parse residual TQ {}: {e}", res_path.display()))
+                })?
+            } else {
+                Vec::new()
+            }
+        } else {
+            Vec::new()
+        };
+
         // FFN kind classification by robust substring match (handles both
         // GGUF `ffn_gate`/`ffn_up`/`ffn_down` and HF `gate_proj`/`up_proj`/
         // `down_proj`). Returns the kind tag used to pair with a layer's
@@ -4330,6 +4415,27 @@ impl QwenDense {
                 }
             }
         }
+        // Same indexing for the residual pass (empty when no residual artifact).
+        let mut res_by_key: std::collections::HashMap<
+            (usize, &'static str),
+            &crate::tq::StrandTensor,
+        > = std::collections::HashMap::new();
+        for st in &res_tensors {
+            if let Some(li) = layer_index(&st.name) {
+                if let Some(kind) = ffn_kind(&st.name).or_else(|| attn_kind(&st.name)) {
+                    res_by_key.insert((li, kind), st);
+                }
+            }
+        }
+
+        // Serve TQ on GPU when Metal is up (the GPU bitslice GEMV path, GAP 2).
+        // A per-linear `TqPreparedGpu` is uploaded once; the GEMV runs via
+        // `strand_bitslice_gemv_tcb` with the RHT-cols transform + OUTL correction
+        // folded in (GAP 1) and the optional residual accumulate. Falls back to the
+        // CPU `matvec_rht` when the GPU is unavailable or a Cols tensor's
+        // in_features is not 256-aligned (the 0.5B's 896 — see upload_to_gpu).
+        #[cfg(target_os = "macos")]
+        let want_gpu = self.metal_ctx.is_some() && !crate::env_on("HAWKING_QWEN_TQ_CPU");
 
         // Walk layers; for each FFN projection present in the artifact, decode
         // its Q12 ONCE and map the GGUF source offset → TqServe. Validate the
@@ -4378,6 +4484,53 @@ impl QwenDense {
                         st.name, st.out_features, st.in_features
                     )));
                 }
+                // Residual second pass for this projection (shape-checked).
+                let res_st = res_by_key.get(&(li, kind)).copied();
+                if let Some(rst) = res_st {
+                    if (rst.out_features, rst.in_features) != (rows, cols) {
+                        return Err(Error::Model(format!(
+                            "TQ residual {:?} shape ({},{}) != layer {li} {kind} ({rows},{cols})",
+                            rst.name, rst.out_features, rst.in_features
+                        )));
+                    }
+                }
+                // CPU residual (fallback serve path; also exercised when the GPU
+                // path is unavailable). decode_q12 includes any residual OUTL; the
+                // residual carries its own rht mode/seed.
+                let res_cpu = res_st.map(|rst| (rst.decode_q12(), rst.rht_mode, rst.rht_seed));
+
+                // GPU buffers (macOS): upload the per-linear base (+ residual) so the
+                // GEMV runs on the GPU bitslice path. A Cols tensor whose in_features
+                // is not 256-aligned (0.5B = 896) is refused by upload_to_gpu →
+                // gpu stays None → CPU fallback (still correct).
+                #[cfg(target_os = "macos")]
+                let (gpu, gpu_res) = if want_gpu {
+                    let ctx = self.metal_ctx.as_ref().expect("want_gpu ⇒ metal_ctx");
+                    match crate::tq_gpu::TqPreparedGpu::from_strand_tensor(st)
+                        .and_then(|p| p.upload_to_gpu(ctx))
+                    {
+                        Ok(base_gpu) => {
+                            let res_gpu = match res_st {
+                                Some(rst) => crate::tq_gpu::TqPreparedGpu::from_strand_tensor(rst)
+                                    .and_then(|p| p.upload_to_gpu(ctx))
+                                    .ok(),
+                                None => None,
+                            };
+                            // If a residual exists but its GPU upload failed (e.g.
+                            // unaligned Cols), drop BOTH to CPU so we never serve a
+                            // base-only GPU result that silently omits the residual.
+                            if res_st.is_some() && res_gpu.is_none() {
+                                (None, None)
+                            } else {
+                                (Some(base_gpu), res_gpu)
+                            }
+                        }
+                        Err(_) => (None, None),
+                    }
+                } else {
+                    (None, None)
+                };
+
                 map.insert(
                     src_off,
                     TqServe {
@@ -4386,6 +4539,11 @@ impl QwenDense {
                         in_features: st.in_features,
                         rht_mode: st.rht_mode,
                         rht_seed: st.rht_seed,
+                        #[cfg(target_os = "macos")]
+                        gpu,
+                        #[cfg(target_os = "macos")]
+                        gpu_res,
+                        res_cpu,
                     },
                 );
             }
@@ -9618,5 +9776,197 @@ mod bsize_verify_diag {
             );
         }
         println!("=== END VERIFY COST VS K CURVE ===");
+    }
+
+    /// GAP 2: Qwen serves its TQ FFN projections on the GPU bitslice path.
+    ///
+    /// Loads the 3B GGUF + its `.tq` sidecar, enables `HAWKING_QWEN_TQ`, builds the
+    /// TQ cache, and asserts (a) the FFN projections were uploaded to the GPU
+    /// (`gpu.is_some()` — the 3B's hidden=2048 / intermediate=11008 are both
+    /// %256==0, so the GPU path is reachable) and (b) the GPU `matmul_q4_dispatch`
+    /// GEMV matches the CPU `matvec_rht` reference for the same tensor within fp
+    /// tolerance. This is the end-to-end GAP 2 gate on a REAL model: the condense
+    /// product (Qwen) served from `.tq` on GPU.
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    #[test]
+    fn qwen_tq_serves_ffn_on_gpu() {
+        let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
+        let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
+        if !weights.exists() || !tq.exists() {
+            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — need {weights:?} + {tq:?}");
+            return;
+        }
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        if m.metal_ctx.is_none() {
+            eprintln!("qwen_tq_serves_ffn_on_gpu: skip — no Metal device");
+            return;
+        }
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built (artifact present)");
+        assert!(!map.is_empty(), "TQ artifact carried no FFN/attn projections");
+
+        // At least one projection must have uploaded to the GPU (the 3B FFN dims
+        // are 256-aligned, so the GPU bitslice path is reachable). Also serve-check
+        // GPU == CPU on the first GPU-resident tensor.
+        let n_gpu = map.values().filter(|s| s.gpu.is_some()).count();
+        assert!(
+            n_gpu > 0,
+            "no TQ projection uploaded to GPU — GAP 2 GPU serve not engaged (dims 256-aligned?)"
+        );
+        println!(
+            "[qwen_tq_gpu] {} TQ projections, {} GPU-resident",
+            map.len(),
+            n_gpu
+        );
+
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let (_, s) = map.iter().find(|(_, s)| s.gpu.is_some()).unwrap();
+        let cols = s.in_features;
+        let rows = s.out_features;
+        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() * 0.3).collect();
+
+        // GPU serve (the same dispatch matmul_q4_dispatch takes).
+        use crate::metal::TokenCommandBuffer;
+        let gpu = s.gpu.as_ref().unwrap();
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0)
+            .expect("gpu tq gemv");
+        tcb.commit_and_wait().expect("commit");
+        let y_gpu = {
+            let p = out_buf.contents() as *const f32;
+            unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
+        };
+
+        // CPU reference: matvec_rht over the same decoded Q12 (+ RHT mode/seed).
+        let y_cpu =
+            crate::tq::matvec_rht(&s.q12, &x, rows, cols, s.rht_mode, s.rht_seed);
+
+        let mut max_rel = 0.0f32;
+        for o in 0..rows {
+            let abs = (y_gpu[o] - y_cpu[o]).abs();
+            max_rel = max_rel.max(abs / (1.0 + y_cpu[o].abs()));
+        }
+        println!("[qwen_tq_gpu] {rows}x{cols} rht_mode={:?}: GPU vs CPU max_rel={max_rel:.3e}", s.rht_mode);
+        assert!(
+            max_rel <= 2e-3,
+            "Qwen TQ GPU serve diverged from CPU matvec_rht: max_rel {max_rel:.3e} > 2e-3"
+        );
+    }
+
+    /// GAP 2 (residual): the Qwen GPU TQ serve sums a base + residual second pass
+    /// (`decode(base)·x + decode(residual)·x`), both compressed — the same two-part
+    /// recipe rwkv7 `ProjWeight::Tq` uses. The 3B has no `.res.tq` on disk, so this
+    /// builds a residual STRAND pass IN-PROCESS for a real loaded FFN tensor
+    /// (`residual = W − decode(base)`, 2-bit), uploads it, and asserts the GPU
+    /// two-pass GEMV (`strand_bitslice_gemv_tcb` + `_accum` — exactly the dispatch
+    /// `matmul_q4_dispatch` runs when `gpu_res` is `Some`) equals the CPU
+    /// decoded-sum GEMV. Validates the Qwen residual GPU path on a real tensor.
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    #[test]
+    fn qwen_tq_residual_two_pass_serves_on_gpu() {
+        use crate::metal::TokenCommandBuffer;
+        use strand_quant::encode::encode_tensor;
+        use strand_quant::TrellisConfig;
+
+        let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
+        let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
+        if !weights.exists() || !tq.exists() {
+            eprintln!("qwen_tq_residual: skip — need {weights:?} + {tq:?}");
+            return;
+        }
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        if m.metal_ctx.is_none() {
+            eprintln!("qwen_tq_residual: skip — no Metal device");
+            return;
+        }
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built");
+        let Some((_, s)) = map.iter().find(|(_, s)| s.gpu.is_some()) else {
+            eprintln!("qwen_tq_residual: skip — no GPU-resident TQ tensor");
+            return;
+        };
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let (rows, cols) = (s.out_features, s.in_features);
+
+        // Base bulk weights (un-rotated; the served base is RhtMode::None here) and a
+        // 2-bit residual of (W − decode(base)). decode the residual to f32 too so we
+        // can form the CPU decoded-sum reference.
+        let inv = crate::tq::q12_to_f32();
+        let base_w: Vec<f32> = s.q12.iter().map(|&q| q as f32 * inv).collect();
+        // Synthetic "full-precision" target = base + a small structured delta, so the
+        // residual is meaningfully non-zero (the bake recovers most of the delta).
+        let target: Vec<f32> = base_w
+            .iter()
+            .enumerate()
+            .map(|(i, &w)| w + 0.02 * ((i as f32) * 0.0031).sin())
+            .collect();
+        let resid_in: Vec<f32> = target.iter().zip(&base_w).map(|(t, b)| t - b).collect();
+        let cfg_r = TrellisConfig::for_bpw(2.0);
+        let enc_r = encode_tensor(&resid_in, &cfg_r);
+        let res_q12 = strand_quant::decode::decode_tensor_fixed(&enc_r, &cfg_r);
+        let res_w: Vec<f32> = res_q12.iter().map(|&q| q as f32 * inv).collect();
+        let w_sum: Vec<f32> = base_w.iter().zip(&res_w).map(|(a, b)| a + b).collect();
+
+        // Build a residual TqGpuReady from the in-process residual encode.
+        let res_prep = {
+            let entries = crate::tq_gpu::bake_bitslice_entries(&enc_r, &cfg_r).expect("bake res");
+            crate::tq_gpu::TqPreparedGpu {
+                payload: enc_r.bits.clone(),
+                entries,
+                lut_q12: cfg_r.codebook().into_owned(),
+                k_bits: cfg_r.k_bits,
+                l_bits: cfg_r.l_bits,
+                rows,
+                cols,
+                rht_mode: 0,
+                rht_seed: 0,
+                outliers: Vec::new(),
+                bpw: cfg_r.k_bits as f32 / cfg_r.vec_dim() as f32,
+            }
+        };
+        let res_gpu = res_prep.upload_to_gpu(ctx).expect("upload res");
+
+        // CPU decoded-sum reference: y = (decode(base)+decode(res)) · x.
+        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.017).cos() * 0.4).collect();
+        let mut y_ref = vec![0.0f32; rows];
+        for o in 0..rows {
+            let mut acc = 0.0f32;
+            for i in 0..cols {
+                acc += w_sum[o * cols + i] * x[i];
+            }
+            y_ref[o] = acc;
+        }
+
+        // GPU two-pass: base (overwrite) then residual (accumulate) — the exact
+        // dispatch matmul_q4_dispatch runs when gpu_res.is_some().
+        let gpu = s.gpu.as_ref().unwrap();
+        let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf = ctx.new_buffer(rows * std::mem::size_of::<f32>());
+        let mut tcb = TokenCommandBuffer::new(ctx);
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0).unwrap();
+        crate::kernels::strand_bitslice_gemv_tcb_accum(&mut tcb, &res_gpu, &x_buf, 0, &out_buf, 0)
+            .unwrap();
+        tcb.commit_and_wait().unwrap();
+        let y_gpu = {
+            let p = out_buf.contents() as *const f32;
+            unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
+        };
+
+        let mut max_rel = 0.0f32;
+        for o in 0..rows {
+            max_rel = max_rel.max((y_gpu[o] - y_ref[o]).abs() / (1.0 + y_ref[o].abs()));
+        }
+        println!("[qwen_tq_residual] {rows}x{cols}: two-pass GPU vs decoded-sum max_rel={max_rel:.3e}");
+        assert!(
+            max_rel <= 2e-3,
+            "Qwen residual two-pass GPU serve diverged from decoded-sum: max_rel {max_rel:.3e}"
+        );
     }
 }

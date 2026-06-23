@@ -478,6 +478,115 @@ kernel void strand_bitslice_reduce_rows_accum(
     y[gidx] += acc;
 }
 
+// ─── RHT-cols activation transform (GAP 1) ─────────────────────────────────────
+//
+// The cheap-serving column-RHT recipe: `y = decode(rht_cols(W)) · T(x)` where the
+// activation transform `T(x)` is row-INDEPENDENT, so it is computed ONCE and the
+// rotated weights are dotted against it (the bitslice GEMV does the dot). This
+// kernel reproduces `strand_quant::rht::rht_forward_cols_inplace` for a single
+// `in_features`-long activation vector, on the deploy invariant
+// `in_features % 256 == 0` (so every 256-block is one self-contained Hadamard
+// block within a row's column span — `h == HADAMARD_BLOCK == 256`, no tail). One
+// thread owns one 256-block and replays the EXACT CPU butterfly order, so the
+// per-block result is bit-identical f32 (the only later divergence is GEMV
+// reduction grouping, already covered by the gate tolerance).
+//
+// `seed` is passed as two u32 halves (lo, hi) because the scalar-bind helper has
+// no u64; they are reassembled here. `sign_at`/`splitmix64` are byte-for-byte the
+// strand-quant integer hashes (ulong wraps mod 2^64 exactly as wrapping_mul does).
+
+static inline ulong rht_splitmix64(thread ulong& state) {
+    state = state + 0x9E3779B97F4A7C15UL;            // wrapping add
+    ulong z = state;
+    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;       // wrapping mul
+    z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+    return z ^ (z >> 31);
+}
+
+// sign_at(seed, i) == +1.0 when the top bit of splitmix64(seed ^ i*PHI) is 0,
+// else -1.0 — verbatim strand_quant::rht::sign_at.
+static inline float rht_sign_at(ulong seed, uint i) {
+    ulong s = seed ^ ((ulong)i * 0x9E3779B97F4A7C15UL);
+    ulong z = rht_splitmix64(s);
+    return ((z >> 63) & 1UL) == 0UL ? 1.0f : -1.0f;
+}
+
+#define RHT_BLOCK 256u
+
+// Per-256-block column-RHT of one activation vector. `n_blocks` = in_features/256.
+// Reads x at `x_base_elems` (element offset), writes the transformed vector to
+// `tx` at element 0 (the GEMV then reads `tx` at offset 0). col index for sign is
+// the per-row column (== flat index % in_features); with in_features % 256 == 0 the
+// block's 256 cols are contiguous `(blk*256) % in_features + j`.
+kernel void strand_rht_forward_cols(
+    device   const float*  x          [[buffer(0)]],
+    device         float*  tx         [[buffer(1)]],
+    constant       uint&   in_features[[buffer(2)]],
+    constant       uint&   seed_lo    [[buffer(3)]],
+    constant       uint&   seed_hi    [[buffer(4)]],
+    constant       uint&   x_base_elems[[buffer(5)]],
+    uint blk [[thread_position_in_grid]])
+{
+    uint n_blocks = in_features / RHT_BLOCK;
+    if (blk >= n_blocks) return;
+    ulong seed = (ulong)seed_lo | ((ulong)seed_hi << 32);
+    uint col_base = (blk * RHT_BLOCK) % in_features;
+    uint base = blk * RHT_BLOCK;
+
+    // Load + apply per-column random sign into a 256-wide register block.
+    float buf[RHT_BLOCK];
+    for (uint j = 0; j < RHT_BLOCK; ++j) {
+        buf[j] = x[x_base_elems + base + j] * rht_sign_at(seed, col_base + j);
+    }
+    // In-place FWHT, EXACT CPU loop order (len doubles 1→2→…→128).
+    for (uint len = 1u; len < RHT_BLOCK; len <<= 1) {
+        for (uint i = 0; i < RHT_BLOCK; i += len * 2u) {
+            for (uint j = i; j < i + len; ++j) {
+                float u = buf[j];
+                float v = buf[j + len];
+                buf[j] = u + v;
+                buf[j + len] = u - v;
+            }
+        }
+    }
+    // Normalise by 1/sqrt(256) and store.
+    const float scale = 1.0f / 16.0f; // sqrt(256) == 16
+    for (uint j = 0; j < RHT_BLOCK; ++j) {
+        tx[base + j] = buf[j] * scale;
+    }
+}
+
+// ─── OUTL outlier sparse correction (GAP 1) ────────────────────────────────────
+//
+// Outliers live in the UN-rotated weight domain. The bulk bitslice GEMV serves
+// `W_bulk_unrotated · x` (via `decode(rht(W_bulk)) · T(x)`); the outlier overwrite
+// adds a sparse correction `y[row] += resid * x_raw[col]` where
+// `resid = outlier_val − decode(bulk_unrotated)[idx]` (precomputed at load) and
+// `x_raw` is the RAW (un-transformed) activation. Mirrors
+// `outlier_mac::matvec_rht`'s residual loop exactly. One thread per outlier; the
+// per-row `+=` races are serialised by `atomic_fetch_add` so independent outliers
+// landing on the same output row sum correctly.
+struct OutlierEntry {
+    uint  row;
+    uint  col;
+    float resid;  // outlier_val − bulk_unrotated[idx], in f32 weight units
+};
+
+kernel void strand_outlier_correct(
+    device   const OutlierEntry* outl     [[buffer(0)]],
+    device         atomic_float* y        [[buffer(1)]],
+    device   const float*        x_raw    [[buffer(2)]],
+    constant       uint&         n_outl   [[buffer(3)]],
+    constant       uint&         x_base_elems [[buffer(4)]],
+    constant       uint&         y_base_elems [[buffer(5)]],
+    uint gidx [[thread_position_in_grid]])
+{
+    if (gidx >= n_outl) return;
+    OutlierEntry e = outl[gidx];
+    float contrib = e.resid * x_raw[x_base_elems + e.col];
+    atomic_fetch_add_explicit(&y[y_base_elems + e.row], contrib, memory_order_relaxed);
+}
+
 template <uint B>
 static inline void bs_gemm_partials_impl(
     device   const uchar*          w_bits,
