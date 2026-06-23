@@ -16,10 +16,13 @@ TAG = os.path.basename(OUT).replace(".safetensors", "").replace("/", "_")  # uni
 BITS = int(sys.argv[3]) if len(sys.argv) > 3 else 3
 ALPHA = float(sys.argv[4]) if len(sys.argv) > 4 else 0.5
 BAKER = "vendor/strand-quant/target/release/quantize-model"
-dev = "mps" if torch.backends.mps.is_available() else "cpu"
+# 7B+ won't fit 19GB in f32 and MPS-f16 has the GQA bug -> DOCTOR_DEVICE=cpu DOCTOR_DTYPE=float16
+# gives correct (CPU has no f16 bug) + fitting (14GB) at the cost of speed. Mac Studio: mps/float32.
+dev = os.environ.get("DOCTOR_DEVICE") or ("mps" if torch.backends.mps.is_available() else "cpu")
+DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))
 CALIB = open(os.environ.get("DOCTOR_CALIB", "scratch/calib_corpus.txt"), errors="ignore").read()[:20000]
 
-m = AutoModelForCausalLM.from_pretrained(MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
+m = AutoModelForCausalLM.from_pretrained(MODEL, torch_dtype=DTYPE, attn_implementation="eager").to(dev).eval()
 tok = AutoTokenizer.from_pretrained(MODEL)
 
 # capture per-input-channel mean|x| per linear (the AWQ importance)

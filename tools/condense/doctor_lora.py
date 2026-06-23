@@ -21,7 +21,8 @@ STEPS = int(sys.argv[2]) if len(sys.argv) > 2 else 300
 LR    = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-3
 RANK  = int(sys.argv[4]) if len(sys.argv) > 4 else 16
 SAVE  = sys.argv[5] if len(sys.argv) > 5 and sys.argv[5] != "-" else None
-dev = "mps" if torch.backends.mps.is_available() else "cpu"
+dev = os.environ.get("DOCTOR_DEVICE") or ("mps" if torch.backends.mps.is_available() else "cpu")
+DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))  # 7B: cpu+float16 fits 19GB
 
 EVAL = """The science of operations, as derived from mathematics more especially, is a
 science of itself, and has its own abstract truth and value. A new, a vast, and a
@@ -42,17 +43,17 @@ def ppl(model, tok, text):
 def main():
     tok = AutoTokenizer.from_pretrained(MODEL)
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev)
+        MODEL, torch_dtype=DTYPE, attn_implementation="eager").to(dev)
     wh = load_file(WBASE)  # STRAND-decoded base weights
 
     params = []
     for name, m in model.named_modules():
         key = name + ".weight"
         if isinstance(m, nn.Linear) and key in wh:
-            m.weight.data = wh[key].to(dev, torch.float32)  # frozen STRAND base
+            m.weight.data = wh[key].to(dev, DTYPE)  # frozen STRAND base
             m.weight.requires_grad_(False)
-            m._A = nn.Parameter(torch.zeros(m.weight.shape[0], RANK, device=dev))
-            m._B = nn.Parameter(torch.randn(RANK, m.weight.shape[1], device=dev) * 0.01)
+            m._A = nn.Parameter(torch.zeros(m.weight.shape[0], RANK, device=dev, dtype=DTYPE))
+            m._B = nn.Parameter(torch.randn(RANK, m.weight.shape[1], device=dev, dtype=DTYPE) * 0.01)
             m.forward = (lambda x, mm=m: F.linear(x, mm.weight + mm._A @ mm._B, mm.bias))
             params += [m._A, m._B]
             ADAPT.append((name, m))
@@ -80,7 +81,7 @@ def main():
     kd_cache = None
     if KD:
         teacher = AutoModelForCausalLM.from_pretrained(
-            MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
+            MODEL, torch_dtype=DTYPE, attn_implementation="eager").to(dev).eval()
         for p in teacher.parameters():
             p.requires_grad_(False)
         kd_cache = []

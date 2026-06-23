@@ -11,8 +11,12 @@ Prints one JSON line: {model, override, ppl, loss, ntok}. The DELTA in ppl betwe
 the f16 run and the condensed run is the real quality cost of condensation; the
 doctor (QAT/KD) should shrink it. Deterministic (fixed passage, no dataset download).
 """
-import sys, json, math, torch
+import sys, json, math, os, torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# 7B+ won't fit 19GB f32; CPU-f16 fits (14GB) and is correct (no MPS f16 GQA bug).
+DEV = os.environ.get("DOCTOR_DEVICE")
+DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))
 
 # fixed multi-paragraph passage (public-domain, deterministic) — relative ppl signal
 TEXT = """The science of operations, as derived from mathematics more especially,
@@ -41,18 +45,19 @@ def main():
     model_dir = sys.argv[1]
     override = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] != "-" else None
     label = sys.argv[3] if len(sys.argv) > 3 else (override or "f16")
-    dev = "mps" if torch.backends.mps.is_available() else "cpu"
+    dev = DEV or ("mps" if torch.backends.mps.is_available() else "cpu")
 
     tok = AutoTokenizer.from_pretrained(model_dir)
     # float32 + eager attention: MPS has an f16 GQA matmul bug; f32 is robust and the
-    # f16-vs-condensed DELTA is what matters (both runs share dtype).
+    # f16-vs-condensed DELTA is what matters (both runs share dtype). 7B+: DOCTOR_DEVICE=cpu
+    # DOCTOR_DTYPE=float16 to fit 19GB (CPU has no f16 bug).
     model = AutoModelForCausalLM.from_pretrained(
-        model_dir, torch_dtype=torch.float32, attn_implementation="eager")
+        model_dir, torch_dtype=DTYPE, attn_implementation="eager")
 
     if override:
         from safetensors.torch import load_file
         sd = load_file(override)
-        sd = {k: v.to(torch.float32) for k, v in sd.items()}
+        sd = {k: v.to(DTYPE) for k, v in sd.items()}
         missing, unexpected = model.load_state_dict(sd, strict=False)
         print(f"# {label}: swapped {len(sd)} tensors | missing {len(missing)} unexpected {len(unexpected)}",
               file=sys.stderr)
