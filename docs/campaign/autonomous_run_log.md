@@ -399,3 +399,27 @@ RUN_SERVE_SMOKE=0 tools/ci/overnight_hardening.sh
 - **Result:** the rebench now produces complete data — Hawking tps in §5/§7, the wedge in §4, all engines (llama.cpp +
   MLX 7B). Rerun clean (Claude closed): `BIT_TARGETS=8,6,5,4,3,2,1 TRIALS=5 TOK=256 bash tools/bench/compare_sota.sh`.
 - **Lane hygiene:** json_constrain (1 dead-variant removal) + bench .sh + this log; engine decode/serve paths untouched.
+
+## Phase 15 — AUDIT of Codex's uncommitted work + fair-comparison push (goal: "make Hawking win the fair comparison")
+Audited Codex's uncommitted parallel work BEFORE building (per owner). Findings + actions:
+- **RoPE interleaved→NEOX (CPU + all Metal kernels)** — Codex's biggest change. VERDICT: **correct, keep.** Validated: Qwen-7B
+  via `/v1/chat` returns correct math/reasoning (391 / 40 / Paris); `cpu_backend_parity` (Metal≡CPU) ✅; lib 182/182 ✅; Q6_K +
+  RWKV parity ✅. NEOX is the right convention for Qwen/Llama/Gemma/DeepSeek GGUF. Committed `f2fb65e`.
+- **The §8 quality "miss" was a HARNESS bug, not Hawking quality.** Raw `generate` was fed a manual `<|im_start|>` template
+  whose special tokens aren't honored → 241/491 (wrong). Via `/v1/chat` (correct special tokens) Hawking gets 391/40/Paris.
+  Codex's bench upgrade routes quality through `/v1/chat` + llama-server chat — the fair path. Committed `14193fb`.
+- **7B kernel profile (goal: short-decode speed)** — Codex's profile was shader-stale (won't load). Rebaked via autotune at
+  the current shader hash (loads; `runtime_profile=fast`). **Honest result: default 20.43 → profile 20.53 tps (+0.5%).**
+  autotune picked `metal-default` — the 7B short-decode gap (~0.7× llama 28.8) is **structural Q4_K GEMV efficiency, not
+  kernel selection**; a profile cannot close it (needs a GEMV kernel rewrite — multi-week, out of scope). Committed `51a4ea5`.
+- **tokenize subcommand** added (inspect special-token handling) — committed `720618a`.
+- **OPEN findings (documented, not yet fixed):**
+  - **8k transformer drop (goal 3):** Codex's change was RoPE-only — the drop is UNADDRESSED. Hawking Qwen-7B 20.9→11.3 @8k
+    vs llama flat 28.7. Lever under test: F16_KV (halves KV read). [measuring]
+  - **Llama serve `/v1/chat` returns EMPTY** — per-arch chat-template gap in serve (raw generate is coherent). Fair-quality
+    eval currently only valid for Qwen; non-Qwen needs the serve chat template fixed.
+  - **`integration_greedy_64` golden gate is RED** — the NEOX change legitimately altered output + the shader hash changed, so
+    the 3B golden profile + token hashes are stale. Needs a 3B autotune + golden-token rebake (rebake-after-validated-change,
+    not a regression). Live correctness gates (lib 182, cpu_backend_parity, kernel/RWKV parity, /v1/chat) all pass.
+- **Honest scorecard (fair, 7B):** quality = WIN/parity (correct via fair path); long-context = WIN (RWKV-7 SSM 119 flat);
+  unique caps (fit/press/serve --auto) = WIN; short 7B decode = LOSE ~0.7× (structural GEMV); 8k transformer = LOSE (KV-path).
