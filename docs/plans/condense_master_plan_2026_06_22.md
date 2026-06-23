@@ -1,0 +1,127 @@
+# The Condensation Pipeline — Master Plan (2026-06-22)
+
+> Hawking's defining product. Not "download a quantized GGUF and run it" — that's
+> the llama.cpp world. Hawking **condenses your own model**: take the biggest thing
+> (32B, 671B), make it the smallest *highest-performing* form, and run it locally.
+> Condensation ≠ quantization. **Condensation does not mean loss** — it means
+> compress-then-restore. The bits are dynamic (4/3/2/1, per-tensor); a recovery
+> layer ("quality infusion") closes the gap back toward 1:1; the result fits where
+> nothing else fits, so it runs faster (the RAM cliff).
+
+## The one-line product
+
+```
+hawking condense <parent>  →  smallest artifact at your quality target  →  hawking run
+```
+
+Your model, your bits, ~1:1 quality, higher tps because it fits. The whole
+complexity is hidden behind one verb.
+
+## Why this is the moat (grounded in measured numbers, not hope)
+
+- **Iso-quant inference is a loss and always will be.** Fair rebench: Hawking 7B
+  Q4_K decode ≈ 0.71× llama.cpp. We do **not** win "run the same file faster."
+- **Condensation is a different game** — *artifact creation* — where llama.cpp
+  barely competes (`llama-quantize` = static PTQ, no recovery, no dynamic bits,
+  weight-space). The win comes from **density × the RAM cliff**: a 32B at 2-bit
+  (~9 GB) *fits* on 18 GB where Q4_K (~18 GB) swaps → 10–100× tok/s. Speed is a
+  **consequence of density**, not of the decode kernel.
+- **The bleeding-edge claim:** a 2-bit-near-lossless artifact that *runs on a
+  laptop* is a capability no shipping tool has (llama Q2_K collapses; AWQ/GPTQ stop
+  at 3–4-bit PTQ; none are out-of-core or dynamic). That's the wedge.
+
+## What we have measured (the honest floor — see condense_output_space_handoff)
+
+Output-space (`||(Ŵ-W)X||/||WX||`) on REAL bf16 weights + REAL measured activations:
+
+| tier | method | output-err | vs Q4_K (0.079) | note |
+|---|---|---|---|---|
+| 4-bit | Q4_K (the bar) | 0.079 | 1.00× | llama's default |
+| 3-bit | TQ3 naive | 0.155 | 1.96× | the weight-space "kill" |
+| 3-bit | **TQ3 + AWQ + outlier (PTQ)** | **0.095–0.108** | **~1.28×** | **26% denser, PTQ ceiling** |
+| 2-bit | TQ2 + AWQ (PTQ) | 0.19–0.32 | 2.4–4× | **collapses without recovery** |
+
+**The verdict that drives this plan:** activation-aware PTQ reopened the quality arm
+(1.96× → 1.28× at 3-bit) but **PTQ alone cannot reach 1:1, and 2-bit PTQ collapses.**
+The 2-bit lead is *only* reachable with the **recovery layer**. So recovery is not a
+nice-to-have — it is the load-bearing wall of the whole product.
+
+## The pipeline (the seven stages)
+
+```
+1 PLAN     hawking press --dry-run --memory-budget   (out-of-core; BUILT)
+2 RANK     output-space damage ranking per tensor/channel   (partly built: rung-kl)
+3 ALLOCATE dynamic 4/3/2/1-bit by damage + budget   (the "bit selected" step)
+4 ENCODE   activation-aware: RHT + AWQ + outlier (+Hessian)   (L1; MEASURED → 1.28×@3b)
+5 RECOVER  "quality infusion" — debias → QAT → KD/distill → LoRA-residual   (L2; THE BUILD)
+6 VERIFY   output-space PPL / logit-KL / task quality card   (gate; partly built)
+7 RUN      Hawking inference (RAM-cliff speed)   (BUILT: HAWKING_QWEN_TQ + .tq sidecar)
+```
+
+Stages 1, 4, 7 exist. Stage 5 (recovery) is the gap that makes "condensed ≠ lossy"
+real. Stages 2–3 (dynamic allocation) turn "pick a format" into "find this model's
+lowest bit-floor that holds quality."
+
+## Stage 5 — the recovery layer ("quality infusion" / the "doctor")
+
+This is the answer to *"how do we add quality back after compressing as small as
+possible."* Note: this is a **quality-recovery stage**, distinct from the existing
+`hawking doctor` (hardware fit) — call it **`condense --recover`** / the *infusion*
+pass. A ladder of levers, cheapest first; each one buys lower bits at equal quality:
+
+| lever | what it does | cost | status |
+|---|---|---|---|
+| **actmean debias** | cancel the systematic output bias of quantization (`c = -(Ŵ-W)·μ`) | ~free | built in baker (`--actmean`), claimed −28.7% PPL; unmeasured in output space |
+| **damage-ranked mixed precision** | keep attn/lm_head/outlier-heavy tensors high-bit, push tolerant FFN low | free | `rung-kl.py` ranks; allocator = TODO |
+| **outlier protection** | top-σ channels at high bits (residual carriers) | +~0.1 bpw | prototyped (marginal alone; stacks) |
+| **LoRA / low-rank residual** | add a tiny high-precision `AB` correction = `Ŵ + AB ≈ W` (the "beautify") | small bytes | NOT built — high ROI, no retrain of base |
+| **QAT** (quant-aware fine-tune) | re-fit weights with the quantizer in the loop | training | `strand-qat.py` scaffold exists |
+| **KD / distillation** | match the parent's logits + hidden states (teacher-forced) | training + teacher | capture path + scripts exist; not wired to condense |
+| **self-data calibration** | generate calibration from the model itself (no corpus) | small | partly (corpus tools) |
+
+The product's quality knob = *how much recovery to apply*. PTQ-only = fast/approx;
++debias+mixed-prec = better; +LoRA-residual = near-lossless cheaply; +QAT/KD =
+the heavy "infusion" for 2-bit ~1:1. The literature (QuIP#, AQLM, BitNet) confirms
+2-bit + recovery ≈ near-lossless for tolerant models — so this is grounded, not hope.
+
+## Dynamic bit selection (the "bit selected model")
+
+Bits are a **free variable chosen per model to hit a quality target**, not a fixed
+format. The allocator (stage 3) sweeps the bit-ladder under a budget:
+
+```
+hawking condense <parent> --target-quality "ppl_delta <= 1%"  [--max-bytes 9gb]
+  → tries lowest bits first; applies recovery; backs off sensitive tensors to 3/4-bit
+  → emits the smallest artifact that holds the target + a quality card
+```
+
+The "discrimination on what models can be condensed how far" falls out
+automatically: tolerant models land at 2-bit, sensitive ones at 3-bit — the
+process **finds each model's floor**. No human picks Q-format.
+
+## Roadmap (phases — each ships a measurable artifact)
+
+- **L0 ✅** output-space harness + real Q4_K-vs-TQ numbers. (DONE: 3-bit PTQ 1.28×.)
+- **L1 🔄** activation-aware encode on real acts. (AWQ+outlier measured; Hessian-metric
+  optional/low-ROI vs recovery.)
+- **L2 ⬅ THE BUILD** the recovery layer: (a) actmean debias measured in output space →
+  (b) damage-ranked mixed-precision allocator → (c) **LoRA low-rank residual** (cheap
+  near-lossless, no base retrain) → (d) QAT/KD for 2-bit ~1:1. Gate each in output space.
+- **L3** wire `hawking condense` (plan→rank→allocate→encode→recover→verify→sidecar) as
+  one command + the per-model quality card. Prove 2-bit near-lossless on a small model.
+- **L4** scale: 7B→14B→32B locally; frontier (MoE) only with owner-approved download/
+  storage/compute. Publish quality cards (RAM-fit, bpw, % parent quality retained, tps).
+
+## The proof bar (no fake GO)
+
+Ship a claim only when, **in output space**, a condensed artifact at fewer bpw than
+Q4_K holds a stated quality target (PPL-delta / task scores) vs the **f16 parent** —
+and runs on Hawking. PTQ gets us to 3-bit/1.28×; **L2 recovery is what turns the
+2-bit lead from "collapses" into "≈1:1," and is the single highest-leverage build.**
+
+## Where this leaves Hawking
+
+If L2 lands: Hawking is the only local tool that takes *your* big model, condenses
+it dynamically to its smallest ~1:1 form with quality infusion, and runs it — the
+pipeline is literally `hawking condense && hawking run`. That is the bleeding edge,
+and it's a creation-time + RAM-cliff moat, not a decode-tps race we'd lose anyway.
