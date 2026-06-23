@@ -4288,6 +4288,20 @@ impl QwenDense {
                 None
             }
         }
+        // Attention projections (all-linear TQ serving — the 32B RAM-cliff path).
+        fn attn_kind(name: &str) -> Option<&'static str> {
+            if name.contains("attn_q") || name.contains("q_proj") {
+                Some("q")
+            } else if name.contains("attn_k") || name.contains("k_proj") {
+                Some("k")
+            } else if name.contains("attn_v") || name.contains("v_proj") {
+                Some("v")
+            } else if name.contains("attn_output") || name.contains("o_proj") {
+                Some("o")
+            } else {
+                None
+            }
+        }
         // Layer index: prefer the digits right after a known marker
         // (`blk.` for GGUF, `layers.` for HF), else fall back to the first
         // run of digits anywhere in the name.
@@ -4310,8 +4324,10 @@ impl QwenDense {
         let mut by_key: std::collections::HashMap<(usize, &'static str), &crate::tq::StrandTensor> =
             std::collections::HashMap::new();
         for st in &tensors {
-            if let (Some(li), Some(kind)) = (layer_index(&st.name), ffn_kind(&st.name)) {
-                by_key.insert((li, kind), st);
+            if let Some(li) = layer_index(&st.name) {
+                if let Some(kind) = ffn_kind(&st.name).or_else(|| attn_kind(&st.name)) {
+                    by_key.insert((li, kind), st);
+                }
             }
         }
 
@@ -4321,7 +4337,17 @@ impl QwenDense {
         // rather than silently serving garbage.
         let mut map: std::collections::HashMap<usize, TqServe> = std::collections::HashMap::new();
         for li in 0..self.config.n_layers {
-            let projs: [(usize, usize, usize, &'static str); 3] = [
+            let q_dim = self.config.n_heads * self.config.head_dim;
+            let kv_dim = self.config.n_kv_heads * self.config.head_dim;
+            // All 7 linears (attn q/k/v/o + ffn gate/up/down). Attn entries are only
+            // mapped when the `.tq` actually carries them (by_key lookup → continue),
+            // so FFN-only artifacts stay backward-compatible. All-linear = the 32B
+            // RAM-cliff path (whole model served from `.tq`, no Q4_K GGUF in RAM).
+            let projs: [(usize, usize, usize, &'static str); 7] = [
+                (self.layers[li].q_proj.offset, q_dim, self.config.hidden, "q"),
+                (self.layers[li].k_proj.offset, kv_dim, self.config.hidden, "k"),
+                (self.layers[li].v_proj.offset, kv_dim, self.config.hidden, "v"),
+                (self.layers[li].o_proj.offset, self.config.hidden, q_dim, "o"),
                 (
                     self.layers[li].ffn_gate.offset,
                     self.config.intermediate,
