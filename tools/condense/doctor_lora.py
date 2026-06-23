@@ -71,6 +71,17 @@ def main():
     chunks = [c for c in chunks if c.shape[1] >= 16] or [ids.unsqueeze(0).to(dev)]
     print(f"# calib: {len(chunks)} chunks", file=sys.stderr)
 
+    # KD: distill the frozen f16 teacher's full logit distribution — a far richer recovery
+    # signal than next-token CE (CE barely moved TQ3; KD targets the teacher's behavior).
+    KD = os.environ.get("KD") == "1"
+    teacher = None
+    if KD:
+        teacher = AutoModelForCausalLM.from_pretrained(
+            MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
+        for p in teacher.parameters():
+            p.requires_grad_(False)
+        print("# KD: distilling f16 teacher logits", file=sys.stderr)
+
     model.train()
     opt = torch.optim.AdamW(params, lr=LR)  # tiny param set -> AdamW is cheap here
     best_ppl, best_step, best_state = base_ppl, -1, None
@@ -78,7 +89,13 @@ def main():
         cids = chunks[step % len(chunks)]
         opt.zero_grad()
         s = model(cids).logits
-        loss = F.cross_entropy(s[:, :-1].reshape(-1, s.size(-1)), cids[:, 1:].reshape(-1))
+        if KD:
+            with torch.no_grad():
+                tl = torch.log_softmax(teacher(cids).logits, dim=-1)
+            sl = torch.log_softmax(s, dim=-1)
+            loss = (tl.exp() * (tl - sl)).sum(-1).mean()  # forward KL
+        else:
+            loss = F.cross_entropy(s[:, :-1].reshape(-1, s.size(-1)), cids[:, 1:].reshape(-1))
         loss.backward()
         opt.step()
         if step % 25 == 0 or step == STEPS - 1:
