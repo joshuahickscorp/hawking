@@ -98,8 +98,22 @@ crashed 17.2 → **0.03** (memorized the one passage) but held-out STRAND-TQ2 = 
 uniform ppl stayed ~1e5. Root cause: **training on one short passage memorizes instead of
 generalizing.** Fix shipped: `doctor_qat.py` now samples **diverse chunks** from a real
 corpus (`DOCTOR_CALIB`, 400 KB wikitext → 174 chunks, rotated per step) — the 3-step smoke
-confirmed CE stays ~12 (not memorizing). **Verdict v2 (diverse calib, 300 steps) is the
-real test of whether the doctor wins.** Lesson: recovery only counts on HELD-OUT data.
+confirmed CE stays ~12 (not memorizing). Lesson: recovery only counts on HELD-OUT data.
+
+### Verdict v2 (diverse calib) — overfit FIXED, but uniform proxy is WRONG for STRAND
+
+Diverse-chunk calib fixed the overfit: uniform held-out ppl **108K → 5,340** (generalizes;
+CE stays ~6, not 0.03). BUT two hard findings: (a) uniform-2bit is **hopeless even healed**
+(5,340 ppl — uniform has no trellis/codebook); (b) **the uniform-healed shadow is
+COUNTERPRODUCTIVE for STRAND** — STRAND-TQ2(healed) ppl **676 > 481 PTQ**. Optimizing
+weights for *uniform* quant mis-optimizes them for STRAND's trellis codec.
+
+⇒ **The doctor MUST quantize with the ACTUAL deployment codec (STRAND) in the QAT loop**
+(the `strand-qat.py` "requant-every-N-steps" proxy-transfer design), not a uniform proxy.
+This is the decisive next lever. **HONEST STATUS: Hawking does NOT yet beat llama on
+low-bit quality.** Density is real (52% smaller); the quality WIN is gated on STRAND-aware
+QAT — measured, not yet built. (The overnight cron did NOT fire — the Mac slept, so the
+watchdog `sleep` never elapsed; the interactive verdict runs above are the only results.)
 
 ## The pipeline (the seven stages)
 
