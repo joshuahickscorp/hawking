@@ -4820,6 +4820,15 @@ impl QwenDense {
         use crate::kernels;
         use crate::metal::{DenseDecodeArena, TokenCommandBuffer};
 
+        // TQ per-tensor HYBRID (HAWKING_QWEN_TQ): build the `.tq` side map on the
+        // first GPU-decode forward (mutable borrow — must precede the immutable
+        // borrows below). Without this the production decode loop never consulted
+        // `tq_ffn` and silently served the FFN from Q4_K; the arena dispatch below
+        // routes the mapped sites through the GPU bitslice serve instead. No-op
+        // unless HAWKING_QWEN_TQ=1 and a `.tq` artifact is present.
+        #[cfg(feature = "tq")]
+        self.ensure_tq_cache()?;
+
         // Item 1 wire-up: lazy-build the Q4_K pre-decoded scale cache
         // on first forward. DEFAULT-ON as of 2026-05-26 per
         // memory/composition_decision_matrix_2026_05_26.md (100% bit-
@@ -5479,6 +5488,21 @@ impl QwenDense {
             self.dense_arena.as_mut().unwrap().ensure_int4_kv(ctx);
         }
         let arena = self.dense_arena.as_ref().unwrap();
+        // TQ per-tensor HYBRID arena fusion (HAWKING_QWEN_TQ): bind the FFN/all-
+        // linear `.tq` side map (keyed by GGUF source offset) so each linear site
+        // can serve from the pre-uploaded GPU bitslice buffers (`TqGpuReady`)
+        // directly into the resident arena activations — no per-call x upload /
+        // out readback (the one-shot `matmul_q4_dispatch` path's cost). Each
+        // `TqGpuReady` already owns its per-tensor scratch (partials_buf, the
+        // RHT-cols rht_x_buf, outl_buf), so no extra arena scratch is needed.
+        // `None` ⇒ feature off / no artifact ⇒ every site stays on Q4_K, byte-
+        // identical to the un-flagged path. A site only routes through TQ when
+        // its `gpu` upload succeeded (GPU-resident); Cols tensors with an
+        // unaligned in_features (e.g. the 0.5B's 896) have `gpu == None` and
+        // fall back to the Q4_K path here (the CPU `forward_token` path serves
+        // those via the `matvec_rht` fallback in `matmul_q4_dispatch`).
+        #[cfg(feature = "tq")]
+        let tq_ffn_ref = self.tq_ffn.as_ref();
         // Pre-bind the W4A8 scratch buffers (None when flag is off) so the
         // dispatch macros don't have to re-Option-walk per call. Each is
         // unwrap()ped only when w4a8_active is true.
@@ -5574,6 +5598,23 @@ impl QwenDense {
         for li in 0..cfg.n_layers {
             let layer = &self.layers[li];
 
+            // TQ per-tensor HYBRID: true when this GGUF offset is served by a
+            // GPU-resident `TqGpuReady`. The fused multi-tensor dispatches below
+            // (qkv triple / kv pair / gate+up pair / ffn_down SwiGLU / o_proj
+            // residual fusion) are Q4_K-shaped and can't host a TQ bitslice GEMV,
+            // so when TQ owns a tensor we DISABLE the fusion that would consume it
+            // and fall back to the per-site `gemv_proj!` path (which serves TQ).
+            // Always false when the `tq` feature is off or the map has no entry.
+            #[cfg(feature = "tq")]
+            let tq_served = |off: usize| -> bool {
+                tq_ffn_ref
+                    .and_then(|m| m.get(&off))
+                    .map(|s| s.gpu.is_some())
+                    .unwrap_or(false)
+            };
+            #[cfg(not(feature = "tq"))]
+            let tq_served = |_off: usize| -> bool { false };
+
             // Dispatcher choice helper. When the projection's GGUF dtype
             // isn't Q4_K, `pinned.*_f16` holds a dequantized-once f16
             // copy and we go through `gemv_f16_metal_buf_tcb`; otherwise
@@ -5589,6 +5630,42 @@ impl QwenDense {
             macro_rules! gemv_proj {
                 ($site_w4a8:expr, $tref:expr, $pinned_f16:expr, $rows:expr, $cols:expr,
                  $x:expr, $x_i8:expr, $x_sc:expr, $out:expr) => {{
+                    // TQ per-tensor HYBRID arena serve (HAWKING_QWEN_TQ): when this
+                    // tensor's GGUF offset maps to a GPU-resident `TqGpuReady`, run
+                    // the bitslice GEMV (RHT-cols transform + OUTL correction folded
+                    // in, GAP 1) straight into the resident arena buffers — `$x` and
+                    // `$out` are arena PinnedBuffers, so x/out never leave the GPU
+                    // (the one-shot `matmul_q4_dispatch` path re-uploaded x and read
+                    // back out per call). Optional residual second pass accumulates
+                    // (`out += decode(residual)·x`). Overrides every Q4_K lever by
+                    // offset, exactly like the CPU one-shot path. `gpu == None`
+                    // (no Metal / unaligned Cols) falls through to Q4_K below.
+                    #[cfg(feature = "tq")]
+                    let __tq_served = if let Some(s) =
+                        tq_ffn_ref.and_then(|m| m.get(&$tref.offset))
+                    {
+                        if let Some(gpu) = s.gpu.as_ref() {
+                            debug_assert_eq!(
+                                (s.out_features, s.in_features),
+                                ($rows, $cols),
+                                "TQ arena GEMV shape mismatch"
+                            );
+                            kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, $x, 0, $out, 0)?;
+                            if let Some(res) = s.gpu_res.as_ref() {
+                                kernels::strand_bitslice_gemv_tcb_accum(
+                                    &mut tcb, res, $x, 0, $out, 0,
+                                )?;
+                            }
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    };
+                    #[cfg(not(feature = "tq"))]
+                    let __tq_served = false;
+                    if !__tq_served {
                     match $tref.dtype {
                         GgmlType::Q4_K => {
                             if $cols % 256 != 0 {
@@ -5734,6 +5811,7 @@ impl QwenDense {
                             )?;
                         }
                     }
+                    } // end `if !__tq_served`
                 }};
             }
 
@@ -5759,8 +5837,14 @@ impl QwenDense {
             // predec cache entries, fuse into a single dispatch (2→1 vs Q +
             // K+V-pair). q_rows ≠ kv_rows in GQA so the triple kernel uses a
             // segmented grid. Incompatible with qkv_concurrent.
+            // TQ guard: a TQ-served q/k/v can't ride the Q4_K predec triple;
+            // disable so each routes through `gemv_proj!` (q/k/v TQ arm) or the
+            // k+v pair (also TQ-guarded). No-op when TQ is off / not mapped.
+            let tq_any_qkv =
+                tq_served(layer.q_proj.offset) || tq_served(layer.k_proj.offset) || tq_served(layer.v_proj.offset);
             let qkv_triple = !w4a8_qproj
                 && !qkv_concurrent
+                && !tq_any_qkv
                 && layer.q_proj.dtype == GgmlType::Q4_K
                 && layer.k_proj.dtype == GgmlType::Q4_K
                 && layer.v_proj.dtype == GgmlType::Q4_K
@@ -5777,6 +5861,7 @@ impl QwenDense {
             // Q dispatch + cross-dtype K+V pair.
             let qkv_mixed_triple = !w4a8_qproj
                 && !qkv_concurrent
+                && !tq_any_qkv
                 && layer.q_proj.dtype == GgmlType::Q4_K
                 && layer.k_proj.dtype == GgmlType::Q4_K
                 && layer.v_proj.dtype == GgmlType::Q6_K
@@ -6054,6 +6139,8 @@ impl QwenDense {
                 //   Q4K+Q6K cross-dtype pair (Track 3.9)
                 //   separate dispatches (fallback)
                 let did_fuse_kv = kv_fuse
+                    && !tq_served(layer.k_proj.offset)
+                    && !tq_served(layer.v_proj.offset)
                     && layer.k_proj.dtype == GgmlType::Q4_K
                     && layer.v_proj.dtype == GgmlType::Q4_K
                     && h % 256 == 0
@@ -6253,11 +6340,15 @@ impl QwenDense {
                 } else {
                     // Track 3.8: Q6K+Q6K pair (models with all-Q6K k/v)
                     let q6k_kv_pair = !w4a8_qproj
+                        && !tq_served(layer.k_proj.offset)
+                        && !tq_served(layer.v_proj.offset)
                         && layer.k_proj.dtype == GgmlType::Q6_K
                         && layer.v_proj.dtype == GgmlType::Q6_K
                         && h % 256 == 0;
                     // Track 3.9: Q4K predec + Q6K cross-dtype pair
                     let q4k_q6k_pair = !w4a8_qproj
+                        && !tq_served(layer.k_proj.offset)
+                        && !tq_served(layer.v_proj.offset)
                         && layer.k_proj.dtype == GgmlType::Q4_K
                         && layer.v_proj.dtype == GgmlType::Q6_K
                         && h % 256 == 0
@@ -6589,8 +6680,13 @@ impl QwenDense {
                 .ffn_norm
                 .as_ref()
                 .ok_or_else(|| Error::Metal("ffn_norm not pinned".into()))?;
-            let fuse_gate =
-                oproj_add_rmsnorm_fuse && layer.o_proj.dtype == GgmlType::Q4_K && q_dim % 256 == 0;
+            // TQ guard: a TQ-served o_proj can't ride the fused Q4_K predec
+            // GEMV+residual+rmsnorm; fall back to `gemv_proj!` (o_proj TQ arm)
+            // → o_proj_out_buf, then the separate add_rmsnorm below.
+            let fuse_gate = oproj_add_rmsnorm_fuse
+                && !tq_served(layer.o_proj.offset)
+                && layer.o_proj.dtype == GgmlType::Q4_K
+                && q_dim % 256 == 0;
             // D6: prefer f16 scales when fast profile is on; fall back to f32.
             let oproj_scales_f16 = if fuse_gate && predec_f16scales_active {
                 predec_cache_f16_ref.and_then(|m| m.get(&layer.o_proj.offset))
@@ -6718,7 +6814,11 @@ impl QwenDense {
             // path-to-50 fusion: when enabled and both gate/up are predec
             // Q4_K with cached scale tables, compute both in ONE dispatch
             // (shared activation). Else fall back to two gemv_proj! calls.
+            // TQ guard: a TQ-served gate/up can't ride the Q4_K predec pair;
+            // fall back to two `gemv_proj!` calls (gate/up TQ arm).
             let did_fuse_gateup = ffn_gateup_fuse
+                && !tq_served(layer.ffn_gate.offset)
+                && !tq_served(layer.ffn_up.offset)
                 && layer.ffn_gate.dtype == GgmlType::Q4_K
                 && layer.ffn_up.dtype == GgmlType::Q4_K
                 && h % 256 == 0
@@ -6966,7 +7066,13 @@ impl QwenDense {
             //   (a) W4A8 is NOT active (W4A8 needs an intermediate int8 step)
             //   (b) the weight format has a swiglu kernel (Q6_K default, Q4K predec)
             // Falls back to the separate silu_mul + ffn_down path otherwise.
-            let ffn_swiglu_fused = if !w4a8_ffn_down {
+            // TQ guard: a TQ-served ffn_down can't host the SwiGLU-fused GEMV
+            // (the bitslice kernel has no silu(gate)*up prologue). Force the
+            // unfused path: silu_mul → ffn_act_buf, then the TQ ffn_down GEMV
+            // below reads ffn_act_buf. No-op when TQ doesn't own ffn_down.
+            let ffn_swiglu_fused = if tq_served(layer.ffn_down.offset) {
+                false
+            } else if !w4a8_ffn_down {
                 if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                     // Requant'd Q4_K ffn_down (HAWKING_QWEN_FFN_DOWN_Q4K=1).
                     // Track D1: prefer f16-scales swiglu when both predec_f16scales
@@ -7116,11 +7222,55 @@ impl QwenDense {
                         )?;
                     }
                 }
+                // TQ per-tensor HYBRID ffn_down: when TQ owns ffn_down, serve the
+                // bitslice GEMV from ffn_act_buf (= silu(gate)*up) into ffn_down_buf
+                // directly — the unfused SwiGLU path above already produced ffn_act.
+                // Optional residual second pass accumulates. Skips the Q4_K dispatch
+                // ladder entirely for this site.
+                #[cfg(feature = "tq")]
+                let __tq_ffn_down = if let Some(s) =
+                    tq_ffn_ref.and_then(|m| m.get(&layer.ffn_down.offset))
+                {
+                    if let Some(gpu) = s.gpu.as_ref() {
+                        debug_assert_eq!(
+                            (s.out_features, s.in_features),
+                            (h, intermediate),
+                            "TQ ffn_down arena GEMV shape mismatch"
+                        );
+                        kernels::strand_bitslice_gemv_tcb(
+                            &mut tcb,
+                            gpu,
+                            &arena.ffn_act_buf,
+                            0,
+                            &arena.ffn_down_buf,
+                            0,
+                        )?;
+                        if let Some(res) = s.gpu_res.as_ref() {
+                            kernels::strand_bitslice_gemv_tcb_accum(
+                                &mut tcb,
+                                res,
+                                &arena.ffn_act_buf,
+                                0,
+                                &arena.ffn_down_buf,
+                                0,
+                            )?;
+                        }
+                        true
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                };
+                #[cfg(not(feature = "tq"))]
+                let __tq_ffn_down = false;
                 // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
                 // via HAWKING_QWEN_FFN_DOWN_Q4K=1), prefer it over the
                 // f16 fallback / native Q6_K path. ~31% BW saving on the
                 // single largest weight per layer.
-                if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
+                if __tq_ffn_down {
+                    // served above
+                } else if let Some(q4k_buf) = layer.pinned.ffn_down_q4k.as_ref() {
                     let blocks_per_row = intermediate / 256;
                     let row_bytes = blocks_per_row * 144;
                     if w4a8_ffn_down {
@@ -9967,6 +10117,285 @@ mod bsize_verify_diag {
         assert!(
             max_rel <= 2e-3,
             "Qwen residual two-pass GPU serve diverged from decoded-sum: max_rel {max_rel:.3e}"
+        );
+    }
+
+    /// FUSION PARITY: the production decode loop (`forward_token_greedy_tcb`) now
+    /// serves TQ tensors by dispatching `strand_bitslice_gemv_tcb` straight into
+    /// the resident `DenseDecodeArena` activations (e.g. ffn_act_buf → ffn_down_buf)
+    /// at a buffer byte OFFSET, inside the shared per-token TCB. The one-shot path
+    /// (`matmul_q4_dispatch`) instead uploads `x` to a FRESH buffer and reads back
+    /// `out` from a FRESH buffer at offset 0, with its OWN TCB + commit_and_wait.
+    ///
+    /// This asserts the two are BIT-IDENTICAL for a real GPU-resident FFN tensor:
+    ///   • arena-style: x staged in a long shared buffer at a non-zero offset,
+    ///     out written into a long shared buffer at a non-zero offset, dispatched
+    ///     in a multi-GEMV TCB (a junk GEMV before + after, to mimic the loop's
+    ///     shared-buffer reuse and ensure no cross-dispatch aliasing).
+    ///   • one-shot: the exact `matmul_q4_dispatch` GPU sequence (fresh buffers,
+    ///     offset 0, dedicated TCB).
+    /// Equal bytes ⇒ the arena fusion changed only WHERE x/out live (resident vs
+    /// per-call upload), not the math. Runs on the 3B `.tq` FFN tensor (in_features
+    /// 11008 → ffn_down, %256==0 so the GPU path is live). Skips without artifacts.
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    #[test]
+    fn qwen_tq_arena_dispatch_bit_identical_to_oneshot() {
+        use crate::metal::TokenCommandBuffer;
+
+        let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
+        let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
+        if !weights.exists() || !tq.exists() {
+            eprintln!("qwen_tq_arena_dispatch: skip — need {weights:?} + {tq:?}");
+            return;
+        }
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        if m.metal_ctx.is_none() {
+            eprintln!("qwen_tq_arena_dispatch: skip — no Metal device");
+            return;
+        }
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        let map = m.tq_ffn.as_ref().expect("tq_ffn built");
+        let Some((_, s)) = map.iter().find(|(_, s)| s.gpu.is_some()) else {
+            eprintln!("qwen_tq_arena_dispatch: skip — no GPU-resident TQ tensor");
+            return;
+        };
+        let ctx = m.metal_ctx.as_ref().unwrap();
+        let gpu = s.gpu.as_ref().unwrap();
+        let (rows, cols) = (s.out_features, s.in_features);
+        let f = std::mem::size_of::<f32>();
+
+        // Deterministic activation.
+        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.011).cos() * 0.37).collect();
+
+        // ── One-shot path: exactly what matmul_q4_dispatch does on the GPU ──
+        let x_buf1 = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
+        let out_buf1 = ctx.new_buffer(rows * f);
+        let mut tcb1 = TokenCommandBuffer::new(ctx);
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb1, gpu, &x_buf1, 0, &out_buf1, 0)
+            .expect("one-shot gemv");
+        tcb1.commit_and_wait().expect("commit one-shot");
+        let y_oneshot = {
+            let p = out_buf1.contents() as *const f32;
+            unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
+        };
+
+        // ── Arena path: model the resident loop. `x` lives at a non-zero offset
+        // in a long shared activation buffer; `out` lives at a non-zero offset in
+        // its OWN resident buffer (each site writes a DISJOINT arena buffer — the
+        // loop never overlaps output regions). The dispatch is issued into a SHARED
+        // TCB alongside unrelated GEMVs (to a separate `junk` output buffer) before
+        // AND after, reusing the SAME `gpu`/`partials_buf` — this stresses the
+        // serial-encoder dependency on the shared partials scratch: if the reduce
+        // pass didn't strictly follow its partials pass, the junk dispatches' use
+        // of the same partials_buf would corrupt the real result.
+        let x_pad = 256usize; // x sits after other activations in a shared buffer
+        let out_pad = 512usize; // out sits at a non-zero offset in its resident buffer
+        let x_buf2 = ctx.new_buffer((cols + x_pad) * f);
+        let out_buf2 = ctx.new_buffer((rows + out_pad) * f);
+        let junk_buf = ctx.new_buffer(rows * f); // a DISJOINT "other site" output
+        unsafe {
+            let dst = (x_buf2.contents() as *mut f32).add(x_pad);
+            std::ptr::copy_nonoverlapping(x.as_ptr(), dst, cols);
+        }
+        let x_off = x_pad * f;
+        let out_off = out_pad * f;
+        let mut tcb2 = TokenCommandBuffer::new(ctx);
+        // Unrelated "earlier site" GEMV into a disjoint buffer (same gpu/partials).
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
+            .expect("arena junk-pre gemv");
+        // The dispatch the fused loop actually issues for this tensor.
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &out_buf2, out_off)
+            .expect("arena gemv");
+        // Unrelated "later site" GEMV into the disjoint buffer (same gpu/partials).
+        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
+            .expect("arena junk-post gemv");
+        tcb2.commit_and_wait().expect("commit arena");
+        let y_arena = {
+            let p = unsafe { (out_buf2.contents() as *const f32).add(out_pad) };
+            unsafe { std::slice::from_raw_parts(p, rows) }.to_vec()
+        };
+
+        // BIT-IDENTICAL: same kernel, same partials_buf, same inputs ⇒ same bytes.
+        let mut max_abs = 0.0f32;
+        let mut n_diff = 0usize;
+        for o in 0..rows {
+            let d = (y_arena[o] - y_oneshot[o]).abs();
+            if d != 0.0 {
+                n_diff += 1;
+            }
+            max_abs = max_abs.max(d);
+        }
+        println!(
+            "[qwen_tq_arena] {rows}x{cols}: arena(offset+shared TCB) vs one-shot \
+             max_abs={max_abs:.3e} n_diff={n_diff}/{rows}"
+        );
+        assert_eq!(
+            n_diff, 0,
+            "arena TQ dispatch (shared buffers + byte offsets) must be BIT-IDENTICAL \
+             to the one-shot path: {n_diff} of {rows} rows differ (max_abs {max_abs:.3e})"
+        );
+    }
+
+    /// FUSION INTEGRATION (e2e): the production GPU decode loop
+    /// (`forward_token_greedy_tcb`) must (a) be DETERMINISTIC with TQ on, and
+    /// (b) produce a final hidden state that DIFFERS from the TQ-off (pure Q4_K)
+    /// loop — proving the arena fusion actually routes the FFN through the `.tq`
+    /// bitslice serve. Before this fusion the greedy-TCB loop never consulted
+    /// `tq_ffn`, so HAWKING_QWEN_TQ=1 greedy decode SILENTLY served Q4_K (the
+    /// one-shot TQ path only fired on the CPU `forward_token` route). This test
+    /// is the regression guard for that: identical-to-Q4_K hidden would mean TQ
+    /// is being bypassed again. Runs full forward over a few real positions on
+    /// the 3B; skips without artifacts.
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    #[test]
+    fn qwen_tq_arena_decode_engages_and_is_deterministic() {
+        let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
+        let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
+        if !weights.exists() || !tq.exists() {
+            eprintln!("qwen_tq_arena_decode: skip — need {weights:?} + {tq:?}");
+            return;
+        }
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+
+        // Drive a few positions and return the final hidden after the LAST one.
+        let run = |m: &mut QwenDense| -> Vec<f32> {
+            m.kv.seq_len = 0;
+            let toks = [30u32, 77, 30, 77, 88, 12];
+            let mut last = vec![];
+            for (i, &t) in toks.iter().enumerate() {
+                last = m.dump_x_norm_after_forward(t, i).expect("forward");
+            }
+            last
+        };
+
+        // TQ ON (arena fusion engaged via ensure_tq_cache + the per-site dispatch).
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        let mut m_tq = QwenDense::load(weights, EngineConfig::default()).expect("load tq");
+        if m_tq.metal_ctx.is_none() {
+            eprintln!("qwen_tq_arena_decode: skip — no Metal device");
+            return;
+        }
+        m_tq.ensure_tq_cache().expect("ensure_tq_cache");
+        let n_gpu = m_tq
+            .tq_ffn
+            .as_ref()
+            .map(|m| m.values().filter(|s| s.gpu.is_some()).count())
+            .unwrap_or(0);
+        if n_gpu == 0 {
+            eprintln!("qwen_tq_arena_decode: skip — no GPU-resident TQ tensor");
+            return;
+        }
+        let h_tq_a = run(&mut m_tq);
+        let h_tq_b = run(&mut m_tq);
+
+        // TQ OFF (pure Q4_K): a fresh model with the flag unset.
+        std::env::remove_var("HAWKING_QWEN_TQ");
+        let mut m_q4 = QwenDense::load(weights, EngineConfig::default()).expect("load q4");
+        let h_q4 = run(&mut m_q4);
+
+        assert_eq!(h_tq_a.len(), h_q4.len());
+
+        // (a) determinism: TQ-on is bit-stable run-to-run.
+        let det_diff = h_tq_a
+            .iter()
+            .zip(&h_tq_b)
+            .filter(|(x, y)| x != y)
+            .count();
+        assert_eq!(
+            det_diff, 0,
+            "TQ arena decode not deterministic: {det_diff} hidden elems differ run-to-run"
+        );
+
+        // (b) engagement: TQ-served hidden must differ from Q4_K (else TQ bypassed).
+        let mut max_abs = 0.0f32;
+        let mut n_diff = 0usize;
+        for (a, b) in h_tq_a.iter().zip(&h_q4) {
+            let d = (a - b).abs();
+            if d > 1e-6 {
+                n_diff += 1;
+            }
+            max_abs = max_abs.max(d);
+        }
+        println!(
+            "[qwen_tq_arena_decode] {n_gpu} GPU TQ tensors; hidden TQ vs Q4_K: \
+             n_diff={n_diff}/{} max_abs={max_abs:.3e}",
+            h_tq_a.len()
+        );
+        assert!(
+            n_diff > 0,
+            "TQ arena decode produced a hidden state IDENTICAL to Q4_K — the FFN \
+             `.tq` serve is being bypassed in forward_token_greedy_tcb (regression: \
+             the loop is not consulting tq_ffn)"
+        );
+    }
+
+    /// DECODE-TPS SANITY (manual; `--ignored`): the fused arena TQ decode keeps
+    /// x/out GPU-resident across the layer, so it should run at real GPU-decode
+    /// throughput — NOT the one-shot path's per-GEMV upload+readback+commit cost
+    /// (which serializes the whole pipeline on every FFN linear). This measures
+    /// steady-state decode tok/s of the fused TQ path on the 3B and just asserts
+    /// it clears a low floor (well above the one-shot regime). Wall-clock, so it's
+    /// `#[ignore]` (run: `cargo test -p hawking-core --features tq
+    /// qwen_tq_arena_decode_tps -- --ignored --nocapture`).
+    #[cfg(all(feature = "tq", target_os = "macos"))]
+    #[test]
+    #[ignore]
+    fn qwen_tq_arena_decode_tps_sanity() {
+        let weights = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.gguf");
+        let tq = Path::new("../../models/Qwen2.5-3B-Instruct-Q4_K_M.tq");
+        if !weights.exists() || !tq.exists() {
+            eprintln!("qwen_tq_arena_decode_tps: skip — need {weights:?} + {tq:?}");
+            return;
+        }
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+        std::env::remove_var("HAWKING_TQ_RESIDUAL");
+        std::env::remove_var("HAWKING_QWEN_TQ_CPU");
+        let mut m = QwenDense::load(weights, EngineConfig::default()).expect("load");
+        if m.metal_ctx.is_none() {
+            eprintln!("qwen_tq_arena_decode_tps: skip — no Metal device");
+            return;
+        }
+        m.ensure_tq_cache().expect("ensure_tq_cache");
+        if m
+            .tq_ffn
+            .as_ref()
+            .map(|m| m.values().filter(|s| s.gpu.is_some()).count())
+            .unwrap_or(0)
+            == 0
+        {
+            eprintln!("qwen_tq_arena_decode_tps: skip — no GPU-resident TQ tensor");
+            return;
+        }
+
+        m.kv.seq_len = 0;
+        // Warm prefill so caches/pipelines are hot.
+        let mut pos = 0usize;
+        for &t in &[30u32, 77, 30, 77, 88, 12, 99, 7] {
+            let _ = m.forward_token_greedy_tcb(t, pos).expect("warm");
+            pos += 1;
+        }
+        // Timed decode.
+        const N: usize = 64;
+        let mut tok = 7u32;
+        let t0 = std::time::Instant::now();
+        for _ in 0..N {
+            tok = m.forward_token_greedy_tcb(tok, pos).expect("decode");
+            pos += 1;
+        }
+        let dt = t0.elapsed().as_secs_f64();
+        let tps = N as f64 / dt;
+        println!("[qwen_tq_arena_decode_tps] fused TQ decode: {tps:.1} tok/s ({N} toks in {dt:.3}s)");
+        // The one-shot per-GEMV path serializes ~7 commits/layer/token → single-
+        // digit tok/s. The fused arena path keeps the layer GPU-resident; even a
+        // conservative floor (10 tok/s) is far above the one-shot regime.
+        assert!(
+            tps > 10.0,
+            "fused TQ decode only {tps:.1} tok/s — expected real GPU-decode \
+             throughput, not the one-shot per-GEMV upload/readback regime"
         );
     }
 }
