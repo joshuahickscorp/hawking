@@ -72,6 +72,24 @@ the triangulation predicted (cheap PTQ/data-free levers could not). The full run
 not on battery). This is the proof that **condensation ≠ loss**: low bits + the
 doctor → small AND ~1:1.
 
+### 🥊 3-way QUALITY bench (the honest scoreboard, 2026-06-23)
+
+`tools/condense/quality_3way.sh` — relative ppl degradation per engine (quant ÷ own
+f16), same model + same text, each in its faithful harness (cancels tokenizer/harness
+differences). RAN on Qwen2.5-0.5B:
+
+| engine | bpw | degradation vs f16 |
+|---|--:|--:|
+| llama.cpp Q4_K_M | 4.5 | **+2.1%** |
+| Hawking TQ3 (PTQ) | 3.35 | **+43.7%** |
+| Hawking TQ2 (PTQ) | 2.34 | +1069% |
+
+**HONEST: at PTQ, Hawking LOSES on quality — badly.** The entire pitch is the doctor:
+to win, condensed+doctor degradation must drop below Q4_K's +2.1% at fewer bpw. The
+cron runs `quality_3way.sh` on the *doctor-recovered* weights → the win/lose verdict
+lands in `OVERNIGHT_RESULTS.md` by morning. This is the most important number in the
+project — and we now measure it rigorously rather than assert it.
+
 ## The pipeline (the seven stages)
 
 ```
