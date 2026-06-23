@@ -127,3 +127,35 @@ recovery stack, even at 7B (CPU-bf16, slow but real).
 > the LoRA lab — i.e. the entire recovery stack short of *scale-training*. The Studio's only unique
 > jobs are training-at-7B+, the codec-native ceiling-breaker, and the full bit-floor-vs-scale curve.
 > Maximize the doctor here; let the Studio extend it — not gate it.
+
+---
+
+## STATUS — build progress + first concrete findings (2026-06-23)
+
+### Built + committed (10c2612)
+- **Residual SERVE bridge** (the #1 target): GPU accumulate kernel + two-part GEMV (base+residual
+  both stay compressed); parity vs CPU decoded-sum **max_rel 7.7e-6**; default+tq builds green.
+  Emitter `residual_tq.py`. *Gap being closed:* bitslice serves raw Q12 (no RHT/outlier yet).
+- **Mixed-precision** `mixed_precision.py` (output-space sensitivity → water-fill → `--mp-config`).
+- **Calibration** `calib_build.py` (multi-domain), **recovery_ledger.py**, **multi_eval.py** (capability tripwire).
+
+### In-flight (background builders)
+- RHT-cols + outlier serving in the bitslice GEMV (serve the *real* recipe) + Qwen residual serve wiring.
+- `awq_plus.py` (per-tensor α + sweep) + `residual_plus.py` (per-tensor depth · iterated · AWQ×residual).
+
+### First findings — 0.5B ladder (worst case, f16 ppl 36.71); effective bpw, honest
+| recipe | eff bpw | degr | read |
+|---|--:|--:|---|
+| 3-AWQ | 3.65 | **+14.6%** | AWQ recovers RHT's +42.9% → +14.6% (the big train-free lever) |
+| 4-AWQ | 4.81 | **+4.7%** | beats Q4_K *quality* (+8%) at ~Q4_K bpw |
+| res2+2 | 5.30 | +9.0% | ≈ Q4_K quality, more bpw |
+| res3+2 | 6.30 | **+1.4%** | ~1:1 — but costs 6.3 *effective* bpw on the worst case |
+| 2-AWQ | 2.65 | +212% | 2-bit not viable on 0.5B (no redundancy) |
+| 1-* / res1+1 | 1.65–3.3 | catastrophic | 1-bit hopeless on 0.5B; **AWQ even HURTS** (amplifies a destroyed base) |
+
+**Honest reads:** (1) **effective bpw ≫ nominal** — RHT+outlier add ~0.65 bpw/pass; residuals cost
+~+1.3 over their nominal sum (res3+2 = 6.30, not 5). (2) **α=0.5 confirmed optimal** (sweep: .25→+26%,
+.5→+14.6%, .75→+28%). (3) **AWQ is the train-free workhorse at 3–4 bit, but useless/harmful once the
+base is destroyed (≤2-bit on 0.5B).** (4) On the worst case we **match Q4_K quality at ~Q4_K bpw**
+and reach ~1:1 only at 6.3 bpw — the 0.5B has no redundancy to spend. **The 7B audit (running) is
+the real test of the redundancy hypothesis: does the floor descend?** → reports/condense/ladder_audit.md.
