@@ -115,6 +115,23 @@ low-bit quality.** Density is real (52% smaller); the quality WIN is gated on ST
 QAT — measured, not yet built. (The overnight cron did NOT fire — the Mac slept, so the
 watchdog `sleep` never elapsed; the interactive verdict runs above are the only results.)
 
+### The LoRA RECOVERY frontier (2026-06-23, full power) — the memory wall is solved
+
+Full-weight STRAND-QAT doesn't fit 19 GB. **Fix: LoRA recovery** (`doctor_lora.py`) — freeze
+the STRAND-quantized base, train tiny rank-r adapters (8.8M params, not 0.5B) → fits + fast.
+Deployed = STRAND low-bit base + small f16 LoRA (~3.0–3.7 bpw, still denser than Q4_K 4.5).
+
+Findings so far (Qwen2.5-0.5B, held-out ppl):
+- TQ2+LoRA(CE, r16): base 247.7 → **120 @ 20 steps** (51%) but **diverges** if over-trained
+  (542 @ 300). Fixed with held-out early-stopping.
+- TQ3+LoRA(CE, r16): base +44% → **+36%** vs f16 — helps, but CE is a weak signal
+  (doctor's own held-out moved only ~3%).
+- ⇒ **KD is the lever** (distill the f16 teacher's full logit distribution — the literature's
+  low-bit recovery method). TQ3+LoRA(KD, r64) is the first real win attempt (running).
+
+**The win condition stands:** condensed+recovery degradation < Q4_K's +2.1% at < 4.5 bpw.
+We're closing (+44% → +36% with weak CE); KD + rank is the path. Honest: **not yet a win.**
+
 ## The pipeline (the seven stages)
 
 ```
