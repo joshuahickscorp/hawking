@@ -72,6 +72,34 @@ The contrast across them *is* the science: it measures how redundancy buys compr
 - **Studio:** full ladder → the bit-floor-vs-scale curve → 235B/405B fit-cliff → block-wise doctor
   attempt for 1-bit-at-scale → the headline (1-bit-405B if the curve holds).
 
+## Sub-1-bit frontier (fractional bpw) — the deep version of the bit-floor hypothesis
+**We are already fractional.** Effective bpw is continuous (the baker reports 2.594, 4.81 …);
+the integer `--bits` is just the trellis quantization level, not the artifact's real density.
+Going *below 1 bpw* is a different regime needing a different mechanism than the bit knob:
+- **Large-block codebook/trellis:** encode K weights per index → `idx_bits/K` bpw (STRAND's
+  "k bits per d weights" packed lever; `--bits` floors at 1 *per step*, but k/d can be <1).
+- **Sparsity:** prune most weights, store survivors + positions → amortized
+  `bpw ≈ p·(b + log2(1/p))` (90% sparse @2-bit ≈ 0.5 bpw). The surer sub-1-bit path.
+
+**Information theory — there is no fixed 1-bit floor.** The floor is `MDL(function)/n_weights`,
+which *shrinks as params grow*. So the bit-floor-descends hypothesis **predicts sub-1-bit for
+big-enough models**: a 405B computing a function a ~70B could approximate carries >5× redundancy
+⇒ <1 bpw is plausible. The doctor (residual/AWQ heal) **shifts the whole curve down** — making
+sub-1-bit viable where *raw* sub-1-bit isn't, even when we deliberately grade off strict 1:1.
+
+**How low, realistically (per model, doctor-assisted):**
+- ~1.5–2 bpw: near-lossless on big models (residual already hits ~1:1 at the 3+2 equivalent).
+- ~1 bpw: the edge (the 405B-fits story); doctor-dependent.
+- ~0.5 bpw (1/2): plausible ONLY big + sparse + doctor, grading a few % off 1:1 = **the novel offer**.
+- ~0.1 bpw (1/10): almost certainly breaks — too little of the function's information survives,
+  except extreme overparam or specific tolerant layers (mixed-precision territory).
+
+**DISCIPLINE (the shipability honesty):** sub-1-bit is a RESEARCH frontier — prove the quality
+curve (Stream A), keep it SEPARATE from the shippable core (2–3-bit single-bake serves today;
+the residual/sparse `.tq` serve path is unbuilt). Judge it on 7B+/big models, NEVER the 0.5B
+(floors ~3-bit). Mechanically it's the SAME floor-search, just extended below 1 bpw with
+sparsity + large-block recipes — the curve continues; the doctor sets how far.
+
 ## Open hooks — fill as findings land (this is the "expand once concrete" part)
 - [ ] **Does the bit-floor descend with scale?** (the curve from 0.5B → 7B → 32B). The whole thesis.
 - [ ] **Where does residual stop paying?** (the eff-bpw cliff per model — when +bpw stops buying ~1:1).
