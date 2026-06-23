@@ -112,10 +112,21 @@ process **finds each model's floor**. No human picks Q-format.
   (c) ~~LoRA low-rank residual~~ ❌ NO-GO (high-rank residual); → **(d) QAT/KD is the
   real doctor** (gradient re-fit to the f16 teacher) for 2-bit ~1:1 — a TRAINING step
   (heavy → run via the deferred bench/recovery cron, not on battery). Gate in output space.
-- **L3** wire `hawking condense` (plan→rank→allocate→encode→recover→verify→sidecar) as
-  one command + the per-model quality card. Prove 2-bit near-lossless on a small model.
+- **L3 🔄 PARTIAL** `hawking condense` BUILT as `tools/condense/condense.sh`
+  (plan → [doctor] → encode+verify → quality card) + the doctor as
+  `tools/condense/doctor.sh` (wraps `strand-qat.py` QAT/KD). ENCODE+VERIFY proven
+  e2e: `tq_bake` bakes a real `.tq` and round-trip-decodes it. Enforces the
+  f16-source rule (refuses quant-of-quant). **TWO REAL GAPS surfaced:**
+  - **🚨 RUN half NOT wired** — the `tq` decoder is test-only; `hawking generate`
+    cannot serve a `.tq`. "condense → run" is half-built until `.tq` serving is
+    wired into the loader/forward (a GPU-path build — the critical next lever).
+  - **deployability**: GPU bitslice needs `in_features % 256 == 0`; ragged tensors
+    bake NON-STRICT (not deployable). Most big-model dims qualify; check per model.
 - **L4** scale: 7B→14B→32B locally; frontier (MoE) only with owner-approved download/
   storage/compute. Publish quality cards (RAM-fit, bpw, % parent quality retained, tps).
+  NOTE: the headline *speed* win needs a model that does NOT fit at Q4_K (the RAM
+  cliff). The 7B fits, so on it condensation shows DENSITY, not speed — the cliff
+  bench needs ≥32B (owner-gated download).
 
 ## The proof bar (no fake GO)
 
