@@ -87,17 +87,18 @@ pub fn softmax_inplace(xs: &mut [f32]) {
 
 /// In-place rotary positional embedding for one (head_dim,) vector at
 /// absolute position `pos`, using the standard θᵢ = base^(-2i/dim)
-/// schedule. The rotary applies in interleaved pairs: (x_{2i}, x_{2i+1}).
+/// schedule. Llama/Qwen/Gemma GGUF tensors use NEOX pairing: dimension
+/// `i` rotates with dimension `i + head_dim/2`.
 pub fn rope_inplace(x: &mut [f32], pos: u32, base: f32) {
     let head_dim = x.len();
     let half = head_dim / 2;
     for i in 0..half {
         let theta = (pos as f32) / base.powf(2.0 * i as f32 / head_dim as f32);
         let (sin, cos) = theta.sin_cos();
-        let x0 = x[2 * i];
-        let x1 = x[2 * i + 1];
-        x[2 * i] = x0 * cos - x1 * sin;
-        x[2 * i + 1] = x0 * sin + x1 * cos;
+        let x0 = x[i];
+        let x1 = x[i + half];
+        x[i] = x0 * cos - x1 * sin;
+        x[i + half] = x0 * sin + x1 * cos;
     }
 }
 
@@ -152,19 +153,16 @@ pub fn rope_inplace_scaled(x: &mut [f32], pos: u32, base: f32, scaling: Option<L
         };
         let theta = pos as f32 * freq_eff;
         let (sin, cos) = theta.sin_cos();
-        let x0 = x[2 * i];
-        let x1 = x[2 * i + 1];
-        x[2 * i] = x0 * cos - x1 * sin;
-        x[2 * i + 1] = x0 * sin + x1 * cos;
+        let x0 = x[i];
+        let x1 = x[i + half];
+        x[i] = x0 * cos - x1 * sin;
+        x[i + half] = x0 * sin + x1 * cos;
     }
 }
 
 /// Phi-3 "longrope" (su-scaled) RoPE, NEOX pairing.
 ///
-/// Two differences from [`rope_inplace`]:
-///   - **NEOX pairing**: dimension `i` rotates with dimension `i+half`
-///     (not the interleaved `2i,2i+1`). llama.cpp uses NEOX rope for the
-///     phi3 arch, so the GGUF Q/K weights are laid out for it.
+/// Difference from [`rope_inplace`]:
 ///   - **Per-dimension frequency rescale + mscale**: each pair's inverse
 ///     frequency is divided by `ext_factors[i]` (the short_factor or
 ///     long_factor array Phi-3.5 ships as a GGUF tensor), and the
@@ -12320,13 +12318,14 @@ mod tests {
             original_max_position_embeddings: 8192,
         };
 
-        // Use a vector of pairs (cos₀=1, sin₀=0) per half-pair so that after
+        // Use a NEOX vector of pairs (cos₀=1, sin₀=0) per half-pair so that after
         // one rotation step the resulting (x0, x1) = (cos θ, sin θ) — i.e. we
         // can read freq_eff[i] directly off the output without inversion.
         let mut x = vec![0.0f32; head_dim];
+        let half = head_dim / 2;
         for i in 0..head_dim / 2 {
-            x[2 * i] = 1.0;
-            x[2 * i + 1] = 0.0;
+            x[i] = 1.0;
+            x[i + half] = 0.0;
         }
         rope_inplace_scaled(&mut x, pos, base, Some(scaling));
 
@@ -12342,7 +12341,7 @@ mod tests {
             let inv_freq = base.powf(2.0 * i as f32 / head_dim as f32);
             let freq = 1.0 / inv_freq;
             let wavelen = two_pi / freq;
-            let recovered_freq_eff = x[2 * i + 1].atan2(x[2 * i]); // since pos=1, θ = freq_eff
+            let recovered_freq_eff = x[i + half].atan2(x[i]); // since pos=1, θ = freq_eff
             if wavelen < high_wavelen {
                 // Regime (a): unchanged.
                 assert!(
