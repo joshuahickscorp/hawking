@@ -29,8 +29,9 @@ print(f"# merged {n} condensed linears into {len(merged)} tensors", file=sys.std
 
 os.makedirs(TMP, exist_ok=True)
 for f in os.listdir(HF):
-    if not f.endswith(".safetensors"):
-        shutil.copy(os.path.join(HF, f), os.path.join(TMP, f))
+    src = os.path.join(HF, f)
+    if os.path.isfile(src) and not f.endswith(".safetensors"):
+        shutil.copy(src, os.path.join(TMP, f))
 save_file(merged, os.path.join(TMP, "model.safetensors"))
 
 subprocess.run(["python3.12", "tools/strand/tools/gguf/convert_hf_to_gguf.py",

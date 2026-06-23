@@ -130,7 +130,25 @@ Findings so far (Qwen2.5-0.5B, held-out ppl):
   low-bit recovery method). TQ3+LoRA(KD, r64) is the first real win attempt (running).
 
 **The win condition stands:** condensed+recovery degradation < Q4_K's +2.1% at < 4.5 bpw.
-We're closing (+44% → +36% with weak CE); KD + rank is the path. Honest: **not yet a win.**
+
+Quality trajectory (3-way text, beating ourselves): TQ3 PTQ **+44%** → +LoRA-CE **+36%** →
++LoRA-KD(cached, r32) **+30.9%**. KD (cached top-64, teacher freed → fits 19 GB) is the best
+lever so far. **Ceiling identified:** LoRA is low-rank, and the quantization error is
+**high-rank** (same root cause as the low-rank-heal NO-GO) — so LoRA recovery plateaus
+(~step 25). Strict parity (<+2.1%) needs **full-rank** recovery (memory-efficient full/
+layer-wise QAT — the 19 GB challenge), or a bigger machine.
+
+### ✅ condense→run CLOSED (2026-06-23) — Hawking serves a condensed+recovered model
+
+`rehydrate.py` (condensed safetensors → merge → `convert_hf_to_gguf` → f16 GGUF) → **Hawking
+generate serves it, COHERENT output, 67.6 tps** (`scratch/qwen-05b-condensed.gguf`, TQ3+LoRA-KD).
+The whole pipeline runs end-to-end for the first time. Caveat: rehydrate inflates to an f16
+container (no memory/cliff benefit) — the RAM-cliff *tps* win needs **native low-bit `.tq`
+serving** (bitslice kernel exists; loader surgery scoped in `native_tq_serving_impl.md`).
+
+**Honest scoreboard:** Density = WON (52% smaller). Quality = Pareto (denser at +31%, not
+parity — full-rank QAT is the open lever). tps cliff = the next build (native serving + a
+non-fitting model). condense→run = WORKS.
 
 ## The pipeline (the seven stages)
 

@@ -73,27 +73,38 @@ def main():
 
     # KD: distill the frozen f16 teacher's full logit distribution — a far richer recovery
     # signal than next-token CE (CE barely moved TQ3; KD targets the teacher's behavior).
+    # KD: distill the f16 teacher. CACHED top-k (precompute teacher logits, FREE the teacher)
+    # so only ONE model is in memory during training — KD with two f32 models swaps on 19GB.
     KD = os.environ.get("KD") == "1"
-    teacher = None
+    KDK = int(os.environ.get("KD_TOPK", "64"))
+    kd_cache = None
     if KD:
         teacher = AutoModelForCausalLM.from_pretrained(
             MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
         for p in teacher.parameters():
             p.requires_grad_(False)
-        print("# KD: distilling f16 teacher logits", file=sys.stderr)
+        kd_cache = []
+        with torch.no_grad():
+            for c in chunks:
+                v, idx = teacher(c).logits.topk(KDK, dim=-1)        # [1,T,K]
+                kd_cache.append((torch.log_softmax(v, -1).detach(), idx.detach()))  # teacher logp over top-k
+        del teacher
+        if dev == "mps":
+            torch.mps.empty_cache()
+        print(f"# KD: cached top-{KDK} teacher logits for {len(chunks)} chunks; teacher freed", file=sys.stderr)
 
     model.train()
     opt = torch.optim.AdamW(params, lr=LR)  # tiny param set -> AdamW is cheap here
     best_ppl, best_step, best_state = base_ppl, -1, None
     for step in range(STEPS):
-        cids = chunks[step % len(chunks)]
+        ci = step % len(chunks)
+        cids = chunks[ci]
         opt.zero_grad()
         s = model(cids).logits
         if KD:
-            with torch.no_grad():
-                tl = torch.log_softmax(teacher(cids).logits, dim=-1)
-            sl = torch.log_softmax(s, dim=-1)
-            loss = (tl.exp() * (tl - sl)).sum(-1).mean()  # forward KL
+            tlp, idx = kd_cache[ci]
+            slp = torch.log_softmax(torch.gather(s, -1, idx), -1)   # student renorm over teacher's top-k
+            loss = (tlp.exp() * (tlp - slp)).sum(-1).mean()         # KL over top-k
         else:
             loss = F.cross_entropy(s[:, :-1].reshape(-1, s.size(-1)), cids[:, 1:].reshape(-1))
         loss.backward()
