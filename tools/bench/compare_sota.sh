@@ -49,6 +49,8 @@
 #   TRIALS=3  TOK=128  CTX_SHORT  CTX_LONG=8192  RUN_TIMEOUT=300
 #   BIT_TARGETS=8,6,5,4,3,2,1
 #   RUN_KERNEL_BENCH=1  KERNEL_ITERS=100  RUN_HAWKING_BENCH=1
+#   RUN_SCALE_SWEEP=1 SCALE_SWEEP_TOK=32 SCALE_SWEEP_LIMIT=12 RUN_LONG_CONTEXT=1
+#   QUALITY_RUNTIME_PROFILE=exact
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 2
@@ -90,6 +92,15 @@ RUN_HAWKING_BENCH="${RUN_HAWKING_BENCH:-1}"
 RUN_KERNEL_BENCH="${RUN_KERNEL_BENCH:-1}"
 KERNEL_ITERS="${KERNEL_ITERS:-100}"; [ "$QUICK" = 1 ] && KERNEL_ITERS=25
 KERNEL_SHAPE="${KERNEL_SHAPE:-1408x2048}"
+RUN_SCALE_SWEEP="${RUN_SCALE_SWEEP:-1}"
+SCALE_SWEEP_TOK="${SCALE_SWEEP_TOK:-32}"; [ "$QUICK" = 1 ] && SCALE_SWEEP_TOK=16
+SCALE_SWEEP_LIMIT="${SCALE_SWEEP_LIMIT:-12}"
+RUN_LONG_CONTEXT="${RUN_LONG_CONTEXT:-1}"
+QUALITY_RUNTIME_PROFILE="${QUALITY_RUNTIME_PROFILE:-exact}"
+QUALITY_SERVER_PID=""
+LLAMA_QUALITY_SERVER_PID=""
+LLAMA_QUALITY_URL=""
+CLEANUP_PIDS=""
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="${OUT:-reports/sota-compare/$STAMP}"
 mkdir -p "$OUT"
@@ -97,9 +108,18 @@ REPORT="$OUT/report.md"
 LOG="$OUT/run.log"
 
 say()  { printf '%s\n' "$*" | tee -a "$LOG"; }
+warn() { printf '%s\n' "$*" | tee -a "$LOG" >&2; }
 md()   { printf '%s\n' "$*" >>"$REPORT"; }
 med()  { sort -n | awk '{a[NR]=$1} END{print (NR>0)?a[int((NR+1)/2)]:"NA"}'; }
 human_gib() { awk -v b="$1" 'BEGIN{printf "%.2f GiB", b/1073741824}'; }
+cleanup() {
+  local pid
+  for pid in $CLEANUP_PIDS; do
+    kill "$pid" >/dev/null 2>&1 || true
+    wait "$pid" >/dev/null 2>&1 || true
+  done
+}
+trap cleanup EXIT
 
 # ---------------------------------------------------------------- portable timeout
 # macOS ships NO `timeout`. Prefer timeout/gtimeout; else perl (always present and
@@ -115,14 +135,13 @@ fi
 
 # ---------------------------------------------------------------- detection
 LLAMA_BENCH="${LLAMA_BENCH:-$(command -v llama-bench || true)}"
-# Generation binary: modern llama.cpp REJECTS `llama-cli -no-cnv` and defaults to
-# an interactive chat that loops `>` forever (the classic hang). The non-interactive
-# binary is `llama-completion`. Prefer it; fall back to an older llama-cli that still
-# honors -no-cnv.
-LLAMA_GEN="${LLAMA_GEN:-$(command -v llama-completion || command -v llama-cli || true)}"
+# Raw completion binary retained only as a last-resort probe. Quality comparisons
+# use llama-server's OpenAI-compatible chat endpoint so we never trip an
+# interactive `llama-cli` loop and call it a pass.
+LLAMA_GEN="${LLAMA_GEN:-$(command -v llama-completion || true)}"
+LLAMA_SERVER="${LLAMA_SERVER:-$(command -v llama-server || true)}"
 case "$LLAMA_GEN" in
   */llama-completion) LLAMA_GEN_KIND="completion" ;;
-  */llama-cli)        LLAMA_GEN_KIND="cli-nocnv" ;;
   *)                  LLAMA_GEN_KIND="none" ;;
 esac
 OLLAMA="$(command -v ollama || true)"
@@ -137,9 +156,50 @@ probe_mlx_python() {
 }
 MLX_PY="$(probe_mlx_python || true)"
 
+sanitize_stem() {
+  basename "$1" .gguf | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]\+/-/g; s/^-//; s/-$//'
+}
+
+model_profile() { # $1=GGUF -> best matching kernel profile path, or empty
+  local g="$1" lower safe candidates c
+  lower="$(printf '%s' "$(basename "$g")" | tr '[:upper:]' '[:lower:]')"
+  safe="$(sanitize_stem "$g")"
+  candidates="profiles/${safe}.m3pro18.json"
+  case "$lower" in
+    *qwen*0.5*b*|*qwen05b*) candidates="profiles/qwen05b-instruct-q4k.m3pro18.json $candidates" ;;
+    *qwen*1.5*b*|*qwen15b*) candidates="profiles/qwen15b-instruct-q4k.m3pro18.json $candidates" ;;
+    *qwen*3*b*|*qwen3b*)    candidates="profiles/qwen3b-instruct-q4k.m3pro18.json $candidates" ;;
+    *qwen*7*b*|*qwen7b*)    candidates="profiles/qwen7b-instruct-q4k.m3pro18.json $candidates" ;;
+    *qwen*14*b*|*qwen14b*)  candidates="profiles/qwen14b-instruct-q4k.m3pro18.json $candidates" ;;
+    *deepseek*v2*lite*)     candidates="profiles/deepseek-v2-lite-q4.m3pro18.json $candidates" ;;
+  esac
+  for c in $candidates; do
+    [ -f "$c" ] && { printf '%s\n' "$c"; return 0; }
+  done
+  return 1
+}
+
+autotune_cmd_for() {
+  local g="$1" safe
+  safe="$(sanitize_stem "$g")"
+  printf '%s autotune --weights "%s" --profile m3-pro-18gb --out "profiles/%s.m3pro18.json"\n' "$HBIN" "$g" "$safe"
+}
+
+scale_sweep_models() {
+  if [ -n "${SCALE_GGUFS:-}" ]; then
+    printf '%s\n' $SCALE_GGUFS
+  else
+    find models -maxdepth 3 -type f -name '*.gguf' 2>/dev/null \
+      | grep -Ei 'qwen|llama|mistral|gemma|phi|smollm|deepseek' \
+      | sort \
+      | head -"$SCALE_SWEEP_LIMIT"
+  fi
+}
+
 HAVE_HAWKING=0; [ -x "$HBIN" ] && HAVE_HAWKING=1
-HAVE_LLAMA=0; { [ -n "$LLAMA_BENCH" ] || [ -n "$LLAMA_GEN" ]; } && HAVE_LLAMA=1
+HAVE_LLAMA=0; { [ -n "$LLAMA_BENCH" ] || [ -n "$LLAMA_GEN" ] || [ -n "$LLAMA_SERVER" ]; } && HAVE_LLAMA=1
 HAVE_MLX=0; [ -n "$MLX_PY" ] && HAVE_MLX=1
+QWEN_PROFILE="$(model_profile "$QWEN_GGUF" || true)"
 
 # ---------------------------------------------------------------- preflight
 say "=== compare_sota: Hawking vs llama.cpp vs MLX ($STAMP) ==="
@@ -159,11 +219,12 @@ mlx_ver="$([ -n "$MLX_PY" ] && "$MLX_PY" -c 'import mlx_lm;print(getattr(mlx_lm,
   echo
   echo "- Run cleanliness: **$CLEAN**"
   echo "- Hawking: \`$hawking_ver\`"
-  echo "- llama.cpp: \`$llama_ver\` (gen=$LLAMA_GEN_KIND, bench=$([ -n "$LLAMA_BENCH" ] && echo yes || echo no))"
+  echo "- llama.cpp: \`$llama_ver\` (gen=$LLAMA_GEN_KIND, bench=$([ -n "$LLAMA_BENCH" ] && echo yes || echo no), server=$([ -n "$LLAMA_SERVER" ] && echo yes || echo no))"
   echo "- MLX (mlx_lm): \`$mlx_ver\`"
   echo "- ollama present: $([ -n "$OLLAMA" ] && echo yes || echo no)"
   echo "- Shared transformer GGUF: \`$QWEN_GGUF\` | SSM GGUF: \`$RWKV_GGUF\`"
-  echo "- Config: TRIALS=$TRIALS TOK=$TOK CTX_LONG=$CTX_LONG RUN_TIMEOUT=${RUN_TIMEOUT}s QUICK=$QUICK BIT_TARGETS=$BIT_TARGETS RUN_HAWKING_BENCH=$RUN_HAWKING_BENCH RUN_KERNEL_BENCH=$RUN_KERNEL_BENCH"
+  echo "- Hawking kernel profile for selected transformer: $([ -n "$QWEN_PROFILE" ] && echo "candidate \`$QWEN_PROFILE\` (load-time validated; fallback is logged if stale)" || echo "**missing** — run \`$(autotune_cmd_for "$QWEN_GGUF")\`")"
+  echo "- Config: TRIALS=$TRIALS TOK=$TOK CTX_LONG=$CTX_LONG RUN_TIMEOUT=${RUN_TIMEOUT}s QUICK=$QUICK BIT_TARGETS=$BIT_TARGETS RUN_HAWKING_BENCH=$RUN_HAWKING_BENCH RUN_KERNEL_BENCH=$RUN_KERNEL_BENCH RUN_SCALE_SWEEP=$RUN_SCALE_SWEEP RUN_LONG_CONTEXT=$RUN_LONG_CONTEXT QUALITY_RUNTIME_PROFILE=$QUALITY_RUNTIME_PROFILE"
   [ -n "$busy_gpu" ] && { echo; echo "> ⚠ other model jobs were running at start:"; echo '> ```'; echo "$busy_gpu" | sed 's/^/> /'; echo '> ```'; }
   echo
 } >"$REPORT"
@@ -217,19 +278,55 @@ while IFS= read -r s; do
 done < <(find models -maxdepth 3 -type f -name '*.safetensors' 2>/dev/null | sort | head -20)
 md ""
 md "Model support tier reference: \`MODELS.md\` (verified vs runs vs untested)."
+md ""
+md "### Kernel profile coverage"
+md ""
+md "| local GGUF | profile candidate used by this report | action / validation |"
+md "|---|---|---|"
+while IFS= read -r g; do
+  [ -n "$g" ] || continue
+  prof="$(model_profile "$g" || true)"
+  if [ -n "$prof" ]; then
+    md "| \`$g\` | \`$prof\` | load-time validated; stale profiles fall back unprofiled and log a warning |"
+  else
+    md "| \`$g\` | **missing** | \`$(autotune_cmd_for "$g")\` |"
+  fi
+done < <(scale_sweep_models)
 
 # ---------------------------------------------------------------- engine runners (warm-median tps)
+hawking_generate_once() { # $1=gguf $2=prompt $3=tok $4=max_seq $5=profile
+  local g="$1" p="$2" t="$3" max_seq="$4" prof="${5:-}"
+  if [ -n "$prof" ]; then
+    TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" generate \
+      --weights "$g" --kernel-profile "$prof" --prompt "$p" \
+      --max-new-tokens "$t" --max-seq-len "$max_seq" \
+      --temperature 0 --seed 5 2>&1 || true
+  else
+    TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" generate \
+      --weights "$g" --prompt "$p" --max-new-tokens "$t" \
+      --max-seq-len "$max_seq" --temperature 0 --seed 5 2>&1 || true
+  fi
+}
+
+hawking_tps_trials() { # $1=gguf $2=prompt $3=tok $4=max_seq $5=profile
+  local g="$1" p="$2" t="$3" max_seq="$4" prof="${5:-}" i out
+  hawking_generate_once "$g" "$p" 8 "$max_seq" "$prof" >/dev/null 2>&1 || true
+  for i in $(seq 1 "$TRIALS"); do
+    out="$(hawking_generate_once "$g" "$p" "$t" "$max_seq" "$prof")"
+    printf '%s\n' "$out" | grep -oE 'dec_tps=[0-9.]+' | tail -1 | cut -d= -f2
+  done
+}
+
 # Hawking decode tps for a prompt + token budget.
 hawking_tps() { # $1=gguf $2=prompt $3=tok -> median tps
-  local g="$1" p="$2" t="$3" i out
-  # warmup (discarded) to amortize cold PSO shader-compile — we want WARM tps.
-  TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" generate --weights "$g" \
-    --prompt "$p" --max-new-tokens 8 --temperature 0 --seed 5 >/dev/null 2>&1 || true
-  for i in $(seq 1 "$TRIALS"); do
-    out="$(TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" generate --weights "$g" \
-            --prompt "$p" --max-new-tokens "$t" --temperature 0 --seed 5 2>&1 || true)"
-    printf '%s\n' "$out" | grep -oE 'dec_tps=[0-9.]+' | tail -1 | cut -d= -f2
-  done | grep . | med
+  local g="$1" p="$2" t="$3" max_seq="${4:-4096}" prof vals
+  prof="$(model_profile "$g" || true)"
+  vals="$(hawking_tps_trials "$g" "$p" "$t" "$max_seq" "$prof" | grep . || true)"
+  if [ -z "$vals" ] && [ -n "$prof" ]; then
+    warn "  WARN: profile failed for $(basename "$g") ($prof); retrying Hawking unprofiled"
+    vals="$(hawking_tps_trials "$g" "$p" "$t" "$max_seq" "" | grep . || true)"
+  fi
+  printf '%s\n' "$vals" | grep . | med
 }
 # llama.cpp decode tps via llama-bench JSON (non-interactive by design).
 llama_tps() { # $1=gguf $2=n_prompt $3=n_gen -> "pp_tps tg_tps"
@@ -318,6 +415,30 @@ md "| llama.cpp (llama-bench) | ${ltg:-NA} | ${lpp:-NA} | non-interactive llama-
 md "| MLX | ${mtg:-NA} | — | $([ "$HAVE_MLX" = 1 ] && echo "$MLX_MODEL" || echo "SKIPPED — pip install mlx-lm in py3.12") |"
 md ""
 md "_Warm median of $TRIALS trials, $TOK tokens, greedy. llama tg via llama-bench; absolute numbers require a clean room._"
+if [ "$RUN_SCALE_SWEEP" = 1 ]; then
+  md ""
+  md "### Scale sweep — every local dense GGUF we can run here"
+  md ""
+  md "| model | size | Hawking decode tps | llama.cpp decode tps | Hawking profile | read |"
+  md "|---|---:|---:|---:|---|---|"
+  while IFS= read -r sg; do
+    [ -f "$sg" ] || continue
+    sb="$(stat -f%z "$sg" 2>/dev/null || echo 0)"
+    sprof="$(model_profile "$sg" || true)"
+    shk="$(hawking_tps "$sg" "$SHORTP" "$SCALE_SWEEP_TOK")"
+    read -r _ sltg <<<"$(llama_tps "$sg" 256 "$SCALE_SWEEP_TOK")"
+    if [ -n "$sprof" ]; then
+      sread="profile candidate; stale fallback logged"
+      scell="\`$sprof\`"
+    else
+      sread="unprofiled Hawking run; do not quote as final"
+      scell="**missing**"
+    fi
+    md "| \`$(basename "$sg")\` | $(human_gib "$sb") | ${shk:-NA} | ${sltg:-NA} | $scell | $sread |"
+  done < <(scale_sweep_models)
+  md ""
+  md "_This table is the anti-7B trap: benchmark every local scale, and mark any unprofiled Hawking row as provisional until autotune exists for that model shape._"
+fi
 
 # ============================================================= 6. KERNEL / BENCH BATTERY
 say ""; say "-- [6/11] Hawking bench suite + kernel microbench --"
@@ -328,9 +449,11 @@ md "|---|---|---|---|"
 if [ "$RUN_HAWKING_BENCH" = 1 ]; then
   hb_json="$OUT/hawking_bench_decode.json"
   say "  hawking bench decode -> $hb_json"
-  TO "$RUN_TIMEOUT" "$HBIN" bench --weights "$QWEN_GGUF" --model "$QWEN_BASE" \
-    --suite decode --trials "$TRIALS" --max-new-tokens "$TOK" --json "$hb_json" \
-    >/dev/null 2>&1 || true
+  hb_profile_arg=()
+  [ -n "$QWEN_PROFILE" ] && hb_profile_arg=(--kernel-profile "$QWEN_PROFILE")
+  TO "$RUN_TIMEOUT" "$HBIN" bench --weights "$QWEN_GGUF" ${hb_profile_arg[@]+"${hb_profile_arg[@]}"} \
+    --model "$QWEN_BASE" --suite decode --trials "$TRIALS" \
+    --max-new-tokens "$TOK" --json "$hb_json" >/dev/null 2>&1 || true
   hb_dec="$(python3 - "$hb_json" 2>/dev/null <<'PY' || true
 import json,sys
 p=sys.argv[1]
@@ -385,22 +508,27 @@ md ""; md "## 7. Long-context — the SSM moat (decode tps vs context)"
 md ""
 md "| model / engine | short | ~${CTX_LONG} ctx | shape |"
 md "|---|---|---|---|"
-# build a long prompt
-LONGP="$(python3 -c "print(('The memory bandwidth of a GPU limits decode because each token rereads weights, and at long context the KV cache adds traffic. '*150)+'Summarize in one line.')")"
-q_short="$(hawking_tps "$QWEN_GGUF" "$SHORTP" 32)"
-q_long="$(hawking_tps "$QWEN_GGUF" "$LONGP" 32)"
-r_short="$(hawking_tps "$RWKV_GGUF" "$SHORTP" 32)"
-r_long="$(hawking_tps "$RWKV_GGUF" "$LONGP" 32)"
-md "| $QWEN_BASE (Hawking) | ${q_short:-NA} | ${q_long:-NA} | transformer — KV wall (drops) |"
-md "| **$RWKV_BASE (Hawking, SSM)** | ${r_short:-NA} | ${r_long:-NA} | **FLAT — no KV cache (the moat)** |"
-if [ -n "$LLAMA_BENCH" ]; then
-  read -r _ ltg_s <<<"$(llama_tps "$QWEN_GGUF" 64 32)"
-  read -r _ ltg_l <<<"$(llama_tps "$QWEN_GGUF" "$CTX_LONG" 32)"
-  md "| $QWEN_BASE (llama.cpp) | ${ltg_s:-NA} | ${ltg_l:-NA} | transformer — KV wall |"
+q_short="NA"; q_long="NA"; r_short="NA"; r_long="NA"
+if [ "$RUN_LONG_CONTEXT" = 1 ]; then
+  # build a long prompt
+  LONGP="$(python3 -c "print(('The memory bandwidth of a GPU limits decode because each token rereads weights, and at long context the KV cache adds traffic. '*150)+'Summarize in one line.')")"
+  q_short="$(hawking_tps "$QWEN_GGUF" "$SHORTP" 32)"
+  q_long="$(hawking_tps "$QWEN_GGUF" "$LONGP" 32 "$CTX_LONG")"
+  r_short="$(hawking_tps "$RWKV_GGUF" "$SHORTP" 32)"
+  r_long="$(hawking_tps "$RWKV_GGUF" "$LONGP" 32 "$CTX_LONG")"
+  md "| $QWEN_BASE (Hawking) | ${q_short:-NA} | ${q_long:-NA} | transformer — KV wall (drops) |"
+  md "| **$RWKV_BASE (Hawking, SSM)** | ${r_short:-NA} | ${r_long:-NA} | **FLAT — no KV cache (the moat)** |"
+  if [ -n "$LLAMA_BENCH" ]; then
+    read -r _ ltg_s <<<"$(llama_tps "$QWEN_GGUF" 64 32)"
+    read -r _ ltg_l <<<"$(llama_tps "$QWEN_GGUF" "$CTX_LONG" 32)"
+    md "| $QWEN_BASE (llama.cpp) | ${ltg_s:-NA} | ${ltg_l:-NA} | transformer — KV wall |"
+  fi
+  md ""
+  md "_The differentiator: the transformer rows fall with context; the RWKV-7 SSM row stays flat (constant recurrent state)._"
+  md "Closest SOTA for an optimized small instruct SSM: none shipping — llama.cpp has RWKV support but unoptimized; MLX has no RWKV-7."
+else
+  md "| skipped | — | — | set \`RUN_LONG_CONTEXT=1\` for the SSM moat and transformer KV-wall measurement |"
 fi
-md ""
-md "_The differentiator: the transformer rows fall with context; the RWKV-7 SSM row stays flat (constant recurrent state)._"
-md "Closest SOTA for an optimized small instruct SSM: none shipping — llama.cpp has RWKV support but unoptimized; MLX has no RWKV-7."
 
 # ============================================================= 8. QUALITY
 say ""; say "-- [8/11] quality (deterministic task prompts, side-by-side) --"
@@ -408,37 +536,166 @@ md ""; md "## 8. Quality — deterministic tasks (greedy; pass = output contains
 md ""
 md "| task | Hawking | llama.cpp | MLX | expected |"
 md "|---|---|---|---|---|"
-# Qwen chat template for Hawking's raw-completion path.
-fmt() { printf '<|im_start|>user\n%s<|im_end|>\n<|im_start|>assistant\n' "$1"; }
-# Hawking has no auto chat-template → feed it the manually-templated prompt.
-hawking_gen() { TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" generate --weights "$QWEN_GGUF" --prompt "$1" --max-new-tokens "${2:-48}" --temperature 0 --seed 7 2>/dev/null | grep -vE '^\[(stats|hawking)' | head -c 4000 || true; }
-# llama-completion + MLX auto-apply the model's chat template → feed the PLAIN question.
-llama_gen() { # $1=PLAIN question $2=tok
-  [ -n "$LLAMA_GEN" ] || { echo ""; return; }
-  if [ "$LLAMA_GEN_KIND" = completion ]; then
-    TO "$RUN_TIMEOUT" "$LLAMA_GEN" -m "$QWEN_GGUF" -p "$1" -n "${2:-48}" --temp 0 -ngl 999 2>/dev/null </dev/null | head -c 4000 || true
+pick_port() {
+  python3 - <<'PY'
+import socket
+s = socket.socket()
+s.bind(("127.0.0.1", 0))
+print(s.getsockname()[1])
+s.close()
+PY
+}
+start_hawking_quality_server() {
+  [ -n "${HAWKING_QUALITY_URL:-}" ] && return 0
+  local port prof server_log
+  port="${HAWKING_QUALITY_PORT:-$(pick_port)}"
+  prof="$(model_profile "$QWEN_GGUF" || true)"
+  server_log="$OUT/hawking_quality_server.log"
+  launch_hawking_quality_server "$port" "$prof" "$server_log" \
+    || { [ -n "$prof" ] && warn "  WARN: quality server profile failed ($prof); retrying unprofiled"; launch_hawking_quality_server "$port" "" "$server_log"; } \
+    || return 1
+}
+launch_hawking_quality_server() { # $1=port $2=profile-or-empty $3=log
+  local port="$1" prof="${2:-}" server_log="$3"
+  if [ -n "$prof" ]; then
+    TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" serve \
+      --profile "$QUALITY_RUNTIME_PROFILE" --weights "$QWEN_GGUF" --kernel-profile "$prof" \
+      --addr "127.0.0.1:$port" --max-batch-size 1 \
+      >"$server_log" 2>&1 &
   else
-    TO "$RUN_TIMEOUT" "$LLAMA_GEN" -m "$QWEN_GGUF" -no-cnv -p "$1" -n "${2:-48}" --temp 0 -ngl 999 2>/dev/null </dev/null | head -c 4000 || true
+    TO "$RUN_TIMEOUT" env HAWKING_QWEN_USER_DRAFT=0 "$HBIN" serve \
+      --profile "$QUALITY_RUNTIME_PROFILE" --weights "$QWEN_GGUF" \
+      --addr "127.0.0.1:$port" --max-batch-size 1 \
+      >"$server_log" 2>&1 &
   fi
+  QUALITY_SERVER_PID=$!
+  CLEANUP_PIDS="$CLEANUP_PIDS $QUALITY_SERVER_PID"
+  for _ in $(seq 1 120); do
+    if python3 - "http://127.0.0.1:$port/healthz" <<'PY' >/dev/null 2>&1
+import sys, urllib.request
+urllib.request.urlopen(sys.argv[1], timeout=0.25).read()
+PY
+    then
+      HAWKING_QUALITY_URL="http://127.0.0.1:$port"
+      return 0
+    fi
+    kill -0 "$QUALITY_SERVER_PID" >/dev/null 2>&1 || return 1
+    sleep 0.25
+  done
+  kill "$QUALITY_SERVER_PID" >/dev/null 2>&1 || true
+  wait "$QUALITY_SERVER_PID" >/dev/null 2>&1 || true
+  return 1
+}
+hawking_chat_gen() { # $1=plain question $2=tok
+  local q="$1" t="${2:-48}"
+  start_hawking_quality_server || { echo "HAWKING_CHAT_SERVER_ERROR"; return; }
+  python3 - "$HAWKING_QUALITY_URL" "$q" "$t" "$RUN_TIMEOUT" <<'PY' | head -c 4000 || true
+import json, sys, urllib.request
+url, question, tokens, timeout_s = sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4])
+body = {
+    "model": "hawking",
+    "messages": [{"role": "user", "content": question}],
+    "max_tokens": tokens,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 7,
+    "stream": False,
+}
+req = urllib.request.Request(
+    url + "/v1/chat/completions",
+    data=json.dumps(body).encode("utf-8"),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+with urllib.request.urlopen(req, timeout=timeout_s) as r:
+    data = json.load(r)
+print(data.get("choices", [{}])[0].get("message", {}).get("content", ""))
+PY
+}
+
+start_llama_quality_server() {
+  [ -n "$LLAMA_QUALITY_URL" ] && return 0
+  [ -n "$LLAMA_SERVER" ] || return 1
+  local port server_log
+  port="${LLAMA_QUALITY_PORT:-$(pick_port)}"
+  server_log="$OUT/llama_quality_server.log"
+  TO "$RUN_TIMEOUT" "$LLAMA_SERVER" --model "$QWEN_GGUF" --alias hawking-bench \
+    --host 127.0.0.1 --port "$port" --ctx-size 4096 --gpu-layers 999 \
+    --no-warmup --log-disable >"$server_log" 2>&1 &
+  LLAMA_QUALITY_SERVER_PID=$!
+  CLEANUP_PIDS="$CLEANUP_PIDS $LLAMA_QUALITY_SERVER_PID"
+  for _ in $(seq 1 120); do
+    if python3 - "http://127.0.0.1:$port" <<'PY' >/dev/null 2>&1
+import sys, urllib.request
+base = sys.argv[1]
+for path in ("/health", "/v1/models"):
+    try:
+        urllib.request.urlopen(base + path, timeout=0.25).read()
+        raise SystemExit(0)
+    except Exception:
+        pass
+raise SystemExit(1)
+PY
+    then
+      LLAMA_QUALITY_URL="http://127.0.0.1:$port"
+      return 0
+    fi
+    kill -0 "$LLAMA_QUALITY_SERVER_PID" >/dev/null 2>&1 || return 1
+    sleep 0.25
+  done
+  kill "$LLAMA_QUALITY_SERVER_PID" >/dev/null 2>&1 || true
+  wait "$LLAMA_QUALITY_SERVER_PID" >/dev/null 2>&1 || true
+  return 1
+}
+
+# Hawking and llama.cpp quality both use OpenAI-compatible chat completions.
+# MLX auto-applies its model chat template from the plain prompt.
+llama_gen() { # $1=PLAIN question $2=tok
+  local q="$1" t="${2:-48}"
+  start_llama_quality_server || { echo "LLAMA_CHAT_SERVER_ERROR"; return; }
+  python3 - "$LLAMA_QUALITY_URL" "$q" "$t" "$RUN_TIMEOUT" <<'PY' | head -c 4000 || true
+import json, sys, urllib.request
+url, question, tokens, timeout_s = sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4])
+body = {
+    "model": "hawking-bench",
+    "messages": [{"role": "user", "content": question}],
+    "max_tokens": tokens,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 7,
+    "stream": False,
+}
+req = urllib.request.Request(
+    url + "/v1/chat/completions",
+    data=json.dumps(body).encode("utf-8"),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+with urllib.request.urlopen(req, timeout=timeout_s) as r:
+    data = json.load(r)
+print(data.get("choices", [{}])[0].get("message", {}).get("content", ""))
+PY
 }
 mlx_gen() { # $1=PLAIN question $2=tok
   [ -n "$MLX_PY" ] || { echo ""; return; }
   TO "$RUN_TIMEOUT" "$MLX_PY" -m mlx_lm.generate --model "$MLX_MODEL" --prompt "$1" --max-tokens "${2:-48}" --temp 0 2>/dev/null </dev/null | head -c 4000 || true
 }
-contains() { printf '%s' "$1" | grep -qi "$2" && echo "✅" || echo "❌"; }
+contains() {
+  printf '%s' "$1" | grep -Eq '^(HAWKING|LLAMA)_CHAT_SERVER_ERROR$' && { echo "—"; return; }
+  printf '%s' "$1" | tr '\n' ' ' | grep -Eqi "$2" && echo "✅" || echo "❌"
+}
 qrun() { # $1=label $2=question $3=expected_regex
-  local label="$1" q="$2" exp="$3" f a l m
-  f="$(fmt "$q")"
-  a="$(hawking_gen "$f" 48)"; l="$(llama_gen "$q" 48)"; m="$(mlx_gen "$q" 48)"
+  local label="$1" q="$2" exp="$3" a l m
+  a="$(hawking_chat_gen "$q" 48)"; l="$(llama_gen "$q" 48)"; m="$(mlx_gen "$q" 48)"
   printf '## %s\n### Q\n%s\n### Hawking\n%s\n### llama.cpp\n%s\n### MLX\n%s\n' "$label" "$q" "$a" "$l" "$m" >"$OUT/quality_${label}.md"
   md "| $label | $(contains "$a" "$exp") | $(contains "$l" "$exp") | $([ "$HAVE_MLX" = 1 ] && contains "$m" "$exp" || echo "—") | \`$exp\` |"
 }
 qrun math    "What is 17 multiplied by 23? Answer with the number only." "391"
 qrun capital "What is the capital of France? One word." "Paris"
-qrun json    "Return ONLY a JSON object with keys name and age for: Alice is 30." "\"age\""
-[ "$QUICK" != 1 ] && qrun primes "List the first five prime numbers, comma-separated." "2, 3, 5, 7, 11"
+qrun json    "Return ONLY a JSON object with keys name and age for: Alice is 30." "\"age\"[[:space:]]*:[[:space:]]*30"
+[ "$QUICK" != 1 ] && qrun primes "List the first five prime numbers, comma-separated." "(^|[^0-9])2,[[:space:]]*3,[[:space:]]*5,[[:space:]]*7,[[:space:]]*11([^0-9]|$)"
 md ""
-md "_Raw answers saved to \`$OUT/quality_*.md\`. Hawking gets a manual Qwen chat template; llama.cpp/MLX get the plain question through their generation wrappers. RWKV-7 instruct quality is evaluated separately (it is a 0.4B model) — see \`tools/ci/ssm_quality_chat.sh\` and \`tools/ci/ssm_quality_suite.sh\`._"
+md "_Raw answers saved to \`$OUT/quality_*.md\`. Hawking and llama.cpp are evaluated through their OpenAI-compatible \`/v1/chat/completions\` endpoints so both servers apply the model chat renderer from the same plain user prompt; Hawking uses \`--profile $QUALITY_RUNTIME_PROFILE\` by default to avoid speed/quality trade-offs. RWKV-7 instruct quality is evaluated separately (it is a 0.4B model) — see \`tools/ci/ssm_quality_chat.sh\` and \`tools/ci/ssm_quality_suite.sh\`._"
 
 # ============================================================= 9. DISTILL / POST-TRAIN
 say ""; say "-- [9/11] distillation / post-train / recovery tooling --"
@@ -523,7 +780,11 @@ say ""; say "=== DONE — report: $REPORT ==="
 {
   echo; echo "## Summary"
   echo "- Speed ($QWEN_BASE decode tps): Hawking ${hk:-NA} vs llama.cpp ${ltg:-NA} vs MLX ${mtg:-NA}."
-  echo "- Long-context moat: $RWKV_BASE (Hawking) short ${r_short:-NA} -> long ${r_long:-NA} (flat) vs $QWEN_BASE short ${q_short:-NA} -> long ${q_long:-NA} (KV wall)."
+  if [ "$RUN_LONG_CONTEXT" = 1 ]; then
+    echo "- Long-context moat: $RWKV_BASE (Hawking) short ${r_short:-NA} -> long ${r_long:-NA} (flat) vs $QWEN_BASE short ${q_short:-NA} -> long ${q_long:-NA} (KV wall)."
+  else
+    echo "- Long-context moat: skipped in this run (RUN_LONG_CONTEXT=0); enable it for the SSM flat-decode and transformer KV-wall evidence."
+  fi
   echo "- Compression/quantization: Hawking + llama.cpp share the GGUF (identical); Hawking adds out-of-core \`press\` planning and the all-bit dry-run ladder (\`$BIT_TARGETS\`)."
   echo "- Distillation/post-train: local RWKV/QAT/KD/DPO tooling exists, but the honest product gap is still a one-command \`press --distill\` artifact flow with quality cards."
   echo "- Unique to Hawking: per-Mac \`fit\`/\`doctor --json\`, capability-first \`serve --auto\`, kernel microbench visibility, out-of-core \`press\`."
