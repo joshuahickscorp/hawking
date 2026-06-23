@@ -15,7 +15,7 @@ import sys, os, math, json, torch, torch.nn as nn, torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from safetensors.torch import save_file, load_file
 
-MODEL = "scratch/qwen-05b"
+MODEL = os.environ.get("DOCTOR_MODEL", "scratch/qwen-05b")
 WBASE = sys.argv[1] if len(sys.argv) > 1 else "scratch/qwen-05b-tq2-full.safetensors"
 STEPS = int(sys.argv[2]) if len(sys.argv) > 2 else 300
 LR    = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-3
