@@ -46,6 +46,21 @@ Output-space (`||(Ŵ-W)X||/||WX||`) on REAL bf16 weights + REAL measured activat
 The 2-bit lead is *only* reachable with the **recovery layer**. So recovery is not a
 nice-to-have — it is the load-bearing wall of the whole product.
 
+### REAL inference confirmation (2026-06-23 — actual perplexity, not the proxy)
+
+Confirmed in *inference space* on Qwen2.5-0.5B (`tools/condense/quality_sweep.sh`,
+`ppl_bench.py`; baker = quantize-model `--bits N --quality --rht-cols`, no AWQ/recovery):
+
+| variant | perplexity | vs f16 |
+|---|--:|--:|
+| f16 parent | 28.31 | — |
+| TQ3 (3-bit PTQ) | 38.92 | **+37.5%** (usable, degraded) |
+| TQ2 (2-bit PTQ) | 449.87 | **+1489%** (collapsed) |
+
+The proxy and real inference agree: **3-bit PTQ is degraded-but-usable; 2-bit PTQ
+collapses.** This is the metric the doctor (QAT/KD) must move — the recovery target
+is TQ2 ppl 450 → ~28. Raw: `reports/condense/ppl_sweep.jsonl`.
+
 ## The pipeline (the seven stages)
 
 ```
