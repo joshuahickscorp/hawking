@@ -159,3 +159,20 @@ recovery stack, even at 7B (CPU-bf16, slow but real).
 base is destroyed (≤2-bit on 0.5B).** (4) On the worst case we **match Q4_K quality at ~Q4_K bpw**
 and reach ~1:1 only at 6.3 bpw — the 0.5B has no redundancy to spend. **The 7B audit (running) is
 the real test of the redundancy hypothesis: does the floor descend?** → reports/condense/ladder_audit.md.
+
+### Build-state snapshot (for clean continuation)
+- **Local BUILD targets DONE + committed + verified:** recovery stack (calib/AWQ/mixed-prec/residual),
+  **residual serve bridge — correctness complete** (`f954559`: Qwen serves TQ+residual on GPU bit-faithful
+  with RHT+outlier, parity 2–4e-6 on Qwen-3B, 4/4 serve tests re-run by me), awq_plus/residual_plus,
+  recovery_ledger, multi_eval, the 0.5B ladder, and the sharded-7B consolidation fix.
+- **7B ladder audit: RUNNING CLEAN.** Root-caused the repeated all-ERR: cargo orphans from a killed
+  agent were starving the baker (OOM at tensor ~7–13/196); killed them → clean relaunch, no errors.
+  f16 ppl 21.76 (bf16). Slow (σ/f16 alone >9 min on 7B CPU-bf16) → multi-hour for 9 configs.
+- **DEFERRED — machine-gated (do when the 19 GB box is free, i.e. after the 7B audit + no parallel
+  heavy job):** (a) arena throughput-fusion of the TQ serve (the one perf step left; killed once for
+  contention), (b) mixed-precision full-bake verdict, (c) multi-eval on a baked override, (d) AWQ with
+  the multi-domain calib, (e) awq_plus/residual_plus full runs. None are *builds* — they're
+  measurements/perf gated on a free machine.
+- **The one structural constraint:** two chats share this 19 GB box; heavy condense jobs (15 GB baker
+  input + a 14 GB model load) cannot co-reside, so the findings/validations serialize on machine
+  availability — that's the only thing between here and "all local targets met."
