@@ -12,6 +12,7 @@ from safetensors.torch import load_file, save_file
 
 MODEL = sys.argv[1]
 OUT = sys.argv[2]
+TAG = os.path.basename(OUT).replace(".safetensors", "").replace("/", "_")  # unique temps per run
 BITS = int(sys.argv[3]) if len(sys.argv) > 3 else 3
 ALPHA = float(sys.argv[4]) if len(sys.argv) > 4 else 0.5
 BAKER = "vendor/strand-quant/target/release/quantize-model"
@@ -48,13 +49,13 @@ for name, mod in m.named_modules():
         scales[k] = s
     elif k in sd:
         scaled[k] = sd[k]
-save_file(scaled, "/tmp/awq_scaled.safetensors")
+save_file(scaled, f"/tmp/awq_scaled_{TAG}.safetensors")
 
-subprocess.run([BAKER, "--in", "/tmp/awq_scaled.safetensors", "--out", "/tmp/awq_baked.safetensors",
+subprocess.run([BAKER, "--in", f"/tmp/awq_scaled_{TAG}.safetensors", "--out", f"/tmp/awq_baked_{TAG}.safetensors",
                 "--bits", str(BITS), "--quality", "--rht-cols", "--outlier-channel", "1",
                 "--outlier-bits", "8", "--threads", "10"], check=True, capture_output=True)
 
-baked = load_file("/tmp/awq_baked.safetensors")
+baked = load_file(f"/tmp/awq_baked_{TAG}.safetensors")
 awq = {}
 for k, v in baked.items():
     awq[k] = (v.float() / scales[k]).to(torch.float16) if k in scales else v   # unscale -> fold
