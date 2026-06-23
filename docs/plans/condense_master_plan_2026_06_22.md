@@ -74,15 +74,18 @@ pass. A ladder of levers, cheapest first; each one buys lower bits at equal qual
 | **actmean debias** | cancel the systematic output bias of quantization (`c = -(Ŵ-W)·μ`) | ~free | built in baker (`--actmean`), claimed −28.7% PPL; unmeasured in output space |
 | **damage-ranked mixed precision** | keep attn/lm_head/outlier-heavy tensors high-bit, push tolerant FFN low | free | `rung-kl.py` ranks; allocator = TODO |
 | **outlier protection** | top-σ channels at high bits (residual carriers) | +~0.1 bpw | prototyped (marginal alone; stacks) |
-| **LoRA / low-rank residual** | add a tiny high-precision `AB` correction = `Ŵ + AB ≈ W` (the "beautify") | small bytes | NOT built — high ROI, no retrain of base |
+| ~~LoRA / low-rank residual~~ | add a tiny high-precision `AB` correction = `Ŵ + AB ≈ W` | small bytes | **❌ MEASURED NO-GO (2026-06-22)** — quantization residual is HIGH-rank noise; rank-16/32/64 SVD heals TQ3 only 0.114→0.104 and rank-64 already costs 4.6 bpw (> Q4_K 4.5). Data-free low-rank patch is the wrong tool. Evidence: `reports/condense/L2_lowrank_heal_NOGO_20260622.txt` |
 | **QAT** (quant-aware fine-tune) | re-fit weights with the quantizer in the loop | training | `strand-qat.py` scaffold exists |
 | **KD / distillation** | match the parent's logits + hidden states (teacher-forced) | training + teacher | capture path + scripts exist; not wired to condense |
 | **self-data calibration** | generate calibration from the model itself (no corpus) | small | partly (corpus tools) |
 
 The product's quality knob = *how much recovery to apply*. PTQ-only = fast/approx;
-+debias+mixed-prec = better; +LoRA-residual = near-lossless cheaply; +QAT/KD =
-the heavy "infusion" for 2-bit ~1:1. The literature (QuIP#, AQLM, BitNet) confirms
-2-bit + recovery ≈ near-lossless for tolerant models — so this is grounded, not hope.
++debias+mixed-prec = a little better; **the cheap data-free patches are NOT enough**
+(low-rank residual measured NO-GO — quantization error is high-rank). The real
+"infusion" for 2-bit ~1:1 is **QAT/KD** (gradient re-fit moves the quantized values
+themselves, addressing the high-rank error). The literature (QuIP#, AQLM, BitNet)
+confirms 2-bit + *gradient* recovery ≈ near-lossless — so the doctor is a training
+step, not a post-hoc patch. That's the honest, measured reshaping of L2.
 
 ## Dynamic bit selection (the "bit selected model")
 
@@ -104,9 +107,11 @@ process **finds each model's floor**. No human picks Q-format.
 - **L0 ✅** output-space harness + real Q4_K-vs-TQ numbers. (DONE: 3-bit PTQ 1.28×.)
 - **L1 🔄** activation-aware encode on real acts. (AWQ+outlier measured; Hessian-metric
   optional/low-ROI vs recovery.)
-- **L2 ⬅ THE BUILD** the recovery layer: (a) actmean debias measured in output space →
-  (b) damage-ranked mixed-precision allocator → (c) **LoRA low-rank residual** (cheap
-  near-lossless, no base retrain) → (d) QAT/KD for 2-bit ~1:1. Gate each in output space.
+- **L2 ⬅ THE BUILD** the recovery layer (data-free cheap rungs measured insufficient):
+  (a) actmean debias + (b) damage-ranked mixed-precision allocator — cheap, modest;
+  (c) ~~LoRA low-rank residual~~ ❌ NO-GO (high-rank residual); → **(d) QAT/KD is the
+  real doctor** (gradient re-fit to the f16 teacher) for 2-bit ~1:1 — a TRAINING step
+  (heavy → run via the deferred bench/recovery cron, not on battery). Gate in output space.
 - **L3** wire `hawking condense` (plan→rank→allocate→encode→recover→verify→sidecar) as
   one command + the per-model quality card. Prove 2-bit near-lossless on a small model.
 - **L4** scale: 7B→14B→32B locally; frontier (MoE) only with owner-approved download/

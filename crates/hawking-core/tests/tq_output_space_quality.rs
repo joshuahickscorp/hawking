@@ -514,3 +514,143 @@ fn awq_sweep() {
     }
     println!("=======================================================================\n");
 }
+
+/// Data-free "doctor"/quality-infusion heal: add the top-`k` SVD of the
+/// quantization residual R = W - Ŵ back to the recon as a low-rank f16 correction
+/// (`Ŵ + UΣVᵀ`). No retraining, no activations — pure weight-residual SVD via
+/// deflation power-iteration (no linalg dep). This is the cheapest recovery rung.
+fn lowrank_heal(wh: &[f32], w: &[f32], rows: usize, cols: usize, k: usize, seed: u64) -> Vec<f32> {
+    let mut rmat: Vec<f32> = (0..rows * cols).map(|i| w[i] - wh[i]).collect();
+    let mut lr = vec![0f32; rows * cols];
+    let mut rng = Rng(seed);
+    let mut u = vec![0f32; rows];
+    for _t in 0..k {
+        let mut v: Vec<f32> = (0..cols).map(|_| rng.norm()).collect();
+        let mut nv = (v.iter().map(|x| (x * x) as f64).sum::<f64>()).sqrt() as f32;
+        if nv < 1e-12 {
+            break;
+        }
+        for x in v.iter_mut() {
+            *x /= nv;
+        }
+        for _it in 0..10 {
+            for i in 0..rows {
+                let row = &rmat[i * cols..i * cols + cols];
+                let mut s = 0f32;
+                for j in 0..cols {
+                    s += row[j] * v[j];
+                }
+                u[i] = s;
+            }
+            let mut vn = vec![0f32; cols];
+            for i in 0..rows {
+                let ui = u[i];
+                let row = &rmat[i * cols..i * cols + cols];
+                for j in 0..cols {
+                    vn[j] += row[j] * ui;
+                }
+            }
+            nv = (vn.iter().map(|x| (x * x) as f64).sum::<f64>()).sqrt() as f32;
+            if nv < 1e-12 {
+                break;
+            }
+            for j in 0..cols {
+                v[j] = vn[j] / nv;
+            }
+        }
+        for i in 0..rows {
+            let row = &rmat[i * cols..i * cols + cols];
+            let mut s = 0f32;
+            for j in 0..cols {
+                s += row[j] * v[j];
+            }
+            u[i] = s;
+        }
+        let sigma = (u.iter().map(|x| (x * x) as f64).sum::<f64>()).sqrt() as f32;
+        if sigma < 1e-8 {
+            break;
+        }
+        for x in u.iter_mut() {
+            *x /= sigma;
+        }
+        for i in 0..rows {
+            let su = sigma * u[i];
+            let ro = i * cols;
+            for j in 0..cols {
+                let d = su * v[j];
+                rmat[ro + j] -= d;
+                lr[ro + j] += d;
+            }
+        }
+    }
+    (0..rows * cols).map(|i| wh[i] + lr[i]).collect()
+}
+
+/// L2 RECOVERY proof: does the data-free low-rank residual "doctor" heal a
+/// condensed tier's output-err toward Q4_K — at total bpw still < Q4_K's 4.5?
+/// Run: cargo test -p hawking-core --release --features tq --test tq_output_space_quality -- --nocapture recovery
+#[test]
+fn recovery() {
+    let st_path = st_path();
+    if !st_path.exists() {
+        eprintln!("SKIP: {} not present", st_path.display());
+        return;
+    }
+    let st = SafeTensors::open(st_path.to_str().expect("utf8")).expect("open st");
+    let picks = [
+        ("model.layers.0.ffn.key.weight", 1024usize),
+        ("model.layers.0.ffn.value.weight", 256usize),
+    ];
+    let clip = 8.0f32;
+    let (b_eval, b_calib) = (64usize, 256usize);
+    let tiers = [("TQ3", 3.0f32, 3.348f32), ("TQ2", 2.0f32, 2.344f32)];
+    let ranks = [16usize, 32, 64];
+    println!("\n========= L2 RECOVERY: data-free low-rank residual heal (REAL acts) =========");
+    println!("o = output rel-err on real-w4a8 acts | Q4_K bar shown per tensor | total_bpw = TQ+AWQ + f16 residual");
+    println!("WANT: a row with o <= Q4_K AND total_bpw < 4.5 (denser-than-Q4_K at equal output quality)\n");
+    for (name, max_rows) in &picks {
+        let t = match st.tensors.get(*name) {
+            Some(t) => t,
+            None => continue,
+        };
+        let full = st.to_f32(t);
+        let c = t.shape[1] as usize;
+        let full_rows = t.shape[0] as usize;
+        let r = (*max_rows).min(full_rows);
+        let w = &full[..r * c];
+        let scales = real_w4a8_scales(c, 0x9EA1_5EED);
+        let x_eval = make_acts(c, b_eval, &scales, 0xE0E0_1111);
+        let x_calib = make_acts(c, b_calib, &scales, 0xCA1B_2222);
+        let mut sigma = vec![0f32; c];
+        for j in 0..c {
+            let mut s2 = 0f64;
+            for bb in 0..b_calib {
+                let v = x_calib[j * b_calib + bb] as f64;
+                s2 += v * v;
+            }
+            sigma[j] = (s2 / b_calib as f64).sqrt() as f32;
+        }
+        let o_q4 = out_rel_err(&recon_q4k(w), w, r, c, &x_eval, b_eval);
+        println!(
+            "── {} ({}×{}) ─ Q4_K o={:.5} @4.50 bpw ─",
+            name, full_rows, c, o_q4
+        );
+        for (tlabel, bpw_q, base_bpw) in &tiers {
+            let cfg = TrellisConfig::for_bpw_quality(*bpw_q as f64);
+            let awq = recon_tq_awq_reg(w, r, c, &cfg, name, &sigma, 0.5, clip);
+            let o_awq = out_rel_err(&awq, w, r, c, &x_eval, b_eval);
+            print!("  {:<5} +awq o={:.5} @{:.2}bpw", tlabel, o_awq, base_bpw);
+            for &k in &ranks {
+                let healed = lowrank_heal(&awq, w, r, c, k, 0x5EED_0001 ^ k as u64);
+                let o = out_rel_err(&healed, w, r, c, &x_eval, b_eval);
+                let add_bpw = (k as f32 * (full_rows + c) as f32 * 16.0) / (full_rows as f32 * c as f32);
+                let tot = base_bpw + add_bpw;
+                let win = if o <= o_q4 && tot < 4.5 { " ✓WIN" } else { "" };
+                print!("  | r{:<3} o={:.5} @{:.2}bpw{}", k, o, tot, win);
+            }
+            println!();
+        }
+        println!();
+    }
+    println!("============================================================================\n");
+}
