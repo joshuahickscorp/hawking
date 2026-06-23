@@ -47,3 +47,17 @@ C. **THEN the 32B** — with quality (~1:1) + speed (GPU serve) in place, conden
    the cliff is the capstone, not the experiment.
 
 State + tools in [[condense-32b-native-serving-2026-06-23]] and `tools/condense/`.
+
+## ✅ BREAKTHROUGH (2026-06-23): AWQ + doctor — the levers compound toward ~1:1
+Measured, 0.5B 3-bit (the HARDEST case, same 24KB held-out eval, ppl vs f16 36.71):
+- TQ3 RHT base (old):        +42.9%
+- TQ3 **AWQ** (no training): +18.7%   ← `tools/condense/awq_bake.py`, activation-aware, halves the gap
+- TQ3 **AWQ + doctor**:      +14.8%   ← LoRA-KD r128 lr1e-4 on the AWQ base
+- llama Q4_K reference:      ~+9-10% @ 4.9 bpw  (Hawking = 3.6 bpw, **20% denser**)
+
+So on the pessimistic floor (0.5B), Hawking is denser at near-comparable quality. The path to
+~1:1 / beating llama is REAL and compounding: AWQ (training-free, big) + doctor (LoRA-KD). Key
+fixes that unlocked it: AWQ base (was missing from real bakes); doctor stability = LOWER lr for
+higher rank (rank256/lr3e-4 DIVERGED; rank128/lr1e-4/top-128 KD is stable). Full-rank STRAND-QAT
+DIVERGES (base-add STE drift — abandoned). Next: bigger models (1.5B+) should WIN; tune doctor
+steps/alpha further; fold AWQ into the baker (--awq); then 2-bit, ternary, 1-bit same treatment.
