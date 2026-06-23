@@ -128,6 +128,21 @@ process **finds each model's floor**. No human picks Q-format.
   cliff). The 7B fits, so on it condensation shows DENSITY, not speed — the cliff
   bench needs ≥32B (owner-gated download).
 
+## Triangulation: three independent measurements, one conclusion
+
+The "recovery is mandatory for 2-bit" conclusion is now confirmed from three angles
+(all in output space, real activations):
+1. **L1 PTQ** activation-aware encode caps at **1.28× Q4_K @ 3-bit**; 2-bit PTQ is 2.4–4×.
+2. **L2 cheap heal** (data-free low-rank residual) is a **measured NO-GO** — residual is high-rank.
+3. **Dynamic allocation** (`allocate` test) **TIES uniform** — 2-bit is intolerable on
+   *every* tensor (o ~doubles 3→2-bit across all 8 picked), so no bit-budget trade
+   rescues it; the allocator is correct, but PTQ has no 2-bit headroom to allocate.
+
+⇒ PTQ — even *optimally allocated* — cannot reach the 2-bit lead. **QAT/KD (gradient
+recovery) is the only path.** The dynamic-allocation lever is still valuable *with*
+recovery (post-heal, tensors regain 2-bit tolerance heterogeneously). Evidence:
+`reports/condense/`.
+
 ## The proof bar (no fake GO)
 
 Ship a claim only when, **in output space**, a condensed artifact at fewer bpw than

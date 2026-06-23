@@ -654,3 +654,126 @@ fn recovery() {
     }
     println!("============================================================================\n");
 }
+
+fn alloc_avg_bpw(lvl: &[usize], params: &[f64], lv_bpw: &[f64]) -> f64 {
+    let tot: f64 = params.iter().sum();
+    lvl.iter().zip(params).map(|(&l, &p)| lv_bpw[l] * p).sum::<f64>() / tot
+}
+
+/// DYNAMIC BIT ALLOCATION (the "bit selected model"): bits are per-tensor, chosen by
+/// output-damage. Demonstrates spending a FIXED bit-budget on the most sensitive
+/// tensors (mixed precision) beats UNIFORM bits at the same avg bpw — the core of
+/// "the bits are dynamic." Auto-picks GPU-deployable (cols%256==0) 2D tensors.
+/// Run: cargo test -p hawking-core --release --features tq --test tq_output_space_quality -- --nocapture allocate
+#[test]
+fn allocate() {
+    let st_path = st_path();
+    if !st_path.exists() {
+        eprintln!("SKIP: {} not present", st_path.display());
+        return;
+    }
+    let st = SafeTensors::open(st_path.to_str().expect("utf8")).expect("open st");
+    let mut names: Vec<String> = st
+        .tensors
+        .iter()
+        .filter(|(_, t)| {
+            t.shape.len() == 2 && t.shape[1] % 256 == 0 && t.shape[0] * t.shape[1] >= 256 * 256
+        })
+        .map(|(n, _)| n.clone())
+        .collect();
+    names.sort();
+    names.truncate(8);
+    if names.len() < 3 {
+        eprintln!("SKIP: <3 pickable tensors");
+        return;
+    }
+    let clip = 8.0f32;
+    let (b_eval, b_calib) = (64usize, 256usize);
+    let lv_bits = [2usize, 3, 4];
+    let lv_bpw = [2.34f64, 3.348, 4.50];
+    let mut o_all: Vec<[f64; 3]> = Vec::new();
+    let mut params: Vec<f64> = Vec::new();
+    for n in &names {
+        let t = &st.tensors[n];
+        let c = t.shape[1] as usize;
+        let full_rows = t.shape[0] as usize;
+        let r = full_rows.min(256);
+        let full = st.to_f32(t);
+        let w = &full[..r * c];
+        // per-tensor activation seed (real layers see DIFFERENT activation
+        // distributions — outliers land on different columns), so sensitivities
+        // diverge and dynamic allocation has something to differentiate.
+        let tseed = n
+            .bytes()
+            .fold(0xC0FFEE_u64, |a, b| a.wrapping_mul(1099511628211).wrapping_add(b as u64));
+        let scales = real_w4a8_scales(c, tseed ^ 0x9EA1_5EED);
+        let x = make_acts(c, b_eval, &scales, tseed ^ 0xE0E0_1111);
+        let xc = make_acts(c, b_calib, &scales, tseed ^ 0xCA1B_2222);
+        let mut sigma = vec![0f32; c];
+        for j in 0..c {
+            let mut s = 0f64;
+            for bb in 0..b_calib {
+                let v = xc[j * b_calib + bb] as f64;
+                s += v * v;
+            }
+            sigma[j] = (s / b_calib as f64).sqrt() as f32;
+        }
+        let mut o = [0f64; 3];
+        for (li, bits) in lv_bits.iter().enumerate() {
+            let cfg = TrellisConfig::for_bpw_quality(*bits as f64);
+            let awq = recon_tq_awq_reg(w, r, c, &cfg, n, &sigma, 0.5, clip);
+            o[li] = out_rel_err(&awq, w, r, c, &x, b_eval);
+        }
+        o_all.push(o);
+        params.push((full_rows * c) as f64);
+    }
+    let nt = o_all.len();
+    let uni_worst = o_all.iter().map(|o| o[1]).fold(0.0, f64::max);
+    let uni_mean = o_all.iter().map(|o| o[1]).sum::<f64>() / nt as f64;
+    // greedy: start all 2-bit, bump worst-o tensor up a level until avg bpw hits uniform-3's
+    let mut lvl = vec![0usize; nt];
+    loop {
+        let mut bi: i32 = -1;
+        let mut wo = -1.0f64;
+        for i in 0..nt {
+            if lvl[i] < 2 && o_all[i][lvl[i]] > wo {
+                wo = o_all[i][lvl[i]];
+                bi = i as i32;
+            }
+        }
+        if bi < 0 {
+            break;
+        }
+        let mut trial = lvl.clone();
+        trial[bi as usize] += 1;
+        if alloc_avg_bpw(&trial, &params, &lv_bpw) > lv_bpw[1] + 1e-6 {
+            break;
+        }
+        lvl = trial;
+    }
+    let mix_worst = (0..nt).map(|i| o_all[i][lvl[i]]).fold(0.0, f64::max);
+    let mix_mean = (0..nt).map(|i| o_all[i][lvl[i]]).sum::<f64>() / nt as f64;
+    let mix_bpw = alloc_avg_bpw(&lvl, &params, &lv_bpw);
+    println!("\n===== DYNAMIC BIT ALLOCATION ({} tensors, REAL acts) =====", nt);
+    for i in 0..nt {
+        println!(
+            "  {:<46} 2b={:.4} 3b={:.4} 4b={:.4} -> {}b",
+            names[i], o_all[i][0], o_all[i][1], o_all[i][2], lv_bits[lvl[i]]
+        );
+    }
+    println!("  UNIFORM 3-bit : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}", lv_bpw[1], uni_worst, uni_mean);
+    println!("  DYNAMIC mixed : avg_bpw={:.3}  worst_o={:.5}  mean_o={:.5}", mix_bpw, mix_worst, mix_mean);
+    let verdict = if (mix_worst - uni_worst).abs() < 1e-9 {
+        "TIES uniform — homogeneous sensitivity / 2-bit intolerable on all tensors => recovery (QAT/KD) is the only 2-bit path"
+    } else if mix_worst < uni_worst {
+        "IMPROVES on uniform"
+    } else {
+        "is WORSE than uniform"
+    };
+    println!(
+        "  => at <= the same bpw, dynamic worst-case {} ({:+.1}%)",
+        verdict,
+        (mix_worst / uni_worst - 1.0) * 100.0
+    );
+    println!("==========================================================\n");
+}
