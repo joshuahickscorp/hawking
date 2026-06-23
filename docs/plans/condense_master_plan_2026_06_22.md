@@ -90,6 +90,17 @@ cron runs `quality_3way.sh` on the *doctor-recovered* weights → the win/lose v
 lands in `OVERNIGHT_RESULTS.md` by morning. This is the most important number in the
 project — and we now measure it rigorously rather than assert it.
 
+### Verdict v1 (2026-06-23) — the doctor OVERFIT; LOSES → fix found
+
+First recovered-weights verdict (doctor 200 steps, **single calib passage**): train CE
+crashed 17.2 → **0.03** (memorized the one passage) but held-out STRAND-TQ2 = **+667%**
+(ppl 284) vs llama Q4_K +3.4% → **LOSES**. The "99.86% recovery" was a mirage — held-out
+uniform ppl stayed ~1e5. Root cause: **training on one short passage memorizes instead of
+generalizing.** Fix shipped: `doctor_qat.py` now samples **diverse chunks** from a real
+corpus (`DOCTOR_CALIB`, 400 KB wikitext → 174 chunks, rotated per step) — the 3-step smoke
+confirmed CE stays ~12 (not memorizing). **Verdict v2 (diverse calib, 300 steps) is the
+real test of whether the doctor wins.** Lesson: recovery only counts on HELD-OUT data.
+
 ## The pipeline (the seven stages)
 
 ```

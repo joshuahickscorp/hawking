@@ -22,10 +22,20 @@ LOG="reports/cron/rebench_${STAMP}.log"
   cargo build --release -p hawking 2>&1 | tail -2
 
   # ── 1. condensation QUALITY: real ppl + the DOCTOR (QAT) recovery — the thesis ──
+  # DIVERSE calib corpus (else the doctor overfits one passage -> loses; see verdict v1).
+  CORPUS=scratch/calib_corpus.txt
+  if [ ! -s "$CORPUS" ]; then
+    python3.12 - <<'PY' 2>/dev/null || echo "[cron] corpus gen failed"
+from datasets import load_dataset
+ds = load_dataset("wikitext","wikitext-2-raw-v1",split="train")
+open("scratch/calib_corpus.txt","w").write("\n".join(t for t in ds["text"] if len(t.strip())>80)[:400000])
+PY
+  fi
+  export DOCTOR_CALIB="$CORPUS"
   echo "[cron] === ppl sweep (f16 vs TQ3 vs TQ2) ==="
   bash tools/condense/quality_sweep.sh scratch/qwen-05b 3,2 2>&1 | tail -20
-  echo "[cron] === DOCTOR (self-CE): QAT recovery 2-bit, 300 steps (the money shot) ==="
-  python3.12 tools/condense/doctor_qat.py 2 300 2e-5 scratch/qwen-05b-healed2.safetensors 2>&1 | tail -30 || echo "[cron] doctor-2 failed"
+  echo "[cron] === DOCTOR (self-CE, diverse calib): 2-bit, 300 steps (the money shot) ==="
+  python3.12 tools/condense/doctor_qat.py 2 300 3e-5 scratch/qwen-05b-healed2.safetensors 2>&1 | tail -30 || echo "[cron] doctor-2 failed"
   echo "[cron] === PRODUCT bridge: STRAND-bake the healed shadow -> real TQ2 ppl ==="
   vendor/strand-quant/target/release/quantize-model --in scratch/qwen-05b-healed2.raw.safetensors \
     --out scratch/qwen-05b-healed2-strand.safetensors --bits 2 --quality --rht-cols \

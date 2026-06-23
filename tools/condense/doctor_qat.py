@@ -85,23 +85,37 @@ def main():
     # KD (distillation) mode: KL against a frozen f16 teacher — a richer signal than
     # self-CE, which the user explicitly wants. Env KD=1.
     KD = os.environ.get("KD") == "1"
-    cids = tok(CALIB, return_tensors="pt").input_ids.to(dev)
-    t_logp = None
+    # DIVERSE calib: sample a different chunk each step so the doctor learns
+    # generalizable quantization-robustness instead of memorizing one passage.
+    # (single-passage QAT overfit: train CE -> 0.03 but held-out ppl stayed ~1e5.)
+    calib_text = CALIB
+    cf = os.environ.get("DOCTOR_CALIB")
+    if cf and os.path.exists(cf):
+        calib_text = open(cf, errors="ignore").read()
+    all_ids = tok(calib_text, return_tensors="pt").input_ids[0]
+    CTX = 512
+    chunks = [all_ids[i:i + CTX].unsqueeze(0).to(dev)
+              for i in range(0, max(1, len(all_ids) - CTX), CTX)]
+    chunks = [c for c in chunks if c.shape[1] >= 16] or [all_ids.unsqueeze(0).to(dev)]
+    print(f"# calib: {len(chunks)} chunks x <={CTX} tok ({cf if cf else 'embedded'})", file=sys.stderr)
+
+    teacher = None
     if KD:
         teacher = AutoModelForCausalLM.from_pretrained(
             MODEL, torch_dtype=torch.float32, attn_implementation="eager").to(dev).eval()
         for p in teacher.parameters():
             p.requires_grad_(False)
-        with torch.no_grad():
-            t_logp = torch.log_softmax(teacher(cids).logits, dim=-1)
-        print(f"# KD on: distilling frozen f16 teacher logits", file=sys.stderr)
+        print("# KD on: distilling frozen f16 teacher logits", file=sys.stderr)
 
     model.train()
     opt = torch.optim.AdamW([m.weight for m in LINEARS], lr=LR)
     for step in range(STEPS):
+        cids = chunks[step % len(chunks)]
         opt.zero_grad()
         s_logits = model(cids).logits
         if KD:
+            with torch.no_grad():
+                t_logp = torch.log_softmax(teacher(cids).logits, dim=-1)
             s_logp = torch.log_softmax(s_logits, dim=-1)
             loss = (t_logp.exp() * (t_logp - s_logp)).sum(-1).mean()  # forward KL
         else:
