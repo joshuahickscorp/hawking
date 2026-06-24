@@ -138,15 +138,17 @@ def _ensure_disk(need_gb, label):
         raise RuntimeError(f"insufficient disk: {free:.1f}GB free < {need_gb}GB needed (skipped, ladder continues)")
 
 
-def _bake_one(inp, out, bits, rung=None):
+def _bake_one(inp, out, bits, rung=None, outlier_pct=1.0):
     """ONE raw baker invocation. --quality removed (L=k+4 fast, accurate for curve shape);
     STRAND_NO_GPU forces CPU so the baker never fights the model measurement for Metal memory.
     rung = path to a flat JSON {substr: bits} for MIXED-PRECISION (per-layer bit allocation,
-    e.g. 4-bit attention / 3-bit FFN); --bits is the fallback for tensors matching no rule."""
+    e.g. 4-bit attention / 3-bit FFN); --bits is the fallback for tensors matching no rule.
+    outlier_pct = % of top-|w| weights kept as an 8-bit sparse channel — the train-free rescue
+    for sub-3-bit (at 1-bit most signal dies; keeping the top 5-10% at 8-bit can recover a lot)."""
     nt = int(os.environ.get("BAKE_THREADS") or 4)
     env = {**os.environ, "STRAND_NO_GPU": "1"}
-    cmd = [BAKER, "--in", inp, "--out", out, "--bits", str(bits),
-           "--rht-cols", "--outlier-channel", "1", "--outlier-bits", "8", "--threads", str(nt)]
+    cmd = [BAKER, "--in", inp, "--out", out, "--bits", str(bits), "--rht-cols",
+           "--outlier-channel", str(outlier_pct), "--outlier-bits", "8", "--threads", str(nt)]
     if rung:
         cmd += ["--rung-config", rung]
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)
@@ -200,14 +202,14 @@ def _chunks(names, specs):
     return out
 
 
-def _bake_chunk(cnames, specs, produce, bits, rung=None):
+def _bake_chunk(cnames, specs, produce, bits, rung=None, outlier_pct=1.0):
     """Bake ONE chunk: stream its (pre-transformed, bf16) inputs, run the baker, return the recon
     as a small in-RAM dict (this chunk only) + the chunk's aggregate bpw. Cleans its own temps.
     This is the unit that bounds memory — the baker accumulates only one chunk's F32 recon."""
     cin, cout = f"{T}_ckin.safetensors", f"{T}_ckout.safetensors"
     try:
         stream_save(cin, cnames, lambda k: (DTYPE, specs[k][1]), produce)
-        bpw, qcount = _bake_one(cin, cout, bits, rung=rung)
+        bpw, qcount = _bake_one(cin, cout, bits, rung=rung, outlier_pct=outlier_pct)
         recon = {}
         with safe_open(cout, framework="pt") as fc:
             for k in fc.keys():
@@ -253,7 +255,7 @@ def _wavg(pairs):
     return w / q if q else float("nan")
 
 
-def build_rht(bits):
+def build_rht(bits, outlier_pct=1.0):
     names, specs = _src_specs()
     chunks = _chunks(names, specs)
     log(f"  [bake] {bits}-RHT in {len(chunks)} chunks")
@@ -261,7 +263,7 @@ def build_rht(bits):
     with safe_open(SRC, framework="pt") as fs:
         for ci, cn in enumerate(chunks):
             _ensure_disk(16, f"{bits}-RHT ck{ci+1}/{len(chunks)}")
-            recon, bpw, qc = _bake_chunk(cn, specs, lambda k: fs.get_tensor(k).to(DTYPE), bits)
+            recon, bpw, qc = _bake_chunk(cn, specs, lambda k: fs.get_tensor(k).to(DTYPE), bits, outlier_pct=outlier_pct)
             parts.append(_emit_part(ci, cn, specs, lambda k: recon[k]))
             bpws.append((bpw, qc))
             del recon; gc.collect()
@@ -269,9 +271,10 @@ def build_rht(bits):
     return parts, _wavg(bpws)
 
 
-def build_awq(bits, alpha=0.5, rung=None):
+def build_awq(bits, alpha=0.5, rung=None, outlier_pct=1.0):
     """AWQ (scale cols by sigma^alpha, bake, unscale). rung = mixed-precision dict {substr: bits}
-    written to a temp json and passed to the baker; `bits` is then the per-tensor FALLBACK."""
+    written to a temp json and passed to the baker; `bits` is then the per-tensor FALLBACK.
+    outlier_pct = top-|w| 8-bit sparse channel size (sub-3-bit train-free rescue)."""
     sig = {}
     with safe_open(SIGPATH, framework="pt") as f:
         for k in f.keys():
@@ -291,7 +294,7 @@ def build_awq(bits, alpha=0.5, rung=None):
             def scaled(k):                                   # scale cols by sigma^alpha pre-bake
                 v = fs.get_tensor(k)
                 return (v.float() * sig[k].pow(alpha)).to(DTYPE) if k in sig else v.to(DTYPE)
-            recon, bpw, qc = _bake_chunk(cn, specs, scaled, bits, rung=rpath)
+            recon, bpw, qc = _bake_chunk(cn, specs, scaled, bits, rung=rpath, outlier_pct=outlier_pct)
             def unscaled(k):                                 # undo the scale post-bake
                 return (recon[k].float() / sig[k].pow(alpha)).to(DTYPE) if k in sig else recon[k]
             parts.append(_emit_part(ci, cn, specs, unscaled))
@@ -323,6 +326,54 @@ def build_residual(b1, b2):
             del r1, r2; gc.collect()
             log(f"  [bake]  res ck{ci+1}/{len(chunks)} bpw={w1:.2f}+{w2:.2f} q={qc1} free={_free_gb():.0f}GB")
     return parts, _wavg(bp1) + _wavg(bp2)
+
+
+def _merge_parts(parts, out):
+    """Stream chunk parts into one safetensors (doctor_lora.py needs a single base file)."""
+    fhs = {p: safe_open(p, framework="pt") for p in parts}
+    order = [k for p in parts for k in fhs[p].keys()]
+    loc = {k: p for p in parts for k in fhs[p].keys()}
+    shp = {k: tuple(fhs[loc[k]].get_slice(k).get_shape()) for k in order}
+    stream_save(out, order, lambda k: (DTYPE, shp[k]), lambda k: fhs[loc[k]].get_tensor(k))
+
+
+def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None, outlier_pct=1.0):
+    """RECOVERY track: AWQ-quantize, then HEAL with LoRA-KD (doctor_lora.py) — the only path to
+    usable sub-3-bit, where PTQ alone collapses. The doctor caches+frees the teacher (one model
+    in RAM, 19GB-safe) and saves the FUSED healed weights, so its output is a direct override.
+    Returns ([healed], base_bpw + LoRA overhead). Slow on CPU — wall-clock is not the constraint."""
+    parts, base_bpw = build_awq(bits, alpha, rung, outlier_pct)
+    base = f"{T}_rbase.safetensors"
+    _merge_parts(parts, base)
+    for p in parts:
+        try: os.remove(p)
+        except OSError: pass
+    healed = f"{T}_healed.safetensors"
+    env = {**os.environ, "DOCTOR_MODEL": MODEL, "DOCTOR_DTYPE": "bfloat16", "DOCTOR_DEVICE": DEV,
+           "KD": "1", "KD_TOPK": "128"}
+    cal = "scratch/calib_corpus.txt"
+    if os.path.exists(cal):
+        env["DOCTOR_CALIB"] = cal
+    log(f"  [recover] {bits}b base bpw={base_bpw:.3f}; LoRA-KD r{rank} {steps} steps (slow on CPU)…")
+    r = subprocess.run(["python3.12", "tools/condense/doctor_lora.py", base,
+                        str(steps), str(lr), str(rank), healed],
+                       capture_output=True, text=True, env=env)
+    try: os.remove(base)
+    except OSError: pass
+    if r.returncode != 0:
+        raise RuntimeError(f"doctor failed bits={bits}: {r.stderr[-200:]}")
+    try:
+        rec = json.loads(r.stdout.strip().splitlines()[-1])
+        log(f"  [recover] base_ppl={rec.get('base_ppl'):.1f} -> lora_ppl={rec.get('lora_ppl'):.1f}"
+            f" (recovered {rec.get('recovery_pct',0):.1f}%)")
+    except Exception:
+        pass
+    # eff bpw of the deployed artifact = base + LoRA(rank) overhead, 16-bit adapters
+    names, specs = _src_specs()
+    qd = [specs[k][1] for k in names if _isq(specs, k)]
+    den = sum(o * i for (o, i) in qd)
+    lora_add = (16 * rank * sum(o + i for (o, i) in qd)) / den if den else 0.0
+    return [healed], base_bpw + lora_add
 
 
 # ---- measurement: load model, stream override in-place, ppl, free ----
@@ -401,6 +452,14 @@ CONFIGS = {
         ("2-AWQ.25", build_awq, (2, 0.25)), ("2-AWQ.75", build_awq, (2, 0.75)),
         ("2-RHT", build_rht, (2,)),
         ("4-RHT", build_rht, (4,)),
+        # --- sub-3-bit rescue suite (the most important: can 1/2-bit be made usable on 7B?) ---
+        # train-free: keep top-|w| 5/10% at 8-bit (outlier channel)
+        ("2-AWQ-o5", build_awq, (2, 0.5, None, 5.0)), ("2-AWQ-o10", build_awq, (2, 0.5, None, 10.0)),
+        ("1-AWQ-o5", build_awq, (1, 0.5, None, 5.0)), ("1-AWQ-o10", build_awq, (1, 0.5, None, 10.0)),
+        # recovery: AWQ base + LoRA-KD heal (doctor) — the real sub-3-bit lever
+        ("3-AWQ+dr", build_recover, (3,)), ("2-AWQ+dr", build_recover, (2,)),
+        ("2-AWQ-o5+dr", build_recover, (2, 60, 64, 1e-4, 0.5, None, 5.0)),
+        ("1-AWQ+dr", build_recover, (1,)), ("1-AWQ-o10+dr", build_recover, (1, 60, 64, 1e-4, 0.5, None, 10.0)),
         # seeded/known (skip on resume):
         ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)), ("2-AWQ", build_awq, (2,)),
         ("1-AWQ", build_awq, (1,)), ("1-RHT", build_rht, (1,))],
