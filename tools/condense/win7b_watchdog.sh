@@ -12,7 +12,9 @@ set -uo pipefail
 cd "$HOME/Downloads/hawking" || exit 2
 LOG=reports/cron/win7b.md; mkdir -p reports/cron
 PY=python3.12
-export DOCTOR_DEVICE=cpu DOCTOR_DTYPE=float16 DOCTOR_CALIB=scratch/calib_corpus.txt PYTHONUNBUFFERED=1
+# bfloat16 NOT float16: fp16 overflows on the 7B CPU forward (>65504 → nan, observed
+# 2026-06-23 → f16 ppl=nan crashed stage 1). bf16 is 2-byte (still fits 14GB) with fp32 range.
+export DOCTOR_DEVICE=cpu DOCTOR_DTYPE=bfloat16 DOCTOR_CALIB=scratch/calib_corpus.txt PYTHONUNBUFFERED=1
 jget(){ $PY -c "import sys,json;print(json.load(sys.stdin)['ppl'])" 2>/dev/null; }
 PT=/tmp/ppl24k.txt; [ -f "$PT" ] || cat README.md docs/plans/*.md 2>/dev/null | head -c 24000 > "$PT"
 

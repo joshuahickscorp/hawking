@@ -15,6 +15,7 @@ honored (0.5B: mps/float32; 7B: cpu/bfloat16 — fp16 overflows the 7B CPU forwa
 Usage: audit_ladder.py <hf-dir> <label> <full|essential> [out_prefix]
 """
 import sys, os, re, gc, json, math, subprocess, shutil, atexit, torch, torch.nn as nn
+import torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from safetensors import safe_open
 from safetensors.torch import save_file
@@ -49,11 +50,6 @@ def _resolve_src():
         stream_save(cons, all_keys, _spec, _produce)
         gc.collect()
     return cons
-
-
-SRC = _resolve_src()
-T = f"/tmp/aud_{LABEL}"                     # reused temp prefix (overwritten per config)
-SIGPATH = f"{T}_sigma.safetensors"
 
 
 def log(m): print(m, file=sys.stderr); sys.stderr.flush()
@@ -111,14 +107,38 @@ def stream_save(out_path, names, spec, produce):
             del t, b
 
 
+SRC = None
+T = f"/tmp/aud_{LABEL}"                     # reused temp prefix (overwritten per config)
+SIGPATH = os.environ.get("LADDER_SIGMA", f"{OUTP}_sigma.safetensors")
+
+
 def _free_gb(path="/tmp"):
     return shutil.disk_usage(path).free / 1e9
 
 
-def _clean_temps(keep=(SRC, SIGPATH)):
+def _ensure_ppl_text():
+    """Recreate the small eval/capture corpus if /tmp was wiped by a reboot."""
+    if os.path.exists(PT):
+        return
+    chunks = []
+    if os.path.exists("README.md"):
+        chunks.append(open("README.md", errors="ignore").read())
+    import glob
+    for path in sorted(glob.glob("docs/plans/*.md")):
+        chunks.append(open(path, errors="ignore").read())
+    text = "\n".join(chunks)[:24000]
+    if not text:
+        raise FileNotFoundError(PT)
+    with open(PT, "w") as f:
+        f.write(text)
+
+
+def _clean_temps(keep=None):
     """Remove every {T}_* intermediate (b1/b2/rin/scaled/baked/ovr), keep SRC + sigma.
     Used to recover from an interrupted config before retrying."""
     import glob
+    if keep is None:
+        keep = (SRC, SIGPATH)
     for p in glob.glob(f"{T}_*.safetensors"):
         if p not in keep:
             try: os.remove(p)
@@ -151,6 +171,23 @@ def _bake_one(inp, out, bits, rung=None, outlier_pct=1.0):
            "--outlier-channel", str(outlier_pct), "--outlier-bits", "8", "--threads", str(nt)]
     if rung:
         cmd += ["--rung-config", rung]
+    # ---- frontier quality levers (env-gated; inert unless a recipe turns them on) ----
+    # --actmean: activation-mean output de-bias (baker comment: -28.7% PPL for ~0.014 bpw).
+    #   c_i = -Σ_j (recon_ij - orig_ij)·E[x_j]; the actmean json is written by capture_sigma.
+    am = os.environ.get("BAKE_ACTMEAN")
+    if am and os.path.exists(am):
+        cmd += ["--actmean", am]
+    # --quality: deeper trellis (L=bits+6 vs +4). Lower PPL, ~4× slower on CPU. Chunked baking
+    #   now bounds RAM regardless of L, so the old 7B OOM that forced this off no longer applies.
+    if os.environ.get("BAKE_QUALITY") == "1":
+        cmd += ["--quality"]
+    # --vec-dim N (+--learned-codebook): d-dim vector/codebook trellis (AQLM-class). payload k/d
+    #   bpw — the real lever for the sub-3-bit tier where scalar quant collapses.
+    vd = int(os.environ.get("BAKE_VECDIM", "1"))
+    if vd > 1:
+        cmd += ["--vec-dim", str(vd)]
+        if os.environ.get("BAKE_LEARNED_CB") == "1":
+            cmd += ["--learned-codebook"]
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)
     if r.returncode != 0:
         raise RuntimeError(f"baker failed bits={bits}: {r.stderr[-200:]}")
@@ -331,36 +368,113 @@ def build_residual(b1, b2):
 def _merge_parts(parts, out):
     """Stream chunk parts into one safetensors (doctor_lora.py needs a single base file)."""
     fhs = {p: safe_open(p, framework="pt") for p in parts}
-    order = [k for p in parts for k in fhs[p].keys()]
-    loc = {k: p for p in parts for k in fhs[p].keys()}
-    shp = {k: tuple(fhs[loc[k]].get_slice(k).get_shape()) for k in order}
-    stream_save(out, order, lambda k: (DTYPE, shp[k]), lambda k: fhs[loc[k]].get_tensor(k))
+    try:
+        order = [k for p in parts for k in fhs[p].keys()]
+        loc = {k: p for p in parts for k in fhs[p].keys()}
+        shp = {k: tuple(fhs[loc[k]].get_slice(k).get_shape()) for k in order}
+        stream_save(out, order, lambda k: (DTYPE, shp[k]), lambda k: fhs[loc[k]].get_tensor(k))
+    finally:
+        for fh in fhs.values():
+            if hasattr(fh, "close"):
+                fh.close()
 
 
-def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None, outlier_pct=1.0):
+def _swap_mb():
+    """Current macOS swap used in MB."""
+    try:
+        out = subprocess.run(["sysctl", "-n", "vm.swapusage"],
+                             capture_output=True, text=True).stdout
+        return float(out.split()[5].rstrip("M,"))
+    except Exception:
+        return 0.0
+
+
+def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None,
+                  outlier_pct=1.0, target_regex=None, kd_topk=None):
     """RECOVERY track: AWQ-quantize, then HEAL with LoRA-KD (doctor_lora.py) — the only path to
     usable sub-3-bit, where PTQ alone collapses. The doctor caches+frees the teacher (one model
-    in RAM, 19GB-safe) and saves the FUSED healed weights, so its output is a direct override.
-    Returns ([healed], base_bpw + LoRA overhead). Slow on CPU — wall-clock is not the constraint."""
+    in RAM, 19GB-safe) and saves LoRA adapters, so measurement applies base+adapter in-place
+    without ever materializing a fused full-weight checkpoint.
+    Returns ({"base": base, "adapter": adapter}, base_bpw + LoRA overhead).
+    Slow on CPU — wall-clock is not the constraint.
+
+    Self-managing resource guard: monitors doctor subprocess every 60s.
+      DOCTOR_TIMEOUT          max wall-clock seconds before checkpointed stop
+      DOCTOR_SWAP_CEIL        soft swap telemetry threshold
+      DOCTOR_SWAP_HARD_CEIL   hard swap threshold before checkpointed stop
+    On breach: preserve the best/latest adapter if one exists and ladder CONTINUES."""
+    import time
+    # timeout: long leash by default; progress is adapter-checkpointed, so time is useful.
+    TIMEOUT   = int(os.environ.get("DOCTOR_TIMEOUT", str(max(28800, steps * 480))))
+    # soft swap is telemetry only; hard swap asks the doctor to checkpoint before SIGKILL.
+    SWAP_CEIL = float(os.environ.get("DOCTOR_SWAP_CEIL", "12000"))
+    HARD_SWAP = float(os.environ.get("DOCTOR_SWAP_HARD_CEIL", "18000"))
+    GRACE     = int(os.environ.get("DOCTOR_TERMINATE_GRACE", "600"))
+    USE_PARTIAL = os.environ.get("DOCTOR_USE_PARTIAL", "1").lower() in {"1", "true", "yes"}
+    WARMUP    = 300   # ignore swap for first 5 min (loading phase is inherently heavy)
+
     parts, base_bpw = build_awq(bits, alpha, rung, outlier_pct)
     base = f"{T}_rbase.safetensors"
     _merge_parts(parts, base)
     for p in parts:
         try: os.remove(p)
         except OSError: pass
-    healed = f"{T}_healed.safetensors"
+    adapter = f"{T}_adapter.safetensors"
+    latest = f"{T}_adapter.latest.safetensors"
+    progress = f"{T}_doctor_progress.jsonl"
+    dout = f"{T}_doctor_stdout.log"
+    derr = f"{T}_doctor_stderr.log"
     env = {**os.environ, "DOCTOR_MODEL": MODEL, "DOCTOR_DTYPE": "bfloat16", "DOCTOR_DEVICE": DEV,
-           "KD": "1", "KD_TOPK": "128"}
+           "DOCTOR_THREADS": str(os.cpu_count() or 8),
+           "DOCTOR_GRAD_ACCUM": os.environ.get("DOCTOR_GRAD_ACCUM", "4"),
+           "DOCTOR_SAVE_MODE": "adapter",
+           "DOCTOR_PROGRESS": progress,
+           "DOCTOR_LATEST": latest,
+           "KD": "1", "KD_TOPK": str(kd_topk or os.environ.get("KD_TOPK", "64"))}
+    if target_regex:
+        env["DOCTOR_TARGET_REGEX"] = target_regex
     cal = "scratch/calib_corpus.txt"
     if os.path.exists(cal):
         env["DOCTOR_CALIB"] = cal
-    log(f"  [recover] {bits}b base bpw={base_bpw:.3f}; LoRA-KD r{rank} {steps} steps (slow on CPU)…")
-    r = subprocess.run(["python3.12", "tools/condense/doctor_lora.py", base,
-                        str(steps), str(lr), str(rank), healed],
-                       capture_output=True, text=True, env=env)
-    try: os.remove(base)
-    except OSError: pass
-    if r.returncode != 0:
+    log(f"  [recover] {bits}b base bpw={base_bpw:.3f}; LoRA-KD r{rank} {steps} steps"
+        f" (timeout={TIMEOUT}s soft_swap={SWAP_CEIL:.0f}MB hard_swap={HARD_SWAP:.0f}MB)…")
+    out_fh, err_fh = open(dout, "w"), open(derr, "w")
+    proc = subprocess.Popen(["python3.12", "tools/condense/doctor_lora.py", base,
+                             str(steps), str(lr), str(rank), adapter],
+                            stdout=out_fh, stderr=err_fh,
+                            text=True, env=env, start_new_session=True)
+    t0 = time.monotonic()
+    terminating_at = None
+    terminated_reason = None
+    while proc.poll() is None:
+        time.sleep(60)
+        elapsed = time.monotonic() - t0
+        swap = _swap_mb()
+        log(f"  [recover] elapsed={elapsed/60:.0f}m swap={swap:.0f}MB pid={proc.pid}")
+        if elapsed > WARMUP and swap > SWAP_CEIL:
+            log(f"  [recover] soft swap leash crossed ({swap:.0f}>{SWAP_CEIL:.0f}MB); continuing under watch")
+        if terminating_at is None and elapsed > WARMUP and swap > HARD_SWAP:
+            terminating_at = time.monotonic()
+            terminated_reason = f"hard swap {swap:.0f}MB > {HARD_SWAP:.0f}MB"
+            log(f"  [recover] {terminated_reason}; SIGTERM doctor for checkpoint")
+            proc.terminate()
+        if terminating_at is None and elapsed > TIMEOUT:
+            terminating_at = time.monotonic()
+            terminated_reason = f"timeout {elapsed/60:.0f}m > {TIMEOUT/60:.0f}m"
+            log(f"  [recover] {terminated_reason}; SIGTERM doctor for checkpoint")
+            proc.terminate()
+        if terminating_at is not None and time.monotonic() - terminating_at > GRACE:
+            log(f"  [recover] checkpoint grace expired after {GRACE}s; SIGKILL doctor")
+            proc.kill()
+    proc.wait()
+    out_fh.close(); err_fh.close()
+    stdout = open(dout, errors="ignore").read() if os.path.exists(dout) else ""
+    stderr = open(derr, errors="ignore").read() if os.path.exists(derr) else ""
+    r = subprocess.CompletedProcess(proc.args, proc.returncode, stdout, stderr)
+    artifact = adapter if os.path.exists(adapter) else latest if os.path.exists(latest) else None
+    if r.returncode != 0 and not (USE_PARTIAL and artifact):
+        try: os.remove(base)
+        except OSError: pass
         raise RuntimeError(f"doctor failed bits={bits}: {r.stderr[-200:]}")
     try:
         rec = json.loads(r.stdout.strip().splitlines()[-1])
@@ -368,41 +482,99 @@ def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None, outlie
             f" (recovered {rec.get('recovery_pct',0):.1f}%)")
     except Exception:
         pass
+    if r.returncode != 0 and artifact:
+        log(f"  [recover] using checkpointed partial adapter after {terminated_reason or 'doctor nonzero exit'}")
     # eff bpw of the deployed artifact = base + LoRA(rank) overhead, 16-bit adapters
     names, specs = _src_specs()
-    qd = [specs[k][1] for k in names if _isq(specs, k)]
+    qd = [specs[k][1] for k in names if _isq(specs, k)
+          and (not target_regex or re.search(target_regex, k[:-7] if k.endswith(".weight") else k))]
     den = sum(o * i for (o, i) in qd)
     lora_add = (16 * rank * sum(o + i for (o, i) in qd)) / den if den else 0.0
-    return [healed], base_bpw + lora_add
+    if not artifact:
+        try: os.remove(base)
+        except OSError: pass
+        raise RuntimeError(f"doctor produced no adapter checkpoint bits={bits}")
+    return {"base": base, "adapter": artifact}, base_bpw + lora_add
 
 
 # ---- measurement: load model, stream override in-place, ppl, free ----
+def _apply_weight_overrides(model, paths):
+    if not paths:
+        return
+    sd = model.state_dict()
+    for pth in paths:
+        with safe_open(pth, framework="pt") as f:
+            for k in f.keys():
+                if k in sd and tuple(sd[k].shape) == tuple(f.get_slice(k).get_shape()):
+                    sd[k].copy_(f.get_tensor(k).to(DEV, DTYPE))
+
+
+def _attach_lora_adapter(model, adapter_path):
+    modules = dict(model.named_modules())
+    attached = 0
+    with safe_open(adapter_path, framework="pt") as f:
+        keys = set(f.keys())
+        for ak in sorted(k for k in keys if k.endswith(".lora_A")):
+            name = ak[:-7]
+            bk = name + ".lora_B"
+            m = modules.get(name)
+            if bk not in keys or not isinstance(m, nn.Linear):
+                continue
+            m._hawking_lora_A = f.get_tensor(ak).to(DEV, DTYPE)
+            m._hawking_lora_B = f.get_tensor(bk).to(DEV, DTYPE)
+            m.forward = (lambda x, mm=m: F.linear(
+                x, mm.weight + mm._hawking_lora_A @ mm._hawking_lora_B, mm.bias))
+            attached += 1
+    if attached == 0:
+        raise RuntimeError(f"adapter contained no attachable LoRA tensors: {adapter_path}")
+    log(f"  [measure] attached {attached} LoRA adapters")
+
+
 def measure(override):
+    _ensure_ppl_text()
     torch.set_num_threads(os.cpu_count() or 12)
     tok = AutoTokenizer.from_pretrained(MODEL)
     model = AutoModelForCausalLM.from_pretrained(MODEL, torch_dtype=DTYPE, attn_implementation="eager").to(DEV).eval()
     if override:
-        paths = [override] if isinstance(override, str) else list(override)
-        sd = model.state_dict()
-        for pth in paths:                          # builders now return a LIST of chunk parts
-            with safe_open(pth, framework="pt") as f:
-                for k in f.keys():
-                    if k in sd and tuple(sd[k].shape) == tuple(f.get_slice(k).get_shape()):
-                        sd[k].copy_(f.get_tensor(k).to(DEV, DTYPE))
+        adapter = None
+        if isinstance(override, dict):
+            paths = [override["base"]] if override.get("base") else []
+            adapter = override.get("adapter")
+        else:
+            paths = [override] if isinstance(override, str) else list(override)
+        _apply_weight_overrides(model, paths)
+        if adapter:
+            _attach_lora_adapter(model, adapter)
     text = open(PT, errors="ignore").read()
-    ids = tok(text, return_tensors="pt").input_ids[:, :2048].to(DEV)
+    all_ids = tok(text, return_tensors="pt").input_ids[0].to(DEV)
+    # MULTIWINDOW>1 (env, default 1) evaluates N non-overlapping 2048-token windows and returns
+    # the MEAN ppl — a single noisy slice is overfittable (doctor trains on a calib corpus), so the
+    # verifier scores on multiple held-out windows to confirm a recovery is real, not memorized.
+    # The running ladder leaves this at 1 (consistent fast search); only the verifier sets it.
+    nwin = int(os.environ.get("MULTIWINDOW", "1"))
+    W = 2048
+    ppls = []
     with torch.no_grad():
-        loss = model(ids, labels=ids).loss.item()
+        for w in range(max(1, nwin)):
+            seg = all_ids[w * W:(w + 1) * W]
+            if seg.numel() < 16:
+                break
+            ids = seg.unsqueeze(0)
+            ppls.append(math.exp(model(ids, labels=ids).loss.item()))
     del model; gc.collect()
     if DEV == "mps":
         torch.mps.empty_cache()
-    return math.exp(loss)
+    if len(ppls) > 1:
+        log(f"  [measure] {len(ppls)} windows: min={min(ppls):.2f} mean={sum(ppls)/len(ppls):.2f} max={max(ppls):.2f}")
+    return sum(ppls) / len(ppls)
 
 
 def capture_sigma():
     if os.path.exists(SIGPATH):
         log(f"# sigma already exists at {SIGPATH}, skipping capture")
         return
+    _ensure_ppl_text()
+    torch.set_num_threads(os.cpu_count() or 12)
     tok = AutoTokenizer.from_pretrained(MODEL)
     model = AutoModelForCausalLM.from_pretrained(MODEL, torch_dtype=DTYPE, attn_implementation="eager").to(DEV).eval()
     sig, hooks = {}, []
@@ -506,24 +678,65 @@ def _acquire_lock():
     atexit.register(_release)
 
 
+def _load_verify_set():
+    """Build CONFIGS['verify'] from a JSON spec so the verifier can independently REPRODUCE a
+    chosen set of top candidates. Spec = [[name, fn_name, [args...]], ...]; fn resolved from
+    module globals (build_awq/build_recover/build_rht/build_residual). Lets the verifier re-bake
+    + re-doctor the winners from scratch under MULTIWINDOW eval — independent reproduction is the
+    strongest 'this result is real' guarantee (catches eval-noise, overfit, and non-determinism)."""
+    spec_path = os.environ.get("VERIFY_SPEC")
+    if not spec_path or not os.path.exists(spec_path):
+        raise RuntimeError(f"SETNAME=verify needs VERIFY_SPEC json (got {spec_path!r})")
+    spec = json.load(open(spec_path))
+    out = []
+    for name, fn_name, args in spec:
+        fn = globals().get(fn_name)
+        if fn is None:
+            raise RuntimeError(f"verify spec: unknown build fn {fn_name!r} for {name}")
+        out.append((name, fn, tuple(args)))
+    CONFIGS["verify"] = out
+    log(f"# verify set: {len(out)} candidates — {[c[0] for c in out]}")
+
+
 def main():
+    global SRC
     _acquire_lock()
+    SRC = _resolve_src()
+    if SETNAME == "verify":
+        _load_verify_set()
     log(f"# audit {LABEL} dev={DEV} dtype={DTYPE} set={SETNAME} cpu={os.cpu_count()} free={_free_gb():.0f}GB")
-    capture_sigma()
 
     # --- checkpoint resume: scan JSONL for already-completed configs ---
-    completed = {}
+    records, completed, failed = {}, {}, {}
     if os.path.exists(f"{OUTP}.jsonl"):
         for line in open(f"{OUTP}.jsonl"):
             try:
                 rec = json.loads(line.strip())
                 cfg = rec.get("config")
-                if cfg and "ppl" in rec:
-                    completed[cfg] = rec
+                if cfg:
+                    records[cfg] = rec
             except Exception:
                 pass
+    for cfg, rec in records.items():
+        if "ppl" in rec:
+            completed[cfg] = rec
+        elif "error" in rec:
+            failed[cfg] = rec
     if completed:
         log(f"# resume: {len(completed)} checkpointed — {sorted(completed)}")
+    retry_errors = os.environ.get("LADDER_RETRY_ERRORS", "0").lower() in {"1", "true", "yes"}
+    skip = dict(completed)
+    if failed and not retry_errors:
+        skip.update(failed)
+        log(f"# resume: {len(failed)} error-checkpointed — {sorted(failed)}")
+
+    # Consume a saved inject before deciding whether expensive sigma capture is still needed.
+    _try_inject()
+    pending = [(name, fn, args) for name, fn, args in CONFIGS[SETNAME] if name not in skip]
+    if any(fn in (build_awq, build_recover) for _, fn, _ in pending):
+        capture_sigma()
+    else:
+        log("# sigma not needed; no pending AWQ/recovery configs")
 
     # --- f16 baseline (resumable) ---
     if "f16" in completed:
@@ -536,12 +749,16 @@ def main():
             json.dumps({"model": LABEL, "config": "f16", "eff_bpw": 16.0,
                         "ppl": round(hf, 3), "degr_pct": 0.0}) + "\n")
 
-    rows = list(completed.values())
+    rows = list(records.values())
     for name, fn, args in CONFIGS[SETNAME]:
         _try_inject()  # execute inject script if present before each config
 
-        if name in completed:
-            log(f"  {name:10s} -> SKIP (checkpoint +{completed[name].get('degr_pct','?')}%)")
+        if name in skip:
+            rec = skip[name]
+            if "ppl" in rec:
+                log(f"  {name:10s} -> SKIP (checkpoint +{rec.get('degr_pct','?')}%)")
+            else:
+                log(f"  {name:10s} -> SKIP (error checkpoint: {rec.get('error','')[:60]})")
             continue
 
         _clean_temps()   # sweep any leftover chunk parts/inputs from an interrupted run

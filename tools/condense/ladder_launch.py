@@ -37,6 +37,8 @@ CMD = [
 ENV = {**os.environ,
        "DOCTOR_DEVICE": "cpu",
        "DOCTOR_DTYPE": "bfloat16",
+       "DOCTOR_THREADS": str(os.cpu_count() or 8),  # all cores — PyTorch defaults to half on macOS
+       "DOCTOR_GRAD_ACCUM": "4",                    # 4-step grad accum = larger effective batch
        "PYTHONUNBUFFERED": "1",
        "STRAND_NO_GPU": "1",
        # The baker accumulates the FULL F32 recon in RAM (~28GB for 7B) → OOM-killed partway on
@@ -56,21 +58,24 @@ def _running_pid():
         return None
 
 
-LOCK = ROOT / "reports/cron/7b_ladder.lock"
+LOCK = ROOT / (OUTBASE + ".lock")
 
 
 def _kill_strays():
-    """Kill EVERY audit_ladder.py process, not just the PID-file one. The 2026-06-23 disk
-    crash was two detached ladders (one untracked) racing the same /tmp paths. Checkpoint
-    resume makes this safe — a killed run loses at most its in-flight config."""
+    """Kill untracked audit_ladder.py processes for this output base only."""
     try:
         out = subprocess.run(["pgrep", "-f", "audit_ladder.py"],
                              capture_output=True, text=True).stdout.split()
     except Exception:
         out = []
     killed = []
+    target = str(ROOT / OUTBASE)
     for p in out:
         try:
+            cmd = subprocess.run(["ps", "-p", p, "-o", "command="],
+                                 capture_output=True, text=True).stdout
+            if target not in cmd:
+                continue
             os.kill(int(p), 15)
             killed.append(p)
         except (ValueError, ProcessLookupError, PermissionError):

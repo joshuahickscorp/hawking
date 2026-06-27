@@ -16,6 +16,8 @@ cd "$HOME/Downloads/hawking" || exit 2
 # per-run paths via env (defaults = the original 7B ladder)
 HEALTH="${LADDER_HEALTH:-reports/cron/7b_ladder_health.log}"
 LOCK="${LADDER_LOCK:-reports/cron/7b_ladder.lock}"
+RUNLOG="${LADDER_RUN_LOG:-${LADDER_OUT:-reports/cron/7b_ladder}_run.log}"
+HEALTH_PID="${LADDER_HEALTH_PID:-${HEALTH%.log}.pid}"
 FLOOR_GB=6
 mkdir -p reports/cron
 
@@ -23,6 +25,13 @@ free_gb(){ df -g / | awk 'NR==2{print $4}'; }
 swap_used_mb(){ sysctl -n vm.swapusage | awk '{print $6}' | tr -d 'M'; }
 
 echo "# ladder health monitor start $(date)  FLOOR=${FLOOR_GB}GB" >> "$HEALTH"
+echo "$$" > "$HEALTH_PID"
+cleanup_pid(){
+  if [ -f "$HEALTH_PID" ] && [ "$(cat "$HEALTH_PID" 2>/dev/null)" = "$$" ]; then
+    rm -f "$HEALTH_PID"
+  fi
+}
+trap cleanup_pid EXIT
 # wait up to 90s for the ladder to write its lock (it spends ~10s importing torch first) so we
 # don't race-exit before monitoring even begins
 for _ in $(seq 1 90); do [ -f "$LOCK" ] && break; sleep 1; done
@@ -30,7 +39,7 @@ while [ -f "$LOCK" ]; do
   fg=$(free_gb); sw=$(swap_used_mb)
   bpid=$(pgrep -f 'quantize-model' | head -1)
   brss=$(ps -o rss= -p "${bpid:-0}" 2>/dev/null | awk '{printf "%.1f", $1/1048576}')
-  cfg=$(tail -3 reports/cron/7b_ladder_run.log 2>/dev/null | grep -oE '[0-9]-(AWQ|RHT)|res[0-9]\+[0-9]' | tail -1)
+  cfg=$(tail -20 "$RUNLOG" 2>/dev/null | grep -oE '([0-9](\.[0-9]+)?-(AWQ|RHT)([^ ]*)?|mp-[^ ]+|res[0-9]\+[0-9](\.[0-9]+)?|\[recover\])' | tail -1)
   printf '%s diskGB=%s swapMB=%s bakerRSS_GB=%s cfg=%s\n' "$(date +%H:%M:%S)" "$fg" "$sw" "${brss:-0}" "${cfg:-?}" >> "$HEALTH"
   # emergency backstop
   if [ -n "$fg" ] && [ "$fg" -lt "$FLOOR_GB" ] 2>/dev/null; then

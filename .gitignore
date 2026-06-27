@@ -39,6 +39,12 @@ models/
 *.gguf
 *.bin
 
+# Condense working dirs: model weights, calib corpora, measurement artifacts
+# (scratch/ ~18GB of safetensors+sidecars; research/ measurement JSON).
+# Reproducible from source + scripts; never commit.
+scratch/
+research/
+
 # Generated specialization artifacts: calibration corpus parquet shards,
 # learned-head .npz files, per-tensor quant configs, vocab-prune tables.
 # Produced by tools/training/* and tools/quant/*. Multi-GB; rebuild from
