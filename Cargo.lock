@@ -735,6 +735,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-context"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hawking-index",
+ "hide-core",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "hawking-core"
 version = "0.2.2"
 dependencies = [
@@ -756,6 +770,47 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "tokenizers",
+]
+
+[[package]]
+name = "hawking-index"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hide-core",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hawking-orch"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hide-core",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hawking-research"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hawking-context",
+ "hawking-index",
+ "hide-core",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]
@@ -782,6 +837,112 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
+name = "hide-backend"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hawking-context",
+ "hawking-index",
+ "hawking-orch",
+ "hawking-research",
+ "hide-core",
+ "hide-fleet",
+ "hide-kernel",
+ "hide-personalize",
+ "hide-security",
+ "hide-tools",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hide-core"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "hide-fleet"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hide-core",
+ "hide-kernel",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hide-kernel"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hawking-context",
+ "hawking-index",
+ "hawking-orch",
+ "hide-core",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "hide-personalize"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hawking-context",
+ "hawking-index",
+ "hide-core",
+ "hide-kernel",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "hide-security"
+version = "0.2.2"
+dependencies = [
+ "hide-core",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "hide-tools"
+version = "0.2.2"
+dependencies = [
+ "futures",
+ "hide-core",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
 
 [[package]]
 name = "http"

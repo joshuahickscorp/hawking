@@ -1,0 +1,29 @@
+[package]
+name = "hide-backend"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Backend composition and connector facade for HIDE"
+
+[dependencies]
+hide-core = { path = "../hide-core" }
+hide-kernel = { path = "../hide-kernel" }
+hide-fleet = { path = "../hide-fleet" }
+hide-personalize = { path = "../hide-personalize" }
+hide-security = { path = "../hide-security" }
+hide-tools = { path = "../hide-tools" }
+hawking-context = { path = "../hawking-context" }
+hawking-index = { path = "../hawking-index" }
+hawking-orch = { path = "../hawking-orch" }
+hawking-research = { path = "../hawking-research" }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

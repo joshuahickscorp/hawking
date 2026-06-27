@@ -1,0 +1,22 @@
+[package]
+name = "hide-kernel"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Headless HIDE agent kernel scaffold"
+
+[dependencies]
+hide-core = { path = "../hide-core" }
+hawking-context = { path = "../hawking-context" }
+hawking-index = { path = "../hawking-index" }
+hawking-orch = { path = "../hawking-orch" }
+futures = { workspace = true }
+parking_lot = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

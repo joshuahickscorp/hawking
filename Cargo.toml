@@ -1,6 +1,17 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/hide-core",
+    "crates/hide-kernel",
+    "crates/hide-fleet",
+    "crates/hide-personalize",
+    "crates/hide-backend",
+    "crates/hide-tools",
+    "crates/hide-security",
+    "crates/hawking-context",
+    "crates/hawking-index",
+    "crates/hawking-orch",
+    "crates/hawking-research",
     "crates/hawking",
     "crates/hawking-core",
     "crates/hawking-serve",
