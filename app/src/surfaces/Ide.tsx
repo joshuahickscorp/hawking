@@ -1,9 +1,10 @@
 /*
-  Ide.tsx: the AI IDE surface (D1.2). Editor-centric body: Explorer | (Editor / Diff Review) over a
-  resizable bottom panel (Terminal). The core gesture is the per-hunk diff review (HunkReview): the
-  agent's proposed change arrives as projection_patch{diff}, reviewed by keyboard (j/k/a/r), accepted
-  per hunk as AcceptDiff / rejected as RejectDiff. Monaco and xterm are mounted and fully re-skinned to
-  the doctrine (near-black anodized material, gold rim-light, Geist Mono): they must not read as VS Code.
+  Ide.tsx: the AI IDE surface, the workshop chamber (v3). Three concrete volumes float in the void:
+  the file tree (Explorer), the editor (largest), and the terminal, with --ma-4..6 between them. The
+  core gesture is the per-hunk diff review (HunkReview): the agent's proposed change arrives as
+  projection_patch{diff}, reviewed by keyboard (j/k/a/r), accepted per hunk as AcceptDiff / rejected as
+  RejectDiff. Monaco and xterm are mounted and recast in v3 (grayscale concrete, light as the only
+  accent, Geist Mono): they must not read as VS Code, and there is no gold anywhere.
 
   Sends: OpenFile, AcceptDiff/RejectDiff, RunCommand, Custom:save_file (via the editor instance).
   Consumes: projection_patch{diff} (the generic projections bag -> parseDiff), projection_patch{editor},
@@ -13,6 +14,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../store";
 import { TRANSPORT_KIND } from "../ipc";
+import { SectionLabel } from "../ui";
 import { Explorer } from "./ide/Explorer";
 import { EditorGroup } from "./ide/Editor";
 import { Terminal } from "./ide/Terminal";
@@ -49,39 +51,53 @@ export function Ide() {
   }, [editorPatch]);
 
   const allDecided = diff != null && diff.hunks.every((h) => h.status !== "pending");
+  const reviewing = diff != null && !allDecided;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "var(--sidebar-w) 1fr", height: "100%", minHeight: 0 }}>
-      <LocalKeyframes />
-
-      {/* Primary sidebar: Explorer + Search */}
-      <aside style={{ borderRight: "1px solid var(--rim)", minHeight: 0, background: "var(--surface-0)" }}>
+    <div
+      style={{
+        // Three volumes: a quiet file tree, the large editor over the terminal. They float in the
+        // chamber with generous void between them (the editor column is the subject).
+        display: "grid",
+        gridTemplateColumns: "clamp(240px, 22vw, 320px) 1fr",
+        gap: "var(--ma-6)",
+        height: "100%",
+        minHeight: 0,
+      }}
+    >
+      {/* FILE TREE volume: a calm airy list along the west of the chamber. */}
+      <aside className="volume" style={{ padding: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <Explorer activePath={openPath} onOpen={setOpenPath} />
       </aside>
 
-      {/* Editor group over the bottom panel (Terminal). */}
-      <div style={{ display: "grid", gridTemplateRows: "1fr 30%", minHeight: 0 }}>
-        <section style={{ minHeight: 0, position: "relative" }}>
-          {diff && !allDecided ? <DiffBanner path={diff.path} count={diff.hunks.filter((h) => h.status === "pending").length} /> : null}
-          <EditorGroup openPath={openPath} diff={diff} onDiffChange={setDiff} />
+      {/* EDITOR over TERMINAL: the two largest volumes, stacked with --ma-5 of void between. */}
+      <div style={{ display: "grid", gridTemplateRows: "1fr clamp(180px, 30%, 360px)", gap: "var(--ma-5)", minHeight: 0, minWidth: 0 }}>
+        {/* EDITOR volume: the largest, where the agent's change lands as reviewable hunks. */}
+        <section
+          className={"volume" + (reviewing ? " alive" : "")}
+          style={{ padding: 0, minHeight: 0, position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}
+        >
+          {reviewing ? <DiffBanner path={diff.path} count={diff.hunks.filter((h) => h.status === "pending").length} /> : null}
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <EditorGroup openPath={openPath} diff={diff} onDiffChange={setDiff} />
+          </div>
         </section>
 
-        <section style={{ borderTop: "1px solid var(--rim)", display: "flex", flexDirection: "column", minHeight: 0, background: "var(--surface-0)" }}>
+        {/* TERMINAL volume: the mirrored shell, the agent's commands entering as light. */}
+        <section className="volume" style={{ padding: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "var(--s3)",
-              padding: "4px var(--s3)",
-              fontSize: "var(--text-xs)",
-              color: "var(--text-low)",
-              borderBottom: "1px solid var(--rim)",
+              gap: "var(--ma-3)",
+              padding: "var(--ma-2) var(--ma-4)",
+              boxShadow: "inset 0 -1px 0 0 var(--line)",
             }}
           >
-            <span style={{ color: "var(--text-mid)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Terminal</span>
-            <span>shell.run mirrors agent commands</span>
+            <SectionLabel>Terminal</SectionLabel>
+            <span className="t-micro">shell.run mirrors agent commands</span>
           </div>
-          <div style={{ flex: 1, minHeight: 0, padding: "var(--s2) var(--s3) var(--s3)" }}>
+          <div style={{ flex: 1, minHeight: 0, padding: "var(--ma-3) var(--ma-4) var(--ma-4)" }}>
             <Terminal />
           </div>
         </section>
@@ -90,11 +106,13 @@ export function Ide() {
   );
 }
 
-// A calm gold-rim banner that the agent has a change waiting (no spinner; the rim is the aliveness).
+// A calm banner that the agent has a change waiting. No spinner; the editor volume already breathes
+// (.alive), so this only names the change in quiet light. The leading word reads in light, never gold.
 function DiffBanner({ path, count }: { path: string; count: number }) {
   return (
     <div
       role="status"
+      className="t-micro"
       style={{
         position: "absolute",
         top: 0,
@@ -103,40 +121,18 @@ function DiffBanner({ path, count }: { path: string; count: number }) {
         zIndex: 5,
         display: "flex",
         alignItems: "center",
-        gap: "var(--s2)",
-        padding: "3px var(--s4)",
-        background: "var(--surface-1)",
-        boxShadow: "inset 0 0 0 1px var(--radiation), 0 0 18px -8px var(--radiation-bloom)",
-        color: "var(--text-mid)",
-        fontSize: "var(--text-xs)",
+        gap: "var(--ma-2)",
+        padding: "var(--ma-2) var(--ma-4)",
+        background: "var(--concrete-3)",
+        boxShadow: "inset 0 -1px 0 0 var(--line), var(--inner-glow)",
+        color: "var(--text-2)",
       }}
     >
-      <span style={{ color: "var(--radiation-bright)" }}>change proposed</span>
-      <span>{path}</span>
-      <span style={{ marginLeft: "auto", color: "var(--text-low)" }}>
+      <span style={{ color: "var(--light)" }}>change proposed</span>
+      <span style={{ color: "var(--text-2)" }}>{path}</span>
+      <span style={{ marginLeft: "auto", color: "var(--text-3)" }}>
         {count} hunk{count === 1 ? "" : "s"} to review
       </span>
     </div>
-  );
-}
-
-/*
-  The two one-shot diff-settle keyframes the HunkReview absorption uses (C11). theme.css owns the
-  shared keyframes (radiation-breathe / radiation-travel) and is off-limits to edit, so these
-  surface-local animations are injected here. They honor prefers-reduced-motion via theme.css's
-  global reduce rule.
-*/
-function LocalKeyframes() {
-  return (
-    <style>{`
-      @keyframes hunk-absorb {
-        0%   { box-shadow: inset 0 0 0 1px var(--radiation-bright), 0 0 26px 0 var(--radiation-bloom); }
-        100% { box-shadow: inset 0 0 0 1px var(--rim); }
-      }
-      @keyframes hunk-dissolve {
-        0%   { opacity: 1; transform: translateY(0); }
-        100% { opacity: 0.4; transform: translateY(-2px); }
-      }
-    `}</style>
   );
 }

@@ -1,19 +1,24 @@
 /*
   hunkreview.tsx: the hunk-by-hunk diff-review gesture, re-housed for the Workstation
-  merge-review queue. THE CONTRACT IS THE IDE's (HIDE_PLAN D §580 + §594): move with
-  j/k, accept/reject with a/r (and Cmd+Enter / Cmd+Backspace under focus), so the gesture
-  is indistinguishable across the IDE and the merge surface. Accept -> AcceptDiff{run_id,diff_id},
-  reject -> RejectDiff, undo a settled hunk -> Custom:revert_diff. The host applies; we only
-  send the verdict and render the settling. No spinner: a hunk absorbs (green/red dissolves to
-  steady) or dissolves back out, the OP-1 key-resolving feel (C §432).
+  merge-review queue. THE CONTRACT IS THE IDE's: move with j/k, accept/reject with a/r
+  (and Cmd+Enter / Cmd+Backspace under focus), so the gesture is indistinguishable across
+  the IDE and the merge surface. Accept -> AcceptDiff{run_id,diff_id}, reject -> RejectDiff,
+  undo a settled hunk -> Custom:revert_diff. The host applies; we only send the verdict and
+  render the settling. No spinner: a hunk absorbs (the +/- quiets to steady code) or dissolves
+  back out, the OP-1 key-resolving feel.
 
-  This is a LOCAL component (parallel-safety: the IDE stub has no shared hunk primitive yet, so
-  the prompt says replicate the identical gesture rather than import across surfaces).
+  Doctrine v3 (Tadao Ando grayscale concrete): the diff is poured concrete; add/del are the
+  ONLY two pigments (--ok lichen, --bad oxide via the .hunk-add / .hunk-del classes, always
+  glyph-paired with +/-). The focused, still-pending hunk is the place light enters: it breathes
+  (LightEdge mode="breathe"). No gold, no third color, generous --ma-* air.
+
+  This is a LOCAL component (the IDE keeps its own copy; the prompt says replicate the
+  identical gesture rather than import across surfaces, so no seam shows).
 */
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { sendIntent } from "../../ipc";
 import { intent } from "../../wire";
-import { RadiationEdge } from "../../ui";
+import { LightEdge } from "../../ui";
 
 export type HunkVerdict = "pending" | "accepted" | "rejected";
 
@@ -36,11 +41,11 @@ export interface ReviewBranch {
   hunks: Hunk[];
 }
 
-// The j/k/a/r keymap, shared verbatim with the IDE diff focus (D §580).
+// The j/k/a/r keymap, shared verbatim with the IDE diff focus.
 const KEY_HELP = "j / k move   a accept   r reject   u undo";
 
 export function HunkReview({ branch }: { branch: ReviewBranch }) {
-  // verdict per hunk id; the user's accept/reject stream IS the personalization corpus (A6.8).
+  // verdict per hunk id; the user's accept/reject stream IS the personalization corpus.
   const [verdicts, setVerdicts] = useState<Record<string, HunkVerdict>>({});
   const [cursor, setCursor] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -67,7 +72,7 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
   };
   const undo = (h: Hunk) => {
     setVerdicts((v) => ({ ...v, [h.id]: "pending" }));
-    // a settled hunk reverts via a compensating upstream event (D §594).
+    // a settled hunk reverts via a compensating upstream event.
     void sendIntent(intent.custom("revert_diff", { run_id: branch.run_id, diff_id: branch.diff_id, hunk: h.id }));
   };
 
@@ -81,7 +86,7 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
   const onKey = (e: React.KeyboardEvent) => {
     const h = branch.hunks[cursor];
     if (!h) return;
-    // Cmd+Enter / Cmd+Backspace mirror the IDE accept/reject hunk binding (D §580).
+    // Cmd+Enter / Cmd+Backspace mirror the IDE accept/reject hunk binding.
     if (e.metaKey && e.key === "Enter") return void (e.preventDefault(), accept(h));
     if (e.metaKey && (e.key === "Backspace" || e.key === "Delete")) return void (e.preventDefault(), reject(h));
     if (e.metaKey) return;
@@ -123,17 +128,17 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
       ref={rootRef}
       tabIndex={0}
       onKeyDown={onKey}
-      style={{ outline: "none", display: "flex", flexDirection: "column", gap: "var(--s3)", minHeight: 0 }}
+      style={{ outline: "none", display: "flex", flexDirection: "column", gap: "var(--ma-6)", minHeight: 0 }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--s3)" }}>
-        <span style={{ color: "var(--text-hi)" }}>{branch.label}</span>
-        <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>{branch.path}</span>
-        <span style={{ marginLeft: "auto", color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--ma-4)" }}>
+        <span className="t-title" style={{ color: "var(--text-1)" }}>{branch.label}</span>
+        <span className="t-code" style={{ color: "var(--text-3)" }}>{branch.path}</span>
+        <span className="t-micro" style={{ marginLeft: "auto" }}>
           {allSettled ? `${accepted} kept` : `${settled}/${branch.hunks.length} reviewed`}
         </span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--s3)", overflowY: "auto", minHeight: 0 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-4)", overflowY: "auto", minHeight: 0 }}>
         {branch.hunks.map((h, i) => (
           <div key={h.id} ref={(el) => { rowRefs.current[i] = el; }}>
             <HunkBlock
@@ -149,15 +154,16 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
         ))}
       </div>
 
-      <div style={{ color: "var(--text-low)", fontSize: "var(--text-xs)", letterSpacing: "0.04em" }}>{KEY_HELP}</div>
+      <div className="t-micro" style={{ color: "var(--mute)" }}>{KEY_HELP}</div>
     </div>
   );
 }
 
-const VERDICT_RING: Record<HunkVerdict, string> = {
-  pending: "var(--rim)",
-  accepted: "var(--success)",
-  rejected: "var(--rim-strong)",
+// A settled hunk wears a quiet, steady shadow-line; pending wears the plain hairline.
+const VERDICT_SHADOW: Record<HunkVerdict, string> = {
+  pending: "var(--hairline)",
+  accepted: "var(--hairline-strong), var(--inner-glow)",
+  rejected: "var(--hairline)",
 };
 
 function HunkBlock({
@@ -182,10 +188,10 @@ function HunkBlock({
   const dissolved = verdict === "rejected";
   const body: CSSProperties = {
     borderRadius: "var(--radius)",
-    background: "var(--surface-0)",
-    boxShadow: `inset 0 0 0 1px ${VERDICT_RING[verdict]}`,
+    background: "var(--concrete-1)",
+    boxShadow: VERDICT_SHADOW[verdict],
     opacity: dissolved ? 0.4 : 1,
-    transition: "opacity 220ms ease, box-shadow 220ms ease, transform 220ms ease",
+    transition: "opacity var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease)",
     transform: dissolved ? "translateY(-2px)" : "none",
     overflow: "hidden",
   };
@@ -193,18 +199,18 @@ function HunkBlock({
     <div style={body}>
       <div
         onMouseEnter={onFocus}
+        className="t-micro"
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "var(--s2)",
-          padding: "var(--s2) var(--s3)",
-          color: "var(--text-low)",
-          fontSize: "var(--text-xs)",
-          boxShadow: "inset 0 -1px 0 0 var(--rim)",
+          gap: "var(--ma-2)",
+          padding: "var(--ma-2) var(--ma-3)",
+          color: "var(--text-3)",
+          boxShadow: "inset 0 -1px 0 0 var(--line)",
         }}
       >
         <span>{hunk.header}</span>
-        <span style={{ marginLeft: "auto", display: "flex", gap: "var(--s2)" }}>
+        <span style={{ marginLeft: "auto", display: "flex", gap: "var(--ma-2)" }}>
           {verdict === "pending" ? (
             <>
               <GestureBtn label="a accept" tone="add" onClick={onAccept} />
@@ -212,7 +218,7 @@ function HunkBlock({
             </>
           ) : (
             <>
-              <span style={{ color: absorbed ? "var(--diff-add-fg)" : "var(--text-low)" }}>
+              <span style={{ color: absorbed ? "var(--ok)" : "var(--text-3)" }}>
                 {absorbed ? "kept" : "rejected"}
               </span>
               <GestureBtn label="u undo" tone="ctx" onClick={onUndo} />
@@ -220,56 +226,46 @@ function HunkBlock({
           )}
         </span>
       </div>
-      <pre style={{ margin: 0, padding: "var(--s2) 0", fontSize: "var(--text-sm)", lineHeight: 1.5 }}>
+      <pre className="t-code" style={{ margin: 0, padding: "var(--ma-2) 0" }}>
         {hunk.lines.map((l, i) => (
           <DiffRow key={i} line={l} muted={absorbed && l.kind !== "ctx"} />
         ))}
       </pre>
     </div>
   );
-  // the focused, still-pending hunk wears the breathing gold edge (this is the live cursor).
-  return focused && verdict === "pending" ? <RadiationEdge mode="breathe">{inner}</RadiationEdge> : inner;
+  // the focused, still-pending hunk is where light enters: it breathes (the live cursor).
+  return focused && verdict === "pending" ? <LightEdge mode="breathe">{inner}</LightEdge> : inner;
 }
 
 function DiffRow({ line, muted }: { line: DiffLine; muted: boolean }) {
   const sign = line.kind === "add" ? "+" : line.kind === "del" ? "-" : " ";
-  // after accept the +/- settles into normal code (muted to context tone): the absorption (C §432).
-  const fg =
-    muted
-      ? "var(--text-mid)"
-      : line.kind === "add"
-        ? "var(--diff-add-fg)"
-        : line.kind === "del"
-          ? "var(--diff-del-fg)"
-          : "var(--text-mid)";
-  const bg =
-    muted
-      ? "transparent"
-      : line.kind === "add"
-        ? "var(--diff-add-bg)"
-        : line.kind === "del"
-          ? "var(--diff-del-bg)"
-          : "transparent";
+  // after accept the +/- settles into normal code (quieted to context tone): the absorption.
+  // add/del use the .hunk-add / .hunk-del classes (--ok / --bad + bg), the only two pigments.
+  const cls = muted ? "" : line.kind === "add" ? "hunk-add" : line.kind === "del" ? "hunk-del" : "";
+  const fg = muted || line.kind === "ctx" ? "var(--text-2)" : undefined;
   return (
-    <div style={{ display: "flex", gap: "var(--s2)", padding: "0 var(--s3)", background: bg, color: fg }}>
-      <span style={{ color: "var(--text-low)", width: 10, flex: "0 0 auto", userSelect: "none" }}>{sign}</span>
+    <div
+      className={cls}
+      style={{ display: "flex", gap: "var(--ma-2)", padding: "0 var(--ma-3)", ...(fg ? { color: fg } : null) }}
+    >
+      <span style={{ color: "var(--text-3)", width: 10, flex: "0 0 auto", userSelect: "none" }}>{sign}</span>
       <span style={{ whiteSpace: "pre-wrap" }}>{line.text}</span>
     </div>
   );
 }
 
 function GestureBtn({ label, tone, onClick }: { label: string; tone: DiffLine["kind"]; onClick: () => void }) {
-  const color = tone === "add" ? "var(--diff-add-fg)" : tone === "del" ? "var(--diff-del-fg)" : "var(--text-mid)";
+  const color = tone === "add" ? "var(--ok)" : tone === "del" ? "var(--bad)" : "var(--text-2)";
   return (
     <button
       onClick={onClick}
+      className="t-micro"
       style={{
         padding: "1px 8px",
         borderRadius: "var(--radius)",
-        fontSize: "var(--text-xs)",
         color,
-        boxShadow: "inset 0 0 0 1px var(--rim)",
-        background: "var(--surface-1)",
+        boxShadow: "var(--hairline)",
+        background: "var(--concrete-2)",
       }}
     >
       {label}

@@ -1,13 +1,14 @@
 /*
-  Editor.tsx: the Monaco editor group (D1.2 / D4.4 #2-#3). Two states:
+  Editor.tsx: the Monaco editor group (v3). Two states:
     - no pending diff: a plain Monaco editor on the open file (ProjectionPatch{editor}, OpenFile).
     - pending diff: Monaco's DiffEditor (the agent's proposed change) on the left, the per-hunk
-      HunkReview gesture on the right. Inline-by-default (C10), with a side-by-side toggle for large
-      diffs (D1.2 useInlineViewWhenSpaceIsLimited). Accept/reject route AcceptDiff/RejectDiff.
+      HunkReview gesture on the right. Inline-by-default, with a side-by-side toggle for large diffs.
+      Accept/reject route AcceptDiff/RejectDiff.
 
-  Re-housed from Void's Monaco DiffEditor wrapper + hunk controls, re-skinned via the hide-observatory
-  theme (monacoTheme.ts) so it never reads as VS Code. The diff-accept gesture is the HunkReview
-  component, identical to the one the Workstation merge-review reuses (C9).
+  Re-housed from a Monaco DiffEditor wrapper + hunk controls, recast in v3 via the hide-observatory
+  theme (monacoTheme.ts): grayscale concrete, light as the only accent, Geist Mono. It must never read
+  as VS Code. The diff-accept gesture is the HunkReview component, identical to the one the Workstation
+  merge-review reuses.
 */
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { DiffEditor, Editor as MonacoEditor, type Monaco } from "@monaco-editor/react";
@@ -40,11 +41,11 @@ export function EditorGroup({
     return (
       <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", height: "100%", minHeight: 0 }}>
         <DiffPane diff={diff} sideBySide={sideBySide} onToggle={() => setSideBySide((v) => !v)} beforeMount={beforeMount} />
-        <div style={{ borderLeft: "1px solid var(--rim)", minHeight: 0 }}>
+        <div style={{ boxShadow: "inset 1px 0 0 0 var(--line)", minHeight: 0 }}>
           <HunkReview
             doc={diff}
             onAct={(hunk, action) => {
-              // Optimistic local flip + the real intent (D2.2: AcceptDiff/RejectDiff{run_id,diff_id}).
+              // Optimistic local flip + the real intent (AcceptDiff/RejectDiff{run_id,diff_id}).
               onDiffChange(applyHunkStatus(diff, hunk.id, action === "accept" ? "accepted" : "rejected"));
               const i = action === "accept" ? intent.acceptDiff(diff.run_id, diff.diff_id) : intent.rejectDiff(diff.run_id, diff.diff_id);
               void sendIntent(i);
@@ -85,7 +86,7 @@ function DiffPane({
           options={{
             ...HIDE_EDITOR_OPTIONS,
             renderSideBySide: sideBySide,
-            readOnly: false, // the modified side is editable before accept (D1.2)
+            readOnly: false, // the modified side is editable before accept
             renderMarginRevertIcon: false,
             renderOverviewRuler: false,
             diffWordWrap: "off",
@@ -104,10 +105,10 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
 
   if (!openPath) {
     return (
-      <div style={{ display: "grid", placeItems: "center", height: "100%", color: "var(--text-low)", textAlign: "center" }}>
-        <div style={{ maxWidth: 360 }}>
-          <div style={{ fontSize: "var(--text-sm)" }}>Open a file from the Explorer.</div>
-          <div style={{ marginTop: "var(--s2)", color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
+      <div style={{ display: "grid", placeItems: "center", height: "100%", color: "var(--text-3)", textAlign: "center" }}>
+        <div style={{ maxWidth: 380 }}>
+          <div className="t-body" style={{ color: "var(--text-2)" }}>Open a file from the Explorer.</div>
+          <div className="t-code" style={{ marginTop: "var(--ma-3)", color: "var(--text-3)" }}>
             The agent's edits arrive here as reviewable diff hunks. Move with j and k, take with a, drop with r.
           </div>
         </div>
@@ -146,20 +147,20 @@ function TabRow({ path, suffix, children }: { path: string; suffix: string | nul
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "var(--s2)",
-        height: 30,
-        padding: "0 var(--s3)",
-        borderBottom: "1px solid var(--rim)",
-        background: "var(--surface-0)",
-        backgroundImage: "var(--panel-grad)",
-        fontSize: "var(--text-xs)",
+        gap: "var(--ma-2)",
+        height: 34,
+        padding: "0 var(--ma-4)",
+        boxShadow: "inset 0 -1px 0 0 var(--line)",
+        background: "var(--concrete-2)",
+        fontSize: "12px",
       }}
     >
-      <span style={{ color: "var(--text-hi)" }}>{name}</span>
+      <span className="t-code" style={{ color: "var(--text-1)" }}>{name}</span>
       {suffix ? (
-        <span style={{ color: "var(--radiation)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{suffix}</span>
+        // the diff marker reads in light, not gold; uppercase label as quiet punctuation.
+        <span className="t-label" style={{ color: "var(--light)", textTransform: "uppercase" }}>{suffix}</span>
       ) : null}
-      <span style={{ color: "var(--text-low)" }}>{path}</span>
+      <span className="t-code" style={{ color: "var(--text-3)" }}>{path}</span>
       <div style={{ marginLeft: "auto" }}>{children}</div>
     </div>
   );
@@ -171,12 +172,12 @@ function ViewToggle({ sideBySide, onToggle }: { sideBySide: boolean; onToggle: (
       onClick={onToggle}
       title="Toggle inline / side-by-side"
       style={{
-        fontSize: "var(--text-xs)",
-        color: "var(--text-mid)",
-        padding: "2px 8px",
+        fontSize: "12px",
+        color: "var(--text-2)",
+        padding: "var(--ma-1) var(--ma-3)",
         borderRadius: "var(--radius)",
-        boxShadow: "inset 0 0 0 1px var(--rim)",
-        background: "var(--surface-1)",
+        boxShadow: "var(--hairline)",
+        background: "var(--concrete-3)",
       }}
     >
       {sideBySide ? "side by side" : "inline"}
@@ -184,19 +185,18 @@ function ViewToggle({ sideBySide, onToggle }: { sideBySide: boolean; onToggle: (
   );
 }
 
-// No spinner (C14): aliveness is the breathing gold, not a wheel.
+// No spinner: aliveness is the breathing light, not a wheel.
 function Loading() {
   return (
     <div style={{ display: "grid", placeItems: "center", height: "100%" }}>
       <span
         aria-label="loading editor"
+        className="alive"
         style={{
           width: 10,
           height: 10,
           borderRadius: "50%",
-          background: "var(--radiation)",
-          boxShadow: "0 0 12px 0 var(--radiation-bloom)",
-          animation: "radiation-breathe 1.8s ease-in-out infinite",
+          background: "var(--light)",
         }}
       />
     </div>

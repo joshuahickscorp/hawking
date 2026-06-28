@@ -1,18 +1,21 @@
 /*
   board.tsx: the fleet board + THE WEDGE + the per-run timeline strip.
 
-  The fleet board is a CALM GRID of agent cards (not a swarm, Self-check C15): each card is an
-  objective + one live-feed line (its current action) + status by glow (breathing gold = active,
-  jade = done, amber = needs you, red = failed). Status is shape+glow, never color alone.
+  Doctrine v3 (Tadao Ando grayscale concrete): the fleet board is a CALM GRID of .volume slabs
+  floating in generous void (not a swarm). Each card is an objective + one live-feed line (its
+  current action) + STATE READ BY LIGHT, never a colored badge: an active card breathes (.alive
+  via LightEdge), a done card rests steady, a card that NEEDS YOU is lit and steady (the agent
+  asking for you, the cross of light), a failed card carries the --bad glyph and quiet text.
+  There is no third color and no amber: "needs you" is a glyph + neutral text + the steady light.
 
-  THE WEDGE (HIDE_PLAN §111, the headline brand frame): one control, "fork and try N". It dispatches
+  THE WEDGE (the headline brand frame): one control, "fork and try N". It dispatches
   ForkSession{at_event} x N then Custom:fleet_run per branch, and at the fork moment plays the
-  RadiationEdge `travel` sheen from the parent card to each freshly spawned child. The gold edge IS
-  the state memcpy, rendered: no five spinners. A Cormorant number resolves the beat ("5 branches.
+  LightEdge mode="travel" sheen from the parent card to each freshly spawned child. The light edge
+  IS the state memcpy, rendered: no five spinners. A Display number resolves the beat ("5 branches.
   0 re-reads.").
 
-  The timeline strip is the per-run scrub/fork rail (ScrubToEvent / ForkSession), the OpenHands
-  event-stream filmstrip re-housed: a lane of dots in seq order, scrub back/forward, fork at a dot.
+  The timeline strip is the per-run scrub/fork rail (ScrubToEvent / ForkSession), a lane of dots
+  in seq order rendered in light (never gold), scrub back/forward, fork at a dot.
 
   Local view-state seeds from the store's fleet slice (the source of truth) and layers the
   fork/timeline interaction the mock transport does not script, so the wedge is ALIVE with no backend.
@@ -21,22 +24,30 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { sendIntent } from "../../ipc";
 import { useStore, type FleetRun } from "../../store";
 import { intent } from "../../wire";
-import { Display, Panel, RadiationEdge, SectionLabel } from "../../ui";
+import { Display, LightEdge, SectionLabel, Volume } from "../../ui";
 
 const MOCK_SESSION = "ses_mock0000000000000000000";
 
-// status -> the marker color (always with the shape/label, never color alone).
-const STATE_DOT: Record<FleetRun["state"], string> = {
-  active: "var(--radiation)",
-  waiting: "var(--warning)",
-  done: "var(--success)",
-  failed: "var(--danger)",
+// status -> a glyph + label. State is read by light (breathe / steady / lit) plus this glyph,
+// never by color alone. Only "failed" carries a pigment (--bad), always with its glyph.
+const STATE_GLYPH: Record<FleetRun["state"], string> = {
+  active: "›",
+  waiting: "◆", // the agent is asking for you
+  done: "●",
+  failed: "✕",
 };
 const STATE_LABEL: Record<FleetRun["state"], string> = {
   active: "active",
   waiting: "needs you",
   done: "done",
   failed: "failed",
+};
+// the glyph tone: light for the states the eye should land on, --bad only for failure.
+const STATE_TONE: Record<FleetRun["state"], string> = {
+  active: "var(--light)",
+  waiting: "var(--light)",
+  done: "var(--text-2)",
+  failed: "var(--bad)",
 };
 
 // One believable live-feed line per run (the calm tool-feed, not a log firehose).
@@ -101,7 +112,7 @@ export function FleetBoard() {
     setBranches((b) => [...b, ...children]);
     setLastFork({ from: parent.objective, n });
     setWedgeFor(null);
-    // the travel sheen is one-shot: clear the flag after it sweeps (1.4s, matches radiation-travel).
+    // the travel sheen is one-shot: clear the flag after it sweeps (matches the light-travel keyframe).
     const t = setTimeout(
       () => setBranches((b) => b.map((x) => (x.justForked ? { ...x, justForked: false } : x))),
       1500,
@@ -113,32 +124,30 @@ export function FleetBoard() {
 
   return (
     <section>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--s3)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-4)" }}>
         <SectionLabel count={branches.length}>Fleet</SectionLabel>
         {lastFork ? (
-          // the Cormorant beat that resolves the fork: "N branches. 0 re-reads."
-          <Display size={20} style={{ color: "var(--text-mid)", marginLeft: "auto" }}>
+          // the Display beat that resolves the fork: "N branches. 0 re-reads."
+          <Display style={{ fontSize: "20px", letterSpacing: "-0.02em", color: "var(--text-2)", marginLeft: "auto" }}>
             {lastFork.n} branches. 0 re-reads.
           </Display>
         ) : (
-          <span style={{ marginLeft: "auto", color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
-            {active} breathing
-          </span>
+          <span className="t-micro" style={{ marginLeft: "auto" }}>{active} breathing</span>
         )}
       </div>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "var(--s3)",
-          marginTop: "var(--s2)",
+          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+          gap: "var(--ma-8)",
+          marginTop: "var(--ma-6)",
         }}
       >
         {branches.length === 0 ? (
-          <Panel pad="var(--s5)" style={{ color: "var(--text-low)" }}>
+          <Volume pad="var(--ma-8)" style={{ color: "var(--text-3)" }}>
             No runs yet. Fan out agents from Chat, or fork an objective and try N.
-          </Panel>
+          </Volume>
         ) : (
           branches.map((b) => (
             <AgentCard
@@ -167,80 +176,78 @@ function AgentCard({
   onFork: (n: number) => void;
 }) {
   const live = branch.state === "active";
+  const needsYou = branch.state === "waiting";
+  // a card that NEEDS YOU holds a steady lit edge (the agent asking, not breathing);
+  // an active card breathes; done and failed rest quiet. State is read by light, never a badge.
+  const litSteady: CSSProperties = needsYou
+    ? { boxShadow: "var(--hairline-strong), var(--light-bloom), var(--inner-glow)" }
+    : {};
   const card = (
-    <Panel
-      active={live && !branch.justForked}
-      pad="var(--s4)"
-      style={{ display: "flex", flexDirection: "column", gap: "var(--s3)", height: "100%" }}
+    <Volume
+      alive={live && !branch.justForked}
+      pad="var(--ma-6)"
+      style={{ display: "flex", flexDirection: "column", gap: "var(--ma-4)", height: "100%", ...litSteady }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)" }}>
-        <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: STATE_DOT[branch.state],
-            boxShadow: branch.state === "done" ? "0 0 6px 0 var(--success)" : undefined,
-          }}
-        />
-        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-low)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {STATE_LABEL[branch.state]}
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)" }}>
+        <span style={{ color: STATE_TONE[branch.state], fontSize: "11px", lineHeight: 1 }}>
+          {STATE_GLYPH[branch.state]}
         </span>
+        <span className="t-label">{STATE_LABEL[branch.state]}</span>
         {branch.parent ? (
-          <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>fork of {branch.parent}</span>
+          <span className="t-micro">fork of {branch.parent}</span>
         ) : null}
-        <span style={{ marginLeft: "auto", color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
+        <span className="t-micro" style={{ marginLeft: "auto" }}>
           step {branch.step}/{branch.steps}
         </span>
       </div>
 
-      <div style={{ color: "var(--text-hi)" }}>{branch.objective}</div>
+      <div className="t-title" style={{ color: "var(--text-1)" }}>{branch.objective}</div>
 
       {/* the ONE live-feed line: current action, the calm tool feed (no firehose). */}
       <div
+        className="t-code"
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "var(--s2)",
-          color: live ? "var(--radiation)" : "var(--text-low)",
-          fontSize: "var(--text-sm)",
-          minHeight: "calc(var(--text-sm) * var(--leading-ui))",
+          gap: "var(--ma-2)",
+          color: live ? "var(--text-1)" : "var(--text-2)",
+          minHeight: "calc(13.5px * 1.55)",
         }}
       >
-        {live ? <span style={{ color: "var(--radiation)" }}>›</span> : null}
+        {live ? <span style={{ color: "var(--light)" }}>›</span> : null}
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{branch.feed}</span>
       </div>
 
-      {/* progress as a recessed bar (real work, not a spinner). */}
-      <div style={{ height: 4, borderRadius: 999, background: "var(--surface-2)", boxShadow: "inset 0 0 0 1px var(--rim)" }}>
+      {/* progress as a recessed bar (real work, not a spinner); fill in light, never color. */}
+      <div style={{ height: 4, borderRadius: 999, background: "var(--concrete-1)", boxShadow: "var(--hairline)" }}>
         <div
           style={{
             width: `${(branch.step / Math.max(branch.steps, 1)) * 100}%`,
             height: "100%",
             borderRadius: 999,
-            background: live ? "var(--radiation)" : STATE_DOT[branch.state],
-            transition: "width 320ms ease",
+            background: branch.state === "failed" ? "var(--bad)" : live || needsYou ? "var(--light)" : "var(--text-3)",
+            transition: "width var(--dur-slow) var(--ease)",
           }}
         />
       </div>
 
       <RunTimeline runId={branch.id} steps={branch.steps} at={branch.step} />
 
-      <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "var(--ma-2)", flexWrap: "wrap" }}>
         <CardBtn label="Pause" onClick={() => void sendIntent(intent.pauseRun(branch.id))} disabled={!live} />
         <CardBtn label="Stop" onClick={() => void sendIntent(intent.cancelRun(branch.id))} disabled={!live} />
         {/* THE WEDGE control: fork and try N. */}
         {!branch.parent ? (
-          <CardBtn label="Fork and try N" tone="gold" onClick={onWedge} active={wedgeOpen} />
+          <CardBtn label="Fork and try N" lit onClick={onWedge} active={wedgeOpen} />
         ) : null}
       </div>
 
       {wedgeOpen ? <Wedge onFork={onFork} /> : null}
-    </Panel>
+    </Volume>
   );
 
-  // at the fork moment the new child wears the travelling gold sheen: the state memcpy, rendered.
-  return branch.justForked ? <RadiationEdge mode="travel">{card}</RadiationEdge> : card;
+  // at the fork moment the new child wears the travelling light sheen: the state memcpy, rendered.
+  return branch.justForked ? <LightEdge mode="travel">{card}</LightEdge> : card;
 }
 
 // THE WEDGE control body: pick N, one key fans out.
@@ -251,36 +258,36 @@ function Wedge({ onFork }: { onFork: (n: number) => void }) {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "var(--s2)",
-        padding: "var(--s2)",
+        gap: "var(--ma-2)",
+        padding: "var(--ma-3)",
         borderRadius: "var(--radius)",
-        background: "var(--surface-1)",
-        boxShadow: "inset 0 0 0 1px var(--rim)",
+        background: "var(--concrete-1)",
+        boxShadow: "var(--hairline)",
       }}
     >
-      <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>try</span>
+      <span className="t-micro">try</span>
       {opts.map((n) => (
         <button
           key={n}
           onClick={() => onFork(n)}
+          className="t-code"
           style={{
             padding: "2px 12px",
             borderRadius: "var(--radius)",
-            color: "var(--radiation-bright)",
-            fontSize: "var(--text-sm)",
-            background: "var(--surface-0)",
-            boxShadow: "inset 0 0 0 1px var(--radiation)",
+            color: "var(--light)",
+            background: "var(--concrete-3)",
+            boxShadow: "var(--hairline-strong), var(--light-bloom)",
           }}
         >
           {n}
         </button>
       ))}
-      <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)", marginLeft: "auto" }}>approaches at once</span>
+      <span className="t-micro" style={{ marginLeft: "auto" }}>approaches at once</span>
     </div>
   );
 }
 
-// ---- The per-run timeline strip: scrub / fork over the event log (OpenHands filmstrip, re-housed). ----
+// ---- The per-run timeline strip: scrub / fork over the event log. ----
 export function RunTimeline({ runId, steps, at }: { runId: string; steps: number; at: number }) {
   const [scrub, setScrub] = useState<number | null>(null);
   const here = scrub ?? at;
@@ -293,7 +300,7 @@ export function RunTimeline({ runId, steps, at }: { runId: string; steps: number
   const forkHere = (i: number) => void sendIntent(intent.forkSession(MOCK_SESSION, `evt_${runId}_${i}`));
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
         {dots.map((i) => {
           const past = i <= here;
@@ -311,7 +318,7 @@ export function RunTimeline({ runId, steps, at }: { runId: string; steps: number
       {scrub != null ? (
         <button
           onClick={() => setScrub(null)}
-          style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}
+          className="t-micro"
           title="return to live"
         >
           live
@@ -327,11 +334,10 @@ function dotStyle(past: boolean, cur: boolean): CSSProperties {
     height: cur ? 9 : 7,
     padding: 0,
     borderRadius: "50%",
-    background: past ? "var(--radiation)" : "var(--surface-2)",
-    boxShadow: cur
-      ? "0 0 0 1px var(--radiation-bright), 0 0 8px 0 var(--radiation-bloom)"
-      : "inset 0 0 0 1px var(--rim)",
-    transition: "all 160ms ease",
+    // dots are light, never gold: past steps glow faintly, the current step blooms.
+    background: past ? "var(--light)" : "var(--concrete-4)",
+    boxShadow: cur ? "var(--light-bloom)" : "var(--hairline)",
+    transition: "all var(--dur) var(--ease)",
   };
 }
 
@@ -339,31 +345,30 @@ function CardBtn({
   label,
   onClick,
   disabled,
-  tone,
+  lit,
   active,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  tone?: "gold";
+  lit?: boolean;
   active?: boolean;
 }) {
-  const gold = tone === "gold";
   return (
     <button
       onClick={onClick}
       disabled={disabled}
+      className="t-micro"
       style={{
         padding: "3px 10px",
         borderRadius: "var(--radius)",
-        fontSize: "var(--text-xs)",
-        color: disabled ? "var(--text-low)" : gold ? "var(--radiation-bright)" : "var(--text-mid)",
+        color: disabled ? "var(--text-3)" : lit ? "var(--light)" : "var(--text-2)",
         boxShadow: active
-          ? "inset 0 0 0 1px var(--radiation), 0 0 12px -4px var(--radiation-bloom)"
-          : gold
-            ? "inset 0 0 0 1px var(--radiation)"
-            : "inset 0 0 0 1px var(--rim)",
-        background: active ? "var(--surface-2)" : "var(--surface-1)",
+          ? "var(--hairline-strong), var(--light-bloom)"
+          : lit
+            ? "var(--hairline-strong)"
+            : "var(--hairline)",
+        background: active ? "var(--concrete-3)" : "var(--concrete-2)",
       }}
     >
       {label}

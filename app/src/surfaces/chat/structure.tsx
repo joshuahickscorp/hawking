@@ -1,8 +1,8 @@
 /*
   chat/structure.tsx: the inline structure that lives INSIDE the assistant stream.
-  Three calm, material, gold-rim devices, re-housed from the Cline/OpenCode plan-act + per-step
-  chat UX into the HIDE doctrine (near-black panels, Geist Mono telemetry voice, gold rim-light,
-  shape+label markers, no spinners, no churn):
+  Three calm, material devices, re-housed from the Cline/OpenCode plan-act + per-step chat UX into
+  the v3 doctrine (grayscale concrete volumes, Geist Mono telemetry voice, light as the only accent,
+  glyph+label markers, no spinners, no churn):
 
     PlanCard  <- projection_patch:plan       : ordered steps with per-step status + approve/edit/reorder.
     ToolChip  <- tool_progress{call_id,msg}   : one calm chip per tool call, no per-token churn.
@@ -15,7 +15,7 @@
 */
 import { useState, type CSSProperties } from "react";
 import type { ToolEvent } from "../../store";
-import { Panel } from "../../ui";
+import { Gate, Volume } from "../../ui";
 import {
   blockLabel,
   chip,
@@ -44,10 +44,11 @@ export function PlanCard({
   const done = steps.filter((s) => s.status === "done").length;
 
   return (
-    <Panel active={awaiting} pad="var(--s3)" style={{ background: "var(--surface-0)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)", marginBottom: "var(--s2)" }}>
+    // While the plan waits for you, the whole volume breathes (the agent needs you, read as light).
+    <Volume alive={awaiting} pad="var(--ma-4)">
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)", marginBottom: "var(--ma-3)" }}>
         <span style={blockLabel}>Plan</span>
-        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-low)" }}>
+        <span className="t-micro">
           {done}/{steps.length}
         </span>
         {awaiting ? (
@@ -56,7 +57,7 @@ export function PlanCard({
           </button>
         ) : null}
       </div>
-      <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+      <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--ma-1)" }}>
         {steps.map((s, i) => (
           <PlanStepRow
             key={s.id ?? i}
@@ -69,7 +70,7 @@ export function PlanCard({
           />
         ))}
       </ol>
-    </Panel>
+    </Volume>
   );
 }
 
@@ -100,23 +101,25 @@ function PlanStepRow({
   };
 
   return (
-    <li style={{ display: "flex", alignItems: "flex-start", gap: "var(--s2)", padding: "3px 0", position: "relative" }}>
-      {/* the spine: index marker + a hairline connector down to the next step */}
+    <li style={{ display: "flex", alignItems: "flex-start", gap: "var(--ma-3)", padding: "var(--ma-1) 0", position: "relative" }}>
+      {/* the spine: status glyph + a shadow-line connector down to the next step. The active step's
+          marker breathes (the .alive keyframe), the agent's current move read as light. */}
       <span
         aria-hidden
         title={step.status ?? "pending"}
+        className={active ? "alive" : undefined}
         style={{
           flex: "0 0 auto",
           width: 16,
           textAlign: "center",
           color: mark.color,
-          ...(active ? { animation: "radiation-breathe 2.2s ease-in-out infinite" } : null),
+          ...(active ? { borderRadius: "var(--radius-pill)" } : null),
         }}
       >
         {mark.glyph}
       </span>
       {!last ? (
-        <span aria-hidden style={{ position: "absolute", left: 7, top: 22, bottom: -3, width: 1, background: "var(--rim)" }} />
+        <span aria-hidden style={{ position: "absolute", left: 7, top: 24, bottom: -4, width: 1, background: "var(--line)" }} />
       ) : null}
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -130,17 +133,17 @@ function PlanStepRow({
               if (e.key === "Enter") commit();
               if (e.key === "Escape") setEditing(false);
             }}
+            className="t-body"
             style={{
               width: "100%",
-              background: "var(--surface-2)",
+              background: "var(--concrete-4)",
               border: "none",
               outline: "none",
-              color: "var(--text-hi)",
+              color: "var(--text-1)",
               font: "inherit",
-              fontSize: "var(--text-sm)",
-              padding: "2px 6px",
+              padding: "var(--ma-1) var(--ma-2)",
               borderRadius: "var(--radius)",
-              boxShadow: "inset 0 0 0 1px var(--rim)",
+              boxShadow: "var(--hairline)",
             }}
           />
         ) : (
@@ -150,20 +153,20 @@ function PlanStepRow({
               setEditing(true);
             }}
             title="edit step"
+            className="t-body"
             style={{
               textAlign: "left",
               width: "100%",
-              fontSize: "var(--text-sm)",
-              color: active ? "var(--text-hi)" : step.status === "done" ? "var(--text-low)" : "var(--text-mid)",
+              color: active ? "var(--text-1)" : step.status === "done" ? "var(--text-3)" : "var(--text-2)",
               textDecoration: step.status === "skipped" ? "line-through" : undefined,
             }}
           >
-            <span style={{ color: "var(--text-low)", marginRight: "var(--s2)" }}>{index + 1}</span>
+            <span style={{ color: "var(--text-3)", marginRight: "var(--ma-3)" }}>{index + 1}</span>
             {step.title}
           </button>
         )}
         {step.detail ? (
-          <div style={{ fontSize: "var(--text-xs)", color: "var(--text-low)", paddingLeft: 22 }}>{step.detail}</div>
+          <div className="t-micro" style={{ paddingLeft: 22, marginTop: "var(--ma-1)" }}>{step.detail}</div>
         ) : null}
       </div>
 
@@ -185,9 +188,9 @@ function PlanStepRow({
 }
 
 const reorderBtn: CSSProperties = {
-  color: "var(--text-low)",
-  fontSize: "var(--text-xs)",
-  padding: "0 3px",
+  color: "var(--text-3)",
+  fontSize: "12px",
+  padding: "0 var(--ma-1)",
   lineHeight: 1.4,
 };
 
@@ -197,11 +200,11 @@ export function ToolChip({ tool }: { tool: ToolEvent }) {
   const verb = tool.message.split(/[:\s]/, 1)[0] || "tool";
   return (
     <span style={chip} title={tool.call_id}>
-      <span aria-hidden style={{ color: "var(--radiation)" }}>
+      <span aria-hidden style={{ color: "var(--text-3)" }}>
         ▸
       </span>
-      <span style={{ color: "var(--text-low)" }}>{verb}</span>
-      <span style={{ color: "var(--text-mid)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <span style={{ color: "var(--text-3)" }}>{verb}</span>
+      <span style={{ color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {tool.message.slice(verb.length).replace(/^[:\s]+/, "")}
       </span>
     </span>
@@ -211,9 +214,9 @@ export function ToolChip({ tool }: { tool: ToolEvent }) {
 export function ToolChipRow({ tools }: { tools: ToolEvent[] }) {
   if (tools.length === 0) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--s1)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-3)" }}>
       <span style={blockLabel}>Tools</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--s2)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-2)" }}>
         {tools.map((t, i) => (
           <ToolChip key={t.call_id + i} tool={t} />
         ))}
@@ -236,30 +239,32 @@ export function DiffChipRow({
 }) {
   if (chips.length === 0) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--s1)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-3)" }}>
       <span style={blockLabel}>Diffs</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--s2)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-2)" }}>
         {chips.map((c) => {
           const settled = c.status === "applied" || c.status === "rejected";
           const file = c.path.split("/").pop() ?? c.path;
           return (
-            <span key={c.diff_id} style={{ ...chip, paddingRight: settled ? 9 : 3 }}>
-              <button onClick={() => onOpen(c)} title={c.path} style={{ display: "inline-flex", alignItems: "center", gap: "var(--s2)", color: "inherit" }}>
-                <span aria-hidden style={{ color: "var(--radiation)" }}>
+            <span key={c.diff_id} style={{ ...chip, paddingRight: settled ? "var(--ma-3)" : "var(--ma-1)" }}>
+              <button onClick={() => onOpen(c)} title={c.path} style={{ display: "inline-flex", alignItems: "center", gap: "var(--ma-2)", color: "inherit" }}>
+                <span aria-hidden style={{ color: "var(--text-3)" }}>
                   ◫
                 </span>
-                <span style={{ color: "var(--text-mid)" }}>{file}</span>
-                {c.added != null ? <span style={{ color: "var(--diff-add-fg)" }}>+{c.added}</span> : null}
-                {c.removed != null ? <span style={{ color: "var(--diff-del-fg)" }}>-{c.removed}</span> : null}
+                <span style={{ color: "var(--text-2)" }}>{file}</span>
+                {/* added/removed counts in the diff pigments, each glyph-paired so color is never alone */}
+                {c.added != null ? <span style={{ color: "var(--ok)" }}>+{c.added}</span> : null}
+                {c.removed != null ? <span style={{ color: "var(--bad)" }}>-{c.removed}</span> : null}
               </button>
               {c.status === "applied" ? (
-                <span style={{ color: "var(--success)" }}>applied</span>
+                <span style={{ color: "var(--ok)" }}>● applied</span>
               ) : c.status === "rejected" ? (
-                <span style={{ color: "var(--text-low)" }}>rejected</span>
+                <span style={{ color: "var(--text-3)" }}>rejected</span>
               ) : c.status === "stale" ? (
-                <span style={{ color: "var(--warning)" }}>stale</span>
+                // "stale" is a needs-you state, not a third color: a neutral glyph + --mute text.
+                <span style={{ color: "var(--mute)" }}>⟳ stale</span>
               ) : (
-                <span style={{ display: "inline-flex", gap: 2 }}>
+                <span style={{ display: "inline-flex", gap: "var(--ma-1)" }}>
                   <button onClick={() => onAccept(c)} title="accept (Cmd+Enter)" style={ctlStyle(true)}>
                     a
                   </button>
@@ -289,23 +294,25 @@ export function InlineGate({
   onDismiss: () => void;
 }) {
   return (
-    <Panel active pad="var(--s3)" style={{ background: "var(--surface-0)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)", marginBottom: "var(--s1)" }}>
-        <span aria-hidden style={{ color: "var(--radiation-bright)" }}>
+    // The agent needs you: the volume holds the steady light of a threshold (alive breathe + lit glyph).
+    <Volume alive pad="var(--ma-4)">
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)", marginBottom: "var(--ma-2)" }}>
+        <span aria-hidden style={{ color: "var(--light)" }}>
           ◈
         </span>
-        <span style={{ ...blockLabel, color: "var(--radiation-bright)" }}>Approval</span>
-        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-low)" }}>{gate}</span>
+        <span style={{ ...blockLabel, color: "var(--text-2)" }}>Approval</span>
+        <span className="t-micro">{gate}</span>
       </div>
-      <div style={{ fontSize: "var(--text-sm)", color: "var(--text-hi)", marginBottom: "var(--s2)" }}>{message}</div>
-      <div style={{ display: "flex", gap: "var(--s2)" }}>
-        <button onClick={onApprove} style={ctlStyle(true)}>
+      <div className="t-body" style={{ color: "var(--text-1)", marginBottom: "var(--ma-4)" }}>{message}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)" }}>
+        {/* the lit capsule: the one tactile control, holds steady, states plainly what happens */}
+        <Gate onClick={onApprove} title="approve this action">
           Approve
-        </button>
+        </Gate>
         <button onClick={onDismiss} style={ctlStyle(false)}>
           Dismiss
         </button>
       </div>
-    </Panel>
+    </Volume>
   );
 }

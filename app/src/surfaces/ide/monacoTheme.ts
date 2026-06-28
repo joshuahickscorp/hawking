@@ -1,107 +1,109 @@
 /*
-  monacoTheme.ts: the DOCTRINE Monaco theme. This is the load-bearing re-skin (Risk R5 / Self-check
-  C15: "Monaco looks like VS Code"). Every Monaco color is pinned to a Part C token value so the editor
-  reads as HIDE near-black anodized material with the gold radiation accent, NOT VS Code blue.
+  monacoTheme.ts: the DOCTRINE Monaco theme (v3, Tadao Ando grayscale concrete + light).
+  This is the load-bearing re-skin (Self-check: "Monaco looks like VS Code"). Every Monaco color is
+  pinned to a v3 theme.css token value so the editor reads as a HIDE concrete chamber where the only
+  accent is LIGHT entering the dark, NOT VS Code blue and NOT the retired v2 gold.
 
-  Monaco's theme API takes literal hex, not CSS variables, so the Part C token values are mirrored here
-  as constants. This file is the ONLY place those values are duplicated, and they trace 1:1 to theme.css.
-  No blue, no purple anywhere (C3 off-limits). Gold cursor/selection. Geist Mono is set on the editor
-  instance options (fontFamily), not in the theme.
+  Monaco's theme API takes literal hex, not CSS variables, so the v3 token values are mirrored here as
+  constants. This file is the ONLY place those values are duplicated, and they trace 1:1 to theme.css.
+  Absolute nevers: no blue, no purple, no gold, no yellow. Keywords and types are LIGHT; strings are ok
+  (lichen); comments are text-3; diffs are ok/bad (lichen/oxide), always paired with +/- gutter markers.
+  The caret is light. Geist Mono is set on the editor instance options (fontFamily), not in the theme.
 */
 import { loader } from "@monaco-editor/react";
 import type * as Monaco from "monaco-editor";
 
-// Mirror of the Part C tokens (theme.css) that Monaco needs as literal hex.
+// Mirror of the v3 tokens (theme.css) that Monaco needs as literal hex (no leading #).
 const T = {
-  void: "060606",
-  surface0: "0B0B0C",
-  surface1: "111113",
-  surface2: "18181B",
-  textHi: "F2F0EC",
-  textMid: "A8A6A1",
-  textLow: "7C7A75",
-  radiation: "F0B95B",
-  radiationBright: "FFD888",
-  success: "6FBF8B",
-  danger: "E5635E",
-  warning: "E08A3C",
-  diffAddBg: "6FBF8B1A", // jade @ ~10% (matches --diff-add-bg)
-  diffDelBg: "E5635E1A", // red @ ~10%
+  void: "070707", // --void (the unlit chamber, editor background)
+  concrete1: "0E0E0F", // --concrete-1
+  concrete2: "141416", // --concrete-2
+  concrete3: "1B1B1E", // --concrete-3
+  concrete4: "222226", // --concrete-4
+  text1: "ECEAE6", // --text-1 (chalk)
+  text2: "9B9A95", // --text-2
+  text3: "6E6D68", // --text-3
+  mute: "5C5B57", // --mute
+  light: "F4F2EE", // --light (the only accent; keywords + types live here)
+  ok: "7E9E86", // --ok (lichen)  -> strings, additions
+  bad: "C0807A", // --bad (oxide) -> deletions, errors
+  okBg: "7E9E8614", // ~ --ok-bg, hex8 for Monaco line/text bg (lichen @ ~8%)
+  badBg: "C0807A14", // ~ --bad-bg (oxide @ ~8%)
 } as const;
 
 export const HIDE_THEME = "hide-observatory";
 export const MONO_FONT = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
 
-// Build the theme object. Tokens are deliberately near-monochrome warm off-whites with ONE gold
-// accent (C3 mood: muted desaturated across 95% of the surface, gold the one luminous thing).
+// Build the theme object. Tokens are deliberately near-monochrome warm ash-grays; LIGHT is the one
+// luminous thing (keywords, types, the caret), with ok/bad reserved for strings and diffs only.
 export function hideMonacoTheme(): Monaco.editor.IStandaloneThemeData {
   return {
     base: "vs-dark",
     inherit: true,
     rules: [
-      { token: "", foreground: T.textHi, background: T.void },
-      { token: "comment", foreground: T.textLow, fontStyle: "italic" },
-      { token: "keyword", foreground: T.radiation },
-      { token: "keyword.control", foreground: T.radiation },
-      { token: "operator", foreground: T.textMid },
-      { token: "string", foreground: T.success },
-      { token: "number", foreground: T.warning },
-      { token: "type", foreground: T.radiationBright },
-      { token: "type.identifier", foreground: T.radiationBright },
-      { token: "function", foreground: T.textHi },
-      { token: "variable", foreground: T.textHi },
-      { token: "variable.predefined", foreground: T.textMid },
-      { token: "identifier", foreground: T.textHi },
-      { token: "delimiter", foreground: T.textMid },
-      { token: "tag", foreground: T.radiation },
-      { token: "attribute.name", foreground: T.radiationBright },
-      { token: "invalid", foreground: T.danger },
+      { token: "", foreground: T.text1, background: T.void },
+      { token: "comment", foreground: T.text3, fontStyle: "italic" },
+      { token: "keyword", foreground: T.light },
+      { token: "keyword.control", foreground: T.light },
+      { token: "operator", foreground: T.text2 },
+      { token: "string", foreground: T.ok },
+      { token: "number", foreground: T.text1 },
+      { token: "type", foreground: T.light },
+      { token: "type.identifier", foreground: T.light },
+      { token: "function", foreground: T.text1 },
+      { token: "variable", foreground: T.text1 },
+      { token: "variable.predefined", foreground: T.text2 },
+      { token: "identifier", foreground: T.text1 },
+      { token: "delimiter", foreground: T.text2 },
+      { token: "tag", foreground: T.light },
+      { token: "attribute.name", foreground: T.light },
+      { token: "invalid", foreground: T.bad },
     ],
     colors: {
       "editor.background": "#" + T.void,
-      "editor.foreground": "#" + T.textHi,
-      // Gutter / chrome from the near-black ramp, never the VS Code blue-grey.
+      "editor.foreground": "#" + T.text1,
+      // Gutter / chrome from the concrete ramp, never the VS Code blue-grey.
       "editorGutter.background": "#" + T.void,
-      "editorLineNumber.foreground": "#" + T.textLow,
-      "editorLineNumber.activeForeground": "#" + T.radiation,
-      "editorIndentGuide.background1": "#1A1A1D",
-      "editorIndentGuide.activeBackground1": "#2A2A2E",
-      "editorWhitespace.foreground": "#222226",
-      // The gold cursor + selection accents (C3: the one luminous thing).
-      "editorCursor.foreground": "#" + T.radiationBright,
-      "editor.selectionBackground": "#" + T.radiation + "33",
-      "editor.inactiveSelectionBackground": "#" + T.radiation + "1A",
-      "editor.selectionHighlightBackground": "#" + T.radiation + "22",
-      "editor.wordHighlightBackground": "#" + T.radiation + "1A",
-      "editor.findMatchBackground": "#" + T.radiation + "44",
-      "editor.findMatchHighlightBackground": "#" + T.radiation + "22",
-      "editor.lineHighlightBackground": "#0B0B0C",
+      "editorLineNumber.foreground": "#" + T.mute,
+      "editorLineNumber.activeForeground": "#" + T.light,
+      "editorIndentGuide.background1": "#" + T.concrete2,
+      "editorIndentGuide.activeBackground1": "#" + T.concrete4,
+      "editorWhitespace.foreground": "#" + T.concrete4,
+      // The LIGHT caret + selection accents (the one luminous thing; no gold).
+      "editorCursor.foreground": "#" + T.light,
+      "editor.selectionBackground": "#F4F2EE22",
+      "editor.inactiveSelectionBackground": "#F4F2EE12",
+      "editor.selectionHighlightBackground": "#F4F2EE18",
+      "editor.wordHighlightBackground": "#F4F2EE12",
+      "editor.findMatchBackground": "#F4F2EE33",
+      "editor.findMatchHighlightBackground": "#F4F2EE1A",
+      "editor.lineHighlightBackground": "#" + T.concrete1,
       "editor.lineHighlightBorder": "#00000000",
-      // Material surfaces for the floaty bits (no blue).
-      "editorWidget.background": "#" + T.surface1,
-      "editorWidget.border": "#1C1C20",
-      "editorSuggestWidget.background": "#" + T.surface1,
-      "editorSuggestWidget.selectedBackground": "#" + T.surface2,
-      "editorSuggestWidget.highlightForeground": "#" + T.radiation,
-      "editorHoverWidget.background": "#" + T.surface1,
-      "editorHoverWidget.border": "#1C1C20",
-      "scrollbarSlider.background": "#FFFFFF14",
-      "scrollbarSlider.hoverBackground": "#FFFFFF26",
-      "scrollbarSlider.activeBackground": "#FFFFFF33",
-      // Diff colors: jade-add / red-del at ~10%, paired ALWAYS with +/- gutter markers (C3 / C14).
-      "diffEditor.insertedTextBackground": "#" + T.diffAddBg,
-      "diffEditor.removedTextBackground": "#" + T.diffDelBg,
-      "diffEditor.insertedLineBackground": "#6FBF8B12",
-      "diffEditor.removedLineBackground": "#E5635E12",
-      "diffEditorGutter.insertedLineBackground": "#6FBF8B22",
-      "diffEditorGutter.removedLineBackground": "#E5635E22",
-      "diffEditor.diagonalFill": "#1A1A1D",
-      // Bracket matching glows gold, not blue.
-      "editorBracketMatch.background": "#" + T.radiation + "22",
-      "editorBracketMatch.border": "#" + T.radiation + "55",
+      // Material surfaces for the floaty bits (concrete tiers, no blue).
+      "editorWidget.background": "#" + T.concrete2,
+      "editorWidget.border": "#" + T.concrete3,
+      "editorSuggestWidget.background": "#" + T.concrete2,
+      "editorSuggestWidget.selectedBackground": "#" + T.concrete3,
+      "editorSuggestWidget.highlightForeground": "#" + T.light,
+      "editorHoverWidget.background": "#" + T.concrete2,
+      "editorHoverWidget.border": "#" + T.concrete3,
+      "scrollbarSlider.background": "#FFFFFF10",
+      "scrollbarSlider.hoverBackground": "#FFFFFF1C",
+      "scrollbarSlider.activeBackground": "#FFFFFF2A",
+      // Diff colors: lichen-add / oxide-del at ~8%, paired ALWAYS with +/- gutter markers.
+      "diffEditor.insertedTextBackground": "#" + T.okBg,
+      "diffEditor.removedTextBackground": "#" + T.badBg,
+      "diffEditor.insertedLineBackground": "#7E9E860F",
+      "diffEditor.removedLineBackground": "#C0807A0F",
+      "diffEditorGutter.insertedLineBackground": "#7E9E861C",
+      "diffEditorGutter.removedLineBackground": "#C0807A1C",
+      "diffEditor.diagonalFill": "#" + T.concrete2,
+      // Bracket matching glows with light, not blue, not gold.
+      "editorBracketMatch.background": "#F4F2EE14",
+      "editorBracketMatch.border": "#F4F2EE33",
       "editorOverviewRuler.border": "#00000000",
-      "editorError.foreground": "#" + T.danger,
-      "editorWarning.foreground": "#" + T.warning,
+      "editorError.foreground": "#" + T.bad,
+      "editorWarning.foreground": "#" + T.text2,
     },
   };
 }
@@ -120,9 +122,9 @@ export function registerHideTheme(monaco: typeof Monaco): void {
 // no minimap clutter, accessible. NO VS Code default look survives this.
 export const HIDE_EDITOR_OPTIONS: Monaco.editor.IStandaloneEditorConstructionOptions = {
   fontFamily: MONO_FONT,
-  fontSize: 12.5,
-  lineHeight: 20,
-  fontLigatures: false,
+  fontSize: 13,
+  lineHeight: 21,
+  fontLigatures: true,
   letterSpacing: 0.2,
   minimap: { enabled: false },
   scrollBeyondLastLine: false,
@@ -132,7 +134,7 @@ export const HIDE_EDITOR_OPTIONS: Monaco.editor.IStandaloneEditorConstructionOpt
   smoothScrolling: true,
   roundedSelection: false,
   guides: { indentation: true, bracketPairs: false },
-  padding: { top: 10, bottom: 10 },
+  padding: { top: 16, bottom: 16 },
   overviewRulerLanes: 0,
   scrollbar: { verticalScrollbarSize: 10, horizontalScrollbarSize: 10, useShadows: false },
   renderWhitespace: "none",

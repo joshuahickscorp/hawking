@@ -1,18 +1,22 @@
 /*
-  Chat.tsx: the AI Chat surface (01-surfaces §D1.3). Watch and steer the agent's reasoning.
-  The full conversational surface over the live UiEvent stream:
+  Chat.tsx: the AI Chat surface (01-surfaces §D1.3), the conversation chamber. Watch and steer
+  the agent's reasoning. The calmest, most spacious surface: a single readable column down the
+  center of the void, content capped near 700px, generous air on either side, no chat-app chrome.
 
    1. Transcript: user + assistant turns in Geist Mono telemetry voice; the streaming assistant text
-      wears the gold leading-edge cursor (the radiation leaking out, no spinner). A render-rate
-      governor flushes one React commit per animation frame so a fast stream never thrashes the paint.
-   2. Composer: SubmitTurn on Enter. While a run is active, the persistent SteerBar redirects mid-flight
-      (Custom:redirect_run) and exposes Cancel/Pause/Resume (CancelRun/PauseRun/ResumeRun). Interruptible.
+      carries a faint light cusp at its leading edge (the light entering the dark, no spinner). A
+      render-rate governor flushes one React commit per animation frame so a fast stream never
+      thrashes the paint.
+   2. Composer: SubmitTurn on Enter, a .volume--raised input pinned at the bottom in its own air.
+      While a run is active, the persistent SteerBar redirects mid-flight (Custom:redirect_run) and
+      exposes Cancel/Pause/Resume (CancelRun/PauseRun/ResumeRun). The agent is interruptible.
    3. Inline structure in the stream: the PlanCard (ordered steps + status, approve/edit/reorder), calm
       ToolChips (tool_progress, no churn), DiffChips (a produced diff -> opens the hunk review), and the
-      SecurityGate as a lit inline approval.
+      SecurityGate as a lit inline approval (the gate capsule).
 
-  Harvest: the plan-act + per-step chat UX (Cline/OpenCode), re-housed into the doctrine (near-black
-  material panels, gold rim-light, Geist Mono, shape+label markers, real-work-as-progress).
+  Harvest: the plan-act + per-step chat UX (Cline/OpenCode), re-housed into the v3 doctrine (grayscale
+  concrete volumes floating in void, light as the only accent, Geist Mono, glyph+label markers,
+  real-work-as-progress).
 
   Sends: SubmitTurn, PauseRun/ResumeRun/CancelRun, AcceptDiff/RejectDiff, Custom(redirect_run,
   approve_plan, edit_plan_step, reorder_plan, approve_gate). Consumes: token_batch, projection_patch
@@ -22,10 +26,13 @@ import { useEffect, useLayoutEffect, useReducer, useRef, useState } from "react"
 import { sendIntent } from "../ipc";
 import { useStore } from "../store";
 import { intent } from "../wire";
-import { Display, Panel, RadiationEdge } from "../ui";
+import { Display, Volume } from "../ui";
 import type { DiffChip, DiffChipPatch, PlanPatch, PlanStep } from "./chat/parts";
 import { DiffChipRow, InlineGate, PlanCard, ToolChipRow } from "./chat/structure";
 import { SteerBar } from "./chat/SteerBar";
+
+// The conversational column: capped near 700px and centered, the doctrine's readable measure.
+const COLUMN = 700;
 
 const SESSION = "ses_mock0000000000000000000";
 
@@ -96,16 +103,28 @@ export function Chat() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "var(--s5)" }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "0 var(--ma-8)" }}>
         {empty ? (
-          <div style={{ maxWidth: 560, margin: "10vh auto 0", textAlign: "center" }}>
-            <Display size={44}>Open the box.</Display>
-            <p style={{ color: "var(--text-mid)", marginTop: "var(--s4)", fontSize: "var(--text-sm)" }}>
+          // The empty chamber points to the first action, in the doctrine's flight-log voice.
+          <div style={{ maxWidth: COLUMN, margin: "0 auto", paddingTop: "18vh", textAlign: "center" }}>
+            <Display>Open the box.</Display>
+            <p className="t-body" style={{ color: "var(--text-2)", marginTop: "var(--ma-6)" }}>
               Ask the agent to do work. You will see exactly what it reads and runs.
             </p>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--s4)", maxWidth: 720, margin: "0 auto" }}>
+          // The conversation column: capped near 700px, centered, --ma-18 top, --ma-14 between turns.
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "var(--ma-14)",
+              maxWidth: COLUMN,
+              margin: "0 auto",
+              paddingTop: "var(--ma-18)",
+              paddingBottom: "var(--ma-10)",
+            }}
+          >
             {messages.map((m) => (
               <Message key={m.id} role={m.role} text={m.text} streaming={m.streaming} />
             ))}
@@ -125,7 +144,8 @@ export function Chat() {
         )}
       </div>
 
-      <div style={{ padding: "var(--s4)", borderTop: "1px solid var(--rim)" }}>
+      {/* The steer field floats at the bottom in its own --ma-8 air; nothing touches an edge, no top rule. */}
+      <div style={{ padding: "var(--ma-4) var(--ma-8) var(--ma-8)" }}>
         {/* While a run is active: the persistent steer bar above the composer (interruptible agent). */}
         {live ? (
           <SteerBar phase={runPhase} onRedirect={steer} onPause={pause} onResume={resume} onCancel={cancel} />
@@ -151,40 +171,54 @@ function useRafGovernor(signal: number) {
 
 function Message({ role, text, streaming }: { role: "user" | "assistant"; text: string; streaming: boolean }) {
   const isUser = role === "user";
-  return (
-    <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
-      <Panel
-        active={streaming}
-        pad="var(--s3) var(--s4)"
-        style={{
-          maxWidth: "84%",
-          background: isUser ? "var(--surface-1)" : "var(--surface-0)",
-          color: "var(--text-hi)",
-          whiteSpace: "pre-wrap",
-          lineHeight: "var(--leading-ui)",
-        }}
-      >
-        <div style={{ fontSize: "var(--text-xs)", color: "var(--text-low)", marginBottom: "var(--s1)", letterSpacing: "0.04em" }}>
-          {isUser ? "you" : "agent"}
+
+  // The speaker label: the quietest mark, in --mute, naming who is talking (flight-log voice).
+  const speaker = (
+    <div className="t-label" style={{ marginBottom: "var(--ma-2)" }}>
+      {isUser ? "You" : "Agent"}
+    </div>
+  );
+
+  // Agent prose: held in the open void as readable body copy, not boxed. The streaming leading edge
+  // carries a faint --light-soft cusp (the light entering the dark), never a spinner.
+  if (!isUser) {
+    return (
+      <div>
+        {speaker}
+        <div className="t-body" style={{ color: "var(--text-1)", whiteSpace: "pre-wrap", lineHeight: 1.6 }}>
+          {text}
+          {streaming ? (
+            <span
+              aria-hidden
+              style={{
+                display: "inline-block",
+                width: "0.5em",
+                height: "1.05em",
+                marginLeft: 2,
+                verticalAlign: "-0.15em",
+                borderRadius: 1,
+                background: "var(--light-soft)",
+                boxShadow: "var(--light-bloom)",
+                animation: "breathe var(--breathe) var(--ease) infinite",
+              }}
+            />
+          ) : null}
         </div>
-        {text}
-        {/* the gold leading edge of the stream: the radiation leaking out (no spinner) */}
-        {streaming ? (
-          <span
-            aria-hidden
-            style={{
-              display: "inline-block",
-              width: 7,
-              height: "1em",
-              marginLeft: 3,
-              verticalAlign: "-2px",
-              background: "var(--radiation)",
-              boxShadow: "0 0 8px 0 var(--radiation-bloom)",
-              animation: "radiation-breathe 1.1s ease-in-out infinite",
-            }}
-          />
-        ) : null}
-      </Panel>
+      </div>
+    );
+  }
+
+  // The user's turn: a quiet raised-concrete slab, set right, never edge to edge.
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <Volume
+        raised
+        pad="var(--ma-3) var(--ma-4)"
+        style={{ maxWidth: "82%", color: "var(--text-1)", whiteSpace: "pre-wrap" }}
+      >
+        {speaker}
+        <div className="t-body" style={{ lineHeight: 1.6 }}>{text}</div>
+      </Volume>
     </div>
   );
 }
@@ -213,50 +247,57 @@ function Composer({
   // While a run is live, Enter queues the turn behind the active one (Custom:queue_turn semantics);
   // otherwise it submits a fresh turn. The copy on the control says exactly which.
   const placeholder = !ready ? "Runtime not ready" : live ? "Queue a turn (or steer above)" : "Message the agent";
+  const armed = !!text.trim() && ready;
 
   return (
-    <RadiationEdge mode="breathe" style={{ maxWidth: 720, margin: "0 auto" }}>
-      <Panel pad="var(--s2) var(--s3)" style={{ display: "flex", alignItems: "flex-end", gap: "var(--s2)" }}>
-        <textarea
-          ref={ref}
-          value={text}
-          onChange={(e) => onText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onSubmit();
-            }
-          }}
-          rows={1}
-          placeholder={placeholder}
-          disabled={!ready}
-          style={{
-            flex: 1,
-            resize: "none",
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            color: "var(--text-hi)",
-            font: "inherit",
-            lineHeight: "var(--leading-ui)",
-            padding: "var(--s2) 0",
-          }}
-        />
-        <button
-          onClick={onSubmit}
-          disabled={!ready || !text.trim()}
-          style={{
-            padding: "6px 14px",
-            borderRadius: "var(--radius)",
-            color: text.trim() && ready ? "var(--void)" : "var(--text-low)",
-            background: text.trim() && ready ? "var(--radiation)" : "var(--surface-2)",
-            boxShadow: text.trim() && ready ? "0 0 14px -4px var(--radiation-bloom)" : "inset 0 0 0 1px var(--rim)",
-            fontSize: "var(--text-sm)",
-          }}
-        >
-          {live ? "Queue" : "Send"}
-        </button>
-      </Panel>
-    </RadiationEdge>
+    <Volume
+      raised
+      pad="var(--ma-3) var(--ma-4)"
+      style={{ maxWidth: COLUMN, margin: "0 auto", display: "flex", alignItems: "flex-end", gap: "var(--ma-3)" }}
+    >
+      <textarea
+        ref={ref}
+        value={text}
+        onChange={(e) => onText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            onSubmit();
+          }
+        }}
+        rows={1}
+        placeholder={placeholder}
+        disabled={!ready}
+        className="t-body"
+        style={{
+          flex: 1,
+          resize: "none",
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          color: "var(--text-1)",
+          font: "inherit",
+          lineHeight: 1.6,
+          padding: "var(--ma-1) 0",
+        }}
+      />
+      {/* The send affordance catches the light only when armed; otherwise it is quiet concrete. */}
+      <button
+        onClick={onSubmit}
+        disabled={!armed}
+        style={{
+          padding: "var(--ma-2) var(--ma-4)",
+          borderRadius: "var(--radius)",
+          fontSize: "13px",
+          fontWeight: 500,
+          color: armed ? "var(--light)" : "var(--text-3)",
+          background: "var(--concrete-4)",
+          boxShadow: armed ? "var(--hairline-strong), var(--light-bloom)" : "var(--hairline)",
+          transition: "color var(--dur) var(--ease), box-shadow var(--dur) var(--ease)",
+        }}
+      >
+        {live ? "Queue" : "Send"}
+      </button>
+    </Volume>
   );
 }

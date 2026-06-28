@@ -1,8 +1,9 @@
 /*
-  App.tsx: the workbench shell. Six regions (01-surfaces §A.1): title bar, activity/mode rail,
-  the main stage that swaps the three surface frames, the persistent Context Stack right rail,
-  the bottom status bar, and the Cmd+K command palette. Observation-first: the Workstation is the
-  default front door. The shell connects the store to the live UiEvent stream on mount.
+  App.tsx: the Shell (Doctrine v3). One grid: west wall | active chamber | east light-well.
+  The west wall is the ModeRail (the three surfaces). The center Stage mounts the active
+  surface. The east ContextStack is the light well, always present. Observation-first: the
+  Workstation is the default front door. Volumes float in generous void; nothing touches an
+  edge. The shell connects the store to the live UiEvent stream on mount.
 */
 import { useEffect, useMemo, useState } from "react";
 import { connectStore, useStore } from "./store";
@@ -13,8 +14,9 @@ import { Ide } from "./surfaces/Ide";
 import { Workstation } from "./surfaces/Workstation";
 import {
   CommandPalette,
-  EventHorizon,
-  ModeSwitcher,
+  Gate,
+  Mark,
+  ModeRail,
   StatusPill,
   type Command,
   type SurfaceMode,
@@ -55,83 +57,123 @@ export function App() {
     [],
   );
 
-  const degraded = runtimeStatus === "degraded" || runtimeStatus === "failed" || runtimeStatus === "down";
+  const degraded =
+    runtimeStatus === "degraded" || runtimeStatus === "failed" || runtimeStatus === "down";
 
   return (
     <div
+      className="shell"
       style={{
         display: "grid",
-        gridTemplateRows: "var(--titlebar-h) 1fr var(--statusbar-h)",
-        height: "100%",
+        gridTemplateColumns: "56px 1fr clamp(320px, 26vw, 380px)",
+        height: "100vh",
+        background: "var(--void)",
+        color: "var(--text-1)",
+        fontFamily: "var(--font)",
       }}
     >
-      {/* TITLE BAR */}
-      <header
+      {/* WEST WALL: the quiet mode rail. A single shadow-line separates it from the chamber. */}
+      <aside
         style={{
           display: "flex",
-          alignItems: "center",
-          gap: "var(--s3)",
-          padding: "0 var(--s4)",
-          borderBottom: "1px solid var(--rim)",
-          background: "var(--surface-0)",
-          backgroundImage: "var(--panel-grad)",
+          flexDirection: "column",
+          boxShadow: "inset -1px 0 0 0 var(--line)",
         }}
       >
-        <EventHorizon size={15} />
-        {/* the wordmark is the ONLY place Geist appears */}
-        <span style={{ fontFamily: "Geist, var(--font-mono)", fontWeight: 600, letterSpacing: "0.04em" }}>HIDE</span>
-        <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>hawking</span>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "var(--s3)" }}>
-          <StatusPill status={runtimeStatus} detail={runtimeDetail} />
-          <button
-            onClick={() => setPaletteOpen(true)}
-            style={{ fontSize: "var(--text-xs)", color: "var(--text-low)", padding: "2px 8px", boxShadow: "inset 0 0 0 1px var(--rim)", borderRadius: "var(--radius)" }}
-          >
-            ⌘K
-          </button>
+        <div
+          style={{
+            height: 56,
+            display: "grid",
+            placeItems: "center",
+          }}
+          title="HIDE"
+        >
+          <Mark size={16} />
         </div>
-      </header>
+        <ModeRail mode={mode} onMode={setMode} />
+      </aside>
 
-      {/* MAIN ROW: activity rail | stage | context rail */}
-      <div style={{ display: "grid", gridTemplateColumns: "var(--activity-w) 1fr var(--rail-w)", minHeight: 0 }}>
-        <aside style={{ borderRight: "1px solid var(--rim)", background: "var(--surface-0)" }}>
-          <ModeSwitcher mode={mode} onMode={setMode} />
-        </aside>
-
-        <main style={{ minWidth: 0, minHeight: 0, position: "relative" }}>
+      {/* ACTIVE CHAMBER: the stage. Generous hero air; the surface floats in the void. */}
+      <div style={{ display: "grid", gridTemplateRows: "1fr auto", minWidth: 0, minHeight: 0 }}>
+        <main
+          style={{
+            position: "relative",
+            minWidth: 0,
+            minHeight: 0,
+            overflow: "auto",
+            padding: "var(--ma-14) var(--ma-18)",
+          }}
+        >
           {degraded ? <DegradedBanner status={runtimeStatus} detail={runtimeDetail} /> : null}
           {mode === "workstation" ? <Workstation /> : mode === "ide" ? <Ide /> : <Chat />}
         </main>
 
-        <aside style={{ borderLeft: "1px solid var(--rim)", background: "var(--surface-0)", minHeight: 0 }}>
-          <ContextStack />
-        </aside>
+        {/* STATUS BAR: a low chalk line resting under the chamber. */}
+        <footer
+          className="t-micro"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--ma-6)",
+            padding: "0 var(--ma-18)",
+            height: 32,
+            boxShadow: "inset 0 1px 0 0 var(--line)",
+            color: "var(--text-3)",
+          }}
+        >
+          <span>agent: {runPhase}</span>
+          <span style={{ marginLeft: "auto" }}>{TRANSPORT_KIND} transport</span>
+          {notices.length ? (
+            <span
+              style={{
+                color:
+                  notices[notices.length - 1].kind === "error" ? "var(--bad)" : "var(--text-2)",
+              }}
+            >
+              {notices[notices.length - 1].message.slice(0, 80)}
+            </span>
+          ) : null}
+        </footer>
       </div>
 
-      {/* STATUS BAR */}
-      <footer
+      {/* EAST LIGHT-WELL: the context stack, always present. */}
+      <aside
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--s4)",
-          padding: "0 var(--s4)",
-          borderTop: "1px solid var(--rim)",
-          background: "var(--surface-0)",
-          fontSize: "var(--text-xs)",
-          color: "var(--text-low)",
+          minHeight: 0,
+          overflow: "auto",
+          boxShadow: "inset 1px 0 0 0 var(--line)",
+          padding: "var(--ma-8) var(--ma-6)",
         }}
       >
-        <span>agent: {runPhase}</span>
-        <span style={{ marginLeft: "auto" }}>{TRANSPORT_KIND} transport</span>
-        {notices.length ? (
-          <span style={{ color: notices[notices.length - 1].kind === "error" ? "var(--danger)" : "var(--text-mid)" }}>
-            {notices[notices.length - 1].message.slice(0, 80)}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--ma-3)",
+            marginBottom: "var(--ma-8)",
+          }}
+        >
+          {/* the wordmark is the ONLY place Geist Sans appears */}
+          <span
+            style={{
+              fontFamily: '"Geist Sans", var(--font)',
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              color: "var(--text-1)",
+            }}
+          >
+            HIDE
           </span>
-        ) : null}
-      </footer>
+          <span className="t-micro">hawking</span>
+          <div style={{ marginLeft: "auto" }}>
+            <StatusPill status={runtimeStatus} detail={runtimeDetail} />
+          </div>
+        </div>
+        <ContextStack />
+      </aside>
 
       {/* SECURITY GATE: blocking, never auto-dismissed (FE-5) */}
-      {gate ? <GatePrompt gate={gate.gate} message={gate.message} onDismiss={dismissGate} /> : null}
+      {gate ? <GatePrompt message={gate.message} gateId={gate.gate} onDismiss={dismissGate} /> : null}
 
       <CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
     </div>
@@ -142,50 +184,67 @@ function DegradedBanner({ status, detail }: { status: string; detail: string | n
   return (
     <div
       role="status"
+      className="t-micro"
       style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-        padding: "var(--s2) var(--s4)",
-        background: "var(--surface-1)",
-        boxShadow: "inset 0 0 0 1px var(--warning)",
-        color: "var(--text-mid)",
-        fontSize: "var(--text-xs)",
+        marginBottom: "var(--ma-8)",
+        padding: "var(--ma-3) var(--ma-4)",
+        borderRadius: "var(--radius)",
+        background: "var(--concrete-2)",
+        boxShadow: "var(--hairline-strong)",
+        color: "var(--text-2)",
       }}
     >
-      Local engine is {status}. {detail ?? "It may not be running."} Auto-restarting.
+      Local engine is {status}. {detail ?? "It may not be running."} Auto restarting.
     </div>
   );
 }
 
-function GatePrompt({ gate, message, onDismiss }: { gate: string; message: string; onDismiss: () => void }) {
+function GatePrompt({
+  message,
+  gateId,
+  onDismiss,
+}: {
+  message: string;
+  gateId: string;
+  onDismiss: () => void;
+}) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(6,6,6,0.6)", display: "grid", placeItems: "center", zIndex: 200 }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(7,7,7,0.62)",
+        display: "grid",
+        placeItems: "center",
+        zIndex: 200,
+      }}
+    >
       <div
-        className="panel"
-        style={{
-          padding: "var(--s5)",
-          width: "min(440px, 90vw)",
-          animation: "radiation-breathe 2.6s ease-in-out infinite",
-        }}
+        className="volume alive"
+        style={{ padding: "var(--ma-8)", width: "min(440px, 90vw)" }}
       >
-        <div style={{ fontSize: "var(--text-xs)", color: "var(--radiation-bright)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+        <div className="t-label" style={{ color: "var(--light)" }}>
           Approval needed
         </div>
-        <div style={{ margin: "var(--s3) 0", color: "var(--text-hi)" }}>{message}</div>
-        <div style={{ display: "flex", gap: "var(--s2)", justifyContent: "flex-end" }}>
-          <button onClick={onDismiss} style={{ padding: "6px 14px", color: "var(--text-mid)", boxShadow: "inset 0 0 0 1px var(--rim)", borderRadius: "var(--radius)" }}>
+        <div className="t-body" style={{ margin: "var(--ma-4) 0", color: "var(--text-1)" }}>
+          {message}
+        </div>
+        <div style={{ display: "flex", gap: "var(--ma-3)", justifyContent: "flex-end" }}>
+          <button
+            className="t-body"
+            onClick={onDismiss}
+            style={{
+              padding: "var(--ma-2) var(--ma-4)",
+              color: "var(--text-2)",
+              boxShadow: "var(--hairline)",
+              borderRadius: "var(--radius-pill)",
+            }}
+          >
             Deny
           </button>
-          <button
-            onClick={onDismiss}
-            title={gate}
-            style={{ padding: "6px 14px", color: "var(--void)", background: "var(--radiation-bright)", borderRadius: "var(--radius)", boxShadow: "0 0 16px -4px var(--radiation-bloom)" }}
-          >
+          <Gate onClick={onDismiss} title={gateId}>
             Approve
-          </button>
+          </Gate>
         </div>
       </div>
     </div>

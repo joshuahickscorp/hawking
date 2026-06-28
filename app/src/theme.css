@@ -1,15 +1,11 @@
 /*
-  theme.css: THE single source of truth for the HIDE design system.
-  Every color, surface recipe, glow, type family, and spacing step lives here as a
-  CSS variable. No hardcoded colors anywhere else in the app. Doctrine: 04-design-doctrine.md.
-  The look: near-black anodized material surfaces, recessed and rim-lit, with one
-  luminous warm-gold radiation accent on everything alive. Cormorant display, Geist Mono UI.
+  theme.css: THE single source of truth for the HIDE design system (Doctrine v3).
+  A Tadao Ando chamber: grayscale board-formed concrete volumes resting in generous void,
+  where the only accent is LIGHT entering the dark. No color, no gold, no brand hue.
+  The agent's life appears as light, never as a colored accent. One font: Geist Mono.
 */
 
 /* Fonts, vendored via npm (no external fetch: honors the air-gap ethos). */
-@import "@fontsource/cormorant-garamond/400.css";
-@import "@fontsource/cormorant-garamond/500.css";
-@import "@fontsource/cormorant-garamond/600.css";
 @import "@fontsource/geist-mono/400.css";
 @import "@fontsource/geist-mono/500.css";
 @import "@fontsource/geist-mono/600.css";
@@ -17,71 +13,39 @@
 @import "@fontsource/geist-sans/600.css";
 
 :root {
-  /* ---- Near-black material ramp ---- */
-  --void: #060606;            /* base background, never #000 */
-  --surface-0: #0B0B0C;       /* raised panel */
-  --surface-1: #111113;       /* card */
-  --surface-2: #18181B;       /* elevated / hover */
-  --rim: rgba(255, 255, 255, 0.06);        /* hairline border, recessed-channel edge */
-  --rim-strong: rgba(255, 255, 255, 0.10); /* emphasized edge */
+  --font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
 
-  /* ---- Text (warm off-whites, AA on --void) ---- */
-  --text-hi: #F2F0EC;
-  --text-mid: #A8A6A1;
-  --text-low: #7C7A75;
+  /* concrete (surface) */
+  --void:#070707; --concrete-1:#0E0E0F; --concrete-2:#141416; --concrete-3:#1B1B1E; --concrete-4:#222226;
+  --formwork:rgba(255,255,255,0.02);
 
-  /* ---- Radiation: the brand life-color (the gold photon ring) ---- */
-  --radiation: #F0B95B;            /* agent active / streaming, the breathing glow */
-  --radiation-bright: #FFD888;     /* needs your approval, peak glow, lit controls */
-  --radiation-bloom: rgba(240, 185, 91, 0.32); /* the rim-light bloom / glow shadow */
+  /* shadow-lines REPLACE all CSS borders */
+  --line:rgba(255,255,255,0.06); --line-strong:rgba(255,255,255,0.11);
+  --hairline:0 0 0 1px rgba(255,255,255,0.06); --hairline-strong:0 0 0 1px rgba(255,255,255,0.11);
+  --depth:0 0 0 1px rgba(255,255,255,0.06), 0 12px 32px -16px rgba(0,0,0,0.7);
 
-  /* ---- Semantic palette (always paired with a shape/marker, never color alone) ---- */
-  --success: #6FBF8B;   /* muted jade, never neon, never terminal-green */
-  --danger: #E5635E;    /* refined signal red */
-  --warning: #E08A3C;   /* orange, deliberately separated from the gold */
-  --diff-add-fg: #8FD0A6;
-  --diff-add-bg: rgba(111, 191, 139, 0.10);
-  --diff-del-fg: #E58B86;
-  --diff-del-bg: rgba(229, 99, 94, 0.10);
+  /* light = the only accent */
+  --light:#F4F2EE; --light-soft:rgba(244,242,238,0.06); --light-bloom:0 0 28px rgba(244,242,238,0.10);
+  --inner-glow:inset 0 1px 0 rgba(255,255,255,0.06);
+  --grade-wall:linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0) 42%);
 
-  /* ---- Type ---- */
-  --font-display: "Cormorant Garamond", Georgia, serif; /* display sizes ONLY, 28-72px */
-  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace; /* everything functional */
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-md: 13px;
-  --text-lg: 14px;
-  --leading-ui: 1.55;     /* mono UI legibility requirement */
+  /* text (chalk on concrete), all AA on --void */
+  --text-1:#ECEAE6; --text-2:#9B9A95; --text-3:#6E6D68; --mute:#5C5B57;
 
-  /* ---- Spacing: 4px base, 8px rhythm ---- */
-  --s1: 4px;
-  --s2: 8px;
-  --s3: 12px;
-  --s4: 16px;
-  --s5: 24px;
-  --s6: 32px;
-  --s7: 48px;
+  /* pigment (the ONLY two colors, glyph-paired) */
+  --ok:#7E9E86; --ok-bg:rgba(126,158,134,0.08); --bad:#C0807A; --bad-bg:rgba(192,128,122,0.08);
 
-  /* ---- Geometry ---- */
-  --radius: 4px;        /* restrained; not rounded-everything */
-  --radius-lg: 8px;
-  --rail-w: 320px;      /* Context Stack right rail */
-  --sidebar-w: 260px;   /* primary sidebar */
-  --activity-w: 52px;   /* left mode/activity rail */
-  --statusbar-h: 26px;
-  --titlebar-h: 38px;
+  /* void (ma scale) */
+  --ma-1:4px; --ma-2:8px; --ma-3:12px; --ma-4:16px; --ma-6:24px; --ma-8:32px; --ma-10:40px; --ma-14:56px; --ma-18:72px; --ma-24:96px;
 
-  /*
-    Material surface recipe (the anodized look): a subtle two-layer top-light
-    gradient + an inset hairline rim + a soft inner recess shadow. Applied via .panel.
-  */
-  --panel-grad: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 64px);
-  --panel-inset: inset 0 0 0 1px var(--rim), inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
-    inset 0 -18px 28px -24px rgba(0, 0, 0, 0.65);
+  /* form + motion */
+  --radius:8px; --radius-pill:9999px; --ease:cubic-bezier(0.2,0,0,1);
+  --dur-fast:120ms; --dur:220ms; --dur-slow:360ms; --dur-door:480ms; --breathe:2400ms;
 }
 
 * {
   box-sizing: border-box;
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
 html,
@@ -93,91 +57,88 @@ body,
 
 body {
   background: var(--void);
-  color: var(--text-hi);
-  font-family: var(--font-mono);
-  font-size: var(--text-md);
-  line-height: var(--leading-ui);
-  font-feature-settings: "tnum" 1, "ss01" 1;
+  color: var(--text-1);
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Display type. Cormorant never drops below display sizes (it gets spindly). */
-.display {
-  font-family: var(--font-display);
-  font-weight: 500;
-  line-height: 1.04;
-  letter-spacing: 0.01em;
-  color: var(--text-hi);
-  margin: 0;
-}
+/* ---- Type roles: weight carries meaning (400 read / 500 interact / 600 announce). ---- */
+.t-display { font-weight:600; font-size:clamp(32px,4vw,52px); letter-spacing:-0.035em; line-height:1.05; }
+.t-title { font-weight:500; font-size:20px; letter-spacing:-0.02em; line-height:1.2; }
+.t-body { font-weight:400; font-size:14px; line-height:1.6; }
+.t-code { font-weight:400; font-size:13.5px; line-height:1.55; }
+.t-label { font-weight:500; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--mute); line-height:1.4; }
+.t-micro { font-weight:400; font-size:11px; letter-spacing:0.04em; color:var(--mute); }
 
-/*
-  The material panel: a recessed, rim-lit anodized surface with real depth.
-  Use everywhere a region needs to read as physical, not flat.
-*/
-.panel {
-  position: relative;
-  background-color: var(--surface-0);
-  background-image: var(--panel-grad);
+/* ---- Component recipes. ---- */
+
+/* The poured concrete slab: shadow-as-border + inner light catch on the top edge. */
+.volume {
+  background: var(--concrete-2);
   border-radius: var(--radius);
-  box-shadow: var(--panel-inset);
+  box-shadow: var(--hairline), var(--inner-glow);
+  padding: var(--ma-6);
+}
+.volume--raised { background: var(--concrete-3); }
+
+/* alive: light breathes into the volume (the agent's heartbeat, never a spinner). */
+.alive {
+  box-shadow: var(--inner-glow);
+  animation: breathe var(--breathe) var(--ease) infinite;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: var(--inner-glow); }
+  50% { box-shadow: var(--inner-glow), var(--light-bloom); }
 }
 
-/* A keyboard focus ring that wears the rim, brightening to gold on interactive elements. */
+/* The gate approval capsule: a lit threshold. */
+.gate {
+  border-radius: var(--radius-pill);
+  background: var(--concrete-3);
+  color: var(--light);
+  box-shadow: var(--hairline-strong), var(--light-bloom), var(--inner-glow);
+  padding: var(--ma-3) var(--ma-6);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Diff pigment: the only two colors, always glyph-paired in markup. */
+.hunk-add { color: var(--ok); background: var(--ok-bg); }
+.hunk-del { color: var(--bad); background: var(--bad-bg); }
+
+/* The one-shot light travel sheen on a top edge (fork / handoff). */
+@keyframes light-travel {
+  0% { background-position: -40% 0; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { background-position: 140% 0; opacity: 0; }
+}
+
+/* A keyboard focus ring made of light, not gold. */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--radiation), 0 0 0 4px var(--radiation-bloom);
+  box-shadow: var(--hairline-strong), var(--light-bloom);
   border-radius: var(--radius);
 }
 
 button {
   font: inherit;
-  color: var(--text-mid);
+  color: var(--text-2);
   background: transparent;
   border: none;
   cursor: pointer;
 }
 
 ::selection {
-  background: var(--radiation-bloom);
-  color: var(--text-hi);
-}
-
-/*
-  The radiation breathing pulse: the agent's heartbeat. A soft gold glow that
-  inhales and exhales. Driven by a CSS variable so any element can wear it.
-  Static fallback honored under prefers-reduced-motion below.
-*/
-@keyframes radiation-breathe {
-  0%,
-  100% {
-    box-shadow: 0 0 0 1px var(--radiation), 0 0 10px -2px var(--radiation-bloom);
-    opacity: 0.92;
-  }
-  50% {
-    box-shadow: 0 0 0 1px var(--radiation-bright), 0 0 22px 1px var(--radiation-bloom);
-    opacity: 1;
-  }
-}
-
-/* The travelling fork/handoff edge: a gold sheen sweeps along a border once. */
-@keyframes radiation-travel {
-  0% {
-    background-position: -140% 0;
-  }
-  100% {
-    background-position: 240% 0;
-  }
+  background: var(--light-soft);
+  color: var(--text-1);
 }
 
 /* Custom scrollbars: thin, recessed, never bright. */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {
-  background: var(--rim-strong);
+  background: var(--line-strong);
   border-radius: 6px;
   border: 3px solid transparent;
   background-clip: padding-box;
@@ -187,7 +148,9 @@ button {
   background-clip: padding-box;
 }
 
+/* Reduced motion: light rests already-bloomed instead of breathing. */
 @media (prefers-reduced-motion: reduce) {
+  .alive { animation: none; box-shadow: var(--inner-glow), var(--light-bloom); }
   *,
   *::before,
   *::after {

@@ -41,45 +41,53 @@ export interface DiffChipPatch {
 
 // ---- shared style atoms (kept here so every chat helper reads from one place) ----
 
-// A chip: a small rim-lit recessed pill in the near-black material, mono caps-ish telemetry label.
+// A chip: a small recessed pill of concrete, shadow-line for its edge, mono telemetry label.
+// No fill accent: a chip is a quiet object in the void, brightened only by its glyph when it matters.
 export const chip: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
-  gap: "var(--s2)",
-  padding: "3px 9px",
-  borderRadius: 999,
-  fontSize: "var(--text-xs)",
-  color: "var(--text-mid)",
-  background: "var(--surface-1)",
-  boxShadow: "inset 0 0 0 1px var(--rim)",
+  gap: "var(--ma-2)",
+  padding: "var(--ma-1) var(--ma-3)",
+  borderRadius: "var(--radius-pill)",
+  fontSize: "12px",
+  color: "var(--text-2)",
+  background: "var(--concrete-2)",
+  boxShadow: "var(--hairline)",
   maxWidth: "100%",
 };
 
 // The dim mono caps label used to title an inline structure block (plan, tools, diffs).
+// Mirrors the .t-label role: 600/uppercase/tracked, in --mute.
 export const blockLabel: CSSProperties = {
-  fontSize: "var(--text-xs)",
-  letterSpacing: "0.08em",
+  fontWeight: 500,
+  fontSize: "12px",
+  letterSpacing: "0.06em",
   textTransform: "uppercase",
-  color: "var(--text-low)",
+  color: "var(--mute)",
 };
 
-// A small lit/ghost control button (Cancel / Pause / Resume / Approve), shaped not color-only.
+// A small control button (Cancel / Pause / Resume / Approve), shape + tone, never color-only.
+// `lit` is the engaged/affirmative control: it catches the light (text -> --light, a soft bloom);
+// the rest are quiet recessed concrete that brightens on the focus ring.
 export function ctlStyle(lit: boolean): CSSProperties {
   return {
-    padding: "4px 11px",
+    padding: "var(--ma-1) var(--ma-3)",
     borderRadius: "var(--radius)",
-    fontSize: "var(--text-xs)",
-    color: lit ? "var(--void)" : "var(--text-mid)",
-    background: lit ? "var(--radiation-bright)" : "var(--surface-2)",
-    boxShadow: lit ? "0 0 14px -4px var(--radiation-bloom)" : "inset 0 0 0 1px var(--rim)",
+    fontSize: "12px",
+    fontWeight: 500,
+    color: lit ? "var(--light)" : "var(--text-2)",
+    background: "var(--concrete-3)",
+    boxShadow: lit ? "var(--hairline-strong), var(--light-bloom)" : "var(--hairline)",
   };
 }
 
-// Status -> a marker glyph + color, so the plan-step / diff state never reads as color alone.
+// Status -> a marker glyph + tone, so the plan-step / diff state never reads as color alone.
+// The two pigments (--ok / --bad) appear only on terminal done/failed; in-flight and pending
+// states are read by light and grayscale (the active step also breathes via .alive at the call site).
 export const STEP_MARK: Record<PlanStepStatus, { glyph: string; color: string }> = {
-  pending: { glyph: "○", color: "var(--text-low)" },
-  active: { glyph: "◉", color: "var(--radiation)" },
-  done: { glyph: "●", color: "var(--success)" },
-  failed: { glyph: "✕", color: "var(--danger)" },
-  skipped: { glyph: "-", color: "var(--text-low)" },
+  pending: { glyph: "○", color: "var(--text-3)" },
+  active: { glyph: "◉", color: "var(--light)" },
+  done: { glyph: "●", color: "var(--ok)" },
+  failed: { glyph: "✕", color: "var(--bad)" },
+  skipped: { glyph: "/", color: "var(--text-3)" },
 };

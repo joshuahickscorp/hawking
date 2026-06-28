@@ -1,14 +1,15 @@
 /*
-  Explorer.tsx: the file tree + search box (D1.2 / D4.4 #4). Re-housed from the Void/VS-Code
-  explorer pattern, re-skinned to near-black mono with gold accents (no VS Code chrome, no twisties
-  in blue). Click a file -> OpenFile{path} intent. Search runs the code_index connector
-  (callConnector("code_index","search",{q})); the mock returns [], so we fall back to a local
+  Explorer.tsx: the file tree + search box (the workshop's quiet west list). Re-housed from the
+  VS-Code explorer pattern, recast in v3: a calm airy list (14px, --text-2, generous row height), no
+  VS Code chrome, no blue twisties. Click a file -> OpenFile{path} intent. Search runs the code_index
+  connector (callConnector("code_index","search",{q})); the mock returns [], so we fall back to a local
   name-filter over the seeded tree so the surface is ALIVE with no backend.
 
-  Touched-by-run files wear a small gold dot (the agent's footprint), git badges wear a +/M letter
-  (shape, not color alone). Selected row wears the gold rim, the one lit thing.
+  Touched-by-run files wear a faint light glyph (the agent's footprint); git badges wear a +/M letter
+  (shape, not color alone). The active file rests at --text-1 with a faint --inner-glow row, the one
+  thing the light catches.
 */
-import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { callConnector, sendIntent } from "../../ipc";
 import { intent } from "../../wire";
 import { MOCK_TREE, type FileNode } from "./types";
@@ -73,46 +74,46 @@ export function Explorer({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <div style={{ padding: "var(--s3) var(--s3) var(--s2)" }}>
-        <Label>Explorer</Label>
-        <div style={{ position: "relative", marginTop: "var(--s2)" }}>
+      <div style={{ padding: "var(--ma-4) var(--ma-4) var(--ma-3)" }}>
+        <div className="t-label">Explorer</div>
+        <div style={{ position: "relative", marginTop: "var(--ma-3)" }}>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the repo"
             spellCheck={false}
+            className="t-body"
             style={{
               width: "100%",
-              padding: "5px var(--s3)",
+              padding: "var(--ma-2) var(--ma-3)",
               borderRadius: "var(--radius)",
               background: "var(--void)",
-              color: "var(--text-hi)",
-              fontFamily: "var(--font-mono)",
-              fontSize: "var(--text-sm)",
+              color: "var(--text-1)",
+              fontFamily: "var(--font)",
               border: "none",
-              boxShadow: "inset 0 0 0 1px var(--rim)",
+              boxShadow: "var(--hairline)",
               outline: "none",
             }}
           />
           {searching ? (
             <span
               aria-hidden
+              className="alive"
               style={{
                 position: "absolute",
-                right: 8,
-                top: 7,
+                right: 10,
+                top: 11,
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "var(--radiation)",
-                animation: "radiation-breathe 1.4s ease-in-out infinite",
+                background: "var(--light)",
               }}
             />
           ) : null}
         </div>
       </div>
 
-      <div style={{ overflowY: "auto", padding: "0 var(--s2) var(--s3)", minHeight: 0, flex: 1 }}>
+      <div style={{ overflowY: "auto", padding: "0 var(--ma-3) var(--ma-4)", minHeight: 0, flex: 1 }}>
         {hits ? (
           <SearchResults hits={hits} query={query} onOpen={(p, line) => { void sendIntent(intent.openFile(p, line)); onOpen(p); }} />
         ) : (
@@ -151,19 +152,21 @@ function TreeRow({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "var(--s2)",
+          gap: "var(--ma-2)",
           width: "100%",
           textAlign: "left",
-          padding: "3px var(--s2)",
-          paddingLeft: 8 + depth * 14,
+          padding: "5px var(--ma-2)",
+          paddingLeft: 10 + depth * 16,
           borderRadius: "var(--radius)",
-          fontSize: "var(--text-sm)",
-          color: selected ? "var(--text-hi)" : node.dir ? "var(--text-mid)" : "var(--text-mid)",
-          background: selected ? "var(--surface-2)" : "transparent",
-          boxShadow: selected ? "inset 0 0 0 1px var(--radiation)" : undefined,
+          fontSize: "14px",
+          lineHeight: 1.8,
+          // the active file rests at --text-1 with a faint inner-glow catch; everything else is quiet.
+          color: selected ? "var(--text-1)" : "var(--text-2)",
+          background: selected ? "var(--concrete-3)" : "transparent",
+          boxShadow: selected ? "var(--inner-glow)" : undefined,
         }}
       >
-        <span style={{ width: 10, color: "var(--text-low)", userSelect: "none" }}>
+        <span style={{ width: 12, color: "var(--text-3)", userSelect: "none" }}>
           {node.dir ? (isOpen ? "▾" : "▸") : ""}
         </span>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{node.name}</span>
@@ -180,16 +183,17 @@ function TreeRow({
   );
 }
 
-// Git/agent badge: a letter (shape) + token color, never color alone (C14).
+// Git/agent badge: a glyph (shape) + token color, never color alone. The only two colors are --ok and
+// --bad; a 'modified' state has no hue (there is no third color), so it reads as a neutral glyph.
 function Badge({ kind }: { kind: NonNullable<FileNode["badge"]> }) {
   const map = {
-    added: { ch: "+", color: "var(--diff-add-fg)" },
-    modified: { ch: "M", color: "var(--warning)" },
-    touched: { ch: "▪", color: "var(--radiation)" },
+    added: { ch: "+", color: "var(--ok)" },
+    modified: { ch: "M", color: "var(--text-2)" },
+    touched: { ch: "▪", color: "var(--light)" },
   } as const;
   const m = map[kind];
   return (
-    <span title={kind} style={{ color: m.color, fontSize: "var(--text-xs)", width: 12, textAlign: "center" }}>
+    <span title={kind} style={{ color: m.color, fontSize: "12px", width: 14, textAlign: "center" }}>
       {m.ch}
     </span>
   );
@@ -205,7 +209,7 @@ function SearchResults({
   onOpen: (path: string, line: number) => void;
 }) {
   if (hits.length === 0) {
-    return <div style={{ color: "var(--text-low)", fontSize: "var(--text-sm)", padding: "var(--s3)" }}>No matches for "{query}".</div>;
+    return <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-4)" }}>No matches for "{query}".</div>;
   }
   return (
     <ul style={list}>
@@ -217,17 +221,17 @@ function SearchResults({
               display: "block",
               width: "100%",
               textAlign: "left",
-              padding: "4px var(--s2)",
+              padding: "var(--ma-2)",
               borderRadius: "var(--radius)",
-              fontSize: "var(--text-sm)",
-              color: "var(--text-mid)",
+              fontSize: "14px",
+              color: "var(--text-2)",
             }}
           >
-            <span style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
+            <span style={{ color: "var(--text-3)", fontSize: "12px" }}>
               {h.path}
-              {h.line ? <span style={{ color: "var(--radiation)" }}>:{h.line}</span> : null}
+              {h.line ? <span style={{ color: "var(--text-2)" }}>:{h.line}</span> : null}
             </span>
-            <div style={{ color: "var(--text-mid)", whiteSpace: "pre", overflow: "hidden", textOverflow: "ellipsis" }}>{h.preview}</div>
+            <div className="t-code" style={{ color: "var(--text-2)", whiteSpace: "pre", overflow: "hidden", textOverflow: "ellipsis" }}>{h.preview}</div>
           </button>
         </li>
       ))}
@@ -252,18 +256,3 @@ function localSearch(nodes: FileNode[], q: string): SearchHit[] {
 }
 
 const list: CSSProperties = { listStyle: "none", margin: 0, padding: 0 };
-
-function Label({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        fontSize: "var(--text-xs)",
-        letterSpacing: "0.08em",
-        textTransform: "uppercase",
-        color: "var(--text-low)",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
