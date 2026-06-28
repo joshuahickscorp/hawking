@@ -705,6 +705,22 @@ CONFIGS = {
         ("1-bw", build_blockwise, (1,)),
         ("2-str", build_strand, (2,)), ("1-str", build_strand, (1,)),
     ],
+    # SUBBIT — the sub-1-bit / sub-2-bit frontier lane (studio_maximization SUBBIT plan). Gated by
+    # subbit_measure.py (SUBBIT-0 entropy floor) upstream. SUBBIT-1 = PTQ1.61: 1-bit bulk + sparse
+    # 8-bit outlier channel (serves via the native base .tq + OUTL wire). res1+1 = SUBBIT-3 coarse
+    # base + low-rate residual (native parity-green two-part .tq serve). 1-str/1-bw/+dr = the
+    # codec-native + full-rank recovery at the 1-bit edge (the UNPROVEN gate-opener the Studio reopens).
+    "subbit": [
+        ("subbit1-o0.5", build_awq, (1, 0.5, None, 0.5)),
+        ("subbit1-o1",   build_awq, (1, 0.5, None, 1.0)),
+        ("subbit1-o2",   build_awq, (1, 0.5, None, 2.0)),
+        ("res1+1",       build_residual, (1, 1)),
+        ("res2+1",       build_residual, (2, 1)),
+        ("1-str",        build_strand,   (1,)),
+        ("1-bw",         build_blockwise, (1,)),
+        ("subbit1-o1+dr", build_recover, (1, 60, 64, 1e-4, 0.5, None, 1.0)),
+        ("2-AWQ+dr",     build_recover,  (2,)),
+    ],
 }
 
 

@@ -56,9 +56,10 @@ def _have(label):
     return False
 
 
-def run_model(label):
-    """Run ONE model's full chain serially: bakes+ppl ladder -> recovery stack -> floor search ->
-    receipt. Heavy; STUDIO only. Each step shells the real tool and is individually checkpointed."""
+def run_model(label, set_name="studio"):
+    """Run ONE model's full chain serially: (SUBBIT-0 gate) -> bake+recovery stack -> floor search ->
+    receipt. Heavy; STUDIO only. set_name selects audit_ladder's config set ('studio' = the L0-L6
+    bit-floor stack; 'subbit' = the sub-1/sub-2-bit frontier lane). Each step is checkpointed."""
     row = next(r for r in LADDER if r[0] == label)
     _, mdir, params, _, _, role = row
     if not os.path.isdir(mdir):
@@ -71,13 +72,20 @@ def run_model(label):
            # generous swap leashes for the big box (§3); the 18GB 6000MB death must not recur <32B
            "DOCTOR_SWAP_CEIL": os.environ.get("DOCTOR_SWAP_CEIL", "60000"),
            "DOCTOR_SWAP_HARD_CEIL": os.environ.get("DOCTOR_SWAP_HARD_CEIL", "80000")}
-    log = f"reports/cron/studio_{label}.log"
-    out = f"reports/cron/studio_{label}"
-    print(f"[{label}] chain start (role={role}, {params}B) -> {log}", file=sys.stderr)
-    # Stage 1-2: the full L0-L6 stack via audit_ladder's 'studio' set (bakes + AWQ + mixed + residual
-    # + L6 LoRA-KD + L4 block-QAT + L5 GPTQ-Hessian), each checkpointed/guarded, multiwindow ppl +
-    # capability tripwire on floor candidates.
-    rc = subprocess.run(["python3.12", f"{TC}/audit_ladder.py", mdir, label, "studio", out],
+    log = f"reports/cron/{set_name}_{label}.log"
+    out = f"reports/cron/{set_name}_{label}"
+    print(f"[{label}] {set_name} chain start (role={role}, {params}B) -> {log}", file=sys.stderr)
+    # SUBBIT-0 GATE: measure the entropy/side-info floor first. If sub-1-bit dense is DEAD by the
+    # floor, the subbit lane still runs (MoE/residual survive) but the gate is on record per model.
+    if set_name == "subbit":
+        subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
+        # SUBBIT-4 probe: per-expert sensitivity decides MoE sub-bit allocation (gated to MoE dirs).
+        if any(t in label.lower() for t in ("moe", "a22b", "a3b", "deepseek", "mixtral", "glm")):
+            subprocess.run(["python3.12", f"{TC}/expert_sensitivity.py", mdir, "--label", label,
+                            "--bits", "1,2"], env=env)
+    # Stage 1-2: the chosen stack via audit_ladder (bakes + AWQ + mixed + residual + L6 LoRA-KD +
+    # L4 block-QAT + L5 GPTQ-Hessian), each checkpointed/guarded, multiwindow ppl + tripwire.
+    rc = subprocess.run(["python3.12", f"{TC}/audit_ladder.py", mdir, label, set_name, out],
                         env=env).returncode
     # Stage 3-4: pick the floor (lowest eff-bpw <= +2% ppl) + emit a schema-valid receipt.
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--floor", label,
@@ -87,14 +95,14 @@ def run_model(label):
     return rc
 
 
-def run_all():
+def run_all(set_name="studio"):
     """Schedule every model's chain, packed into RAM, then fit the curve."""
     from ram_scheduler import Scheduler, Job
-    jobs = [Job(lbl, ["python3.12", f"{TC}/studio_run.py", "--model", lbl],
+    jobs = [Job(lbl, ["python3.12", f"{TC}/studio_run.py", "--model", lbl, set_name],
                 est_gb=gb, solo=solo, done_when=None,
-                log=f"reports/cron/studio_{lbl}.log")
+                log=f"reports/cron/{set_name}_{lbl}.log")
             for (lbl, _, _, gb, solo, _) in LADDER if not _have(lbl)]
-    Scheduler(statusf="reports/cron/studio_sched.status").run(jobs)
+    Scheduler(statusf=f"reports/cron/{set_name}_sched.status").run(jobs)
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", FLOORS])
 
 
@@ -124,8 +132,14 @@ if __name__ == "__main__":
     if a == "--plan":
         plan()
     elif a == "--model":
-        sys.exit(run_model(sys.argv[2]))
+        # studio_run.py --model <label> [set]   (set = studio | subbit)
+        sys.exit(run_model(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "studio"))
     elif a == "--run":
-        run_all()
+        run_all("studio")
+    elif a == "--subbit":
+        # studio_run.py --subbit <label>   (one model, sub-1-bit lane, with the SUBBIT-0 gate)
+        sys.exit(run_model(sys.argv[2], "subbit"))
+    elif a == "--subbit-run":
+        run_all("subbit")            # schedule the whole ladder through the sub-1-bit lane
     else:
         print(__doc__)
