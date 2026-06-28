@@ -1,0 +1,198 @@
+/*
+  theme.css: THE single source of truth for the HIDE design system.
+  Every color, surface recipe, glow, type family, and spacing step lives here as a
+  CSS variable. No hardcoded colors anywhere else in the app. Doctrine: 04-design-doctrine.md.
+  The look: near-black anodized material surfaces, recessed and rim-lit, with one
+  luminous warm-gold radiation accent on everything alive. Cormorant display, Geist Mono UI.
+*/
+
+/* Fonts, vendored via npm (no external fetch: honors the air-gap ethos). */
+@import "@fontsource/cormorant-garamond/400.css";
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+@import "@fontsource/geist-mono/600.css";
+/* Geist Sans is the wordmark face ONLY (logo); never used in UI text. */
+@import "@fontsource/geist-sans/600.css";
+
+:root {
+  /* ---- Near-black material ramp ---- */
+  --void: #060606;            /* base background, never #000 */
+  --surface-0: #0B0B0C;       /* raised panel */
+  --surface-1: #111113;       /* card */
+  --surface-2: #18181B;       /* elevated / hover */
+  --rim: rgba(255, 255, 255, 0.06);        /* hairline border, recessed-channel edge */
+  --rim-strong: rgba(255, 255, 255, 0.10); /* emphasized edge */
+
+  /* ---- Text (warm off-whites, AA on --void) ---- */
+  --text-hi: #F2F0EC;
+  --text-mid: #A8A6A1;
+  --text-low: #7C7A75;
+
+  /* ---- Radiation: the brand life-color (the gold photon ring) ---- */
+  --radiation: #F0B95B;            /* agent active / streaming, the breathing glow */
+  --radiation-bright: #FFD888;     /* needs your approval, peak glow, lit controls */
+  --radiation-bloom: rgba(240, 185, 91, 0.32); /* the rim-light bloom / glow shadow */
+
+  /* ---- Semantic palette (always paired with a shape/marker, never color alone) ---- */
+  --success: #6FBF8B;   /* muted jade, never neon, never terminal-green */
+  --danger: #E5635E;    /* refined signal red */
+  --warning: #E08A3C;   /* orange, deliberately separated from the gold */
+  --diff-add-fg: #8FD0A6;
+  --diff-add-bg: rgba(111, 191, 139, 0.10);
+  --diff-del-fg: #E58B86;
+  --diff-del-bg: rgba(229, 99, 94, 0.10);
+
+  /* ---- Type ---- */
+  --font-display: "Cormorant Garamond", Georgia, serif; /* display sizes ONLY, 28-72px */
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace; /* everything functional */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 14px;
+  --leading-ui: 1.55;     /* mono UI legibility requirement */
+
+  /* ---- Spacing: 4px base, 8px rhythm ---- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+
+  /* ---- Geometry ---- */
+  --radius: 4px;        /* restrained; not rounded-everything */
+  --radius-lg: 8px;
+  --rail-w: 320px;      /* Context Stack right rail */
+  --sidebar-w: 260px;   /* primary sidebar */
+  --activity-w: 52px;   /* left mode/activity rail */
+  --statusbar-h: 26px;
+  --titlebar-h: 38px;
+
+  /*
+    Material surface recipe (the anodized look): a subtle two-layer top-light
+    gradient + an inset hairline rim + a soft inner recess shadow. Applied via .panel.
+  */
+  --panel-grad: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 64px);
+  --panel-inset: inset 0 0 0 1px var(--rim), inset 0 1px 0 0 rgba(255, 255, 255, 0.03),
+    inset 0 -18px 28px -24px rgba(0, 0, 0, 0.65);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--void);
+  color: var(--text-hi);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  line-height: var(--leading-ui);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display type. Cormorant never drops below display sizes (it gets spindly). */
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: 0.01em;
+  color: var(--text-hi);
+  margin: 0;
+}
+
+/*
+  The material panel: a recessed, rim-lit anodized surface with real depth.
+  Use everywhere a region needs to read as physical, not flat.
+*/
+.panel {
+  position: relative;
+  background-color: var(--surface-0);
+  background-image: var(--panel-grad);
+  border-radius: var(--radius);
+  box-shadow: var(--panel-inset);
+}
+
+/* A keyboard focus ring that wears the rim, brightening to gold on interactive elements. */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--radiation), 0 0 0 4px var(--radiation-bloom);
+  border-radius: var(--radius);
+}
+
+button {
+  font: inherit;
+  color: var(--text-mid);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--radiation-bloom);
+  color: var(--text-hi);
+}
+
+/*
+  The radiation breathing pulse: the agent's heartbeat. A soft gold glow that
+  inhales and exhales. Driven by a CSS variable so any element can wear it.
+  Static fallback honored under prefers-reduced-motion below.
+*/
+@keyframes radiation-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px var(--radiation), 0 0 10px -2px var(--radiation-bloom);
+    opacity: 0.92;
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--radiation-bright), 0 0 22px 1px var(--radiation-bloom);
+    opacity: 1;
+  }
+}
+
+/* The travelling fork/handoff edge: a gold sheen sweeps along a border once. */
+@keyframes radiation-travel {
+  0% {
+    background-position: -140% 0;
+  }
+  100% {
+    background-position: 240% 0;
+  }
+}
+
+/* Custom scrollbars: thin, recessed, never bright. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rim-strong);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
