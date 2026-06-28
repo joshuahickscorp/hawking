@@ -16,6 +16,14 @@ path = "src/main.rs"
 name = "hawking-spec-acceptance-measure"
 path = "src/spec_acceptance_measure.rs"
 
+[features]
+# Forward the runtime `tq` feature down through hawking-serve to hawking-core so
+# the `hawking serve` binary, built with `--features tq`, serves a `.tq` sidecar
+# (HAWKING_QWEN_TQ). OFF by default: the default product build stays
+# byte-identical and existing gates stay green. The RuntimeSupervisor builds /
+# runs the runtime with this feature when a `.tq` sidecar is configured.
+tq = ["hawking-serve/tq", "hawking-core/tq"]
+
 [dependencies]
 hawking-core = { path = "../hawking-core" }
 hawking-serve = { path = "../hawking-serve" }

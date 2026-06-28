@@ -31,6 +31,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio::sync::broadcast::error::RecvError;
+use tower_http::cors::{Any, CorsLayer};
 
 /// Build the axum router for the HIDE transport, with the shared
 /// [`BackendHost`] as state. Pure: no I/O, no binding — the bin (or a test)
@@ -44,7 +45,25 @@ pub fn router(host: Arc<BackendHost>) -> Router {
         // of the upgrade extractor (Some => WS, None => plain GET).
         .route("/v1/hide/events", get(get_events))
         .route("/v1/hide/connector", post(post_connector))
+        // Permissive-localhost CORS so the browser at the Vite dev origin
+        // (e.g. http://127.0.0.1:5273 or :5174) can reach this localhost
+        // transport (127.0.0.1:8744). The OPTIONS preflight is answered by the
+        // layer itself. WS upgrades do not use CORS, but a permissive origin
+        // keeps the cross-origin browser path usable for the JSON routes.
+        .layer(cors_layer())
         .with_state(host)
+}
+
+/// A permissive CORS layer for the localhost dev surface: any origin, the
+/// methods the FE uses (GET/POST + the OPTIONS preflight), and any request
+/// header. This is intentionally open because the transport binds to loopback
+/// only (no cross-machine exposure to defend here), and the Vite dev server's
+/// origin/port is not fixed.
+fn cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any)
 }
 
 async fn healthz() -> &'static str {

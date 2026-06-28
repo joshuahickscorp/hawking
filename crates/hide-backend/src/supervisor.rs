@@ -72,23 +72,47 @@ pub struct SupervisorConfig {
 impl SupervisorConfig {
     /// Production config: spawn the `hawking` binary's `serve` subcommand and
     /// poll its `/healthz`. The caller supplies the bind host:port so the health
-    /// URL and the serve `--addr` agree.
+    /// URL and the serve `--addr` agree, plus the model `weights` the serve
+    /// loads for generation (the `serve` subcommand requires `--weights`).
+    ///
+    /// When a `.tq` sidecar sits next to the weights (same stem, `.tq`
+    /// extension), the runtime is asked to serve it: `HAWKING_QWEN_TQ=1` is set
+    /// in the child's env so the engine builds the TQ side map and serves the
+    /// FFN/all-linear projections from the `.tq` artifact (the `hawking serve`
+    /// binary must have been built `--features tq` for this to engage; without
+    /// that feature the env var is a no-op and serve falls back to Q4_K).
     pub fn for_hawking_serve(
         bind_addr: impl Into<String>,
         workspace_root: impl AsRef<Path>,
+        weights: impl AsRef<Path>,
         lock_path: impl Into<PathBuf>,
     ) -> Self {
         let bind = bind_addr.into();
+        let weights = weights.as_ref();
+        let mut argv = vec![
+            "hawking".to_string(),
+            "serve".to_string(),
+            "--addr".to_string(),
+            bind.clone(),
+            "--weights".to_string(),
+            weights.display().to_string(),
+        ];
+        // The serve `--addr` default is 0.0.0.0:8080; we always pass the bind
+        // explicitly above so health URL and serve addr agree. (argv kept as a
+        // Vec so a caller can extend it before constructing the supervisor.)
+        let _ = &mut argv;
+
+        let mut env: std::collections::BTreeMap<String, String> = Default::default();
+        // A `.tq` sidecar (same stem, `.tq` extension) flips on native TQ serving.
+        if weights.with_extension("tq").exists() {
+            env.insert("HAWKING_QWEN_TQ".to_string(), "1".to_string());
+        }
+
         let spec = ProcessSpec {
             name: "hawking-serve".to_string(),
-            argv: vec![
-                "hawking".to_string(),
-                "serve".to_string(),
-                "--addr".to_string(),
-                bind.clone(),
-            ],
+            argv,
             cwd: Some(workspace_root.as_ref().display().to_string()),
-            env: Default::default(),
+            env,
             health_url: Some(format!("http://{bind}/healthz")),
         };
         Self {

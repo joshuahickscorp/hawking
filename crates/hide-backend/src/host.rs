@@ -4,13 +4,14 @@ use crate::interrupt::InterruptHub;
 use crate::replay::BackendReplayService;
 use crate::security::SecurityServices;
 use crate::services::{BackendCapabilities, BackendServices, SharedBackend};
+use crate::supervisor::{RuntimeSupervisor, SupervisorConfig};
 use crate::tools::{build_default_tool_dispatcher, build_default_tool_registry};
 use crate::ui_bus::UiEventBus;
 use hide_core::api::{Intent, IntentAck, UiEvent, UiEventKind};
 use hide_core::event::{NewEvent, ToolCallEvent, ToolResultEvent};
 use hide_core::ids::{RunId, SessionId};
 use hide_core::observability::{HealthCheck, HealthReport, HealthStatus};
-use hide_core::runtime::ModelRole;
+use hide_core::runtime::{ModelRole, RuntimeSupervisorState};
 use hide_core::tool::{ToolCall, ToolDispatcher, ToolRegistry, ToolResult, ToolSpec, ToolStatus};
 use hide_core::Result;
 use hide_fleet::manager::KernelRunLauncher;
@@ -40,6 +41,13 @@ pub struct BackendHost {
     ui_bus: Arc<UiEventBus>,
     /// Shared with the CommandRouter so control intents reach running runs.
     interrupts: Arc<InterruptHub>,
+    /// The supervised `hawking serve` runtime, present only when a model is
+    /// configured (`HIDE_MODEL_WEIGHTS` set). `None` keeps the host fully usable
+    /// headless: the ~410 unit tests never spawn a server. When present, its
+    /// state machine (`Down -> Booting -> Ready -> Degraded -> Failed`) is
+    /// surfaced through `health()`/`status()`, and `base_url()` (once `Ready`)
+    /// is where `SubmitTurn` generation is routed.
+    runtime: Option<Arc<RuntimeSupervisor>>,
 }
 
 impl BackendHost {
@@ -54,6 +62,7 @@ impl BackendHost {
         let connectors = Arc::new(ConnectorRegistry::default());
         register_backend_connectors(&connectors, &services);
         let interrupts = Arc::new(InterruptHub::default());
+        let runtime = Self::maybe_boot_runtime(&services);
         Ok(Self {
             commands: CommandRouter::with_interrupts(
                 services.event_log.clone(),
@@ -71,7 +80,54 @@ impl BackendHost {
             security: SecurityServices::default(),
             ui_bus: Arc::new(UiEventBus::default()),
             interrupts,
+            runtime,
         })
+    }
+
+    /// Construct + (in the background) boot the runtime supervisor, GATED behind
+    /// the `HIDE_MODEL_WEIGHTS` env var. When unset (the headless/test default)
+    /// this returns `None` and NO server is ever spawned, so the ~410 unit tests
+    /// stay model-free. When set to a weights path, the `RuntimeSupervisor` is
+    /// built for `hawking serve --weights <path>` and `boot()` is spawned on the
+    /// current tokio runtime so construction stays synchronous and NON-FATAL: a
+    /// missing binary, a bad path, or a `/healthz` that never comes up just
+    /// leaves the supervisor in `Failed`/`Booting`; the host is still returned
+    /// and fully usable (it will report "model offline" rather than fake a
+    /// token). The bind addr is overridable via `HIDE_MODEL_ADDR`
+    /// (default 127.0.0.1:8745, distinct from hide-serve's own 8744).
+    fn maybe_boot_runtime(services: &Arc<BackendServices>) -> Option<Arc<RuntimeSupervisor>> {
+        let weights = std::env::var("HIDE_MODEL_WEIGHTS").ok()?;
+        if weights.trim().is_empty() {
+            return None;
+        }
+        let bind = std::env::var("HIDE_MODEL_ADDR")
+            .ok()
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or_else(|| "127.0.0.1:8745".to_string());
+        let layout = services.layout();
+        let cfg = SupervisorConfig::for_hawking_serve(
+            bind,
+            &services.config.workspace_root,
+            &weights,
+            layout.hide_dir.join("runtime.lock"),
+        );
+        let supervisor = Arc::new(RuntimeSupervisor::for_hawking_serve(cfg));
+        // Boot in the background so construction is sync + non-fatal. If we are
+        // not inside a tokio runtime (a sync test that set the env var), skip the
+        // spawn but still hand back the (Down) supervisor: health/status report
+        // it honestly and generation surfaces "model offline".
+        if let Ok(handle) = tokio::runtime::Handle::try_current() {
+            let sup = supervisor.clone();
+            handle.spawn(async move {
+                if let Err(e) = sup.boot().await {
+                    // Non-fatal: the supervisor already transitioned to Failed and
+                    // recorded the reason; just surface it (consistent with the
+                    // supervisor's own eprintln! diagnostics).
+                    eprintln!("warning: runtime supervisor boot failed (non-fatal): {e}");
+                }
+            });
+        }
+        Some(supervisor)
     }
 
     /// Subscribe to the live push UiEvent stream (Wire-B). Ordered; a lagging
@@ -90,8 +146,113 @@ impl BackendHost {
         &self.interrupts
     }
 
+    /// The supervised runtime's state (`None` when no model is configured, i.e.
+    /// `HIDE_MODEL_WEIGHTS` unset). Surfaced so the FE's `RuntimeStatus` can
+    /// reflect down/booting/ready/degraded/failed.
+    pub fn runtime_state(&self) -> Option<RuntimeSupervisorState> {
+        self.runtime.as_ref().map(|s| s.state())
+    }
+
+    /// The base URL of the supervised runtime, but only when it is `Ready`. A
+    /// `None` here means "no model online to generate against", so the caller
+    /// surfaces that as a `RuntimeStatus`/`Error` UiEvent rather than faking a
+    /// token.
+    fn runtime_base_url(&self) -> Option<String> {
+        let sup = self.runtime.as_ref()?;
+        if sup.state() == RuntimeSupervisorState::Ready {
+            sup.base_url()
+        } else {
+            None
+        }
+    }
+
+    /// Handle a Wire-A intent. The `IntentAck` is returned SYNCHRONOUSLY (the
+    /// contract is unchanged); generation, when an accepted `SubmitTurn`
+    /// triggers it, is spawned as a background task that streams tokens onto the
+    /// Wire-B bus. The ack does not wait for generation.
     pub async fn handle_intent(&self, intent: Intent) -> Result<IntentAck> {
-        self.commands.handle(intent).await
+        // Snapshot the SubmitTurn parameters before the router consumes the
+        // intent (it takes `intent` by value and returns only an `IntentAck`).
+        let submit = match &intent {
+            Intent::SubmitTurn {
+                session_id, text, ..
+            } => Some((session_id.clone(), text.clone())),
+            _ => None,
+        };
+
+        let ack = self.commands.handle(intent).await?;
+
+        // Only an ACCEPTED SubmitTurn starts generation (a rejected one, e.g.
+        // empty text, returned `accepted: false` and logged nothing).
+        if let (true, Some((session_id, prompt))) = (ack.accepted, submit) {
+            self.spawn_submit_turn_generation(session_id, prompt);
+        }
+        Ok(ack)
+    }
+
+    /// Spawn the generation for an accepted `SubmitTurn`: route it at the live
+    /// runtime and stream tokens onto Wire-B. The run's `run_id` is registered
+    /// so `CancelRun`/`PauseRun` reach it via the shared `InterruptHub`. When no
+    /// runtime is online (no model configured, or it is not yet `Ready`), this
+    /// publishes a `RuntimeStatus`/`Error` UiEvent instead of generating, so the
+    /// FE shows "model offline", never a fake token.
+    fn spawn_submit_turn_generation(&self, session_id: SessionId, prompt: String) {
+        let run_id = RunId::new();
+        match self.runtime_base_url() {
+            Some(base_url) => {
+                // Register the run with the interrupt hub so control intents can
+                // reach it (the generation task polls it cooperatively).
+                let ui_bus = self.ui_bus.clone();
+                let role_registry = self.services.role_registry.clone();
+                let event_log = self.services.event_log.clone();
+                let interrupts = self.interrupts.clone();
+                let run = run_id.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = generate_submit_turn(
+                        event_log,
+                        role_registry,
+                        ui_bus.clone(),
+                        interrupts,
+                        run,
+                        session_id.clone(),
+                        base_url,
+                        prompt,
+                    )
+                    .await
+                    {
+                        // Surface the failure on the same typed Wire-B channel;
+                        // never swallow it.
+                        ui_bus.publish(UiEvent {
+                            seq: 0,
+                            session_id: Some(session_id),
+                            kind: UiEventKind::Error {
+                                code: "generation".to_string(),
+                                message: e.to_string(),
+                            },
+                        });
+                    }
+                });
+            }
+            None => {
+                // No model online: surface "model offline" as a real UiEvent.
+                let status = self
+                    .runtime_state()
+                    .map(|s| format!("{s:?}").to_lowercase())
+                    .unwrap_or_else(|| "down".to_string());
+                let detail = match self.runtime.is_some() {
+                    true => "runtime not ready; reconnect when it reports ready".to_string(),
+                    false => "no model configured (set HIDE_MODEL_WEIGHTS)".to_string(),
+                };
+                self.ui_bus.publish(UiEvent {
+                    seq: 0,
+                    session_id: Some(session_id),
+                    kind: UiEventKind::RuntimeStatus {
+                        status,
+                        detail: Some(detail),
+                    },
+                });
+            }
+        }
     }
 
     pub async fn call_connector(&self, id: &str, method: &str, params: Value) -> Result<Value> {
@@ -360,6 +521,7 @@ impl BackendHost {
             connectors: self.connectors.statuses().await,
             tools: self.tools.specs(),
             model_roles: self.services.role_registry.all(),
+            runtime: self.runtime_state(),
         }
     }
 
@@ -387,6 +549,25 @@ impl BackendHost {
                 detail: connector.detail,
             });
         }
+        // Surface the runtime supervisor state so the FE's RuntimeStatus
+        // reflects down/booting/ready/degraded/failed. When NO model is
+        // configured (the headless default) the runtime is simply absent and we
+        // report `Ok` with a "not configured" note: a missing model is not a
+        // health failure of the host. A configured-but-not-ready runtime maps to
+        // Degraded (still booting) or Failed (crashed past its restart cap).
+        let (rt_status, rt_detail) = match self.runtime_state() {
+            None => (HealthStatus::Ok, "not configured".to_string()),
+            Some(RuntimeSupervisorState::Ready) => (HealthStatus::Ok, "ready".to_string()),
+            Some(RuntimeSupervisorState::Failed) => {
+                (HealthStatus::Failed, "failed".to_string())
+            }
+            Some(other) => (HealthStatus::Degraded, format!("{other:?}").to_lowercase()),
+        };
+        checks.push(HealthCheck {
+            name: "runtime".to_string(),
+            status: rt_status,
+            detail: rt_detail,
+        });
         let status = if checks
             .iter()
             .any(|check| check.status == HealthStatus::Failed)
@@ -408,6 +589,100 @@ impl BackendHost {
     }
 }
 
+/// The spawnable twin of [`BackendHost::generate_and_publish`]: it takes owned
+/// clones (so it is `'static` for `tokio::spawn`) and wires the run's `run_id`
+/// into the [`InterruptHub`] so `CancelRun`/`PauseRun` reach it. A `CancelRun`
+/// that lands before the (single-shot) HTTP generate fires aborts the run with
+/// a `RuntimeStatus` notice rather than a fake completion.
+#[allow(clippy::too_many_arguments)]
+async fn generate_submit_turn(
+    event_log: hide_core::persistence::DynEventLog,
+    role_registry: Arc<hawking_orch::RoleRegistry>,
+    ui_bus: Arc<UiEventBus>,
+    interrupts: Arc<InterruptHub>,
+    run_id: RunId,
+    session_id: SessionId,
+    base_url: String,
+    prompt: String,
+) -> Result<String> {
+    use crate::model_provider::{HttpModelProvider, ModelProviderInferenceClient};
+    use hawking_orch::router::SimpleRouter;
+    use hide_core::runtime::{InferenceRequest, StreamChunk};
+    use hide_kernel::govern::Interrupt;
+    use hide_kernel::runtime_client::KernelRuntimeClient;
+
+    // Cooperative cancel: a CancelRun/PauseRun buffered for this run before we
+    // start aborts cleanly (surfaced as a RuntimeStatus, not a fake token).
+    if matches!(interrupts.take(&run_id), Some(Interrupt::Abort)) {
+        ui_bus.publish(UiEvent {
+            seq: 0,
+            session_id: Some(session_id),
+            kind: UiEventKind::RuntimeStatus {
+                status: "cancelled".to_string(),
+                detail: Some(format!("run {} cancelled before generation", run_id.as_str())),
+            },
+        });
+        return Ok(String::new());
+    }
+
+    let provider = HttpModelProvider::new(base_url);
+    let inference = Arc::new(ModelProviderInferenceClient::new(provider));
+    let router = Arc::new(SimpleRouter::new(role_registry));
+    let runtime = KernelRuntimeClient::new(router, inference);
+
+    let request = InferenceRequest {
+        task_kind: "code".to_string(),
+        prompt,
+        messages: Vec::new(),
+        max_output_tokens: 256,
+        sampler: None,
+        grammar: None,
+        want_logprobs: false,
+        metadata: Default::default(),
+    };
+    // A stable seq to key the published UiEvent stream off of.
+    let status_event = event_log
+        .append(NewEvent::system(
+            session_id.clone(),
+            "runtime.generation",
+            json!({ "task": "code", "run_id": run_id.as_str() }),
+        ))
+        .await?;
+    let stream_id = status_event.seq.to_string();
+
+    let mut buf = String::new();
+    {
+        let bus = ui_bus.clone();
+        let sess = session_id.clone();
+        let sid = stream_id.clone();
+        let seq = status_event.seq;
+        let mut sink = |chunk: StreamChunk| {
+            match chunk {
+                StreamChunk::Token { text, .. } => {
+                    buf.push_str(&text);
+                    bus.publish_token(seq, Some(sess.clone()), &sid, &text);
+                }
+                StreamChunk::Done { .. } => {
+                    bus.flush(Some(sess.clone()));
+                }
+                StreamChunk::Error { message } => {
+                    bus.publish(UiEvent {
+                        seq,
+                        session_id: Some(sess.clone()),
+                        kind: UiEventKind::Error {
+                            code: "generation".to_string(),
+                            message,
+                        },
+                    });
+                }
+            }
+            Ok(())
+        };
+        runtime.generate(request, &mut sink).await?;
+    }
+    Ok(buf)
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BackendStatus {
     pub workspace_root: PathBuf,
@@ -415,6 +690,11 @@ pub struct BackendStatus {
     pub connectors: Vec<ConnectorStatus>,
     pub tools: Vec<ToolSpec>,
     pub model_roles: Vec<ModelRole>,
+    /// The supervised runtime's state, or `None` when no model is configured
+    /// (`HIDE_MODEL_WEIGHTS` unset). Lets the FE reflect down/booting/ready/
+    /// degraded/failed.
+    #[serde(default)]
+    pub runtime: Option<RuntimeSupervisorState>,
 }
 
 fn tool_result_summary(result: &ToolResult) -> String {
@@ -710,6 +990,55 @@ mod tests {
 
         supervisor.shutdown().await;
         rt.stop();
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    /// No model configured (`HIDE_MODEL_WEIGHTS` unset, the headless default):
+    /// an ACCEPTED `SubmitTurn` must NOT fabricate a token. It surfaces a
+    /// `RuntimeStatus` "model offline" UiEvent on Wire-B instead, never a fake
+    /// `TokenBatch`. This guards the "no silent failure / never a fake token"
+    /// contract.
+    #[tokio::test]
+    async fn submit_turn_with_no_runtime_publishes_model_offline_not_a_token() {
+        let dir = std::env::temp_dir().join(format!("hide_host_offline_{}", now_ms()));
+        // Ensure the gate is OFF for this test regardless of ambient env.
+        std::env::remove_var("HIDE_MODEL_WEIGHTS");
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        assert!(
+            host.runtime_state().is_none(),
+            "no runtime should be configured without HIDE_MODEL_WEIGHTS"
+        );
+
+        let session = host.services.session();
+        let mut rx = host.subscribe_ui();
+        let ack = host
+            .handle_intent(Intent::SubmitTurn {
+                session_id: session.clone(),
+                text: "implement the parser".to_string(),
+                attachments: Vec::new(),
+            })
+            .await
+            .unwrap();
+        // The ack is still accepted + synchronous (the contract is unchanged).
+        assert!(ack.accepted);
+
+        let event = tokio::time::timeout(std::time::Duration::from_secs(2), rx.recv())
+            .await
+            .expect("a UiEvent should be published")
+            .expect("broadcast delivers");
+        match event.kind {
+            UiEventKind::RuntimeStatus { status, detail } => {
+                assert_eq!(status, "down");
+                assert!(
+                    detail.unwrap_or_default().contains("no model configured"),
+                    "offline notice should name the missing model"
+                );
+            }
+            UiEventKind::TokenBatch { .. } => {
+                panic!("must not fabricate a token when no model is online")
+            }
+            other => panic!("expected a RuntimeStatus UiEvent, got {other:?}"),
+        }
         let _ = std::fs::remove_dir_all(dir);
     }
 }

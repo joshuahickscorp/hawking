@@ -27,6 +27,10 @@ tokio = { workspace = true }
 # WebSocket support (Wire-B). Additive on this crate only; the root
 # [workspace.dependencies] is untouched.
 axum = { workspace = true, features = ["ws"] }
+# Permissive-localhost CORS so the browser at the Vite dev origin can reach the
+# localhost transport. `tower-http` 0.6 is already in the workspace lockfile via
+# axum's tree, so this adds no new crate. Only the `cors` feature is pulled in.
+tower-http = { version = "0.6", features = ["cors"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
