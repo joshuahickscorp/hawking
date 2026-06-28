@@ -1,70 +1,43 @@
-# Hawking IDE — Technical Bible
+# Hawking IDE (HIDE) — Documentation
 
-**13-chapter engineering reference for the HIDE local-first agentic coding IDE.**
+HIDE is the second product in the Hawking family: a local-first agentic coding IDE that serves Hawking `.tq` models. This directory has two parts now — the **built backend** (reference) and the **front-end bible** (the active, forward-looking spec).
 
-HIDE is built on Hawking Condense (`.tq` sub-4-bit models) and runs entirely on Apple Silicon — no cloud required, no per-token cost. This bible is the single authoritative source for every architecture decision, schema, state machine, and integration contract. Read it before touching any HIDE crate.
-
----
-
-## Reading order
-
-Start with [ch.00](00-vision-and-constitution.md) (the thesis and design constitution) and [ch.01](01-system-architecture.md) (process model and event log). Then read chapters in any order — they are heavily cross-referenced.
+> **Where things stand:** the entire HIDE **backend is built and tested** (11 Rust crates, the agent loop is real). The work now is the **front end** — a Tauri 2 + React/Monaco shell that talks to that backend over a small, already-existing contract. The bible has been restructured to match: the old 13-chapter backend design spec is archived; what's active is the front-end document set.
 
 ---
 
-## Chapters
+## → Start here: the front-end bible
 
-| # | Title | Core contract | Status |
-|---|---|---|---|
-| [00](00-vision-and-constitution.md) | Vision and Constitution | Thesis, local superpowers, 12 design principles, scope gates | ✅ |
-| [01](01-system-architecture.md) | System Architecture | Four-tier process model, append-only event log, plugin spine, data stores | ✅ |
-| [02](02-agent-kernel.md) | Agent Kernel | Formal FSM, Plan-as-data (HTN+DAG), Oracle trait, search escalation ladder, Skill Library | ✅ |
-| [03](03-tool-system-and-capabilities.md) | Tool System and Capabilities | `ToolCall`/`ToolResult`/`ToolError` schemas, ~60 built-in tools, MCP 2025-11-25 host+client, PermissionPolicy | ✅ |
-| [04](04-context-engineering-and-memory.md) | Context Engineering and Memory | Context Compiler, `KvStore` trait, CoALA memory layers, forever project memory | ✅ |
-| [05](05-codebase-intelligence.md) | Codebase Intelligence | BLAKE3 merkle-DAG, tree-sitter + stack-graphs + headless LSP, unified graph, living index daemon | ✅ |
-| [06](06-model-inference-orchestration.md) | Model Inference Orchestration | Model-role system, routing cascade, constrained/grammar decode, LoRA hot-swap, personalization flywheel | ✅ |
-| [07](07-hci-ux-and-ide-surface.md) | HCI, UX and IDE Surface | Six-region workbench, Context Stack right-rail, Tauri IPC, Monaco adapters, three ASCII state machines | ✅ |
-| [08](08-research-and-knowledge-lab.md) | Research and Knowledge Lab | Multi-source pipeline FSM, ~21 node knowledge graph, `SourceAdapter` trait, adversarial verify | ✅ POST-SHELL |
-| [09](09-parallel-agents-and-workstation.md) | Parallel Agents and Workstation | 7 orchestration patterns, worktree isolation, merge funnel, machine Governor, remote wss protocol | ✅ POST-SHELL |
-| [10](10-local-first-infrastructure-and-security.md) | Local-First Infrastructure and Security | Storage layout, T0-T4 sandbox ladder, CaMeL taint, 22-row threat model, hash-chained log | ✅ |
-| [11](11-bleeding-edge-and-moonshots.md) | Bleeding-Edge Capabilities and Moonshots | Personalization flywheel, RLEF on-device, self-improving workflows, KV handoff, ranked table | ✅ |
-| [12](12-competitive-matrix.md) | Competitive Matrix | HIDE vs Claude Code / Cursor / Cline / Aider / Void / OpenHands and 6 others; OSS harvest map | ✅ |
-| [13](13-roadmap-and-build-sequencing.md) | Roadmap and Build Sequencing | M0/M1/M2/M3+ milestones, thesis gate, kill protocol, scope contract, HF lane conditions | ✅ |
+The active spec for building the UI skeleton lives in **[`frontend/`](frontend/)**:
 
----
-
-## Key schemas (quick reference)
-
-| Schema | Defined in |
+| Doc | What it covers |
 |---|---|
-| `Event` envelope (ULID, seq, session, cause, payload) | ch.01 §1.2 |
-| `Plan` + `PlanStep` + `StepResult` | ch.02 §2.3 |
-| `ToolCall` / `ToolResult` / `ToolError` | ch.03 §3.1 |
-| `PermissionPolicy` (rules, defaults, risk_gates, scope_grammar) | ch.03 §3.5, ch.10 §10.4 |
-| `ContextManifest` (retained/dropped spans, KV budget) | ch.04 §4.2 |
-| `MemoryRecord` (CoALA-typed: working/episodic/semantic/procedural) | ch.04 §4.5 |
-| `ToolCall` wire format for MCP 2025-11-25 | ch.03 §3.4 |
-| `ModelDescriptor` / `ProviderCaps` / `RoleRegistry` | ch.06 §6.1 |
-| `AgentJob` / `GovernorState` / `WakeReport` | ch.09 §9.5 |
-| `PersonalizationRecord` | ch.11 §11.1 |
-| `AgentHandoff` (structured JSON inter-agent) | ch.11 §11.4 |
+| [00 · Vision & the Backend Contract](frontend/00-vision-and-backend-contract.md) | The three surfaces, the Tauri/React/Monaco/xterm stack, and the **real** FE↔backend contract — the `Intent`/`UiEvent` wires, the `BackendHost`/`CommandRouter`/`UiEventBus` API, the connectors, the TS IPC client, and the Custom-name registry. |
+| [01 · The Surfaces](frontend/01-surfaces.md) | The **AI IDE** (Monaco editor / diff review / file tree / terminal), the **AI Chat** (streaming turns), the **AI Workstation** (agent-run timeline / fleetview), and the **Context Stack** rail — component trees, store slices, intents sent, UiEvents consumed, and the binding state machines. |
+| [02 · OSS Harvest Map](frontend/02-oss-harvest.md) | What front-end component/UX to rip from each open-source AI IDE — Cline, Void, OpenHands, Continue, Aider, Goose, Kilo, OpenCode (port) and Zed/Cursor/Copilot (study-only) — with licenses and target modules. |
+| [03 · Build Sequencing](frontend/03-build-sequencing.md) | The skeleton-first plan, on top of the done backend: scaffold the Tauri app + the typed IPC client, then the panels in priority order (chat → editor → diff → tree → terminal → context stack → timeline → workstation), with milestones M-FE0…M-FE3. |
+
+Everything in `frontend/` binds to the contract that **actually exists** in code (`crates/hide-core/src/api.rs`, `crates/hide-backend/`), not to a sketch — where the old design diverged from what was built, the docs follow what was built.
 
 ---
 
-## Scope summary
+## The backend (built — reference, not active work)
 
-**Ships in the initial shell (M0–M1):** agent kernel, eval harness, router, `.tq` GPU serving, constrained-JSON tools, Tauri app shell (Chat / Diff Review / Context Stack / terminal / file tree / timeline).
+The backend is implemented across `crates/hide-core`, `hide-kernel`, `hide-tools`, `hide-security`, `hide-fleet`, `hide-personalize`, `hide-backend`, `hawking-context`, `hawking-index`, `hawking-orch`, `hawking-research`. The code is the source of truth; these two docs index it:
 
-**M2, gated on thesis-gate GO:** `hawking-condense` (HF link → .tq), `hawking-hub` (catalog download), Model Lab/Store tab.
+- **[SCAFFOLD_STATUS.md](SCAFFOLD_STATUS.md)** — the completion record: per-crate real-vs-seam state, the deferred seams (live model wiring, the Tauri frontend, the moonshots), and a "when you return" checklist. **Read this for what the backend can do today.**
+- **[SCAFFOLD_AUDIT.md](SCAFFOLD_AUDIT.md)** — the original gap audit (the "before" picture; historical).
 
-**Explicitly deferred:** Hawking HF org live catalog (until 32B `.tq` ready), Research Tab, parallel agent workstation UI, Remote Mac-Studio, RLEF/personalization flywheel (ch.11 moonshots), full JSON-Schema grammar compiler.
-
-See [ch.13 §13.9](13-roadmap-and-build-sequencing.md) for the full scope contract table.
+The one deferred seam the front-end work fills: the **Tauri host layer**. `CommandRouter::handle(Intent)` is transport-agnostic and the `UiEventBus` already streams `UiEvent`s — the front end wraps these behind `#[tauri::command]` and an `ipc::Channel<UiEvent>` (see [frontend/03 §1](frontend/03-build-sequencing.md)).
 
 ---
 
-## License policy
+## Archive
 
-Only **MIT / Apache-2.0** code may be copied or ported into shipped `app/` or `crates/`. CI gate: `cargo-about` + `package.json` license check fails on GPL/AGPL/unknown. See `THIRD_PARTY_NOTICES.md` for attribution. **Zed = study-only (AGPL). Cursor/Codex = never lift (proprietary ToS).**
+The original 13-chapter bible (the backend design spec, now implemented) is preserved under **[`archive/`](archive/)** — `00-vision-and-constitution` through `13-roadmap-and-build-sequencing`. It's design rationale; the implementation is the code + `SCAFFOLD_STATUS.md`. Kept for reference; not part of the active spec.
 
-See [ch.12 §12.5](12-competitive-matrix.md) for the full OSS harvest map.
+---
+
+## License policy (for the front-end harvest)
+
+Only **MIT / Apache-2.0** code may be ported into shipped `app/`. Zed (AGPL) and Cursor/Copilot (proprietary) are **study-only — never copy code**. Maintain `THIRD_PARTY_NOTICES.md`; the CI license gate fails on anything else. Full map in [frontend/02](frontend/02-oss-harvest.md).
