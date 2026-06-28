@@ -20,7 +20,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 os.chdir(ROOT)
 TC = "tools/condense"
 REC = "receipts/official"
-FLOORS = "reports/cron/bit_floor_curve.jsonl"     # one floor datapoint per model
+FLOORS = "reports/cron/bit_floor_curve.jsonl"     # studio-lane floor curve (back-compat default)
+
+def floors_path(set_name="studio"):
+    """Per-lane floor file so the studio and subbit lanes don't overwrite each other's curve."""
+    return FLOORS if set_name == "studio" else f"reports/cron/bit_floor_{set_name}.jsonl"
 
 # model ladder: label -> (hf dir, params(B), doctor peak GB, solo?, role)
 LADDER = [
@@ -43,11 +47,12 @@ STACK = [
 ]
 
 
-def _have(label):
-    """A model's floor point is done if its receipt + floor row already exist (resumable)."""
-    if not os.path.exists(FLOORS):
+def _have(label, set_name="studio"):
+    """A model's floor point is done if its floor row already exists in that lane (resumable)."""
+    fp = floors_path(set_name)
+    if not os.path.exists(fp):
         return False
-    for ln in open(FLOORS):
+    for ln in open(fp):
         try:
             if json.loads(ln).get("model") == label:
                 return True
@@ -89,7 +94,7 @@ def run_model(label, set_name="studio"):
                         env=env).returncode
     # Stage 3-4: pick the floor (lowest eff-bpw <= +2% ppl) + emit a schema-valid receipt.
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--floor", label,
-                    f"{out}.jsonl", FLOORS, mdir], env=env)
+                    f"{out}.jsonl", floors_path(set_name), mdir], env=env)
     subprocess.run(["python3.12", f"{TC}/receipt_verify.py", f"receipts/official/{label}-floor.json"],
                    env=env)
     return rc
@@ -101,9 +106,9 @@ def run_all(set_name="studio"):
     jobs = [Job(lbl, ["python3.12", f"{TC}/studio_run.py", "--model", lbl, set_name],
                 est_gb=gb, solo=solo, done_when=None,
                 log=f"reports/cron/{set_name}_{lbl}.log")
-            for (lbl, _, _, gb, solo, _) in LADDER if not _have(lbl)]
+            for (lbl, _, _, gb, solo, _) in LADDER if not _have(lbl, set_name)]
     Scheduler(statusf=f"reports/cron/{set_name}_sched.status").run(jobs)
-    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", FLOORS])
+    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path(set_name)])
 
 
 def plan():
@@ -127,9 +132,56 @@ def plan():
     print("band, and extrapolates the 70B/405B floor (T3.1) as a pre-registered prediction.")
 
 
+SPEC_TARGETS = ["7B", "32B"]   # condensed substrate + capstone to revive spec-decode on
+
+
+def go():
+    """THE GO BUTTON — run the ENTIRE studio frontier program end-to-end, RAM-packed, continuous
+    (no pauses), resumable via per-lane floor files + receipts. On the Studio, this is the one command:
+        python3.12 tools/condense/studio_run.py go
+    P1 CONDENSE  bit-floor-vs-scale curve (the headline science) across the ladder.
+    P2 SUBBIT    sub-1-bit frontier lane (PTQ1.61 + residual + 1-bit codec-native/recover), SUBBIT-0 gated.
+    P3 SPEC      revive speculative decoding on the condensed substrate + capstone (latency x density).
+    P4 SYNTH     fit both curves + extrapolate 70B/405B; receipts are the record."""
+    print("=" * 78); print("HAWKING STUDIO FRONTIER — GO (continuous, resumable, RAM-packed)"); print("=" * 78)
+    print("\n### P1 CONDENSE — bit-floor-vs-scale curve ###", file=sys.stderr)
+    run_all("studio")
+    print("\n### P2 SUBBIT — sub-1-bit frontier lane ###", file=sys.stderr)
+    run_all("subbit")
+    print("\n### P3 SPEC — speculative decode revival on condensed models ###", file=sys.stderr)
+    for lbl in SPEC_TARGETS:
+        row = next((r for r in LADDER if r[0] == lbl), None)
+        if row and os.path.isdir(row[1]):
+            subprocess.run(["python3.12", f"{TC}/spec_revive.py", row[1], lbl])
+        else:
+            print(f"[spec] {lbl} parent not staged — skipping", file=sys.stderr)
+    print("\n### P4 SYNTH — fit curves + extrapolate ###", file=sys.stderr)
+    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("studio")])
+    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("subbit")])
+    print("\nGO COMPLETE — receipts in receipts/official/, curves in reports/cron/bit_floor_*.jsonl",
+          file=sys.stderr)
+
+
+def go_plan():
+    """Dry overview of the whole GO program (run nothing heavy)."""
+    plan()
+    print("\n" + "=" * 78); print("FULL GO PROGRAM (studio_run.py go):")
+    print("  P1 CONDENSE  run_all('studio')  -> bit_floor_curve.jsonl + receipts")
+    print("  P2 SUBBIT    run_all('subbit')  -> SUBBIT-0 gate + sub-1-bit lane -> bit_floor_subbit.jsonl")
+    print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
+          "-> accept -> governor)")
+    print("  P4 SYNTH     scaling_law --fit (both lanes)")
+    for lbl in SPEC_TARGETS:
+        subprocess.run(["python3.12", f"{TC}/spec_revive.py", "--plan", lbl])
+
+
 if __name__ == "__main__":
     a = sys.argv[1] if len(sys.argv) > 1 else "--plan"
-    if a == "--plan":
+    if a == "go":
+        go()
+    elif a == "--go-plan":
+        go_plan()
+    elif a == "--plan":
         plan()
     elif a == "--model":
         # studio_run.py --model <label> [set]   (set = studio | subbit)
