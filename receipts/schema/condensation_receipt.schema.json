@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hawking.local/schema/condensation_receipt.schema.json",
+  "title": "Hawking Condensation Receipt",
+  "description": "Schema v0.2 (extends docs/plans/studio_maximization_2026_06_27.md §19.3 v0.1). The smallest publishable unit of a Hawking claim: one condensation_receipt.json + one quality card. Every Studio run emits one. See §20.3 for the eight invalidation rules enforced by receipt_verify.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project",
+    "receipt_version",
+    "repro_level",
+    "claim_type",
+    "machine",
+    "machine_class",
+    "model_family",
+    "source_model",
+    "source_sha256",
+    "source_precision",
+    "condensed_artifact",
+    "artifact_sha256",
+    "effective_bpw",
+    "peak_rss_gb",
+    "multiwindow_n",
+    "quality_gate",
+    "hawking_commit",
+    "commands"
+  ],
+  "properties": {
+    "project": {
+      "const": "hawking",
+      "description": "Always 'hawking'."
+    },
+    "receipt_version": {
+      "type": "string",
+      "const": "0.2",
+      "description": "Schema version. This file encodes v0.2."
+    },
+    "repro_level": {
+      "type": "string",
+      "enum": ["R0", "R1", "R2", "R3", "R4", "R5"],
+      "description": "§20.6 reproducibility gradient. REQUIRED — no claim without it. R0 private; R1 author-rerunnable; R2 artifact identified+measured; R3 one-command same-machine-class repro (minimum bar for a public WIN); R4 third-party Mac (trust moat); R5 the format itself is cited externally."
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": ["density", "cliff", "scale-point", "negative", "baseline"],
+      "description": "What this receipt asserts. density = smaller at near-parent quality (both fit). cliff = loads+serves where Q4 cannot. scale-point = a point on the bit-floor curve. negative = a published failure. baseline = a sanity/baseline measurement that never sets a verdict (e.g. 0.5B)."
+    },
+    "machine": {
+      "type": "string",
+      "description": "Human-readable machine string, e.g. 'Mac Studio M2 Max, 96GB unified, 2TB'."
+    },
+    "machine_class": {
+      "type": "string",
+      "description": "Canonical class token for the §20.6 R3 same-class repro, e.g. 'M2Max-96', 'M3Pro-18'."
+    },
+    "os_build": {
+      "type": "string",
+      "description": "macOS build string, e.g. 'macOS 26.x (24Gxx)'."
+    },
+    "model_family": {
+      "type": "string",
+      "description": "One-family-first (§19.6). e.g. 'qwen'."
+    },
+    "source_model": {
+      "type": "string",
+      "description": "Exact HF id or local path of the bf16/f16 parent."
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "description": "sha256 of the source weights — identity, not trust-me. REQUIRED (invalidation rule 4)."
+    },
+    "source_precision": {
+      "type": "string",
+      "enum": ["bf16", "f16"],
+      "description": "Parent precision."
+    },
+    "source_license": {
+      "type": "string",
+      "description": "§20.11 provenance, e.g. 'apache-2.0', 'llama-community'."
+    },
+    "derivative_policy": {
+      "type": "string",
+      "description": "§20.11, e.g. 'see LICENSE_DERIVATIVE'."
+    },
+    "condensed_artifact": {
+      "type": "string",
+      "description": "Path or HF id of the condensed artifact. For claim_type=baseline this may name the measured metrics file rather than a separate weights blob."
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "description": "sha256 of the condensed weights / measured artifact — output hash (§19.8 #5). REQUIRED (invalidation rule 4)."
+    },
+    "recipe": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ordered recipe steps, e.g. ['awq-0.5','mixed-prec','residual','t1.1-errfeedback','logit-kd']."
+    },
+    "effective_bpw": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Baker AGGREGATE bpw (RHT + outlier + residual + side-info), never nominal. REQUIRED and must be > 0 (invalidation rule 1)."
+    },
+    "nominal_bpw": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Reported too, but never the headline."
+    },
+    "peak_rss_gb": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Peak resident memory of serving, on the named machine."
+    },
+    "swap_gb": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Swap used during serving."
+    },
+    "condense_peak_rss_gb": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Peak RSS during condensation — the out-of-core proof (§13d)."
+    },
+    "wall_clock_s": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Wall-clock seconds for the run (§20.11 cost line)."
+    },
+    "energy_kwh": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated energy (label it as estimated). §20.11 'no rented GPU' line."
+    },
+    "tokens_per_second": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Decode tok/s of the condensed artifact."
+    },
+    "baseline_q4_load_result": {
+      "type": "string",
+      "enum": ["ok", "oom", "swap-thrash", "not-run"],
+      "description": "Whether the Q4 baseline loaded at all on the named machine."
+    },
+    "baseline_q4_tps": {
+      "type": "number",
+      "minimum": 0,
+      "description": "If Q4 loads, time it — the cliff number."
+    },
+    "baseline_mlx4_result": {
+      "type": "string",
+      "enum": ["ok", "oom", "swap-thrash", "not-run", "matched", "beaten"],
+      "description": "MLX-4bit baseline behavior."
+    },
+    "baseline_best_effort": {
+      "type": "boolean",
+      "description": "§20-BASELINES honesty flag. A best-effort baseline can support a contingent/negative claim but NEVER a public win (invalidation rule 8)."
+    },
+    "ppl_parent": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Perplexity of the f16/bf16 parent on the frozen suite."
+    },
+    "ppl_condensed": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Perplexity of the condensed artifact on the frozen suite."
+    },
+    "ppl_delta_pct": {
+      "type": "number",
+      "description": "(ppl_condensed / ppl_parent - 1) * 100."
+    },
+    "kl_parent_condensed": {
+      "type": "number",
+      "minimum": 0,
+      "description": "KL(parent || condensed) on the frozen suite."
+    },
+    "multiwindow_n": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of held-out eval windows (§6). For a quality claim this must be >= 4 (invalidation rule 2)."
+    },
+    "multiwindow_worst_pct": {
+      "type": "number",
+      "description": "The WORST window's ppl-delta-pct, not the mean (§6)."
+    },
+    "tripwire": {
+      "type": "object",
+      "description": "multi_eval.py capability tripwire (capability, not ppl).",
+      "additionalProperties": false,
+      "properties": {
+        "qa": { "type": "number" },
+        "cloze": { "type": "number" },
+        "math": { "type": "number" },
+        "code": { "type": "number" }
+      }
+    },
+    "prompt_suite_hash": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "description": "sha256 of the frozen prompt cassette (§20.11)."
+    },
+    "prompt_suite_version": {
+      "type": "string",
+      "description": "Cassette version, e.g. 'v1'."
+    },
+    "quality_gate": {
+      "type": "string",
+      "enum": ["pass", "warn", "fail", "invalid"],
+      "description": "§20-GATES four levels. pass = clears §6 bar (<=+2% ppl, KL in band, tripwire held, R3+). warn = +2-4% band, contingent/portfolio only. fail = misses gate, ships as FAILURES.md. invalid = violates a §20.3 rule; the run does not count and the reason is published in invalidation_reasons."
+    },
+    "invalidation_reasons": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Populated when quality_gate == 'invalid'. Each string names a violated §20.3 rule."
+    },
+    "hawking_commit": {
+      "type": "string",
+      "minLength": 7,
+      "description": "Git sha of the Hawking repo at run time. REQUIRED (invalidation rule 5)."
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Exact reproduce commands. REQUIRED, non-empty (invalidation rule 5)."
+    },
+    "raw_logs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths or artifact urls to the raw logs."
+    },
+    "mps_headline": {
+      "type": "boolean",
+      "description": "True if the HEADLINE number was produced on the MPS backend. If true, cpu_bf16_confirmed must also be true (§3, invalidation rule 7)."
+    },
+    "cpu_bf16_confirmed": {
+      "type": "boolean",
+      "description": "True if a CPU-bf16 confirmation backs the headline number (§3)."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-form notes (e.g. EXAMPLE labelling, caveats)."
+    }
+  }
+}

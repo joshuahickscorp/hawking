@@ -1,0 +1,30 @@
+# Hawking frozen prompt suite v1
+# ---------------------------------------------------------------------------
+# Frozen public eval cassette (§20.3 prompt_suite_hash / §20.11 freeze policy).
+# Every receipt cites this suite by sha256. The demo video and every public
+# quality card use THIS suite only. Changing any line below bumps the suite
+# version (v1 -> v2) and forces a re-run of all cards — no silent prompt swaps
+# (a receipt_diff red flag). Lines beginning with '#' are comments and are part
+# of the hashed content; do not reformat without bumping the version.
+#
+# tokenizer: Qwen2.5 (Qwen/Qwen2.5-*-Instruct), apply_chat_template=False
+# seed: 1234
+# decode: greedy (temperature=0), max_new_tokens=128
+# windows: each PROMPT line below is one held-out window for the multi-window
+#          ppl/KL suite (§6); the TRIPWIRE block is the multi_eval.py capability
+#          probe (qa / cloze / math / code).
+# ---------------------------------------------------------------------------
+
+[PPL-WINDOWS]
+PROMPT::The history of computing began long before the electronic computer, with mechanical aids to calculation.
+PROMPT::In thermodynamics, the second law states that the total entropy of an isolated system can only increase.
+PROMPT::She walked along the shoreline at dawn, listening to the slow rhythm of the tide against the rocks.
+PROMPT::A balanced diet provides the body with the nutrients it needs to function effectively and stay healthy.
+PROMPT::The function returns a list of integers sorted in ascending order, ignoring any non-numeric entries.
+PROMPT::Quarterly revenue rose nine percent year over year, driven mainly by strength in the services segment.
+
+[TRIPWIRE]
+QA::Q: What is the capital of France? A::Paris
+CLOZE::The opposite of "hot" is ____.::cold
+MATH::Compute 17 * 23.::391
+CODE::Complete the Python: def square(x): return ____::x * x

@@ -41,6 +41,11 @@ export LADDER_SIGMA=reports/cron/${RUN}_sigma.safetensors
 export DOCTOR_DEVICE=cpu DOCTOR_DTYPE=bfloat16 PYTHONUNBUFFERED=1 STRAND_NO_GPU=1
 export DOCTOR_THREADS=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 8)
 export DOCTOR_GRAD_ACCUM=4
+# engage all cores (P+E) for CPU math — user keeps the machine free for this run.
+# BLAS backends each gate on their own env var; set them all to the logical core count.
+NCPU=$(sysctl -n hw.logicalcpu 2>/dev/null || echo 8)
+export OMP_NUM_THREADS=$NCPU MKL_NUM_THREADS=$NCPU OPENBLAS_NUM_THREADS=$NCPU \
+       VECLIB_MAXIMUM_THREADS=$NCPU NUMEXPR_NUM_THREADS=$NCPU
 export DOCTOR_SAVE_MODE=adapter
 export DOCTOR_TIMEOUT=${DOCTOR_TIMEOUT:-28800}
 export DOCTOR_SWAP_CEIL=${DOCTOR_SWAP_CEIL:-12000}
@@ -48,7 +53,7 @@ export DOCTOR_SWAP_HARD_CEIL=${DOCTOR_SWAP_HARD_CEIL:-18000}
 export DOCTOR_TERMINATE_GRACE=${DOCTOR_TERMINATE_GRACE:-600}
 export DOCTOR_USE_PARTIAL=${DOCTOR_USE_PARTIAL:-1}
 export KD_TOPK=${KD_TOPK:-64}
-export BAKE_CHUNKS=8 BAKE_THREADS=8
+export BAKE_CHUNKS=8 BAKE_THREADS=$NCPU
 PT=/tmp/ppl24k.txt
 [ -f "$PT" ] || cat README.md docs/plans/*.md 2>/dev/null | head -c 24000 > "$PT"
 export PPL_TEXT=$PT

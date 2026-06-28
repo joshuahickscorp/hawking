@@ -15,13 +15,18 @@ Env: DOCTOR_CALIB (diverse corpus)
      DOCTOR_SAVE_MODE (adapter default, or fused for legacy full-weight output)
      DOCTOR_PROGRESS (JSONL progress/checkpoint ledger)
 """
-import sys, os, re, math, json, gc, time, signal, torch, torch.nn as nn, torch.nn.functional as F
+import sys, os, re, math, json, gc, time, signal
+# ── engage ALL cores (P+E) — set BLAS thread env BEFORE importing torch, because OMP/veclib read
+# their thread count at library load. DOCTOR_THREADS (or all logical cores) drives every backend.
+_n_threads = int(os.environ.get("DOCTOR_THREADS", str(os.cpu_count() or 8)))
+for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS",
+           "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_v, str(_n_threads))
+import torch, torch.nn as nn, torch.nn.functional as F
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from safetensors.torch import save_file
 from safetensors import safe_open
 
-# ── use all cores — PyTorch defaults to half on macOS ────────────────────────
-_n_threads = int(os.environ.get("DOCTOR_THREADS", str(os.cpu_count() or 8)))
 torch.set_num_threads(_n_threads)
 torch.set_num_interop_threads(max(2, _n_threads // 2))
 

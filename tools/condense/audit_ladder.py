@@ -497,6 +497,61 @@ def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None,
     return {"base": base, "adapter": artifact}, base_bpw + lora_add
 
 
+def _bake_shadow(candidates, bits, tag):
+    """STRAND-bake a doctor's healed-shadow weights (L4/L5 produce full-precision quant-robust
+    weights that must be baked through the real codec). Picks the first shadow file that exists,
+    bakes it whole, returns ([baked_override], effective_bpw). Whole-bake peaks at ~2x bf16 RAM —
+    fine on the 96GB Studio (this is a Studio-tier stage)."""
+    raw = next((c for c in candidates if os.path.exists(c)), None)
+    if not raw:
+        raise RuntimeError(f"{tag}: doctor produced no shadow ({candidates})")
+    baked = f"{T}_{tag}_baked.safetensors"
+    bpw, qc = _bake_one(raw, baked, bits)
+    for c in candidates:
+        try: os.remove(c)
+        except OSError: pass
+    return [baked], bpw
+
+
+def _doctor_env():
+    env = {**os.environ, "DOCTOR_MODEL": MODEL, "DOCTOR_DEVICE": DEV, "DOCTOR_DTYPE": "bfloat16",
+           "STRAND_NO_GPU": "1"}
+    cal = "scratch/calib_corpus.txt"
+    if os.path.exists(cal):
+        env["DOCTOR_CALIB"] = cal
+    return env
+
+
+def build_blockwise(bits, steps=80):
+    """L4 — full-rank per-layer QAT (doctor_blockwise): the LoRA-plateau fix. Heals the full weight
+    matrix (no rank ceiling, no bpw overhead) so it survives the STRAND cut, then bakes it."""
+    out = f"{T}_bw.safetensors"
+    log(f"  [L4 blockwise] {bits}b QAT {steps} steps")
+    r = subprocess.run(["python3.12", "tools/condense/doctor_blockwise.py", MODEL, out, str(bits), str(steps)],
+                       capture_output=True, text=True, env=_doctor_env())
+    if r.returncode != 0:
+        raise RuntimeError(f"blockwise failed bits={bits}: {r.stderr[-200:]}")
+    return _bake_shadow([out, out.replace(".safetensors", ".raw.safetensors")], bits, "bw")
+
+
+def build_strand(bits, steps=200, lr=3e-5, req=50):
+    """L5 — codec-native GPTQ-Hessian error-feedback (doctor_strand): the sub-residual ceiling
+    breaker; quantizes sequentially through STRAND's trellis with Hessian error feedback (no STE)."""
+    save = f"{T}_str.safetensors"
+    log(f"  [L5 strand] {bits}b GPTQ-Hessian {steps} steps lr {lr} requant/{req}")
+    r = subprocess.run(["python3.12", "tools/condense/doctor_strand.py", str(bits), str(steps),
+                        str(lr), str(req), save], capture_output=True, text=True, env=_doctor_env())
+    if r.returncode != 0:
+        raise RuntimeError(f"strand failed bits={bits}: {r.stderr[-200:]}")
+    return _bake_shadow([save.replace(".safetensors", ".raw.safetensors"), save], bits, "str")
+
+
+def _mp(a, f):
+    """mixed-precision rung: a-bit attention, f-bit FFN."""
+    return {k: a for k in ("q_proj", "k_proj", "v_proj", "o_proj")} | \
+           {k: f for k in ("gate_proj", "up_proj", "down_proj")}
+
+
 # ---- measurement: load model, stream override in-place, ppl, free ----
 def _apply_weight_overrides(model, paths):
     if not paths:
@@ -635,6 +690,21 @@ CONFIGS = {
         # seeded/known (skip on resume):
         ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)), ("2-AWQ", build_awq, (2,)),
         ("1-AWQ", build_awq, (1,)), ("1-RHT", build_rht, (1,))],
+    # STUDIO — the full L0-L6 recovery stack per model for the bit-floor-vs-scale experiment (§4).
+    # Bake tiers set the PTQ floor + density references; recovery tiers push the sub-3-bit floor
+    # down: dr=L6 LoRA-KD, bw=L4 full-rank block-QAT (the plateau fix), str=L5 codec-native
+    # GPTQ-Hessian. scaling_law reads this jsonl to pick each model's floor. Ordered cheapest-first.
+    "studio": [
+        ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)),
+        ("2-AWQ", build_awq, (2,)), ("1-AWQ", build_awq, (1,)),
+        ("mp-4a3f", build_awq, (3, 0.5, _mp(4, 3))), ("mp-3a2f", build_awq, (2, 0.5, _mp(3, 2))),
+        ("res3+2", build_residual, (3, 2)), ("res2+1", build_residual, (2, 1)),
+        ("3-AWQ+dr", build_recover, (3,)), ("2-AWQ+dr", build_recover, (2,)),
+        ("1-AWQ+dr", build_recover, (1,)),
+        ("3-bw", build_blockwise, (3,)), ("2-bw", build_blockwise, (2,)),
+        ("1-bw", build_blockwise, (1,)),
+        ("2-str", build_strand, (2,)), ("1-str", build_strand, (1,)),
+    ],
 }
 
 
@@ -768,6 +838,23 @@ def main():
             p = measure(path)
             rec = {"model": LABEL, "config": name, "eff_bpw": round(bpw, 3),
                    "ppl": round(p, 3), "degr_pct": round((p / hf - 1) * 100, 2)}
+            # capability tripwire on floor candidates: a floor claim is void if ppl is ~1:1 but a
+            # downstream task collapses (§6). Only on parts-based artifacts within the gate, to keep
+            # multi_eval cost off the broken tiers. Best-effort: records, never blocks the run.
+            tw_gate = float(os.environ.get("STUDIO_TRIPWIRE_GATE", "8.0"))
+            if (os.environ.get("STUDIO_TRIPWIRE") == "1" and isinstance(path, list)
+                    and rec["degr_pct"] <= tw_gate):
+                merged = f"{T}_trip.safetensors"
+                try:
+                    _merge_parts(path, merged)
+                    tw = subprocess.run(["python3.12", "tools/condense/multi_eval.py", MODEL, merged, name],
+                                        capture_output=True, text=True, env=os.environ)
+                    last = tw.stdout.strip().splitlines()[-1] if tw.stdout.strip() else ""
+                    try: rec["tripwire"] = json.loads(last)
+                    except Exception: rec["tripwire"] = last[:200] or f"rc={tw.returncode}"
+                finally:
+                    try: os.remove(merged)
+                    except OSError: pass
         except Exception as e:
             rec = {"model": LABEL, "config": name, "error": str(e)[:140]}
         rows.append(rec)
