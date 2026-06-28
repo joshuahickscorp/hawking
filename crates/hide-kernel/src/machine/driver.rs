@@ -237,7 +237,16 @@ impl<'a> AgentDriver<'a> {
             .await?;
 
         let outcome = match step.kind {
-            StepKind::Edit | StepKind::Command => self.act_tool(&step).await,
+            StepKind::Edit | StepKind::Command => {
+                let dispatched = self.act_tool(&step).await;
+                // K4/K8: count the tool-call against the budget when (and only
+                // when) a tool was actually dispatched, so `max_tool_calls` can
+                // trip. The Governor's check on the next transition reads this.
+                if let Ok((_, true)) = &dispatched {
+                    state.ledger.consume_tool_call();
+                }
+                dispatched.map(|(value, _)| value)
+            }
             StepKind::Investigate | StepKind::Synthesize | StepKind::Verify => {
                 self.act_model(&step).await
             }
@@ -267,27 +276,35 @@ impl<'a> AgentDriver<'a> {
     /// Effectful step: dispatch the declared tool through the permission-gated
     /// dispatcher. EXEC_NONZERO is data, so a failing build is still a normal
     /// observation (the Verify gate, not Act, judges correctness).
-    async fn act_tool(&self, step: &PlanStep) -> Result<serde_json::Value> {
+    ///
+    /// Returns `(outcome, dispatched)`. `dispatched` is `true` only when a real
+    /// tool was actually sent through the dispatcher — the caller consumes a
+    /// tool-call against the budget exactly then (so `max_tool_calls` trips), and
+    /// not for the no-dispatcher / model-authored-edit fallbacks.
+    async fn act_tool(&self, step: &PlanStep) -> Result<(serde_json::Value, bool)> {
         let Some(dispatcher) = self.dispatcher else {
-            return Ok(json!({ "note": "no dispatcher; step recorded without effect" }));
+            return Ok((json!({ "note": "no dispatcher; step recorded without effect" }), false));
         };
         let tool = match &step.tool_hint {
             Some(t) => t.clone(),
             // No explicit tool: an edit step with no tool is a model-authored
             // change recorded as an observation (the oracles verify the result).
-            None => return self.act_model(step).await,
+            None => return self.act_model(step).await.map(|v| (v, false)),
         };
         let mut args = step.tool_args.clone().unwrap_or_else(|| json!({}));
         if args.get("cwd").is_none() {
             args["cwd"] = json!(self.workspace_root);
         }
         let result = dispatcher.dispatch(ToolCall::new(tool.clone(), args)).await?;
-        Ok(json!({
-            "tool": tool,
-            "ok": result.ok,
-            "exit_code": result.exit_code,
-            "structured": result.structured_content,
-        }))
+        Ok((
+            json!({
+                "tool": tool,
+                "ok": result.ok,
+                "exit_code": result.exit_code,
+                "structured": result.structured_content,
+            }),
+            true,
+        ))
     }
 
     /// Model step: call the runtime to generate (Investigate/Synthesize/Verify).
@@ -354,12 +371,41 @@ impl<'a> AgentDriver<'a> {
         state.last_verdict = verdicts.last().cloned();
         state.last_verdicts = verdicts.clone();
 
-        // Soft step: declared no oracles AND none ran (no probabilistic oracle
-        // wired). A non-effectful investigate/synthesize step that produced
-        // output is accepted — there is no machine artifact to check, and K1's
-        // "no advance on faith" applies to *effectful* steps with declared
-        // verifiers, which this is not.
+        // Soft step (the escape hatch — semantics, read carefully):
+        //
+        // This branch accepts a step *without any machine verification*. It fires
+        // ONLY when ALL of:
+        //   1. the step declared no oracle ids,
+        //   2. no verdict ran at all (no probabilistic oracle was wired — the
+        //      unknown-id markers from `OracleSuite::run` would land here too, so
+        //      an empty set really does mean "nothing to check"), AND
+        //   3. the step is NON-effectful (investigate/synthesize/verify) — it
+        //      produced output but mutated nothing.
+        //
+        // K1 ("no state advances on faith") binds *effectful* steps with declared
+        // verifiers; a read-only step that wrote no artifact has nothing to verify,
+        // so accepting it is not faith — there is no claim to check. The default
+        // `StubPlanner` emits exactly such a step, so the minimal kernel can reach
+        // `Done` through here; we record an auditable `verify.soft_accept` event so
+        // that "verified nothing" is never invisible in the log.
+        //
+        // An EFFECTFUL step with no declared oracle must NOT reach this branch:
+        // the `!step.is_effectful()` guard sends it to the gate, which returns
+        // Inconclusive on an empty verdict set (never Accept) — so it repairs or
+        // replans rather than silently passing.
         if step.acceptance.oracles.is_empty() && verdicts.is_empty() && !step.is_effectful() {
+            self.events
+                .append(crate::machine::effects::custom_agent_event(
+                    state.session_id.clone(),
+                    state.run_id.clone(),
+                    "verify.soft_accept",
+                    json!({
+                        "step_id": step.id,
+                        "kind": format!("{:?}", step.kind),
+                        "reason": "non-effectful step with no declared oracle and no oracle ran",
+                    }),
+                ))
+                .await?;
             state.mark_cursor(StepStatus::Completed);
             state.cursor = None;
             state.phase = Phase::SelectStep;

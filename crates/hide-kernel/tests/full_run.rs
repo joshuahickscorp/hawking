@@ -35,19 +35,37 @@ use std::sync::Arc;
 struct FixedPlanner {
     oracles: Vec<String>,
     kind: StepKind,
+    /// Optional tool the step dispatches through the real dispatcher.
+    tool_hint: Option<String>,
+    tool_args: Option<serde_json::Value>,
+}
+
+impl FixedPlanner {
+    fn new(oracles: Vec<String>, kind: StepKind) -> Self {
+        Self {
+            oracles,
+            kind,
+            tool_hint: None,
+            tool_args: None,
+        }
+    }
 }
 
 impl Planner for FixedPlanner {
     fn synthesize<'a>(&'a self, objective: &'a str) -> BoxFuture<'a, Result<Plan>> {
         let oracles = self.oracles.clone();
         let kind = self.kind;
+        let tool_hint = self.tool_hint.clone();
+        let tool_args = self.tool_args.clone();
         let objective = objective.to_string();
         Box::pin(async move {
-            let step = PlanStep::new(
+            let mut step = PlanStep::new(
                 "make the change",
                 kind,
                 Acceptance::with_oracles("workspace type-checks", oracles),
             );
+            step.tool_hint = tool_hint;
+            step.tool_args = tool_args;
             Ok(Plan {
                 id: hide_core::ids::PlanId::new(),
                 title: "fixed".into(),
@@ -151,10 +169,7 @@ async fn phase_names(log: &Arc<InMemoryEventLog>) -> Vec<String> {
 async fn full_run_passes_through_real_oracle_to_done() {
     let repo = make_repo(true);
     let log = Arc::new(InMemoryEventLog::new());
-    let planner = Arc::new(FixedPlanner {
-        oracles: vec!["typecheck".to_string()],
-        kind: StepKind::Edit,
-    });
+    let planner = Arc::new(FixedPlanner::new(vec!["typecheck".to_string()], StepKind::Edit));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Live);
 
     let mut state = kernel
@@ -184,10 +199,7 @@ async fn full_run_passes_through_real_oracle_to_done() {
 async fn failing_real_oracle_triggers_repair() {
     let repo = make_repo(false); // code does NOT type-check
     let log = Arc::new(InMemoryEventLog::new());
-    let planner = Arc::new(FixedPlanner {
-        oracles: vec!["typecheck".to_string()],
-        kind: StepKind::Edit,
-    });
+    let planner = Arc::new(FixedPlanner::new(vec!["typecheck".to_string()], StepKind::Edit));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Live);
 
     let mut state = kernel
@@ -214,12 +226,9 @@ async fn failing_real_oracle_triggers_repair() {
 async fn replay_mode_does_not_run_effects() {
     let repo = make_repo(true);
     let log = Arc::new(InMemoryEventLog::new());
-    let planner = Arc::new(FixedPlanner {
-        // No oracles + non-effectful → in replay the action folds without effect
-        // and the soft-step gate accepts it, so the run still reaches terminal.
-        oracles: vec![],
-        kind: StepKind::Investigate,
-    });
+    // No oracles + non-effectful → in replay the action folds without effect
+    // and the soft-step gate accepts it, so the run still reaches terminal.
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
     let kernel = build_kernel(log.clone(), &repo, planner, Mode::Replay);
 
     let mut state = kernel
@@ -234,6 +243,93 @@ async fn replay_mode_does_not_run_effects() {
     assert_eq!(action_count, 0, "replay must not fire Action effects");
     // It still reaches a terminal state by folding.
     assert!(state.phase.is_terminal());
+
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+/// FIX 1 (budget): a low `max_tool_calls` budget must trip a structured Governor
+/// Abort once a real tool is dispatched. Before the fix the ledger's
+/// `tool_calls` stayed 0 (the driver never consumed it) so the cap was inert.
+#[tokio::test]
+async fn low_tool_call_budget_trips_governor_abort() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    // A Command step that dispatches a real `shell.run` (echo) through the
+    // dispatcher — and declares no oracle, so after the dispatch the gate is
+    // inconclusive and the loop re-attempts, dispatching again. With a cap of 1,
+    // the second Governor check must abort on the tool-call cap.
+    let mut planner = FixedPlanner::new(vec![], StepKind::Command);
+    planner.tool_hint = Some("shell.run".to_string());
+    planner.tool_args = Some(serde_json::json!({ "argv": ["echo", "hi"] }));
+    let kernel = build_kernel(log.clone(), &repo, Arc::new(planner), Mode::Live);
+
+    let mut state = kernel.start_run(SessionId::new(), "run a command").await.unwrap();
+    state.budget.max_tool_calls = 1; // cap reached after a single dispatch
+
+    let _ = drive(&kernel, &mut state, 80).await;
+
+    assert_eq!(state.phase, Phase::Aborted, "low tool-call budget must abort the run");
+    // At least one real tool call was consumed against the ledger.
+    assert!(state.ledger.tool_calls >= 1, "a tool dispatch must be counted");
+    // The abort was the structured ToolCalls cap (cap = "tool_calls").
+    let events = log.scan(None, None, None).await.unwrap();
+    let abort = events
+        .iter()
+        .find(|e| e.kind == "run.aborted")
+        .expect("a run.aborted event must be recorded");
+    assert_eq!(
+        abort.payload.get("cap").and_then(|v| v.as_str()),
+        Some("tool_calls"),
+        "abort must be the structured tool-call cap, payload: {:?}",
+        abort.payload
+    );
+
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+/// FIX 3 (soft-step escape hatch): an EFFECTFUL step with no declared oracle must
+/// NOT be soft-accepted. It produced an effect with nothing verifying it, so K1
+/// forbids advancing on faith — the gate is Inconclusive and the loop must route
+/// to repair/replan rather than silently completing the step.
+#[tokio::test]
+async fn effectful_step_without_oracle_is_not_soft_accepted() {
+    let repo = make_repo(true);
+    let log = Arc::new(InMemoryEventLog::new());
+    // Edit (effectful) with NO oracle and NO tool_hint → act_model records the
+    // change but no oracle runs. The soft-step branch must NOT fire (it is gated
+    // on `!is_effectful()`); the step goes through the gate instead.
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Edit));
+    let kernel = build_kernel(log.clone(), &repo, planner, Mode::Live);
+
+    let mut state = kernel
+        .start_run(SessionId::new(), "edit but verify nothing")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    let events = log.scan(None, None, None).await.unwrap();
+    // The EFFECTFUL step must never be soft-accepted. (A localized replan may
+    // legitimately soft-accept a NON-effectful `Investigate` probe it inserts —
+    // that is the documented, correct behavior — so we assert specifically that
+    // no soft-accept names an effectful step kind.)
+    let effectful_soft_accept = events.iter().any(|e| {
+        e.kind == "verify.soft_accept"
+            && matches!(
+                e.payload.get("kind").and_then(|v| v.as_str()),
+                Some("Edit") | Some("Command") | Some("Delegate")
+            )
+    });
+    assert!(
+        !effectful_soft_accept,
+        "effectful step with no oracle must NOT be soft-accepted"
+    );
+    // The effectful step instead routed through repair (the gate returned
+    // Inconclusive on its empty verdict set, not Accept) — it did not silently pass.
+    let phase_names = phase_names(&log).await;
+    assert!(
+        phase_names.iter().any(|n| n == "repair" || n == "replan"),
+        "effectful unverified step must route to repair/replan; phases: {phase_names:?}"
+    );
 
     let _ = std::fs::remove_dir_all(repo);
 }
