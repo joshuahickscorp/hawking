@@ -19,7 +19,7 @@ HIDE does **not** try to match cloud IDEs on raw frontier-model capability — t
 - the run as a **scrubbable, replayable timeline** backed by the durable event log,
 - the model's own logit-derived confidence, on demand.
 
-This "observability + live steering" is the differentiator. It is felt as latency-rich UI (local IPC is ~ms, no network round-trip), persistent restorable workspace, and HITL-by-default interaction.
+This "observability + live steering" is the differentiator. It is felt as latency-rich UI (the transport is loopback — a localhost HTTP/WS round-trip on the same machine, sub-ms), persistent restorable workspace, and HITL-by-default interaction.
 
 ### The three named surfaces
 
@@ -42,13 +42,15 @@ The stack is fixed by the product brief and the built host. **Do not re-litigate
 
 | Layer | Choice | Why |
 |---|---|---|
-| **App shell / host** | **Tauri 2** (Rust host wrapping `hide-backend::BackendHost`) | Native binary, no cloud deps, air-gap-safe; the host is already built as a headless Rust library — Tauri is the thin window + IPC bridge around it. |
-| **UI runtime** | **React + TypeScript** | Component model fits the panel fabric; TS gives us typed mirrors of the Rust `Intent`/`UiEvent` wire types. |
+| **Transport / host** | **`hide-serve` — a thin axum HTTP/WS server** (Rust, wrapping `hide-backend::BackendHost`) | The host is already built as a headless Rust library; `hide-serve` is the small Rust glue that constructs `BackendHost::open_workspace` and exposes the two wires + connector RPC over **localhost HTTP + WebSocket**. It directly mirrors `crates/hawking-serve` (the already-proven axum + SSE server in this repo). No cloud deps, air-gap-safe — it binds to `127.0.0.1`. The UI is a **pure web app** that talks to it; it does **not** depend on Tauri (see "Packaging / desktop wrapper (deferred)" below). |
+| **UI runtime** | **React + TypeScript + Vite** | A standard web app (browser-renderable). Component model fits the panel fabric; TS gives us typed mirrors of the Rust `Intent`/`UiEvent` wire types. |
 | **Editor / diff** | **Monaco** | Ships a first-class `DiffEditor` (side-by-side + inline) with view zones, decorations (zIndex stacking), and inline widgets — exactly what ghost-text, Cmd+K inline-edit overlays, and per-hunk diff review need. |
-| **Terminal** | **xterm.js + PTY** (`tauri-plugin-pty` / portable-pty) | A real PTY, not a command passthrough — proven Tauri 2 + React + xterm pattern. |
+| **Terminal** | **xterm.js + PTY** (`portable-pty`, hosted in `hide-serve`) | A real PTY, not a command passthrough. The PTY is hosted server-side in `hide-serve` and streamed to the xterm front over its own WebSocket — a transport-agnostic pattern that works under any wrapper (or none). |
 | **State store** | **Zustand-style slices** | Lightweight, selector-based; the right shape for derived-cache stores fed by a router (no Redux ceremony). |
 
-**Architectural constraint that drives all of §2:** the view holds **no authoritative state**. The event log in the Rust host is the system of record (constitution principle 3). Every store is a *derived cache* of the projection stream; on reload the FE replays from the log and rebuilds byte-identical. This is why the stack is "host owns truth, webview renders + dispatches intents" — it makes reload lossless and time-travel free.
+**Architectural constraint that drives all of §2:** the view holds **no authoritative state**. The event log in the Rust host is the system of record (constitution principle 3). Every store is a *derived cache* of the projection stream; on reload the FE replays from the log and rebuilds byte-identical. This is why the stack is "host owns truth, web client renders + dispatches intents" — it makes reload lossless and time-travel free.
+
+**Transport is an adapter, not the architecture.** The UI binds to a single typed client interface (`sendIntent` / `onUiEvent` / `callConnector`, §3.7) implemented over `fetch` + `WebSocket` against `hide-serve`. Because the contract (`CommandRouter::handle(Intent)` and `UiEventBus::subscribe()`) is **transport-agnostic**, neither the wire types nor any UI code knows or cares whether `hide-serve` is reached as a bare localhost server in a browser, behind a desktop wrapper, or — later — across a network (the remote thin-client story, `01-surfaces.md` §D.4). Swapping any of those never touches UI code.
 
 ---
 
@@ -56,9 +58,9 @@ The stack is fixed by the product brief and the built host. **Do not re-litigate
 
 This is the load-bearing section. The backend is built; the FE binds to **these exact types and methods**, not to any earlier design sketch. Source of truth: `crates/hide-core/src/api.rs` (the wire types) and `crates/hide-backend/src/{host,commands,ui_bus,connectors}.rs` (the host surface).
 
-### 3.1 The two wires + the Tauri bridge
+### 3.1 The two wires + the `hide-serve` HTTP/WS adapter
 
-Two directions, mediated by Tauri IPC:
+Two directions, carried over **localhost HTTP + WebSocket** by `hide-serve` — a thin axum server wrapping `BackendHost`, mirroring `crates/hawking-serve`. `hide-serve` constructs `BackendHost::open_workspace`, binds `127.0.0.1`, and exposes the endpoints below; it (de)serializes JSON and otherwise does nothing — the contract types and behavior are unchanged:
 
 ```
   ┌─────────────────────────── RUST HOST (hide-backend::BackendHost) ─────────────────────────┐
@@ -70,17 +72,17 @@ Two directions, mediated by Tauri IPC:
   │           ▲                                                            UiEventBus│ (publish │
   │           │ (Wire-A)                                            subscribe()──────┘  + coalesce)
   └───────────┼──────────────────────────────────────────────────────────────┬─────────────────┘
-              │  #[tauri::command] hide_intent                                 │  ipc::Channel<UiEvent>
+   hide-serve │  POST /v1/hide/intent                          WS /v1/hide/events │  (axum, 127.0.0.1)
   ┌───────────┼──────────────────────────────────────────────────────────────▼─────────────────┐
-  │  WEBVIEW (React + TS)                                                                         │
-  │   user action ─▶ sendIntent(intent) ─▶ invoke('hide_intent',{intent}) ─▶ IntentAck           │
-  │   channel.onmessage(UiEvent) ─▶ EventRouter ─▶ route by kind ─▶ Zustand stores ─▶ render      │
-  │   callConnector(id,method,params) ─▶ invoke('hide_call_connector',…) ─▶ Value                 │
+  │  WEB APP (React + TS + Vite — browser-renderable, no Tauri dependency)                        │
+  │   user action ─▶ sendIntent(intent) ─▶ fetch POST /v1/hide/intent ─▶ IntentAck               │
+  │   ws.onmessage(UiEvent) ─▶ EventRouter ─▶ route by kind ─▶ Zustand stores ─▶ render           │
+  │   callConnector(id,method,params) ─▶ fetch POST /v1/hide/connector ─▶ Value                   │
   └──────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Wire-A (FE → host): `invoke('hide_intent', { intent })`.** A thin `#[tauri::command]` deserializes the `Intent`, calls `CommandRouter::handle(intent)` (which `BackendHost::handle_intent` delegates to), and serializes the `IntentAck`. `handle` is deliberately a plain transport-agnostic `async fn` — the Tauri wrapper does nothing but (de)serialize. **The host validates and can reject:** an empty `SubmitTurn`, empty-argv `RunCommand`, or blank-name `Custom` returns `IntentAck { accepted: false, message: Some(reason) }` and logs nothing. The FE must surface a rejected ack, not assume success.
-- **Wire-B (host → FE): `ipc::Channel<UiEvent>`.** The FE opens one ordered per-window channel; the bridge forwards everything from `BackendHost::subscribe_ui()` (a `broadcast::Receiver<UiEvent>` off the `UiEventBus`). The bus does **render-coalescing** (consecutive `TokenBatch`es for one stream merge before publish) and has **bounded backpressure** (a slow subscriber gets a `Lagged` drop-oldest signal, never stalls the host). The FE adds its own rAF render-governor on top (see §4 and the state-stores sibling doc).
+- **Wire-A (FE → host): `POST /v1/hide/intent`** (body = `Intent` JSON, response = `IntentAck` JSON). The `hide-serve` handler deserializes the `Intent`, calls `CommandRouter::handle(intent)` (which `BackendHost::handle_intent` delegates to), and serializes the `IntentAck`. `handle` is deliberately a plain transport-agnostic `async fn` — the HTTP handler does nothing but (de)serialize. **The host validates and can reject:** an empty `SubmitTurn`, empty-argv `RunCommand`, or blank-name `Custom` returns `IntentAck { accepted: false, message: Some(reason) }` (HTTP 200 with `accepted:false`) and logs nothing. The FE must surface a rejected ack, not assume success.
+- **Wire-B (host → FE): `WebSocket /v1/hide/events`** — a stream of `UiEvent` JSON frames. The FE opens one ordered WebSocket per client; the handler forwards everything from `BackendHost::subscribe_ui()` (a `broadcast::Receiver<UiEvent>` off the `UiEventBus`) onto the socket. The bus does **render-coalescing** (consecutive `TokenBatch`es for one stream merge before publish) and has **bounded backpressure** (a slow subscriber gets a `Lagged` drop-oldest signal, never stalls the host). For reconnect, **`GET /v1/hide/events?after_seq=N`** is the **pull** catch-up (backed by `BackendHost::ui_events`) — fetch the gap, then resume the live socket. The FE adds its own rAF render-governor on top (see §4 and the state-stores sibling doc).
 
 ### 3.2 Wire-A — the `Intent` enum (every variant)
 
@@ -116,16 +118,16 @@ Two directions, mediated by Tauri IPC:
 | `Error` | `code: String`, `message: String` | Route to the notification + status stores; non-fatal inline, fatal as a banner. |
 | `Custom(Value)` | free `Value` | Extension-defined events; route by an agreed discriminator inside the value. |
 
-### 3.4 The `BackendHost` method surface (what the Tauri commands wrap)
+### 3.4 The `BackendHost` method surface (what the `hide-serve` endpoints wrap)
 
-The Tauri layer exposes these (already real on `host.rs`) as `#[tauri::command]`s or uses them internally:
+`hide-serve` exposes these (already real on `host.rs`) as HTTP/WS endpoints, or uses them internally:
 
 | Host method | Signature (abbrev.) | FE use |
 |---|---|---|
-| `open_workspace(root)` | `-> Result<Self>` | App boot: open a project. |
-| `subscribe_ui()` | `-> broadcast::Receiver<UiEvent>` | Bridged to the `ipc::Channel<UiEvent>` (Wire-B). |
-| `handle_intent(Intent)` | `-> Result<IntentAck>` | Backs `invoke('hide_intent')` (Wire-A). |
-| `call_connector(id, method, params)` | `(&str,&str,Value) -> Result<Value>` | Backs `callConnector` (§3.5). |
+| `open_workspace(root)` | `-> Result<Self>` | App boot: `hide-serve` opens the project at startup. |
+| `subscribe_ui()` | `-> broadcast::Receiver<UiEvent>` | Forwarded onto `WebSocket /v1/hide/events` (Wire-B). |
+| `handle_intent(Intent)` | `-> Result<IntentAck>` | Backs `POST /v1/hide/intent` (Wire-A). |
+| `call_connector(id, method, params)` | `(&str,&str,Value) -> Result<Value>` | Backs `POST /v1/hide/connector` → `callConnector` (§3.5). |
 | `fleet_run(session, objective)` | `-> Result<String>` | Workstation: schedule a parallel kernel run; returns terminal status. |
 | `generate_and_publish(session, base_url, prompt)` | `-> Result<String>` | Drives generation through the runtime client; publishes `TokenBatch`es onto Wire-B. |
 | `scrub_to_event(session, seq)` | `-> Result<SessionProjection>` | Timeline scrub (read-only past view). |
@@ -134,7 +136,7 @@ The Tauri layer exposes these (already real on `host.rs`) as `#[tauri::command]`
 | `run_command(session, argv, cwd)` | `-> Result<ToolResult>` | Terminal/command execution (shell.run tool). |
 | `status()` | `-> BackendStatus` | Boot/settings: workspace root, capabilities, connector statuses, tool specs, model roles. |
 | `health()` | `-> HealthReport` | Health panel: per-component Ok/Degraded/Failed checks. |
-| `ui_events(session, after_seq, limit)` | `-> Result<Vec<UiEvent>>` | **Pull** catch-up/replay (the durable-log path) — used on reconnect to fill the gap before live Wire-B resumes. |
+| `ui_events(session, after_seq, limit)` | `-> Result<Vec<UiEvent>>` | **Pull** catch-up/replay (the durable-log path), exposed as `GET /v1/hide/events?after_seq=N` — used on reconnect to fill the gap before the live `WebSocket /v1/hide/events` resumes. |
 
 ### 3.5 The connectors (`call_connector(id, method, params)`)
 
@@ -156,9 +158,9 @@ Connectors are the typed RPC surface for non-intent data the FE needs (search, c
 - **Degraded/down banners**: on `degraded`/`failed`/`down`, show a non-modal banner; the host auto-restarts, so the banner clears on the next `ready`.
 - **Gate the composer**: while `status != ready`, `SubmitTurn` may be rejected upstream — reflect "runtime not ready" in the UI rather than spinning.
 
-### 3.7 The IPC client surface
+### 3.7 The HTTP/WS client surface
 
-The FE's single seam to the host — a concrete TS IPC client. Everything else (stores, router) sits on top of this. This is the **canonical IPC client surface** sibling docs point to; the store-wiring *build steps* live in [`03-build-sequencing.md`](03-build-sequencing.md) §2. (Types are TS mirrors of the Rust `serde` wire shapes in `api.rs`.)
+The FE's single seam to the host — a concrete TS client over `fetch` + `WebSocket`. Everything else (stores, router) sits on top of this. This is the **canonical client surface** sibling docs point to; the store-wiring *build steps* live in [`03-build-sequencing.md`](03-build-sequencing.md) §2. (Types are TS mirrors of the Rust `serde` wire shapes in `api.rs`.)
 
 ```ts
 // wire.ts — TS mirrors of crates/hide-core/src/api.rs
@@ -193,20 +195,33 @@ export type UiEvent = { seq: number; session_id: SessionId | null; kind: UiEvent
 ```
 
 ```ts
-// ipc.ts — the ONLY module that touches Tauri invoke/Channel.
-import { invoke, Channel } from "@tauri-apps/api/core";
+// ipc.ts — the ONLY module that touches the HTTP/WS transport (fetch + WebSocket).
+const BASE = import.meta.env.VITE_HIDE_BASE ?? "http://127.0.0.1:8744"; // hide-serve
+const WS_BASE = BASE.replace(/^http/, "ws");
 
-/** Wire-A: send an intent, get the host's ack (which may be a rejection). */
+/** Wire-A: POST the intent, get the host's ack (which may be a rejection). */
 export async function sendIntent(intent: Intent): Promise<IntentAck> {
-  return invoke<IntentAck>("hide_intent", { intent });
+  const r = await fetch(`${BASE}/v1/hide/intent`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(intent),
+  });
+  return (await r.json()) as IntentAck;   // accepted:false is a 200 body, not an HTTP error
 }
 
-/** Wire-B: subscribe to the ordered UiEvent stream. Returns an unsubscribe fn. */
+/** Wire-B: subscribe to the ordered UiEvent stream over a WebSocket. Returns an unsubscribe fn.
+ *  On (re)connect, the caller first pulls ui_events(after_seq) (catchUpUiEvents) to fill any gap,
+ *  then resumes the live socket — see §3 "Decisions" and the reconnect note. */
 export function onUiEvent(handler: (ev: UiEvent) => void): () => void {
-  const channel = new Channel<UiEvent>();
-  channel.onmessage = handler;            // ordered; host-side coalesced + backpressured
-  void invoke("hide_subscribe_ui", { channel });
-  return () => void invoke("hide_unsubscribe_ui", { channel });
+  const ws = new WebSocket(`${WS_BASE}/v1/hide/events`); // ordered; host-side coalesced + backpressured
+  ws.onmessage = (e) => handler(JSON.parse(e.data) as UiEvent);
+  return () => ws.close();
+}
+
+/** Pull catch-up/replay for reconnect: GET the durable UiEvents after a seq cursor. */
+export async function catchUpUiEvents(afterSeq: number): Promise<UiEvent[]> {
+  const r = await fetch(`${BASE}/v1/hide/events?after_seq=${afterSeq}`);
+  return (await r.json()) as UiEvent[];
 }
 
 /** Typed RPC to a backend connector (runtime/code_index/context/personalization/research). */
@@ -215,11 +230,16 @@ export async function callConnector<T = unknown>(
   method: string,
   params: unknown,
 ): Promise<T> {
-  return invoke<T>("hide_call_connector", { id, method, params });
+  const r = await fetch(`${BASE}/v1/hide/connector`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id, method, params }),
+  });
+  return (await r.json()) as T;
 }
 ```
 
-> The Tauri command names (`hide_intent`, `hide_subscribe_ui`, `hide_call_connector`) are the FE↔host contract the Tauri wrapper must expose; they're the only strings hard-coded outside `ipc.ts`. (`onUiEvent`'s unsubscribe path also invokes `hide_unsubscribe_ui`.) Everything above the IPC client (router, stores, components) imports only `sendIntent`/`onUiEvent`/`callConnector`.
+> The endpoint paths (`POST /v1/hide/intent`, `WS|GET /v1/hide/events`, `POST /v1/hide/connector`) are the FE↔host contract `hide-serve` must expose; they're the only strings hard-coded outside `ipc.ts`. Everything above the client (router, stores, components) imports only `sendIntent`/`onUiEvent`/`catchUpUiEvents`/`callConnector` — so the transport (and any desktop wrapper, see §5) is swappable without touching UI code.
 
 ### 3.8 The Custom-name registry (canonical)
 
@@ -270,15 +290,27 @@ Each surface is a composition of intents it sends, UiEvent kinds it consumes, an
 
 **Context Stack (rail, all surfaces):** consumes `ProjectionPatch{projection:"context*"}` for the live `ContextManifest`; calls `context.compile` to (re)build it; `Custom` intents for pin/drop/profile-switch; reads `runtime.roles.list` for the Model panel. On a Timeline scrub (`ScrubToEvent`), the rail rewinds to that event's manifest — the "what did it see when it decided *that*" superpower.
 
-**Cross-cutting (every surface):** `RuntimeStatus` → status pill + banner; `Error` → notifications; every `UiEvent.seq` advances the owning store's `last_applied_seq` so reconnect replays cleanly (open Channel, request `ui_events(after_seq)` catch-up, resume live).
+**Cross-cutting (every surface):** `RuntimeStatus` → status pill + banner; `Error` → notifications; every `UiEvent.seq` advances the owning store's `last_applied_seq` so reconnect replays cleanly (open the `/v1/hide/events` WebSocket, request `GET /v1/hide/events?after_seq=N` catch-up, resume live).
+
+---
+
+## 5. Packaging / desktop wrapper (deferred)
+
+The UI is a **pure web app** talking to `hide-serve` over localhost HTTP/WS. Whether it's eventually shipped inside a native desktop shell is a **late, reversible packaging choice that does not touch UI code** — the wrapper just hosts the same web client and (optionally) launches `hide-serve` as a child process. Because every surface binds only to the §3.7 client interface, the wrapper is invisible above `ipc.ts`.
+
+- **Electron — the safe default.** It's what VS Code, Cursor, and Void ship, so the harvested UIs and the broader ecosystem assume it; lowest-friction path to a desktop binary.
+- **Tauri — an option, not the architecture.** Stays on the table for a small macOS-only binary (smaller artifact, system WebView). It would host the same web client and spawn `hide-serve`; it is **not** the transport and the UI never imports it.
+- **Plain browser / PWA — fine for dev.** Run `hide-serve`, open the Vite dev server (or the built static bundle) in a browser. This is the default during skeleton development and keeps the loop fast.
+
+Because the contract is transport-agnostic (`CommandRouter::handle(Intent)` and `UiEventBus::subscribe()` don't know about transport), choosing or changing the wrapper is a build/packaging decision, deferred until the surfaces work end-to-end against `hide-serve`. The same indirection is what makes the later remote thin-client story (`01-surfaces.md` §D.4) a transport swap inside `ipc.ts`, not a UI rewrite.
 
 ---
 
 ## Decisions sibling docs must stay consistent with
 
 1. **Wire types are fixed by `api.rs`** — `Intent`/`IntentAck`/`UiEvent`/`UiEventKind` exactly as enumerated (snake_case `type`/`data` tagging; time-travel uses `event_id`/`at_event: EventId`, not `at_seq`). Don't introduce new variants in docs; use `Custom{name,payload}` for FE-specific actions.
-2. **Three Tauri command strings only:** `hide_intent` (Wire-A: an `Intent` → `IntentAck`), `hide_subscribe_ui` (opens the Wire-B `ipc::Channel<UiEvent>`), `hide_call_connector` (connector RPC: `id`, `method`, `params`). (`hide_unsubscribe_ui` closes a Wire-B channel.) The IPC client (`ipc.ts`) is the sole module that touches `invoke`/`Channel`.
-3. **The host owns truth; stores are derived caches** keyed by `last_applied_seq`. Reconnect = open Channel + `ui_events(after_seq)` pull catch-up + live resume.
+2. **Three `hide-serve` endpoints only:** `POST /v1/hide/intent` (Wire-A: an `Intent` → `IntentAck`), `WS /v1/hide/events` (Wire-B: the ordered `UiEvent` stream; `GET /v1/hide/events?after_seq=N` is its pull twin for reconnect), `POST /v1/hide/connector` (connector RPC: `{id, method, params}`). The HTTP/WS client (`ipc.ts`) is the sole module that touches `fetch`/`WebSocket`.
+3. **The host owns truth; stores are derived caches** keyed by `last_applied_seq`. Reconnect = open the WebSocket + `GET /v1/hide/events?after_seq=N` pull catch-up + live resume.
 4. **Two streaming layers:** host-side `UiEventBus` coalescing (per `stream_id`) **and** an FE rAF render-governor. Don't render per token.
 5. **Connectors are the non-intent RPC surface** (`runtime`/`code_index`/`context`/`personalization`/`research`); the Context Stack's data comes from `context.compile` → `{prompt, manifest}`.
 6. **Runtime is observed, not controlled:** `RuntimeStatus` states are `down/booting/ready/degraded/failed`; gate the composer on `ready`.

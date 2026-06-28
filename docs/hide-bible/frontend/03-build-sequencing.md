@@ -2,9 +2,10 @@
 
 > Part of the HIDE front-end bible. The 11-crate backend is **already built and tested** (the
 > agent loop is real); see [`SCAFFOLD_STATUS.md`](../SCAFFOLD_STATUS.md). This doc is the
-> actionable, ordered plan to build the UI **on top of** that backend — the React/TS surfaces
-> plus the one piece of new Rust glue (the Tauri host wrapping `BackendHost`). It does **not**
-> re-plan any backend work; that is done.
+> actionable, ordered plan to build the UI **on top of** that backend — the React/TS/Vite web app
+> plus the one piece of new Rust glue (`hide-serve`, a thin axum HTTP/WS server wrapping
+> `BackendHost`, mirroring `crates/hawking-serve`). It does **not** re-plan any backend work;
+> that is done.
 
 ---
 
@@ -15,11 +16,14 @@ Planner→Executor→Verifier loop, persists an event log, scrubs/forks sessions
 transport-agnostic command surface. What does **not** exist yet, and is the entire subject of this
 doc, is:
 
-1. The **Tauri 2 host** (`app/src-tauri`) that constructs `BackendHost::open_workspace`, exposes
-   `#[tauri::command] hide_intent`, and pumps the `UiEvent` bus down an `ipc::Channel<UiEvent>`.
-   This is the "Tauri frontend / `#[tauri::command]` layer" recorded as a *deliberately deferred
-   seam* in `SCAFFOLD_STATUS.md` — we are filling it now.
-2. The **React/TS app** (`app/src`): the typed IPC client, the store, and the panels.
+1. The **`hide-serve` crate** — a small axum HTTP/WS server that constructs
+   `BackendHost::open_workspace` and exposes the `/v1/hide/*` endpoints (Wire-A `POST
+   /v1/hide/intent`, Wire-B `WS /v1/hide/events` + `GET ?after_seq=N`, `POST /v1/hide/connector`).
+   It mirrors `crates/hawking-serve` (the already-proven axum + SSE server in this repo). This is
+   the transport seam recorded as a *deliberately deferred* item in `SCAFFOLD_STATUS.md` — we are
+   filling it now. (A desktop wrapper — Electron/Tauri/PWA — is a separate, deferred packaging
+   choice that does **not** touch UI code; see [`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) §5.)
+2. The **React/TS/Vite web app** (`app/src`): the typed HTTP/WS client, the store, and the panels.
 
 There is **no** backend redesign here. If a panel needs something, it already has a binding on the
 real contract (see [`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) for the wire). Our job is
@@ -33,55 +37,79 @@ to change anything is to send an `Intent`.)
 
 ---
 
-## 1. Scaffold the Tauri 2 app (the host glue)
+## 1. Scaffold the web app + the `hide-serve` server (the host glue)
 
-**Goal:** a window that boots `BackendHost`, can receive one `Intent`, and can stream one
-`UiEvent`. No panels yet. This eliminates the single biggest unknown — Tauri 2 + Vite + a Rust
-host co-existing in CI — before any feature work.
+**Goal:** a web app that talks to `hide-serve`, which boots `BackendHost`, can receive one `Intent`
+over HTTP, and can stream one `UiEvent` over a WebSocket. No panels yet. This eliminates the single
+biggest unknown — a Vite web app + an axum Rust host co-existing in CI — before any feature work.
 
-### 1.1 `app/src-tauri` (the Rust host)
+### 1.1 `hide-serve` (the Rust HTTP/WS server)
 
-A thin Tauri shell. It owns one `BackendHost`, registers the intent command, and bridges the bus.
+A thin axum server, mirroring `crates/hawking-serve`. It owns one `BackendHost`, exposes the intent
+endpoint, the connector endpoint, and the event WebSocket (+ its pull twin), and forwards the bus.
 
 ```rust
-// app/src-tauri/src/lib.rs  (sketch — binds to the REAL hide-backend API)
+// crates/hide-serve/src/lib.rs  (sketch — binds to the REAL hide-backend API; mirrors hawking-serve)
 use hide_backend::BackendHost;
-use hide_core::api::{Intent, IntentAck, UiEvent};
-use tauri::ipc::Channel;
+use hide_core::api::Intent;
+use axum::{
+    extract::{ws::{Message, WebSocket, WebSocketUpgrade}, Query, State},
+    routing::{get, post},
+    Json, Router,
+};
+use serde_json::Value;
 use std::sync::Arc;
 
+#[derive(Clone)]
 struct AppState { host: Arc<BackendHost> }
 
-#[tauri::command]
-async fn hide_intent(
-    state: tauri::State<'_, AppState>,
-    intent: Intent,                 // serde-deserialized from JS (tag="type", content="data")
-) -> Result<IntentAck, String> {
-    state.host.handle_intent(intent).await.map_err(|e| e.to_string())
+fn router(state: AppState) -> Router {
+    Router::new()
+        .route("/v1/hide/intent", post(hide_intent))         // Wire-A
+        .route("/v1/hide/events", get(hide_events))          // Wire-B: WS upgrade OR pull (?after_seq=N)
+        .route("/v1/hide/connector", post(hide_connector))   // connector RPC (§2.3)
+        .with_state(state)
 }
 
-// Called once from JS at startup; forwards every bus event onto an ipc::Channel.
-#[tauri::command]
-async fn hide_subscribe_ui(
-    state: tauri::State<'_, AppState>,
-    channel: Channel<UiEvent>,
-) -> Result<(), String> {
-    let mut rx = state.host.subscribe_ui();          // broadcast::Receiver<UiEvent>
-    tokio::spawn(async move {
-        while let Ok(ev) = rx.recv().await { let _ = channel.send(ev); }
-    });
+// Wire-A: deserialize Intent → CommandRouter::handle → serialize IntentAck.
+async fn hide_intent(State(s): State<AppState>, Json(intent): Json<Intent>) -> Json<Value> {
+    let ack = s.host.handle_intent(intent).await;     // accepted:false is a normal 200 body
+    Json(serde_json::to_value(ack.unwrap_or_default()).unwrap())
+}
+
+// Wire-B: a GET with ?after_seq=N is the pull catch-up; otherwise it's a WebSocket upgrade.
+async fn hide_events(
+    State(s): State<AppState>,
+    Query(q): Query<std::collections::HashMap<String, String>>,
+    ws: Option<WebSocketUpgrade>,
+) -> axum::response::Response {
+    if let Some(after) = q.get("after_seq").and_then(|v| v.parse::<u64>().ok()) {
+        let evs = s.host.ui_events(None, Some(after), None).await.unwrap_or_default();
+        return Json(evs).into_response();
+    }
+    ws.unwrap().on_upgrade(move |socket| forward_bus(s, socket))
+}
+
+// Forward every UiEvent from the bus onto the socket (ordered; host-side coalesced + backpressured).
+async fn forward_bus(s: AppState, mut socket: WebSocket) {
+    let mut rx = s.host.subscribe_ui();               // broadcast::Receiver<UiEvent>
+    while let Ok(ev) = rx.recv().await {
+        let json = serde_json::to_string(&ev).unwrap();
+        if socket.send(Message::Text(json)).await.is_err() { break; }
+    }
+}
+
+async fn hide_connector(State(s): State<AppState>, Json(req): Json<ConnectorReq>) -> Json<Value> {
+    Json(s.host.call_connector(&req.id, &req.method, req.params).await.unwrap_or(Value::Null))
+}
+#[derive(serde::Deserialize)] struct ConnectorReq { id: String, method: String, params: Value }
+
+pub async fn run(root: &str, addr: std::net::SocketAddr) -> anyhow::Result<()> {
+    let host = Arc::new(BackendHost::open_workspace(root)?);   // builds the whole service graph
+    let app = router(AppState { host });
+    let listener = tokio::net::TcpListener::bind(addr).await?; // 127.0.0.1 — loopback only
+    axum::serve(listener, app).await?;
     Ok(())
-}
-
-pub fn run() {
-    let host = Arc::new(
-        BackendHost::open_workspace(/* root from CLI/arg */ ".").expect("open_workspace")
-    );
-    tauri::Builder::default()
-        .manage(AppState { host })
-        .invoke_handler(tauri::generate_handler![hide_intent, hide_subscribe_ui, hide_call_connector])
-        .run(tauri::generate_context!())
-        .expect("tauri run");
 }
 ```
 
@@ -93,49 +121,66 @@ Key facts this binds to (all real, in `hide-backend`/`hide-core`):
   `TokenBatch`** events, not per-token spam.
 - `handle_intent(Intent) -> IntentAck` is *literally* `CommandRouter::handle` behind the host;
   validation/rejection/interrupt-signalling already live there. We add zero logic — we wrap.
-- The third Tauri command, `hide_call_connector` (the connector RPC), is added in §2.3.
+- `ui_events(session, after_seq, limit)` backs `GET /v1/hide/events?after_seq=N` (reconnect pull).
+- The connector RPC endpoint, `POST /v1/hide/connector`, is detailed in §2.3.
 
-**Capability manifest:** minimum perms — FS read (file tree), shell/PTY (terminal), window
-management. Pin CI to `macos-14` (matches the existing runner). The PTY itself is hosted here via
-`portable-pty` and streamed over its own `ipc::Channel<PtyChunk>` (see panel §3.5).
+**Binding & perms:** `hide-serve` binds `127.0.0.1` (loopback only — air-gap-safe). Pin CI to
+`macos-14` (matches the existing runner). The PTY is hosted here via `portable-pty` and streamed
+over its own WebSocket (see panel §3.5). A desktop wrapper (Electron/Tauri/PWA) is a deferred
+packaging choice that would launch this server as a child process — it does **not** change any of
+the above (see [`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) §5).
 
-### 1.2 `app/src` (React + TS + Vite)
+### 1.2 `app/src` (React + TS + Vite — the web app)
 
-Standard Vite React-TS template. `pnpm`. The only structural decisions to lock now:
+Standard Vite React-TS template. `pnpm`. Browser-renderable; no desktop-shell dependency. The only
+structural decisions to lock now:
 - **Store fabric:** Zustand-style slices, one slice per surface (see §2.2). One root store; panels
   subscribe to slices.
-- **IPC client module** (`src/ipc/`): the *only* place `@tauri-apps/api` `invoke`/`Channel` is
-  touched. Everything else imports the typed client (§2.1). This keeps the wire swappable and
-  testable against a mock.
+- **HTTP/WS client module** (`src/ipc/`): the *only* place `fetch`/`WebSocket` against `hide-serve`
+  is touched. Everything else imports the typed client (§2.1). This keeps the transport swappable
+  (and any future desktop wrapper invisible) and testable against a mock.
 
-**Done when:** `pnpm tauri build` exits 0 on `macos-14`; the window opens; a dev-only button calls
-`invoke('hide_intent', { intent: { type:'custom', data:{ name:'ping', payload:{} } } })` and logs
-the returned `IntentAck`.
+**Done when:** `pnpm build` exits 0 and `hide-serve` builds on `macos-14`; with `hide-serve`
+running, the web app loads in a browser; a dev-only button calls
+`sendIntent({ type:'custom', data:{ name:'ping', payload:{} } })` (a `fetch` to
+`POST /v1/hide/intent`) and logs the returned `IntentAck`.
 
 ---
 
-## 2. The IPC client layer + store wiring
+## 2. The HTTP/WS client layer + store wiring
 
-This is the seam between the React tree and `BackendHost`. Get it exactly right once; every panel
-rides on it. The contract is owned by [`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) — this
-section is the *client implementation* of that contract.
+This is the seam between the React tree and `BackendHost` (via `hide-serve`). Get it exactly right
+once; every panel rides on it. The contract is owned by
+[`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) — this section is the
+*client implementation* of that contract.
 
 ### 2.1 The typed TS client surface
 
 ```ts
 // src/ipc/client.ts — the ENTIRE surface the rest of the app may use.
-import { invoke, Channel } from '@tauri-apps/api/core';
 import type { Intent, IntentAck, UiEvent } from './contract';   // mirrors hide-core::api
+const BASE = import.meta.env.VITE_HIDE_BASE ?? 'http://127.0.0.1:8744';   // hide-serve
+const WS_BASE = BASE.replace(/^http/, 'ws');
 
 export async function sendIntent(intent: Intent): Promise<IntentAck> {
-  return invoke<IntentAck>('hide_intent', { intent });
+  const r = await fetch(`${BASE}/v1/hide/intent`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(intent),
+  });
+  return r.json() as Promise<IntentAck>;          // accepted:false is a 200 body, not an HTTP error
 }
 
-// Subscribe ONCE at app boot. Fans every UiEvent to the store reducer.
-export function onUiEvent(handler: (ev: UiEvent) => void): void {
-  const ch = new Channel<UiEvent>();
-  ch.onmessage = handler;
-  void invoke('hide_subscribe_ui', { channel: ch });
+// Open ONCE at app boot. Fans every UiEvent to the store reducer. Returns an unsubscribe fn.
+export function onUiEvent(handler: (ev: UiEvent) => void): () => void {
+  const ws = new WebSocket(`${WS_BASE}/v1/hide/events`);
+  ws.onmessage = (e) => handler(JSON.parse(e.data) as UiEvent);
+  return () => ws.close();
+}
+
+// Reconnect pull catch-up: GET the durable UiEvents after a seq cursor.
+export async function catchUpUiEvents(afterSeq: number): Promise<UiEvent[]> {
+  const r = await fetch(`${BASE}/v1/hide/events?after_seq=${afterSeq}`);
+  return r.json() as Promise<UiEvent[]>;
 }
 
 export async function callConnector(
@@ -143,7 +188,11 @@ export async function callConnector(
   method: string,
   params: unknown,
 ): Promise<unknown> {
-  return invoke('hide_call_connector', { id, method, params });
+  const r = await fetch(`${BASE}/v1/hide/connector`, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ id, method, params }),
+  });
+  return r.json();
 }
 ```
 
@@ -173,20 +222,18 @@ Slice list: `chatStore`, `editorStore`, `diffStore`, `fileTreeStore`, `terminalS
 authoritative field comes from a `UiEvent`; every user action goes out as an `Intent`. There is no
 third path.
 
-### 2.3 Connector access (`hide_call_connector`)
+### 2.3 Connector access (`POST /v1/hide/connector`)
 
-Add the host command and the client wrapper. Connectors are read-mostly side channels the panels
+Add the server endpoint and the client wrapper. Connectors are read-mostly side channels the panels
 use for synchronous-ish queries (search, profile switch, manifest compile) that are not turn
 submissions:
 
 ```rust
-#[tauri::command]
-async fn hide_call_connector(
-    state: tauri::State<'_, AppState>,
-    id: String, method: String, params: serde_json::Value,
-) -> Result<serde_json::Value, String> {
-    state.host.call_connector(&id, &method, params).await.map_err(|e| e.to_string())
+// crates/hide-serve — body = { id, method, params } → BackendHost::call_connector → Value
+async fn hide_connector(State(s): State<AppState>, Json(req): Json<ConnectorReq>) -> Json<Value> {
+    Json(s.host.call_connector(&req.id, &req.method, req.params).await.unwrap_or(Value::Null))
 }
+#[derive(serde::Deserialize)] struct ConnectorReq { id: String, method: String, params: Value }
 ```
 
 Real connectors (`connectors.rs`): `runtime` (`roles.list`, `route` — the latter a read-only routing
@@ -213,8 +260,8 @@ and which contract pieces it exercises.
 | 1 | **Chat** | message-list + composer patterns; SSE/stream render | `SubmitTurn`, `CancelRun`, `PauseRun`, `ResumeRun` | `TokenBatch`, `ProjectionPatch(chat)`, `RuntimeStatus` |
 | 2 | **Editor** | **Monaco** (`monaco-editor`, MIT) | `OpenFile` | `ProjectionPatch(editor)` |
 | 3 | **Diff Review** | Monaco `createDiffEditor` + Cline/Void hunk-UX (Apache-2.0, *reference only*) | `AcceptDiff`, `RejectDiff` | `ProjectionPatch(diff)`, `SecurityGate` |
-| 4 | **File Tree** | tree-view component; `tauri-plugin-fs` reads | `OpenFile` | `ProjectionPatch(file_tree)` |
-| 5 | **Terminal** | **xterm.js** (MIT) over `portable-pty` (MIT) | `RunCommand` | dedicated `Channel<PtyChunk>` + `ProjectionPatch(terminal)` |
+| 4 | **File Tree** | tree-view component; file reads via `hide-serve` / `code_index` connector | `OpenFile` | `ProjectionPatch(file_tree)` |
+| 5 | **Terminal** | **xterm.js** (MIT) over `portable-pty` (MIT) | `RunCommand` | dedicated PTY WebSocket + `ProjectionPatch(terminal)` |
 | 6 | **Context Stack** | original; renders `ContextManifest` | `ScrubToEvent`, `Custom{pin/unpin/switch_profile}` | `ProjectionPatch(context)`, `RuntimeStatus` |
 | 7 | **Agent Timeline** | OpenHands event-model *idea* (MIT, *reference only*) | `ScrubToEvent`, `ForkSession`, `CancelRun` | `ProjectionPatch(timeline)`, `ToolProgress`, `TokenBatch` |
 | 8 | **Workstation** | original; grid of timeline cards | `SubmitTurn`(per lane), `CancelRun` | per-session `ProjectionPatch`, `RuntimeStatus` |
@@ -244,13 +291,14 @@ precede the apply (write-permission ask).
 
 ### 3.4 File Tree
 
-`tauri-plugin-fs` to list the workspace root; render a tree; click → `OpenFile`. Live external-change
-decorations arrive as `ProjectionPatch(file_tree)`. Read-only in the skeleton.
+The workspace root is listed by the host (served through `hide-serve` / the `code_index` connector,
+not a direct browser FS API); render a tree; click → `OpenFile`. Live external-change decorations
+arrive as `ProjectionPatch(file_tree)`. Read-only in the skeleton.
 
 ### 3.5 Terminal
 
-xterm.js front; `portable-pty` in the host. Keystrokes → PTY stdin over an `ipc::Channel`; PTY
-output → xterm. Agent-initiated commands route through `RunCommand{argv, cwd?}` /
+xterm.js front; `portable-pty` in `hide-serve`. Keystrokes → PTY stdin over a dedicated WebSocket;
+PTY output → xterm. Agent-initiated commands route through `RunCommand{argv, cwd?}` /
 `run_agent_to_terminal(...)` so the terminal shows what the agent ran. Opens in workspace root.
 
 ### 3.6 Context Stack (the differentiator)
@@ -289,11 +337,14 @@ Each milestone has one binary **done-when**. These are the FE counterparts to th
 M0/M1 sequencing — but the backend is done, so they are purely UI + host glue.
 
 ### M-FE0 — Walking skeleton
-Tauri host boots `BackendHost`; chat streams. Build §1 (host + React scaffold), §2 (IPC + store),
-and §3.1 (chat only).
-**Done when:** in the running app, typing a message sends `SubmitTurn`, and coalesced `TokenBatch`
-events render incrementally in the chat panel — against a stubbed serve *or* a live one. The
-`IntentAck.accepted` and the streamed `stream_id` are observable in devtools.
+The web app + the `hide-serve` server, with chat streaming over the WebSocket. `hide-serve` boots
+`BackendHost`; chat streams. Build §1 (web app + `hide-serve` scaffold), §2 (HTTP/WS client +
+store), and §3.1 (chat only).
+**Done when:** in the running web app (browser or any wrapper) talking to `hide-serve`, typing a
+message sends `SubmitTurn` (a `fetch` to `POST /v1/hide/intent`), and coalesced `TokenBatch` events
+arriving on the `WS /v1/hide/events` socket render incrementally in the chat panel — against a
+stubbed serve *or* a live one. The `IntentAck.accepted` and the streamed `stream_id` are observable
+in devtools.
 
 ### M-FE1 — IDE surface
 Add Editor (§3.2), Diff Review (§3.3), File Tree (§3.4), Terminal (§3.5).
@@ -327,15 +378,15 @@ FE-relevant bundled/invoked components and obligations:
 |---|---|---|---|
 | Monaco Editor | MIT | editor + diff (bundled) | MIT notice |
 | xterm.js | MIT | terminal (bundled) | MIT notice |
-| portable-pty | MIT | PTY host (`src-tauri`) | MIT notice |
-| `@tauri-apps/*` | MIT/Apache-2.0 | shell + IPC | notice |
+| portable-pty | MIT | PTY host (`hide-serve`) | MIT notice |
+| axum | MIT | HTTP/WS server (`hide-serve`) | MIT notice |
 | Zustand | MIT | store | MIT notice |
 | OpenHands event model | MIT | timeline design *reference only* | no code copied → no obligation |
 | Cline / Void diff UX | Apache-2.0 | diff design *reference only* | no code copied → no obligation |
 
 **The gate (CI, every commit):**
-1. `cargo deny check licenses` over `app/src-tauri` — allow MIT / Apache-2.0 / MPL-2.0; reject any
-   new dep introducing GPL / AGPL / BUSL. (Same `deny.toml` posture as the backend.)
+1. `cargo deny check licenses` over `crates/hide-serve` — allow MIT / Apache-2.0 / MPL-2.0; reject
+   any new dep introducing GPL / AGPL / BUSL. (Same `deny.toml` posture as the backend.)
 2. A JS license scan (e.g. `license-checker`) over `app/src` `node_modules` with the same allow-list.
 3. `THIRD_PARTY_NOTICES.md` is regenerated by `tools/gen_notices.sh` (extended to walk both the
    Rust host deps **and** the bundled npm deps) and must be present before any release.
@@ -352,9 +403,9 @@ component above.
 ## 6. Build-order summary (open this to start)
 
 ```
-§1 Tauri host + React scaffold ─┐
-                                 ├─► M-FE0  chat walking skeleton
-§2 IPC client + store slices ───┘            (SubmitTurn → TokenBatch → render)
+§1 hide-serve server + web-app scaffold ─┐
+                                          ├─► M-FE0  chat walking skeleton
+§2 HTTP/WS client + store slices ────────┘     (SubmitTurn → TokenBatch over WS → render)
                                               │
 §3.2–3.5 editor/diff/tree/terminal ──────────► M-FE1  IDE surface
                                               │
@@ -367,12 +418,13 @@ component above.
 
 **Consistency contract for sibling docs.** Decisions made here that other front-end docs must not
 contradict:
-- The FE talks to the backend through **exactly three** Tauri commands:
-  `hide_intent` (Wire-A: one `Intent` → `IntentAck`), `hide_subscribe_ui` (Wire-B: opens the
-  `ipc::Channel<UiEvent>`), and `hide_call_connector` (connector RPC: `id`, `method`, `params`).
-  (A `hide_unsubscribe_ui` closes a Wire-B channel.) These match the contract doc
+- The FE talks to the backend through **exactly three** `hide-serve` endpoints:
+  `POST /v1/hide/intent` (Wire-A: one `Intent` → `IntentAck`), `WS /v1/hide/events` (Wire-B: the
+  ordered `UiEvent` stream; `GET /v1/hide/events?after_seq=N` is its pull twin for reconnect), and
+  `POST /v1/hide/connector` (connector RPC: `{id, method, params}`). These match the contract doc
   ([`00-vision-and-backend-contract.md`](00-vision-and-backend-contract.md) §3.7 "Decisions"); no
-  panel invokes the backend any other way.
+  panel reaches the backend any other way. The desktop wrapper (Electron/Tauri/PWA) is deferred and
+  never touches UI code (contract doc §5).
 - **`ProjectionPatch` is the universal state-update mechanism**; `TokenBatch` is the only streaming
   text path; the seven `UiEventKind`s map 1:1 to the slices in §2.2.
 - The store is a **fold of the event stream**; the only outbound mutation channel is `Intent`.

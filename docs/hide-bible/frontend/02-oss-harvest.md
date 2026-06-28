@@ -12,7 +12,7 @@ This is a hard CI-enforced rule. Treat it as load-bearing, not advisory.
 
 | Bucket | Licenses | What you may do |
 |---|---|---|
-| **PORT-OK** | **MIT, Apache-2.0** | Adapt/incorporate source into shipped `app/` (the Tauri+React FE) and Rust host code. Copyright header in every ported file + a `THIRD_PARTY_NOTICES.md` entry. |
+| **PORT-OK** | **MIT, Apache-2.0** | Adapt/incorporate source into shipped `app/` (the React/TS/Vite web app) and Rust host code (`hide-serve`). Copyright header in every ported file + a `THIRD_PARTY_NOTICES.md` entry. |
 | **STUDY-ONLY** | **AGPL-3.0** (Zed) | Read published docs/blogs/behavior only. **Never** copy, port, link, paste, or "reimplement from a peek at" the source — AGPL would force HIDE's proprietary FE open. No exceptions regardless of snippet size. |
 | **NEVER-TOUCH** | Proprietary (Cursor, Copilot/Copilot Workspace, Claude Code) | No source exists / is closed. Study observable UX only. No lifting. |
 
@@ -51,7 +51,7 @@ One row per source. "FE component to harvest" is strictly front-end (UI/interact
 Each subsection names the exact interaction to harvest and binds it to the **real** `Intent`/`UiEvent` contract the FE sends/receives. The wire types (from `crates/hide-core/src/api.rs`):
 
 - **`Intent`** (FE → host, via `BackendHost::handle_intent` → `IntentAck{accepted, event_seq?, message?}`): `SubmitTurn{session_id,text,attachments}`, `CancelRun{run_id}`, `PauseRun{run_id}`, `ResumeRun{run_id}`, `AcceptDiff{run_id,diff_id}`, `RejectDiff{run_id,diff_id}`, `ScrubToEvent{session_id,event_id}`, `ForkSession{session_id,at_event}`, `OpenFile{path,line?}`, `RunCommand{argv,cwd?}`, `Custom{name,payload}`.
-- **`UiEvent{seq,session_id?,kind}`** (host → FE, via `BackendHost::subscribe_ui()` broadcast, bridged over a Tauri `ipc::Channel<UiEvent>`): `ProjectionPatch{projection,patch}`, `TokenBatch{stream_id,text}`, `RuntimeStatus{status,detail?}`, `ToolProgress{call_id,message}`, `SecurityGate{gate,message}`, `Error{code,message}`, `Custom(Value)`.
+- **`UiEvent{seq,session_id?,kind}`** (host → FE, via `BackendHost::subscribe_ui()` broadcast, forwarded over the `WS /v1/hide/events` WebSocket served by `hide-serve`): `ProjectionPatch{projection,patch}`, `TokenBatch{stream_id,text}`, `RuntimeStatus{status,detail?}`, `ToolProgress{call_id,message}`, `SecurityGate{gate,message}`, `Error{code,message}`, `Custom(Value)`.
 
 > **Contract note for all sibling docs.** The built contract is *deliberately thinner* than the old design sketch (now archived under ../archive/). Rich per-panel state (plan tree, context manifest, diff set, file tree, timeline cards) arrives as **`ProjectionPatch{projection, patch}`** — one named projection per panel, JSON-diff applied into a store slice — **not** as ~30 distinct typed event kinds. Steering actions that the old sketch named as first-class intents (`PinSpan`, `EditPlanStep`, `RedirectRun`, `SwitchProfile`, `ApproveStep`…) are **not** first-class in the shipped `Intent` enum; they ride on **`Intent::Custom{name, payload}`** (e.g. `name:"pin_span"`). Harvested UIs must emit `Custom` for these, and consume the relevant `ProjectionPatch` projection — see §3. Do not invent typed intents the host doesn't accept.
 
