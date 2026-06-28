@@ -30,7 +30,7 @@ complexity is hidden behind one verb.
   laptop* is a capability no shipping tool has (llama Q2_K collapses; AWQ/GPTQ stop
   at 3–4-bit PTQ; none are out-of-core or dynamic). That's the wedge.
 
-## What we have measured (the honest floor — see condense_output_space_handoff)
+## What we have measured (the honest floor, preserved in the retrospective ledger)
 
 Output-space (`||(Ŵ-W)X||/||WX||`) on REAL bf16 weights + REAL measured activations:
 

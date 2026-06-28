@@ -51,8 +51,8 @@ Format: `<ISO time> arm=<name> step=<N> s_per_step=<X> drv_gb=<Y> requant_s=<las
 - Commits: none. The main session owns will.md and git.
 
 ## 1b. Watcher liveness (re-arm as background tasks if missing)
-- **THE CONDUCTOR (primary):** if `pgrep -f 'scratch/conductor.sh'` is empty, re-arm
-  `bash scratch/conductor.sh` as a harness background task. It consolidates: lane
+- **THE CONDUCTOR (primary):** if `pgrep -f 'scripts/conductor.sh'` is empty, re-arm
+  `bash scripts/conductor.sh` as a harness background task. It consolidates: lane
   verdict/failure wakes, the pv re-pass relaunch (max 2), the post-marathon idle speed
   sweep, pod polling + local mirroring (scratch/pod-results/), pod milestones, and
   runbook §2 stall kills. Its heartbeat = scratch/conductor.log (a tick line at least

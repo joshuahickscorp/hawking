@@ -11,7 +11,9 @@ ps aux | grep -E 'cargo|rustc' | grep -v grep
 If any cargo/rustc procs are running: wait. The repo must be idle before h touches it.
 
 ## h's ingest target
-`docs/plans/SESSION_HANDOFF_2026_06_21.md` — written by source when workflow completes.
+The legacy 2026-06-21 session handoff was consolidated into
+`/Users/scammermike/Downloads/PROJECT_RETROSPECTIVE_CHECKPOINTS_2026_06_28.md`. Fresh ingest
+should use the current Studio plan and active operational docs instead of reviving session handoffs.
 
 ## h's auto-verify sequence (non-negotiable, run in order)
 ```bash
