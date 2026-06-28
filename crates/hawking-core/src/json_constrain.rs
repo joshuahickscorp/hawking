@@ -221,7 +221,6 @@ impl JsonConstraint {
     fn byte_allowed(&self, ch: char, valid: &ValidFirstBytes) -> bool {
         match valid {
             ValidFirstBytes::Any => true,
-            ValidFirstBytes::None => false,
             ValidFirstBytes::Set(set) => set.contains(&ch),
             ValidFirstBytes::InString => {
                 // Any char except unescaped '"' is allowed inside a string.
@@ -261,7 +260,6 @@ impl JsonConstraint {
 
 enum ValidFirstBytes {
     Any,
-    None,
     Set(Vec<char>),
     InString,
     Done,

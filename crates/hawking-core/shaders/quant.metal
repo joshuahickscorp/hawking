@@ -4798,22 +4798,37 @@ static inline float q6k_dot_row(
     return simd_sum(partial);
 }
 
+static inline uint rope_neox_pair(uint pair_idx, constant ArgbufQkvRopeAppend& args)
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    return pair_idx % pairs_per_head;
+}
+
+static inline uint rope_neox_row0(uint pair_idx, constant ArgbufQkvRopeAppend& args)
+{
+    uint pairs_per_head = args.head_dim / 2u;
+    uint head = pair_idx / pairs_per_head;
+    uint pair = pair_idx - head * pairs_per_head;
+    return head * args.head_dim + pair;
+}
+
 static inline void write_rope_pair(
     device float* dst,
     device const float* bias,
     uint has_bias,
     uint row0,
+    uint row1,
+    uint pair,
     float v0,
     float v1,
     constant ArgbufQkvRopeAppend& args)
 {
     float x0 = v0 + (has_bias != 0u ? bias[row0] : 0.0f);
-    float x1 = v1 + (has_bias != 0u ? bias[row0 + 1u] : 0.0f);
-    uint pair = (row0 % args.head_dim) / 2u;
+    float x1 = v1 + (has_bias != 0u ? bias[row1] : 0.0f);
     float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
     float c = cos(theta), s = sin(theta);
-    dst[row0]      = x0 * c - x1 * s;
-    dst[row0 + 1u] = x0 * s + x1 * c;
+    dst[row0] = x0 * c - x1 * s;
+    dst[row1] = x0 * s + x1 * c;
 }
 
 kernel void gemm_q4k_predec_qkv_rope_append(
@@ -4844,20 +4859,24 @@ kernel void gemm_q4k_predec_qkv_rope_append(
     if (gid < n_tg_q) {
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, row1, pair, p0, p1, args);
         }
     } else if (gid < n_tg_q + n_tg_k) {
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, row1, pair, p0, p1, args);
         }
     } else {
         uint eff_gid = gid - (n_tg_q + n_tg_k);
@@ -4910,27 +4929,41 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r(
         // Q section: each simdgroup handles a quad (4 rows = 2 RoPE pairs).
         uint quad_idx = gid * 8u + simd_id;
         if (quad_idx >= q_quads) return;
-        uint row0 = quad_idx * 4u;
-        float p0 = q4k_predec_dot_row(wq, q_sc, x, row0,      args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
-        float p2 = q4k_predec_dot_row(wq, q_sc, x, row0 + 2u, args.cols, simd_lane);
-        float p3 = q4k_predec_dot_row(wq, q_sc, x, row0 + 3u, args.cols, simd_lane);
+        uint pair0 = quad_idx * 2u;
+        uint pair1 = pair0 + 1u;
+        uint row0 = rope_neox_row0(pair0, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint row2 = rope_neox_row0(pair1, args);
+        uint row3 = row2 + args.head_dim / 2u;
+        uint pidx0 = rope_neox_pair(pair0, args);
+        uint pidx1 = rope_neox_pair(pair1, args);
+        float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row1, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row(wq, q_sc, x, row2, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row(wq, q_sc, x, row3, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0,      p0, p1, args);
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0 + 2u, p2, p3, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, row1, pidx0, p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row2, row3, pidx1, p2, p3, args);
         }
     } else if (gid < n_tg_q + n_tg_k) {
         // K section: each simdgroup handles a quad (4 rows = 2 RoPE pairs).
         uint quad_idx = (gid - n_tg_q) * 8u + simd_id;
         if (quad_idx >= k_quads) return;
-        uint row0 = quad_idx * 4u;
-        float p0 = q4k_predec_dot_row(wk, k_sc, x, row0,      args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
-        float p2 = q4k_predec_dot_row(wk, k_sc, x, row0 + 2u, args.cols, simd_lane);
-        float p3 = q4k_predec_dot_row(wk, k_sc, x, row0 + 3u, args.cols, simd_lane);
+        uint pair0 = quad_idx * 2u;
+        uint pair1 = pair0 + 1u;
+        uint row0 = rope_neox_row0(pair0, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint row2 = rope_neox_row0(pair1, args);
+        uint row3 = row2 + args.head_dim / 2u;
+        uint pidx0 = rope_neox_pair(pair0, args);
+        uint pidx1 = rope_neox_pair(pair1, args);
+        float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row1, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row(wk, k_sc, x, row2, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row(wk, k_sc, x, row3, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0,      p0, p1, args);
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0 + 2u, p2, p3, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, row1, pidx0, p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row2, row3, pidx1, p2, p3, args);
         }
     } else {
         // V section: 2r/simdgroup (append 2 rows per simdgroup, no RoPE).
@@ -4980,20 +5013,24 @@ kernel void gemm_q4k_predec_qkv_rope_append_f16s(
     if (gid < n_tg_q) {
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, row1, pair, p0, p1, args);
         }
     } else if (gid < n_tg_q + n_tg_k) {
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, row1, pair, p0, p1, args);
         }
     } else {
         uint eff_gid = gid - (n_tg_q + n_tg_k);
@@ -5040,26 +5077,40 @@ kernel void gemm_q4k_predec_qkv_rope_append_4r_f16s(
     if (gid < n_tg_q) {
         uint quad_idx = gid * 8u + simd_id;
         if (quad_idx >= q_quads) return;
-        uint row0 = quad_idx * 4u;
-        float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0,      args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
-        float p2 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 2u, args.cols, simd_lane);
-        float p3 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0 + 3u, args.cols, simd_lane);
+        uint pair0 = quad_idx * 2u;
+        uint pair1 = pair0 + 1u;
+        uint row0 = rope_neox_row0(pair0, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint row2 = rope_neox_row0(pair1, args);
+        uint row3 = row2 + args.head_dim / 2u;
+        uint pidx0 = rope_neox_pair(pair0, args);
+        uint pidx1 = rope_neox_pair(pair1, args);
+        float p0 = q4k_predec_dot_row_f16s(wq, q_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wq, q_sc, x, row1, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row_f16s(wq, q_sc, x, row2, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row_f16s(wq, q_sc, x, row3, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0,      p0, p1, args);
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0 + 2u, p2, p3, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, row1, pidx0, p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row2, row3, pidx1, p2, p3, args);
         }
     } else if (gid < n_tg_q + n_tg_k) {
         uint quad_idx = (gid - n_tg_q) * 8u + simd_id;
         if (quad_idx >= k_quads) return;
-        uint row0 = quad_idx * 4u;
-        float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0,      args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
-        float p2 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 2u, args.cols, simd_lane);
-        float p3 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0 + 3u, args.cols, simd_lane);
+        uint pair0 = quad_idx * 2u;
+        uint pair1 = pair0 + 1u;
+        uint row0 = rope_neox_row0(pair0, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint row2 = rope_neox_row0(pair1, args);
+        uint row3 = row2 + args.head_dim / 2u;
+        uint pidx0 = rope_neox_pair(pair0, args);
+        uint pidx1 = rope_neox_pair(pair1, args);
+        float p0 = q4k_predec_dot_row_f16s(wk, k_sc, x, row0, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row_f16s(wk, k_sc, x, row1, args.cols, simd_lane);
+        float p2 = q4k_predec_dot_row_f16s(wk, k_sc, x, row2, args.cols, simd_lane);
+        float p3 = q4k_predec_dot_row_f16s(wk, k_sc, x, row3, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0,      p0, p1, args);
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0 + 2u, p2, p3, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, row1, pidx0, p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row2, row3, pidx1, p2, p3, args);
         }
     } else {
         uint eff_gid = gid - (n_tg_q + n_tg_k);
@@ -5103,20 +5154,24 @@ kernel void gemm_q4k_q4k_q6k_rope_append(
     if (gid < n_tg_q) {
         uint pair_idx = gid * 8u + simd_id;
         if (pair_idx >= q_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wq, q_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wq, q_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wq, q_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, p0, p1, args);
+            write_rope_pair(q_out, q_bias, args.has_q_bias, row0, row1, pair, p0, p1, args);
         }
     } else if (gid < n_tg_q + n_tg_k) {
         uint pair_idx = (gid - n_tg_q) * 8u + simd_id;
         if (pair_idx >= k_pairs) return;
-        uint row0 = pair_idx * 2u;
+        uint row0 = rope_neox_row0(pair_idx, args);
+        uint row1 = row0 + args.head_dim / 2u;
+        uint pair = rope_neox_pair(pair_idx, args);
         float p0 = q4k_predec_dot_row(wk, k_sc, x, row0, args.cols, simd_lane);
-        float p1 = q4k_predec_dot_row(wk, k_sc, x, row0 + 1u, args.cols, simd_lane);
+        float p1 = q4k_predec_dot_row(wk, k_sc, x, row1, args.cols, simd_lane);
         if (simd_lane == 0u) {
-            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, p0, p1, args);
+            write_rope_pair(k_cache + args.kv_off, k_bias, args.has_k_bias, row0, row1, pair, p0, p1, args);
         }
     } else {
         uint eff_gid = gid - (n_tg_q + n_tg_k);

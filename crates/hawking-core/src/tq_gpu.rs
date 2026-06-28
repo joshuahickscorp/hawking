@@ -334,8 +334,25 @@ pub struct TqPreparedGpu {
     pub rht_mode: u32,
     /// Per-tensor RHT seed (meaningful when `rht_mode != 0`).
     pub rht_seed: u64,
+    /// OUTL outlier sparse corrections, pre-resolved against the decoded bulk:
+    /// `(row, col, resid)` where `resid = outlier_val − decode(bulk_unrotated)[idx]`
+    /// in f32 weight units. The served weight is the bulk bitslice GEMV plus
+    /// `y[row] += resid * x_raw[col]` (the un-rotated activation), mirroring
+    /// `outlier_mac::matvec_rht`. Empty when the tensor has no OUTL section.
+    pub outliers: Vec<OutlierEntry>,
     /// Informational effective bits-per-weight for this tensor.
     pub bpw: f32,
+}
+
+/// Host mirror of the MSL `OutlierEntry` (`shaders/strand_bitslice.metal`):
+/// `#[repr(C)]` `{ row:u32, col:u32, resid:f32 }` = 12 bytes, 4-aligned. The
+/// sparse outlier correction `y[row] += resid * x_raw[col]`.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct OutlierEntry {
+    pub row: u32,
+    pub col: u32,
+    pub resid: f32,
 }
 
 impl TqPreparedGpu {
@@ -376,6 +393,16 @@ impl TqPreparedGpu {
         // EncodedTensor::payload_bpw but doesn't require accessing that method).
         let bpw = cfg.k_bits as f32 / cfg.vec_dim() as f32;
 
+        // Step 6: pre-resolve OUTL outlier corrections against the decoded bulk.
+        // The served weight is the bulk bitslice GEMV plus a sparse correction
+        // `y[row] += resid * x_raw[col]` with `resid = outlier_val −
+        // decode(bulk_unrotated)[idx]` — exactly `outlier_mac::matvec_rht`'s
+        // residual loop (and the `StrandTensor::matvec` un-rotated overwrite,
+        // re-expressed as base + sparse term). For `RhtMode::None` the raw decode
+        // is already un-rotated; for `Cols`/`Rows` it must be inverse-rotated once
+        // to recover the bulk in the domain the outlier value is defined in.
+        let outliers = build_outlier_entries(st);
+
         Ok(TqPreparedGpu {
             payload,
             entries,
@@ -386,9 +413,51 @@ impl TqPreparedGpu {
             cols: st.in_features,
             rht_mode,
             rht_seed: st.rht_seed,
+            outliers,
             bpw,
         })
     }
+}
+
+/// Resolve a `StrandTensor`'s OUTL section into `(row, col, resid)` sparse
+/// corrections in the un-rotated weight domain — the GPU twin of the
+/// `StrandTensor::matvec` outlier overwrite, re-expressed as a sparse ADD on top
+/// of the bulk GEMV (`y[row] += resid * x_raw[col]`). `resid = outlier_val −
+/// decode(bulk_unrotated)[idx]`; the outlier value is the Q12-quantised stored
+/// value (`q12_value * inv`), matching `StrandTensor::matvec`'s `v as f32 * inv`
+/// (NOT the raw OUTL float — keeps the determinism moat on the Q12 grid).
+#[cfg(feature = "tq")]
+fn build_outlier_entries(st: &crate::tq::StrandTensor) -> Vec<OutlierEntry> {
+    if st.outliers.is_empty() {
+        return Vec::new();
+    }
+    let inv = crate::tq::q12_to_f32();
+    let in_features = st.in_features;
+    // Bulk weights in the UN-rotated domain (the domain outliers are defined in).
+    let mut bulk: Vec<f32> = st.decode_q12_raw().iter().map(|&q| q as f32 * inv).collect();
+    match st.rht_mode {
+        crate::tq::RhtMode::None => {}
+        crate::tq::RhtMode::Cols => {
+            let rcfg = strand_quant::rht::RhtConfig::from_seed(st.rht_seed);
+            strand_quant::rht::rht_inverse_cols_inplace(&mut bulk, &rcfg, in_features);
+        }
+        crate::tq::RhtMode::Rows => {
+            let rcfg = strand_quant::rht::RhtConfig::from_seed(st.rht_seed);
+            strand_quant::rht::rht_inverse_rows_inplace(&mut bulk, &rcfg, in_features);
+        }
+    }
+    st.outliers
+        .iter()
+        .filter_map(|&(idx, q12_val)| {
+            if idx >= bulk.len() {
+                return None;
+            }
+            let row = (idx / in_features) as u32;
+            let col = (idx % in_features) as u32;
+            let resid = q12_val as f32 * inv - bulk[idx];
+            Some(OutlierEntry { row, col, resid })
+        })
+        .collect()
 }
 
 /// GPU-resident pre-uploaded buffers and dispatch constants for one STRAND
@@ -413,6 +482,22 @@ pub struct TqGpuReady {
     pub shmem_bytes: u64,
     pub n_tg_partials: u32,
     pub n_tg_reduce: u32,
+    /// RHT serving mode (0 None / 1 Rows / 2 Cols). When `Cols`, the GEMV runs
+    /// `strand_rht_forward_cols` over the input activation first (`x → rht_x_buf`)
+    /// and the partials pass reads `rht_x_buf` instead of the raw `x`.
+    pub rht_mode: u32,
+    /// Per-tensor RHT seed (meaningful when `rht_mode != 0`).
+    pub rht_seed: u64,
+    /// Scratch for the RHT-transformed activation (cols × f32). `Some` only when
+    /// `rht_mode == 2` (Cols), the cheap-serving path the bitslice GEMV supports.
+    pub rht_x_buf: Option<crate::metal::PinnedBuffer>,
+    /// `cols / 256` — number of 256-wide Hadamard blocks the RHT kernel dispatches
+    /// (one thread per block). Only meaningful with `rht_x_buf`.
+    pub rht_n_blocks: u32,
+    /// OUTL sparse-correction entries (`OutlierEntry`), uploaded to GPU. Empty
+    /// buffer + `n_outl == 0` when the tensor has no outliers.
+    pub outl_buf: crate::metal::PinnedBuffer,
+    pub n_outl: u32,
 }
 
 #[cfg(target_os = "macos")]
@@ -450,6 +535,50 @@ impl TqPreparedGpu {
         let n_tg_reduce = rows.div_ceil(TG).max(1);
         let partials_buf = ctx.new_buffer(n_blocks as usize * std::mem::size_of::<f32>());
 
+        // RHT-cols activation transform scratch. The GPU `strand_rht_forward_cols`
+        // kernel is hardcoded to the 256-wide Hadamard block, which is bit-exact to
+        // the CPU `rht_forward_cols_inplace` ONLY when `in_features % 256 == 0`
+        // (the deploy invariant: `h == pow2_block_for(in_features,256) == 256`, no
+        // sub-256 tail block). For `Cols` with an unaligned `in_features` (e.g. the
+        // 0.5B's 896) the GPU transform would diverge, so we refuse to enable the
+        // GPU RHT path and error — the caller must serve such a tensor on CPU or
+        // re-bake `--no-rht`. None/Rows need no activation scratch here.
+        let (rht_x_buf, rht_n_blocks) = if self.rht_mode == 2 {
+            if cols % 256 != 0 {
+                return Err(crate::Error::Unimplemented(
+                    "TQ GPU RhtMode::Cols requires in_features % 256 == 0 (GPU FWHT is 256-wide); re-bake --no-rht or serve on CPU",
+                ));
+            }
+            (
+                Some(ctx.new_buffer(cols as usize * std::mem::size_of::<f32>())),
+                cols / 256,
+            )
+        } else if self.rht_mode == 1 {
+            // Per-row RHT (the ~1 tok/s wall) is not served on GPU; no baked
+            // artifact uses it and the bitslice path targets Cols. Refuse loudly.
+            return Err(crate::Error::Unimplemented(
+                "TQ GPU RhtMode::Rows is not served on the GPU bitslice path (eval-only on CPU)",
+            ));
+        } else {
+            (None, 0)
+        };
+
+        // OUTL sparse-correction entries → GPU buffer (empty-but-valid when none).
+        let outl_buf = if self.outliers.is_empty() {
+            // A 1-entry placeholder so the buffer is never zero-length (Metal
+            // dislikes 0-byte buffers); n_outl == 0 means the kernel is skipped.
+            ctx.new_buffer(std::mem::size_of::<OutlierEntry>())
+        } else {
+            let bytes: &[u8] = unsafe {
+                std::slice::from_raw_parts(
+                    self.outliers.as_ptr() as *const u8,
+                    std::mem::size_of_val(self.outliers.as_slice()),
+                )
+            };
+            ctx.new_buffer_with_bytes(bytes)
+        };
+        let n_outl = self.outliers.len() as u32;
+
         Ok(TqGpuReady {
             tbl_buf,
             lut_buf,
@@ -464,6 +593,12 @@ impl TqPreparedGpu {
             shmem_bytes,
             n_tg_partials,
             n_tg_reduce,
+            rht_mode: self.rht_mode,
+            rht_seed: self.rht_seed,
+            rht_x_buf,
+            rht_n_blocks,
+            outl_buf,
+            n_outl,
         })
     }
 }

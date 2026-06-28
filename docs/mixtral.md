@@ -1,6 +1,6 @@
 # Mixtral 8×7B support
 
-dismantle supports running Mixtral 8×7B GGUF models on Apple Silicon. The
+hawking supports running Mixtral 8×7B GGUF models on Apple Silicon. The
 **Q3_K_M** quantization is the recommended target for 18 GB Macs because the
 on-disk model (~16 GB) fits with enough headroom for the KV cache and
 activations.
@@ -39,7 +39,7 @@ Or download manually to `models/mixtral-8x7b-instruct-v0.1.Q3_K_M.gguf`.
 ## Run
 
 ```sh
-./target/release/dismantle generate \
+./target/release/hawking generate \
     --weights models/mixtral-8x7b-instruct-v0.1.Q3_K_M.gguf \
     --max-routed-expert-ram-mb 14000 \
     --prompt "Once upon a time" \
@@ -50,7 +50,7 @@ The `--max-routed-expert-ram-mb` flag caps expert weight residency. On
 18 GB Macs, 14000 leaves ~4 GB for everything else (activations,
 KV cache, OS overhead). On larger Macs you can raise or omit this flag.
 
-## What dismantle does for Mixtral specifically
+## What hawking does for Mixtral specifically
 
 - **Architecture detection** — auto-recognizes Mixtral's standard
   MHA + GQA + RoPE structure (32 layers, hidden=4096, intermediate=14336,

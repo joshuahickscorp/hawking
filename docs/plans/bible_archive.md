@@ -10,7 +10,7 @@
 
 ---
 
-# `dismantle` — The Throughput Bible
+# `hawking` — The Throughput Bible
 
 *The single consolidated reference for pushing single-stream Qwen2.5-3B decode on M3 Pro to its limit. Everything viable is in here, tiered by axis, with a mechanism, a realistic ceiling, a confidence, a run-before-you-build oracle, a dependency, and whether it runs on Colab (offline) or locally on the M3. This is a map of the whole territory — not a claim that we do it all at once. The critical path at the end says what to do in what order. Maximal scope; the physics ceilings still bind, and we exploit them rather than wish them away.*
 
@@ -30,7 +30,7 @@
 | Q4_K v4_predec (pre-decoded sub-block scale table) | +39.8% paired, bit-identical | `8a67a63` (infra), `c325068` (wire), `6f0209e` (default-on) | the single biggest decode lever; kills ~332K decode-ops/token |
 | path-to-50 predec: 2r default-on + fused gate+up + ffn_down→predec | +32.5% decode, bit-identical | `d2343cc` | 2-row ILP default |
 | Q4K_FAST sidecar (160B sub-block-contiguous layout) | +28.1% paired | `4fc7e59` (infra), `2ff8198` (wire) | mutually exclusive with predec (predec wins) |
-| f16-scales predec (FFN gate+up pair) | +6–9% decode, opt-in | `7d614f8`, `0899137` | A6.5 — the lone bandwidth win of the overnight kernel track; `DISMANTLE_QWEN_PREDEC_F16SCALES` |
+| f16-scales predec (FFN gate+up pair) | +6–9% decode, opt-in | `7d614f8`, `0899137` | A6.5 — the lone bandwidth win of the overnight kernel track; `HAWKING_QWEN_PREDEC_F16SCALES` |
 | pruned-Q4_K LM head through predec GEMV | +2.0%, bit-identical | `0e6eb14` | route the pruned head through predec |
 | in-RAM prefix cache (exact KV reuse) | ~84% prefill cut; default-on | `ebfc57a` (opt-in), `9e03270` / `fc93ea0` (default-on + LRU + disk-tier) | the moat leg (§8 L1.2) |
 | batched Q4_K predec GEMM (spec verify) | verify-perf | `6be1057`, `e25c033` | amortizes scale-decode compute across K positions |
@@ -261,7 +261,7 @@ Every Apple-Silicon claim this section relies on, with its status:
 
 ## §8 — The System-Level Shift
 
-*A standalone strategic + engineering plan, companion to the Throughput Bible (`plans/throughput_bible_2026_05_30.md`) and the roadmap. The bible answers "how fast can the kernels go on this hardware" (physics ceiling: ~50 dense parity, ~100–125 with everything stacked). This plan answers a different question: "what is dismantle, as a system, that the incumbents structurally cannot be." Same discipline as the bible — every lever has a mechanism, an offline oracle to run before any kernel, an Apple-GPU/M3 feasibility verdict, an exact-vs-quality-trade label, a confidence tag, and an honest energy verdict. The dreaming stays defensible.*
+*A standalone strategic + engineering plan, companion to the Throughput Bible (`plans/throughput_bible_2026_05_30.md`) and the roadmap. The bible answers "how fast can the kernels go on this hardware" (physics ceiling: ~50 dense parity, ~100–125 with everything stacked). This plan answers a different question: "what is hawking, as a system, that the incumbents structurally cannot be." Same discipline as the bible — every lever has a mechanism, an offline oracle to run before any kernel, an Apple-GPU/M3 feasibility verdict, an exact-vs-quality-trade label, a confidence tag, and an honest energy verdict. The dreaming stays defensible.*
 
 ---
 
@@ -274,11 +274,11 @@ Every incumbent inference engine — llama.cpp, MLX, vLLM, Ollama — is built t
 
 These three properties are not laziness; they are *requirements* of being a general-purpose engine. And every one of them leaves performance on the table.
 
-**dismantle's shift is to refuse all three.** It runs on **one machine, for one user, on an observable workload, with persistent state, and a model that molds to that user.** Every lever in this plan is downstream of that refusal. This is the system-level move; the individual techniques are how it cashes out. The incumbents cannot copy the core of it, because copying it would mean abandoning the generality that is their entire value proposition.
+**hawking's shift is to refuse all three.** It runs on **one machine, for one user, on an observable workload, with persistent state, and a model that molds to that user.** Every lever in this plan is downstream of that refusal. This is the system-level move; the individual techniques are how it cashes out. The incumbents cannot copy the core of it, because copying it would mean abandoning the generality that is their entire value proposition.
 
 **Why this is the right bet (the honest version).** The bible already proved you cannot win on raw tps — MLX is Apple's own and beats you, llama.cpp is free and years-tuned, and the physical ceiling is parity, not dominance. "Faster" is a treadmill. But the *adaptive/stateful/specialized* dimension is empty: no shipping local engine treats the model as alive. You reach "all" not by winning two races you can't win (kernels vs MLX, coverage vs llama.cpp), but by being **fast enough** (parity, which the tps lane delivers) and then **owning the entire dimension everyone else abandoned by design.** To a user, an engine that runs near-MLX speed, handles enormous context, reuses repeated computation, sips power, and quietly molds to their patterns privately — that reads as "all," and it is a *defended position*, not a treadmill.
 
-**The brain frame, kept honest.** The reason a brain runs on ~20W and a GPU doesn't is that the brain has no bus: memory and compute are co-located, so it never pays the von Neumann tax that *is* dismantle's measured bottleneck (decode is bandwidth-bound = paying the bus tax the brain avoids). That is a beautiful diagnosis. But the brain's *solution* — co-located analog compute, spiking sparsity, no clock — is **hardware**, owned by the neuromorphic/in-memory-compute industry, not buildable in software on a fixed M3. So this plan does **not** claim a brain-grade hardware paradigm shift. It claims the two things the brain frame legitimately motivates and that you *can* build: exploit the brain's *software-transferable* principles (sparsity, predict-only-the-surprise, statefulness), and own **energy-per-token** as a measured, branded axis nobody else competes on.
+**The brain frame, kept honest.** The reason a brain runs on ~20W and a GPU doesn't is that the brain has no bus: memory and compute are co-located, so it never pays the von Neumann tax that *is* hawking's measured bottleneck (decode is bandwidth-bound = paying the bus tax the brain avoids). That is a beautiful diagnosis. But the brain's *solution* — co-located analog compute, spiking sparsity, no clock — is **hardware**, owned by the neuromorphic/in-memory-compute industry, not buildable in software on a fixed M3. So this plan does **not** claim a brain-grade hardware paradigm shift. It claims the two things the brain frame legitimately motivates and that you *can* build: exploit the brain's *software-transferable* principles (sparsity, predict-only-the-surprise, statefulness), and own **energy-per-token** as a measured, branded axis nobody else competes on.
 
 **The energy caveat, stated once and applied throughout.** On a fixed M3, decode is bandwidth-bound, and the GPU draws roughly similar power whether it is computing or stalling on memory. So "use less energy → fit more in the same envelope" only holds where you are **compute-throttled or thermally-throttled**, not across the board. Energy efficiency is a real, underexploited dimension to *own and market*, but the "more fits in the same power" lever is narrower than it feels. Each lever below carries an explicit **Energy verdict**: GENUINE (draws less power / does less work), NEUTRAL (helps speed, not power), or THERMAL (helps only by reducing sustained-throttle).
 
@@ -329,7 +329,7 @@ Notation per lever: **Mechanism** · **Benefit to the project** · **Exact?** (E
 - **Confidence:** M. **Where:** Colab → M3.
 
 ##### L1.5 — Learned per-model codebook
-- **Mechanism:** llama.cpp uses a universal quant grid for every model on earth. dismantle fits a codebook (k-means / lattice) to *this specific model's* weight distribution, offline, once.
+- **Mechanism:** llama.cpp uses a universal quant grid for every model on earth. hawking fits a codebook (k-means / lattice) to *this specific model's* weight distribution, offline, once.
 - **Benefit:** more quality per bit than a one-size-fits-all grid — a specialization general engines cannot afford per-model.
 - **Exact?** Q (lossy; better quality-per-bit than fixed-grid at the same bits).
 - **Oracle:** fit the codebook on Qwen's weights; measure KL/perplexity vs Q4_K_M at matched bits. Proceed only if the per-model grid beats the universal grid by a margin worth a custom decode path.
@@ -435,11 +435,11 @@ Notation per lever: **Mechanism** · **Benefit to the project** · **Exact?** (E
 #### Layer 5 — The boundary dissolves (co-design)
 
 ##### L5.1 — Heal the model into the engine
-- **Mechanism:** stop treating the model as fixed input. Fine-tune on Colab into a shape that is simultaneously **accurate and ideal for dismantle's kernels**: GPU-mappable structured sparsity (so L2.2 finally works), fusion-friendly layer structure, a residual stream fine-tuned to tolerate low precision (the f16-residual-error finding is the signal that there is headroom here), and a layer structure amenable to cross-layer delta (L1.3) or low-rank (L1.4).
+- **Mechanism:** stop treating the model as fixed input. Fine-tune on Colab into a shape that is simultaneously **accurate and ideal for hawking's kernels**: GPU-mappable structured sparsity (so L2.2 finally works), fusion-friendly layer structure, a residual stream fine-tuned to tolerate low precision (the f16-residual-error finding is the signal that there is headroom here), and a layer structure amenable to cross-layer delta (L1.3) or low-rank (L1.4).
 - **Benefit:** the most literal "moldable foundation" — model and engine stop being separate artifacts. The wins from L1.3–L1.5 and L2.1–L2.2 get **baked in** (trained-for) rather than bolted-on (extracted post-hoc), which is the difference between a lever that "could come back small on Qwen" and one you *engineered* to be large.
 - **Exact?** Q (a different, healed model — validated to match or beat the base on real tasks).
 - **Oracle:** this is the unifier, so its oracle is downstream — once L1.3/L1.4/L2.2 oracles report what structure *would* help, a small healing fine-tune tests whether the model can be pushed into that structure without quality loss (eval on real tasks, not perplexity).
-- **Apple-GPU/M3 feasibility:** healing runs on Colab; the *result* is a model file dismantle serves. No new runtime constraint.
+- **Apple-GPU/M3 feasibility:** healing runs on Colab; the *result* is a model file hawking serves. No new runtime constraint.
 - **Energy verdict:** GENUINE downstream (it makes the do-less levers land), via the levers it unlocks.
 - **Confidence:** M (the mechanism is sound; it is the long-horizon unifier, highest-effort).
 - **Where:** Colab (heal) → M3 (serve).
@@ -509,7 +509,7 @@ The expected shape on a well-trained *stock* model: most post-hoc structural lev
 
 ### 8.4 — The honest bottom line
 
-The System-Level Shift is real, and it is the right bet — not because it is a paradigm shift for inference engines writ large (the brain-grade version of that is hardware you don't build), but because the **stateful/adaptive/specialized dimension is empty**, and owning it is a defended product position that the general engines gave up by design. dismantle reaches "all" by being **fast enough** (the tps lane → parity) and then being the **only local engine that treats the model as alive** — managing context as a working set, reusing computation across a session, molding to its user privately, doing less work like a brain, and sipping power as a measured, branded virtue. Keep the engine; reframe what it is *for*. Every lever above earns its place by an oracle, not by enthusiasm — and the strong ones (caching, KV working-set, on-device personalization, speculation) are strong enough that they don't need the hype.
+The System-Level Shift is real, and it is the right bet — not because it is a paradigm shift for inference engines writ large (the brain-grade version of that is hardware you don't build), but because the **stateful/adaptive/specialized dimension is empty**, and owning it is a defended product position that the general engines gave up by design. hawking reaches "all" by being **fast enough** (the tps lane → parity) and then being the **only local engine that treats the model as alive** — managing context as a working set, reusing computation across a session, molding to its user privately, doing less work like a brain, and sipping power as a measured, branded virtue. Keep the engine; reframe what it is *for*. Every lever above earns its place by an oracle, not by enthusiasm — and the strong ones (caching, KV working-set, on-device personalization, speculation) are strong enough that they don't need the hype.
 
 *Companion docs: `plans/throughput_bible_2026_05_30.md` (the physics + kernel ceiling, incl. §7 the physical floor), `plans/roadmap_2026_05_30.md` (in-flight). This plan is the systems + product axis orthogonal to raw tps.*
 

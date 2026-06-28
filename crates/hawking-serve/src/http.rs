@@ -423,10 +423,32 @@ fn sse_response(
 
     // Admit the request under a short lock (tokenize + slot assignment only).
     // The engine lock is held only for the encoding step, not for generation.
-    let slot_id_opt = {
+    let admit_outcome = {
         let engine = state.engine.lock();
         let mut driver = state.driver.lock();
-        driver.admit(&**engine, req.clone()).ok().flatten()
+        driver.admit(&**engine, req.clone())
+    };
+    // Distinguish a real admit decision from an engine that cannot serve this
+    // request at all. `Ok(Some)` = admitted; `Ok(None)` = no free slot (→ queue);
+    // `Err` (e.g. the engine lacks `encode_prompt_for_batch`, or tokenization
+    // failed) must NOT silently enter the wait-queue forever — return a clear
+    // SSE error instead (mirrors the slot-exhausted error path below). This is
+    // what made the RWKV admission gap present as a 180s hang.
+    let slot_id_opt = match admit_outcome {
+        Ok(slot) => slot,
+        Err(e) => {
+            let sse_tx2 = sse_tx.clone();
+            let msg = format!("engine cannot serve this request: {e}");
+            tokio::spawn(async move {
+                let body = serde_json::json!({
+                    "error": {"message": msg, "type": "server_error", "code": "admit_unsupported"}
+                });
+                let _ = sse_tx2
+                    .send(Ok(Event::default().data(body.to_string())))
+                    .await;
+            });
+            return Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default());
+        }
     };
 
     if let Some(slot_id) = slot_id_opt {
@@ -706,12 +728,12 @@ fn token_id_sse_response(
                         break;
                     }
                 }
-                Err(()) => {
-                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
-                    break;
-                }
+                Err(()) => break,
             }
         }
+        // Emit [DONE] on ANY stream end (EOS signal, max_tokens channel-close, or
+        // client disconnect) so OpenAI-style clients always see a clean terminator.
+        let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
@@ -801,24 +823,27 @@ fn hawking_generate_sse(
                         break;
                     }
                 }
-                Err(()) => {
-                    let decode_ms = start.elapsed().as_secs_f64() * 1000.0;
-                    let stats = hawking_generate_stats_json(
-                        prompt_tokens,
-                        completion_tokens,
-                        decode_ms,
-                        token_only_snapshot,
-                        lm_head,
-                    );
-                    let final_obj = serde_json::json!({ "stats": stats });
-                    let _ = sse_tx
-                        .send(Ok(Event::default().data(final_obj.to_string())))
-                        .await;
-                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
-                    break;
-                }
+                Err(()) => break,
             }
         }
+        // Always emit the final stats + [DONE] when the stream ends — whether by
+        // EOS (the Err(()) signal), max_tokens (the slot is released and the
+        // channel closes), or client disconnect — so the native SSE terminates
+        // cleanly. Previously stats/[DONE] fired only on the EOS signal, so a
+        // max_tokens-bounded request ended without them.
+        let decode_ms = start.elapsed().as_secs_f64() * 1000.0;
+        let stats = hawking_generate_stats_json(
+            prompt_tokens,
+            completion_tokens,
+            decode_ms,
+            token_only_snapshot,
+            lm_head,
+        );
+        let final_obj = serde_json::json!({ "stats": stats });
+        let _ = sse_tx
+            .send(Ok(Event::default().data(final_obj.to_string())))
+            .await;
+        let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())

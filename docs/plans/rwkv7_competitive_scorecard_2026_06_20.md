@@ -1,5 +1,5 @@
 # RWKV-7 Competitive Scorecard
-**Date:** 2026-06-20 14:54 UTC
+**Date:** 2026-06-20 20:54 UTC
 
 ## Verdict Gates
 
@@ -36,7 +36,7 @@
 
 ## llama.cpp Head-to-Head
 
-- Log: `/Users/scammermike/Downloads/dismantle/artifacts/lowbit_rwkv7/v2_expansion/llama_qwen_head_to_head.log`
+- Log: `/Users/scammermike/Downloads/hawking/artifacts/lowbit_rwkv7/v2_expansion/llama_qwen_head_to_head.log`
 - Single-stream dismantle: pending tok/s
 - Single-stream llama.cpp: pending tok/s
 - Ratio: pendingx
@@ -44,7 +44,7 @@
 ## Low-Bit Quant
 
 - Artifact count: 0
-- Latest v2 report: `/Users/scammermike/Downloads/dismantle/docs/plans/g1a_v2_expansion_results_2026_06_20.md`
+- Latest v2 report: `/Users/scammermike/Downloads/hawking/docs/plans/g1a_v2_expansion_results_2026_06_20.md`
 - TQ loader pass: False
 - TQ bench pass: False
 

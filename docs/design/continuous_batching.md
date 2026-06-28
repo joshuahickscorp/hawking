@@ -1,4 +1,4 @@
-# Continuous Request Batching for `dismantle serve`
+# Continuous Request Batching for `hawking serve`
 
 Author: Joshua Hicks <joshuahicksboba@gmail.com>
 Status: design / not implemented
@@ -8,29 +8,29 @@ Anchor commits: `68c0ece` (batched MHA decode), `4e73195` (per-op consolidation)
 
 The kernel-side groundwork for amortizing Q4_K weight reads across a
 B-dimension is already on `main` and shipping behind
-`DISMANTLE_QWEN_BATCH_PREFILL=1`. The `dismantle-serve` crate already
+`HAWKING_QWEN_BATCH_PREFILL=1`. The `hawking-serve` crate already
 has a `Slot` / `Scheduler` / `BatchDriver` skeleton
-(`crates/dismantle-serve/src/batch/{mod,scheduler,driver}.rs`) sketched
+(`crates/hawking-serve/src/batch/{mod,scheduler,driver}.rs`) sketched
 against an `Engine::forward_tokens_batched(tokens, positions)` trait
 method that currently falls back to a sequential per-token loop. The
 gap between today and a real vLLM-style continuous batcher is:
 
 1. A per-request KV cache (the current `KvCache` at
-   `crates/dismantle-core/src/cache/mod.rs:22` is a single contiguous
+   `crates/hawking-core/src/cache/mod.rs:22` is a single contiguous
    buffer with one `seq_len` cursor shared across the engine).
 2. A batched decode kernel that accepts an **arbitrary** per-batch
    position vector rather than the current contiguous
    `[p0..p0+B)` constraint hard-coded into
    `forward_tokens_batch_tcb`
-   (`crates/dismantle-core/src/model/qwen_dense.rs:1571` on `main`)
+   (`crates/hawking-core/src/model/qwen_dense.rs:1571` on `main`)
    and `mha_decode_f32_batched`
-   (`crates/dismantle-core/shaders/mha.metal:137` on `main`).
+   (`crates/hawking-core/shaders/mha.metal:137` on `main`).
 3. An HTTP-side request queue that maps inbound SSE / JSON requests
    onto slots and drives the engine in a step loop rather than
    one-shot per request.
 
 Recommended path: **(α) decode-only batching first**, gated behind
-`DISMANTLE_CB_ALPHA=1` and `--continuous-batching` on the CLI, then
+`HAWKING_CB_ALPHA=1` and `--continuous-batching` on the CLI, then
 **(β) prefill+decode interleaving** when there is enough demand to
 justify the per-request KV refactor.
 
@@ -42,18 +42,18 @@ justify the per-request KV refactor.
 
 | File | Lines | Role |
 |---|---|---|
-| `crates/dismantle/src/main.rs` | 20-42, 246-265 | CLI surface for `dismantle serve` |
-| `crates/dismantle-serve/src/lib.rs` | 14-62 | Engine load + axum wire-up |
-| `crates/dismantle-serve/src/http/mod.rs` | 25-39, 117-247 | Routes + per-request blocking task |
-| `crates/dismantle-serve/src/batch/mod.rs` | 13-139 | `Slot` + `SlotState` + `DecodeStep` |
-| `crates/dismantle-serve/src/batch/scheduler.rs` | 14-146 | Slot manager (admit, decode_batch, apply_decode_logits) |
-| `crates/dismantle-serve/src/batch/driver.rs` | 20-58 | `BatchDriver::decode_ready_once` → `Engine::forward_tokens_batched` |
-| `crates/dismantle-core/src/engine.rs` | 168-261 | `trait Engine` (CB seam: `encode_prompt_for_batch`, `forward_tokens_batched`, `eos_id_for_batch`) |
-| `crates/dismantle-core/src/cache/mod.rs` | 22-84 | Single-request `KvCache` |
-| `crates/dismantle-core/src/model/qwen_dense.rs` | 290-386 (main: 683-849) | `QwenDense::generate` |
-| `crates/dismantle-core/src/model/qwen_dense.rs` (main) | 1571-1962 | `forward_tokens_batch_tcb` (batched prefill, contiguous positions) |
-| `crates/dismantle-core/src/metal/dense_decode_arena.rs` (main) | 8-141 | GPU-resident scratch + `k_cache_buf` / `v_cache_buf` |
-| `crates/dismantle-core/shaders/mha.metal` (main) | 125-220 | `mha_decode_f32_batched` |
+| `crates/hawking/src/main.rs` | 20-42, 246-265 | CLI surface for `hawking serve` |
+| `crates/hawking-serve/src/lib.rs` | 14-62 | Engine load + axum wire-up |
+| `crates/hawking-serve/src/http/mod.rs` | 25-39, 117-247 | Routes + per-request blocking task |
+| `crates/hawking-serve/src/batch/mod.rs` | 13-139 | `Slot` + `SlotState` + `DecodeStep` |
+| `crates/hawking-serve/src/batch/scheduler.rs` | 14-146 | Slot manager (admit, decode_batch, apply_decode_logits) |
+| `crates/hawking-serve/src/batch/driver.rs` | 20-58 | `BatchDriver::decode_ready_once` → `Engine::forward_tokens_batched` |
+| `crates/hawking-core/src/engine.rs` | 168-261 | `trait Engine` (CB seam: `encode_prompt_for_batch`, `forward_tokens_batched`, `eos_id_for_batch`) |
+| `crates/hawking-core/src/cache/mod.rs` | 22-84 | Single-request `KvCache` |
+| `crates/hawking-core/src/model/qwen_dense.rs` | 290-386 (main: 683-849) | `QwenDense::generate` |
+| `crates/hawking-core/src/model/qwen_dense.rs` (main) | 1571-1962 | `forward_tokens_batch_tcb` (batched prefill, contiguous positions) |
+| `crates/hawking-core/src/metal/dense_decode_arena.rs` (main) | 8-141 | GPU-resident scratch + `k_cache_buf` / `v_cache_buf` |
+| `crates/hawking-core/shaders/mha.metal` (main) | 125-220 | `mha_decode_f32_batched` |
 
 ### 1.2 What happens today for one request
 
@@ -82,7 +82,7 @@ flow is:
         │   kv.reset()  ← clears shared cache       │
         │                                           │
         │   PREFILL (one of two modes):             │
-        │     a) DISMANTLE_QWEN_BATCH_PREFILL=1     │
+        │     a) HAWKING_QWEN_BATCH_PREFILL=1     │
         │        for i in 0..prompt_len step 8:     │
         │          forward_tokens_batch_tcb(...)    │
         │     b) sequential                          │
@@ -147,7 +147,7 @@ Two structural facts that matter for continuous batching:
    per-element seq_len in `mha.metal:154`. Two requests at different
    absolute decode positions cannot share one batched forward today.
 
-### 1.3 What `dismantle-serve` already has for CB
+### 1.3 What `hawking-serve` already has for CB
 
 The `batch` submodule is shaped correctly but inert. From
 `scheduler.rs:14-146`:
@@ -361,17 +361,17 @@ window.
 
 | File | Change | LOC delta |
 |---|---|---|
-| `crates/dismantle-core/src/cache/mod.rs` | Add `MultiSlotKvCache` (N × current shape, one shared `PinnedBuffer`) | +120 |
-| `crates/dismantle-core/src/metal/dense_decode_arena.rs` | Size `k_cache_buf` / `v_cache_buf` by `N_slots`; add `slot_byte_offset(slot, layer)` | +40 |
-| `crates/dismantle-core/shaders/mha.metal` | New `mha_decode_f32_batched_cb` kernel (per-elem slot+position vectors) | +90 |
-| `crates/dismantle-core/src/kernels/mod.rs` | Wrapper for new kernel | +60 |
-| `crates/dismantle-core/src/model/qwen_dense.rs` | New `forward_step_cb(slots: &[CbDecodeSlot])` method (decode-only variant of `forward_tokens_batch_tcb`); reuses every other dispatch unchanged | +260 |
-| `crates/dismantle-core/src/engine.rs` | Trait method `forward_step_cb` with default returning `Unimplemented` | +20 |
-| `crates/dismantle-serve/src/batch/scheduler.rs` | Switch admission to per-slot-KV; track `Queued` state | +80 |
-| `crates/dismantle-serve/src/batch/driver.rs` | Replace `forward_tokens_batched` call with `forward_step_cb` | +60 |
-| `crates/dismantle-serve/src/http/mod.rs` | New `cb_handler` task that owns the engine and drives `decode_ready_once` in a loop; per-request channel for streaming | +180 |
-| `crates/dismantle/src/main.rs` | `--continuous-batching` flag, `--max-concurrent-requests N` flag | +25 |
-| `crates/dismantle-core/tests/cb_alpha_decode_parity.rs` | N=1 CB output ≡ single-request output bit-identical; N=2 CB output for each slot ≡ what that slot would have produced run alone | +220 |
+| `crates/hawking-core/src/cache/mod.rs` | Add `MultiSlotKvCache` (N × current shape, one shared `PinnedBuffer`) | +120 |
+| `crates/hawking-core/src/metal/dense_decode_arena.rs` | Size `k_cache_buf` / `v_cache_buf` by `N_slots`; add `slot_byte_offset(slot, layer)` | +40 |
+| `crates/hawking-core/shaders/mha.metal` | New `mha_decode_f32_batched_cb` kernel (per-elem slot+position vectors) | +90 |
+| `crates/hawking-core/src/kernels/mod.rs` | Wrapper for new kernel | +60 |
+| `crates/hawking-core/src/model/qwen_dense.rs` | New `forward_step_cb(slots: &[CbDecodeSlot])` method (decode-only variant of `forward_tokens_batch_tcb`); reuses every other dispatch unchanged | +260 |
+| `crates/hawking-core/src/engine.rs` | Trait method `forward_step_cb` with default returning `Unimplemented` | +20 |
+| `crates/hawking-serve/src/batch/scheduler.rs` | Switch admission to per-slot-KV; track `Queued` state | +80 |
+| `crates/hawking-serve/src/batch/driver.rs` | Replace `forward_tokens_batched` call with `forward_step_cb` | +60 |
+| `crates/hawking-serve/src/http/mod.rs` | New `cb_handler` task that owns the engine and drives `decode_ready_once` in a loop; per-request channel for streaming | +180 |
+| `crates/hawking/src/main.rs` | `--continuous-batching` flag, `--max-concurrent-requests N` flag | +25 |
+| `crates/hawking-core/tests/cb_alpha_decode_parity.rs` | N=1 CB output ≡ single-request output bit-identical; N=2 CB output for each slot ≡ what that slot would have produced run alone | +220 |
 
 **Total: ~1,155 LOC** new, ~50 LOC modified. Mostly mechanical
 shader + wrapper + arena resize; the qwen_dense forward step is a
@@ -391,7 +391,7 @@ MHA dispatches.
   the current bit-identical greedy test.
 - Slot-cache slicing means `qwen_dense.kv` (CPU mirror, line 270
   here) goes away from the CB path. Hybrid prefill (CPU) → CB decode
-  is not supported in α; CB requires `DISMANTLE_QWEN_TCB=1` end-to-end.
+  is not supported in α; CB requires `HAWKING_QWEN_TCB=1` end-to-end.
 
 **Parity gates:**
 1. `cb_alpha_decode_parity::n1_eq_singleton` — `forward_step_cb`
@@ -425,12 +425,12 @@ decode tokens of older requests, subject to a token budget
 
 | File | Change | LOC delta |
 |---|---|---|
-| `crates/dismantle-serve/src/batch/scheduler.rs` | Chunked prefill admission; `pack_step(token_budget)` returns the optimal mix of prefill chunks + decode tokens | +200 |
-| `crates/dismantle-serve/src/batch/driver.rs` | Split returned logits: prefill chunks emit no token; decode rows emit one token each | +90 |
-| `crates/dismantle-core/src/model/qwen_dense.rs` | Generalize `forward_step_cb` to accept variable-length per-slot inputs; KV scatter writes (slot_id, position) tuples | +180 |
-| `crates/dismantle-core/shaders/mha.metal` | Verify the CB kernel scales to higher B (the existing v3w kernel was tuned for B≤8; β may want B≤16 or 32) | +40 |
-| `crates/dismantle-core/src/metal/dense_decode_arena.rs` | Variable-B sizing (param `max_step_tokens`) | +30 |
-| `crates/dismantle-serve/src/batch/cb_loop.rs` (new) | Top-level event loop: pull from request queue, pack step, dispatch, emit | +220 |
+| `crates/hawking-serve/src/batch/scheduler.rs` | Chunked prefill admission; `pack_step(token_budget)` returns the optimal mix of prefill chunks + decode tokens | +200 |
+| `crates/hawking-serve/src/batch/driver.rs` | Split returned logits: prefill chunks emit no token; decode rows emit one token each | +90 |
+| `crates/hawking-core/src/model/qwen_dense.rs` | Generalize `forward_step_cb` to accept variable-length per-slot inputs; KV scatter writes (slot_id, position) tuples | +180 |
+| `crates/hawking-core/shaders/mha.metal` | Verify the CB kernel scales to higher B (the existing v3w kernel was tuned for B≤8; β may want B≤16 or 32) | +40 |
+| `crates/hawking-core/src/metal/dense_decode_arena.rs` | Variable-B sizing (param `max_step_tokens`) | +30 |
+| `crates/hawking-serve/src/batch/cb_loop.rs` (new) | Top-level event loop: pull from request queue, pack step, dispatch, emit | +220 |
 | Tests | β-specific parity + soak | +400 |
 
 **Total: ~1,160 LOC** *on top of* α, so β-cumulative is ~2,300 LOC.
@@ -469,14 +469,14 @@ ngram or eagle5 draft head; the verify forward runs at B = Σ
 
 | File | Change | LOC delta |
 |---|---|---|
-| `crates/dismantle-core/src/speculate/{shared,ngram}.rs` | Per-slot draft state; batched draft generation | +180 |
-| `crates/dismantle-core/src/model/qwen_dense.rs` | `forward_verify_cb(rows: &[CbVerifyRow])` — each row has 1 + K_draft tokens | +160 |
-| `crates/dismantle-serve/src/batch/cb_loop.rs` | Mixed accept/reject path; per-slot rewind on rejection | +180 |
+| `crates/hawking-core/src/speculate/{shared,ngram}.rs` | Per-slot draft state; batched draft generation | +180 |
+| `crates/hawking-core/src/model/qwen_dense.rs` | `forward_verify_cb(rows: &[CbVerifyRow])` — each row has 1 + K_draft tokens | +160 |
+| `crates/hawking-serve/src/batch/cb_loop.rs` | Mixed accept/reject path; per-slot rewind on rejection | +180 |
 | Tests | Spec acceptance parity per-slot | +250 |
 
 **Total: ~770 LOC** on top of β. Cumulative ~3,100 LOC.
 
-**Risk surface:** spec-decode in dismantle has a long history of
+**Risk surface:** spec-decode in hawking has a long history of
 regressions (see [[spec_decode_runtime_NOT_broken_2026_05_22]],
 [[v110_path30_findings]]). The composition with CB is high-variance.
 **Gate γ on β actually shipping decode_tps neutral or positive at
@@ -499,9 +499,9 @@ older requests). γ is conditional on β.
 
 ---
 
-## 4. API contract for `dismantle serve`
+## 4. API contract for `hawking serve`
 
-### 4.1 New CLI flags (`crates/dismantle/src/main.rs:20-42`)
+### 4.1 New CLI flags (`crates/hawking/src/main.rs:20-42`)
 
 ```
 --continuous-batching            (default: off)
@@ -551,14 +551,14 @@ The `GenerateRequest::abort: Option<Arc<AtomicBool>>` channel
 
 | Metric | Type | Notes |
 |---|---|---|
-| `dismantle_active_slots` | gauge | 0..N |
-| `dismantle_queue_depth` | gauge | |
-| `dismantle_request_admit_total` | counter | |
-| `dismantle_request_reject_total{reason}` | counter | `reason` ∈ `queue_full`, `abort_at_admit` |
-| `dismantle_step_tokens_total` | counter | Σ tokens emitted across all steps |
-| `dismantle_step_duration_seconds` | histogram | per-step wall time |
-| `dismantle_request_latency_seconds{phase}` | histogram | `phase` ∈ `prefill`, `decode_first_token`, `total` |
-| `dismantle_weight_bw_pct` | gauge | estimated weight-bandwidth saturation; computed from per-step batch size and the known 1.6 GB per-token-prefill weight read |
+| `hawking_active_slots` | gauge | 0..N |
+| `hawking_queue_depth` | gauge | |
+| `hawking_request_admit_total` | counter | |
+| `hawking_request_reject_total{reason}` | counter | `reason` ∈ `queue_full`, `abort_at_admit` |
+| `hawking_step_tokens_total` | counter | Σ tokens emitted across all steps |
+| `hawking_step_duration_seconds` | histogram | per-step wall time |
+| `hawking_request_latency_seconds{phase}` | histogram | `phase` ∈ `prefill`, `decode_first_token`, `total` |
+| `hawking_weight_bw_pct` | gauge | estimated weight-bandwidth saturation; computed from per-step batch size and the known 1.6 GB per-token-prefill weight read |
 
 ---
 
@@ -566,9 +566,9 @@ The `GenerateRequest::abort: Option<Arc<AtomicBool>>` channel
 
 | Phase | Ships | Gate |
 |---|---|---|
-| **0** | Today: HTTP layer is single-request only. CB skeleton lives at `crates/dismantle-serve/src/batch/*` but is unused. `forward_tokens_batched` is the dead-lever loop. | (current) |
+| **0** | Today: HTTP layer is single-request only. CB skeleton lives at `crates/hawking-serve/src/batch/*` but is unused. `forward_tokens_batched` is the dead-lever loop. | (current) |
 | **M1** | α implementation behind `--continuous-batching` (default off). `--continuous-batching=false` path is byte-identical to today. | All §3-α parity gates green. Aggregate req/s at N=4 ≥ 1.8× single-request baseline (i.e. ≥ 40 req-tok/s vs. today's 22 dec_tps). |
-| **M2** | α becomes default for `dismantle serve` (HTTP code paths through CB even at N=1). Add `--no-continuous-batching` escape hatch. Drop the non-CB SSE code path (`http/mod.rs:217-247`) after one release of soak. | M1 metrics show <0.5% per-token latency overhead at N=1 vs. the legacy path. |
+| **M2** | α becomes default for `hawking serve` (HTTP code paths through CB even at N=1). Add `--no-continuous-batching` escape hatch. Drop the non-CB SSE code path (`http/mod.rs:217-247`) after one release of soak. | M1 metrics show <0.5% per-token latency overhead at N=1 vs. the legacy path. |
 | **M3** | β behind `--cb-prefill-interleave`. α remains the default. | β passes its mixed-prefill parity + soak; bench shows aggregate req/s at N=4 ≥ 3.5× single-request (i.e. measurable lift over α). |
 | **M4** | β becomes default; α deleted. | M3 soak clean for 2 weeks. |
 | **M5** | γ behind `--speculate exact-shared --continuous-batching`. | γ acceptance rate per-slot ≥ standalone spec-decode acceptance rate, no per-slot decode regression. |
@@ -663,7 +663,7 @@ under-utilized decode steps when one request is finishing.
 
 ### 7.4 Bench harness wiring
 
-Add to `crates/dismantle-bench/`:
+Add to `crates/hawking-bench/`:
 
 - `bin/cb_throughput.rs` — drives M client connections each
   submitting the canonical 47-tok prompt back-to-back. Emits aggregate
@@ -708,8 +708,8 @@ Add to `crates/dismantle-bench/`:
 
 - `memory/p3_batched_prefill_shipped.md` — kernel groundwork.
 - `memory/qwen_dense_metal_pipeline.md` — single-request baseline.
-- `crates/dismantle-core/src/model/qwen_dense.rs` (main branch) — `forward_tokens_batch_tcb` is the source-of-truth for the batched dispatch sequence.
-- `crates/dismantle-core/shaders/mha.metal` (main branch) — `mha_decode_f32_batched` is the source-of-truth kernel to fork for `mha_decode_f32_batched_cb`.
+- `crates/hawking-core/src/model/qwen_dense.rs` (main branch) — `forward_tokens_batch_tcb` is the source-of-truth for the batched dispatch sequence.
+- `crates/hawking-core/shaders/mha.metal` (main branch) — `mha_decode_f32_batched` is the source-of-truth kernel to fork for `mha_decode_f32_batched_cb`.
 - vLLM paper (Kwon et al. 2023) — the original "continuous batching"
   formulation with paged attention. We intentionally start without
   paging; see §2.1.

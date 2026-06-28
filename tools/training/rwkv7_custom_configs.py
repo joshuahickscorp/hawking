@@ -1,7 +1,9 @@
 """Custom RWKV-7 draft-model configs for spec-decode experiments.
 
 The variants are sized for Apple Silicon/Metal geometry:
-  * n_embd and n_ff are multiples of 256 for Q4_K GEMV block alignment.
+  * n_ff is a multiple of 256 for Q4_K GEMV block alignment.
+  * n_embd is normally 256-aligned, but the micro-frontier probes intentionally
+    test 128/192-wide drafts to find the true spec-decode floor.
   * RWKV-7 head_dim stays fixed at 64.
   * LoRA ranks are scaled from the 0.4B defaults and rounded to 16.
 """
@@ -16,11 +18,82 @@ except ImportError:  # scripts are usually run from tools/training/
 
 VOCAB_SIZE = 65536
 BASE_SWEEP_VARIANTS = ("draft_100m", "draft_150m", "draft_200m", "draft_300m")
+MICRO_PROBE_VARIANTS = (
+    "draft_17m_probe",
+    "draft_18m_probe",
+    "draft_20m_probe",
+    "draft_26m_probe",
+    "draft_29m_probe",
+)
 SHRINK_PROBE_VARIANTS = ("draft_35m_probe", "draft_50m_probe", "draft_75m_probe")
-VARIANT_ORDER = SHRINK_PROBE_VARIANTS + BASE_SWEEP_VARIANTS
+VARIANT_ORDER = MICRO_PROBE_VARIANTS + SHRINK_PROBE_VARIANTS + BASE_SWEEP_VARIANTS
 
 
 CUSTOM_VARIANTS: dict[str, RWKV7Config] = {
+    # Micro-frontier: below the old 35M floor. These intentionally relax the
+    # 256-wide hidden-size convention so the spec-decode sweep can find the
+    # smallest draft that still earns enough acceptance. The 17M floor is set by
+    # the untied 65k embedding + lm_head at n_embd=128.
+    "draft_17m_probe": RWKV7Config(
+        n_embd=128,
+        n_layer=2,
+        n_ff=256,
+        head_dim=64,
+        n_head=2,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=16,
+    ),
+    "draft_18m_probe": RWKV7Config(
+        n_embd=128,
+        n_layer=4,
+        n_ff=1024,
+        head_dim=64,
+        n_head=2,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=16,
+    ),
+    "draft_20m_probe": RWKV7Config(
+        n_embd=128,
+        n_layer=8,
+        n_ff=1024,
+        head_dim=64,
+        n_head=2,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=16,
+    ),
+    "draft_26m_probe": RWKV7Config(
+        n_embd=192,
+        n_layer=2,
+        n_ff=512,
+        head_dim=64,
+        n_head=3,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=32,
+    ),
+    "draft_29m_probe": RWKV7Config(
+        n_embd=192,
+        n_layer=8,
+        n_ff=768,
+        head_dim=64,
+        n_head=3,
+        vocab_size=VOCAB_SIZE,
+        decay_lora=16,
+        iclr_lora=16,
+        value_res_lora=16,
+        gate_lora=32,
+    ),
     # Architectural floor probe: 2 layers at 256-wide cannot learn language; expected
     # wikitext2 PPL ~100k and accept rate ~5%. Trains in <30 min. The only value is
     # establishing where the coherence cliff sits so the shrink policy knows not to go here.
@@ -133,11 +206,10 @@ def theoretical_tok_s(cfg: RWKV7Config, bandwidth_bytes_s: float = 150e9) -> flo
 
 
 def _assert_config(name: str, cfg: RWKV7Config) -> None:
-    assert cfg.n_embd % 256 == 0, f"{name}: n_embd must be 256-aligned"
+    assert cfg.n_embd % cfg.head_dim == 0, f"{name}: n_embd must divide into heads"
     assert cfg.n_ff % 256 == 0, f"{name}: n_ff must be 256-aligned"
     assert cfg.head_dim == 64, f"{name}: RWKV-7 head_dim must stay 64"
     assert cfg.n_head == cfg.n_embd // cfg.head_dim, f"{name}: n_head must be n_embd / 64"
-    assert cfg.n_embd % cfg.head_dim == 0, f"{name}: n_embd must divide into heads"
     assert cfg.decay_lora >= 16 and cfg.decay_lora % 16 == 0, f"{name}: bad decay_lora"
     assert cfg.iclr_lora >= 16 and cfg.iclr_lora % 16 == 0, f"{name}: bad iclr_lora"
     assert cfg.value_res_lora >= 16 and cfg.value_res_lora % 16 == 0, f"{name}: bad value_res_lora"

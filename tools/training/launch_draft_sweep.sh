@@ -22,8 +22,19 @@ Environment:
   GRAD_ACCUM=16
   LR=5e-4
   POLL_SECONDS=300
-  DRAFT_VARIANTS="draft_100m draft_150m draft_200m draft_300m"
+  DRAFT_VARIANTS="draft_17m_probe draft_18m_probe draft_20m_probe draft_26m_probe draft_29m_probe draft_35m_probe draft_75m_probe"
   TEACHER_LOGITS=/path/to/teacher_logits   # optional KD shards
+  # --- speed / max-RAM ---
+  BATCH_SIZE=1            # >1 batches sequences (faster + more RAM). eff batch = BATCH_SIZE*GRAD_ACCUM
+  AUTO_BATCH=0            # 1 = probe per variant and use fixed-B length buckets
+  MEM_CEILING_GB=0        # e.g. 17 on an 18 GB machine; also drives the MPS cap
+  MPS_MEM_FRACTION=0      # fallback cap when MEM_CEILING_GB=0
+  GRAD_CKPT=1             # keep 1 for deep variants unless a probe proves 0 fits
+  EMPTY_CACHE_EVERY=5     # periodic MPS cache flush; 0 is benchmark-only and can late-OOM
+  LOG_EVERY=5             # progress line every N optimizer steps
+
+Safe fast preset for an 18 GB Apple Silicon box:
+  AUTO_BATCH=1 MEM_CEILING_GB=17 BATCH_SIZE=16 GRAD_ACCUM=1 GRAD_CKPT=1 EMPTY_CACHE_EVERY=5 LOG_EVERY=5 bash tools/training/launch_draft_sweep.sh
 EOF
         exit 0
     fi
@@ -32,7 +43,7 @@ EOF
     exit 2
 fi
 
-read -r -a variants <<< "${DRAFT_VARIANTS:-draft_100m draft_150m draft_200m draft_300m}"
+read -r -a variants <<< "${DRAFT_VARIANTS:-draft_17m_probe draft_18m_probe draft_20m_probe draft_26m_probe draft_29m_probe draft_35m_probe draft_75m_probe}"
 if [[ "${#variants[@]}" -eq 0 ]]; then
     echo "DRAFT_VARIANTS resolved to an empty list" >&2
     exit 2
@@ -47,6 +58,30 @@ POLL_SECONDS="${POLL_SECONDS:-300}"
 USE_CHUNKED="${USE_CHUNKED:-1}"
 CHUNK_SIZE="${CHUNK_SIZE:-32}"
 SEED="${SEED:-1337}"
+# --- Speed / max-RAM knobs (the 'speed' branch) ---
+# BATCH_SIZE>1 batches sequences per fwd/bwd: replaces N serial forwards with one
+# padded batch -> far better GPU utilisation + higher RAM use = faster. Effective
+# batch = BATCH_SIZE * GRAD_ACCUM; keep the product ~constant to preserve training
+# dynamics (BATCH_SIZE=16 GRAD_ACCUM=1 has the same effective batch as the old
+# BATCH_SIZE=1 GRAD_ACCUM=16, but runs as one batched step).
+BATCH_SIZE="${BATCH_SIZE:-1}"
+# AUTO_BATCH=1: per-variant, probe the largest fixed batch that fits MEM_CEILING_GB,
+# then bucket examples by 256-token padded length. Small models -> big batch, big
+# models -> small, with bounded MPS shapes instead of one-off dynamic shapes.
+# BATCH_SIZE is the probe ceiling when AUTO_BATCH=1.
+AUTO_BATCH="${AUTO_BATCH:-0}"
+# Target unified-RAM ceiling in GB (e.g. 17 on an 18 GB box). Drives AUTO_BATCH + the MPS cap.
+MEM_CEILING_GB="${MEM_CEILING_GB:-0}"
+# Cap MPS at this fraction of recommended RAM (0.9 = ~90%). 0 = none. Ignored if MEM_CEILING_GB>0.
+MPS_MEM_FRACTION="${MPS_MEM_FRACTION:-0}"
+# 1 = grad-checkpoint (less RAM, ~33% more compute). 0 = off (more RAM, faster).
+GRAD_CKPT="${GRAD_CKPT:-1}"
+# empty_cache() every N opt steps. MUST be >0 on MPS: with 0 the freed-block cache grows
+# unbounded over a long run and OOMs (~step 150). Periodic (every 5) is cheap — unlike the
+# old per-EXAMPLE flush that was the throughput bug. Default 5.
+EMPTY_CACHE_EVERY="${EMPTY_CACHE_EVERY:-5}"
+# Progress log cadence (opt steps between [ep0 opt=N] lines).
+LOG_EVERY="${LOG_EVERY:-5}"
 PYTHON="${PYTHON:-$ROOT/.venv-rwkv/bin/python}"
 if [[ ! -x "$PYTHON" ]]; then
     PYTHON="python3"
@@ -79,6 +114,13 @@ for variant in "${variants[@]}"; do
         --lr "$LR" \
         --out "$out" \
         --seed "$SEED" \
+        --batch-size "$BATCH_SIZE" \
+        --auto-batch "$AUTO_BATCH" \
+        --mem-ceiling-gb "$MEM_CEILING_GB" \
+        --grad-checkpoint "$GRAD_CKPT" \
+        --mps-mem-fraction "$MPS_MEM_FRACTION" \
+        --empty-cache-every "$EMPTY_CACHE_EVERY" \
+        --log-every "$LOG_EVERY" \
         ${chunk_args[@]+"${chunk_args[@]}"} \
         ${teacher_args[@]+"${teacher_args[@]}"} &
     train_pid=$!

@@ -27,7 +27,7 @@ quality change** (same teacher, same data, same greedy decode, same loss):
 
 | # | Lever | Mechanism | Speedup | Validated |
 |---|---|---|---|---|
-| 1 | **Batched teacher capture** | `dismantle generate --batched-capture` routes the prompt corpus through the **multiseq path** (B=8 sequences/pass, one Q4_K weight read amortised across the group) instead of the serial loop | **~6–8×** on capture | CLI built + CPU unit-tested; GPU run deferred |
+| 1 | **Batched teacher capture** | `hawking generate --batched-capture` routes the prompt corpus through the **multiseq path** (B=8 sequences/pass, one Q4_K weight read amortised across the group) instead of the serial loop | **~6–8×** on capture | CLI built + CPU unit-tested; GPU run deferred |
 | 2 | **torch-mps trainer (MLX rejected)** | MLX has **no RWKV-7** support → NO-GO (see §7). Optimize torch-mps instead: grad-accum for big effective batch at batch-1 memory, bf16 autocast where mps supports it, grad-checkpointing | **~1.3–1.7×** on train | trainer-lever smoke PASS on CPU |
 | 3 | **Pipeline capture → SFT** | Capture writes **sharded JSONL**; the streaming trainer (`--watch`) starts SFT on finished shards while capture continues | overlaps the two longest phases → `max()` not `sum()` | dry-run validated; orchestrator `rwkv7_pipeline.sh` |
 | 4 | **Aggressive-but-safe memory** | capture-to-disk-first (never teacher+trainer resident together) + tuned `max_length`/grad-accum/grad-checkpointing to fill 18 GB without OOM | enables 1–3 | budget in §5 |
@@ -153,7 +153,7 @@ ls models/rwkv7-g1-04-hf
 ### Teacher — Qwen2.5-3B-Instruct
 
 - GGUF already on disk: `models/Qwen2.5-3B-Instruct-Q4_K_M.gguf` (1.93 GB) —
-  fine for **generating teacher *text*** (run it through `dismantle generate` or
+  fine for **generating teacher *text*** (run it through `hawking generate` or
   `llama.cpp`), which is all the DPO/distill step strictly needs.
 - For **teacher *logits*** (true KL distillation) you'd want HF weights:
   `Qwen/Qwen2.5-3B-Instruct` safetensors ≈ **6.17 GB**. Only download if you do
@@ -222,7 +222,7 @@ Generate both to disk first, then train CPU/GPU-decoupled.
 
 **The optimization:** the original runbook redirected `generate --prompts-file`
 to a file, but that path decodes **one prompt at a time** (`max_batch_size = 1`)
-— each Q4_K weight read serves a single sequence. dismantle already has a
+— each Q4_K weight read serves a single sequence. hawking already has a
 **multiseq / continuous-batch path** (B=8 independent sequences, weight read once
 per position across the whole group; `forward_multiseq_greedy_tokens` +
 `prefill_slots_parallel` in `qwen_dense.rs`). The new `--batched-capture` flag
@@ -232,7 +232,7 @@ routes the prompt corpus through it.
 > prefill (`forward_token_greedy_tcb`) and the *same* Q4_K-LM-head argmax the
 > single-stream path uses — it is the `--profile exact`, temperature-0 teacher,
 > just with B sequences sharing each weight read. No sampling, no draft, no
-> approximation. (`crates/dismantle/src/capture.rs`, unit-tested.)
+> approximation. (`crates/hawking/src/capture.rs`, unit-tested.)
 
 **THE EXACT FIRST COMMAND once the bench frees the GPU** (teacher "chosen" set):
 
@@ -242,7 +242,7 @@ routes the prompt corpus through it.
 #   --capture-out     : per-group shards <stem>.shard-NNNN.jsonl (for streaming SFT)
 #   --capture-batch 8 : sequences per pass (max weight-read amortisation)
 #   --profile exact   : clean, un-traded teacher target (no vocab-prune-32k trade)
-cargo run --release -p dismantle -- generate \
+cargo run --release -p hawking -- generate \
   --weights models/Qwen2.5-3B-Instruct-Q4_K_M.gguf \
   --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
   --batched-capture \
@@ -274,7 +274,7 @@ Then (B) the **"rejected"** set = the *student before training* on the same
 prompts (so DPO has a contrast), also batched:
 
 ```sh
-cargo run --release -p dismantle -- generate \
+cargo run --release -p hawking -- generate \
   --weights models/rwkv7-g1-04/rwkv7-0.4B-g1.Q4_K_M.gguf \
   --prompts-file artifacts/rwkv7_posttrain/dpo_prompts.prompts.txt \
   --batched-capture \
@@ -455,9 +455,9 @@ back-to-back if the machine is free.
 > LoRA on the student and the teacher in 4-bit, or defer to cloud. Not required
 > to ship a coherent instruct 0.4B; DPO with teacher *text* is the cheap path.
 
-### 4d. (CPU) Export to the GGUF dismantle loads
+### 4d. (CPU) Export to the GGUF hawking loads
 
-dismantle's `rwkv7` loader reads `rwkv7.*` GGUF metadata. Convert the trained HF
+hawking's `rwkv7` loader reads `rwkv7.*` GGUF metadata. Convert the trained HF
 safetensors with the in-repo converter (`Rwkv7ForCausalLM` is supported):
 
 ```sh
@@ -488,7 +488,7 @@ vs the size-matched baseline **Qwen2.5-0.5B-Instruct**
      both models' generations, score with the standard harness. Gate: post-train
      **≥** the pre-train g1 on IFEval, and **ties** (within noise) with
      Qwen2.5-0.5B on the MT-Bench subset.
-   - Generate with: `cargo run --release -p dismantle -- generate --weights
+   - Generate with: `cargo run --release -p hawking -- generate --weights
      <gguf> --prompt "<ifeval prompt>" --max-new-tokens 256`.
 2. **Recall probe (the SSM's known weak spot):** a needle-in-a-haystack / NIAH
    probe at 1k / 2k / 4k context. RWKV's fixed state can lose mid-context facts;
@@ -498,7 +498,7 @@ vs the size-matched baseline **Qwen2.5-0.5B-Instruct**
 3. **Long-context tps (GPU, quick):** the SSM's headline advantage — O(1) state,
    no growing KV. Measure decode tps at 4k context for both:
    ```sh
-   cargo run --release -p dismantle -- generate \
+   cargo run --release -p hawking -- generate \
      --weights models/rwkv7-g1-04-posttrained-Q4_K_M.gguf \
      --prompt "$(python - <<'PY'
 print("Summarize the following.\n\n"+("lorem ipsum dolor sit amet. "*450))

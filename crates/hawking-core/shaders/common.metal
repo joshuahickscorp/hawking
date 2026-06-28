@@ -483,10 +483,10 @@ kernel void rope_inplace(
     float theta = (float)pos / pow(base, 2.0f * float(id) / float(head_dim));
     float c = cos(theta);
     float s = sin(theta);
-    float x0 = (float)x[2 * id];
-    float x1 = (float)x[2 * id + 1];
-    x[2 * id]     = half(x0 * c - x1 * s);
-    x[2 * id + 1] = half(x0 * s + x1 * c);
+    float x0 = (float)x[id];
+    float x1 = (float)x[id + half_dim];
+    x[id]            = half(x0 * c - x1 * s);
+    x[id + half_dim] = half(x0 * s + x1 * c);
 }
 
 kernel void rope_q_f32_inplace(
@@ -500,15 +500,17 @@ kernel void rope_q_f32_inplace(
 
     uint head = id / pairs_per_head;
     uint pair = id - head * pairs_per_head;
-    uint off = head * args.q_head_dim + args.qk_nope_dim + 2u * pair;
+    uint half_dim = args.qk_rope_dim / 2u;
+    uint off0 = head * args.q_head_dim + args.qk_nope_dim + pair;
+    uint off1 = off0 + half_dim;
 
     float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.qk_rope_dim));
     float c = cos(theta);
     float s = sin(theta);
-    float x0 = q[off];
-    float x1 = q[off + 1u];
-    q[off]      = x0 * c - x1 * s;
-    q[off + 1u] = x0 * s + x1 * c;
+    float x0 = q[off0];
+    float x1 = q[off1];
+    q[off0] = x0 * c - x1 * s;
+    q[off1] = x0 * s + x1 * c;
 }
 
 kernel void rope_slice_f32_inplace(
@@ -521,15 +523,16 @@ kernel void rope_slice_f32_inplace(
 {
     uint half_dim = head_dim / 2u;
     if (id >= half_dim) return;
-    uint off = offset + 2u * id;
+    uint off0 = offset + id;
+    uint off1 = off0 + half_dim;
 
     float theta = (float)pos / pow(base, 2.0f * float(id) / float(head_dim));
     float c = cos(theta);
     float s = sin(theta);
-    float x0 = x[off];
-    float x1 = x[off + 1u];
-    x[off]      = x0 * c - x1 * s;
-    x[off + 1u] = x0 * s + x1 * c;
+    float x0 = x[off0];
+    float x1 = x[off1];
+    x[off0] = x0 * c - x1 * s;
+    x[off1] = x0 * s + x1 * c;
 }
 
 // R2 — batched RoPE over B multi-seq decode slots, each at its OWN position
@@ -561,15 +564,17 @@ kernel void rope_f32_batched_multiseq(
     uint rem  = id - bi * per_slot;
     uint head = rem / pairs_per_head;
     uint pair = rem - head * pairs_per_head;
-    uint off  = bi * args.slot_stride + head * args.head_dim + 2u * pair;
+    uint half_dim = args.head_dim / 2u;
+    uint off0 = bi * args.slot_stride + head * args.head_dim + pair;
+    uint off1 = off0 + half_dim;
 
     float theta = (float)positions[bi] / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
     float c = cos(theta);
     float s = sin(theta);
-    float x0 = x[off];
-    float x1 = x[off + 1u];
-    x[off]      = x0 * c - x1 * s;
-    x[off + 1u] = x0 * s + x1 * c;
+    float x0 = x[off0];
+    float x1 = x[off1];
+    x[off0] = x0 * c - x1 * s;
+    x[off1] = x0 * s + x1 * c;
 }
 
 // Fused Q+K RoPE for multiseq batched decode (Track 3.4).
@@ -612,27 +617,29 @@ kernel void rope_qk_f32_batched_multiseq(
         uint rem  = id - bi * q_per_slot;
         uint head = rem / pairs_per_head;
         pair      = rem - head * pairs_per_head;
-        off       = bi * args.q_slot_stride + head * args.head_dim + 2u * pair;
+        uint half_dim = args.head_dim / 2u;
+        off       = bi * args.q_slot_stride + head * args.head_dim + pair;
         buf       = q;
         theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
         float theta = (float)positions[bi] / theta_denom;
         float c = cos(theta); float s = sin(theta);
-        float x0 = buf[off]; float x1 = buf[off + 1u];
-        buf[off]      = x0 * c - x1 * s;
-        buf[off + 1u] = x0 * s + x1 * c;
+        float x0 = buf[off]; float x1 = buf[off + half_dim];
+        buf[off]            = x0 * c - x1 * s;
+        buf[off + half_dim] = x0 * s + x1 * c;
     } else {
         uint kid  = id - q_total;
         uint bi   = kid / k_per_slot;
         uint rem  = kid - bi * k_per_slot;
         uint head = rem / pairs_per_head;
         pair      = rem - head * pairs_per_head;
-        off       = bi * args.k_slot_stride + head * args.head_dim + 2u * pair;
+        uint half_dim = args.head_dim / 2u;
+        off       = bi * args.k_slot_stride + head * args.head_dim + pair;
         theta_denom = pow(args.base, 2.0f * float(pair) / float(args.head_dim));
         float theta = (float)positions[bi] / theta_denom;
         float c = cos(theta); float s = sin(theta);
-        float x0 = k[off]; float x1 = k[off + 1u];
-        k[off]      = x0 * c - x1 * s;
-        k[off + 1u] = x0 * s + x1 * c;
+        float x0 = k[off]; float x1 = k[off + half_dim];
+        k[off]            = x0 * c - x1 * s;
+        k[off + half_dim] = x0 * s + x1 * c;
     }
 }
 
@@ -1158,32 +1165,34 @@ kernel void rope_qk_f32_b1_bias(
 
     device float* buf;
     device const float* bias;
-    uint head, pair, off;
+    uint head, pair, off0, off1;
     bool use_bias;
 
     if (id < q_total) {
         head     = id / pairs_per_head;
         pair     = id - head * pairs_per_head;
-        off      = head * args.head_dim + 2u * pair;
-        buf      = q + off;
-        bias     = qb + off;
+        off0     = head * args.head_dim + pair;
+        off1     = off0 + pairs_per_head;
+        buf      = q;
+        bias     = qb;
         use_bias = args.has_q_bias != 0u;
     } else {
         uint kid = id - q_total;
         head     = kid / pairs_per_head;
         pair     = kid - head * pairs_per_head;
-        off      = head * args.head_dim + 2u * pair;
-        buf      = k + off;
-        bias     = kb + off;
+        off0     = head * args.head_dim + pair;
+        off1     = off0 + pairs_per_head;
+        buf      = k;
+        bias     = kb;
         use_bias = args.has_k_bias != 0u;
     }
 
-    float x0 = buf[0] + (use_bias ? bias[0] : 0.0f);
-    float x1 = buf[1] + (use_bias ? bias[1] : 0.0f);
+    float x0 = buf[off0] + (use_bias ? bias[off0] : 0.0f);
+    float x1 = buf[off1] + (use_bias ? bias[off1] : 0.0f);
     float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
     float c = cos(theta), s = sin(theta);
-    buf[0] = x0 * c - x1 * s;
-    buf[1] = x0 * s + x1 * c;
+    buf[off0] = x0 * c - x1 * s;
+    buf[off1] = x0 * s + x1 * c;
 }
 
 // ── rope_qk_kv_append_vbias_f32 ───────────────────────────────────────────────
@@ -1249,25 +1258,27 @@ kernel void rope_qk_kv_append_vbias_f32(
         // ── Q: bias + RoPE, in-place write to q_buf ─────────────────────────
         uint head = id / pairs_per_head;
         uint pair = id - head * pairs_per_head;
-        uint off  = head * args.head_dim + 2u * pair;
-        float x0 = q_buf[off]   + (args.has_q_bias ? q_bias[off]   : 0.0f);
-        float x1 = q_buf[off+1] + (args.has_q_bias ? q_bias[off+1] : 0.0f);
+        uint off0 = head * args.head_dim + pair;
+        uint off1 = off0 + pairs_per_head;
+        float x0 = q_buf[off0] + (args.has_q_bias ? q_bias[off0] : 0.0f);
+        float x1 = q_buf[off1] + (args.has_q_bias ? q_bias[off1] : 0.0f);
         float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
         float c = cos(theta), s = sin(theta);
-        q_buf[off]   = x0 * c - x1 * s;
-        q_buf[off+1] = x0 * s + x1 * c;
+        q_buf[off0] = x0 * c - x1 * s;
+        q_buf[off1] = x0 * s + x1 * c;
     } else if (id < k_end) {
         // ── K: bias + RoPE k_tok, write directly to k_cache ─────────────────
         uint kid  = id - q_end;
         uint head = kid / pairs_per_head;
         uint pair = kid - head * pairs_per_head;
-        uint off  = head * args.head_dim + 2u * pair;
-        float x0 = k_tok[off]   + (args.has_k_bias ? k_bias[off]   : 0.0f);
-        float x1 = k_tok[off+1] + (args.has_k_bias ? k_bias[off+1] : 0.0f);
+        uint off0 = head * args.head_dim + pair;
+        uint off1 = off0 + pairs_per_head;
+        float x0 = k_tok[off0] + (args.has_k_bias ? k_bias[off0] : 0.0f);
+        float x1 = k_tok[off1] + (args.has_k_bias ? k_bias[off1] : 0.0f);
         float theta = (float)args.pos / pow(args.base, 2.0f * float(pair) / float(args.head_dim));
         float c = cos(theta), s = sin(theta);
-        k_cache[args.kv_off + off]   = x0 * c - x1 * s;
-        k_cache[args.kv_off + off+1] = x0 * s + x1 * c;
+        k_cache[args.kv_off + off0] = x0 * c - x1 * s;
+        k_cache[args.kv_off + off1] = x0 * s + x1 * c;
     } else {
         // ── V: add optional bias, write to v_cache ───────────────────────────
         uint vid = id - k_end;

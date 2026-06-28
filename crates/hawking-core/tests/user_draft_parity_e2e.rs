@@ -416,6 +416,79 @@ fn user_draft_propose_first_bit_identical_pruned_q4k() {
     eprintln!("============================================================\n");
 }
 
+// ── Event Horizon parity gate ────────────────────────────────────────────
+//
+// THE GATE: with HAWKING_QWEN_USER_DRAFT=1 + HAWKING_QWEN_EVENT_HORIZON=1,
+// greedy output must be byte-identical to the same request with EH OFF.
+// This proves that Verifier::verify_line + ProposalRouter (the EH seam)
+// replicate the inline accept block exactly.
+
+/// P0.6 gate: EH ON (verify_line) ≡ EH OFF (inline accept) under the CPU
+/// fp16 fallback verify path.
+#[test]
+fn event_horizon_bit_identical_default() {
+    let Some(weights) = weights_path() else { return; };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+
+    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
+    let (ref_ids, _) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+
+    std::env::set_var("HAWKING_QWEN_EVENT_HORIZON", "1");
+    let (eh_ids, accepted) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
+    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
+
+    assert_eq!(ref_ids.len(), MAX_NEW_TOKENS, "EH-OFF produced wrong token count");
+    assert_eq!(eh_ids.len(), MAX_NEW_TOKENS, "EH-ON produced wrong token count");
+    assert_eq!(
+        &ref_ids[..3], &eh_ids[..3],
+        "EH GATE FAILED (first 3 tokens): EH changed greedy output.\n \
+         off={:?}\n  on={:?}", &ref_ids[..3], &eh_ids[..3],
+    );
+    assert_eq!(
+        ref_ids, eh_ids,
+        "EH GATE FAILED (16 tokens): EH changed greedy output.\n \
+         off={ref_ids:?}\n  on={eh_ids:?}"
+    );
+    eprintln!("\n=== EH parity gate (default cfg) ===");
+    eprintln!("EH OFF: {ref_ids:?}");
+    eprintln!("EH ON : {eh_ids:?}  (draft_accepted={accepted})");
+    eprintln!("bit-identical: YES");
+    eprintln!("=====================================\n");
+}
+
+/// P0.6 gate: EH ON ≡ EH OFF under the GPU pruned-Q4K fast verify path.
+#[test]
+fn event_horizon_bit_identical_fast_pruned_q4k() {
+    let Some(weights) = weights_path() else { return; };
+    let _g = SERIAL_GATE.get_or_init(|| Mutex::new(())).lock().unwrap();
+    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "1");
+    std::env::set_var("HAWKING_QWEN_VOCAB_PRUNE", "32000");
+    std::env::set_var("HAWKING_QWEN_Q4K_LMHEAD", "1");
+
+    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
+    let (ref_ids, _) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+
+    std::env::set_var("HAWKING_QWEN_EVENT_HORIZON", "1");
+    let (eh_ids, accepted) = { let mut e = make_engine(&weights); gen_on(e.as_mut(), PROMPT) };
+    std::env::remove_var("HAWKING_QWEN_EVENT_HORIZON");
+    std::env::remove_var("HAWKING_QWEN_VOCAB_PRUNE");
+    std::env::remove_var("HAWKING_QWEN_Q4K_LMHEAD");
+    std::env::set_var("HAWKING_QWEN_USER_DRAFT", "0");
+
+    assert_eq!(ref_ids, eh_ids,
+        "EH GATE FAILED (pruned-Q4K): EH changed greedy output.\n \
+         off={ref_ids:?}\n  on={eh_ids:?}");
+    assert!(accepted > 0,
+        "EH pruned-Q4K gate: draft_accepted=0 — drafting path not exercised");
+    eprintln!("\n=== EH parity gate (fast pruned-Q4K) ===");
+    eprintln!("EH OFF: {ref_ids:?}");
+    eprintln!("EH ON : {eh_ids:?}  (draft_accepted={accepted})");
+    eprintln!("bit-identical: YES");
+    eprintln!("=========================================\n");
+}
+
 /// (c) A 64-token lossless run (propose-first vs bonus-first, pruned-Q4K fast
 /// verify). A 16-token window can miss a KV-rewind off-by-one in the new loop's
 /// accept/advance bookkeeping (the highest-risk part of the port — the eagle5

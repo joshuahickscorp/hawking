@@ -206,6 +206,57 @@ fn argmax_count(m: &HashMap<u32, u32>) -> Option<u32> {
         .map(|(&id, _)| id)
 }
 
+// ---- Event Horizon: the live, lossless, tokenizer-native BASE proposer ----
+use crate::speculate::proposal::{Budget, Ctx, Proposal, Proposer, Telemetry};
+
+/// Default-on, lossless, tokenizer-native base proposer: a thin [`Proposer`]
+/// adapter over [`UserNgramDraft`] (the live τ=1.43 base that beat the trained
+/// head — see docs/dead_levers.md). Newtype so adapter-only state can be added
+/// later without touching the inherent API (its determinism/tie-break is
+/// load-bearing for paired-bench parity).
+#[derive(Debug, Default)]
+pub struct NgramProposer {
+    inner: UserNgramDraft,
+}
+
+impl NgramProposer {
+    pub fn new() -> Self {
+        Self { inner: UserNgramDraft::new() }
+    }
+    pub fn index(&self) -> &UserNgramDraft {
+        &self.inner
+    }
+}
+
+impl Proposer for NgramProposer {
+    fn name(&self) -> &'static str {
+        "user_ngram"
+    }
+
+    fn propose(&mut self, ctx: &Ctx<'_>, budget: Budget, _tel: &Telemetry) -> Proposal {
+        // UserNgramDraft::propose is &self, reads only the last two ids, may
+        // return < k on a chain miss. Caller already clamped budget.k to ≤7.
+        Proposal::TokenLine(self.inner.propose(ctx.last_two(), budget.k))
+    }
+
+    fn observe(&mut self, emitted: &[u32]) {
+        // MANDATORY: grow the index from the emitted (verifier) stream — one
+        // note_token per token, in order, identical to the live 'ud_loop feed.
+        for &t in emitted {
+            self.inner.note_token(t);
+        }
+    }
+
+    fn warm(&mut self, history: &[u32]) {
+        self.inner.warm_start(history);
+    }
+
+    fn reset(&mut self) {
+        // cursor only — KEEP the learned grams across requests.
+        self.inner.reset_context();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

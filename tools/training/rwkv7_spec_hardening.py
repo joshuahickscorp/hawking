@@ -173,7 +173,7 @@ def shrink_recommendation(rows: list[dict[str, Any]], metrics: list[VariantMetri
         return [
             "Do not shrink yet: no evaluated draft clears the spec physics gate.",
             "First improve accept rate with target-logit KD, then re-run this hardening pass.",
-            "Once a draft passes, launch the nearest smaller configured probe with `DRAFT_VARIANTS=\"draft_75m_probe draft_50m_probe\"` before scaling anything up.",
+            "Once a draft passes, launch the nearest smaller micro probe before scaling anything up.",
         ]
     size_by_variant = {m.variant: m.params_m for m in metrics}
     smallest = min(evaluated, key=lambda r: size_by_variant.get(str(r["variant"]), float("inf")))

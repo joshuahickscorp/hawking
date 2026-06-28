@@ -208,15 +208,15 @@ log "Report written: $REPORT_OUT"
 log "=== G1a v2 expansion chain complete ==="
 
 # ---------------------------------------------------------------------------
-# Draft-sweep: train the default 100M/150M/200M/300M RWKV-7 variants for
-# spec-decode. Set DRAFT_VARIANTS for shrink probes after hardening blesses it.
+# Draft-sweep: train the micro-frontier RWKV-7 draft variants for spec-decode.
+# Set DRAFT_VARIANTS to override when testing a specific frontier slice.
 # Runs after all architecture checks so a Rust build failure cannot block it.
 # EPOCHS=1 gives enough signal to rank variants; extend the winner manually.
 # ACCEPT_SEQS=50 keeps the per-checkpoint watcher eval under ~8 min on CPU.
 # ---------------------------------------------------------------------------
 DRAFT_SWEEP="$ROOT/tools/training/launch_draft_sweep.sh"
 if [[ -f "$DRAFT_SWEEP" ]]; then
-    log "=== launching draft sweep (${DRAFT_VARIANTS:-draft_100m draft_150m draft_200m draft_300m}) ==="
+    log "=== launching draft sweep (${DRAFT_VARIANTS:-draft_17m_probe draft_18m_probe draft_20m_probe draft_26m_probe draft_29m_probe draft_35m_probe draft_75m_probe}) ==="
     DRAFT_LOG="$ROOT/artifacts/lowbit_rwkv7/draft_sweep.log"
     mkdir -p "$(dirname "$DRAFT_LOG")"
     EPOCHS="${DRAFT_EPOCHS:-1}" \
