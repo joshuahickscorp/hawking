@@ -10,6 +10,7 @@ description = "Headless HIDE agent kernel scaffold"
 
 [dependencies]
 hide-core = { path = "../hide-core" }
+hide-tools = { path = "../hide-tools" }
 hawking-context = { path = "../hawking-context" }
 hawking-index = { path = "../hawking-index" }
 hawking-orch = { path = "../hawking-orch" }
@@ -20,3 +21,4 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+blake3 = { workspace = true }

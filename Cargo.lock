@@ -1196,11 +1196,13 @@ dependencies = [
 name = "hide-kernel"
 version = "0.2.2"
 dependencies = [
+ "blake3",
  "futures",
  "hawking-context",
  "hawking-index",
  "hawking-orch",
  "hide-core",
+ "hide-tools",
  "parking_lot",
  "serde",
  "serde_json",

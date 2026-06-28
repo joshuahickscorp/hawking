@@ -36,22 +36,28 @@ impl ProjectionEngine for BasicProjectionEngine {
                         projection
                             .transcript
                             .push(format!("agent:{} {}", state.phase, state.detail));
-                        projection.phase = match state.phase.as_str() {
-                            "intake" => Some(crate::machine::state::Phase::Intake),
-                            "plan" => Some(crate::machine::state::Phase::Plan),
-                            "select_step" => Some(crate::machine::state::Phase::SelectStep),
-                            "act" => Some(crate::machine::state::Phase::Act),
-                            "observe" => Some(crate::machine::state::Phase::Observe),
-                            "verify" => Some(crate::machine::state::Phase::Verify),
-                            "repair" => Some(crate::machine::state::Phase::Repair),
-                            "replan" => Some(crate::machine::state::Phase::Replan),
-                            "finalize" => Some(crate::machine::state::Phase::Finalize),
-                            "done" => Some(crate::machine::state::Phase::Done),
-                            "aborted" => Some(crate::machine::state::Phase::Aborted),
-                            "paused" => Some(crate::machine::state::Phase::Paused),
-                            _ => projection.phase,
-                        };
+                        // The driver emits the snake_case wire name (Phase::wire_name),
+                        // so this snake_case match round-trips correctly (the prior
+                        // PascalCase `{:?}` mismatch is fixed). Parse via serde so the
+                        // mapping stays in sync with the enum's rename_all.
+                        if let Ok(phase) = serde_json::from_value::<crate::machine::state::Phase>(
+                            serde_json::Value::String(state.phase.clone()),
+                        ) {
+                            projection.phase = Some(phase);
+                        }
                     }
+                }
+                "verify.result" => {
+                    if let Some(v) = event.payload_as::<crate::verify::oracle::Verdict>() {
+                        projection
+                            .transcript
+                            .push(format!("verify:{} {:?}", v.oracle, v.status));
+                    }
+                }
+                "run.aborted" => {
+                    projection
+                        .errors
+                        .push(format!("run aborted: {}", event.payload));
                 }
                 "plan.created" => {
                     if let Some(plan_event) = event.payload_as::<PlanEvent>() {

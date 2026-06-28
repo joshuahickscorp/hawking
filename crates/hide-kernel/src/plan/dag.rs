@@ -20,6 +20,12 @@ impl PlanDag {
             .collect()
     }
 
+    /// The plan's dependency graph is a DAG (no cycles). The driver gates `Plan`
+    /// on this (§4.5.2): a cyclic plan must be replanned, never executed.
+    pub fn acyclic(plan: &Plan) -> bool {
+        !Self::has_cycle(plan)
+    }
+
     pub fn has_cycle(plan: &Plan) -> bool {
         let deps: BTreeMap<_, _> = plan
             .steps
