@@ -32,6 +32,11 @@ python3.12 tools/condense/studio_run.py --go-plan
   gate -> capture-retrain the eagle5 head against the condensed distribution -> acceptance measure
   -> governor bench with the exact-match gate. Density (RAM) x spec (latency) stack multiplicatively.
 - **P4 SYNTH** — fit both lane curves + the pre-registered 70B/405B extrapolation.
+- **P5 FRONTIER** — the 100B+ research prize (235B-A22B / 405B / 671B / 744B), serve-oriented since
+  they do NOT fit the doctor budget. Runs what works on streamed shards (SUBBIT-0 entropy floor +
+  per-expert MoE sensitivity + the serve-fit record); the block-wise condense-to-`.tq`, the
+  native-serve quality number, and the RAM-cliff tps demo are the serve build (read_strand into the
+  serve binary + per-expert `.tq` writer). Skips unstaged models. **These are the primary research target.**
 
 ## LOCKED CONTEXT — do NOT reopen
 

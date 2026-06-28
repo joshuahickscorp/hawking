@@ -27,12 +27,26 @@ def floors_path(set_name="studio"):
     return FLOORS if set_name == "studio" else f"reports/cron/bit_floor_{set_name}.jsonl"
 
 # model ladder: label -> (hf dir, params(B), doctor peak GB, solo?, role)
+# These DOCTOR resident on 96GB (f16 ~2x params must fit) -> caps at ~32B. This is the bit-floor
+# curve substrate; the 100B+ research targets are SERVE-only (FRONTIER below), a different pipeline.
 LADDER = [
     ("0.5B", "scratch/qwen-05b", 0.5, 10, False, "lab"),
     ("1.5B", "scratch/qwen-15b", 1.5, 10, False, "lab"),
     ("7B",   "scratch/qwen-7b",  7.0, 40, False, "substrate"),   # the honest mid; 1-bit judged here
     ("14B",  "scratch/qwen-14b", 14.0, 65, False, "payoff"),
     ("32B",  "scratch/qwen-32b", 32.0, 85, True,  "capstone"),   # solo: needs the whole box
+]
+
+# FRONTIER — the 100B+ research targets (the real prize). These do NOT fit the doctor budget (f16
+# 2x resident overflows 96GB), so the pipeline is SERVE-oriented: block-wise streamed condense to a
+# serve-fit .tq + per-expert allocation for MoE + the entropy floor + the RAM-cliff demo. Quality is
+# measured via the NATIVE .tq serve (not f16 forward, which can't be held) -> gated on the serve build.
+# label, hf dir, total_b, active_b (None=dense), serve_bpw (the headline rung), moe?, role
+FRONTIER = [
+    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-dream"),    # 39GB @1.34 COMFY
+    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-edge"),    # 68GB @1.34 TIGHT
+    ("671B",      "scratch/deepseek-v3",     671.0, 37.0, 1.00, True,  "moe-capstone"),  # 84GB @1.0  the EDGE
+    ("744B",      "scratch/glm-744b",        744.0, 32.0, 0.75, True,  "moe-stretch"),   # 70GB @0.75 research
 ]
 
 # the recovery stack run per model, cheapest-first (plan §2). Each entry: (stage, tool, note).
@@ -111,6 +125,52 @@ def run_all(set_name="studio"):
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path(set_name)])
 
 
+def run_frontier(label):
+    """SERVE-oriented frontier pipeline for a 100B+ model (the real research prize). The doctor does
+    NOT fit (f16 2x resident overflows 96GB), so this runs what DOES on streamed shards: the SUBBIT-0
+    entropy floor + per-expert sensitivity (MoE) + the serve-fit record. The block-wise condense to a
+    serve-fit .tq, the native-serve quality number, and the RAM-cliff tps demo are the Rust serve
+    build (read_strand into the serve binary + the per-expert .tq writer) — emitted as gated steps."""
+    row = next((r for r in FRONTIER if r[0] == label), None)
+    if not row:
+        print(f"[frontier] unknown {label}", file=sys.stderr); return 2
+    _, mdir, total, active, bpw, moe, role = row
+    artifact = round(total * bpw / 8.0, 1)
+    fits = artifact <= 84.0
+    ncpu = str(os.cpu_count() or 8)
+    env = {**os.environ, "DOCTOR_DEVICE": "cpu", "DOCTOR_DTYPE": "bfloat16", "STRAND_NO_GPU": "1",
+           "OMP_NUM_THREADS": ncpu, "MKL_NUM_THREADS": ncpu, "VECLIB_MAXIMUM_THREADS": ncpu}
+    print(f"[frontier] {label} ({total}B{f', act {active}B MoE' if moe else ' dense'}, role={role}) "
+          f"-> {bpw} bpw = {artifact}GB ({'FITS 84GB' if fits else 'OVERFLOW'})", file=sys.stderr)
+    if not os.path.isdir(mdir):
+        print(f"[frontier] {label} NOT staged at {mdir}. On the Studio (2TB SSD): "
+              f"hf download <{label}> --local-dir {mdir}  (block-wise; never held resident)", file=sys.stderr)
+        return 2
+    # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
+    subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
+    if moe:
+        subprocess.run(["python3.12", f"{TC}/expert_sensitivity.py", mdir, "--label", label,
+                        "--bits", "1,2"], env=env)
+    # the serve-build steps (Rust, gated): block-wise condense + native-serve quality + RAM-cliff tps
+    rec = {"model": label, "total_b": total, "active_b": active, "moe": moe, "role": role,
+           "serve_bpw": bpw, "artifact_gb": artifact, "serve_fits_84": fits,
+           "condense_cmd": f"# block-wise streamed single-bake (+per-expert if MoE) to {label}.tq @ {bpw}bpw",
+           "serve_quality_gated_on": "read_strand wired into hawking-serve binary + native .tq GEMV",
+           "ram_cliff_demo": f"serve {label}.tq ({artifact}GB resident) vs Q4_K ({round(total*4.5/8)}GB, overflows->swap)"}
+    os.makedirs("reports/condense", exist_ok=True)
+    json.dump(rec, open(f"reports/condense/{label}_frontier.json", "w"), indent=2)
+    print(f"[frontier] {label} serve-fit recorded; quality+cliff GATED on the native serve build",
+          file=sys.stderr)
+    return 0
+
+
+def run_frontier_all():
+    """Frontier models are each ~box-filling -> run sequentially (the scheduler would serialize them
+    anyway). Skips unstaged. The serve build is the gate on the quality/cliff numbers."""
+    for (lbl, *_rest) in FRONTIER:
+        run_frontier(lbl)
+
+
 def plan():
     sys.path.insert(0, TC)
     from ram_scheduler import Scheduler, Job
@@ -158,8 +218,11 @@ def go():
     print("\n### P4 SYNTH — fit curves + extrapolate ###", file=sys.stderr)
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("studio")])
     subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("subbit")])
-    print("\nGO COMPLETE — receipts in receipts/official/, curves in reports/cron/bit_floor_*.jsonl",
+    print("\n### P5 FRONTIER — the 100B+ research prize (serve-oriented; runs what's staged) ###",
           file=sys.stderr)
+    run_frontier_all()
+    print("\nGO COMPLETE — receipts in receipts/official/, curves in reports/cron/bit_floor_*.jsonl, "
+          "frontier records in reports/condense/*_frontier.json", file=sys.stderr)
 
 
 def go_plan():
@@ -171,6 +234,9 @@ def go_plan():
     print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
           "-> accept -> governor)")
     print("  P4 SYNTH     scaling_law --fit (both lanes)")
+    print("  P5 FRONTIER  run_frontier_all() -> 100B+ research prize (235B-A22B/405B/671B/744B):")
+    print("               SUBBIT-0 floor + per-expert MoE sensitivity + serve-fit record;")
+    print("               block-wise condense + native-serve quality + RAM-cliff = the serve build.")
     for lbl in SPEC_TARGETS:
         subprocess.run(["python3.12", f"{TC}/spec_revive.py", "--plan", lbl])
 
@@ -193,5 +259,9 @@ if __name__ == "__main__":
         sys.exit(run_model(sys.argv[2], "subbit"))
     elif a == "--subbit-run":
         run_all("subbit")            # schedule the whole ladder through the sub-1-bit lane
+    elif a == "--frontier":
+        sys.exit(run_frontier(sys.argv[2]))   # one 100B+ model (serve-oriented)
+    elif a == "--frontier-run":
+        run_frontier_all()           # all staged 100B+ research targets
     else:
         print(__doc__)
