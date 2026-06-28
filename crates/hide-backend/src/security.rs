@@ -7,19 +7,10 @@ use hide_security::sandbox::{
 };
 use hide_security::storage::AtRestPolicy;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SecurityServices {
     pub redactor: Redactor,
     pub at_rest: AtRestPolicy,
-}
-
-impl Default for SecurityServices {
-    fn default() -> Self {
-        Self {
-            redactor: Redactor::default(),
-            at_rest: AtRestPolicy::default(),
-        }
-    }
 }
 
 impl SecurityServices {
@@ -58,8 +49,13 @@ impl SecurityServices {
                     reason: "workspace write follows configured policy".to_string(),
                 },
                 PermissionRule {
+                    // The capability the builtin shell tools actually advertise
+                    // (`hide_tools::spec_helpers::exec_spec` → `shell.exec`). The
+                    // rule previously named `process.exec`, which matched no tool,
+                    // so every `shell.run` fell through to `default_decision` and
+                    // was denied even with `shell_default = Allow`.
                     id: "shell-exec".to_string(),
-                    capability_kind: "process.exec".to_string(),
+                    capability_kind: "shell.exec".to_string(),
                     scope_pattern: "*".to_string(),
                     decision: config.security.shell_default,
                     max_risk: RiskLevel::High,

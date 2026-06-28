@@ -24,6 +24,13 @@ parking_lot = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+# The host owns the async runtime (§4.9): a multi-threaded tokio runtime drives
+# the RuntimeSupervisor's health-poll loop, the broadcast UiEvent bus, and the
+# HTTP ModelProvider. `tokio` is now a real (non-dev) dependency.
+tokio = { workspace = true }
+# HTTP-only seam to the supervised `hawking serve` (T5: no engine-crate link).
+reqwest = { workspace = true }
+async-trait = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
