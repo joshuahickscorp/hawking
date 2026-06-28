@@ -10,6 +10,7 @@ description = "Headless research lab, ingestion, and knowledge graph scaffold fo
 
 [dependencies]
 hide-core = { path = "../hide-core" }
+hawking-orch = { path = "../hawking-orch" }
 hawking-context = { path = "../hawking-context" }
 hawking-index = { path = "../hawking-index" }
 futures = { workspace = true }
@@ -17,6 +18,13 @@ parking_lot = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+blake3 = { workspace = true }
+sha2 = { workspace = true }
+petgraph = { workspace = true }
+similar = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }

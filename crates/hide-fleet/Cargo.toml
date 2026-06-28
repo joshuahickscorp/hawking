@@ -16,6 +16,16 @@ parking_lot = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+blake3 = { workspace = true }
+ulid = { workspace = true }
+similar = { workspace = true }
+async-trait = { workspace = true }
+tracing = { workspace = true }
+# Crate-specific: WebSocket transport for the workstation/remote plane (§4.9).
+# JSON-RPC 2.0 frames ride over this. Not a workspace dep (only this crate needs it).
+tokio-tungstenite = { version = "0.24", default-features = false, features = ["handshake", "connect", "stream"] }
 
 [dev-dependencies]
-tokio = { workspace = true }
+hawking-orch = { path = "../hawking-orch" }
