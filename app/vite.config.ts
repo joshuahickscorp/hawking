@@ -6,7 +6,20 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: { port: 5273, strictPort: false },
-  // Monaco ships many language workers; we only bundle the editor core for the skeleton.
-  optimizeDeps: { include: ["monaco-editor"] },
+  // Monaco's editor + language services run off-thread; the workers are imported via `?worker`
+  // (see app/src/surfaces/ide/monacoTheme.ts) and bundled as ES-module workers, no CDN fetch.
+  worker: { format: "es" },
+  // Bundle the editor core; exclude the worker entry subpaths from prebundling so the `?worker`
+  // imports are handled as real worker modules, not flattened into the optimize step.
+  optimizeDeps: {
+    include: ["monaco-editor"],
+    exclude: [
+      "monaco-editor/esm/vs/editor/editor.worker",
+      "monaco-editor/esm/vs/language/typescript/ts.worker",
+      "monaco-editor/esm/vs/language/json/json.worker",
+      "monaco-editor/esm/vs/language/css/css.worker",
+      "monaco-editor/esm/vs/language/html/html.worker",
+    ],
+  },
   build: { target: "es2022", sourcemap: true },
 });

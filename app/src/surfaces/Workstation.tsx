@@ -1,110 +1,139 @@
 /*
-  Workstation.tsx: the AI Workstation surface frame (01-surfaces §D). The front door.
-  A calm board of agent cards, each a run with a status glow (breathing gold = active,
-  green = done, amber = waiting). Fed by projection_patch(fleet) via the store. The big
-  Cormorant editorial number is the 032c "morning digest" moment.
-  Skeleton: fleet grid + digest. Merge-review and the per-run timeline are the surface pass.
-  Sends: Custom:fleet_run, PauseRun/CancelRun per run.
-*/
-import { sendIntent } from "../ipc";
-import { useStore, type FleetRun } from "../store";
-import { intent } from "../wire";
-import { Display, Panel, SectionLabel } from "../ui";
+  Workstation.tsx: the AI Workstation surface (HIDE_PLAN §D, §111-114). THE FRONT DOOR.
+  An observatory, not a cockpit: a calm board of parallel agents, the one-control WEDGE that
+  fans out N branches with the gold edge travelling parent->child (the state memcpy, rendered),
+  a morning-digest big-number (032c editorial moment), and a merge-review queue whose hunk gesture
+  (j/k/a/r) is identical to the IDE's. Per-run timeline strips scrub/fork over the event log.
 
-const STATE_DOT: Record<FleetRun["state"], string> = {
-  active: "var(--radiation)",
-  waiting: "var(--warning)",
-  done: "var(--success)",
-  failed: "var(--danger)",
-};
+  Fed by projection_patch(fleet) via the store (the source of truth); the fork/timeline/merge
+  interaction layers local view-state the mock transport does not script, so the surface is ALIVE.
+
+  Sends: ForkSession, ScrubToEvent, Custom:fleet_run, PauseRun/CancelRun, AcceptDiff/RejectDiff,
+  Custom:revert_diff. Consumes: projection_patch(fleet) (store.fleet) + (in live mode) projection_patch(diff).
+
+  Touches no shared foundation file. Helpers live under surfaces/workstation/.
+*/
+import { useMemo, useState } from "react";
+import { useStore, type FleetRun } from "../store";
+import { Display, Panel, SectionLabel } from "../ui";
+import { FleetBoard } from "./workstation/board";
+import { HunkReview, type ReviewBranch } from "./workstation/hunkreview";
+import { MOCK_BRANCHES } from "./workstation/mockdiffs";
 
 export function Workstation() {
   const fleet = useStore((s) => s.fleet);
-  const active = fleet.filter((r) => r.state === "active").length;
-  const needs = fleet.filter((r) => r.state === "waiting").length;
-
   return (
     <div style={{ height: "100%", overflowY: "auto", padding: "var(--s6)" }}>
-      {/* The morning digest: one editorial number in Cormorant. */}
-      <header style={{ maxWidth: 980, margin: "0 auto var(--s6)" }}>
-        <Display size={40}>
-          {fleet.length} agent{fleet.length === 1 ? "" : "s"} running. {needs} need{needs === 1 ? "s" : ""} you.
-        </Display>
-        <p style={{ color: "var(--text-low)", marginTop: "var(--s3)" }}>
-          {active} active, {fleet.filter((r) => r.state === "done").length} ready to review. Spend lavishly, locally.
-        </p>
-      </header>
-
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
-        <SectionLabel count={fleet.length}>Fleet</SectionLabel>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: "var(--s3)",
-          }}
-        >
-          {fleet.length === 0 ? (
-            <Panel pad="var(--s5)" style={{ color: "var(--text-low)" }}>
-              No runs yet. Fan out agents from Chat or a fleet objective.
-            </Panel>
-          ) : (
-            fleet.map((r) => <RunCard key={r.id} run={r} />)
-          )}
-        </div>
+      <div style={{ maxWidth: 1040, margin: "0 auto", display: "flex", flexDirection: "column", gap: "var(--s6)" }}>
+        <Digest fleet={fleet} />
+        <FleetBoard />
+        <MergeQueue branches={MOCK_BRANCHES} />
       </div>
     </div>
   );
 }
 
-function RunCard({ run }: { run: FleetRun }) {
-  const live = run.state === "active";
+// ---- The morning digest: one editorial Cormorant number, the observatory at dawn (C §411). ----
+// Ranked the way the doctrine ranks it: what needs you FIRST, then ready-to-merge, then failed.
+function Digest({ fleet }: { fleet: FleetRun[] }) {
+  const counts = useMemo(() => tally(fleet), [fleet]);
+  const ran = fleet.length;
+  // the hero line resolves to the calm state of the night's work.
+  const hero =
+    ran === 0
+      ? "Nothing running. A quiet observatory."
+      : `${ran} agent${ran === 1 ? "" : "s"} ran. ${counts.waiting} need${counts.waiting === 1 ? "s" : ""} you.`;
+
   return (
-    <Panel active={live} pad="var(--s4)" style={{ display: "flex", flexDirection: "column", gap: "var(--s3)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)" }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: STATE_DOT[run.state] }} />
-        <span style={{ fontSize: "var(--text-xs)", color: "var(--text-low)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {run.state}
-        </span>
-        <span style={{ marginLeft: "auto", color: "var(--text-low)", fontSize: "var(--text-xs)" }}>
-          step {run.step}/{run.steps}
-        </span>
+    <header>
+      <Display size={44}>{hero}</Display>
+      <p style={{ color: "var(--text-low)", marginTop: "var(--s3)" }}>
+        Walk in to the night composed into one view, not fifty notifications. Spend lavishly, locally.
+      </p>
+      <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap", marginTop: "var(--s4)" }}>
+        {/* needs-you ranked first, in amber; then ready-to-merge jade; then failed red. */}
+        <DigestStat n={counts.waiting} label="need you" tone="var(--warning)" lead />
+        <DigestStat n={counts.done} label="ready to merge" tone="var(--success)" />
+        <DigestStat n={counts.active} label="still running" tone="var(--radiation)" />
+        <DigestStat n={counts.failed} label="failed" tone="var(--danger)" />
       </div>
-      <div style={{ color: "var(--text-hi)" }}>{run.objective}</div>
-      {/* step progress as a recessed bar (real work, not a spinner) */}
-      <div style={{ height: 4, borderRadius: 999, background: "var(--surface-2)", boxShadow: "inset 0 0 0 1px var(--rim)" }}>
-        <div
-          style={{
-            width: `${(run.step / Math.max(run.steps, 1)) * 100}%`,
-            height: "100%",
-            borderRadius: 999,
-            background: live ? "var(--radiation)" : STATE_DOT[run.state],
-          }}
-        />
-      </div>
-      <div style={{ display: "flex", gap: "var(--s2)" }}>
-        <CardBtn label="Pause" onClick={() => void sendIntent(intent.pauseRun(run.id))} disabled={!live} />
-        <CardBtn label="Stop" onClick={() => void sendIntent(intent.cancelRun(run.id))} disabled={!live} />
-      </div>
+    </header>
+  );
+}
+
+function tally(fleet: FleetRun[]) {
+  const c = { active: 0, waiting: 0, done: 0, failed: 0 };
+  for (const r of fleet) c[r.state] += 1;
+  return c;
+}
+
+function DigestStat({ n, label, tone, lead }: { n: number; label: string; tone: string; lead?: boolean }) {
+  const lit = n > 0;
+  return (
+    <Panel
+      pad="var(--s3) var(--s4)"
+      active={lead && lit}
+      style={{ display: "flex", alignItems: "baseline", gap: "var(--s2)", minWidth: 132 }}
+    >
+      <Display size={28} style={{ color: lit ? tone : "var(--text-low)" }}>
+        {n}
+      </Display>
+      <span style={{ color: lit ? "var(--text-mid)" : "var(--text-low)", fontSize: "var(--text-xs)" }}>{label}</span>
     </Panel>
   );
 }
 
-function CardBtn({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+// ---- Merge review: a calm queue of finished branches, each reviewed with the IDE's hunk gesture. ----
+function MergeQueue({ branches }: { branches: ReviewBranch[] }) {
+  const [openId, setOpenId] = useState<string>(branches[0]?.diff_id ?? "");
+  const open = branches.find((b) => b.diff_id === openId) ?? branches[0];
+
+  if (branches.length === 0) {
+    return (
+      <section>
+        <SectionLabel>Merge review</SectionLabel>
+        <Panel pad="var(--s5)" style={{ color: "var(--text-low)" }}>
+          Nothing to merge yet. Finished branches queue here for hunk-by-hunk review.
+        </Panel>
+      </section>
+    );
+  }
+
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        padding: "3px 10px",
-        borderRadius: "var(--radius)",
-        fontSize: "var(--text-xs)",
-        color: disabled ? "var(--text-low)" : "var(--text-mid)",
-        boxShadow: "inset 0 0 0 1px var(--rim)",
-        background: "var(--surface-1)",
-      }}
-    >
-      {label}
-    </button>
+    <section>
+      <SectionLabel count={branches.length}>Merge review</SectionLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "var(--s3)", minHeight: 0 }}>
+        {/* the queue: pick a branch's diff to review. */}
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "var(--s2)" }}>
+          {branches.map((b) => {
+            const on = b.diff_id === open?.diff_id;
+            return (
+              <li key={b.diff_id}>
+                <button
+                  onClick={() => setOpenId(b.diff_id)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "var(--s2) var(--s3)",
+                    borderRadius: "var(--radius)",
+                    color: on ? "var(--text-hi)" : "var(--text-mid)",
+                    background: on ? "var(--surface-1)" : "transparent",
+                    boxShadow: on ? "inset 0 0 0 1px var(--radiation)" : "inset 0 0 0 1px var(--rim)",
+                  }}
+                >
+                  <div>{b.label}</div>
+                  <div style={{ color: "var(--text-low)", fontSize: "var(--text-xs)" }}>{b.path}</div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* the reviewer: same j/k/a/r gesture as the IDE diff focus. */}
+        <Panel pad="var(--s4)" style={{ minHeight: 0 }}>
+          {open ? <HunkReview branch={open} /> : null}
+        </Panel>
+      </div>
+    </section>
   );
 }
