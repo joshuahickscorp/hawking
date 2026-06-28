@@ -107,10 +107,7 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
     return (
       <div style={{ display: "grid", placeItems: "center", height: "100%", color: "var(--text-3)", textAlign: "center" }}>
         <div style={{ maxWidth: 380 }}>
-          <div className="t-body" style={{ color: "var(--text-2)" }}>Open a file from the Explorer.</div>
-          <div className="t-code" style={{ marginTop: "var(--ma-3)", color: "var(--text-3)" }}>
-            The agent's edits arrive here as reviewable diff hunks. Move with j and k, take with a, drop with r.
-          </div>
+          <div className="t-body" style={{ color: "var(--text-2)" }}>Open a file</div>
         </div>
       </div>
     );

@@ -1,19 +1,13 @@
-/*
-  ui.tsx: the base design primitives (Doctrine v3, Tadao Ando grayscale concrete).
-  Everything references the tokens in theme.css; no hardcoded colors here.
-  The single most brand-load-bearing asset is LIGHT entering the dark: a breathing bloom
-  for active/streaming and a one-shot travelling sheen for fork/handoff. There is no gold,
-  no color, no spinner. Aliveness is light. Borders are shadow-lines, never CSS `border`.
-*/
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import type { RuntimeState } from "./wire";
 
-// ---- Volume / Panel: the poured concrete slab (the .volume recipe). ----
-// `alive` wears the light breathe (active/streaming). `raised` is the lighter concrete tier.
+export type SurfaceMode = "workstation" | "ide" | "chat";
+
 export function Volume({
   children,
   alive = false,
   raised = false,
+  quiet = false,
   pad,
   as: As = "div",
   style,
@@ -22,51 +16,39 @@ export function Volume({
   children: ReactNode;
   alive?: boolean;
   raised?: boolean;
+  quiet?: boolean;
   pad?: string;
   as?: "div" | "section" | "aside" | "article";
   style?: CSSProperties;
   className?: string;
 }) {
-  const cls =
-    "volume" +
-    (raised ? " volume--raised" : "") +
-    (alive ? " alive" : "") +
-    (className ? " " + className : "");
+  const cls = [
+    "volume",
+    raised && "volume--raised",
+    quiet && "volume--quiet",
+    alive && "alive",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <As className={cls} style={{ ...(pad != null ? { padding: pad } : null), ...style }}>
+    <As className={cls} style={{ ...(pad ? { padding: pad } : null), ...style }}>
       {children}
     </As>
   );
 }
 
-// Panel: the historical name the surfaces import; an alias of Volume. `active` -> `alive`.
-export function Panel({
-  children,
-  active = false,
-  pad,
-  style,
-  className,
-}: {
+export function Panel(props: {
   children: ReactNode;
   active?: boolean;
   pad?: string;
   style?: CSSProperties;
   className?: string;
 }) {
-  return (
-    <Volume alive={active} pad={pad} style={style} className={className}>
-      {children}
-    </Volume>
-  );
+  return <Volume alive={props.active} pad={props.pad} style={props.style} className={props.className}>{props.children}</Volume>;
 }
 
-/*
-  LightEdge: THE accent primitive (replaces RadiationEdge). Two modes:
-    - "breathe": the heartbeat bloom on active/streaming elements (light, not gold).
-    - "travel":  a one-shot light sheen that sweeps once along the top edge (fork / handoff).
-  Wraps its children. No spinner; aliveness is the light. Reduced-motion is handled by
-  theme.css (.alive rests already-bloomed); travel falls back to a static lit top edge.
-*/
 export function LightEdge({
   mode = "breathe",
   children,
@@ -76,71 +58,84 @@ export function LightEdge({
   children: ReactNode;
   style?: CSSProperties;
 }) {
-  const base: CSSProperties = { position: "relative", borderRadius: "var(--radius)" };
   if (mode === "breathe") {
     return (
-      <div className="alive" style={{ ...base, ...style }}>
+      <div className="alive" style={{ position: "relative", borderRadius: "var(--radius)", ...style }}>
         {children}
       </div>
     );
   }
-  // travel: a soft light band that sweeps once across the top hairline.
-  const sheen: CSSProperties = {
-    position: "absolute",
-    insetInline: 0,
-    top: 0,
-    height: 1,
-    borderRadius: "inherit",
-    pointerEvents: "none",
-    backgroundImage:
-      "linear-gradient(90deg, transparent 0%, var(--light-soft) 38%, var(--light) 50%, var(--light-soft) 62%, transparent 100%)",
-    backgroundSize: "55% 1px",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "-40% 0",
-    animation: "light-travel var(--dur-door) var(--ease) forwards",
-  };
+
   return (
-    <div style={{ ...base, boxShadow: "var(--hairline)", ...style }}>
-      <div style={sheen} />
+    <div style={{ position: "relative", borderRadius: "var(--radius)", boxShadow: "var(--hairline)", ...style }}>
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          insetInline: 0,
+          top: 0,
+          height: 1,
+          borderRadius: "inherit",
+          pointerEvents: "none",
+          backgroundImage:
+            "linear-gradient(90deg, transparent 0%, var(--light-soft) 38%, var(--light) 50%, var(--light-soft) 62%, transparent 100%)",
+          backgroundSize: "55% 1px",
+          backgroundRepeat: "no-repeat",
+          animation: "light-travel var(--dur-door) var(--ease) forwards",
+        }}
+      />
       {children}
     </div>
   );
 }
 
-// useLight: inline style for a breathing light edge, gated on `active` (replaces useRadiation).
 const LIGHT_ACTIVE: CSSProperties = { animation: "breathe var(--breathe) var(--ease) infinite" };
 export function useLight(active: boolean): CSSProperties {
   return useMemo(() => (active ? LIGHT_ACTIVE : {}), [active]);
 }
 
-// ---- Display: Geist Mono 600 (.t-display). The editorial moment, in concrete, not serif. ----
-export function Display({
-  children,
-  style,
-  className,
-}: {
-  children: ReactNode;
-  style?: CSSProperties;
-  className?: string;
-}) {
+export function Display({ children, style, className }: { children: ReactNode; style?: CSSProperties; className?: string }) {
   return (
-    <h1 className={"t-display" + (className ? " " + className : "")} style={{ margin: 0, color: "var(--text-1)", ...style }}>
+    <h1 className={["t-display", className].filter(Boolean).join(" ")} style={style}>
       {children}
     </h1>
   );
 }
 
-// ---- SectionLabel: the OP-1 instrument caps (.t-label). ----
 export function SectionLabel({ children, count }: { children: ReactNode; count?: number }) {
   return (
     <div className="t-label" style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)" }}>
       <span>{children}</span>
-      {count != null ? <span style={{ color: "var(--text-3)" }}>{count}</span> : null}
+      {count != null ? <span className="t-micro">{count}</span> : null}
     </div>
   );
 }
 
-// ---- Mark: the brand glyph. A grayscale concrete disk with a thin LIGHT rim (event horizon). ----
+export function SurfaceHeader({
+  label,
+  title,
+  children,
+  meta,
+}: {
+  label: string;
+  title: ReactNode;
+  children?: ReactNode;
+  meta?: ReactNode;
+}) {
+  return (
+    <header className="surface-header">
+      <div className="surface-header__row">
+        <div>
+          <div className="t-label" style={{ marginBottom: "var(--ma-4)" }}>{label}</div>
+          <Display>{title}</Display>
+        </div>
+        {meta ? <div className="surface-header__meta">{meta}</div> : null}
+      </div>
+      {children ? <div className="t-body surface-header__sub">{children}</div> : null}
+    </header>
+  );
+}
+
 export function Mark({ size = 16 }: { size?: number }) {
   return (
     <span
@@ -151,106 +146,61 @@ export function Mark({ size = 16 }: { size?: number }) {
         height: size,
         borderRadius: "50%",
         background: "radial-gradient(circle at 50% 42%, var(--concrete-1) 54%, var(--void) 60%)",
-        boxShadow: "0 0 0 1px var(--line-strong), var(--light-bloom), inset 0 0 4px 0 rgba(0,0,0,0.9)",
+        boxShadow: "0 0 0 1px var(--line-strong), var(--light-bloom), inset 0 0 4px rgba(0, 0, 0, 0.9)",
       }}
     />
   );
 }
 
-// ---- StatusPill: bound to RuntimeState. Readiness reads as light, never gold. ----
-// Each state pairs a glyph + label + tone so meaning never rests on a single channel.
-const RUNTIME_STYLE: Record<RuntimeState, { glyph: string; label: string; tone: string }> = {
-  down: { glyph: "○", label: "Down", tone: "var(--text-3)" },
-  booting: { glyph: "◐", label: "Booting", tone: "var(--text-2)" },
-  ready: { glyph: "●", label: "Ready", tone: "var(--light)" },
-  degraded: { glyph: "◑", label: "Degraded", tone: "var(--text-2)" },
-  failed: { glyph: "✕", label: "Failed", tone: "var(--bad)" },
+const RUNTIME_STYLE: Record<RuntimeState, { label: string; dot: string; pulse?: boolean; lit?: boolean }> = {
+  down: { label: "Down", dot: "status-dot" },
+  booting: { label: "Booting", dot: "status-dot status-dot--light", pulse: true },
+  ready: { label: "Ready", dot: "status-dot status-dot--light", lit: true },
+  degraded: { label: "Degraded", dot: "status-dot" },
+  failed: { label: "Failed", dot: "status-dot status-dot--bad" },
 };
 
 export function StatusPill({ status, detail }: { status: RuntimeState; detail?: string | null }) {
   const s = RUNTIME_STYLE[status];
-  const breathing = status === "booting";
-  const lit = status === "ready";
   return (
     <span
       title={detail ?? undefined}
-      className={breathing ? "alive" : undefined}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "var(--ma-2)",
-        padding: "2px 10px",
-        borderRadius: "var(--radius-pill)",
-        fontSize: "11px",
-        fontWeight: 500,
-        letterSpacing: "0.04em",
-        color: "var(--text-2)",
-        boxShadow: lit
-          ? "var(--hairline-strong), var(--light-bloom)"
-          : "var(--hairline)",
-        background: "var(--concrete-2)",
-      }}
+      className={["status-pill", s.lit && "status-pill--lit", s.pulse && "alive"].filter(Boolean).join(" ")}
     >
-      <span style={{ color: s.tone, fontSize: "10px", lineHeight: 1 }}>{s.glyph}</span>
-      {s.label}
-      {detail ? <span style={{ color: "var(--text-3)" }}>{detail}</span> : null}
+      <span className={s.dot} />
+      <span>{s.label}</span>
+      {detail ? <span className="t-micro" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{detail}</span> : null}
     </span>
   );
 }
 
-// ---- Mode rail: the three surfaces as the quiet west wall. Active mode is marked by light. ----
-export type SurfaceMode = "workstation" | "ide" | "chat";
 const MODES: { id: SurfaceMode; glyph: string; label: string }[] = [
-  { id: "workstation", glyph: "▦", label: "Workstation" }, // the front door / default
-  { id: "ide", glyph: "‹›", label: "IDE" },
+  { id: "workstation", glyph: "▦", label: "Workstation" },
+  { id: "ide", glyph: "⌘", label: "IDE" },
   { id: "chat", glyph: "✎", label: "Chat" },
 ];
 
 export function ModeRail({ mode, onMode }: { mode: SurfaceMode; onMode: (m: SurfaceMode) => void }) {
   return (
-    <nav
-      aria-label="Surface"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "var(--ma-3)",
-        paddingTop: "var(--ma-6)",
-      }}
-    >
-      {MODES.map((m) => {
-        const on = m.id === mode;
-        return (
-          <button
-            key={m.id}
-            title={m.label}
-            aria-pressed={on}
-            onClick={() => onMode(m.id)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "var(--radius)",
-              display: "grid",
-              placeItems: "center",
-              fontSize: 15,
-              color: on ? "var(--light)" : "var(--text-3)",
-              background: on ? "var(--concrete-3)" : "transparent",
-              boxShadow: on ? "var(--hairline-strong), var(--light-bloom)" : "none",
-              transition: "color var(--dur) var(--ease), box-shadow var(--dur) var(--ease)",
-            }}
-          >
-            {m.glyph}
-          </button>
-        );
-      })}
+    <nav className="mode-rail" aria-label="Surface">
+      {MODES.map((m) => (
+        <button
+          key={m.id}
+          className="mode-button"
+          title={m.label}
+          aria-label={m.label}
+          aria-pressed={m.id === mode}
+          onClick={() => onMode(m.id)}
+        >
+          {m.glyph}
+        </button>
+      ))}
     </nav>
   );
 }
 
-// ModeSwitcher: the historical name the surfaces import; an alias of ModeRail.
 export const ModeSwitcher = ModeRail;
 
-// ---- Gate: the approval capsule (the .gate recipe). A lit threshold the user must cross. ----
 export function Gate({
   children,
   onClick,
@@ -269,7 +219,6 @@ export function Gate({
   );
 }
 
-// ---- CommandPalette: the keyboard-first threshold (Cmd+K). Fuzzy list over wired commands. ----
 export interface Command {
   id: string;
   label: string;
@@ -291,39 +240,21 @@ export function CommandPalette({
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
-    if (!t) return commands;
-    return commands.filter((c) => c.label.toLowerCase().includes(t));
+    return t ? commands.filter((c) => c.label.toLowerCase().includes(t)) : commands;
   }, [q, commands]);
 
   useEffect(() => {
-    if (open) {
-      setQ("");
-      setSel(0);
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
+    if (!open) return;
+    setQ("");
+    setSel(0);
+    requestAnimationFrame(() => inputRef.current?.focus());
   }, [open]);
 
   if (!open) return null;
+
   return (
-    <div
-      role="dialog"
-      aria-label="Command palette"
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(7,7,7,0.6)",
-        display: "grid",
-        placeItems: "start center",
-        paddingTop: "14vh",
-        zIndex: 100,
-      }}
-    >
-      <Volume
-        alive
-        pad="0"
-        style={{ width: "min(620px, 86vw)", overflow: "hidden" }}
-      >
+    <div role="dialog" aria-label="Command palette" className="palette-overlay" onClick={onClose}>
+      <Volume alive pad="0" className="palette">
         <div onClick={(e) => e.stopPropagation()}>
           <input
             ref={inputRef}
@@ -342,40 +273,21 @@ export function CommandPalette({
               }
             }}
             placeholder="Type a command"
-            className="t-body"
-            style={{
-              width: "100%",
-              padding: "var(--ma-4)",
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "var(--text-1)",
-              fontFamily: "var(--font)",
-              fontSize: "15px",
-              boxShadow: "inset 0 -1px 0 0 var(--line)",
-            }}
+            className="t-body palette__input"
           />
-          <ul style={{ listStyle: "none", margin: 0, padding: "var(--ma-2)", maxHeight: 340, overflowY: "auto" }}>
+          <ul className="palette__list">
             {filtered.length === 0 ? (
-              <li className="t-body" style={{ padding: "var(--ma-3)", color: "var(--text-3)" }}>No commands.</li>
+              <li className="t-body" style={{ padding: "var(--ma-3)", color: "var(--text-3)" }}>No commands</li>
             ) : (
               filtered.map((c, i) => (
                 <li key={c.id}>
                   <button
-                    className="t-body"
+                    className="ghost-button palette__item t-body"
+                    aria-selected={i === sel}
                     onMouseEnter={() => setSel(i)}
                     onClick={() => {
                       c.run();
                       onClose();
-                    }}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "var(--ma-2) var(--ma-3)",
-                      borderRadius: "var(--radius)",
-                      color: i === sel ? "var(--text-1)" : "var(--text-2)",
-                      background: i === sel ? "var(--concrete-3)" : "transparent",
-                      boxShadow: i === sel ? "var(--hairline)" : "none",
                     }}
                   >
                     {c.label}

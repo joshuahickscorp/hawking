@@ -209,7 +209,7 @@ function SearchResults({
   onOpen: (path: string, line: number) => void;
 }) {
   if (hits.length === 0) {
-    return <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-4)" }}>No matches for "{query}".</div>;
+    return <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-4)" }}>No matches for "{query}"</div>;
   }
   return (
     <ul style={list}>

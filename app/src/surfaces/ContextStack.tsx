@@ -1,23 +1,3 @@
-/*
-  ContextStack.tsx: the LIGHT WELL, THE differentiator (Doctrine v3, Part II + the Part IV recipe).
-  A narrow vertical shaft along the east wall, present in every chamber: wherever you are, you are
-  watching the agent's mind. It renders the live ContextManifest verbatim as a calm legible COLUMN
-  of strata, top to bottom, each a .volume ledge floating in the void, and makes every stratum
-  touchable (pin/unpin, mute, evict, inject). The current-action stratum is the NOW: it wears the
-  breathing LIGHT (useLight, never gold) and scrolls the agent's real moves (no spinner, no % bar).
-
-  Strata (top -> bottom): Model, Budget, Retrieved files, Tools-in-context, Memory, Dropped,
-  Tests & state, and the live Current action feed.
-
-  Binds: context.compile -> {prompt, manifest} (callConnector, refreshed when a turn ends) and the
-  projection_patch(context_manifest | retrieval | memory) updates folded into the store. Steering
-  writes go out as Custom intents the host's compiler honors next turn; a local optimistic overlay
-  makes each touch feel material immediately (useSteer).
-
-  Consumes (read-only): store slices manifest, tools (live feed), projections.build/.test, runPhase,
-  runtimeDetail. Sends: open_file; Custom{pin_span, unpin_span, switch_profile}. Touches NO shared
-  foundation file.
-*/
 import { useEffect, useState } from "react";
 import { callConnector, sendIntent } from "../ipc";
 import { useStore, type ContextManifest } from "../store";
@@ -26,12 +6,6 @@ import { SectionLabel } from "../ui";
 import { HardwareToggle, Line, NoteField, OkMark, Stratum } from "./contextstack/parts";
 import { spanKey, useSteer } from "./contextstack/state";
 
-/*
-  Budget segments read by LIGHT, not color (Doctrine: state is read by light, never a colored badge).
-  The bar is a calm monochrome ramp of concrete tiers brightening toward LIGHT for the heaviest
-  source; there is no hue here. Only --ok/--bad ever appear in this surface, and only where genuinely
-  semantic (a tool result, a test outcome), never to label a budget source.
-*/
 const SEGMENT_TONE: Record<string, string> = {
   system: "var(--concrete-4)",
   code: "var(--light)",
@@ -55,8 +29,6 @@ export function ContextStack() {
   const live = runPhase === "executing" || runPhase === "planning";
   const steer = useSteer();
 
-  // Bind to the context connector: compile the manifest on mount and whenever a turn settles,
-  // so the rail is the verbatim window assembly even before the host pushes a projection patch.
   const [compiled, setCompiled] = useState<ContextManifest | null>(null);
   useEffect(() => {
     let alive = true;
@@ -68,47 +40,27 @@ export function ContextStack() {
     };
   }, [runPhase === "done"]); // recompile when a turn ends (the manifest is published per turn)
 
-  // The store's folded manifest is truth-of-record; the compile result is the fallback before
-  // the first projection patch arrives. Prefer the live store manifest when present.
   const m = manifest ?? compiled;
 
   return (
-    <aside
-      aria-label="Context Stack"
-      style={{
-        height: "100%",
-        overflowY: "auto",
-        padding: "var(--ma-6)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--ma-4)",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)", paddingBottom: "var(--ma-2)" }}>
+    <aside aria-label="Context Stack" className="stack">
+      <div className="stack-head">
         <SectionLabel>Context Stack</SectionLabel>
         {live ? (
           <span
-            className="alive"
             title="agent active"
             aria-label="agent active"
-            style={{
-              marginLeft: "auto",
-              width: 7,
-              height: 7,
-              borderRadius: "50%",
-              background: "var(--light)",
-            }}
+            className="stack-live-dot alive"
           />
         ) : null}
       </div>
 
       {!m && liveFeed.length === 0 ? (
         <section className="volume" style={{ color: "var(--text-3)" }}>
-          <span className="t-body">No manifest yet. It compiles when the agent assembles a turn's context.</span>
+          <span className="t-body">No context yet</span>
         </section>
       ) : null}
 
-      {/* MODEL: id/arch/ctx, profile, sampling; click cycles the profile (switch_profile). */}
       {m?.model ? (
         <Stratum
           label="Model"
@@ -128,7 +80,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* BUDGET: the stacked bar read by light, framed as abundance, never an alarm. */}
       {m?.budget ? (
         <Stratum
           label="Budget"
@@ -136,7 +87,7 @@ export function ContextStack() {
           defaultOpen
         >
           <div className="t-code" style={{ color: "var(--text-2)", marginBottom: "var(--ma-3)" }}>
-            {m.budget.used.toLocaleString()} used / {m.budget.free.toLocaleString()} free
+            {m.budget.used.toLocaleString()} / {m.budget.total.toLocaleString()}
           </div>
           <div
             style={{
@@ -169,7 +120,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* RETRIEVED: files/spans. Click opens; pin/unpin holds the span into the next turn. */}
       {m?.retrieved?.length ? (
         <Stratum
           label="Retrieved"
@@ -206,7 +156,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* TOOLS in context: each can be muted (drop its output from the next assembly). */}
       {m?.tools?.length ? (
         <Stratum
           label="Tools"
@@ -238,7 +187,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* MEMORY: injected facts. Each can be evicted from context, and notes injected. */}
       {m?.memory?.length ? (
         <Stratum label="Memory" count={m.memory.length} summary={m.memory[0]?.fact}>
           {m.memory.map((mem) => {
@@ -276,7 +224,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* DROPPED: candidates cut to fit. One press pins it back into the next turn. */}
       {m?.dropped?.length ? (
         <Stratum label="Dropped" count={m.dropped.length} summary={m.dropped[0]?.title}>
           {m.dropped.map((d) => {
@@ -303,7 +250,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* TESTS & STATE: build + test projection, calm and read-only, shape not spinner. */}
       {build || test ? (
         <Stratum
           label="Tests & state"
@@ -326,8 +272,6 @@ export function ContextStack() {
         </Stratum>
       ) : null}
 
-      {/* CURRENT ACTION: the NOW. The live-feed stratum wears the breathing LIGHT and scrolls
-          the agent's real moves (no % bar). Empty when idle, calm and honest. */}
       <Stratum
         label="Current action"
         live={live}

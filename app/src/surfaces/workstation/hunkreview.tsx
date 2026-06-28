@@ -55,7 +55,6 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
   useEffect(() => {
     setVerdicts({});
     setCursor(0);
-    requestAnimationFrame(() => rootRef.current?.focus());
   }, [branch.diff_id]);
 
   const verdictOf = (id: string): HunkVerdict => verdicts[id] ?? "pending";
@@ -77,11 +76,6 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
   };
 
   const advance = () => setCursor((c) => Math.min(c + 1, branch.hunks.length - 1));
-
-  // scroll the focused hunk into view as the cursor walks.
-  useEffect(() => {
-    rowRefs.current[cursor]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [cursor]);
 
   const onKey = (e: React.KeyboardEvent) => {
     const h = branch.hunks[cursor];
@@ -130,10 +124,10 @@ export function HunkReview({ branch }: { branch: ReviewBranch }) {
       onKeyDown={onKey}
       style={{ outline: "none", display: "flex", flexDirection: "column", gap: "var(--ma-6)", minHeight: 0 }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--ma-4)" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: "var(--ma-4)", flexWrap: "wrap", minWidth: 0 }}>
         <span className="t-title" style={{ color: "var(--text-1)" }}>{branch.label}</span>
-        <span className="t-code" style={{ color: "var(--text-3)" }}>{branch.path}</span>
-        <span className="t-micro" style={{ marginLeft: "auto" }}>
+        <span className="t-code" style={{ color: "var(--text-3)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{branch.path}</span>
+        <span className="t-micro" style={{ marginLeft: "auto", flex: "0 0 auto" }}>
           {allSettled ? `${accepted} kept` : `${settled}/${branch.hunks.length} reviewed`}
         </span>
       </div>
@@ -204,13 +198,14 @@ function HunkBlock({
           display: "flex",
           alignItems: "center",
           gap: "var(--ma-2)",
+          flexWrap: "wrap",
           padding: "var(--ma-2) var(--ma-3)",
           color: "var(--text-3)",
           boxShadow: "inset 0 -1px 0 0 var(--line)",
         }}
       >
-        <span>{hunk.header}</span>
-        <span style={{ marginLeft: "auto", display: "flex", gap: "var(--ma-2)" }}>
+        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{hunk.header}</span>
+        <span style={{ marginLeft: "auto", display: "flex", gap: "var(--ma-2)", flex: "0 0 auto" }}>
           {verdict === "pending" ? (
             <>
               <GestureBtn label="a accept" tone="add" onClick={onAccept} />
@@ -249,7 +244,7 @@ function DiffRow({ line, muted }: { line: DiffLine; muted: boolean }) {
       style={{ display: "flex", gap: "var(--ma-2)", padding: "0 var(--ma-3)", ...(fg ? { color: fg } : null) }}
     >
       <span style={{ color: "var(--text-3)", width: 10, flex: "0 0 auto", userSelect: "none" }}>{sign}</span>
-      <span style={{ whiteSpace: "pre-wrap" }}>{line.text}</span>
+      <span style={{ minWidth: 0, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{line.text}</span>
     </div>
   );
 }

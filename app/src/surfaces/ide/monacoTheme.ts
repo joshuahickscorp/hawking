@@ -78,7 +78,7 @@ export function hideMonacoTheme(): Monaco.editor.IStandaloneThemeData {
       "editor.findMatchBackground": "#F4F2EE33",
       "editor.findMatchHighlightBackground": "#F4F2EE1A",
       "editor.lineHighlightBackground": "#" + T.concrete1,
-      "editor.lineHighlightBorder": "#00000000",
+      "editor.lineHighlightBorder": "#07070700",
       // Material surfaces for the floaty bits (concrete tiers, no blue).
       "editorWidget.background": "#" + T.concrete2,
       "editorWidget.border": "#" + T.concrete3,
@@ -101,7 +101,7 @@ export function hideMonacoTheme(): Monaco.editor.IStandaloneThemeData {
       // Bracket matching glows with light, not blue, not gold.
       "editorBracketMatch.background": "#F4F2EE14",
       "editorBracketMatch.border": "#F4F2EE33",
-      "editorOverviewRuler.border": "#00000000",
+      "editorOverviewRuler.border": "#07070700",
       "editorError.foreground": "#" + T.bad,
       "editorWarning.foreground": "#" + T.text2,
     },

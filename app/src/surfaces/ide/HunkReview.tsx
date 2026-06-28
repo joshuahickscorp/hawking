@@ -180,7 +180,7 @@ export function HunkReview({
           />
         ))}
         {doc.hunks.length === 0 ? (
-          <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-6)" }}>No hunks in this change.</div>
+          <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-6)" }}>No hunks in this change</div>
         ) : null}
       </div>
     </div>

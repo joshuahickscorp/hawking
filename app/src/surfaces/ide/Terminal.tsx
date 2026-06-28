@@ -72,7 +72,7 @@ export function Terminal() {
     term.open(hostRef.current);
     termRef.current = term;
 
-    term.writeln("\x1b[38;2;110;109;104mhawking shell. agent runs mirror here.\x1b[0m");
+    term.writeln("\x1b[38;2;110;109;104mhawking shell\x1b[0m");
     term.write(PROMPT);
 
     // Local line editor: enter dispatches RunCommand, the host mirrors back as tool_progress.
