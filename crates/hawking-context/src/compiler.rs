@@ -180,7 +180,7 @@ fn default_truncate(text: &str, target_tokens: usize, counter: &TokenCounter) ->
     }
     let (mut lo, mut hi) = (0usize, words.len());
     while lo < hi {
-        let mid = (lo + hi + 1) / 2;
+        let mid = (lo + hi).div_ceil(2);
         let candidate = words[..mid].join(" ");
         if counter.count(&candidate) <= target_tokens.saturating_sub(1) {
             lo = mid;
@@ -200,6 +200,12 @@ fn default_truncate(text: &str, target_tokens: usize, counter: &TokenCounter) ->
 
 /// Large constant: a user pin floats above any normally-scored span.
 const PIN_BONUS: f32 = 1_000.0;
+
+/// A non-pinned candidate is only worth degrading when its estimated cost is
+/// within this multiple of the free budget; beyond it a truncation would keep
+/// too little to be useful, so the span is deferred (→ no-fit drop) rather than
+/// realized and shredded. Pins ignore this (admitted unconditionally).
+const DEGRADE_FIT_RATIO: usize = 8;
 
 #[derive(Default)]
 pub struct ContextCompiler {
@@ -257,10 +263,16 @@ impl ContextCompiler {
         // only response+scratchpad are subtracted from the competition pool.
         let mut free = total.saturating_sub(resv.response + resv.scratchpad);
 
-        // --- 1. Gather cheap candidates. ---
+        // --- 1. Gather cheap candidates (metadata only). ---
+        // Each candidate is tagged with the index of the source that produced it
+        // so the selected-span `realize()` / over-budget `degrade()` calls below
+        // dispatch back to *that* source (lazy materialization, bible §4.2.1).
         let mut cands: Vec<ContextCandidate> = Vec::new();
-        for source in &self.sources {
-            cands.extend(source.candidates(&input).await?);
+        let mut cand_src: Vec<usize> = Vec::new();
+        for (src_idx, source) in self.sources.iter().enumerate() {
+            let produced = source.candidates(&input).await?;
+            cand_src.extend(std::iter::repeat(src_idx).take(produced.len()));
+            cands.extend(produced);
         }
 
         // Embed the query and all candidate texts once (for relevance + redundancy).
@@ -308,6 +320,7 @@ impl ContextCompiler {
                 EntryCarrier {
                     base_value: base,
                     vec_idx: i,
+                    src_idx: cand_src[i],
                     signals: SpanSignals {
                         recency,
                         importance,
@@ -469,15 +482,18 @@ impl ContextCompiler {
         })
     }
 
-    /// Realize and admit a candidate, applying the degrade ladder if it doesn't
-    /// fit whole. Pins skip the fit check (admitted unconditionally but still
-    /// degraded to fit if necessary). Returns `Some(entry)` when the candidate
-    /// could not fit even after degrade — the caller defers it for the
-    /// local-improvement pass (it still carries its body).
+    /// Realize and admit a *selected* candidate, applying the source's degrade
+    /// ladder if it doesn't fit whole. Pins skip the fit check (admitted
+    /// unconditionally but still degraded to fit if necessary). Returns
+    /// `Some(entry)` when the candidate could not fit even after degrade — the
+    /// caller defers it for the local-improvement pass.
     ///
-    /// NOTE: candidates carry their own bodies (gather-based sources), so
-    /// realize/degrade operate on `cand.text`. A lazy source that defers bodies
-    /// realizes them inside its own `candidates()` before scoring.
+    /// This is the **only** place a body is materialized: selection scores on
+    /// metadata (`title` + `est_tokens`), then we call the producing source's
+    /// [`ContextSource::realize`] for the whole-fit path and
+    /// [`ContextSource::degrade`] for the over-budget ladder. A lazy source that
+    /// defers its body therefore never pays for dropped candidates (bible
+    /// §4.2.1 "just-in-time / progressive disclosure").
     async fn admit(
         &self,
         e: EntryCarrier,
@@ -486,17 +502,50 @@ impl ContextCompiler {
         compaction: &mut Vec<CompactionEvent>,
         is_pin: bool,
     ) -> Result<Option<EntryCarrier>> {
-        let cost = self.counter.count(&e.cand.text);
-        if cost <= *free {
-            let tokens = cost.min(*free);
-            *free -= tokens;
-            let text = e.cand.text.clone();
-            selected.push(self.into_selected(e, text, tokens, None));
-            return Ok(None);
+        let source = &self.sources[e.src_idx];
+        // Cheap metadata estimate gates whether we materialize at all. A lazy
+        // candidate whose *estimate* already blows the budget is never realized
+        // here — it is either degraded (pins / near-fits) or deferred so the
+        // caller can record it as a no-fit drop with its body never touched.
+        let est = e.cand.token_count();
+
+        // Whole-fit path: only realize when the estimate says it could fit. The
+        // estimate is `chars/4`-class and may be off, so we re-check the true
+        // realized cost before committing.
+        if est <= *free {
+            let realized = source.realize(&e.cand, *free).await?;
+            let cost = self.counter.count(&realized.text);
+            if cost <= *free && !realized.text.is_empty() {
+                let tokens = cost.min(*free);
+                *free -= tokens;
+                let text = realized.text;
+                let cf = if realized.compacted {
+                    Some(crate::manifest::CompactedFrom {
+                        original_id: e.cand.id.clone(),
+                        method: "realize".to_string(),
+                        ratio: tokens as f32 / est.max(1) as f32,
+                    })
+                } else {
+                    None
+                };
+                selected.push(self.selected_from(e, text, tokens, cf));
+                return Ok(None);
+            }
+            // The realized body was larger than its estimate; fall through to the
+            // degrade ladder rather than over-spend the budget.
         }
-        // Doesn't fit whole — try the degrade ladder (truncate/summary).
+
+        // Over-budget path. Non-pins that can't plausibly degrade into a useful
+        // span (no room, or the estimate dwarfs the free budget so a truncation
+        // would be near-useless) are deferred *without* realizing, so they are
+        // recorded as honest no-fit drops. Pins always degrade-to-fit (they are
+        // admitted unconditionally per the reservation contract).
+        if !is_pin && (*free == 0 || est > free.saturating_mul(DEGRADE_FIT_RATIO)) {
+            return Ok(Some(e));
+        }
+        let cost = est;
         let target = if is_pin { (*free).max(1) } else { *free };
-        let degraded = default_truncate(&e.cand.text, target, &self.counter);
+        let degraded = source.degrade(&e.cand, target, &self.counter).await?;
         match degraded {
             Some(r) if !r.text.is_empty() => {
                 let tokens = self.counter.count(&r.text).min(*free).max(usize::from(!is_pin));
@@ -508,27 +557,27 @@ impl ContextCompiler {
                     compaction.push(CompactionEvent {
                         original_id: original_id.clone(),
                         result_id,
-                        method: "truncate".to_string(),
+                        method: "degrade".to_string(),
                         model: None,
                         ratio,
                     });
                     Some(crate::manifest::CompactedFrom {
                         original_id,
-                        method: "truncate".to_string(),
+                        method: "degrade".to_string(),
                         ratio,
                     })
                 } else {
                     None
                 };
                 let text = r.text;
-                selected.push(self.into_selected(e, text, tokens, cf));
+                selected.push(self.selected_from(e, text, tokens, cf));
                 Ok(None)
             }
             _ => Ok(Some(e)),
         }
     }
 
-    fn into_selected(
+    fn selected_from(
         &self,
         e: EntryCarrier,
         text: String,
@@ -639,6 +688,9 @@ struct EntryCarrier {
     cand: ContextCandidate,
     base_value: f32,
     vec_idx: usize,
+    /// Index into `self.sources` of the source that produced `cand` — the
+    /// `realize()`/`degrade()` calls dispatch back to it.
+    src_idx: usize,
     signals: SpanSignals,
 }
 
@@ -724,6 +776,8 @@ mod tests {
     use crate::profiles::ContextProfile;
     use hide_core::ids::ModelId;
     use hide_core::runtime::{ModelArchitecture, ModelDescriptor};
+    use std::collections::HashSet;
+    use std::sync::Mutex;
 
     struct StaticSource(Vec<ContextCandidate>);
 
@@ -736,6 +790,71 @@ mod tests {
             _input: &'a CompileInput,
         ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
             Box::pin(async { Ok(self.0.clone()) })
+        }
+    }
+
+    /// A lazy source whose `candidates()` returns metadata-only handles (empty
+    /// body + an `est_tokens` estimate) and whose `realize()` materializes the
+    /// real body, recording *which* candidate ids were realized. Used to prove
+    /// the compiler never realizes a dropped candidate.
+    struct SpySource {
+        /// (id, title, body, est_tokens, score) tuples.
+        cands: Vec<(String, String, String, usize, f32)>,
+        realized: Arc<Mutex<Vec<String>>>,
+    }
+
+    impl ContextSource for SpySource {
+        fn name(&self) -> &str {
+            "spy"
+        }
+        fn gather<'a>(
+            &'a self,
+            input: &'a CompileInput,
+        ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
+            self.candidates(input)
+        }
+        fn candidates<'a>(
+            &'a self,
+            _input: &'a CompileInput,
+        ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
+            Box::pin(async move {
+                Ok(self
+                    .cands
+                    .iter()
+                    .map(|(id, title, _body, est, score)| {
+                        // Metadata only: NO body, just a cost estimate.
+                        let mut c = ContextCandidate::new(
+                            id.clone(),
+                            ContextSourceKind::Code,
+                            title.clone(),
+                            String::new(),
+                            *score,
+                            Provenance::trusted("spy"),
+                        );
+                        c.est_tokens = *est;
+                        c
+                    })
+                    .collect())
+            })
+        }
+        fn realize<'a>(
+            &'a self,
+            c: &'a ContextCandidate,
+            _budget_tokens: usize,
+        ) -> BoxFuture<'a, Result<RealizedSpan>> {
+            self.realized.lock().unwrap().push(c.id.clone());
+            let body = self
+                .cands
+                .iter()
+                .find(|(id, ..)| *id == c.id)
+                .map(|(_, _, body, ..)| body.clone())
+                .unwrap_or_default();
+            Box::pin(async move {
+                Ok(RealizedSpan {
+                    text: body,
+                    compacted: false,
+                })
+            })
         }
     }
 
@@ -808,6 +927,169 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn realize_not_called_for_dropped_candidates() {
+        // Budget fits only the small high-value span. The bulky low-value span
+        // must be dropped *without* its body ever being realized — proving the
+        // lazy candidates → select → realize split is live, not eager.
+        let realized = Arc::new(Mutex::new(Vec::new()));
+        let mut compiler = ContextCompiler::new();
+        compiler.add_source(SpySource {
+            cands: vec![
+                // id, title, body, est_tokens, score
+                (
+                    "keep".to_string(),
+                    "important task content".to_string(),
+                    "important task content".to_string(),
+                    6,
+                    1.0,
+                ),
+                (
+                    "drop".to_string(),
+                    "irrelevant filler".to_string(),
+                    // A large body that would be expensive to materialize.
+                    "z ".repeat(5_000),
+                    5_000,
+                    0.05,
+                ),
+            ],
+            realized: realized.clone(),
+        });
+        let compiled = compiler
+            .compile(CompileInput {
+                // Small window: after reservations only a few tokens compete, so
+                // only "keep" can be admitted.
+                profile: ContextProfile::tight(48),
+                model: model(48),
+                task: "important task content".to_string(),
+            })
+            .await
+            .unwrap();
+
+        let realized_ids: HashSet<String> =
+            realized.lock().unwrap().iter().cloned().collect();
+        // The selected span was realized.
+        assert!(
+            realized_ids.contains("keep"),
+            "selected candidate must be realized; realized={realized_ids:?}"
+        );
+        // The dropped span was NEVER realized — its (huge) body was never touched.
+        assert!(
+            !realized_ids.contains("drop"),
+            "dropped candidate must NOT be realized; realized={realized_ids:?}"
+        );
+        // And it is recorded as a no-fit drop, not silently lost.
+        assert!(
+            compiled
+                .manifest
+                .dropped
+                .iter()
+                .any(|d| d.id == "drop" && d.reason == DropReason::NoFit),
+            "drop must be a recorded NoFit; dropped={:?}",
+            compiled.manifest.dropped
+        );
+        // The realized body actually made it into the prompt.
+        assert!(compiled.prompt.contains("important task content"));
+    }
+
+    #[tokio::test]
+    async fn degrade_invoked_on_over_budget_pinned_span() {
+        // A pinned lazy span larger than the whole window must be admitted via
+        // the source's degrade() ladder (the over-budget path), proving degrade
+        // is dispatched — not the dead free-fn.
+        let degraded_calls = Arc::new(Mutex::new(0usize));
+
+        struct DegradeSpy {
+            calls: Arc<Mutex<usize>>,
+        }
+        impl ContextSource for DegradeSpy {
+            fn name(&self) -> &str {
+                "degrade_spy"
+            }
+            fn gather<'a>(
+                &'a self,
+                input: &'a CompileInput,
+            ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
+                self.candidates(input)
+            }
+            fn candidates<'a>(
+                &'a self,
+                _input: &'a CompileInput,
+            ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
+                Box::pin(async move {
+                    let mut c = ContextCandidate::new(
+                        "big",
+                        ContextSourceKind::System,
+                        "system",
+                        String::new(),
+                        1.0,
+                        Provenance::trusted("t"),
+                    );
+                    c.est_tokens = 100_000;
+                    c.pin = PinState::NeverEvict;
+                    Ok(vec![c])
+                })
+            }
+            fn realize<'a>(
+                &'a self,
+                _c: &'a ContextCandidate,
+                _budget_tokens: usize,
+            ) -> BoxFuture<'a, Result<RealizedSpan>> {
+                // The whole body is far too large for any window.
+                Box::pin(async move {
+                    Ok(RealizedSpan {
+                        text: "word ".repeat(100_000),
+                        compacted: false,
+                    })
+                })
+            }
+            fn degrade<'a>(
+                &'a self,
+                _c: &'a ContextCandidate,
+                target_tokens: usize,
+                _counter: &'a TokenCounter,
+            ) -> BoxFuture<'a, Result<Option<RealizedSpan>>> {
+                *self.calls.lock().unwrap() += 1;
+                let n = target_tokens.max(1);
+                Box::pin(async move {
+                    Ok(Some(RealizedSpan {
+                        text: "w ".repeat(n),
+                        compacted: true,
+                    }))
+                })
+            }
+        }
+
+        let mut compiler = ContextCompiler::new();
+        compiler.add_source(DegradeSpy {
+            calls: degraded_calls.clone(),
+        });
+        let compiled = compiler
+            .compile(CompileInput {
+                profile: ContextProfile::tight(64),
+                model: model(64),
+                task: "anything".to_string(),
+            })
+            .await
+            .unwrap();
+        assert!(
+            *degraded_calls.lock().unwrap() >= 1,
+            "degrade() must be dispatched for the over-budget pinned span"
+        );
+        // It was admitted compacted (degrade ladder), with a recorded event.
+        assert!(
+            !compiled.manifest.compaction_events.is_empty(),
+            "degrade should record a compaction event"
+        );
+        let span = compiled
+            .manifest
+            .retained
+            .iter()
+            .find(|s| matches!(s.source, ContextSourceKind::System))
+            .expect("pinned span retained via degrade");
+        assert!(span.compacted_from.is_some(), "retained span is compacted");
+    }
+
+    #[tokio::test]
     async fn redundant_near_duplicate_is_penalized() {
         let mut compiler = ContextCompiler::new();
         // Two near-identical spans; only one should survive (redundancy).
@@ -841,6 +1123,75 @@ mod tests {
                 .any(|d| d.reason == DropReason::Redundant),
             "expected a redundancy drop, dropped={:?}",
             compiled.manifest.dropped
+        );
+    }
+
+    #[tokio::test]
+    async fn debug_profile_band_boosts_diagnostics_over_code() {
+        // Two spans with identical declared score and length. Under the debug
+        // profile, the diagnostics band multiplier (>1.0) must make the
+        // diagnostic outrank the code span when only one fits — proving
+        // band_by_kind is exercised, not a no-op 1.0.
+        let body = "alpha beta gamma delta epsilon zeta eta theta";
+        let mut compiler = ContextCompiler::new();
+        compiler.add_source(StaticSource(vec![
+            ContextCandidate::new(
+                "code",
+                ContextSourceKind::Code,
+                "code",
+                body,
+                0.5,
+                Provenance::trusted("t"),
+            ),
+            ContextCandidate::new(
+                "diag",
+                ContextSourceKind::Diagnostics,
+                "diag",
+                body,
+                0.5,
+                Provenance::trusted("t"),
+            ),
+        ]));
+        // Budget sized so only one of the two equal-length spans is admitted.
+        let compiled = compiler
+            .compile(CompileInput {
+                profile: ContextProfile::debug(72),
+                model: model(72),
+                task: "unrelated query text".to_string(),
+            })
+            .await
+            .unwrap();
+        // The diagnostic survives; the code span is dropped/degraded.
+        assert!(
+            compiled
+                .manifest
+                .retained
+                .iter()
+                .any(|s| matches!(s.source, ContextSourceKind::Diagnostics)),
+            "diagnostics span should be retained under the debug band, retained={:?}",
+            compiled.manifest.retained.iter().map(|s| &s.title).collect::<Vec<_>>()
+        );
+        // Sanity: with the *standard* profile (no band boost) the two equal
+        // spans tie-break on content id, so the band is what flips debug.
+        let standard = compiler
+            .compile(CompileInput {
+                profile: ContextProfile::standard(72),
+                model: model(72),
+                task: "unrelated query text".to_string(),
+            })
+            .await
+            .unwrap();
+        // Under standard, "code" wins the id tie-break (c < d), so the band in
+        // the debug run genuinely changed the selection.
+        let standard_kept_code = standard
+            .manifest
+            .retained
+            .iter()
+            .any(|s| s.title == "code");
+        assert!(
+            standard_kept_code,
+            "control: standard profile keeps 'code' by id tie-break; got {:?}",
+            standard.manifest.retained.iter().map(|s| &s.title).collect::<Vec<_>>()
         );
     }
 

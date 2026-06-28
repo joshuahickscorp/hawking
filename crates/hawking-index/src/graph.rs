@@ -369,9 +369,9 @@ fn truncate_line(line: &str, max: usize) -> String {
     }
 }
 
-/// Cheap token estimate (chars/4) for budget binary-search.
+/// Cheap token estimate (chars/4, rounded up) for budget binary-search.
 pub fn estimate_tokens(text: &str) -> usize {
-    (text.chars().count() + 3) / 4
+    text.chars().count().div_ceil(4)
 }
 
 #[cfg(test)]

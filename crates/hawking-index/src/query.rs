@@ -75,16 +75,54 @@ pub struct IndexHealth {
 /// Per-query knobs: freshness gate + precise-only filter.
 #[derive(Debug, Clone, Default)]
 pub struct Q {
-    /// Wait-for-freshness: only answer once the index is at >= this generation.
+    /// Freshness gate. When set, a query errors with [`HideError::InvalidState`]
+    /// unless the index is committed at >= this generation (a stale read is
+    /// refused rather than silently served from an old generation).
     pub min_generation: Option<u64>,
-    /// Accept only compiler-precise (LSP-confirmed) edges (not yet produced;
-    /// approximate tags are always returned today).
+    /// Exact-symbol-only resolution. When `true`, `definition_q`/`references_q`
+    /// resolve ONLY the requested symbol id or its exact bare name — the fuzzy
+    /// bare-name expansion (which can pull in same-named symbols across files) is
+    /// suppressed, so a hit is a precise match for the requested symbol.
     pub precise: bool,
+}
+
+impl Q {
+    /// Apply the freshness gate against the index's current committed generation.
+    /// Returns `Err(InvalidState)` if `min_generation` is set and `current` is
+    /// behind it; `Ok(())` otherwise (including when no gate is requested).
+    pub fn check_fresh(&self, current: u64) -> Result<()> {
+        if let Some(min) = self.min_generation {
+            if current < min {
+                return Err(hide_core::HideError::InvalidState(format!(
+                    "index generation {current} is behind requested min_generation {min}"
+                )));
+            }
+        }
+        Ok(())
+    }
 }
 
 pub trait Index: CodeIndex {
     /// Token-budgeted repo-map (the structural leg of ch.04).
     fn repo_map<'a>(&'a self, req: RepoMapRequest) -> BoxFuture<'a, Result<RepoMap>>;
+
+    /// The committed generation this index can answer at (freshness anchor).
+    fn current_generation(&self) -> u64;
+
+    /// Definition lookup honoring the per-query [`Q`] knobs: freshness gate +
+    /// precise (exact-symbol-only) resolution.
+    fn definition_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
+
+    /// Reference lookup honoring the per-query [`Q`] knobs.
+    fn references_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>>;
 }
 
 // ============================================================================
@@ -292,6 +330,19 @@ impl InMemoryCodeIndex {
         }
         out
     }
+
+    /// Precise lookup for the `Q.precise` path: resolve ONLY the exact key
+    /// (`symbol` as stored), with no bare-name / cross-file expansion.
+    fn lookup_occurrences_exact(&self, symbol: &str, role: &str) -> Vec<Occurrence> {
+        self.occurrences
+            .read()
+            .get(symbol)
+            .cloned()
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|o| o.role == role)
+            .collect()
+    }
 }
 
 fn def_range(
@@ -449,9 +500,25 @@ impl SqliteCodeIndex {
 
     /// Full hybrid search (symbol ⊕ lexical ⊕ vector → RRF → rerank). Uses a stub
     /// embedder by default so it works offline; swap via `search_with_embedder`.
+    /// The vector (semantic) leg always runs here; use [`hybrid_search_opts`] to
+    /// disable it.
+    ///
+    /// [`hybrid_search_opts`]: SqliteCodeIndex::hybrid_search_opts
     pub async fn hybrid_search(&self, query: &str, k_final: usize) -> Result<Vec<FusedHit>> {
+        self.hybrid_search_opts(query, k_final, true).await
+    }
+
+    /// Hybrid search with an explicit `include_semantic` toggle. When `false` the
+    /// vector leg (and the embedder) is skipped entirely.
+    pub async fn hybrid_search_opts(
+        &self,
+        query: &str,
+        k_final: usize,
+        include_semantic: bool,
+    ) -> Result<Vec<FusedHit>> {
         let embedder = StubEmbeddingClient::default();
-        self.search_with_embedder(query, k_final, &embedder).await
+        self.search_with_embedder(query, k_final, &embedder, include_semantic)
+            .await
     }
 
     pub async fn search_with_embedder<E: crate::semantic::EmbeddingClient>(
@@ -459,6 +526,7 @@ impl SqliteCodeIndex {
         query: &str,
         k_final: usize,
         embedder: &E,
+        include_semantic: bool,
     ) -> Result<Vec<FusedHit>> {
         // Leg B: FTS5 lexical.
         let lex_hits = self.store.lexical_search(query, 50)?;
@@ -511,13 +579,14 @@ impl SqliteCodeIndex {
 
         let retriever = HybridRetriever::new(&self.store, embedder);
         retriever
-            .search(
+            .search_with_legs(
                 query,
                 lexical,
                 symbol,
                 &snippets,
                 &LexicalOverlapReranker,
                 k_final,
+                include_semantic,
             )
             .await
     }
@@ -548,7 +617,10 @@ fn first_n_lines(s: &str, n: usize) -> String {
 impl CodeIndex for SqliteCodeIndex {
     fn search<'a>(&'a self, query: SearchQuery) -> BoxFuture<'a, Result<Vec<SearchResult>>> {
         Box::pin(async move {
-            let hits = self.hybrid_search(&query.text, query.limit).await?;
+            // Honor `include_semantic`: when false, the vector leg is skipped.
+            let hits = self
+                .hybrid_search_opts(&query.text, query.limit, query.include_semantic)
+                .await?;
             Ok(hits
                 .into_iter()
                 .map(|h| SearchResult {
@@ -604,6 +676,40 @@ impl Index for SqliteCodeIndex {
     fn repo_map<'a>(&'a self, req: RepoMapRequest) -> BoxFuture<'a, Result<RepoMap>> {
         Box::pin(async move { Ok(self.graph.read().repo_map(&req)) })
     }
+
+    fn current_generation(&self) -> u64 {
+        *self.generation.read()
+    }
+
+    fn definition_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+        Box::pin(async move {
+            q.check_fresh(self.current_generation())?;
+            if q.precise {
+                self.store.definitions_exact(symbol)
+            } else {
+                self.store.definitions(symbol)
+            }
+        })
+    }
+
+    fn references_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+        Box::pin(async move {
+            q.check_fresh(self.current_generation())?;
+            if q.precise {
+                self.store.references_exact(symbol)
+            } else {
+                self.store.references(symbol)
+            }
+        })
+    }
 }
 
 impl Index for InMemoryCodeIndex {
@@ -629,6 +735,40 @@ impl Index for InMemoryCodeIndex {
                 }
             }
             Ok(g.repo_map(&req))
+        })
+    }
+
+    fn current_generation(&self) -> u64 {
+        *self.generation.read()
+    }
+
+    fn definition_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+        Box::pin(async move {
+            q.check_fresh(self.current_generation())?;
+            Ok(if q.precise {
+                self.lookup_occurrences_exact(symbol, ROLE_DEFINITION)
+            } else {
+                self.lookup_occurrences(symbol, ROLE_DEFINITION)
+            })
+        })
+    }
+
+    fn references_q<'a>(
+        &'a self,
+        symbol: &'a str,
+        q: Q,
+    ) -> BoxFuture<'a, Result<Vec<Occurrence>>> {
+        Box::pin(async move {
+            q.check_fresh(self.current_generation())?;
+            Ok(if q.precise {
+                self.lookup_occurrences_exact(symbol, ROLE_REFERENCE)
+            } else {
+                self.lookup_occurrences(symbol, ROLE_REFERENCE)
+            })
         })
     }
 }

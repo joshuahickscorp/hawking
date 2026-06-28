@@ -403,12 +403,12 @@ pub fn validate_layout(hide_dir: &Path) -> LayoutValidation {
             false
         };
 
-        return LayoutValidation {
+        LayoutValidation {
             ok: root_ok && !log_violation,
             root_mode_owner_only: root_ok,
             hide_log_agent_writable: log_violation,
             warnings,
-        };
+        }
     }
 
     #[cfg(not(unix))]

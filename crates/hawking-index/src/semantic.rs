@@ -317,6 +317,10 @@ impl<'a, E: EmbeddingClient> HybridRetriever<'a, E> {
     /// Full search: vector leg + caller-supplied lexical & symbol legs → RRF →
     /// rerank. The caller passes lexical/symbol rankings (from `store`) so this
     /// stays decoupled from how those legs are produced.
+    ///
+    /// The vector (semantic) leg always runs; use [`search_with_legs`] to skip it.
+    ///
+    /// [`search_with_legs`]: HybridRetriever::search_with_legs
     pub async fn search(
         &self,
         query: &str,
@@ -326,8 +330,29 @@ impl<'a, E: EmbeddingClient> HybridRetriever<'a, E> {
         reranker: &dyn Reranker,
         k_final: usize,
     ) -> Result<Vec<FusedHit>> {
-        let vector = self.vector_leg(query, 50).await?;
-        let legs = vec![lexical, symbol, vector];
+        self.search_with_legs(query, lexical, symbol, snippets, reranker, k_final, true)
+            .await
+    }
+
+    /// As [`search`](HybridRetriever::search), but `include_semantic` toggles the
+    /// vector leg. When `false` the embedder is never invoked (no `embed()` call,
+    /// no cosine pass) — the result is a pure lexical⊕symbol fusion. This is what
+    /// lets `include_semantic` on a query actually turn the vector leg off.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn search_with_legs(
+        &self,
+        query: &str,
+        lexical: LegRanking,
+        symbol: LegRanking,
+        snippets: &std::collections::HashMap<String, FusedHit>,
+        reranker: &dyn Reranker,
+        k_final: usize,
+        include_semantic: bool,
+    ) -> Result<Vec<FusedHit>> {
+        let mut legs = vec![lexical, symbol];
+        if include_semantic {
+            legs.push(self.vector_leg(query, 50).await?);
+        }
         let fused = fuse_legs(&legs, RRF_K);
 
         let mut hits: Vec<FusedHit> = Vec::new();
@@ -397,6 +422,84 @@ mod tests {
         let retriever = HybridRetriever::new(&store, &embedder);
         let leg = retriever.vector_leg("compute alpha", 5).await.unwrap();
         assert!(!leg.ranked_keys.is_empty(), "vector leg must return hits");
+    }
+
+    /// An embedder that records how many times `embed()` was invoked, so a test
+    /// can prove the vector leg was (or wasn't) run.
+    struct CountingEmbedder {
+        calls: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+    }
+    impl EmbeddingClient for CountingEmbedder {
+        fn embed<'a>(&'a self, texts: Vec<String>) -> BoxFuture<'a, Result<Vec<Vec<f32>>>> {
+            self.calls
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Box::pin(async move { Ok(texts.iter().map(|t| bag_of_chars(t, 16)).collect()) })
+        }
+        fn model_id(&self) -> String {
+            "counting:test".into()
+        }
+    }
+
+    #[tokio::test]
+    async fn include_semantic_toggles_vector_leg() {
+        use std::sync::atomic::Ordering;
+        use std::sync::Arc;
+        let store = SqliteStore::open_in_memory().unwrap();
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let embedder = CountingEmbedder {
+            calls: calls.clone(),
+        };
+        let retriever = HybridRetriever::new(&store, &embedder);
+
+        let snippets: HashMap<String, FusedHit> = HashMap::new();
+        let lexical = LegRanking {
+            name: "lexical".into(),
+            weight: 1.0,
+            ranked_keys: vec![],
+        };
+        let symbol = LegRanking {
+            name: "symbol".into(),
+            weight: 1.0,
+            ranked_keys: vec![],
+        };
+
+        // include_semantic = false → embedder must NOT be called.
+        retriever
+            .search_with_legs(
+                "q",
+                lexical.clone(),
+                symbol.clone(),
+                &snippets,
+                &LexicalOverlapReranker,
+                5,
+                false,
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            0,
+            "vector leg ran despite include_semantic=false"
+        );
+
+        // include_semantic = true → embedder IS called exactly once (the query embed).
+        retriever
+            .search_with_legs(
+                "q",
+                lexical,
+                symbol,
+                &snippets,
+                &LexicalOverlapReranker,
+                5,
+                true,
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            calls.load(Ordering::SeqCst),
+            1,
+            "vector leg should have embedded the query"
+        );
     }
 
     #[tokio::test]

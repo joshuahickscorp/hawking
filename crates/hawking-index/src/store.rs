@@ -314,6 +314,21 @@ impl SqliteStore {
         Ok(occs)
     }
 
+    /// Precise definition lookup: ONLY the exact `symbol_id` (no bare-name
+    /// fallback). Used by the `Q.precise` query path so a same-named symbol in
+    /// another file can't leak in.
+    pub fn definitions_exact(&self, symbol: &str) -> Result<Vec<Occurrence>> {
+        let conn = self.conn.lock();
+        query_occurrences(&conn, "symbol_id = ?1 AND role = 'definition'", symbol)
+    }
+
+    /// Precise reference lookup: ONLY occurrences keyed by exactly `symbol`
+    /// (references are stored keyed by bare name; no SCIP-suffix stripping).
+    pub fn references_exact(&self, symbol: &str) -> Result<Vec<Occurrence>> {
+        let conn = self.conn.lock();
+        query_occurrences(&conn, "symbol_id = ?1 AND role = 'reference'", symbol)
+    }
+
     /// Reference occurrences for a symbol — by id or bare name.
     pub fn references(&self, symbol: &str) -> Result<Vec<Occurrence>> {
         let conn = self.conn.lock();
@@ -360,7 +375,8 @@ impl SqliteStore {
     /// Symbols whose display_name matches the query substring (symbol leg).
     pub fn symbol_search(&self, query: &str, limit: usize) -> Result<Vec<Symbol>> {
         let conn = self.conn.lock();
-        let like = format!("%{}%", query.replace('%', "").replace('_', ""));
+        // Strip LIKE wildcards from the user input (collapsed into one pass).
+        let like = format!("%{}%", query.replace(['%', '_'], ""));
         let mut stmt = conn
             .prepare(
                 "SELECT symbol_id, kind, display_name, file FROM symbol

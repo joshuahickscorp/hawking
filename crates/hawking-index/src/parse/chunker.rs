@@ -7,6 +7,7 @@
 //! never re-embedded (the dominant incremental-embedding win).
 
 use super::grammars::{GrammarRegistry, LangId};
+use super::{scip_symbol_id, SymKind};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tree_sitter::{Node, Parser};
@@ -62,6 +63,13 @@ pub fn chunk_file(rel_path: &str, source: &str) -> Vec<CodeChunk> {
     }
     raw.sort_by_key(|(s, _)| *s);
 
+    // Build a table of every definition's byte span → its SCIP id, so each chunk
+    // can be tagged with the symbol whose span encloses it (bible §4.7). We walk
+    // the *whole* tree (not just chunk-able defs) so that, e.g., a method chunk
+    // inside a class resolves to the method symbol rather than the class.
+    let mut def_symbols: Vec<DefSpan> = Vec::new();
+    collect_def_symbols(tree.root_node(), src, lang, rel_path, &mut def_symbols);
+
     // Split oversized, then merge small adjacent siblings (cAST).
     let mut split: Vec<(usize, usize)> = Vec::new();
     for (s, e) in raw {
@@ -75,8 +83,102 @@ pub fn chunk_file(rel_path: &str, source: &str) -> Vec<CodeChunk> {
 
     merged
         .into_iter()
-        .filter_map(|(s, e)| make_chunk(rel_path, source, s, e))
+        .filter_map(|(s, e)| {
+            let mut chunk = make_chunk(rel_path, source, s, e)?;
+            chunk.symbol = enclosing_symbol(&def_symbols, s, e);
+            Some(chunk)
+        })
         .collect()
+}
+
+/// A definition's byte span paired with its SCIP id.
+struct DefSpan {
+    start: usize,
+    end: usize,
+    symbol_id: String,
+}
+
+/// The SCIP id of the definition that owns the chunk (bible §4.7: "the symbol
+/// whose span contains the chunk").
+///
+/// A chunk usually IS one definition, but cAST may split an oversized def or
+/// merge small siblings; the chunk then maps to its *leading* definition — the
+/// smallest def whose span contains the chunk's start byte. For a nested form
+/// (a method inside a class) the inner, smaller def wins, so a method chunk maps
+/// to the method rather than the enclosing class. `None` only when nothing
+/// covers the start (e.g. a window-fallback fragment).
+fn enclosing_symbol(defs: &[DefSpan], start: usize, end: usize) -> Option<String> {
+    defs.iter()
+        // Prefer the smallest def fully containing the chunk (the clean 1:1 case),
+        // then fall back to the smallest def containing just the chunk's start
+        // (merged/split case).
+        .filter(|d| d.start <= start && d.end >= end)
+        .min_by_key(|d| d.end - d.start)
+        .or_else(|| {
+            defs.iter()
+                .filter(|d| d.start <= start && d.end > start)
+                .min_by_key(|d| d.end - d.start)
+        })
+        .map(|d| d.symbol_id.clone())
+}
+
+/// Walk the tree collecting (byte-span, SCIP id) for every named definition we
+/// can attach a symbol to. Mirrors `parse::extract_with_bundle`'s kind mapping so
+/// the ids are byte-for-byte the same as the symbols stored in the index — that's
+/// what lets a retrieval hit map back to a symbol.
+fn collect_def_symbols(
+    node: Node,
+    src: &[u8],
+    lang: LangId,
+    rel_path: &str,
+    out: &mut Vec<DefSpan>,
+) {
+    if let Some((name, kind)) = def_name_and_kind(node, src) {
+        out.push(DefSpan {
+            start: node.start_byte(),
+            end: node.end_byte(),
+            symbol_id: scip_symbol_id(lang, rel_path, &name, kind),
+        });
+    }
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_def_symbols(child, src, lang, rel_path, out);
+    }
+}
+
+/// Map a definition node to its (name, kind), or `None` if it isn't a named
+/// definition. Covers the Rust / Python / TS-JS forms the index emits symbols for.
+fn def_name_and_kind(node: Node, src: &[u8]) -> Option<(String, SymKind)> {
+    let kind = match node.kind() {
+        // rust
+        "function_item" => SymKind::Function,
+        "struct_item" => SymKind::Struct,
+        "enum_item" => SymKind::Enum,
+        "trait_item" => SymKind::Trait,
+        "mod_item" => SymKind::Module,
+        "macro_definition" => SymKind::Macro,
+        "type_item" => SymKind::TypeAlias,
+        "const_item" | "static_item" => SymKind::Constant,
+        // python
+        "function_definition" => SymKind::Function,
+        "class_definition" => SymKind::Class,
+        // typescript / javascript
+        "function_declaration" | "generator_function_declaration" => SymKind::Function,
+        "method_definition" => SymKind::Method,
+        "class_declaration" => SymKind::Class,
+        "interface_declaration" => SymKind::Interface,
+        "enum_declaration" => SymKind::Enum,
+        "type_alias_declaration" => SymKind::TypeAlias,
+        _ => return None,
+    };
+    let name = node
+        .child_by_field_name("name")
+        .and_then(|n| n.utf8_text(src).ok())
+        .map(|s| s.to_string())?;
+    if name.is_empty() {
+        return None;
+    }
+    Some((name, kind))
 }
 
 /// Collect byte spans of the definition nodes we want as chunks (functions,
@@ -219,7 +321,7 @@ mod tests {
     fn chunks_rust_by_definition() {
         let src = "pub fn alpha() {\n    let x = 1;\n}\n\npub fn beta() {\n    let y = 2;\n}\n";
         let chunks = chunk_file("m.rs", src);
-        assert!(chunks.len() >= 1);
+        assert!(!chunks.is_empty());
         // each chunk is content-addressed and non-empty
         for c in &chunks {
             assert_eq!(c.chunk_id.len(), 64);
@@ -235,6 +337,61 @@ mod tests {
         let a = chunk_file("a.rs", "pub fn f() { body(); }");
         let b = chunk_file("b.rs", "pub fn f() { body(); }");
         assert_eq!(a[0].chunk_id, b[0].chunk_id);
+    }
+
+    #[test]
+    fn chunk_symbol_is_enclosing_def_scip_id() {
+        use crate::parse::parse_source;
+        // Two top-level fns: each chunk must carry the SCIP id of the def it covers,
+        // and that id must equal the symbol the parser emits (so hits map back).
+        let src = "pub fn alpha() {\n    work();\n}\n\npub fn beta() {\n    other();\n}\n";
+        let chunks = chunk_file("m.rs", src);
+        assert!(!chunks.is_empty());
+        // every chunk that wraps a single def must have a symbol (not None)
+        let with_sym: Vec<_> = chunks.iter().filter(|c| c.symbol.is_some()).collect();
+        assert!(
+            !with_sym.is_empty(),
+            "expected at least one chunk tagged with its enclosing symbol"
+        );
+
+        // The symbol id must be byte-identical to a parsed symbol's qualified_name.
+        let parsed = parse_source("m.rs", src);
+        let parsed_ids: std::collections::HashSet<&str> =
+            parsed.symbols.iter().map(|s| s.qualified_name.as_str()).collect();
+        for c in &with_sym {
+            let sym = c.symbol.as_deref().unwrap();
+            assert!(
+                parsed_ids.contains(sym),
+                "chunk symbol {sym:?} must match a parsed symbol id; have {parsed_ids:?}"
+            );
+        }
+
+        // Specifically, the chunk covering `alpha` resolves to alpha's id.
+        let alpha_id = scip_symbol_id(LangId::Rust, "m.rs", "alpha", SymKind::Function);
+        assert!(
+            chunks.iter().any(|c| c.symbol.as_deref() == Some(alpha_id.as_str())),
+            "a chunk should map to alpha's SCIP id {alpha_id:?}"
+        );
+    }
+
+    #[test]
+    fn chunk_symbol_resolves_to_inner_method_not_class() {
+        // A method chunk inside a class must resolve to the *method* (smallest
+        // enclosing def), not the class. Make the method body large enough that it
+        // survives as its own chunk (cAST won't merge a >MIN-size sibling).
+        let body: String = (0..40)
+            .map(|i| format!("        line_{i}();\n"))
+            .collect();
+        let src = format!("class Greeter {{\n    render() {{\n{body}    }}\n}}\n");
+        let chunks = chunk_file("ui.ts", &src);
+        let method_id = scip_symbol_id(LangId::TypeScript, "ui.ts", "render", SymKind::Method);
+        // there must be a chunk that maps to the inner method's id (smallest
+        // enclosing def), proving nested resolution prefers the method over the class.
+        assert!(
+            chunks.iter().any(|c| c.symbol.as_deref() == Some(method_id.as_str())),
+            "expected a chunk mapped to inner method {method_id:?}; got {:?}",
+            chunks.iter().map(|c| c.symbol.clone()).collect::<Vec<_>>()
+        );
     }
 
     #[test]

@@ -313,6 +313,91 @@ fn helper() {}
     }
 
     #[test]
+    fn typescript_extracts_defs_and_refs() {
+        // Ordinary TS source: a function, a class with a method, and call sites.
+        // The bundled grammar tags.scm would yield ZERO here (signature-only).
+        let src = r#"
+function greet(name: string): string {
+    return format(name);
+}
+
+class Greeter {
+    render(): void {
+        greet("world");
+    }
+}
+
+const formatted = format("x");
+"#;
+        let out = parse_source("ui.ts", src);
+        assert_eq!(out.lang, Some(LangId::TypeScript));
+        assert!(!out.unparseable);
+
+        let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(def_names.contains(&"greet"), "got defs {def_names:?}");
+        assert!(def_names.contains(&"Greeter"), "got defs {def_names:?}");
+        assert!(def_names.contains(&"render"), "got defs {def_names:?}");
+        assert!(
+            !out.symbols.is_empty(),
+            "TS source must yield non-empty definitions"
+        );
+
+        let refs: Vec<_> = out
+            .occurrences
+            .iter()
+            .filter(|o| o.role == ROLE_REFERENCE)
+            .map(|o| o.symbol.as_str())
+            .collect();
+        assert!(
+            !refs.is_empty(),
+            "TS source must yield non-empty references, got {refs:?}"
+        );
+        assert!(refs.contains(&"greet"), "expected call ref to greet: {refs:?}");
+        assert!(refs.contains(&"format"), "expected call ref to format: {refs:?}");
+    }
+
+    #[test]
+    fn javascript_extracts_defs_and_refs() {
+        // Plain JS (no types) routed through the TS superset grammar: a function,
+        // a class + method, an arrow-fn const, and call sites.
+        let src = r#"
+function add(a, b) {
+    return compute(a, b);
+}
+
+class Calculator {
+    run() {
+        add(1, 2);
+    }
+}
+
+const square = (n) => add(n, n);
+"#;
+        let out = parse_source("calc.js", src);
+        assert_eq!(out.lang, Some(LangId::TypeScript));
+        assert!(!out.unparseable);
+
+        let def_names: Vec<_> = out.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(def_names.contains(&"add"), "got defs {def_names:?}");
+        assert!(def_names.contains(&"Calculator"), "got defs {def_names:?}");
+        assert!(def_names.contains(&"run"), "got defs {def_names:?}");
+        assert!(def_names.contains(&"square"), "arrow-fn const def: {def_names:?}");
+
+        let refs: Vec<_> = out
+            .occurrences
+            .iter()
+            .filter(|o| o.role == ROLE_REFERENCE)
+            .map(|o| o.symbol.as_str())
+            .collect();
+        assert!(
+            !refs.is_empty(),
+            "JS source must yield non-empty references, got {refs:?}"
+        );
+        assert!(refs.contains(&"compute"), "expected call ref to compute: {refs:?}");
+        assert!(refs.contains(&"add"), "expected call ref to add: {refs:?}");
+    }
+
+    #[test]
     fn python_extracts_class_and_function() {
         let src = "class Widget:\n    def render(self):\n        draw()\n\ndef draw():\n    pass\n";
         let out = parse_source("ui.py", src);

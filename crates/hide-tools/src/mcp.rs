@@ -200,16 +200,21 @@ pub struct McpClient {
 }
 
 enum ClientTransport {
-    Stdio {
-        _child: Child,
-        stdin: Mutex<ChildStdin>,
-        stdout: Mutex<BufReader<ChildStdout>>,
-    },
+    /// Boxed because the stdio transport carries a `Child` + two large buffered
+    /// handles, dwarfing the `Http` variant (`clippy::large_enum_variant`).
+    Stdio(Box<StdioTransport>),
     Http {
         client: reqwest::Client,
         endpoint: String,
         session_id: Mutex<Option<String>>,
     },
+}
+
+/// State for an stdio MCP transport: the live child plus its locked I/O handles.
+struct StdioTransport {
+    _child: Child,
+    stdin: Mutex<ChildStdin>,
+    stdout: Mutex<BufReader<ChildStdout>>,
 }
 
 impl McpClient {
@@ -226,11 +231,11 @@ impl McpClient {
                     .with_context(|| format!("spawning MCP server {command}"))?;
                 let stdin = child.stdin.take().ok_or_else(|| anyhow!("no stdin"))?;
                 let stdout = child.stdout.take().ok_or_else(|| anyhow!("no stdout"))?;
-                ClientTransport::Stdio {
+                ClientTransport::Stdio(Box::new(StdioTransport {
                     _child: child,
                     stdin: Mutex::new(stdin),
                     stdout: Mutex::new(BufReader::new(stdout)),
-                }
+                }))
             }
             McpTransport::StreamableHttp { endpoint } => ClientTransport::Http {
                 client: reqwest::Client::new(),
@@ -297,7 +302,8 @@ impl McpClient {
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
         let req = json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
         let response = match &self.transport {
-            ClientTransport::Stdio { stdin, stdout, .. } => {
+            ClientTransport::Stdio(t) => {
+                let StdioTransport { stdin, stdout, .. } = t.as_ref();
                 let mut line = serde_json::to_string(&req)?;
                 line.push('\n');
                 {
@@ -360,7 +366,8 @@ impl McpClient {
     async fn notify(&self, method: &str, params: Value) -> Result<()> {
         let note = json!({ "jsonrpc": "2.0", "method": method, "params": params });
         match &self.transport {
-            ClientTransport::Stdio { stdin, .. } => {
+            ClientTransport::Stdio(t) => {
+                let stdin = &t.stdin;
                 let mut line = serde_json::to_string(&note)?;
                 line.push('\n');
                 let mut w = stdin.lock().await;
@@ -552,6 +559,129 @@ mod tests {
             .expect("call");
         assert!(result.ok);
         assert_eq!(result.structured_content.unwrap()["echoed"], "hi");
+    }
+
+    #[tokio::test]
+    async fn http_client_lists_and_calls_tools_against_an_inprocess_server() {
+        use axum::{
+            extract::Json as AxumJson,
+            http::HeaderMap,
+            response::{IntoResponse, Response},
+            routing::post,
+            Router,
+        };
+        use std::sync::atomic::{AtomicBool, Ordering as AtomicOrdering};
+        use std::sync::Arc as StdArc;
+
+        // Tracks that the client echoed back the server-assigned session id on the
+        // second request — the Streamable-HTTP session leg, end to end.
+        let saw_session_id = StdArc::new(AtomicBool::new(false));
+        let saw = saw_session_id.clone();
+
+        async fn rpc(
+            saw: StdArc<AtomicBool>,
+            headers: HeaderMap,
+            AxumJson(req): AxumJson<Value>,
+        ) -> Response {
+            let id = req.get("id").cloned().unwrap_or(Value::Null);
+            let method = req.get("method").and_then(|m| m.as_str()).unwrap_or("");
+            // Any request carrying a session id proves the header round-tripped.
+            if headers.contains_key("mcp-session-id") {
+                saw.store(true, AtomicOrdering::SeqCst);
+            }
+            let body = match method {
+                "initialize" => json!({
+                    "jsonrpc": "2.0", "id": id,
+                    "result": {
+                        "protocolVersion": MCP_PROTOCOL_VERSION,
+                        "capabilities": {},
+                        "serverInfo": { "name": "fake-http", "version": "0" }
+                    }
+                }),
+                "notifications/initialized" => {
+                    // Notification: no body expected. Return 202-ish empty 200.
+                    return AxumJson(json!({})).into_response();
+                }
+                "tools/list" => json!({
+                    "jsonrpc": "2.0", "id": id,
+                    "result": { "tools": [{
+                        "name": "echo",
+                        "description": "echo back",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": { "msg": { "type": "string" } },
+                            "required": ["msg"],
+                            "additionalProperties": false
+                        }
+                    }]}
+                }),
+                "tools/call" => {
+                    let msg = req["params"]["arguments"]["msg"].clone();
+                    json!({
+                        "jsonrpc": "2.0", "id": id,
+                        "result": {
+                            "isError": false,
+                            "structuredContent": { "echoed": msg },
+                            "content": [{ "type": "text", "text": msg }]
+                        }
+                    })
+                }
+                _ => json!({
+                    "jsonrpc": "2.0", "id": id,
+                    "error": { "code": -32601, "message": "method not found" }
+                }),
+            };
+            // Always assign a session id so the client must echo it back next time.
+            (
+                [("MCP-Session-Id", "sess-abc123")],
+                AxumJson(body),
+            )
+                .into_response()
+        }
+
+        let app = Router::new().route(
+            "/mcp",
+            post(move |headers, body| rpc(saw.clone(), headers, body)),
+        );
+
+        // Bind an ephemeral port and serve in the background.
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("bind");
+        let addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move {
+            axum::serve(listener, app).await.unwrap();
+        });
+
+        let desc = McpServerDescriptor {
+            id: "fakehttp".into(),
+            transport: McpTransport::StreamableHttp {
+                endpoint: format!("http://{addr}/mcp"),
+            },
+            trust: "third-party".into(),
+        };
+
+        // connect() runs initialize + the initialized notification.
+        let client = McpClient::connect(&desc).await.expect("connect");
+        let specs = client.list_tools().await.expect("list");
+        assert_eq!(specs.len(), 1);
+        assert_eq!(specs[0].name, "mcp:fakehttp/echo");
+
+        let result = client
+            .call_tool("echo", json!({ "msg": "hi-http" }))
+            .await
+            .expect("call");
+        assert!(result.ok);
+        assert_eq!(result.structured_content.unwrap()["echoed"], "hi-http");
+
+        // The session id assigned on the initialize response must have been carried
+        // on a subsequent request (the Streamable-HTTP session leg).
+        assert!(
+            saw_session_id.load(AtomicOrdering::SeqCst),
+            "client must echo MCP-Session-Id on later requests"
+        );
+
+        server.abort();
     }
 
     fn which_python() -> Option<String> {

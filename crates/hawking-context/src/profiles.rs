@@ -85,6 +85,30 @@ pub struct SourceWeights {
     pub band_by_kind: BTreeMap<String, f32>,
 }
 
+impl SourceWeights {
+    /// Band multipliers for the **debug** profile: diagnostics (compiler/linter
+    /// messages) and failing tool output are boosted above ambient code so the
+    /// failure surface wins the budget competition (bible §4.2.2). Keys are the
+    /// `ContextSourceKind` debug names (what [`band_multiplier`] looks up).
+    pub fn debug_bands() -> BTreeMap<String, f32> {
+        BTreeMap::from([
+            ("Diagnostics".to_string(), 1.6),
+            ("ToolOutput".to_string(), 1.3),
+        ])
+    }
+
+    /// Band multipliers for the **refactor** profile: symbol and code spans (the
+    /// def/ref graph around the target) are boosted while volatile tool output
+    /// is de-emphasized so the structural picture dominates (bible §4.2.2).
+    pub fn refactor_bands() -> BTreeMap<String, f32> {
+        BTreeMap::from([
+            ("Symbol".to_string(), 1.6),
+            ("Code".to_string(), 1.3),
+            ("ToolOutput".to_string(), 0.7),
+        ])
+    }
+}
+
 impl Default for SourceWeights {
     fn default() -> Self {
         // Generative-Agents default α=1 for the three signals; band carries
@@ -329,6 +353,42 @@ impl ContextProfile {
         }
     }
 
+    /// Debug: root-causing a failure. A *debugging* profile weights diagnostics
+    /// and recency (bible §4.2.2): diagnostics and tool output (test/compiler
+    /// failures) get a band multiplier so they outrank ambient code, and the
+    /// recency weight is lifted so the freshest failure dominates.
+    pub fn debug(max_input_tokens: usize) -> Self {
+        let mut weights = SourceWeights {
+            // Lift recency: the latest failing run is what matters.
+            w_recency: 1.0,
+            ..SourceWeights::default()
+        };
+        weights.band_by_kind = SourceWeights::debug_bands();
+        Self {
+            name: "debug".to_string(),
+            recency_half_life_ms: 5 * 60 * 1000, // 5 min: failures age fast
+            source_weights: weights,
+            ..Self::standard(max_input_tokens)
+        }
+    }
+
+    /// Refactor: a structural change across files. A *refactor* profile weights
+    /// symbols and relevance (bible §4.2.2): symbol/code spans get a band
+    /// multiplier and the relevance weight is lifted so the def/ref graph around
+    /// the target dominates, while volatile tool output is de-emphasized.
+    pub fn refactor(max_input_tokens: usize) -> Self {
+        let mut weights = SourceWeights {
+            w_relevance: 1.5,
+            ..SourceWeights::default()
+        };
+        weights.band_by_kind = SourceWeights::refactor_bands();
+        Self {
+            name: "refactor".to_string(),
+            source_weights: weights,
+            ..Self::long(max_input_tokens)
+        }
+    }
+
     /// Look up a reserved preset by dial name; `None` for custom names.
     pub fn preset(name: &str, max_input_tokens: usize) -> Option<Self> {
         match name {
@@ -336,6 +396,8 @@ impl ContextProfile {
             "standard" | "coding_default" => Some(Self::standard(max_input_tokens)),
             "long" => Some(Self::long(max_input_tokens)),
             "unbounded" => Some(Self::unbounded(max_input_tokens)),
+            "debug" => Some(Self::debug(max_input_tokens)),
+            "refactor" => Some(Self::refactor(max_input_tokens)),
             _ => None,
         }
     }
@@ -356,6 +418,28 @@ mod tests {
         ));
         assert!(ContextProfile::preset("long", 8192).is_some());
         assert!(ContextProfile::preset("nope", 8192).is_none());
+    }
+
+    #[test]
+    fn debug_and_refactor_profiles_populate_band_by_kind() {
+        let debug = ContextProfile::debug(8192);
+        // The debug profile boosts diagnostics above 1.0 and lifts recency.
+        assert!(debug.source_weights.band_by_kind.get("Diagnostics").copied().unwrap() > 1.0);
+        assert!(debug.source_weights.band_by_kind.get("ToolOutput").copied().unwrap() > 1.0);
+        assert!(debug.source_weights.w_recency >= 1.0);
+        // A kind with no entry still defaults to 1.0 at the call site (absent).
+        assert!(!debug.source_weights.band_by_kind.contains_key("Code"));
+
+        let refactor = ContextProfile::refactor(8192);
+        // The refactor profile boosts symbols/code and de-emphasizes tool output.
+        assert!(refactor.source_weights.band_by_kind.get("Symbol").copied().unwrap() > 1.0);
+        assert!(refactor.source_weights.band_by_kind.get("Code").copied().unwrap() > 1.0);
+        assert!(refactor.source_weights.band_by_kind.get("ToolOutput").copied().unwrap() < 1.0);
+        assert!(refactor.source_weights.w_relevance > 1.0);
+
+        // Reserved names resolve via preset().
+        assert!(ContextProfile::preset("debug", 8192).is_some());
+        assert!(ContextProfile::preset("refactor", 8192).is_some());
     }
 
     #[test]

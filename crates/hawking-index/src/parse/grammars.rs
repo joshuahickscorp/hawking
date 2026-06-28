@@ -44,6 +44,64 @@ impl LangId {
     }
 }
 
+/// Custom TypeScript/JavaScript `tags.scm`.
+///
+/// The grammar's *bundled* `queries/tags.scm` only matches ambient/signature
+/// declarations (`function_signature`, `method_signature`, `abstract_*`,
+/// `interface_declaration`, `module`) — so ordinary `.ts`/`.js` source (a plain
+/// `function foo() {}`, `class Bar {}`, a method body, a call site) yields ZERO
+/// defs/refs. This query covers the concrete-syntax forms that real source code
+/// actually uses, plus reference forms (call sites, `new`, ident uses), so the
+/// reverse-reference / blast-radius moat works on TS and JS. Capture names match
+/// the `definition.<kind>` / `reference.<kind>` / `@name` contract that
+/// `parse::extract_with_bundle` consumes. The TypeScript grammar is a superset of
+/// JavaScript, so the same query drives both (`.js`/`.jsx`/`.mjs` route here too).
+pub const TS_TAGS_QUERY: &str = r#"
+; ---- definitions ----
+
+(function_declaration
+  name: (identifier) @name) @definition.function
+
+(generator_function_declaration
+  name: (identifier) @name) @definition.function
+
+(class_declaration
+  name: (type_identifier) @name) @definition.class
+
+(method_definition
+  name: (property_identifier) @name) @definition.method
+
+; arrow-fn / function-expr bound to a const/let/var: `const f = (..) => ..`
+(variable_declarator
+  name: (identifier) @name
+  value: [(arrow_function) (function_expression)]) @definition.function
+
+; interfaces / type aliases / enums (TS)
+(interface_declaration
+  name: (type_identifier) @name) @definition.interface
+
+(type_alias_declaration
+  name: (type_identifier) @name) @definition.type
+
+(enum_declaration
+  name: (identifier) @name) @definition.enum
+
+; ---- references ----
+
+; direct call: `foo(..)`
+(call_expression
+  function: (identifier) @name) @reference.call
+
+; method/qualified call: `obj.foo(..)` — credit the property name
+(call_expression
+  function: (member_expression
+    property: (property_identifier) @name)) @reference.call
+
+; `new Thing(..)`
+(new_expression
+  constructor: (identifier) @name) @reference.class
+"#;
+
 /// A compiled grammar bundle. Holds the tree-sitter `Language` and a compiled
 /// `tags.scm` `Query` (defs + refs + name captures).
 pub struct GrammarBundle {
@@ -85,7 +143,9 @@ impl GrammarRegistry {
             LangId::TypeScript => GrammarBundle::build(
                 lang,
                 tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into(),
-                tree_sitter_typescript::TAGS_QUERY,
+                // Custom query (the bundled `TAGS_QUERY` only matches ambient
+                // signatures, yielding ZERO defs/refs on ordinary `.ts`/`.js`).
+                TS_TAGS_QUERY,
             ),
             LangId::Unknown => None,
         }

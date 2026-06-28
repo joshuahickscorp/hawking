@@ -41,7 +41,7 @@ pub struct RenderedSandboxProfile {
 /// Optional render-time context the basic `render_macos_seatbelt` doesn't carry
 /// on the profile itself (proxy port, workspace/worktree roots, `.hide` dir).
 /// Defaults are conservative (no egress route, no extra confinement seam).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SandboxRenderOptions {
     /// Host egress proxy port; `Some` ⇒ render the single allowed outbound
     /// route; `None` ⇒ no network route at all even if policy is `Allow`-ish.
@@ -52,16 +52,6 @@ pub struct SandboxRenderOptions {
     /// Worktree root to confine writes to (§4.5.2 `$WORKTREE`); falls back to
     /// the profile's first write root.
     pub worktree_root: Option<String>,
-}
-
-impl Default for SandboxRenderOptions {
-    fn default() -> Self {
-        Self {
-            proxy_port: None,
-            hide_dir: None,
-            worktree_root: None,
-        }
-    }
 }
 
 /// Render a Seatbelt (SBPL) profile from `profile`. **Public signature

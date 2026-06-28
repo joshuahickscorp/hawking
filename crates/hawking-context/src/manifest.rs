@@ -103,7 +103,7 @@ pub struct ManifestBudget {
 }
 
 /// Where a span sits in the pin lattice (A.1 `pin`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum PinState {
     /// Always present, never evicted (system rails, safety rules).
@@ -111,13 +111,8 @@ pub enum PinState {
     /// Floated to the top by the user.
     UserPinned,
     /// Competes on value like everything else.
+    #[default]
     Normal,
-}
-
-impl Default for PinState {
-    fn default() -> Self {
-        PinState::Normal
-    }
 }
 
 /// The four scoring signals attached to every retained span (A.1 `signals`).

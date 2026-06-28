@@ -340,8 +340,13 @@ impl SqliteMemoryStore {
                 access_count INTEGER NOT NULL,
                 retired INTEGER NOT NULL DEFAULT 0
             );
+            -- FTS5 inverted index over `text`, keyed by `rowid = memory.rowid`
+            -- so a `MATCH` joins straight back to the memory row by rowid. A
+            -- regular (content-storing) FTS5 table is used — not `content=''` —
+            -- because a contentless table cannot return stored columns and makes
+            -- row updates awkward; the extra text copy is negligible here.
             CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts
-                USING fts5(id UNINDEXED, text, content='');
+                USING fts5(text);
             "#,
         )
         .map_err(sql_err)?;
@@ -366,10 +371,7 @@ impl SqliteMemoryStore {
         let provenance_json = serde_json::to_string(&record.provenance)?;
         let tags_json = serde_json::to_string(&record.tags)?;
         let links_json = serde_json::to_string(&meta.links)?;
-        let embedding_json = match &meta.embedding_ref {
-            Some(v) => Some(v.clone()),
-            None => None,
-        };
+        let embedding_json = meta.embedding_ref.clone();
         conn.execute(
             r#"INSERT INTO memory
                (id, kind, text, importance, created_at_ms, last_used_at_ms,
@@ -403,9 +405,19 @@ impl SqliteMemoryStore {
             ],
         )
         .map_err(sql_err)?;
+        // Mirror into the FTS5 index, keyed by the memory row's rowid so a
+        // `MATCH` joins back to `memory` by rowid. On an upsert the row already
+        // exists; clear the stale FTS row first, then index the current text.
+        let rowid: i64 = conn
+            .query_row("SELECT rowid FROM memory WHERE id = ?1", [&record.id], |r| {
+                r.get(0)
+            })
+            .map_err(sql_err)?;
+        conn.execute("DELETE FROM memory_fts WHERE rowid = ?1", [rowid])
+            .map_err(sql_err)?;
         conn.execute(
-            "INSERT INTO memory_fts(id, text) VALUES (?1, ?2)",
-            rusqlite::params![record.id, record.text],
+            "INSERT INTO memory_fts(rowid, text) VALUES (?1, ?2)",
+            rusqlite::params![rowid, record.text],
         )
         .map_err(sql_err)?;
         Ok(())
@@ -434,6 +446,61 @@ impl SqliteMemoryStore {
             .collect::<std::result::Result<Vec<_>, _>>()
             .map_err(sql_err)?;
         Ok(rows)
+    }
+
+    /// Keyword recall via the FTS5 `memory_fts` index. Returns `id -> keyword
+    /// relevance in [0,1]` for the rows the FTS5 `MATCH` selects, derived from
+    /// the bm25 rank (best row → 1.0, decaying with rank). This is real
+    /// inverted-index recall: it ranks by term frequency / document length and
+    /// finds rows a naive `text.contains(term)` substring scan would mis-rank.
+    ///
+    /// `terms` are lowercased, non-empty user tokens. Each is wrapped in an FTS5
+    /// string literal (doubling embedded quotes) and OR-combined, so arbitrary
+    /// user text can never inject FTS5 query operators.
+    fn fts_match(&self, terms: &[String]) -> Result<std::collections::HashMap<String, f32>> {
+        use std::collections::HashMap;
+        if terms.is_empty() {
+            return Ok(HashMap::new());
+        }
+        // Build `"t1" OR "t2" OR ...` with each term as a quoted FTS5 string.
+        let match_query = terms
+            .iter()
+            .map(|t| format!("\"{}\"", t.replace('"', "\"\"")))
+            .collect::<Vec<_>>()
+            .join(" OR ");
+
+        let conn = self.conn.lock();
+        // Join the FTS rowid back to the live memory row's id.
+        let mut stmt = conn
+            .prepare(
+                "SELECT m.id, bm25(memory_fts) AS rank
+                 FROM memory_fts
+                 JOIN memory m ON m.rowid = memory_fts.rowid
+                 WHERE memory_fts MATCH ?1 AND m.retired = 0
+                 ORDER BY rank",
+            )
+            .map_err(sql_err)?;
+        // bm25() returns a score where *more negative* = better match. Map the
+        // ordered results to a [0,1] keyword-relevance with the top hit at 1.0.
+        let rows: Vec<(String, f64)> = stmt
+            .query_map([&match_query], |r| Ok((r.get::<_, String>(0)?, r.get::<_, f64>(1)?)))
+            .map_err(sql_err)?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(sql_err)?;
+
+        let mut out = HashMap::new();
+        let n = rows.len();
+        for (rank_idx, (id, _bm25)) in rows.into_iter().enumerate() {
+            // Rank-decayed relevance: 1.0 for the best, linearly down the list,
+            // floored at a small positive so any MATCH still beats a non-match.
+            let rel = if n <= 1 {
+                1.0
+            } else {
+                1.0 - 0.5 * (rank_idx as f32) / ((n - 1) as f32)
+            };
+            out.insert(id, rel);
+        }
+        Ok(out)
     }
 
     fn bump_access(&self, id: &str, now: u64) {
@@ -492,25 +559,33 @@ impl MemoryStore for SqliteMemoryStore {
         Box::pin(async move {
             let now = now_ms();
             let query_vec = self.embed_text(&query.text).await;
-            let all = self.all_live()?;
             let query_terms: Vec<String> = query
                 .text
                 .split_whitespace()
                 .map(|s| s.to_lowercase())
                 .collect();
+            // Keyword recall through the FTS5 inverted index (real `MATCH`, not a
+            // substring scan): id -> rank-decayed keyword relevance.
+            let fts_hits = self.fts_match(&query_terms)?;
+            let all = self.all_live()?;
 
             let mut scored: Vec<ScoredMemory> = all
                 .into_iter()
                 .filter(|s| query.kinds.is_empty() || query.kinds.contains(&s.record.kind))
                 .map(|s| {
-                    let relevance = match (&query_vec, &s.meta.embedding_ref) {
+                    // Fuse the two recall legs (bible §4.6.1 "FTS5 keyword +
+                    // stored-vector cosine"): vector cosine where embeddings
+                    // exist, the FTS5 bm25-ranked keyword hit always, and take
+                    // the stronger signal so either leg can surface a memory.
+                    let keyword = fts_hits.get(&s.record.id).copied().unwrap_or(0.0);
+                    let vector = match (&query_vec, &s.meta.embedding_ref) {
                         (Some(qv), Some(ej)) => {
                             let mv: Vec<f32> = serde_json::from_str(ej).unwrap_or_default();
                             ((cosine(qv, &mv) + 1.0) / 2.0).clamp(0.0, 1.0)
                         }
-                        // No vectors: FTS-style keyword presence over terms.
-                        _ => keyword_relevance(&query_terms, &s.record.text),
+                        _ => 0.0,
                     };
+                    let relevance = keyword.max(vector);
                     let recency = recency_score(
                         s.record.last_used_at_ms.unwrap_or(s.record.created_at_ms),
                         now,
@@ -612,15 +687,6 @@ fn lexical_overlap(a: &str, b: &str) -> f32 {
     hits as f32 / a_words.len() as f32
 }
 
-fn keyword_relevance(terms: &[String], text: &str) -> f32 {
-    if terms.is_empty() {
-        return 0.0;
-    }
-    let lt = text.to_lowercase();
-    let hits = terms.iter().filter(|t| lt.contains(t.as_str())).count();
-    hits as f32 / terms.len() as f32
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -658,6 +724,57 @@ mod tests {
             .unwrap();
         assert_eq!(hits[0].record.id, "a", "relevance should rank the db note first");
         assert_eq!(store.len().unwrap(), 2);
+    }
+
+    #[tokio::test]
+    async fn fts5_match_is_token_aware_not_substring() {
+        // No embedder => relevance comes solely from the FTS5 keyword leg.
+        let store = SqliteMemoryStore::open_in_memory().unwrap();
+        // "cat" is a whole token here.
+        store
+            .upsert(rec("hit", MemoryKind::Semantic, "the cat sat on the mat", 0.1))
+            .await
+            .unwrap();
+        // "cat" appears only as a *substring* of "concatenate" — a naive
+        // `text.contains("cat")` scan would (wrongly) match this row, but the
+        // FTS5 inverted index tokenizes and does NOT.
+        store
+            .upsert(rec(
+                "substring_only",
+                MemoryKind::Semantic,
+                "concatenate adjacent buffers efficiently",
+                0.1,
+            ))
+            .await
+            .unwrap();
+
+        let hits = store
+            .retrieve("cat", 10, &[MemoryKind::Semantic])
+            .await
+            .unwrap();
+
+        // The token match gets non-zero relevance.
+        let hit = hits.iter().find(|h| h.record.id == "hit").expect("token row present");
+        assert!(
+            hit.relevance > 0.0,
+            "FTS5 MATCH must give the token row keyword relevance"
+        );
+        // The substring-only row gets ZERO relevance from the MATCH path — the
+        // proof that retrieval went through FTS5, not a substring scan.
+        let sub = hits
+            .iter()
+            .find(|h| h.record.id == "substring_only")
+            .expect("substring row still listed (all_live), but unmatched");
+        assert_eq!(
+            sub.relevance, 0.0,
+            "substring-only row must NOT be matched by FTS5 (a substring scan would)"
+        );
+        // And the token row therefore outranks the substring-only row.
+        assert!(
+            hits[0].record.id == "hit",
+            "token match should rank first; got {:?}",
+            hits.iter().map(|h| &h.record.id).collect::<Vec<_>>()
+        );
     }
 
     #[tokio::test]

@@ -1246,6 +1246,7 @@ name = "hide-tools"
 version = "0.2.2"
 dependencies = [
  "anyhow",
+ "axum",
  "blake3",
  "futures",
  "globset",

@@ -15,7 +15,7 @@
 //! (siblings + the `EventChainAuditor` integrity trait consume them) — they are
 //! extended, not replaced. The salted variants are additive.
 
-use hide_core::event::{Event, EventClass, EventSource, NewEvent};
+use hide_core::event::{Event, NewEvent};
 use hide_core::ids::SessionId;
 use hide_core::persistence::{EventLogIntegrity, IntegrityReport};
 use hide_core::Result;
@@ -260,16 +260,14 @@ pub fn integrity_alarm_event(
     kind: IntegrityAlarmKind,
     detail: impl Into<String>,
 ) -> NewEvent {
-    let mut event = NewEvent::system(
+    // `NewEvent::system` already sets `source = System` and `class = Neither`,
+    // which is exactly the classification an integrity alarm wants — so no
+    // post-construction re-assignment is needed.
+    NewEvent::system(
         session_id,
         "security.integrity_alarm",
         serde_json::json!({ "kind": kind.as_str(), "detail": detail.into() }),
-    );
-    // An integrity alarm is an Action-class security observation about the
-    // world; classify it explicitly so timeline tooling can surface it.
-    event.source = EventSource::System;
-    event.class = EventClass::Neither;
-    event
+    )
 }
 
 /// Verdict of [`verify_with_anchors`].
