@@ -10,10 +10,22 @@ description = "Builtin tool implementations and protocol bridges for HIDE"
 
 [dependencies]
 hide-core = { path = "../hide-core" }
+hide-security = { path = "../hide-security" }
 futures = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true }
+blake3 = { workspace = true }
+similar = { workspace = true }
+globset = { workspace = true }
+ignore = { workspace = true }
+regex = { workspace = true }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [dev-dependencies]
 tokio = { workspace = true }
