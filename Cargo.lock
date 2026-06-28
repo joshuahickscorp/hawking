@@ -1175,6 +1175,7 @@ dependencies = [
  "hide-personalize",
  "hide-security",
  "hide-tools",
+ "libc",
  "parking_lot",
  "reqwest",
  "serde",

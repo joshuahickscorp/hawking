@@ -176,15 +176,41 @@ impl RuntimeSupervisor {
     }
 
     /// Acquire the `runtime.lock` (fail-closed if another live host holds it).
-    /// The lock stores the pid + boot time; a stale lock (no live process) is
-    /// reclaimed. No-op when `lock_path` is `None`.
+    /// The lock stores the host's pid + boot time. On acquire, a pre-existing
+    /// lock is inspected: if it names a pid that is **still alive**, we refuse
+    /// (`Err`) rather than steal a live lock; only a stale lock — dead pid,
+    /// unparseable, or no pid — is reclaimed (with a warning). No-op when
+    /// `lock_path` is `None`.
     fn acquire_lock(&self) -> Result<(), String> {
         let Some(path) = &self.config.lock_path else {
             return Ok(());
         };
         if path.exists() {
-            // A pre-existing lock: reclaim it (the previous host is gone — this
-            // shell ships single-host; a real multi-host story checks liveness).
+            // Inspect the existing lock before touching it. Read the holder's pid
+            // and probe liveness; only reclaim genuinely stale locks.
+            match Self::read_lock_holder(path) {
+                Some(pid) if pid_is_alive(pid) => {
+                    return Err(format!(
+                        "runtime.lock held by live process pid={pid} ({}); refusing to steal it",
+                        path.display()
+                    ));
+                }
+                Some(pid) => {
+                    // Recorded a pid but it is no longer alive — stale, reclaim.
+                    eprintln!(
+                        "warning: reclaiming stale runtime.lock at {} (holder pid={pid} is gone)",
+                        path.display()
+                    );
+                }
+                None => {
+                    // No parseable pid (legacy/corrupt lock): conservatively
+                    // reclaim — there is no live holder we can attribute it to.
+                    eprintln!(
+                        "warning: reclaiming runtime.lock at {} (no readable holder pid)",
+                        path.display()
+                    );
+                }
+            }
             let _ = std::fs::remove_file(path);
         }
         if let Some(parent) = path.parent() {
@@ -192,10 +218,23 @@ impl RuntimeSupervisor {
         }
         std::fs::write(
             path,
-            serde_json::json!({ "name": self.config.spec.name, "acquired_ms": now_ms() })
-                .to_string(),
+            serde_json::json!({
+                "name": self.config.spec.name,
+                "pid": std::process::id(),
+                "acquired_ms": now_ms(),
+            })
+            .to_string(),
         )
         .map_err(|e| format!("runtime.lock write failed: {e}"))
+    }
+
+    /// Read the holder pid out of a `runtime.lock`, if present and parseable.
+    /// Returns `None` when the file is missing, unreadable, not JSON, or has no
+    /// numeric `pid` field (a legacy lock predating pid-stamping).
+    fn read_lock_holder(path: &Path) -> Option<u32> {
+        let body = std::fs::read_to_string(path).ok()?;
+        let json: serde_json::Value = serde_json::from_str(&body).ok()?;
+        json.get("pid").and_then(|p| p.as_u64()).and_then(|p| u32::try_from(p).ok())
     }
 
     fn release_lock(&self) {
@@ -494,6 +533,37 @@ impl RuntimeLauncher for ProcessLauncher {
     }
 }
 
+/// Is the process with the given pid still alive?
+///
+/// On unix this is the canonical "signal 0" probe: `kill(pid, 0)` delivers no
+/// signal but performs the existence + permission checks. A return of `0` means
+/// the process exists; `EPERM` means it exists but we lack permission to signal
+/// it (still alive); `ESRCH` means no such process (dead). On non-unix targets
+/// we have no cheap probe, so we fail **closed** (assume alive) — better to
+/// refuse a possibly-live lock than to steal one.
+fn pid_is_alive(pid: u32) -> bool {
+    #[cfg(unix)]
+    {
+        // pid 0 means "the calling process group" to kill(2) — never a real
+        // lock holder; treat as not-alive so a bogus 0 lock is reclaimed.
+        if pid == 0 {
+            return false;
+        }
+        // SAFETY: kill with signal 0 only inspects; it never mutates our state.
+        let rc = unsafe { libc::kill(pid as libc::pid_t, 0) };
+        if rc == 0 {
+            return true;
+        }
+        // rc == -1: distinguish "no such process" (dead) from "exists but EPERM".
+        std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = pid;
+        true
+    }
+}
+
 #[cfg(test)]
 pub(crate) mod testkit {
     //! A fake in-process health server + launcher for supervisor tests. The
@@ -772,6 +842,82 @@ mod tests {
         let err = sup.boot().await.unwrap_err();
         assert!(err.contains("refused"));
         assert_eq!(sup.state(), RuntimeSupervisorState::Failed);
+        rt.stop();
+    }
+
+    /// Pick a pid that is (almost certainly) not alive. We probe upward until
+    /// `pid_is_alive` reports false, so the test is robust regardless of which
+    /// pids happen to be running.
+    fn dead_pid() -> u32 {
+        for pid in (90_000u32..=100_000).rev() {
+            if !pid_is_alive(pid) {
+                return pid;
+            }
+        }
+        // Fallback: pid 0 is reclaimable by construction.
+        0
+    }
+
+    #[test]
+    fn pid_is_alive_for_self_dead_for_bogus() {
+        // Our own pid is unmistakably alive.
+        assert!(pid_is_alive(std::process::id()));
+        // A pid we just confirmed has no process must read dead.
+        assert!(!pid_is_alive(dead_pid()));
+    }
+
+    #[tokio::test]
+    async fn live_lock_is_not_stolen_but_stale_lock_is_reclaimed() {
+        let dir = std::env::temp_dir().join(format!("hide_sup_steal_{}", now_ms()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let lock = dir.join("runtime.lock");
+
+        let rt = Arc::new(FakeRuntime::spawn().await);
+        let mut cfg = test_config();
+        cfg.lock_path = Some(lock.clone());
+
+        // 1) A lock stamped with the *current* (alive) pid must NOT be stolen.
+        std::fs::write(
+            &lock,
+            serde_json::json!({
+                "name": "other-host",
+                "pid": std::process::id(),
+                "acquired_ms": now_ms(),
+            })
+            .to_string(),
+        )
+        .unwrap();
+        let sup = RuntimeSupervisor::new(cfg.clone(), Arc::new(FakeLauncher::new(rt.clone())));
+        let err = sup.boot().await.unwrap_err();
+        assert!(
+            err.contains("held by live process"),
+            "boot should refuse a live lock, got: {err}"
+        );
+        assert_eq!(sup.state(), RuntimeSupervisorState::Down);
+        // The live host's lock was left untouched (still names the live pid).
+        let body = std::fs::read_to_string(&lock).unwrap();
+        assert!(body.contains(&std::process::id().to_string()));
+
+        // 2) A lock stamped with a dead/bogus pid MUST be reclaimed and booted.
+        std::fs::write(
+            &lock,
+            serde_json::json!({
+                "name": "ghost-host",
+                "pid": dead_pid(),
+                "acquired_ms": now_ms(),
+            })
+            .to_string(),
+        )
+        .unwrap();
+        let sup2 = RuntimeSupervisor::new(cfg, Arc::new(FakeLauncher::new(rt.clone())));
+        sup2.boot().await.unwrap();
+        assert_eq!(sup2.state(), RuntimeSupervisorState::Ready);
+        // The reclaimed lock is now ours — stamped with our own pid.
+        let body = std::fs::read_to_string(&lock).unwrap();
+        assert!(body.contains(&std::process::id().to_string()));
+
+        sup2.shutdown().await;
+        let _ = std::fs::remove_dir_all(dir);
         rt.stop();
     }
 

@@ -27,8 +27,17 @@ use tokio::sync::broadcast;
 /// A pending coalesce buffer for one stream's tokens.
 #[derive(Default)]
 struct Coalescer {
-    /// (stream_id, accumulated text, last seq) of the in-flight token batch.
-    pending: Option<(String, String, u64)>,
+    /// The in-flight token batch. Carries the session it belongs to so a flush
+    /// on a stream switch emits with *its own* session, not the incoming one.
+    pending: Option<PendingBatch>,
+}
+
+/// One stream's accumulating token batch.
+struct PendingBatch {
+    session_id: Option<hide_core::ids::SessionId>,
+    stream_id: String,
+    text: String,
+    last_seq: u64,
 }
 
 /// The push bus. Cheap to clone the subscribe handle via [`UiEventBus::subscribe`].
@@ -77,61 +86,62 @@ impl UiEventBus {
         let to_emit = {
             let mut c = self.coalescer.lock();
             match &mut c.pending {
-                Some((sid, acc, last_seq)) if *sid == stream_id => {
-                    acc.push_str(text);
-                    *last_seq = seq;
+                Some(batch) if batch.stream_id == stream_id => {
+                    batch.text.push_str(text);
+                    batch.last_seq = seq;
                     None
                 }
                 _ => {
                     // Different stream (or first token): flush the old, start new.
                     let flushed = c.pending.take();
-                    c.pending = Some((stream_id.clone(), text.to_string(), seq));
+                    c.pending = Some(PendingBatch {
+                        session_id: session_id.clone(),
+                        stream_id: stream_id.clone(),
+                        text: text.to_string(),
+                        last_seq: seq,
+                    });
                     flushed
                 }
             }
         };
-        // We can't recover the previous batch's session here, but coalesced
-        // batches share a session in practice (one run = one stream); emit the
-        // flushed batch under the current session.
-        if let Some((sid, acc, last_seq)) = to_emit {
-            let _ = self.tx.send(UiEvent {
-                seq: last_seq,
-                session_id: session_id.clone(),
-                kind: UiEventKind::TokenBatch {
-                    stream_id: sid,
-                    text: acc,
-                },
-            });
+        // Emit the flushed batch under *its own* session — the one captured when
+        // that batch was started — not the incoming token's session.
+        if let Some(batch) = to_emit {
+            self.emit_batch(batch);
         }
-        let _ = session_id; // session retained on the pending entry conceptually
+    }
+
+    /// Send a completed batch as a single `TokenBatch`, stamped with the
+    /// session it accumulated under.
+    fn emit_batch(&self, batch: PendingBatch) {
+        let _ = self.tx.send(UiEvent {
+            seq: batch.last_seq,
+            session_id: batch.session_id,
+            kind: UiEventKind::TokenBatch {
+                stream_id: batch.stream_id,
+                text: batch.text,
+            },
+        });
     }
 
     /// Flush the accumulated token batch (call at stream end, before a Done).
+    /// The batch is emitted under the session it accumulated under; the passed
+    /// `session_id` is used only as a fallback when the batch never recorded one
+    /// (it always does in practice, so this is belt-and-suspenders).
     pub fn flush(&self, session_id: Option<hide_core::ids::SessionId>) {
-        if let Some((sid, acc, last_seq)) = self.coalescer.lock().pending.take() {
-            let _ = self.tx.send(UiEvent {
-                seq: last_seq,
-                session_id,
-                kind: UiEventKind::TokenBatch {
-                    stream_id: sid,
-                    text: acc,
-                },
-            });
+        if let Some(mut batch) = self.coalescer.lock().pending.take() {
+            if batch.session_id.is_none() {
+                batch.session_id = session_id;
+            }
+            self.emit_batch(batch);
         }
     }
 
-    /// Internal: flush pending tokens with no session (used before a non-token
-    /// publish). Tokens carry their own stream id; session is best-effort.
+    /// Internal: flush pending tokens before a non-token publish. The batch
+    /// carries its own session, so ordering *and* attribution are preserved.
     fn flush_pending(&self) {
-        if let Some((sid, acc, last_seq)) = self.coalescer.lock().pending.take() {
-            let _ = self.tx.send(UiEvent {
-                seq: last_seq,
-                session_id: None,
-                kind: UiEventKind::TokenBatch {
-                    stream_id: sid,
-                    text: acc,
-                },
-            });
+        if let Some(batch) = self.coalescer.lock().pending.take() {
+            self.emit_batch(batch);
         }
     }
 }
@@ -201,6 +211,46 @@ mod tests {
             }
             other => panic!("expected s1 flush, got {other:?}"),
         }
+    }
+
+    #[tokio::test]
+    async fn stream_switch_flushes_with_its_own_session() {
+        let bus = UiEventBus::new(16);
+        let mut rx = bus.subscribe();
+        let sess_a = Some(SessionId::new());
+        let sess_b = Some(SessionId::new());
+        assert_ne!(sess_a, sess_b);
+
+        // Session A streams a token, then session B's token arrives on a
+        // different stream — flushing A's batch on the boundary. The flushed
+        // batch must carry A's session, NOT B's (the incoming token's session).
+        bus.publish_token(1, sess_a.clone(), "s-a", "alpha");
+        bus.publish_token(2, sess_b.clone(), "s-b", "beta");
+
+        let flushed = rx.recv().await.unwrap();
+        match &flushed.kind {
+            UiEventKind::TokenBatch { stream_id, text } => {
+                assert_eq!(stream_id, "s-a");
+                assert_eq!(text, "alpha");
+            }
+            other => panic!("expected s-a flush, got {other:?}"),
+        }
+        assert_eq!(
+            flushed.session_id, sess_a,
+            "boundary-flushed batch must keep ITS OWN (session A), not the incoming session B"
+        );
+
+        // Now flush the still-pending B batch; it must carry session B.
+        bus.flush(None);
+        let flushed_b = rx.recv().await.unwrap();
+        match &flushed_b.kind {
+            UiEventKind::TokenBatch { stream_id, text } => {
+                assert_eq!(stream_id, "s-b");
+                assert_eq!(text, "beta");
+            }
+            other => panic!("expected s-b flush, got {other:?}"),
+        }
+        assert_eq!(flushed_b.session_id, sess_b);
     }
 
     #[tokio::test]

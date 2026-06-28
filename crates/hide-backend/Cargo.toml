@@ -32,5 +32,12 @@ tokio = { workspace = true }
 reqwest = { workspace = true }
 async-trait = { workspace = true }
 
+[target.'cfg(unix)'.dependencies]
+# Used only for the `runtime.lock` liveness check (`kill(pid, 0)` — signal 0
+# probes whether the lock-holding pid is still alive without touching it), so the
+# lock is genuinely fail-closed against a live host. Already in the lockfile via
+# tokio/reqwest; pinned here as a concrete dep.
+libc = "0.2"
+
 [dev-dependencies]
 tokio = { workspace = true }
