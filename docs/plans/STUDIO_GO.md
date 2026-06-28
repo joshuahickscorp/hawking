@@ -31,12 +31,26 @@ python3.12 tools/condense/studio_run.py --go-plan
 - **P3 SPEC** — `spec_revive.py` on the condensed substrate (7B) + capstone (32B): lossless-verify
   gate -> capture-retrain the eagle5 head against the condensed distribution -> acceptance measure
   -> governor bench with the exact-match gate. Density (RAM) x spec (latency) stack multiplicatively.
-- **P4 SYNTH** — fit both lane curves + the pre-registered 70B/405B extrapolation.
-- **P5 FRONTIER** — the 100B+ research prize (235B-A22B / 405B / 671B / 744B), serve-oriented since
+- **P4 FRONTIER** — the 100B+ research prize (235B-A22B / 405B / 671B / 744B), serve-oriented since
   they do NOT fit the doctor budget. Runs what works on streamed shards (SUBBIT-0 entropy floor +
   per-expert MoE sensitivity + the serve-fit record); the block-wise condense-to-`.tq`, the
-  native-serve quality number, and the RAM-cliff tps demo are the serve build (read_strand into the
-  serve binary + per-expert `.tq` writer). Skips unstaged models. **These are the primary research target.**
+  native-serve quality number, and the RAM-cliff demo are the serve build (read_strand into the serve
+  binary + per-expert `.tq` writer). Skips unstaged models. **These are the primary research target.**
+- **P5 EVAL** — `eval_suite.py`: capability tasks (qa/cloze/math/code) + NIAH long-context on the
+  floor winners. A floor is CONFIRMED only if capability holds AND NIAH holds at the served context.
+  The proof bar that turns a ppl number into a capability claim.
+- **P6 BASELINE** — `bench_baselines.py`: the wedge gate. Hawking's floor head-to-head vs llama.cpp
+  IQ1_S/IQ2 + MLX-4bit/DWQ at MATCHED effective bpw. WIN iff it beats IQ2 at <= equal bpw on 7B+;
+  else the wedge is killed and we reframe to portfolio. This is the credibility gate vs competition.
+- **P7 CLIFF** — `ramcliff_bench.py --all`: the headline. tok/s of the condensed `.tq` served
+  RESIDENT vs the same model at Q4_K that overflows 96GB and swaps, PLUS energy J/tok (powermetrics).
+  A CLIFF-WIN requires native serve + >10x tok/s + lower J/tok. The fits-where-others-cant + energy moat.
+- **P8 CODEC** — `codec_bakeoff.py`: STRAND vs QTIP / QuIP# / AQLM at matched bpw (the 2-bit SOTA are
+  CUDA-locked offline-encode baselines; STRAND is the only Metal-native trellis serve). Where we rank.
+- **P9 SCORECARD** — `scaling_law.py --fit` (both lanes, the H1/H0 verdict + 70B/405B extrapolation)
+  then `scorecard.py`: the POPULATED competitive matrix synthesized from every record, with each cell
+  citing its backing record. It REFUSES to print a WIN cell without an R3+ receipt — the no-fake-GO
+  capstone. -> `reports/condense/SCORECARD.md`. **This is the deliverable that makes the program valuable.**
 
 ## LOCKED CONTEXT — do NOT reopen
 

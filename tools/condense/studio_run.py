@@ -215,14 +215,32 @@ def go():
             subprocess.run(["python3.12", f"{TC}/spec_revive.py", row[1], lbl])
         else:
             print(f"[spec] {lbl} parent not staged — skipping", file=sys.stderr)
-    print("\n### P4 SYNTH — fit curves + extrapolate ###", file=sys.stderr)
-    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("studio")])
-    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("subbit")])
-    print("\n### P5 FRONTIER — the 100B+ research prize (serve-oriented; runs what's staged) ###",
+    print("\n### P4 FRONTIER — the 100B+ research prize (serve-oriented; runs what's staged) ###",
           file=sys.stderr)
     run_frontier_all()
-    print("\nGO COMPLETE — receipts in receipts/official/, curves in reports/cron/bit_floor_*.jsonl, "
-          "frontier records in reports/condense/*_frontier.json", file=sys.stderr)
+    # ---- the VALUE layer: prove capability, defend the wedge, measure the cliff+energy, map the codec ----
+    eval_targets = [(l, m) for (l, m, p, g, s, r) in LADDER if l not in ("0.5B", "1.5B")]
+    print("\n### P5 EVAL — capability + NIAH long-context on floor winners (the proof bar) ###", file=sys.stderr)
+    for lbl, mdir in eval_targets:
+        if os.path.isdir(mdir):
+            subprocess.run(["python3.12", f"{TC}/eval_suite.py", "--model", mdir, "--label", lbl])
+    print("\n### P6 BASELINE — wedge gate: IQ1_S/IQ2/MLX-4bit head-to-head at matched bpw ###", file=sys.stderr)
+    for lbl, mdir in eval_targets:
+        if os.path.isdir(mdir):
+            subprocess.run(["python3.12", f"{TC}/bench_baselines.py", "--model", mdir, "--label", lbl,
+                            "--audit-jsonl", f"reports/cron/studio_{lbl}.jsonl"])
+    print("\n### P7 CLIFF — RAM-cliff tok/s + energy J/tok (the headline + the energy moat) ###", file=sys.stderr)
+    subprocess.run(["python3.12", f"{TC}/ramcliff_bench.py", "--all"])
+    print("\n### P8 CODEC — STRAND vs QTIP/QuIP#/AQLM bakeoff (where we rank) ###", file=sys.stderr)
+    for lbl, mdir in eval_targets[:1]:   # one representative (7B) sets the codec rank
+        if os.path.isdir(mdir):
+            subprocess.run(["python3.12", f"{TC}/codec_bakeoff.py", "--model", mdir, "--label", lbl])
+    print("\n### P9 SYNTH + SCORECARD — fit curves + the populated competitive matrix ###", file=sys.stderr)
+    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("studio")])
+    subprocess.run(["python3.12", f"{TC}/scaling_law.py", "--fit", floors_path("subbit")])
+    subprocess.run(["python3.12", f"{TC}/scorecard.py"])
+    print("\nGO COMPLETE — SCORECARD at reports/condense/SCORECARD.md; receipts in receipts/official/; "
+          "curves in reports/cron/bit_floor_*.jsonl; eval/cliff/codec/frontier in reports/condense/", file=sys.stderr)
 
 
 def go_plan():
@@ -233,10 +251,12 @@ def go_plan():
     print("  P2 SUBBIT    run_all('subbit')  -> SUBBIT-0 gate + sub-1-bit lane -> bit_floor_subbit.jsonl")
     print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
           "-> accept -> governor)")
-    print("  P4 SYNTH     scaling_law --fit (both lanes)")
-    print("  P5 FRONTIER  run_frontier_all() -> 100B+ research prize (235B-A22B/405B/671B/744B):")
-    print("               SUBBIT-0 floor + per-expert MoE sensitivity + serve-fit record;")
-    print("               block-wise condense + native-serve quality + RAM-cliff = the serve build.")
+    print("  P4 FRONTIER  run_frontier_all() -> 100B+ research prize (235B-A22B/405B/671B/744B)")
+    print("  P5 EVAL      eval_suite.py -> capability (qa/cloze/math/code) + NIAH long-context (proof bar)")
+    print("  P6 BASELINE  bench_baselines.py -> wedge gate vs IQ1_S/IQ2/MLX-4bit at matched bpw")
+    print("  P7 CLIFF     ramcliff_bench.py --all -> RAM-cliff tok/s + energy J/tok (headline + energy moat)")
+    print("  P8 CODEC     codec_bakeoff.py -> STRAND vs QTIP/QuIP#/AQLM (the codec rank map)")
+    print("  P9 SCORECARD scorecard.py -> the POPULATED competitive matrix (no WIN cell without a receipt)")
     for lbl in SPEC_TARGETS:
         subprocess.run(["python3.12", f"{TC}/spec_revive.py", "--plan", lbl])
 
