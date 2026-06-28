@@ -85,6 +85,21 @@ pub struct DocSection {
     pub heading: String,
     pub text: String,
     pub spans: Vec<DocSpan>,
+    /// CAS receipt for this section's *own* canonical evidence bytes, populated
+    /// when the section is pinned (`pin_doc_evidence`). The pinned bytes are
+    /// exactly the bytes the section's claim node is content-addressed over, so
+    /// the claim id, the evidence blob, and the re-verification hash all agree
+    /// on one canonical byte source (§4.7.3 — citation re-verification soundness).
+    #[serde(default)]
+    pub evidence: Option<SectionEvidence>,
+}
+
+/// An immutable CAS receipt for a section's evidence bytes: the blob ref the
+/// bytes are stored under, and the blake3 hash of *exactly* those bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SectionEvidence {
+    pub blob: BlobRef,
+    pub content_hash: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -136,6 +151,7 @@ pub fn structured_doc_from_text(
             heading: "Abstract".to_string(),
             text: body.to_string(),
             spans: vec![span],
+            evidence: None,
         }]
     };
     StructuredDoc {

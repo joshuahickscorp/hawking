@@ -19,6 +19,11 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 parking_lot = { workspace = true }
 
+# Crate-specific: tree-sitter for the §11.8.2 Tier-1 static parse-sanity check.
+# Same ABI-compatible set hawking-index pins (the grammar bundles we consult
+# from `hawking_index::parse::grammars` are built against these versions).
+tree-sitter = "0.25"
+
 [dev-dependencies]
 tokio = { workspace = true }
 tempfile = "3"

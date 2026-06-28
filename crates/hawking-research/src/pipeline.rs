@@ -367,20 +367,32 @@ impl ResearchPipeline {
         Err(HideError::NotFound(record.id.clone()))
     }
 
-    // Pin each section's evidence bytes in the CAS so citations re-verify, and
-    // stamp the doc's content_hash from the pinned bytes if it was missing.
+    // Pin evidence bytes in the CAS so citations re-verify. Each section is
+    // pinned under its *own* canonical (normalized) bytes — the exact bytes its
+    // claim node is content-addressed over — so the claim id, the evidence blob,
+    // and the re-verification hash all agree on one byte source (§4.7.3). The
+    // doc-level blob is the first non-empty section's receipt (a stable handle);
+    // per-claim re-verification uses the per-section receipt, not the doc's.
     fn pin_doc_evidence(&self, doc: &mut StructuredDoc) -> Result<()> {
-        let body = doc
-            .sections
-            .iter()
-            .map(|s| s.text.as_str())
-            .collect::<Vec<_>>()
-            .join("\n");
-        let bytes = body.into_bytes();
-        let (blob, hash) = cas::pin_evidence(&self.cas, bytes, Some("text/plain".to_string()))?;
-        doc.blob = Some(blob);
+        let mut doc_blob = None;
+        let mut doc_hash = None;
+        for section in &mut doc.sections {
+            if section.text.trim().is_empty() {
+                continue;
+            }
+            let (blob, hash) = cas::pin_canonical_evidence(&self.cas, &section.text)?;
+            if doc_blob.is_none() {
+                doc_blob = Some(blob.clone());
+                doc_hash = Some(hash.clone());
+            }
+            section.evidence = Some(crate::ingest::SectionEvidence {
+                blob,
+                content_hash: hash,
+            });
+        }
+        doc.blob = doc_blob;
         if doc.source.content_hash.is_none() {
-            doc.source.content_hash = Some(hash);
+            doc.source.content_hash = doc_hash;
         }
         Ok(())
     }
@@ -608,6 +620,73 @@ mod tests {
             r("c", "h2", "http://x/pdf/1"), // same canonical uri as a → dropped
         ]);
         assert_eq!(out.len(), 1);
+    }
+
+    // Regression: the integrated pipeline path must pin EXACTLY the bytes a
+    // claim is content-addressed over, so an untampered citation re-verifies
+    // Intact and only a real mutation reports Tampered (no false positive).
+    #[tokio::test]
+    async fn pipeline_citation_reverifies_intact_then_tampered() {
+        use crate::verify::{AdversarialVerifier, CitationCheck};
+        use hide_core::persistence::FileBlobStore;
+
+        // A real on-disk CAS so we can faithfully mutate the pinned evidence.
+        let dir = std::env::temp_dir().join(format!("hawking_cas_{}", now_ms()));
+        let store = FileBlobStore::open(&dir).unwrap();
+        let cas: DynBlobStore = Arc::new(store);
+
+        let graph = Arc::new(PetKnowledgeGraph::new());
+        let mut pipeline = ResearchPipeline::new(
+            graph,
+            stub_runtime(
+                "Synthesis: paged attention reduces KV cache memory waste [c]. \
+                 This is corroborated across the retrieved sources.",
+            ),
+            cas.clone(),
+            Arc::new(InMemoryCheckpointLedger::new()),
+        );
+        pipeline.add_adapter(mk_adapter());
+        let run = pipeline.run_once("KV cache", 4).await.unwrap();
+        assert_eq!(run.state, ResearchState::Complete);
+        assert!(run.docs_read >= 2, "expected docs to be fetched");
+        assert!(!run.claims.is_empty());
+
+        // Every claim that was pinned must re-verify Intact through the SAME path
+        // production uses — not a single one should be a false-positive Tampered.
+        let mut checked = 0usize;
+        for claim in &run.claims {
+            if claim.provenance.evidence_blob.is_none() {
+                continue;
+            }
+            let v = AdversarialVerifier::verify_with_cas(claim, &run.claims, &cas).unwrap();
+            assert_eq!(
+                v.citation_check,
+                CitationCheck::Intact,
+                "untampered claim {} falsely flagged: {:?}",
+                claim.id,
+                v.citation_check
+            );
+            checked += 1;
+        }
+        assert!(checked > 0, "expected at least one pinned claim to re-verify");
+
+        // Now deliberately mutate the on-disk evidence bytes of one claim's blob
+        // and confirm the re-check flips to Tampered (a REAL change is caught).
+        let target = run
+            .claims
+            .iter()
+            .find(|c| c.provenance.evidence_blob.is_some())
+            .unwrap();
+        let blob = target.provenance.evidence_blob.clone().unwrap();
+        // FileBlobStore layout: <root>/<hash[..2]>/<hash>.
+        let path = dir.join(&blob.hash[..2]).join(&blob.hash);
+        assert!(path.exists(), "evidence blob must be on disk");
+        std::fs::write(&path, b"tampered-evidence").unwrap();
+
+        let vt = AdversarialVerifier::verify_with_cas(target, &run.claims, &cas).unwrap();
+        assert_eq!(vt.citation_check, CitationCheck::Tampered);
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[tokio::test]

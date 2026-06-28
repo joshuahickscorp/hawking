@@ -23,7 +23,7 @@ use hide_core::ids::{now_ms, RunId};
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
 use serde_json::json;
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 use tokio::sync::mpsc;
 
@@ -158,6 +158,11 @@ pub struct FleetManager {
     config: FleetConfig,
     completions_tx: mpsc::UnboundedSender<RunReport>,
     completions_rx: parking_lot::Mutex<Option<mpsc::UnboundedReceiver<RunReport>>>,
+    /// The real `RunWorkspace` produced by `admit_and_launch`, keyed by job id.
+    /// `fold_completion` reuses the actual handle (its leased ports) so
+    /// `release_run` returns the run's ports to the pool — rebuilding a synthetic
+    /// workspace with empty ports leaked the pool under sustained scheduling.
+    active_workspaces: parking_lot::Mutex<BTreeMap<String, RunWorkspace>>,
 }
 
 impl FleetManager {
@@ -185,6 +190,7 @@ impl FleetManager {
             config,
             completions_tx,
             completions_rx: parking_lot::Mutex::new(Some(completions_rx)),
+            active_workspaces: parking_lot::Mutex::new(BTreeMap::new()),
         }
     }
 
@@ -215,30 +221,20 @@ impl FleetManager {
     }
 
     /// Current pool occupancy across the two pools + isolation leases.
+    ///
+    /// The model/cpu pool counts come from the job projection (the queue is the
+    /// source of truth for *which* jobs are live in each pool). The isolation
+    /// leases (`worktrees`, `ports_leased`) are read from the allocator's TRUTH
+    /// via the [`WorktreeManager`], not estimated from the projection — so a
+    /// release leak (or a launch that out-/under-paced the projection) can't
+    /// silently desync the Governor's admission ceilings (reviewer finding #2).
     pub fn occupancy(&self) -> PoolOccupancy {
         PoolOccupancy {
             model_runs: self.queue.live_in_class(ConcurrencyClass::Model),
             cpu_runs: self.queue.live_in_class(ConcurrencyClass::CpuOnly),
-            worktrees: self
-                .queue
-                .all()
-                .iter()
-                .filter(|j| j.status.is_live())
-                .count() as u32,
-            ports_leased: self.worktrees_ports_leased(),
+            worktrees: self.worktrees.live_worktree_count() as u32,
+            ports_leased: self.worktrees.ports_leased_count() as u32,
         }
-    }
-
-    fn worktrees_ports_leased(&self) -> u32 {
-        // The worktree manager owns the port allocator; live model runs each hold
-        // `ports_per_run`. We approximate from live jobs (the allocator is the
-        // source of truth but lives behind the manager's internal lock).
-        self.queue
-            .all()
-            .iter()
-            .filter(|j| j.status.is_live() && j.concurrency_class() == ConcurrencyClass::Model)
-            .count() as u32
-            * self.config.ports_per_run as u32
     }
 
     /// One scheduler tick (§4.6.2). Probes the machine, applies thermal/RAM
@@ -381,6 +377,12 @@ impl FleetManager {
             .set_status_logged(&self.log, &job.id, JobStatus::Running, json!({}))
             .await?;
 
+        // Remember the real workspace (with its leased ports) so completion can
+        // release exactly what was leased (P-leak fix: see `active_workspaces`).
+        self.active_workspaces
+            .lock()
+            .insert(job.id.clone(), workspace.clone());
+
         // Launch the run on a detached task; it reports back over the channel.
         let launcher = self.launcher.clone();
         let tx = self.completions_tx.clone();
@@ -444,24 +446,14 @@ impl FleetManager {
         // Release the worktree (adopted vs discarded: a failed run is discarded).
         if let Some(job) = self.queue.get(&report.job_id) {
             let discarded = report.status != JobStatus::Done;
-            // Reconstruct a minimal workspace handle for release (run_id keyed).
-            let ws = RunWorkspace {
-                run_id: job.id.clone(),
-                worktree: crate::isolate::WorktreeLease {
-                    run_id: job.id.clone(),
-                    branch: format!("hide/{}", job.id),
-                    path: self.worktrees.worktree_root().join(&job.id),
-                    base_ref: job.base_ref.clone(),
-                    sandbox: crate::isolate::workspace_sandbox(
-                        &self.worktrees.worktree_root().join(&job.id),
-                    ),
-                },
-                ports: crate::isolate::PortLease {
-                    run_id: job.id.clone(),
-                    ports: Vec::new(),
-                },
-                env: Default::default(),
-            };
+            // Reuse the REAL workspace produced by admit_and_launch (its leased
+            // ports), so release_run actually returns this run's ports to the
+            // pool. Falling back to a synthetic empty-port handle would re-leak.
+            let ws = self
+                .active_workspaces
+                .lock()
+                .remove(&report.job_id)
+                .unwrap_or_else(|| self.synthetic_release_handle(&job));
             let _ = self
                 .worktrees
                 .release_run(&ws, RunOutcome { discarded })
@@ -470,6 +462,30 @@ impl FleetManager {
                 .await?;
         }
         Ok(())
+    }
+
+    /// Fallback release handle when the real workspace is absent from
+    /// `active_workspaces` (e.g. a completion folded after a manager restart, or
+    /// a boot-time orphan). Carries empty ports — the allocator wasn't holding a
+    /// lease for this run in the current process, so there is nothing to return —
+    /// but still drives the worktree remove/prune so the tree is reaped.
+    fn synthetic_release_handle(&self, job: &AgentJob) -> RunWorkspace {
+        let path = self.worktrees.worktree_root().join(&job.id);
+        RunWorkspace {
+            run_id: job.id.clone(),
+            worktree: crate::isolate::WorktreeLease {
+                run_id: job.id.clone(),
+                branch: format!("hide/{}", job.id),
+                path: path.clone(),
+                base_ref: job.base_ref.clone(),
+                sandbox: crate::isolate::workspace_sandbox(&path),
+            },
+            ports: crate::isolate::PortLease {
+                run_id: job.id.clone(),
+                ports: Vec::new(),
+            },
+            env: Default::default(),
+        }
     }
 
     /// Drive ticks until the queue reaches quiescence: no ready jobs and no live
@@ -625,6 +641,10 @@ mod tests {
             max_model_runs: max_model,
             ram_headroom_mb_min: 256,
             max_cpu_runs: 8,
+            // Tests drive ticks synchronously (microseconds apart), not at the ~1 Hz
+            // production cadence, so the spawn-rate EWMA would trip the breaker and
+            // stall admission. Lift the ceiling for deterministic scheduling tests.
+            max_spawns_per_min: 1_000_000.0,
             ..Default::default()
         };
         let snap = ResourceSnapshot {
@@ -738,6 +758,89 @@ mod tests {
         let (plan, _launched) = mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
         assert_eq!(plan.admit.len(), 1, "model pool ceiling = 1");
         assert_eq!(plan.deferred.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn ports_round_trip_to_baseline_after_a_run_completes() {
+        // Finding #1: a completed run must return its leased ports to the pool.
+        let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 2);
+        // Baseline: nothing leased.
+        assert_eq!(mgr.worktrees().ports_leased_count(), 0);
+        assert_eq!(mgr.occupancy().ports_leased, 0);
+
+        let job = AgentJob::new("lease then release", PriorityClass::Normal);
+        let id = job.id.clone();
+        mgr.enqueue(job).await.unwrap();
+
+        mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
+        // The run is live and holds `ports_per_run` ports (allocator truth).
+        assert_eq!(
+            mgr.worktrees().ports_leased_count(),
+            mgr.config.ports_per_run as usize,
+            "ports leased while the run is live"
+        );
+        assert_eq!(mgr.occupancy().ports_leased, mgr.config.ports_per_run as u32);
+
+        // Fold the completion → release_run must return the ports.
+        mgr.await_completions(1).await.unwrap();
+        assert_eq!(mgr.queue().get(&id).unwrap().status, JobStatus::Done);
+        assert_eq!(
+            mgr.worktrees().ports_leased_count(),
+            0,
+            "ports returned to the pool — no leak after completion"
+        );
+        assert_eq!(mgr.occupancy().ports_leased, 0);
+        assert_eq!(mgr.occupancy().worktrees, 0, "no live leases remain");
+    }
+
+    #[tokio::test]
+    async fn ports_do_not_leak_under_sustained_scheduling() {
+        // Finding #1 under load: many sequential runs through a tiny pool must not
+        // exhaust it. With max_ports_leased ceilings unchanged, a leak would make
+        // later admissions fail; instead every cycle round-trips to baseline.
+        let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 1);
+        for i in 0..12 {
+            let job = AgentJob::new(format!("run {i}"), PriorityClass::Normal);
+            let id = job.id.clone();
+            mgr.enqueue(job).await.unwrap();
+            mgr.schedule_tick(1, 40.0, 40.0).await.unwrap();
+            mgr.await_completions(1).await.unwrap();
+            assert_eq!(
+                mgr.queue().get(&id).unwrap().status,
+                JobStatus::Done,
+                "cycle {i} admitted + completed (pool not exhausted)"
+            );
+            assert_eq!(
+                mgr.worktrees().ports_leased_count(),
+                0,
+                "cycle {i}: pool back to baseline"
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn occupancy_reflects_allocator_truth_not_an_estimate() {
+        // Finding #2: occupancy.ports_leased / worktrees come from the allocator,
+        // so they exactly track real leases through the lifecycle.
+        let mgr = manager_with(Arc::new(ScriptedLauncher::default()), 2);
+        for i in 0..2 {
+            mgr.enqueue(AgentJob::new(format!("job {i}"), PriorityClass::Normal))
+                .await
+                .unwrap();
+        }
+        mgr.schedule_tick(2, 40.0, 40.0).await.unwrap();
+
+        let occ = mgr.occupancy();
+        // Two live model runs each hold ports_per_run ports → allocator truth.
+        assert_eq!(occ.ports_leased, 2 * mgr.config.ports_per_run as u32);
+        assert_eq!(occ.ports_leased, mgr.worktrees().ports_leased_count() as u32);
+        assert_eq!(occ.worktrees, 2);
+        assert_eq!(occ.worktrees, mgr.worktrees().live_worktree_count() as u32);
+
+        mgr.await_completions(2).await.unwrap();
+        let occ = mgr.occupancy();
+        assert_eq!(occ.ports_leased, 0);
+        assert_eq!(occ.worktrees, 0);
     }
 
     #[tokio::test]

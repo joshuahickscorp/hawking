@@ -57,12 +57,16 @@ pub struct RunOutcome {
 }
 
 /// Disjoint port-range allocator (§4.3 ports level). Hands each run `count`
-/// contiguous-from-pool ports; releases them on run end.
-#[derive(Debug, Clone)]
+/// contiguous-from-pool ports; releases them on run end. Tracks leases by
+/// `run_id` so occupancy reads are the allocator's truth, not an estimate.
+#[derive(Debug, Clone, Default)]
 pub struct PortAllocator {
     start: u16,
     end: u16,
     leased: BTreeSet<u16>,
+    /// run_id → the ports that run currently holds. The authority for both
+    /// `leased_count()` (ports) and `leased_runs()` (distinct runs).
+    run_ports: BTreeMap<String, Vec<u16>>,
 }
 
 impl PortAllocator {
@@ -71,6 +75,7 @@ impl PortAllocator {
             start,
             end,
             leased: BTreeSet::new(),
+            run_ports: BTreeMap::new(),
         }
     }
 
@@ -90,20 +95,36 @@ impl PortAllocator {
         for port in &ports {
             self.leased.insert(*port);
         }
-        Some(PortLease {
-            run_id: run_id.into(),
-            ports,
-        })
+        let run_id = run_id.into();
+        self.run_ports
+            .entry(run_id.clone())
+            .or_default()
+            .extend(ports.iter().copied());
+        Some(PortLease { run_id, ports })
     }
 
     pub fn release(&mut self, lease: &PortLease) {
         for port in &lease.ports {
             self.leased.remove(port);
         }
+        // Drop the released ports from the run's ledger; forget the run once it
+        // holds none. Tolerant of a partial/empty lease (idempotent release).
+        if let Some(held) = self.run_ports.get_mut(&lease.run_id) {
+            held.retain(|p| !lease.ports.contains(p));
+            if held.is_empty() {
+                self.run_ports.remove(&lease.run_id);
+            }
+        }
     }
 
+    /// The number of ports currently leased (the pool's true occupancy).
     pub fn leased_count(&self) -> usize {
         self.leased.len()
+    }
+
+    /// The number of distinct runs currently holding any leased port.
+    pub fn leased_runs(&self) -> usize {
+        self.run_ports.len()
     }
 }
 
@@ -164,6 +185,21 @@ impl WorktreeManager {
 
     pub fn worktree_root(&self) -> &Path {
         &self.worktree_root
+    }
+
+    /// The number of ports currently leased from the pool (the allocator's
+    /// truth). The Governor reconciles its occupancy estimate against this so a
+    /// release leak can't silently shrink the pool (§4.3 ports level).
+    pub fn ports_leased_count(&self) -> usize {
+        self.ports.lock().leased_count()
+    }
+
+    /// The number of distinct runs holding live worktree/port leases right now
+    /// (the allocator's truth, keyed by `run_id`). Used to reconcile the
+    /// Governor's worktree occupancy against reality rather than estimating from
+    /// the job projection.
+    pub fn live_worktree_count(&self) -> usize {
+        self.ports.lock().leased_runs()
     }
 
     /// Create an isolated workspace for `run_id` (§4.3 lifecycle). Steps:
@@ -397,6 +433,35 @@ mod tests {
         alloc.release(&a);
         // Released ports are reusable.
         assert!(alloc.lease("run_c", 2).is_some());
+    }
+
+    #[test]
+    fn allocator_tracks_leased_count_and_runs_as_truth() {
+        let mut alloc = PortAllocator::new(4000, 4010);
+        assert_eq!(alloc.leased_count(), 0);
+        assert_eq!(alloc.leased_runs(), 0);
+
+        let a = alloc.lease("run_a", 2).unwrap();
+        let b = alloc.lease("run_b", 3).unwrap();
+        assert_eq!(alloc.leased_count(), 5, "2 + 3 ports leased");
+        assert_eq!(alloc.leased_runs(), 2, "two distinct runs hold leases");
+
+        // Releasing one run returns exactly its ports + forgets the run.
+        alloc.release(&a);
+        assert_eq!(alloc.leased_count(), 3);
+        assert_eq!(alloc.leased_runs(), 1);
+
+        alloc.release(&b);
+        assert_eq!(alloc.leased_count(), 0, "pool fully returned to baseline");
+        assert_eq!(alloc.leased_runs(), 0);
+
+        // Releasing an empty/synthetic lease is a no-op (idempotent, can't leak).
+        alloc.release(&PortLease {
+            run_id: "run_a".to_string(),
+            ports: Vec::new(),
+        });
+        assert_eq!(alloc.leased_count(), 0);
+        assert_eq!(alloc.leased_runs(), 0);
     }
 
     #[test]

@@ -285,6 +285,14 @@ impl PetKnowledgeGraph {
                 continue;
             }
             let claim_id = cas::composite_id("claim", &[&section.text, &doc.id]);
+            // The claim's evidence receipt MUST address the same canonical bytes
+            // the claim id is derived from. When the section was pinned, use its
+            // own per-section receipt (normalized section bytes); fall back to the
+            // doc-level receipt only when no section-level pin exists.
+            let (content_hash, evidence_blob) = match &section.evidence {
+                Some(ev) => (Some(ev.content_hash.clone()), Some(ev.blob.clone())),
+                None => (doc.source.content_hash.clone(), doc.blob.clone()),
+            };
             let span = ProvenanceSpan {
                 doc_id: doc.id.clone(),
                 span_id: section.spans.first().map(|s| s.id.clone()),
@@ -293,8 +301,8 @@ impl PetKnowledgeGraph {
                     .first()
                     .map(|s| (s.start_char, s.end_char)),
                 citation: None,
-                content_hash: doc.source.content_hash.clone(),
-                evidence_blob: doc.blob.clone(),
+                content_hash,
+                evidence_blob,
                 provenance: doc.source.provenance.clone(),
             };
             self.upsert_node(KnowledgeNode {
@@ -579,6 +587,7 @@ mod tests {
                     start_char: 0,
                     end_char: body.len(),
                 }],
+                evidence: None,
             }],
             references: Vec::new(),
             blob: None,
@@ -595,6 +604,51 @@ mod tests {
         // Same ids the second time; node count unchanged.
         assert_eq!(c1[0].id, c2[0].id);
         assert_eq!(g.node_count(), n1);
+    }
+
+    #[test]
+    fn claim_evidence_addresses_same_canonical_bytes_as_claim_id() {
+        use crate::ingest::SectionEvidence;
+        use hide_core::persistence::{DynBlobStore, InMemoryBlobStore};
+        use std::sync::Arc;
+
+        let cas: DynBlobStore = Arc::new(InMemoryBlobStore::default());
+        let mut d = doc(
+            "doc1",
+            "Paged Attention",
+            "  Paged   attention\n improves reuse.  ",
+        );
+        // Pin the section's CANONICAL bytes (what pin_doc_evidence does) and
+        // stamp the receipt onto the section.
+        let section_text = d.sections[0].text.clone();
+        let (blob, hash) = cas::pin_canonical_evidence(&cas, &section_text).unwrap();
+        d.sections[0].evidence = Some(SectionEvidence {
+            blob: blob.clone(),
+            content_hash: hash.clone(),
+        });
+
+        let claims = PetKnowledgeGraph::new().ingest_doc(&d);
+        let claim = &claims[0];
+
+        // (1) The claim id is content-addressed over the same normalized text the
+        //     evidence receipt hashes — both reduce to canonical section bytes.
+        assert_eq!(
+            claim.id,
+            cas::composite_id("claim", &[&section_text, &d.id])
+        );
+        // (2) The recorded receipt hash equals blake3 of the canonical bytes...
+        let canon = cas::canonical_evidence_bytes(&section_text);
+        assert_eq!(claim.provenance.content_hash.as_deref(), Some(cas::blake3_hex(&canon).as_str()));
+        // ...and equals the per-section pin's hash (no doc-level divergence).
+        assert_eq!(claim.provenance.content_hash.as_deref(), Some(hash.as_str()));
+        assert_eq!(claim.provenance.evidence_blob.as_ref(), Some(&blob));
+
+        // (3) Re-verification re-hashes the SAME blob bytes against the SAME
+        //     receipt → Intact (no false positive).
+        let check =
+            cas::verify_evidence(&cas, claim.provenance.evidence_blob.as_ref().unwrap(), claim.provenance.content_hash.as_ref().unwrap())
+                .unwrap();
+        assert!(check.is_intact());
     }
 
     #[test]

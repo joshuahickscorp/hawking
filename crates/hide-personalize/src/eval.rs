@@ -17,7 +17,7 @@
 use crate::records::Hash32;
 use hide_core::ids::now_micros;
 use hide_core::Result;
-use hawking_index::{CodeIndex, SearchQuery};
+use hawking_index::{CodeIndex, Occurrence, SearchQuery};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -164,7 +164,10 @@ pub struct EvalTaskCandidate {
     pub task_description: String,
     pub oracle: EvalOracle,
     pub source_files: Vec<PathBuf>,
-    /// 0.0–1.0; the "function has no test linkage" heuristic is 0.90.
+    /// 0.0–1.0. The base "function has no test linkage" heuristic scores 0.90
+    /// (below the 0.95 auto-add gate → surfaces for review); the stronger
+    /// "untested AND referenced from non-test source" heuristic scores 0.97
+    /// (clears the gate → auto-added).
     pub confidence: f32,
     pub mined_at_us: u64,
     pub status: CandidateStatus,
@@ -206,6 +209,35 @@ impl Default for EvalMinerConfig {
 /// references it. "Test reference" is approximated by: a search hit whose path
 /// looks like a test (`tests/`, `_test`, `#[test]`-adjacent) and that mentions
 /// the function name. A function with zero such hits is a candidate.
+///
+/// # Implemented heuristics
+///
+///   * **no test linkage** (0.90) — the function is defined but no test path
+///     references it.
+///   * **untested AND load-bearing** (0.97) — additionally referenced from
+///     non-test source, so it is product code with no test (auto-add tier).
+///
+/// # POST-SHELL MOONSHOT SEAMS (bible §11.3.2 — NOT implemented)
+///
+/// The bible's full `EvalMiner` also proposes richer, *learned* candidate
+/// sources that depend on infrastructure that does not exist until after the
+/// shell ships, and are deliberately **not** implemented here so this scaffold
+/// does not overclaim:
+///
+///   * **regression-from-failed-rollout** — mine a failing autonomous rollout
+///     (RLEF) into a permanent eval. Requires the §11.1 capture pipeline running
+///     in production with real rollout transcripts.
+///   * **coverage-gap from telemetry** — diff executed code paths (runtime
+///     coverage) against tested paths to find under-tested hot code. Requires
+///     the runtime coverage daemon.
+///   * **flaky-test detection** — repeated-run variance mining. Requires a
+///     historical eval-result store with many runs per case.
+///   * **LLM-proposed semantic evals** (DSPy/ADAS-style, see [`crate::prompts`])
+///     — generate eval *tasks* from a description of recent changes. Requires the
+///     self-improving prompt-optimization loop, itself a post-shell moonshot.
+///
+/// These remain documented trait/heuristic seams; the only thing wired today is
+/// the static "no test linkage" path above.
 pub struct EvalMiner {
     config: EvalMinerConfig,
 }
@@ -249,7 +281,20 @@ impl EvalMiner {
             let source_files: Vec<PathBuf> =
                 defs.iter().map(|o| PathBuf::from(&o.file)).collect();
 
-            let confidence = 0.90; // §11.3.2: "function has no test linkage".
+            // Confidence heuristics (§11.3.2).
+            //
+            //   * Base "function has no test linkage" — 0.90. On its own this is
+            //     below the default 0.95 auto-add gate, so it surfaces for human
+            //     review (an untested-AND-unreferenced function may be dead code,
+            //     where the right action is "delete", not "write a test").
+            //
+            //   * **Untested AND load-bearing** — 0.97. When the function has no
+            //     test linkage BUT *is* referenced from non-test source, it is
+            //     code that is actually used in the product yet exercised by no
+            //     test. That is the highest-value, lowest-ambiguity "write a
+            //     test" target, so it clears the auto-add gate.
+            let source_refs = self.nontest_reference_count(index, name).await?;
+            let confidence = if source_refs > 0 { 0.97 } else { 0.90 };
             let status = if confidence >= self.config.auto_add_confidence_threshold
                 && auto_added < self.config.max_auto_add
             {
@@ -298,6 +343,23 @@ impl EvalMiner {
             })
             .await?;
         Ok(hits.iter().any(|h| is_test_path(&h.span.path)))
+    }
+
+    /// How many times is `name` referenced from **non-test** source? Uses the
+    /// index's structural reference occurrences (tree-sitter extracted), filtered
+    /// to drop the definition's own file and any test path. A positive count
+    /// means the function is load-bearing — actually used by product code.
+    async fn nontest_reference_count<I: CodeIndex>(
+        &self,
+        index: &I,
+        name: &str,
+    ) -> Result<usize> {
+        let refs: Vec<Occurrence> = index.references(name).await?;
+        let count = refs
+            .iter()
+            .filter(|o| !is_test_path(std::path::Path::new(&o.file)))
+            .count();
+        Ok(count)
     }
 }
 
@@ -417,5 +479,54 @@ mod tests {
             .collect();
         assert!(names.iter().any(|d| d.contains("lonely")));
         assert!(!names.iter().any(|d| d.contains("helper")));
+    }
+
+    #[tokio::test]
+    async fn miner_auto_adds_untested_load_bearing_function() {
+        let index = InMemoryCodeIndex::default();
+        // `compute` is defined in one source file...
+        index.add_text_file(
+            "src/math.rs",
+            "pub fn compute(x: i32) -> i32 { x + 1 }\n",
+            Some("m".into()),
+        );
+        // ...and *used* from another (non-test) source file — load-bearing.
+        index.add_text_file(
+            "src/app.rs",
+            "use crate::math::compute;\npub fn run() -> i32 { compute(41) }\n",
+            Some("a".into()),
+        );
+
+        let miner = EvalMiner::with_defaults();
+        let candidates = miner.mine(&index, &["compute".into()]).await.unwrap();
+
+        let compute = candidates
+            .iter()
+            .find(|c| c.task_description.contains("compute"))
+            .expect("compute should be a candidate (untested)");
+        // Referenced from non-test source → 0.97 ≥ 0.95 gate → AutoAdded.
+        assert_eq!(compute.confidence, 0.97);
+        assert_eq!(compute.status, CandidateStatus::AutoAdded);
+    }
+
+    #[tokio::test]
+    async fn miner_defers_untested_unreferenced_function() {
+        let index = InMemoryCodeIndex::default();
+        // Defined but referenced nowhere (possibly dead code) → human review.
+        index.add_text_file(
+            "src/orphan.rs",
+            "pub fn orphan() -> i32 { 0 }\n",
+            Some("o".into()),
+        );
+
+        let miner = EvalMiner::with_defaults();
+        let candidates = miner.mine(&index, &["orphan".into()]).await.unwrap();
+
+        let orphan = candidates
+            .iter()
+            .find(|c| c.task_description.contains("orphan"))
+            .expect("orphan should be a candidate");
+        assert_eq!(orphan.confidence, 0.90);
+        assert_eq!(orphan.status, CandidateStatus::PendingHuman);
     }
 }

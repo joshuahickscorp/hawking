@@ -61,10 +61,22 @@ pub fn composite_id(prefix: &str, fields: &[&str]) -> String {
     format!("{prefix}:{}", blake3_hex(joined.as_bytes()))
 }
 
+/// The canonical evidence bytes for a piece of free text: the *normalized* form,
+/// UTF-8 encoded. This is the single byte source that both content-addressing
+/// (claim/citation ids) and evidence pinning/re-verification must agree on, so
+/// that an id, its pinned blob, and its re-check hash never diverge (§4.7.3).
+pub fn canonical_evidence_bytes(text: &str) -> Vec<u8> {
+    normalize_text(text).into_bytes()
+}
+
 /// Pin raw evidence bytes in the CAS and return both the [`BlobRef`] and the
 /// blake3 content hash used as the immutable receipt. The blake3 hash is the
 /// one we record on provenance (so re-verification is backend-independent); the
 /// `BlobRef` is how the bytes are fetched back.
+///
+/// Invariant: the recorded hash is `blake3_hex` of *exactly* the bytes pinned,
+/// so [`verify_evidence`] (which re-hashes the fetched blob bytes) is sound by
+/// construction.
 pub fn pin_evidence(
     cas: &DynBlobStore,
     bytes: Vec<u8>,
@@ -73,6 +85,13 @@ pub fn pin_evidence(
     let hash = blake3_hex(&bytes);
     let blob = cas.put(bytes, media_type)?;
     Ok((blob, hash))
+}
+
+/// Pin a section's *canonical* evidence bytes (normalized text) and return the
+/// receipt. The pinned bytes match what [`content_id`]/[`composite_id`] hash for
+/// the same text, so the claim id and its evidence receipt agree on one source.
+pub fn pin_canonical_evidence(cas: &DynBlobStore, text: &str) -> Result<(BlobRef, String)> {
+    pin_evidence(cas, canonical_evidence_bytes(text), Some("text/plain".to_string()))
 }
 
 /// Re-open evidence bytes from the CAS and confirm they still blake3-hash to the
