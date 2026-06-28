@@ -69,6 +69,7 @@ impl Tool for GitStatusTool {
                     let status = output.status.code().unwrap_or(-1);
                     ToolResult {
                         call_id: hide_core::ids::ToolCallId::new(),
+                        ok: output.status.success(),
                         status: if output.status.success() {
                             ToolStatus::Ok
                         } else {
@@ -85,30 +86,36 @@ impl Tool for GitStatusTool {
                             "truncated": truncated
                         })),
                         bytes_ref: None,
+                        exit_code: Some(status),
                         effects: Default::default(),
+                        provenance: "tool-output".to_string(),
+                        stats: Default::default(),
                         error: if output.status.success() {
                             None
                         } else {
-                            Some(ToolError {
-                                code: "git_status_failed".to_string(),
-                                message: format!("git exited with status {status}"),
-                                recoverable: true,
-                            })
+                            // NOTE: non-zero exit is EXEC_NONZERO data per ch.03
+                            // §4.2.3; the ok:true rewiring is a hide-tools item, not
+                            // this contract migration. Behavior preserved.
+                            Some(ToolError::new(
+                                "EXEC_NONZERO",
+                                format!("git exited with status {status}"),
+                                true,
+                            ))
                         },
                     }
                 }
                 Err(err) => ToolResult {
                     call_id: hide_core::ids::ToolCallId::new(),
+                    ok: false,
                     status: ToolStatus::ToolError,
                     content: Vec::new(),
                     structured_content: None,
                     bytes_ref: None,
+                    exit_code: None,
                     effects: Default::default(),
-                    error: Some(ToolError {
-                        code: "spawn_failed".to_string(),
-                        message: err.to_string(),
-                        recoverable: true,
-                    }),
+                    provenance: "tool-output".to_string(),
+                    stats: Default::default(),
+                    error: Some(ToolError::new("TOOL_FAULT", err.to_string(), true)),
                 },
             }
         })
@@ -139,14 +146,7 @@ mod tests {
             })),
         );
         let result = dispatcher
-            .dispatch(ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "git.status".to_string(),
-                args: json!({ "cwd": "." }),
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            })
+            .dispatch(ToolCall::new("git.status", json!({ "cwd": "." })))
             .await
             .unwrap();
         assert_eq!(result.status, ToolStatus::Ok);

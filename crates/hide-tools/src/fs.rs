@@ -63,13 +63,17 @@ impl Tool for FsReadTool {
                     match String::from_utf8(bytes) {
                         Ok(content) => ToolResult {
                             call_id: hide_core::ids::ToolCallId::new(),
+                            ok: true,
                             status: ToolStatus::Ok,
                             content: vec![ToolContent::Text {
                                 text: content.clone(),
                             }],
                             structured_content: Some(json!({ "path": path, "content": content })),
                             bytes_ref: None,
+                            exit_code: None,
                             effects: EffectSet::default(),
+                            provenance: "tool-output".to_string(),
+                            stats: Default::default(),
                             error: None,
                         },
                         Err(err) => tool_error("non_utf8", err.to_string()),
@@ -164,13 +168,17 @@ impl Tool for FsListTool {
                     entries.sort();
                     ToolResult {
                         call_id: hide_core::ids::ToolCallId::new(),
+                        ok: true,
                         status: ToolStatus::Ok,
                         content: vec![ToolContent::Json {
                             value: json!(entries),
                         }],
                         structured_content: Some(json!({ "path": path, "entries": entries })),
                         bytes_ref: None,
+                        exit_code: None,
                         effects: EffectSet::default(),
+                        provenance: "tool-output".to_string(),
+                        stats: Default::default(),
                         error: None,
                     }
                 }
@@ -265,6 +273,7 @@ impl Tool for FsWriteTool {
                     };
                     ToolResult {
                         call_id: hide_core::ids::ToolCallId::new(),
+                        ok: true,
                         status: ToolStatus::Ok,
                         content: vec![ToolContent::Json {
                             value: json!({ "path": path, "bytes": content.len() }),
@@ -274,7 +283,10 @@ impl Tool for FsWriteTool {
                             "bytes": content.len()
                         })),
                         bytes_ref: None,
+                        exit_code: None,
                         effects,
+                        provenance: "tool-output".to_string(),
+                        stats: Default::default(),
                         error: None,
                     }
                 }
@@ -318,32 +330,32 @@ fn write_effect(path: &str, bytes: usize, create_dirs: bool) -> Effect {
 fn protocol_error(message: impl Into<String>) -> ToolResult {
     ToolResult {
         call_id: hide_core::ids::ToolCallId::new(),
+        ok: false,
         status: ToolStatus::ProtocolError,
         content: Vec::new(),
         structured_content: None,
         bytes_ref: None,
+        exit_code: None,
         effects: EffectSet::default(),
-        error: Some(ToolError {
-            code: "bad_args".to_string(),
-            message: message.into(),
-            recoverable: true,
-        }),
+        provenance: "tool-output".to_string(),
+        stats: Default::default(),
+        error: Some(ToolError::new("ARG_INVALID", message, true)),
     }
 }
 
 fn tool_error(code: impl Into<String>, message: impl Into<String>) -> ToolResult {
     ToolResult {
         call_id: hide_core::ids::ToolCallId::new(),
+        ok: false,
         status: ToolStatus::ToolError,
         content: Vec::new(),
         structured_content: None,
         bytes_ref: None,
+        exit_code: None,
         effects: EffectSet::default(),
-        error: Some(ToolError {
-            code: code.into(),
-            message: message.into(),
-            recoverable: true,
-        }),
+        provenance: "tool-output".to_string(),
+        stats: Default::default(),
+        error: Some(ToolError::new(code, message, true)),
     }
 }
 
@@ -373,14 +385,10 @@ mod tests {
             })),
         );
         let result = dispatcher
-            .dispatch(ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "fs.read".to_string(),
-                args: json!({ "path": file.to_string_lossy() }),
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            })
+            .dispatch(ToolCall::new(
+                "fs.read",
+                json!({ "path": file.to_string_lossy() }),
+            ))
             .await
             .unwrap();
         assert_eq!(result.status, ToolStatus::Ok);
@@ -408,18 +416,14 @@ mod tests {
             })),
         );
         let result = dispatcher
-            .dispatch(ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "fs.write".to_string(),
-                args: json!({
+            .dispatch(ToolCall::new(
+                "fs.write",
+                json!({
                     "path": file.to_string_lossy(),
                     "content": "hello write",
                     "create_dirs": true
                 }),
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            })
+            ))
             .await
             .unwrap();
 

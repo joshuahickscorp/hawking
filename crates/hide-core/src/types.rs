@@ -54,12 +54,20 @@ pub struct BlobRef {
     pub media_type: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Provenance {
     pub source: String,
     pub trust: TrustLevel,
+    /// Confidence in this provenance's trust claim, 0.0..=1.0 (bible A.2/F12).
+    /// Defaults to 1.0 for trusted/builtin sources.
+    #[serde(default = "default_confidence")]
+    pub confidence: f32,
     pub labels: Vec<String>,
     pub derived_from: Vec<String>,
+}
+
+fn default_confidence() -> f32 {
+    1.0
 }
 
 impl Provenance {
@@ -67,9 +75,16 @@ impl Provenance {
         Self {
             source: source.into(),
             trust: TrustLevel::Trusted,
+            confidence: 1.0,
             labels: Vec::new(),
             derived_from: Vec::new(),
         }
+    }
+
+    /// Set the confidence in this provenance (builder).
+    pub fn with_confidence(mut self, confidence: f32) -> Self {
+        self.confidence = confidence;
+        self
     }
 }
 

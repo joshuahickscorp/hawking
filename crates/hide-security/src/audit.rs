@@ -119,7 +119,7 @@ fn hex_lower(bytes: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hide_core::event::{EventPayload, EventSource, NewEvent};
+    use hide_core::event::{EventSource, NewEvent};
     use hide_core::ids::SessionId;
 
     #[test]
@@ -127,27 +127,21 @@ mod tests {
         let session = SessionId::new();
         let mut first = hide_core::event::Event::new(
             1,
-            NewEvent {
-                session_id: session.clone(),
-                run_id: None,
-                parent: None,
-                source: EventSource::System,
-                kind: "system.started".into(),
-                payload: EventPayload::Custom(serde_json::json!({ "n": 1 })),
-                redactions: Vec::new(),
-            },
+            NewEvent::of(
+                session.clone(),
+                EventSource::System,
+                "system.started",
+                serde_json::json!({ "n": 1 }),
+            ),
         );
         let mut second = hide_core::event::Event::new(
             2,
-            NewEvent {
-                session_id: session,
-                run_id: None,
-                parent: None,
-                source: EventSource::System,
-                kind: "system.ready".into(),
-                payload: EventPayload::Custom(serde_json::json!({ "n": 2 })),
-                redactions: Vec::new(),
-            },
+            NewEvent::of(
+                session,
+                EventSource::System,
+                "system.ready",
+                serde_json::json!({ "n": 2 }),
+            ),
         );
         first.chain_hash = Some(
             compute_event_chain(&[first.clone()]).records[0]
@@ -170,15 +164,12 @@ mod tests {
         let session = SessionId::new();
         let mut event = hide_core::event::Event::new(
             1,
-            NewEvent {
-                session_id: session,
-                run_id: None,
-                parent: None,
-                source: EventSource::System,
-                kind: "system.started".into(),
-                payload: EventPayload::Custom(serde_json::json!({ "n": 1 })),
-                redactions: Vec::new(),
-            },
+            NewEvent::of(
+                session,
+                EventSource::System,
+                "system.started",
+                serde_json::json!({ "n": 1 }),
+            ),
         );
         event.chain_hash = Some("bad".to_string());
 

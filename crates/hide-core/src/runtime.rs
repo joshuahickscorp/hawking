@@ -58,6 +58,17 @@ pub struct ModelRole {
     pub model: ModelDescriptor,
     pub caps: ProviderCaps,
     pub default_sampler: SamplerProfile,
+    /// Localhost endpoint this role is served from (ch.06 §4.4). Optional so
+    /// roles can be declared before an endpoint is resolved.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub endpoint: Option<String>,
+    /// Relative cost hint for the scheduler/admission (ch.06 §4.11).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cost: Option<f32>,
+    /// The role to escalate to when confidence is low — expresses the
+    /// confidence-aware cascade graph (ch.06 §4.4, the chapter's thesis).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub escalates_to: Option<RoleId>,
     pub metadata: BTreeMap<String, String>,
 }
 
@@ -71,6 +82,8 @@ pub enum RolePurpose {
     Summarizer,
     Classifier,
     ToolPlanner,
+    /// Long-context SSM (RWKV-7 / Mamba-2) routing (ch.06).
+    SsmLong,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

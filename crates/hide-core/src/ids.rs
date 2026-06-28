@@ -1,17 +1,38 @@
 use serde::{Deserialize, Serialize};
+use std::cell::Cell;
 use std::fmt;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
+use ulid::Ulid;
 
-static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+thread_local! {
+    /// Optional deterministic id source for tests. When set, ids are minted as
+    /// `{prefix}_{seed:026X}` with a monotonically increasing seed instead of a
+    /// random ULID, so replay/integrity tests are reproducible (T6).
+    static DETERMINISTIC_SEED: Cell<Option<u128>> = const { Cell::new(None) };
+}
+
+/// Scope guard installing a deterministic, monotonically increasing id source on
+/// the current thread for the duration of the closure. Restores the previous
+/// source on exit. Intended for tests that assert id monotonicity / replay.
+pub fn with_deterministic_ids<T>(start: u128, f: impl FnOnce() -> T) -> T {
+    let previous = DETERMINISTIC_SEED.with(|cell| cell.replace(Some(start)));
+    let out = f();
+    DETERMINISTIC_SEED.with(|cell| cell.set(previous));
+    out
+}
+
+fn next_ulid_body() -> String {
+    if let Some(seed) = DETERMINISTIC_SEED.with(|cell| cell.get()) {
+        DETERMINISTIC_SEED.with(|cell| cell.set(Some(seed + 1)));
+        // Encode the seed as a ULID so it stays lexicographically sortable and
+        // 26 chars wide, matching the random path's format.
+        return Ulid::from(seed).to_string();
+    }
+    Ulid::new().to_string()
+}
 
 fn next_id(prefix: &str) -> String {
-    let ms = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis();
-    let n = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-    format!("{prefix}_{ms:013x}_{n:08x}")
+    format!("{prefix}_{}", next_ulid_body())
 }
 
 macro_rules! id_newtype {
@@ -77,4 +98,42 @@ pub fn now_ms() -> TimestampMs {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis() as u64
+}
+
+/// Wall-clock microseconds since the Unix epoch — the `ts` field on `Event`
+/// (informational; `seq` is the authoritative order, ch.01 §4.6).
+pub fn now_micros() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_micros() as u64
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ulid_ids_are_sortable_and_unique() {
+        let a = EventId::new();
+        let b = EventId::new();
+        assert_ne!(a, b);
+        assert!(a.as_str().starts_with("evt_"));
+        // ULIDs minted later sort lexicographically >= earlier ones.
+        assert!(b.as_str() >= a.as_str());
+    }
+
+    #[test]
+    fn deterministic_ids_are_monotonic_and_reproducible() {
+        let first = with_deterministic_ids(0, || {
+            (0..4).map(|_| EventId::new().0).collect::<Vec<_>>()
+        });
+        let second = with_deterministic_ids(0, || {
+            (0..4).map(|_| EventId::new().0).collect::<Vec<_>>()
+        });
+        assert_eq!(first, second, "same seed yields identical id sequence");
+        for pair in first.windows(2) {
+            assert!(pair[1] > pair[0], "deterministic ids are strictly increasing");
+        }
+    }
 }

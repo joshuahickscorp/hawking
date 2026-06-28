@@ -19,7 +19,7 @@ pub mod verify;
 
 use crate::machine::driver::AgentDriver;
 use crate::machine::state::AgentState;
-use hide_core::event::{EventPayload, EventSource, NewEvent, UserIntentEvent};
+use hide_core::event::{NewEvent, UserIntentEvent};
 use hide_core::ids::{RunId, SessionId};
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
@@ -42,18 +42,16 @@ impl AgentKernel {
         let objective = objective.into();
         let run_id = RunId::new();
         self.events
-            .append(NewEvent {
-                session_id: session_id.clone(),
-                run_id: Some(run_id.clone()),
-                parent: None,
-                source: EventSource::User,
-                kind: "user.intent.submit_turn".into(),
-                payload: EventPayload::UserIntent(UserIntentEvent {
-                    intent: "submit_turn".to_string(),
-                    args: json!({ "objective": objective }),
-                }),
-                redactions: Vec::new(),
-            })
+            .append(
+                NewEvent::user_intent(
+                    session_id.clone(),
+                    UserIntentEvent {
+                        intent: "submit_turn".to_string(),
+                        args: json!({ "objective": objective }),
+                    },
+                )
+                .with_run(run_id.clone()),
+            )
             .await?;
         Ok(AgentState::new(session_id, run_id, objective))
     }

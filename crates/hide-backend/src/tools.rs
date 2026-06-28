@@ -47,18 +47,14 @@ mod tests {
         let file = dir.join("allowed.txt");
 
         let result = dispatcher
-            .dispatch(ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "fs.write".to_string(),
-                args: json!({
+            .dispatch(ToolCall::new(
+                "fs.write",
+                json!({
                     "path": file.to_string_lossy(),
                     "content": "allowed",
                     "create_dirs": true
                 }),
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            })
+            ))
             .await
             .unwrap();
 

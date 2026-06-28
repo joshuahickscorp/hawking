@@ -1,11 +1,12 @@
 use crate::error::{HideError, Result};
-use crate::ids::{now_ms, EventId, GrantId, RunId, SessionId, StepId, TimestampMs, ToolCallId};
+use crate::ids::{now_micros, EventId, GrantId, RunId, SessionId, StepId, ToolCallId};
 use crate::types::{BlobRef, Decision, EffectSet, Provenance};
 use futures::future::BoxFuture;
 use parking_lot::Mutex;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
@@ -13,23 +14,17 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 pub const EVENT_SCHEMA_VERSION: u16 = 1;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EventKind(pub String);
-
-impl EventKind {
-    pub fn new(kind: impl Into<String>) -> Self {
-        Self(kind.into())
-    }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-}
-
-impl From<&str> for EventKind {
-    fn from(value: &str) -> Self {
-        Self::new(value)
-    }
+/// Event class (ch.01 §4.6). Following OpenHands, effect-bearing events are
+/// `Action`s; their recorded outcomes are `Observation`s (carrying `cause`).
+/// Most lifecycle events are `Neither`. Replay applies `Observation` outcomes
+/// as data and never re-fires `Action`s (T3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EventClass {
+    Action,
+    Observation,
+    #[default]
+    Neither,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,87 +40,185 @@ pub enum EventSource {
     Memory,
 }
 
+/// The single immutable record (ch.01 §4.6 — the cross-cutting contract every
+/// other chapter binds to).
+///
+/// The payload is an **open** `serde_json::Value`, not a closed Rust enum: the
+/// bible explicitly rejected the giant-enum approach because it makes the core a
+/// bottleneck for every new event kind and breaks WASM-plugin emission. Kinds
+/// are open dotted strings (e.g. `"tool.call"`); typed constructors and
+/// [`Event::payload_as`] keep emission/consumption type-safe over the `Value`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Event {
     pub schema_version: u16,
-    pub id: EventId,
     pub seq: u64,
+    pub id: EventId,
     pub session_id: SessionId,
     pub run_id: Option<RunId>,
+    /// Direct causal parent (builds the causal DAG).
     pub parent: Option<EventId>,
+    /// For `Observation`s: the `Action` that produced this (OpenHands-style
+    /// Action/Observation pairing for replay — T3).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cause: Option<EventId>,
+    /// Wall-clock micros since epoch (informational; `seq` is the order).
+    pub ts: u64,
     pub source: EventSource,
-    pub kind: EventKind,
-    pub payload: EventPayload,
-    pub timestamp_ms: TimestampMs,
+    /// Sub-actor id (which agent/plugin/tool instance emitted this).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub actor: Option<String>,
+    /// Event class (Action / Observation / Neither).
+    #[serde(default)]
+    pub class: EventClass,
+    /// Open, dotted, registry-validated kind (e.g. `"tool.call"`).
+    pub kind: String,
+    /// Kind-specific body. Open `Value` so new kinds never require a core edit.
+    /// Kept as a named field (not `#[serde(flatten)]`) so it never competes with
+    /// the flattened `ext` forward-compat capture below.
+    pub payload: Value,
+    /// JSON-pointer paths scrubbed for privacy/secrets (the redaction is itself
+    /// auditable).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub redactions: Vec<String>,
+    /// blake3 chain hash over the canonical bytes + the previous hash. `None`
+    /// until the durable log assigns it on append.
+    // NOTE: hide-security/audit.rs must use the same blake3 chain — see WP-6.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub chain_hash: Option<String>,
+    /// Forward-compat capture of unknown fields (T10) — additive-by-default.
+    #[serde(flatten, default)]
+    pub ext: BTreeMap<String, Value>,
 }
 
 impl Event {
     pub fn new(seq: u64, input: NewEvent) -> Self {
         Self {
             schema_version: EVENT_SCHEMA_VERSION,
-            id: EventId::new(),
             seq,
+            id: EventId::new(),
             session_id: input.session_id,
             run_id: input.run_id,
             parent: input.parent,
+            cause: input.cause,
+            ts: now_micros(),
             source: input.source,
+            actor: input.actor,
+            class: input.class,
             kind: input.kind,
             payload: input.payload,
-            timestamp_ms: now_ms(),
             redactions: input.redactions,
             chain_hash: None,
+            ext: BTreeMap::new(),
         }
+    }
+
+    /// Deserialize the open payload into a typed view (e.g.
+    /// `event.payload_as::<ToolCallEvent>()`). Returns `None` if the payload
+    /// does not match the requested shape — the type-safe read side of the
+    /// open-payload contract.
+    pub fn payload_as<T: DeserializeOwned>(&self) -> Option<T> {
+        serde_json::from_value(self.payload.clone()).ok()
+    }
+
+    pub fn is_action(&self) -> bool {
+        self.class == EventClass::Action
+    }
+
+    pub fn is_observation(&self) -> bool {
+        self.class == EventClass::Observation
     }
 }
 
+/// A not-yet-sequenced event. The single-writer log assigns `seq`/`id`/`ts`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NewEvent {
     pub session_id: SessionId,
     pub run_id: Option<RunId>,
     pub parent: Option<EventId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cause: Option<EventId>,
     pub source: EventSource,
-    pub kind: EventKind,
-    pub payload: EventPayload,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub actor: Option<String>,
+    #[serde(default)]
+    pub class: EventClass,
+    pub kind: String,
+    pub payload: Value,
+    #[serde(default)]
     pub redactions: Vec<String>,
 }
 
 impl NewEvent {
-    pub fn system(
-        session_id: SessionId,
-        kind: impl Into<EventKind>,
-        payload: EventPayload,
-    ) -> Self {
+    /// Build a `System`-sourced event with an arbitrary JSON payload.
+    pub fn system(session_id: SessionId, kind: impl Into<String>, payload: Value) -> Self {
         Self {
             session_id,
             run_id: None,
             parent: None,
+            cause: None,
             source: EventSource::System,
+            actor: None,
+            class: EventClass::Neither,
             kind: kind.into(),
             payload,
             redactions: Vec::new(),
         }
     }
+
+    /// Generic builder: source + kind + open payload, class `Neither`.
+    pub fn of(
+        session_id: SessionId,
+        source: EventSource,
+        kind: impl Into<String>,
+        payload: Value,
+    ) -> Self {
+        Self {
+            session_id,
+            run_id: None,
+            parent: None,
+            cause: None,
+            source,
+            actor: None,
+            class: EventClass::Neither,
+            kind: kind.into(),
+            payload,
+            redactions: Vec::new(),
+        }
+    }
+
+    pub fn with_run(mut self, run_id: RunId) -> Self {
+        self.run_id = Some(run_id);
+        self
+    }
+
+    pub fn with_parent(mut self, parent: EventId) -> Self {
+        self.parent = Some(parent);
+        self
+    }
+
+    pub fn with_cause(mut self, cause: EventId) -> Self {
+        self.cause = Some(cause);
+        self
+    }
+
+    pub fn with_class(mut self, class: EventClass) -> Self {
+        self.class = class;
+        self
+    }
+
+    pub fn with_actor(mut self, actor: impl Into<String>) -> Self {
+        self.actor = Some(actor.into());
+        self
+    }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type", content = "data", rename_all = "snake_case")]
-pub enum EventPayload {
-    UserIntent(UserIntentEvent),
-    AgentState(AgentStateEvent),
-    Plan(PlanEvent),
-    ToolCall(ToolCallEvent),
-    ToolResult(ToolResultEvent),
-    RuntimeStatus(RuntimeStatusEvent),
-    RuntimeToken(TokenEvent),
-    Security(SecurityEvent),
-    Projection(ProjectionEvent),
-    Memory(MemoryEvent),
-    Index(IndexEvent),
-    Error(ErrorEvent),
-    Custom(Value),
-}
+// ---------------------------------------------------------------------------
+// Typed payload views + ergonomic constructors.
+//
+// Storage is open (`payload: Value`) but emission stays type-safe: each known
+// kind has a serde view struct + a `NewEvent` constructor that serializes it.
+// Reading back is `event.payload_as::<TheView>()`.
+// ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserIntentEvent {
@@ -214,6 +307,78 @@ pub struct ErrorEvent {
     pub recoverable: bool,
 }
 
+/// Serialize a typed payload view into the open `Value`. Infallible for the
+/// in-tree view structs; falls back to `Null` only on the impossible serde
+/// failure path.
+fn to_payload<T: Serialize>(view: &T) -> Value {
+    serde_json::to_value(view).unwrap_or(Value::Null)
+}
+
+impl NewEvent {
+    pub fn user_intent(session_id: SessionId, view: UserIntentEvent) -> Self {
+        Self {
+            kind: "user.intent".to_string(),
+            payload: to_payload(&view),
+            class: EventClass::Action,
+            ..Self::of(session_id, EventSource::User, "user.intent", Value::Null)
+        }
+    }
+
+    pub fn agent_state(session_id: SessionId, run_id: RunId, view: AgentStateEvent) -> Self {
+        Self {
+            run_id: Some(run_id),
+            payload: to_payload(&view),
+            ..Self::of(session_id, EventSource::Agent, "agent.phase", Value::Null)
+        }
+    }
+
+    pub fn plan(session_id: SessionId, run_id: RunId, view: PlanEvent) -> Self {
+        Self {
+            run_id: Some(run_id),
+            payload: to_payload(&view),
+            ..Self::of(session_id, EventSource::Agent, "plan.created", Value::Null)
+        }
+    }
+
+    pub fn tool_call(session_id: SessionId, view: ToolCallEvent) -> Self {
+        Self {
+            payload: to_payload(&view),
+            class: EventClass::Action,
+            ..Self::of(session_id, EventSource::Agent, "tool.call", Value::Null)
+        }
+    }
+
+    /// `cause` should point at the `tool.call` event id (Action/Observation
+    /// pairing, T3).
+    pub fn tool_result(session_id: SessionId, view: ToolResultEvent) -> Self {
+        Self {
+            payload: to_payload(&view),
+            class: EventClass::Observation,
+            ..Self::of(session_id, EventSource::Tool, "tool.result", Value::Null)
+        }
+    }
+
+    pub fn observation(
+        session_id: SessionId,
+        kind: impl Into<String>,
+        cause: EventId,
+        payload: Value,
+    ) -> Self {
+        Self {
+            cause: Some(cause),
+            class: EventClass::Observation,
+            ..Self::of(session_id, EventSource::Tool, kind, payload)
+        }
+    }
+
+    pub fn error(session_id: SessionId, view: ErrorEvent) -> Self {
+        Self {
+            payload: to_payload(&view),
+            ..Self::of(session_id, EventSource::System, "error", Value::Null)
+        }
+    }
+}
+
 pub trait EventLog: Send + Sync {
     fn append<'a>(&'a self, event: NewEvent) -> BoxFuture<'a, Result<Event>>;
 
@@ -284,6 +449,10 @@ impl InMemoryEventLog {
 
     pub fn len(&self) -> usize {
         self.events.lock().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.events.lock().is_empty()
     }
 }
 
@@ -399,14 +568,17 @@ fn read_events(path: &Path) -> Result<Vec<Event>> {
     Ok(events)
 }
 
+/// blake3 chain hash over the previous hash + the canonical bytes of the event
+/// (with `chain_hash` cleared). Replaces SHA-256 per ch.01 §4.7 / §4.8.
+// NOTE: hide-security/audit.rs must use the same blake3 chain — see WP-6.
 fn compute_chain_hash(previous_hash: &[u8], event: &Event) -> Result<Vec<u8>> {
     let mut canonical = event.clone();
     canonical.chain_hash = None;
     let bytes = serde_json::to_vec(&canonical)?;
-    let mut hasher = Sha256::new();
+    let mut hasher = blake3::Hasher::new();
     hasher.update(previous_hash);
-    hasher.update(bytes);
-    Ok(hasher.finalize().to_vec())
+    hasher.update(&bytes);
+    Ok(hasher.finalize().as_bytes().to_vec())
 }
 
 fn hex_lower(bytes: &[u8]) -> String {
@@ -445,6 +617,7 @@ fn hex_val(byte: u8) -> Result<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ids::now_ms;
 
     #[tokio::test]
     async fn in_memory_log_assigns_ordered_sequences() {
@@ -454,7 +627,7 @@ mod tests {
             .append(NewEvent::system(
                 session.clone(),
                 "system.started",
-                EventPayload::Custom(Value::Null),
+                Value::Null,
             ))
             .await
             .unwrap();
@@ -462,7 +635,7 @@ mod tests {
             .append(NewEvent::system(
                 session.clone(),
                 "system.ready",
-                EventPayload::Custom(Value::Null),
+                Value::Null,
             ))
             .await
             .unwrap();
@@ -481,7 +654,7 @@ mod tests {
             .append(NewEvent::system(
                 session.clone(),
                 "system.started",
-                EventPayload::Custom(Value::Null),
+                Value::Null,
             ))
             .await
             .unwrap();
@@ -489,7 +662,7 @@ mod tests {
             .append(NewEvent::system(
                 session.clone(),
                 "system.ready",
-                EventPayload::Custom(Value::Null),
+                Value::Null,
             ))
             .await
             .unwrap();
@@ -504,14 +677,87 @@ mod tests {
             .unwrap();
         assert_eq!(loaded.len(), 2);
         let third = reopened
-            .append(NewEvent::system(
-                session,
-                "system.done",
-                EventPayload::Custom(Value::Null),
-            ))
+            .append(NewEvent::system(session, "system.done", Value::Null))
             .await
             .unwrap();
         assert_eq!(third.seq, 3);
         let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn blake3_chain_detects_tampering() {
+        // Build a two-event chain, then tamper with the first event's payload
+        // and assert its recomputed blake3 hash no longer matches the embedded
+        // one (integrity / tamper detection, ch.01 §4.8).
+        let session = SessionId::new();
+        let mut first = Event::new(
+            1,
+            NewEvent::system(session.clone(), "a", serde_json::json!({ "n": 1 })),
+        );
+        let h1 = compute_chain_hash(&[0u8; 32], &first).unwrap();
+        first.chain_hash = Some(hex_lower(&h1));
+
+        let second = Event::new(2, NewEvent::system(session, "b", serde_json::json!({ "n": 2 })));
+        let h2 = compute_chain_hash(&h1, &second).unwrap();
+
+        // Untampered: recomputation matches the embedded hash.
+        let recomputed = compute_chain_hash(&[0u8; 32], &first).unwrap();
+        assert_eq!(first.chain_hash.as_deref(), Some(hex_lower(&recomputed).as_str()));
+
+        // Tamper with the payload → recomputed hash diverges, so the embedded
+        // hash (and every downstream hash) no longer verifies.
+        let mut tampered = first.clone();
+        tampered.payload = serde_json::json!({ "n": 999 });
+        let after = compute_chain_hash(&[0u8; 32], &tampered).unwrap();
+        assert_ne!(h1, after, "tampering changes the chain hash");
+        // The follow-on hash, recomputed from the tampered prefix, also breaks.
+        let h2_after = compute_chain_hash(&after, &second).unwrap();
+        assert_ne!(h2, h2_after, "tamper propagates down the chain");
+    }
+
+    #[test]
+    fn typed_constructor_round_trips_through_value_payload() {
+        let session = SessionId::new();
+        let call_id = ToolCallId::new();
+        let new = NewEvent::tool_call(
+            session,
+            ToolCallEvent {
+                call_id: call_id.clone(),
+                tool_name: "fs.read".to_string(),
+                capability_grant_id: None,
+                args: serde_json::json!({ "path": "src/main.rs" }),
+                predicted_effects: EffectSet::default(),
+            },
+        );
+        let event = Event::new(1, new);
+        assert_eq!(event.kind, "tool.call");
+        assert_eq!(event.class, EventClass::Action);
+        let view: ToolCallEvent = event.payload_as().expect("payload is a ToolCallEvent");
+        assert_eq!(view.call_id, call_id);
+        assert_eq!(view.tool_name, "fs.read");
+    }
+
+    #[test]
+    fn unknown_ext_fields_survive_serde_round_trip() {
+        // An event serialized by a newer/foreign producer carrying an unknown
+        // top-level field must round-trip it (T10 forward-compat).
+        let session = SessionId::new();
+        let event = Event::new(
+            7,
+            NewEvent::system(session, "future.kind", serde_json::json!({ "a": 1 })),
+        );
+        let mut as_json = serde_json::to_value(&event).unwrap();
+        as_json["unknown_future_field"] = serde_json::json!({ "nested": true });
+        let restored: Event = serde_json::from_value(as_json).unwrap();
+        assert_eq!(
+            restored.ext.get("unknown_future_field"),
+            Some(&serde_json::json!({ "nested": true })),
+            "unknown field captured in ext"
+        );
+        // And it must serialize back out (ext flattened) without loss.
+        let reserialized = serde_json::to_value(&restored).unwrap();
+        assert_eq!(reserialized["unknown_future_field"]["nested"], true);
+        // The known open payload also survives (under the named `payload` field).
+        assert_eq!(reserialized["payload"]["a"], 1);
     }
 }

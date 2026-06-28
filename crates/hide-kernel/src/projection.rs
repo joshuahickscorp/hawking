@@ -1,5 +1,5 @@
 use crate::session::SessionProjection;
-use hide_core::event::{Event, EventPayload};
+use hide_core::event::{AgentStateEvent, ErrorEvent, Event, PlanEvent, UserIntentEvent};
 use hide_core::ids::SessionId;
 use hide_core::Result;
 
@@ -21,41 +21,53 @@ impl ProjectionEngine for BasicProjectionEngine {
             if let Some(run_id) = &event.run_id {
                 projection.active_run = Some(run_id.clone());
             }
-            match &event.payload {
-                EventPayload::UserIntent(intent) => {
-                    projection
-                        .transcript
-                        .push(format!("intent:{} {}", intent.intent, intent.args));
-                }
-                EventPayload::AgentState(state) => {
-                    projection
-                        .transcript
-                        .push(format!("agent:{} {}", state.phase, state.detail));
-                    projection.phase = match state.phase.as_str() {
-                        "intake" => Some(crate::machine::state::Phase::Intake),
-                        "plan" => Some(crate::machine::state::Phase::Plan),
-                        "select_step" => Some(crate::machine::state::Phase::SelectStep),
-                        "act" => Some(crate::machine::state::Phase::Act),
-                        "observe" => Some(crate::machine::state::Phase::Observe),
-                        "verify" => Some(crate::machine::state::Phase::Verify),
-                        "repair" => Some(crate::machine::state::Phase::Repair),
-                        "replan" => Some(crate::machine::state::Phase::Replan),
-                        "finalize" => Some(crate::machine::state::Phase::Finalize),
-                        "done" => Some(crate::machine::state::Phase::Done),
-                        "aborted" => Some(crate::machine::state::Phase::Aborted),
-                        "paused" => Some(crate::machine::state::Phase::Paused),
-                        _ => projection.phase,
-                    };
-                }
-                EventPayload::Plan(plan_event) => {
-                    if let Some(plan) = &plan_event.plan {
+            // Open payload: dispatch on the dotted kind, then read the typed
+            // view off the `Value` payload (`payload_as`).
+            match event.kind.as_str() {
+                "user.intent" => {
+                    if let Some(intent) = event.payload_as::<UserIntentEvent>() {
                         projection
                             .transcript
-                            .push(format!("plan:{}", plan_event.action));
-                        projection.plan = serde_json::from_value(plan.clone()).ok();
+                            .push(format!("intent:{} {}", intent.intent, intent.args));
                     }
                 }
-                EventPayload::Error(error) => projection.errors.push(error.message.clone()),
+                "agent.phase" => {
+                    if let Some(state) = event.payload_as::<AgentStateEvent>() {
+                        projection
+                            .transcript
+                            .push(format!("agent:{} {}", state.phase, state.detail));
+                        projection.phase = match state.phase.as_str() {
+                            "intake" => Some(crate::machine::state::Phase::Intake),
+                            "plan" => Some(crate::machine::state::Phase::Plan),
+                            "select_step" => Some(crate::machine::state::Phase::SelectStep),
+                            "act" => Some(crate::machine::state::Phase::Act),
+                            "observe" => Some(crate::machine::state::Phase::Observe),
+                            "verify" => Some(crate::machine::state::Phase::Verify),
+                            "repair" => Some(crate::machine::state::Phase::Repair),
+                            "replan" => Some(crate::machine::state::Phase::Replan),
+                            "finalize" => Some(crate::machine::state::Phase::Finalize),
+                            "done" => Some(crate::machine::state::Phase::Done),
+                            "aborted" => Some(crate::machine::state::Phase::Aborted),
+                            "paused" => Some(crate::machine::state::Phase::Paused),
+                            _ => projection.phase,
+                        };
+                    }
+                }
+                "plan.created" => {
+                    if let Some(plan_event) = event.payload_as::<PlanEvent>() {
+                        if let Some(plan) = &plan_event.plan {
+                            projection
+                                .transcript
+                                .push(format!("plan:{}", plan_event.action));
+                            projection.plan = serde_json::from_value(plan.clone()).ok();
+                        }
+                    }
+                }
+                "error" => {
+                    if let Some(error) = event.payload_as::<ErrorEvent>() {
+                        projection.errors.push(error.message);
+                    }
+                }
                 _ => {}
             }
         }

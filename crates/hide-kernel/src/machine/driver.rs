@@ -4,7 +4,7 @@ use crate::machine::state::{AgentState, Phase};
 use crate::plan::dag::PlanDag;
 use crate::plan::schema::{Plan, StepStatus};
 use crate::verify::oracle::{Verdict, VerdictStatus};
-use hide_core::event::{EventPayload, EventSource, NewEvent, PlanEvent};
+use hide_core::event::{NewEvent, PlanEvent};
 use hide_core::persistence::DynEventLog;
 use hide_core::{HideError, Result};
 use serde_json::json;
@@ -33,19 +33,15 @@ impl AgentDriver {
             Phase::Plan => {
                 let plan = Plan::single_step("Scaffold architecture", &state.objective);
                 self.events
-                    .append(NewEvent {
-                        session_id: state.session_id.clone(),
-                        run_id: Some(state.run_id.clone()),
-                        parent: None,
-                        source: EventSource::Agent,
-                        kind: "plan.created".into(),
-                        payload: EventPayload::Plan(PlanEvent {
+                    .append(NewEvent::plan(
+                        state.session_id.clone(),
+                        state.run_id.clone(),
+                        PlanEvent {
                             action: "created".to_string(),
                             step_id: None,
                             plan: Some(serde_json::to_value(&plan)?),
-                        }),
-                        redactions: Vec::new(),
-                    })
+                        },
+                    ))
                     .await?;
                 state.plan = Some(plan);
                 state.phase = Phase::SelectStep;

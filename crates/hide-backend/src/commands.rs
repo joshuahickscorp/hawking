@@ -1,5 +1,5 @@
 use hide_core::api::{Intent, IntentAck};
-use hide_core::event::{EventPayload, EventSource, NewEvent, UserIntentEvent};
+use hide_core::event::{NewEvent, UserIntentEvent};
 use hide_core::ids::SessionId;
 use hide_core::persistence::DynEventLog;
 use hide_core::Result;
@@ -97,21 +97,17 @@ impl CommandRouter {
                 payload,
             ),
         };
-        let event = self
-            .events
-            .append(NewEvent {
-                session_id,
-                run_id: None,
-                parent: None,
-                source: EventSource::User,
-                kind: format!("user.intent.{intent_name}").as_str().into(),
-                payload: EventPayload::UserIntent(UserIntentEvent {
-                    intent: intent_name,
-                    args,
-                }),
-                redactions: Vec::new(),
-            })
-            .await?;
+        // Preserve the namespaced kind (`user.intent.<name>`) while carrying the
+        // typed UserIntent view in the open payload.
+        let mut new_event = NewEvent::user_intent(
+            session_id,
+            UserIntentEvent {
+                intent: intent_name.clone(),
+                args,
+            },
+        );
+        new_event.kind = format!("user.intent.{intent_name}");
+        let event = self.events.append(new_event).await?;
         Ok(IntentAck {
             accepted: true,
             event_seq: Some(event.seq),

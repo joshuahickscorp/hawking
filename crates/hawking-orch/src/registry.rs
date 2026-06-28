@@ -124,6 +124,9 @@ fn local_role(
         },
         caps,
         default_sampler,
+        endpoint: None,
+        cost: None,
+        escalates_to: None,
         metadata: BTreeMap::new(),
     }
 }

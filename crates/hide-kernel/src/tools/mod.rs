@@ -16,7 +16,7 @@ pub struct ToolDispatchRecord {
 }
 
 pub fn lint_tool_call(call: &ToolCall) -> Result<(), String> {
-    if call.tool_name.trim().is_empty() {
+    if call.tool.trim().is_empty() {
         return Err("tool name is empty".to_string());
     }
     if !call.args.is_object() {

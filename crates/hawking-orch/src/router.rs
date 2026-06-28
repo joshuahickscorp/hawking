@@ -124,6 +124,9 @@ mod tests {
                 ..ProviderCaps::hawking_local_shell_today()
             },
             default_sampler: SamplerProfile::deterministic_edit(),
+            endpoint: None,
+            cost: None,
+            escalates_to: None,
             metadata: BTreeMap::new(),
         });
         let router = SimpleRouter::new(registry);

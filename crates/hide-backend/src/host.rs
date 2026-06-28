@@ -5,7 +5,7 @@ use crate::security::SecurityServices;
 use crate::services::{BackendCapabilities, BackendServices, SharedBackend};
 use crate::tools::{build_default_tool_dispatcher, build_default_tool_registry};
 use hide_core::api::{Intent, IntentAck, UiEvent};
-use hide_core::event::{EventPayload, EventSource, NewEvent, ToolCallEvent, ToolResultEvent};
+use hide_core::event::{NewEvent, ToolCallEvent, ToolResultEvent};
 use hide_core::ids::{RunId, SessionId};
 use hide_core::observability::{HealthCheck, HealthReport, HealthStatus};
 use hide_core::runtime::ModelRole;
@@ -90,19 +90,8 @@ impl BackendHost {
         if let Some(cwd) = cwd {
             args["cwd"] = json!(cwd);
         }
-        self.dispatch_tool(
-            session_id,
-            None,
-            ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "shell.run".to_string(),
-                args,
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            },
-        )
-        .await
+        self.dispatch_tool(session_id, None, ToolCall::new("shell.run", args))
+            .await
     }
 
     pub async fn dispatch_tool(
@@ -113,43 +102,33 @@ impl BackendHost {
     ) -> Result<ToolResult> {
         let call_event = call.clone();
         let result = self.dispatcher.dispatch(call).await?;
-        self.services
-            .event_log
-            .append(NewEvent {
-                session_id: session_id.clone(),
-                run_id: run_id.clone(),
-                parent: None,
-                source: EventSource::Agent,
-                kind: "tool.call".into(),
-                payload: EventPayload::ToolCall(ToolCallEvent {
-                    call_id: call_event.id,
-                    tool_name: call_event.tool_name,
-                    capability_grant_id: call_event.capability_grant_id,
-                    args: call_event.args,
-                    predicted_effects: result.effects.clone(),
-                }),
-                redactions: Vec::new(),
-            })
-            .await?;
-        let result_event = self
-            .services
-            .event_log
-            .append(NewEvent {
-                session_id,
-                run_id,
-                parent: None,
-                source: EventSource::Tool,
-                kind: "tool.result".into(),
-                payload: EventPayload::ToolResult(ToolResultEvent {
-                    call_id: result.call_id.clone(),
-                    ok: result.status == ToolStatus::Ok,
-                    summary: tool_result_summary(&result),
-                    output: result.structured_content.clone(),
-                    bytes_ref: result.bytes_ref.clone(),
-                }),
-                redactions: Vec::new(),
-            })
-            .await?;
+        let mut call_new = NewEvent::tool_call(
+            session_id.clone(),
+            ToolCallEvent {
+                call_id: call_event.call_id,
+                tool_name: call_event.tool,
+                capability_grant_id: call_event.capability_grant_id,
+                args: call_event.args,
+                predicted_effects: result.effects.clone(),
+            },
+        );
+        call_new.run_id = run_id.clone();
+        let call_event_record = self.services.event_log.append(call_new).await?;
+        // The tool.result Observation pairs back to the tool.call Action via
+        // `cause` (T3 Action/Observation replay pairing).
+        let mut result_new = NewEvent::tool_result(
+            session_id,
+            ToolResultEvent {
+                call_id: result.call_id.clone(),
+                ok: result.status == ToolStatus::Ok,
+                summary: tool_result_summary(&result),
+                output: result.structured_content.clone(),
+                bytes_ref: result.bytes_ref.clone(),
+            },
+        );
+        result_new.run_id = run_id;
+        result_new.cause = Some(call_event_record.id);
+        let result_event = self.services.event_log.append(result_new).await?;
         self.services.projection_store.put_projection(
             &result_event.session_id,
             result_event.seq,
@@ -287,8 +266,7 @@ mod tests {
     use hawking_research::{ResearchRun, ResearchState};
     use hide_core::api::UiEventKind;
     use hide_core::config::HideConfig;
-    use hide_core::event::EventPayload;
-    use hide_core::ids::{now_ms, ToolCallId};
+    use hide_core::ids::now_ms;
     use hide_core::tool::ToolCall;
     use hide_core::types::Decision;
 
@@ -305,18 +283,14 @@ mod tests {
             .dispatch_tool(
                 session_id.clone(),
                 None,
-                ToolCall {
-                    id: ToolCallId::new(),
-                    tool_name: "fs.write".to_string(),
-                    args: json!({
+                ToolCall::new(
+                    "fs.write",
+                    json!({
                         "path": file.to_string_lossy(),
                         "content": "host write",
                         "create_dirs": true
                     }),
-                    capability_grant_id: None,
-                    idempotency_key: None,
-                    dry_run: false,
-                },
+                ),
             )
             .await
             .unwrap();
@@ -329,12 +303,8 @@ mod tests {
             .scan(Some(session_id.clone()), None, None)
             .await
             .unwrap();
-        assert!(events
-            .iter()
-            .any(|event| matches!(event.payload, EventPayload::ToolCall(_))));
-        assert!(events
-            .iter()
-            .any(|event| matches!(event.payload, EventPayload::ToolResult(_))));
+        assert!(events.iter().any(|event| event.kind == "tool.call"));
+        assert!(events.iter().any(|event| event.kind == "tool.result"));
         assert!(host
             .services
             .projection_store

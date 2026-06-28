@@ -62,6 +62,7 @@ impl Tool for ShellPlanTool {
                 .unwrap_or_default();
             ToolResult {
                 call_id: hide_core::ids::ToolCallId::new(),
+                ok: true,
                 status: ToolStatus::Ok,
                 content: vec![ToolContent::Text {
                     text: format!("planned command: {:?}", argv),
@@ -72,7 +73,10 @@ impl Tool for ShellPlanTool {
                     "note": "shell.plan is non-effecting; shell.run must be sandbox-wired separately"
                 })),
                 bytes_ref: None,
+                exit_code: None,
                 effects: EffectSet::default(),
+                provenance: "tool-output".to_string(),
+                stats: Default::default(),
                 error: None,
             }
         })
@@ -189,6 +193,7 @@ impl Tool for ShellRunTool {
                     let status = output.status.code().unwrap_or(-1);
                     ToolResult {
                         call_id: hide_core::ids::ToolCallId::new(),
+                        ok: output.status.success(),
                         status: if output.status.success() {
                             ToolStatus::Ok
                         } else {
@@ -204,30 +209,37 @@ impl Tool for ShellRunTool {
                             "truncated": truncated
                         })),
                         bytes_ref: None,
+                        exit_code: Some(status),
                         effects: EffectSet::default(),
+                        provenance: "tool-output".to_string(),
+                        stats: Default::default(),
                         error: if output.status.success() {
                             None
                         } else {
-                            Some(ToolError {
-                                code: "nonzero_exit".to_string(),
-                                message: format!("command exited with status {status}"),
-                                recoverable: true,
-                            })
+                            // NOTE: per ch.03 §4.2.3 a non-zero exit is `EXEC_NONZERO`
+                            // data (ok:true), not a tool fault — wiring that is a
+                            // hide-tools completion item (WP / Tier 1), not this
+                            // contract migration. Behavior is preserved here.
+                            Some(ToolError::new(
+                                "EXEC_NONZERO",
+                                format!("command exited with status {status}"),
+                                true,
+                            ))
                         },
                     }
                 }
                 Err(err) => ToolResult {
                     call_id: hide_core::ids::ToolCallId::new(),
+                    ok: false,
                     status: ToolStatus::ToolError,
                     content: Vec::new(),
                     structured_content: None,
                     bytes_ref: None,
+                    exit_code: None,
                     effects: EffectSet::default(),
-                    error: Some(ToolError {
-                        code: "spawn_failed".to_string(),
-                        message: err.to_string(),
-                        recoverable: true,
-                    }),
+                    provenance: "tool-output".to_string(),
+                    stats: Default::default(),
+                    error: Some(ToolError::new("TOOL_FAULT", err.to_string(), true)),
                 },
             }
         })
@@ -267,16 +279,16 @@ fn parse_argv(args: &Value) -> Vec<String> {
 fn shell_protocol_error(message: impl Into<String>) -> ToolResult {
     ToolResult {
         call_id: hide_core::ids::ToolCallId::new(),
+        ok: false,
         status: ToolStatus::ProtocolError,
         content: Vec::new(),
         structured_content: None,
         bytes_ref: None,
+        exit_code: None,
         effects: EffectSet::default(),
-        error: Some(ToolError {
-            code: "bad_args".to_string(),
-            message: message.into(),
-            recoverable: true,
-        }),
+        provenance: "tool-output".to_string(),
+        stats: Default::default(),
+        error: Some(ToolError::new("ARG_INVALID", message, true)),
     }
 }
 
@@ -300,14 +312,10 @@ mod tests {
             })),
         );
         let result = dispatcher
-            .dispatch(ToolCall {
-                id: hide_core::ids::ToolCallId::new(),
-                tool_name: "shell.run".to_string(),
-                args: json!({ "argv": ["printf", "hello"] }),
-                capability_grant_id: None,
-                idempotency_key: None,
-                dry_run: false,
-            })
+            .dispatch(ToolCall::new(
+                "shell.run",
+                json!({ "argv": ["printf", "hello"] }),
+            ))
             .await
             .unwrap();
         assert_eq!(result.status, ToolStatus::Ok);

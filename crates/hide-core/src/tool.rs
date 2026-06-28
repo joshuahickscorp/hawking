@@ -43,25 +43,99 @@ impl Default for ToolAnnotations {
     }
 }
 
+/// The canonical effect request (ch.03 §4.2.2). Maps 1:1 to the `tool.call`
+/// event payload. Field names match the bible wire shape exactly.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ToolCall {
-    pub id: ToolCallId,
-    pub tool_name: String,
+    /// ULID; unique within the run; correlates result + events.
+    pub call_id: ToolCallId,
+    /// `ToolSpec.name` (registry-resolved).
+    pub tool: String,
     pub args: Value,
+    /// References Ch.01's grant ledger (TT3).
     pub capability_grant_id: Option<GrantId>,
-    pub idempotency_key: Option<String>,
-    pub dry_run: bool,
+    pub wire_version: u16,
+    /// Optional execution directives (dry-run, idempotency, timeout override).
+    #[serde(default)]
+    pub x: ToolCallExt,
 }
 
+/// Optional per-call execution directives (`ToolCall.x`, ch.03 §4.2.2).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct ToolCallExt {
+    #[serde(default)]
+    pub dry_run: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub idempotency_key: Option<String>,
+    /// `≤` the spec cap; cannot exceed it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timeout_ms_override: Option<u64>,
+}
+
+impl ToolCall {
+    /// Convenience constructor with a fresh `call_id`, current wire version, and
+    /// default execution directives.
+    pub fn new(tool: impl Into<String>, args: Value) -> Self {
+        Self {
+            call_id: ToolCallId::new(),
+            tool: tool.into(),
+            args,
+            capability_grant_id: None,
+            wire_version: TOOL_WIRE_VERSION,
+            x: ToolCallExt::default(),
+        }
+    }
+}
+
+/// The current tool-wire-format version (ch.03 §4.2, TT11).
+pub const TOOL_WIRE_VERSION: u16 = 1;
+
+/// The canonical recorded outcome (ch.03 §4.2.3). Maps 1:1 to the `tool.result`
+/// event payload (TT4). `output` is the typed body; large bodies spill to
+/// `bytes_ref`. `provenance` marks the body as UNTRUSTED data, not instructions
+/// (TT8).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ToolResult {
     pub call_id: ToolCallId,
+    /// `false` ⇒ see `error`; maps to MCP `isError` (§4.10). NOTE: a non-zero
+    /// process exit is `ok:true` with `exit_code` set — `EXEC_NONZERO` is data,
+    /// not a tool failure (§4.2.3).
+    pub ok: bool,
     pub status: ToolStatus,
+    /// Optional MCP-style multimodal blocks.
+    #[serde(default)]
     pub content: Vec<ToolContent>,
+    /// Typed body validated against `ToolSpec.output_schema` (`output`).
+    #[serde(default)]
     pub structured_content: Option<Value>,
+    /// Large bodies spill here as a blake3 CAS ref (TT5).
     pub bytes_ref: Option<BlobRef>,
+    /// For process-shaped tools (shell/test/build); `None` otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exit_code: Option<i32>,
     pub effects: EffectSet,
+    /// TT8: the result body is untrusted data. Defaults to `"tool-output"`.
+    #[serde(default = "default_tool_provenance")]
+    pub provenance: String,
+    /// Execution stats (duration, cache hit, dry-run origin).
+    #[serde(default)]
+    pub stats: ToolStats,
     pub error: Option<ToolError>,
+}
+
+fn default_tool_provenance() -> String {
+    "tool-output".to_string()
+}
+
+/// Execution stats carried on every `ToolResult` (ch.03 §4.2.3 `stats`).
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct ToolStats {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub cached: bool,
+    #[serde(default)]
+    pub from_dry_run: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -82,22 +156,49 @@ pub enum ToolContent {
     Blob { blob: BlobRef },
 }
 
+/// The structured failure (when `ok=false`). Designed to be self-correcting:
+/// the agent loop feeds it back so the model can fix the call (ch.03 §4.2.3).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ToolError {
+    /// Stable taxonomy code (`ARG_INVALID`/`NOT_FOUND`/`EXEC_NONZERO`/… §4.2.3).
     pub code: String,
     pub message: String,
-    pub recoverable: bool,
+    /// Can the same model fix-and-retry? (Ch.02 uses this.)
+    pub retriable: bool,
+    /// Actionable hint for the model to repair the call.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fix_hint: Option<String>,
+    /// JSON-pointer into `args` for precise UI/model targeting.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_path: Option<String>,
+}
+
+impl ToolError {
+    /// Minimal constructor; `fix_hint`/`schema_path` default to `None`.
+    pub fn new(code: impl Into<String>, message: impl Into<String>, retriable: bool) -> Self {
+        Self {
+            code: code.into(),
+            message: message.into(),
+            retriable,
+            fix_hint: None,
+            schema_path: None,
+        }
+    }
 }
 
 impl ToolResult {
     pub fn ok(call_id: ToolCallId, structured_content: Option<Value>, effects: EffectSet) -> Self {
         Self {
             call_id,
+            ok: true,
             status: ToolStatus::Ok,
             content: Vec::new(),
             structured_content,
             bytes_ref: None,
+            exit_code: None,
             effects,
+            provenance: default_tool_provenance(),
+            stats: ToolStats::default(),
             error: None,
         }
     }
@@ -168,11 +269,11 @@ impl ToolDispatcher {
     }
 
     pub async fn dispatch(&self, call: ToolCall) -> Result<ToolResult> {
-        let call_id = call.id.clone();
+        let call_id = call.call_id.clone();
         let tool = self
             .registry
-            .get(&call.tool_name)
-            .ok_or_else(|| HideError::NotFound(format!("tool {}", call.tool_name)))?;
+            .get(&call.tool)
+            .ok_or_else(|| HideError::NotFound(format!("tool {}", call.tool)))?;
         let spec = tool.spec().clone();
         let predicted = tool
             .simulate(
@@ -209,9 +310,10 @@ impl ToolDispatcher {
         if verdict.decision != Decision::Allow {
             return Err(HideError::PolicyDenied(verdict.reason));
         }
-        if call.dry_run {
+        if call.x.dry_run {
             return Ok(ToolResult {
                 call_id,
+                ok: true,
                 status: ToolStatus::Ok,
                 content: vec![ToolContent::Json {
                     value: serde_json::to_value(&predicted)?,
@@ -222,7 +324,13 @@ impl ToolDispatcher {
                     "predicted_effects": predicted,
                 })),
                 bytes_ref: None,
+                exit_code: None,
                 effects: predicted,
+                provenance: default_tool_provenance(),
+                stats: ToolStats {
+                    from_dry_run: true,
+                    ..ToolStats::default()
+                },
                 error: None,
             });
         }

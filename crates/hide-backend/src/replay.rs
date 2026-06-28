@@ -1,5 +1,8 @@
 use hide_core::api::{UiEvent, UiEventKind};
-use hide_core::event::{Event, EventPayload};
+use hide_core::event::{
+    Event, ErrorEvent, ProjectionEvent, RuntimeStatusEvent, SecurityEvent, TokenEvent,
+    ToolCallEvent, ToolResultEvent,
+};
 use hide_core::ids::SessionId;
 use hide_core::persistence::{DynEventLog, DynProjectionStore};
 use hide_core::Result;
@@ -61,49 +64,77 @@ impl BackendReplayService {
 }
 
 pub fn event_to_ui_event(event: &Event) -> UiEvent {
+    // The kernel never ships internal-only events; UI events are a
+    // projection-flavored subset keyed off the dotted event kind, reading the
+    // typed view off the open `Value` payload.
+    let kind = match event.kind.as_str() {
+        "projection.patch" => event
+            .payload_as::<ProjectionEvent>()
+            .map(|projection| UiEventKind::ProjectionPatch {
+                projection: projection.projection,
+                patch: projection.patch,
+            }),
+        "token" | "token_batch" => {
+            event
+                .payload_as::<TokenEvent>()
+                .map(|token| UiEventKind::TokenBatch {
+                    stream_id: token.stream_id,
+                    text: token.text,
+                })
+        }
+        "runtime.status" => {
+            event
+                .payload_as::<RuntimeStatusEvent>()
+                .map(|status| UiEventKind::RuntimeStatus {
+                    status: status.status,
+                    detail: status.detail,
+                })
+        }
+        "tool.call" => event
+            .payload_as::<ToolCallEvent>()
+            .map(|call| UiEventKind::ToolProgress {
+                call_id: call.call_id.as_str().to_string(),
+                message: format!("started {}", call.tool_name),
+            }),
+        "tool.result" => {
+            event
+                .payload_as::<ToolResultEvent>()
+                .map(|result| UiEventKind::ToolProgress {
+                    call_id: result.call_id.as_str().to_string(),
+                    message: if result.ok {
+                        result.summary
+                    } else {
+                        format!("failed: {}", result.summary)
+                    },
+                })
+        }
+        "security.gate" => {
+            event
+                .payload_as::<SecurityEvent>()
+                .map(|security| UiEventKind::SecurityGate {
+                    gate: security.gate,
+                    message: security.detail,
+                })
+        }
+        "error" => event
+            .payload_as::<ErrorEvent>()
+            .map(|error| UiEventKind::Error {
+                code: error.code,
+                message: error.message,
+            }),
+        _ => None,
+    };
     UiEvent {
         seq: event.seq,
         session_id: Some(event.session_id.clone()),
-        kind: match &event.payload {
-            EventPayload::Projection(projection) => UiEventKind::ProjectionPatch {
-                projection: projection.projection.clone(),
-                patch: projection.patch.clone(),
-            },
-            EventPayload::RuntimeToken(token) => UiEventKind::TokenBatch {
-                stream_id: token.stream_id.clone(),
-                text: token.text.clone(),
-            },
-            EventPayload::RuntimeStatus(status) => UiEventKind::RuntimeStatus {
-                status: status.status.clone(),
-                detail: status.detail.clone(),
-            },
-            EventPayload::ToolCall(call) => UiEventKind::ToolProgress {
-                call_id: call.call_id.as_str().to_string(),
-                message: format!("started {}", call.tool_name),
-            },
-            EventPayload::ToolResult(result) => UiEventKind::ToolProgress {
-                call_id: result.call_id.as_str().to_string(),
-                message: if result.ok {
-                    result.summary.clone()
-                } else {
-                    format!("failed: {}", result.summary)
-                },
-            },
-            EventPayload::Security(security) => UiEventKind::SecurityGate {
-                gate: security.gate.clone(),
-                message: security.detail.clone(),
-            },
-            EventPayload::Error(error) => UiEventKind::Error {
-                code: error.code.clone(),
-                message: error.message.clone(),
-            },
-            other => UiEventKind::Custom(serde_json::json!({
+        kind: kind.unwrap_or_else(|| {
+            UiEventKind::Custom(serde_json::json!({
                 "event_id": event.id,
-                "kind": event.kind.as_str(),
+                "kind": event.kind,
                 "source": event.source,
-                "payload": other,
-            })),
-        },
+                "payload": event.payload,
+            }))
+        }),
     }
 }
 
@@ -111,10 +142,9 @@ pub fn event_to_ui_event(event: &Event) -> UiEvent {
 mod tests {
     use super::*;
     use hide_core::event::{
-        AgentStateEvent, EventLog, EventPayload, EventSource, InMemoryEventLog, NewEvent,
-        ToolResultEvent,
+        AgentStateEvent, EventLog, InMemoryEventLog, NewEvent, ToolResultEvent,
     };
-    use hide_core::ids::{SessionId, ToolCallId};
+    use hide_core::ids::{RunId, SessionId, ToolCallId};
     use hide_core::persistence::{InMemoryProjectionStore, ProjectionStore};
 
     #[tokio::test]
@@ -123,18 +153,14 @@ mod tests {
         let projections = Arc::new(InMemoryProjectionStore::default());
         let session = SessionId::new();
         events
-            .append(NewEvent {
-                session_id: session.clone(),
-                run_id: None,
-                parent: None,
-                source: EventSource::Agent,
-                kind: "agent.state".into(),
-                payload: EventPayload::AgentState(AgentStateEvent {
+            .append(NewEvent::agent_state(
+                session.clone(),
+                RunId::new(),
+                AgentStateEvent {
                     phase: "plan".to_string(),
                     detail: "building plan".to_string(),
-                }),
-                redactions: Vec::new(),
-            })
+                },
+            ))
             .await
             .unwrap();
 
@@ -161,21 +187,16 @@ mod tests {
         let session = SessionId::new();
         let call_id = ToolCallId::new();
         events
-            .append(NewEvent {
-                session_id: session.clone(),
-                run_id: None,
-                parent: None,
-                source: EventSource::Tool,
-                kind: "tool.result".into(),
-                payload: EventPayload::ToolResult(ToolResultEvent {
+            .append(NewEvent::tool_result(
+                session.clone(),
+                ToolResultEvent {
                     call_id: call_id.clone(),
                     ok: true,
                     summary: "done".to_string(),
                     output: None,
                     bytes_ref: None,
-                }),
-                redactions: Vec::new(),
-            })
+                },
+            ))
             .await
             .unwrap();
 

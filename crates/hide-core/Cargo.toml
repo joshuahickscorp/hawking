@@ -9,6 +9,7 @@ authors.workspace = true
 description = "Shared domain contracts for the HIDE local-first IDE architecture"
 
 [dependencies]
+blake3 = { workspace = true }
 futures = { workspace = true }
 parking_lot = { workspace = true }
 serde = { workspace = true }
@@ -17,3 +18,4 @@ sha2 = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+ulid = { workspace = true }

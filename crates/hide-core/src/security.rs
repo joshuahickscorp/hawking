@@ -2,7 +2,8 @@ use crate::ids::ValueId;
 use crate::types::{Decision, Provenance, TrustLevel};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// NOTE: not `Eq` — `Provenance.confidence` is an `f32`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TaintedValue {
     pub id: ValueId,
     pub provenance: Provenance,
