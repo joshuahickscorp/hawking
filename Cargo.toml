@@ -6,6 +6,7 @@ members = [
     "crates/hide-fleet",
     "crates/hide-personalize",
     "crates/hide-backend",
+    "crates/hide-serve",
     "crates/hide-tools",
     "crates/hide-security",
     "crates/hawking-context",
