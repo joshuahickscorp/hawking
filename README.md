@@ -134,6 +134,11 @@ heavy runs on an Apple M2 Max Mac Studio (96 GB).
 - Post-hoc context extension (YaRN RoPE-scaling) validated by needle-in-a-haystack
   retrieval, not just "it didn't crash" - stretch the trained window at serve time,
   paired with int4 KV so the longer context actually fits in memory.
+- STKV, a tiered KV hybrid that is Hawking-specific because it uses both engines at
+  once: exact int8 recall for attention sinks and the recent window, a trellis-coded
+  warm band (the same codec as the weights, on the cache), and an unbounded cold tail
+  that is either paged to SSD (lossless, slow) or summarized into an RWKV-7 state
+  (lossy, flat memory). Exact recall where attention lands, unbounded reach beyond it.
 - Close the remaining decode-throughput gap to llama.cpp / MLX (kernel and
   scheduling work).
 

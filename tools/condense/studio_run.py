@@ -226,8 +226,11 @@ def go():
             subprocess.run(["python3.12", f"{TC}/eval_suite.py", "--model", mdir, "--label", lbl])
             # long-context: YaRN extension + KV-RAM wall + SSM moat ...
             subprocess.run(["python3.12", f"{TC}/ctx_extend.py", mdir, lbl])
-            # ... then the AGGRESSIVE KV frontier (int2/trellis KV, SSD-paging, evict, SSM) per regime.
+            # ... the AGGRESSIVE KV frontier (int2/trellis KV, SSD-paging, evict, SSM) per regime ...
             subprocess.run(["python3.12", f"{TC}/kv_frontier.py", mdir, lbl, str(params)])
+            # ... and STKV, the Hawking-specific hybrid that consolidates all four levers (trellis
+            # warm + int8 sink + SSD/SSM tail) into one tiered policy — exact recall + unbounded reach.
+            subprocess.run(["python3.12", f"{TC}/kv_hybrid.py", mdir, lbl, str(params)])
     print("\n### P6 BASELINE — wedge gate: IQ1_S/IQ2/MLX-4bit head-to-head at matched bpw ###", file=sys.stderr)
     for lbl, mdir in eval_targets:
         if os.path.isdir(mdir):
