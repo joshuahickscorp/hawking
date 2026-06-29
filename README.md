@@ -131,6 +131,9 @@ heavy runs on an Apple M2 Max Mac Studio (96 GB).
 ### Next
 - RWKV-7 (SSM) long-context path: flat-cost decode with no KV-cache wall.
 - Per-channel int4 KV cache, to cut KV memory by roughly three quarters.
+- Post-hoc context extension (YaRN RoPE-scaling) validated by needle-in-a-haystack
+  retrieval, not just "it didn't crash" - stretch the trained window at serve time,
+  paired with int4 KV so the longer context actually fits in memory.
 - Close the remaining decode-throughput gap to llama.cpp / MLX (kernel and
   scheduling work).
 

@@ -220,10 +220,12 @@ def go():
     run_frontier_all()
     # ---- the VALUE layer: prove capability, defend the wedge, measure the cliff+energy, map the codec ----
     eval_targets = [(l, m) for (l, m, p, g, s, r) in LADDER if l not in ("0.5B", "1.5B")]
-    print("\n### P5 EVAL — capability + NIAH long-context on floor winners (the proof bar) ###", file=sys.stderr)
+    print("\n### P5 EVAL — capability + NIAH + LONG-CONTEXT extension on floor winners ###", file=sys.stderr)
     for lbl, mdir in eval_targets:
         if os.path.isdir(mdir):
             subprocess.run(["python3.12", f"{TC}/eval_suite.py", "--model", mdir, "--label", lbl])
+            # long-context lane: YaRN RoPE-scaling extension + KV-RAM wall + (SSM = flat-memory moat).
+            subprocess.run(["python3.12", f"{TC}/ctx_extend.py", mdir, lbl])
     print("\n### P6 BASELINE — wedge gate: IQ1_S/IQ2/MLX-4bit head-to-head at matched bpw ###", file=sys.stderr)
     for lbl, mdir in eval_targets:
         if os.path.isdir(mdir):
@@ -252,7 +254,7 @@ def go_plan():
     print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
           "-> accept -> governor)")
     print("  P4 FRONTIER  run_frontier_all() -> 100B+ research prize (235B-A22B/405B/671B/744B)")
-    print("  P5 EVAL      eval_suite.py -> capability (qa/cloze/math/code) + NIAH long-context (proof bar)")
+    print("  P5 EVAL      eval_suite.py (capability + NIAH) + ctx_extend.py (YaRN long-ctx + KV-RAM + SSM moat)")
     print("  P6 BASELINE  bench_baselines.py -> wedge gate vs IQ1_S/IQ2/MLX-4bit at matched bpw")
     print("  P7 CLIFF     ramcliff_bench.py --all -> RAM-cliff tok/s + energy J/tok (headline + energy moat)")
     print("  P8 CODEC     codec_bakeoff.py -> STRAND vs QTIP/QuIP#/AQLM (the codec rank map)")
