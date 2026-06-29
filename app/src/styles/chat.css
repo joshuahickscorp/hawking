@@ -1,0 +1,373 @@
+/* chat.css — ChatGPT/Codex-style chat surface styling. Owned by the chat restyle.
+   Imported after theme.css, so these rules win on equal specificity. */
+
+/* ---- conversation column ---- */
+.message-list {
+  display: flex;
+  width: min(760px, 100%);
+  flex-direction: column;
+  gap: var(--ma-6);
+  margin: 0 auto;
+  padding: var(--ma-6) 0 var(--ma-8);
+}
+
+.message {
+  min-width: 0;
+}
+
+/* ---- assistant turn: full-width markdown, no bubble ---- */
+.message--assistant {
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+.stream-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 2px;
+  border-radius: 1px;
+  background: var(--text);
+  vertical-align: -0.15em;
+  animation: blink 1s step-end infinite;
+}
+
+/* ---- user turn: right-aligned rounded bubble ---- */
+.message--user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.message__bubble {
+  max-width: 85%;
+  padding: 8px 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: var(--radius-bubble);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* ---- rendered markdown ---- */
+.md {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.md > :first-child {
+  margin-top: 0;
+}
+.md > :last-child {
+  margin-bottom: 0;
+}
+
+.md p {
+  margin: 0 0 var(--ma-3);
+}
+
+.md ul,
+.md ol {
+  margin: 0 0 var(--ma-3);
+  padding-left: var(--ma-6);
+}
+
+.md li {
+  margin: var(--ma-1) 0;
+}
+
+.md li > ul,
+.md li > ol {
+  margin: var(--ma-1) 0 0;
+}
+
+.md h1,
+.md h2,
+.md h3,
+.md h4 {
+  color: var(--text-strong);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: var(--ma-5) 0 var(--ma-3);
+}
+.md h1 {
+  font-size: 20px;
+}
+.md h2 {
+  font-size: 17px;
+}
+.md h3 {
+  font-size: 15px;
+}
+.md h4 {
+  font-size: 14px;
+}
+
+.md a {
+  color: var(--link);
+  text-decoration: none;
+}
+.md a:hover {
+  text-decoration: underline;
+}
+
+.md strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.md hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: var(--ma-4) 0;
+}
+
+.md blockquote {
+  margin: 0 0 var(--ma-3);
+  padding: 2px 0 2px var(--ma-4);
+  border-left: 3px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+/* inline code */
+.md :not(pre) > code {
+  background: var(--surface-2);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+/* code block */
+.md pre {
+  margin: 0 0 var(--ma-3);
+  background: var(--editor-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  overflow: auto;
+}
+
+.md pre code {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.md table {
+  border-collapse: collapse;
+  margin: 0 0 var(--ma-3);
+  font-size: 13px;
+}
+.md th,
+.md td {
+  border: 1px solid var(--border);
+  padding: var(--ma-1) var(--ma-3);
+  text-align: left;
+}
+.md th {
+  background: var(--surface-2);
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+/* ---- code-block copy button (injected at runtime) ---- */
+.md-pre {
+  position: relative;
+}
+
+.md-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.md-pre:hover .md-copy,
+.md-copy:focus-visible {
+  opacity: 1;
+}
+
+.md-copy:hover {
+  color: var(--text-strong);
+  background: var(--surface-3);
+}
+
+/* ---- composer (Codex-style rounded input) ---- */
+.composer-zone {
+  padding: var(--ma-2) var(--ma-4) var(--ma-4);
+}
+
+.composer {
+  display: flex;
+  width: min(760px, 100%);
+  align-items: flex-end;
+  gap: var(--ma-2);
+  margin: 0 auto;
+  padding: 6px 6px 6px 8px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-composer);
+}
+
+.composer:focus-within {
+  border-color: var(--accent);
+}
+
+.composer__attach {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.composer__attach:hover:not(:disabled) {
+  background: var(--surface-3);
+  color: var(--text);
+}
+.composer__attach:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.composer__input {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 6px 2px;
+}
+
+.composer__input::placeholder {
+  color: var(--text-dim);
+}
+
+.composer__send {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  color: var(--text-dim);
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.composer__send:not(:disabled) {
+  color: var(--accent-text);
+  background: var(--accent);
+}
+.composer__send:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+.composer__send:disabled {
+  cursor: default;
+}
+
+/* ---- steer bar (slim control strip above composer) ---- */
+.steerbar {
+  display: flex;
+  width: min(760px, 100%);
+  align-items: center;
+  gap: var(--ma-2);
+  margin: 0 auto var(--ma-2);
+  padding: 6px var(--ma-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.steerbar__input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+.steerbar__input::placeholder {
+  color: var(--text-dim);
+}
+
+/* ---- inline structure cards / rows ---- */
+.chat-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--ma-4);
+}
+
+.chat-card--gate {
+  border-color: var(--border-strong);
+}
+
+.chat-card__meta {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* a "file edited" diff row */
+.diff-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-3);
+  padding: 6px var(--ma-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.diff-row__open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ma-2);
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.diff-row__icon {
+  color: var(--text-dim);
+  flex: 0 0 auto;
+}
+
+.diff-row__file {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

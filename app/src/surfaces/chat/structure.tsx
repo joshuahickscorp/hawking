@@ -1,13 +1,12 @@
 /*
   chat/structure.tsx: the inline structure that lives INSIDE the assistant stream.
-  Three calm, material devices, re-housed from the Cline/OpenCode plan-act + per-step chat UX into
-  the v3 doctrine (grayscale concrete volumes, Geist Mono telemetry voice, light as the only accent,
-  glyph+label markers, no spinners, no churn):
+  Four flat Codex-style devices, re-housed into the VS Code / ChatGPT visual language
+  (flat surfaces, thin borders, the accent only on the engaged control):
 
     PlanCard  <- projection_patch:plan       : ordered steps with per-step status + approve/edit/reorder.
-    ToolChip  <- tool_progress{call_id,msg}   : one calm chip per tool call, no per-token churn.
-    DiffChipRow <- projection_patch:diff_chip : a produced diff -> a chip that opens the hunk review.
-    InlineGate <- security_gate{gate,message} : the lit approval the doctrine wants rendered inline.
+    ToolChip  <- tool_progress{call_id,msg}   : one calm pill per tool call, no per-token churn.
+    DiffChipRow <- projection_patch:diff_chip : a produced diff -> a "file edited" row + accept/reject/open.
+    InlineGate <- security_gate{gate,message} : an approval card with an accent primary button.
 
   Steer/approve verbs go out as the registered intents: approve_plan / edit_plan_step / reorder_plan
   (Custom), accept_diff / reject_diff (enum), approve_gate (Custom). Nothing here owns transport;
@@ -15,7 +14,6 @@
 */
 import { useState, type CSSProperties } from "react";
 import type { ToolEvent } from "../../store";
-import { Gate, Volume } from "../../ui";
 import {
   blockLabel,
   chip,
@@ -26,7 +24,7 @@ import {
   type PlanStep,
 } from "./parts";
 
-// ---- PlanCard: the plan rendered as ordered steps with status (the Cline plan-act card, re-skinned). ----
+// ---- PlanCard: the plan rendered as ordered steps with status, as a flat card. ----
 export function PlanCard({
   plan,
   onApprove,
@@ -44,11 +42,10 @@ export function PlanCard({
   const done = steps.filter((s) => s.status === "done").length;
 
   return (
-    // While the plan waits for you, the whole volume breathes (the agent needs you, read as light).
-    <Volume alive={awaiting} pad="var(--ma-4)">
+    <div className="chat-card">
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)", marginBottom: "var(--ma-3)" }}>
         <span style={blockLabel}>Plan</span>
-        <span className="t-micro">
+        <span className="chat-card__meta">
           {done}/{steps.length}
         </span>
         {awaiting ? (
@@ -70,7 +67,7 @@ export function PlanCard({
           />
         ))}
       </ol>
-    </Volume>
+    </div>
   );
 }
 
@@ -102,24 +99,21 @@ function PlanStepRow({
 
   return (
     <li style={{ display: "flex", alignItems: "flex-start", gap: "var(--ma-3)", padding: "var(--ma-1) 0", position: "relative" }}>
-      {/* the spine: status glyph + a shadow-line connector down to the next step. The active step's
-          marker breathes (the .alive keyframe), the agent's current move read as light. */}
+      {/* the spine: status glyph + a thin connector down to the next step. */}
       <span
         aria-hidden
         title={step.status ?? "pending"}
-        className={active ? "alive" : undefined}
         style={{
           flex: "0 0 auto",
           width: 16,
           textAlign: "center",
           color: mark.color,
-          ...(active ? { borderRadius: "var(--radius-pill)" } : null),
         }}
       >
         {mark.glyph}
       </span>
       {!last ? (
-        <span aria-hidden style={{ position: "absolute", left: 7, top: 24, bottom: -4, width: 1, background: "var(--line)" }} />
+        <span aria-hidden style={{ position: "absolute", left: 7, top: 24, bottom: -4, width: 1, background: "var(--border)" }} />
       ) : null}
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -133,17 +127,16 @@ function PlanStepRow({
               if (e.key === "Enter") commit();
               if (e.key === "Escape") setEditing(false);
             }}
-            className="t-body"
             style={{
               width: "100%",
-              background: "var(--concrete-4)",
-              border: "none",
+              background: "var(--input-bg)",
+              border: "1px solid var(--input-border)",
               outline: "none",
-              color: "var(--text-1)",
+              color: "var(--text)",
               font: "inherit",
+              fontSize: "13px",
               padding: "var(--ma-1) var(--ma-2)",
-              borderRadius: "var(--radius)",
-              boxShadow: "var(--hairline)",
+              borderRadius: "var(--radius-sm)",
             }}
           />
         ) : (
@@ -153,24 +146,25 @@ function PlanStepRow({
               setEditing(true);
             }}
             title="edit step"
-            className="t-body"
             style={{
               textAlign: "left",
               width: "100%",
-              color: active ? "var(--text-1)" : step.status === "done" ? "var(--text-3)" : "var(--text-2)",
+              fontSize: "13px",
+              lineHeight: 1.5,
+              color: active ? "var(--text-strong)" : step.status === "done" ? "var(--text-dim)" : "var(--text)",
               textDecoration: step.status === "skipped" ? "line-through" : undefined,
             }}
           >
-            <span style={{ color: "var(--text-3)", marginRight: "var(--ma-3)" }}>{index + 1}</span>
+            <span style={{ color: "var(--text-dim)", marginRight: "var(--ma-3)" }}>{index + 1}</span>
             {step.title}
           </button>
         )}
         {step.detail ? (
-          <div className="t-micro" style={{ paddingLeft: 22, marginTop: "var(--ma-1)" }}>{step.detail}</div>
+          <div className="chat-card__meta" style={{ paddingLeft: 22, marginTop: "var(--ma-1)" }}>{step.detail}</div>
         ) : null}
       </div>
 
-      {/* reorder handles (mouse-rich where it is spatial); shown dim, brighten on hover via focus ring */}
+      {/* reorder handles */}
       <span style={{ flex: "0 0 auto", display: "flex", gap: 2 }}>
         {onUp ? (
           <button onClick={onUp} title="move up" style={reorderBtn}>
@@ -188,23 +182,22 @@ function PlanStepRow({
 }
 
 const reorderBtn: CSSProperties = {
-  color: "var(--text-3)",
+  color: "var(--text-dim)",
   fontSize: "12px",
   padding: "0 var(--ma-1)",
   lineHeight: 1.4,
 };
 
-// ---- ToolChip: one calm chip per tool call (no churn). Bound to tool_progress{call_id,message}. ----
+// ---- ToolChip: one calm pill per tool call (no churn). Bound to tool_progress{call_id,message}. ----
 export function ToolChip({ tool }: { tool: ToolEvent }) {
-  // The message is the agent's own present-tense narration ("edit guard.rs: moved drop past retry").
   const verb = tool.message.split(/[:\s]/, 1)[0] || "tool";
   return (
     <span style={chip} title={tool.call_id}>
-      <span aria-hidden style={{ color: "var(--text-3)" }}>
+      <span aria-hidden style={{ color: "var(--text-dim)" }}>
         ▸
       </span>
-      <span style={{ color: "var(--text-3)" }}>{verb}</span>
-      <span style={{ color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <span style={{ color: "var(--text)" }}>{verb}</span>
+      <span style={{ color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {tool.message.slice(verb.length).replace(/^[:\s]+/, "")}
       </span>
     </span>
@@ -214,7 +207,7 @@ export function ToolChip({ tool }: { tool: ToolEvent }) {
 export function ToolChipRow({ tools }: { tools: ToolEvent[] }) {
   if (tools.length === 0) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-3)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-2)" }}>
       <span style={blockLabel}>Tools</span>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-2)" }}>
         {tools.map((t, i) => (
@@ -225,7 +218,7 @@ export function ToolChipRow({ tools }: { tools: ToolEvent[] }) {
   );
 }
 
-// ---- DiffChipRow: a produced diff -> a chip that opens the hunk diff review. ----
+// ---- DiffChipRow: a produced diff -> a "file edited" row that opens the hunk diff review. ----
 export function DiffChipRow({
   chips,
   onOpen,
@@ -239,41 +232,38 @@ export function DiffChipRow({
 }) {
   if (chips.length === 0) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-3)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-2)" }}>
       <span style={blockLabel}>Diffs</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-2)" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-2)" }}>
         {chips.map((c) => {
-          const settled = c.status === "applied" || c.status === "rejected";
           const file = c.path.split("/").pop() ?? c.path;
           return (
-            <span key={c.diff_id} style={{ ...chip, paddingRight: settled ? "var(--ma-3)" : "var(--ma-1)" }}>
-              <button onClick={() => onOpen(c)} title={c.path} style={{ display: "inline-flex", alignItems: "center", gap: "var(--ma-2)", color: "inherit" }}>
-                <span aria-hidden style={{ color: "var(--text-3)" }}>
+            <div key={c.diff_id} className="diff-row">
+              <button onClick={() => onOpen(c)} title={c.path} className="diff-row__open">
+                <span aria-hidden className="diff-row__icon">
                   ◫
                 </span>
-                <span style={{ color: "var(--text-2)" }}>{file}</span>
-                {/* added/removed counts in the diff pigments, each glyph-paired so color is never alone */}
-                {c.added != null ? <span style={{ color: "var(--ok)" }}>+{c.added}</span> : null}
-                {c.removed != null ? <span style={{ color: "var(--bad)" }}>-{c.removed}</span> : null}
+                <span className="diff-row__file">{file}</span>
+                {c.added != null ? <span style={{ color: "var(--git-add)" }}>+{c.added}</span> : null}
+                {c.removed != null ? <span style={{ color: "var(--git-del)" }}>-{c.removed}</span> : null}
               </button>
               {c.status === "applied" ? (
-                <span style={{ color: "var(--ok)" }}>● applied</span>
+                <span style={{ color: "var(--green)", fontSize: "12px" }}>● applied</span>
               ) : c.status === "rejected" ? (
-                <span style={{ color: "var(--text-3)" }}>rejected</span>
+                <span style={{ color: "var(--text-dim)", fontSize: "12px" }}>rejected</span>
               ) : c.status === "stale" ? (
-                // "stale" is a needs-you state, not a third color: a neutral glyph + --mute text.
-                <span style={{ color: "var(--mute)" }}>⟳ stale</span>
+                <span style={{ color: "var(--git-mod)", fontSize: "12px" }}>⟳ stale</span>
               ) : (
                 <span style={{ display: "inline-flex", gap: "var(--ma-1)" }}>
                   <button onClick={() => onAccept(c)} title="accept (Cmd+Enter)" style={ctlStyle(true)}>
-                    a
+                    Accept
                   </button>
                   <button onClick={() => onReject(c)} title="reject (Cmd+Backspace)" style={ctlStyle(false)}>
-                    r
+                    Reject
                   </button>
                 </span>
               )}
-            </span>
+            </div>
           );
         })}
       </div>
@@ -281,7 +271,7 @@ export function DiffChipRow({
   );
 }
 
-// ---- InlineGate: the SecurityGate as a lit approval inline in the stream (doctrine: see/steer/gate). ----
+// ---- InlineGate: the SecurityGate as an approval card inline in the stream. ----
 export function InlineGate({
   gate,
   message,
@@ -294,25 +284,23 @@ export function InlineGate({
   onDismiss: () => void;
 }) {
   return (
-    // The agent needs you: the volume holds the steady light of a threshold (alive breathe + lit glyph).
-    <Volume alive pad="var(--ma-4)">
+    <div className="chat-card chat-card--gate">
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)", marginBottom: "var(--ma-2)" }}>
-        <span aria-hidden style={{ color: "var(--light)" }}>
+        <span aria-hidden style={{ color: "var(--accent)" }}>
           ◈
         </span>
-        <span style={{ ...blockLabel, color: "var(--text-2)" }}>Approval</span>
-        <span className="t-micro">{gate}</span>
+        <span style={blockLabel}>Approval</span>
+        <span className="chat-card__meta">{gate}</span>
       </div>
-      <div className="t-body" style={{ color: "var(--text-1)", marginBottom: "var(--ma-4)" }}>{message}</div>
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)" }}>
-        {/* the lit capsule: the one tactile control, holds steady, states plainly what happens */}
-        <Gate onClick={onApprove} title="approve this action">
+      <div style={{ color: "var(--text)", fontSize: "13px", lineHeight: 1.5, marginBottom: "var(--ma-4)" }}>{message}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)" }}>
+        <button className="gate" onClick={onApprove} title="approve this action">
           Approve
-        </Gate>
+        </button>
         <button onClick={onDismiss} style={ctlStyle(false)}>
           Dismiss
         </button>
       </div>
-    </Volume>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { RunPhase } from "../../store";
-import { Volume } from "../../ui";
 import { ctlStyle } from "./parts";
 
 export function SteerBar({
@@ -18,7 +17,6 @@ export function SteerBar({
 }) {
   const [steer, setSteer] = useState("");
   const paused = phase === "paused";
-  const breathing = phase === "executing" || phase === "planning" || phase === "awaiting";
 
   const fire = () => {
     const t = steer.trim();
@@ -28,22 +26,16 @@ export function SteerBar({
   };
 
   return (
-    <Volume
-      raised
-      alive={breathing}
-      className="steerbar"
-    >
+    <div className="steerbar">
       <span
         aria-hidden
         title={paused ? "run paused" : "run active"}
-        className={breathing ? "alive" : undefined}
         style={{
           flex: "0 0 auto",
           width: 14,
           textAlign: "center",
           fontSize: "11px",
-          borderRadius: "var(--radius-pill)",
-          color: paused ? "var(--text-2)" : "var(--light)",
+          color: paused ? "var(--text-muted)" : "var(--accent)",
         }}
       >
         {paused ? "❙❙" : "●"}
@@ -51,9 +43,9 @@ export function SteerBar({
       <span
         style={{
           flex: "0 0 auto",
-          fontWeight: 500,
-          fontSize: "12px",
-          color: "var(--mute)",
+          fontWeight: 600,
+          fontSize: "11px",
+          color: "var(--text-dim)",
           textTransform: "uppercase",
           letterSpacing: "0.06em",
         }}
@@ -71,7 +63,7 @@ export function SteerBar({
           }
         }}
         placeholder="Redirect this run"
-        className="t-body"
+        className="steerbar__input"
         style={{ flex: 1, padding: "var(--ma-1) 0" }}
       />
 
@@ -87,10 +79,10 @@ export function SteerBar({
           Pause
         </button>
       )}
-      <button onClick={onCancel} style={{ ...ctlStyle(false), color: "var(--bad)" }} title="cancel run">
+      <button onClick={onCancel} style={{ ...ctlStyle(false), color: "var(--red)" }} title="cancel run">
         Cancel
       </button>
-    </Volume>
+    </div>
   );
 }
 

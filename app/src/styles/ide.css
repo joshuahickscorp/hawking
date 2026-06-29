@@ -1,0 +1,192 @@
+/* ide.css — VS Code editor / explorer / tabs / diff styling (Phase 3). Owned by the IDE restyle.
+   Imported after theme.css, so these rules win on equal specificity. */
+
+/* ========================================================================
+   Explorer — pure VS Code file tree
+   ======================================================================== */
+.vsc-tree {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--ma-1) 0 var(--ma-3);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.vsc-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vsc-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: 22px;
+  padding: 0 var(--ma-3) 0 8px;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+  border: none;
+  border-radius: 0;
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vsc-row:hover {
+  background: var(--list-hover);
+}
+
+.vsc-row--selected {
+  background: var(--list-inactive);
+  color: var(--text-strong);
+}
+
+/* indentation guides: faint vertical rules, one per ancestor level */
+.vsc-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  pointer-events: none;
+}
+
+.vsc-twisty {
+  flex: 0 0 auto;
+  width: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  user-select: none;
+}
+
+.vsc-glyph {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+.vsc-glyph--folder {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 10px;
+}
+
+.vsc-row__name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vsc-badge {
+  flex: 0 0 auto;
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* ========================================================================
+   Editor breadcrumb bar (VS Code style: thin, editor-bg, › separators)
+   ======================================================================== */
+.vsc-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-2);
+  height: 22px;
+  flex: 0 0 auto;
+  padding: 0 var(--ma-3);
+  background: var(--editor-bg);
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.vsc-breadcrumb__trail {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.vsc-breadcrumb__seg {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vsc-breadcrumb__sep {
+  margin: 0 4px;
+  color: var(--text-dim);
+}
+
+.vsc-breadcrumb__leaf {
+  color: var(--text);
+}
+
+.vsc-breadcrumb__suffix {
+  margin-left: var(--ma-2);
+  color: var(--git-mod);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex: 0 0 auto;
+}
+
+.vsc-breadcrumb__actions {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.vsc-view-toggle {
+  min-height: 22px;
+  padding: 1px var(--ma-3);
+  font-size: 12px;
+}
+
+/* ========================================================================
+   Diff rows — lichen (add) / oxide (remove), the only two pigments, glyph-paired.
+   ======================================================================== */
+.vsc-diffline {
+  min-width: 0;
+}
+
+.hunk-add {
+  background: var(--ok-bg);
+  color: var(--git-add);
+}
+
+.hunk-del {
+  background: var(--bad-bg);
+  color: var(--git-del);
+}
+
+/* ========================================================================
+   Tab file glyph: one neutral mark (no per-extension hue; color is never identity).
+   The open tab is told apart by its lit surface, not by a colored dot.
+   ======================================================================== */
+.tab__dot {
+  background: var(--text-3);
+}
+.tab--active .tab__dot {
+  background: var(--light);
+}

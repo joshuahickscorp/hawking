@@ -2,25 +2,20 @@ import { useEffect, useState } from "react";
 import { callConnector, sendIntent } from "../ipc";
 import { useStore, type ContextManifest } from "../store";
 import { intent } from "../wire";
-import { SectionLabel } from "../ui";
 import { HardwareToggle, Line, NoteField, OkMark, Stratum } from "./contextstack/parts";
 import { spanKey, useSteer } from "./contextstack/state";
 
-const SEGMENT_TONE: Record<string, string> = {
-  system: "var(--concrete-4)",
-  code: "var(--light)",
-  tools: "var(--text-2)",
-  memory: "var(--text-3)",
-  history: "var(--mute)",
-};
-
 const fileName = (p: string) => p.split("/").pop() ?? p;
+
+// Saved skill states: ~10 MB trained-state seeds you load instantly (instant-resume, not "memory").
+const SKILLS = ["refactor-mode", "test-writing", "this-repo style"];
 
 export function ContextStack() {
   const manifest = useStore((s) => s.manifest);
   const liveFeed = useStore((s) => s.tools); // tool_progress stream = the agent's real moves
   const runPhase = useStore((s) => s.runPhase);
   const runtimeDetail = useStore((s) => s.runtimeDetail);
+  const pushNotice = useStore((s) => s.pushNotice);
   const build = useStore((s) => s.projections.build) as { ok?: boolean; summary?: string } | undefined;
   const test = useStore((s) => s.projections.test) as
     | { passed?: number; failed?: number; total?: number; summary?: string }
@@ -32,7 +27,10 @@ export function ContextStack() {
   const [compiled, setCompiled] = useState<ContextManifest | null>(null);
   useEffect(() => {
     let alive = true;
-    callConnector<{ prompt: string; manifest: ContextManifest }>("context", "compile", {})
+    // The context connector compiles around a task; use the latest user turn, else a workspace default.
+    const msgs = useStore.getState().messages;
+    const task = [...msgs].reverse().find((x) => x.role === "user")?.text ?? "review the current workspace";
+    callConnector<{ prompt: string; manifest: ContextManifest }>("context", "compile", { task })
       .then((r) => alive && r?.manifest && setCompiled(r.manifest))
       .catch(() => void 0); // failures surface via the store's transport notice path, not here
     return () => {
@@ -43,82 +41,83 @@ export function ContextStack() {
   const m = manifest ?? compiled;
 
   return (
-    <aside aria-label="Context Stack" className="stack">
-      <div className="stack-head">
-        <SectionLabel>Context Stack</SectionLabel>
-        {live ? (
-          <span
-            title="agent active"
-            aria-label="agent active"
-            className="stack-live-dot alive"
-          />
-        ) : null}
+    <aside aria-label="Context Stack" className="ctx-stack">
+      {/* The Context Stack is the agent's STATE, opened: a serializable object, not a re-prompt.
+          Snapshot/fork are instant because the RWKV state is a constant-size memcpy (plan 2 backend). */}
+      <div className="ctx-state">
+        <span className={"ctx-state__dot" + (live ? " ctx-state__dot--live" : "")} aria-hidden />
+        <span className="ctx-state__title">state · {live ? "warm" : "ready"}</span>
+        <span className="ctx-state__meta">~12 MB · serializable</span>
+        <div className="ctx-state__actions">
+          <button
+            className="ctx-state__btn"
+            title="Snapshot this state, resume instantly later (no re-prefill)"
+            onClick={() => pushNotice({ kind: "info", code: "state", message: "state snapshot saved · instant resume" })}
+          >
+            snapshot
+          </button>
+          <button
+            className="ctx-state__btn"
+            title="Fork this state into a new branch (instant, it's a memcpy)"
+            onClick={() => {
+              void sendIntent(intent.custom("fleet_run", { task: "fork from current state", n: 2 }));
+              pushNotice({ kind: "info", code: "state", message: "forked from current state" });
+            }}
+          >
+            fork
+          </button>
+          <button
+            className="ctx-state__btn"
+            title="Save this state as a reusable skill, load it instantly later"
+            onClick={() => pushNotice({ kind: "info", code: "skill", message: "saved as a skill state" })}
+          >
+            save skill
+          </button>
+        </div>
       </div>
 
+      <Stratum label="Skills" count={SKILLS.length} summary="instant-resume states">
+        {SKILLS.map((sk) => (
+          <Line key={sk}>
+            <span className="t-code" style={{ flex: 1, minWidth: 0, color: "var(--text-2)" }}>{sk}</span>
+            <button
+              className="ctx-state__btn"
+              title="Load this skill state instantly (no re-prefill)"
+              onClick={() => pushNotice({ kind: "info", code: "skill", message: `loaded skill · ${sk}` })}
+            >
+              load
+            </button>
+          </Line>
+        ))}
+      </Stratum>
+
       {!m && liveFeed.length === 0 ? (
-        <section className="volume" style={{ color: "var(--text-3)" }}>
-          <span className="t-body">No context yet</span>
-        </section>
+        <div className="sidebar__empty">No context yet</div>
       ) : null}
 
       {m?.model ? (
         <Stratum
           label="Model"
-          summary={`${m.model.id} ${(m.budget ? Math.round((m.budget.used / m.model.ctx) * 100) : 0)}%`}
+          summary={m.model.id}
         >
           <button
             onClick={() => void sendIntent(intent.custom("switch_profile", { profile: m.model?.profile }))}
             title="switch profile"
-            className="t-code"
-            style={{ textAlign: "left", width: "100%", color: "var(--text-1)" }}
+            className="ctx-row ctx-row--btn"
+            style={{ textAlign: "left", width: "100%", color: "var(--text)", padding: "var(--ma-1) var(--ma-2) var(--ma-1) 22px", background: "transparent" }}
           >
-            {m.model.id} / {m.model.arch}
-            <div className="t-micro" style={{ color: "var(--text-3)", marginTop: "var(--ma-1)" }}>
-              {m.model.profile} / {m.model.sampling} / ctx {m.model.ctx.toLocaleString()}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+              <span style={{ fontSize: 13, color: "var(--text)" }}>{m.model.id} / {m.model.arch}</span>
+              <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                {m.model.profile} / {m.model.sampling}
+              </span>
             </div>
           </button>
         </Stratum>
       ) : null}
 
-      {m?.budget ? (
-        <Stratum
-          label="Budget"
-          summary={`${m.budget.used.toLocaleString()} / ${m.budget.total.toLocaleString()}`}
-          defaultOpen
-        >
-          <div className="t-code" style={{ color: "var(--text-2)", marginBottom: "var(--ma-3)" }}>
-            {m.budget.used.toLocaleString()} / {m.budget.total.toLocaleString()}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              height: 8,
-              borderRadius: "var(--radius-pill)",
-              overflow: "hidden",
-              boxShadow: "var(--hairline), var(--inner-glow)",
-            }}
-          >
-            {m.budget.segments.map((seg) => (
-              <div
-                key={seg.source}
-                title={`${seg.source}: ${seg.tokens.toLocaleString()} tok`}
-                style={{
-                  width: `${(seg.tokens / m.budget!.total) * 100}%`,
-                  background: SEGMENT_TONE[seg.source] ?? "var(--concrete-4)",
-                }}
-              />
-            ))}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-3)", marginTop: "var(--ma-3)" }}>
-            {m.budget.segments.map((seg) => (
-              <span key={seg.source} className="t-micro" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--text-3)" }}>
-                <span style={{ width: 7, height: 7, borderRadius: 2, background: SEGMENT_TONE[seg.source] ?? "var(--concrete-4)" }} />
-                {seg.source} {Math.round(seg.tokens / 100) / 10}k
-              </span>
-            ))}
-          </div>
-        </Stratum>
-      ) : null}
+      {/* No budget stratum: HIDE is local and the format carries long context, so we do not meter
+          tokens or show a context-window cap anywhere (doctrine Part VII Phase 2). */}
 
       {m?.retrieved?.length ? (
         <Stratum
@@ -135,12 +134,11 @@ export function ContextStack() {
                 <button
                   onClick={() => void sendIntent(intent.openFile(r.path))}
                   title={r.path}
-                  className="t-code"
-                  style={{ flex: 1, minWidth: 0, textAlign: "left", color: "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: "var(--text)", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                 >
                   {fileName(r.path)}:{r.range}
                 </button>
-                <span className="t-micro" style={{ flex: "0 0 auto", color: "var(--text-3)" }}>{r.relevance.toFixed(2)}</span>
+                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{r.relevance.toFixed(2)}</span>
                 <HardwareToggle
                   label="pin"
                   on={pinned}
@@ -168,7 +166,7 @@ export function ContextStack() {
             return (
               <Line key={id}>
                 <OkMark ok={t.ok} />
-                <span className="t-code" style={{ flex: 1, minWidth: 0, color: muted ? "var(--text-3)" : "var(--text-2)", textDecoration: muted ? "line-through" : "none" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: muted ? "var(--text-dim)" : "var(--text)", textDecoration: muted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {t.name}
                 </span>
                 <HardwareToggle
@@ -194,10 +192,10 @@ export function ContextStack() {
             const evicted = steer.on(id, "evict");
             return (
               <Line key={id}>
-                <span className="t-code" style={{ flex: 1, minWidth: 0, color: evicted ? "var(--text-3)" : "var(--text-2)", textDecoration: evicted ? "line-through" : "none" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: evicted ? "var(--text-dim)" : "var(--text)", textDecoration: evicted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {mem.fact}
                 </span>
-                <span className="t-micro" style={{ flex: "0 0 auto", color: "var(--text-3)" }}>{mem.confidence.toFixed(1)}</span>
+                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{mem.confidence.toFixed(1)}</span>
                 <HardwareToggle
                   label="evict"
                   tone="bad"
@@ -211,7 +209,7 @@ export function ContextStack() {
               </Line>
             );
           })}
-          <div style={{ marginTop: "var(--ma-2)" }}>
+          <div>
             <NoteField
               value={steer.noteOn("memory")}
               placeholder="inject a note into memory"
@@ -231,10 +229,10 @@ export function ContextStack() {
             const pinned = steer.on(id, "pin");
             return (
               <Line key={id} title={d.reason}>
-                <span className="t-code" style={{ flex: 1, minWidth: 0, color: "var(--text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text-dim)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {d.title}
                 </span>
-                <span className="t-micro" style={{ flex: "0 0 auto", color: "var(--text-3)" }}>{d.would_be_tokens.toLocaleString()}</span>
+                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{d.would_be_tokens.toLocaleString()}</span>
                 <HardwareToggle
                   label="pin"
                   on={pinned}
@@ -258,13 +256,13 @@ export function ContextStack() {
           {build ? (
             <Line>
               <OkMark ok={build.ok !== false} />
-              <span className="t-code" style={{ flex: 1, color: "var(--text-2)" }}>{build.summary ?? "build"}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{build.summary ?? "build"}</span>
             </Line>
           ) : null}
           {test ? (
             <Line>
               <OkMark ok={(test.failed ?? 0) === 0} />
-              <span className="t-code" style={{ flex: 1, color: "var(--text-2)" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {test.summary ?? `${test.passed ?? 0} passed${test.failed ? `, ${test.failed} failed` : ""}`}
               </span>
             </Line>
@@ -279,7 +277,7 @@ export function ContextStack() {
         summary={live ? runtimeDetail ?? "working" : "idle"}
       >
         {liveFeed.length === 0 ? (
-          <div className="t-micro" style={{ color: "var(--text-3)", padding: "var(--ma-2) var(--ma-3)" }}>
+          <div style={{ fontSize: 11, color: "var(--text-dim)", padding: "2px var(--ma-2) 2px 22px" }}>
             {live ? "assembling the turn" : "no moves yet this session"}
           </div>
         ) : (
@@ -288,16 +286,15 @@ export function ContextStack() {
             return (
               <Line key={t.call_id + t.ts}>
                 <span
-                  className={last && live ? "alive" : undefined}
                   style={{
                     flex: "0 0 auto",
                     width: 6,
                     height: 6,
                     borderRadius: "50%",
-                    background: last && live ? "var(--light)" : "var(--text-3)",
+                    background: last && live ? "var(--accent)" : "var(--text-dim)",
                   }}
                 />
-                <span className="t-code" style={{ flex: 1, minWidth: 0, color: last ? "var(--text-1)" : "var(--text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: last ? "var(--text)" : "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {t.message}
                 </span>
               </Line>

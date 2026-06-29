@@ -8,7 +8,7 @@
   UiEventKind to its slice. Every failure is surfaced into notifyStore, never swallowed.
 */
 import { create } from "zustand";
-import { subscribeUi } from "./ipc";
+import { callConnector, subscribeUi, TRANSPORT_KIND } from "./ipc";
 import type { ProjectionName, RuntimeState, UiEvent } from "./wire";
 
 // ---- Slice shapes (kept flat and minimal; surfaces extend their own slice in the next pass) ----
@@ -239,9 +239,24 @@ export function lastAppliedSeq(s: State): number {
 // Transport errors are surfaced into notifyStore, never swallowed.
 export function connectStore(): () => void {
   const apply = useStore.getState().apply;
-  return subscribeUi(
+  const unsub = subscribeUi(
     (ev) => apply(ev),
     (err) => useStore.getState().pushNotice({ kind: "error", code: "transport", message: err.message }),
     lastAppliedSeq(useStore.getState()),
   );
+  // The live runtime emits its "ready" status once at boot, before the UI connects, and that event
+  // is not replayable. Derive current readiness from the runtime connector (a real working endpoint),
+  // so the status bar reflects the live engine instead of staying "down".
+  if (TRANSPORT_KIND === "live") {
+    void callConnector<{ roles?: Array<{ model?: { architecture?: string } | null }> }>("runtime", "roles.list", {})
+      .then((r) => {
+        const roles = r?.roles;
+        if (Array.isArray(roles) && roles.length) {
+          const detail = roles[0]?.model?.architecture ?? "hawking";
+          apply({ seq: 0, session_id: null, kind: { type: "runtime_status", data: { status: "ready", detail } } });
+        }
+      })
+      .catch(() => void 0);
+  }
+  return unsub;
 }

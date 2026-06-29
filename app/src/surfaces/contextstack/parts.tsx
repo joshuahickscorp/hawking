@@ -1,32 +1,31 @@
 /*
-  parts.tsx: the tactile hardware of the Context Stack (Doctrine v3, the OP-1 instrument inside
-  an Ando chamber). Every affordance here is a quiet TE line-glyph control on raw concrete: dim at
-  rest, brighter on hover, and when engaged it lights with LIGHT, never gold. These are LOCAL
-  primitives (parallel-safety: the surface owns them; ui.tsx is not touched). They re-house the
-  VS Code SCM "tree-row hover action" pattern into restrained hardware: instead of ghost icons,
-  each row carries a labeled toggle you can always read, that reads as a switch you can press.
+  parts.tsx: the primitives of the Context tree, folded into a VS Code-style Explorer sidebar.
+  Each Stratum is a collapsible tree SECTION (a 22px header row with a twistie chevron, an uppercase
+  section label, an optional count). Rows (Line) are compact ~22px tree rows. Flat + system-font +
+  VS Code-toned: no glows, no breathing, no bloom. Liveness is a small accent dot, nothing more.
+  These are LOCAL primitives (the surface owns them; ui.tsx is not touched). Every prop is preserved
+  so ContextStack.tsx — and the steer logic — keep working unchanged.
 */
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { useLight } from "../../ui";
+import { useState, type CSSProperties, type ReactNode } from "react";
 
-/* A row inside a stratum: a thin recessed channel, content + trailing controls. */
+/* A compact tree row: ~22px, content + trailing controls, hover background. */
 export function Line({ children, onClick, title }: { children: ReactNode; onClick?: () => void; title?: string }) {
   const base: CSSProperties = {
     display: "flex",
     alignItems: "center",
-    gap: "var(--ma-3)",
-    padding: "var(--ma-2) var(--ma-3)",
-    borderRadius: "var(--radius)",
+    gap: "var(--ma-2)",
+    minHeight: 22,
+    padding: "0 var(--ma-2) 0 22px",
+    fontSize: 13,
     minWidth: 0,
   };
-  if (!onClick) return <div style={base}>{children}</div>;
+  if (!onClick) return <div className="ctx-row" style={base}>{children}</div>;
   return (
     <button
+      className="ctx-row ctx-row--btn"
       title={title}
       onClick={onClick}
-      style={{ ...base, width: "100%", textAlign: "left", color: "inherit" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--concrete-3)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      style={{ ...base, width: "100%", textAlign: "left", color: "inherit", background: "transparent" }}
     >
       {children}
     </button>
@@ -34,12 +33,9 @@ export function Line({ children, onClick, title }: { children: ReactNode; onClic
 }
 
 /*
-  HardwareToggle: the signature "let me touch it" control. A small labeled line-glyph switch.
-  Off = a recessed dark channel with a hairline rim, the label dim (--mute). Hover lifts the label
-  toward --text-2. On = the switch lights with LIGHT (a soft bloom + lit label), the engaged state
-  unmistakable without any hue. The lone semantic exception is `tone="bad"`, the oxide pigment used
-  only where the action is genuinely destructive (evict), and even then glyph-paired by its label.
-  Tactile feedback is a quick depress on press, never a bounce.
+  HardwareToggle: a small labeled toggle that sits at the trailing edge of a tree row. Flat VS Code
+  toning: dim uppercase label at rest, brighter on hover, accent (or a destructive red for `tone="bad"`)
+  when engaged. No bloom, no depress bounce — just a quiet background + color shift.
 */
 export function HardwareToggle({
   label,
@@ -54,38 +50,24 @@ export function HardwareToggle({
   tone?: "light" | "mute" | "bad";
   title?: string;
 }) {
-  const [down, setDown] = useState(false);
-  const [hover, setHover] = useState(false);
-  // engaged tone: LIGHT by default; oxide only where the action is genuinely destructive.
-  const litColor = tone === "bad" ? "var(--bad)" : "var(--light)";
-  const litBloom = tone === "bad" ? "0 0 10px -3px var(--bad)" : "var(--light-bloom)";
-  const restColor = on ? litColor : hover ? "var(--text-2)" : "var(--mute)";
+  const litColor = tone === "bad" ? "var(--red)" : "var(--accent)";
   return (
     <button
       title={title ?? label}
       aria-pressed={on}
-      onMouseDown={() => setDown(true)}
-      onMouseUp={() => setDown(false)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => {
-        setDown(false);
-        setHover(false);
-      }}
       onClick={onToggle}
-      className="t-micro"
+      className="ctx-toggle"
       style={{
         flex: "0 0 auto",
-        letterSpacing: "0.06em",
+        fontSize: 10,
+        letterSpacing: "0.04em",
         textTransform: "uppercase",
-        padding: "1px 7px",
-        borderRadius: "var(--radius)",
-        color: restColor,
-        background: on ? "var(--concrete-4)" : hover ? "var(--concrete-3)" : "transparent",
-        boxShadow: on
-          ? `var(--hairline-strong), ${litBloom}, var(--inner-glow)`
-          : "var(--hairline)",
-        transform: down ? "translateY(1px)" : "none",
-        transition: "transform 80ms var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease)",
+        padding: "1px 6px",
+        borderRadius: "var(--radius-sm)",
+        color: on ? "var(--accent-text)" : "var(--text-dim)",
+        background: on ? litColor : "transparent",
+        border: "1px solid",
+        borderColor: on ? "transparent" : "var(--input-border)",
       }}
     >
       {label}
@@ -94,11 +76,9 @@ export function HardwareToggle({
 }
 
 /*
-  Stratum: a labeled ledge of the stack, poured as a .volume slab resting in the void. Calm summary
-  by default; the whole header is the expand control. Expanding opens the inspector body with WEIGHT
-  (height + opacity eased in), the weighted disclosure of a heavy door, never a pop. The live stratum
-  wears the breathing LIGHT via `live` (useLight), not gold. Header carries a count and an optional
-  trailing control slot.
+  Stratum: a collapsible Explorer SECTION. The 22px header row carries a twistie chevron
+  (▾ open / ▸ collapsed), an uppercase 11px section label, an optional count, and (collapsed) a quiet
+  one-line summary. Clicking the header toggles. The live section shows a small accent dot, no breathing.
 */
 export function Stratum({
   label,
@@ -115,64 +95,71 @@ export function Stratum({
   defaultOpen?: boolean;
   summary?: ReactNode; // one-line glance shown collapsed
   trailing?: ReactNode; // a control that lives in the header (e.g. a global mute)
-  children?: ReactNode; // the inspector body, revealed on expand
+  children?: ReactNode; // the section body, revealed on expand
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const breathe = useLight(live);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [h, setH] = useState(0);
-
-  // Measure the natural body height so the expand eases to an exact target (weighted, not jumpy).
-  useEffect(() => {
-    if (open && bodyRef.current) setH(bodyRef.current.scrollHeight);
-  }, [open, children, count]);
-
   const hasBody = children != null;
-  const glyphColor = live ? "var(--light)" : "var(--text-3)";
+
   return (
-    <section
-      className={"volume" + (live ? " alive" : "")}
-      style={{
-        padding: "var(--ma-6)",
-        ...breathe,
-      }}
-    >
-      <header style={{ display: "flex", alignItems: "center", gap: "var(--ma-3)" }}>
+    <section className="ctx-section">
+      <header className="ctx-section__head" style={{ display: "flex", alignItems: "center", gap: "var(--ma-1)" }}>
         <button
+          className="ctx-section__toggle"
           onClick={() => hasBody && setOpen((v) => !v)}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "var(--ma-3)",
+            gap: "var(--ma-1)",
             flex: 1,
             minWidth: 0,
-            color: "var(--mute)",
+            height: 22,
+            color: "var(--text-muted)",
+            background: "transparent",
             cursor: hasBody ? "pointer" : "default",
           }}
         >
-          {hasBody ? (
+          <span
+            aria-hidden
+            className="ctx-twistie"
+            style={{
+              flex: "0 0 auto",
+              width: 16,
+              textAlign: "center",
+              fontSize: 10,
+              color: "var(--text-muted)",
+              visibility: hasBody ? "visible" : "hidden",
+            }}
+          >
+            {open ? "▾" : "▸"}
+          </span>
+          <span
+            className="ctx-section__label"
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: "var(--text-muted)",
+            }}
+          >
+            {label}
+          </span>
+          {live ? (
             <span
-              aria-hidden
-              style={{
-                fontSize: 9,
-                color: glyphColor,
-                transform: open ? "rotate(90deg)" : "none",
-                transition: "transform var(--dur) var(--ease)",
-              }}
-            >
-              ▸
-            </span>
-          ) : (
-            <span aria-hidden style={{ width: 9, fontSize: 9, color: glyphColor }}>▪</span>
-          )}
-          <span className="t-label">{label}</span>
-          {count != null ? <span className="t-micro" style={{ color: "var(--text-3)" }}>{count}</span> : null}
+              aria-label="active"
+              title="agent active"
+              style={{ flex: "0 0 auto", width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }}
+            />
+          ) : null}
+          {count != null ? (
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>{count}</span>
+          ) : null}
           {!open && summary ? (
             <span
-              className="t-micro"
               style={{
                 marginLeft: "auto",
-                color: "var(--text-3)",
+                fontSize: 11,
+                color: "var(--text-dim)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -185,18 +172,9 @@ export function Stratum({
         {trailing ? <div style={{ flex: "0 0 auto" }}>{trailing}</div> : null}
       </header>
 
-      {hasBody ? (
-        <div
-          style={{
-            height: open ? h : 0,
-            opacity: open ? 1 : 0,
-            overflow: "hidden",
-            transition: "height var(--dur-slow) var(--ease), opacity var(--dur) var(--ease)",
-          }}
-        >
-          <div ref={bodyRef} style={{ paddingTop: "var(--ma-3)", display: "flex", flexDirection: "column", gap: 1 }}>
-            {children}
-          </div>
+      {hasBody && open ? (
+        <div className="ctx-section__body" style={{ display: "flex", flexDirection: "column" }}>
+          {children}
         </div>
       ) : null}
     </section>
@@ -204,23 +182,21 @@ export function Stratum({
 }
 
 /*
-  NoteField: inject a note into context (the fourth touch verb, the @-add). A recessed input that
-  commits on Enter and clears, the way an instrument latches a value. Calm, no submit chrome. The
-  already-committed value rests inside a faintly lit channel (LIGHT inner-glow, never a colored rim).
+  NoteField: inject a note into context. A flat VS Code input that commits on Enter and clears.
+  The already-committed value rests above it in a quiet card.
 */
 export function NoteField({ value, onCommit, placeholder }: { value?: string; onCommit: (text: string) => void; placeholder: string }) {
   const [draft, setDraft] = useState("");
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-2)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-1)", padding: "var(--ma-1) var(--ma-2) var(--ma-1) 22px" }}>
       {value ? (
         <div
-          className="t-micro"
           style={{
-            color: "var(--text-2)",
-            padding: "var(--ma-2) var(--ma-3)",
-            borderRadius: "var(--radius)",
-            boxShadow: "var(--hairline), var(--inner-glow)",
-            background: "var(--concrete-3)",
+            fontSize: 12,
+            color: "var(--text)",
+            padding: "var(--ma-1) var(--ma-2)",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--surface-2)",
           }}
         >
           {value}
@@ -236,18 +212,17 @@ export function NoteField({ value, onCommit, placeholder }: { value?: string; on
           }
         }}
         placeholder={placeholder}
-        className="t-micro"
+        className="ctx-note-input"
         style={{
           width: "100%",
-          padding: "var(--ma-2) var(--ma-3)",
-          color: "var(--text-1)",
-          background: "var(--void)",
-          border: "none",
-          borderRadius: "var(--radius)",
+          padding: "3px var(--ma-2)",
+          color: "var(--text)",
+          background: "var(--input-bg)",
+          border: "1px solid var(--input-border)",
+          borderRadius: "var(--radius-sm)",
           outline: "none",
-          boxShadow: "var(--hairline)",
           font: "inherit",
-          fontSize: "11px",
+          fontSize: 12,
         }}
       />
     </div>
@@ -255,9 +230,8 @@ export function NoteField({ value, onCommit, placeholder }: { value?: string; on
 }
 
 /*
-  OkMark: a small ok/fail marker, shape + pigment (never pigment alone), per doctrine. The only two
-  colors, glyph-paired: lichen check for ok, oxide cross for fail. (Named OkMark to leave the brand
-  glyph `Mark` in ui.tsx unshadowed; this is the semantic state marker, not the event-horizon disk.)
+  OkMark: a small ok/fail marker, shape + pigment (never pigment alone). Green check for ok,
+  red cross for fail.
 */
 export function OkMark({ ok }: { ok: boolean }) {
   return (
@@ -267,8 +241,8 @@ export function OkMark({ ok }: { ok: boolean }) {
         flex: "0 0 auto",
         width: 14,
         textAlign: "center",
-        fontSize: "12px",
-        color: ok ? "var(--ok)" : "var(--bad)",
+        fontSize: 12,
+        color: ok ? "var(--green)" : "var(--red)",
       }}
     >
       {ok ? "✓" : "✗"}

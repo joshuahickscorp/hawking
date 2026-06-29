@@ -1,13 +1,8 @@
 /*
-  Explorer.tsx: the file tree + search box (the workshop's quiet west list). Re-housed from the
-  VS-Code explorer pattern, recast in v3: a calm airy list (14px, --text-2, generous row height), no
-  VS Code chrome, no blue twisties. Click a file -> OpenFile{path} intent. Search runs the code_index
-  connector (callConnector("code_index","search",{q})); the mock returns [], so we fall back to a local
-  name-filter over the seeded tree so the surface is ALIVE with no backend.
-
-  Touched-by-run files wear a faint light glyph (the agent's footprint); git badges wear a +/M letter
-  (shape, not color alone). The active file rests at --text-1 with a faint --inner-glow row, the one
-  thing the light catches.
+  Explorer.tsx: the navigator. A filter/search field sits at the top (Search folded in, Xcode-style):
+  empty -> the file tree; a query -> inline code_index.search results (local fallback over MOCK_TREE).
+  Click a file -> OpenFile{path}. Rows are quiet 22px lines; file glyphs are neutral (color is never
+  identity); the active file rests on the selected row.
 */
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { callConnector, sendIntent } from "../../ipc";
@@ -27,29 +22,27 @@ export function Explorer({
   activePath: string | null;
   onOpen: (path: string) => void;
 }) {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
-  const [searching, setSearching] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const open = useCallback(
-    (path: string) => {
-      void sendIntent(intent.openFile(path));
+    (path: string, line?: number) => {
+      void sendIntent(intent.openFile(path, line));
       onOpen(path);
     },
     [onOpen],
   );
 
-  // Search the code_index connector; if it returns nothing (mock), fall back to a local name filter.
+  const toggle = (path: string) => setCollapsed((c) => ({ ...c, [path]: !c[path] }));
+
   useEffect(() => {
     const q = query.trim();
     if (!q) {
       setHits(null);
-      setSearching(false);
       return;
     }
     let live = true;
-    setSearching(true);
     const t = setTimeout(async () => {
       let result: SearchHit[] = [];
       try {
@@ -59,10 +52,7 @@ export function Explorer({
         result = [];
       }
       if (result.length === 0) result = localSearch(MOCK_TREE, q);
-      if (live) {
-        setHits(result);
-        setSearching(false);
-      }
+      if (live) setHits(result);
     }, 140);
     return () => {
       live = false;
@@ -70,60 +60,34 @@ export function Explorer({
     };
   }, [query]);
 
-  const toggle = (path: string) => setCollapsed((c) => ({ ...c, [path]: !c[path] }));
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
-      <div style={{ padding: "var(--ma-4) var(--ma-4) var(--ma-3)" }}>
-        <div className="t-label">Explorer</div>
-        <div style={{ position: "relative", marginTop: "var(--ma-3)" }}>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search the repo"
-            spellCheck={false}
-            className="t-body"
-            style={{
-              width: "100%",
-              padding: "var(--ma-2) var(--ma-3)",
-              borderRadius: "var(--radius)",
-              background: "var(--void)",
-              color: "var(--text-1)",
-              fontFamily: "var(--font)",
-              border: "none",
-              boxShadow: "var(--hairline)",
-              outline: "none",
-            }}
-          />
-          {searching ? (
-            <span
-              aria-hidden
-              className="alive"
-              style={{
-                position: "absolute",
-                right: 10,
-                top: 11,
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "var(--light)",
-              }}
-            />
-          ) : null}
-        </div>
+    <div className="vsc-tree">
+      <div className="nav-filter">
+        <span className="nav-filter__glyph" aria-hidden>⌕</span>
+        <input
+          className="nav-filter__input"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Filter or search"
+          spellCheck={false}
+          aria-label="Filter or search files"
+        />
+        {query ? (
+          <button className="nav-filter__clear" title="Clear" aria-label="Clear" onClick={() => setQuery("")}>
+            ×
+          </button>
+        ) : null}
       </div>
 
-      <div style={{ overflowY: "auto", padding: "0 var(--ma-3) var(--ma-4)", minHeight: 0, flex: 1 }}>
-        {hits ? (
-          <SearchResults hits={hits} query={query} onOpen={(p, line) => { void sendIntent(intent.openFile(p, line)); onOpen(p); }} />
-        ) : (
-          <ul style={list}>
-            {MOCK_TREE.map((n) => (
-              <TreeRow key={n.path} node={n} depth={0} activePath={activePath} collapsed={collapsed} onToggle={toggle} onOpen={open} />
-            ))}
-          </ul>
-        )}
-      </div>
+      {hits ? (
+        <SearchResults hits={hits} query={query} onOpen={open} />
+      ) : (
+        <ul style={list}>
+          {MOCK_TREE.map((n) => (
+            <TreeRow key={n.path} node={n} depth={0} activePath={activePath} collapsed={collapsed} onToggle={toggle} onOpen={(p) => open(p)} />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -148,28 +112,18 @@ function TreeRow({
   return (
     <li>
       <button
+        className={"vsc-row" + (selected ? " vsc-row--selected" : "")}
         onClick={() => (node.dir ? onToggle(node.path) : onOpen(node.path))}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "var(--ma-2)",
-          width: "100%",
-          textAlign: "left",
-          padding: "5px var(--ma-2)",
-          paddingLeft: 10 + depth * 16,
-          borderRadius: "var(--radius)",
-          fontSize: "14px",
-          lineHeight: 1.8,
-          // the active file rests at --text-1 with a faint inner-glow catch; everything else is quiet.
-          color: selected ? "var(--text-1)" : "var(--text-2)",
-          background: selected ? "var(--concrete-3)" : "transparent",
-          boxShadow: selected ? "var(--inner-glow)" : undefined,
-        }}
+        style={{ paddingLeft: 8 + depth * 12 }}
       >
-        <span style={{ width: 12, color: "var(--text-3)", userSelect: "none" }}>
+        {Array.from({ length: depth }).map((_, i) => (
+          <span key={i} className="vsc-guide" style={{ left: 8 + i * 12 + 6 }} aria-hidden />
+        ))}
+        <span className="vsc-twisty" aria-hidden>
           {node.dir ? (isOpen ? "▾" : "▸") : ""}
         </span>
-        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{node.name}</span>
+        <FileGlyph node={node} open={isOpen} />
+        <span className="vsc-row__name">{node.name}</span>
         {node.badge ? <Badge kind={node.badge} /> : null}
       </button>
       {node.dir && isOpen && node.children ? (
@@ -183,17 +137,34 @@ function TreeRow({
   );
 }
 
-// Git/agent badge: a glyph (shape) + token color, never color alone. The only two colors are --ok and
-// --bad; a 'modified' state has no hue (there is no third color), so it reads as a neutral glyph.
+// File glyph: folder twistie for dirs, a neutral extension letter-tile for files. No per-type hue
+// (color is never identity); the selected file brightens via the row, not a colored dot.
+function FileGlyph({ node, open }: { node: FileNode; open: boolean }) {
+  if (node.dir) {
+    return (
+      <span className="vsc-glyph vsc-glyph--folder" aria-hidden>
+        {open ? "▾" : "▸"}
+      </span>
+    );
+  }
+  const ext = node.name.split(".").pop() ?? "";
+  return (
+    <span className="vsc-glyph" aria-hidden>
+      {ext ? ext[0].toUpperCase() : "·"}
+    </span>
+  );
+}
+
+// Git/agent badge: a glyph + (the only) two pigments, never color alone.
 function Badge({ kind }: { kind: NonNullable<FileNode["badge"]> }) {
   const map = {
-    added: { ch: "+", color: "var(--ok)" },
-    modified: { ch: "M", color: "var(--text-2)" },
-    touched: { ch: "▪", color: "var(--light)" },
+    added: { ch: "U", color: "var(--git-add)" },
+    modified: { ch: "M", color: "var(--git-mod)" },
+    touched: { ch: "●", color: "var(--text-dim)" },
   } as const;
   const m = map[kind];
   return (
-    <span title={kind} style={{ color: m.color, fontSize: "12px", width: 14, textAlign: "center" }}>
+    <span className="vsc-badge" title={kind} style={{ color: m.color }}>
       {m.ch}
     </span>
   );
@@ -206,32 +177,21 @@ function SearchResults({
 }: {
   hits: SearchHit[];
   query: string;
-  onOpen: (path: string, line: number) => void;
+  onOpen: (path: string, line?: number) => void;
 }) {
   if (hits.length === 0) {
-    return <div className="t-body" style={{ color: "var(--text-3)", padding: "var(--ma-4)" }}>No matches for "{query}"</div>;
+    return <div className="sidebar__empty">No results for "{query}"</div>;
   }
   return (
-    <ul style={list}>
+    <ul className="search-view__list">
       {hits.map((h, i) => (
         <li key={i}>
-          <button
-            onClick={() => onOpen(h.path, h.line)}
-            style={{
-              display: "block",
-              width: "100%",
-              textAlign: "left",
-              padding: "var(--ma-2)",
-              borderRadius: "var(--radius)",
-              fontSize: "14px",
-              color: "var(--text-2)",
-            }}
-          >
-            <span style={{ color: "var(--text-3)", fontSize: "12px" }}>
+          <button className="ghost-button search-hit" onClick={() => onOpen(h.path, h.line || undefined)}>
+            <span className="search-hit__path">
               {h.path}
-              {h.line ? <span style={{ color: "var(--text-2)" }}>:{h.line}</span> : null}
+              {h.line ? <span className="search-hit__line">:{h.line}</span> : null}
             </span>
-            <div className="t-code" style={{ color: "var(--text-2)", whiteSpace: "pre", overflow: "hidden", textOverflow: "ellipsis" }}>{h.preview}</div>
+            {h.preview && h.preview !== h.path ? <span className="search-hit__preview t-code">{h.preview}</span> : null}
           </button>
         </li>
       ))}
@@ -239,7 +199,6 @@ function SearchResults({
   );
 }
 
-// Local fallback so search works against the seeded tree when the connector is the mock.
 function localSearch(nodes: FileNode[], q: string): SearchHit[] {
   const out: SearchHit[] = [];
   const lc = q.toLowerCase();

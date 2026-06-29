@@ -40,6 +40,7 @@ class LiveTransport implements Transport {
   subscribeUi(onEvent: (ev: UiEvent) => void, onError: (err: Error) => void, afterSeq?: number): () => void {
     let closed = false;
     let ws: WebSocket | null = null;
+    let notified = false; // report a socket drop once per outage, not on every 1s reconnect tick
 
     const open = async (fromSeq: number) => {
       if (closed) return;
@@ -56,6 +57,9 @@ class LiveTransport implements Transport {
       if (closed) return;
       ws = new WebSocket(`${WS_BASE}/v1/hide/events`);
       let lastSeq = fromSeq;
+      ws.onopen = () => {
+        notified = false;
+      };
       ws.onmessage = (e) => {
         try {
           const ev = JSON.parse(e.data as string) as UiEvent;
@@ -65,7 +69,11 @@ class LiveTransport implements Transport {
           onError(err instanceof Error ? err : new Error(String(err)));
         }
       };
-      ws.onerror = () => onError(new Error("event socket error; reconnecting"));
+      ws.onerror = () => {
+        if (notified) return;
+        notified = true;
+        onError(new Error("event socket error; reconnecting"));
+      };
       ws.onclose = () => {
         if (closed) return;
         // Reconnect: backfill from lastSeq, then resume live.

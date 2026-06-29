@@ -17,6 +17,7 @@ import { sendIntent } from "../../ipc";
 import { intent } from "../../wire";
 import { HIDE_EDITOR_OPTIONS, HIDE_THEME, configureMonacoLoader, registerHideTheme } from "./monacoTheme";
 import { HunkReview } from "./HunkReview";
+import { CodeActions } from "./CodeActions";
 import { applyHunkStatus, MOCK_FILE_BODY, type DiffDoc } from "./types";
 
 // Point the loader at bundled monaco once (air-gap: no CDN fetch).
@@ -39,9 +40,9 @@ export function EditorGroup({
 
   if (diff) {
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", height: "100%", minHeight: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", height: "100%", minHeight: 0, minWidth: 0 }}>
         <DiffPane diff={diff} sideBySide={sideBySide} onToggle={() => setSideBySide((v) => !v)} beforeMount={beforeMount} />
-        <div style={{ boxShadow: "inset 1px 0 0 0 var(--line)", minHeight: 0 }}>
+        <div style={{ borderLeft: "1px solid var(--border)", minHeight: 0, minWidth: 0, overflow: "hidden" }}>
           <HunkReview
             doc={diff}
             onAct={(hunk, action) => {
@@ -100,6 +101,7 @@ function DiffPane({
 
 function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMount: (m: Monaco) => void }) {
   const editorRef = useRef<MEditor.IStandaloneCodeEditor | null>(null);
+  const [sel, setSel] = useState<{ text: string; top: number; left: number } | null>(null);
   // Resolve the open file's body. Live host streams it as ProjectionPatch{editor}; the mock has stubs.
   const body = useMemo(() => (openPath ? MOCK_FILE_BODY[openPath] : null), [openPath]);
 
@@ -116,7 +118,7 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       <TabRow path={openPath} suffix={null} />
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
         <MonacoEditor
           path={openPath}
           language={body?.lang ?? "plaintext"}
@@ -128,74 +130,61 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
             ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () =>
               void sendIntent(intent.custom("save_file", { path: openPath })),
             );
+            // Highlight-to-100x: a Liquid-Glass action popover follows a non-empty selection.
+            ed.onDidChangeCursorSelection((e) => {
+              const model = ed.getModel();
+              const txt = model ? model.getValueInRange(e.selection) : "";
+              if (txt.trim().length > 1) {
+                const vp = ed.getScrolledVisiblePosition(e.selection.getStartPosition());
+                if (vp) setSel({ text: txt, top: Math.max(4, vp.top - 40), left: Math.min(Math.max(8, vp.left), 360) });
+              } else {
+                setSel(null);
+              }
+            });
+            ed.onDidScrollChange(() => setSel(null));
+            ed.onDidBlurEditorWidget(() => setSel(null));
           }}
           loading={<Loading />}
           options={{ ...HIDE_EDITOR_OPTIONS, readOnly: false }}
         />
+        {sel ? <CodeActions text={sel.text} top={sel.top} left={sel.left} onDone={() => setSel(null)} /> : null}
       </div>
     </div>
   );
 }
 
+// VS Code breadcrumb bar: thin, editor-bg, the path split into segments joined by a "›" separator.
 function TabRow({ path, suffix, children }: { path: string; suffix: string | null; children?: ReactNode }) {
-  const name = path.split("/").pop() ?? path;
+  const segments = path.split("/").filter(Boolean);
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "var(--ma-2)",
-        height: 34,
-        padding: "0 var(--ma-4)",
-        boxShadow: "inset 0 -1px 0 0 var(--line)",
-        background: "var(--concrete-2)",
-        fontSize: "12px",
-      }}
-    >
-      <span className="t-code" style={{ color: "var(--text-1)" }}>{name}</span>
-      {suffix ? (
-        // the diff marker reads in light, not gold; uppercase label as quiet punctuation.
-        <span className="t-label" style={{ color: "var(--light)", textTransform: "uppercase" }}>{suffix}</span>
-      ) : null}
-      <span className="t-code" style={{ color: "var(--text-3)" }}>{path}</span>
-      <div style={{ marginLeft: "auto" }}>{children}</div>
+    <div className="vsc-breadcrumb">
+      <div className="vsc-breadcrumb__trail">
+        {segments.map((seg, i) => (
+          <span key={i} className="vsc-breadcrumb__seg">
+            {i > 0 ? <span className="vsc-breadcrumb__sep" aria-hidden>›</span> : null}
+            <span className={i === segments.length - 1 ? "vsc-breadcrumb__leaf" : undefined}>{seg}</span>
+          </span>
+        ))}
+        {suffix ? <span className="vsc-breadcrumb__suffix">{suffix}</span> : null}
+      </div>
+      {children ? <div className="vsc-breadcrumb__actions">{children}</div> : null}
     </div>
   );
 }
 
 function ViewToggle({ sideBySide, onToggle }: { sideBySide: boolean; onToggle: () => void }) {
   return (
-    <button
-      onClick={onToggle}
-      title="Toggle inline / side-by-side"
-      style={{
-        fontSize: "12px",
-        color: "var(--text-2)",
-        padding: "var(--ma-1) var(--ma-3)",
-        borderRadius: "var(--radius)",
-        boxShadow: "var(--hairline)",
-        background: "var(--concrete-3)",
-      }}
-    >
-      {sideBySide ? "side by side" : "inline"}
+    <button className="text-button vsc-view-toggle" onClick={onToggle} title="Toggle inline / side-by-side">
+      {sideBySide ? "Side by side" : "Inline"}
     </button>
   );
 }
 
-// No spinner: aliveness is the breathing light, not a wheel.
+// Quiet text, no spinner or glow — just like VS Code's editor placeholder.
 function Loading() {
   return (
     <div style={{ display: "grid", placeItems: "center", height: "100%" }}>
-      <span
-        aria-label="loading editor"
-        className="alive"
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: "50%",
-          background: "var(--light)",
-        }}
-      />
+      <span style={{ color: "var(--text-dim)", fontSize: "13px" }}>Loading…</span>
     </div>
   );
 }

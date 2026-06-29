@@ -1,17 +1,12 @@
 /*
-  HunkReview.tsx: THE core gesture, factored as a reusable local component (v3). Per-hunk review of
-  an agent's proposed diff, driven by keyboard:
+  HunkReview.tsx: the core per-hunk diff-review gesture, a reusable local component. Keyboard-driven:
     j / ArrowDown  -> next hunk        k / ArrowUp  -> prev hunk
     a / Cmd+Enter  -> accept hunk      r / Cmd+Backspace -> reject hunk
-  Accept dispatches AcceptDiff{run_id,diff_id}; reject dispatches RejectDiff. The accepted hunk settles
-  with a brief LIGHT settle ("the change is taken in", light entering then quieting); the rejected one
-  dissolves back out. Diff add/del use the .hunk-add/.hunk-del classes (lichen/oxide) AND a +/- marker,
-  never color alone (accessibility: color is never the sole signal).
-
-  This same gesture must be identical in the Workstation merge-review (the review gesture must be the
-  same everywhere or the seams show), so this component is the single source of it: it takes a DiffDoc +
-  an onAct callback and owns nothing surface-specific. Re-housed from the Cline hunk-accept UX, recast
-  in v3 grayscale concrete: the selected hunk wears a LightEdge breathe, never a colored rim.
+  Accept dispatches AcceptDiff{run_id,diff_id}; reject dispatches RejectDiff and fades the card out.
+  Diff add/del use the .hunk-add/.hunk-del classes (VS Code green/red) AND a +/- marker, never color
+  alone (accessibility: color is never the sole signal). The selected pending hunk wears a flat 1px
+  accent border (VS Code style), no glow or animation. Takes a DiffDoc + an onAct callback and owns
+  nothing surface-specific.
 */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import type { DiffDoc, Hunk } from "./types";
@@ -27,10 +22,10 @@ const KIND_STYLE = {
 } as const;
 
 const STATUS_LABEL: Record<Hunk["status"], { label: string; color: string }> = {
-  pending: { label: "pending", color: "var(--text-3)" },
-  accepted: { label: "accepted", color: "var(--ok)" },
-  rejected: { label: "rejected", color: "var(--bad)" },
-  applied: { label: "applied", color: "var(--ok)" },
+  pending: { label: "pending", color: "var(--text-dim)" },
+  accepted: { label: "accepted", color: "var(--git-add)" },
+  rejected: { label: "rejected", color: "var(--git-del)" },
+  applied: { label: "applied", color: "var(--git-add)" },
 };
 
 export function HunkReview({
@@ -122,51 +117,59 @@ export function HunkReview({
   const remaining = pendingIdx.length;
 
   return (
-    <div ref={rootRef} style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
+    <div
+      ref={rootRef}
+      style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, width: "100%", minWidth: 0, overflow: "hidden" }}
+    >
       <LocalSettleKeyframes />
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "var(--ma-3)",
-          padding: "var(--ma-3) var(--ma-4)",
-          boxShadow: "inset 0 -1px 0 0 var(--line)",
+          gap: "var(--ma-2)",
+          flexWrap: "wrap",
+          rowGap: "var(--ma-1)",
+          padding: "var(--ma-2) var(--ma-3)",
+          boxShadow: "inset 0 -1px 0 0 var(--border)",
           fontSize: "12px",
-          color: "var(--text-3)",
+          color: "var(--text-muted)",
+          minWidth: 0,
         }}
       >
-        <span className="t-code" style={{ color: "var(--text-2)" }}>{doc.path}</span>
+        <span className="t-code" style={{ color: "var(--text)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{doc.path}</span>
         {doc.stale ? (
-          // 'needs you' state with a GLYPH + neutral text (no orange/warning hue exists in v3).
           <span
             title="The file changed under this pending diff. Re-sync before applying."
             style={{
               display: "inline-flex",
               alignItems: "center",
               gap: "var(--ma-1)",
-              color: "var(--text-2)",
-              boxShadow: "var(--hairline-strong)",
-              borderRadius: "var(--radius)",
-              padding: "1px 8px",
+              color: "var(--git-mod)",
+              border: "1px solid var(--border-strong)",
+              borderRadius: "var(--radius-sm)",
+              padding: "0 6px",
+              flex: "0 0 auto",
             }}
           >
-            <span aria-hidden style={{ color: "var(--text-2)" }}>△</span>
+            <span aria-hidden>△</span>
             stale
           </span>
         ) : null}
-        <span style={{ marginLeft: "auto" }}>
+        <span style={{ marginLeft: "auto", flex: "0 0 auto" }}>
           {remaining} hunk{remaining === 1 ? "" : "s"} to review
         </span>
-        <kbd style={kbd}>j</kbd>
-        <kbd style={kbd}>k</kbd>
-        <span>move</span>
-        <kbd style={kbd}>a</kbd>
-        <span>accept</span>
-        <kbd style={kbd}>r</kbd>
-        <span>reject</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ma-1)", flex: "0 0 auto", flexWrap: "wrap" }}>
+          <kbd style={kbd}>j</kbd>
+          <kbd style={kbd}>k</kbd>
+          <span>move</span>
+          <kbd style={kbd}>a</kbd>
+          <span>accept</span>
+          <kbd style={kbd}>r</kbd>
+          <span>reject</span>
+        </span>
       </div>
 
-      <div style={{ overflowY: "auto", padding: "var(--ma-4)", display: "flex", flexDirection: "column", gap: "var(--ma-4)", minHeight: 0 }}>
+      <div style={{ overflow: "auto", padding: "var(--ma-3)", display: "flex", flexDirection: "column", gap: "var(--ma-3)", minHeight: 0, minWidth: 0 }}>
         {doc.hunks.map((h, i) => (
           <HunkCard
             key={h.id}
@@ -206,26 +209,22 @@ function HunkCard({
 }) {
   const decided = hunk.status !== "pending";
   const st = STATUS_LABEL[hunk.status];
-  // The settle: accept lets light enter then quiet; reject fades the card out (no gold anywhere).
+  // Reject fades the card out; accept just settles (no glow/bloom — flat VS Code surface).
   const settleStyle =
-    settle === "accept"
-      ? { animation: "hunk-light-settle 620ms var(--ease)" }
-      : settle === "reject"
-        ? { animation: "hunk-dissolve 480ms var(--ease) forwards" }
-        : {};
-  // The selected, still-pending hunk breathes light (the .alive heartbeat = LightEdge breathe).
-  const breathing = selected && !decided && !settle;
+    settle === "reject" ? { animation: "hunk-dissolve 480ms var(--ease) forwards" } : {};
+  const selectedPending = selected && !decided && !settle;
 
   return (
     <div
       ref={innerRef}
       onClick={onSelect}
-      className={"volume" + (breathing ? " alive" : "")}
       style={{
         padding: 0,
         overflow: "hidden",
+        borderRadius: "var(--radius-sm)",
+        background: "var(--surface-2)",
+        border: selectedPending ? "1px solid var(--accent)" : "1px solid var(--border)",
         opacity: decided && settle !== "accept" ? 0.55 : 1,
-        boxShadow: breathing ? undefined : selected ? "var(--hairline-strong), var(--inner-glow)" : "var(--hairline), var(--inner-glow)",
         ...settleStyle,
       }}
     >
@@ -234,26 +233,27 @@ function HunkCard({
           display: "flex",
           alignItems: "center",
           gap: "var(--ma-2)",
-          padding: "var(--ma-2) var(--ma-4)",
-          boxShadow: "inset 0 -1px 0 0 var(--line)",
+          padding: "var(--ma-2) var(--ma-3)",
+          boxShadow: "inset 0 -1px 0 0 var(--border)",
           fontSize: "12px",
-          color: "var(--text-3)",
+          color: "var(--text-muted)",
+          minWidth: 0,
         }}
       >
-        <span className="t-code" style={{ color: "var(--text-2)" }}>{hunk.header}</span>
-        <span style={{ marginLeft: "auto", color: st.color }}>{st.label}</span>
+        <span style={{ fontFamily: "var(--font-mono)", color: "var(--text-muted)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hunk.header}</span>
+        <span style={{ marginLeft: "auto", color: st.color, flex: "0 0 auto" }}>{st.label}</span>
       </div>
 
-      <div className="t-code" style={{ lineHeight: 1.7 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", lineHeight: 1.6, overflowX: "auto", minWidth: 0 }}>
         {hunk.lines.map((ln, j) => {
           const ks = KIND_STYLE[ln.kind];
           const ctx = ln.kind === "ctx";
           return (
-            <div key={j} className={ks.cls} style={{ display: "flex" }}>
+            <div key={j} className={"vsc-diffline " + ks.cls} style={{ display: "flex" }}>
               <span style={gutterNo}>{ln.oldNo ?? ""}</span>
               <span style={gutterNo}>{ln.newNo ?? ""}</span>
-              <span style={{ width: 16, textAlign: "center", userSelect: "none", color: ctx ? "var(--text-3)" : undefined }}>{ks.marker}</span>
-              <span style={{ color: ctx ? "var(--text-2)" : undefined, whiteSpace: "pre", paddingRight: "var(--ma-4)" }}>
+              <span style={{ width: 16, flexShrink: 0, textAlign: "center", userSelect: "none", color: ctx ? "var(--text-dim)" : undefined }}>{ks.marker}</span>
+              <span style={{ color: ctx ? "var(--text)" : undefined, whiteSpace: "pre", paddingRight: "var(--ma-4)" }}>
                 {ln.text || " "}
               </span>
             </div>
@@ -282,25 +282,22 @@ function ActBtn({
   tone: "accept" | "reject";
   onClick: (e: MouseEvent) => void;
 }) {
-  const accent = tone === "accept" ? "var(--ok)" : "var(--bad)";
+  const isAccept = tone === "accept";
   return (
     <button
-      className="t-label"
       onClick={onClick}
       style={{
         display: "inline-flex",
         alignItems: "center",
         gap: "var(--ma-2)",
-        padding: "var(--ma-1) var(--ma-3)",
-        borderRadius: "var(--radius)",
-        color: "var(--text-2)",
-        background: "var(--concrete-3)",
-        boxShadow: "var(--hairline)",
-        textTransform: "none",
-        letterSpacing: "0.02em",
+        padding: "4px var(--ma-3)",
+        borderRadius: "var(--radius-sm)",
+        fontSize: "12px",
+        color: isAccept ? "var(--accent-text)" : "var(--text)",
+        background: isAccept ? "var(--accent)" : "var(--input-bg)",
+        border: isAccept ? "none" : "1px solid var(--border-strong)",
       }}
     >
-      <span style={{ color: accent }}>{tone === "accept" ? "+" : "-"}</span>
       {label}
       <kbd style={kbd}>{hint}</kbd>
     </button>
@@ -308,18 +305,12 @@ function ActBtn({
 }
 
 /*
-  The two one-shot diff-settle keyframes the absorption uses, recast to LIGHT (the retired gold
-  hunk-absorb / hunk-dissolve are gone). theme.css owns the shared breathe / light-travel keyframes
-  and is off-limits to edit, so these surface-local animations live here. They honor
+  The one-shot keyframe a rejected hunk uses to fade out. Kept surface-local; honors
   prefers-reduced-motion via theme.css's global reduce rule.
 */
 function LocalSettleKeyframes() {
   return (
     <style>{`
-      @keyframes hunk-light-settle {
-        0%   { box-shadow: var(--inner-glow), var(--light-bloom); }
-        100% { box-shadow: var(--hairline), var(--inner-glow); }
-      }
       @keyframes hunk-dissolve {
         0%   { opacity: 1; transform: translateY(0); }
         100% { opacity: 0.4; transform: translateY(-2px); }
@@ -329,21 +320,21 @@ function LocalSettleKeyframes() {
 }
 
 const gutterNo: CSSProperties = {
-  width: 36,
+  width: 34,
   flexShrink: 0,
   textAlign: "right",
   paddingRight: 8,
-  color: "var(--text-3)",
+  color: "var(--text-dim)",
   userSelect: "none",
   fontSize: "11px",
 };
 
 const kbd: CSSProperties = {
-  fontFamily: "var(--font)",
+  fontFamily: "var(--font-mono)",
   fontSize: 10,
   padding: "1px 5px",
   borderRadius: 3,
-  color: "var(--text-2)",
-  boxShadow: "var(--hairline-strong)",
-  background: "var(--concrete-3)",
+  color: "var(--text-muted)",
+  border: "1px solid var(--border-strong)",
+  background: "var(--surface-2)",
 };
