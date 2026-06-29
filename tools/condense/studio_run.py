@@ -219,13 +219,15 @@ def go():
           file=sys.stderr)
     run_frontier_all()
     # ---- the VALUE layer: prove capability, defend the wedge, measure the cliff+energy, map the codec ----
-    eval_targets = [(l, m) for (l, m, p, g, s, r) in LADDER if l not in ("0.5B", "1.5B")]
-    print("\n### P5 EVAL — capability + NIAH + LONG-CONTEXT extension on floor winners ###", file=sys.stderr)
-    for lbl, mdir in eval_targets:
+    eval_targets = [(l, m, p) for (l, m, p, g, s, r) in LADDER if l not in ("0.5B", "1.5B")]
+    print("\n### P5 EVAL — capability + NIAH + LONG-CONTEXT (extend + aggressive KV frontier) ###", file=sys.stderr)
+    for lbl, mdir, params in eval_targets:
         if os.path.isdir(mdir):
             subprocess.run(["python3.12", f"{TC}/eval_suite.py", "--model", mdir, "--label", lbl])
-            # long-context lane: YaRN RoPE-scaling extension + KV-RAM wall + (SSM = flat-memory moat).
+            # long-context: YaRN extension + KV-RAM wall + SSM moat ...
             subprocess.run(["python3.12", f"{TC}/ctx_extend.py", mdir, lbl])
+            # ... then the AGGRESSIVE KV frontier (int2/trellis KV, SSD-paging, evict, SSM) per regime.
+            subprocess.run(["python3.12", f"{TC}/kv_frontier.py", mdir, lbl, str(params)])
     print("\n### P6 BASELINE — wedge gate: IQ1_S/IQ2/MLX-4bit head-to-head at matched bpw ###", file=sys.stderr)
     for lbl, mdir in eval_targets:
         if os.path.isdir(mdir):
