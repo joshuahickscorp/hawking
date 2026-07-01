@@ -32,6 +32,20 @@ Record-only on the M3 Pro 18 GB; download on the Studio (disk-bound now).
 | MoE (T1.4) | `Qwen/Qwen3-30B-A3B` | MoE | no | STUDIO |
 | KD teacher (T2.5) | `mistralai/Mixtral-8x7B-v0.1` | ~94 GB | no | STUDIO / serve-only |
 
+### FRONTIER — the 100B+ research prize (`studio_run.py --frontier <label>`, exact ids pinned in `FRONTIER` in `tools/condense/studio_run.py`)
+
+Serve-oriented (do NOT fit the doctor's f16-resident budget). `.tq` sizes at the recipe's serve bpw.
+
+| label | exact HF id | total params | active (MoE) | serve bpw | `.tq` size |
+|---|---|--:|--:|--:|--:|
+| 235B-A22B | `Qwen/Qwen3-235B-A22B` | 235B | 22B | 1.34 | ~39 GB (COMFY) |
+| 405B | `meta-llama/Llama-3.1-405B-Instruct` | 405B | dense | 1.34 | ~68 GB (TIGHT) |
+| 671B | `deepseek-ai/DeepSeek-V3` | 671B | 37B | 1.00 | ~84 GB (the EDGE) |
+| 744B | `zai-org/GLM-4.5` | 744B | 32B | 0.75 | ~70 GB (research) |
+
+Download each with `hf download <id> --local-dir scratch/<dir>` per the `FRONTIER` table — large
+(hundreds of GB), do them serially, confirm free disk before each (`size_frontier.py --ceiling`).
+
 ## Honesty rules
 
 - Every baseline receipt sets `baseline_best_effort` truthfully. `true` => the baseline can

@@ -43,10 +43,15 @@ LADDER = [
 # measured via the NATIVE .tq serve (not f16 forward, which can't be held) -> gated on the serve build.
 # label, hf dir, total_b, active_b (None=dense), serve_bpw (the headline rung), moe?, role
 FRONTIER = [
-    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-dream"),    # 39GB @1.34 COMFY
-    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-edge"),    # 68GB @1.34 TIGHT
-    ("671B",      "scratch/deepseek-v3",     671.0, 37.0, 1.00, True,  "moe-capstone"),  # 84GB @1.0  the EDGE
-    ("744B",      "scratch/glm-744b",        744.0, 32.0, 0.75, True,  "moe-stretch"),   # 70GB @0.75 research
+    # label, local dir, total_b, active_b, serve_bpw, moe?, role, exact HF id (for `hf download`)
+    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-dream",
+     "Qwen/Qwen3-235B-A22B"),                                                        # 39GB @1.34 COMFY
+    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-edge",
+     "meta-llama/Llama-3.1-405B-Instruct"),                                          # 68GB @1.34 TIGHT
+    ("671B",      "scratch/deepseek-v3",     671.0, 37.0, 1.00, True,  "moe-capstone",
+     "deepseek-ai/DeepSeek-V3"),                                                     # 84GB @1.0  the EDGE
+    ("744B",      "scratch/glm-744b",        744.0, 32.0, 0.75, True,  "moe-stretch",
+     "zai-org/GLM-4.5"),                                                             # 70GB @0.75 research
 ]
 
 # the recovery stack run per model, cheapest-first (plan §2). Each entry: (stage, tool, note).
@@ -134,7 +139,7 @@ def run_frontier(label):
     row = next((r for r in FRONTIER if r[0] == label), None)
     if not row:
         print(f"[frontier] unknown {label}", file=sys.stderr); return 2
-    _, mdir, total, active, bpw, moe, role = row
+    _, mdir, total, active, bpw, moe, role, hf_id = row
     artifact = round(total * bpw / 8.0, 1)
     fits = artifact <= 84.0
     ncpu = str(os.cpu_count() or 8)
@@ -144,7 +149,7 @@ def run_frontier(label):
           f"-> {bpw} bpw = {artifact}GB ({'FITS 84GB' if fits else 'OVERFLOW'})", file=sys.stderr)
     if not os.path.isdir(mdir):
         print(f"[frontier] {label} NOT staged at {mdir}. On the Studio (2TB SSD): "
-              f"hf download <{label}> --local-dir {mdir}  (block-wise; never held resident)", file=sys.stderr)
+              f"hf download {hf_id} --local-dir {mdir}  (block-wise; never held resident)", file=sys.stderr)
         return 2
     # Auto mode: recommend the bit format + serve regime (RESIDENT / MOE-PAGED / DENSE-OOC) and show
     # the device size ceiling before condensing (the "how big can we pull in" advisor).

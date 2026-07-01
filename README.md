@@ -120,7 +120,9 @@ Hawking is a from-scratch LLM inference engine for Apple Silicon, written in
 Rust with hand-written Metal kernels. It runs quantized GGUF models end to end
 on the GPU, with no PyTorch, llama.cpp, or BLAS. The work ahead is about
 pushing quality, memory, and context length further on Apple hardware, with the
-heavy runs on an Apple M2 Max Mac Studio (96 GB).
+heavy runs on an Apple M2 Max Mac Studio (96 GB). The condense/studio research
+program - the largest-model, lowest-bit, and long-context work below - is a
+single command away: see `docs/plans/STUDIO_GO.md`.
 
 ### Now (works today)
 - Dense Qwen2.5 forward pass on Metal, GGUF-native, with Q4_K / Q6_K kernels,
