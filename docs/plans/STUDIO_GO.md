@@ -28,11 +28,18 @@ files + receipts). Dry-preview first with:
 python3.12 tools/condense/studio_run.py --go-plan
 ```
 
-## WHAT `go` DOES (nine phases, automatic — see `docs/plans/quintessential_engine_2026_06_29.md` for the full design)
+## WHAT `go` DOES (ten phases, automatic — see `docs/plans/quintessential_engine_2026_06_29.md` for the full design)
 
-- **P0 STAGE+ADVISE** — `auto_bits.py` + `size_frontier.py` + `doctor_registry.py --select`: for
-  each 100B+ model, recommend the bit format, the serve regime (RESIDENT/MOE-PAGED/DENSE-OOC), and
-  the auto-composed recovery chain, before any bake.
+- **P0 CODEC TRIAGE + STAGE/ADVISE** — one-time: `codec_parallelism.py --catalog` scores every
+  candidate codec/kernel design for decode PARALLELISM (not just density) before any Rust build
+  time is spent — the direct lesson from the QTIP-on-Metal dead end (serial decode ate the
+  bandwidth win). Per-model (inline in P1/P4): `auto_bits.py` + `size_frontier.py` +
+  `doctor_registry.py --select` + `arch_coverage.py` recommend the bit format, the serve regime
+  (RESIDENT/MOE-PAGED/DENSE-OOC), the auto-composed recovery chain, and which Doctor levers are
+  architecture-compatible (dense/SSM/MoE — Mamba2 and RWKV-7 both get their real flat-state math,
+  not an approximation) — all before any bake. For MoE frontier models, `expert_cache_policy.py`
+  simulates hot-expert cache hit-rate/blended-tok-s across cache sizes so the eventual OOC pager's
+  cache size is chosen from a measured sweep, not a guess.
 - **P1 CONDENSE** — the bit-floor-vs-scale curve across {0.5B,1.5B,7B,14B,32B} via the Doctor
   registry's auto-composed L0-L6 stack, multiwindow ppl + capability tripwire, one floor receipt
   per model, then the curve fit (H1 descent vs H0 flat).

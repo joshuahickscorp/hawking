@@ -162,4 +162,13 @@ single command away: see `docs/plans/STUDIO_GO.md`.
   advisor picks the bit format and the serve regime (resident / expert-paged /
   dense out-of-core) per model and device.
 - Broader verified architecture coverage (MoE, Mamba2, more dense families)
-  under the same correctness-before-speed gates.
+  under the same correctness-before-speed gates. Mamba2 already ships as a real
+  serve engine (flat O(1) recurrent state, same long-context shape as RWKV-7)
+  and now has condense-track coverage too: its state geometry is computed from
+  its own config, and the Doctor knows which recovery methods apply to an SSM
+  versus a dense-attention or MoE model.
+- A codec-parallelism triage step, so a new low-bit format is scored for decode
+  parallelism (not just density) before any Metal kernel work starts on it -
+  compression and speed are aligned on this hardware as long as decode stays
+  lane-independent; a denser format that forces serial decode can lose the
+  bandwidth win it was supposed to buy.

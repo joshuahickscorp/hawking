@@ -99,6 +99,9 @@ def run_model(label, set_name="studio"):
     log = f"reports/cron/{set_name}_{label}.log"
     out = f"reports/cron/{set_name}_{label}"
     print(f"[{label}] {set_name} chain start (role={role}, {params}B) -> {log}", file=sys.stderr)
+    # Architecture coverage: which Doctor levers are arch-compatible for this model (dense here
+    # today; the same check that flags Mamba2/RWKV-7 SSM state + MoE per-expert applicability).
+    subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, label], env=env)
     # SUBBIT-0 GATE: measure the entropy/side-info floor first. If sub-1-bit dense is DEAD by the
     # floor, the subbit lane still runs (MoE/residual survive) but the gate is on record per model.
     if set_name == "subbit":
@@ -168,9 +171,28 @@ def run_frontier(label):
     subprocess.run(dr, env=env)
     # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
     subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
+    # Architecture coverage: real state geometry (Mamba2/RWKV-7 flat state) + which Doctor levers
+    # are arch-compatible for this model, so the selector above never wastes a bake on one that isn't.
+    subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, label], env=env)
     if moe:
         subprocess.run(["python3.12", f"{TC}/expert_sensitivity.py", mdir, "--label", label,
                         "--bits", "1,2"], env=env)
+        # Hot-expert cache policy: simulate hit-rate/blended-tok/s across cache sizes so the OOC
+        # pager's cache size is chosen from a measured sweep, not a guess. n_experts best-effort
+        # from config; falls back to a documented default sized to this model's active fraction.
+        n_experts = 0
+        try:
+            n_experts = json.load(open(os.path.join(mdir, "config.json"))).get(
+                "n_routed_experts") or json.load(open(os.path.join(mdir, "config.json"))).get(
+                "num_local_experts") or 0
+        except Exception:
+            pass
+        n_experts = n_experts or max(8, round(total / max(1.0, active or 1.0)) * 4)
+        expert_size_b = total / max(1, n_experts)          # params per single expert
+        active_k = max(1, round((active or total * 0.05) / max(0.1, expert_size_b)))
+        active_gb_tok = (active or total * 0.05) * bpw / 8.0   # TOTAL active bytes/token (all active experts)
+        subprocess.run(["python3.12", f"{TC}/expert_cache_policy.py", "--sim", str(n_experts),
+                        str(active_k), "--active-gb", str(round(active_gb_tok, 3))], env=env)
     # the serve-build steps (Rust, gated): block-wise condense + native-serve quality + RAM-cliff tps
     rec = {"model": label, "total_b": total, "active_b": active, "moe": moe, "role": role,
            "serve_bpw": bpw, "artifact_gb": artifact, "serve_fits_84": fits,
@@ -224,6 +246,8 @@ def go():
     P3 SPEC      revive speculative decoding on the condensed substrate + capstone (latency x density).
     P4 SYNTH     fit both curves + extrapolate 70B/405B; receipts are the record."""
     print("=" * 78); print("HAWKING STUDIO FRONTIER — GO (continuous, resumable, RAM-packed)"); print("=" * 78)
+    print("\n### P0 CODEC TRIAGE — score candidate codec designs for decode parallelism ###", file=sys.stderr)
+    subprocess.run(["python3.12", f"{TC}/codec_parallelism.py", "--catalog"])
     print("\n### P1 CONDENSE — bit-floor-vs-scale curve ###", file=sys.stderr)
     run_all("studio")
     print("\n### P2 SUBBIT — sub-1-bit frontier lane ###", file=sys.stderr)
@@ -274,6 +298,7 @@ def go_plan():
     """Dry overview of the whole GO program (run nothing heavy)."""
     plan()
     print("\n" + "=" * 78); print("FULL GO PROGRAM (studio_run.py go):")
+    print("  P0 CODEC     codec_parallelism.py --catalog -> triage new codec designs before Rust build time")
     print("  P1 CONDENSE  run_all('studio')  -> bit_floor_curve.jsonl + receipts")
     print("  P2 SUBBIT    run_all('subbit')  -> SUBBIT-0 gate + sub-1-bit lane -> bit_floor_subbit.jsonl")
     print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
