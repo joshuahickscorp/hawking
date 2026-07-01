@@ -146,6 +146,12 @@ heavy runs on an Apple M2 Max Mac Studio (96 GB).
 - Condense: an out-of-core, memory-budgeted low-bit compression pipeline that
   can quantize models too large to hold resident, so a single Mac can prepare
   and serve models well beyond its own memory.
+- The Doctor as a registry: quality restoration at low bits is not one method
+  but a pluggable set - calibration, activation-aware pre-scaling, output-
+  sensitivity mixed precision, full-rank residual, block-wise QAT, codec-native
+  error feedback, and distillation - auto-composed per model and target bit-rate,
+  with a ledger that reports which method recovers the most per unit of compute so
+  the next lever is chosen from evidence, not guesswork.
 - The size frontier: stop requiring the whole model resident. The parameter
   ceiling is then storage, not RAM - the model lives on the SSD and only the
   weights a token touches stream through memory. For MoE (all the giant models),

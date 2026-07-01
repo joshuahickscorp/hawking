@@ -156,6 +156,11 @@ def run_frontier(label):
     if active:
         sf += ["--active", str(active)]
     subprocess.run(sf, env=env)
+    # The Doctor registry: the auto-composed recovery chain (L0-L6 + per-expert) for this model/bpw.
+    dr = ["python3.12", f"{TC}/doctor_registry.py", "--select", str(total), str(bpw)]
+    if moe:
+        dr.append("--moe")
+    subprocess.run(dr, env=env)
     # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
     subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
     if moe:
