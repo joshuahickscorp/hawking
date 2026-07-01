@@ -31,7 +31,7 @@ Apple-Silicon-first Rust/Metal LLM inference runtime. ~92.4k Rust LoC + 13.1k Me
 `hawking generate` → `qwen_dense.rs::forward_token_greedy_tcb` → per layer: rmsnorm → q/k/v_proj GEMV → RoPE → MHA
 (`mha.metal`) → o_proj → rmsnorm → gate/up GEMV → **ffn_down GEMV (`gemm_q6_k_fused_v2_swiglu_2r`, the largest single
 read, 20% of bytes)** → LM-head. Bandwidth-bound (~1.8 GiB weights/token, ~56% of peak BW; the predec Q4_K GEMV is at the
-batch-1 memory-model optimum — see `docs/campaign/kill_ledger.md`).
+batch-1 memory-model optimum — see `docs/campaign/kill_ledger.md`, archived, see `docs/ARCHIVE_INDEX.md`).
 
 ## Density / consolidation candidates (parity-gated, NOT yet removed)
 - **`speculate/eagle5.rs` + EH neural scaffolds (~1.6k+ LoC)** — trained-EAGLE is now-dead (spec is net-negative for speed).
@@ -45,4 +45,4 @@ batch-1 memory-model optimum — see `docs/campaign/kill_ledger.md`).
 
 ## Notes
 - Env-flag surface = 284 `HAWKING_*` flags (see `docs/env_flags.md`).
-- The architectural long-context differentiator is the **SSM path** (`rwkv7.rs`, flat decode) — see `docs/campaign/findings_summary.md`.
+- The architectural long-context differentiator is the **SSM path** (`rwkv7.rs`, flat decode) — see `docs/campaign/findings_summary.md` (archived, see `docs/ARCHIVE_INDEX.md`).

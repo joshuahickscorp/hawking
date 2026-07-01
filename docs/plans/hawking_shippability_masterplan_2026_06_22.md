@@ -12,8 +12,9 @@
 > `STUB` (code path exists but returns Unimplemented / placeholder), `GAP` (does not exist), `ASPIRATION`
 > (product goal, not yet specced). Effort tags: `S` (<1 day), `M` (days), `L` (1–2 weeks), `XL` (multi-week).
 >
-> Companion docs: `docs/campaign/project_standing_snapshot.md` (current numbers), `docs/plans/
-> ratios_roadmap_2026_06_21.md` (speed/compression levers), `docs/campaign/kill_ledger.md` +
+> Companion docs: `docs/campaign/project_standing_snapshot.md` (current numbers, archived — see
+> `docs/ARCHIVE_INDEX.md`), `docs/plans/ratios_roadmap_2026_06_21.md` (speed/compression levers),
+> `docs/campaign/kill_ledger.md` (archived, see `docs/ARCHIVE_INDEX.md`) +
 > `docs/dead_levers.md` (rejected ideas — do not re-litigate), `docs/architecture.md`, `docs/env_flags.md`.
 
 ---

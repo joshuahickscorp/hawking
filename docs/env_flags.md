@@ -5,6 +5,9 @@ This curates the **user-facing decode + compression** subset, with effects **mea
 (warm 5-trial median, Qwen2.5-3B-Q4_K_M; see `docs/campaign/test_matrix.md`). To find any flag's default in code:
 `crate::env_on("X")` = **default-OFF** (on iff set & != "0"); a `var_os(...).map_or(true, …)` = **default-ON** (opt-out via `=0`).
 
+(Every `docs/campaign/*.md` reference below points to a file archived in the 2026-06-28 consolidation
+pass — see `docs/ARCHIVE_INDEX.md` for retrieval instructions.)
+
 ## Profiles (preferred entry point)
 | Flag / CLI | Effect | Measured |
 |---|---|---|

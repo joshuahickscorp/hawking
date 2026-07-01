@@ -5,7 +5,8 @@
 > M2 Max (96 GB / 2 TB) arrives. This supersedes the short dismantle handoff. Honest by rule
 > (no fake GO). Branch `serve/rwkv-multiseq-fix`, HEAD `272c864`, 857 commits since 2026-05-02.
 > Working tree is dirty (campaign/plan pruning) and this session's receipt harness + plan docs
-> are untracked. Canonical plan: `docs/plans/studio_maximization_2026_06_27.md`.
+> are untracked. Canonical plan: `docs/plans/studio_maximization_2026_06_27.md` (archived, see
+> `docs/ARCHIVE_INDEX.md`).
 
 ---
 
@@ -308,7 +309,8 @@ doctored.
 You are resuming **hawking** (`/Users/scammermike/Downloads/hawking`), a from-scratch Rust+Metal
 Apple-Silicon LLM inference engine + a Python condensation pipeline, plus a separate active agent
 product **HIDE** (`hide-*` crates). Read `docs/plans/hawking_handoff_2026_06_28.md` (this file)
-in full first, then `docs/plans/studio_maximization_2026_06_27.md`. Honor the invariants in section
+in full first, then `docs/plans/studio_maximization_2026_06_27.md` (archived, see
+`docs/ARCHIVE_INDEX.md`). Honor the invariants in section
 9: receipts on every run, effective bpw, judge low-bit on big models, do not re-litigate the
 section-6 dead-ends, no commit/push without approval, do not disturb the live frontier PIDs, Apple
 Silicon only, locked hardware context. Current truth: the engine's verified path is Qwen2.5-dense;

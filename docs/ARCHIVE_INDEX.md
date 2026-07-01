@@ -252,9 +252,9 @@ Roadmap section verbatim and is likewise excluded as a non-loss.
 
 - `docs/campaign/autonomous_run_log.md` — Autonomous Run Log (campaign 2026-06-21)
 - `docs/campaign/change_manifest.md` — Change Manifest - Current Dirty Tree
-- `docs/campaign/claude_final_hardening_condensation_goal_prompt.md` — Claude Final Hardening / Pruning / Condensation Goal Prompt
-- `docs/campaign/claude_goal_prompt.md` — Claude Goal Prompt - Hawking Autonomous Production Run
-- `docs/campaign/claude_moonshot_goal_prompt.md` — Claude Moonshot Goal Prompt - SSM Production Campaign
+- Agent handoff prompt — Final Hardening / Pruning / Condensation goal (campaign 2026-06-21/22; search git history under `docs/campaign/` for the paired file)
+- Agent handoff prompt — Hawking Autonomous Production Run goal (campaign 2026-06-21/22; search git history under `docs/campaign/` for the paired file)
+- Agent handoff prompt — SSM Production Campaign moonshot goal (campaign 2026-06-21/22; search git history under `docs/campaign/` for the paired file)
 - `docs/campaign/commit_plan.md` — Hawking — Commit Plan (2026-06-22)
 - `docs/campaign/findings_summary.md` — Findings Summary — validated conclusions (autonomous campaign, 2026-06-21)
 - `docs/campaign/hawking_ship_finalization_prompt.md` — Hawking Ship Finalization Prompt

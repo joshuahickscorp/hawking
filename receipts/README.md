@@ -1,6 +1,7 @@
 # Hawking Condensation Receipt Harness
 
-> **The first artifact** (`docs/plans/studio_maximization_2026_06_27.md` §20.9 / §20.13): the
+> **The first artifact** (`docs/plans/studio_maximization_2026_06_27.md` §20.9 / §20.13 — archived,
+> see `docs/ARCHIVE_INDEX.md`): the
 > machine-verifiable proof format that makes every Hawking run rerunnable. *Hawking does not ask
 > to be believed. It asks to be rerun.* Built pre-Studio on the M3 Pro 18 GB — pure code + JSON,
 > zero downloads, zero large compute.
