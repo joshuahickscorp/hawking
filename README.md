@@ -131,7 +131,9 @@ single command away: see `docs/plans/STUDIO_GO.md`.
   CI on real Apple Silicon.
 
 ### Next
-- RWKV-7 (SSM) long-context path: flat-cost decode with no KV-cache wall.
+- RWKV-7 (SSM): the decode engine and CPU/Metal parity tests exist; what's left
+  is wiring it into the OpenAI-compatible serve path so the flat-cost,
+  no-KV-wall long-context case is reachable the same way Qwen2.5 is.
 - Per-channel int4 KV cache, to cut KV memory by roughly three quarters.
 - Post-hoc context extension (YaRN RoPE-scaling) validated by needle-in-a-haystack
   retrieval, not just "it didn't crash" - stretch the trained window at serve time,
