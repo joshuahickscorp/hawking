@@ -37,6 +37,7 @@ pub mod security;
 pub mod services;
 pub mod supervisor;
 pub mod tools;
+pub mod tq_metadata;
 pub mod ui_bus;
 
 pub use commands::CommandRouter;

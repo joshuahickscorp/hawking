@@ -388,6 +388,15 @@ pub trait EventLog: Send + Sync {
         after_seq: Option<u64>,
         limit: Option<usize>,
     ) -> BoxFuture<'a, Result<Vec<Event>>>;
+
+    /// Spine B: archive events with `seq < before_seq` to a durable cold store so
+    /// a compaction/summary can read them later, WITHOUT mutating the live
+    /// (hash-chained) log — chain integrity is preserved by never rewriting in
+    /// place. Returns the number of events archived. Default: no-op for logs that
+    /// do not support archival.
+    fn compact_before<'a>(&'a self, _before_seq: u64) -> BoxFuture<'a, Result<usize>> {
+        Box::pin(async move { Ok(0) })
+    }
 }
 
 #[derive(Debug, Default)]
@@ -540,6 +549,31 @@ impl EventLog for JsonlEventLog {
                 }
             }
             Ok(out)
+        })
+    }
+
+    /// Chain-safe archival: copy events with `seq < before_seq` into a sibling
+    /// `<log>.archive` file (append-only) and leave the live, hash-chained log
+    /// untouched. The cold store feeds compaction/summary; the live chain still
+    /// verifies. (In-place truncation would re-anchor the chain and is deferred.)
+    fn compact_before<'a>(&'a self, before_seq: u64) -> BoxFuture<'a, Result<usize>> {
+        Box::pin(async move {
+            let cold: Vec<Event> = read_events(&self.path)?
+                .into_iter()
+                .filter(|event| event.seq < before_seq)
+                .collect();
+            if cold.is_empty() {
+                return Ok(0);
+            }
+            let archive_path = self.path.with_extension("jsonl.archive");
+            let mut file = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&archive_path)?;
+            for event in &cold {
+                writeln!(file, "{}", serde_json::to_string(event)?)?;
+            }
+            Ok(cold.len())
         })
     }
 }

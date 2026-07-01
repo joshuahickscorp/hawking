@@ -12,13 +12,13 @@ use crate::machine::effects::{action_event, observation_event, state_event, Mode
 use crate::machine::guards::{
     cursor_is_effectful, cursor_step, plan_has_ready_step, plan_is_acyclic, repairs_remaining,
 };
-use crate::machine::state::{AgentState, ApprovalRequest, Phase};
+use crate::machine::state::{AgentState, ApprovalRequest, Lesson, Phase};
 use crate::plan::dag::PlanDag;
 use crate::plan::planner::Planner;
 use crate::plan::replan::{localized_replan, supersede, ReplanRequest};
 use crate::plan::schema::{PlanStep, StepKind, StepStatus};
 use crate::verify::gate::{GateDecision, VerificationGate};
-use crate::verify::oracle::{Failure, VerdictStatus, VerificationInput};
+use crate::verify::oracle::{Failure, Verdict, VerdictStatus, VerificationInput};
 use crate::verify::OracleSuite;
 use crate::Grounding;
 use crate::runtime_client::KernelRuntimeClient;
@@ -236,6 +236,16 @@ impl<'a> AgentDriver<'a> {
             ))
             .await?;
 
+        // Drain steering instructions (Interrupt::Steer) into this generation so
+        // a mid-run voice/text steer reaches the model; a pure tool dispatch
+        // leaves them queued for the next model step (W-F5-5). Drained, not just
+        // read, so the same instruction is not re-applied on every turn.
+        let steer: Vec<String> = if matches!(step.kind, StepKind::Edit | StepKind::Command) {
+            Vec::new()
+        } else {
+            std::mem::take(&mut state.steer)
+        };
+
         let outcome = match step.kind {
             StepKind::Edit | StepKind::Command => {
                 let dispatched = self.act_tool(&step).await;
@@ -248,11 +258,11 @@ impl<'a> AgentDriver<'a> {
                 dispatched.map(|(value, _)| value)
             }
             StepKind::Investigate | StepKind::Synthesize | StepKind::Verify => {
-                self.act_model(&step).await
+                self.act_model(&step, &steer).await
             }
             StepKind::Decompose | StepKind::Delegate => {
                 // Decompose/delegate are model-driven boundaries here.
-                self.act_model(&step).await
+                self.act_model(&step, &steer).await
             }
         };
 
@@ -289,7 +299,7 @@ impl<'a> AgentDriver<'a> {
             Some(t) => t.clone(),
             // No explicit tool: an edit step with no tool is a model-authored
             // change recorded as an observation (the oracles verify the result).
-            None => return self.act_model(step).await.map(|v| (v, false)),
+            None => return self.act_model(step, &[]).await.map(|v| (v, false)),
         };
         let mut args = step.tool_args.clone().unwrap_or_else(|| json!({}));
         if args.get("cwd").is_none() {
@@ -308,14 +318,12 @@ impl<'a> AgentDriver<'a> {
     }
 
     /// Model step: call the runtime to generate (Investigate/Synthesize/Verify).
-    async fn act_model(&self, step: &PlanStep) -> Result<serde_json::Value> {
+    async fn act_model(&self, step: &PlanStep, steer: &[String]) -> Result<serde_json::Value> {
         let Some(runtime) = self.runtime else {
             return Ok(json!({ "note": "no runtime; step recorded without generation" }));
         };
-        let prompt = format!(
-            "Step: {}\nGoal: {}\n{}",
-            step.title, step.acceptance.predicate, step.rationale
-        );
+        let prompt =
+            build_model_prompt(&step.title, &step.acceptance.predicate, &step.rationale, steer);
         let request = InferenceRequest {
             task_kind: "code".to_string(),
             prompt,
@@ -371,6 +379,14 @@ impl<'a> AgentDriver<'a> {
         state.last_verdict = verdicts.last().cloned();
         state.last_verdicts = verdicts.clone();
 
+        // Convergence/stall detection (W-F5-1): record a normalized fingerprint
+        // of this verify pass; if the last K are identical, repair is spinning
+        // and the Repair branch below routes to Replan instead.
+        state.verdict_history.push_back(verdict_fingerprint(&verdicts));
+        while state.verdict_history.len() > STALL_WINDOW {
+            state.verdict_history.pop_front();
+        }
+
         // Soft step (the escape hatch — semantics, read carefully):
         //
         // This branch accepts a step *without any machine verification*. It fires
@@ -421,7 +437,25 @@ impl<'a> AgentDriver<'a> {
                 self.emit_phase(state, "verification passed").await?;
             }
             GateDecision::Repair | GateDecision::Inconclusive => {
-                if repairs_remaining(state) {
+                if is_stalled(&state.verdict_history) {
+                    // Identical failures across the whole window: repairing again
+                    // would only reproduce them. Emit run.stalled and replan.
+                    self.events
+                        .append(crate::machine::effects::custom_agent_event(
+                            state.session_id.clone(),
+                            state.run_id.clone(),
+                            "run.stalled",
+                            json!({
+                                "step_id": state.cursor,
+                                "window": STALL_WINDOW,
+                                "fingerprint": state.verdict_history.back(),
+                            }),
+                        ))
+                        .await?;
+                    state.phase = Phase::Replan;
+                    self.emit_phase(state, "stalled: identical failures across the window; replanning")
+                        .await?;
+                } else if repairs_remaining(state) {
                     state.phase = Phase::Repair;
                     self.emit_phase(state, "verification failed; repairing").await?;
                 } else {
@@ -454,7 +488,13 @@ impl<'a> AgentDriver<'a> {
             .collect();
         let lesson = lesson_from_failures(&failures);
         if let Some(l) = &lesson {
-            state.lessons.push(l.clone());
+            let entry = Lesson {
+                text: l.clone(),
+                phase: state.phase,
+                step_id: state.cursor.clone(),
+                ts: 0,
+            };
+            state.push_lesson(entry);
         }
 
         // Bump the repair count for the cursor step.
@@ -507,7 +547,7 @@ impl<'a> AgentDriver<'a> {
             .as_ref()
             .map(|v| v.detail.clone())
             .unwrap_or_else(|| "verification could not pass".to_string());
-        let lesson = state.lessons.last().cloned();
+        let lesson = state.lessons.last().map(|l| l.text.clone());
 
         let new_plan = match &state.plan {
             Some(plan) if state.replan_count <= 1 => {
@@ -639,4 +679,121 @@ fn lesson_from_failures(failures: &[Failure]) -> Option<String> {
         first.message.lines().next().unwrap_or(&first.message),
         first.category
     ))
+}
+
+/// Build the model-step prompt, prepending any mid-run steering
+/// (`Interrupt::Steer`) so the model applies it first (W-F5-5).
+fn build_model_prompt(title: &str, predicate: &str, rationale: &str, steer: &[String]) -> String {
+    let steer_prefix = if steer.is_empty() {
+        String::new()
+    } else {
+        format!("User steering (apply first):\n{}\n\n", steer.join("\n"))
+    };
+    format!("{steer_prefix}Step: {title}\nGoal: {predicate}\n{rationale}")
+}
+
+#[cfg(test)]
+mod steer_tests {
+    use super::build_model_prompt;
+
+    #[test]
+    fn steer_is_prepended_verbatim_at_prompt_head() {
+        let steer = vec!["use rayon".to_string(), "avoid unsafe".to_string()];
+        let p = build_model_prompt("Impl", "compiles", "because", &steer);
+        assert!(
+            p.starts_with("User steering (apply first):\nuse rayon\navoid unsafe\n\nStep: Impl"),
+            "got: {p}"
+        );
+    }
+
+    #[test]
+    fn no_steer_leaves_prompt_unprefixed() {
+        let p = build_model_prompt("Impl", "compiles", "because", &[]);
+        assert!(p.starts_with("Step: Impl"));
+        assert!(!p.contains("User steering"));
+    }
+}
+
+/// Window size for convergence/stall detection: when this many consecutive
+/// verify passes produce an identical fingerprint, repair is not converging.
+const STALL_WINDOW: usize = 3;
+
+/// Normalized, order-independent fingerprint of a verify pass — the set of
+/// `(oracle, status, first-failure file:line:code)` triples. Two passes that
+/// fail the same oracle the same way at the same location hash identically, so
+/// repeated identical fingerprints mean repair is spinning.
+fn verdict_fingerprint(verdicts: &[Verdict]) -> String {
+    let mut parts: Vec<String> = verdicts
+        .iter()
+        .map(|v| {
+            let loc = v
+                .failures
+                .first()
+                .map(|f| {
+                    format!(
+                        "{}:{}:{}",
+                        f.file.as_deref().unwrap_or(""),
+                        f.line.map(|l| l.to_string()).unwrap_or_default(),
+                        f.code.as_deref().unwrap_or(""),
+                    )
+                })
+                .unwrap_or_default();
+            format!("{}|{:?}|{}", v.oracle, v.status, loc)
+        })
+        .collect();
+    parts.sort();
+    parts.join(";")
+}
+
+/// True when the last `STALL_WINDOW` fingerprints are all identical.
+fn is_stalled(history: &std::collections::VecDeque<String>) -> bool {
+    history.len() >= STALL_WINDOW && {
+        let last = history.back();
+        history
+            .iter()
+            .rev()
+            .take(STALL_WINDOW)
+            .all(|fp| Some(fp) == last)
+    }
+}
+
+#[cfg(test)]
+mod stall_tests {
+    use super::{is_stalled, verdict_fingerprint, STALL_WINDOW};
+    use crate::verify::oracle::{OracleClass, Verdict};
+    use std::collections::VecDeque;
+
+    fn hist(items: &[&str]) -> VecDeque<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn identical_window_is_stalled() {
+        assert!(is_stalled(&hist(&["a", "a", "a"])));
+    }
+
+    #[test]
+    fn changed_last_is_not_stalled() {
+        assert!(!is_stalled(&hist(&["a", "a", "b"])));
+    }
+
+    #[test]
+    fn short_history_is_not_stalled() {
+        assert!(!is_stalled(&hist(&["a", "a"])));
+        assert_eq!(STALL_WINDOW, 3);
+    }
+
+    #[test]
+    fn fingerprint_is_order_independent_and_stable() {
+        let a = Verdict::pass("build", OracleClass::Deterministic, "ok");
+        let b = Verdict::fail("test", OracleClass::Deterministic, "boom", Vec::new());
+        assert_eq!(
+            verdict_fingerprint(&[a.clone(), b.clone()]),
+            verdict_fingerprint(&[b, a]),
+            "fingerprint must not depend on verdict order"
+        );
+        let c = Verdict::fail("test", OracleClass::Deterministic, "boom", Vec::new());
+        let d = Verdict::fail("test", OracleClass::Deterministic, "boom", Vec::new());
+        assert_eq!(verdict_fingerprint(&[c]), verdict_fingerprint(&[d]));
+    }
 }

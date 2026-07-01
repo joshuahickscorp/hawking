@@ -7,7 +7,7 @@
 //! transcript (the clean-window discipline, §4.10).
 
 use crate::govern::Budget;
-use crate::machine::state::{AgentState, Frame, Phase};
+use crate::machine::state::{AgentState, Frame, Lesson, Phase};
 use crate::AgentKernel;
 use hide_core::ids::{RunId, SessionId};
 use hide_core::Result;
@@ -67,7 +67,7 @@ pub struct SubagentReturn {
     pub status: SubagentStatus,
     /// The ONLY thing entering parent context (§4.10).
     pub summary: String,
-    pub lessons: Vec<String>,
+    pub lessons: Vec<Lesson>,
     /// Budget used by the child — rolled up into the parent's ledger.
     pub steps_used: u32,
     pub tool_calls_used: u32,

@@ -3,7 +3,7 @@ use crate::plan::schema::{Plan, StepStatus};
 use crate::verify::oracle::Verdict;
 use hide_core::ids::{RunId, SessionId, StepId};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -67,6 +67,26 @@ pub struct ApprovalRequest {
     pub effects: Vec<String>,
 }
 
+/// A typed lesson distilled from a failure, anchored to the decision that
+/// produced it (§4.7). Replaces the old free-string list so learnings carry
+/// provenance (phase + step) for replay and can be retained with a bound.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Lesson {
+    pub text: String,
+    pub phase: Phase,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step_id: Option<StepId>,
+    /// Reserved monotonic stamp. The driver has no clock; the emitting event
+    /// carries the authoritative timestamp. Defaults to 0.
+    #[serde(default)]
+    pub ts: u64,
+}
+
+/// Cap on retained lessons — Reflexion plateaus around 3-5 and an unbounded
+/// scratchpad induces confabulation, so `push_lesson` evicts the oldest beyond
+/// this.
+const MAX_LESSONS: usize = 5;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AgentState {
     pub session_id: SessionId,
@@ -99,8 +119,15 @@ pub struct AgentState {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pending_approval: Option<ApprovalRequest>,
     /// Lessons carried forward from failures into the next repair/replan (§4.7).
+    /// Typed (provenance-anchored) + bounded — see `push_lesson` / `MAX_LESSONS`.
     #[serde(default)]
-    pub lessons: Vec<String>,
+    pub lessons: Vec<Lesson>,
+    /// Rolling fingerprints of the last K verify passes (normalized
+    /// oracle/status/first-failure). When the last K are identical the run has
+    /// stalled (repair is not converging) and routes to Replan instead of
+    /// looping Repair forever (W-F5-1 convergence detection).
+    #[serde(default)]
+    pub verdict_history: VecDeque<String>,
 }
 
 impl AgentState {
@@ -123,6 +150,7 @@ impl AgentState {
             steer: Vec::new(),
             pending_approval: None,
             lessons: Vec::new(),
+            verdict_history: VecDeque::new(),
         }
     }
 
@@ -141,5 +169,42 @@ impl AgentState {
             .and_then(|c| self.repair_count.get(c))
             .copied()
             .unwrap_or(0)
+    }
+
+    /// Record a lesson with bounded retention (oldest evicted past
+    /// `MAX_LESSONS`), so the scratchpad cannot grow unboundedly.
+    pub fn push_lesson(&mut self, lesson: Lesson) {
+        self.lessons.push(lesson);
+        while self.lessons.len() > MAX_LESSONS {
+            self.lessons.remove(0);
+        }
+    }
+}
+
+#[cfg(test)]
+mod lesson_tests {
+    use super::*;
+    use hide_core::ids::{RunId, SessionId};
+
+    fn lesson(n: usize) -> Lesson {
+        Lesson {
+            text: format!("L{n}"),
+            phase: Phase::Repair,
+            step_id: None,
+            ts: 0,
+        }
+    }
+
+    #[test]
+    fn push_lesson_is_bounded_and_evicts_oldest() {
+        let mut s = AgentState::new(SessionId::new(), RunId::new(), "obj".to_string());
+        for i in 0..(MAX_LESSONS + 2) {
+            s.push_lesson(lesson(i));
+        }
+        assert_eq!(s.lessons.len(), MAX_LESSONS);
+        // The two oldest were evicted; the newest is retained.
+        assert_eq!(s.lessons.first().unwrap().text, "L2");
+        assert_eq!(s.lessons.last().unwrap().text, format!("L{}", MAX_LESSONS + 1));
+        assert_eq!(s.lessons[0].phase, Phase::Repair);
     }
 }

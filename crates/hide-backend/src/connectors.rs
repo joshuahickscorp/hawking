@@ -1,9 +1,10 @@
-use crate::services::BackendServices;
+use crate::services::{BackendServices, DynMemoryStore};
 use futures::future::BoxFuture;
 use hawking_context::compiler::CompileInput;
 use hawking_context::profiles::ContextProfile;
 use hawking_context::sources::CodeIndexContextSource;
-use hawking_context::ContextCompiler;
+use hawking_context::{ContextCompiler, InMemoryMemoryStore, MemoryKind};
+use hide_core::types::Provenance;
 use hawking_index::{CodeIndex, InMemoryCodeIndex, SearchQuery};
 use hawking_orch::{RoleRegistry, Router, SimpleRouter};
 use hawking_research::{DynResearchLedger, ResearchRun, ResearchState};
@@ -342,11 +343,14 @@ impl Connector for CodeIndexConnector {
 pub struct ContextConnector {
     index: Arc<InMemoryCodeIndex>,
     roles: Arc<RoleRegistry>,
+    /// Spine B: the persistent Project Brain — each compile upserts a record so
+    /// the agent's working memory of this project accrues across turns/sessions.
+    memory: DynMemoryStore,
 }
 
 impl ContextConnector {
-    pub fn new(index: Arc<InMemoryCodeIndex>, roles: Arc<RoleRegistry>) -> Self {
-        Self { index, roles }
+    pub fn new(index: Arc<InMemoryCodeIndex>, roles: Arc<RoleRegistry>, memory: DynMemoryStore) -> Self {
+        Self { index, roles, memory }
     }
 }
 
@@ -401,6 +405,19 @@ impl Connector for ContextConnector {
                             task: task.to_string(),
                         })
                         .await?;
+                    // Spine B: accrue the Project Brain — record this compile (task +
+                    // what the window retained) as a Project memory. Best-effort: a
+                    // brain write must never fail the compile.
+                    let brain = InMemoryMemoryStore::record(
+                        MemoryKind::Project,
+                        format!(
+                            "task: {task}\nretained {} spans, {} tokens used",
+                            compiled.manifest.retained.len(),
+                            compiled.manifest.used_tokens
+                        ),
+                        Provenance::trusted("context.compile"),
+                    );
+                    let _ = self.memory.upsert(brain).await;
                     Ok(json!({
                         "prompt": compiled.prompt,
                         "manifest": compiled.manifest
@@ -414,6 +431,156 @@ impl Connector for ContextConnector {
     }
 }
 
+// ---- Real workspace file I/O (ship item: the editor + Explorer operate on real files) ----
+
+const FS_IGNORE: &[&str] = &[".git", "node_modules", "target", "dist", ".hide", ".next", "build", ".turbo"];
+const FS_MAX_DEPTH: usize = 4;
+const FS_MAX_NODES: usize = 4000;
+const FS_MAX_READ_BYTES: u64 = 2_000_000;
+
+fn lang_for(path: &str) -> &'static str {
+    match path.rsplit('.').next().unwrap_or("") {
+        "rs" => "rust",
+        "ts" | "tsx" => "typescript",
+        "js" | "jsx" | "mjs" | "cjs" => "javascript",
+        "py" => "python",
+        "go" => "go",
+        "json" => "json",
+        "toml" => "toml",
+        "yaml" | "yml" => "yaml",
+        "md" | "markdown" => "markdown",
+        "css" => "css",
+        "html" | "htm" => "html",
+        "sh" | "bash" | "zsh" => "shell",
+        "c" | "h" => "c",
+        "cpp" | "cc" | "hpp" | "cxx" => "cpp",
+        "java" => "java",
+        "rb" => "ruby",
+        "sql" => "sql",
+        _ => "plaintext",
+    }
+}
+
+/// Real file I/O confined to the project root. Workspace-relative paths only; `..`, absolute, and
+/// prefix components are rejected so a path can never escape the root.
+#[derive(Clone)]
+pub struct FsConnector {
+    root: std::path::PathBuf,
+}
+
+impl FsConnector {
+    pub fn new(root: impl Into<std::path::PathBuf>) -> Self {
+        Self { root: root.into() }
+    }
+
+    fn resolve(&self, rel: &str) -> Result<std::path::PathBuf> {
+        use std::path::Component;
+        let rel = rel.trim_start_matches('/');
+        if std::path::Path::new(rel)
+            .components()
+            .any(|c| matches!(c, Component::ParentDir | Component::RootDir | Component::Prefix(_)))
+        {
+            return Err(HideError::PolicyDenied(format!("path escapes workspace: {rel}")));
+        }
+        Ok(self.root.join(rel))
+    }
+}
+
+fn walk_tree(dir: &std::path::Path, root: &std::path::Path, depth: usize, budget: &mut usize) -> Vec<Value> {
+    if depth > FS_MAX_DEPTH || *budget == 0 {
+        return Vec::new();
+    }
+    let mut entries: Vec<_> = match std::fs::read_dir(dir) {
+        Ok(rd) => rd.flatten().collect(),
+        Err(_) => return Vec::new(),
+    };
+    entries.sort_by_key(|e| {
+        let is_dir = e.file_type().map(|t| t.is_dir()).unwrap_or(false);
+        (!is_dir, e.file_name().to_string_lossy().to_lowercase())
+    });
+    let mut out = Vec::new();
+    for e in entries {
+        if *budget == 0 {
+            break;
+        }
+        let name = e.file_name().to_string_lossy().to_string();
+        let is_dir = e.file_type().map(|t| t.is_dir()).unwrap_or(false);
+        if is_dir && FS_IGNORE.contains(&name.as_str()) {
+            continue;
+        }
+        let abs = e.path();
+        let rel = abs.strip_prefix(root).unwrap_or(&abs).to_string_lossy().replace('\\', "/");
+        *budget -= 1;
+        if is_dir {
+            let children = walk_tree(&abs, root, depth + 1, budget);
+            out.push(json!({ "path": rel, "name": name, "dir": true, "children": children }));
+        } else {
+            out.push(json!({ "path": rel, "name": name, "dir": false }));
+        }
+    }
+    out
+}
+
+impl Connector for FsConnector {
+    fn id(&self) -> &str {
+        "fs"
+    }
+
+    fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
+        Box::pin(async move {
+            let healthy = self.root.is_dir();
+            Ok(ConnectorStatus {
+                id: self.id().to_string(),
+                healthy,
+                detail: format!("root={}", self.root.display()),
+                contributions: Vec::new(),
+            })
+        })
+    }
+
+    fn call<'a>(&'a self, method: &'a str, params: Value) -> BoxFuture<'a, Result<Value>> {
+        Box::pin(async move {
+            match method {
+                "tree" => {
+                    let mut budget = FS_MAX_NODES;
+                    let tree = walk_tree(&self.root, &self.root, 0, &mut budget);
+                    Ok(json!({ "tree": tree, "root": self.root.display().to_string() }))
+                }
+                "read_file" => {
+                    let path = params
+                        .get("path")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| HideError::Config("missing path".to_string()))?;
+                    let abs = self.resolve(path)?;
+                    let meta = std::fs::metadata(&abs).map_err(|e| HideError::Storage(e.to_string()))?;
+                    if meta.len() > FS_MAX_READ_BYTES {
+                        return Err(HideError::PolicyDenied(format!("file too large to open ({} bytes)", meta.len())));
+                    }
+                    let text = std::fs::read_to_string(&abs).map_err(|e| HideError::Storage(e.to_string()))?;
+                    Ok(json!({ "text": text, "lang": lang_for(path), "path": path }))
+                }
+                "write_file" => {
+                    let path = params
+                        .get("path")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| HideError::Config("missing path".to_string()))?;
+                    let content = params
+                        .get("content")
+                        .and_then(|v| v.as_str())
+                        .ok_or_else(|| HideError::Config("missing content".to_string()))?;
+                    let abs = self.resolve(path)?;
+                    if let Some(parent) = abs.parent() {
+                        std::fs::create_dir_all(parent).map_err(|e| HideError::Storage(e.to_string()))?;
+                    }
+                    std::fs::write(&abs, content).map_err(|e| HideError::Storage(e.to_string()))?;
+                    Ok(json!({ "ok": true, "bytes": content.len() }))
+                }
+                other => Err(HideError::NotFound(format!("fs connector method {other}"))),
+            }
+        })
+    }
+}
+
 pub fn register_backend_connectors(registry: &ConnectorRegistry, services: &BackendServices) {
     registry.register(PersonalizationConnector::new(
         services.personalization_store.clone(),
@@ -421,10 +588,33 @@ pub fn register_backend_connectors(registry: &ConnectorRegistry, services: &Back
     registry.register(ResearchConnector::new(services.research_ledger.clone()));
     registry.register(RuntimeConnector::new(services.role_registry.clone()));
     registry.register(CodeIndexConnector::new(services.code_index.clone()));
+    registry.register(FsConnector::new(services.config.workspace_root.clone()));
     registry.register(ContextConnector::new(
         services.code_index.clone(),
         services.role_registry.clone(),
+        services.memory_store.clone(),
     ));
+}
+
+#[cfg(test)]
+mod fs_tests {
+    use super::*;
+
+    #[test]
+    fn resolve_confines_to_root() {
+        let fs = FsConnector::new("/work/proj");
+        assert!(fs.resolve("src/main.rs").is_ok());
+        assert!(fs.resolve("/src/main.rs").is_ok()); // leading slash stripped, stays in root
+        assert!(fs.resolve("../etc/passwd").is_err());
+        assert!(fs.resolve("a/../../b").is_err());
+    }
+
+    #[test]
+    fn lang_detection() {
+        assert_eq!(lang_for("a/b.rs"), "rust");
+        assert_eq!(lang_for("x.tsx"), "typescript");
+        assert_eq!(lang_for("noext"), "plaintext");
+    }
 }
 
 fn limit_param(params: &Value) -> Option<usize> {
@@ -645,6 +835,7 @@ mod tests {
         registry.register(ContextConnector::new(
             index,
             Arc::new(RoleRegistry::with_default_local_roles()),
+            Arc::new(InMemoryMemoryStore::default()),
         ));
 
         let compiled = registry

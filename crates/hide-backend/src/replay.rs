@@ -52,6 +52,27 @@ impl BackendReplayService {
         Ok(projection)
     }
 
+    /// Spine B: rebuild a session by folding the LIVE TAIL (events with
+    /// `seq > after_seq`) on top of a pre-computed `summary` projection, instead
+    /// of folding the whole log from empty. This is how a session resumes from a
+    /// compacted summary: the cold prefix (archived via
+    /// [`EventLog::compact_before`](hide_core::event::EventLog::compact_before))
+    /// is represented by `summary`, and only the recent tail is replayed. The
+    /// caller supplies the summary (built by the compaction/summary step); replay
+    /// stays a pure fold, so this never loses determinism.
+    pub async fn rebuild_with_summary(
+        &self,
+        session_id: SessionId,
+        summary: SessionProjection,
+        after_seq: u64,
+    ) -> Result<SessionProjection> {
+        let tail = self
+            .events
+            .scan(Some(session_id), Some(after_seq), None)
+            .await?;
+        self.engine.fold(summary, &tail)
+    }
+
     pub async fn ui_events(
         &self,
         session_id: Option<SessionId>,

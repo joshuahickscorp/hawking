@@ -1,3 +1,4 @@
+use hawking_context::{InMemoryMemoryStore, MemoryStore, SqliteMemoryStore};
 use hawking_index::InMemoryCodeIndex;
 use hawking_orch::RoleRegistry;
 use hawking_research::{DynResearchLedger, InMemoryResearchLedger, JsonlResearchLedger};
@@ -65,10 +66,17 @@ impl SessionRegistry {
     }
 }
 
+/// Shared handle to the long-term memory store (Spine B — the Project Brain).
+pub type DynMemoryStore = Arc<dyn MemoryStore>;
+
 #[derive(Clone)]
 pub struct BackendServices {
     pub config: HideConfig,
     pub event_log: DynEventLog,
+    /// Spine B: structured long-term memory (file-facts, decisions, test results,
+    /// constraints, failed approaches) — the persistent Project Brain. Sqlite on
+    /// disk via `open()`, RAM via `new()`/`with_stores()`.
+    pub memory_store: DynMemoryStore,
     pub event_integrity: DynEventLogIntegrity,
     pub blob_store: DynBlobStore,
     pub projection_store: DynProjectionStore,
@@ -87,6 +95,7 @@ impl BackendServices {
         Self {
             config,
             event_log,
+            memory_store: Arc::new(InMemoryMemoryStore::default()),
             event_integrity: Arc::new(EventChainAuditor),
             blob_store: Arc::new(InMemoryBlobStore::default()),
             projection_store: Arc::new(InMemoryProjectionStore::default()),
@@ -112,6 +121,7 @@ impl BackendServices {
         Self {
             config,
             event_log,
+            memory_store: Arc::new(InMemoryMemoryStore::default()),
             event_integrity: Arc::new(EventChainAuditor),
             blob_store,
             projection_store,
@@ -155,7 +165,11 @@ impl BackendServices {
             layout.hide_dir.join("research").join("runs.jsonl"),
         )?);
 
-        Ok(Self::with_stores(
+        // Spine B: the persistent Project Brain lives in a SQLite DB on disk.
+        let memory_store: DynMemoryStore =
+            Arc::new(SqliteMemoryStore::open(layout.hide_dir.join("memory").join("memory.db"))?);
+
+        let mut services = Self::with_stores(
             config,
             event_log,
             blob_store,
@@ -163,7 +177,9 @@ impl BackendServices {
             key_value_store,
             personalization_store,
             research_ledger,
-        ))
+        );
+        services.memory_store = memory_store;
+        Ok(services)
     }
 
     pub fn layout(&self) -> WorkspaceLayout {

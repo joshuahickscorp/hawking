@@ -37,6 +37,33 @@ pub enum GenerateRoute {
     Chat,
 }
 
+/// Spine A: the engine's live context snapshot, mirroring `hawking-serve`'s
+/// `/v1/hawking/context` response. `#[serde(default)]` throughout so a serve
+/// build that predates a field still deserializes (forward-compatible).
+#[derive(Debug, Clone, Default, serde::Deserialize)]
+pub struct ContextInfo {
+    #[serde(default)]
+    pub model_id: String,
+    #[serde(default)]
+    pub arch: String,
+    #[serde(default)]
+    pub ctx_len_native: Option<usize>,
+    #[serde(default)]
+    pub ctx_len_effective: Option<usize>,
+    #[serde(default)]
+    pub tq_multiplier: f32,
+    #[serde(default)]
+    pub tq_estimated: bool,
+    #[serde(default)]
+    pub recurrent_state_bytes: Option<usize>,
+    #[serde(default)]
+    pub active_slots: usize,
+    #[serde(default)]
+    pub free_slots: usize,
+    #[serde(default)]
+    pub max_batch: usize,
+}
+
 /// A reqwest-backed [`ModelProvider`] pointed at a (supervised) serve instance.
 pub struct HttpModelProvider {
     base_url: String,
@@ -67,6 +94,18 @@ impl HttpModelProvider {
 
     fn url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
+    }
+
+    /// Spine A: read the engine's live context picture from `GET /v1/hawking/context`
+    /// (native + effective ceiling, the measured `.tq` multiplier, recurrent-state
+    /// bytes, slot occupancy). `None` if the serve instance is down or pre-context
+    /// (old build) — the caller then shows no live ceiling rather than a fake one.
+    pub async fn get_context_info(&self) -> Option<ContextInfo> {
+        let resp = self.client.get(self.url("/v1/hawking/context")).send().await.ok()?;
+        if !resp.status().is_success() {
+            return None;
+        }
+        resp.json::<ContextInfo>().await.ok()
     }
 
     fn sampler(request: &InferenceRequest) -> SamplerProfile {

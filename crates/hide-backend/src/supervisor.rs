@@ -104,8 +104,18 @@ impl SupervisorConfig {
 
         let mut env: std::collections::BTreeMap<String, String> = Default::default();
         // A `.tq` sidecar (same stem, `.tq` extension) flips on native TQ serving.
-        if weights.with_extension("tq").exists() {
+        let tq_path = weights.with_extension("tq");
+        if tq_path.exists() {
             env.insert("HAWKING_QWEN_TQ".to_string(), "1".to_string());
+            // Spine A: read the artifact's REAL measured compression and pass the
+            // derived (estimated) effective-context multiplier to the serve process,
+            // which surfaces it on GET /v1/hawking/context. Never a hardcoded number.
+            if let Some(info) = crate::tq_metadata::read_tq_context(&tq_path) {
+                env.insert(
+                    "HAWKING_QWEN_TQ_MULTIPLIER".to_string(),
+                    format!("{:.3}", info.multiplier),
+                );
+            }
         }
 
         let spec = ProcessSpec {
