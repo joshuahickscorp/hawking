@@ -21,4 +21,4 @@ Everything binds to the contract that actually exists in code (`crates/hide-core
 
 ## Archive
 
-**[archive/](archive/)** holds superseded design material kept for provenance: the original 13-chapter backend bible (now implemented as code), the 5-doc front-end bible (now folded into `HIDE_PLAN.md`), and the standalone `MASTER_PLAN.md`. Reference only; the live spec is `HIDE_PLAN.md` and the code.
+The original 13-chapter backend bible (now implemented as code), the 5-doc front-end bible (now folded into `HIDE_PLAN.md`), and the standalone `MASTER_PLAN.md` were archived (removed from the tree, fully retrievable) on 2026-06-28; see the "2026-06-28 pass" section of [`../ARCHIVE_INDEX.md`](../ARCHIVE_INDEX.md) for the file list and retrieval commands. Reference only; the live spec is `HIDE_PLAN.md` and the code.

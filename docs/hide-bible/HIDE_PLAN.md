@@ -1,6 +1,6 @@
 # HIDE: The Plan
 
-> The single authoritative HIDE document. This consolidates the strategy, the roadmap, the binding design doctrine, and the product/contract reference into one source of truth, replacing the scattered front-end chapters. The backend is built and tested (11 Rust crates, a real Planner-Executor-Verifier agent loop, a runnable headless `BackendHost`): see [`SCAFFOLD_STATUS.md`](SCAFFOLD_STATUS.md). The old numbered chapters are archived under [`archive/`](archive/). When this document and any archived chapter disagree, this document wins.
+> The single authoritative HIDE document. This consolidates the strategy, the roadmap, the binding design doctrine, and the product/contract reference into one source of truth, replacing the scattered front-end chapters. The backend is built and tested (11 Rust crates, a real Planner-Executor-Verifier agent loop, a runnable headless `BackendHost`): see [`SCAFFOLD_STATUS.md`](SCAFFOLD_STATUS.md). The old numbered chapters were archived (see the "2026-06-28 pass" section of [`../ARCHIVE_INDEX.md`](../ARCHIVE_INDEX.md) for the file list and retrieval commands). When this document and any archived chapter disagree, this document wins.
 
 ---
 

@@ -234,3 +234,95 @@ These working-log files were removed to consolidate the docs tree. **Nothing is 
 ## docs/v2.1_architecture_sketch.md — 1 files
 
 - `docs/v2.1_architecture_sketch.md` — v2.1 architecture sketch — Apple Neural Engine integration
+
+
+## 2026-06-28 pass (retroactively indexed 2026-07-01)
+
+Commit `52f64684` ("docs: consolidate rwkv7 notes, drop superseded hide-bible archive, prune internal
+planning and campaign notes, add roadmap", 2026-06-28) deleted 49 markdown files without recording them
+in this index. Nothing is lost: full content lives in git history immediately before that commit.
+Restore any file with `git show 52f64684^:<path>` (note the `^` — these predate the tag below) or
+`git checkout 52f64684^ -- <path>`. Three files that might look related were NOT deleted and are
+excluded here: `tools/strand/scripts/{labd-design,nervous-system,watchdog-runbook}.md` were moved (not
+lost) to `tools/strand/ops/` in the same commit; `docs/rwkv7_posttrain_ondevice.md` was renamed to
+`docs/rwkv7.md`. `ROADMAP.md` (deleted a week later, `85bc7fe8`) was folded into README.md's own
+Roadmap section verbatim and is likewise excluded as a non-loss.
+
+### docs/campaign/ — 18 files (internal autonomous-campaign working logs, self-superseded by 2026-06-22)
+
+- `docs/campaign/autonomous_run_log.md` — Autonomous Run Log (campaign 2026-06-21)
+- `docs/campaign/change_manifest.md` — Change Manifest - Current Dirty Tree
+- `docs/campaign/claude_final_hardening_condensation_goal_prompt.md` — Claude Final Hardening / Pruning / Condensation Goal Prompt
+- `docs/campaign/claude_goal_prompt.md` — Claude Goal Prompt - Hawking Autonomous Production Run
+- `docs/campaign/claude_moonshot_goal_prompt.md` — Claude Moonshot Goal Prompt - SSM Production Campaign
+- `docs/campaign/commit_plan.md` — Hawking — Commit Plan (2026-06-22)
+- `docs/campaign/findings_summary.md` — Findings Summary — validated conclusions (autonomous campaign, 2026-06-21)
+- `docs/campaign/hawking_ship_finalization_prompt.md` — Hawking Ship Finalization Prompt
+- `docs/campaign/hawking_ship_goal_prompts.md` — Hawking Ship Goal Prompts
+- `docs/campaign/kill_ledger.md` — Kill Ledger — tested + rejected, with evidence (autonomous campaign, 2026-06-21)
+- `docs/campaign/open_risks_and_gates.md` — Hawking — Open Risks & Gates (2026-06-22)
+- `docs/campaign/project_standing_snapshot.md` — Hawking — Project Standing Snapshot (2026-06-22)
+- `docs/campaign/pruning_inventory.md` — Hawking — Pruning / Condensation Inventory (2026-06-22)
+- `docs/campaign/roadmap.md` — Roadmap — ranked remaining opportunities (autonomous campaign, 2026-06-21)
+- `docs/campaign/ssm_model_selection.md` — SSM Model-Selection Decision Table (operator-facing)
+- `docs/campaign/ssm_productionization.md` — SSM Productionization Plan
+- `docs/campaign/summary_seed_for_new_chat.md` — Hawking — Summary Seed for a New Chat
+- `docs/campaign/test_matrix.md` — Test Matrix — what was measured, how, result (autonomous campaign, 2026-06-21)
+
+### docs/hide-bible/archive/ — 20 files (pre-HIDE_PLAN.md chaptered bible + old MASTER_PLAN.md, superseded by HIDE_PLAN.md)
+
+- `docs/hide-bible/archive/00-vision-and-backend-contract.md` — Front-End Vision & the Backend Contract
+- `docs/hide-bible/archive/00-vision-and-constitution.md` — Hawking IDE — Vision and Constitution
+- `docs/hide-bible/archive/01-surfaces.md` — The Three Surfaces + the Context Stack
+- `docs/hide-bible/archive/01-system-architecture.md` — 01 · System Architecture & The Extensibility Spine
+- `docs/hide-bible/archive/02-agent-kernel.md` — 02 · The Agent Kernel
+- `docs/hide-bible/archive/02-oss-harvest.md` — OSS Harvest Map — What to Rip From Each AI IDE
+- `docs/hide-bible/archive/03-build-sequencing.md` — Front-End Build Sequencing — Skeleton First
+- `docs/hide-bible/archive/03-tool-system-and-capabilities.md` — 03 · Tool System & Capability Surface
+- `docs/hide-bible/archive/04-context-engineering-and-memory.md` — 04 · Context Engineering & Memory
+- `docs/hide-bible/archive/04-design-doctrine.md` — HIDE Design Doctrine
+- `docs/hide-bible/archive/05-codebase-intelligence.md` — 05 · Codebase Intelligence — the Living Index
+- `docs/hide-bible/archive/06-model-inference-orchestration.md` — 06 · Model & Inference Orchestration
+- `docs/hide-bible/archive/07-hci-ux-and-ide-surface.md` — 07 · HCI, UX & The IDE Surface
+- `docs/hide-bible/archive/08-research-and-knowledge-lab.md` — Chapter 08 · Research & Knowledge Lab
+- `docs/hide-bible/archive/09-parallel-agents-and-workstation.md` — 09 · Parallel Agents & Workstation Mode
+- `docs/hide-bible/archive/10-local-first-infrastructure-and-security.md` — 10 · Local-First Infrastructure & Security
+- `docs/hide-bible/archive/11-bleeding-edge-and-moonshots.md` — Chapter 11 — Bleeding-Edge Capabilities and Moonshots
+- `docs/hide-bible/archive/12-competitive-matrix.md` — Chapter 12 — Competitive Matrix
+- `docs/hide-bible/archive/13-roadmap-and-build-sequencing.md` — Chapter 13 — Roadmap and Build Sequencing
+- `docs/hide-bible/archive/MASTER_PLAN.md` — HIDE Master Plan
+
+### docs/plans/ — 10 files (superseded session handoffs, RWKV-7 hardening notes, and one 2205-line studio plan)
+
+- `docs/plans/SESSION_HANDOFF_2026_06_19.md` — Session Handoff — Hawking (rename finalized + docs consolidated) — 2026-06-20
+- `docs/plans/SESSION_HANDOFF_2026_06_21.md` — Session Handoff — 2026-06-21 (Sonnet → h)
+- `docs/plans/STUDIO_GO.md` — STUDIO GO — the one-command entry point for the Hawking frontier program
+- `docs/plans/condense_output_space_handoff_2026_06_22.md` — Condense / TQ — Output-Space Quality Push: Session Handoff (2026-06-22)
+- `docs/plans/rwkv7_competitive_scorecard_2026_06_20.md` — RWKV-7 Competitive Scorecard
+- `docs/plans/rwkv7_dynamic_batch_hardening_2026_06_20.md` — RWKV-7 Dynamic Batch Hardening - 2026-06-20
+- `docs/plans/rwkv7_micro_frontier_prompt_2026_06_20.md` — RWKV-7 Micro-Frontier Handoff - 2026-06-20
+- `docs/plans/rwkv7_spec_hardening_2026_06_20.md` — RWKV-7 Spec-Decode Hardening
+- `docs/plans/studio_era_expansion.md` — Studio-Era Expansion — Hardening + Aggression for Hawking Condense
+- `docs/plans/studio_maximization_2026_06_27.md` — Hawking — End-to-End Workflow: Studio Maximization → Experiments → Proof → Positioning → GTM (2026-06-27) — still cited as canonical spec by BASELINES.md/FAILURES.md/WATCHLIST.md/GO.md; those pointers are now stale (see note below)
+
+### repo root — 1 file
+
+- `paradigmshift.md` — the "new north star" doc (tokens/sec ↑, joules/token ↓); content folded into README.md/ARCHITECTURE.md framing
+
+**Known stale cross-references left as-is (content-accuracy issue, not an archive/prune-scope fix):**
+`BASELINES.md`, `FAILURES.md`, `WATCHLIST.md`, and `GO.md` all cite `docs/plans/studio_maximization_2026_06_27.md`
+as their canonical spec source; that file is one of the 10 `docs/plans/` files above. Retrieve it with
+`git show 52f64684^:docs/plans/studio_maximization_2026_06_27.md` if you need to re-point those docs or
+recreate it. Likewise `docs/plans/hide_handoff_2026_06_28.md` points at a `docs/hide-bible/MASTER_PLAN.md`
+path that never existed (only the now-archived `docs/hide-bible/archive/MASTER_PLAN.md` did), and
+`docs/plans/throughput_pivot_campaign.md` opens by citing the whole (now-archived) `docs/campaign/` dir
+as its "canonical recovery artifacts". These are pre-existing dangling references in currently-active
+docs; fixing their prose is out of scope for this pass.
+
+
+## 2026-07-01 pass
+
+Tag: `pre-consolidation-2026-07-01`. Restore any file below with
+`git checkout pre-consolidation-2026-07-01 -- <path>` or `git show pre-consolidation-2026-07-01:<path>`.
+
+- `docs/plans/hide_backend_executor_plan_2026_06_29.md` — HIDE Executor engine (backend) plan v1 — six-phase build plan for the Planner-Executor-Verifier loop, context manifest, and tool dispatch. Explicitly superseded by `docs/plans/hide_executor_plan_v2_enriched_2026_06_29.md`, which opens: "This supersedes the v1 backend plan by deepening it, not widening it. Same six phases." No other tracked file referenced the v1 doc.
