@@ -7,6 +7,16 @@ import { spanKey, useSteer } from "./contextstack/state";
 
 const fileName = (p: string) => p.split("/").pop() ?? p;
 
+// Compact token count for the ambient context line (8192 -> "8K", 4_000_000 -> "4M").
+const fmtTok = (n: number) =>
+  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(n % 1_000_000 ? 1 : 0)}M` : n >= 1000 ? `${Math.round(n / 1000)}K` : `${n}`;
+const WATERMARK_WORD: Record<string, string> = {
+  normal: "cached",
+  soft: "ready to compact",
+  warn: "recency decay",
+  critical: "compacting",
+};
+
 // Saved skill states: ~10 MB trained-state seeds you load instantly (instant-resume, not "memory").
 const SKILLS = ["refactor-mode", "test-writing", "this-repo style"];
 
@@ -75,6 +85,28 @@ export function ContextStack() {
           </button>
         </div>
       </div>
+
+      {/* Spine A: the live, measured context ceiling (native x the .tq multiplier, read live, never a
+          constant). Ambient and quiet, no meter: abundance shown as a number that is simply large. */}
+      {m && (m.ctx_len_effective || m.live) ? (
+        <Line title="Live context ceiling: native x the measured .tq multiplier, read live from the engine. Local: never billed, never truncated.">
+          <span style={{ color: "var(--text-3)" }}>context</span>
+          <span style={{ color: "var(--text-2)", minWidth: 0 }}>
+            {fmtTok((m.live?.effective_ceiling_tokens ?? m.ctx_len_effective) || 0)} effective
+            {m.tq_multiplier && m.tq_multiplier > 1 ? `   ${m.tq_multiplier.toFixed(1)}x .tq` : ""}
+            {m.recurrent_state_bytes ? `   ${Math.round(m.recurrent_state_bytes / 1e6)} MB state` : ""}
+            {typeof m.live?.recall_fidelity === "number" ? `   recall ${Math.round(m.live.recall_fidelity * 100)}%` : ""}
+          </span>
+          <span
+            style={{
+              marginLeft: "auto",
+              color: m.live && m.live.watermark !== "normal" ? "var(--light)" : "var(--text-3)",
+            }}
+          >
+            {WATERMARK_WORD[m.live?.watermark ?? "normal"]}
+          </span>
+        </Line>
+      ) : null}
 
       <Stratum label="Skills" count={SKILLS.length} summary="instant-resume states">
         {SKILLS.map((sk) => (

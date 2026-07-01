@@ -61,7 +61,7 @@ export interface UiEvent {
 export type RuntimeState = "down" | "booting" | "ready" | "degraded" | "failed";
 
 // The five connectors (00-vision §3.5). callConnector is typed against this union.
-export type ConnectorId = "runtime" | "code_index" | "context" | "personalization" | "research";
+export type ConnectorId = "runtime" | "code_index" | "context" | "personalization" | "research" | "fs";
 
 /*
   The Custom-name registry (00-vision §3.8). Intent::Custom{name} is the escape hatch
@@ -93,11 +93,15 @@ export const CUSTOM_NAMES = [
   "pin_span",
   "unpin_span",
   "switch_profile",
+  "switch_model",
   "toggle_confidence",
   // Notifications / any panel
   "approve_gate",
+  "deny_gate",
   "focus_run",
   "dismiss",
+  // Workspace / onboarding
+  "open_folder",
 ] as const;
 export type CustomName = (typeof CUSTOM_NAMES)[number];
 

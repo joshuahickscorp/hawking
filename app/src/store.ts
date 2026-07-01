@@ -37,6 +37,23 @@ export interface ContextManifest {
   tools?: { name: string; ok: boolean }[];
   memory?: { fact: string; confidence: number }[];
   dropped?: { title: string; would_be_tokens: number; reason: string }[];
+  // Spine A: the live, measured context picture from the engine (host emits this as
+  // projection_patch{context_manifest}). The ceiling is native x the measured .tq
+  // multiplier, never a constant; `live` is the dynamic occupancy/recall reading.
+  arch?: string;
+  ctx_len_native?: number;
+  ctx_len_effective?: number;
+  tq_multiplier?: number;
+  tq_estimated?: boolean;
+  recurrent_state_bytes?: number;
+  live?: {
+    effective_ceiling_tokens: number;
+    used_tokens_estimate?: number;
+    occupancy: number;
+    recall_fidelity?: number;
+    watermark: "normal" | "soft" | "warn" | "critical";
+    estimated?: boolean;
+  };
 }
 
 export interface ToolEvent {
@@ -63,6 +80,7 @@ type Patch = Record<string, unknown>;
 
 interface State {
   // chat / run (Chat surface)
+  sessionId: string; // active session, tracked from UiEvent.session_id (not hardcoded per surface)
   messages: ChatMessage[];
   streams: Record<string, string>; // stream_id -> active assistant message id
   runPhase: RunPhase;
@@ -108,6 +126,7 @@ let _id = 0;
 const nextId = () => `m${++_id}`;
 
 export const useStore = create<State>((set, get) => ({
+  sessionId: "ses_local000000000000000000",
   messages: [],
   streams: {},
   runPhase: "idle",
@@ -144,6 +163,7 @@ export const useStore = create<State>((set, get) => ({
   // THE EventRouter: route by kind, then for projection_patch by projection name.
   apply: (ev) => {
     const k = ev.kind;
+    if (ev.session_id) set({ sessionId: ev.session_id }); // track the active session for fork/scrub/turn
     switch (k.type) {
       case "token_batch":
         set((s) => appendStream(s, k.data.stream_id, k.data.text, ev.seq));

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useFocusTrap } from "./shell/a11y";
 
 // Shared UI primitives still used by the VS Code shell. (The old doctrine primitives —
 // Volume/Mark/LightEdge/ModeRail/StatusPill — were retired with the concrete design.)
@@ -49,6 +50,7 @@ export function CommandPalette({
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const trapRef = useFocusTrap<HTMLDivElement>(open);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -65,8 +67,8 @@ export function CommandPalette({
   if (!open) return null;
 
   return (
-    <div role="dialog" aria-label="Command palette" className="palette-overlay" onClick={onClose}>
-      <div className="palette" onClick={(e) => e.stopPropagation()}>
+    <div role="presentation" className="palette-overlay" onClick={onClose}>
+      <div className="palette" role="dialog" aria-modal="true" aria-label="Command palette" ref={trapRef} onClick={(e) => e.stopPropagation()}>
         <input
           ref={inputRef}
           value={q}

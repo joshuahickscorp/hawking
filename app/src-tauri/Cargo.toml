@@ -1,0 +1,23 @@
+# HIDE desktop shell (Tauri v2). Build-ready scaffold: requires fetching the tauri crates
+# (network) and `pnpm add -D @tauri-apps/cli` before `pnpm tauri build`. On macOS the webview is
+# WKWebView (WebKit-class), so the glass renders through the frost path (rim + grain), not refract.
+# Standalone from the main Rust workspace (the desktop shell has its own dep tree: tauri + webkit).
+[workspace]
+
+[package]
+name = "hide-desktop"
+version = "0.1.0"
+edition = "2021"
+description = "HIDE local-first agentic coding IDE (desktop shell)"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api"] }
+# Native macOS vibrancy (NSVisualEffectView) behind the transparent window, so the OS desktop and the
+# apps behind HIDE show through the glass (the real Liquid Glass the web build cannot do).
+window-vibrancy = "0.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["process", "rt-multi-thread", "macros"] }

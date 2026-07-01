@@ -7,17 +7,19 @@
 
   Re-housed from a Monaco DiffEditor wrapper + hunk controls, recast in v3 via the hide-observatory
   theme (monacoTheme.ts): grayscale concrete, light as the only accent, Geist Mono. It must never read
-  as VS Code. The diff-accept gesture is the HunkReview component, identical to the one the Workstation
-  merge-review reuses.
+  as VS Code. The diff-accept gesture is the HunkReview component, the single source of per-hunk review
+  logic in the IDE.
 */
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { DiffEditor, Editor as MonacoEditor, type Monaco } from "@monaco-editor/react";
 import type { editor as MEditor } from "monaco-editor";
-import { sendIntent } from "../../ipc";
+import { callConnector, sendIntent } from "../../ipc";
+import { useStore } from "../../store";
 import { intent } from "../../wire";
 import { HIDE_EDITOR_OPTIONS, HIDE_THEME, configureMonacoLoader, registerHideTheme } from "./monacoTheme";
 import { HunkReview } from "./HunkReview";
 import { CodeActions } from "./CodeActions";
+import { Radiate } from "../../shell/Radiate";
 import { applyHunkStatus, MOCK_FILE_BODY, type DiffDoc } from "./types";
 
 // Point the loader at bundled monaco once (air-gap: no CDN fetch).
@@ -39,9 +41,61 @@ export function EditorGroup({
   const beforeMount = useCallback((monaco: Monaco) => registerHideTheme(monaco), []);
 
   if (diff) {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", height: "100%", minHeight: 0, minWidth: 0 }}>
-        <DiffPane diff={diff} sideBySide={sideBySide} onToggle={() => setSideBySide((v) => !v)} beforeMount={beforeMount} />
+    return <DiffReview diff={diff} sideBySide={sideBySide} onToggle={() => setSideBySide((v) => !v)} beforeMount={beforeMount} onDiffChange={onDiffChange} />;
+  }
+
+  return <FilePane openPath={openPath} beforeMount={beforeMount} />;
+}
+
+// DiffReview — the inline diff the Executor proposes, with the fast accept/reject gesture (Tab applies
+// the whole diff, Esc rejects) layered over the per-hunk HunkReview for granular control. The gesture
+// is the Cursor-style "tab to apply"; Tab is not hijacked while you are hand-editing the modified
+// buffer (Monaco's hidden input keeps it for indentation). When the backend streams the change
+// (second plan), the same surface fills in live; today the diff arrives whole via ProjectionPatch{diff}.
+function DiffReview({
+  diff,
+  sideBySide,
+  onToggle,
+  beforeMount,
+  onDiffChange,
+}: {
+  diff: DiffDoc;
+  sideBySide: boolean;
+  onToggle: () => void;
+  beforeMount: (m: Monaco) => void;
+  onDiffChange: (next: DiffDoc | null) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+  }, [diff.diff_id]);
+
+  const acceptAll = useCallback(() => {
+    onDiffChange(null); // optimistic: clear the pending diff (host applies + echoes the new buffer)
+    void sendIntent(intent.acceptDiff(diff.run_id, diff.diff_id));
+  }, [diff.run_id, diff.diff_id, onDiffChange]);
+
+  const rejectAll = useCallback(() => {
+    onDiffChange(null);
+    void sendIntent(intent.rejectDiff(diff.run_id, diff.diff_id));
+  }, [diff.run_id, diff.diff_id, onDiffChange]);
+
+  const onKeyDown = (e: ReactKeyboardEvent) => {
+    const el = document.activeElement as HTMLElement | null;
+    const editing = !!el && el.classList.contains("inputarea"); // Monaco's hidden textarea
+    if (e.key === "Tab" && !editing) {
+      e.preventDefault();
+      acceptAll();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      rejectAll();
+    }
+  };
+
+  return (
+    <div ref={ref} tabIndex={-1} className="diffreview" role="region" aria-label="Proposed edit" onKeyDown={onKeyDown} style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, minWidth: 0, outline: "none" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr minmax(300px, 38%)", flex: 1, minHeight: 0, minWidth: 0 }}>
+        <DiffPane diff={diff} sideBySide={sideBySide} onToggle={onToggle} beforeMount={beforeMount} />
         <div style={{ borderLeft: "1px solid var(--border)", minHeight: 0, minWidth: 0, overflow: "hidden" }}>
           <HunkReview
             doc={diff}
@@ -54,10 +108,17 @@ export function EditorGroup({
           />
         </div>
       </div>
-    );
-  }
-
-  return <FilePane openPath={openPath} beforeMount={beforeMount} />;
+      <div className="diffbar">
+        <span className="diffbar__hint">
+          <kbd>Tab</kbd> apply all<span className="diffbar__sep">·</span><kbd>Esc</kbd> reject<span className="diffbar__sep">·</span>or review each hunk at right
+        </span>
+        <div className="diffbar__actions">
+          <button className="diffbar__btn" onClick={rejectAll}>reject</button>
+          <button className="diffbar__btn diffbar__btn--accent" onClick={acceptAll}>apply all</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function DiffPane({
@@ -102,8 +163,28 @@ function DiffPane({
 function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMount: (m: Monaco) => void }) {
   const editorRef = useRef<MEditor.IStandaloneCodeEditor | null>(null);
   const [sel, setSel] = useState<{ text: string; top: number; left: number } | null>(null);
-  // Resolve the open file's body. Live host streams it as ProjectionPatch{editor}; the mock has stubs.
-  const body = useMemo(() => (openPath ? MOCK_FILE_BODY[openPath] : null), [openPath]);
+  const pushNotice = useStore((s) => s.pushNotice);
+  // The open file's real body from the fs connector; falls back to the mock stub (dev / no backend).
+  const [body, setBody] = useState<{ text: string; lang: string } | null>(null);
+  useEffect(() => {
+    if (!openPath) {
+      setBody(null);
+      return;
+    }
+    let alive = true;
+    callConnector<{ text?: string; lang?: string }>("fs", "read_file", { path: openPath })
+      .then((r) => {
+        if (!alive) return;
+        if (typeof r?.text === "string") setBody({ text: r.text, lang: r.lang ?? "plaintext" });
+        else setBody(MOCK_FILE_BODY[openPath] ?? null);
+      })
+      .catch(() => {
+        if (alive) setBody(MOCK_FILE_BODY[openPath] ?? null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [openPath]);
 
   if (!openPath) {
     return (
@@ -127,9 +208,13 @@ function FilePane({ openPath, beforeMount }: { openPath: string | null; beforeMo
           beforeMount={beforeMount}
           onMount={(ed, monaco) => {
             editorRef.current = ed;
-            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () =>
-              void sendIntent(intent.custom("save_file", { path: openPath })),
-            );
+            ed.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+              const content = ed.getModel()?.getValue() ?? "";
+              void callConnector("fs", "write_file", { path: openPath, content })
+                .then(() => pushNotice({ kind: "info", code: "fs", message: `saved ${openPath}` }))
+                .catch(() => pushNotice({ kind: "error", code: "fs", message: `save failed ${openPath}` }));
+              void sendIntent(intent.custom("save_file", { path: openPath })); // notify the agent loop
+            });
             // Highlight-to-100x: a Liquid-Glass action popover follows a non-empty selection.
             ed.onDidChangeCursorSelection((e) => {
               const model = ed.getModel();
@@ -180,11 +265,11 @@ function ViewToggle({ sideBySide, onToggle }: { sideBySide: boolean; onToggle: (
   );
 }
 
-// Quiet text, no spinner or glow — just like VS Code's editor placeholder.
+// The radiate ring is the one loading indicator in the app, here too (no stock spinner).
 function Loading() {
   return (
-    <div style={{ display: "grid", placeItems: "center", height: "100%" }}>
-      <span style={{ color: "var(--text-dim)", fontSize: "13px" }}>Loading…</span>
+    <div style={{ display: "grid", placeItems: "center", height: "100%", gap: "var(--ma-3)" }}>
+      <Radiate size={20} active title="loading" />
     </div>
   );
 }

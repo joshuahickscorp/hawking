@@ -140,6 +140,7 @@ export function HunkReview({
         {doc.stale ? (
           <span
             title="The file changed under this pending diff. Re-sync before applying."
+            aria-label="Diff is stale; re-sync before applying"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -155,7 +156,7 @@ export function HunkReview({
             stale
           </span>
         ) : null}
-        <span style={{ marginLeft: "auto", flex: "0 0 auto" }}>
+        <span role="status" aria-live="polite" style={{ marginLeft: "auto", flex: "0 0 auto" }}>
           {remaining} hunk{remaining === 1 ? "" : "s"} to review
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--ma-1)", flex: "0 0 auto", flexWrap: "wrap" }}>
@@ -169,7 +170,7 @@ export function HunkReview({
         </span>
       </div>
 
-      <div style={{ overflow: "auto", padding: "var(--ma-3)", display: "flex", flexDirection: "column", gap: "var(--ma-3)", minHeight: 0, minWidth: 0 }}>
+      <div role="list" aria-label={`Diff hunks for ${doc.path}`} style={{ overflow: "auto", padding: "var(--ma-3)", display: "flex", flexDirection: "column", gap: "var(--ma-3)", minHeight: 0, minWidth: 0 }}>
         {doc.hunks.map((h, i) => (
           <HunkCard
             key={h.id}
@@ -218,6 +219,9 @@ function HunkCard({
     <div
       ref={innerRef}
       onClick={onSelect}
+      role="listitem"
+      aria-current={selectedPending ? "true" : undefined}
+      aria-label={`Hunk ${hunk.header}, ${st.label}`}
       style={{
         padding: 0,
         overflow: "hidden",

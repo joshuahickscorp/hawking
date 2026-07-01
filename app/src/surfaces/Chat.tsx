@@ -6,12 +6,30 @@ import { useStore } from "../store";
 import { intent } from "../wire";
 import { Display } from "../ui";
 import { Icon } from "../shell/icons";
+import { Radiate } from "../shell/Radiate";
 import type { DiffChip, DiffChipPatch, PlanPatch, PlanStep } from "./chat/parts";
 import { DiffChipRow, InlineGate, PlanCard, ToolChipRow } from "./chat/structure";
 import { SteerBar } from "./chat/SteerBar";
 
-const SESSION = "ses_mock0000000000000000000";
 const STEERABLE = new Set(["planning", "executing", "paused", "awaiting"]);
+
+// The empty-composer prompt. Default terse (flight-log voice); flip DREAM_BIG to restore "dream big".
+const DREAM_BIG = false;
+const IDLE_PLACEHOLDER = DREAM_BIG ? "dream big" : "Describe a task";
+
+// Oracle ladder for the radiate ring: how many distinct verify stages have reported this run. Returns
+// undefined when no laddered progress is present, so the ring degrades to an indeterminate sweep.
+const LADDER = ["build", "typecheck", "test", "lint"];
+function oracleStage(tools: { message: string }[]): number | undefined {
+  const seen = new Set<number>();
+  for (const t of tools) {
+    const m = t.message.toLowerCase();
+    LADDER.forEach((k, i) => {
+      if (m.includes(k)) seen.add(i);
+    });
+  }
+  return seen.size > 0 ? seen.size : undefined;
+}
 
 marked.setOptions({ gfm: true, breaks: true });
 
@@ -25,6 +43,7 @@ export function Chat() {
   const activeRunId = useStore((s) => s.activeRunId);
   const pushUserMessage = useStore((s) => s.pushUserMessage);
   const pushNotice = useStore((s) => s.pushNotice);
+  const sessionId = useStore((s) => s.sessionId);
   const plan = useStore((s) => s.projections.plan as PlanPatch | undefined);
   const diffPatch = useStore((s) => s.projections.diff_chip as DiffChipPatch | undefined);
   const chips: DiffChip[] = diffPatch?.chips ?? [];
@@ -47,7 +66,7 @@ export function Chat() {
     if (!t) return;
     pushUserMessage(t);
     setText("");
-    const ack = await sendIntent(intent.submitTurn(SESSION, t));
+    const ack = await sendIntent(intent.submitTurn(sessionId, t));
     if (!ack.accepted) pushNotice({ kind: "error", code: "rejected", message: ack.message ?? "turn rejected" });
   };
 
@@ -59,11 +78,15 @@ export function Chat() {
   const editStep = (step: PlanStep, title: string) =>
     void sendIntent(intent.custom("edit_plan_step", { run_id: runId, step_id: step.id, title }));
   const reorder = (from: number, to: number) => void sendIntent(intent.custom("reorder_plan", { run_id: runId, from, to }));
+  // The Executor proposes; it does not host accept/reject. Opening a diff routes to the editor, which
+  // owns the gesture (Tab applies the whole diff, Esc rejects) along with the per-hunk panel.
   const openDiff = (c: DiffChip) => void sendIntent(intent.openFile(c.path));
-  const acceptDiff = (c: DiffChip) => void sendIntent(intent.acceptDiff(c.run_id ?? runId, c.diff_id));
-  const rejectDiff = (c: DiffChip) => void sendIntent(intent.rejectDiff(c.run_id ?? runId, c.diff_id));
   const approveGate = () => {
     if (gate) void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
+    dismissGate();
+  };
+  const denyGate = () => {
+    if (gate) void sendIntent(intent.custom("deny_gate", { gate: gate.gate }));
     dismissGate();
   };
 
@@ -75,9 +98,6 @@ export function Chat() {
         {empty ? (
           <div className="chat-empty">
             <Display>Describe the work</Display>
-            <p className="t-body" style={{ color: "var(--text-muted)", marginTop: "var(--ma-6)" }}>
-              Start with a task, file, or question
-            </p>
           </div>
         ) : (
           <div className="message-list">
@@ -86,15 +106,15 @@ export function Chat() {
             ))}
             {plan ? <PlanCard plan={plan} onApprove={approvePlan} onEditStep={editStep} onReorder={reorder} /> : null}
             <ToolChipRow tools={tools} />
-            <DiffChipRow chips={chips} onOpen={openDiff} onAccept={acceptDiff} onReject={rejectDiff} />
-            {gate ? <InlineGate gate={gate.gate} message={gate.message} onApprove={approveGate} onDismiss={dismissGate} /> : null}
+            <DiffChipRow chips={chips} onOpen={openDiff} />
+            {gate ? <InlineGate gate={gate.gate} message={gate.message} onApprove={approveGate} onDismiss={denyGate} /> : null}
           </div>
         )}
       </div>
 
       <div className="composer-zone">
         {live ? <SteerBar phase={runPhase} onRedirect={steer} onPause={pause} onResume={resume} onCancel={cancel} /> : null}
-        <Composer text={text} onText={setText} onSubmit={submit} ready={runtimeReady} live={live} />
+        <Composer text={text} onText={setText} onSubmit={submit} ready={runtimeReady} live={live} stage={oracleStage(tools)} />
       </div>
     </div>
   );
@@ -172,12 +192,14 @@ function Composer({
   onSubmit,
   ready,
   live,
+  stage,
 }: {
   text: string;
   onText: (v: string) => void;
   onSubmit: () => void;
   ready: boolean;
   live: boolean;
+  stage?: number;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const pushNotice = useStore((s) => s.pushNotice);
@@ -236,7 +258,7 @@ function Composer({
       ? "Runtime not ready"
       : live
         ? "Queue a turn"
-        : "dream big";
+        : IDLE_PLACEHOLDER;
   const armed = !!text.trim() && ready;
 
   return (
@@ -277,7 +299,7 @@ function Composer({
         title={live ? "Queue turn" : "Send"}
         aria-label={live ? "Queue turn" : "Send"}
       >
-        <Icon name="send" size={16} />
+        {live ? <Radiate size={16} active stage={stage} /> : <Icon name="send" size={16} />}
       </button>
     </div>
   );

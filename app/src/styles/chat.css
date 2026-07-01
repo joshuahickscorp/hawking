@@ -262,6 +262,10 @@
   font-size: 14px;
   line-height: 1.5;
   padding: 6px 2px;
+  /* grow-with-content, but cap and scroll internally so the composer never overtakes the panel
+     (the height is set in JS to min(scrollHeight, 180); past the cap this scrolls) */
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .composer__input::placeholder {
@@ -289,8 +293,13 @@
 .composer__send:not(:disabled):hover {
   background: var(--accent-hover);
 }
+/* Idle send is the quietest mark on the panel: a hairline ring, not a filled disc. It fills on content
+   (the :not(:disabled) rule above). */
 .composer__send:disabled {
   cursor: default;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--glass-line);
+  color: var(--mute);
 }
 
 /* ---- steer bar (slim control strip above composer) ---- */

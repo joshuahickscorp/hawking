@@ -11,9 +11,9 @@ export function ChatPane({ onClose, onFloat }: { onClose: () => void; onFloat?: 
   const model = manifest?.model?.id ?? "qwen2.5-7b";
 
   return (
-    <section className="chatpane" aria-label="Chat">
+    <section className="chatpane" aria-label="Executor">
       <div className="chatpane__head">
-        <span className="chatpane__title">Chat</span>
+        <span className="chatpane__title">Executor</span>
         <span className="chatpane__model">{model}</span>
         <div className="chatpane__actions">
           <button className="icon-button chatpane__icon" title="New chat" aria-label="New chat">

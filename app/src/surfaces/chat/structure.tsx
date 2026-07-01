@@ -227,8 +227,10 @@ export function DiffChipRow({
 }: {
   chips: DiffChip[];
   onOpen: (chip: DiffChip) => void;
-  onAccept: (chip: DiffChip) => void;
-  onReject: (chip: DiffChip) => void;
+  // Accept and reject are owned by the editor and the hunk panel, not the Executor. When these are
+  // omitted (the Executor case) the chip is open-only: it routes you to the editor to review.
+  onAccept?: (chip: DiffChip) => void;
+  onReject?: (chip: DiffChip) => void;
 }) {
   if (chips.length === 0) return null;
   return (
@@ -253,7 +255,7 @@ export function DiffChipRow({
                 <span style={{ color: "var(--text-dim)", fontSize: "12px" }}>rejected</span>
               ) : c.status === "stale" ? (
                 <span style={{ color: "var(--git-mod)", fontSize: "12px" }}>⟳ stale</span>
-              ) : (
+              ) : onAccept && onReject ? (
                 <span style={{ display: "inline-flex", gap: "var(--ma-1)" }}>
                   <button onClick={() => onAccept(c)} title="accept (Cmd+Enter)" style={ctlStyle(true)}>
                     Accept
@@ -262,6 +264,10 @@ export function DiffChipRow({
                     Reject
                   </button>
                 </span>
+              ) : (
+                <button onClick={() => onOpen(c)} title="open to review in the editor" style={{ color: "var(--text-dim)", fontSize: "12px", background: "transparent" }}>
+                  review
+                </button>
               )}
             </div>
           );

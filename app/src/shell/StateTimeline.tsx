@@ -10,10 +10,9 @@ import { useStore } from "../store";
 import { intent } from "../wire";
 import { Icon } from "./icons";
 
-const SESSION = "ses_live000000000000000000";
-
 export function StateTimeline() {
   const tools = useStore((s) => s.tools);
+  const sessionId = useStore((s) => s.sessionId);
   const [sel, setSel] = useState<number | null>(null);
   const steps = tools.slice(-14);
   if (steps.length === 0) return null;
@@ -21,9 +20,9 @@ export function StateTimeline() {
   const at = sel == null ? steps.length - 1 : Math.min(sel, steps.length - 1);
   const scrub = (i: number) => {
     setSel(i);
-    void sendIntent(intent.scrubToEvent(SESSION, steps[i].call_id));
+    void sendIntent(intent.scrubToEvent(sessionId, steps[i].call_id));
   };
-  const forkHere = () => void sendIntent(intent.forkSession(SESSION, steps[at].call_id));
+  const forkHere = () => void sendIntent(intent.forkSession(sessionId, steps[at].call_id));
   const live = () => setSel(null);
 
   return (

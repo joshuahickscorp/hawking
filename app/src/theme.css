@@ -53,13 +53,22 @@
 
   /* ---- Liquid Glass: translucent concrete + blur over the void (chrome + floating layers).
        The editor surface stays solid; glass reads most over code (floating chat) and the top bar. ---- */
-  --glass-chrome: rgba(18, 18, 21, 0.5); /* sidebar / bottom panel / toolbar */
-  --glass-float: rgba(24, 24, 28, 0.4); /* summoned chat, palette, dialogs, popovers */
-  --glass-blur: blur(32px) saturate(2);
-  --glass-line: rgba(255, 255, 255, 0.16);
-  /* a specular light sheen so glass reads even over the near-black editor (Liquid Glass catches light) */
-  --glass-sheen: linear-gradient(150deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 34%, rgba(255, 255, 255, 0) 62%);
-  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  /* Glass on a dark ground is sold by its edge and its light, not by its frost. The rim is the
+     part that sells it; grain kills the banding you get blurring a near-black field. */
+  --glass-chrome: rgba(16, 16, 19, 0.62); /* sidebar / bottom panel / toolbar / status strip */
+  --glass-float: rgba(21, 21, 25, 0.54); /* summoned Executor, palette, dialogs, popovers */
+  --glass-blur: blur(11px) saturate(1.2); /* frost: small radius, warm-bias the rare ok/bad glyphs */
+  --glass-line: rgba(255, 255, 255, 0.1); /* seam hairline where attached panes meet the body */
+  /* rim: the void's single light source caught on the top and left edges (this sells the glass) */
+  --glass-rim: rgba(244, 242, 238, 0.14);
+  /* ink: the pane has thickness, a soft inner shadow biased to the bottom and right */
+  --glass-ink: rgba(0, 0, 0, 0.3);
+  /* a faint specular sheen, secondary to the rim */
+  --glass-sheen: linear-gradient(150deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 38%, rgba(255, 255, 255, 0) 64%);
+  /* grain: a tiled grayscale noise generated once and reused, reads as ground glass over the frost */
+  --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.045'/%3E%3C/svg%3E");
+  /* rim (top, left) + depth (bottom, right) as one inset set; elevation (--depth) added per surface */
+  --glass-edge: inset 1px 1px 0 0 var(--glass-rim), inset -1px -1px 3px -1px var(--glass-ink);
 
   --accent: var(--light);
   --accent-hover: #ffffff;
@@ -70,8 +79,8 @@
   --text-strong: #f4f2ee;
   --text-1: #eceae6;
   --text-2: #9b9a95;
-  --text-3: #6e6d68;
-  --mute: #5c5b57;
+  --text-3: #84827a; /* lifted for WCAG AA (>=4.5:1 on --void) */
+  --mute: #78766d;   /* lifted for WCAG AA on --void */
   --text: var(--text-1);
   --text-muted: var(--text-2);
   --text-dim: var(--text-3);
@@ -602,10 +611,9 @@ textarea:disabled {
 .gate-dialog {
   width: min(440px, 90vw);
   padding: var(--ma-6);
-  background: var(--glass-sheen), var(--glass-float);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-float);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-line);
   border-radius: var(--radius);
   box-shadow: var(--glass-edge), var(--depth);
 }
@@ -620,20 +628,179 @@ textarea:disabled {
 .palette {
   width: min(600px, 90vw);
   overflow: hidden;
-  background: var(--glass-sheen), var(--glass-float);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-float);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-line);
   border-radius: var(--radius);
   box-shadow: var(--glass-edge), var(--depth);
 }
 
-/* Reusable Liquid Glass surface (toolbar, floating chat, popovers). */
-.glass {
-  background: var(--glass-sheen), var(--glass-float);
+/* No-folder first-run surface (surfaces/Onboarding.tsx). A full-bleed concrete light-well over the
+   shell until a project is opened or the sample workspace is chosen. */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.onboarding {
+  width: min(520px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ma-3);
+  padding: var(--ma-7) var(--ma-6);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-float);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  box-shadow: var(--glass-edge), var(--depth);
+}
+
+.onboarding__title {
+  margin: var(--ma-2) 0 0;
+  color: var(--text-strong);
+}
+
+.onboarding__pitch {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 42ch;
+}
+
+.onboarding__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-3);
+  margin-top: var(--ma-2);
+  flex-wrap: wrap;
+}
+
+.onboarding__note {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.onboarding__keys {
+  width: 100%;
+  margin-top: var(--ma-3);
+  padding-top: var(--ma-3);
+  box-shadow: inset 0 1px 0 0 var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ma-1);
+}
+
+/* Crash recover panel (error boundary). */
+.crash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--void);
+  padding: var(--ma-6);
+}
+.crash__box {
+  width: min(560px, 92vw);
+  border-radius: var(--radius);
+  padding: var(--ma-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ma-4);
+}
+.crash__title {
+  font-size: 14px;
+  color: var(--text-1);
+}
+.crash__detail {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--bad);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.crash__btn {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--light);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.crash__btn:hover {
+  background: var(--concrete-3);
+}
+
+/* Settings surface (glass modal). */
+.settings {
+  width: min(520px, 92vw);
+  max-height: 80vh;
+  overflow: auto;
+  border-radius: var(--radius);
+  padding: var(--ma-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ma-5);
+}
+.settings__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.settings__title {
+  font-size: 14px;
+  color: var(--text-1);
+}
+.settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.settings__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ma-4);
+  font-size: 13px;
+}
+.settings__k {
+  color: var(--text-3);
+}
+.settings__v {
+  color: var(--text-2);
+}
+.settings__btn {
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--light);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.settings__btn:hover {
+  background: var(--concrete-3);
+}
+.settings__note {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* Reusable Liquid Glass surface (toolbar, floating chat, popovers). */
+.glass {
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-float);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--depth);
 }
 
@@ -680,6 +847,21 @@ textarea:disabled {
   .radiate--active .radiate__arc {
     animation: none;
   }
+}
+
+/* Laddered radiate: when the oracle ladder reports (build, typecheck, test, lint) the ring is
+   determinate, the arc length encodes the stage, and it does not spin. It sharpens as work lands. */
+.radiate--laddered .radiate__arc {
+  animation: none;
+  transition: stroke-dasharray 320ms var(--ease, ease);
+}
+
+/* Chromium-class upgrade (gated by the runtime probe in glass.ts, a no-op elsewhere): a real
+   bent-light backdrop on the FIXED chrome only. Resizable panes keep rim + frost + grain, since one
+   displacement map assumes fixed dimensions. WebKit-class never reaches this rule. */
+[data-glass="refract"] .toolbar,
+[data-glass="refract"] .vsc-statusbar {
+  backdrop-filter: var(--glass-blur) url(#hide-glass-refract);
 }
 
 /* ---- Xcode-style unified toolbar (Liquid Glass) ---- */
@@ -1265,6 +1447,71 @@ textarea:disabled {
   box-shadow: var(--hairline-strong), var(--light-bloom);
 }
 
+/* DiffReview — the inline proposed edit + its fast-path affordance bar (Tab apply / Esc reject),
+   layered over the per-hunk review. The reveal evokes the change arriving (real streaming is plan 2). */
+.diffreview {
+  animation: diff-reveal 200ms ease both;
+}
+@keyframes diff-reveal {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.diffbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ma-3);
+  padding: 6px var(--ma-3);
+  border-top: 1px solid var(--border);
+  background: var(--concrete-1);
+  font-size: 12px;
+  flex: 0 0 auto;
+}
+.diffbar__hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3);
+}
+.diffbar__sep {
+  color: var(--mute);
+  margin: 0 4px;
+}
+.diffbar kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--concrete-3);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.diffbar__actions {
+  display: flex;
+  gap: var(--ma-2);
+}
+.diffbar__btn {
+  padding: 3px var(--ma-3);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.diffbar__btn:hover {
+  background: var(--list-hover);
+  color: var(--text-1);
+}
+.diffbar__btn--accent {
+  color: var(--light);
+}
+.diffbar__btn--accent:hover {
+  background: var(--concrete-3);
+  box-shadow: var(--hairline-strong), var(--light-bloom);
+}
+@media (prefers-reduced-motion: reduce) {
+  .diffreview { animation: none; }
+}
+
 .palette__input {
   display: block;
   width: calc(100% - var(--ma-4));
@@ -1770,7 +2017,7 @@ textarea:disabled {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--glass-sheen), var(--glass-chrome);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-chrome);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: inset -1px 0 0 var(--glass-line);
@@ -1787,6 +2034,120 @@ textarea:disabled {
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+/* The Explorer workcard: one glanceable line (ready dot + model name + local). The model name is a
+   button that summons the context popover. Nothing else lives here (invisible until summoned). */
+.workcard {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 12px var(--ma-5);
+  box-shadow: inset 0 -1px 0 var(--glass-line);
+}
+.workcard__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-2);
+  min-width: 0;
+}
+.workcard__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex: 0 0 auto;
+}
+.workcard__dot--ready {
+  background: var(--ok);
+}
+.workcard__model {
+  font-size: 13px;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.workcard__model:hover {
+  color: var(--light);
+}
+.workcard__local {
+  font-size: 11px;
+  color: var(--text-3);
+  flex: 0 0 auto;
+}
+
+/* The context popover summoned from the model name: live ceiling, .tq, recall, state + switch. */
+.modelpop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% - 4px);
+  left: var(--ma-5);
+  right: var(--ma-5);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--ma-3);
+  border-radius: var(--radius);
+}
+.modelpop__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-2);
+  margin-bottom: 2px;
+}
+.modelpop__title {
+  font-size: 13px;
+  color: var(--text-1);
+}
+.modelpop__arch {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+.modelpop__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ma-3);
+  font-size: 12px;
+}
+.modelpop__label {
+  color: var(--text-3);
+}
+.modelpop__value {
+  color: var(--text-2);
+}
+.modelpop__bar {
+  position: relative;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--concrete-3);
+  overflow: hidden;
+}
+.modelpop__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--light);
+  opacity: 0.45;
+}
+.modelpop__switch {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--light);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.modelpop__switch:hover {
+  background: var(--concrete-3);
+  box-shadow: var(--hairline-strong), var(--light-bloom);
 }
 
 .sidebar__body {
@@ -1984,7 +2345,7 @@ textarea:disabled {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--glass-sheen), var(--glass-chrome);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-chrome);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: inset 0 1px 0 var(--glass-line);
@@ -2084,8 +2445,10 @@ textarea:disabled {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  background: var(--statusbar-bg);
-  box-shadow: inset 0 1px 0 var(--border);
+  background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-chrome);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 1px 0 var(--glass-rim);
   color: var(--text);
   font-size: 12px;
 }

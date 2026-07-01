@@ -4,10 +4,13 @@
   Click a file -> OpenFile{path}. Rows are quiet 22px lines; file glyphs are neutral (color is never
   identity); the active file rests on the selected row.
 */
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { callConnector, sendIntent } from "../../ipc";
 import { intent } from "../../wire";
+import { flattenVisible, treeKeyTarget, type TreeKey } from "../../shell/a11y";
 import { MOCK_TREE, type FileNode } from "./types";
+
+const TREE_KEYS = new Set(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"]);
 
 interface SearchHit {
   path: string;
@@ -25,6 +28,20 @@ export function Explorer({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
+  // The real workspace tree from the fs connector; falls back to the mock tree when no backend (dev).
+  const [tree, setTree] = useState<FileNode[]>(MOCK_TREE);
+
+  useEffect(() => {
+    let alive = true;
+    callConnector<{ tree?: FileNode[] }>("fs", "tree", {})
+      .then((r) => {
+        if (alive && Array.isArray(r?.tree) && r.tree.length) setTree(r.tree);
+      })
+      .catch(() => void 0); // keep the mock fallback
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const open = useCallback(
     (path: string, line?: number) => {
@@ -35,6 +52,30 @@ export function Explorer({
   );
 
   const toggle = (path: string) => setCollapsed((c) => ({ ...c, [path]: !c[path] }));
+
+  // Roving-tabindex focus for the ARIA tree: one row is tabbable; arrows move between visible rows
+  // and expand/collapse dirs. `flattenVisible`/`treeKeyTarget` carry the (tested) navigation logic.
+  const treeRef = useRef<HTMLDivElement>(null);
+  const [focusPath, setFocusPath] = useState<string | null>(null);
+  const rows = useMemo(() => flattenVisible(tree, collapsed), [tree, collapsed]);
+  const activeFocus = focusPath ?? activePath ?? rows[0]?.path ?? null;
+
+  const focusRow = (path: string) => {
+    setFocusPath(path);
+    treeRef.current?.querySelector<HTMLElement>(`[data-treepath="${CSS.escape(path)}"]`)?.focus();
+  };
+
+  const onTreeKeyDown = (e: ReactKeyboardEvent) => {
+    if (!activeFocus || !TREE_KEYS.has(e.key)) return;
+    const target = treeKeyTarget(rows, activeFocus, e.key as TreeKey);
+    if (!target) return;
+    e.preventDefault();
+    if (target.kind === "focus") focusRow(target.path);
+    else {
+      setCollapsed((c) => ({ ...c, [target.path]: !target.expand }));
+      setFocusPath(target.path);
+    }
+  };
 
   useEffect(() => {
     const q = query.trim();
@@ -51,7 +92,7 @@ export function Explorer({
       } catch {
         result = [];
       }
-      if (result.length === 0) result = localSearch(MOCK_TREE, q);
+      if (result.length === 0) result = localSearch(tree, q);
       if (live) setHits(result);
     }, 140);
     return () => {
@@ -82,11 +123,28 @@ export function Explorer({
       {hits ? (
         <SearchResults hits={hits} query={query} onOpen={open} />
       ) : (
-        <ul style={list}>
-          {MOCK_TREE.map((n) => (
-            <TreeRow key={n.path} node={n} depth={0} activePath={activePath} collapsed={collapsed} onToggle={toggle} onOpen={(p) => open(p)} />
-          ))}
-        </ul>
+        <div ref={treeRef}>
+          <ul style={list} role="tree" aria-label="Files" onKeyDown={onTreeKeyDown}>
+            {tree.map((n) => (
+              <TreeRow
+                key={n.path}
+                node={n}
+                depth={0}
+                activePath={activePath}
+                focusPath={activeFocus}
+                collapsed={collapsed}
+                onToggle={(p) => {
+                  toggle(p);
+                  setFocusPath(p);
+                }}
+                onOpen={(p) => {
+                  setFocusPath(p);
+                  open(p);
+                }}
+              />
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
@@ -96,6 +154,7 @@ function TreeRow({
   node,
   depth,
   activePath,
+  focusPath,
   collapsed,
   onToggle,
   onOpen,
@@ -103,6 +162,7 @@ function TreeRow({
   node: FileNode;
   depth: number;
   activePath: string | null;
+  focusPath: string | null;
   collapsed: Record<string, boolean>;
   onToggle: (path: string) => void;
   onOpen: (path: string) => void;
@@ -110,9 +170,11 @@ function TreeRow({
   const isOpen = !collapsed[node.path];
   const selected = !node.dir && node.path === activePath;
   return (
-    <li>
+    <li role="treeitem" aria-level={depth + 1} aria-selected={selected} aria-expanded={node.dir ? isOpen : undefined}>
       <button
         className={"vsc-row" + (selected ? " vsc-row--selected" : "")}
+        data-treepath={node.path}
+        tabIndex={node.path === focusPath ? 0 : -1}
         onClick={() => (node.dir ? onToggle(node.path) : onOpen(node.path))}
         style={{ paddingLeft: 8 + depth * 12 }}
       >
@@ -127,9 +189,18 @@ function TreeRow({
         {node.badge ? <Badge kind={node.badge} /> : null}
       </button>
       {node.dir && isOpen && node.children ? (
-        <ul style={list}>
+        <ul style={list} role="group">
           {node.children.map((c) => (
-            <TreeRow key={c.path} node={c} depth={depth + 1} activePath={activePath} collapsed={collapsed} onToggle={onToggle} onOpen={onOpen} />
+            <TreeRow
+              key={c.path}
+              node={c}
+              depth={depth + 1}
+              activePath={activePath}
+              focusPath={focusPath}
+              collapsed={collapsed}
+              onToggle={onToggle}
+              onOpen={onOpen}
+            />
           ))}
         </ul>
       ) : null}

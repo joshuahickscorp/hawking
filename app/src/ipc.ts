@@ -63,7 +63,10 @@ class LiveTransport implements Transport {
       ws.onmessage = (e) => {
         try {
           const ev = JSON.parse(e.data as string) as UiEvent;
-          lastSeq = ev.seq;
+          // Keep the reconnect cursor monotonic: a stray out-of-order (lower-seq) event must not
+          // rewind it, or a reconnect would re-request / skip the gap. catchUp(lastSeq) on the next
+          // open() backfills anything the socket missed during the disconnect window.
+          lastSeq = Math.max(lastSeq, ev.seq);
           onEvent(ev);
         } catch (err) {
           onError(err instanceof Error ? err : new Error(String(err)));
@@ -139,6 +142,14 @@ const MOCK_MANIFEST = {
   ],
   memory: [{ fact: "DB uses sqlx", confidence: 1.0 }],
   dropped: [{ title: "cargo build log", would_be_tokens: 4200, reason: "low relevance" }],
+  // Spine A: the live, measured context picture (the host emits this for real; the mock
+  // mirrors the shape so the ambient Context-Stack line renders).
+  arch: "qwen",
+  ctx_len_native: 32768,
+  ctx_len_effective: 131072,
+  tq_multiplier: 4.0,
+  tq_estimated: true,
+  live: { effective_ceiling_tokens: 131072, used_tokens_estimate: 14210, occupancy: 0.11, watermark: "normal" as const, estimated: true },
 };
 
 class MockTransport implements Transport {

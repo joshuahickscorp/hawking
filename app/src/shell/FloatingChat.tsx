@@ -3,7 +3,7 @@
   editor (Xcode-assistant style), instead of a fixed dock. Drag by the header. Dock/close from the
   header. Hosts the existing <Chat/> surface unchanged. (The docked ChatPane is kept as the alternate.)
 */
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { useStore } from "../store";
 import { Chat } from "../surfaces/Chat";
 import { Icon } from "./icons";
@@ -38,8 +38,20 @@ export function FloatingChat({
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
+  // Re-clamp into view on window resize (otherwise a panel parked at the old right edge can end up
+  // off-screen after the window shrinks). Same bounds as the drag clamp.
+  useEffect(() => {
+    const clamp = () => {
+      const x = Math.max(8, Math.min(window.innerWidth - 120, pos.x));
+      const y = Math.max(44, Math.min(window.innerHeight - 80, pos.y));
+      if (x !== pos.x || y !== pos.y) onPos({ x, y });
+    };
+    window.addEventListener("resize", clamp);
+    return () => window.removeEventListener("resize", clamp);
+  }, [pos.x, pos.y, onPos]);
+
   return (
-    <section className="floatchat glass" style={{ left: pos.x, top: pos.y }} role="dialog" aria-label="Assistant">
+    <section className="floatchat glass" style={{ left: pos.x, top: pos.y }} role="dialog" aria-label="Executor">
       <div
         className="floatchat__head"
         onPointerDown={onPointerDown}
@@ -49,7 +61,7 @@ export function FloatingChat({
         <span className="floatchat__spark" aria-hidden>
           <Icon name="sparkle" size={15} strokeWidth={1.4} />
         </span>
-        <span className="floatchat__title">Assistant</span>
+        <span className="floatchat__title">Executor</span>
         <span className="floatchat__model">{model}</span>
         <div className="floatchat__actions">
           <button className="floatchat__icon" title="New chat" aria-label="New chat">

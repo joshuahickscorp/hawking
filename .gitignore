@@ -111,3 +111,10 @@ crates/hawking-core/reports/
 
 # local Mac Studio go-prompt
 GO.md
+
+# Tauri sidecar build output and design masters
+app/src-tauri/binaries/
+*.psd
+
+# AI-session handoff notes (not documentation)
+docs/plans/hide_build_handoff_*.md

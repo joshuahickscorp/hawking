@@ -1,40 +1,74 @@
 import { useEffect, useMemo, useState } from "react";
-import { connectStore, useStore, type FleetRun } from "./store";
+import { connectStore, useStore } from "./store";
 import { TRANSPORT_KIND, sendIntent } from "./ipc";
 import { intent } from "./wire";
-import { ActivityBar, type SideView } from "./shell/ActivityBar";
 import { SideBar } from "./shell/SideBar";
 import { EditorArea } from "./shell/EditorArea";
 import { ChatPane } from "./shell/ChatPane";
 import { FloatingChat } from "./shell/FloatingChat";
 import { Toolbar } from "./shell/Toolbar";
 import { StatusBar } from "./shell/StatusBar";
+import { Settings } from "./surfaces/Settings";
+import { Onboarding } from "./surfaces/Onboarding";
 import { CommandPalette, Gate, type Command } from "./ui";
+import { useFocusTrap } from "./shell/a11y";
+import { shouldShowOnboarding } from "./shell/onboarding";
 import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
 
 const INITIAL_FILE = "crates/pool/src/guard.rs";
 
-export function App() {
-  const [view, setView] = useState<SideView>("explorer");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [chatOpen, setChatOpen] = useState(true);
-  const [chatFloating, setChatFloating] = useState(true);
-  const [chatPos, setChatPos] = useState(() => ({
-    x: Math.max(24, (typeof window !== "undefined" ? window.innerWidth : 1280) - 384),
-    y: 52,
-  }));
-  const [panelOpen, setPanelOpen] = useState(true);
-  const [paletteOpen, setPaletteOpen] = useState(false);
+// Lightweight UI-state persistence: the shell layout survives a restart. Wrapped in try/catch so a
+// disabled localStorage never breaks boot.
+function persisted<T>(key: string, fallback: T): T {
+  try {
+    const v = localStorage.getItem("hide." + key);
+    return v == null ? fallback : (JSON.parse(v) as T);
+  } catch {
+    return fallback;
+  }
+}
+function persist(key: string, value: unknown): void {
+  try {
+    localStorage.setItem("hide." + key, JSON.stringify(value));
+  } catch {
+    /* storage unavailable */
+  }
+}
 
-  const [openPath, setOpenPath] = useState<string | null>(INITIAL_FILE);
-  const [tabs, setTabs] = useState<string[]>([INITIAL_FILE]);
+export function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(() => persisted("sidebarOpen", true));
+  const [chatOpen, setChatOpen] = useState(() => persisted("chatOpen", true));
+  const [chatFloating, setChatFloating] = useState(() => persisted("chatFloating", true));
+  const [chatPos, setChatPos] = useState(() =>
+    persisted("chatPos", {
+      x: Math.max(24, (typeof window !== "undefined" ? window.innerWidth : 1280) - 384),
+      y: 52,
+    }),
+  );
+  const [panelOpen, setPanelOpen] = useState(() => persisted("panelOpen", true));
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // First-run: show the no-folder onboarding until a project is opened (or the sample is chosen).
+  const [folderOpened, setFolderOpened] = useState(() => persisted("folderOpened", false));
+
+  const [openPath, setOpenPath] = useState<string | null>(() => persisted("openPath", INITIAL_FILE));
+  const [tabs, setTabs] = useState<string[]>(() => persisted("tabs", [INITIAL_FILE]));
   const [diff, setDiff] = useState<DiffDoc | null>(null);
+
+  // Persist the layout whenever it changes.
+  useEffect(() => persist("sidebarOpen", sidebarOpen), [sidebarOpen]);
+  useEffect(() => persist("chatOpen", chatOpen), [chatOpen]);
+  useEffect(() => persist("chatFloating", chatFloating), [chatFloating]);
+  useEffect(() => persist("chatPos", chatPos), [chatPos]);
+  useEffect(() => persist("panelOpen", panelOpen), [panelOpen]);
+  useEffect(() => persist("openPath", openPath), [openPath]);
+  useEffect(() => persist("tabs", tabs), [tabs]);
+  useEffect(() => persist("folderOpened", folderOpened), [folderOpened]);
 
   const runtimeStatus = useStore((s) => s.runtimeStatus);
   const runtimeDetail = useStore((s) => s.runtimeDetail);
   const activeRunId = useStore((s) => s.activeRunId);
   const notices = useStore((s) => s.notices);
-  const pushNotice = useStore((s) => s.pushNotice);
   const gate = useStore((s) => s.gate);
   const dismissGate = useStore((s) => s.dismissGate);
   const diffPatch = useStore((s) => s.projections.diff);
@@ -90,52 +124,38 @@ export function App() {
     });
   };
 
-  const selectView = (v: SideView) => {
-    if (v === view && sidebarOpen) setSidebarOpen(false);
-    else {
-      setView(v);
-      setSidebarOpen(true);
-    }
-  };
-
-  // Fork the agent state into N parallel attempts (free, local). Backend forks state in plan 2;
-  // here we dispatch the real intent and surface it. The Fleet view (Part 2) renders the branches.
-  const tryN = (n: number) => {
-    const msgs = useStore.getState().messages;
-    const task = [...msgs].reverse().find((m) => m.role === "user")?.text ?? "explore approaches for the current task";
-    void sendIntent(intent.custom("fleet_run", { task, n }));
-    // Optimistic local preview of the forked branches until the backend forks RWKV state (plan 2).
-    const cycle: FleetRun["state"][] = ["active", "active", "waiting", "active", "done", "active", "active", "waiting"];
-    const runs: FleetRun[] = Array.from({ length: n }, (_, i) => ({
-      id: `try_${i + 1}`,
-      objective: `${task.slice(0, 60)} — approach ${i + 1}`,
-      state: i === 0 ? "active" : cycle[i % cycle.length],
-      step: 1 + (i % 5),
-      steps: 6,
-    }));
-    useStore.getState().apply({ seq: 0, session_id: null, kind: { type: "projection_patch", data: { projection: "fleet", patch: { runs } } } });
-    setView("agents");
-    setSidebarOpen(true);
-    pushNotice({ kind: "info", code: "fleet", message: `forked ${n} attempts, free, local` });
-  };
-
   const cancelRun = () => {
     if (activeRunId) void sendIntent(intent.cancelRun(activeRunId));
   };
 
+  // Approve-and-proceed: tell the engine the gate is cleared (it releases + runs the held command),
+  // then drop the prompt. Deny tells the engine to drop the held command. Mirrors the Executor's
+  // inline gate. Both carry the gate id the SecurityGate was emitted with.
+  const approveGate = () => {
+    if (gate) void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
+    dismissGate();
+  };
+  const denyGate = () => {
+    if (gate) void sendIntent(intent.custom("deny_gate", { gate: gate.gate }));
+    dismissGate();
+  };
+
+  // First-run folder choice: a real path (from the desktop folder picker) tells the engine to switch
+  // its workspace root; a null (the sample-workspace fallback) just dismisses first-run. Either way it
+  // is recorded so onboarding shows once.
+  const chooseFolder = (folder: string | null) => {
+    if (folder) void sendIntent(intent.custom("open_folder", { path: folder }));
+    setFolderOpened(true);
+  };
+
   const commands = useMemo<Command[]>(
     () => [
-      { id: "view.explorer", label: "View: Explorer", run: () => selectView("explorer") },
-      { id: "view.agents", label: "View: Agents", run: () => selectView("agents") },
-      { id: "view.context", label: "View: Context", run: () => selectView("context") },
-      { id: "toggle.chat", label: "Toggle Assistant", run: () => setChatOpen((v) => !v) },
-      { id: "toggle.float", label: "Assistant: Float / Dock", run: () => setChatFloating((v) => !v) },
+      { id: "toggle.chat", label: "Toggle Executor", run: () => setChatOpen((v) => !v) },
+      { id: "toggle.float", label: "Executor: Float / Dock", run: () => setChatFloating((v) => !v) },
       { id: "toggle.panel", label: "Toggle Terminal", run: () => setPanelOpen((v) => !v) },
       { id: "toggle.sidebar", label: "Toggle Navigator", run: () => setSidebarOpen((v) => !v) },
-      { id: "try.5", label: "Fork & Try 5", run: () => tryN(5) },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [view, sidebarOpen],
+    [],
   );
 
   const degraded = runtimeStatus === "degraded" || runtimeStatus === "failed" || runtimeStatus === "down";
@@ -147,19 +167,12 @@ export function App() {
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onTogglePanel={() => setPanelOpen((v) => !v)}
         onToggleChat={() => setChatOpen((v) => !v)}
-        onTryN={tryN}
+        onSettings={() => setSettingsOpen(true)}
         onCancel={cancelRun}
       />
 
       <div className="vsc-body">
-        <ActivityBar
-          view={view}
-          sidebarOpen={sidebarOpen}
-          onView={selectView}
-          onSettings={() => setPaletteOpen(true)}
-        />
-
-        {sidebarOpen ? <SideBar view={view} openPath={openPath} onOpen={openFile} /> : null}
+        {sidebarOpen ? <SideBar openPath={openPath} onOpen={openFile} /> : null}
 
         <EditorArea
           openPath={openPath}
@@ -182,8 +195,10 @@ export function App() {
       ) : null}
 
       {degraded ? <DegradedToast status={runtimeStatus} detail={runtimeDetail} /> : null}
-      {gate ? <GatePrompt message={gate.message} gateId={gate.gate} onDismiss={dismissGate} /> : null}
+      {gate ? <GatePrompt message={gate.message} gateId={gate.gate} onApprove={approveGate} onDeny={denyGate} /> : null}
       <CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
+      {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : null}
+      {shouldShowOnboarding(folderOpened) ? <Onboarding onChoose={chooseFolder} /> : null}
       {/* notices surface in the status bar */}
       <span hidden>{notices.length}</span>
     </div>
@@ -201,22 +216,39 @@ function DegradedToast({ status, detail }: { status: string; detail: string | nu
 function GatePrompt({
   message,
   gateId,
-  onDismiss,
+  onApprove,
+  onDeny,
 }: {
   message: string;
   gateId: string;
-  onDismiss: () => void;
+  onApprove: () => void;
+  onDeny: () => void;
 }) {
+  const trapRef = useFocusTrap<HTMLDivElement>();
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onDeny();
+    };
+    document.addEventListener("keydown", onEsc);
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [onDeny]);
   return (
-    <div className="gate-overlay" role="dialog" aria-modal="true">
-      <div className="gate-dialog">
+    <div className="gate-overlay" role="presentation">
+      <div
+        className="gate-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Approval required"
+        tabIndex={-1}
+        ref={trapRef}
+      >
         <div className="t-label" style={{ color: "var(--text-strong)" }}>Approval required</div>
         <div className="t-body" style={{ margin: "var(--ma-4) 0", color: "var(--text)" }}>
           {message}
         </div>
         <div style={{ display: "flex", gap: "var(--ma-2)", justifyContent: "flex-end" }}>
-          <button className="text-button" onClick={onDismiss}>Deny</button>
-          <Gate onClick={onDismiss} title={gateId}>Approve</Gate>
+          <button className="text-button" onClick={onDeny}>Deny</button>
+          <Gate onClick={onApprove} title={gateId}>Approve</Gate>
         </div>
       </div>
     </div>
