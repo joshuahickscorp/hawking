@@ -2,9 +2,9 @@
 # tools/bench/quick_bench.sh — 3-trial median bench for dev-loop iteration.
 #
 # NOT authoritative — bench numbers are contaminated when run from inside
-# an active Claude Code session (4-5x slower than truth, see
+# an active coding agent session (4-5x slower than truth, see
 # reports/v0.3.5_clean_rebench.md). Use tools/bench/clean_bench.sh from a
-# Cmd+Q-Claude terminal for shippable numbers.
+# Cmd+Q-the-agent terminal for shippable numbers.
 #
 # This wrapper exists to give fast structural-metric feedback (counters
 # from --trace-dispatch are load-independent and accurate even contaminated).
@@ -12,28 +12,32 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
 TOKENS="${TOKENS:-32}"
 BIN="./target/release/hawking"
 
-CLAUDE_RUNNING=0
-if pgrep -f "Claude.app" > /dev/null 2>&1; then
-    CLAUDE_RUNNING=1
-    echo "⚠️  Claude desktop app is running — dec_tps will be contaminated." >&2
+AGENT_RUNNING=0
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" > /dev/null 2>&1; then
+    AGENT_RUNNING=1
+    echo "⚠️  the agent desktop app is running — dec_tps will be contaminated." >&2
     echo "   Use tools/bench/clean_bench.sh for shippable numbers." >&2
 fi
 
 # `--strict` (or STRICT=1 env) blocks contaminated runs entirely. Use when
 # you intend to gate a wedge on absolute dec_tps — past sessions wasted
 # hours treating contaminated numbers as truth (see bench_contamination.md
-# and feedback_bench_with_claude_open.md). Paired-delta runs don't need
+# and feedback_bench_with_agent_open.md). Paired-delta runs don't need
 # this; absolute-tps gates do.
 STRICT_FLAG="${STRICT:-}"
 if [[ "${1:-}" == "--strict" ]]; then STRICT_FLAG=1; shift || true; fi
-if [[ -n "$STRICT_FLAG" ]] && [[ "$CLAUDE_RUNNING" == "1" ]]; then
-    echo "❌ STRICT mode: refusing to bench with Claude running." >&2
-    echo "   Cmd+Q the Claude desktop app and any CLI sessions, then re-run." >&2
+if [[ -n "$STRICT_FLAG" ]] && [[ "$AGENT_RUNNING" == "1" ]]; then
+    echo "❌ STRICT mode: refusing to bench with the agent running." >&2
+    echo "   Cmd+Q the agent desktop app and any CLI sessions, then re-run." >&2
     exit 64
 fi
 

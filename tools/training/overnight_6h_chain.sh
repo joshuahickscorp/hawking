@@ -20,14 +20,14 @@
 #   M6  wrap                 ~5 min    — synthesizes everything into a single review memo.
 #
 # Hard rules baked in (from user globals + project memory):
-#   - No Claude git attribution on any commit
+#   - No agent git attribution on any commit
 #   - No autonomous commits unless CHAIN_AUTO_COMMIT=1
 #   - Disk-watcher PAUSEs the chain if <10 GB free
 #   - RAM-watcher PAUSEs the chain if <2 GB free (M3 Pro 18 GB)
 #   - All artifacts to artifacts/runs/overnight_6h/
 #   - Pause/resume via tools/bench/pause_bench.sh / resume_bench.sh
 #
-# Launch (survives Claude crash):
+# Launch (survives agent crash):
 #   nohup ./tools/training/overnight_6h_chain.sh > /dev/null 2>&1 & disown
 #
 # Monitor:
@@ -524,7 +524,7 @@ else
     {
         echo "# High-confidence stack matrix — $(stamp)"
         echo ""
-        echo "TRIALS=20 × 3 prompts × 4 configs. 64-tok decode. Paired (Claude-live OK per project memory)."
+        echo "TRIALS=20 × 3 prompts × 4 configs. 64-tok decode. Paired (agent-live OK per project memory)."
         echo ""
         echo "Configs:"
         echo "- **baseline** — no flags"

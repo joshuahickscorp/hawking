@@ -27,16 +27,16 @@
 #   * Every external call is timeout-wrapped; a missing engine is SKIPPED with a
 #     clear note + the install command, never a hang or a hard failure.
 #
-# CLEAN ROOM: for trustworthy absolute numbers, quit Claude/Cursor and any heavy
-# GPU app first (a background Claude session inflates tps/J ~4-5x). The preflight
-# warns (or aborts with STRICT_CLEAN=1).
+# CLEAN ROOM: for trustworthy absolute numbers, quit the coding agent/Cursor and
+# any heavy GPU app first (a background agent session inflates tps/J ~4-5x). The
+# preflight warns (or aborts with STRICT_CLEAN=1).
 #
 # Wall-clock is intentionally not optimized — this is the thorough latent test.
 #
 # USAGE (run in a terminal with everything else closed):
 #   bash tools/bench/compare_sota.sh                 # full run, all engines found
 #   QUICK=1 bash tools/bench/compare_sota.sh         # fewer trials/contexts/prompts
-#   STRICT_CLEAN=1 bash tools/bench/compare_sota.sh  # abort if Claude is running
+#   STRICT_CLEAN=1 bash tools/bench/compare_sota.sh  # abort if the agent is running
 #   TRIALS=5 TOK=256 bash tools/bench/compare_sota.sh
 #
 # ENV OVERRIDES:
@@ -53,6 +53,11 @@
 #   QUALITY_RUNTIME_PROFILE=exact
 # =============================================================================
 set -uo pipefail
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 cd "$(dirname "$0")/../.." || exit 2
 REPO="$(pwd)"
 
@@ -204,9 +209,9 @@ QWEN_PROFILE="$(model_profile "$QWEN_GGUF" || true)"
 # ---------------------------------------------------------------- preflight
 say "=== compare_sota: Hawking vs llama.cpp vs MLX ($STAMP) ==="
 CLEAN="clean"
-if pgrep -f "Claude.app" >/dev/null 2>&1 || pgrep -xi claude >/dev/null 2>&1; then
-  CLEAN="DIRTY (Claude running — absolute tps/J inflate; close it for trustworthy numbers)"
-  if [ "${STRICT_CLEAN:-0}" = 1 ]; then say "ABORT: STRICT_CLEAN=1 and Claude is running."; exit 3; fi
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1 || pgrep -xi "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+  CLEAN="DIRTY (agent running — absolute tps/J inflate; close it for trustworthy numbers)"
+  if [ "${STRICT_CLEAN:-0}" = 1 ]; then say "ABORT: STRICT_CLEAN=1 and the agent is running."; exit 3; fi
 fi
 busy_gpu="$(ps ax -o command= | grep -E 'hawking (generate|serve)|llama-(cli|bench|server)|mlx_lm' | grep -v grep || true)"
 

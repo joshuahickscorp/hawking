@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #
-# tools/bench/coexist_bench.sh — bench WITHOUT requiring Claude to quit.
+# tools/bench/coexist_bench.sh — bench WITHOUT requiring the agent to quit.
 #
-# Trades absolute accuracy for the ability to run while Claude.app is open.
+# Trades absolute accuracy for the ability to run while the agent app is open.
 # Use when:
-#   - You have an overnight Claude session you don't want to interrupt.
+#   - You have an overnight agent session you don't want to interrupt.
 #   - You want fast relative-change feedback between two commits.
 #
 # Do NOT use for:
-#   - Shippable v-version baselines (use clean_bench.sh from a Claude-quit terminal).
+#   - Shippable v-version baselines (use clean_bench.sh from an agent-quit terminal).
 #   - Flipping defaults via the bench-first gate.
 #
 # Mitigations vs naked quick_bench:
@@ -37,6 +37,10 @@
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 WEIGHTS="${WEIGHTS:-models/deepseek-v2-lite-q4.gguf}"
 PROFILE="${PROFILE:-profiles/deepseek-v2-lite-q4.m3pro18.json}"
@@ -69,27 +73,27 @@ log() {
     fi
 }
 
-log "=== COEXIST MODE bench — Claude.app may be running ==="
+log "=== COEXIST MODE bench — the agent app may be running ==="
 log "  trials=${TRIALS}  tokens=${TOKENS}  anchor=${ANCHOR} dec_tps"
 log "  output: $OUT_DIR"
 
-# Pre-flight: build sanity (no Claude gate, that's the point).
+# Pre-flight: build sanity (no agent gate, that's the point).
 if ! "$BIN" --version >/dev/null 2>&1; then
     log "binary missing or broken — running cargo build --release --workspace..."
     cargo build --release --workspace >/dev/null 2>&1
 fi
 
-# Confirm Claude.app is actually running (else just use clean_bench).
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-    log "Claude.app: present (expected for coexist mode)"
+# Confirm the agent app is actually running (else just use clean_bench).
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+    log "agent app: present (expected for coexist mode)"
     log "  → mitigations active: best-tier scheduling, caffeinate, ${TRIALS}-trial median"
 else
-    log "Claude.app: NOT running — consider clean_bench.sh for higher-fidelity numbers"
+    log "agent app: NOT running — consider clean_bench.sh for higher-fidelity numbers"
 fi
 
 # Spotlight check (don't gate, just warn).
-TOP=$(ps -axo %cpu,comm | sort -nr | awk '$2 !~ /dismantle|Claude/ {print; exit}')
-log "top non-bench non-Claude process: $TOP"
+TOP=$(ps -axo %cpu,comm | sort -nr | awk -v agent_pat="${AGENT_APP_PGREP:?see .agent_env.example}" '$2 !~ /dismantle/ && $2 !~ agent_pat {print; exit}')
+log "top non-bench non-agent process: $TOP"
 
 # ─── WARMUP TRIAL ─────────────────────────────────────────────────────────────
 # One throwaway 4-token run to warm OS page cache + Metal pipeline cache +
@@ -112,13 +116,13 @@ log "warmup done — caches primed"
 # ─── TRIAL LOOP ───────────────────────────────────────────────────────────────
 # Note: NO `nice -n 19 taskpolicy -b` here. That's the Phase 1 cooperative
 # scheduling rule for hauls running ALONGSIDE slm — for this bench we want
-# the OPPOSITE: elevate priority so Claude gives us cycles, not the other way.
+# the OPPOSITE: elevate priority so the agent gives us cycles, not the other way.
 TRIALS_TPS=()
 for i in $(seq 1 "$TRIALS"); do
     OUT_JSON="$OUT_DIR/trial_${i}.json"
     TRACE_JSON="$OUT_DIR/trial_${i}.trace.json"
 
-    # 30s settle between trials so we don't catch a Claude GC pause.
+    # 30s settle between trials so we don't catch an agent GC pause.
     if [[ $i -gt 1 ]]; then
         log "settling 30s between trials..."
         sleep 30
@@ -285,7 +289,7 @@ log "appended to bench_results/bench_history.jsonl"
 # ─── SUMMARY.MD ───────────────────────────────────────────────────────────────
 {
     printf '# coexist bench — %s\n\n' "$(ts)"
-    printf '**Mode:** COEXIST (Claude.app may be present, not closed)\n'
+    printf '**Mode:** COEXIST (the agent app may be present, not closed)\n'
     printf '**Authoritative:** No — use only for relative comparison.\n\n'
     printf '## Trials\n'
     for i in $(seq 1 "$TRIALS"); do

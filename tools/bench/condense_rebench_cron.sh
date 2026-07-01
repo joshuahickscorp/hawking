@@ -48,7 +48,7 @@ PY
   echo "[cron] === DOCTOR: 3-bit, 200 steps ==="
   python3.12 tools/condense/doctor_qat.py 3 200 2e-5 scratch/qwen-05b-healed3.safetensors 2>&1 | tail -8 || echo "[cron] doctor-3 failed"
 
-  # ── 2. tps/footprint: full rigorous bench, CLEAN (cron has no Claude inflating tps) ──
+  # ── 2. tps/footprint: full rigorous bench, CLEAN (cron has no agent inflating tps) ──
   echo "[cron] === SOTA bench (Hawking vs llama vs MLX) ==="
   TRIALS=5 TOK=256 BIT_TARGETS=8,6,5,4,3,2,1 STRICT_CLEAN=0 \
     OUT="reports/sota-compare/cron-${STAMP}" bash tools/bench/compare_sota.sh

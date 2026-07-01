@@ -13,7 +13,7 @@ Benchmark harness for dismantle. All numbers are reproducible from this director
 | per-kernel comparison | `dismantle bench-kernel` | `--iterations 500` | <30 s |
 | cross-commit decision | `bench_diff.sh` | HEAD~1 HEAD | instant |
 
-**For authoritative ship numbers: quit Claude.app first, then run `clean_bench.sh` from a fresh terminal.** A running Claude session inflates dec_tps 4–5×; the inflation cancels in paired A/B deltas but contaminates absolute numbers.
+**For authoritative ship numbers: quit the agent app first, then run `clean_bench.sh` from a fresh terminal.** A running agent session inflates dec_tps 4–5×; the inflation cancels in paired A/B deltas but contaminates absolute numbers.
 
 ## Standardized parameters (do not change per session)
 
@@ -37,7 +37,7 @@ median: 19.8 dec_tps (95% CI: [18.9, 20.7], IQR: 1.4)
 - **IQR**: interquartile range (Q3 − Q1). `IQR/median > 15%` triggers `⚠ SPREAD HIGH`.
 - **trimmed_mean**: median with 25% dropped from each tail (N≥4). Robust to a single anomalous trial.
 
-`⚠ SPREAD HIGH` means Claude.app was probably doing heavy GPU work during some trials. Discard and re-run with more settling time, or note it as a coexist-mode limitation.
+`⚠ SPREAD HIGH` means the agent app was probably doing heavy GPU work during some trials. Discard and re-run with more settling time, or note it as a coexist-mode limitation.
 
 ## bench_diff.sh — cross-commit significance test
 

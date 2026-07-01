@@ -9,7 +9,7 @@
 #    * 4-RHT for completeness
 #  The 6 already-measured results (f16, 4/3/2/1-AWQ, 1-RHT) are SEEDED so they
 #  skip — only the ~10 new configs run. Long run (~10-15h) → detached; you close
-#  Claude, I sample/update and watch for optimizations.
+#  the agent, I sample/update and watch for optimizations.
 #
 #      ./run_7b_frontier.sh            # launch / resume + arm backstop
 #      ./run_7b_frontier.sh status     # results so far (run anytime)
@@ -197,6 +197,6 @@ PY
     if [ -n "$(_live_verifier)" ]; then echo "verifier already armed"
     else echo "arming verifier…"; _arm_verifier; fi
     sleep 12; echo ""; "$0" status
-    echo ""; echo "✅ Safe to close terminal + Claude — reparents to launchd, stays awake on AC."
+    echo ""; echo "✅ Safe to close terminal + agent — reparents to launchd, stays awake on AC."
     echo "   Check anytime:  ./run_7b_frontier.sh status" ;;
 esac

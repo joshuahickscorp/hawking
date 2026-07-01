@@ -84,7 +84,7 @@ cat > "$REPORT" <<EOF
 **Profile:** $PROFILE
 **Prompt:** "$PROMPT"
 **Tokens/trial:** $TOKENS  ·  **Trials/lever:** $TRIALS  ·  **Seed:** $SEED
-**Mode:** paired-delta — Claude may be live; absolute numbers contaminated, relative deltas valid (per memory feedback_bench_with_claude_open.md).
+**Mode:** paired-delta — the agent may be live; absolute numbers contaminated, relative deltas valid (see project design memory).
 
 **Flag probe:**
 - vocab-prune: $HAS_VOCAB_PRUNE
@@ -206,7 +206,7 @@ echo "**Raw output per lever:** $RAW/" >> "$REPORT"
 echo "" >> "$REPORT"
 echo "## Notes" >> "$REPORT"
 echo "" >> "$REPORT"
-echo "- Absolute tps is contaminated 4-5× by Claude (per memory bench_contamination.md). Δ vs L0 is the trustworthy column." >> "$REPORT"
+echo "- Absolute tps is contaminated 4-5× by a live agent session (see project design memory). Δ vs L0 is the trustworthy column." >> "$REPORT"
 [[ "$HAS_Q8_KV" = "0" ]] && echo "- **Q8 KV skipped:** binary lacks the flag. Session C may have landed Rust changes but the binary needs \`cargo build --release -p hawking\` to surface them." >> "$REPORT"
 
 echo

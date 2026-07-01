@@ -48,7 +48,7 @@ Tests 3 and 4 SKIP silently without model weights — SKIP is a pass. FAIL is no
 | NEVER flip `HAWKING_QWEN_EVENT_HORIZON` default to on | additive + flag-gated invariant |
 | NEVER write a new Metal shader | out of scope |
 | NEVER commit without parity gate passing | losslessness is non-negotiable |
-| NEVER commit with AI attribution | per global CLAUDE.md |
+| NEVER commit with AI attribution | per global AGENT.md |
 
 ## Wall-clock chain (run in priority order after source stops)
 

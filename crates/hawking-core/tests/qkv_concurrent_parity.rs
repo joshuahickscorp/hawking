@@ -7,7 +7,7 @@
 //! greedy tokens identical).
 //!
 //! If parity fails the spike halts per the plan:
-//! `~/.claude/plans/closing-the-2-4-virtual-phoenix.md`.
+//! (see project design memory: closing-the-2-4-virtual-phoenix).
 //!
 //! Run via:
 //!

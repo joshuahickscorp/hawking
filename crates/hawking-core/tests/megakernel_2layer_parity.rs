@@ -50,7 +50,7 @@ const ROPE_THETA: f32 = 1_000_000.0;
 /// f16 carries ~10 mantissa bits → ~1e-3 RELATIVE precision, so for a
 /// value of magnitude ~10 the absolute fp16 store noise is ~1e-2. The
 /// effective gate is `|diff| ≤ ATOL + RTOL * |want|`, mirroring numpy's
-/// `assert_allclose`. CLAUDE.md § "Verification rule" specifies atol=1e-3
+/// `assert_allclose`. AGENT.md § "Verification rule" specifies atol=1e-3
 /// fp16 for kernel parity with O(1) inputs; here the synthetic input
 /// drives activations into O(10) range so the relative term takes over.
 const RTOL: f32 = 2e-3;

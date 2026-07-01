@@ -75,7 +75,7 @@
 # RUN-WHERE
 #   GPU lane (this is a real two-model forward job). Paired-delta contamination
 #   rules do NOT apply — these are absolute logit dumps; their ARGMAX agreement
-#   is load-independent, so it is safe to run with Claude open, but heavy. The
+#   is load-independent, so it is safe to run with the agent open, but heavy. The
 #   oracle math at the end is pure CPU numpy.
 #
 # USAGE
@@ -188,7 +188,7 @@ export_logits() {  # $1=gguf  $2=tag
   local bin="$WORKDIR/${tag}.bin" npy="$WORKDIR/${tag}.npy"
   echo "  [$tag] llama-perplexity --save-all-logits over the corpus (teacher-forced)..."
   echo "        $PERP_BIN -m $gguf -f $CORPUS_TXT -c $CTX --chunks $CHUNKS --save-all-logits $bin"
-  # nice/taskpolicy: co-existence (CLAUDE.md memory-coexist rule) — yield to any
+  # nice/taskpolicy: co-existence (AGENT.md memory-coexist rule) — yield to any
   # foreground GPU job. -ngl 999 keeps all layers on the GPU (Metal) lane.
   nice -n 19 taskpolicy -b "$PERP_BIN" \
       -m "$gguf" -f "$CORPUS_TXT" -c "$CTX" --chunks "$CHUNKS" \

@@ -76,7 +76,7 @@ WHY THE WEIGHT-ONLY SURROGATE OVER/UNDER-CREDITS THE REAL IMATRIX
     A weight-RMSE proxy can show the assignment is byte-feasible and rank-
     sensible, but only the Colab logit/KL gate decides GO/NO-GO.
 
-KILL-PROTOCOL FRAMING (CLAUDE.md / bible 8.3.1)
+KILL-PROTOCOL FRAMING (AGENT.md / bible 8.3.1)
 -----------------------------------------------
 This is a FIRST CUT. It does NOT record a kill. A weight-only proxy cannot
 legitimately kill an activation-driven method (that would be a Type-2 error):

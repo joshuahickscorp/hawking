@@ -2,16 +2,17 @@
 # =============================================================================
 # tools/bench/clean_bench_queue.sh — THE single command to run in a clean window.
 #
-# Clean-room downtime (Claude.app + Colab both quit) is scarce. This script
+# Clean-room downtime (the agent app + Colab both quit) is scarce. This script
 # batches EVERY pending ABSOLUTE / clean-room-gated measurement into one pass so
 # the window is maximally productive, and tees a consolidated report.
 #
 # It is the deferred-absolute companion to final_analysis.sh (which is the
-# contamination-robust day-to-day runner that works with Claude OPEN). Anything
-# here needs the clean room because it reports an ABSOLUTE number (tps, J/tok,
-# per-kernel GPU-us) where the ~4-5x session inflation does NOT cancel.
+# contamination-robust day-to-day runner that works with the agent OPEN).
+# Anything here needs the clean room because it reports an ABSOLUTE number
+# (tps, J/tok, per-kernel GPU-us) where the ~4-5x session inflation does NOT
+# cancel.
 #
-# USAGE (quit Claude.app AND any Colab/GPU job first):
+# USAGE (quit the agent app AND any Colab/GPU job first):
 #   tools/bench/clean_bench_queue.sh                 # run all sections
 #   tools/bench/clean_bench_queue.sh --only anchor,energy
 #   tools/bench/clean_bench_queue.sh --skip trace    # everything except the MST diff
@@ -39,6 +40,10 @@
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 ALL_SECTIONS="anchor energy trace batch"
 ONLY=""; SKIP=""
@@ -96,9 +101,10 @@ declare -a RESULTS
 banner "PREFLIGHT — clean-room guard"
 abort=0
 # Match clean_room_batch.sh's canonical gate: the desktop app AND the CLI/agent.
-if pgrep -f "Claude.app" >/dev/null 2>&1 || pgrep -xi "claude" >/dev/null 2>&1 \
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1 \
+   || pgrep -xi "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1 \
    || pgrep -f "MASTER_LOOP" >/dev/null 2>&1; then
-  echo "FAIL: a Claude session (app or CLI) is running — absolute numbers inflate ~4-5x. Quit it and re-run."
+  echo "FAIL: an agent session (app or CLI) is running — absolute numbers inflate ~4-5x. Quit it and re-run."
   abort=1
 fi
 # Any other heavy GPU/CPU hog (Colab via a browser tab won't show here, but a
@@ -112,7 +118,7 @@ if [[ "$abort" == 1 ]]; then
   echo "Aborting — the room is not clean."
   exit 3
 fi
-echo "OK: Claude.app not detected. Proceeding."
+echo "OK: agent app not detected. Proceeding."
 echo "log: $LOG"
 
 # Self-heal a stale kernel profile: a shader change invalidates the committed

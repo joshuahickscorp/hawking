@@ -18,7 +18,7 @@
 # dominant GEMV — that requires a real MST on BOTH engines, which is THIS tool.
 #
 # CONTAMINATION: absolute GPU-us are meaningless with another GPU workload
-# open. This script HARD-ABORTS if Claude.app is running. RUN IT CLAUDE-QUIT.
+# open. This script HARD-ABORTS if the agent app is running. RUN IT AGENT-QUIT.
 #
 # Usage:
 #   tools/bench/mst_diff.sh                 # Qwen-3B-Q4_K_M defaults, 256 tok
@@ -41,6 +41,10 @@
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 # --- knobs -----------------------------------------------------------------
 BIN="${BIN:-./target/release/hawking}"
@@ -78,13 +82,13 @@ hr()   { printf '\n=================== %s ===================\n' "$1"; }
 # ===========================================================================
 hr "STAGE 0: preflight"
 
-# 0a. Claude.app => HARD ABORT (absolute GPU-us would be contaminated).
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-    die "Claude.app is running. Absolute GPU-us in an MST are contaminated 4-5x.
-       Cmd+Q Claude and re-run this script. (This is the single check that makes
+# 0a. agent app => HARD ABORT (absolute GPU-us would be contaminated).
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+    die "The agent app is running. Absolute GPU-us in an MST are contaminated 4-5x.
+       Cmd+Q the agent and re-run this script. (This is the single check that makes
        the per-call GPU-us DIFF trustworthy — it is not optional.)"
 fi
-note "[ok] Claude.app not running"
+note "[ok] agent app not running"
 
 # 0b. xcrun present.
 command -v xcrun >/dev/null 2>&1 \
@@ -228,7 +232,7 @@ else
   DIFF_JSON='{}'
 fi
 
-# The report is plain markdown; the human reads it Claude-quit and pastes the
+# The report is plain markdown; the human reads it agent-quit and pastes the
 # verdict line into the kill-ledger / closeout.
 {
   echo "# MST diff — dismantle vs llama.cpp (single-stream 1.6x-gap decider)"

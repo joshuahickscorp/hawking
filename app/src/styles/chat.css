@@ -1,4 +1,4 @@
-/* chat.css — ChatGPT/Codex-style chat surface styling. Owned by the chat restyle.
+/* chat.css — ChatGPT-style, flat pill chat surface styling. Owned by the chat restyle.
    Imported after theme.css, so these rules win on equal specificity. */
 
 /* ---- conversation column ---- */
@@ -209,7 +209,7 @@
   background: var(--surface-3);
 }
 
-/* ---- composer (Codex-style rounded input) ---- */
+/* ---- composer (rounded composer input) ---- */
 .composer-zone {
   padding: var(--ma-2) var(--ma-4) var(--ma-4);
 }

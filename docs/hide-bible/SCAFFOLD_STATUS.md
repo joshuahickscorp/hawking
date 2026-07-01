@@ -3,7 +3,7 @@
 > **Date:** 2026-06-27
 > **State:** the 11-crate HIDE backend is complete as a runnable, headless **vestigial structure** — every bible contract has a real, tested implementation or an explicitly documented seam. Nothing here is wired to a live model yet (that waits on Hawking-proper: Condense + the 32B `.tq`), and there is no GUI yet (the Tauri frontend is deferred). But the agent loop and all capabilities are built; "no further development on the agent loop" is satisfied.
 >
-> This supersedes the *before* picture in [SCAFFOLD_AUDIT.md](SCAFFOLD_AUDIT.md), which captured the original Codex skeleton.
+> This supersedes the *before* picture in [SCAFFOLD_AUDIT.md](SCAFFOLD_AUDIT.md), which captured the original scaffold skeleton.
 
 ## How it was built
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # tools/training/corpus_monitor.sh
 #
-# One-shot status check for the autonomous corpus build. The Claude
-# monitor-session calls this every 15–30 min (via /loop or manually)
+# One-shot status check for the autonomous corpus build. The coding
+# agent's monitor session calls this every 15–30 min (via /loop or manually)
 # and reads the JSON-ish summary on stdout.
 #
 # Three classes of output:

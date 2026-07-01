@@ -2,8 +2,8 @@
 # ============================================================================
 #  7B quality-ladder — fire-and-forget overnight runner.
 #
-#  Run this ONCE, then close the terminal AND Claude. Everything below reparents
-#  to launchd (PPID 1) and survives disconnect — closing Claude actually HELPS
+#  Run this ONCE, then close the terminal AND the agent. Everything below reparents
+#  to launchd (PPID 1) and survives disconnect — closing the agent actually HELPS
 #  (frees ~3GB RAM for the baker).
 #
 #      ./run_7b_ladder.sh            # launch / resume the ladder + arm the backstop
@@ -85,7 +85,7 @@ PY
     echo ""
     "$0" status
     echo ""
-    echo "✅ Safe to close this terminal AND Claude now — both reparent to launchd."
+    echo "✅ Safe to close this terminal AND the agent now — both reparent to launchd."
     echo "   Check anytime:  ./run_7b_ladder.sh status"
     ;;
 esac

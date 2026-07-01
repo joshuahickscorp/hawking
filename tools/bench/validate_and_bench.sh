@@ -134,7 +134,7 @@ if [[ "$SKIP_BENCH" == "1" ]]; then
     skip "SKIP_BENCH=1 — skipping report_card"
     (( SKIPS++ )) || true
 else
-    echo "  Note: absolute numbers require a clean room (close Claude before this step)."
+    echo "  Note: absolute numbers require a clean room (close the agent before this step)."
     echo "  Paired ratios (lane vs lane) are contamination-robust."
     echo ""
     tools/bench/report_card.sh

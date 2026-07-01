@@ -10,7 +10,7 @@ trellis-coded quantization, ~3.0 bits) is USABLE as the deep byte-cut codec for
 Qwen2.5-3B decode — i.e. whether a ~3-bit trellis MATCHES-OR-BEATS Q4_K_M's
 ~4.5-bit grid on the metrics that matter (reconstruction RMSE, and on Colab the
 logit-cosine / KL / argmax-agreement family the W4A8 work uses). Oracle-before-
-body discipline (CLAUDE.md): no QTIP kernel is written until this clears.
+body discipline (AGENT.md): no QTIP kernel is written until this clears.
 
 THE HARD CONSTRAINT (why the decisive verdict is Colab, not local)
 ------------------------------------------------------------------
@@ -48,7 +48,7 @@ What runs IN-SESSION (CPU/NumPy, contamination-immune):
                            draw -> Q4_K pays real quant error incl. the outlier
                            tax; NOT the forbidden requant-from-already-Q4).
 
-KILL-PROTOCOL FRAMING (CLAUDE.md / bible §8.3.1)
+KILL-PROTOCOL FRAMING (AGENT.md / bible §8.3.1)
 ------------------------------------------------
 QTIP is the named, alive reframe of the Type-1 L1.5 gather-wall kill. This is its
 named cheap quality oracle. GO floors (design §5.1): QTIP-3.0 RMSE <= Q4_K_M RMSE

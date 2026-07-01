@@ -10,7 +10,7 @@
 //!     weight-amortizing GEMM over B columns instead of B sequential CPU matmuls.
 //!
 //! The SPEEDUP RATIO and the flag-ON/OFF DELTA are contamination-robust (the
-//! ~4-5x Claude inflation cancels), so they are valid with Claude open. The
+//! ~4-5x agent inflation cancels), so they are valid with the agent open. The
 //! ABSOLUTE tps needs a clean room. R2+R3 are baked into BOTH configs; to isolate
 //! their delta, A/B this bench vs commit 8aba79e (R1-only, pre-R2/R3).
 //!
@@ -113,7 +113,7 @@ fn multiseq_aggregate_speedup() {
             off[idx], on[idx]
         );
     }
-    println!("(ratio/delta cancel Claude's ~4-5x inflation; ABSOLUTE tps needs a clean room.)");
+    println!("(ratio/delta cancel the agent's ~4-5x inflation; ABSOLUTE tps needs a clean room.)");
     println!("(batch_ceiling.py predicts ~3.5-5.6x realistic aggregate @ B=8.)");
     println!(
         "(R2+R3 are unconditional; to isolate their delta, A/B this bench vs commit 8aba79e.)\n"

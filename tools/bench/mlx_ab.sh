@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 # tools/bench/mlx_ab.sh — MLX CEILING TEST (Wave-6 decisive measurement)
 #
 # PURPOSE
@@ -33,11 +36,11 @@
 #
 # CONTAMINATION
 # =============
-# This bench is contaminated (Claude may be open). The ratio MLX/dismantle
+# This bench is contaminated (the agent may be open). The ratio MLX/dismantle
 # is what matters, not the absolute numbers, and contamination is roughly
 # constant across both arms on the same machine state. The absolute numbers
-# are annotated as contaminated if Claude.app is detected.
-# For authoritative absolute numbers: Cmd+Q Claude, open a fresh terminal,
+# are annotated as contaminated if the agent app is detected.
+# For authoritative absolute numbers: Cmd+Q the agent, open a fresh terminal,
 # re-run. The ratio verdict should hold either way.
 #
 # Co-existence: dismantle runs under nice -n 19 taskpolicy -b (background QoS
@@ -199,9 +202,9 @@ HAWKING_VERSION="$("$BIN" --version 2>&1 | head -1 | awk '{print $2}' || echo un
 # ---------------------------------------------------------------------------
 # Contamination check (informational, does NOT block)
 # ---------------------------------------------------------------------------
-CLAUDE_RUNNING=0
-if pgrep -f "Claude.app" > /dev/null 2>&1; then
-  CLAUDE_RUNNING=1
+AGENT_RUNNING=0
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" > /dev/null 2>&1; then
+  AGENT_RUNNING=1
 fi
 
 # ---------------------------------------------------------------------------
@@ -223,12 +226,12 @@ printf 'mlx model id   : %s\n' "$MLX_MODEL_ID"
 printf 'dismantle wts  : %s\n' "$WEIGHTS"
 printf 'tokens         : %s\n' "$TOKENS"
 printf 'prompt         : "%s"\n' "$PROMPT"
-if [[ "$CLAUDE_RUNNING" == 1 ]]; then
+if [[ "$AGENT_RUNNING" == 1 ]]; then
   printf '\n'
-  printf 'NOTE: Claude.app is running — absolute tps values are contaminated\n'
+  printf 'NOTE: the agent app is running — absolute tps values are contaminated\n'
   printf '  (~4-5x slower than clean-room). The MLX/dismantle RATIO is still\n'
   printf '  valid because contamination is constant across both arms.\n'
-  printf '  For authoritative absolute numbers: Cmd+Q Claude, open fresh terminal.\n'
+  printf '  For authoritative absolute numbers: Cmd+Q the agent, open fresh terminal.\n'
 fi
 printf '\n'
 
@@ -273,7 +276,7 @@ median_of() {
 #
 # WARM-UP (UNTIMED): the first invocation downloads the ~1.7GB MLX model and
 # JIT-compiles the Metal kernels. If that happens INSIDE a timed trial, the
-# per-trial alarm (600s) can fire mid-download under Claude contamination — the
+# per-trial alarm (600s) can fire mid-download under agent contamination — the
 # kill leaves HF's partial blob corrupt, the next trial restarts from zero, and
 # the run never converges. So do the download/compile here, with NO timer.
 printf '[MLX warm-up — first run downloads ~1.7GB + compiles kernels, UNTIMED]\n'
@@ -391,7 +394,7 @@ printf '\n'
 awk \
   -v mlx="$MLX_MEDIAN" \
   -v dis="$HAWKING_MEDIAN" \
-  -v contaminated="$CLAUDE_RUNNING" \
+  -v contaminated="$AGENT_RUNNING" \
   -v llamacpp="49" \
 'BEGIN {
   if (dis <= 0) {
@@ -408,7 +411,7 @@ awk \
   printf "\n"
 
   if (contaminated) {
-    printf "NOTE: Values above are contaminated (Claude open). Ratio is valid; absolutes are not.\n"
+    printf "NOTE: Values above are contaminated (agent open). Ratio is valid; absolutes are not.\n"
     printf "\n"
   }
 
@@ -434,7 +437,7 @@ awk \
   } else {
     printf "VERDICT: MLX hits %.1f tok/s — ratio %.3fx is in the AMBIGUOUS band (1.1x-1.3x).\n", mlx, ratio
     printf "  → INCONCLUSIVE. Run more trials (--mlx-trials 5 --dismantle-trials 5)\n"
-    printf "    and/or run clean (Cmd+Q Claude + fresh terminal) for authoritative absolutes.\n"
+    printf "    and/or run clean (Cmd+Q the agent + fresh terminal) for authoritative absolutes.\n"
     printf "  → If MLX absolute is 40+ clean: structural. If MLX absolute is ~30 clean: HW-bound.\n"
   }
   printf "\n"
@@ -459,7 +462,7 @@ result = {
     "dismantle_version":  "$HAWKING_VERSION",
     "tokens":             $TOKENS,
     "prompt":             "$PROMPT",
-    "contaminated":       bool($CLAUDE_RUNNING),
+    "contaminated":       bool($AGENT_RUNNING),
     "mlx_tps_trials":     mlx_trials,
     "dismantle_tps_trials": dis_trials,
     "mlx_median_tps":     mlx_med,

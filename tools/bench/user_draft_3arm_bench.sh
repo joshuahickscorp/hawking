@@ -35,7 +35,7 @@
 # CLEAN-ROOM  ⚠  This is an ABSOLUTE-tps comparison across THREE different
 #   decode loops, so it is contamination-sensitive in a way a pure A/B is not:
 #   the in-session table in draft_tuning_verify_findings is contaminated (1.3-30x
-#   swings, memory/bench_contamination.md). The diagnosis §6 mandates Claude
+#   swings, memory/bench_contamination.md). The diagnosis §6 mandates the agent
 #   QUIT for the tps verdict. The harness still INTERLEAVES the arms (A,B,C,A,..)
 #   so thermal drift cancels; the per-arm draft_accepted + forward-count
 #   mechanism check is load-independent and trustworthy even if run dirty, but
@@ -63,6 +63,9 @@
 #   ALLOW_DIRTY=1 tools/bench/user_draft_3arm_bench.sh       # mechanism-only, tps CONTAMINATED
 # =============================================================================
 set -uo pipefail
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 cd "$(dirname "$0")/../.."
 
 # ---- config (override via env) ---------------------------------------------
@@ -113,19 +116,19 @@ mkdir -p "$(dirname "$OUT")"
 
 # Clean-room gate (the dec_tps verdict needs it; mechanism check does not).
 DIRTY=0
-if pgrep -f "Claude.app" >/dev/null 2>&1; then DIRTY=1; fi
-pgrep -x "claude" >/dev/null 2>&1 && DIRTY=1
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then DIRTY=1; fi
+pgrep -x "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1 && DIRTY=1
 pgrep -f "MASTER_LOOP" >/dev/null 2>&1 && DIRTY=1
 pgrep -i slm 2>/dev/null | grep -vq aslmanager && DIRTY=1
 if [[ "$DIRTY" == 1 ]]; then
   if [[ "$ALLOW_DIRTY" == 1 ]]; then
-    echo "  ⚠ DIRTY room (Claude/slm running) + ALLOW_DIRTY=1 — dec_tps will be" >&2
+    echo "  ⚠ DIRTY room (agent/slm running) + ALLOW_DIRTY=1 — dec_tps will be" >&2
     echo "    CONTAMINATED (1.3-30x). Only draft_accepted + forward-count are"   >&2
-    echo "    trustworthy. The diagnosis §6 tps verdict needs Claude QUIT."      >&2
+    echo "    trustworthy. The diagnosis §6 tps verdict needs the agent QUIT."   >&2
   else
-    echo "  ❌ CLEAN-ROOM GATE FAILED: Claude/slm running. The 3-arm dec_tps" >&2
+    echo "  ❌ CLEAN-ROOM GATE FAILED: agent/slm running. The 3-arm dec_tps" >&2
     echo "     verdict is absolute-tps and contaminates (diagnosis §6). Cmd+Q" >&2
-    echo "     Claude + quit slm, then re-run. (ALLOW_DIRTY=1 for mechanism-"  >&2
+    echo "     the agent + quit slm, then re-run. (ALLOW_DIRTY=1 for mechanism-"  >&2
     echo "     only: draft_accepted + forward count, tps tagged CONTAMINATED.)" >&2
     exit 1
   fi
@@ -269,6 +272,6 @@ PYEOF
 hr
 echo "  DONE. Verdict (diagnosis §6): C>B on the LOW prompt by > spread => propose-"
 echo "  first removes the 2-forward penalty => keep it. C<A on either => default-off."
-echo "  If tps_quality=CONTAMINATED, re-run with Claude QUIT before trusting tps;"
+echo "  If tps_quality=CONTAMINATED, re-run with the agent QUIT before trusting tps;"
 echo "  the draft_accepted + verify-timing-line counts above are already trustworthy."
 hr

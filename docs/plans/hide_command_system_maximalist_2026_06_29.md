@@ -26,7 +26,7 @@ Cmd+P palette as the keyboard twin. One grammar, learnable in a minute, each cha
 
 | Trigger | Verb | Copies | HIDE expansion (free + local) |
 |---|---|---|---|
-| `/` | run a command | Slack/Discord/Notion/Claude Code | command can declare `fleets: N`, `ambient`, a `pipeline`, an arg schema; user-authored as files |
+| `/` | run a command | Slack/Discord/Notion/the coding agent | command can declare `fleets: N`, `ambient`, a `pipeline`, an arg schema; user-authored as files |
 | `@` | pull into context | Cursor @files/@symbols | `@file` silently background-summarizes into the Context Stack; `@symbol` spawns a 3-agent usage/callers/tests fleet; `@state` loads a saved RWKV state; `@agent` spins a fleet |
 | `#` | reference memory | GitHub #issue, Slack #channel | `#tag` pulls structured Project-Brain records (Spine B memory store) by label; `#decision`, `#constraint`, `#file-fact` |
 | `>` | do an action | VS Code palette `>` | `>format/test/build/deploy`; `>agent:name` runs a named fleet; ambient oracles already running make the result instant |
@@ -73,8 +73,8 @@ The feature set is **open**, not a fixed menu:
 - **Commands as files** — `.hide/commands/**/*.md`: YAML frontmatter (`name`, `description`, `icon`,
   `args:` typed schema with hints/enums/defaults, `fleets:`, `ambient:`, `context:` to auto-pin spans,
   `pipeline:` steps) + a markdown body that is the prompt (with `$ARG` substitution). Filesystem path is
-  the namespace. This steals Raycast's script-command model and Claude Code's `.claude/commands`, typed
-  like Discord's options.
+  the namespace. This steals Raycast's script-command model and other coding agents' file-based slash-command
+  configs, typed like Discord's options.
 - **Pipelines as files** — `.hide/pipelines/*.pipeline`: a prose/DSL chain of commands with typed magic
   variables passed between stages (Apple-Shortcuts-style), optionally fanned across a fleet.
 - **Macros** — record a sequence of actions, save as a command. HIDE can even *learn* one: notice a

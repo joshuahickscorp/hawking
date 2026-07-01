@@ -41,7 +41,7 @@ export interface DiffChipPatch {
 
 // ---- shared style atoms (kept here so every chat helper reads from one place) ----
 
-// A chip: a small flat pill (Codex/VS Code), surface-2 fill with a thin border, muted label.
+// A chip: a small flat pill (VS Code style), surface-2 fill with a thin border, muted label.
 export const chip: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -64,7 +64,7 @@ export const blockLabel: CSSProperties = {
   color: "var(--text-dim)",
 };
 
-// A small control button (Cancel / Pause / Resume / Approve), flat Codex style.
+// A small control button (Cancel / Pause / Resume / Approve), chip-style flat button.
 // `lit` is the engaged/affirmative control: filled accent. The rest are quiet bordered surface.
 export function ctlStyle(lit: boolean): CSSProperties {
   return {

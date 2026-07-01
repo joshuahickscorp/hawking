@@ -4,8 +4,8 @@
 #   B = dirty-tree defaults        (gate+up fuse + ffn_down predec ON)
 #   C = B + 2-row ILP              (HAWKING_QWEN_PREDEC_2R=1)
 # Parity: greedy output of B and C must be bit-identical to A.
-# Bench: interleaved paired dec_tps (cancels thermal drift); Claude-open is
-# fine for paired deltas (memory/feedback_bench_with_claude_open.md).
+# Bench: interleaved paired dec_tps (cancels thermal drift); agent-open is
+# fine for paired deltas (see project design memory).
 set -uo pipefail
 cd "$(dirname "$0")/../.."
 BIN="./target/release/hawking"

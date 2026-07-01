@@ -189,7 +189,7 @@ stall check and pod poll that tick; labd defers exhaust escalations to the end o
 
 ### 9b. Tracked vs orphaned launches (the session-lifetime trap)
 
-**Incident (will.md 2026-06-10 ~12:20).** Processes spawned from a Claude chat inherited
+**Incident (will.md 2026-06-10 ~12:20).** Processes spawned from an agent chat inherited
 macOS sandbox grants that died when the chat was deleted: a requant 164/168 tensors deep
 panicked EPERM on its output write; three sibling arms died within one second (could not even
 open their logs); a false `.night3-done` propagated (root writable, subtree denied); two

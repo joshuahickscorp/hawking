@@ -509,7 +509,7 @@ Can you explain how transformers work in three sentences? Transformers
 are a kind of neural network architecture that uses an attention
 mechanism to process sequences of tokens in parallel. They were
 introduced in the 2017 paper Attention Is All You Need by Vaswani et
-al. Modern large language models like GPT, Claude, LLaMA, Qwen, and
+al. Modern large language models like GPT, PaLM, LLaMA, Qwen, and
 DeepSeek are all based on the transformer architecture.
 
 A function in Python takes one or more arguments and returns a value.
@@ -5295,7 +5295,7 @@ impl QwenDense {
         // Track E3: 2r gate+up pair with inline scale reads — DEFAULT-ON.
         // Same geometry as the old default 2r and BIT-IDENTICAL to it (parity test
         // pair_2r_inline_matches_pair_2r), but drops the 64-float scale preload →
-        // CLEAN bench 2026-06-06: +9.6% (64-tok×7-trial, Claude quit, all B-trials
+        // CLEAN bench 2026-06-06: +9.6% (64-tok×7-trial, agent quit, all B-trials
         // above all A-trials). Promoted to default per the dead_levers resurrection
         // check ("promote to default if clean bench agrees"). Opt OUT via
         // HAWKING_QWEN_PAIR_2R_INLINE=0 (falls back to the preloaded 2r).

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Clean-room single-stream dec_tps: dismantle vs llama.cpp on the smallest-coherent
-# models. RUN WITH CLAUDE QUIT (a live Claude session inflates/perturbs absolute tps).
+# models. RUN WITH THE AGENT QUIT (a live agent session inflates/perturbs absolute tps).
 # Usage: bash tools/bench/clean_room_small_tps.sh [llama_bench_path]
 set -euo pipefail
 cd "$(dirname "$0")/../.."

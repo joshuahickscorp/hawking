@@ -918,7 +918,7 @@ This is a hard CI-enforced rule. Treat it as load-bearing, not advisory.
 |---|---|---|
 | **PORT-OK** | **MIT, Apache-2.0** | Adapt/incorporate source into shipped `app/` (the React/TS/Vite web app) and Rust host code (`hide-serve`). Copyright header in every ported file + a `THIRD_PARTY_NOTICES.md` entry. |
 | **STUDY-ONLY** | **AGPL-3.0** (Zed) | Read published docs/blogs/behavior only. **Never** copy, port, link, paste, or "reimplement from a peek at" the source: AGPL would force HIDE's proprietary FE open. No exceptions regardless of snippet size. |
-| **NEVER-TOUCH** | Proprietary (Cursor, Copilot/Copilot Workspace, Claude Code) | No source exists / is closed. Study observable UX only. No lifting. |
+| **NEVER-TOUCH** | Proprietary (Cursor, Copilot/Copilot Workspace, other closed coding agents) | No source exists / is closed. Study observable UX only. No lifting. |
 
 Mechanics the FE build must honor: `THIRD_PARTY_NOTICES.md` at repo root is the canonical attribution file, generated at build time from a structured `harvest.toml` manifest (component -> license -> version -> list of FE source files that incorporate it); Apache-2.0 ports additionally require a "modifications stated" line per file. A **CI license gate** fails the build if any FE source file under a harvest path lacks the required origin-header comment, or if `harvest.toml` references a license outside PORT-OK, or if a file's structure resembles Zed/GPUI. Any PR adding harvested UI must confirm it does not draw on AGPL (Zed) or proprietary (Cursor/Copilot) source. If in doubt: **port only MIT/Apache-2.0; everything else is inspiration you re-implement clean.**
 

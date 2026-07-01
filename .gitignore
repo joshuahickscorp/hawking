@@ -14,7 +14,7 @@ Cargo.lock.bak
 *.swp
 .DS_Store
 
-# Claude Code project-local config (settings, plans, agents)
+# Coding-agent project-local config (settings, plans, agents)
 .claude/
 
 # Manager↔executor file-based bus (internal AI dev pipeline; results ship via
@@ -107,7 +107,10 @@ crates/hawking-core/reports/
 /colab/
 
 # Agent operating contract — kept on disk, not shipped
-/CLAUDE.md
+/AGENT.md
+
+# Local bench-guard process-name config (machine-specific, not shipped)
+/.agent_env
 
 # local Mac Studio go-prompt
 GO.md

@@ -24,7 +24,7 @@ condensation pre-Studio work that de-risks the moment the 96 GB lands, and (B) H
 where active coding energy is and does not need the Studio at all. Keep them separate; do not let
 condensation block HIDE or vice versa.
 
-Ignore when reading: `.claude/worktrees/*`, `crates/dismantle-*`, `vendor/strand-decode-kernel/`
+Ignore when reading: agent-local worktree copies, `crates/dismantle-*`, `vendor/strand-decode-kernel/`
 are duplicate/fork trees of the same code.
 
 ---
@@ -297,7 +297,7 @@ doctored.
   M3 Ultra / M4 Max / cloud / hiring / fundraising. bf16 at scale. 96 GB caps doctoring ~32B,
   inference ~70B; the 405B tail is cloud/rented.
 - Git: NO commit/push without explicit approval. `tools/strand/` + `vendor/strand-quant` are
-  production / audit-only (branch + PR, never direct main). Never add Claude attribution to commits
+  production / audit-only (branch + PR, never direct main). Never add AI attribution to commits
   or PRs. The working tree is already dirty with this session's untracked work — do not blow it away.
 - Do NOT disturb the live frontier processes (PIDs above) unless deliberately stopping the run.
 

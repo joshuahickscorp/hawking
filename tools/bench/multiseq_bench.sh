@@ -32,7 +32,7 @@
 # CONTAMINATION NOTE:
 #   B>1/B=1 scaling ratio and vs-llama ratio are contamination-robust (relative;
 #   inflation cancels). Absolute agg_tps at B=1 is inflated ~4-5x with a live
-#   Claude session — tag accordingly.
+#   agent session — tag accordingly.
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
@@ -218,5 +218,5 @@ printf 'agg_tps      = total tokens/s across all B slots\n'
 printf 'per_slot_tps = agg_tps / B  (latency proxy; ideal: constant as B grows)\n'
 printf 'vs_llama     = agg_tps / llama_baseline  (>B×1.0 means linear scaling)\n'
 printf '\nContamination: B>1/B=1 scaling ratio is robust. B=1 absolute tps is\n'
-printf 'inflated ~4-5x with a live Claude session. Run clean for absolute numbers.\n'
+printf 'inflated ~4-5x with a live agent session. Run clean for absolute numbers.\n'
 printf '%.0s=' {1..70}; echo

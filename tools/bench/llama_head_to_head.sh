@@ -8,8 +8,8 @@
 #   2. Aggregate throughput sweep B=1..8: dismantle serve vs llama-server --parallel N
 #      (apples-to-apples: both engines serving N concurrent slots)
 #
-# CLEAN ROOM REQUIRED for absolute tps/J numbers — quit Claude and any heavy
-# GPU process first. The preflight check aborts if Claude is running.
+# CLEAN ROOM REQUIRED for absolute tps/J numbers — quit the agent and any heavy
+# GPU process first. The preflight check aborts if the agent is running.
 #
 # USAGE:
 #   tools/bench/llama_head_to_head.sh
@@ -30,6 +30,11 @@
 #   SKIP_BATCH        set to 1 to skip the batch sweep (faster)
 # =============================================================================
 set -uo pipefail
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
+
 cd "$(dirname "$0")/../.."
 
 GGUF="${GGUF:-models/qwen2.5-3b-instruct-q4_k_m.gguf}"
@@ -70,8 +75,8 @@ warn() { echo "WARN: $*"; }
 
 command -v macmon >/dev/null 2>&1 || fail "macmon missing → brew install macmon"
 
-if pgrep -f "Claude.app" >/dev/null 2>&1 || pgrep -xi "claude" >/dev/null 2>&1; then
-  fail "Claude session is running — absolute tps/J inflate ~4-5×. Quit it and re-run."
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1 || pgrep -xi "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+  fail "agent session is running — absolute tps/J inflate ~4-5×. Quit it and re-run."
 fi
 
 [[ -x "$DBIN" ]] || fail "$DBIN not built — cargo build --release --workspace"
@@ -575,5 +580,5 @@ echo " • Single-stream: dismantle+llama CLI run same GGUF, greedy temp=0, seed
 echo " • Aggregate: dismantle serve vs llama-server --parallel B — same B concurrent"
 echo "   requests fired simultaneously to each server. Apples-to-apples serving."
 echo " • J/tok = avg_power_W / dec_tps (decode-dominated at N=$TOKENS, short prompt)."
-echo " • Clean room (Claude quit) required for valid absolute tps and J/tok numbers."
+echo " • Clean room (agent quit) required for valid absolute tps and J/tok numbers."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -2,11 +2,11 @@
 # tools/training/path_to_75_autonomous.sh
 #
 # Autonomous production chain for path-to-75 v2. No timeline pressure —
-# runs as long as it needs. Pause-aware. Survives Claude crash via
+# runs as long as it needs. Pause-aware. Survives agent crash via
 # nohup + disown.
 #
 # 4 modules, each idempotent + checkpoint-marker:
-#   M1 commit-readiness — stages safe commit sequence (no Claude attribution),
+#   M1 commit-readiness — stages safe commit sequence (no agent attribution),
 #                          runs cargo test per stage, commits only if green.
 #                          DRY-RUN by default; set CHAIN_AUTO_COMMIT=1 to
 #                          actually commit.
@@ -18,7 +18,7 @@
 #                          stack, gives release-grade confidence interval
 #
 # Hard rules baked in:
-#   - No Claude git attribution (commit messages are non-attributed)
+#   - No agent git attribution (commit messages are non-attributed)
 #   - No autonomous commits unless CHAIN_AUTO_COMMIT=1
 #   - Disk watcher: PAUSE if <10 GB free
 #   - All artifacts to artifacts/runs/path_to_75/

@@ -4,7 +4,7 @@
 #
 # DESIGN RATIONALE
 # ================
-# Context: the user cannot run a clean-room absolute bench with Claude open.
+# Context: the user cannot run a clean-room absolute bench with the agent open.
 # Contamination factor (~4-5x) is CONSTANT across consecutive trials on the
 # same machine state, so it CANCELS in the B/A ratio — paired A/B is valid.
 #
@@ -416,7 +416,7 @@ PYEOF
 # ===================================
 #   The phase-0 noise-floor run (reports/bench/phase0_noise_floor.json) used
 #   A=B (identical env) and found B/A = 0.970 (-3.0%). This means:
-#   - Second position is ~3% slower on this machine under Claude-open conditions.
+#   - Second position is ~3% slower on this machine under agent-open conditions.
 #   - ABBA interleave distributes each arm across both positions equally,
 #     so the position bias cancels in the pooled medians.
 #   - Any B/A outside [0.97, 1.03] after ABBA interleave is a real signal.

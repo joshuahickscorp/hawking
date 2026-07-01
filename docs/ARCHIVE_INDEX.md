@@ -28,7 +28,7 @@ These working-log files were removed to consolidate the docs tree. **Nothing is 
 - `docs/plans/bible_execution_2026_05_30.md` — Bible execution + errata — autonomous session 2026-05-30
 - `docs/plans/bleeding_edge_throughput_energy_moat_plan_2026_06_05.md` — Bleeding-edge throughput, energy, and moat plan
 - `docs/plans/cheaper_decode_q3_design_2026_05_31.md` — Cheaper-decode Q3_K design — 2026-05-31 (DESIGN ONLY, no code/commits)
-- `docs/plans/claude_code_prompt_expansion_wave_v2_2026_06_18.md` — Claude Code Prompt - Dismantle Expansion Wave V2
+- Coding-agent handoff prompt for the Dismantle Expansion Wave V2 (dated 2026-06-18; see `docs/plans/dismantle_expansion_wave_v2_2026_06_18.md` for the companion plan doc and search git history around that date for the paired prompt file)
 - `docs/plans/colab_consolidation_audit_2026_05_30.md` — Colab Consolidation Audit — 2026-05-30
 - `docs/plans/continuous_batching_ship.md` — Continuous Batching Ship Plan
 - `docs/plans/dismantle_expansion_wave_v2_2026_06_18.md` — Dismantle Expansion Wave V2
@@ -79,9 +79,9 @@ These working-log files were removed to consolidate the docs tree. **Nothing is 
 - `docs/reports/autonomous_session_2026-05-23.md` — Autonomous session log — 2026-05-23
 - `docs/reports/b2_kv_working_set_oracle.md` — B2 — KV-working-set (§8 L1.1) attention-mass oracle
 - `docs/reports/c1_energy_baseline.md` — C1 — Energy / joules-per-token baseline (§8 L4.2)
-- `docs/reports/claude_md_proposed_kill_protocol.md` — Proposed CLAUDE.md addition — Kill Protocol rule
+- Proposed AGENT.md addition — Kill Protocol rule (search git history under `docs/reports/` for the proposal doc)
 - `docs/reports/clean_room_baselines_2026_05_31.md` — Clean-room baselines — 2026-05-31 (MEASURED, contamination-free)
-- `docs/reports/clean_room_final_analysis.md` — Clean-room final analysis — commands to run (Claude QUIT)
+- `docs/reports/clean_room_final_analysis.md` — Clean-room final analysis — commands to run (agent QUIT)
 - `docs/reports/closeout_aggregate_2026_06_04.md` — Closeout — aggregate-opt + clean-room + reduce-ms (2026-06-04)
 - `docs/reports/closeout_paradigm_exec_2026_06_05.md` — Closeout — paradigm/exec (2026-06-05)
 - `docs/reports/dismantle_budget_2026_05_24.md` — Dismantle latency-and-cost budget — sessions 1+2
@@ -112,7 +112,7 @@ These working-log files were removed to consolidate the docs tree. **Nothing is 
 - `docs/reports/overnight_calibration_corpus_runbook.md` — Autonomous runbook — calibration corpus build
 - `docs/reports/paradigm_execution_log.md` — Paradigm execution log
 - `docs/reports/paradigm_plan_final_audit.md` — Paradigm plan final audit — completeness table
-- `docs/reports/parallel_rust_workstream_prompts.md` — Parallel Rust workstream prompts — copy into fresh Claude Code sessions
+- `docs/reports/parallel_rust_workstream_prompts.md` — Parallel Rust workstream prompts — copy into fresh coding agent sessions
 - `docs/reports/path_to_50_consolidation_handoff.md` — path-to-50 consolidation — handoff snapshot
 - `docs/reports/path_to_50_gap_diagnosis_2026_05_29.md` — path-to-50 gap diagnosis — 2026-05-29
 - `docs/reports/path_to_50_oneshot_prompt.md` — Path-to-50 — one-shot self-contained prompt

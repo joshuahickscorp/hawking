@@ -1,6 +1,6 @@
 # STUDIO GO — the one-command entry point for the Hawking frontier program
 
-> Paste target: when Hawking is on the Mac Studio, run preflight, then tell Claude Code "go".
+> Paste target: when Hawking is on the Mac Studio, run preflight, then tell the coding agent "go".
 > Everything downstream is already built, gated, resumable, and continuous. No pauses.
 
 ## STEP 1 — preflight (always run first)

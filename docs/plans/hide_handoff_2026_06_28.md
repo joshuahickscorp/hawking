@@ -64,7 +64,7 @@ DISCIPLINE:
   before it is trusted; re-run the parity check yourself, do not trust a green CI alone).
 - Keep the two tracks clean: if you need a condensed artifact that does not exist yet, note it as
   a dependency on the condensation/Studio track rather than running condensation here.
-- Git attribution: do NOT add any Claude/AI co-author or "Generated with" trailers to commits or
+- Git attribution: do NOT add any AI co-author or "Generated with" trailers to commits or
   PRs (the owner's standing rule).
 
 Begin by reading docs/hide-bible/MASTER_PLAN.md and SCAFFOLD_STATUS.md, then give me a plan for

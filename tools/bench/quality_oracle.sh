@@ -19,7 +19,7 @@
 #     - corpus drift%  (tokens downstream of the first divergence / total)
 #     - per-category breakdown (code/math/prose/... — drift is category-corr.)
 #
-# METHOD — PAIRED BY CONSTRUCTION (Claude-open OK):
+# METHOD — PAIRED BY CONSTRUCTION (agent-open OK):
 #   Runs `dismantle bench-server` TWICE against the same prompt set: lever env
 #   UNSET (OFF) then =1 (ON), locked base env constant. The metric is the
 #   OFF-vs-ON text comparison (a RELATIVE delta), so machine contamination
@@ -199,7 +199,7 @@ def run_server(prompts, lever_on):
     sys.stderr.write(
         f"  [running {len(prompts)} prompts, lever={'ON' if lever_on else 'OFF'} — "
         f"NO live output until this whole arm completes; long-ctx (2.8K-token prefix) "
-        f"is slow and 4-5x slower again with Claude open. Quit Claude or use --short-only.]\n")
+        f"is slow and 4-5x slower again with the agent open. Quit the agent or use --short-only.]\n")
     sys.stderr.flush()
     proc = subprocess.run(cmd, input=reqs, env=env,
                           capture_output=True, text=True, timeout=1800)

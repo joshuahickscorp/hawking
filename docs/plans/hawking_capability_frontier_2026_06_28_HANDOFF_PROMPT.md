@@ -18,7 +18,7 @@ You are continuing the Hawking IDE (HIDE) project at `/Users/scammermike/Downloa
 - **H6:** report *effective* bpw; 2-bit needs recovery; test real generation, not just perplexity.
 - **H7:** any state passed between agents must keep an optional text-decode "tap" for audit/debug.
 - **Parity gate is sacred:** GPU `.tq` decode must stay bit-identical to the CPU oracle.
-- **Git:** never add Claude/AI attribution to commits or PRs (no `Co-Authored-By`, no "Generated with" — house rule). Branch off `main`; commit/push only when asked. Verify real `main` and re-run parity yourself before merging any worktree lane.
+- **Git:** never add AI attribution to commits or PRs (no `Co-Authored-By`, no "Generated with" — house rule). Branch off `main`; commit/push only when asked. Verify real `main` and re-run parity yourself before merging any worktree lane.
 
 **Suggested execution order (full detail in the roadmap §4):**
 1. **Phase 0** — native `.tq` serving (Stage A→B) + `hawking-eval` Thesis-Gate run. STOP and report the gate verdict before continuing.

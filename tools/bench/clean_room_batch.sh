@@ -3,11 +3,11 @@
 # clean_room_batch.sh — CLEAN-ROOM-ONLY absolute-metric batch
 # =============================================================================
 #
-#   ⚠⚠⚠  RUN THIS ONLY WITH CLAUDE CODE FULLY QUIT.  ⚠⚠⚠
+#   ⚠⚠⚠  RUN THIS ONLY WITH THE CODING AGENT FULLY QUIT.  ⚠⚠⚠
 #
 # WHY CLEAN-ROOM-ONLY (read this before running):
 #   Every number this script prints is an ABSOLUTE metric (GB/s, dec_tps,
-#   joules/token) — NOT a paired relative delta. A running Claude Code / agent
+#   joules/token) — NOT a paired relative delta. A running coding agent
 #   session inflates throughput by ~4–5× (the bench-contamination finding:
 #   reports/bench_contamination.md, memory/bench_contamination.md), and even a
 #   mild active session shifts dec_tps (~37 vs ~31 clean, bible §3.0
@@ -19,8 +19,8 @@
 #   energy* batch the cheaper-decode-Q3 / QTIP designs need, in one turnkey run.
 #
 # HOW TO RUN (the user does this — NOT an agent):
-#   1. Quit the Claude Code desktop app   (Cmd+Q in the menu bar).
-#   2. Quit any `claude` CLI sessions     (incl. any MASTER_LOOP / loop).
+#   1. Quit the agent desktop app         (Cmd+Q in the menu bar).
+#   2. Quit any agent CLI sessions        (incl. any MASTER_LOOP / loop).
 #   3. Quit slm and any other GPU/RAM-heavy process.
 #   4. Open a fresh Terminal.app window.
 #   5. cd /Users/scammermike/Downloads/hawking
@@ -28,7 +28,7 @@
 #   7. Read the three section verdicts printed at the end.
 #
 #   Pass --gates-only to run the pre-flight contamination checks and print the
-#   plan WITHOUT running any bench (safe to run anytime, even with Claude open).
+#   plan WITHOUT running any bench (safe to run anytime, even with the agent open).
 #
 # WHAT IT RUNS (three sections, each with an echoed header + GO/NO-GO rule):
 #   (A) Q3 byte-cut microbench  — the existing q3k_bytecut_bench; prints the
@@ -45,6 +45,10 @@
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "$0")/../.."
+
+_agent_env="$(git rev-parse --show-toplevel 2>/dev/null)/.agent_env"
+[ -f "$_agent_env" ] && source "$_agent_env"
+unset _agent_env
 
 # ---- config (override via env) ---------------------------------------------
 BIN="${BIN:-./target/release/hawking}"
@@ -75,25 +79,25 @@ die() { echo "error: $*" >&2; exit 64; }
 # ---------------------------------------------------------------------------
 hr
 echo "  clean_room_batch — CLEAN-ROOM-ONLY absolute-metric batch"
-echo "  (Claude MUST be quit; absolute tps/GB/s/J inflate ~4-5x under an active session)"
+echo "  (the agent MUST be quit; absolute tps/GB/s/J inflate ~4-5x under an active session)"
 hr
 
 PREFLIGHT_FAIL=0
 
-# Gate 1: Claude desktop app must be quit.
-if pgrep -f "Claude.app" >/dev/null 2>&1; then
-  echo "  [GATE claude-app]  FAIL — Claude.app is running. Cmd+Q it, then re-run." >&2
+# Gate 1: agent desktop app must be quit.
+if pgrep -f "${AGENT_APP_PGREP:?see .agent_env.example}" >/dev/null 2>&1; then
+  echo "  [GATE agent-app]   FAIL — the agent app is running. Cmd+Q it, then re-run." >&2
   PREFLIGHT_FAIL=1
 else
-  echo "  [GATE claude-app]  pass (Claude.app not running)"
+  echo "  [GATE agent-app]   pass (agent app not running)"
 fi
 
-# Gate 2: no `claude` CLI / loop sessions.
-if pgrep -x "claude" >/dev/null 2>&1 || pgrep -f "MASTER_LOOP" >/dev/null 2>&1; then
-  echo "  [GATE claude-cli]  FAIL — a 'claude' CLI / MASTER_LOOP session is running. Quit it." >&2
+# Gate 2: no agent CLI / loop sessions.
+if pgrep -x "${AGENT_CLI_PGREP:?see .agent_env.example}" >/dev/null 2>&1 || pgrep -f "MASTER_LOOP" >/dev/null 2>&1; then
+  echo "  [GATE agent-cli]   FAIL — an agent CLI / MASTER_LOOP session is running. Quit it." >&2
   PREFLIGHT_FAIL=1
 else
-  echo "  [GATE claude-cli]  pass (no claude CLI / loop session)"
+  echo "  [GATE agent-cli]   pass (no agent CLI / loop session)"
 fi
 
 # Gate 3: no slm (co-existence partner — its load contaminates absolute numbers).
@@ -136,7 +140,7 @@ if [[ "$GATES_ONLY" == 1 ]]; then
     echo "  --gates-only: printed the pre-flight failures and plan. Not running benches."
     echo "  Re-run without the flag only after the FAIL gates pass."
   else
-    echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (Claude quit)."
+    echo "  --gates-only: pre-flight passed. Not running benches. Re-run without the flag (agent quit)."
   fi
   exit 0
 fi

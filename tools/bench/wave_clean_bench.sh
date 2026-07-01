@@ -2,7 +2,7 @@
 # =============================================================================
 # wave_clean_bench.sh — clean-bench ONLY the things not yet cleanly measured.
 #
-#   Quit the Claude desktop app first (Cmd+Q) for clean ABSOLUTE numbers.
+#   Quit the agent app first (Cmd+Q) for clean ABSOLUTE numbers.
 #
 # Runs (≈15-18 min):
 #   [A] PROFILE LADDER : single-stream dec_tps under default/exact/fast/race/efficient

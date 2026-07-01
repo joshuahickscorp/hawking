@@ -2,7 +2,7 @@
 # tools/training/overnight_phase2_chain.sh
 #
 # Phase 2 of the overnight chain — runs AFTER phase 1 (M1-M4) completes.
-# Picks up via status.json poll. Survives Claude crashes (nohup + disown).
+# Picks up via status.json poll. Survives agent crashes (nohup + disown).
 #
 # Updated with background-work findings (2026-05-23):
 #   - K landed: +2.18 baseline, +4.65 at K4 (spec-decode revert worked)
@@ -296,7 +296,7 @@ M9_OUT="$LOG_DIR/M9_commit_audit.md"
     echo "- F (RMSNorm fusion) 1/6 sites — wait until all sites wired + parity green per-site"
     echo "- Mixed-precision Path A (Session A worktree, still in flight)"
     echo ""
-    echo "## Suggested commit messages (no Claude attribution)"
+    echo "## Suggested commit messages (no agent attribution)"
     echo ""
     echo '```'
     echo 'spec-decode: revert batched-verify regression (+2-4 tps)'

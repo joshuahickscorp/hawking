@@ -1,6 +1,6 @@
 /*
   chat/structure.tsx: the inline structure that lives INSIDE the assistant stream.
-  Four flat Codex-style devices, re-housed into the VS Code / ChatGPT visual language
+  Four flat pill-style devices, re-housed into the VS Code / ChatGPT visual language
   (flat surfaces, thin borders, the accent only on the engaged control):
 
     PlanCard  <- projection_patch:plan       : ordered steps with per-step status + approve/edit/reorder.

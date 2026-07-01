@@ -5,7 +5,7 @@
 //! correctness gate is the pass-through invariant `x_out == x_in`,
 //! NOT a full per-layer parity vs CPU. Stage bodies land in the
 //! follow-up sessions per
-//! `~/.claude/projects/-Users-scammermike-Downloads-hawking/memory/build_megakernel_day3_2026_05_25.md`.
+//! project design memory (build_megakernel_day3_2026_05_25).
 
 #![allow(dead_code)]
 
