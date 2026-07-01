@@ -146,5 +146,12 @@ heavy runs on an Apple M2 Max Mac Studio (96 GB).
 - Condense: an out-of-core, memory-budgeted low-bit compression pipeline that
   can quantize models too large to hold resident, so a single Mac can prepare
   and serve models well beyond its own memory.
+- The size frontier: stop requiring the whole model resident. The parameter
+  ceiling is then storage, not RAM - the model lives on the SSD and only the
+  weights a token touches stream through memory. For MoE (all the giant models),
+  only the routed experts page in, so a multi-trillion-parameter model runs at a
+  usable rate where a RAM-resident engine tops out near half a trillion. An auto
+  advisor picks the bit format and the serve regime (resident / expert-paged /
+  dense out-of-core) per model and device.
 - Broader verified architecture coverage (MoE, Mamba2, more dense families)
   under the same correctness-before-speed gates.

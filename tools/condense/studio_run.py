@@ -146,6 +146,16 @@ def run_frontier(label):
         print(f"[frontier] {label} NOT staged at {mdir}. On the Studio (2TB SSD): "
               f"hf download <{label}> --local-dir {mdir}  (block-wise; never held resident)", file=sys.stderr)
         return 2
+    # Auto mode: recommend the bit format + serve regime (RESIDENT / MOE-PAGED / DENSE-OOC) and show
+    # the device size ceiling before condensing (the "how big can we pull in" advisor).
+    ab = ["python3.12", f"{TC}/auto_bits.py", "--params", str(total), "--label", label]
+    if active:
+        ab += ["--active", str(active)]
+    subprocess.run(ab, env=env)
+    sf = ["python3.12", f"{TC}/size_frontier.py", str(total), "--bpw", str(bpw)]
+    if active:
+        sf += ["--active", str(active)]
+    subprocess.run(sf, env=env)
     # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
     subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
     if moe:
