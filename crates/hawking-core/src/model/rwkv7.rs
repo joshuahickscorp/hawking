@@ -192,6 +192,7 @@ pub struct RwkvLayer {
 /// `S` matrices, row-major `i*head_size + j`). `att_shift`/`ffn_shift` hold the
 /// previous token's post-LN hidden for the two token-shift lerps (`n_embd`
 /// each). Nothing here grows with sequence length.
+#[derive(Clone)]
 pub struct RwkvState {
     pub wkv: Vec<Vec<f32>>,
     pub att_shift: Vec<Vec<f32>>,
@@ -200,6 +201,47 @@ pub struct RwkvState {
     /// token-shift state as "no previous token" (x_prev = 0).
     pub fresh: bool,
 }
+
+/// Magic for the `DSSSMV1` serialized recurrent-state format (the M1 "pass
+/// state, not text" atom). 8 bytes including the trailing NUL.
+const STATE_MAGIC: &[u8; 8] = b"DSSSMV1\0";
+/// Magic for the INT8-quantized recurrent-state format (W-F3-7 state codec):
+/// `wkv` planes are int8 (per-plane scale), `att`/`ffn` stay f32.
+const STATE_MAGIC_I8: &[u8; 8] = b"DSSSMI8\0";
+/// Fixed header length of a `DSSSMV1` blob (magic + 5x u32 + fresh u8 + 3 pad).
+const STATE_HEADER_LEN: usize = 32;
+
+/// Error returned by [`RwkvState::from_bytes`] for a malformed `DSSSMV1` blob.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StateDecodeError {
+    /// Fewer bytes than the fixed header requires.
+    TooShort { got: usize },
+    /// Leading magic did not match `DSSSMV1\0`.
+    BadMagic,
+    /// Header version is not understood by this build.
+    UnsupportedVersion(u32),
+    /// Payload byte count did not match the header-declared shape.
+    LengthMismatch { expected: usize, got: usize },
+}
+
+impl std::fmt::Display for StateDecodeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StateDecodeError::TooShort { got } => {
+                write!(f, "RwkvState blob too short: {got} bytes (need >= {STATE_HEADER_LEN})")
+            }
+            StateDecodeError::BadMagic => write!(f, "RwkvState blob has wrong magic (not DSSSMV1)"),
+            StateDecodeError::UnsupportedVersion(v) => {
+                write!(f, "RwkvState blob version {v} is unsupported")
+            }
+            StateDecodeError::LengthMismatch { expected, got } => {
+                write!(f, "RwkvState payload length mismatch: expected {expected}, got {got}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for StateDecodeError {}
 
 impl RwkvState {
     fn new(cfg: &RwkvConfig) -> Self {
@@ -233,6 +275,468 @@ impl RwkvState {
         let f = |v: &Vec<Vec<f32>>| v.iter().map(|x| x.len()).sum::<usize>();
         (f(&self.wkv) + f(&self.att_shift) + f(&self.ffn_shift)) * std::mem::size_of::<f32>()
     }
+
+    /// Serialize to a self-describing `DSSSMV1` byte blob -- the M1 "pass state,
+    /// not text" atom. Layout (little-endian): `[magic][version u32][n_layer u32]
+    /// [wkv_len u32][att_len u32][ffn_len u32][fresh u8][pad u8;3]` then the
+    /// `wkv`, `att_shift`, `ffn_shift` planes as contiguous `f32`, layer-major.
+    /// Per-layer plane lengths are uniform by construction, so the header fully
+    /// describes the shape and [`from_bytes`](Self::from_bytes) reconstructs
+    /// without a `RwkvConfig`. Round-trips bit-identically on one architecture.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let n_layer = self.wkv.len();
+        let wkv_len = self.wkv.first().map_or(0, |v| v.len());
+        let att_len = self.att_shift.first().map_or(0, |v| v.len());
+        let ffn_len = self.ffn_shift.first().map_or(0, |v| v.len());
+        let f32_count = n_layer * (wkv_len + att_len + ffn_len);
+        let mut out = Vec::with_capacity(STATE_HEADER_LEN + f32_count * 4);
+        out.extend_from_slice(STATE_MAGIC);
+        out.extend_from_slice(&1u32.to_le_bytes());
+        out.extend_from_slice(&(n_layer as u32).to_le_bytes());
+        out.extend_from_slice(&(wkv_len as u32).to_le_bytes());
+        out.extend_from_slice(&(att_len as u32).to_le_bytes());
+        out.extend_from_slice(&(ffn_len as u32).to_le_bytes());
+        out.push(u8::from(self.fresh));
+        out.extend_from_slice(&[0u8; 3]);
+        debug_assert_eq!(out.len(), STATE_HEADER_LEN);
+        for plane in self.wkv.iter().chain(&self.att_shift).chain(&self.ffn_shift) {
+            out.extend_from_slice(bytemuck::cast_slice::<f32, u8>(plane.as_slice()));
+        }
+        out
+    }
+
+    /// Reconstruct from a `DSSSMV1` blob produced by [`to_bytes`](Self::to_bytes).
+    /// Alignment-independent (reads each `f32` via `from_le_bytes`), so it is safe
+    /// on mmap'd or arbitrarily-aligned input.
+    pub fn from_bytes(bytes: &[u8]) -> std::result::Result<Self, StateDecodeError> {
+        if bytes.len() < STATE_HEADER_LEN {
+            return Err(StateDecodeError::TooShort { got: bytes.len() });
+        }
+        if &bytes[..8] != &STATE_MAGIC[..] {
+            return Err(StateDecodeError::BadMagic);
+        }
+        let rd = |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
+        let version = rd(8);
+        if version != 1 {
+            return Err(StateDecodeError::UnsupportedVersion(version));
+        }
+        let n_layer = rd(12) as usize;
+        let wkv_len = rd(16) as usize;
+        let att_len = rd(20) as usize;
+        let ffn_len = rd(24) as usize;
+        let fresh = bytes[28] != 0;
+        let expected = n_layer * (wkv_len + att_len + ffn_len) * 4;
+        let payload = &bytes[STATE_HEADER_LEN..];
+        if payload.len() != expected {
+            return Err(StateDecodeError::LengthMismatch { expected, got: payload.len() });
+        }
+        let floats: Vec<f32> = payload
+            .chunks_exact(4)
+            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+            .collect();
+        let mut idx = 0usize;
+        let mut planes = |per: usize| {
+            let mut out = Vec::with_capacity(n_layer);
+            for _ in 0..n_layer {
+                out.push(floats[idx..idx + per].to_vec());
+                idx += per;
+            }
+            out
+        };
+        let wkv = planes(wkv_len);
+        let att_shift = planes(att_len);
+        let ffn_shift = planes(ffn_len);
+        Ok(Self { wkv, att_shift, ffn_shift, fresh })
+    }
+
+    /// Fork this recurrent state into an independent copy -- the M1 "Fork-&-Try-N"
+    /// / speculative-branch primitive. The cost is a memcpy of exactly
+    /// `size_bytes()`, NOT a re-prefill: the child shares no memory with the
+    /// parent and diverges only as new tokens are fed to it.
+    pub fn fork(&self) -> Self {
+        self.clone()
+    }
+
+    /// Tamper-evident fingerprint: sha256 of the serialized state. Cheap
+    /// accountability for a handed-off state (append to an audit chain).
+    pub fn fingerprint(&self) -> [u8; 32] {
+        use sha2::{Digest, Sha256};
+        let mut h = Sha256::new();
+        h.update(self.to_bytes());
+        let mut out = [0u8; 32];
+        out.copy_from_slice(&h.finalize());
+        out
+    }
+
+    /// Serialize to an INT8-quantized blob (`DSSSMI8`) -- the M3 packaging codec
+    /// that ~halves the dominant `wkv` footprint (per-plane absmax int8); the
+    /// small `att`/`ffn` token-shift planes stay f32. Lossy within one quant step
+    /// on `wkv`; NEVER label lossless. The KL-vs-fp16 quality gate is model-gated.
+    pub fn to_int8_bytes(&self) -> Vec<u8> {
+        let n_layer = self.wkv.len();
+        let wkv_len = self.wkv.first().map_or(0, |v| v.len());
+        let att_len = self.att_shift.first().map_or(0, |v| v.len());
+        let ffn_len = self.ffn_shift.first().map_or(0, |v| v.len());
+        let mut out = Vec::new();
+        out.extend_from_slice(STATE_MAGIC_I8);
+        out.extend_from_slice(&1u32.to_le_bytes());
+        out.extend_from_slice(&(n_layer as u32).to_le_bytes());
+        out.extend_from_slice(&(wkv_len as u32).to_le_bytes());
+        out.extend_from_slice(&(att_len as u32).to_le_bytes());
+        out.extend_from_slice(&(ffn_len as u32).to_le_bytes());
+        out.push(u8::from(self.fresh));
+        out.extend_from_slice(&[0u8; 3]);
+        for plane in &self.wkv {
+            let (q, scale) = quantize_plane_int8(plane);
+            out.extend_from_slice(&scale.to_le_bytes());
+            out.extend_from_slice(bytemuck::cast_slice::<i8, u8>(q.as_slice()));
+        }
+        for plane in self.att_shift.iter().chain(&self.ffn_shift) {
+            out.extend_from_slice(bytemuck::cast_slice::<f32, u8>(plane.as_slice()));
+        }
+        out
+    }
+
+    /// Reconstruct from a `DSSSMI8` blob produced by [`to_int8_bytes`]. `wkv` is
+    /// dequantized (lossy within a quant step); `att`/`ffn` are exact.
+    pub fn from_int8_bytes(bytes: &[u8]) -> std::result::Result<Self, StateDecodeError> {
+        if bytes.len() < STATE_HEADER_LEN {
+            return Err(StateDecodeError::TooShort { got: bytes.len() });
+        }
+        if &bytes[..8] != &STATE_MAGIC_I8[..] {
+            return Err(StateDecodeError::BadMagic);
+        }
+        let rd = |o: usize| u32::from_le_bytes([bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]]);
+        if rd(8) != 1 {
+            return Err(StateDecodeError::UnsupportedVersion(rd(8)));
+        }
+        let n_layer = rd(12) as usize;
+        let wkv_len = rd(16) as usize;
+        let att_len = rd(20) as usize;
+        let ffn_len = rd(24) as usize;
+        let fresh = bytes[28] != 0;
+        let mut off = STATE_HEADER_LEN;
+        let mut wkv = Vec::with_capacity(n_layer);
+        for _ in 0..n_layer {
+            if off + 4 + wkv_len > bytes.len() {
+                return Err(StateDecodeError::LengthMismatch { expected: off + 4 + wkv_len, got: bytes.len() });
+            }
+            let scale =
+                f32::from_le_bytes([bytes[off], bytes[off + 1], bytes[off + 2], bytes[off + 3]]);
+            off += 4;
+            let codes: Vec<i8> = bytes[off..off + wkv_len].iter().map(|&b| b as i8).collect();
+            off += wkv_len;
+            wkv.push(dequantize_plane_int8(&codes, scale));
+        }
+        let read_planes = |off: &mut usize, per: usize| -> std::result::Result<Vec<Vec<f32>>, StateDecodeError> {
+            let mut planes = Vec::with_capacity(n_layer);
+            for _ in 0..n_layer {
+                let nbytes = per * 4;
+                if *off + nbytes > bytes.len() {
+                    return Err(StateDecodeError::LengthMismatch { expected: *off + nbytes, got: bytes.len() });
+                }
+                let plane: Vec<f32> = bytes[*off..*off + nbytes]
+                    .chunks_exact(4)
+                    .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                    .collect();
+                *off += nbytes;
+                planes.push(plane);
+            }
+            Ok(planes)
+        };
+        let att_shift = read_planes(&mut off, att_len)?;
+        let ffn_shift = read_planes(&mut off, ffn_len)?;
+        Ok(Self { wkv, att_shift, ffn_shift, fresh })
+    }
+}
+
+/// Mean per-layer cosine similarity of the `wkv` planes between two states -- a
+/// cheap state-diff to flag gross injection/tampering of a handed-off state
+/// (e.g. flag below ~0.80). 1.0 for identical states; mismatched shape -> 0.0.
+pub fn wkv_cosine_similarity(a: &RwkvState, b: &RwkvState) -> f32 {
+    if a.wkv.is_empty() && b.wkv.is_empty() {
+        return 1.0;
+    }
+    if a.wkv.len() != b.wkv.len() || a.wkv.is_empty() {
+        return 0.0;
+    }
+    let mut sum = 0.0f32;
+    for (x, y) in a.wkv.iter().zip(&b.wkv) {
+        sum += cosine(x, y);
+    }
+    sum / a.wkv.len() as f32
+}
+
+fn cosine(x: &[f32], y: &[f32]) -> f32 {
+    if x.len() != y.len() || x.is_empty() {
+        return 0.0;
+    }
+    let (mut dot, mut nx, mut ny) = (0.0f32, 0.0f32, 0.0f32);
+    for (a, b) in x.iter().zip(y) {
+        dot += a * b;
+        nx += a * a;
+        ny += b * b;
+    }
+    if nx == 0.0 || ny == 0.0 {
+        0.0
+    } else {
+        dot / (nx.sqrt() * ny.sqrt())
+    }
+}
+
+/// INT8 quantize a recurrent-state plane, per-plane absmax-symmetric (W-F3-7
+/// codec): `scale = absmax/127`, `q = round(x/scale)`. Returns the codes + the
+/// scale. Pure; the KL(int8 || fp16)-vs-a-real-model ceiling gate (and the
+/// never-label-lossless rule) is the model-gated part this codec would feed.
+pub fn quantize_plane_int8(plane: &[f32]) -> (Vec<i8>, f32) {
+    let absmax = plane.iter().fold(0.0f32, |m, &x| m.max(x.abs()));
+    if absmax == 0.0 {
+        return (vec![0i8; plane.len()], 0.0);
+    }
+    let scale = absmax / 127.0;
+    let q = plane
+        .iter()
+        .map(|&x| (x / scale).round().clamp(-127.0, 127.0) as i8)
+        .collect();
+    (q, scale)
+}
+
+/// Dequantize an int8 plane produced by [`quantize_plane_int8`].
+pub fn dequantize_plane_int8(q: &[i8], scale: f32) -> Vec<f32> {
+    q.iter().map(|&v| v as f32 * scale).collect()
+}
+
+/// Max-abs round-trip error of the int8 plane codec -- the per-plane proxy for
+/// the recurrent-state quant error (the full KL-vs-fp16 gate is model-gated).
+pub fn int8_plane_roundtrip_error(plane: &[f32]) -> f32 {
+    let (q, scale) = quantize_plane_int8(plane);
+    let deq = dequantize_plane_int8(&q, scale);
+    plane
+        .iter()
+        .zip(&deq)
+        .fold(0.0f32, |m, (a, b)| m.max((a - b).abs()))
+}
+
+/// Length of the longest common subsequence of two token slices.
+fn lcs_len(a: &[&str], b: &[&str]) -> usize {
+    let (n, m) = (a.len(), b.len());
+    let mut dp = vec![0usize; m + 1];
+    for ai in a.iter().take(n) {
+        let mut prev = 0;
+        for j in 1..=m {
+            let tmp = dp[j];
+            if *ai == b[j - 1] {
+                dp[j] = prev + 1;
+            } else {
+                dp[j] = dp[j].max(dp[j - 1]);
+            }
+            prev = tmp;
+        }
+    }
+    dp[m]
+}
+
+/// ROUGE-L F1 between two token sequences (longest-common-subsequence based) --
+/// the text-similarity metric for the State Echo audit tap (W-F3-3): decode a
+/// handed-off state to a short continuation and compare it to the known upstream
+/// continuation. Pure (0..1); the DECODING that produces the two sequences is
+/// model-gated.
+pub fn rouge_l_f1(reference: &[&str], candidate: &[&str]) -> f32 {
+    if reference.is_empty() || candidate.is_empty() {
+        return 0.0;
+    }
+    let lcs = lcs_len(reference, candidate) as f32;
+    let p = lcs / candidate.len() as f32;
+    let r = lcs / reference.len() as f32;
+    if p + r == 0.0 {
+        0.0
+    } else {
+        2.0 * p * r / (p + r)
+    }
+}
+
+/// Whitespace-tokenized convenience wrapper over [`rouge_l_f1`].
+pub fn rouge_l_f1_str(reference: &str, candidate: &str) -> f32 {
+    let r: Vec<&str> = reference.split_whitespace().collect();
+    let c: Vec<&str> = candidate.split_whitespace().collect();
+    rouge_l_f1(&r, &c)
+}
+
+#[cfg(test)]
+mod state_serde_tests {
+    use super::{RwkvState, StateDecodeError};
+
+    fn sample() -> RwkvState {
+        RwkvState {
+            wkv: vec![vec![0.5, -1.0, 2.0, 3.5], vec![4.0, 5.0, 6.0, 7.0]],
+            att_shift: vec![vec![0.1, 0.2], vec![0.3, 0.4]],
+            ffn_shift: vec![vec![-0.1, -0.2], vec![-0.3, -0.4]],
+            fresh: false,
+        }
+    }
+
+    #[test]
+    fn to_from_bytes_roundtrips_bit_identical() {
+        let s = sample();
+        let bytes = s.to_bytes();
+        let back = RwkvState::from_bytes(&bytes).expect("decode");
+        assert_eq!(s.wkv, back.wkv);
+        assert_eq!(s.att_shift, back.att_shift);
+        assert_eq!(s.ffn_shift, back.ffn_shift);
+        assert_eq!(s.fresh, back.fresh);
+        assert_eq!(bytes, back.to_bytes(), "re-encode must be byte-stable");
+    }
+
+    #[test]
+    fn clone_is_a_deep_copy() {
+        let s = sample();
+        let mut c = s.clone();
+        c.wkv[0][0] = 999.0;
+        assert_eq!(s.wkv[0][0], 0.5, "mutating the clone must not touch the original");
+    }
+
+    #[test]
+    fn fork_is_a_memcpy_not_a_reprefill() {
+        let s = sample();
+        let f = s.fork();
+        // An independent, exact copy.
+        assert_eq!(f.to_bytes(), s.to_bytes());
+        // The wire size is the fixed header plus exactly `size_bytes()` of state
+        // -- the memcpy cost, with no re-prefill term.
+        assert_eq!(s.to_bytes().len(), super::STATE_HEADER_LEN + s.size_bytes());
+    }
+
+    #[test]
+    fn fingerprint_changes_on_mutation() {
+        let s = sample();
+        let f0 = s.fingerprint();
+        assert_eq!(f0, s.fingerprint(), "stable for an identical state");
+        let mut t = s.clone();
+        t.wkv[0][0] = 42.0;
+        assert_ne!(f0, t.fingerprint(), "any change alters the fingerprint");
+    }
+
+    #[test]
+    fn cosine_flags_divergence() {
+        let s = sample();
+        assert!((super::wkv_cosine_similarity(&s, &s) - 1.0).abs() < 1e-5, "identical -> 1.0");
+        let mut t = s.clone();
+        for v in &mut t.wkv {
+            for x in v {
+                *x = -*x;
+            }
+        }
+        assert!(super::wkv_cosine_similarity(&s, &t) < 0.0, "negated -> negative cosine");
+    }
+
+    #[test]
+    fn state_share_group_is_copy_only_and_independent() {
+        let base = sample();
+        let mut g = super::StateShareGroup::new(base.clone());
+        assert!(g.fork_member("a"));
+        assert!(g.fork_member("b"));
+        assert!(!g.fork_member("a"), "duplicate key rejected");
+        assert_eq!(g.len(), 2);
+        // Each member is an exact fork of the base.
+        assert_eq!(g.member("a").unwrap().to_bytes(), base.to_bytes());
+        // Mutating one branch leaves the other untouched (independent copies).
+        g.member_mut("a").unwrap().wkv[0][0] = 99.0;
+        assert_ne!(
+            g.member("a").unwrap().to_bytes(),
+            g.member("b").unwrap().to_bytes()
+        );
+        assert!(g.drop_member("a"));
+        assert_eq!(g.len(), 1);
+    }
+
+    #[test]
+    fn reconverge_starts_fresh_from_base_no_state_merge() {
+        let base = sample();
+        let mut g = super::StateShareGroup::new(base.clone());
+        g.fork_member("a");
+        g.member_mut("a").unwrap().wkv[0][0] = 7.0; // diverge a branch
+        let seed = g.reconverge();
+        assert_eq!(seed.to_bytes(), base.to_bytes(), "reconverge seed == fresh base fork");
+        assert!(g.is_empty(), "diverged members dropped");
+    }
+
+    #[test]
+    fn int8_plane_codec_roundtrips_within_a_quant_step() {
+        let plane = vec![0.0, 1.0, -2.0, 3.5, -3.5, 0.7];
+        let err = super::int8_plane_roundtrip_error(&plane);
+        // Round-trip error is bounded by one quant step (absmax/127).
+        let step = 3.5 / 127.0;
+        assert!(err <= step, "err {err} should be <= one quant step {step}");
+    }
+
+    #[test]
+    fn int8_zero_plane_is_exact() {
+        assert_eq!(super::int8_plane_roundtrip_error(&[0.0, 0.0, 0.0]), 0.0);
+    }
+
+    #[test]
+    fn int8_state_roundtrip_keeps_shift_exact_and_shrinks() {
+        let s = sample();
+        let bytes = s.to_int8_bytes();
+        let back = RwkvState::from_int8_bytes(&bytes).expect("decode int8 state");
+        // att/ffn token-shift planes stay f32 -> exact.
+        assert_eq!(back.att_shift, s.att_shift);
+        assert_eq!(back.ffn_shift, s.ffn_shift);
+        assert_eq!(back.fresh, s.fresh);
+        // wkv is within one quant step per plane.
+        for (orig, deq) in s.wkv.iter().zip(&back.wkv) {
+            let absmax = orig.iter().fold(0.0f32, |m, &x| m.max(x.abs()));
+            let step = absmax / 127.0;
+            for (a, b) in orig.iter().zip(deq) {
+                assert!((a - b).abs() <= step + 1e-6, "wkv quant within a step");
+            }
+        }
+        // The int8 blob is smaller than the f32 blob (wkv 4x smaller).
+        assert!(bytes.len() < s.to_bytes().len(), "int8 state shrinks the footprint");
+    }
+
+    #[test]
+    fn int8_state_rejects_wrong_magic() {
+        let s = sample();
+        // A DSSSMV1 (f32) blob must not decode as DSSSMI8.
+        assert!(matches!(
+            RwkvState::from_int8_bytes(&s.to_bytes()),
+            Err(StateDecodeError::BadMagic)
+        ));
+    }
+
+    #[test]
+    fn rouge_l_identical_one_disjoint_zero() {
+        assert!((super::rouge_l_f1_str("the cat sat", "the cat sat") - 1.0).abs() < 1e-6);
+        assert_eq!(super::rouge_l_f1_str("the cat sat", "dog ran far"), 0.0);
+        assert_eq!(super::rouge_l_f1_str("", "x"), 0.0);
+    }
+
+    #[test]
+    fn rouge_l_partial_overlap_is_between() {
+        // reference "a b c d", candidate "a c d" -> LCS "a c d" (3):
+        // p = 3/3 = 1.0, r = 3/4 = 0.75, F1 ~= 0.857.
+        let f = super::rouge_l_f1_str("a b c d", "a c d");
+        assert!((f - 0.857).abs() < 0.01, "got {f}");
+    }
+
+    #[test]
+    fn fresh_flag_survives_roundtrip() {
+        let mut s = sample();
+        s.fresh = true;
+        let back = RwkvState::from_bytes(&s.to_bytes()).unwrap();
+        assert!(back.fresh);
+    }
+
+    #[test]
+    fn rejects_truncation_and_bad_magic() {
+        let s = sample();
+        let mut bytes = s.to_bytes();
+        assert!(RwkvState::from_bytes(&bytes[..16]).is_err());
+        bytes[0] = b'X';
+        assert!(matches!(RwkvState::from_bytes(&bytes), Err(StateDecodeError::BadMagic)));
+        assert!(RwkvState::from_bytes(&[]).is_err());
+    }
 }
 
 /// B INDEPENDENT recurrent states for the continuous-batch (multi-seq) decode —
@@ -244,6 +748,7 @@ impl RwkvState {
 /// State is per-stream and never shared; only the weights are. A slot can be
 /// reset independently (`reset_slot`) so a finished stream's slot can be reused
 /// by a new sequence without disturbing the others (continuous batching).
+#[derive(Clone)]
 pub struct RwkvMultiState {
     pub slots: Vec<RwkvState>,
 }
@@ -272,6 +777,66 @@ impl RwkvMultiState {
     pub fn reset_slot(&mut self, slot: usize) {
         self.slots[slot].reset();
     }
+}
+
+/// A copy-only group of forked recurrent states (W-F3-1) -- the RWKV-native
+/// analogue of the transformer `KvShareGroup`. Members are seeded by FORKING a
+/// base state (a memcpy, no re-prefill). There is deliberately NO merge/average
+/// op: interpolating recurrent states is unsound (it induces amnesia), so
+/// divergent branches only ever reconverge via text, never by blending state.
+#[derive(Clone)]
+pub struct StateShareGroup {
+    base: RwkvState,
+    members: std::collections::HashMap<String, RwkvState>,
+}
+
+impl StateShareGroup {
+    /// Start a group rooted at `base` (e.g. the planner's analyzed-repo state).
+    pub fn new(base: RwkvState) -> Self {
+        Self { base, members: std::collections::HashMap::new() }
+    }
+
+    /// Fork the base into a new member by `key` (memcpy). Returns `false` if the
+    /// key already exists (forks are never silently overwritten).
+    pub fn fork_member(&mut self, key: impl Into<String>) -> bool {
+        let key = key.into();
+        if self.members.contains_key(&key) {
+            return false;
+        }
+        let forked = self.base.fork();
+        self.members.insert(key, forked);
+        true
+    }
+
+    pub fn member(&self, key: &str) -> Option<&RwkvState> {
+        self.members.get(key)
+    }
+
+    pub fn member_mut(&mut self, key: &str) -> Option<&mut RwkvState> {
+        self.members.get_mut(key)
+    }
+
+    /// Drop a finished branch's state. Returns whether it existed.
+    pub fn drop_member(&mut self, key: &str) -> bool {
+        self.members.remove(key).is_some()
+    }
+
+    pub fn len(&self) -> usize {
+        self.members.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.members.is_empty()
+    }
+
+    /// Reconverge after a fan-out (W-F3-6): branches never blend state, so
+    /// convergence starts a FRESH fork of the shared base and the caller feeds
+    /// the branch outputs back as TEXT. Drops the diverged members.
+    pub fn reconverge(&mut self) -> RwkvState {
+        self.members.clear();
+        self.base.fork()
+    }
+    // Intentionally no `merge` / `average`: copy-not-merge is the invariant.
 }
 
 pub struct RwkvSeven {
@@ -1081,6 +1646,35 @@ impl Engine for RwkvSeven {
 
     fn model_arch(&self) -> &str {
         "rwkv7"
+    }
+
+    /// Spine A: native context as declared by `rwkv7.context_length`. For an SSM
+    /// this is a soft recall horizon (the state is constant-size and has no hard
+    /// token cap), surfaced as "how sharp" rather than "how full".
+    fn context_length_native(&self) -> Option<usize> {
+        Some(self.config.max_seq_len)
+    }
+
+    /// Spine A: the constant recurrent-state footprint (the "~6 MiB" headline).
+    fn recurrent_state_size_bytes(&self) -> Option<usize> {
+        Some(self.state.size_bytes())
+    }
+
+    /// M1: serialize the constant-size recurrent state to the `DSSSMV1` blob.
+    /// Captures `self.state` (the CPU correctness oracle); after a GPU decode the
+    /// live state is in the decode arena and the GPU path is re-seeded from
+    /// `self.state` at the next prefill, so checkpoint/resume across a fresh
+    /// prefill is exact (mid-GPU-stream capture awaits the GPU->CPU readback).
+    fn save_checkpoint(&self) -> Result<Vec<u8>> {
+        Ok(self.state.to_bytes())
+    }
+
+    /// M1: restore a recurrent state with no re-prefill. Replaces `self.state`;
+    /// the GPU decode arena is re-seeded from it on the next prefill.
+    fn load_checkpoint(&mut self, bytes: &[u8]) -> Result<()> {
+        self.state = RwkvState::from_bytes(bytes)
+            .map_err(|e| Error::Model(format!("rwkv state checkpoint decode: {e}")))?;
+        Ok(())
     }
 
     /// Token-id forward seam used by the parity gate. RWKV-7 carries recurrent

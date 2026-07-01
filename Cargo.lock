@@ -1072,6 +1072,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hawking-eval"
+version = "0.2.2"
+dependencies = [
+ "async-trait",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "hawking-index"
 version = "0.2.2"
 dependencies = [
@@ -1183,6 +1195,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "strand-quant",
  "thiserror 2.0.18",
  "tokio",
 ]

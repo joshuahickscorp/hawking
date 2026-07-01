@@ -156,8 +156,17 @@ pub trait ContextSource: Send + Sync {
         counter: &'a TokenCounter,
     ) -> BoxFuture<'a, Result<Option<RealizedSpan>>> {
         let text = c.text.clone();
+        // Tool-output spans are MASKED (placeholder + elision note) rather than
+        // truncated or summarized: a local summary is a full inference pass, and
+        // masking preserves the reasoning trace by only touching tool chatter
+        // (W-F2-5). Everything else degrades by token-boundary truncation.
+        let is_tool_output = c.source == ContextSourceKind::ToolOutput;
         Box::pin(async move {
-            Ok(default_truncate(&text, target_tokens, counter))
+            Ok(if is_tool_output {
+                mask_observation(&text, target_tokens, counter)
+            } else {
+                default_truncate(&text, target_tokens, counter)
+            })
         })
     }
 }
@@ -198,6 +207,51 @@ fn default_truncate(text: &str, target_tokens: usize, counter: &TokenCounter) ->
     })
 }
 
+/// Observation masking (W-F2-5): replace a tool-output span with a compact
+/// placeholder that records how much was elided, keeping its first line as a
+/// hint. Cheaper than truncation and far cheaper than an LLM summary (a summary
+/// is a full local inference pass), and it preserves the reasoning trace by only
+/// touching tool chatter. A span already within budget is kept verbatim.
+fn mask_observation(text: &str, target_tokens: usize, counter: &TokenCounter) -> Option<RealizedSpan> {
+    if text.is_empty() {
+        return None;
+    }
+    let full = counter.count(text);
+    if target_tokens > 0 && full <= target_tokens {
+        return Some(RealizedSpan {
+            text: text.to_string(),
+            compacted: false,
+        });
+    }
+    let head: String = text
+        .lines()
+        .next()
+        .unwrap_or("")
+        .trim()
+        .chars()
+        .take(80)
+        .collect();
+    let placeholder = if head.is_empty() {
+        format!("[tool output masked: ~{full} tokens elided]")
+    } else {
+        format!("[tool output masked: {head} … ~{full} tokens elided]")
+    };
+    Some(RealizedSpan {
+        text: placeholder,
+        compacted: true,
+    })
+}
+
+/// Importance-weighted fraction of a span's tokens dropped by a compaction — the
+/// secondary recall-gate signal (W-F2-3). A high-salience span that loses a lot
+/// reverts even when needle recall looks fine; a low-salience span can shed the
+/// same fraction without tripping the gate. Range `[0,1]`.
+fn dropped_important_frac(orig_tokens: usize, compacted_tokens: usize, importance: f32) -> f32 {
+    let kept = compacted_tokens as f32 / orig_tokens.max(1) as f32;
+    let dropped = (1.0 - kept).clamp(0.0, 1.0);
+    (importance.clamp(0.0, 1.0) * dropped).clamp(0.0, 1.0)
+}
+
 /// Large constant: a user pin floats above any normally-scored span.
 const PIN_BONUS: f32 = 1_000.0;
 
@@ -213,6 +267,12 @@ pub struct ContextCompiler {
     counter: TokenCounter,
     embedder: Option<Arc<dyn EmbeddingClient>>,
     session_id: Option<String>,
+    /// Measured `.tq` effective-context multiplier for the served model, if
+    /// known (resolved from the `.tq` sidecar at serve time). When set, the
+    /// compiled manifest reports the *physical* effective ceiling
+    /// (native x multiplier) instead of just the per-pass budget. Never a
+    /// hardcoded constant — a measured per-model number or `None`.
+    tq_multiplier: Option<f32>,
 }
 
 impl ContextCompiler {
@@ -222,6 +282,7 @@ impl ContextCompiler {
             counter: TokenCounter::heuristic(),
             embedder: None,
             session_id: None,
+            tq_multiplier: None,
         }
     }
 
@@ -242,6 +303,15 @@ impl ContextCompiler {
 
     pub fn with_session(mut self, session_id: impl Into<String>) -> Self {
         self.session_id = Some(session_id.into());
+        self
+    }
+
+    /// Record the measured `.tq` effective-context multiplier (native ->
+    /// effective) for the served model so the compiled manifest reports the real
+    /// physical ceiling. `None` (default) keeps the per-pass budget as the
+    /// effective figure — no regression on existing callers.
+    pub fn with_tq_multiplier(mut self, multiplier: f32) -> Self {
+        self.tq_multiplier = Some(multiplier);
         self
     }
 
@@ -436,7 +506,15 @@ impl ContextCompiler {
             id: input.model.id.to_string(),
             arch: format!("{:?}", input.model.architecture).to_lowercase(),
             ctx_len_native: input.model.context_tokens,
-            ctx_len_effective: total,
+            // Physical effective ceiling = native x measured `.tq` multiplier
+            // when known; otherwise the per-pass budget (preserves prior
+            // behavior). The "what fit this pass" figure lives in
+            // `ManifestProfile.target_ctx_tokens`, so the two stay distinct.
+            ctx_len_effective: self
+                .tq_multiplier
+                .filter(|m| *m > 0.0)
+                .map(|m| ((input.model.context_tokens as f32) * m).round() as usize)
+                .unwrap_or(total),
             tokenizer_sig: input.model.tokenizer_signature.clone(),
         });
 
@@ -524,6 +602,7 @@ impl ContextCompiler {
                         original_id: e.cand.id.clone(),
                         method: "realize".to_string(),
                         ratio: tokens as f32 / est.max(1) as f32,
+                        depth: 1,
                     })
                 } else {
                     None
@@ -548,28 +627,71 @@ impl ContextCompiler {
         let degraded = source.degrade(&e.cand, target, &self.counter).await?;
         match degraded {
             Some(r) if !r.text.is_empty() => {
-                let tokens = self.counter.count(&r.text).min(*free).max(usize::from(!is_pin));
+                // Spine B: a compaction may only stand if it preserves recall. Measure the
+                // degraded text against needles from the ORIGINAL; if recall regresses below
+                // the floor and the original still fits the free budget, REVERT to the
+                // original (lossless-where-it-matters). Either way the recall is recorded.
+                let mut text = r.text;
+                let mut compacted = r.compacted;
+                let mut recall_score: Option<f32> = None;
+                let mut rolled_back = false;
+                if compacted {
+                    let probes = crate::recall::needles_from(&e.cand.text, 8);
+                    let recall = crate::recall::recall_at_k(&probes, &text);
+                    recall_score = Some(recall);
+                    let orig_tokens = self.counter.count(&e.cand.text);
+                    // Importance-weighted dropped fraction: a high-salience span
+                    // that loses a lot of its tokens reverts even when needle
+                    // recall looks fine (W-F2-3 -- replaces the hardcoded 0.0).
+                    let compacted_tokens = self.counter.count(&text);
+                    let importance = e.cand.importance.unwrap_or(e.cand.score);
+                    let dropped = dropped_important_frac(orig_tokens, compacted_tokens, importance);
+                    if crate::recall::decide_rollback(recall, dropped, false, 1).should_rollback
+                        && orig_tokens <= *free
+                    {
+                        text = e.cand.text.clone();
+                        compacted = false;
+                        rolled_back = true;
+                    }
+                }
+                let tokens = self.counter.count(&text).min(*free).max(usize::from(!is_pin));
                 *free = free.saturating_sub(tokens);
                 let original_id = e.cand.id.clone();
-                let result_id = span_content_id(&e.cand.source, &e.cand.title, &r.text);
+                let result_id = span_content_id(&e.cand.source, &e.cand.title, &text);
                 let ratio = tokens as f32 / cost.max(1) as f32;
-                let cf = if r.compacted {
+                let cf = if compacted {
                     compaction.push(CompactionEvent {
                         original_id: original_id.clone(),
                         result_id,
                         method: "degrade".to_string(),
                         model: None,
                         ratio,
+                        depth: 1,
+                        recall_score,
+                        rolled_back: false,
                     });
                     Some(crate::manifest::CompactedFrom {
                         original_id,
                         method: "degrade".to_string(),
                         ratio,
+                        depth: 1,
                     })
                 } else {
+                    if rolled_back {
+                        // Record the reverted compaction for telemetry (original kept, no compacted span).
+                        compaction.push(CompactionEvent {
+                            original_id: original_id.clone(),
+                            result_id,
+                            method: "degrade-reverted".to_string(),
+                            model: None,
+                            ratio: 1.0,
+                            depth: 1,
+                            recall_score,
+                            rolled_back: true,
+                        });
+                    }
                     None
                 };
-                let text = r.text;
                 selected.push(self.selected_from(e, text, tokens, cf));
                 Ok(None)
             }
@@ -869,6 +991,58 @@ mod tests {
         }
     }
 
+    #[test]
+    fn dropped_important_frac_weights_by_salience() {
+        use crate::recall::DROPPED_IMPORTANT_CEIL;
+        // High-importance span losing 80% of its tokens -> over the ceiling (revert).
+        assert!(dropped_important_frac(100, 20, 1.0) > DROPPED_IMPORTANT_CEIL);
+        // Same drop on a low-importance span -> under the ceiling (keep).
+        assert!(dropped_important_frac(100, 20, 0.05) < DROPPED_IMPORTANT_CEIL);
+        // No drop -> zero regardless of importance.
+        assert_eq!(dropped_important_frac(100, 100, 1.0), 0.0);
+    }
+
+    #[test]
+    fn mask_observation_replaces_body_with_placeholder() {
+        let counter = TokenCounter::heuristic();
+        let body = format!("RUN cargo test\n{}", "output line ".repeat(200));
+        let masked = mask_observation(&body, 10, &counter).expect("masked");
+        assert!(masked.compacted);
+        assert!(masked.text.contains("masked"), "got: {}", masked.text);
+        assert!(counter.count(&masked.text) < counter.count(&body));
+        // A short span already within budget is kept verbatim, not masked.
+        let small = mask_observation("ok", 100, &counter).expect("small");
+        assert!(!small.compacted);
+        assert_eq!(small.text, "ok");
+    }
+
+    #[tokio::test]
+    async fn degrade_masks_tool_output_but_truncates_code() {
+        let counter = TokenCounter::heuristic();
+        let src = StaticSource(vec![]);
+        let big = "x ".repeat(500);
+        let tool = ContextCandidate::new(
+            "t",
+            ContextSourceKind::ToolOutput,
+            "tool",
+            big.clone(),
+            0.5,
+            Provenance::trusted("test"),
+        );
+        let code = ContextCandidate::new(
+            "c",
+            ContextSourceKind::Code,
+            "code",
+            big,
+            0.5,
+            Provenance::trusted("test"),
+        );
+        let dt = src.degrade(&tool, 10, &counter).await.unwrap().expect("tool degraded");
+        let dc = src.degrade(&code, 10, &counter).await.unwrap().expect("code degraded");
+        assert!(dt.text.contains("masked"), "tool output should be masked");
+        assert!(!dc.text.contains("masked"), "code should be truncated, not masked");
+    }
+
     #[tokio::test]
     async fn keeps_highest_value_under_budget() {
         let mut compiler = ContextCompiler::new();
@@ -924,6 +1098,37 @@ mod tests {
         // F1 invariant recorded.
         let b = compiled.manifest.budget.unwrap();
         assert!(b.used + b.reservation_response <= b.total + b.reservation_system);
+    }
+
+    #[tokio::test]
+    async fn tq_multiplier_sets_physical_effective_ceiling() {
+        // No multiplier: effective ceiling stays the per-pass budget (the field
+        // is NOT silently equal to native*2) -- no regression.
+        let base = ContextCompiler::new()
+            .compile(CompileInput {
+                profile: ContextProfile::coding_default(128),
+                model: model(4096),
+                task: "t".to_string(),
+            })
+            .await
+            .unwrap();
+        let m = base.manifest.model.expect("model manifest");
+        assert_eq!(m.ctx_len_native, 4096);
+        assert_ne!(m.ctx_len_effective, 8192);
+
+        // With a 2.0 multiplier: effective ceiling = native * 2.
+        let scaled = ContextCompiler::new()
+            .with_tq_multiplier(2.0)
+            .compile(CompileInput {
+                profile: ContextProfile::coding_default(128),
+                model: model(4096),
+                task: "t".to_string(),
+            })
+            .await
+            .unwrap();
+        let sm = scaled.manifest.model.expect("model manifest");
+        assert_eq!(sm.ctx_len_native, 4096);
+        assert_eq!(sm.ctx_len_effective, 8192, "native 4096 x 2.0 multiplier");
     }
 
     #[tokio::test]

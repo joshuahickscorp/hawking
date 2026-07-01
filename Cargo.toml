@@ -17,6 +17,7 @@ members = [
     "crates/hawking-core",
     "crates/hawking-serve",
     "crates/hawking-bench",
+    "crates/hawking-eval",
     "tools/q4k_fast",
     "tools/awq_bake",
     "tools/tq_bake",

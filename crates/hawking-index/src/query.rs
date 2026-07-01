@@ -52,6 +52,111 @@ pub enum SearchResultSource {
     Graph,
 }
 
+/// Coarse shape of a search query, used to route BEFORE retrieving (W-F2-6):
+/// route exact-symbol lookups to the precise symbol tier and only spend the
+/// fuzzy semantic leg on natural-language intent.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QueryShape {
+    /// A single symbol-like token (`Foo::bar`, `snake_case`, `camelCase`).
+    ExactSymbol,
+    /// One or two plain tokens — lexical territory.
+    Identifier,
+    /// A phrase / question — needs the hybrid (semantic) leg.
+    NaturalLanguage,
+}
+
+fn has_internal_caps(t: &str) -> bool {
+    t.chars().skip(1).any(|c| c.is_uppercase())
+}
+
+/// Classify a raw query string by shape (pure, deterministic).
+pub fn classify_query_shape(text: &str) -> QueryShape {
+    let t = text.trim();
+    let words = t.split_whitespace().count();
+    if t.ends_with('?') || words >= 3 {
+        return QueryShape::NaturalLanguage;
+    }
+    if words <= 1 {
+        let symbolish =
+            t.contains("::") || t.contains('.') || t.contains('_') || has_internal_caps(t);
+        if symbolish {
+            return QueryShape::ExactSymbol;
+        }
+    }
+    QueryShape::Identifier
+}
+
+/// Precision rank of a result source (lower = more precise). Used to break score
+/// ties so a definition/symbol hit outranks a same-score "similar-code" semantic
+/// hit (W-F2-6).
+fn source_rank(s: SearchResultSource) -> u8 {
+    match s {
+        SearchResultSource::Symbol => 0,
+        SearchResultSource::Lexical => 1,
+        SearchResultSource::Graph => 2,
+        SearchResultSource::Semantic => 3,
+    }
+}
+
+/// Re-rank results by score (desc), breaking ties toward the more precise source
+/// so "similar function" semantic hits never displace an equally-scored
+/// definition/symbol hit (W-F2-6).
+pub fn rerank_prefer_precise(results: &mut [SearchResult]) {
+    results.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| source_rank(a.source).cmp(&source_rank(b.source)))
+    });
+}
+
+impl SearchQuery {
+    /// Build a query whose retrieval-tier flags are routed by the query's shape
+    /// (W-F2-6): exact symbols skip the fuzzy legs; natural language gets the
+    /// full hybrid.
+    pub fn routed(text: impl Into<String>, limit: usize) -> Self {
+        let text = text.into();
+        let (include_symbols, include_lexical, include_semantic) =
+            match classify_query_shape(&text) {
+                QueryShape::ExactSymbol => (true, false, false),
+                QueryShape::Identifier => (true, true, false),
+                QueryShape::NaturalLanguage => (true, true, true),
+            };
+        SearchQuery { text, limit, include_symbols, include_lexical, include_semantic }
+    }
+}
+
+#[cfg(test)]
+mod routing_tests {
+    use super::*;
+
+    #[test]
+    fn classifies_query_shapes() {
+        assert_eq!(classify_query_shape("CodeIndex::search"), QueryShape::ExactSymbol);
+        assert_eq!(classify_query_shape("foo_bar"), QueryShape::ExactSymbol);
+        assert_eq!(classify_query_shape("parseTree"), QueryShape::ExactSymbol);
+        assert_eq!(classify_query_shape("parse tree"), QueryShape::Identifier);
+        assert_eq!(classify_query_shape("where do we handle retries?"), QueryShape::NaturalLanguage);
+        assert_eq!(classify_query_shape("how does compaction work"), QueryShape::NaturalLanguage);
+    }
+
+    #[test]
+    fn routed_sets_tier_flags() {
+        let exact = SearchQuery::routed("Foo::bar", 10);
+        assert!(exact.include_symbols && !exact.include_lexical && !exact.include_semantic);
+        let ident = SearchQuery::routed("parse tree", 10);
+        assert!(ident.include_symbols && ident.include_lexical && !ident.include_semantic);
+        let nl = SearchQuery::routed("how does the gate decide rollback", 10);
+        assert!(nl.include_symbols && nl.include_lexical && nl.include_semantic);
+    }
+
+    #[test]
+    fn precise_sources_outrank_similar_code() {
+        assert!(source_rank(SearchResultSource::Symbol) < source_rank(SearchResultSource::Semantic));
+        assert!(source_rank(SearchResultSource::Lexical) < source_rank(SearchResultSource::Semantic));
+    }
+}
+
 pub trait CodeIndex: Send + Sync {
     fn search<'a>(&'a self, query: SearchQuery) -> BoxFuture<'a, Result<Vec<SearchResult>>>;
     fn definition<'a>(&'a self, symbol: &'a str) -> BoxFuture<'a, Result<Vec<Occurrence>>>;

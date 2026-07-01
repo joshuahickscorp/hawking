@@ -166,6 +166,7 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/embeddings", post(embeddings))
         .route("/v1/hawking/tokens", post(hawking_tokens))
         .route("/v1/hawking/generate", post(hawking_generate))
+        .route("/v1/hawking/context", get(hawking_context))
         .route("/metrics", get(metrics))
         .with_state(state)
 }
@@ -210,6 +211,61 @@ async fn metrics(State(s): State<AppState>) -> String {
         lane.greedy_steps, lane.logits_steps, lane.readback_bytes,
         lane.prefix_reuse_count,
     )
+}
+
+/// Spine A — live context introspection. Read-only snapshot of the real,
+/// dynamic context picture: native length from the model config, the effective
+/// ceiling derived from the measured `.tq` multiplier (passed in via env by the
+/// supervisor — never a constant), the constant recurrent-state footprint for
+/// SSMs, and live slot occupancy. The shell renders this as an ambient cue.
+#[derive(Serialize)]
+struct ContextStatus {
+    model_id: String,
+    arch: String,
+    ctx_len_native: Option<usize>,
+    ctx_len_effective: Option<usize>,
+    /// Measured `.tq` weight-compression multiplier (1.0 == no claim).
+    tq_multiplier: f32,
+    /// True when the effective ceiling is a derived estimate, not a hard cap.
+    tq_estimated: bool,
+    /// Constant recurrent-state footprint in bytes for SSMs; None for transformers.
+    recurrent_state_bytes: Option<usize>,
+    active_slots: usize,
+    free_slots: usize,
+    max_batch: usize,
+}
+
+async fn hawking_context(State(s): State<AppState>) -> Json<ContextStatus> {
+    let (model_id, arch, native, state_bytes) = {
+        let eng = s.engine.lock();
+        (
+            eng.model_id().to_string(),
+            eng.model_arch().to_string(),
+            eng.context_length_native(),
+            eng.recurrent_state_size_bytes(),
+        )
+    };
+    // The supervisor measured this from the .tq artifact and passed it in; if
+    // absent the multiplier is 1.0 (no expansion claimed). Never hardcoded.
+    let tq_multiplier: f32 = std::env::var("HAWKING_QWEN_TQ_MULTIPLIER")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .filter(|m: &f32| m.is_finite() && *m >= 1.0)
+        .unwrap_or(1.0);
+    let effective = native.map(|n| (n as f32 * tq_multiplier).round() as usize);
+    let active = s.driver.lock().scheduler.active_count();
+    Json(ContextStatus {
+        model_id,
+        arch,
+        ctx_len_native: native,
+        ctx_len_effective: effective,
+        tq_multiplier,
+        tq_estimated: tq_multiplier > 1.0,
+        recurrent_state_bytes: state_bytes,
+        active_slots: active,
+        free_slots: s.max_batch.saturating_sub(active),
+        max_batch: s.max_batch,
+    })
 }
 
 #[derive(Serialize)]

@@ -265,6 +265,42 @@ enum ValidFirstBytes {
     Done,
 }
 
+/// A structured output constraint a request can carry into the runtime (the
+/// W-F4-1 foundation). The engine today has only a binary `json_mode`; this is
+/// the core-owned grammar TYPE the runtime-grammar work builds on (core cannot
+/// reach hawking-orch's shell-side `GrammarSpec`). `validate` is the post-hoc
+/// gate; per-token MASK enforcement of `required_keys` / `Choices` during decode
+/// is the deferred runtime FSM (hawking-orch grammar.rs marks it
+/// "RUNTIME-SIDE — LATER"), as is threading a `grammar` field through the 44
+/// `GenerateRequest` construction sites.
+#[derive(Debug, Clone, PartialEq)]
+pub enum GrammarConstraint {
+    /// Any valid JSON object, optionally requiring these top-level keys.
+    JsonObject { required_keys: Vec<String> },
+    /// Output must be exactly one of these choices (classifier label / enum).
+    Choices(Vec<String>),
+}
+
+impl GrammarConstraint {
+    /// Post-hoc validation gate: does a completed `output` satisfy the constraint?
+    pub fn validate(&self, output: &str) -> bool {
+        match self {
+            GrammarConstraint::JsonObject { required_keys } => {
+                match serde_json::from_str::<serde_json::Value>(output.trim()) {
+                    Ok(serde_json::Value::Object(map)) => {
+                        required_keys.iter().all(|k| map.contains_key(k.as_str()))
+                    }
+                    _ => false,
+                }
+            }
+            GrammarConstraint::Choices(choices) => {
+                let t = output.trim();
+                choices.iter().any(|c| c.as_str() == t)
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -303,5 +339,26 @@ mod tests {
         c.advance(r#"{"k": "#);
         assert!(!c.is_done());
         assert_eq!(c.state, JsonState::ObjectValue);
+    }
+
+    #[test]
+    fn grammar_constraint_validates_json_object_required_keys() {
+        let c = GrammarConstraint::JsonObject {
+            required_keys: vec!["tool".into(), "args".into()],
+        };
+        assert!(c.validate(r#"{"tool":"grep","args":{}}"#));
+        assert!(!c.validate(r#"{"tool":"grep"}"#), "missing required key");
+        assert!(!c.validate("not json"));
+        assert!(!c.validate("[1,2,3]"), "array is not an object");
+        let any = GrammarConstraint::JsonObject { required_keys: vec![] };
+        assert!(any.validate(r#"{"x":1}"#));
+    }
+
+    #[test]
+    fn grammar_constraint_validates_choices() {
+        let c = GrammarConstraint::Choices(vec!["yes".into(), "no".into()]);
+        assert!(c.validate("yes"));
+        assert!(c.validate("  no  "), "trims whitespace");
+        assert!(!c.validate("maybe"));
     }
 }

@@ -128,16 +128,13 @@ impl ContextSource for CodeIndexContextSource {
         input: &'a CompileInput,
     ) -> BoxFuture<'a, Result<Vec<ContextCandidate>>> {
         Box::pin(async move {
-            let results = self
-                .index
-                .search(SearchQuery {
-                    text: input.task.clone(),
-                    limit: self.limit,
-                    include_symbols: true,
-                    include_lexical: true,
-                    include_semantic: self.include_semantic,
-                })
-                .await?;
+            // W-F2-6: route the query by shape (an exact-symbol query skips the
+            // fuzzy legs), capped by this source's semantic config, then prefer
+            // precise hits over similar-code semantic ones on score ties.
+            let mut query = SearchQuery::routed(input.task.clone(), self.limit);
+            query.include_semantic = query.include_semantic && self.include_semantic;
+            let mut results = self.index.search(query).await?;
+            hawking_index::query::rerank_prefer_precise(&mut results);
             Ok(results
                 .into_iter()
                 .enumerate()

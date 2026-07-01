@@ -9,10 +9,12 @@
 pub mod budget;
 pub mod compiler;
 pub mod embed;
+pub mod fidelity;
 pub mod kv;
 pub mod manifest;
 pub mod memory;
 pub mod profiles;
+pub mod recall;
 pub mod sources;
 
 pub use budget::{estimate_tokens, RegionBudget, Reservations, TokenBudget, TokenCounter};

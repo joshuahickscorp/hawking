@@ -47,6 +47,11 @@ pub struct ContextManifest {
     /// Compaction events: a span was replaced by a shorter rendering.
     #[serde(default)]
     pub compaction_events: Vec<CompactionEvent>,
+    /// Live occupancy / recall headroom at inference time (Spine A). Changes
+    /// every step as the window fills (transformer KV) or the recurrent state
+    /// ages (RWKV recall fidelity). None until the runtime reports it.
+    #[serde(default)]
+    pub live: Option<ManifestLive>,
 }
 
 impl ContextManifest {
@@ -67,6 +72,115 @@ impl ContextManifest {
             conflicts: Vec::new(),
             kv: ManifestKv::default(),
             compaction_events: Vec::new(),
+            live: None,
+        }
+    }
+}
+
+/// Live occupancy / recall headroom recorded at inference time (Spine A — live
+/// context introspection). Distinct from the static `model` block: this is the
+/// DYNAMIC reading, computed against the live effective ceiling (never a
+/// hardcoded token count). Two regimes share one struct: transformers report KV
+/// occupancy; SSMs (RWKV-7, no token cap) report recall fidelity over a
+/// constant-size recurrent state.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct ManifestLive {
+    /// Transformer: current KV sequence position. None for SSMs.
+    pub kv_seq_len: Option<usize>,
+    /// Transformer: allocated KV cache size in tokens.
+    pub kv_max: Option<usize>,
+    /// SSM (RWKV): constant recurrent-state footprint, bytes.
+    pub state_bytes: Option<usize>,
+    /// SSM (RWKV): tokens that have flowed through the state this run.
+    pub state_age_tokens: Option<usize>,
+    /// SSM (RWKV): calibrated recall fidelity 0..1 (how "sharp" old context is).
+    pub recall_fidelity: Option<f32>,
+    /// Effective ceiling in tokens (native × .tq multiplier), read live.
+    pub effective_ceiling_tokens: usize,
+    /// Headroom before degradation: free tokens (transformer) or a recall-based
+    /// estimate (SSM).
+    pub headroom_tokens: usize,
+    /// Occupancy 0..1 against the effective ceiling; drives watermarks.
+    pub occupancy: f32,
+    /// Which watermark band the occupancy/fidelity sits in.
+    pub watermark: WatermarkLevel,
+}
+
+/// Headroom bands that drive the ambient cue + compaction timing (Spine A).
+/// Computed against the LIVE ceiling, never a constant. For SSMs the band is
+/// derived from `1 - recall_fidelity` so "recall getting soft" maps to the same
+/// scale as "KV getting full".
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum WatermarkLevel {
+    /// < 60% — abundant; the ambient cue stays quiet.
+    #[default]
+    Normal,
+    /// >= 60% — a context layer is ready to compact (soft hint).
+    Soft,
+    /// >= 75% — recency decay begins (warn).
+    Warn,
+    /// >= 90% — auto quality-compaction fires (before the cliff).
+    Critical,
+}
+
+impl WatermarkLevel {
+    /// Band for a 0..1 occupancy (transformer KV) or `1 - recall_fidelity` (SSM).
+    pub fn for_occupancy(occ: f32) -> Self {
+        if occ >= 0.90 {
+            Self::Critical
+        } else if occ >= 0.75 {
+            Self::Warn
+        } else if occ >= 0.60 {
+            Self::Soft
+        } else {
+            Self::Normal
+        }
+    }
+}
+
+impl ManifestLive {
+    /// Transformer regime: occupancy is KV position over the effective ceiling.
+    pub fn transformer(kv_seq_len: usize, effective_ceiling_tokens: usize) -> Self {
+        let occupancy = if effective_ceiling_tokens == 0 {
+            0.0
+        } else {
+            (kv_seq_len as f32 / effective_ceiling_tokens as f32).clamp(0.0, 1.0)
+        };
+        Self {
+            kv_seq_len: Some(kv_seq_len),
+            kv_max: Some(effective_ceiling_tokens),
+            state_bytes: None,
+            state_age_tokens: None,
+            recall_fidelity: None,
+            effective_ceiling_tokens,
+            headroom_tokens: effective_ceiling_tokens.saturating_sub(kv_seq_len),
+            occupancy,
+            watermark: WatermarkLevel::for_occupancy(occupancy),
+        }
+    }
+
+    /// SSM regime (RWKV-7): there is no token cap, so "occupancy" is framed as
+    /// `1 - recall_fidelity` — how soft recall has gotten — so the same watermark
+    /// bands and ambient cue apply. Headroom is a recall-based token estimate.
+    pub fn ssm(
+        state_bytes: usize,
+        state_age_tokens: usize,
+        recall_fidelity: f32,
+        effective_ceiling_tokens: usize,
+    ) -> Self {
+        let fidelity = recall_fidelity.clamp(0.0, 1.0);
+        let occupancy = 1.0 - fidelity;
+        Self {
+            kv_seq_len: None,
+            kv_max: None,
+            state_bytes: Some(state_bytes),
+            state_age_tokens: Some(state_age_tokens),
+            recall_fidelity: Some(fidelity),
+            effective_ceiling_tokens,
+            headroom_tokens: ((effective_ceiling_tokens as f32) * fidelity) as usize,
+            occupancy,
+            watermark: WatermarkLevel::for_occupancy(occupancy),
         }
     }
 }
@@ -130,6 +244,10 @@ pub struct CompactedFrom {
     pub original_id: String,
     pub method: String,
     pub ratio: f32,
+    /// Recursion depth in the compaction chain (Spine B). `realize()` refuses to
+    /// compact past depth 2 and falls back to the original to stop compounding loss.
+    #[serde(default)]
+    pub depth: u8,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -236,6 +354,16 @@ pub struct CompactionEvent {
     pub method: String,
     pub model: Option<String>,
     pub ratio: f32,
+    /// Recursion depth of this compaction (Spine B). >2 triggers auto-rollback.
+    #[serde(default)]
+    pub depth: u8,
+    /// Needle-in-haystack recall@k measured AFTER this compaction, 0..1 (Spine B).
+    /// None until the RecallOracle runs. Below threshold => `rolled_back`.
+    #[serde(default)]
+    pub recall_score: Option<f32>,
+    /// True when the RecallOracle reverted this compaction (recall regressed).
+    #[serde(default)]
+    pub rolled_back: bool,
 }
 
 #[cfg(test)]
