@@ -62,10 +62,13 @@ def recipe_label(recipe):
 def serves(recipe):
     return recipe[0] == "single"          # single-bake has a built .tq serve path today
 
-# ── hardware envelope ─────────────────────────────────────────────────────────────────
-RAM_GB        = 96.0
-WEIGHT_BUDGET = 84.0                       # leave ~12 GB for KV + activations + OS
-CONDENSE_RESIDENT_MAX_B = 34              # naive condense cap (f16 ≈ 2×params must fit ~80 GB)
+# ── hardware envelope (M1 Ultra, the DELIVERED box: 128 GB unified, ~800 GB/s, 8 TB) ────
+# Re-derived from the M2-Max-96GB constants the plan was written against (see
+# M1ULTRA_POTENTIAL_AUDIT.md §6 re-derivation 1). The bigger envelope moves 405B@1.34 and
+# 671B@1.0 out of TIGHT/EDGE into RESIDENT with no expert pager.
+RAM_GB        = 128.0
+WEIGHT_BUDGET = 112.0                      # leave ~16 GB for KV + activations + OS
+CONDENSE_RESIDENT_MAX_B = 48              # naive condense cap (f16 ≈ 2×params must fit ~112 GB) -> ~48B
 
 
 def tq_gb(params_b, bpw):

@@ -10,7 +10,7 @@ Usage:
   python3.12 tools/condense/preflight.py            # full check
   python3.12 tools/condense/preflight.py --quiet    # exit code only, minimal output
 """
-import sys, os, subprocess, shutil, importlib
+import sys, os, subprocess, shutil, importlib, importlib.util
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
@@ -108,12 +108,29 @@ def check_receipt_harness():
     return ok
 
 
+def check_procurement():
+    """Soft check: the fastest-SOTA download path (hf_transfer + hf_xet). Not a hard fail (you can
+    still procure, just slower), but the ~4 TB of frontier parents are the one real bottleneck, so
+    flag a degraded path loudly. Informational -> always returns True."""
+    xfer = importlib.util.find_spec("hf_transfer") is not None
+    xet = importlib.util.find_spec("hf_xet") is not None
+    _say(xfer, "hf_transfer (Rust chunked accelerator)" if xfer else
+         "hf_transfer MISSING - pip install hf_transfer (procurement will be link-bottlenecked)")
+    _say(xet, "hf_xet (Xet dedup + parallel range gets)" if xet else
+         "hf_xet MISSING - pip install hf_xet (slower on Xet repos)")
+    if not (xfer and xet):
+        _say(True, "procurement DEGRADED but usable; export HF_HUB_ENABLE_HF_TRANSFER=1 and see procure.py")
+    else:
+        _say(True, "procurement path FASTEST-SOTA (link-bound); use tools/condense/procure.py")
+    return True
+
+
 def main():
     checks = [
         ("Python env", check_python), ("Rust toolchain", check_rust),
         ("Hardware", check_hardware), ("Tool compile", check_compile),
         ("cargo check", check_cargo), ("Staged models", check_staged_models),
-        ("Receipt harness", check_receipt_harness),
+        ("Procurement path", check_procurement), ("Receipt harness", check_receipt_harness),
     ]
     results = {}
     for name, fn in checks:

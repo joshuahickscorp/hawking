@@ -21,16 +21,22 @@ import sys, os, json
 
 OUT = "reports/condense"
 DEVICES = {  # name -> (RAM_GB usable for weights, SSD_TB, SSD_read_GBps)
+    # m1ultra = THE DELIVERED BOX (M1 Ultra, 128 GB unified, ~800 GB/s, 8 TB SSD). Weight budget
+    # ~112 GB leaves ~16 GB for KV + activations + OS. This is the default; the frontier numbers are
+    # denominated against 800 GB/s and 8 TB, not the M2-Max-96GB box the plan was derived for.
+    "m1ultra": (112.0, 8.0, 6.0),
     "studio-m2max": (84.0, 2.0, 5.0), "mbp-36": (28.0, 1.0, 5.0),
     "mbp-64": (52.0, 2.0, 5.0), "studio-m3ultra-512": (470.0, 8.0, 6.0),
 }
+DEFAULT_DEVICE = "m1ultra"
+RAM_GBPS = 800.0   # M1 Ultra unified-memory bandwidth (the resident-serve tok/s denominator)
 
 
 def tq_gb(p_b, bpw): return p_b * bpw / 8.0
 
 
 def analyze(total_b, active_b, bpw, dev, hot_cache_gb=20.0, kv_gb=6.0):
-    ram, ssd_tb, bw = DEVICES.get(dev, DEVICES["studio-m2max"])
+    ram, ssd_tb, bw = DEVICES.get(dev, DEVICES[DEFAULT_DEVICE])
     ssd_gb = ssd_tb * 1000
     store = tq_gb(total_b, bpw)
     res = {"device": dev, "ram_gb": ram, "ssd_gb": ssd_gb, "ssd_bw_gbps": bw,
@@ -78,7 +84,7 @@ def report(total_b, active_b, bpw, dev):
 if __name__ == "__main__":
     a = sys.argv[1] if len(sys.argv) > 1 else "--help"
     if a == "--ceiling":
-        dev = sys.argv[2] if len(sys.argv) > 2 else "studio-m2max"
+        dev = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_DEVICE
         ram, ssd_tb, bw = DEVICES[dev]
         print(f"{dev}: RAM {ram}GB, SSD {ssd_tb}TB, {bw}GB/s")
         for bpw in (4.5, 3.34, 2.34, 1.34, 1.0):
@@ -87,7 +93,7 @@ if __name__ == "__main__":
         print(__doc__)
     else:
         total = float(a)
-        active = None; dev = "studio-m2max"; bpw = 1.34
+        active = None; dev = DEFAULT_DEVICE; bpw = 1.34
         if "--active" in sys.argv: active = float(sys.argv[sys.argv.index("--active")+1])
         if "--bpw" in sys.argv: bpw = float(sys.argv[sys.argv.index("--bpw")+1])
         if "--device" in sys.argv: dev = sys.argv[sys.argv.index("--device")+1]

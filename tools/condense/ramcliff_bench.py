@@ -47,7 +47,7 @@ Env (matches audit_ladder.py / scaling_law.py / subbit_measure.py):
   RAMCLIFF_Q4K_BPW       Q4_K reference effective bpw (default 4.5)
   RAMCLIFF_CLIFF_X       cliff x-factor gate (default 10.0)
   RAMCLIFF_SSD_GBPS      modeled SSD read bandwidth GB/s for the swapping path (default 5.0)
-  RAMCLIFF_RAM_GBPS      modeled unified-memory bandwidth GB/s for the resident path (default 400.0)
+  RAMCLIFF_RAM_GBPS      modeled unified-memory bandwidth GB/s for the resident path (default 800.0, M1 Ultra)
   RAMCLIFF_SERVE_BIN     path to the native .tq serve binary (gates the REAL path; absent -> STUDIO-TIER)
   POWERMETRICS           path to powermetrics (gates the REAL energy path; absent -> modeled/STUDIO-TIER)
 
@@ -67,7 +67,7 @@ import sys, os, json, math, argparse, shutil, subprocess
 Q4K_BPW = float(os.environ.get("RAMCLIFF_Q4K_BPW", "4.5"))     # llama Q4_K reference effective rate
 CLIFF_X_GATE = float(os.environ.get("RAMCLIFF_CLIFF_X", "10.0"))  # >10x resident-vs-swap = headline
 SSD_GBPS = float(os.environ.get("RAMCLIFF_SSD_GBPS", "5.0"))   # modeled SSD read BW (swapping path)
-RAM_GBPS = float(os.environ.get("RAMCLIFF_RAM_GBPS", "400.0")) # modeled unified-mem BW (resident path)
+RAM_GBPS = float(os.environ.get("RAMCLIFF_RAM_GBPS", "800.0")) # modeled unified-mem BW (resident path)
 
 DEV = os.environ.get("DOCTOR_DEVICE", "cpu")                   # recorded for provenance only
 DTYPE = os.environ.get("DOCTOR_DTYPE", "float32")              # recorded; staging read only

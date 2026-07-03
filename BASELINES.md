@@ -43,8 +43,12 @@ Serve-oriented (do NOT fit the doctor's f16-resident budget). `.tq` sizes at the
 | 671B | `deepseek-ai/DeepSeek-V3` | 671B | 37B | 1.00 | ~84 GB (the EDGE) |
 | 744B | `zai-org/GLM-4.5` | 744B | 32B | 0.75 | ~70 GB (research) |
 
-Download each with `hf download <id> --local-dir scratch/<dir>` per the `FRONTIER` table — large
-(hundreds of GB), do them serially, confirm free disk before each (`size_frontier.py --ceiling`).
+Download with the FASTEST-SOTA path: `python3.12 tools/condense/procure.py <label>` (forces
+`HF_HUB_ENABLE_HF_TRANSFER=1` + the `hf_xet` backend + `--max-workers`, so it is link-bound not
+software-bound). `procure.py --all-frontier --link-mbps <your link>` prints the manifest + per-model
+ETA; `procure.py --check` confirms the accelerators are active. The whole ~4.3 TB frontier lands in
+~10 h on gigabit. 8 TB SSD holds all parents + their `.tq` outputs; download biggest LAST so the
+ladder + condense start immediately on the small ones.
 
 ## Honesty rules
 

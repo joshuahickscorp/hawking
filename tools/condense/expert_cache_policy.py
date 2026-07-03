@@ -25,7 +25,7 @@ batch/async-only at this size - a real constraint, not a bug to code around.
 
 Usage:
   expert_cache_policy.py --sim <n_experts> <active_k> [--skew 1.2] [--cache-frac 0.1,0.25,0.5]
-                          [--active-gb 0.31] [--ssd-gbps 5.0] [--ram-gbps 400]
+                          [--active-gb 0.31] [--ssd-gbps 6.0] [--ram-gbps 800]
 """
 import sys, os, json, random
 
@@ -55,7 +55,7 @@ def simulate(n_experts, active_k, skew, cache_frac, trials=20000, seed=0):
     return hits / total if total else 0.0
 
 
-def blended_tok_s(p_hit, active_gb, ram_gbps=400.0, ssd_gbps=5.0):
+def blended_tok_s(p_hit, active_gb, ram_gbps=800.0, ssd_gbps=6.0):
     tok_s_warm = ram_gbps / active_gb if active_gb else 0.0
     tok_s_cold = ssd_gbps / active_gb if active_gb else 0.0
     # per-token expected time = p_hit*t_warm + (1-p_hit)*t_cold ; tok/s = 1/expected_time
@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 if "--cache-frac" in sys.argv else [0.1, 0.25, 0.5])
         active_gb = float(sys.argv[sys.argv.index("--active-gb") + 1]) if "--active-gb" in sys.argv else 0.31
         ssd = float(sys.argv[sys.argv.index("--ssd-gbps") + 1]) if "--ssd-gbps" in sys.argv else 5.0
-        ram = float(sys.argv[sys.argv.index("--ram-gbps") + 1]) if "--ram-gbps" in sys.argv else 400.0
+        ram = float(sys.argv[sys.argv.index("--ram-gbps") + 1]) if "--ram-gbps" in sys.argv else 800.0
         run(n, k, skew, fracs, active_gb, ssd, ram)
     else:
         print(__doc__)

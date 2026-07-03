@@ -37,21 +37,22 @@ LADDER = [
     ("32B",  "scratch/qwen-32b", 32.0, 85, True,  "capstone"),   # solo: needs the whole box
 ]
 
-# FRONTIER — the 100B+ research targets (the real prize). These do NOT fit the doctor budget (f16
-# 2x resident overflows 96GB), so the pipeline is SERVE-oriented: block-wise streamed condense to a
-# serve-fit .tq + per-expert allocation for MoE + the entropy floor + the RAM-cliff demo. Quality is
-# measured via the NATIVE .tq serve (not f16 forward, which can't be held) -> gated on the serve build.
-# label, hf dir, total_b, active_b (None=dense), serve_bpw (the headline rung), moe?, role
+# FRONTIER — the 100B+ research targets (the real prize). On the M1 Ultra 128 GB box the pivot from
+# the M2-Max plan: 235B (~39GB), 405B-dense (~68GB), and 671B@1.0 (~84GB) all fit RESIDENT under the
+# ~112 GB weight budget, so the OOC expert pager (the hardest serve-build item, Type-1 dead in the
+# free-RAM regime) is NOT needed for these. The pipeline condenses block-wise-streamed to a serve-fit
+# .tq, then serves RESIDENT; quality is the native .tq serve (gated on the serve build). Only 744B and
+# the deeper frontier (1T/3T) need the SSD out-of-core path. (f16 parent is streamed, never resident.)
+# label, hf dir, total_b, active_b (None=dense), serve_bpw, moe?, role, HF id
 FRONTIER = [
-    # label, local dir, total_b, active_b, serve_bpw, moe?, role, exact HF id (for `hf download`)
-    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-dream",
-     "Qwen/Qwen3-235B-A22B"),                                                        # 39GB @1.34 COMFY
-    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-edge",
-     "meta-llama/Llama-3.1-405B-Instruct"),                                          # 68GB @1.34 TIGHT
+    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-resident",
+     "Qwen/Qwen3-235B-A22B"),                                            # ~39GB @1.34  RESIDENT (comfy)
+    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-resident",
+     "meta-llama/Llama-3.1-405B-Instruct"),                             # ~68GB @1.34  RESIDENT (no pager)
     ("671B",      "scratch/deepseek-v3",     671.0, 37.0, 1.00, True,  "moe-capstone",
-     "deepseek-ai/DeepSeek-V3"),                                                     # 84GB @1.0  the EDGE
+     "deepseek-ai/DeepSeek-V3"),                                        # ~84GB @1.0   RESIDENT (the prize)
     ("744B",      "scratch/glm-744b",        744.0, 32.0, 0.75, True,  "moe-stretch",
-     "zai-org/GLM-4.5"),                                                             # 70GB @0.75 research
+     "zai-org/GLM-4.5"),                                                # ~70GB @0.75  RESIDENT (research)
 ]
 
 # the recovery stack run per model, cheapest-first (plan §2). Each entry: (stage, tool, note).
@@ -144,15 +145,20 @@ def run_frontier(label):
         print(f"[frontier] unknown {label}", file=sys.stderr); return 2
     _, mdir, total, active, bpw, moe, role, hf_id = row
     artifact = round(total * bpw / 8.0, 1)
-    fits = artifact <= 84.0
+    # M1 Ultra 128 GB weight budget ~112 GB (re-derived from the M2-Max 84 GB). The pivot: 235B (~39GB),
+    # 405B-dense (~68GB), and 671B@1.0 (~84GB) all fit RESIDENT here, so the OOC expert pager (the
+    # hardest serve-build item, and Type-1 dead in the free-RAM regime) is NOT on the critical path.
+    WEIGHT_BUDGET = 112.0
+    fits = artifact <= WEIGHT_BUDGET
+    resident = "RESIDENT (no pager)" if fits else "OVERFLOW (SSD-bound, deep frontier)"
     ncpu = str(os.cpu_count() or 8)
     env = {**os.environ, "DOCTOR_DEVICE": "cpu", "DOCTOR_DTYPE": "bfloat16", "STRAND_NO_GPU": "1",
            "OMP_NUM_THREADS": ncpu, "MKL_NUM_THREADS": ncpu, "VECLIB_MAXIMUM_THREADS": ncpu}
     print(f"[frontier] {label} ({total}B{f', act {active}B MoE' if moe else ' dense'}, role={role}) "
-          f"-> {bpw} bpw = {artifact}GB ({'FITS 84GB' if fits else 'OVERFLOW'})", file=sys.stderr)
+          f"-> {bpw} bpw = {artifact}GB ({resident} on 128GB)", file=sys.stderr)
     if not os.path.isdir(mdir):
-        print(f"[frontier] {label} NOT staged at {mdir}. On the Studio (2TB SSD): "
-              f"hf download {hf_id} --local-dir {mdir}  (block-wise; never held resident)", file=sys.stderr)
+        print(f"[frontier] {label} NOT staged at {mdir}. Fastest-SOTA procurement (hf_transfer + hf_xet, "
+              f"link-bound): python3.12 {TC}/procure.py {label}  (8 TB SSD; ~3h/671B on gigabit)", file=sys.stderr)
         return 2
     # Auto mode: recommend the bit format + serve regime (RESIDENT / MOE-PAGED / DENSE-OOC) and show
     # the device size ceiling before condensing (the "how big can we pull in" advisor).
@@ -195,7 +201,8 @@ def run_frontier(label):
                         str(active_k), "--active-gb", str(round(active_gb_tok, 3))], env=env)
     # the serve-build steps (Rust, gated): block-wise condense + native-serve quality + RAM-cliff tps
     rec = {"model": label, "total_b": total, "active_b": active, "moe": moe, "role": role,
-           "serve_bpw": bpw, "artifact_gb": artifact, "serve_fits_84": fits,
+           "serve_bpw": bpw, "artifact_gb": artifact, "serve_fits_resident_112gb": fits,
+           "resident_no_pager": fits,
            "condense_cmd": f"# block-wise streamed single-bake (+per-expert if MoE) to {label}.tq @ {bpw}bpw",
            "serve_quality_gated_on": "read_strand wired into hawking-serve binary + native .tq GEMV",
            "ram_cliff_demo": f"serve {label}.tq ({artifact}GB resident) vs Q4_K ({round(total*4.5/8)}GB, overflows->swap)"}
@@ -227,9 +234,9 @@ def plan():
         print(f"    3. floor-search: lowest eff-bpw at <=+2% ppl AND multi_eval tripwire pass")
         print(f"    4. emit receipt (repro level; 0.5B/1.5B tagged baseline, never set the verdict)")
     print("\n" + "=" * 78)
-    print("RAM-PACK SCHEDULE ACROSS MODELS (Studio 96GB -> 82GB budget):")
+    print("RAM-PACK SCHEDULE ACROSS MODELS (M1 Ultra 128GB -> 110GB budget):")
     jobs = [Job(lbl, ["true"], est_gb=gb, solo=solo) for (lbl, _, _, gb, solo, _) in LADDER]
-    Scheduler(budget_gb=82).plan(jobs)
+    Scheduler(budget_gb=110).plan(jobs)   # M1 Ultra 128GB -> ~110GB pack budget (was 82 on M2-Max-96)
     print("\nAfter the last model: scaling_law.py fits floor vs log(N), draws the recovered-vs-PTQ")
     print("band, and extrapolates the 70B/405B floor (T3.1) as a pre-registered prediction.")
 
@@ -276,14 +283,14 @@ def go():
             # warm + int8 sink + SSD/SSM tail) into one tiered policy — exact recall + unbounded reach.
             subprocess.run(["python3.12", f"{TC}/kv_hybrid.py", mdir, lbl, str(params)])
     print("\n### P6 BASELINE — wedge gate: IQ1_S/IQ2/MLX-4bit head-to-head at matched bpw ###", file=sys.stderr)
-    for lbl, mdir in eval_targets:
+    for lbl, mdir, _params in eval_targets:   # SPINE-0: eval_targets are 3-tuples (label, dir, params)
         if os.path.isdir(mdir):
             subprocess.run(["python3.12", f"{TC}/bench_baselines.py", "--model", mdir, "--label", lbl,
                             "--audit-jsonl", f"reports/cron/studio_{lbl}.jsonl"])
     print("\n### P7 CLIFF — RAM-cliff tok/s + energy J/tok (the headline + the energy moat) ###", file=sys.stderr)
     subprocess.run(["python3.12", f"{TC}/ramcliff_bench.py", "--all"])
     print("\n### P8 CODEC — STRAND vs QTIP/QuIP#/AQLM bakeoff (where we rank) ###", file=sys.stderr)
-    for lbl, mdir in eval_targets[:1]:   # one representative (7B) sets the codec rank
+    for lbl, mdir, _params in eval_targets[:1]:   # one representative (7B) sets the codec rank
         if os.path.isdir(mdir):
             subprocess.run(["python3.12", f"{TC}/codec_bakeoff.py", "--model", mdir, "--label", lbl])
     print("\n### P9 SYNTH + SCORECARD — fit curves + the populated competitive matrix ###", file=sys.stderr)

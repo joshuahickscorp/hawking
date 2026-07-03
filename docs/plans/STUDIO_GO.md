@@ -20,7 +20,7 @@ on a red preflight.
 python3.12 tools/condense/studio_run.py go
 ```
 
-Runs the entire frontier program end-to-end, RAM-packed across the 96 GB, continuous, and
+Runs the entire frontier program end-to-end, RAM-packed across the 128 GB, continuous, and
 resumable (re-run `go` after any interruption — completed models/lanes skip via per-lane floor
 files + receipts). Dry-preview first with:
 
@@ -68,7 +68,7 @@ python3.12 tools/condense/studio_run.py --go-plan
 
 ## LOCKED CONTEXT — do NOT reopen
 
-- Hardware: this 96 GB Studio. Metal/MPS only, NO CUDA, no cloud, no 512 GB box. One project owns
+- Hardware: this M1 Ultra Studio, 128 GB unified, ~800 GB/s, 8 TB SSD. Metal/MPS only, NO CUDA, no cloud, no 512 GB box. One project owns
   the whole machine, one heavy job at a time (the RAM scheduler enforces it). Wall-clock is FREE,
   plugged in 24/7 — optimize for maximum proof, not speed. bf16 throughout.
 - Respect the measured dead-ends: low-rank LoRA plateaus (use full-rank), NO uniform-STE through
@@ -88,24 +88,28 @@ python3.12 tools/condense/studio_run.py --go-plan
 
 ## THE TWO GATES THAT DECIDE THE MOONSHOT (both currently UNMEASURED, not refuted)
 
-1. Does doctor recovery work on 96 GB? (every +dr died on the 18 GB box by swap/timeout, not recipe.)
+1. Does doctor recovery work resident on 128 GB? (every +dr died on the 18 GB box by swap/timeout, not recipe.)
 2. Is MoE expert sensitivity non-uniform? (dense was uniform ~3% spread = dead; MoE is a different regime.)
 
-If both pass: build toward the dream — **DeepSeek-V3 671B @ 1.0 bpw = 84 GB served entirely from RAM**
-on a single Studio where llama.cpp Q4_K (377 GB) cannot even load. If recovery fails: density-only,
+If both pass: build toward the dream — **DeepSeek-V3 671B @ 1.0 bpw = 84 GB served entirely from RAM (RESIDENT, no pager)**
+on a single Studio where llama.cpp Q4_K (377 GB) cannot even load. On 128 GB, 235B/405B/671B all fit RESIDENT, no expert pager needed. If recovery fails: density-only,
 usable floor ~3.3-3.8 bpw. If expert sensitivity is uniform: fall back to 405B @ 1.34 = 68 GB dense.
 0.33/0.5 DENSE is below the information floor — fantasy; only MoE-amortized sub-1 is real.
 
 ## THE SERVE-BUILD CRITICAL PATH (the one gate on real wins, in order)
 
-See `docs/plans/quintessential_engine_2026_06_29.md` §"Serve-build critical path" for the full spec:
-(1) residual two-part GPU decode parity, (2) all-tensor `.tq` loader, (3) per-expert `.tq` writer,
-(4) MoE expert-paging OOC pager, (5) frontier native quality + RAM-cliff (flips P4/P7 GATED->MEASURED),
-(6) spec-decode governor. Until these land, the size/quality/tps numbers stay honestly GATED.
+See `docs/plans/quintessential_engine_2026_06_29.md` §"Serve-build critical path" for the full spec.
+RE-DERIVED FOR 128 GB: because 235B/405B/671B all fit RESIDENT, the OOC expert pager is NO LONGER on
+the critical path for the prize (it is Type-1 dead in the free-RAM regime anyway); it is deferred to
+the deep frontier only (744B/1T/3T, SSD-bound). The shortened path:
+(1) residual two-part GPU decode parity, (2) all-tensor `.tq` loader, (3) per-expert `.tq` writer +
+resident heterogeneous MoE serve, (4) frontier native quality + RAM-cliff RESIDENT (flips P4/P7
+GATED->MEASURED), (5) spec-decode governor. [deferred] the OOC pager, only for models > ~112 GB.
+Until (1)-(4) land, the size/quality/tps numbers stay honestly GATED.
 
 ## STAGING (download on the Studio; `go` skips what is not present)
 
-14B/32B/72B/MoE/100B+ parents are owner-gated downloads (2 TB SSD). Exact HF ids + sizes are in
+14B/32B/72B/MoE/100B+ parents are owner-gated downloads (8 TB SSD). Exact HF ids + sizes are in
 `BASELINES.md`. `go` runs whatever is staged and skips the rest, so you can start with 7B+14B
 present and add 32B/72B/235B-A22B/671B as they land. The 7B substrate + its calib/recovery data
 are the baseline that makes P3 (spec) work.
