@@ -45,8 +45,18 @@ FRONTIER = {
     "32B":       ("Qwen/Qwen2.5-32B-Instruct",       64, "scratch/qwen-32b"),
     "72B":       ("Qwen/Qwen2.5-72B-Instruct",      140, "scratch/qwen-72b"),
 }
-FAST_ENV = {"HF_HUB_ENABLE_HF_TRANSFER": "1"}       # Rust chunked transfer; hf_xet auto-activates if installed
-MAX_WORKERS = str(min(16, (os.cpu_count() or 8) * 2))
+# The full turbo env. hf_transfer = Rust chunked accelerator (parallel byte ranges per FILE).
+# hf_xet high-performance mode = more concurrent range gets + larger buffers (bigger memory use, more
+# throughput). These are the sanctioned "go faster" knobs; an env var an older backend does not know
+# is simply ignored, so setting them is harmless. The real ceiling is your PHYSICAL link + router.
+FAST_ENV = {
+    "HF_HUB_ENABLE_HF_TRANSFER": "1",
+    "HF_XET_HIGH_PERFORMANCE": "1",              # hf_xet: max concurrency + buffers
+    "HF_XET_NUM_CONCURRENT_RANGE_GETS": os.environ.get("HF_XET_NUM_CONCURRENT_RANGE_GETS", "32"),
+}
+# --max-workers = parallel FILES (shards). A frontier parent is hundreds of shards, so more workers
+# overlap per-file TLS/HTTP setup. Capped to keep the router's NAT table + CPU sane (see --check).
+MAX_WORKERS = os.environ.get("HF_MAX_WORKERS", str(min(32, (os.cpu_count() or 8) * 4)))
 
 
 def _have(mod):
@@ -56,15 +66,47 @@ def _have(mod):
         return False
 
 
+def _link_layer():
+    """Best-effort: is the default route over WiFi or ethernet on macOS? WiFi is the #1 reason a
+    download undershoots the speedtest (the radio can't sustain the wired link + adds jitter)."""
+    try:
+        dev = subprocess.run(["route", "-n", "get", "default"], capture_output=True, text=True).stdout
+        iface = next((l.split(":")[1].strip() for l in dev.splitlines() if "interface:" in l), None)
+        if not iface:
+            return "unknown"
+        ports = subprocess.run(["networksetup", "-listallhardwareports"], capture_output=True, text=True).stdout
+        blocks = ports.split("Hardware Port:")
+        for b in blocks:
+            if f"Device: {iface}" in b:
+                name = b.splitlines()[0].strip()
+                is_wifi = "wi-fi" in name.lower() or "airport" in name.lower()
+                return f"{iface} ({name}) -> {'WiFi (fine IF it delivers your full link; measure with a real download, ethernet only matters at gigabit+)' if is_wifi else 'wired ethernet (good)'}"
+        return f"{iface} (unknown type)"
+    except Exception:
+        return "unknown"
+
+
 def check():
     hf = shutil.which("hf") or shutil.which("huggingface-cli")
     xet, xfer = _have("hf_xet"), _have("hf_transfer")
+    print("--- software path (turbo env) ---", file=sys.stderr)
     print(f"hf CLI          : {hf or 'MISSING (pip install huggingface_hub[cli])'}", file=sys.stderr)
     print(f"hf_xet backend  : {'ACTIVE (Xet dedup + parallel range gets)' if xet else 'MISSING (pip install hf_xet)'}", file=sys.stderr)
     print(f"hf_transfer     : {'ACTIVE (Rust chunked accelerator)' if xfer else 'MISSING (pip install hf_transfer)'}", file=sys.stderr)
-    print(f"env to export   : HF_HUB_ENABLE_HF_TRANSFER=1   --max-workers {MAX_WORKERS}", file=sys.stderr)
+    print(f"turbo env       : {' '.join(f'{k}={v}' for k, v in FAST_ENV.items())}  --max-workers {MAX_WORKERS}", file=sys.stderr)
     ok = bool(hf) and xet and xfer
-    print(f"=> procurement path is {'FASTEST-SOTA (link-bound, not software-bound)' if ok else 'DEGRADED - install the missing piece above'}", file=sys.stderr)
+    print(f"=> software path is {'FASTEST-SOTA (link-bound, not software-bound)' if ok else 'DEGRADED - install the missing piece above'}", file=sys.stderr)
+    print("\n--- PHYSICAL layer (where the real gap usually is) ---", file=sys.stderr)
+    print(f"default route   : {_link_layer()}", file=sys.stderr)
+    print("bandwidth checklist, biggest win first:", file=sys.stderr)
+    print("  1. WIRED ETHERNET into the router (the Studio has a 10GbE port) - #1 real-world win over WiFi.", file=sys.stderr)
+    print("  2. Plug into the ROUTER, not a switch/extender; short cable; Cat6+.", file=sys.stderr)
+    print("  3. No VPN during downloads (adds routing + a single-tunnel bottleneck).", file=sys.stderr)
+    print("  4. Nothing else heavy on the link (a 4K stream or a game update steals the pipe).", file=sys.stderr)
+    print("  5. If the router is old/cheap it can cap under many connections - see the 'crash' note below.", file=sys.stderr)
+    print("# NOTE: --max-workers is capped at 32 on purpose. Hundreds of connections can exhaust a home", file=sys.stderr)
+    print("# router's NAT table / CPU and drop OTHER devices (or reboot a cheap router) - that is", file=sys.stderr)
+    print("# saturation, not a exploit. 16-32 workers saturates bandwidth without destabilizing the LAN.", file=sys.stderr)
     return ok
 
 
