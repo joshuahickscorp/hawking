@@ -57,3 +57,7 @@ None is a runnable command (0 broken command references), so nothing is function
 Docs footprint delta this run: 0 (no deletions). Content-accuracy: 10 active references updated. One
 byte-identical non-md requirements pair is staged above for human review only. The doc consolidation the
 operator remembers wanting was already executed across the four archive passes above.
+
+Code/data placeholder note: two redundant `.gitkeep` files were deleted from non-empty receipt directories
+(`receipts/failures`, `receipts/official`). `receipts/third_party/.gitkeep` remains intentionally because it
+is the only tracked file preserving the documented third-party receipt drop directory.

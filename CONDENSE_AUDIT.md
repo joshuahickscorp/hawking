@@ -11,7 +11,7 @@ output-diffed byte-identical.
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
 | tools/condense files | 52 | 40 | -12 (-23%) |
-| files (owned) | 4322 | 4310 | -12 |
+| files (owned) | 4322 | 4308 | -14 |
 | tools/condense LOC | 13,044 | ~13,157 | +113 cumulative wrapper overhead; -7 this iteration |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
@@ -38,6 +38,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 6 | sibling | awq_bake+awq_plus -> awq.py | SILVER (verbatim; CALIB collision isolated) | 46->45 |
 | 7 | sibling | doctor_{blockwise,strand,qat,lora,registry} -> doctor.py | SILVER + GOLD (registry --list byte-identical) | 45->41 |
 | 8 | sibling | sweep_render.py -> sweep.py render | GOLD (sweep plan + render byte-identical) | 41->40 |
+| 9 | placeholders | redundant receipt .gitkeep files | receipt verify + build/go-plan green | tracked files -2 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -78,11 +79,14 @@ is staged for human review only in CONDENSE_DOCS_REVIEW.md.
 Safe local fixpoint for this autonomous pass. A full tracked duplicate scan found only no-touch assets,
 generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requirements pair staged for human
 review. The remaining code-fold candidates either disturb live supervisor identity (frontier) or break the
-byte-stable go-plan oracle (codec). No tests, assets, generated schemas, fixtures, or docs were deleted.
+byte-stable go-plan oracle (codec). Redundant `.gitkeep` placeholders in non-empty receipt directories were
+removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a documented empty drop
+directory. No tests, assets, generated schemas, fixtures, or docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 10 commits since baseline, `tools/condense` 52 -> 40 (-23%), every
+Branch `condense/run-20260703`: 11 commits since baseline, `tools/condense` 52 -> 40 (-23%), tracked files
+4322 -> 4308 (-14), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
 green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing
 pushed, nothing auto-merged. Merge `condense/run-20260703` to main?

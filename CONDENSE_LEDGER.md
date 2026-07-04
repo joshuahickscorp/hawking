@@ -190,3 +190,17 @@ Post-iteration scan:
 - Duplicate scan found no auto-deletable tracked code/docs: duplicates are app assets/icons, generated
   Tauri schemas, frozen test fixtures, audit-only STRAND mirrors, or a byte-identical requirements pair now
   listed in CONDENSE_DOCS_REVIEW.md for human review only.
+
+## Resumed for placeholder sweep
+
+### Iteration 9 · class EMPTY PLACEHOLDERS · redundant receipt .gitkeep files · PASS
+
+- Applied · deleted `receipts/failures/.gitkeep` and `receipts/official/.gitkeep`. Both directories already
+  contain real tracked receipt JSON (`FAIL-001.json`, `qwen-05b-tq3.json`), so the placeholders are
+  redundant. Left `receipts/third_party/.gitkeep` intact because it is the only tracked file preserving the
+  documented third-party receipt drop directory.
+- GATE (all green) · `python3.12 -m py_compile tools/condense/*.py` OK ·
+  `python3.12 tools/condense/receipt_verify.py receipts/official/qwen-05b-tq3.json` OK ·
+  `studio_run.py --go-plan` green at 134 lines and byte-identical to the prior oracle ·
+  `cargo check --workspace` green (warnings pre-existing) · no tests/assets/docs content touched ·
+  net tracked files -2, no behavior surface change.
