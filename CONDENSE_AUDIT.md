@@ -4,15 +4,17 @@ Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en das
 
 ## 1. Baseline vs final
 
-Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each, plus one single-use
-helper inlined into its only caller. Every merge holds the surface hash / construction-equivalent and a green
-byte-stable `--go-plan`; model-free runnable paths are output-diffed byte-identical.
+Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each, one single-use helper
+inlined into its only caller, and one duplicate orchestrator helper removed by reusing the neighboring
+implementation. Every merge holds the surface hash / construction-equivalent and a green byte-stable
+`--go-plan`; model-free runnable paths are output-diffed byte-identical.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
 | tools/condense Python files | 52 | 39 | -13 (-25%) |
 | files (owned) | 4322 | 4307 | -15 |
 | tools/condense Python LOC | 13,044 | 13,146 | +102 cumulative wrapper overhead; -11 this iteration |
+| tools/orchestrator pack_corpus.py LOC | 203 | 193 | -10 |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
 | public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
@@ -40,6 +42,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 8 | sibling | sweep_render.py -> sweep.py render | GOLD (sweep plan + render byte-identical) | 41->40 |
 | 9 | placeholders | redundant receipt .gitkeep files | receipt verify + build/go-plan green | tracked files -2 |
 | 10 | single-use helper | verdict.py -> recovery_sweep.sh inline verdict | GOLD (representative verdict byte-identical) | 40->39 |
+| 11 | duplicate helper | pack_corpus.py reuses pack_ffn.py quantize_int8 | GOLD (synthetic parquet rows byte-equivalent) | LOC -10 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -94,14 +97,15 @@ Safe local fixpoint for this autonomous pass. A full tracked duplicate scan foun
 generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requirements pair staged for human
 review. The remaining code-fold candidates either disturb live supervisor identity (frontier), break the
 byte-stable go-plan oracle (codec), change a copied-package/self-location contract (`strand_eval`), or lack a
-model-free behavioral oracle (`build_corpus.py` hook refactor). Redundant `.gitkeep` placeholders in non-empty
-receipt directories were removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a
-documented empty drop directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No
-tests, assets, generated schemas, fixtures, or docs were deleted.
+model-free behavioral oracle (`build_corpus.py` hook refactor). One duplicate orchestrator quantizer helper
+was removed with a synthetic parquet oracle. Redundant `.gitkeep` placeholders in non-empty receipt
+directories were removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a documented
+empty drop directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No tests,
+assets, generated schemas, fixtures, or docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 13 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
+Branch `condense/run-20260703`: 14 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
 tracked files 4322 -> 4307 (-15), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
 green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing

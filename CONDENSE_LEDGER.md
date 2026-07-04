@@ -218,7 +218,7 @@ Post-iteration scan:
 
 ## Continuation scan after iteration 10
 
-No further autonomous reduction committed. Rechecked the remaining attractive candidates:
+Rechecked the remaining attractive candidates:
 
 - `tools/strand/scripts/strand_eval` mirrors `tools/strand/tools/strand_eval`, but the duplicate package is
   part of a copied-package/self-location contract documented by its frozen tests. The live scripts target
@@ -235,3 +235,15 @@ No further autonomous reduction committed. Rechecked the remaining attractive ca
 - Duplicate hooks inside `tools/training/build_corpus.py` sit on model forward-hook capture and async
   device-transfer behavior. Without a lightweight model-free oracle, refactoring them would be risk without
   proof.
+
+### Iteration 11 · class DUPLICATE HELPER · pack_corpus.py reuses pack_ffn.py quantizer · PASS
+
+- Applied · removed the duplicate `quantize_int8()` implementation from `tools/orchestrator/pack_corpus.py`
+  and imported the exact neighboring implementation from `tools/orchestrator/pack_ffn.py`. Both packers
+  already require `numpy` + `pyarrow`, and both helpers were byte-identical in behavior and AST.
+- GATE (all green) · synthetic capture stream packed before/after with `rows_per_shard=1`; parsed parquet
+  rows identical, stderr identical, stdout identical after normalizing only the temp output directory path ·
+  `python3.12 -m py_compile tools/orchestrator/pack_corpus.py tools/orchestrator/pack_ffn.py` OK ·
+  `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
+  `cargo check --workspace` green (pre-existing warnings only) · net `pack_corpus.py` 203 -> 193 lines
+  versus baseline (-10), tracked files unchanged.

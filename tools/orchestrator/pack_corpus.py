@@ -56,20 +56,10 @@ except ImportError:
     sys.stderr.write("pack_corpus needs pyarrow: pip install pyarrow\n")
     sys.exit(1)
 
+from pack_ffn import quantize_int8
+
 SENTINEL = 0xFFFFFFFF
 MIN_TOKENS = 5  # trainer drops sequences shorter than this
-
-
-def quantize_int8(arr: np.ndarray) -> tuple[bytes, float]:
-    """Symmetric per-tensor int8 quant with a single global scale.
-
-    Mirrors the trainer's dequant: f32 = int8 * scale.
-    """
-    arr = np.ascontiguousarray(arr, dtype=np.float32)
-    amax = float(np.abs(arr).max()) if arr.size else 0.0
-    scale = (amax / 127.0) if amax > 0 else 1.0
-    q = np.clip(np.round(arr / scale), -127, 127).astype(np.int8)
-    return q.tobytes(), scale
 
 
 def iter_sequences(path: Path):
