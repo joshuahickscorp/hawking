@@ -51,12 +51,11 @@ import numpy as np
 
 try:
     import pyarrow as pa
-    import pyarrow.parquet as pq
 except ImportError:
     sys.stderr.write("pack_corpus needs pyarrow: pip install pyarrow\n")
     sys.exit(1)
 
-from pack_ffn import quantize_int8
+from pack_ffn import quantize_int8, write_shard
 
 SENTINEL = 0xFFFFFFFF
 MIN_TOKENS = 5  # trainer drops sequences shorter than this
@@ -138,14 +137,6 @@ SCHEMA = pa.schema([
 ])
 
 
-def write_shard(rows: list[dict], out_dir: Path, idx: int) -> Path:
-    cols = {k: [r[k] for r in rows] for k in SCHEMA.names}
-    table = pa.table(cols, schema=SCHEMA)
-    out = out_dir / f"shard_{idx:05d}.parquet"
-    pq.write_table(table, out)
-    return out
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(prog="pack_corpus")
     ap.add_argument("--in", dest="inp", required=True, help="raw capture .bin")
@@ -171,13 +162,13 @@ def main() -> int:
         hidden_seen.add(res.shape[1])
         rows.append(build_row(toks, res, inter))
         if len(rows) >= args.rows_per_shard:
-            p = write_shard(rows, out_dir, shard_idx)
+            p = write_shard(rows, out_dir, shard_idx, schema=SCHEMA)
             print(f"[pack] wrote {p} ({len(rows)} rows)")
             rows = []
             shard_idx += 1
 
     if rows:
-        p = write_shard(rows, out_dir, shard_idx)
+        p = write_shard(rows, out_dir, shard_idx, schema=SCHEMA)
         print(f"[pack] wrote {p} ({len(rows)} rows)")
         shard_idx += 1
 

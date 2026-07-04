@@ -170,9 +170,9 @@ SCHEMA = pa.schema([
 ])
 
 
-def write_shard(rows: list[dict], out_dir: Path, idx: int) -> Path:
-    cols = {k: [r[k] for r in rows] for k in SCHEMA.names}
-    table = pa.table(cols, schema=SCHEMA)
+def write_shard(rows: list[dict], out_dir: Path, idx: int, schema=SCHEMA) -> Path:
+    cols = {k: [r[k] for r in rows] for k in schema.names}
+    table = pa.table(cols, schema=schema)
     out = out_dir / f"shard_{idx:05d}.parquet"
     pq.write_table(table, out)
     return out

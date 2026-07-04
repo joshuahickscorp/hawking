@@ -247,3 +247,16 @@ Rechecked the remaining attractive candidates:
   `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
   `cargo check --workspace` green (pre-existing warnings only) · net `pack_corpus.py` 203 -> 193 lines
   versus baseline (-10), tracked files unchanged.
+
+### Iteration 12 · class DUPLICATE HELPER · pack_corpus.py reuses pack_ffn.py shard writer · PASS
+
+- Applied · parameterized `tools/orchestrator/pack_ffn.py`'s `write_shard()` by schema and reused it from
+  `tools/orchestrator/pack_corpus.py`, deleting the duplicate corpus-local writer. `pack_ffn.py` call-sites
+  keep the default schema, while `pack_corpus.py` passes its own schema explicitly.
+- GATE (all green) · synthetic corpus and FFN capture streams packed before/after with `rows_per_shard=1`;
+  parsed parquet rows identical for both packers, stderr identical, stdout identical after normalizing only
+  temp output directory paths · `python3.12 -m py_compile tools/orchestrator/pack_corpus.py
+  tools/orchestrator/pack_ffn.py` OK · `python3.12 -m py_compile tools/condense/*.py` OK ·
+  `studio_run.py --go-plan` 134 lines / 0 stderr · `cargo check --workspace` green (pre-existing warnings
+  only) · net `pack_corpus.py` 193 -> 184 lines this iteration, 203 -> 184 versus baseline (-19 total),
+  tracked files unchanged.
