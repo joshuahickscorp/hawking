@@ -101,11 +101,29 @@ check. Any non-path diff or any broken gate is an automatic revert.
 - before -> after · files 51 -> 50 (-1, from -2 originals +1 merged) · capability identical · behavior proven
   identical on every runnable + parser-defined path.
 
+## Resumed at the SILVER bar (grader chose "keep going now")
+
+Collision families are merged with the WRAP technique: each tool's body is copied byte-verbatim, indented +4,
+wrapped in `def _run_<sub>():` so top-level collisions become isolated function locals. Safe because the
+families are proven `global`-free + reflection-free. Verification is STRUCTURAL (verbatim-body substring proof
++ scope-safety + compile + `--go-plan` byte-identical + no-dangling-refs) plus any model-free output-diff a
+tool happens to expose. Builder: scratchpad/wrap_merge.py (reads originals; no transcription). sweep (huge
+blast) + frontier (live daemons) deferred by decision.
+
+### Iteration 4 · class SIBLING FILES · subbit_ladder + subbit_measure + subbit_admm -> subbit.py · PASS
+
+- Applied · wrap-merged into `subbit.py` (measure / ladder / admm). subbit_measure had 2 direct call-sites
+  (studio_run.py:109 and :179, one 8-space one 4-space indent); subbit_ladder + subbit_admm are standalone
+  (no programmatic callers). Collisions log/main/SCALE_BITS isolated by wrapping.
+- GATE (all green) · all 3 wrapper bodies proven BYTE-VERBATIM (exact substring of subbit.py) · `admm
+  --self-test` (deterministic, model-free) BYTE-IDENTICAL pre/post = GOLD-level for that subcommand · all 3
+  subcommands dispatch (exit 0) · compile all OK · `--go-plan` BYTE-IDENTICAL · surface HELD · net files
+  50 -> 48. No functional dangling refs (call-sites updated; remaining grep hits are prose comments,
+  in-file docstrings, and the intentional argv[0] prog-name preservation).
+
 ## Progress
 
-Baseline 52 -> 50 tools/condense files. Two families folded, both fully verified (functional byte-equivalence
-+ verbatim proof). Boundary reached: the collision scan shows every REMAINING family has top-level name
-collisions (awq 3, subbit 3, sweep 4, residual 12, doctor 12) requiring non-verbatim symbol renaming, and/or
-shell-orchestrator + audit-only (tools/strand) entanglement. Next: probe whether any collision is benign
-(identical-constant), else stop-and-report the rest for grader/Studio (where models allow functional
-verification). See CONDENSE_AUDIT.md.
+Baseline 52 -> 48 tools/condense files (kv, expert at the gold bar; subbit at silver + admm gold). Remaining
+wrap targets: awq, residual, doctor (all STACK/audit_ladder-entangled -> wider call-site sets). sweep +
+frontier deferred. Stale doc/comment references to old tool names to be batch-updated on the docs track at
+the end. See CONDENSE_AUDIT.md.

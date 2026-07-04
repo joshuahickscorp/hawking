@@ -106,7 +106,7 @@ def run_model(label, set_name="studio"):
     # SUBBIT-0 GATE: measure the entropy/side-info floor first. If sub-1-bit dense is DEAD by the
     # floor, the subbit lane still runs (MoE/residual survive) but the gate is on record per model.
     if set_name == "subbit":
-        subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
+        subprocess.run(["python3.12", f"{TC}/subbit.py", "measure", mdir, label], env=env)
         # SUBBIT-4 probe: per-expert sensitivity decides MoE sub-bit allocation (gated to MoE dirs).
         if any(t in label.lower() for t in ("moe", "a22b", "a3b", "deepseek", "mixtral", "glm")):
             subprocess.run(["python3.12", f"{TC}/expert.py", "sensitivity", mdir, "--label", label,
@@ -176,7 +176,7 @@ def run_frontier(label):
         dr.append("--moe")
     subprocess.run(dr, env=env)
     # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
-    subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
+    subprocess.run(["python3.12", f"{TC}/subbit.py", "measure", mdir, label], env=env)
     # Architecture coverage: real state geometry (Mamba2/RWKV-7 flat state) + which Doctor levers
     # are arch-compatible for this model, so the selector above never wastes a bake on one that isn't.
     subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, label], env=env)
