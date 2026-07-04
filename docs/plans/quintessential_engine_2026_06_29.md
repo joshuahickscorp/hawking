@@ -17,7 +17,7 @@ STKV tiered KV, spec-decode on the condensed substrate) turns the small artifact
 tok/s. The single gate unifying all three is the **serve build**; until it lands, the frontier
 quality and RAM-cliff numbers stay honestly GATED.
 
-## The Doctor, as a registry (tools/condense/doctor_registry.py)
+## The Doctor, as a registry (tools/condense/doctor.py registry)
 
 "The doctor" is the *name for restoring quality at low bits*, not a function. It is now a pluggable
 `REGISTRY` of `RecoveryMethod`s + an auto-selector. Register with `@register(...)`; a method's

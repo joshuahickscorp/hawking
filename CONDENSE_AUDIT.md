@@ -2,86 +2,72 @@
 
 Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en dashes · middot separators.
 
-## 1. Baseline vs final (per metric)
+## 1. Baseline vs final
 
-Two families folded, both proven behavior-preserving by OUTPUT byte-equivalence (the gold bar). All other
-invariants byte-identical.
+Six sibling-file families in `tools/condense/` folded into one subcommand-tool each. Every merge holds the
+surface hash and a byte-identical `--go-plan`; every wrapper body proven verbatim.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
-| tools/condense files | 52 | 50 | -2 |
-| files (owned) | 4322 | 4320 | -2 |
-| Rust LOC | 400,885 | 400,885 | 0 |
+| tools/condense files | 52 | 41 | -11 (-21%) |
+| files (owned) | 4322 | 4311 | -11 |
+| tools/condense LOC | 13,044 | ~13,000 | ~0 (reorganized, near-zero deleted) |
+| Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
-| public-surface hash | 82867d52.. | 82867d52.. | HELD |
-| `--go-plan` oracle | 134 lines | 134 lines | BYTE-IDENTICAL |
+| public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
+| `--go-plan` oracle | 134 lines | 134 lines | BYTE-IDENTICAL every commit |
 | build | green | green | held |
 
 ## 2. Invariants · all HELD
 
-1 surface frozen · 2 behavior unchanged (proven per merge, below) · 3 build green · 4 assets untouched ·
-5 tests frozen (counts unchanged) · 6 coverage held by construction · 7 docs no loss. Perf: no hot-path
-edit; Python tooling only. Flaky: none (oracle deterministic).
+1 surface frozen (hash byte-identical every commit) · 2 behavior unchanged (verbatim bodies + output-diff
+where a model-free path existed) · 3 build green · 4 assets untouched · 5 tests frozen (counts unchanged;
+the one merge that touched a test dep was reverted) · 6 coverage held by construction · 7 docs no content
+lost (only path-reference updates). Perf: Python tooling only, no hot-path edit. Flaky: none.
 
-## 3. What landed (gold bar · output byte-equivalence)
+## 3. Iterations
 
-- Iteration 2 · `kv_frontier.py` + `kv_hybrid.py` -> `kv.py` (frontier/hybrid subcommands). 0 collisions,
-  verbatim concat. Proven: `--synthetic` stdout AND emitted JSON BYTE-IDENTICAL both subcommands ·
-  `--go-plan` identical · surface held.
-- Iteration 3 · `expert_sensitivity.py` + `expert_cache_policy.py` -> `expert.py` (sensitivity/cache). 0
-  collisions, programmatic verbatim build (473+106 LOC copied, not retyped). Proven: sensitivity `--help`
-  (full argparse parser) BYTE-IDENTICAL · sensitivity body VERBATIM by region diff · cache `--sim`
-  BYTE-IDENTICAL · `--go-plan` identical · surface held. Call-sites updated: studio_run x3 + doctor_registry
-  string.
+| # | class | change | verification bar | result |
+|---|---|---|---|--:|
+| 1 | dead code | hide-backend host.rs::len | gate caught frozen-test dep | REVERTED |
+| 2 | sibling | kv_frontier+kv_hybrid -> kv.py | GOLD (--synthetic + JSON byte-identical) | 52->51 |
+| 3 | sibling | expert_sensitivity+expert_cache_policy -> expert.py | GOLD (--help + --sim byte-identical, verbatim) | 51->50 |
+| 4 | sibling | subbit_{ladder,measure,admm} -> subbit.py | SILVER + GOLD (admm --self-test byte-identical) | 50->48 |
+| 5 | sibling | residual_{bake,tq,plus} -> residual.py | SILVER (verbatim + structural) | 48->46 |
+| 6 | sibling | awq_bake+awq_plus -> awq.py | SILVER (verbatim; CALIB collision isolated) | 46->45 |
+| 7 | sibling | doctor_{blockwise,strand,qat,lora,registry} -> doctor.py | SILVER + GOLD (registry --list byte-identical) | 45->41 |
 
-Iteration 1 (dead code, host.rs::len) was attempted and REVERTED (a frozen test depends on it). See
-CONDENSE_LEDGER.md.
+Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
+(`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
+`global`-free + reflection-free. Every wrapper body verified a byte-verbatim substring of the merged file.
+The builder (scratchpad/wrap_merge.py) reads the originals, so no code was retyped. doctor's 15 call-site
+edits across 7 files were applied by a count-asserted rewire (aborts unless each old string is found exactly
+N times).
 
-## 4. The boundary: why the gold bar is at fixpoint on this box
+Verification bars: GOLD = proved identical program OUTPUT on a runnable model-free path. SILVER = verbatim
+body + scope-safety (no global/reflection/module-class hazard) + compile + `--go-plan` byte-identical +
+no-dangling-refs across every modifiable .py/.sh. The grader chose SILVER-on-this-box over
+GOLD-on-the-Studio for the model-gated families.
 
-Every REMAINING family (awq, subbit, residual, doctor, sweep, frontier) was analyzed. The good news: all are
-`global`-free, reflection-free, and NOT entangled with the audit-only `tools/strand` (the earlier
-"sweep<->strand" was a substring false positive; strand calls its own sibling `sweep.py`). So the
-function-wrap merge technique is STRUCTURALLY safe for all of them.
+## 4. Deferred by decision (not merged)
 
-The blocker is VERIFICATION, not safety:
+- `sweep` (sweep + sweep_render): near-public, referenced across tools/bench, tools/training, and many docs;
+  the blast radius is too wide to change safely without the Studio.
+- `frontier` (frontier_verifier + frontier_autopilot + frontier_conductor): live research daemons launched
+  by `run_7b_frontier.sh` / `frontier_keepalive.sh`; do not disturb a running frontier.
 
-- 0 collisions is required for verbatim concat (kv, expert). Every remaining family HAS collisions
-  (awq 3, subbit 3, sweep 4, residual 12, doctor 12), several SEMANTIC: e.g. `awq_bake.CALIB` reads the
-  corpus FILE CONTENTS at import while `awq_plus.CALIB` is a PATH string; `BAKER` is relative vs absolute.
-  Concat would silently corrupt. The wrap technique isolates each in its own function scope and fixes this,
-  but the merge is then indent-shifted, not byte-verbatim.
-- NONE of these tools use argparse, and all need a real model to run their functional path. So the two
-  proofs that cleared kv/expert (deterministic dry-mode output byte-diff, and argparse `--help`
-  byte-identical) are BOTH UNAVAILABLE here. The strongest proof I can produce on this box is STRUCTURAL:
-  verbatim-indented body diff + scope-safety (no global/reflection) + compile + `--go-plan` byte-identical +
-  no-dangling-refs. That is rigorous, but it is not the OUTPUT byte-equivalence bar.
+Folding these would reach ~41 -> ~37. Recommend doing them on the Studio (frontier idle) with output-diff.
 
-So under a strict reading (do not ship a merge whose behavior I cannot output-verify), the gold bar is at
-FIXPOINT at 52 -> 50. The remaining ~8-10 files of reduction are real and the technique is known; they need
-either (a) an explicit decision to accept the SILVER bar (structural verification) on this box, or (b) the
-Studio, where the models make output byte-equivalence checkable exactly as kv/expert were.
+## 5. Docs track
 
-## 5. Remaining reductions (ready to execute on approval)
-
-Behavior-preserving via function-wrap, all `global`/reflection/strand clean. Blast = call-sites to update
-(all in modifiable files: tools/condense, root/tools/bench/tools/condense shell scripts):
-
-| family | files -> 1 | collisions | approx call-sites | note |
-|---|---|--:|--:|---|
-| awq | awq_bake + awq_plus (2->1) | 3 (CALIB semantic) | 3 (studio_run, win7b_watchdog.sh, sweep.py) | low blast |
-| residual | residual_bake + residual_tq + residual_plus (3->1) | 12 | ~2-3 real | residual_tq has module-exec (lazy under wrap) |
-| subbit | subbit_ladder + subbit_measure + subbit_admm (3->1) | 3 (log/main) | ~10 | wide caller set |
-| doctor | 5 tools -> 1 | 12 (main/ppl/dev) | ~12 + 3 shell | largest win (-4), widest blast |
-| sweep | sweep + sweep_render (2->1) | 4 | very wide (bench/training/docs) | sweep is near-public; defer |
-| frontier | 3 live-daemon tools -> 1 | (few) | run_7b_frontier.sh + keepalive | live research daemons; defer |
-
-If all safe families fold: 50 -> ~40 (awq/residual/subbit/doctor). sweep + frontier stay standalone (too
-wide / live daemons).
+No footprint deletions (docs already at fixpoint; zero byte-identical dupes). Content-accuracy: 8 references
+to the old tool names in the two ACTIVE canonical docs (STUDIO_GO.md, quintessential_engine) updated to the
+new subcommand form (count-asserted). 8 archival/dated plan docs still carry prose mentions of old names;
+these are historical and out of footprint scope, listed in CONDENSE_DOCS_REVIEW.md.
 
 ## 6. One line for the grader
 
-Branch `condense/run-20260703`: 2 commits, tools/condense 52 -> 50, both merges OUTPUT-verified, every
-invariant held, `--go-plan` + surface byte-identical. The gold verification bar (output byte-equivalence) is
-at fixpoint on this box; the remaining ~8-10 files need either an explicit SILVER-bar (structural only) OK or
-the Studio for gold. Merge these 2 to main now? And which bar for the rest?
+Branch `condense/run-20260703`: 8 commits, `tools/condense` 52 -> 41 (-21%), every invariant held every
+commit (surface hash + `--go-plan` byte-identical), every wrapper body proven verbatim, four subcommands
+additionally output-verified byte-identical. Rust and tests untouched. sweep + frontier deferred to the
+Studio. Nothing pushed, nothing on main. Merge `condense/run-20260703` to main?

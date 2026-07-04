@@ -27,7 +27,21 @@ cites a `docs/hide-bible/MASTER_PLAN.md` path that never existed. These are dang
 them removes no footprint (so it is out of scope for /goal condense) but would improve reviewability. If you
 want it, it is a small, separate content commit, not a condensation.
 
+## Merged-tool references (from the code-track consolidation)
+
+The tool-file consolidation (52 -> 41 in tools/condense) renamed six families to subcommand-tools. Doc
+references updated (count-asserted) in the two ACTIVE canonical docs: `docs/plans/STUDIO_GO.md` (7 refs:
+kv_frontier/kv_hybrid/expert_sensitivity/expert_cache_policy/subbit_measure/subbit_admm/doctor_registry ->
+their `kv.py`/`expert.py`/`subbit.py`/`doctor.py` subcommand forms) and
+`docs/plans/quintessential_engine_2026_06_29.md` (doctor_registry).
+
+Still carrying stale PROSE mentions of old tool names (historical/archival, out of footprint scope, listed
+for a future content pass, NOT a deletion): `doctor_maximization_plan.md`, `condense_master_plan_2026_06_22.md`,
+`M1ULTRA_POTENTIAL_AUDIT.md`, `parameter_sweep_pipeline.md`, `hawking_capability_frontier_2026_06_28.md`,
+`doctor_capability_and_speed_roadmap.md`, `condense_autopilot_2026_06_27.md`, `hawking_handoff_2026_06_28.md`.
+None is a runnable command (0 broken command references), so nothing is functionally broken.
+
 ## Verdict
 
-Docs footprint delta this run: 0. Nothing to approve here. The doc consolidation the operator remembers
-wanting was already executed across the four passes above.
+Docs footprint delta this run: 0 (no deletions). Content-accuracy: 8 canonical references updated. The doc
+consolidation the operator remembers wanting was already executed across the four archive passes above.

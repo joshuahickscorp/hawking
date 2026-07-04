@@ -34,10 +34,10 @@ python3.12 tools/condense/studio_run.py --go-plan
   candidate codec/kernel design for decode PARALLELISM (not just density) before any Rust build
   time is spent — the direct lesson from the QTIP-on-Metal dead end (serial decode ate the
   bandwidth win). Per-model (inline in P1/P4): `auto_bits.py` + `size_frontier.py` +
-  `doctor_registry.py --select` + `arch_coverage.py` recommend the bit format, the serve regime
+  `doctor.py registry --select` + `arch_coverage.py` recommend the bit format, the serve regime
   (RESIDENT/MOE-PAGED/DENSE-OOC), the auto-composed recovery chain, and which Doctor levers are
   architecture-compatible (dense/SSM/MoE — Mamba2 and RWKV-7 both get their real flat-state math,
-  not an approximation) — all before any bake. For MoE frontier models, `expert_cache_policy.py`
+  not an approximation) — all before any bake. For MoE frontier models, `expert.py cache`
   simulates hot-expert cache hit-rate/blended-tok-s across cache sizes so the eventual OOC pager's
   cache size is chosen from a measured sweep, not a guess.
 - **P1 CONDENSE** — the bit-floor-vs-scale curve across {0.5B,1.5B,7B,14B,32B} via the Doctor
@@ -45,7 +45,7 @@ python3.12 tools/condense/studio_run.py --go-plan
   per model, then the curve fit (H1 descent vs H0 flat).
   -> `reports/cron/bit_floor_curve.jsonl`, `receipts/official/*-floor.json`.
 - **P2 SUBBIT** — the sub-1-bit frontier lane (PTQ1.61, residual two-part, codec-native/recover),
-  gated per model by `subbit_measure.py` (SUBBIT-0 entropy floor) and, for MoE, `expert_sensitivity.py`.
+  gated per model by `subbit.py measure` (SUBBIT-0 entropy floor) and, for MoE, `expert.py sensitivity`.
   -> `reports/cron/bit_floor_subbit.jsonl`.
 - **P3 SPEC** — `spec_revive.py` on the condensed substrate (7B) + capstone (32B): lossless-verify
   gate -> capture-retrain the eagle5 head -> acceptance measure -> governor bench (exact-match).
@@ -55,7 +55,7 @@ python3.12 tools/condense/studio_run.py --go-plan
   budget. Runs on streamed shards (entropy floor + per-expert sensitivity + serve-fit record + the
   auto-composed recovery chain). The native-serve quality + RAM-cliff are the serve build.
 - **P5 EVAL + LONG-CONTEXT** — `eval_suite.py` (capability + NIAH) + `ctx_extend.py` (YaRN) +
-  `kv_frontier.py` (int2/trellis KV, SSD-paging, SSM) + `kv_hybrid.py` (STKV: exact recall + unbounded reach).
+  `kv.py frontier` (int2/trellis KV, SSD-paging, SSM) + `kv.py hybrid` (STKV: exact recall + unbounded reach).
 - **P6 BASELINE** — `bench_baselines.py`: the wedge gate vs llama.cpp IQ1_S/IQ2 + MLX-4bit at matched
   effective bpw. WIN iff it beats IQ2 on 7B+; else reframe to portfolio.
 - **P7 CLIFF** — `ramcliff_bench.py --all`: RAM-cliff tok/s + energy J/tok — the headline + the
@@ -73,7 +73,7 @@ python3.12 tools/condense/studio_run.py --go-plan
   plugged in 24/7 — optimize for maximum proof, not speed. bf16 throughout.
 - Respect the measured dead-ends: low-rank LoRA plateaus (use full-rank), NO uniform-STE through
   the trellis (codec-aware only), AWQ x residual is a non-win, calib = domain-matched not diverse,
-  judge low-bit on 7B+ never on 0.5B. `subbit_admm.py` already re-confirmed NanoQuant is a low-rank
+  judge low-bit on 7B+ never on 0.5B. `subbit.py admm` already re-confirmed NanoQuant is a low-rank
   resurrection (KILLs on real qwen-05b) — do not iterate on it.
 
 ## PROOF DISCIPLINE (the program enforces this; do not relax it)
