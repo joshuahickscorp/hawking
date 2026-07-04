@@ -62,6 +62,19 @@ GOLD-on-the-Studio for the model-gated families.
 - `codec` (codec_parallelism + codec_bakeoff): rejected before commit. The runtime can be lazily merged, but
   `studio_run.py --go-plan` prints the two old command names. Removing those entrypoints would either make
   the dry plan stale or change the byte-stable go-plan oracle.
+- `strand_eval` mirror (`tools/strand/scripts/strand_eval` vs `tools/strand/tools/strand_eval`): exact code
+  duplicate, but the package-copy/self-location behavior is documented by frozen tests. The live launcher
+  path uses `tools/strand/tools/strand_eval`; replacing the scripts-side package with a shim would change the
+  copied-package contract rather than just remove duplication.
+- Generated Tauri schemas: `desktop-schema.json` and `macOS-schema.json` are byte-identical today, but their
+  distinct platform names are generated schema support. A build cannot prove editor/schema consumers, so the
+  duplicate stays.
+- STRAND rung config mirror: the two `rung-attn4-ffn3.json` files are semantically identical after JSON
+  normalization, but both are plausible user-facing CLI input paths.
+- `w4a8_activation_dist.csv`: report-looking, but actively read by `tq_output_space_quality.rs`; treated as a
+  frozen fixture.
+- `tools/training/build_corpus.py` duplicate hook helpers: real internal duplication, deferred because the
+  behavior is model-forward capture and async tensor transfer with no cheap oracle.
 
 Folding these would reach ~40 -> ~37. Recommend doing frontier only when the frontier is known idle, with a
 compatibility shim or launcher rewrite accepted by the grader. Recommend doing codec only if the grader
@@ -79,15 +92,16 @@ is staged for human review only in CONDENSE_DOCS_REVIEW.md.
 
 Safe local fixpoint for this autonomous pass. A full tracked duplicate scan found only no-touch assets,
 generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requirements pair staged for human
-review. The remaining code-fold candidates either disturb live supervisor identity (frontier) or break the
-byte-stable go-plan oracle (codec). Redundant `.gitkeep` placeholders in non-empty receipt directories were
-removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a documented empty drop
-directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No tests, assets,
-generated schemas, fixtures, or docs were deleted.
+review. The remaining code-fold candidates either disturb live supervisor identity (frontier), break the
+byte-stable go-plan oracle (codec), change a copied-package/self-location contract (`strand_eval`), or lack a
+model-free behavioral oracle (`build_corpus.py` hook refactor). Redundant `.gitkeep` placeholders in non-empty
+receipt directories were removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a
+documented empty drop directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No
+tests, assets, generated schemas, fixtures, or docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 12 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
+Branch `condense/run-20260703`: 13 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
 tracked files 4322 -> 4307 (-15), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
 green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing

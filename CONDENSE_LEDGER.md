@@ -215,3 +215,23 @@ Post-iteration scan:
   live refs to `verdict.py` · `python3.12 -m py_compile tools/condense/*.py` OK · net
   `tools/condense` Python files 40 -> 39, Python LOC 13,157 -> 13,146 (-11); total `.py + .sh` lines flat
   because the formatter moved into shell.
+
+## Continuation scan after iteration 10
+
+No further autonomous reduction committed. Rechecked the remaining attractive candidates:
+
+- `tools/strand/scripts/strand_eval` mirrors `tools/strand/tools/strand_eval`, but the duplicate package is
+  part of a copied-package/self-location contract documented by its frozen tests. The live scripts target
+  `tools/strand/tools/strand_eval`; turning the scripts-side package into a shim would reduce LOC but change
+  how a copied package behaves when shipped away from the repo. Deferred.
+- `app/src-tauri/gen/schemas/desktop-schema.json` and `macOS-schema.json` are byte-identical and unreferenced
+  by repo text, but they are platform-named generated Tauri schema support files. A Rust or Tauri build would
+  not prove IDE/schema consumers, so no deletion.
+- `tools/strand/configs/rung-attn4-ffn3.json` and `tools/strand/scripts/configs/rung-attn4-ffn3.json` are
+  semantically identical JSON after formatting, but both paths can be user-supplied CLI inputs. Deleting the
+  scripts-side path would shrink the tree by one config at the cost of public file surface.
+- `crates/hawking-core/reports/w4a8_activation_dist.csv` is a tracked report, but it is read by
+  `crates/hawking-core/tests/tq_output_space_quality.rs`, so it is fixture-like and out of bounds.
+- Duplicate hooks inside `tools/training/build_corpus.py` sit on model forward-hook capture and async
+  device-transfer behavior. Without a lightweight model-free oracle, refactoring them would be risk without
+  proof.
