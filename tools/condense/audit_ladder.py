@@ -439,7 +439,7 @@ def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None,
     log(f"  [recover] {bits}b base bpw={base_bpw:.3f}; LoRA-KD r{rank} {steps} steps"
         f" (timeout={TIMEOUT}s soft_swap={SWAP_CEIL:.0f}MB hard_swap={HARD_SWAP:.0f}MB)…")
     out_fh, err_fh = open(dout, "w"), open(derr, "w")
-    proc = subprocess.Popen(["python3.12", "tools/condense/doctor_lora.py", base,
+    proc = subprocess.Popen(["python3.12", "tools/condense/doctor.py", "lora", base,
                              str(steps), str(lr), str(rank), adapter],
                             stdout=out_fh, stderr=err_fh,
                             text=True, env=env, start_new_session=True)
@@ -527,7 +527,7 @@ def build_blockwise(bits, steps=80):
     matrix (no rank ceiling, no bpw overhead) so it survives the STRAND cut, then bakes it."""
     out = f"{T}_bw.safetensors"
     log(f"  [L4 blockwise] {bits}b QAT {steps} steps")
-    r = subprocess.run(["python3.12", "tools/condense/doctor_blockwise.py", MODEL, out, str(bits), str(steps)],
+    r = subprocess.run(["python3.12", "tools/condense/doctor.py", "blockwise", MODEL, out, str(bits), str(steps)],
                        capture_output=True, text=True, env=_doctor_env())
     if r.returncode != 0:
         raise RuntimeError(f"blockwise failed bits={bits}: {r.stderr[-200:]}")
@@ -539,7 +539,7 @@ def build_strand(bits, steps=200, lr=3e-5, req=50):
     breaker; quantizes sequentially through STRAND's trellis with Hessian error feedback (no STE)."""
     save = f"{T}_str.safetensors"
     log(f"  [L5 strand] {bits}b GPTQ-Hessian {steps} steps lr {lr} requant/{req}")
-    r = subprocess.run(["python3.12", "tools/condense/doctor_strand.py", str(bits), str(steps),
+    r = subprocess.run(["python3.12", "tools/condense/doctor.py", "strand", str(bits), str(steps),
                         str(lr), str(req), save], capture_output=True, text=True, env=_doctor_env())
     if r.returncode != 0:
         raise RuntimeError(f"strand failed bits={bits}: {r.stderr[-200:]}")

@@ -131,10 +131,31 @@ blast) + frontier (live daemons) deferred by decision.
   dangling refs (invocation sites updated) · `--go-plan` BYTE-IDENTICAL · surface HELD · net files 48 -> 46.
   Structural bar (no model-free output path on these tools).
 
-## Progress
+### Iteration 6 · class SIBLING FILES · awq_bake + awq_plus -> awq.py · PASS
 
-Baseline 52 -> 46 tools/condense files. Folded: kv, expert (gold) · subbit (silver + admm gold) · residual
-(silver). Verified clean: no real reflection in any remaining family, only doctor_registry has a (cli-only,
-localizable) class. Remaining wrap targets: awq (2 call-sites, bare-script awq_bake + CALIB semantic
-collision isolated by wrap), doctor (5 files, ~8 call-sites incl audit_ladder + 6 shell). sweep + frontier
-deferred. Stale prose/comment refs batch-updated on the docs track at the end.
+- Applied · wrap-merged into `awq.py` (bake / plus). awq_bake is a bare top-to-bottom script (loads the
+  model at module level); the CALIB semantic collision (bake reads corpus TEXT at import, plus stores a
+  PATH) is isolated by the per-wrapper scope. Real call-sites: win7b_watchdog.sh:30, sweep.py:95. Cosmetic:
+  STACK row, registry string. awq_plus standalone.
+- GATE (all green) · both bodies BYTE-VERBATIM · compile all OK · dispatch routes · no real dangling refs ·
+  `--go-plan` BYTE-IDENTICAL · surface HELD · net 46 -> 45.
+
+### Iteration 7 · class SIBLING FILES · doctor_{blockwise,strand,qat,lora,registry} -> doctor.py · PASS
+
+- Applied · wrap-merged 5 tools into `doctor.py` (blockwise / strand / qat / lora / registry). The widest
+  blast: 15 exact-string edits across 7 files (audit_ladder.py x3, studio_run.py x4, win7b_watchdog.sh,
+  win_test.sh, recovery_sweep.sh, condense_rebench_cron.sh x3, doctor.py registry metadata x4) applied by a
+  COUNT-ASSERTED rewire script (aborts if any old string is not found exactly N times). doctor_registry's
+  `class RecoveryMethod` + @register decorators localize cleanly (cli-only).
+- GATE (all green) · all 5 bodies BYTE-VERBATIM · compile all OK · `registry --list` (model-free) output
+  BYTE-IDENTICAL pre/post = gold-level for that subcommand · no real dangling refs across .py + .sh ·
+  `--go-plan` BYTE-IDENTICAL · surface HELD · net 45 -> 41.
+
+## Progress / stop for the code track
+
+Baseline 52 -> 41 tools/condense files (-11, -21%). All six mergeable families folded: kv, expert (gold) ·
+subbit (silver + admm gold) · residual, awq (silver) · doctor (silver + registry gold). Every commit holds
+the surface hash + a byte-identical `--go-plan`, every wrapper body proven verbatim. DEFERRED by decision:
+sweep (near-public, referenced across tools/bench + tools/training + many docs) and frontier (live research
+daemons under run_7b_frontier.sh). Remaining: the docs track (batch-update stale prose/comment references to
+the six old tool-name sets), then finalize CONDENSE_AUDIT.md.

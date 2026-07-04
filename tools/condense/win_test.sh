@@ -18,7 +18,7 @@ echo "[1] STRAND TQ$BITS bake of $MD ..."
 $BAKER --in "$ST" --out "scratch/$TAG-tq$BITS.safetensors" --bits "$BITS" --quality --rht-cols \
   --outlier-channel 1 --outlier-bits 8 2>&1 | tail -1
 echo "[2] LoRA-KD recovery (rank $RANK, $STEPS steps) ..."
-KD=1 KD_TOPK=64 python3.12 tools/condense/doctor_lora.py "scratch/$TAG-tq$BITS.safetensors" "$STEPS" 3e-4 "$RANK" \
+KD=1 KD_TOPK=64 python3.12 tools/condense/doctor.py lora "scratch/$TAG-tq$BITS.safetensors" "$STEPS" 3e-4 "$RANK" \
   "scratch/$TAG-healed.safetensors" 2>&1 | grep -E 'base held|best held'
 echo "[3] f16 + Q4_K GGUFs ..."
 [ -f "scratch/$TAG-f16.gguf" ]  || python3.12 tools/strand/tools/gguf/convert_hf_to_gguf.py "$MD" --outfile "scratch/$TAG-f16.gguf" --outtype f16 >/dev/null 2>&1

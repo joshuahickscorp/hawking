@@ -61,9 +61,9 @@ STACK = [
     ("L1 AWQ",        f"{TC}/awq.py bake",        "alpha=0.5 pre-scale + bake"),
     ("L2 mixed-prec", f"{TC}/mixed_precision.py", "output-sensitivity bit allocation"),
     ("L3 residual",   f"{TC}/residual.py bake",   "full-rank residual (train-free ~1:1)"),
-    ("L4 block-QAT",  f"{TC}/doctor_blockwise.py","full-rank per-layer QAT  [the LoRA-plateau fix]"),
-    ("L5 GPTQ-Hess",  f"{TC}/doctor_strand.py",   "codec-native error-feedback [sub-residual edge]"),
-    ("L6 deep-KD",    f"{TC}/doctor_lora.py",     "logit/feature KD polish on the full-rank base"),
+    ("L4 block-QAT",  f"{TC}/doctor.py blockwise","full-rank per-layer QAT  [the LoRA-plateau fix]"),
+    ("L5 GPTQ-Hess",  f"{TC}/doctor.py strand",   "codec-native error-feedback [sub-residual edge]"),
+    ("L6 deep-KD",    f"{TC}/doctor.py lora",     "logit/feature KD polish on the full-rank base"),
 ]
 
 
@@ -171,7 +171,7 @@ def run_frontier(label):
         sf += ["--active", str(active)]
     subprocess.run(sf, env=env)
     # The Doctor registry: the auto-composed recovery chain (L0-L6 + per-expert) for this model/bpw.
-    dr = ["python3.12", f"{TC}/doctor_registry.py", "--select", str(total), str(bpw)]
+    dr = ["python3.12", f"{TC}/doctor.py", "registry", "--select", str(total), str(bpw)]
     if moe:
         dr.append("--moe")
     subprocess.run(dr, env=env)

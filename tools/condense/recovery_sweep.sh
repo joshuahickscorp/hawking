@@ -24,7 +24,7 @@ for cfg in "${CONFIGS[@]}"; do
   IFS=':' read -r base rank steps lr bpw label <<< "$cfg"
   out="scratch/qwen-05b-sweep-${base}-r${rank}.safetensors"
   echo ""; echo ">>> $label  (base=$base rank=$rank steps=$steps lr=$lr)"
-  KD=1 $PY tools/condense/doctor_lora.py "scratch/qwen-05b-${base}.safetensors" "$steps" "$lr" "$rank" "$out" 2>&1 \
+  KD=1 $PY tools/condense/doctor.py lora "scratch/qwen-05b-${base}.safetensors" "$steps" "$lr" "$rank" "$out" 2>&1 \
     | grep -E 'base held|best held|KD:' | sed 's/^/    /'
   hc=$(PPL_TEXT=/tmp/ppl8k.txt $PY tools/condense/ppl_bench.py scratch/qwen-05b "$out" "$label" 2>/dev/null | jget)
   $PY tools/condense/verdict.py "$hf" "${hc:-0}" "$bpw" "$label"
