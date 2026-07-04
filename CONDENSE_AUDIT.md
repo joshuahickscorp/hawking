@@ -6,9 +6,9 @@ Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en das
 
 Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each, one single-use helper
 inlined into its only caller, two duplicate orchestrator helpers removed by reusing neighboring
-implementations, and two duplicate bench oracle helper pairs shared. Every merge holds the surface hash /
-construction-equivalent and a green byte-stable `--go-plan`; model-free runnable paths are output-diffed
-byte-identical.
+implementations, two duplicate bench oracle helper pairs shared, and one duplicate bench parser shared. Every
+merge holds the surface hash / construction-equivalent and a green byte-stable `--go-plan`; model-free
+runnable paths are output-diffed byte-identical.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
@@ -18,6 +18,7 @@ byte-identical.
 | tools/orchestrator pack_corpus.py LOC | 203 | 184 | -19 |
 | tools/bench oracle_imatrix_mixprec.py LOC | 809 | 794 | -15 |
 | tools/bench oracle_spec_accept.py LOC | 424 | 418 | -6 |
+| tools/bench mst_analyze.py LOC | 218 | 180 | -38 |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
 | public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
@@ -49,6 +50,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 12 | duplicate helper | pack_corpus.py reuses pack_ffn.py write_shard | GOLD (synthetic corpus+FFN parquet rows equivalent) | LOC -9 |
 | 13 | duplicate helper | oracle_imatrix_mixprec.py reuses oracle_qtip_quality.py rss/rmse helpers | GOLD (both selftests byte-identical) | LOC -15 |
 | 14 | duplicate helper | oracle_spec_accept.py reuses oracle_prefix_cache.py common-prefix helper | GOLD (synthetic PLD output byte-identical) | LOC -6 |
+| 15 | duplicate helper | mst_analyze.py reuses mst_gap.py xctrace XML parser | GOLD (synthetic XML reports byte-identical) | LOC -38 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -99,22 +101,23 @@ is staged for human review only in CONDENSE_DOCS_REVIEW.md.
 
 ## 6. Current status
 
-The resumed scan removed another model-free bench oracle helper duplicate. The remaining large exact
-duplicates are still no-touch assets, generated schemas, frozen fixtures, audit-only STRAND mirrors, and the
-requirements pair staged for human review. The remaining code-fold candidates either disturb live supervisor
-identity (frontier), break the byte-stable go-plan oracle (codec), change a copied-package/self-location
-contract (`strand_eval`), sit inside the generated public GGUF converter, or lack a model-free behavioral
-oracle (`build_corpus.py` hook refactor). Two duplicate orchestrator helpers were removed with synthetic
-parquet oracles, and two duplicate bench oracle helper pairs were removed with byte-identical model-free
-oracles. Redundant `.gitkeep` placeholders in non-empty receipt directories were removed; the sole
+The resumed scan removed another model-free bench parser duplicate. The remaining large exact duplicates are
+still no-touch assets, generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requirements
+pair staged for human review. The remaining code-fold candidates either disturb live supervisor identity
+(frontier), break the byte-stable go-plan oracle (codec), change a copied-package/self-location contract
+(`strand_eval`), sit inside the generated public GGUF converter, or lack a model-free behavioral oracle
+(`build_corpus.py` hook refactor). Two duplicate orchestrator helpers were removed with synthetic parquet
+oracles, two duplicate bench oracle helper pairs were removed with byte-identical model-free oracles, and one
+duplicate bench parser was removed with byte-identical synthetic XML reports. Redundant `.gitkeep`
+placeholders in non-empty receipt directories were removed; the sole
 `receipts/third_party/.gitkeep` remains because it preserves a documented empty drop directory. `verdict.py`,
 a single-use helper, was inlined with byte-identical output. No tests, assets, generated schemas, fixtures, or
 docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 17 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
+Branch `condense/run-20260703`: 18 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
 tracked files 4322 -> 4307 (-15), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
-green), Rust and tests untouched, bench oracle helper LOC -21. frontier and codec remain deferred for the
+green), Rust and tests untouched, bench helper/parser LOC -59. frontier and codec remain deferred for the
 safety reasons above. Nothing pushed, nothing auto-merged. Continue scanning before any merge.

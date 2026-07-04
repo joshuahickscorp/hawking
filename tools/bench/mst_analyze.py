@@ -27,50 +27,12 @@ import argparse
 import collections
 import json
 import sys
-import xml.etree.ElementTree as ET
+
+from mst_gap import parse_rows
 
 M3_PRO_PEAK_GBPS = 150.0
 MODEL_BYTES = {"qwen3b": int(1.93 * 1024 ** 3), "v2lite": int(1.82 * 1024 ** 3)}
 DUR_TO_US = {"ns": 1e-3, "us": 1.0, "ms": 1e3, "s": 1e6}
-
-
-def parse_rows(path):
-    """Return (col_names, rows) where each row is a list of resolved cell
-    values, resolving xctrace's id/ref dedup. Cell value = text or fmt attr."""
-    id_map = {}
-    col_names, rows = [], []
-    in_schema = False
-    cur = None
-    for ev, el in ET.iterparse(path, events=("start", "end")):
-        tag = el.tag
-        if ev == "start":
-            if tag == "schema":
-                in_schema = True
-            elif tag == "row":
-                cur = []
-        else:  # end
-            if tag == "schema":
-                in_schema = False
-            elif in_schema and tag == "col":
-                nm = el.findtext("name") or el.findtext("mnemonic") or f"col{len(col_names)}"
-                col_names.append(nm.strip())
-            elif tag == "row":
-                rows.append(cur)
-                cur = None
-                el.clear()
-            elif cur is not None and tag not in ("fmt",):
-                ref = el.get("ref")
-                if ref is not None:
-                    cur.append(id_map.get(ref))
-                else:
-                    val = (el.text or "").strip() or el.get("fmt")
-                    if val is None:
-                        f = el.find("fmt")
-                        val = f.text.strip() if f is not None and f.text else None
-                    if el.get("id") is not None:
-                        id_map[el.get("id")] = val
-                    cur.append(val)
-    return col_names, rows
 
 
 def looks_numeric(v):

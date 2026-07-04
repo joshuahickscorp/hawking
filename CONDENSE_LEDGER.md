@@ -286,3 +286,16 @@ Rechecked the remaining attractive candidates:
   `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
   `cargo check --workspace` green (pre-existing warnings only) · net `oracle_spec_accept.py` 424 -> 418
   lines versus baseline (-6), tracked files unchanged.
+
+### Iteration 15 · class DUPLICATE HELPER · mst_analyze.py reuses mst_gap.py XML row parser · PASS
+
+- Applied · removed the duplicate streaming xctrace XML `parse_rows()` implementation from
+  `tools/bench/mst_analyze.py` and imported the identical parser from sibling tool
+  `tools/bench/mst_gap.py`. `mst_analyze.py` keeps its own column heuristics and reporting.
+- GATE (all green) · `mst_analyze.py --help` and `mst_gap.py --help` stdout/stderr byte-identical
+  before/after · synthetic XML run compared against the pre-edit `mst_analyze.py` from `HEAD`, with
+  `--inspect`, `--json`, and text report stdout/stderr byte-identical ·
+  `python3.12 -m py_compile tools/bench/mst_analyze.py tools/bench/mst_gap.py` OK ·
+  `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
+  `cargo check --workspace` green (pre-existing warnings only) · net `mst_analyze.py` 218 -> 180 lines
+  versus baseline (-38), tracked files unchanged.
