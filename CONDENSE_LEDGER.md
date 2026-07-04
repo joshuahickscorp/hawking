@@ -273,3 +273,16 @@ Rechecked the remaining attractive candidates:
   `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
   `cargo check --workspace` green (pre-existing warnings only) · net `oracle_imatrix_mixprec.py` 809 -> 794
   lines versus baseline (-15), tracked files unchanged.
+
+### Iteration 14 · class DUPLICATE HELPER · oracle_spec_accept.py reuses prefix-cache common-prefix helper · PASS
+
+- Applied · removed the duplicate `common_prefix_len()` implementation from
+  `tools/bench/oracle_spec_accept.py` and imported the identical helper from sibling oracle
+  `tools/bench/oracle_prefix_cache.py`.
+- GATE (all green) · `oracle_spec_accept.py --help` and `oracle_prefix_cache.py --help` stdout/stderr
+  byte-identical before/after · synthetic single-stream PLD run compared against the pre-edit
+  `oracle_spec_accept.py` from `HEAD`, with stdout, stderr, and JSON byte-identical ·
+  `python3.12 -m py_compile tools/bench/oracle_spec_accept.py tools/bench/oracle_prefix_cache.py` OK ·
+  `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
+  `cargo check --workspace` green (pre-existing warnings only) · net `oracle_spec_accept.py` 424 -> 418
+  lines versus baseline (-6), tracked files unchanged.

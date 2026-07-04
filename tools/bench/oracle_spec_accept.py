@@ -49,6 +49,8 @@ import tempfile
 from collections import defaultdict
 from statistics import median
 
+from oracle_prefix_cache import common_prefix_len
+
 
 def load_ids(path):
     ids = []
@@ -108,14 +110,6 @@ def simulate(ids, n_match, K, start=0, seed_warm=True, count_mask=None):
         "hit_rate": round(sum(c for a, c in acc.items() if a > 0) / steps, 3) if steps else 0,
         "acc_hist": {str(a): acc[a] for a in sorted(acc)},
     }
-
-
-def common_prefix_len(a, b):
-    n = min(len(a), len(b))
-    i = 0
-    while i < n and a[i] == b[i]:
-        i += 1
-    return i
 
 
 # --------------------------------------------------------------------------- #
