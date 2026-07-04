@@ -67,7 +67,7 @@ def _mp(ctx): return ("mp-4a3f", "build_awq", (3, 0.5, {"q_proj": 4, "k_proj": 4
                                                          "gate_proj": 3, "up_proj": 3, "down_proj": 3}))
 
 @register(name="residual", layer=3, stage="local", train_free=True, sensitivity="per_tensor",
-          tool="residual_bake.py", provides_serve=True, status="MEASURED",
+          tool="residual.py bake", provides_serve=True, status="MEASURED",
           note="W ~= STRAND(W)+STRAND(residual); train-free ~1:1; two-part serve (parity-green)")
 def _res(ctx): return (f"res{ctx['bits']}+1", "build_residual", (ctx["bits"], 1))
 

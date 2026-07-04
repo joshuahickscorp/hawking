@@ -60,7 +60,7 @@ STACK = [
     ("L0 calib",      f"{TC}/calib_build.py",     "domain-matched corpus (input to all below)"),
     ("L1 AWQ",        f"{TC}/awq_bake.py",        "alpha=0.5 pre-scale + bake"),
     ("L2 mixed-prec", f"{TC}/mixed_precision.py", "output-sensitivity bit allocation"),
-    ("L3 residual",   f"{TC}/residual_bake.py",   "full-rank residual (train-free ~1:1)"),
+    ("L3 residual",   f"{TC}/residual.py bake",   "full-rank residual (train-free ~1:1)"),
     ("L4 block-QAT",  f"{TC}/doctor_blockwise.py","full-rank per-layer QAT  [the LoRA-plateau fix]"),
     ("L5 GPTQ-Hess",  f"{TC}/doctor_strand.py",   "codec-native error-feedback [sub-residual edge]"),
     ("L6 deep-KD",    f"{TC}/doctor_lora.py",     "logit/feature KD polish on the full-rank base"),

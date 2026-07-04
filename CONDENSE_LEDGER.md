@@ -121,9 +121,20 @@ blast) + frontier (live daemons) deferred by decision.
   50 -> 48. No functional dangling refs (call-sites updated; remaining grep hits are prose comments,
   in-file docstrings, and the intentional argv[0] prog-name preservation).
 
+### Iteration 5 · class SIBLING FILES · residual_bake + residual_tq + residual_plus -> residual.py · PASS
+
+- Applied · wrap-merged into `residual.py` (bake / tq / plus). bake + tq are bare top-to-bottom scripts (0
+  main-guards, handled by the builder's 0-guard path); plus is main()-based. 12 collisions (B1/B2/BAKER/W/
+  bake/log/SRC/...) isolated by wrapping. Real call-site: sweep.py:98 (residual_bake). Cosmetic: STACK
+  display row + doctor_registry string. residual_tq + residual_plus are standalone.
+- GATE (all green) · all 3 wrapper bodies BYTE-VERBATIM · compile all OK · dispatch routes (exit 0) · no real
+  dangling refs (invocation sites updated) · `--go-plan` BYTE-IDENTICAL · surface HELD · net files 48 -> 46.
+  Structural bar (no model-free output path on these tools).
+
 ## Progress
 
-Baseline 52 -> 48 tools/condense files (kv, expert at the gold bar; subbit at silver + admm gold). Remaining
-wrap targets: awq, residual, doctor (all STACK/audit_ladder-entangled -> wider call-site sets). sweep +
-frontier deferred. Stale doc/comment references to old tool names to be batch-updated on the docs track at
-the end. See CONDENSE_AUDIT.md.
+Baseline 52 -> 46 tools/condense files. Folded: kv, expert (gold) · subbit (silver + admm gold) · residual
+(silver). Verified clean: no real reflection in any remaining family, only doctor_registry has a (cli-only,
+localizable) class. Remaining wrap targets: awq (2 call-sites, bare-script awq_bake + CALIB semantic
+collision isolated by wrap), doctor (5 files, ~8 call-sites incl audit_ladder + 6 shell). sweep + frontier
+deferred. Stale prose/comment refs batch-updated on the docs track at the end.

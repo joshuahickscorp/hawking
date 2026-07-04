@@ -95,7 +95,7 @@ def stream_a(m, hf_dir, recipe, env):
         r = sh([PY, "tools/condense/awq_bake.py", hf_dir, art, str(a), str(ALPHA)],
                env={**env, "DOCTOR_CALIB": CALIB})
     else:                          # residual = STRAND_b1 + STRAND_b2(residual), full-rank heal
-        r = sh([PY, "tools/condense/residual_bake.py", hf_dir, art, str(a), str(b)],
+        r = sh([PY, "tools/condense/residual.py", "bake", hf_dir, art, str(a), str(b)],
                env={**env, "DOCTOR_CALIB": CALIB})
     if not os.path.exists(art):
         res["error"] = f"{kind}_bake failed: " + (r.stderr.strip().splitlines()[-1] if r.stderr else "?")
