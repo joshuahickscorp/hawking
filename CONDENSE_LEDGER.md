@@ -177,5 +177,16 @@ safe to fold.
 Baseline 52 -> 40 tools/condense files (-12, -23%). Seven mergeable families folded: kv, expert (gold) ·
 subbit (silver + admm gold) · residual, awq (silver) · doctor (silver + registry gold) · sweep-render
 (gold). Every commit holds the surface hash / construction-equivalent plus a green 134-line `--go-plan`;
-model-free runnable paths were output-diffed byte-identical. DEFERRED by safety, not convenience: frontier
-(live research daemons under run_7b_frontier.sh whose supervisor logic keys on script identity).
+model-free runnable paths were output-diffed byte-identical.
+
+Post-iteration scan:
+
+- `frontier_{verifier,autopilot,conductor}` remains DEFERRED by safety, not convenience. The live launcher
+  and keepalive logic key on script identity (`pgrep -f frontier_verifier.py`) and import paths; folding it
+  would change supervisor/adoption behavior.
+- `codec_parallelism.py` + `codec_bakeoff.py` was probed and REJECTED before commit. A lazy merged
+  dispatcher can preserve runtime behavior, but `studio_run.py --go-plan` explicitly prints both old
+  command names. Removing either file would force a stale dry plan or a non-byte-identical oracle output.
+- Duplicate scan found no auto-deletable tracked code/docs: duplicates are app assets/icons, generated
+  Tauri schemas, frozen test fixtures, audit-only STRAND mirrors, or a byte-identical requirements pair now
+  listed in CONDENSE_DOCS_REVIEW.md for human review only.

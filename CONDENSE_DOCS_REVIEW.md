@@ -6,14 +6,21 @@ regenerable or byte-identical duplicates, and only staged here for a human. Hous
 
 ## Staged deletions
 
-NONE. The docs tree is already at its consolidation fixpoint:
+REVIEW ONLY, not auto-deleted:
+
+- `docs/plans/studio_pinned_requirements.txt` is byte-identical to
+  `scaffolding/requirements.freeze.txt`. Do not delete blindly: `tools/condense/preflight.py` currently
+  points operators at the docs/plans path, while `receipts/README.md` points at the scaffolding path. A human
+  can choose the canonical location and update references in a separate content commit.
+
+The markdown docs tree is already at its consolidation fixpoint:
 
 - Four prior passes already pruned 280+ tracked markdown files into git history, each recorded in
   `docs/ARCHIVE_INDEX.md` with a restore command and an annotated tag (`pre-hawking-rename`,
   `pre-consolidation-2026-07-01`). Passes: 2026-06-20 (225 files), 2026-06-28 (49), the campaign logs (18),
   the hide-bible archive (20), and the superseded plans set (10).
 - Zero byte-identical markdown duplicates exist in the owned tree (checked by sha over every non-archive
-  `.md`). There is nothing regenerable-or-duplicate to stage.
+  `.md`). There is no markdown deletion to stage.
 - The 38 surviving `docs/plans/*.md` are the curated set. Merging any two would require judging which prose
   is redundant, i.e. content work, not a footprint-safe dedupe. Deferred: no merge is safe to do blind.
 
@@ -47,5 +54,6 @@ None is a runnable command (0 broken command references), so nothing is function
 
 ## Verdict
 
-Docs footprint delta this run: 0 (no deletions). Content-accuracy: 10 canonical references updated. The doc
-consolidation the operator remembers wanting was already executed across the four archive passes above.
+Docs footprint delta this run: 0 (no deletions). Content-accuracy: 10 active references updated. One
+byte-identical non-md requirements pair is staged above for human review only. The doc consolidation the
+operator remembers wanting was already executed across the four archive passes above.

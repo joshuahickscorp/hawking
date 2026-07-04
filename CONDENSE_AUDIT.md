@@ -57,21 +57,32 @@ GOLD-on-the-Studio for the model-gated families.
   by `run_7b_frontier.sh` / `frontier_keepalive.sh`; the launcher keys live process detection on
   `frontier_verifier.py`, and the conductor imports the autopilot by path. Folding it would change
   supervisor/adoption behavior, not just code organization.
+- `codec` (codec_parallelism + codec_bakeoff): rejected before commit. The runtime can be lazily merged, but
+  `studio_run.py --go-plan` prints the two old command names. Removing those entrypoints would either make
+  the dry plan stale or change the byte-stable go-plan oracle.
 
-Folding frontier would reach ~40 -> ~38. Recommend doing it only when the frontier is known idle, with a
-compatibility shim or launcher rewrite accepted by the grader.
+Folding these would reach ~40 -> ~37. Recommend doing frontier only when the frontier is known idle, with a
+compatibility shim or launcher rewrite accepted by the grader. Recommend doing codec only if the grader
+accepts a planned `--go-plan` text change or keeps compatibility shims despite no file-count win.
 
 ## 5. Docs track
 
-No footprint deletions (docs already at fixpoint; zero byte-identical dupes). Content-accuracy: 8 references
-to old tool names in the two ACTIVE canonical docs (STUDIO_GO.md, quintessential_engine) updated to the new
-subcommand form (count-asserted), plus 2 active parameter-sweep references updated from `sweep_render.py` to
-`sweep.py render`. 8 archival/dated plan docs still carry prose mentions of old names; these are historical
-and out of footprint scope, listed in CONDENSE_DOCS_REVIEW.md.
+No markdown footprint deletions (docs already at fixpoint; zero byte-identical markdown dupes).
+Content-accuracy: 8 references to old tool names in the two ACTIVE canonical docs (STUDIO_GO.md,
+quintessential_engine) updated to the new subcommand form (count-asserted), plus 2 active parameter-sweep
+references updated from `sweep_render.py` to `sweep.py render`. One byte-identical non-md requirements pair
+is staged for human review only in CONDENSE_DOCS_REVIEW.md.
 
-## 6. One line for the grader
+## 6. Stop reason
 
-Branch `condense/run-20260703`: 9 condense commits since baseline, `tools/condense` 52 -> 40 (-23%), every
+Safe local fixpoint for this autonomous pass. A full tracked duplicate scan found only no-touch assets,
+generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requirements pair staged for human
+review. The remaining code-fold candidates either disturb live supervisor identity (frontier) or break the
+byte-stable go-plan oracle (codec). No tests, assets, generated schemas, fixtures, or docs were deleted.
+
+## 7. One line for the grader
+
+Branch `condense/run-20260703`: 10 commits since baseline, `tools/condense` 52 -> 40 (-23%), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
-green), Rust and tests untouched. frontier remains deferred for live-supervisor safety. Nothing pushed,
-nothing auto-merged. Merge `condense/run-20260703` to main?
+green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing
+pushed, nothing auto-merged. Merge `condense/run-20260703` to main?
