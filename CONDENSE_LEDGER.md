@@ -151,11 +151,31 @@ blast) + frontier (live daemons) deferred by decision.
   BYTE-IDENTICAL pre/post = gold-level for that subcommand · no real dangling refs across .py + .sh ·
   `--go-plan` BYTE-IDENTICAL · surface HELD · net 45 -> 41.
 
+## Resumed under "not aggressive enough, continue without causing harm"
+
+The prior handoff deferred sweep and frontier. Re-audited both. Frontier stays deferred because the launcher
+and keepalive scripts key process identity on `frontier_verifier.py`, and `frontier_conductor.py` imports
+`frontier_autopilot.py` by path with long-running supervisor semantics. Folding it would disturb live-run
+adoption behavior, not just a filename. Sweep has a model-free renderer and a small rewire surface, so it is
+safe to fold.
+
+### Iteration 8 · class SIBLING FILES · sweep_render.py -> sweep.py render · PASS
+
+- Applied · folded the matrix renderer into `sweep.py` as the `render` subcommand, preserving the normal
+  sweep entrypoint (`sweep.py --profile here`) byte-for-byte. Internal call-sites updated:
+  `sweep.py --go` now invokes `sweep.py render`; `sweep_watchdog.sh` invokes `sweep.py render`; the active
+  parameter-sweep plan doc now names the subcommand. Deleted the standalone `sweep_render.py`.
+- GATE (all green) · `python3.12 -m py_compile tools/condense/*.py` OK · `sweep.py --profile here`
+  stdout/stderr BYTE-IDENTICAL pre/post (289 stdout lines, 0 stderr) · `sweep.py render` stdout/stderr
+  BYTE-IDENTICAL to pre-delete `sweep_render.py` (1 stdout line, 0 stderr) · no remaining
+  executable or active-doc command refs to `sweep_render.py` outside this audit trail · `studio_run.py --go-plan` green at 134 lines and
+  deterministic across reruns · `cargo check --workspace` green (warnings pre-existing) · Rust/tests/assets
+  untouched · surface HELD by construction · net files 41 -> 40, tools/condense LOC 13,164 -> 13,157 (-7).
+
 ## Progress / stop for the code track
 
-Baseline 52 -> 41 tools/condense files (-11, -21%). All six mergeable families folded: kv, expert (gold) ·
-subbit (silver + admm gold) · residual, awq (silver) · doctor (silver + registry gold). Every commit holds
-the surface hash + a byte-identical `--go-plan`, every wrapper body proven verbatim. DEFERRED by decision:
-sweep (near-public, referenced across tools/bench + tools/training + many docs) and frontier (live research
-daemons under run_7b_frontier.sh). Remaining: the docs track (batch-update stale prose/comment references to
-the six old tool-name sets), then finalize CONDENSE_AUDIT.md.
+Baseline 52 -> 40 tools/condense files (-12, -23%). Seven mergeable families folded: kv, expert (gold) ·
+subbit (silver + admm gold) · residual, awq (silver) · doctor (silver + registry gold) · sweep-render
+(gold). Every commit holds the surface hash / construction-equivalent plus a green 134-line `--go-plan`;
+model-free runnable paths were output-diffed byte-identical. DEFERRED by safety, not convenience: frontier
+(live research daemons under run_7b_frontier.sh whose supervisor logic keys on script identity).

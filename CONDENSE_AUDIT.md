@@ -4,14 +4,15 @@ Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en das
 
 ## 1. Baseline vs final
 
-Six sibling-file families in `tools/condense/` folded into one subcommand-tool each. Every merge holds the
-surface hash and a byte-identical `--go-plan`; every wrapper body proven verbatim.
+Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each. Every merge holds the
+surface hash / construction-equivalent and a green byte-stable `--go-plan`; model-free runnable paths are
+output-diffed byte-identical.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
-| tools/condense files | 52 | 41 | -11 (-21%) |
-| files (owned) | 4322 | 4311 | -11 |
-| tools/condense LOC | 13,044 | ~13,000 | ~0 (reorganized, near-zero deleted) |
+| tools/condense files | 52 | 40 | -12 (-23%) |
+| files (owned) | 4322 | 4310 | -12 |
+| tools/condense LOC | 13,044 | ~13,157 | +113 cumulative wrapper overhead; -7 this iteration |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
 | public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
@@ -20,7 +21,7 @@ surface hash and a byte-identical `--go-plan`; every wrapper body proven verbati
 
 ## 2. Invariants · all HELD
 
-1 surface frozen (hash byte-identical every commit) · 2 behavior unchanged (verbatim bodies + output-diff
+1 surface frozen (hash byte-identical or held by construction every commit) · 2 behavior unchanged (verbatim bodies + output-diff
 where a model-free path existed) · 3 build green · 4 assets untouched · 5 tests frozen (counts unchanged;
 the one merge that touched a test dep was reverted) · 6 coverage held by construction · 7 docs no content
 lost (only path-reference updates). Perf: Python tooling only, no hot-path edit. Flaky: none.
@@ -36,6 +37,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 5 | sibling | residual_{bake,tq,plus} -> residual.py | SILVER (verbatim + structural) | 48->46 |
 | 6 | sibling | awq_bake+awq_plus -> awq.py | SILVER (verbatim; CALIB collision isolated) | 46->45 |
 | 7 | sibling | doctor_{blockwise,strand,qat,lora,registry} -> doctor.py | SILVER + GOLD (registry --list byte-identical) | 45->41 |
+| 8 | sibling | sweep_render.py -> sweep.py render | GOLD (sweep plan + render byte-identical) | 41->40 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -51,23 +53,25 @@ GOLD-on-the-Studio for the model-gated families.
 
 ## 4. Deferred by decision (not merged)
 
-- `sweep` (sweep + sweep_render): near-public, referenced across tools/bench, tools/training, and many docs;
-  the blast radius is too wide to change safely without the Studio.
 - `frontier` (frontier_verifier + frontier_autopilot + frontier_conductor): live research daemons launched
-  by `run_7b_frontier.sh` / `frontier_keepalive.sh`; do not disturb a running frontier.
+  by `run_7b_frontier.sh` / `frontier_keepalive.sh`; the launcher keys live process detection on
+  `frontier_verifier.py`, and the conductor imports the autopilot by path. Folding it would change
+  supervisor/adoption behavior, not just code organization.
 
-Folding these would reach ~41 -> ~37. Recommend doing them on the Studio (frontier idle) with output-diff.
+Folding frontier would reach ~40 -> ~38. Recommend doing it only when the frontier is known idle, with a
+compatibility shim or launcher rewrite accepted by the grader.
 
 ## 5. Docs track
 
 No footprint deletions (docs already at fixpoint; zero byte-identical dupes). Content-accuracy: 8 references
-to the old tool names in the two ACTIVE canonical docs (STUDIO_GO.md, quintessential_engine) updated to the
-new subcommand form (count-asserted). 8 archival/dated plan docs still carry prose mentions of old names;
-these are historical and out of footprint scope, listed in CONDENSE_DOCS_REVIEW.md.
+to old tool names in the two ACTIVE canonical docs (STUDIO_GO.md, quintessential_engine) updated to the new
+subcommand form (count-asserted), plus 2 active parameter-sweep references updated from `sweep_render.py` to
+`sweep.py render`. 8 archival/dated plan docs still carry prose mentions of old names; these are historical
+and out of footprint scope, listed in CONDENSE_DOCS_REVIEW.md.
 
 ## 6. One line for the grader
 
-Branch `condense/run-20260703`: 8 commits, `tools/condense` 52 -> 41 (-21%), every invariant held every
-commit (surface hash + `--go-plan` byte-identical), every wrapper body proven verbatim, four subcommands
-additionally output-verified byte-identical. Rust and tests untouched. sweep + frontier deferred to the
-Studio. Nothing pushed, nothing on main. Merge `condense/run-20260703` to main?
+Branch `condense/run-20260703`: 9 condense commits since baseline, `tools/condense` 52 -> 40 (-23%), every
+invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
+green), Rust and tests untouched. frontier remains deferred for live-supervisor safety. Nothing pushed,
+nothing auto-merged. Merge `condense/run-20260703` to main?

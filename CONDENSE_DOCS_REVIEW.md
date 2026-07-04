@@ -29,11 +29,15 @@ want it, it is a small, separate content commit, not a condensation.
 
 ## Merged-tool references (from the code-track consolidation)
 
-The tool-file consolidation (52 -> 41 in tools/condense) renamed six families to subcommand-tools. Doc
+The tool-file consolidation (52 -> 40 in tools/condense) renamed seven families to subcommand-tools. Doc
 references updated (count-asserted) in the two ACTIVE canonical docs: `docs/plans/STUDIO_GO.md` (7 refs:
 kv_frontier/kv_hybrid/expert_sensitivity/expert_cache_policy/subbit_measure/subbit_admm/doctor_registry ->
 their `kv.py`/`expert.py`/`subbit.py`/`doctor.py` subcommand forms) and
 `docs/plans/quintessential_engine_2026_06_29.md` (doctor_registry).
+
+Continuation update: `docs/plans/parameter_sweep_pipeline.md` now references `sweep.py render` instead of
+the deleted `sweep_render.py` renderer (2 refs). This is an active command-reference update, not a doc
+deletion.
 
 Still carrying stale PROSE mentions of old tool names (historical/archival, out of footprint scope, listed
 for a future content pass, NOT a deletion): `doctor_maximization_plan.md`, `condense_master_plan_2026_06_22.md`,
@@ -43,5 +47,5 @@ None is a runnable command (0 broken command references), so nothing is function
 
 ## Verdict
 
-Docs footprint delta this run: 0 (no deletions). Content-accuracy: 8 canonical references updated. The doc
+Docs footprint delta this run: 0 (no deletions). Content-accuracy: 10 canonical references updated. The doc
 consolidation the operator remembers wanting was already executed across the four archive passes above.

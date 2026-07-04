@@ -29,7 +29,7 @@ echo "# Hawking condense sweep ($PROFILE)" > "$LOG"; date >> "$LOG"
   $PY "${S[@]}" --max-prio 2 2>&1 | tail -60
 
   echo ""; echo "## Matrix"; date
-  $PY tools/condense/sweep_render.py 2>&1 | tail -3
+  $PY tools/condense/sweep.py render 2>&1 | tail -3
   echo "→ reports/condense/MATRIX.md"
   echo ""; echo "## DONE"; date
 } >> "$LOG" 2>&1
