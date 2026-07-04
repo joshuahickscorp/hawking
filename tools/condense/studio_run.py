@@ -109,7 +109,7 @@ def run_model(label, set_name="studio"):
         subprocess.run(["python3.12", f"{TC}/subbit_measure.py", mdir, label], env=env)
         # SUBBIT-4 probe: per-expert sensitivity decides MoE sub-bit allocation (gated to MoE dirs).
         if any(t in label.lower() for t in ("moe", "a22b", "a3b", "deepseek", "mixtral", "glm")):
-            subprocess.run(["python3.12", f"{TC}/expert_sensitivity.py", mdir, "--label", label,
+            subprocess.run(["python3.12", f"{TC}/expert.py", "sensitivity", mdir, "--label", label,
                             "--bits", "1,2"], env=env)
     # Stage 1-2: the chosen stack via audit_ladder (bakes + AWQ + mixed + residual + L6 LoRA-KD +
     # L4 block-QAT + L5 GPTQ-Hessian), each checkpointed/guarded, multiwindow ppl + tripwire.
@@ -181,7 +181,7 @@ def run_frontier(label):
     # are arch-compatible for this model, so the selector above never wastes a bake on one that isn't.
     subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, label], env=env)
     if moe:
-        subprocess.run(["python3.12", f"{TC}/expert_sensitivity.py", mdir, "--label", label,
+        subprocess.run(["python3.12", f"{TC}/expert.py", "sensitivity", mdir, "--label", label,
                         "--bits", "1,2"], env=env)
         # Hot-expert cache policy: simulate hit-rate/blended-tok/s across cache sizes so the OOC
         # pager's cache size is chosen from a measured sweep, not a guess. n_experts best-effort
@@ -197,7 +197,7 @@ def run_frontier(label):
         expert_size_b = total / max(1, n_experts)          # params per single expert
         active_k = max(1, round((active or total * 0.05) / max(0.1, expert_size_b)))
         active_gb_tok = (active or total * 0.05) * bpw / 8.0   # TOTAL active bytes/token (all active experts)
-        subprocess.run(["python3.12", f"{TC}/expert_cache_policy.py", "--sim", str(n_experts),
+        subprocess.run(["python3.12", f"{TC}/expert.py", "cache", "--sim", str(n_experts),
                         str(active_k), "--active-gb", str(round(active_gb_tok, 3))], env=env)
     # the serve-build steps (Rust, gated): block-wise condense + native-serve quality + RAM-cliff tps
     rec = {"model": label, "total_b": total, "active_b": active, "moe": moe, "role": role,

@@ -85,8 +85,27 @@ check. Any non-path diff or any broken gate is an automatic revert.
 - before -> after · files 52 -> 51 (-1) · LOC ~193 -> ~185 (shared kv_bpt/OUT/imports deduped) · capability
   identical · behavior proven identical on every runnable path.
 
-## Stop
+### Iteration 3 · class SIBLING FILES · expert_sensitivity.py + expert_cache_policy.py -> expert.py · PASS
 
-Loop RUNNING (grader keep-going). Not at fixpoint: the 4A family consolidation is in progress. Will stop and
-re-write CONDENSE_AUDIT.md at true fixpoint (all mergeable families folded or exhausted) or on a
-stop-and-report trigger.
+- Applied · merged the two MoE-expert tools into `expert.py` with subcommands `sensitivity` / `cache`.
+  Built PROGRAMMATICALLY by a script that copies both bodies byte-verbatim (473 + 106 LOC), safe because a
+  collision scan proved 0 top-level name collisions. Each original `__main__` preserved behind an argv[1]
+  dispatcher. Call-sites updated: studio_run.py x3 (two `sensitivity` P0/P4 sites at different indents, one
+  `cache` P4 site) + doctor_registry.py `expert_alloc.tool` string metadata.
+- GATE (all green) · py_compile all tools/condense OK · sensitivity `--help` (full argparse parser)
+  BYTE-IDENTICAL to pre-merge · sensitivity body proven VERBATIM by region diff (expert.py 13..482 ==
+  expert_sensitivity.py 2..471, ignoring rstrip'd blanks) · sensitivity `--synthetic` runs exit 0
+  (unseeded-random, so not byte-diffable; verbatim + parser proof cover it) · cache `--sim` BYTE-IDENTICAL
+  (deterministic) · no dangling old-name refs · `--go-plan` BYTE-IDENTICAL to baseline · surface HELD · net
+  files 51 -> 50.
+- before -> after · files 51 -> 50 (-1, from -2 originals +1 merged) · capability identical · behavior proven
+  identical on every runnable + parser-defined path.
+
+## Progress
+
+Baseline 52 -> 50 tools/condense files. Two families folded, both fully verified (functional byte-equivalence
++ verbatim proof). Boundary reached: the collision scan shows every REMAINING family has top-level name
+collisions (awq 3, subbit 3, sweep 4, residual 12, doctor 12) requiring non-verbatim symbol renaming, and/or
+shell-orchestrator + audit-only (tools/strand) entanglement. Next: probe whether any collision is benign
+(identical-constant), else stop-and-report the rest for grader/Studio (where models allow functional
+verification). See CONDENSE_AUDIT.md.

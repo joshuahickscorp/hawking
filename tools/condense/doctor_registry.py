@@ -92,7 +92,7 @@ def _str(ctx): return (f"{ctx['bits']}-str", "build_strand", (ctx["bits"],))
 def _kd(ctx): return (f"{ctx['bits']}-AWQ+dr", "build_recover", (ctx["bits"],))
 
 @register(name="expert_alloc", layer=2, stage="studio", train_free=True, sensitivity="per_expert",
-          tool="expert_sensitivity.py", provides_serve=False, min_params_b=100.0, status="GATED",
+          tool="expert.py sensitivity", provides_serve=False, min_params_b=100.0, status="GATED",
           note="MoE per-expert bit allocation: router/shared high-bit, hot 2-bit, cold 1-bit/ternary")
 def _expert(ctx): return ("expert-alloc", "per_expert", (ctx["bits"],))
 
