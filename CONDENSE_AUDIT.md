@@ -4,15 +4,15 @@ Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en das
 
 ## 1. Baseline vs final
 
-Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each. Every merge holds the
-surface hash / construction-equivalent and a green byte-stable `--go-plan`; model-free runnable paths are
-output-diffed byte-identical.
+Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each, plus one single-use
+helper inlined into its only caller. Every merge holds the surface hash / construction-equivalent and a green
+byte-stable `--go-plan`; model-free runnable paths are output-diffed byte-identical.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
-| tools/condense files | 52 | 40 | -12 (-23%) |
-| files (owned) | 4322 | 4308 | -14 |
-| tools/condense LOC | 13,044 | ~13,157 | +113 cumulative wrapper overhead; -7 this iteration |
+| tools/condense Python files | 52 | 39 | -13 (-25%) |
+| files (owned) | 4322 | 4307 | -15 |
+| tools/condense Python LOC | 13,044 | 13,146 | +102 cumulative wrapper overhead; -11 this iteration |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
 | public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
@@ -39,6 +39,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 7 | sibling | doctor_{blockwise,strand,qat,lora,registry} -> doctor.py | SILVER + GOLD (registry --list byte-identical) | 45->41 |
 | 8 | sibling | sweep_render.py -> sweep.py render | GOLD (sweep plan + render byte-identical) | 41->40 |
 | 9 | placeholders | redundant receipt .gitkeep files | receipt verify + build/go-plan green | tracked files -2 |
+| 10 | single-use helper | verdict.py -> recovery_sweep.sh inline verdict | GOLD (representative verdict byte-identical) | 40->39 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -81,12 +82,13 @@ generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requireme
 review. The remaining code-fold candidates either disturb live supervisor identity (frontier) or break the
 byte-stable go-plan oracle (codec). Redundant `.gitkeep` placeholders in non-empty receipt directories were
 removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a documented empty drop
-directory. No tests, assets, generated schemas, fixtures, or docs were deleted.
+directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No tests, assets,
+generated schemas, fixtures, or docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 11 commits since baseline, `tools/condense` 52 -> 40 (-23%), tracked files
-4322 -> 4308 (-14), every
+Branch `condense/run-20260703`: 12 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
+tracked files 4322 -> 4307 (-15), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
 green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing
 pushed, nothing auto-merged. Merge `condense/run-20260703` to main?

@@ -46,6 +46,10 @@ Continuation update: `docs/plans/parameter_sweep_pipeline.md` now references `sw
 the deleted `sweep_render.py` renderer (2 refs). This is an active command-reference update, not a doc
 deletion.
 
+Continuation update: `docs/plans/hawking_handoff_2026_06_28.md` now points at `recovery_sweep.sh`'s inline
+verdict instead of the deleted single-use `verdict.py` helper (1 ref). This preserves the same Q4_K
+comparison note and removes no doc content.
+
 Still carrying stale PROSE mentions of old tool names (historical/archival, out of footprint scope, listed
 for a future content pass, NOT a deletion): `doctor_maximization_plan.md`, `condense_master_plan_2026_06_22.md`,
 `M1ULTRA_POTENTIAL_AUDIT.md`, `parameter_sweep_pipeline.md`, `hawking_capability_frontier_2026_06_28.md`,
@@ -54,7 +58,7 @@ None is a runnable command (0 broken command references), so nothing is function
 
 ## Verdict
 
-Docs footprint delta this run: 0 (no deletions). Content-accuracy: 10 active references updated. One
+Docs footprint delta this run: 0 (no deletions). Content-accuracy: 11 active references updated. One
 byte-identical non-md requirements pair is staged above for human review only. The doc consolidation the
 operator remembers wanting was already executed across the four archive passes above.
 

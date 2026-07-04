@@ -9,6 +9,17 @@ export DOCTOR_CALIB="${CALIB:-scratch/calib_corpus_big.txt}"
 PY=python3.12
 head -c 8000 docs/plans/condense_master_plan_2026_06_22.md > /tmp/ppl8k.txt
 jget() { $PY -c "import sys,json;print(json.load(sys.stdin)['ppl'])" 2>/dev/null; }
+verdict() {
+  $PY - "$@" <<'PYEOF'
+import sys
+hf, hc, bpw, lbl = float(sys.argv[1]), float(sys.argv[2]), sys.argv[3], sys.argv[4]
+d = (hc / hf - 1) * 100
+print(f"  Hawking {lbl} (~{bpw} bpw): +{d:.1f}%   (ppl {hc:.1f} vs f16 {hf:.1f})")
+print(f"  llama.cpp Q4_K_M  (4.5 bpw): +2.1%")
+print("  => " + ("🏆 WIN: denser AND >= Q4_K quality" if d < 2.1
+                 else f"+{d:.1f}% vs 2.1% — closer, keep tuning"))
+PYEOF
+}
 hf=$(PPL_TEXT=/tmp/ppl8k.txt $PY tools/condense/ppl_bench.py scratch/qwen-05b - f16 2>/dev/null | jget)
 echo "f16 reference ppl (3-way text): $hf"
 echo "======================================================================"
@@ -27,7 +38,7 @@ for cfg in "${CONFIGS[@]}"; do
   KD=1 $PY tools/condense/doctor.py lora "scratch/qwen-05b-${base}.safetensors" "$steps" "$lr" "$rank" "$out" 2>&1 \
     | grep -E 'base held|best held|KD:' | sed 's/^/    /'
   hc=$(PPL_TEXT=/tmp/ppl8k.txt $PY tools/condense/ppl_bench.py scratch/qwen-05b "$out" "$label" 2>/dev/null | jget)
-  $PY tools/condense/verdict.py "$hf" "${hc:-0}" "$bpw" "$label"
+  verdict "$hf" "${hc:-0}" "$bpw" "$label"
 done
 echo "======================================================================"
 echo "sweep done"

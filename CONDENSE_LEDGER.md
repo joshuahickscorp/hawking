@@ -174,9 +174,9 @@ safe to fold.
 
 ## Progress / stop for the code track
 
-Baseline 52 -> 40 tools/condense files (-12, -23%). Seven mergeable families folded: kv, expert (gold) ·
+Baseline 52 -> 39 tools/condense Python files (-13, -25%). Seven mergeable families folded: kv, expert (gold) ·
 subbit (silver + admm gold) · residual, awq (silver) · doctor (silver + registry gold) · sweep-render
-(gold). Every commit holds the surface hash / construction-equivalent plus a green 134-line `--go-plan`;
+(gold), plus one single-use helper inlined into its only caller. Every commit holds the surface hash / construction-equivalent plus a green 134-line `--go-plan`;
 model-free runnable paths were output-diffed byte-identical.
 
 Post-iteration scan:
@@ -204,3 +204,14 @@ Post-iteration scan:
   `studio_run.py --go-plan` green at 134 lines and byte-identical to the prior oracle ·
   `cargo check --workspace` green (warnings pre-existing) · no tests/assets/docs content touched ·
   net tracked files -2, no behavior surface change.
+
+### Iteration 10 · class SINGLE-USE HELPER · verdict.py -> recovery_sweep.sh inline verdict · PASS
+
+- Applied · inlined the 11-line `verdict.py` formatter into its only executable caller,
+  `recovery_sweep.sh`, then deleted the standalone helper. The one active doc reference in
+  `docs/plans/hawking_handoff_2026_06_28.md` now points at the inline verdict in the sweep script.
+- GATE (all green) · extracted `recovery_sweep.sh`'s `verdict()` function and compared a representative
+  invocation (`10 10.2 3.4 TEST`) against the pre-delete `verdict.py` output byte-for-byte · no remaining
+  live refs to `verdict.py` · `python3.12 -m py_compile tools/condense/*.py` OK · net
+  `tools/condense` Python files 40 -> 39, Python LOC 13,157 -> 13,146 (-11); total `.py + .sh` lines flat
+  because the formatter moved into shell.

@@ -182,7 +182,7 @@ high-rank fix is codec-native residual or full-rank blockwise QAT, both Studio-o
 **Eval:** `ppl_bench.py` (real ppl delta), `mlx_ppl.py` (3-way Hawking/llama.cpp/MLX, each vs own
 f16), `multi_eval.py` (capability tripwire — QA/cloze/math/code, catches ppl healing while
 arithmetic dies), `recovery_ledger.py` (per-lever recovered-points, flags the tier with most
-headroom), `verdict.py` (vs llama Q4_K +2.1% @ 4.5 bpw).
+headroom), `recovery_sweep.sh` inline verdict (vs llama Q4_K +2.1% @ 4.5 bpw).
 
 ---
 
