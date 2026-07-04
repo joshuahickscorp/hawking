@@ -92,7 +92,7 @@ def stream_a(m, hf_dir, recipe, env):
     f16 = f16_ppl_for(name) or ppl(hf_dir, None, "f16", env)
     res["f16_ppl"] = f16
     if kind == "single":          # AWQ base = the artifact (activation-aware, training-free)
-        r = sh([PY, "tools/condense/awq_bake.py", hf_dir, art, str(a), str(ALPHA)],
+        r = sh([PY, "tools/condense/awq.py", "bake", hf_dir, art, str(a), str(ALPHA)],
                env={**env, "DOCTOR_CALIB": CALIB})
     else:                          # residual = STRAND_b1 + STRAND_b2(residual), full-rank heal
         r = sh([PY, "tools/condense/residual.py", "bake", hf_dir, art, str(a), str(b)],

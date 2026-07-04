@@ -56,7 +56,7 @@ def register(**kw):
 def _calib(ctx): return ("calib", "build_calib", ())
 
 @register(name="awq", layer=1, stage="local", train_free=True, sensitivity="per_tensor",
-          tool="awq_bake.py", provides_serve=True, status="MEASURED",
+          tool="awq.py bake", provides_serve=True, status="MEASURED",
           note="alpha=0.5 activation-aware pre-scale; halves the raw gap at 3-4bit")
 def _awq(ctx): return (f"{ctx['bits']}-AWQ", "build_awq", (ctx["bits"], 0.5))
 
