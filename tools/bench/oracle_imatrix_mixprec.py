@@ -95,6 +95,8 @@ import time
 
 import numpy as np
 
+from oracle_qtip_quality import rel_rmse, rss_gb
+
 # ----------------------------------------------------------------------------
 MODEL = os.environ.get(
     "IMATRIX_MODEL",
@@ -127,16 +129,6 @@ SEED = 0
 BITS = {"Q4_K": 4.5, "Q3_K": 3.4375, "Q2_K": 2.625}
 BLOCK_BYTES = {"Q4_K": 144.0, "Q3_K": 110.0, "Q2_K": 84.0}
 
-try:
-    import resource
-
-    def rss_gb():
-        kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        return kb / (1024**3) if sys.platform == "darwin" else kb / (1024**2)
-except Exception:  # pragma: no cover
-    def rss_gb():
-        return float("nan")
-
 
 def check_rss(where):
     g = rss_gb()
@@ -144,13 +136,6 @@ def check_rss(where):
         sys.stderr.write(f"[FATAL] RSS {g:.2f} GB > {RSS_CEIL_GB} GB at {where}\n")
         sys.exit(2)
     return g
-
-
-def rel_rmse(recon, ref):
-    recon = recon.ravel().astype(np.float64)
-    ref = ref.ravel().astype(np.float64)
-    denom = np.linalg.norm(ref)
-    return float(np.linalg.norm(recon - ref) / denom) if denom > 0 else float("nan")
 
 
 # ============================================================================

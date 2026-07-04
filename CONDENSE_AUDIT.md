@@ -5,9 +5,10 @@ Baseline `condense-baseline-20260703` @ `05df9315`. House style: no em or en das
 ## 1. Baseline vs final
 
 Seven sibling-file families in `tools/condense/` folded into one subcommand-tool each, one single-use helper
-inlined into its only caller, and two duplicate orchestrator helpers removed by reusing neighboring
-implementations. Every merge holds the surface hash / construction-equivalent and a green byte-stable
-`--go-plan`; model-free runnable paths are output-diffed byte-identical.
+inlined into its only caller, two duplicate orchestrator helpers removed by reusing neighboring
+implementations, and one duplicate bench oracle helper pair shared. Every merge holds the surface hash /
+construction-equivalent and a green byte-stable `--go-plan`; model-free runnable paths are output-diffed
+byte-identical.
 
 | metric | baseline | final | delta |
 |---|--:|--:|--:|
@@ -15,6 +16,7 @@ implementations. Every merge holds the surface hash / construction-equivalent an
 | files (owned) | 4322 | 4307 | -15 |
 | tools/condense Python LOC | 13,044 | 13,146 | +102 cumulative wrapper overhead; -11 this iteration |
 | tools/orchestrator pack_corpus.py LOC | 203 | 184 | -19 |
+| tools/bench oracle_imatrix_mixprec.py LOC | 809 | 794 | -15 |
 | Rust LOC | 400,885 | 400,885 | 0 (untouched) |
 | Rust test fns | 1,127 | 1,127 | 0 (frozen) |
 | public-surface hash | 82867d52.. | 82867d52.. | HELD every commit |
@@ -44,6 +46,7 @@ lost (only path-reference updates). Perf: Python tooling only, no hot-path edit.
 | 10 | single-use helper | verdict.py -> recovery_sweep.sh inline verdict | GOLD (representative verdict byte-identical) | 40->39 |
 | 11 | duplicate helper | pack_corpus.py reuses pack_ffn.py quantize_int8 | GOLD (synthetic parquet rows byte-equivalent) | LOC -10 |
 | 12 | duplicate helper | pack_corpus.py reuses pack_ffn.py write_shard | GOLD (synthetic corpus+FFN parquet rows equivalent) | LOC -9 |
+| 13 | duplicate helper | oracle_imatrix_mixprec.py reuses oracle_qtip_quality.py rss/rmse helpers | GOLD (both selftests byte-identical) | LOC -15 |
 
 Technique: 0-collision families concatenated verbatim (kv, expert); collision families wrapped
 (`def _run_<sub>():` isolates top-level name collisions as function locals) after proving each is
@@ -99,15 +102,16 @@ generated schemas, frozen fixtures, audit-only STRAND mirrors, and the requireme
 review. The remaining code-fold candidates either disturb live supervisor identity (frontier), break the
 byte-stable go-plan oracle (codec), change a copied-package/self-location contract (`strand_eval`), or lack a
 model-free behavioral oracle (`build_corpus.py` hook refactor). Two duplicate orchestrator helpers were
-removed with synthetic parquet oracles. Redundant `.gitkeep` placeholders in non-empty receipt directories
+removed with synthetic parquet oracles, and a duplicate bench oracle helper pair was removed with
+byte-identical selftests. Redundant `.gitkeep` placeholders in non-empty receipt directories
 were removed; the sole `receipts/third_party/.gitkeep` remains because it preserves a documented empty drop
 directory. `verdict.py`, a single-use helper, was inlined with byte-identical output. No tests, assets,
 generated schemas, fixtures, or docs were deleted.
 
 ## 7. One line for the grader
 
-Branch `condense/run-20260703`: 15 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
+Branch `condense/run-20260703`: 16 commits since baseline, `tools/condense` Python files 52 -> 39 (-25%),
 tracked files 4322 -> 4307 (-15), every
 invariant held every commit (`--go-plan` green at 134 lines, model-free paths byte-identical, Rust build
-green), Rust and tests untouched. frontier and codec remain deferred for the safety reasons above. Nothing
-pushed, nothing auto-merged. Merge `condense/run-20260703` to main?
+green), Rust and tests untouched, bench oracle helper LOC -15. frontier and codec remain deferred for the
+safety reasons above. Nothing pushed, nothing auto-merged. Merge `condense/run-20260703` to main?

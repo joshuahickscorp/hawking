@@ -260,3 +260,16 @@ Rechecked the remaining attractive candidates:
   `studio_run.py --go-plan` 134 lines / 0 stderr · `cargo check --workspace` green (pre-existing warnings
   only) · net `pack_corpus.py` 193 -> 184 lines this iteration, 203 -> 184 versus baseline (-19 total),
   tracked files unchanged.
+
+### Iteration 13 · class DUPLICATE HELPER · oracle_imatrix_mixprec.py reuses qtip metric helpers · PASS
+
+- Applied · removed duplicate `rss_gb()` and `rel_rmse()` implementations from
+  `tools/bench/oracle_imatrix_mixprec.py` and imported the identical neighboring helpers from
+  `tools/bench/oracle_qtip_quality.py`. Kept `check_rss()` local so the imatrix oracle still enforces its
+  own 3 GB ceiling and fatal diagnostic.
+- GATE (all green) · `oracle_imatrix_mixprec.py --selftest` stdout/stderr byte-identical before/after ·
+  `oracle_qtip_quality.py --selftest` stdout/stderr byte-identical before/after ·
+  `python3.12 -m py_compile tools/bench/oracle_qtip_quality.py tools/bench/oracle_imatrix_mixprec.py` OK ·
+  `python3.12 -m py_compile tools/condense/*.py` OK · `studio_run.py --go-plan` 134 lines / 0 stderr ·
+  `cargo check --workspace` green (pre-existing warnings only) · net `oracle_imatrix_mixprec.py` 809 -> 794
+  lines versus baseline (-15), tracked files unchanged.
