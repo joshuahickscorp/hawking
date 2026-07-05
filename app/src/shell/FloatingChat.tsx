@@ -13,11 +13,13 @@ export function FloatingChat({
   onPos,
   onClose,
   onDock,
+  onPopToChat,
 }: {
   pos: { x: number; y: number };
   onPos: (p: { x: number; y: number }) => void;
   onClose: () => void;
   onDock: () => void;
+  onPopToChat: () => void;
 }) {
   const manifest = useStore((s) => s.manifest);
   const model = manifest?.model?.id ?? "qwen2.5";
@@ -66,6 +68,9 @@ export function FloatingChat({
         <div className="floatchat__actions">
           <button className="floatchat__icon" title="New chat" aria-label="New chat">
             <Icon name="plus" size={15} />
+          </button>
+          <button className="floatchat__icon" title="Open in Chat (picture in picture)" aria-label="Open in Chat" onClick={onPopToChat}>
+            <Icon name="pip" size={14} />
           </button>
           <button className="floatchat__icon" title="Dock to side" aria-label="Dock" onClick={onDock}>
             <Icon name="split" size={14} />

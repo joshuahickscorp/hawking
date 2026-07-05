@@ -31,7 +31,10 @@ export type IconName =
   | "chat-toggle"
   | "history"
   | "fleet"
-  | "mic";
+  | "mic"
+  | "pip"
+  | "globe"
+  | "reload";
 
 const PATHS: Record<IconName, string> = {
   files:
@@ -63,6 +66,9 @@ const PATHS: Record<IconName, string> = {
   history: "M3 3v6h6M3.5 9a9 9 0 1 0 2.1-3.4L3 9M12 7v5l4 2",
   fleet: "M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",
   mic: "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8",
+  pip: "M4 5h16v14H4zM13 12h6v5h-6z",
+  globe: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.7 3.8 5.8 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.8-3.8-9s1.3-6.3 3.8-9z",
+  reload: "M21 12a9 9 0 1 1-2.64-6.36M21 4v5h-5",
 };
 
 export function Icon({

@@ -4,6 +4,7 @@ import "./theme.css";
 import "./styles/chat.css";
 import "./styles/ide.css";
 import "./styles/panels.css";
+import "./styles/home.css";
 import { App } from "./App";
 import { initGlass } from "./shell/glass";
 import { ErrorBoundary } from "./shell/ErrorBoundary";

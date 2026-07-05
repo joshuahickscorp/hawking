@@ -33,4 +33,32 @@ describe("store.apply", () => {
     expect(useStore.getState().manifest?.ctx_len_effective).toBe(131072);
     expect(useStore.getState().manifest?.tq_multiplier).toBe(4);
   });
+
+  it("folds the home digest and deep-merges partial workspace patches", () => {
+    apply(
+      { type: "projection_patch", data: { projection: "home", patch: { user: { name: "Joshua-Hicks" }, workspace: { repo: "hawking", branch: "main" }, digest: { sessions: 1182 } } } },
+      null,
+      5,
+    );
+    // a later partial patch (a new branch only) must not wipe the repo or digest
+    apply({ type: "projection_patch", data: { projection: "home", patch: { workspace: { branch: "wt/feat" } } } }, null, 6);
+    const home = useStore.getState().home;
+    expect(home?.user?.name).toBe("Joshua-Hicks");
+    expect(home?.workspace?.repo).toBe("hawking");
+    expect(home?.workspace?.branch).toBe("wt/feat");
+    expect(home?.digest?.sessions).toBe(1182);
+  });
+
+  it("replaces the sessions list from a sessions projection", () => {
+    apply({ type: "projection_patch", data: { projection: "sessions", patch: { items: [{ id: "ses_a", title: "a", state: "active", updated_ms: 1 }] } } }, null, 7);
+    expect(useStore.getState().sessions.map((s) => s.id)).toEqual(["ses_a"]);
+  });
+
+  it("startNewSession clears the local transcript", () => {
+    useStore.getState().pushUserMessage("hello");
+    expect(useStore.getState().messages.length).toBeGreaterThan(0);
+    useStore.getState().startNewSession();
+    expect(useStore.getState().messages.length).toBe(0);
+    expect(useStore.getState().runPhase).toBe("idle");
+  });
 });

@@ -201,6 +201,16 @@ impl BackendHost {
             }
             _ => None,
         };
+        // Launcher (courtyard) custom intents: snapshot the ones with a side effect so we can act after
+        // the router has recorded them in the event log.
+        let launcher_action: Option<(String, Value)> = match &intent {
+            Intent::Custom { name, payload }
+                if matches!(name.as_str(), "create_worktree" | "new_session" | "compact_context") =>
+            {
+                Some((name.clone(), payload.clone()))
+            }
+            _ => None,
+        };
 
         let ack = self.commands.handle(intent).await?;
 
@@ -220,7 +230,69 @@ impl BackendHost {
                 self.deny_gate(&gate);
             }
         }
+        // Launcher side effects, once the intent is safely in the log.
+        if let (true, Some((name, payload))) = (ack.accepted, launcher_action) {
+            match name.as_str() {
+                // Create a real, isolated git worktree so a session can run on its own branch.
+                "create_worktree" => {
+                    self.spawn_worktree_add(payload.get("branch").and_then(|v| v.as_str()));
+                }
+                // Mint a fresh session and publish it so the courtyard composer hands off to a clean run.
+                "new_session" => self.emit_new_session(),
+                // compact_context is recorded here; the actual, recall-gated compaction is performed by
+                // the context compiler's watermark gate on the next compile (hawking-context::compiler).
+                // The FE fires this proactively so the window is trimmed ahead of the cliff. Nothing is
+                // faked here: no manifest is fabricated, the request is simply logged for the compiler.
+                _ => {}
+            }
+        }
         Ok(ack)
+    }
+
+    /// Create a real git worktree for an isolated session branch. Runs `git worktree add -b hide/<slug>
+    /// <sibling-dir>` from the workspace root and streams its output back as `tool_progress` (the
+    /// terminal and Context Stack mirror those rows). A safe command, so it runs without a gate.
+    fn spawn_worktree_add(&self, branch: Option<&str>) {
+        let raw = branch.unwrap_or("session");
+        let slug: String = raw
+            .chars()
+            .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c.to_ascii_lowercase() } else { '-' })
+            .collect();
+        let slug = slug.trim_matches('-');
+        let slug = if slug.is_empty() { "session" } else { slug };
+        let root = self.services.config.workspace_root.clone();
+        let repo = root
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("repo")
+            .to_string();
+        let dest = root
+            .parent()
+            .map(|p| p.join(format!("{repo}-{slug}")))
+            .unwrap_or_else(|| root.join(format!(".hide-worktree-{slug}")));
+        let argv = vec![
+            "git".to_string(),
+            "worktree".to_string(),
+            "add".to_string(),
+            "-b".to_string(),
+            format!("hide/{slug}"),
+            dest.to_string_lossy().to_string(),
+        ];
+        self.spawn_exec(argv, None);
+    }
+
+    /// Mint a fresh session id and publish an idle `turn` projection under it, so the FE adopts the new
+    /// session (its event router tracks `session_id` off any event) and the transcript starts clean.
+    fn emit_new_session(&self) {
+        let sid = SessionId::new();
+        self.ui_bus.publish(UiEvent {
+            seq: 0,
+            session_id: Some(sid),
+            kind: UiEventKind::ProjectionPatch {
+                projection: "turn".to_string(),
+                patch: json!({ "phase": "idle", "run_id": Value::Null }),
+            },
+        });
     }
 
     /// Execute an accepted `RunCommand` in the workspace and stream its stdout and stderr back as
@@ -1542,6 +1614,54 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(host.pending_gate_count(), 0, "deny drops the held command without running it");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn host_new_session_publishes_a_fresh_session() {
+        let dir = std::env::temp_dir().join(format!("hide_host_newsess_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        let mut rx = host.subscribe_ui();
+
+        let ack = host
+            .handle_intent(Intent::Custom {
+                name: "new_session".to_string(),
+                payload: json!({}),
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted, "new_session is accepted");
+
+        // A `turn` projection under a fresh session id is published so the FE adopts the new session.
+        let ev = loop {
+            let ev = tokio::time::timeout(std::time::Duration::from_secs(2), rx.recv())
+                .await
+                .expect("a UiEvent should arrive")
+                .expect("broadcast delivers");
+            if let UiEventKind::ProjectionPatch { ref projection, .. } = ev.kind {
+                if projection == "turn" && ev.session_id.is_some() {
+                    break ev;
+                }
+            }
+        };
+        assert!(ev.session_id.is_some(), "new_session carries a fresh session id");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn host_accepts_create_worktree_intent() {
+        let dir = std::env::temp_dir().join(format!("hide_host_wt_{}", now_ms()));
+        let host = BackendHost::open_workspace(&dir).unwrap();
+        // Accepted and logged; the git worktree add streams its own output as tool_progress (and in a
+        // non-repo temp dir simply fails fast, which is fine for this contract test).
+        let ack = host
+            .handle_intent(Intent::Custom {
+                name: "create_worktree".to_string(),
+                payload: json!({ "branch": "feat/launch pad" }),
+            })
+            .await
+            .unwrap();
+        assert!(ack.accepted, "create_worktree is accepted and recorded");
         let _ = std::fs::remove_dir_all(dir);
     }
 

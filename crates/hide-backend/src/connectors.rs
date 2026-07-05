@@ -1,5 +1,8 @@
+use crate::digest::compute_home_and_sessions;
 use crate::services::{BackendServices, DynMemoryStore};
 use futures::future::BoxFuture;
+use hide_core::persistence::{DynEventLog, DynProjectionStore};
+use std::path::PathBuf;
 use hawking_context::compiler::CompileInput;
 use hawking_context::profiles::ContextProfile;
 use hawking_context::sources::CodeIndexContextSource;
@@ -247,6 +250,56 @@ impl Connector for RuntimeConnector {
                 other => Err(HideError::NotFound(format!(
                     "runtime connector method {other}"
                 ))),
+            }
+        })
+    }
+}
+
+/// The courtyard (Home) connector: serves the retrospective digest + session list folded live from the
+/// event log. The FE pulls this on connect (like `roles.list`) since the launcher data is not a replayed
+/// event stream. Read-only; nothing is written.
+pub struct HomeConnector {
+    event_log: DynEventLog,
+    projection_store: DynProjectionStore,
+    workspace_root: PathBuf,
+}
+
+impl HomeConnector {
+    pub fn new(event_log: DynEventLog, projection_store: DynProjectionStore, workspace_root: PathBuf) -> Self {
+        Self { event_log, projection_store, workspace_root }
+    }
+}
+
+impl Connector for HomeConnector {
+    fn id(&self) -> &str {
+        "home"
+    }
+
+    fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
+        Box::pin(async move {
+            Ok(ConnectorStatus {
+                id: self.id().to_string(),
+                healthy: true,
+                detail: "courtyard digest".to_string(),
+                contributions: Vec::new(),
+            })
+        })
+    }
+
+    fn call<'a>(&'a self, method: &'a str, _params: Value) -> BoxFuture<'a, Result<Value>> {
+        Box::pin(async move {
+            match method {
+                // Fold the event log into the launcher's home + sessions patches.
+                "digest" => {
+                    let (home, sessions) = compute_home_and_sessions(
+                        &self.event_log,
+                        &self.projection_store,
+                        &self.workspace_root,
+                    )
+                    .await?;
+                    Ok(json!({ "home": home, "sessions": sessions }))
+                }
+                other => Err(HideError::NotFound(format!("home connector method {other}"))),
             }
         })
     }
@@ -593,6 +646,11 @@ pub fn register_backend_connectors(registry: &ConnectorRegistry, services: &Back
         services.code_index.clone(),
         services.role_registry.clone(),
         services.memory_store.clone(),
+    ));
+    registry.register(HomeConnector::new(
+        services.event_log.clone(),
+        services.projection_store.clone(),
+        services.config.workspace_root.clone(),
     ));
 }
 

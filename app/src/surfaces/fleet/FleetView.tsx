@@ -36,7 +36,7 @@ export function FleetView() {
   return (
     <div className="fleet">
       <div className="fleet__pitch">
-        {fleet.length} attempt{fleet.length === 1 ? "" : "s"} · free · local{active ? ` · ${active} radiating` : ""}
+        {fleet.length} attempt{fleet.length === 1 ? "" : "s"}, free, local{active ? `, ${active} radiating` : ""}
       </div>
       <ul className="fleet__list">
         {fleet.map((run) => (

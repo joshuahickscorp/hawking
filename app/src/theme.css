@@ -908,6 +908,32 @@ textarea:disabled {
   margin: 0 var(--ma-2) 0 2px;
 }
 
+/* Home / Code chamber switch (the courtyard vs the workshop). A quiet segmented control. */
+.toolbar__switch {
+  display: flex;
+  gap: 2px;
+  margin: 0 var(--ma-2);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--hairline);
+}
+.toolbar__switchbtn {
+  padding: 2px var(--ma-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.toolbar__switchbtn:hover {
+  color: var(--text-1);
+}
+.toolbar__switchbtn--on {
+  color: var(--text-strong);
+  background: var(--concrete-3);
+  box-shadow: var(--inner-glow);
+}
+
 .toolbar__icon {
   display: grid;
   place-items: center;
@@ -2384,13 +2410,30 @@ textarea:disabled {
 
 /* ---- Chat pane ---- */
 .chatpane {
-  width: var(--chat-w);
+  position: relative;
+  width: var(--chat-w); /* default; overridden by the inline resized width */
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: var(--editor-bg);
   box-shadow: inset 1px 0 0 var(--border);
+}
+
+/* Resize handle: a thin grabbable strip on the pane's left edge. */
+.chatpane__resize {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  z-index: 10;
+  cursor: col-resize;
+  touch-action: none;
+}
+.chatpane__resize:hover,
+.chatpane__resize:active {
+  box-shadow: inset 3px 0 0 var(--line-strong);
 }
 
 .chatpane__head {

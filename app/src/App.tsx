@@ -13,7 +13,13 @@ import { Onboarding } from "./surfaces/Onboarding";
 import { CommandPalette, Gate, type Command } from "./ui";
 import { useFocusTrap } from "./shell/a11y";
 import { shouldShowOnboarding } from "./shell/onboarding";
+import { useAutoCompact } from "./shell/autocompact";
 import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
+import { Home } from "./surfaces/home/Home";
+import type { PermMode } from "./surfaces/home/HomeComposer";
+
+// The two chambers: Chat (Claude Code style, the front door) and Code (the IDE, Cursor style).
+type Mode = "chat" | "code";
 
 const INITIAL_FILE = "crates/pool/src/guard.rs";
 
@@ -36,6 +42,10 @@ function persist(key: string, value: unknown): void {
 }
 
 export function App() {
+  // Boot into Chat (the front door); walk to Code (the IDE) via the pop-out. Migrate any legacy "home".
+  const [mode, setMode] = useState<Mode>(() => (persisted<string>("mode", "chat") === "code" ? "code" : "chat"));
+  // Permission mode governs the security gate: bypass auto-approves, ask/auto prompt (see below).
+  const [permMode, setPermMode] = useState<PermMode>(() => persisted<PermMode>("permMode", "ask"));
   const [sidebarOpen, setSidebarOpen] = useState(() => persisted("sidebarOpen", true));
   const [chatOpen, setChatOpen] = useState(() => persisted("chatOpen", true));
   const [chatFloating, setChatFloating] = useState(() => persisted("chatFloating", true));
@@ -56,6 +66,8 @@ export function App() {
   const [diff, setDiff] = useState<DiffDoc | null>(null);
 
   // Persist the layout whenever it changes.
+  useEffect(() => persist("mode", mode), [mode]);
+  useEffect(() => persist("permMode", permMode), [permMode]);
   useEffect(() => persist("sidebarOpen", sidebarOpen), [sidebarOpen]);
   useEffect(() => persist("chatOpen", chatOpen), [chatOpen]);
   useEffect(() => persist("chatFloating", chatFloating), [chatFloating]);
@@ -74,6 +86,19 @@ export function App() {
   const diffPatch = useStore((s) => s.projections.diff);
 
   useEffect(() => connectStore(), []);
+
+  // Secret, proactive context compaction: the condenser mindset applied to the live window. Watches the
+  // engine's watermark and compacts ahead of the cliff during work, silently. No cap ever reaches the UI.
+  useAutoCompact();
+
+  // Bypass permissions: when the operator has opted into full autonomy, a security gate is auto-approved
+  // instead of prompting. ask/auto still surface the lit approval capsule (the human-in-the-loop default).
+  useEffect(() => {
+    if (gate && permMode === "bypass") {
+      void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
+      dismissGate();
+    }
+  }, [gate, permMode, dismissGate]);
 
   // Lift the IDE's diff lifecycle into the shell so the editor area and SCM view share it.
   const hostDiff = useMemo(() => parseDiff(diffPatch as Record<string, unknown> | undefined), [diffPatch]);
@@ -150,6 +175,8 @@ export function App() {
 
   const commands = useMemo<Command[]>(
     () => [
+      { id: "go.chat", label: "Go to Chat", run: () => setMode("chat") },
+      { id: "go.code", label: "Go to Code", run: () => setMode("code") },
       { id: "toggle.chat", label: "Toggle Executor", run: () => setChatOpen((v) => !v) },
       { id: "toggle.float", label: "Executor: Float / Dock", run: () => setChatFloating((v) => !v) },
       { id: "toggle.panel", label: "Toggle Terminal", run: () => setPanelOpen((v) => !v) },
@@ -163,6 +190,8 @@ export function App() {
   return (
     <div className="vsc-shell">
       <Toolbar
+        mode={mode}
+        onMode={setMode}
         chatOpen={chatOpen}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onTogglePanel={() => setPanelOpen((v) => !v)}
@@ -171,27 +200,56 @@ export function App() {
         onCancel={cancelRun}
       />
 
-      <div className="vsc-body">
-        {sidebarOpen ? <SideBar openPath={openPath} onOpen={openFile} /> : null}
-
-        <EditorArea
-          openPath={openPath}
-          tabs={tabs}
-          diff={diff}
-          panelOpen={panelOpen}
-          onSelectTab={setOpenPath}
-          onCloseTab={closeTab}
-          onDiffChange={setDiff}
-          onTogglePanel={() => setPanelOpen((v) => !v)}
+      {mode === "chat" ? (
+        <Home
+          onPopToCode={() => {
+            // Picture in picture out: open the SAME conversation in the Code chamber to watch code
+            // (Cursor style). Dock beside the editor when wide; float when narrow (the docked pane sheds
+            // below 1100px, so floating guarantees the chat stays visible).
+            setMode("code");
+            const wide = typeof window !== "undefined" && window.innerWidth >= 1180;
+            setChatFloating(!wide);
+            setChatOpen(true);
+          }}
+          onSettings={() => setSettingsOpen(true)}
+          permMode={permMode}
+          onPermMode={setPermMode}
         />
+      ) : (
+        <div className="vsc-body">
+          {sidebarOpen ? <SideBar openPath={openPath} onOpen={openFile} /> : null}
 
-        {chatOpen && !chatFloating ? <ChatPane onClose={() => setChatOpen(false)} onFloat={() => setChatFloating(true)} /> : null}
-      </div>
+          <EditorArea
+            openPath={openPath}
+            tabs={tabs}
+            diff={diff}
+            panelOpen={panelOpen}
+            onSelectTab={setOpenPath}
+            onCloseTab={closeTab}
+            onDiffChange={setDiff}
+            onTogglePanel={() => setPanelOpen((v) => !v)}
+          />
+
+          {chatOpen && !chatFloating ? (
+            <ChatPane
+              onClose={() => setChatOpen(false)}
+              onFloat={() => setChatFloating(true)}
+              onPopToChat={() => setMode("chat")}
+            />
+          ) : null}
+        </div>
+      )}
 
       <StatusBar />
 
-      {chatOpen && chatFloating ? (
-        <FloatingChat pos={chatPos} onPos={setChatPos} onClose={() => setChatOpen(false)} onDock={() => setChatFloating(false)} />
+      {mode === "code" && chatOpen && chatFloating ? (
+        <FloatingChat
+          pos={chatPos}
+          onPos={setChatPos}
+          onClose={() => setChatOpen(false)}
+          onDock={() => setChatFloating(false)}
+          onPopToChat={() => setMode("chat")}
+        />
       ) : null}
 
       {degraded ? <DegradedToast status={runtimeStatus} detail={runtimeDetail} /> : null}
