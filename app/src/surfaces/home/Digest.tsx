@@ -10,28 +10,41 @@ import type { HomeDigest } from "../../store";
 import { fmtCount, fmtDays, fmtHour, heatColumns } from "./metrics";
 
 type Range = "all" | "30d" | "7d";
-const RANGE_COLS: Record<Range, number> = { all: Infinity, "30d": 5, "7d": 1 };
+// Column counts for the week-grid view. 7d is rendered as a horizontal day strip instead (a single
+// column read as a lonely sliver in a mostly-empty card), so it is not in this map.
+const RANGE_COLS: Record<Exclude<Range, "7d">, number> = { all: Infinity, "30d": 5 };
 
 export function Digest({ digest }: { digest: HomeDigest | null }) {
   const [range, setRange] = useState<Range>("all");
   const d = digest;
 
   const cols = d?.heatmap_cols ?? (d?.heatmap ? Math.ceil(d.heatmap.length / 7) : 0);
+  const allColumns = useMemo(
+    () => (d?.heatmap && cols > 0 ? heatColumns(d.heatmap, cols) : []),
+    [d?.heatmap, cols],
+  );
   const columns = useMemo(() => {
-    if (!d?.heatmap || cols <= 0) return [];
-    const all = heatColumns(d.heatmap, cols);
+    if (range === "7d") return [];
     const want = RANGE_COLS[range];
-    return want === Infinity ? all : all.slice(Math.max(0, all.length - want));
-  }, [d?.heatmap, cols, range]);
+    return want === Infinity ? allColumns : allColumns.slice(Math.max(0, allColumns.length - want));
+  }, [allColumns, range]);
+  // 7d: the last seven days as a full-width horizontal strip, so the card reads as a week, not a sliver.
+  const days7 = useMemo(() => allColumns.flat().slice(-7), [allColumns]);
 
   const hasTokens = typeof d?.tokens === "number";
-  const metrics: { label: string; value: string }[] = d
+  // Two tiers so the card reads: a wall of primary totals, then quieter context.
+  // Without this every stat is one 24px numeral and a model name reads like a metric.
+  const primary: { label: string; value: string }[] = d
     ? [
         { label: "Sessions", value: fmtCount(d.sessions) },
         { label: "Messages", value: fmtCount(d.messages) },
         // Tokens only when the engine actually reports them (the local host omits, never faking a total).
         ...(hasTokens ? [{ label: "Tokens", value: fmtCount(d.tokens as number) }] : []),
         { label: "Active days", value: fmtCount(d.active_days) },
+      ]
+    : [];
+  const secondary: { label: string; value: string }[] = d
+    ? [
         { label: "Current streak", value: fmtDays(d.streak_current) },
         { label: "Longest streak", value: fmtDays(d.streak_longest) },
         { label: "Peak hour", value: fmtHour(d.peak_hour) },
@@ -61,7 +74,7 @@ export function Digest({ digest }: { digest: HomeDigest | null }) {
       {d ? (
         <>
           <div className="metric-grid digest__metrics">
-            {metrics.map((m) => (
+            {primary.map((m) => (
               <div key={m.label} className="metric">
                 <div className="metric__value">{m.value}</div>
                 <div className="metric__label t-label">{m.label}</div>
@@ -69,7 +82,15 @@ export function Digest({ digest }: { digest: HomeDigest | null }) {
             ))}
           </div>
 
-          {columns.length ? (
+          {range === "7d" ? (
+            days7.length ? (
+              <div className="heatweek" aria-hidden>
+                {days7.map((cell, i) => (
+                  <span key={i} className="heatweek__cell" data-level={cell.level} />
+                ))}
+              </div>
+            ) : null
+          ) : columns.length ? (
             <div className="heatmap" aria-hidden>
               {columns.map((col, ci) => (
                 <div key={ci} className="heatmap__col">
@@ -80,6 +101,15 @@ export function Digest({ digest }: { digest: HomeDigest | null }) {
               ))}
             </div>
           ) : null}
+
+          <div className="digest__sub">
+            {secondary.map((m) => (
+              <div key={m.label} className="substat">
+                <span className="substat__value">{m.value}</span>
+                <span className="substat__label t-label">{m.label}</span>
+              </div>
+            ))}
+          </div>
 
           <div className="digest__note t-micro">
             {hasTokens ? `${fmtCount(d.tokens as number)} tokens, all local. ` : ""}Nothing left your machine.

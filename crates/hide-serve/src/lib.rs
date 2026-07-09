@@ -19,7 +19,7 @@ use axum::{
         ws::{Message, WebSocket, WebSocketUpgrade},
         FromRequestParts, Query, Request, State,
     },
-    http::{header, StatusCode},
+    http::{header, HeaderValue, Method, StatusCode},
     response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
@@ -31,7 +31,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use std::sync::Arc;
 use tokio::sync::broadcast::error::RecvError;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{AllowOrigin, CorsLayer};
 
 /// Build the axum router for the HIDE transport, with the shared
 /// [`BackendHost`] as state. Pure: no I/O, no binding — the bin (or a test)
@@ -54,16 +54,28 @@ pub fn router(host: Arc<BackendHost>) -> Router {
         .with_state(host)
 }
 
-/// A permissive CORS layer for the localhost dev surface: any origin, the
-/// methods the FE uses (GET/POST + the OPTIONS preflight), and any request
-/// header. This is intentionally open because the transport binds to loopback
-/// only (no cross-machine exposure to defend here), and the Vite dev server's
-/// origin/port is not fixed.
+/// The origins allowed to reach this loopback transport: the Tauri webview and the Vite dev server.
+/// A localhost service's real threat is the user's own browser, not a remote machine: with `Any`,
+/// any website the user visits could POST intents to 127.0.0.1:8744 (running commands, reading and
+/// writing files) and read the response. Locking the origin closes that drive-by surface. Override
+/// the dev origin with `HIDE_ALLOW_ORIGIN` if the Vite port differs. WS upgrades do not use CORS.
+fn allowed_origins() -> Vec<HeaderValue> {
+    let mut raw = vec![
+        "tauri://localhost".to_string(),
+        "http://localhost:5273".to_string(),
+        "http://127.0.0.1:5273".to_string(),
+    ];
+    if let Ok(extra) = std::env::var("HIDE_ALLOW_ORIGIN") {
+        raw.extend(extra.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()));
+    }
+    raw.iter().filter_map(|o| o.parse().ok()).collect()
+}
+
 fn cors_layer() -> CorsLayer {
     CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any)
+        .allow_origin(AllowOrigin::list(allowed_origins()))
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE])
 }
 
 async fn healthz() -> &'static str {
@@ -269,6 +281,45 @@ mod tests {
         let bytes = resp.into_body().collect().await.unwrap().to_bytes();
         let ack: IntentAck = serde_json::from_slice(&bytes).unwrap();
         assert!(ack.accepted, "valid RunCommand must be accepted");
+    }
+
+    #[tokio::test]
+    async fn cors_allows_the_app_origin_and_blocks_foreign_sites() {
+        // The Tauri webview origin is granted CORS: the header is echoed back.
+        let resp = router(host_for_test())
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri("/healthz")
+                    .header("origin", "tauri://localhost")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            resp.headers().get("access-control-allow-origin").and_then(|v| v.to_str().ok()),
+            Some("tauri://localhost"),
+            "the app origin is allowed to read responses"
+        );
+
+        // An arbitrary website gets NO CORS grant, so the browser blocks it from reading the
+        // response. This is the drive-by RCE surface (any page POSTing to 127.0.0.1:8744), closed.
+        let resp = router(host_for_test())
+            .oneshot(
+                Request::builder()
+                    .method("GET")
+                    .uri("/healthz")
+                    .header("origin", "https://evil.example.com")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert!(
+            resp.headers().get("access-control-allow-origin").is_none(),
+            "a foreign origin must not receive a CORS grant"
+        );
     }
 
     #[tokio::test]

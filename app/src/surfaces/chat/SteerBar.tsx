@@ -34,7 +34,7 @@ export function SteerBar({
           flex: "0 0 auto",
           width: 14,
           textAlign: "center",
-          fontSize: "11px",
+          fontSize: "var(--fs-label)",
           color: paused ? "var(--text-muted)" : "var(--accent)",
         }}
       >
@@ -44,7 +44,7 @@ export function SteerBar({
         style={{
           flex: "0 0 auto",
           fontWeight: 600,
-          fontSize: "11px",
+          fontSize: "var(--fs-label)",
           color: "var(--text-dim)",
           textTransform: "uppercase",
           letterSpacing: "0.06em",

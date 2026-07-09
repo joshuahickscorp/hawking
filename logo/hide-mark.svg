@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#F4F2EE" role="img" aria-label="HIDE">
-  <!-- ball (Comfortaa round dot) + Geist-Black 'h' on the diagonal. Coordinates match the PNG:
-       ball diameter 0.40 of the art, h 0.66 of the ball, 45-degree gap 0.70 of the ball, group centered. -->
-  <circle cx="42.41" cy="59.12" r="17.2"/>
-  <g transform="translate(56.40,46.39) scale(0.03197,-0.03197)">
-    <path d="M56 710V0H250V272C250 348 270 391 319 391C371 391 380 348 380 272V0H575V341C575 459 508 542 397 542C335 542 281 523 250 467V710Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="#F4F2EE" role="img" aria-label="HIDE">
+  <!-- Just the Geist 'h', centered. No globe. -->
+  <g transform="translate(512,512) scale(0.663) translate(-315.5,-355)">
+    <g transform="translate(0,710) scale(1,-1)">
+      <path d="M56 710V0H250V272C250 348 270 391 319 391C371 391 380 348 380 272V0H575V341C575 459 508 542 397 542C335 542 281 523 250 467V710Z"/>
+    </g>
   </g>
 </svg>

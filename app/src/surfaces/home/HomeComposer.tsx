@@ -12,6 +12,7 @@ import { useStore } from "../../store";
 import { intent } from "../../wire";
 import { Icon } from "../../shell/icons";
 import { Radiate } from "../../shell/Radiate";
+import { pickWorkspaceFolder } from "../../shell/onboarding";
 
 export type PermMode = "ask" | "auto" | "bypass";
 const PERM_LABEL: Record<PermMode, string> = { ask: "Ask each step", auto: "Auto run", bypass: "Bypass permissions" };
@@ -43,9 +44,40 @@ export function HomeComposer({
   const [files, setFiles] = useState<File[]>([]);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [addMenu, setAddMenu] = useState(false);
   const rec = useRef<{ mr: MediaRecorder; stream: MediaStream; timer: ReturnType<typeof setInterval> } | null>(null);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const addRef = useRef<HTMLDivElement>(null);
+
+  // The plus button adds context, like Claude Code: a working folder (native picker) or attachments.
+  const addFolder = async () => {
+    setAddMenu(false);
+    const path = await pickWorkspaceFolder();
+    if (path) {
+      void sendIntent(intent.custom("open_folder", { path }));
+      pushNotice({ kind: "info", code: "folder", message: `workspace set, ${path.split("/").pop() ?? path}` });
+    } else {
+      pushNotice({ kind: "info", code: "folder", message: "folder picker opens in the desktop app" });
+    }
+  };
+
+  // Close the add menu on an outside click or Escape.
+  useEffect(() => {
+    if (!addMenu) return;
+    const onDown = (e: MouseEvent) => {
+      if (addRef.current && !addRef.current.contains(e.target as Node)) setAddMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setAddMenu(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [addMenu]);
 
   const model = manifest?.model?.id ?? "local model";
   const repo = home?.workspace?.repo ?? home?.workspace?.root?.split("/").pop() ?? "workspace";
@@ -126,6 +158,10 @@ export function HomeComposer({
     void sendIntent(intent.custom("create_worktree", { branch }));
     pushNotice({ kind: "info", code: "worktree", message: `worktree on ${branch}` });
   };
+  const createPr = () => {
+    void sendIntent(intent.custom("create_pr", { branch }));
+    pushNotice({ kind: "info", code: "pr", message: `opening pull request for ${branch}` });
+  };
   const switchModel = () => void sendIntent(intent.custom("switch_model", {}));
   const cycleEffort = () => {
     const next = EFFORTS[(EFFORTS.indexOf(effort) + 1) % EFFORTS.length];
@@ -150,6 +186,9 @@ export function HomeComposer({
         </span>
         <button className="hc__chip hc__chip--action" onClick={createWorktree} title="Create an isolated git worktree">
           <Icon name="fork" size={13} /> worktree
+        </button>
+        <button className="hc__chip hc__chip--pr" onClick={createPr} title="Open a pull request for this branch">
+          <Icon name="source-control" size={13} /> Create PR
         </button>
       </div>
 
@@ -186,9 +225,42 @@ export function HomeComposer({
 
       <div className="hc__row">
         <div className="hc__group">
-          <button className="hc__icon" type="button" title="Attach files, images, video, anything" aria-label="Attach" onClick={() => fileRef.current?.click()}>
-            <Icon name="plus" size={16} />
+          <button className="hc__perm" type="button" onClick={() => onPermMode(PERM_NEXT[permMode])} title="Permission mode">
+            {PERM_LABEL[permMode]}
           </button>
+          <div className="hc__add" ref={addRef}>
+            <button
+              className={"hc__icon" + (addMenu ? " hc__icon--pressed" : "")}
+              type="button"
+              title="Add a folder or files"
+              aria-label="Add context"
+              aria-haspopup="menu"
+              aria-expanded={addMenu}
+              onClick={() => setAddMenu((v) => !v)}
+            >
+              <Icon name="plus" size={16} />
+            </button>
+            {addMenu ? (
+              <div className="hc__addmenu" role="menu">
+                <button className="hc__addmenu__item" role="menuitem" type="button" onClick={addFolder}>
+                  <Icon name="files" size={14} />
+                  Add folder
+                </button>
+                <button
+                  className="hc__addmenu__item"
+                  role="menuitem"
+                  type="button"
+                  onClick={() => {
+                    setAddMenu(false);
+                    fileRef.current?.click();
+                  }}
+                >
+                  <Icon name="plus" size={14} />
+                  Attach files
+                </button>
+              </div>
+            ) : null}
+          </div>
           <input
             ref={fileRef}
             type="file"
@@ -208,9 +280,6 @@ export function HomeComposer({
             aria-pressed={recording}
           >
             <Icon name="mic" size={15} />
-          </button>
-          <button className="hc__perm" type="button" onClick={() => onPermMode(PERM_NEXT[permMode])} title="Permission mode">
-            {PERM_LABEL[permMode]}
           </button>
         </div>
 

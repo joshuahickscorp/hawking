@@ -10,6 +10,7 @@ use hide_kernel::projection::{empty_projection, BasicProjectionEngine, Projectio
 use hide_kernel::session::SessionProjection;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct BackendReplayService {
     events: DynEventLog,
     projections: DynProjectionStore,

@@ -163,6 +163,7 @@ interface State {
   // ---- actions (all internal; user actions go out as Intents elsewhere) ----
   apply(ev: UiEvent): void;
   pushNotice(n: Omit<Notice, "id">): void;
+  dismissNotice(id: string): void;
   dismissGate(): void;
   pushUserMessage(text: string): void;
   // Launching a fresh session from the courtyard: clear the local transcript optimistically so the
@@ -209,7 +210,14 @@ export const useStore = create<State>((set, get) => ({
   pushUserMessage: (text) =>
     set((s) => ({ messages: [...s.messages, { id: nextId(), role: "user", text, streaming: false }] })),
 
-  pushNotice: (n) => set((s) => ({ notices: [...s.notices.slice(-19), { ...n, id: nextId() }] })),
+  pushNotice: (n) => {
+    const id = nextId();
+    set((s) => ({ notices: [...s.notices.slice(-19), { ...n, id }] }));
+    // Auto-expire so a transient error never lives forever in the status bar; errors linger a little
+    // longer than info so they are not missed. Cleared early if the user acts or a newer notice lands.
+    setTimeout(() => get().dismissNotice(id), n.kind === "error" ? 8000 : 4000);
+  },
+  dismissNotice: (id) => set((s) => ({ notices: s.notices.filter((x) => x.id !== id) })),
 
   dismissGate: () => set({ gate: null }),
 

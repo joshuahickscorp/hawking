@@ -28,6 +28,7 @@ export function Toolbar({
   onCancel: () => void;
 }) {
   const runPhase = useStore((s) => s.runPhase);
+  const ws = useStore((s) => s.home?.workspace);
   const working = runPhase === "executing" || runPhase === "planning" || runPhase === "awaiting";
   const inCode = mode === "code";
 
@@ -40,11 +41,28 @@ export function Toolbar({
           </button>
         ) : null}
         <span className="toolbar__brand" title="HIDE"><LogoH size={13} /></span>
-        <div className="toolbar__switch" role="tablist" aria-label="Chamber">
-          <button role="tab" aria-selected={mode === "chat"} className={"toolbar__switchbtn" + (mode === "chat" ? " toolbar__switchbtn--on" : "")} onClick={() => onMode("chat")}>
+        {/* Chat/Code lives in the sidebar in chat mode (Claude Code geometry); the toolbar keeps it in
+            the Code chamber (which has no rail), and re-shows it as a fallback in chat mode only when
+            the rail is hidden at narrow widths, so chamber switching is never unreachable. */}
+        <div
+          className={"toolbar__switch" + (inCode ? "" : " toolbar__switch--rail-fallback")}
+          role="tablist"
+          aria-label="Chamber"
+        >
+          <button
+            role="tab"
+            aria-selected={mode === "chat"}
+            className={"toolbar__switchbtn" + (mode === "chat" ? " toolbar__switchbtn--on" : "")}
+            onClick={() => onMode("chat")}
+          >
             Chat
           </button>
-          <button role="tab" aria-selected={mode === "code"} className={"toolbar__switchbtn" + (mode === "code" ? " toolbar__switchbtn--on" : "")} onClick={() => onMode("code")}>
+          <button
+            role="tab"
+            aria-selected={mode === "code"}
+            className={"toolbar__switchbtn" + (mode === "code" ? " toolbar__switchbtn--on" : "")}
+            onClick={() => onMode("code")}
+          >
             Code
           </button>
         </div>
@@ -52,6 +70,16 @@ export function Toolbar({
           <button className="toolbar__icon" title="Cancel run" aria-label="Stop" onClick={onCancel} disabled={!working}>
             <Icon name="stop" size={12} />
           </button>
+        ) : null}
+        {/* Session identity in the title bar (Claude Code geometry): project name + branch tag. */}
+        {!inCode ? (
+          <span className="toolbar__session" title={ws?.root}>
+            <span className="toolbar__session-name">{ws?.repo ?? "workspace"}</span>
+            <span className="toolbar__session-tag">
+              <Icon name="source-control" size={11} strokeWidth={1.5} />
+              {ws?.branch ?? "main"}
+            </span>
+          </span>
         ) : null}
       </div>
 

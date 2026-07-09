@@ -110,7 +110,7 @@ function DiffReview({
       </div>
       <div className="diffbar">
         <span className="diffbar__hint">
-          <kbd>Tab</kbd> apply all<span className="diffbar__sep">·</span><kbd>Esc</kbd> reject<span className="diffbar__sep">·</span>or review each hunk at right
+          <kbd>Tab</kbd> apply all<span className="diffbar__sep">/</span><kbd>Esc</kbd> reject<span className="diffbar__sep">/</span>or review each hunk at right
         </span>
         <div className="diffbar__actions">
           <button className="diffbar__btn" onClick={rejectAll}>reject</button>

@@ -7,7 +7,7 @@
   width: min(760px, 100%);
   flex-direction: column;
   gap: var(--ma-6);
-  margin: 0 auto;
+  margin: auto auto 0; /* center horizontally, bottom-anchor a short conversation near the composer */
   padding: var(--ma-6) 0 var(--ma-8);
 }
 
@@ -45,17 +45,56 @@
   color: var(--text);
   border-radius: var(--radius-bubble);
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+/* ---- tool-call rows: quiet inline collapsible rows in the transcript flow ---- */
+.toolflow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: var(--ma-1) 0;
+}
+.toolrow-inline {
+  display: flex;
+  flex-direction: column;
+}
+.toolrow-inline__head {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  padding: var(--ma-1) 0;
+  color: var(--text-3);
+  font-size: var(--fs-ui);
+  text-align: left;
+  transition: color var(--dur-fast) var(--ease);
+}
+.toolrow-inline__head:hover {
+  color: var(--text-1);
+}
+.toolrow-inline__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toolrow-inline__body {
+  padding: 0 0 var(--ma-2) var(--ma-4);
+  color: var(--text-3);
+  font-size: var(--fs-small);
 }
 
 /* ---- rendered markdown ---- */
 .md {
   font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: var(--fs-body);
+  line-height: var(--lh-prose);
   color: var(--text);
+  max-width: 68ch; /* mono prose past ~70ch measurably fatigues */
 }
 
 .md > :first-child {
@@ -89,21 +128,21 @@
 .md h3,
 .md h4 {
   color: var(--text-strong);
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading);
   margin: var(--ma-5) 0 var(--ma-3);
 }
 .md h1 {
-  font-size: 20px;
+  font-size: var(--fs-lead);
 }
 .md h2 {
-  font-size: 17px;
+  font-size: var(--fs-title);
 }
 .md h3 {
-  font-size: 15px;
+  font-size: var(--fs-body);
 }
 .md h4 {
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 
 .md a {
@@ -138,7 +177,7 @@
   padding: 2px 5px;
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: var(--fs-code);
 }
 
 /* code block */
@@ -156,7 +195,7 @@
   padding: 0;
   border: 0;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: var(--fs-code);
   line-height: 1.5;
   color: var(--text);
 }
@@ -164,7 +203,7 @@
 .md table {
   border-collapse: collapse;
   margin: 0 0 var(--ma-3);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 .md th,
 .md td {
@@ -189,14 +228,14 @@
   right: 6px;
   padding: 2px 8px;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-muted);
   background: var(--surface-2);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition: opacity var(--dur-fast) var(--ease);
 }
 
 .md-pre:hover .md-copy,
@@ -259,7 +298,7 @@
   background: transparent;
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
   padding: 6px 2px;
   /* grow-with-content, but cap and scroll internally so the composer never overtakes the panel
@@ -283,7 +322,7 @@
   color: var(--text-dim);
   background: var(--surface-3);
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 
 .composer__send:not(:disabled) {
@@ -322,7 +361,7 @@
   background: transparent;
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 .steerbar__input::placeholder {
   color: var(--text-dim);
@@ -341,7 +380,7 @@
 }
 
 .chat-card__meta {
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-dim);
 }
 
@@ -364,7 +403,7 @@
   min-width: 0;
   color: inherit;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 .diff-row__icon {
@@ -374,7 +413,7 @@
 
 .diff-row__file {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: var(--fs-code);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;

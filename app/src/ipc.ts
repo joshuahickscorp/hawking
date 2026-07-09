@@ -12,9 +12,10 @@ import type { ConnectorId, Intent, IntentAck, UiEvent } from "./wire";
 const BASE = import.meta.env.VITE_HIDE_BASE ?? "http://127.0.0.1:8744"; // hide-serve loopback
 const WS_BASE = BASE.replace(/^http/, "ws");
 
-// Default to the mock transport in dev so the app runs ALIVE with no backend.
-// Set VITE_HIDE_TRANSPORT=live to bind the real hide-serve.
-const USE_MOCK = (import.meta.env.VITE_HIDE_TRANSPORT ?? "mock") !== "live";
+// Dev defaults to the mock so the app runs ALIVE with no backend; a production build defaults to
+// live so the shipped app can never silently ship the mock. VITE_HIDE_TRANSPORT overrides either way.
+const TRANSPORT = import.meta.env.VITE_HIDE_TRANSPORT ?? (import.meta.env.PROD ? "live" : "mock");
+const USE_MOCK = TRANSPORT !== "live";
 
 export interface Transport {
   sendIntent(intent: Intent): Promise<IntentAck>;

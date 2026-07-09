@@ -79,9 +79,9 @@
 
 .runs-subhead {
   padding: var(--ma-1) var(--ma-3);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -98,7 +98,7 @@
   gap: var(--ma-2);
   padding: 0 var(--ma-3);
   border-radius: 0;
-  font-size: 13px;
+  font-size: var(--fs-ui);
   color: var(--text);
 }
 
@@ -111,7 +111,7 @@
   width: 14px;
   text-align: center;
   flex: 0 0 auto;
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 .runs-row__name {
@@ -125,6 +125,6 @@
 .runs-row__meta {
   flex: 0 0 auto;
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-variant-numeric: tabular-nums;
 }

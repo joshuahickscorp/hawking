@@ -48,7 +48,7 @@ export const chip: CSSProperties = {
   gap: "var(--ma-2)",
   padding: "3px var(--ma-2)",
   borderRadius: "var(--radius-sm)",
-  fontSize: "12px",
+  fontSize: "var(--fs-small)",
   color: "var(--text-muted)",
   background: "var(--surface-2)",
   border: "1px solid var(--border)",
@@ -58,7 +58,7 @@ export const chip: CSSProperties = {
 // The dim caps label used to title an inline structure block (plan, tools, diffs).
 export const blockLabel: CSSProperties = {
   fontWeight: 600,
-  fontSize: "11px",
+  fontSize: "var(--fs-label)",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
   color: "var(--text-dim)",
@@ -70,7 +70,7 @@ export function ctlStyle(lit: boolean): CSSProperties {
   return {
     padding: "3px var(--ma-2)",
     borderRadius: "var(--radius-sm)",
-    fontSize: "12px",
+    fontSize: "var(--fs-small)",
     fontWeight: 500,
     color: lit ? "var(--accent-text)" : "var(--text)",
     background: lit ? "var(--accent)" : "var(--surface-2)",

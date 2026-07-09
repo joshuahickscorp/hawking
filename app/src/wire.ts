@@ -107,6 +107,7 @@ export const CUSTOM_NAMES = [
   "new_session",
   "open_session",
   "create_worktree",
+  "create_pr",
   "switch_branch",
   // Context: proactive compaction (fires ahead of the watermark cliff; never shows a cap)
   "compact_context",

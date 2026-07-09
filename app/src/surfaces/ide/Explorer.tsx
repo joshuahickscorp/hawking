@@ -221,7 +221,7 @@ function FileGlyph({ node, open }: { node: FileNode; open: boolean }) {
   const ext = node.name.split(".").pop() ?? "";
   return (
     <span className="vsc-glyph" aria-hidden>
-      {ext ? ext[0].toUpperCase() : "·"}
+      {ext ? ext[0].toUpperCase() : "#"}
     </span>
   );
 }

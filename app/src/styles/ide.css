@@ -9,7 +9,7 @@
   min-height: 0;
   overflow-y: auto;
   padding: var(--ma-1) 0 var(--ma-3);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   color: var(--text);
 }
 
@@ -32,7 +32,7 @@
   color: var(--text);
   border: none;
   border-radius: 0;
-  font-size: 13px;
+  font-size: var(--fs-ui);
   line-height: 22px;
   white-space: nowrap;
   cursor: pointer;
@@ -63,7 +63,7 @@
   width: 12px;
   text-align: center;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-label);
   user-select: none;
 }
 
@@ -71,7 +71,7 @@
   flex: 0 0 auto;
   width: 16px;
   text-align: center;
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-family: var(--font-mono);
   font-weight: 600;
   line-height: 1;
@@ -81,7 +81,7 @@
 .vsc-glyph--folder {
   color: var(--text-muted);
   font-weight: 400;
-  font-size: 10px;
+  font-size: var(--fs-label);
 }
 
 .vsc-row__name {
@@ -95,9 +95,9 @@
   flex: 0 0 auto;
   width: 16px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-small);
   font-family: var(--font-mono);
-  font-weight: 700;
+  font-weight: var(--fw-semibold);
 }
 
 /* ========================================================================
@@ -112,7 +112,7 @@
   padding: 0 var(--ma-3);
   background: var(--editor-bg);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-small);
   overflow: hidden;
   min-width: 0;
 }
@@ -146,7 +146,7 @@
 .vsc-breadcrumb__suffix {
   margin-left: var(--ma-2);
   color: var(--git-mod);
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   flex: 0 0 auto;
@@ -160,7 +160,7 @@
 .vsc-view-toggle {
   min-height: 22px;
   padding: 1px var(--ma-3);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 /* ========================================================================

@@ -16,7 +16,7 @@ export function Line({ children, onClick, title }: { children: ReactNode; onClic
     gap: "var(--ma-2)",
     minHeight: 22,
     padding: "0 var(--ma-2) 0 22px",
-    fontSize: 13,
+    fontSize: "var(--fs-ui)",
     minWidth: 0,
   };
   if (!onClick) return <div className="ctx-row" style={base}>{children}</div>;
@@ -59,7 +59,7 @@ export function HardwareToggle({
       className="ctx-toggle"
       style={{
         flex: "0 0 auto",
-        fontSize: 10,
+        fontSize: "var(--fs-label)",
         letterSpacing: "0.04em",
         textTransform: "uppercase",
         padding: "1px 6px",
@@ -125,7 +125,7 @@ export function Stratum({
               flex: "0 0 auto",
               width: 16,
               textAlign: "center",
-              fontSize: 10,
+              fontSize: "var(--fs-label)",
               color: "var(--text-muted)",
               visibility: hasBody ? "visible" : "hidden",
             }}
@@ -135,7 +135,7 @@ export function Stratum({
           <span
             className="ctx-section__label"
             style={{
-              fontSize: 11,
+              fontSize: "var(--fs-label)",
               fontWeight: 700,
               letterSpacing: "0.04em",
               textTransform: "uppercase",
@@ -152,13 +152,13 @@ export function Stratum({
             />
           ) : null}
           {count != null ? (
-            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>{count}</span>
+            <span style={{ fontSize: "var(--fs-label)", color: "var(--text-dim)" }}>{count}</span>
           ) : null}
           {!open && summary ? (
             <span
               style={{
                 marginLeft: "auto",
-                fontSize: 11,
+                fontSize: "var(--fs-label)",
                 color: "var(--text-dim)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -192,7 +192,7 @@ export function NoteField({ value, onCommit, placeholder }: { value?: string; on
       {value ? (
         <div
           style={{
-            fontSize: 12,
+            fontSize: "var(--fs-small)",
             color: "var(--text)",
             padding: "var(--ma-1) var(--ma-2)",
             borderRadius: "var(--radius-sm)",
@@ -222,7 +222,7 @@ export function NoteField({ value, onCommit, placeholder }: { value?: string; on
           borderRadius: "var(--radius-sm)",
           outline: "none",
           font: "inherit",
-          fontSize: 12,
+          fontSize: "var(--fs-small)",
         }}
       />
     </div>
@@ -241,7 +241,7 @@ export function OkMark({ ok }: { ok: boolean }) {
         flex: "0 0 auto",
         width: 14,
         textAlign: "center",
-        fontSize: 12,
+        fontSize: "var(--fs-small)",
         color: ok ? "var(--green)" : "var(--red)",
       }}
     >

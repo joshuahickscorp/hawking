@@ -205,7 +205,10 @@ impl BackendHost {
         // the router has recorded them in the event log.
         let launcher_action: Option<(String, Value)> = match &intent {
             Intent::Custom { name, payload }
-                if matches!(name.as_str(), "create_worktree" | "new_session" | "compact_context") =>
+                if matches!(
+                    name.as_str(),
+                    "create_worktree" | "new_session" | "compact_context" | "open_session" | "open_folder"
+                ) =>
             {
                 Some((name.clone(), payload.clone()))
             }
@@ -239,6 +242,19 @@ impl BackendHost {
                 }
                 // Mint a fresh session and publish it so the courtyard composer hands off to a clean run.
                 "new_session" => self.emit_new_session(),
+                // Load a past session: republish its recorded transcript so the FE (which adopts the
+                // session off any event's session_id) switches to it and re-renders. Real events from
+                // the log, never fabricated.
+                "open_session" => {
+                    if let Some(id) = payload.get("session_id").and_then(|v| v.as_str()) {
+                        self.spawn_open_session(SessionId::from(id));
+                    }
+                }
+                // Open a folder as the workspace root. The deep re-root (the engine serving files/git
+                // from the new folder) requires the desktop shell to relaunch the sidecar with the new
+                // root; that path is owned by app/src-tauri. Here we only record the request in the log
+                // (done by the router above) so the choice is durable; we do NOT fake a workspace switch.
+                "open_folder" => {}
                 // compact_context is recorded here; the actual, recall-gated compaction is performed by
                 // the context compiler's watermark gate on the next compile (hawking-context::compiler).
                 // The FE fires this proactively so the window is trimmed ahead of the cliff. Nothing is
@@ -292,6 +308,33 @@ impl BackendHost {
                 projection: "turn".to_string(),
                 patch: json!({ "phase": "idle", "run_id": Value::Null }),
             },
+        });
+    }
+
+    /// Load a past session: scan its recorded events, map them to UiEvents, and republish them on the
+    /// live bus so the FE (which adopts the session off any event's `session_id`) switches to it and
+    /// re-renders the transcript. Every event is real, read straight from the log; nothing is fabricated.
+    fn spawn_open_session(&self, sid: SessionId) {
+        let replay = self.replay.clone();
+        let bus = Arc::clone(&self.ui_bus);
+        tokio::spawn(async move {
+            match replay.ui_events(Some(sid.clone()), None, None).await {
+                Ok(events) => {
+                    for ev in events {
+                        bus.publish(ev);
+                    }
+                }
+                Err(err) => {
+                    bus.publish(UiEvent {
+                        seq: 0,
+                        session_id: Some(sid),
+                        kind: UiEventKind::RuntimeStatus {
+                            status: "error".to_string(),
+                            detail: Some(format!("could not load session: {err}")),
+                        },
+                    });
+                }
+            }
         });
     }
 

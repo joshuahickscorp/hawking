@@ -26,6 +26,36 @@
   box-shadow: inset -1px 0 0 var(--line);
 }
 
+/* Chat/Code segmented at the rail top (Claude Code's Home/Code) */
+.home-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  margin-bottom: var(--ma-3);
+  border-radius: var(--radius);
+  box-shadow: var(--hairline);
+}
+.home-switchbtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--fs-ui);
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.home-switchbtn:hover {
+  color: var(--text-1);
+}
+.home-switchbtn--on {
+  color: var(--text-strong);
+  background: var(--concrete-3);
+  box-shadow: var(--inner-glow);
+}
+
 .home-new {
   display: flex;
   align-items: center;
@@ -37,7 +67,7 @@
   background: var(--concrete-3);
   box-shadow: var(--hairline), var(--inner-glow);
   color: var(--text-1);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .home-new:hover {
@@ -56,7 +86,7 @@
   padding: 0 var(--ma-4);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 .home-nav:hover {
@@ -119,12 +149,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 .home-recent__age {
   flex: 0 0 auto;
   color: var(--text-3);
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-variant-numeric: tabular-nums;
 }
 
@@ -147,7 +177,7 @@
   background: var(--concrete-3);
   box-shadow: var(--hairline);
   color: var(--text-1);
-  font-size: 12px;
+  font-size: var(--fs-small);
   font-weight: 600;
 }
 .home-id__name {
@@ -157,12 +187,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-1);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 .home-id__plan {
   flex: 0 0 auto;
   color: var(--text-3);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.04em;
 }
 
@@ -177,10 +207,13 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: var(--ma-18) clamp(var(--ma-6), 5vw, var(--ma-14)) var(--ma-8);
+  padding: var(--ma-14) var(--stage-pad-x) var(--ma-10);
+  /* content dissolves into the void at the bottom edge instead of a hard clip at the fold */
+  mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent);
 }
 .home-scroll > * {
-  width: min(100%, 920px);
+  width: min(100%, var(--col-stage));
   margin-left: auto;
   margin-right: auto;
 }
@@ -189,7 +222,7 @@
   display: flex;
   align-items: center;
   gap: var(--ma-4);
-  margin-bottom: var(--ma-14);
+  margin-bottom: var(--ma-10);
 }
 .home-hero__mark {
   color: var(--light);
@@ -221,7 +254,7 @@
   padding: 2px var(--ma-3);
   border-radius: var(--radius-sm);
   color: var(--text-3);
-  font-size: 11px;
+  font-size: var(--fs-label);
   letter-spacing: 0.02em;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
@@ -243,7 +276,31 @@
   gap: var(--ma-2);
 }
 .digest__metrics .metric__value {
-  font-size: 22px;
+  font-size: var(--fs-metric);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Secondary tier: streaks / peak / model, quieter than the primary totals. */
+.digest__sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ma-5) var(--ma-8);
+  margin-top: var(--ma-6);
+}
+.substat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ma-1);
+}
+.substat__value {
+  font-size: var(--fs-title);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Activity heatmap: the light ramp, dark = quiet, near-white = busiest ---- */
@@ -264,8 +321,7 @@
   width: 11px;
   height: 11px;
   border-radius: 2px;
-  background: var(--concrete-2);
-  box-shadow: var(--hairline);
+  background: var(--void); /* empty day recesses below the card, not a wireframe box on it */
 }
 .heatmap__cell[data-level="1"] {
   background: rgba(244, 242, 238, 0.14);
@@ -277,6 +333,32 @@
   background: rgba(244, 242, 238, 0.55);
 }
 .heatmap__cell[data-level="4"] {
+  background: var(--light);
+  box-shadow: var(--light-bloom);
+}
+
+/* 7d view: the last seven days as a full-width strip, so the card reads as a week not a sliver. */
+.heatweek {
+  display: flex;
+  gap: var(--ma-1);
+  margin-top: var(--ma-8);
+}
+.heatweek__cell {
+  flex: 1;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--void);
+}
+.heatweek__cell[data-level="1"] {
+  background: rgba(244, 242, 238, 0.14);
+}
+.heatweek__cell[data-level="2"] {
+  background: rgba(244, 242, 238, 0.3);
+}
+.heatweek__cell[data-level="3"] {
+  background: rgba(244, 242, 238, 0.55);
+}
+.heatweek__cell[data-level="4"] {
   background: var(--light);
   box-shadow: var(--light-bloom);
 }
@@ -322,14 +404,14 @@
 /* ---- The composer, floating at the foot of the room ---- */
 .home-composer-zone {
   flex: 0 0 auto;
-  padding: var(--ma-4) clamp(var(--ma-6), 5vw, var(--ma-14)) var(--ma-10);
+  padding: var(--ma-4) var(--stage-pad-x) var(--ma-10);
 }
 .home-composer-zone--waiting {
   opacity: 0.85;
 }
 
 .hc {
-  width: min(100%, 760px);
+  width: min(100%, var(--col-stage));
   margin: 0 auto;
   padding: var(--ma-3) var(--ma-4) var(--ma-3);
   background: var(--concrete-2);
@@ -359,7 +441,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--hairline);
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: var(--fs-small);
   letter-spacing: 0.01em;
 }
 .hc__chip--action {
@@ -367,6 +449,17 @@
   transition: color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 .hc__chip--action:hover {
+  color: var(--light);
+  box-shadow: var(--hairline-strong), var(--light-bloom);
+}
+/* Create PR sits at the far right of the branch row (Claude Code geometry). */
+.hc__chip--pr {
+  margin-left: auto;
+  color: var(--text-1);
+  box-shadow: var(--hairline-strong);
+  transition: color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+.hc__chip--pr:hover {
   color: var(--light);
   box-shadow: var(--hairline-strong), var(--light-bloom);
 }
@@ -393,7 +486,7 @@
   border-radius: var(--radius-sm);
   background: var(--concrete-3);
   box-shadow: var(--hairline);
-  font-size: 11.5px;
+  font-size: var(--fs-small);
   color: var(--text-1);
 }
 .hc__file-name {
@@ -413,7 +506,7 @@
   flex: 0 0 auto;
   border-radius: var(--radius-sm);
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1;
 }
 .hc__file-x:hover {
@@ -431,7 +524,7 @@
   background: transparent;
   color: var(--text-1);
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1.5;
 }
 .hc__input::placeholder {
@@ -471,13 +564,53 @@
   box-shadow: var(--light-bloom);
   animation: breathe var(--breathe) var(--ease) infinite;
 }
+.hc__icon--pressed {
+  color: var(--light);
+  background: var(--surface-3);
+}
+
+/* Add-context popover on the composer plus button (folder / files, Claude Code style) */
+.hc__add {
+  position: relative;
+  display: inline-flex;
+}
+.hc__addmenu {
+  position: absolute;
+  bottom: calc(100% + var(--ma-2));
+  left: 0;
+  z-index: 40;
+  min-width: 172px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ma-1);
+  background: var(--concrete-3);
+  border-radius: var(--radius);
+  box-shadow: var(--depth-float);
+}
+.hc__addmenu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-2);
+  padding: var(--ma-2) var(--ma-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-size: var(--fs-ui);
+  text-align: left;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.hc__addmenu__item:hover {
+  background: var(--concrete-4);
+  color: var(--light);
+}
 
 .hc__perm,
 .hc__meta {
   padding: var(--ma-1) var(--ma-3);
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-small);
   white-space: nowrap;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
@@ -533,23 +666,58 @@
   padding: var(--ma-2) var(--ma-4);
 }
 .home-panelbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px var(--ma-3);
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   color: var(--text-3);
-  font-size: 12px;
   box-shadow: var(--hairline);
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 .home-panelbtn:hover {
   color: var(--text-1);
+  background: var(--surface-2);
 }
 .home-panelbtn--on {
   color: var(--text-strong);
   background: var(--concrete-3);
   box-shadow: var(--hairline-strong), var(--inner-glow);
+}
+
+/* Tools + Artifacts feed (agent moves / produced files) */
+.toolfeed {
+  list-style: none;
+  margin: 0;
+  padding: var(--ma-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.toolfeed__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ma-2);
+  padding: var(--ma-2) var(--ma-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--fs-small);
+}
+.toolfeed__row:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.toolfeed__msg {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toolfeed__meta {
+  margin-left: auto;
+  color: var(--text-3);
+  font-size: var(--fs-label);
 }
 
 .home-panel {
@@ -630,7 +798,7 @@
 }
 .preview__btn--go {
   color: var(--light);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 .preview__url {
   flex: 1;
@@ -655,7 +823,7 @@
   background: transparent;
   color: var(--text-1);
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: var(--fs-code);
 }
 .preview__frame {
   flex: 1;

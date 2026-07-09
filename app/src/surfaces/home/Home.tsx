@@ -13,7 +13,7 @@ import { sendIntent, TRANSPORT_KIND } from "../../ipc";
 import { useStore } from "../../store";
 import { intent } from "../../wire";
 import { Icon, type IconName } from "../../shell/icons";
-import { LogoMark } from "../../shell/Mark";
+import { LogoH } from "../../shell/Mark";
 import { FleetView } from "../fleet/FleetView";
 import { Conversation } from "../chat/Conversation";
 import { MOCK_DIFF, applyHunkStatus, parseDiff, type DiffDoc, type Hunk } from "../ide/types";
@@ -22,20 +22,25 @@ import { ChatPanel, type ChatPanelKind } from "./ChatPanel";
 import { Digest } from "./Digest";
 import { HomeComposer, type PermMode } from "./HomeComposer";
 import { fillGreeting, nextGreetingIndex } from "./greetings";
-import { fmtAge } from "./metrics";
 
 const PANELS: { kind: ChatPanelKind; icon: IconName; label: string }[] = [
   { kind: "terminal", icon: "terminal", label: "Terminal" },
   { kind: "diff", icon: "source-control", label: "Diff" },
   { kind: "preview", icon: "globe", label: "Preview" },
+  { kind: "tools", icon: "tool", label: "Tools" },
+  { kind: "artifacts", icon: "box", label: "Artifacts" },
 ];
 
 export function Home({
+  mode,
+  onMode,
   onPopToCode,
   onSettings,
   permMode,
   onPermMode,
 }: {
+  mode: "chat" | "code";
+  onMode: (m: "chat" | "code") => void;
   onPopToCode: () => void;
   onSettings: () => void;
   permMode: PermMode;
@@ -69,7 +74,6 @@ export function Home({
   };
 
   const name = home?.user?.name ?? "there";
-  const now = Date.now();
   // The opening line rotates per visit (index fixed at mount, name fills reactively).
   const [greetIx] = useState(() => nextGreetingIndex());
   const greeting = fillGreeting(greetIx, name);
@@ -102,8 +106,29 @@ export function Home({
   return (
     <div className="home">
       <aside className="home-rail" aria-label="Sessions">
+        <div className="home-switch" role="tablist" aria-label="Chamber">
+          <button
+            role="tab"
+            aria-selected={mode === "chat"}
+            className={"home-switchbtn" + (mode === "chat" ? " home-switchbtn--on" : "")}
+            onClick={() => onMode("chat")}
+          >
+            <Icon name="chat" size={14} /> Chat
+          </button>
+          <button
+            role="tab"
+            aria-selected={mode === "code"}
+            className={"home-switchbtn" + (mode === "code" ? " home-switchbtn--on" : "")}
+            onClick={() => onMode("code")}
+          >
+            <Icon name="split" size={14} /> Code
+          </button>
+        </div>
         <button className="home-new" onClick={newSession}>
           <Icon name="plus" size={15} /> New session
+        </button>
+        <button className="home-nav" onClick={onPopToCode}>
+          <Icon name="box" size={15} /> Artifacts
         </button>
         <button className="home-nav" onClick={onSettings}>
           <Icon name="settings" size={15} /> Customize
@@ -118,7 +143,6 @@ export function Home({
                   <button className="home-recent" onClick={() => openSession(s.id)} title={s.title}>
                     <span className={"home-recent__dot" + (s.state === "active" ? " home-recent__dot--live" : "")} aria-hidden />
                     <span className="home-recent__title">{s.title}</span>
-                    <span className="home-recent__age">{fmtAge(s.updated_ms, now)}</span>
                   </button>
                 </li>
               ))}
@@ -146,12 +170,12 @@ export function Home({
                   key={p.kind}
                   role="tab"
                   aria-selected={panel === p.kind}
+                  aria-label={p.label}
                   className={"home-panelbtn" + (panel === p.kind ? " home-panelbtn--on" : "")}
                   title={p.label}
                   onClick={() => setPanel((cur) => (cur === p.kind ? null : p.kind))}
                 >
-                  <Icon name={p.icon} size={14} />
-                  <span className="home-panelbtn__lbl">{p.label}</span>
+                  <Icon name={p.icon} size={15} />
                 </button>
               ))}
             </div>
@@ -165,11 +189,12 @@ export function Home({
           <div className="home-scroll">
             <div className="home-hero">
               <span className="home-hero__mark" aria-hidden>
-                <LogoMark size={22} />
+                <LogoH size={20} />
               </span>
               <h1 className="t-display home-hero__title">{greeting}</h1>
             </div>
-            <Digest digest={home?.digest ?? null} />
+            {/* Live work outranks retrospective stats: when agents are running, the fleet sits above the
+                digest so it is seen first instead of buried below a tall card at the fold. */}
             {fleet.length > 0 ? (
               <section className="home-fleet" aria-label="Running agents">
                 <div className="home-fleet__head">
@@ -181,6 +206,7 @@ export function Home({
                 <FleetView />
               </section>
             ) : null}
+            <Digest digest={home?.digest ?? null} />
           </div>
           {composer}
         </main>

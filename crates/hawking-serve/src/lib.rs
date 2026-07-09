@@ -378,7 +378,10 @@ impl Default for ServeOptions {
     fn default() -> Self {
         Self {
             weights: PathBuf::new(),
-            addr: "0.0.0.0:8080".parse().unwrap(),
+            // Loopback by default: the local inference server must not be reachable from the LAN
+            // unless the operator explicitly asks for it. The supervisor always passes an explicit
+            // addr, but the binary's own default must be safe too.
+            addr: "127.0.0.1:8080".parse().unwrap(),
             max_batch_size: 1,
             speculate: None,
             verify_window: 4,

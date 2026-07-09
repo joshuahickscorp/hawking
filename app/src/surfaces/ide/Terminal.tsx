@@ -15,7 +15,7 @@ import "@xterm/xterm/css/xterm.css";
 import { sendIntent } from "../../ipc";
 import { useStore, type ToolEvent } from "../../store";
 import { intent } from "../../wire";
-import { MONO_FONT } from "./monacoTheme";
+import { MONO_FONT } from "./ideConstants";
 
 // The v3 xterm theme: every color a theme.css token value (xterm needs literal hex). Grayscale
 // concrete with light as the only accent; ok/bad are the lone two colors, glyph-paired in the feed.
@@ -26,8 +26,8 @@ const XTERM_THEME: ITheme = {
   cursorAccent: "#070707",
   selectionBackground: "#F4F2EE22",
   selectionInactiveBackground: "#F4F2EE12",
-  scrollbarSliderBackground: "#FFFFFF10",
-  scrollbarSliderHoverBackground: "#FFFFFF1C",
+  scrollbarSliderBackground: "#F4F2EE10",
+  scrollbarSliderHoverBackground: "#F4F2EE1C",
   black: "#070707",
   red: "#C0807A", // --bad (oxide)
   green: "#7E9E86", // --ok (lichen)
@@ -36,7 +36,7 @@ const XTERM_THEME: ITheme = {
   magenta: "#9B9A95", // remap magenta -> neutral (no purple)
   cyan: "#7E9E86",
   white: "#ECEAE6", // --text-1
-  brightBlack: "#6E6D68", // --text-3
+  brightBlack: "#8A887F", // --text-3
   brightRed: "#C0807A",
   brightGreen: "#7E9E86",
   brightYellow: "#ECEAE6", // remap -> chalk (no gold)
@@ -60,7 +60,7 @@ export function Terminal() {
     const term = new Xterm({
       theme: XTERM_THEME,
       fontFamily: MONO_FONT,
-      fontSize: 12.5,
+      fontSize: 13,
       lineHeight: 1.4,
       letterSpacing: 0.2,
       cursorBlink: true,

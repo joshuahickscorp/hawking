@@ -15,6 +15,9 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = ["macos-private-api"] }
+# Native folder picker for "Add folder" (the workspace root). Exposed to the webview via
+# withGlobalTauri as window.__TAURI__.dialog and gated by capabilities/default.json.
+tauri-plugin-dialog = "2"
 # Native macOS vibrancy (NSVisualEffectView) behind the transparent window, so the OS desktop and the
 # apps behind HIDE show through the glass (the real Liquid Glass the web build cannot do).
 window-vibrancy = "0.5"

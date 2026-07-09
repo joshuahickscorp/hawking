@@ -12,12 +12,12 @@
 */
 :root {
   /* ---- Concrete surfaces (the ramp; never pure black) ---- */
-  --void: #070707;        /* the unlit chamber: app + editor background */
-  --concrete-1: #0e0e0f;  /* chrome bars: activity rail, sidebar, panel, status */
-  --concrete-2: #141416;  /* a poured volume: cards, dialogs, composer */
-  --concrete-3: #1b1b1e;  /* a raised / active module */
-  --concrete-4: #222226;  /* the surface a hand is on */
-  --formwork: rgba(255, 255, 255, 0.02);
+  --void: #070707;        /* the unlit chamber: app + editor background (kept pure neutral) */
+  --concrete-1: #0f0e0d;  /* chrome bars: activity rail, sidebar, panel, status */
+  --concrete-2: #161513;  /* a poured volume: cards, dialogs, composer */
+  --concrete-3: #1e1c1a;  /* a raised / active module */
+  --concrete-4: #262421;  /* the surface a hand is on */
+  --formwork: rgba(244, 242, 238, 0.03);
 
   --editor-bg: var(--void);
   --sidebar-bg: var(--concrete-1);
@@ -32,39 +32,43 @@
   --list-inactive: var(--concrete-3);
   --input-bg: var(--concrete-1);
 
-  /* ---- Shadow-lines (replace CSS borders) ---- */
-  --line: rgba(255, 255, 255, 0.06);
-  --line-strong: rgba(255, 255, 255, 0.11);
+  /* ---- Shadow-lines (warm-white hairlines; one temperature with the light) ---- */
+  --line: rgba(244, 242, 238, 0.07);
+  --line-strong: rgba(244, 242, 238, 0.13);
+  --rim: rgba(244, 242, 238, 0.05);   /* the lit top edge of a poured volume */
   --border: var(--line);
   --border-strong: var(--line-strong);
   --input-border: var(--line-strong);
   --widget-border: var(--line-strong);
   --hairline: 0 0 0 1px var(--line);
   --hairline-strong: 0 0 0 1px var(--line-strong);
-  --depth: 0 0 0 1px var(--line), 0 12px 32px -16px rgba(0, 0, 0, 0.7);
+  /* elevation is light, not a black blur: hairline + a lit top rim. floating layers add the halo. */
+  --depth: 0 0 0 1px var(--line), inset 0 1px 0 var(--rim);
+  --depth-float: 0 0 0 1px var(--line), 0 24px 48px -24px rgba(0, 0, 0, 0.9), inset 0 1px 0 var(--rim);
 
   /* ---- Light: the only accent ---- */
   --light: #f4f2ee;
   --light-soft: rgba(244, 242, 238, 0.06);
   --light-wash: rgba(244, 242, 238, 0.035);
   --light-bloom: 0 0 28px rgba(244, 242, 238, 0.1);
-  --inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --grade-wall: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 42%);
+  --inner-glow: inset 0 1px 0 rgba(244, 242, 238, 0.05);
+  --grade-wall: linear-gradient(180deg, rgba(244, 242, 238, 0.04), rgba(244, 242, 238, 0) 42%);
+  --focus-ring: 0 0 0 1px var(--void), 0 0 0 2.5px var(--light);
 
   /* ---- Liquid Glass: translucent concrete + blur over the void (chrome + floating layers).
        The editor surface stays solid; glass reads most over code (floating chat) and the top bar. ---- */
   /* Glass on a dark ground is sold by its edge and its light, not by its frost. The rim is the
      part that sells it; grain kills the banding you get blurring a near-black field. */
-  --glass-chrome: rgba(16, 16, 19, 0.62); /* sidebar / bottom panel / toolbar / status strip */
-  --glass-float: rgba(21, 21, 25, 0.54); /* summoned Executor, palette, dialogs, popovers */
+  --glass-chrome: rgba(19, 17, 15, 0.62); /* sidebar / bottom panel / toolbar / status strip */
+  --glass-float: rgba(24, 22, 20, 0.54); /* summoned Executor, palette, dialogs, popovers */
   --glass-blur: blur(11px) saturate(1.2); /* frost: small radius, warm-bias the rare ok/bad glyphs */
-  --glass-line: rgba(255, 255, 255, 0.1); /* seam hairline where attached panes meet the body */
+  --glass-line: var(--line-strong); /* seam hairline where attached panes meet the body */
   /* rim: the void's single light source caught on the top and left edges (this sells the glass) */
   --glass-rim: rgba(244, 242, 238, 0.14);
   /* ink: the pane has thickness, a soft inner shadow biased to the bottom and right */
   --glass-ink: rgba(0, 0, 0, 0.3);
   /* a faint specular sheen, secondary to the rim */
-  --glass-sheen: linear-gradient(150deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 38%, rgba(255, 255, 255, 0) 64%);
+  --glass-sheen: linear-gradient(150deg, rgba(244, 242, 238, 0.05), rgba(244, 242, 238, 0.012) 38%, rgba(244, 242, 238, 0) 64%);
   /* grain: a tiled grayscale noise generated once and reused, reads as ground glass over the frost */
   --glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.045'/%3E%3C/svg%3E");
   /* rim (top, left) + depth (bottom, right) as one inset set; elevation (--depth) added per surface */
@@ -79,8 +83,8 @@
   --text-strong: #f4f2ee;
   --text-1: #eceae6;
   --text-2: #9b9a95;
-  --text-3: #84827a; /* lifted for WCAG AA (>=4.5:1 on --void) */
-  --mute: #78766d;   /* lifted for WCAG AA on --void */
+  --text-3: #8a887f; /* AA >=4.5:1 on --void and on raised concrete surfaces */
+  --mute: #7d7b72;   /* AA >=4.5:1 on --void (measured 4.7:1) */
   --text: var(--text-1);
   --text-muted: var(--text-2);
   --text-dim: var(--text-3);
@@ -101,6 +105,34 @@
   --font: var(--font-mono);
   --wordmark: "Geist Sans", var(--font-mono);
 
+  /* ---- Type scale (ONE system; every font-size routes through a token) ----
+     mono has no face contrast, so hierarchy is size + weight + case + tracking.
+     weights: 400 / 500 / 600 only (the loaded set). no fractional sizes. */
+  --fs-label: 11px;    /* uppercase micro-labels (the one label style) */
+  --fs-small: 12px;    /* meta, chips, ages, status strip */
+  --fs-ui: 13px;       /* default: controls, rows, composer input */
+  --fs-code: 13px;     /* code, inline + block */
+  --fs-body: 14px;     /* chat prose */
+  --fs-title: 16px;    /* dialog + section titles */
+  --fs-lead: 18px;     /* md h1, section leads */
+  --fs-metric: 24px;   /* primary digest numerals */
+  --fs-display: clamp(24px, 2vw, 28px); /* the landing greeting, only */
+
+  --lh-tight: 1.15;    /* display, metric */
+  --lh-heading: 1.3;   /* titles */
+  --lh-ui: 1.5;        /* controls, code */
+  --lh-prose: 1.6;     /* body prose */
+  --lh-label: 1.45;    /* labels, meta */
+
+  --ls-display: -0.02em; /* mono display must tighten or it reads as ascii art */
+  --ls-tight: -0.01em;
+  --ls-label: 0.08em;    /* uppercase micro-labels widen */
+  --ls-small: 0.01em;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
   /* ---- Void (ma scale) ---- */
   --ma-1: 4px;
   --ma-2: 8px;
@@ -114,21 +146,21 @@
   --ma-18: 72px;
   --ma-24: 96px;
 
-  /* ---- Form ---- */
-  --radius-sm: 4px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --radius-composer: 14px;
-  --radius-bubble: 10px;
+  /* ---- Form (three radii; composer + bubble alias the canonical set) ---- */
+  --radius-sm: 4px;      /* chips, small buttons, segmented controls */
+  --radius: 8px;         /* cards, bubbles, panels, previews */
+  --radius-lg: 12px;     /* composer, floating executor, dialogs */
+  --radius-composer: var(--radius-lg);
+  --radius-bubble: var(--radius);
   --radius-pill: 9999px;
 
-  /* ---- Motion (the weight of concrete) ---- */
+  /* ---- Motion (the weight of concrete; these are the ONLY durations + easing) ---- */
   --ease: cubic-bezier(0.2, 0, 0, 1);
-  --dur-fast: 120ms;
-  --dur: 220ms;
-  --dur-slow: 360ms;
-  --dur-door: 480ms;
-  --breathe: 2400ms;
+  --dur-fast: 120ms;   /* hover, press, focus tint */
+  --dur: 220ms;        /* reveals, summoned surfaces */
+  --dur-slow: 360ms;   /* progress fills, laddered arc */
+  --dur-door: 480ms;   /* hunk dissolve, PiP dock */
+  --breathe: 2400ms;   /* ambient */
 
   /* ---- Shell sizing ---- */
   --activitybar-w: 48px;
@@ -136,6 +168,8 @@
   --chat-w: 384px;
   --statusbar-h: 22px;
   --titlebar-h: 35px;
+  --col-stage: 760px;    /* the landing column: hero, digest, fleet, composer share this edge */
+  --stage-pad-x: clamp(var(--ma-6), 5vw, var(--ma-14)); /* one horizontal pad for scroll + composer */
 }
 
 * {
@@ -154,7 +188,8 @@ body {
   background: var(--editor-bg);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -185,7 +220,9 @@ textarea:disabled {
 
 :focus-visible {
   outline: 0;
-  box-shadow: var(--hairline-strong), var(--light-bloom) !important;
+  /* focus is light entering the volume: a bone ring with a void gap so it never fuses
+     with a control's own hairline. ~18:1 on void, passes WCAG 1.4.11 with margin. */
+  box-shadow: var(--focus-ring), var(--light-bloom) !important;
 }
 
 ::-webkit-scrollbar {
@@ -194,14 +231,14 @@ textarea:disabled {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(244, 242, 238, 0.1);
   border: 3px solid transparent;
   border-radius: 8px;
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(244, 242, 238, 0.18);
   background-clip: padding-box;
 }
 
@@ -209,53 +246,70 @@ textarea:disabled {
   background: transparent;
 }
 
-/* ---- Typography ---- */
+/* ---- Typography (roles; each maps to the type-scale tokens) ---- */
 .t-display {
   margin: 0;
   color: var(--text-strong);
-  font-size: clamp(24px, 3vw, 34px);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.12;
+  font-size: var(--fs-display);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-tight);
 }
 
 .t-title {
   margin: 0;
   color: var(--text-strong);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--fs-title);
+  font-weight: var(--fw-medium);
   letter-spacing: 0;
-  line-height: 1.3;
+  line-height: var(--lh-heading);
+}
+
+.t-metric {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: var(--fs-metric);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-tight);
+  line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
 }
 
 .t-body {
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.55;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-prose);
+}
+
+.t-ui {
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-ui);
 }
 
 .t-code {
   font-family: var(--font-mono);
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.5;
+  font-size: var(--fs-code);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-ui);
 }
 
 .t-label {
   color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
+  line-height: var(--lh-label);
   text-transform: uppercase;
 }
 
+.t-small,
 .t-micro {
   color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  line-height: 1.45;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--ls-small);
+  line-height: var(--lh-label);
 }
 
 /* ===================================================================
@@ -350,7 +404,7 @@ textarea:disabled {
   background: var(--statusbar-bg);
   box-shadow: inset 0 1px 0 var(--border);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 .statusbar__notice {
@@ -381,7 +435,7 @@ textarea:disabled {
 .wordmark {
   color: var(--text-strong);
   font-family: var(--wordmark);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   font-weight: 600;
   letter-spacing: 0.04em;
 }
@@ -429,9 +483,8 @@ textarea:disabled {
 .volume {
   min-width: 0;
   background: var(--surface-2);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: none;
+  box-shadow: var(--depth); /* hairline + lit top rim: a poured mass, not a bordered box */
   padding: var(--ma-4);
 }
 
@@ -457,11 +510,6 @@ textarea:disabled {
 @keyframes blink {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
-}
-
-@keyframes light-travel {
-  0% { opacity: 0.6; }
-  100% { opacity: 1; }
 }
 
 /* The approval capsule: the one lit instrument, brushed concrete that holds steady when it needs you. */
@@ -554,7 +602,7 @@ textarea:disabled {
   background: transparent;
   box-shadow: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-weight: 400;
   letter-spacing: 0;
   white-space: nowrap;
@@ -615,7 +663,7 @@ textarea:disabled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius);
-  box-shadow: var(--glass-edge), var(--depth);
+  box-shadow: var(--glass-edge), var(--depth-float);
 }
 
 .palette-overlay {
@@ -632,7 +680,7 @@ textarea:disabled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius);
-  box-shadow: var(--glass-edge), var(--depth);
+  box-shadow: var(--glass-edge), var(--depth-float);
 }
 
 /* No-folder first-run surface (surfaces/Onboarding.tsx). A full-bleed concrete light-well over the
@@ -657,7 +705,7 @@ textarea:disabled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius);
-  box-shadow: var(--glass-edge), var(--depth);
+  box-shadow: var(--glass-edge), var(--depth-float);
 }
 
 .onboarding__title {
@@ -712,20 +760,20 @@ textarea:disabled {
   gap: var(--ma-4);
 }
 .crash__title {
-  font-size: 14px;
+  font-size: var(--fs-body);
   color: var(--text-1);
 }
 .crash__detail {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--bad);
   white-space: pre-wrap;
   word-break: break-word;
 }
 .crash__btn {
   align-self: flex-start;
-  font-size: 13px;
+  font-size: var(--fs-ui);
   color: var(--light);
   padding: 6px 14px;
   border-radius: var(--radius-sm);
@@ -752,7 +800,7 @@ textarea:disabled {
   justify-content: space-between;
 }
 .settings__title {
-  font-size: 14px;
+  font-size: var(--fs-body);
   color: var(--text-1);
 }
 .settings__section {
@@ -761,7 +809,7 @@ textarea:disabled {
   gap: 6px;
 }
 .settings__label {
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-3);
@@ -771,7 +819,7 @@ textarea:disabled {
   align-items: center;
   justify-content: space-between;
   gap: var(--ma-4);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 .settings__k {
   color: var(--text-3);
@@ -781,7 +829,7 @@ textarea:disabled {
 }
 .settings__btn {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--light);
   padding: 4px 10px;
   border-radius: var(--radius-sm);
@@ -791,7 +839,7 @@ textarea:disabled {
   background: var(--concrete-3);
 }
 .settings__note {
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--text-3);
   margin: 0;
 }
@@ -801,7 +849,7 @@ textarea:disabled {
   background: var(--glass-sheen) no-repeat, var(--glass-grain) 0 0 / 140px 140px repeat, var(--glass-float);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-edge), var(--depth);
+  box-shadow: var(--glass-edge), var(--depth-float);
 }
 
 /* Opaque fallback where the browser can't blur, so nothing turns muddy. */
@@ -853,7 +901,7 @@ textarea:disabled {
    determinate, the arc length encodes the stage, and it does not spin. It sharpens as work lands. */
 .radiate--laddered .radiate__arc {
   animation: none;
-  transition: stroke-dasharray 320ms var(--ease, ease);
+  transition: stroke-dasharray var(--dur-slow) var(--ease);
 }
 
 /* Chromium-class upgrade (gated by the runtime probe in glass.ts, a no-op elsewhere): a real
@@ -904,8 +952,34 @@ textarea:disabled {
   font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--text-strong);
-  font-size: 12px;
+  font-size: var(--fs-small);
   margin: 0 var(--ma-2) 0 2px;
+}
+
+/* Session identity in the title bar: project name + branch tag (Claude Code geometry). */
+.toolbar__session {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ma-2);
+  margin-left: var(--ma-2);
+  min-width: 0;
+}
+.toolbar__session-name {
+  color: var(--text-1);
+  font-size: var(--fs-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toolbar__session-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--ma-2);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--hairline);
+  color: var(--text-3);
+  font-size: var(--fs-label);
 }
 
 /* Home / Code chamber switch (the courtyard vs the workshop). A quiet segmented control. */
@@ -917,11 +991,21 @@ textarea:disabled {
   border-radius: var(--radius-sm);
   box-shadow: var(--hairline);
 }
+/* In chat mode the switch lives in the sidebar; this toolbar copy is a fallback shown only when the
+   rail is hidden at narrow widths, so chamber switching is never lost. */
+.toolbar__switch--rail-fallback {
+  display: none;
+}
+@media (max-width: 860px) {
+  .toolbar__switch--rail-fallback {
+    display: flex;
+  }
+}
 .toolbar__switchbtn {
   padding: 2px var(--ma-3);
   border-radius: var(--radius-sm);
   color: var(--text-3);
-  font-size: 12px;
+  font-size: var(--fs-small);
   letter-spacing: 0.01em;
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
@@ -964,7 +1048,7 @@ textarea:disabled {
   gap: var(--ma-2);
   padding: 3px var(--ma-3);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--text-2);
   max-width: 380px;
 }
@@ -993,7 +1077,7 @@ textarea:disabled {
   border-radius: var(--radius-sm);
   box-shadow: var(--hairline);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 .toolbar__tryn-label {
@@ -1006,7 +1090,7 @@ textarea:disabled {
   height: 20px;
   border-radius: var(--radius-sm);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-small);
   transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 
@@ -1060,7 +1144,7 @@ textarea:disabled {
 
 .floatchat__model {
   color: var(--text-3);
-  font-size: 11px;
+  font-size: var(--fs-label);
 }
 
 .floatchat__actions {
@@ -1155,7 +1239,7 @@ textarea:disabled {
 
 .nav-filter__glyph {
   color: var(--text-3);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 .nav-filter__input {
@@ -1166,7 +1250,7 @@ textarea:disabled {
   background: transparent;
   color: var(--text-1);
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: var(--fs-code);
 }
 
 .nav-filter__input::placeholder {
@@ -1178,7 +1262,7 @@ textarea:disabled {
   height: 16px;
   border-radius: var(--radius-sm);
   color: var(--text-3);
-  font-size: 14px;
+  font-size: var(--fs-body);
   line-height: 1;
 }
 
@@ -1197,7 +1281,7 @@ textarea:disabled {
 .fleet__pitch {
   padding: var(--ma-3) var(--ma-4);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-small);
   line-height: 1.5;
 }
 
@@ -1228,7 +1312,7 @@ textarea:disabled {
   display: flex;
   align-items: center;
   gap: var(--ma-2);
-  font-size: 11px;
+  font-size: var(--fs-label);
 }
 
 .branch__state {
@@ -1244,13 +1328,13 @@ textarea:disabled {
 
 .branch__obj {
   color: var(--text-1);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   line-height: 1.4;
 }
 
 .branch__feed {
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: var(--fs-small);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1279,7 +1363,7 @@ textarea:disabled {
 .branch__keep {
   padding: 2px var(--ma-3);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--light);
   background: var(--concrete-3);
   box-shadow: var(--hairline-strong), var(--inner-glow);
@@ -1292,7 +1376,7 @@ textarea:disabled {
 .branch__stop {
   padding: 2px var(--ma-3);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-2);
   box-shadow: var(--hairline);
 }
@@ -1315,7 +1399,7 @@ textarea:disabled {
   padding: 0 var(--ma-3);
   background: var(--sidebar-bg);
   box-shadow: inset 0 -1px 0 var(--border);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-2);
 }
 
@@ -1396,7 +1480,7 @@ textarea:disabled {
   border-radius: var(--radius-sm);
   background: var(--concrete-2);
   box-shadow: var(--hairline), var(--inner-glow);
-  font-size: 11px;
+  font-size: var(--fs-label);
 }
 
 .ctx-state__dot {
@@ -1432,7 +1516,7 @@ textarea:disabled {
 .ctx-state__btn {
   padding: 2px var(--ma-2);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-2);
   box-shadow: var(--hairline);
 }
@@ -1455,7 +1539,7 @@ textarea:disabled {
 .codeactions__btn {
   padding: 3px var(--ma-3);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--text-1);
   white-space: nowrap;
 }
@@ -1476,7 +1560,7 @@ textarea:disabled {
 /* DiffReview — the inline proposed edit + its fast-path affordance bar (Tab apply / Esc reject),
    layered over the per-hunk review. The reveal evokes the change arriving (real streaming is plan 2). */
 .diffreview {
-  animation: diff-reveal 200ms ease both;
+  animation: diff-reveal var(--dur) var(--ease) both;
 }
 @keyframes diff-reveal {
   from { opacity: 0; transform: translateY(4px); }
@@ -1490,7 +1574,7 @@ textarea:disabled {
   padding: 6px var(--ma-3);
   border-top: 1px solid var(--border);
   background: var(--concrete-1);
-  font-size: 12px;
+  font-size: var(--fs-small);
   flex: 0 0 auto;
 }
 .diffbar__hint {
@@ -1505,7 +1589,7 @@ textarea:disabled {
 }
 .diffbar kbd {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-label);
   padding: 1px 5px;
   border-radius: var(--radius-sm);
   background: var(--concrete-3);
@@ -1519,7 +1603,7 @@ textarea:disabled {
 .diffbar__btn {
   padding: 3px var(--ma-3);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--text-2);
   border: 1px solid var(--border);
 }
@@ -1589,7 +1673,7 @@ textarea:disabled {
 
 .metric__value {
   color: var(--text-strong);
-  font-size: 26px;
+  font-size: var(--fs-metric);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
@@ -1816,6 +1900,10 @@ textarea:disabled {
   min-height: 0;
   overflow: auto;
   padding: 0 var(--ma-4);
+  /* Column so a short conversation bottom-anchors near the composer (void above, not a lonely block
+     floating at the top); margin-top:auto on the list collapses once content overflows and scrolls. */
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-empty {
@@ -1826,7 +1914,7 @@ textarea:disabled {
 
 /* The summoned assistant is compact, so the empty-state prompt is sized to fit it. */
 .chat-empty .t-display {
-  font-size: 22px;
+  font-size: var(--fs-metric);
   line-height: 1.18;
 }
 
@@ -1907,7 +1995,7 @@ textarea:disabled {
   outline: 0;
   background: transparent;
   color: var(--text);
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 
 .composer textarea {
@@ -2056,7 +2144,7 @@ textarea:disabled {
   flex: 0 0 auto;
   padding: 0 var(--ma-5) 0 var(--ma-5);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-label);
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2089,7 +2177,7 @@ textarea:disabled {
   background: var(--ok);
 }
 .workcard__model {
-  font-size: 13px;
+  font-size: var(--fs-ui);
   color: var(--text-1);
   white-space: nowrap;
   overflow: hidden;
@@ -2102,7 +2190,7 @@ textarea:disabled {
   color: var(--light);
 }
 .workcard__local {
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-3);
   flex: 0 0 auto;
 }
@@ -2127,11 +2215,11 @@ textarea:disabled {
   margin-bottom: 2px;
 }
 .modelpop__title {
-  font-size: 13px;
+  font-size: var(--fs-ui);
   color: var(--text-1);
 }
 .modelpop__arch {
-  font-size: 11px;
+  font-size: var(--fs-label);
   color: var(--text-3);
   margin-left: auto;
 }
@@ -2140,7 +2228,7 @@ textarea:disabled {
   align-items: center;
   justify-content: space-between;
   gap: var(--ma-3);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 .modelpop__label {
   color: var(--text-3);
@@ -2165,7 +2253,7 @@ textarea:disabled {
 }
 .modelpop__switch {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: var(--fs-small);
   color: var(--light);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -2185,7 +2273,7 @@ textarea:disabled {
 .sidebar__empty {
   padding: var(--ma-4) var(--ma-5);
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 /* ---- Runs (SCM) view ---- */
@@ -2199,7 +2287,7 @@ textarea:disabled {
   width: 100%;
   min-height: 28px;
   padding: var(--ma-1) var(--ma-3);
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 .runs-row__glyph {
@@ -2217,7 +2305,7 @@ textarea:disabled {
 
 .runs-row__meta {
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: var(--fs-label);
 }
 
 /* ---- Search view ---- */
@@ -2239,7 +2327,7 @@ textarea:disabled {
   border-radius: var(--radius-sm);
   color: var(--text);
   outline: none;
-  font-size: 13px;
+  font-size: var(--fs-ui);
 }
 
 .search-view__input:focus {
@@ -2262,7 +2350,7 @@ textarea:disabled {
 .search-hit__path {
   display: block;
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2312,7 +2400,7 @@ textarea:disabled {
   background: var(--sidebar-bg);
   color: var(--text-muted);
   border-right: 1px solid var(--border);
-  font-size: 13px;
+  font-size: var(--fs-ui);
   cursor: pointer;
   user-select: none;
 }
@@ -2391,7 +2479,7 @@ textarea:disabled {
   display: flex;
   align-items: center;
   height: 35px;
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -2447,7 +2535,7 @@ textarea:disabled {
 }
 
 .chatpane__title {
-  font-size: 11px;
+  font-size: var(--fs-label);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -2456,7 +2544,7 @@ textarea:disabled {
 
 .chatpane__model {
   color: var(--text-dim);
-  font-size: 11px;
+  font-size: var(--fs-label);
 }
 
 .chatpane__actions {
@@ -2493,7 +2581,7 @@ textarea:disabled {
   -webkit-backdrop-filter: var(--glass-blur);
   box-shadow: inset 0 1px 0 var(--glass-rim);
   color: var(--text);
-  font-size: 12px;
+  font-size: var(--fs-small);
 }
 
 .vsc-statusbar__item {
@@ -2507,7 +2595,7 @@ textarea:disabled {
 }
 
 .vsc-statusbar__item--button:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--line-strong);
 }
 
 .vsc-statusbar__spacer {
@@ -2525,7 +2613,7 @@ textarea:disabled {
   background: var(--surface-2);
   border: 1px solid var(--widget-border);
   border-radius: var(--radius);
-  box-shadow: var(--glass-edge), var(--depth);
+  box-shadow: var(--glass-edge), var(--depth-float);
   color: var(--text);
 }
 
