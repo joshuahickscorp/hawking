@@ -1,6 +1,7 @@
 mod bench_kernel;
 mod bench_server;
 mod capture;
+mod studio;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -444,6 +445,11 @@ enum Cmd {
     Version {
         #[arg(long)]
         weights: Option<PathBuf>,
+    },
+    /// Studio proof/lifecycle control surface. Read-only/dry-run by default.
+    Studio {
+        #[command(subcommand)]
+        cmd: studio::StudioCmd,
     },
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
@@ -963,6 +969,7 @@ fn main() -> Result<()> {
             max_routed_expert_ram_mb,
         ),
         Cmd::Version { weights } => version_main(weights),
+        Cmd::Studio { cmd } => studio::run(cmd),
         Cmd::BatchHash {
             weights,
             prompts,
@@ -1125,7 +1132,11 @@ fn press_main(
     println!("source:           {source}");
     println!("dtypes:           {dtype_summary}");
     println!("tensors:          {n_tensors}");
-    println!("parameters:       {} ({} elems)", fmt_count_h(total_elems), total_elems);
+    println!(
+        "parameters:       {} ({} elems)",
+        fmt_count_h(total_elems),
+        total_elems
+    );
     println!(
         "weight bytes:     {} ({} bytes of tensor data, header excluded, ~{cur_bpw:.2} bpw)",
         fmt_bytes_h(total_bytes),
@@ -1155,7 +1166,10 @@ fn press_main(
     }
     println!();
     println!("-- Condense ladder (estimated output; flat per-tensor bpw) --");
-    println!("  {:<8} {:>8} {:>12} {:>9}", "tier", "bpw", "out size", "vs now");
+    println!(
+        "  {:<8} {:>8} {:>12} {:>9}",
+        "tier", "bpw", "out size", "vs now"
+    );
     for (label, bpw) in &tiers {
         let out_bytes = ((total_elems as f64) * bpw / 8.0).ceil() as u64;
         let ratio = total_bytes as f64 / out_bytes as f64;
@@ -1196,7 +1210,9 @@ fn press_main(
     println!();
     println!("NOTE: estimates from model metadata only (GGUF or safetensors) — no weights, GPU, or network.");
     println!("      Output sizes use a flat per-tensor bpw; the real damage-ranked allocator (C3)");
-    println!("      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here).");
+    println!(
+        "      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here)."
+    );
     Ok(())
 }
 
@@ -1264,8 +1280,8 @@ fn read_safetensors_inventory(
     }
     let mut hbuf = vec![0u8; hlen as usize];
     f.read_exact(&mut hbuf)?;
-    let json: serde_json::Value =
-        serde_json::from_slice(&hbuf).map_err(|e| anyhow::anyhow!("safetensors header JSON: {e}"))?;
+    let json: serde_json::Value = serde_json::from_slice(&hbuf)
+        .map_err(|e| anyhow::anyhow!("safetensors header JSON: {e}"))?;
     let obj = json
         .as_object()
         .ok_or_else(|| anyhow::anyhow!("safetensors: header is not a JSON object"))?;
@@ -1344,10 +1360,10 @@ fn parse_tier_arg(s: &str) -> std::result::Result<Vec<(String, f64)>, String> {
             .parse()
             .map_err(|_| format!("bad tier '{p}' (use bit-widths like 4,3,2,1)"))?;
         let bpw = match bits as i64 {
-            4 => 4.5, // Q4_K compatibility floor
-            3 => 3.0, // first extreme public tier (TQ3)
-            2 => 2.0, // recovery tier
-            1 => 1.0, // 1-bit/ternary research tier (ternary ~1.58)
+            4 => 4.5,  // Q4_K compatibility floor
+            3 => 3.0,  // first extreme public tier (TQ3)
+            2 => 2.0,  // recovery tier
+            1 => 1.0,  // 1-bit/ternary research tier (ternary ~1.58)
             _ => bits, // any other value: treat as literal target bpw
         };
         out.push((format!("{}-bit", bits as i64), bpw));
@@ -1531,7 +1547,11 @@ fn fit_main(
     println!(
         "machine:    {} | {} unified | macOS {}",
         mac.chip,
-        if total > 0 { fmt_bytes_h(total) } else { "?".into() },
+        if total > 0 {
+            fmt_bytes_h(total)
+        } else {
+            "?".into()
+        },
         mac.os
     );
     println!(
@@ -1559,22 +1579,31 @@ fn fit_main(
         println!();
         println!("-- recommendation --");
         println!("  Apple Fit MOAT: context length does NOT grow memory on this SSM. The usable");
-        println!("  context is bounded by model QUALITY, not by this Mac's RAM. Pick context by the");
+        println!(
+            "  context is bounded by model QUALITY, not by this Mac's RAM. Pick context by the"
+        );
         println!("  quality card (`tools/ci/ssm_quality_chat.sh`), not by fit.");
         println!("  Strongest stable: the full model at any context the task needs.");
         println!();
         println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything.");
-        println!("      Live memory pressure (A4) and measured tps/energy (A6) refine this estimate.");
+        println!(
+            "      Live memory pressure (A4) and measured tps/energy (A6) refine this estimate."
+        );
         return Ok(());
     }
 
     if layers == 0 || kv_heads == 0 || head_dim == 0 {
-        println!("(model attention config not found in GGUF metadata; cannot compute KV envelope.)");
+        println!(
+            "(model attention config not found in GGUF metadata; cannot compute KV envelope.)"
+        );
         return Ok(());
     }
 
     // Context ladder to display: standard rungs up to the requested cap (default native).
-    let cap = max_context.map(|c| c as u64).unwrap_or(native_ctx).max(4096);
+    let cap = max_context
+        .map(|c| c as u64)
+        .unwrap_or(native_ctx)
+        .max(4096);
     let mut ctxs: Vec<u64> = [4096u64, 8192, 16384, 32768, 65536, 131072]
         .into_iter()
         .filter(|&c| c <= cap)
@@ -1613,7 +1642,9 @@ fn fit_main(
     println!();
 
     // Envelope ceilings: largest ctx (over a wide ladder) that stays stable.
-    let ladder: [u64; 9] = [4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576];
+    let ladder: [u64; 9] = [
+        4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576,
+    ];
     let max_stable = |elem: u64| -> u64 {
         ladder
             .iter()
@@ -1709,9 +1740,15 @@ fn fit_main(
         println!("  override: --max-context <N>, --intent <mode>, or set KV policy at serve time.");
     }
     println!();
-    println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything. Estimates");
-    println!("      are weights+KV+overhead from metadata; live pressure (A4) and measured tps/energy");
-    println!("      (A6) refine them. `serve --auto` (A3) must not pick below max-capability without a");
+    println!(
+        "NOTE: Apple Fit reports the envelope only — it does not run or cap anything. Estimates"
+    );
+    println!(
+        "      are weights+KV+overhead from metadata; live pressure (A4) and measured tps/energy"
+    );
+    println!(
+        "      (A6) refine them. `serve --auto` (A3) must not pick below max-capability without a"
+    );
     println!("      stated --intent or hard pressure (anti-throttle gate A8).");
     Ok(())
 }
@@ -1789,8 +1826,9 @@ fn max_stable_ctx(
         .iter()
         .copied()
         .filter(|&c| {
-            let r =
-                file_bytes + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, c, elem, conc) + FIT_OVERHEAD_BYTES;
+            let r = file_bytes
+                + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, c, elem, conc)
+                + FIT_OVERHEAD_BYTES;
             let z = fit_zone(r, total);
             if comfortable_only {
                 z == "FITS"
@@ -1868,7 +1906,10 @@ fn auto_serve_pick(f: &ModelFacts, file_bytes: u64, total_mem: u64, intent: &str
             context: f.native_ctx.min(stable32),
             energy_efficient: false,
             profile_fast: false,
-            rationale: format!("max-quality: f32 KV at {} tokens", f.native_ctx.min(stable32)),
+            rationale: format!(
+                "max-quality: f32 KV at {} tokens",
+                f.native_ctx.min(stable32)
+            ),
             safety_downgrade: None,
         },
         "max-speed" => AutoPick {
@@ -1876,8 +1917,9 @@ fn auto_serve_pick(f: &ModelFacts, file_bytes: u64, total_mem: u64, intent: &str
             context: f.native_ctx.min(8192),
             energy_efficient: false,
             profile_fast: true,
-            rationale: "max-speed: `--profile fast` (mild quality trade, stated intent) + modest context"
-                .to_string(),
+            rationale:
+                "max-speed: `--profile fast` (mild quality trade, stated intent) + modest context"
+                    .to_string(),
             safety_downgrade: None,
         },
         "max-battery" => {
@@ -2724,7 +2766,7 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
                 stop: Vec::new(),
                 abort: None,
                 max_stall_ms: 30_000,
-            json_mode: false,
+                json_mode: false,
             };
             let mut decode_ms = 0.0f64;
             let mut completion_tokens = 0usize;
@@ -3519,8 +3561,10 @@ mod press_tests {
         let mut buf = Vec::new();
         buf.extend_from_slice(&(json.len() as u64).to_le_bytes());
         buf.extend_from_slice(json);
-        let p = std::env::temp_dir()
-            .join(format!("hawking_press_st_{}.safetensors", std::process::id()));
+        let p = std::env::temp_dir().join(format!(
+            "hawking_press_st_{}.safetensors",
+            std::process::id()
+        ));
         std::fs::File::create(&p).unwrap().write_all(&buf).unwrap();
         let res = read_safetensors_inventory(&p);
         std::fs::remove_file(&p).ok();
@@ -3589,7 +3633,9 @@ mod fit_tests {
         assert!(sf.safety_downgrade.is_some());
         assert!(sf.context <= f.native_ctx);
         let bat = auto_serve_pick(&f, file, total18, "max-battery");
-        assert!(bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx);
+        assert!(
+            bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx
+        );
 
         // max-context reaches the largest stable context via f16, no hidden downgrade.
         let mc = auto_serve_pick(&f, file, total18, "max-context");
@@ -3675,8 +3721,14 @@ mod serve_auto_tests {
         // On an 18 GiB Mac a 3B model fits at native context + full-precision KV →
         // max-capability must serve exactly that (no throttle-down).
         let cap18 = auto_serve_pick(&f, bytes, 18u64 << 30, "max-capability");
-        assert_eq!(cap18.context, 32768, "native ctx should be served when it fits");
-        assert!(!cap18.kv_f16, "f32 KV fits at 18 GiB → must not drop to f16");
+        assert_eq!(
+            cap18.context, 32768,
+            "native ctx should be served when it fits"
+        );
+        assert!(
+            !cap18.kv_f16,
+            "f32 KV fits at 18 GiB → must not drop to f16"
+        );
     }
 
     /// SSM: flat recurrent state → context is not RAM-bound; never throttled.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.12
 """RAM-aware parallel job scheduler — pack the Studio's unified memory, run many jobs at once.
 
-The 18 GB box forced one-job-at-a-time. On the 96 GB Studio the binding constraint is RAM, not
+The 18 GB box forced one-job-at-a-time. On the 128 GB Studio the binding constraint is RAM, not
 cores, so the win is PACKING: run as many jobs concurrently as fit under a memory budget — heavy
 jobs (32B doctor ~85 GB) run SOLO (whole box), light jobs (0.5B/1.5B labs, PTQ bakes ~8-16 GB)
 run many-at-once. Deterministic launch order, a live swap watchdog (stop launching if swap climbs
@@ -149,7 +149,7 @@ class Scheduler:
 
 if __name__ == "__main__":
     # self-test: pack the real model ladder. Pass a budget GB to simulate a target box
-    # (e.g. `ram_scheduler.py 82` for the 96 GB Studio); default = this machine.
+    # (e.g. `ram_scheduler.py 110` for the 128 GB Studio); default = this machine.
     budget = float(sys.argv[1]) if len(sys.argv) > 1 else None
     demo = [
         # bakes (cheap, chunk-bounded ~14GB) — parallelize 5-wide on the Studio

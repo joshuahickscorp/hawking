@@ -418,7 +418,7 @@ def _run_ladder():
     which (model, eff-bpw) cells are PRODUCT, RESEARCH, FANTASY, or physically BELOW-FLOOR.
 
     WHAT THIS TOOL IS: a size/fit/feasibility CALCULATOR. Given any (params, eff-bpw) it computes the
-    artifact size, whether it serves on an 84 GB weight budget, and its lane. It does NOT bake, doctor,
+    artifact size, whether it serves on the Studio weight budget, and its lane. It does NOT bake, doctor,
     measure ppl, or claim a serving win — the serve paths below 1.34 bpw are UNBUILT and the recovery
     at these rungs is UNPROVEN. The "PRODUCT" lane means "the math + a built codec rung exist", NOT
     "this artifact ships at near-1:1 quality today". Treat every sub-1-bit number as a PROBE.
@@ -441,20 +441,22 @@ def _run_ladder():
     CLI:
       python subbit_ladder.py                 # summary: rungs x models, lane per cell
       python subbit_ladder.py --tsv           # flat table (model, params, active, per-rung gb + class + lane)
-      python subbit_ladder.py --fit <p_b> [--active A]   # footprint per rung + the bpw that just fits 84/70/30GB
-      python subbit_ladder.py --dream         # the headline callouts (671B@1.0, 744B@0.33, 235B-A22B@1.34)
+      python subbit_ladder.py --fit <p_b> [--active A]   # footprint per rung + the bpw that just fits 112/96/30GB
+      python subbit_ladder.py --dream         # headline callouts (V4-Pro@0.5, GLM-5.2@1.0, Kimi-K2@0.75)
       python subbit_ladder.py --selftest      # run --tsv + --dream and assert the anchor numbers
     """
-    import sys
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from studio_manifest import DEFAULT_HARDWARE, FRONTIER_MODELS
 
     # ── hardware envelope (matches ladder.py) ─────────────────────────────────────────────
-    WEIGHT_BUDGET = 84.0          # serve weight budget on the 96 GB box (leave headroom for KV/acts/OS)
-    SERVE_COMFY   = 70.0          # <= this = comfortable (room for long-ctx KV)
+    WEIGHT_BUDGET = DEFAULT_HARDWARE.weight_budget_gb
+    SERVE_COMFY   = 96.0          # <= this = comfortable inside the 112 GB weight budget
     SERVE_DREAM   = 30.0          # the "fits on a 32 GB laptop class" callout threshold
 
     # ── the SUB-1-BIT ladder (EFFECTIVE bpw, side-info included) ───────────────────────────
     # 4.50/3.34/2.34/1.34 are ladder.py's built rungs (BPW dict); below 1.34 is the new frontier.
-    # 1.00 = the absolute edge that makes 671B fit 84 GB. 0.33 ~= ternary's MoE-amortized dream.
+    # 1.00 = the edge that makes 671B/GLM-5.2 resident. 0.75 = the 1T-scale resident stretch rung.
     RUNGS = [4.50, 3.34, 2.34, 1.34, 1.00, 0.75, 0.50, 0.33]
 
     # rungs at/above this have a BUILT GPU bitslice .tq serve path (ladder.py serves()=single-bake)
@@ -475,14 +477,33 @@ def _run_ladder():
     def M(family, name, total_b, active_b=None, note=""):
         return dict(family=family, name=name, total_b=total_b, active_b=active_b, note=note)
 
+    def _frontier_manifest_models():
+        skip = {"235B-A22B"}
+        rows = []
+        families = {
+            "meta-llama": "llama3",
+            "deepseek-ai": "deepseek",
+            "zai-org": "glm",
+            "moonshotai": "moonshot",
+            "Qwen": "qwen3",
+        }
+        for model in FRONTIER_MODELS:
+            if model.label in skip:
+                continue
+            org = model.hf_id.split("/", 1)[0]
+            family = families.get(org, org.lower().replace("-", ""))
+            artifact_gb = model.total_b * model.serve_bpw / 8.0
+            note = (f"{model.role}: @{model.serve_bpw:.2f} ~= {artifact_gb:.0f}GB "
+                    f"resident target; {model.note}")
+            rows.append(M(family, model.label, model.total_b, model.active_b, note))
+        return rows
+
     MODELS = [
         M("qwen2.5", "Qwen2.5-32B",      32.5,  None, "dense; unconstrained on the box"),
         M("qwen2.5", "Qwen2.5-72B",      72.7,  None, "dense; serve-tight even at 4.5 bpw"),
         M("llama3",  "Llama3.3-70B",     70.6,  None, "dense; the cross-family 70B point"),
         M("qwen3",   "Qwen3-235B-A22B",  235.0, 22.0, "MoE: 235B footprint, decodes like ~22B"),
-        M("llama3",  "Llama3.1-405B",    405.0, None, "dense FRONTIER: needs <=1.0 bpw to even fit"),
-        M("deepseek","DeepSeek-V3",      671.0, 37.0, "MoE: 671B footprint @1.0 ~= 84GB = box edge; active 37B"),
-        M("glm",     "GLM-744B",         744.0, 32.0, "MoE: largest tail; active ~32B; the 0.33 dream"),
+        *_frontier_manifest_models(),
     ]
 
 
@@ -492,7 +513,7 @@ def _run_ladder():
 
 
     def serve_class(gb):
-        """SERVE-COMFY (<=70GB) / SERVE-TIGHT (70-84) / SERVE-OVERFLOW (>84)."""
+        """SERVE-COMFY / SERVE-TIGHT / SERVE-OVERFLOW against the Studio weight budget."""
         if gb <= SERVE_COMFY:
             return "SERVE-COMFY"
         if gb <= WEIGHT_BUDGET:
@@ -582,16 +603,16 @@ def _run_ladder():
     def cmd_tsv():
         cols = "\t".join(f"gb@{r}" for r in RUNGS)
         lanes = "\t".join(f"lane@{r}" for r in RUNGS)
-        print(f"family\tmodel\ttotal_b\tactive_b\tkind\t{cols}\tfit84\tfit70\tfit30\t{lanes}")
+        print(f"family\tmodel\ttotal_b\tactive_b\tkind\t{cols}\tfit112\tfit96\tfit30\t{lanes}")
         for m in MODELS:
             p = m["total_b"]
             gbs = "\t".join(f"{tq_gb(p, r):.1f}" for r in RUNGS)
             lns = "\t".join(lane(r, is_moe(m)) for r in RUNGS)
-            f84 = bpw_that_fits(p, WEIGHT_BUDGET)
-            f70 = bpw_that_fits(p, SERVE_COMFY)
+            f112 = bpw_that_fits(p, WEIGHT_BUDGET)
+            f96 = bpw_that_fits(p, SERVE_COMFY)
             f30 = bpw_that_fits(p, SERVE_DREAM)
             print(f"{m['family']}\t{m['name']}\t{p}\t{m['active_b'] or ''}\t{_moe_tag(m)}\t{gbs}\t"
-                  f"{f84 if f84 else 'none'}\t{f70 if f70 else 'none'}\t{f30 if f30 else 'none'}\t{lns}")
+                  f"{f112 if f112 else 'none'}\t{f96 if f96 else 'none'}\t{f30 if f30 else 'none'}\t{lns}")
 
 
     def cmd_fit(params_b, active_b=None):
@@ -605,7 +626,9 @@ def _run_ladder():
             bf = "  BELOW-FLOOR(dense impossible)" if below_floor(r, moe) else ""
             print(f"  {r:4.2f} bpw: {gb:7.1f} GB  {serve_class(gb):13s} {lane(r, moe):11s}"
                   f"{'' if serves_today(r) else ' [no built serve path]'}{bf}")
-        for budget, tag in ((WEIGHT_BUDGET, "84GB box"), (SERVE_COMFY, "70GB comfy"), (SERVE_DREAM, "30GB laptop")):
+        for budget, tag in ((WEIGHT_BUDGET, f"{WEIGHT_BUDGET:.0f}GB box"),
+                            (SERVE_COMFY, f"{SERVE_COMFY:.0f}GB comfy"),
+                            (SERVE_DREAM, "30GB laptop")):
             b = bpw_that_fits(params_b, budget)
             if b is None:
                 print(f"  just-fits {tag:12s}: none on this rung set (even {RUNGS[-1]} bpw overflows)")
@@ -617,7 +640,10 @@ def _run_ladder():
         print("# Headline sub-1-bit callouts (PROBE math — sizes only, no serve-win claim):")
         callouts = [
             ("DeepSeek-V3 671B",      671.0, 1.00, 37.0),
-            ("GLM-744B",              744.0, 0.33, 32.0),
+            ("DeepSeek-V4-Pro",      1600.0, 0.50, 49.0),
+            ("GLM-5.2",               753.0, 1.00, 39.0),
+            ("Kimi-K2.6",            1100.0, 0.75, 32.0),
+            ("Kimi-K2.7-Code",        1100.0, 0.75, 32.0),
             ("Qwen3-235B-A22B",       235.0, 1.34, 22.0),
         ]
         for name, p, bpw, act in callouts:
@@ -652,8 +678,8 @@ def _run_ladder():
                 sym = sym if gb <= WEIGHT_BUDGET else sym.rstrip() + "!"
                 marks.append(f"{sym:>5s}")
             print(row + "  ".join(marks))
-        print("\n# legend: P=product R=research F=fantasy x=below-floor  '!'=overflows 84GB")
-        print("# fit-on-84GB (highest eff-bpw that serves):")
+        print(f"\n# legend: P=product R=research F=fantasy x=below-floor  '!'=overflows {WEIGHT_BUDGET:.0f}GB")
+        print(f"# fit-on-{WEIGHT_BUDGET:.0f}GB (highest eff-bpw that serves):")
         for m in MODELS:
             b = bpw_that_fits(m["total_b"], WEIGHT_BUDGET)
             print(f"    {m['name']:20s} <= {b if b else 'none':>4} bpw   ({_moe_tag(m)})")
@@ -663,7 +689,8 @@ def _run_ladder():
 
     def cmd_selftest():
         """Synthetic, runs entirely here (touches no model). Asserts the anchor numbers from the
-        prompt: 671@1.0 ~ 83.9GB, 744@0.33 ~ 30.7GB, 235@1.34 ~ 39GB, plus lane/floor invariants."""
+        prompt: V4-Pro@0.5 ~100GB, 671@1.0 ~83.9GB, GLM-5.2@1.0 ~94.1GB, Kimi-K2@0.75 ~103GB,
+        235@1.34 ~ 39GB, plus lane/floor invariants."""
         ok = True
         def check(name, got, want, tol=0.15):
             nonlocal ok
@@ -672,12 +699,18 @@ def _run_ladder():
             print(f"  [{'PASS' if good else 'FAIL'}] {name}: got {got:.2f}, want ~{want:.2f}")
 
         check("671B @ 1.00 bpw GB", tq_gb(671.0, 1.00), 83.9)
-        check("744B @ 0.33 bpw GB", tq_gb(744.0, 0.33), 30.7)
+        check("DeepSeek-V4-Pro @ 0.50 bpw GB", tq_gb(1600.0, 0.50), 100.0, tol=0.5)
+        check("GLM-5.2 @ 1.00 bpw GB", tq_gb(753.0, 1.00), 94.1, tol=0.5)
+        check("Kimi-K2.6 @ 0.75 bpw GB", tq_gb(1100.0, 0.75), 103.1, tol=0.5)
+        check("Kimi-K2.7-Code @ 0.75 bpw GB", tq_gb(1100.0, 0.75), 103.1, tol=0.5)
         check("235B @ 1.34 bpw GB", tq_gb(235.0, 1.34), 39.4, tol=0.5)
 
         # lane invariants
         inv = [
-            ("671B@1.00 serves the box (TIGHT)", serve_class(tq_gb(671.0, 1.00)) == "SERVE-TIGHT"),
+            ("671B@1.00 serves the box", serve_class(tq_gb(671.0, 1.00)) in ("SERVE-COMFY", "SERVE-TIGHT")),
+            ("DeepSeek-V4-Pro@0.50 serves the box", serve_class(tq_gb(1600.0, 0.50)) == "SERVE-TIGHT"),
+            ("Kimi-K2.6@0.75 serves the box", serve_class(tq_gb(1100.0, 0.75)) == "SERVE-TIGHT"),
+            ("Kimi-K2.7-Code@0.75 serves the box", serve_class(tq_gb(1100.0, 0.75)) == "SERVE-TIGHT"),
             ("671B@1.00 is PRODUCT (SUBBIT-1)", lane(1.00, True) == "PRODUCT"),
             ("0.75 dense rung is RESEARCH", lane(0.75, False) == "RESEARCH"),
             ("0.50 dense rung is RESEARCH", lane(0.50, False) == "RESEARCH"),
@@ -685,7 +718,7 @@ def _run_ladder():
             ("0.20 dense rung is BELOW-FLOOR", lane(0.20, False) == "BELOW-FLOOR"),
             ("0.20 MoE rung is NOT below-floor", lane(0.20, True) != "BELOW-FLOOR"),
             ("1.34 is the built serve floor", serves_today(1.34) and not serves_today(1.00)),
-            ("405B needs <=1.34 to fit 84GB", (bpw_that_fits(405.0, WEIGHT_BUDGET) or 9) <= 1.34),
+            ("405B needs <=1.34 to fit 112GB", (bpw_that_fits(405.0, WEIGHT_BUDGET) or 9) <= 1.34),
             ("32B fits at top rung 4.50", bpw_that_fits(32.5, WEIGHT_BUDGET) == 4.50),
         ]
         for name, cond in inv:

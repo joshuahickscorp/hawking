@@ -20,6 +20,10 @@ THE RECORDS IT READS (all optional — --dry composes from whatever exists):
   reports/condense/*_spec.json                                      (spec-decode revival — accept + exact-match)
   reports/condense/*_codec_bakeoff.json                             (STRAND vs QTIP/QuIP#/AQLM head-to-head)
   reports/condense/*_frontier.json                                  (100B+ serve-fit records)
+  reports/condense/*_serve.json                                     (native .tq served-forward/tok/s receipts)
+  reports/condense/*_ramcliff.json                                  (resident .tq vs Q4_K swap/J-token receipts)
+  reports/condense/*_experiment_matrix.json                         (seeds, ablations, repeats, null results)
+  reports/condense/*_parity.json                                    (frontier architecture parity records)
   reports/condense/*_subbit0.json                                   (the sub-1-bit entropy/side-info FLOOR)
   reports/condense/*_expert_sens.json                              (MoE per-expert sensitivity — sub-bit alive?)
 
@@ -53,7 +57,24 @@ CLI (argv, matching the neighbors):
                                #   branch (WIN gate, fake-win refusal, KILL, repro ladder), assert anchors
   scorecard.py -h | --help
 """
-import sys, os, re, json, glob, math, hashlib, subprocess, tempfile, shutil
+import sys, os, re, json, glob, math, hashlib, subprocess, tempfile, shutil, pathlib
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from studio_manifest import FRONTIER_MODELS
+except Exception:
+    FRONTIER_MODELS = ()
+try:
+    import frontier_coverage
+except Exception:
+    frontier_coverage = None
+try:
+    import frontier_receipts
+except Exception:
+    frontier_receipts = None
+try:
+    import frontier_experiments
+except Exception:
+    frontier_experiments = None
 
 # ── paths (match studio_run.py / scaling_law.py layout) ────────────────────────────────
 CRON_DIR    = "reports/cron"
@@ -79,7 +100,8 @@ REPRO_DESC = {
 }
 # params for the scale curve (mirrors scaling_law.PARAMS); <7B = lab, never sets the verdict.
 PARAMS = {"0.5B": 0.5, "1.5B": 1.5, "7B": 7.0, "14B": 14.0, "32B": 32.0,
-          "70B": 70.0, "72B": 72.0, "405B": 405.0, "671B": 671.0, "744B": 744.0}
+          "70B": 70.0, "72B": 72.0}
+PARAMS.update({m.label: m.total_b for m in FRONTIER_MODELS})
 LAB_MAX_B = 7.0   # strictly below this = lab rung (printed, excluded from the verdict)
 
 
@@ -233,10 +255,14 @@ def _label_from_receipt(r, path):
     return m.group(1) if m else os.path.basename(path).replace(".json", "")
 
 
+def _is_sha256(value):
+    return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdefABCDEF" for c in value)
+
+
 def ingest_condense(root, suffix):
     """Generic loader for reports/condense/*_<suffix>.json. Returns {label: record}, label parsed
     off the filename prefix (strip the suffix). Used for eval/baselines/spec/codec_bakeoff/
-    frontier/subbit0/expert_sens — each interpreted by the composer that owns the section."""
+    frontier/serve/parity/subbit0/expert_sens — each interpreted by the composer that owns the section."""
     out = {}
     for path in sorted(glob.glob(os.path.join(root, COND_DIR, f"*_{suffix}.json"))):
         r = _load_json(path)
@@ -246,6 +272,110 @@ def ingest_condense(root, suffix):
         r["_file"] = os.path.relpath(path, root)
         out[label] = r
     return out
+
+
+def _frontier_labels():
+    """Stable frontier label set from the shared manifest; falls back gracefully in self-contained tests."""
+    return [m.label for m in FRONTIER_MODELS]
+
+
+def _parity_passed(label, rec):
+    """Mirror the minimum frontier_parity.py claim gate using only the JSON scorecard can see."""
+    return bool(
+        rec
+        and rec.get("status") == "pass"
+        and rec.get("model") == label
+        and rec.get("prompt_count", 0) >= 4
+        and rec.get("max_logit_abs_err") is not None
+        and rec.get("greedy_match_tokens", 0) >= 16
+    )
+
+
+def _parity_rollup(parity, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(parity.keys())
+    passed = [label for label in labels if _parity_passed(label, parity.get(label))]
+    missing = [label for label in labels if label not in parity]
+    failed = [label for label in labels if label in parity and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _serve_passed(label, rec):
+    """Native .tq serve receipt gate: fail closed on fake f16 rehydrate or partial ownership."""
+    return bool(
+        rec
+        and rec.get("schema") == "hawking.frontier_serve.v1"
+        and rec.get("status") == "pass"
+        and rec.get("model", label) == label
+        and rec.get("native_tq") is True
+        and rec.get("rehydrate_f16") is False
+        and rec.get("tq_strict") is True
+        and rec.get("all_linear") is True
+        and rec.get("gpu_bitslice") is True
+        and rec.get("served_forward_pass") is True
+        and rec.get("parity_pass") is True
+        and (rec.get("tok_s") or 0) > 0
+        and _is_sha256(rec.get("artifact_sha256"))
+        and (rec.get("commands") or rec.get("command"))
+        and (rec.get("git_commit") or rec.get("hawking_commit"))
+        and (rec.get("machine_class") or (rec.get("hardware") or {}).get("profile"))
+        and rec.get("source", "measured") not in ("synthetic", "modeled", "gated")
+    )
+
+
+def _serve_rollup(serve, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(serve.keys())
+    passed = [label for label in labels if _serve_passed(label, serve.get(label))]
+    missing = [label for label in labels if label not in serve]
+    failed = [label for label in labels if label in serve and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _ramcliff_passed(label, rec):
+    gate = rec.get("gate") if isinstance((rec or {}).get("gate"), dict) else {}
+    return bool(
+        rec
+        and rec.get("schema") == "hawking.frontier_ramcliff.v1"
+        and (rec.get("model") or rec.get("label")) == label
+        and rec.get("source") == "measured"
+        and rec.get("verdict") == "CLIFF-WIN"
+        and rec.get("served_native_tq") is True
+        and gate.get("condensed_resident") is True
+        and gate.get("served_native_tq") is True
+        and gate.get("q4k_overflows_box") is True
+        and gate.get("cliff_x_over_gate") is True
+        and gate.get("resident_lower_energy") is True
+        and (rec.get("tok_s_resident") or 0) > 0
+        and (rec.get("tok_s_swapping") or 0) > 0
+        and (rec.get("j_per_tok_resident") or 0) > 0
+        and (rec.get("j_per_tok_swapping") or 0) > 0
+        and (rec.get("cliff_x") or 0) > 10.0
+        and rec.get("j_per_tok_resident") < rec.get("j_per_tok_swapping")
+        and _is_sha256(rec.get("artifact_sha256"))
+        and (rec.get("commands") or rec.get("command"))
+        and (rec.get("git_commit") or rec.get("hawking_commit"))
+        and (rec.get("machine_class") or (rec.get("hardware") or {}).get("profile"))
+    )
+
+
+def _ramcliff_rollup(ramcliff, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(ramcliff.keys())
+    passed = [label for label in labels if _ramcliff_passed(label, ramcliff.get(label))]
+    missing = [label for label in labels if label not in ramcliff]
+    failed = [label for label in labels if label in ramcliff and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _short_list(items, limit=4):
+    items = list(items)
+    if len(items) <= limit:
+        return ", ".join(items)
+    return ", ".join(items[:limit]) + f", +{len(items) - limit} more"
 
 
 # ════════════════════════════════════════════════════════════════════════════════════════
@@ -306,6 +436,7 @@ def compose_matrix(records):
     Returns a list of row dicts."""
     receipts = records["receipts"]
     win_receipts = [r for r in receipts if r["win_eligible"]]
+    cliff_receipts = [r for r in win_receipts if r.get("claim_type") == "cliff"]
     floors = records["floors"]["points"]
     law = records["floors"]["law"]
     curves = records["curves"]
@@ -315,6 +446,31 @@ def compose_matrix(records):
     baselines = records["baselines"]
     bakeoff = records["codec_bakeoff"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
+
+    def _parity_note(labels):
+        roll = _parity_rollup(parity, labels)
+        total = len(roll["labels"])
+        passed = len(roll["passed"])
+        if total == 0:
+            return "frontier parity not evaluated"
+        if passed == total:
+            return f"frontier parity PASS {passed}/{total}"
+        blockers = roll["failed"] + roll["missing"]
+        return f"frontier parity BLOCK {passed}/{total} ({_short_list(blockers)})"
+
+    def _serve_note(labels):
+        roll = _serve_rollup(serve, labels)
+        total = len(roll["labels"])
+        passed = len(roll["passed"])
+        if total == 0:
+            return "native .tq serve not evaluated"
+        if passed == total:
+            return f"native .tq serve PASS {passed}/{total}"
+        blockers = roll["failed"] + roll["missing"]
+        return f"native .tq serve BLOCK {passed}/{total} ({_short_list(blockers)})"
 
     # has ANY non-lab (>=7B) floor at/under a bpw that beats Q4_K with a win-eligible receipt?
     def _hawking_density_serve_cell():
@@ -352,17 +508,36 @@ def compose_matrix(records):
     def _hawking_serve_cell():
         # native low-bit serve: a serve/tps WIN is admissible ONLY under a native-serve record. The
         # frontier records say the quality/cliff numbers are GATED on the Rust serve build => not a win.
+        serve_pass = [r for label, r in serve.items() if _serve_passed(label, r)]
+        if serve_pass:
+            s0 = serve_pass[0]
+            return ("gated", f"native .tq served-forward receipt pass; tok/s={s0.get('tok_s')} "
+                    f"(needs R{WIN_MIN_REPRO[-1]}+ serve receipt for WIN) [{s0['_file']}]")
         if frontier:
             f0 = next(iter(frontier.values()))
-            return ("gated", f"serve-fit recorded; quality+cliff GATED on native .tq serve build [{f0['_file']}]")
-        return ("unproven", "no native-serve record (rehydrate -> f16 = fake win; refused)")
+            return ("gated", f"serve-fit recorded; quality+cliff GATED on native .tq serve build + "
+                    f"{_parity_note(frontier.keys())} [{f0['_file']}]")
+        return ("unproven", "no native .tq serve receipt (rehydrate -> f16 = fake win; refused)")
 
     def _hawking_ramcliff_cell():
+        rpass = [(label, r) for label, r in ramcliff.items() if _ramcliff_passed(label, r)]
+        if rpass:
+            label, r0 = rpass[0]
+            if cliff_receipts:
+                return ("yes", f"WIN: RAM-cliff receipt pass for {label}, "
+                        f"cliff_x={r0.get('cliff_x')} [{cliff_receipts[0]['file']}]")
+            return ("gated", f"RAM-cliff receipt pass for {label}, cliff_x={r0.get('cliff_x')} "
+                    f"(needs R{WIN_MIN_REPRO[-1]}+ receipt for WIN) [{r0['_file']}]")
         if frontier:
-            fits = [v for v in frontier.values() if v.get("serve_fits_84")]
+            fits = [
+                v for v in frontier.values()
+                if v.get("serve_fits_resident_112gb") or v.get("serve_fits_84")
+            ]
             if fits:
                 v = fits[0]
-                return ("gated", f"{v['model']} {v['artifact_gb']}GB fits 84GB serve-fit (cliff GATED on serve build) [{v['_file']}]")
+                return ("gated", f"{v['model']} {v['artifact_gb']}GB fits Studio serve-fit "
+                        f"(cliff GATED on {_serve_note(frontier.keys())} + "
+                        f"{_parity_note(frontier.keys())}) [{v['_file']}]")
         return ("unproven", "no RAM-cliff demo (serve build unbuilt)")
 
     def _hawking_law_cell():
@@ -474,7 +649,7 @@ HEADLINE_CLAIMS = [
     ("scale-law","bit-floor descends with scale (H1), fitted power law",
      "bit_floor_curve.md law + ≥2 verdict floor points",  "R3"),
     ("ram-cliff","serves a model that Q4_K swaps/OOMs (the money demo)",
-     "a native-serve record at the serve-fit bpw",  "R3"),
+     "a native-serve record at the serve-fit bpw plus frontier parity",  "R3"),
     ("recovery", "gradient recovery reaches near-lossless BELOW the PTQ/residual floor",
      "a recovered (+dr/-bw/-str) curve config under the gate + receipt",  "R3"),
     ("moe",      "per-expert bit allocation beats uniform on a real MoE bake",
@@ -491,6 +666,7 @@ def compose_claims(records):
     MEASURED requires a win-eligible receipt (R>=WIN_MIN_REPRO, positive gate, real eff-bpw)."""
     receipts = records["receipts"]
     win_receipts = [r for r in receipts if r["win_eligible"]]
+    cliff_receipts = [r for r in win_receipts if r.get("claim_type") == "cliff"]
     floors = records["floors"]["points"]
     law = records["floors"]["law"]
     curves = records["curves"]
@@ -498,6 +674,9 @@ def compose_claims(records):
     bakeoff = records["codec_bakeoff"]
     expert = records["expert_sens"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
     best_repro = max((r["repro_level"] for r in receipts), key=lambda x: REPRO_ORDER.index(x)
                      if x in REPRO_ORDER else -1, default="none")
 
@@ -522,8 +701,29 @@ def compose_claims(records):
                 state, cite = "UNPROVEN", None
         elif cid == "ram-cliff":
             # serve/tps is admissible ONLY under a native-serve record; frontier records GATE it.
-            if frontier:
-                state, repro, cite = "GATED", "R2", next(iter(frontier.values()))["_file"]
+            ram_pass = [(label, r) for label, r in ramcliff.items() if _ramcliff_passed(label, r)]
+            serve_pass = [(label, r) for label, r in serve.items() if _serve_passed(label, r)]
+            if ram_pass and cliff_receipts:
+                label, r0 = ram_pass[0]
+                state, repro, cite = "MEASURED", cliff_receipts[0]["repro_level"], (
+                    f"{r0['_file']} (RAM-cliff pass for {label}, cliff_x={r0.get('cliff_x')})"
+                )
+            elif ram_pass:
+                label, r0 = ram_pass[0]
+                state, repro, cite = "GATED", "R2", (
+                    f"{r0['_file']} (RAM-cliff pass for {label}, cliff_x={r0.get('cliff_x')}; "
+                    f"needs R{WIN_MIN_REPRO[-1]} receipt)"
+                )
+            elif serve_pass:
+                label, s0 = serve_pass[0]
+                state, repro, cite = "GATED", "R2", (
+                    f"{s0['_file']} (native .tq serve pass for {label}, tok/s={s0.get('tok_s')}; "
+                    f"needs RAM-cliff baseline + R{WIN_MIN_REPRO[-1]} receipt)"
+                )
+            elif frontier:
+                roll = _parity_rollup(parity, frontier.keys())
+                ptxt = f"parity {len(roll['passed'])}/{len(roll['labels'])} pass"
+                state, repro, cite = "GATED", "R2", f"{next(iter(frontier.values()))['_file']} ({ptxt})"
         elif cid == "recovery":
             hit = None
             for cf in curves.values():
@@ -565,12 +765,18 @@ def compose_claims(records):
 
 def compose_gates(records):
     """The open gates (the questions whose answers unlock the headline) + each one's current status,
-    read off the records. recovery? expert non-uniform? lossless-verify? serve build?"""
+    read off the records. recovery? expert non-uniform? lossless-verify? serve build? parity?"""
     curves = records["curves"]
     expert = records["expert_sens"]
     spec = records["spec"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
     subbit0 = records["subbit0"]
+    baseline_coverage = records.get("baseline_coverage")
+    eval_coverage = records.get("eval_coverage")
+    experiment_depth = records.get("experiment_depth")
 
     # recovery gate
     rec_attempted = errored = cleared = False
@@ -618,6 +824,82 @@ def compose_gates(records):
     else:
         sb = "OPEN — native .tq serve unbuilt; rehydrate -> f16 (any serve win from rehydrate is a FAKE win, refused)"
 
+    # native .tq serve receipt gate
+    serve_labels = list(frontier.keys()) if frontier else _frontier_labels()
+    sroll = _serve_rollup(serve, serve_labels)
+    spassed = len(sroll["passed"])
+    stotal = len(sroll["labels"])
+    if stotal == 0:
+        ns = "OPEN — no native .tq serve labels available for receipt accounting"
+    elif spassed == stotal:
+        ns = f"PASS — {spassed}/{stotal} native .tq serve receipts pass"
+    else:
+        sblockers = sroll["failed"] + sroll["missing"]
+        ns = (f"BLOCK — {spassed}/{stotal} native .tq serve receipts pass; "
+              f"blocked labels: {_short_list(sblockers)}")
+
+    # frontier architecture parity gate
+    labels = _frontier_labels()
+    roll = _parity_rollup(parity, labels)
+    total = len(roll["labels"])
+    passed = len(roll["passed"])
+    if total == 0:
+        par = "OPEN — no frontier manifest labels available for parity accounting"
+    elif passed == total:
+        par = f"PASS — {passed}/{total} frontier parity records pass"
+    else:
+        blockers = roll["failed"] + roll["missing"]
+        par = (f"BLOCK — {passed}/{total} frontier parity records pass; "
+               f"blocked labels: {_short_list(blockers)}")
+
+    # RAM-cliff receipt gate
+    ramcliff_labels = list(frontier.keys()) if frontier else labels
+    rroll = _ramcliff_rollup(ramcliff, ramcliff_labels)
+    rpassed = len(rroll["passed"])
+    rtotal = len(rroll["labels"])
+    if rtotal == 0:
+        rc = "OPEN — no RAM-cliff labels available for receipt accounting"
+    elif rpassed == rtotal:
+        rc = f"PASS — {rpassed}/{rtotal} RAM-cliff receipts pass"
+    else:
+        rblockers = rroll["failed"] + rroll["missing"]
+        rc = (f"BLOCK — {rpassed}/{rtotal} RAM-cliff receipts pass; "
+              f"blocked labels: {_short_list(rblockers)}")
+
+    # baseline/eval coverage gates
+    if baseline_coverage:
+        if baseline_coverage["ok"]:
+            base = (f"PASS — {baseline_coverage['passed_count']}/"
+                    f"{baseline_coverage['model_count']} frontier baseline records covered")
+        else:
+            base = (f"BLOCK — {baseline_coverage['passed_count']}/"
+                    f"{baseline_coverage['model_count']} frontier baseline records covered; "
+                    f"blocked labels: {_short_list(baseline_coverage['blocked_labels'])}")
+    else:
+        base = "OPEN — coverage module unavailable; cannot audit baseline coverage"
+
+    if eval_coverage:
+        if eval_coverage["ok"]:
+            ev = (f"PASS — {eval_coverage['passed_count']}/"
+                  f"{eval_coverage['model_count']} frontier eval records covered")
+        else:
+            ev = (f"BLOCK — {eval_coverage['passed_count']}/"
+                  f"{eval_coverage['model_count']} frontier eval records covered; "
+                  f"blocked labels: {_short_list(eval_coverage['blocked_labels'])}")
+    else:
+        ev = "OPEN — coverage module unavailable; cannot audit eval coverage"
+
+    if experiment_depth:
+        if experiment_depth["ok"]:
+            ex = (f"PASS — {experiment_depth['passed_count']}/"
+                  f"{experiment_depth['model_count']} frontier experiment matrices complete")
+        else:
+            ex = (f"BLOCK — {experiment_depth['passed_count']}/"
+                  f"{experiment_depth['model_count']} frontier experiment matrices complete; "
+                  f"blocked labels: {_short_list(experiment_depth['blocked_labels'])}")
+    else:
+        ex = "OPEN — experiment module unavailable; cannot audit expensive-mode depth"
+
     # subbit-0 entropy floor gate (sub-1-bit dense alive?)
     if subbit0:
         s0 = next(iter(subbit0.values()))
@@ -630,6 +912,12 @@ def compose_gates(records):
         {"gate": "Expert sensitivity NON-UNIFORM (MoE sub-bit alive)?", "status": exp},
         {"gate": "Lossless-verify bit-exact (spec admissible)?", "status": lv},
         {"gate": "Native .tq serve built (serve/cliff admissible)?", "status": sb},
+        {"gate": "Native .tq serve receipt passes?", "status": ns},
+        {"gate": "Frontier architecture parity passes?", "status": par},
+        {"gate": "RAM-cliff receipt passes?", "status": rc},
+        {"gate": "Frontier baseline coverage complete?", "status": base},
+        {"gate": "Frontier eval coverage complete?", "status": ev},
+        {"gate": "Expensive-mode experiment matrix complete?", "status": ex},
         {"gate": "SUBBIT-0 dense entropy floor (sub-1-bit alive)?", "status": sbz},
     ]
 
@@ -655,7 +943,10 @@ def render_md(sc):
       f"receipts {sc['provenance']['counts']['receipts']}, "
       f"eval {sc['provenance']['counts']['eval']}, baselines {sc['provenance']['counts']['baselines']}, "
       f"spec {sc['provenance']['counts']['spec']}, codec_bakeoff {sc['provenance']['counts']['codec_bakeoff']}, "
-      f"frontier {sc['provenance']['counts']['frontier']}, subbit0 {sc['provenance']['counts']['subbit0']}, "
+      f"frontier {sc['provenance']['counts']['frontier']}, serve {sc['provenance']['counts']['serve']}, "
+      f"ramcliff {sc['provenance']['counts']['ramcliff']}, "
+      f"parity {sc['provenance']['counts']['parity']}, "
+      f"subbit0 {sc['provenance']['counts']['subbit0']}, "
       f"expert_sens {sc['provenance']['counts']['expert_sens']}).")
     P("")
     # ---- KILL line ----
@@ -735,6 +1026,7 @@ def render_md(sc):
 #  TOP-LEVEL: gather -> compose -> render -> write
 # ════════════════════════════════════════════════════════════════════════════════════════
 def gather(root="."):
+    labels = _frontier_labels()
     records = {
         "_root": root,
         "curves": ingest_curves(root),
@@ -745,9 +1037,23 @@ def gather(root="."):
         "spec": ingest_condense(root, "spec"),
         "codec_bakeoff": ingest_condense(root, "codec_bakeoff"),
         "frontier": ingest_condense(root, "frontier"),
+        "serve": ingest_condense(root, "serve"),
+        "ramcliff": ingest_condense(root, "ramcliff"),
+        "parity": ingest_condense(root, "parity"),
         "subbit0": ingest_condense(root, "subbit0"),
         "expert_sens": ingest_condense(root, "expert_sens"),
     }
+    if frontier_coverage is not None:
+        root_path = pathlib.Path(root)
+        records["baseline_coverage"] = frontier_coverage.baseline_rollup(root_path, labels)
+        records["eval_coverage"] = frontier_coverage.eval_rollup(root_path, labels)
+    else:
+        records["baseline_coverage"] = None
+        records["eval_coverage"] = None
+    if frontier_experiments is not None:
+        records["experiment_depth"] = frontier_experiments.experiment_rollup(pathlib.Path(root), labels)
+    else:
+        records["experiment_depth"] = None
     return records
 
 
@@ -772,7 +1078,7 @@ def build_scorecard(records):
 
     counts = {k: len(records[k]) for k in
               ("curves", "receipts", "eval", "baselines", "spec", "codec_bakeoff",
-               "frontier", "subbit0", "expert_sens")}
+               "frontier", "serve", "ramcliff", "parity", "subbit0", "expert_sens")}
     counts["floors"] = len(records["floors"]["points"])
     n_records = sum(counts.values()) + (1 if records["floors"]["law"] else 0)
 
@@ -792,6 +1098,15 @@ def build_scorecard(records):
             "q4k_bpw": Q4K_BPW, "n_records": n_records, "counts": counts,
             "win_eligible_receipts": len(win_receipts),
             "win_cells_admitted": n_win_cells,
+            "baseline_coverage_blocked": (
+                records["baseline_coverage"]["blocked_count"] if records.get("baseline_coverage") else None
+            ),
+            "eval_coverage_blocked": (
+                records["eval_coverage"]["blocked_count"] if records.get("eval_coverage") else None
+            ),
+            "experiment_depth_blocked": (
+                records["experiment_depth"]["blocked_count"] if records.get("experiment_depth") else None
+            ),
         },
     }
 
@@ -869,7 +1184,7 @@ def _seed_win(root):
     # a WIN-eligible receipt (R3, density claim, positive gate, real eff-bpw, not best-effort)
     _write(os.path.join(root, RECEIPT_DIR, "7B-floor.json"), {
         "project": "hawking", "receipt_version": "0.2", "repro_level": "R3",
-        "claim_type": "density", "machine_class": "Studio-96",
+        "claim_type": "density", "machine_class": "Studio-128",
         "source_model": "Qwen2.5-7B (scratch/qwen-7b)", "effective_bpw": 2.1, "nominal_bpw": 2.0,
         "quality_gate": "pass", "baseline_best_effort": False})
     # a recovered config under the gate (so the recovery claim can go MEASURED)
@@ -884,7 +1199,32 @@ def _seed_win(root):
         "label": "32B", "strand_bpw": 2.1, "qtip_bpw": 2.2, "winner": "STRAND"})
     _write(os.path.join(root, COND_DIR, "405B_frontier.json"), {
         "model": "405B", "total_b": 405.0, "serve_bpw": 1.34, "artifact_gb": 67.8,
-        "serve_fits_84": True, "moe": False})
+        "serve_fits_resident_112gb": True, "moe": False})
+    _write(os.path.join(root, COND_DIR, "405B_serve.json"), {
+        "schema": "hawking.frontier_serve.v1",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M1Ultra-128",
+        "status": "pass", "native_tq": True, "rehydrate_f16": False,
+        "tq_strict": True, "all_linear": True, "gpu_bitslice": True,
+        "served_forward_pass": True, "parity_pass": True, "tok_s": 18.5,
+        "artifact_sha256": "a" * 64,
+        "commands": ["selftest serve"],
+        "git_commit": "deadbeef"})
+    _write(os.path.join(root, COND_DIR, "405B_ramcliff.json"), {
+        "schema": "hawking.frontier_ramcliff.v1",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M1Ultra-128",
+        "verdict": "CLIFF-WIN", "served_native_tq": True,
+        "tok_s_resident": 18.5, "tok_s_swapping": 1.0, "cliff_x": 18.5,
+        "j_per_tok_resident": 0.2, "j_per_tok_swapping": 1.5,
+        "gate": {
+            "condensed_resident": True,
+            "served_native_tq": True,
+            "q4k_overflows_box": True,
+            "cliff_x_over_gate": True,
+            "resident_lower_energy": True,
+        },
+        "artifact_sha256": "b" * 64,
+        "commands": ["selftest ramcliff"],
+        "git_commit": "deadbeef"})
 
 
 def selftest():
@@ -918,8 +1258,16 @@ def selftest():
         check("A: scorecard.json written", os.path.exists(os.path.join(da, OUT_JSON)))
         # subbit-0 + expert gates populated from records
         gtxt = " ".join(g["status"] for g in sc["gates"])
+        gnames = " ".join(g["gate"] for g in sc["gates"])
         check("A: SUBBIT-0 gate cites the record", "ALIVE" in gtxt and "0.1093" in gtxt)
         check("A: expert gate flags SYNTHETIC", "SYNTHETIC" in gtxt)
+        check("A: frontier parity gate present", "Frontier architecture parity" in gnames)
+        check("A: frontier parity blocks missing records", any(
+            g["gate"] == "Frontier architecture parity passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
+        check("A: native serve receipt gate blocks missing records", any(
+            g["gate"] == "Native .tq serve receipt passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
     finally:
         shutil.rmtree(da, ignore_errors=True)
 
@@ -941,11 +1289,22 @@ def selftest():
         check("B: scale-law claim MEASURED", next(c for c in sc["claims"] if c["id"] == "scale-law")["state"] == "MEASURED")
         # recovery MEASURED (recovered config under gate + win receipt)
         check("B: recovery MEASURED", next(c for c in sc["claims"] if c["id"] == "recovery")["state"] == "MEASURED")
-        # spec MEASURED (complete + accept + win receipt); codec + ram-cliff GATED (no native-serve / no receipt for those)
+        # spec MEASURED (complete + accept + win receipt); codec + ram-cliff GATED (no cliff-specific receipt)
         check("B: spec MEASURED", next(c for c in sc["claims"] if c["id"] == "spec")["state"] == "MEASURED")
-        check("B: ram-cliff GATED (serve build unbuilt, no fake win)",
+        check("B: ram-cliff GATED (RAM-cliff pass still needs cliff-specific R3 receipt)",
               next(c for c in sc["claims"] if c["id"] == "ram-cliff")["state"] == "GATED")
+        check("B: ram-cliff cites RAM-cliff receipt",
+              "RAM-cliff pass" in next(c for c in sc["claims"] if c["id"] == "ram-cliff")["backed_by"])
         check("B: codec GATED", next(c for c in sc["claims"] if c["id"] == "codec")["state"] == "GATED")
+        check("B: native serve receipt gate passes fabricated serve record", any(
+            g["gate"] == "Native .tq serve receipt passes?" and "PASS" in g["status"]
+            for g in sc["gates"]))
+        check("B: RAM-cliff receipt gate passes fabricated RAM-cliff record", any(
+            g["gate"] == "RAM-cliff receipt passes?" and "PASS" in g["status"]
+            for g in sc["gates"]))
+        check("B: frontier parity gate blocks fabricated frontier record", any(
+            g["gate"] == "Frontier architecture parity passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
         # the density matrix cell now YES with the receipt cited
         dcell = next(r for r in sc["matrix"] if r["capability"] == "Sub-4-bit codec (≤3 eff-bpw)")
         check("B: density matrix cell YES w/ receipt", dcell["hawking"]["status"] == "yes"

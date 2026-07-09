@@ -10,7 +10,8 @@ How it decides the bpw (cheap, no full bake):
   - else use the redundancy-hypothesis heuristic floor(N) ~ clamp(4.0 - 0.8*log10(params_B*1e9/1e9)...)
     -> bigger models are recommended lower bpw (they carry more redundancy), snapped to the ladder
     {1:1.34, 2:2.34, 3:3.34, 4:4.5};
-  - then RAISE the bpw if the model would otherwise not fit / not run acceptably on the device.
+  - then adjust the bpw for the device: raise if storage would overflow; for frontier MoE models,
+    prefer a lower sub-bit rung when that is what turns MOE-PAGED into fully RESIDENT.
 
 How it decides the regime: delegates to size_frontier (RESIDENT / MOE-PAGED / DENSE-OOC) for the
 device budget. If dense + out-of-core would be sub-0.1 tok/s, it says so and suggests a smaller/ MoE
@@ -25,6 +26,7 @@ try:
 except Exception:
     SF = None
 LADDER = [(1, 1.34), (2, 2.34), (3, 3.34), (4, 4.5)]
+SUBBIT_RUNG = [(1, 1.34), (1, 1.00), (1, 0.75), (1, 0.50), (1, 0.33)]
 OUT = "reports/condense"
 
 
@@ -49,7 +51,7 @@ def measured_floor(label):
     return None
 
 
-def recommend(total_b, active_b, arch, label, device="studio-m2max"):
+def recommend(total_b, active_b, arch, label, device="m1ultra"):
     bits, bpw = heuristic_floor_bpw(total_b)
     mfloor = measured_floor(label)
     src = "heuristic(redundancy-law)"
@@ -57,7 +59,8 @@ def recommend(total_b, active_b, arch, label, device="studio-m2max"):
         for b, bp in LADDER:
             if bp >= mfloor:
                 bits, bpw, src = b, bp, "measured(SUBBIT-0 entropy floor)"; break
-    # raise bpw until it at least fits storage on the device; pick the regime
+    # Raise bpw until it at least fits storage on the device; then, for huge MoE models, prefer
+    # a lower sub-bit rung if that is what keeps the entire artifact resident on the Studio.
     regime, chosen = None, None
     for b, bp in [(bits, bpw)] + [(b, bp) for b, bp in LADDER if bp > bpw]:
         r = SF.analyze(total_b, active_b, bp, device) if SF else {"best_regime": "?", "fits_ssd": True}
@@ -65,6 +68,16 @@ def recommend(total_b, active_b, arch, label, device="studio-m2max"):
             chosen, regime = (b, bp), r; break
     if not chosen:
         chosen, regime = (4, 4.5), (SF.analyze(total_b, active_b, 4.5, device) if SF else {"best_regime": "TOO-BIG"})
+    prefer_resident = os.environ.get("AUTO_BITS_PREFER_RESIDENT", "1") != "0"
+    if prefer_resident and active_b and regime.get("best_regime") != "RESIDENT":
+        for b, bp in SUBBIT_RUNG:
+            if bp > chosen[1]:
+                continue
+            r = SF.analyze(total_b, active_b, bp, device) if SF else {"best_regime": "?", "fits_ssd": True}
+            if r.get("best_regime") == "RESIDENT":
+                chosen, regime = (b, bp), r
+                src += "+resident-fit"
+                break
     b, bp = chosen
     rec = {
         "model": label, "total_b": total_b, "active_b": active_b, "arch": arch,
@@ -97,7 +110,7 @@ def _from_dir(model_dir, device):
 
 if __name__ == "__main__":
     a = sys.argv[1] if len(sys.argv) > 1 else "--help"
-    dev = sys.argv[sys.argv.index("--device")+1] if "--device" in sys.argv else "studio-m2max"
+    dev = sys.argv[sys.argv.index("--device")+1] if "--device" in sys.argv else "m1ultra"
     if a == "--params":
         total = float(sys.argv[2])
         active = float(sys.argv[sys.argv.index("--active")+1]) if "--active" in sys.argv else None

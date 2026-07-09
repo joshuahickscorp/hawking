@@ -155,7 +155,47 @@ pub struct QwenLayerPinned {
     pub ffn_down_f16: Option<crate::metal::PinnedBuffer>,
 }
 
-/// One FFN projection served from a baked `.tq` artifact: the Q12 weights
+#[cfg(feature = "tq")]
+const TQ_LINEAR_KINDS: [&str; 7] = ["q", "k", "v", "o", "gate", "up", "down"];
+
+#[cfg(feature = "tq")]
+fn tq_projection_kind(name: &str) -> Option<&'static str> {
+    if name.contains("ffn_down") || name.contains("down_proj") {
+        Some("down")
+    } else if name.contains("ffn_gate") || name.contains("gate_proj") {
+        Some("gate")
+    } else if name.contains("ffn_up") || name.contains("up_proj") {
+        Some("up")
+    } else if name.contains("attn_q") || name.contains("q_proj") {
+        Some("q")
+    } else if name.contains("attn_k") || name.contains("k_proj") {
+        Some("k")
+    } else if name.contains("attn_v") || name.contains("v_proj") {
+        Some("v")
+    } else if name.contains("attn_output") || name.contains("o_proj") {
+        Some("o")
+    } else {
+        None
+    }
+}
+
+#[cfg(feature = "tq")]
+fn tq_layer_index(name: &str) -> Option<usize> {
+    let after = name
+        .find("blk.")
+        .map(|i| i + "blk.".len())
+        .or_else(|| name.find("layers.").map(|i| i + "layers.".len()));
+    let start = after.unwrap_or(0);
+    let rest = &name[start..];
+    let digits: String = rest
+        .chars()
+        .skip_while(|c| !c.is_ascii_digit())
+        .take_while(|c| c.is_ascii_digit())
+        .collect();
+    digits.parse::<usize>().ok()
+}
+
+/// One projection served from a baked `.tq` artifact: the Q12 weights
 /// (decoded ONCE at cache-build, reused across every token) plus the shape and
 /// activation-RHT serving params `crate::tq::matvec_rht` needs. Stored in
 /// `QwenDense::tq_ffn` keyed by GGUF source offset (the TQ per-tensor HYBRID).
@@ -311,15 +351,17 @@ pub struct QwenDense {
     #[cfg(target_os = "macos")]
     pub(crate) q4k_fast_offsets: Option<std::collections::HashMap<usize, (usize, usize)>>,
 
-    /// TQ per-tensor HYBRID (HAWKING_QWEN_TQ): the three FFN projections
-    /// served from a baked `.tq` artifact via `crate::tq`, while attention
-    /// stays Q4_K. Keyed by GGUF source OFFSET (same key space as
+    /// TQ per-tensor HYBRID (HAWKING_QWEN_TQ): any projection carried by a baked
+    /// `.tq` artifact (attention q/k/v/o + FFN gate/up/down) is served via
+    /// `crate::tq`. Keyed by GGUF source OFFSET (same key space as
     /// `q4k_fast_offsets`) so `matmul_q4_dispatch` can override exactly the
-    /// FFN GEMVs by `t.offset`. Built lazily by `ensure_tq_cache` on first
+    /// owned GEMVs by `t.offset`. Built lazily by `ensure_tq_cache` on first
     /// forward when the flag is set AND a `<weights>.tq` (or `models/<stem>.tq`)
-    /// is present; `None` = flag off or no artifact (feature stays inert,
-    /// byte-identical to the un-flagged Q4_K path). Not macOS-gated: this is
-    /// the CPU serving reference and runs under HAWKING_FORCE_CPU=1.
+    /// is present. Normal mode is backward-compatible and inert when the sidecar
+    /// is absent; proof mode can fail closed with HAWKING_QWEN_TQ_STRICT=1,
+    /// HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR=1, or HAWKING_QWEN_TQ_REQUIRE_GPU=1.
+    /// Not macOS-gated: this is the CPU serving reference and runs under
+    /// HAWKING_FORCE_CPU=1.
     #[cfg(feature = "tq")]
     pub(crate) tq_ffn: Option<std::collections::HashMap<usize, TqServe>>,
 
@@ -4291,16 +4333,19 @@ impl QwenDense {
     }
 
     /// TQ per-tensor HYBRID loader (HAWKING_QWEN_TQ): build the side map that
-    /// serves the three FFN projections from a baked `.tq` artifact via
-    /// `crate::tq`, leaving attention on Q4_K. Modeled on `ensure_q4k_fast_cache`
-    /// but NOT macOS-gated (this is the CPU serving reference) and keyed by GGUF
-    /// source offset so `matmul_q4_dispatch` overrides exactly the FFN GEMVs.
+    /// serves projections from a baked `.tq` artifact via `crate::tq`. FFN-only
+    /// artifacts remain valid; all-linear artifacts (attention q/k/v/o + FFN
+    /// gate/up/down) are required only in proof mode. Modeled on
+    /// `ensure_q4k_fast_cache` but NOT macOS-gated (this is the CPU serving
+    /// reference) and keyed by GGUF source offset so `matmul_q4_dispatch`
+    /// overrides exactly the TQ-owned GEMVs.
     ///
     /// Returns early (Ok, feature inert) when already built, the flag is off, or
-    /// no `.tq` is found at `<weights>.tq` or `models/<stem>.tq`. The `.tq`
+    /// no `.tq` is found at `<weights>.tq` or `models/<stem>.tq` unless strict
+    /// proof mode is enabled. The `.tq`
     /// tensor names may be GGUF-style (`blk.N.ffn_down.weight`) or HF-style
     /// (`model.layers.N.mlp.down_proj.weight`); we classify each StrandTensor by
-    /// (layer index, FFN kind) via substring match and prefer the per-tensor
+    /// (layer index, projection kind) via substring match and prefer the per-tensor
     /// `rht_seed` carried in the header over recomputing it.
     #[cfg(feature = "tq")]
     fn ensure_tq_cache(&mut self) -> Result<()> {
@@ -4321,8 +4366,21 @@ impl QwenDense {
                 crate::tq::TQ_EXT
             )));
         }
+        let strict = crate::env_on("HAWKING_QWEN_TQ_STRICT");
+        let require_all_linear = crate::env_on("HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR");
+        let require_gpu = crate::env_on("HAWKING_QWEN_TQ_REQUIRE_GPU");
         let tq_path = match candidates.iter().find(|p| p.exists()).cloned() {
             Some(p) => p,
+            None if strict || require_all_linear || require_gpu => {
+                let looked = candidates
+                    .iter()
+                    .map(|p| p.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                return Err(Error::Model(format!(
+                    "HAWKING_QWEN_TQ proof mode requested but no .tq artifact was found; looked at: {looked}"
+                )));
+            }
             None => return Ok(()),
         };
         let bytes = std::fs::read(&tq_path)
@@ -4357,60 +4415,12 @@ impl QwenDense {
             Vec::new()
         };
 
-        // FFN kind classification by robust substring match (handles both
-        // GGUF `ffn_gate`/`ffn_up`/`ffn_down` and HF `gate_proj`/`up_proj`/
-        // `down_proj`). Returns the kind tag used to pair with a layer's
-        // projection. Order matters only in that the three substrings are
-        // mutually exclusive, so a simple contains() per kind is unambiguous.
-        fn ffn_kind(name: &str) -> Option<&'static str> {
-            if name.contains("ffn_down") || name.contains("down_proj") {
-                Some("down")
-            } else if name.contains("ffn_gate") || name.contains("gate_proj") {
-                Some("gate")
-            } else if name.contains("ffn_up") || name.contains("up_proj") {
-                Some("up")
-            } else {
-                None
-            }
-        }
-        // Attention projections (all-linear TQ serving — the 32B RAM-cliff path).
-        fn attn_kind(name: &str) -> Option<&'static str> {
-            if name.contains("attn_q") || name.contains("q_proj") {
-                Some("q")
-            } else if name.contains("attn_k") || name.contains("k_proj") {
-                Some("k")
-            } else if name.contains("attn_v") || name.contains("v_proj") {
-                Some("v")
-            } else if name.contains("attn_output") || name.contains("o_proj") {
-                Some("o")
-            } else {
-                None
-            }
-        }
-        // Layer index: prefer the digits right after a known marker
-        // (`blk.` for GGUF, `layers.` for HF), else fall back to the first
-        // run of digits anywhere in the name.
-        fn layer_index(name: &str) -> Option<usize> {
-            let after = name
-                .find("blk.")
-                .map(|i| i + "blk.".len())
-                .or_else(|| name.find("layers.").map(|i| i + "layers.".len()));
-            let start = after.unwrap_or(0);
-            let rest = &name[start..];
-            let digits: String = rest
-                .chars()
-                .skip_while(|c| !c.is_ascii_digit())
-                .take_while(|c| c.is_ascii_digit())
-                .collect();
-            digits.parse::<usize>().ok()
-        }
-
         // Index StrandTensors by (layer, kind) → tensor (borrow into `tensors`).
         let mut by_key: std::collections::HashMap<(usize, &'static str), &crate::tq::StrandTensor> =
             std::collections::HashMap::new();
         for st in &tensors {
-            if let Some(li) = layer_index(&st.name) {
-                if let Some(kind) = ffn_kind(&st.name).or_else(|| attn_kind(&st.name)) {
+            if let Some(li) = tq_layer_index(&st.name) {
+                if let Some(kind) = tq_projection_kind(&st.name) {
                     by_key.insert((li, kind), st);
                 }
             }
@@ -4421,8 +4431,8 @@ impl QwenDense {
             &crate::tq::StrandTensor,
         > = std::collections::HashMap::new();
         for st in &res_tensors {
-            if let Some(li) = layer_index(&st.name) {
-                if let Some(kind) = ffn_kind(&st.name).or_else(|| attn_kind(&st.name)) {
+            if let Some(li) = tq_layer_index(&st.name) {
+                if let Some(kind) = tq_projection_kind(&st.name) {
                     res_by_key.insert((li, kind), st);
                 }
             }
@@ -4450,10 +4460,30 @@ impl QwenDense {
             // so FFN-only artifacts stay backward-compatible. All-linear = the 32B
             // RAM-cliff path (whole model served from `.tq`, no Q4_K GGUF in RAM).
             let projs: [(usize, usize, usize, &'static str); 7] = [
-                (self.layers[li].q_proj.offset, q_dim, self.config.hidden, "q"),
-                (self.layers[li].k_proj.offset, kv_dim, self.config.hidden, "k"),
-                (self.layers[li].v_proj.offset, kv_dim, self.config.hidden, "v"),
-                (self.layers[li].o_proj.offset, self.config.hidden, q_dim, "o"),
+                (
+                    self.layers[li].q_proj.offset,
+                    q_dim,
+                    self.config.hidden,
+                    "q",
+                ),
+                (
+                    self.layers[li].k_proj.offset,
+                    kv_dim,
+                    self.config.hidden,
+                    "k",
+                ),
+                (
+                    self.layers[li].v_proj.offset,
+                    kv_dim,
+                    self.config.hidden,
+                    "v",
+                ),
+                (
+                    self.layers[li].o_proj.offset,
+                    self.config.hidden,
+                    q_dim,
+                    "o",
+                ),
                 (
                     self.layers[li].ffn_gate.offset,
                     self.config.intermediate,
@@ -4547,6 +4577,74 @@ impl QwenDense {
                     },
                 );
             }
+        }
+        if map.is_empty() && strict {
+            return Err(Error::Model(format!(
+                "HAWKING_QWEN_TQ_STRICT=1: .tq artifact {} parsed but no Qwen projection names matched",
+                tq_path.display()
+            )));
+        }
+        if require_all_linear {
+            let expected = self.config.n_layers * TQ_LINEAR_KINDS.len();
+            let mut missing = Vec::new();
+            for li in 0..self.config.n_layers {
+                for kind in TQ_LINEAR_KINDS {
+                    if !by_key.contains_key(&(li, kind)) {
+                        missing.push(format!("layer {li} {kind}"));
+                    }
+                }
+            }
+            if !missing.is_empty() {
+                let preview = missing
+                    .iter()
+                    .take(12)
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                return Err(Error::Model(format!(
+                    "HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR=1: .tq artifact {} covers {}/{} Qwen projections; missing: {}{}",
+                    tq_path.display(),
+                    expected - missing.len(),
+                    expected,
+                    preview,
+                    if missing.len() > 12 {
+                        format!(", +{} more", missing.len() - 12)
+                    } else {
+                        String::new()
+                    }
+                )));
+            }
+        }
+        #[cfg(target_os = "macos")]
+        if require_gpu {
+            let gpu_count = map.values().filter(|s| s.gpu.is_some()).count();
+            if gpu_count != map.len() {
+                return Err(Error::Model(format!(
+                    "HAWKING_QWEN_TQ_REQUIRE_GPU=1: only {gpu_count}/{} TQ projections uploaded to GPU bitslice serve",
+                    map.len()
+                )));
+            }
+        }
+        #[cfg(not(target_os = "macos"))]
+        if require_gpu {
+            return Err(Error::Model(
+                "HAWKING_QWEN_TQ_REQUIRE_GPU=1 requires macOS Metal TQ serving".into(),
+            ));
+        }
+        if strict || require_all_linear || require_gpu {
+            #[cfg(target_os = "macos")]
+            let gpu_note = {
+                let gpu_count = map.values().filter(|s| s.gpu.is_some()).count();
+                format!(", gpu={gpu_count}/{}", map.len())
+            };
+            #[cfg(not(target_os = "macos"))]
+            let gpu_note = String::new();
+            eprintln!(
+                "[qwen-tq] proof coverage ok: {} projections mapped from {}{}",
+                map.len(),
+                tq_path.display(),
+                gpu_note
+            );
         }
         self.tq_ffn = Some(map);
         Ok(())
@@ -9715,6 +9813,42 @@ mod bsize_verify_diag {
     use super::*;
     use std::path::Path;
 
+    #[cfg(feature = "tq")]
+    #[test]
+    fn tq_projection_parser_covers_gguf_and_hf_names() {
+        let cases = [
+            ("blk.0.attn_q.weight", Some((0usize, "q"))),
+            ("blk.1.attn_k.weight", Some((1usize, "k"))),
+            ("blk.2.attn_v.weight", Some((2usize, "v"))),
+            ("blk.3.attn_output.weight", Some((3usize, "o"))),
+            ("blk.4.ffn_gate.weight", Some((4usize, "gate"))),
+            ("blk.5.ffn_up.weight", Some((5usize, "up"))),
+            ("blk.6.ffn_down.weight", Some((6usize, "down"))),
+            (
+                "model.layers.7.self_attn.q_proj.weight",
+                Some((7usize, "q")),
+            ),
+            (
+                "model.layers.8.self_attn.o_proj.weight",
+                Some((8usize, "o")),
+            ),
+            (
+                "model.layers.9.mlp.gate_proj.weight",
+                Some((9usize, "gate")),
+            ),
+            (
+                "model.layers.10.mlp.down_proj.weight",
+                Some((10usize, "down")),
+            ),
+            ("token_embd.weight", None),
+        ];
+        for (name, expected) in cases {
+            let got = tq_layer_index(name).zip(tq_projection_kind(name));
+            assert_eq!(got, expected, "parse {name}");
+        }
+        assert_eq!(TQ_LINEAR_KINDS, ["q", "k", "v", "o", "gate", "up", "down"]);
+    }
+
     fn top2_margin(logits: &[f32]) -> f32 {
         let (mut t1, mut t2) = (f32::NEG_INFINITY, f32::NEG_INFINITY);
         for &x in logits {
@@ -9729,6 +9863,7 @@ mod bsize_verify_diag {
     }
 
     #[test]
+    #[ignore = "real-model diagnostic; loads Qwen 3B GGUF and sweeps B=1..8, run explicitly with --ignored"]
     fn bsize_matrix() {
         let weights = Path::new("../../models/qwen2.5-3b-instruct-q4_k_m.gguf");
         if !weights.exists() {

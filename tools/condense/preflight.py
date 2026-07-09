@@ -1,29 +1,193 @@
 #!/usr/bin/env python3.12
 """preflight.py — run this FIRST on the Mac Studio, before `studio_run.py go`.
 
-Confirms the whole environment is actually ready: Python deps, Rust toolchain, disk space,
-staged model parents, and the receipt harness — so `go` never dies 10 minutes in on a missing
-dependency. Exits 0 (green, safe to `go`) or 1 (red, prints exactly what to fix). Pure stdlib +
-best-effort imports; never crashes on a missing optional dep, it just flags it.
+Confirms the whole environment is actually ready: Python deps, Rust toolchain, disk space, staged
+model parents, launch-time HF refresh/ledger artifacts, and the receipt harness — so `go` never dies
+10 minutes in on a missing dependency or stale frontier manifest. Exits 0 (green, safe to `go`) or 1
+(red, prints exactly what to fix). Pure stdlib + best-effort imports; never crashes on a missing
+optional dep, it just flags it.
 
 Usage:
-  python3.12 tools/condense/preflight.py            # full check
+  python3.12 tools/condense/preflight.py            # full check + signed JSON summary
   python3.12 tools/condense/preflight.py --quiet    # exit code only, minimal output
+  python3.12 tools/condense/preflight.py --verify-summary [PATH]
 """
-import sys, os, subprocess, shutil, importlib, importlib.util
+import sys, os, subprocess, shutil, importlib, importlib.metadata, importlib.util, json, datetime, hashlib, socket, time, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
 QUIET = "--quiet" in sys.argv
 REQUIRED_PY = ["torch", "transformers", "safetensors", "numpy", "jsonschema"]
-MIN_DISK_GB = 100.0     # comfortable headroom for the 0.5B-32B ladder + a first frontier download
-MIN_RAM_GB = 64.0       # below this, this isn't the 96GB Studio the plan assumes
+MIN_DISK_GB = 500.0     # comfortable headroom for the ladder + at least one frontier checkpoint
+MIN_RAM_GB = 120.0      # below this, this isn't the 128GB Studio the plan assumes
+REFRESH_OUT = "reports/condense/frontier_refresh.preflight.json"
+LEDGER_OUT = "reports/condense/frontier_ledger.preflight.json"
+LAUNCH_GATE_OUT = "reports/condense/frontier_launch_gate.preflight.json"
+SUMMARY_OUT = "reports/condense/studio_preflight_summary.json"
 
 
 def _say(ok, msg):
     if not QUIET:
         print(f"[{'OK ' if ok else 'FAIL'}] {msg}", file=sys.stderr)
     return ok
+
+
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+
+def _run(cmd, timeout=15):
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        return p.returncode, p.stdout, p.stderr
+    except Exception as e:
+        return 127, "", f"{type(e).__name__}: {e}"
+
+
+def _git_commit():
+    rc, out, _ = _run(["git", "rev-parse", "--short", "HEAD"], timeout=10)
+    return out.strip() if rc == 0 and out.strip() else "unknown"
+
+
+def _hardware_summary():
+    ram_gb = None
+    rc, out, _ = _run(["sysctl", "-n", "hw.memsize"], timeout=10)
+    if rc == 0:
+        try:
+            ram_gb = int(out.strip()) / 1e9
+        except ValueError:
+            ram_gb = None
+    rc_cpu, cpu_brand, _ = _run(["sysctl", "-n", "machdep.cpu.brand_string"], timeout=10)
+    rc_ncpu, ncpu, _ = _run(["sysctl", "-n", "hw.ncpu"], timeout=10)
+    rc_batt, batt, batt_err = _run(["pmset", "-g", "batt"], timeout=10)
+    rc_therm, therm, therm_err = _run(["pmset", "-g", "therm"], timeout=10)
+    usage = shutil.disk_usage(ROOT)
+    return {
+        "target_ram_gb": MIN_RAM_GB,
+        "target_free_disk_gb": MIN_DISK_GB,
+        "actual_ram_gb": round(ram_gb, 2) if ram_gb else None,
+        "actual_cpu_brand": cpu_brand.strip() if rc_cpu == 0 and cpu_brand.strip() else None,
+        "actual_cpu_count": int(ncpu.strip()) if rc_ncpu == 0 and ncpu.strip().isdigit() else None,
+        "disk_total_gb": round(usage.total / 1e9, 3),
+        "disk_free_gb": round(usage.free / 1e9, 3),
+        "power_source": (batt or batt_err).splitlines()[0].strip()
+        if (batt or batt_err).strip() else None,
+        "thermal_status": (therm or therm_err).strip()[:1000]
+        if (therm or therm_err).strip() else None,
+    }
+
+
+def _route_summary(host):
+    rc, out, err = _run(["route", "-n", "get", host], timeout=10)
+    data = {"ok": rc == 0}
+    if rc != 0:
+        data["error"] = (err or out).strip()[:500]
+        return data
+    for line in out.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        if key in ("interface", "gateway", "source", "ifscope"):
+            data[key] = value
+    return data
+
+
+def _network_summary():
+    host = "huggingface.co"
+    api_url = "https://huggingface.co/api/models?limit=1"
+    out = {
+        "schema": "hawking.studio_network_summary.v1",
+        "host": host,
+        "api_url": api_url,
+        "probe_is_download": False,
+        "route": _route_summary(host),
+    }
+    out["route_interface"] = out["route"].get("interface")
+    out["route_gateway"] = out["route"].get("gateway")
+    try:
+        infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
+        addresses = sorted({info[4][0] for info in infos})
+        out["dns_ok"] = True
+        out["addresses"] = addresses[:8]
+        out["address_count"] = len(addresses)
+    except Exception as e:
+        out["dns_ok"] = False
+        out["dns_error"] = f"{type(e).__name__}: {e}"[:500]
+    try:
+        req = urllib.request.Request(api_url, method="HEAD", headers={"User-Agent": "hawking-preflight/1"})
+        start = time.monotonic()
+        with urllib.request.urlopen(req, timeout=10) as response:
+            out["hf_api_status"] = getattr(response, "status", None)
+            out["hf_api_elapsed_ms"] = round((time.monotonic() - start) * 1000, 1)
+            out["hf_api_server"] = response.headers.get("server")
+            out["hf_api_cache"] = response.headers.get("x-cache")
+        out["hf_api_ok"] = 200 <= int(out.get("hf_api_status") or 0) < 500
+    except Exception as e:
+        out["hf_api_ok"] = False
+        out["hf_api_error"] = f"{type(e).__name__}: {e}"[:500]
+    return out
+
+
+def _artifact_status(path):
+    exists = os.path.exists(path)
+    out = {"path": path, "exists": exists}
+    if exists:
+        out["bytes"] = os.path.getsize(path)
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                h.update(chunk)
+        out["sha256"] = h.hexdigest()
+    return out
+
+
+def write_summary(results, preflight_ok):
+    try:
+        summary = {
+            "schema": "hawking.studio_preflight_summary.v1",
+            "generated_at": _now(),
+            "root": ROOT,
+            "git_commit": _git_commit(),
+            "python": sys.version.split()[0],
+            "preflight_ok_before_summary": bool(preflight_ok),
+            "checks": results,
+            "hardware": _hardware_summary(),
+            "network": _network_summary(),
+            "artifacts": {
+                "frontier_refresh": _artifact_status(REFRESH_OUT),
+                "frontier_ledger": _artifact_status(LEDGER_OUT),
+                "frontier_launch_gate": _artifact_status(LAUNCH_GATE_OUT),
+            },
+        }
+        canonical = json.dumps(summary, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        summary["signature"] = {
+            "algorithm": "sha256-json-v1",
+            "digest": hashlib.sha256(canonical).hexdigest(),
+        }
+        os.makedirs(os.path.dirname(SUMMARY_OUT), exist_ok=True)
+        with open(SUMMARY_OUT, "w") as f:
+            json.dump(summary, f, indent=2, sort_keys=True)
+            f.write("\n")
+        return _say(True, f"signed preflight summary written to {SUMMARY_OUT}")
+    except Exception as e:
+        return _say(False, f"could not write signed preflight summary: {type(e).__name__}: {e}")
+
+
+def verify_summary(path=SUMMARY_OUT):
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        signature = data.pop("signature", {})
+        expected = signature.get("digest")
+        actual = hashlib.sha256(
+            json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        ok = bool(expected) and expected == actual
+        return _say(ok, f"preflight summary signature {'valid' if ok else 'INVALID'}: {path}")
+    except Exception as e:
+        return _say(False, f"could not verify preflight summary {path}: {type(e).__name__}: {e}")
 
 
 def check_python():
@@ -34,7 +198,10 @@ def check_python():
     for pkg in REQUIRED_PY:
         try:
             m = importlib.import_module(pkg)
-            v = getattr(m, "__version__", "?")
+            try:
+                v = importlib.metadata.version(pkg)
+            except importlib.metadata.PackageNotFoundError:
+                v = getattr(m, "__version__", "?")
             results.append(_say(True, f"{pkg} {v}"))
         except ImportError:
             results.append(_say(False, f"{pkg} MISSING — pip install {pkg} (or restore from "
@@ -57,7 +224,7 @@ def check_hardware():
                                     text=True, check=True).stdout) / 1e9
         results.append(_say(ram_gb >= MIN_RAM_GB,
                             f"RAM {ram_gb:.0f}GB" + ("" if ram_gb >= MIN_RAM_GB else
-                            f" — below {MIN_RAM_GB:.0f}GB; the plan's RAM budgets assume the 96GB Studio")))
+                            f" — below {MIN_RAM_GB:.0f}GB; the plan's RAM budgets assume the 128GB Studio")))
     except Exception as e:
         results.append(_say(False, f"could not read RAM: {e}"))
     try:
@@ -110,7 +277,7 @@ def check_receipt_harness():
 
 def check_procurement():
     """Soft check: the fastest-SOTA download path (hf_transfer + hf_xet). Not a hard fail (you can
-    still procure, just slower), but the ~4 TB of frontier parents are the one real bottleneck, so
+    still procure, just slower), but the multi-TB frontier manifest is the one real bottleneck, so
     flag a degraded path loudly. Informational -> always returns True."""
     xfer = importlib.util.find_spec("hf_transfer") is not None
     xet = importlib.util.find_spec("hf_xet") is not None
@@ -125,12 +292,47 @@ def check_procurement():
     return True
 
 
+def check_frontier_refresh():
+    """Hard check: a launch-time HF refresh ledger exists for candidate/model review."""
+    r = subprocess.run(["python3.12", "tools/condense/frontier_ops.py", "refresh", "--out", REFRESH_OUT],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    _say(ok, f"frontier refresh written to {REFRESH_OUT}" if ok else
+         f"frontier refresh FAILED:\n{r.stdout[-500:]}{r.stderr[-800:]}")
+    return ok
+
+
+def check_frontier_ledger():
+    """Write a refreshed frontier ledger so storage + HF metadata state is captured before launch."""
+    r = subprocess.run(["python3.12", "tools/condense/frontier_ops.py", "ledger",
+                        "--refresh-hf", "--out", LEDGER_OUT],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    _say(ok, f"frontier ledger written to {LEDGER_OUT}" if ok else
+         f"frontier ledger FAILED:\n{r.stderr[-800:]}")
+    return ok
+
+
+def check_frontier_launch_gate():
+    """Hard frontier procurement gate: model-aware disk, refresh, manifest, and license checks."""
+    r = subprocess.run(["python3.12", "tools/condense/frontier_ops.py", "launch-gate",
+                        "--phase", "procure", "--require-refresh", REFRESH_OUT,
+                        "--out", LAUNCH_GATE_OUT],
+                       capture_output=True, text=True)
+    ok = r.returncode == 0
+    _say(ok, f"frontier launch gate green ({LAUNCH_GATE_OUT})" if ok else
+         f"frontier launch gate RED ({LAUNCH_GATE_OUT}):\n{r.stdout[-900:]}{r.stderr[-500:]}")
+    return ok
+
+
 def main():
     checks = [
         ("Python env", check_python), ("Rust toolchain", check_rust),
         ("Hardware", check_hardware), ("Tool compile", check_compile),
         ("cargo check", check_cargo), ("Staged models", check_staged_models),
-        ("Procurement path", check_procurement), ("Receipt harness", check_receipt_harness),
+        ("Procurement path", check_procurement), ("Frontier refresh", check_frontier_refresh),
+        ("Frontier ledger", check_frontier_ledger),
+        ("Frontier launch gate", check_frontier_launch_gate), ("Receipt harness", check_receipt_harness),
     ]
     results = {}
     for name, fn in checks:
@@ -141,14 +343,24 @@ def main():
         except Exception as e:
             results[name] = _say(False, f"{name} raised {type(e).__name__}: {e}")
     ok = all(results.values())
+    summary_ok = write_summary(results, ok)
+    ok = ok and summary_ok
     print(f"\n{'='*60}", file=sys.stderr)
     if ok:
         print("PREFLIGHT GREEN — safe to run: python3.12 tools/condense/studio_run.py go", file=sys.stderr)
     else:
         failed = [n for n, v in results.items() if not v]
+        if not summary_ok:
+            failed.append("Preflight summary")
         print(f"PREFLIGHT RED — fix before `go`: {failed}", file=sys.stderr)
     return 0 if ok else 1
 
 
 if __name__ == "__main__":
+    if "--verify-summary" in sys.argv:
+        i = sys.argv.index("--verify-summary")
+        path = SUMMARY_OUT
+        if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
+            path = sys.argv[i + 1]
+        sys.exit(0 if verify_summary(path) else 1)
     sys.exit(main())

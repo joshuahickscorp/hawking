@@ -1,10 +1,10 @@
 #!/usr/bin/env python3.12
 """size_frontier.py — the BLACK-HOLE size axis: how many parameters can a device pull in, orthogonal
-to per-weight quality. llama.cpp caps at what fits in RAM (~500B @ 1.34bpw on 84GB). Hawking's move
+to per-weight quality. llama.cpp caps at what fits in RAM (~669B @ 1.34bpw on 112GB). Hawking's move
 is to stop requiring the whole model resident — the model LIVES on the SSD and only the weights a
 token touches stream through RAM (the event horizon). Three regimes, honestly separated by speed:
 
-  RESIDENT   (fast, full speed) : whole .tq in RAM. ceiling = RAM_budget * 8 / bpw  (~500B @1.34/84GB).
+  RESIDENT   (fast, full speed) : whole .tq in RAM. ceiling = RAM_budget * 8 / bpw  (~669B @1.34/112GB).
   MOE-PAGED  (usable)           : only ACTIVE experts + a hot-expert cache resident; cold experts page
                                   from SSD on demand. Footprint ~ active_params, NOT total. All giant
                                   models are MoE, so this is the lever: total params bounded by SSD,

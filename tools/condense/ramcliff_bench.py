@@ -3,7 +3,8 @@
 
 THE BLACK-HOLE HEADLINE this tool measures: "the condensed .tq model serves RESIDENT where the
 conventional quant overflows unified memory and degrades to SSD-paging tok/s." For a cliff model
-(70B / 235B-A22B / 405B / 671B / 744B) it reports four numbers and one verdict:
+(70B plus the shared frontier manifest: 235B-A22B / 405B / 671B / GLM-5.2 / Kimi-K2 family) it reports four
+numbers and one verdict:
 
   tok/s_resident   decode tok/s of the condensed .tq served RESIDENT (weights fit the weight budget)
   tok/s_swapping   decode tok/s of the SAME model at Q4_K when the Q4_K artifact overflows the box
@@ -61,30 +62,54 @@ CLI (argv/argparse, matching neighbors):
 
 Writes reports/condense/<label>_ramcliff.json ; human summary -> stderr.
 """
-import sys, os, json, math, argparse, shutil, subprocess
+import sys, os, json, math, argparse, shutil, subprocess, datetime, hashlib
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from studio_manifest import DEFAULT_HARDWARE, FRONTIER_MODELS
 
 # ── hardware envelope (matches studio_run.py / subbit_ladder.py) ────────────────────────
 Q4K_BPW = float(os.environ.get("RAMCLIFF_Q4K_BPW", "4.5"))     # llama Q4_K reference effective rate
 CLIFF_X_GATE = float(os.environ.get("RAMCLIFF_CLIFF_X", "10.0"))  # >10x resident-vs-swap = headline
-SSD_GBPS = float(os.environ.get("RAMCLIFF_SSD_GBPS", "5.0"))   # modeled SSD read BW (swapping path)
-RAM_GBPS = float(os.environ.get("RAMCLIFF_RAM_GBPS", "800.0")) # modeled unified-mem BW (resident path)
+SSD_GBPS = float(os.environ.get("RAMCLIFF_SSD_GBPS", str(DEFAULT_HARDWARE.ssd_read_gbps)))
+RAM_GBPS = float(os.environ.get("RAMCLIFF_RAM_GBPS", str(DEFAULT_HARDWARE.ram_gbps)))
 
 DEV = os.environ.get("DOCTOR_DEVICE", "cpu")                   # recorded for provenance only
 DTYPE = os.environ.get("DOCTOR_DTYPE", "float32")              # recorded; staging read only
 
-# the cliff models (mirrors studio_run.FRONTIER + the cross-family 70B point). For each:
+# the cliff models (mirrors studio_manifest.FRONTIER_MODELS + the cross-family 70B point). For each:
 #   label, params_b, active_b (None=dense), serve_eff_bpw (headline rung), moe?, role
 CLIFF_MODELS = [
     ("70B",       70.6,  None, 1.34, False, "dense cross-family cliff point"),
-    ("235B-A22B", 235.0, 22.0, 1.34, True,  "MoE: 39GB @1.34 resident; Q4_K 132GB overflows"),
-    ("405B",      405.0, None, 1.34, False, "dense FRONTIER: 68GB @1.34 resident; Q4_K 228GB overflows"),
-    ("671B",      671.0, 37.0, 1.00, True,  "MoE capstone: 84GB @1.00 box-edge; Q4_K 377GB overflows"),
-    ("744B",      744.0, 32.0, 0.75, True,  "MoE stretch: 70GB @0.75 resident; Q4_K 419GB overflows"),
+    *[
+        (m.label, m.total_b, m.active_b, m.serve_bpw, m.moe,
+         f"{m.role}: {m.artifact_gb():.0f}GB @{m.serve_bpw:.2f} resident target; Q4_K {m.q4k_gb():.0f}GB overflows")
+        for m in FRONTIER_MODELS
+    ],
 ]
 
 
 def log(m):
     print(m, file=sys.stderr); sys.stderr.flush()
+
+
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+
+
+def _git_commit():
+    try:
+        out = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             capture_output=True, text=True, timeout=10).stdout.strip()
+        return out or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 # ── hardware probes (best-effort; gate cleanly when unavailable) ────────────────────────
@@ -103,7 +128,7 @@ def weight_budget_gb():
     if ov:
         return float(ov)
     mem = _memsize_gb()
-    return max(8.0, round(mem * 0.82, 1)) if mem else 84.0   # 84 = the Studio default if probe fails
+    return max(8.0, round(mem * 0.82, 1)) if mem else DEFAULT_HARDWARE.weight_budget_gb
 
 
 def _have_serve_bin():
@@ -236,12 +261,19 @@ def bench_model(label, params_b, active_b, eff_bpw, moe, role, budget_gb,
     pmpath = _have_powermetrics()
 
     rec = {
-        "label": label, "bench": "RAM-CLIFF", "role": role,
+        "schema": "hawking.frontier_ramcliff.v1",
+        "generated_at": _now(),
+        "label": label,
+        "model": label,
+        "bench": "RAM-CLIFF", "role": role,
         "note": ("PROBE/BENCH — tok/s & J/tok are a real-serve claim ONLY under a NATIVE .tq serve "
                  "(decode folded into GEMV) on the cliff box. Rehydrate-to-f16 counts ZERO. EFFECTIVE "
                  "bpw only. On this laptop the serve binary / cliff model / powermetrics are absent "
                  "-> tok/s & J/tok are MODELED (synthetic) or GATED; size & residency facts are real."),
         "device": DEV, "dtype": DTYPE,
+        "machine_class": DEFAULT_HARDWARE.name,
+        "git_commit": _git_commit(),
+        "commands": ["python3.12 tools/condense/ramcliff_bench.py " + " ".join(sys.argv[1:])],
         "params_b": params_b, "active_b": active_b, "moe": moe,
         "eff_bpw": eff_bpw, "q4k_bpw": Q4K_BPW,
         "budget_gb": budget_gb,
@@ -250,6 +282,9 @@ def bench_model(label, params_b, active_b, eff_bpw, moe, role, budget_gb,
         "active_gb_per_tok": active_gb, "q4k_active_gb_per_tok": q4k_active_gb,
         "model_bandwidth": {"ram_gbps": RAM_GBPS, "ssd_gbps": SSD_GBPS},
     }
+    if tq_path and os.path.exists(tq_path):
+        rec["artifact_path"] = tq_path
+        rec["artifact_sha256"] = _sha256_file(tq_path)
 
     # ── tok/s + J/tok ──────────────────────────────────────────────────────────────────
     if synthetic:
@@ -438,11 +473,11 @@ def cmd_selftest():
     # Force a small, deterministic box so the cliff is well-defined regardless of the real machine.
     os.environ["RAMCLIFF_BUDGET_GB"] = "84"
     budget = weight_budget_gb()
-    check("budget override honored (84GB)", budget == 84.0)
+    check("budget override honored (84GB synthetic box)", budget == 84.0)
 
     # 671B MoE @1.00 = 83.9GB resident (box-edge); Q4_K = 377GB overflows hugely. Active 37B.
     r671 = bench_model("671B", 671.0, 37.0, 1.00, True, "moe-capstone", budget, synthetic=True)
-    check("671B condensed @1.0 is RESIDENT (<=84GB)", r671["condensed_resident"])
+    check("671B condensed @1.0 is RESIDENT on the synthetic box", r671["condensed_resident"])
     check("671B Q4_K (377GB) OVERFLOWS the box", not r671["q4k_resident"])
     check("671B cliff_x measured", r671["cliff_x"] is not None)
     check("671B cliff_x > 10x (SSD<<RAM makes the cliff steep)", r671["cliff_x"] > 10.0)

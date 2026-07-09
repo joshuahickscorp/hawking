@@ -7,9 +7,9 @@ sweep is a BIT-FLOOR SEARCH (climb 1→4 bit, stop at the lowest bit the doctor 
 near-1:1), not a fixed grid. The central hypothesis: the bit-floor DESCENDS as params
 rise (bigger = more redundant = compresses harder). See docs/plans/parameter_sweep_pipeline.md.
 
-Two ceilings on a 96 GB box:
-  CONDENSE (needs f16 resident ≈ 2×params): ~32-40B naive; ~235B+ via phase-2 block-wise.
-  SERVE   (needs only the .tq ≈ bpw/8×params): ~200B @3-bit, ~285B @2-bit, ~500B @1.34-bit.
+Two ceilings on the M1 Ultra 128 GB / 8 TB Studio:
+  CONDENSE (needs f16 resident ≈ 2×params): ~48B naive; ~235B+ via phase-2 block-wise.
+  SERVE   (needs only the .tq ≈ bpw/8×params): ~268B @3-bit, ~383B @2-bit, ~669B @1.34-bit.
 
 CLI:
   python ladder.py            # summary by family/tier
@@ -18,6 +18,7 @@ CLI:
   python ladder.py --fit 405  # show serve footprint for an arbitrary param count
 """
 import sys
+from studio_manifest import FRONTIER_MODELS
 
 # ── bit → bpw payload (matches condense.sh / TrellisConfig::for_bpw_quality) ──────────
 BPW = {1: 1.34, 2: 2.34, 3: 3.34, 4: 4.50}
@@ -84,13 +85,16 @@ def serve_fits(params_b, bpw, budget=WEIGHT_BUDGET):
 
 
 def serve_headroom_bpw(params_b):
-    """The HIGHEST bit-rung bpw at which this model still serves on 96 GB = its quality
-    headroom / constraint. 32B → 4.50 (unconstrained); 405B → 1.34 (1-bit only); a model
-    that needs the sub-rung 1.0 edge → 1.0; None if even 1.0 bpw overflows."""
+    """The HIGHEST bit-rung bpw at which this model still serves on the Studio = its quality
+    headroom / constraint. 32B -> 4.50 (unconstrained); 405B -> 1.34 (1-bit only); a model
+    that needs a sub-rung edge gets 1.0/0.75/0.50/0.33; None if even 0.33 bpw overflows."""
     for bits in (4, 3, 2, 1):
         if serve_fits(params_b, BPW[bits]):
             return BPW[bits]
-    return 1.0 if tq_gb(params_b, 1.0) <= WEIGHT_BUDGET else None
+    for bpw in (1.0, 0.75, 0.50, 0.33):
+        if tq_gb(params_b, bpw) <= WEIGHT_BUDGET:
+            return bpw
+    return None
 
 
 def condense_tier(params_b, has_f16_source=True):
@@ -108,6 +112,35 @@ def condense_tier(params_b, has_f16_source=True):
 def M(family, name, hf_id, params_b, priority, active_b=None, keep_f16=None, note=""):
     return dict(family=family, name=name, hf_id=hf_id, params_b=params_b, priority=priority,
                 active_b=active_b, keep_f16=keep_f16, note=note)
+
+
+def _frontier_manifest_rows():
+    """Frontier rows generated from studio_manifest.py so new 100B+ targets stay in sync.
+
+    Qwen3-235B-A22B is already represented in P2 as the MoE dream case, so avoid a duplicate row
+    here while still letting `studio_run.py --frontier-run` include it from the manifest.
+    """
+    skip = {"235B-A22B"}
+    rows = []
+    families = {
+        "meta-llama": "llama3",
+        "deepseek-ai": "deepseek",
+        "zai-org": "glm",
+        "moonshotai": "moonshot",
+        "Qwen": "qwen3",
+    }
+    for model in FRONTIER_MODELS:
+        if model.label in skip:
+            continue
+        org = model.hf_id.split("/", 1)[0]
+        family = families.get(org, org.lower().replace("-", ""))
+        name = model.label.lower().replace("_", "-")
+        note = (f"{model.role}: {model.serve_bpw:.2f} bpw ~= {model.artifact_gb():.0f}GB "
+                f"resident target; {model.note}")
+        rows.append(M(family, name, model.hf_id, model.total_b, 3,
+                      active_b=model.active_b, keep_f16=False, note=note))
+    return rows
+
 
 MODELS = [
     # ── P0 — Qwen2.5 spine (clean 144× scaling curve) ──────────────────────────────────
@@ -142,11 +175,8 @@ MODELS = [
     M("gptoss", "gpt-oss-120b",  "openai/gpt-oss-120b", 116.8, 2, active_b=5.1, keep_f16=False,
       note="120B @≤3-bit fits; phase-2 block-wise condense"),
     M("deepseek", "deepseek-v2-lite", "deepseek-ai/DeepSeek-V2-Lite-Chat", 15.7, 2, active_b=2.4),
-    # ── P3 — the 1-bit frontier (gated on 1-bit viable at scale) ───────────────────────
-    M("llama3", "llama3.1-405b",  "meta-llama/Llama-3.1-405B-Instruct", 405.0, 3, keep_f16=False,
-      note="FRONTIER: serves ONLY at ≤1.34 bpw (68GB). Needs 1-bit viable + block-wise condense"),
-    M("deepseek", "deepseek-v3",  "deepseek-ai/DeepSeek-V3", 671.0, 3, active_b=37.0, keep_f16=False,
-      note="EDGE: 1.0 bpw ≈ 84GB = absolute ceiling of the box; MoE active 37B"),
+    # ── P3 — the 1-bit/sub-bit frontier (generated from studio_manifest.py) ─────────────
+    *_frontier_manifest_rows(),
 ]
 
 
@@ -196,7 +226,7 @@ def main():
             print(f"\n# {m['name']}  ({m['params_b']}B, P{m['priority']}, condense={tier}"
                   f"{', '+m['note'] if m['note'] else ''})")
             for c in cells(m):
-                fit = "fits✓" if c["serve_fits"] else "fits✗(96GB)"
+                fit = "fits✓" if c["serve_fits"] else f"fits✗({WEIGHT_BUDGET:.0f}GB)"
                 sv = "" if c["serves"] else " [residual serve pending]"
                 print(f"    {c['recipe']:9s} eff~{c['eff_bpw']:.2f}bpw  .tq≈{c['tq_gb']}GB  {fit}{sv}")
         return

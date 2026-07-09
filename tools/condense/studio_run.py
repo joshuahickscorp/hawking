@@ -5,7 +5,7 @@ This is the one command the Studio runs. It chains, for EACH model in the ladder
 stack and a binary search for that model's bit-floor, emits a receipt per floor point, and after the
 whole ladder fits the floor-vs-scale curve. The parallelism is at MODEL granularity: each model's
 pipeline runs serially inside one job (peak RAM = that model's doctor), and ram_scheduler packs whole
-model-pipelines into the 96 GB box (labs+7B together, 14B bigger, 32B solo). Self-dispatching:
+model-pipelines into the 128 GB Studio (labs+7B together, 14B bigger, 32B solo). Self-dispatching:
   studio_run.py --plan          # dry-run: print the per-model stages + the RAM-pack wave schedule
   studio_run.py --run           # schedule ALL models (packed) then fit the curve  [STUDIO]
   studio_run.py --model 7B      # run ONE model's full chain serially (what --run dispatches) [STUDIO]
@@ -21,13 +21,15 @@ os.chdir(ROOT)
 TC = "tools/condense"
 REC = "receipts/official"
 FLOORS = "reports/cron/bit_floor_curve.jsonl"     # studio-lane floor curve (back-compat default)
+sys.path.insert(0, TC)
+from studio_manifest import DEFAULT_HARDWARE, FRONTIER_MODELS, frontier_by_label, frontier_labels
 
 def floors_path(set_name="studio"):
     """Per-lane floor file so the studio and subbit lanes don't overwrite each other's curve."""
     return FLOORS if set_name == "studio" else f"reports/cron/bit_floor_{set_name}.jsonl"
 
 # model ladder: label -> (hf dir, params(B), doctor peak GB, solo?, role)
-# These DOCTOR resident on 96GB (f16 ~2x params must fit) -> caps at ~32B. This is the bit-floor
+# These DOCTOR resident on 128GB (f16 ~2x params must fit) -> caps at ~32B. This is the bit-floor
 # curve substrate; the 100B+ research targets are SERVE-only (FRONTIER below), a different pipeline.
 LADDER = [
     ("0.5B", "scratch/qwen-05b", 0.5, 10, False, "lab"),
@@ -37,22 +39,13 @@ LADDER = [
     ("32B",  "scratch/qwen-32b", 32.0, 85, True,  "capstone"),   # solo: needs the whole box
 ]
 
-# FRONTIER — the 100B+ research targets (the real prize). On the M1 Ultra 128 GB box the pivot from
-# the M2-Max plan: 235B (~39GB), 405B-dense (~68GB), and 671B@1.0 (~84GB) all fit RESIDENT under the
-# ~112 GB weight budget, so the OOC expert pager (the hardest serve-build item, Type-1 dead in the
-# free-RAM regime) is NOT needed for these. The pipeline condenses block-wise-streamed to a serve-fit
-# .tq, then serves RESIDENT; quality is the native .tq serve (gated on the serve build). Only 744B and
-# the deeper frontier (1T/3T) need the SSD out-of-core path. (f16 parent is streamed, never resident.)
-# label, hf dir, total_b, active_b (None=dense), serve_bpw, moe?, role, HF id
+# FRONTIER — the 100B+ research targets (the real prize). Kept in studio_manifest.py so procurement,
+# RAM-cliff, and docs share one set of hardware/model facts. On the M1 Ultra 128 GB box, the ~112 GB
+# weight budget lets 235B, 405B, 671B, GLM-5.2, and the Kimi-K2 resident stretch rungs run without the
+# OOC expert pager once native .tq serve is wired. (The f16/compressed parent is streamed, never resident.)
 FRONTIER = [
-    ("235B-A22B", "scratch/qwen3-235b-a22b", 235.0, 22.0, 1.34, True,  "moe-resident",
-     "Qwen/Qwen3-235B-A22B"),                                            # ~39GB @1.34  RESIDENT (comfy)
-    ("405B",      "scratch/llama31-405b",    405.0, None, 1.34, False, "dense-resident",
-     "meta-llama/Llama-3.1-405B-Instruct"),                             # ~68GB @1.34  RESIDENT (no pager)
-    ("671B",      "scratch/deepseek-v3",     671.0, 37.0, 1.00, True,  "moe-capstone",
-     "deepseek-ai/DeepSeek-V3"),                                        # ~84GB @1.0   RESIDENT (the prize)
-    ("744B",      "scratch/glm-744b",        744.0, 32.0, 0.75, True,  "moe-stretch",
-     "zai-org/GLM-4.5"),                                                # ~70GB @0.75  RESIDENT (research)
+    (m.label, m.local_dir, m.total_b, m.active_b, m.serve_bpw, m.moe, m.role, m.hf_id)
+    for m in FRONTIER_MODELS
 ]
 
 # the recovery stack run per model, cheapest-first (plan §2). Each entry: (stage, tool, note).
@@ -136,33 +129,34 @@ def run_all(set_name="studio"):
 
 def run_frontier(label):
     """SERVE-oriented frontier pipeline for a 100B+ model (the real research prize). The doctor does
-    NOT fit (f16 2x resident overflows 96GB), so this runs what DOES on streamed shards: the SUBBIT-0
+    NOT fit (f16 2x resident overflows 128GB), so this runs what DOES on streamed shards: the SUBBIT-0
     entropy floor + per-expert sensitivity (MoE) + the serve-fit record. The block-wise condense to a
     serve-fit .tq, the native-serve quality number, and the RAM-cliff tps demo are the Rust serve
     build (read_strand into the serve binary + the per-expert .tq writer) — emitted as gated steps."""
-    row = next((r for r in FRONTIER if r[0] == label), None)
-    if not row:
-        print(f"[frontier] unknown {label}", file=sys.stderr); return 2
-    _, mdir, total, active, bpw, moe, role, hf_id = row
-    artifact = round(total * bpw / 8.0, 1)
-    # M1 Ultra 128 GB weight budget ~112 GB (re-derived from the M2-Max 84 GB). The pivot: 235B (~39GB),
-    # 405B-dense (~68GB), and 671B@1.0 (~84GB) all fit RESIDENT here, so the OOC expert pager (the
-    # hardest serve-build item, and Type-1 dead in the free-RAM regime) is NOT on the critical path.
-    WEIGHT_BUDGET = 112.0
-    fits = artifact <= WEIGHT_BUDGET
+    spec = frontier_by_label(label)
+    if not spec:
+        print(f"[frontier] unknown {label}; known: {', '.join(frontier_labels())}", file=sys.stderr)
+        return 2
+    mdir, total, active, bpw, moe, role, hf_id = (
+        spec.local_dir, spec.total_b, spec.active_b, spec.serve_bpw, spec.moe, spec.role, spec.hf_id
+    )
+    artifact = round(spec.artifact_gb(), 1)
+    fits = spec.fits_resident(DEFAULT_HARDWARE)
     resident = "RESIDENT (no pager)" if fits else "OVERFLOW (SSD-bound, deep frontier)"
     ncpu = str(os.cpu_count() or 8)
     env = {**os.environ, "DOCTOR_DEVICE": "cpu", "DOCTOR_DTYPE": "bfloat16", "STRAND_NO_GPU": "1",
            "OMP_NUM_THREADS": ncpu, "MKL_NUM_THREADS": ncpu, "VECLIB_MAXIMUM_THREADS": ncpu}
-    print(f"[frontier] {label} ({total}B{f', act {active}B MoE' if moe else ' dense'}, role={role}) "
-          f"-> {bpw} bpw = {artifact}GB ({resident} on 128GB)", file=sys.stderr)
+    print(f"[frontier] {spec.label} ({total}B{f', act {active}B MoE' if moe else ' dense'}, role={role}) "
+          f"-> {bpw} bpw = {artifact}GB ({resident} on 128GB; source={spec.source_kind})",
+          file=sys.stderr)
     if not os.path.isdir(mdir):
-        print(f"[frontier] {label} NOT staged at {mdir}. Fastest-SOTA procurement (hf_transfer + hf_xet, "
-              f"link-bound): python3.12 {TC}/procure.py {label}  (8 TB SSD; ~3h/671B on gigabit)", file=sys.stderr)
+        print(f"[frontier] {spec.label} NOT staged at {mdir}. Fastest-SOTA procurement (hf_transfer + hf_xet, "
+              f"link-bound): python3.12 {TC}/procure.py {spec.label}  "
+              f"(download~{spec.download_gb:.0f}GB; 8 TB SSD)", file=sys.stderr)
         return 2
     # Auto mode: recommend the bit format + serve regime (RESIDENT / MOE-PAGED / DENSE-OOC) and show
     # the device size ceiling before condensing (the "how big can we pull in" advisor).
-    ab = ["python3.12", f"{TC}/auto_bits.py", "--params", str(total), "--label", label]
+    ab = ["python3.12", f"{TC}/auto_bits.py", "--params", str(total), "--label", spec.label]
     if active:
         ab += ["--active", str(active)]
     subprocess.run(ab, env=env)
@@ -176,12 +170,12 @@ def run_frontier(label):
         dr.append("--moe")
     subprocess.run(dr, env=env)
     # Runs on streamed shards (no full f16 resident): the entropy floor + the MoE expert decision.
-    subprocess.run(["python3.12", f"{TC}/subbit.py", "measure", mdir, label], env=env)
+    subprocess.run(["python3.12", f"{TC}/subbit.py", "measure", mdir, spec.label], env=env)
     # Architecture coverage: real state geometry (Mamba2/RWKV-7 flat state) + which Doctor levers
     # are arch-compatible for this model, so the selector above never wastes a bake on one that isn't.
-    subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, label], env=env)
+    subprocess.run(["python3.12", f"{TC}/arch_coverage.py", mdir, spec.label], env=env)
     if moe:
-        subprocess.run(["python3.12", f"{TC}/expert.py", "sensitivity", mdir, "--label", label,
+        subprocess.run(["python3.12", f"{TC}/expert.py", "sensitivity", mdir, "--label", spec.label,
                         "--bits", "1,2"], env=env)
         # Hot-expert cache policy: simulate hit-rate/blended-tok/s across cache sizes so the OOC
         # pager's cache size is chosen from a measured sweep, not a guess. n_experts best-effort
@@ -200,15 +194,16 @@ def run_frontier(label):
         subprocess.run(["python3.12", f"{TC}/expert.py", "cache", "--sim", str(n_experts),
                         str(active_k), "--active-gb", str(round(active_gb_tok, 3))], env=env)
     # the serve-build steps (Rust, gated): block-wise condense + native-serve quality + RAM-cliff tps
-    rec = {"model": label, "total_b": total, "active_b": active, "moe": moe, "role": role,
+    rec = {"model": spec.label, "hf_id": hf_id, "total_b": total, "active_b": active, "moe": moe,
+           "role": role, "source_kind": spec.source_kind, "note": spec.note,
            "serve_bpw": bpw, "artifact_gb": artifact, "serve_fits_resident_112gb": fits,
            "resident_no_pager": fits,
-           "condense_cmd": f"# block-wise streamed single-bake (+per-expert if MoE) to {label}.tq @ {bpw}bpw",
+           "condense_cmd": f"# block-wise streamed single-bake (+per-expert if MoE) to {spec.label}.tq @ {bpw}bpw",
            "serve_quality_gated_on": "read_strand wired into hawking-serve binary + native .tq GEMV",
-           "ram_cliff_demo": f"serve {label}.tq ({artifact}GB resident) vs Q4_K ({round(total*4.5/8)}GB, overflows->swap)"}
+           "ram_cliff_demo": f"serve {spec.label}.tq ({artifact}GB resident) vs Q4_K ({round(total*4.5/8)}GB, overflows->swap)"}
     os.makedirs("reports/condense", exist_ok=True)
-    json.dump(rec, open(f"reports/condense/{label}_frontier.json", "w"), indent=2)
-    print(f"[frontier] {label} serve-fit recorded; quality+cliff GATED on the native serve build",
+    json.dump(rec, open(f"reports/condense/{spec.label}_frontier.json", "w"), indent=2)
+    print(f"[frontier] {spec.label} serve-fit recorded; quality+cliff GATED on the native serve build",
           file=sys.stderr)
     return 0
 
@@ -216,8 +211,8 @@ def run_frontier(label):
 def run_frontier_all():
     """Frontier models are each ~box-filling -> run sequentially (the scheduler would serialize them
     anyway). Skips unstaged. The serve build is the gate on the quality/cliff numbers."""
-    for (lbl, *_rest) in FRONTIER:
-        run_frontier(lbl)
+    for spec in FRONTIER_MODELS:
+        run_frontier(spec.label)
 
 
 def plan():
@@ -310,7 +305,7 @@ def go_plan():
     print("  P2 SUBBIT    run_all('subbit')  -> SUBBIT-0 gate + sub-1-bit lane -> bit_floor_subbit.jsonl")
     print("  P3 SPEC      spec_revive.py on " + ", ".join(SPEC_TARGETS) + " (lossless gate -> capture-retrain "
           "-> accept -> governor)")
-    print("  P4 FRONTIER  run_frontier_all() -> 100B+ research prize (235B-A22B/405B/671B/744B)")
+    print("  P4 FRONTIER  run_frontier_all() -> 100B+ research prize (" + "/".join(frontier_labels()) + ")")
     print("  P5 EVAL      eval_suite.py (capability + NIAH) + ctx_extend.py (YaRN long-ctx + KV-RAM + SSM moat)")
     print("  P6 BASELINE  bench_baselines.py -> wedge gate vs IQ1_S/IQ2/MLX-4bit at matched bpw")
     print("  P7 CLIFF     ramcliff_bench.py --all -> RAM-cliff tok/s + energy J/tok (headline + energy moat)")

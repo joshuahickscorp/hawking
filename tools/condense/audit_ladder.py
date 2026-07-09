@@ -501,7 +501,7 @@ def _bake_shadow(candidates, bits, tag):
     """STRAND-bake a doctor's healed-shadow weights (L4/L5 produce full-precision quant-robust
     weights that must be baked through the real codec). Picks the first shadow file that exists,
     bakes it whole, returns ([baked_override], effective_bpw). Whole-bake peaks at ~2x bf16 RAM —
-    fine on the 96GB Studio (this is a Studio-tier stage)."""
+    fine on the 128GB Studio (this is a Studio-tier stage)."""
     raw = next((c for c in candidates if os.path.exists(c)), None)
     if not raw:
         raise RuntimeError(f"{tag}: doctor produced no shadow ({candidates})")
