@@ -113,6 +113,9 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `python3.12 tools/condense/frontier_doctor_recovery.py selftest`: pass. It verifies signed Doctor
   recovery drafts remain blocked, complete 7B+ recovery records sign and verify, tampered receipts fail,
   heldout task collapse is rejected, and missing heldout traces are rejected.
+- `python3.12 tools/condense/frontier_evidence_run.py selftest`: pass. It verifies complete same-run
+  Studio evidence bundles sign and verify, tampered bundles fail, signed drafts remain blocked, and
+  placeholder source-release decisions cannot pass.
 - `python3.12 tools/condense/frontier_serve_capture.py selftest`: pass. It verifies native serve-bench
   JSON can sign a strict serve receipt, the signed receipt verifies through the existing native receipt
   runner, and f16 rehydrate or artifact-hash mismatch reports are blocked.
@@ -124,13 +127,14 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   tamper/placeholder rejection, and compressed-source prequantization enforcement.
 - `python3.12 tools/condense/frontier_claims.py selftest`: pass. It verifies blocked missing bundles,
   admissible synthetic bundles with signed source provenance, parity, native receipts, Doctor recovery,
-  and experiment matrices, signed-bundle verification, and stale-evidence rejection.
+  experiment matrices, and same-run Studio evidence-run bundles, signed-bundle verification, and
+  stale-evidence rejection.
 - `python3.12 tools/condense/frontier_ops.py selftest`: pass after adding the signed-claim-bundle launch
   gate, signed coverage/native/Doctor/experiment receipt operator paths, native serve-capture route,
   proof-pack route, lifecycle state, product-facing license/review command templates, signed worktree
   split planning, wave-0 packet worktree evidence, signed audit-grade receipts, completion-audit guard,
-  and atomic JSON receipt writes.
-- `python3.12 -m py_compile tools/condense/frontier_doctor_recovery.py tools/condense/frontier_claims.py tools/condense/frontier_ops.py`: pass.
+  same-run Studio evidence-run gate, and atomic JSON receipt writes.
+- `python3.12 -m py_compile tools/condense/frontier_evidence_run.py tools/condense/frontier_claims.py tools/condense/frontier_ops.py`: pass.
 - `cargo check -p hawking`: pass after adding the expanded `hawking studio` proof/lifecycle/plan surface.
 - `cargo test -p hawking studio --quiet`: pass, 3 studio unit tests, including proof-pack summary
   extraction.
@@ -138,7 +142,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   `record-license`, `review-plan`, `review-candidate`, `source-provenance-plan`,
   `source-provenance-receipt`, `coverage-plan`, `coverage-receipt`, `parity-receipt`, `receipt-plan`,
   `receipt-record`, `doctor-recovery-plan`, `doctor-recovery-receipt`, `experiment-plan`,
-  `experiment-receipt`, `claim-bundle-build`, and `claim-bundle-verify` through the product CLI.
+  `experiment-receipt`, `evidence-run-plan`, `evidence-run-receipt`, `claim-bundle-build`, and
+  `claim-bundle-verify` through the product CLI.
   Later builds also passed after adding `preflight`, `verify-summary`, signed preflight network evidence,
   `worktree-plan`, `audit-grade-build`, `audit-grade-verify`, and `completion-audit-build|verify`.
 - `cargo run -p hawking --bin hawking -- studio snapshot`: pass. It reads the signed preflight summary,
@@ -194,6 +199,16 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `target/debug/hawking studio experiment-receipt sign|verify 235B-A22B --out-dir <tmp> --json`: pass
   with a synthetic complete experiment matrix in a temp directory, proving the product wrapper can sign
   and verify without mutating real Studio evidence.
+- `target/debug/hawking studio evidence-run-plan 235B-A22B --json`: pass as a read-only blocker plan,
+  showing the nine upstream evidence files, the one-command same-run requirement, and the required source
+  release decision.
+- `target/debug/hawking studio evidence-run-receipt draft 235B-A22B --out-dir /tmp/hawking-evidence-cli --force --sign-draft --json`:
+  pass while returning `ok=false` inside the JSON, writing an intentionally blocked signed same-run
+  evidence bundle instead of treating the missing measured Studio run as a CLI failure.
+- `target/debug/hawking studio evidence-run-receipt verify 235B-A22B --out-dir /tmp/hawking-evidence-cli --json`:
+  correctly red, because final measured source provenance, parity, native `.tq` serve, same-box baseline,
+  frozen eval, RAM-cliff/energy, Doctor recovery, experiment matrix, artifact inventory, and source
+  release decision receipts do not exist yet.
 - `target/debug/hawking studio review-plan --refresh reports/condense/frontier_refresh.preflight.json --out <tmp> --json`:
   pass as a read-only blocker plan, writes the review queue, currently reports 39 missing decisions, and
   every generated command starts with `hawking studio review-candidate`.
@@ -215,7 +230,7 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `cargo run -p hawking --bin hawking -- studio run-next --require-refresh reports/condense/frontier_refresh.preflight.json --json`:
   pass. It prints the first human-proof license command and does not execute it.
 - `cargo run -p hawking --bin hawking -- studio proof-pack --force --json`: pass. Product-facing wrapper
-  for the all-frontier signed draft wall returned `ok=true`, 9 frontier models, 72 evidence rows, and 9
+  for the all-frontier signed draft wall returned `ok=true`, 9 frontier models, 81 evidence rows, and 9
   intentionally blocked local claim bundles.
 - `target/debug/hawking studio serve-capture 235B-A22B --artifact <tiny.tq> --bench-json <strict_report.json> --command <exact serve command> --served-forward-receipt selftest://served-forward --parity-receipt selftest://parity --out <tmp>/serve.json --force --json`:
   pass. Product-facing wrapper returned `ok=true`, `status.ok=true`, `strict_ok=true`, wrote the receipt,
@@ -223,15 +238,17 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `target/debug/hawking studio snapshot --json`: pass; `next_safe_commands` now includes
   `hawking studio source-provenance-receipt verify`, `hawking studio receipt-record verify --kind both`,
   `hawking studio doctor-recovery-plan`, `hawking studio doctor-recovery-receipt verify`,
-  `hawking studio experiment-receipt verify`, `hawking studio claim-bundle-build`, and `hawking studio
-  claim-bundle-verify` before lifecycle gates.
+  `hawking studio evidence-run-plan`, `hawking studio evidence-run-receipt verify`,
+  `hawking studio experiment-receipt verify`, `hawking studio claim-bundle-build`, and
+  `hawking studio claim-bundle-verify` before lifecycle gates.
 - `target/debug/hawking studio source-provenance-plan 235B-A22B --json`: pass; generated command
   template now starts with `hawking studio source-provenance-receipt`.
 - `target/debug/hawking studio experiment-plan 235B-A22B --json`: pass; generated command template now
   starts with `hawking studio experiment-receipt`.
 - `target/debug/hawking studio gate --phase claim --json`: correctly red. Fresh gate output includes
-  `frontier-doctor-recovery: 0/9 Doctor recovery receipts verify` and
-  `summary.doctor_recovery_blocked=9`.
+  `frontier-doctor-recovery: 0/9 Doctor recovery receipts verify`,
+  `frontier-studio-evidence-runs: 0/9 Studio evidence-run bundles verify`,
+  `summary.doctor_recovery_blocked=9`, and `summary.studio_evidence_run_blocked=9`.
 
 ## Qwen dense long-tail classification
 
@@ -287,7 +304,9 @@ Post-split review stack on `codex/hawking-studio-stabilization`:
 - `0c7015c3 Add Studio proof lifecycle and native TQ gates`
 - `bacd6edb Record post-split Studio stabilization receipts`
 - `6c1b5a0e Add Studio completion audit guard`
-- this note now covers the Doctor recovery receipt/gate stabilization on top of those review commits.
+- `a6d27c28 Add Studio Doctor recovery receipt gate`
+- this note now covers the same-run Studio evidence-run receipt/gate stabilization on top of those
+  review commits.
 - `reports/condense/worktree_split_plan.local.json` verifies with `risk: clean`, 0 dirty entries,
   0 staged entries, 0 unstaged entries, 0 untracked entries, and 0 subsystems.
 - The root `node_modules/` artifact is ignored by `.gitignore`; it is 4 KB locally and is not part of
@@ -348,20 +367,26 @@ Generated locally without downloads or bakes:
   it verifies as intentionally incomplete until final seeds, ablations, bpw rungs, RAM-cliff repeats,
   baseline variants, null certifications, rebake/hash proof, exact commands, and row-level traces replace
   TODO state.
+- `reports/condense/<LABEL>_studio_evidence_run.json` for every frontier label: signed but blocked
+  draft same-run Studio evidence-run envelopes. They verify as intentionally incomplete until the final
+  one-command Studio run links final source provenance, architecture parity, native `.tq` serve,
+  same-box baselines, frozen eval coverage, RAM-cliff/energy, Doctor recovery, experiment matrix,
+  artifact inventory, and source-release decision receipts with matching hashes.
 - `reports/condense/235B-A22B_claim_bundle.local.json`: blocked signed bundle probe for 235B-A22B;
-  `claim_admissible=false` with 128 blockers after signed-draft source provenance, parity, coverage,
-  native receipt, Doctor recovery, and experiment checks were added. Every evidence file in the bundle
-  now exists and hashes; all blockers are draft/final-measurement requirements.
+  `claim_admissible=false` with 270 blockers after signed-draft source provenance, parity, coverage,
+  native receipt, Doctor recovery, experiment, and same-run evidence-run checks were added. Every
+  evidence file in the bundle now exists and hashes; all blockers are draft/final-measurement
+  requirements.
 - `reports/condense/frontier_proof_pack.local.json`: all-frontier local proof-pack summary. It records
-  9/9 blocked local claim bundles, 72/72 signed draft evidence files present, and zero unsigned/missing
+  9/9 blocked local claim bundles, 81/81 signed draft evidence files present, and zero unsigned/missing
   draft envelopes across source provenance, parity, baseline/eval, native serve/RAM-cliff, Doctor
-  recovery, and experiment evidence.
+  recovery, experiment, and same-run evidence-run evidence.
 - `reports/condense/<LABEL>_claim_bundle.local.json` for every frontier label: all nine local bundles
-  are claim-inadmissible with 126-128 blockers each, and all eight evidence files per bundle exist and
+  are claim-inadmissible with 266-270 blockers each, and all nine evidence files per bundle exist and
   hash.
 - `reports/condense/frontier_claim_launch_gate.local.json`: claim-phase launch gate snapshot with signed
-  bundles and Doctor recovery included as hard failures; fresh output records
-  `doctor_recovery_blocked=9`.
+  bundles, Doctor recovery, and same-run Studio evidence-run included as hard failures; fresh output
+  records `doctor_recovery_blocked=9` and `studio_evidence_run_blocked=9`.
 - `reports/condense/worktree_split_plan.local.json`: signed dirty-tree split receipt. It verifies through
   `hawking studio worktree-plan --verify` and is summarized by the wave-0 launch packet.
 - `reports/condense/studio_runtime_contract.local.json`: signed runtime/proof-mode contract. It hashes the
@@ -376,12 +401,12 @@ Generated locally without downloads or bakes:
   records that the current 8.4 target is not proven while the runtime contract is green and all frontier
   claims are explicitly walled.
 - `reports/condense/studio_completion_audit.local.json`: signed Hawking Studio 10/10 completion audit.
-  It verifies as a valid red receipt through `hawking studio completion-audit-verify`, with 2/16
-  requirements passing locally (`split_clean_worktree`, `native_tq_runtime_contract`) and 14/16 blocked
+  It verifies as a valid red receipt through `hawking studio completion-audit-verify`, with 2/17
+  requirements passing locally (`split_clean_worktree`, `native_tq_runtime_contract`) and 15/17 blocked
   on the actual Studio evidence: preflight/environment, human license/review gates, procurement gate,
   native `.tq` serve, architecture parity, 7B+ Doctor recovery, RAM-cliff/energy, same-box baselines,
-  frozen eval coverage, source provenance, experiment depth, claim gate, signed claim bundles, and the
-  final audit-grade target.
+  frozen eval coverage, source provenance, experiment depth, same-run Studio evidence bundle, claim
+  gate, signed claim bundles, and the final audit-grade target.
 
 Current launch-gate wall:
 
@@ -393,8 +418,8 @@ Current launch-gate wall:
   not a final measured receipt;
 - source provenance remains 9/9 blocked for public claims; the source-provenance envelopes are signed
   drafts, not final HF revision/file-manifest receipts;
-- baseline/eval/native-serve/RAM-cliff/Doctor/experiment evidence remains incomplete until Studio or
-  smaller proof-complete runtime work produces signed receipts;
+- baseline/eval/native-serve/RAM-cliff/Doctor/experiment/same-run evidence remains incomplete until
+  Studio or smaller proof-complete runtime work produces signed receipts;
 - the 235B-A22B baseline/eval envelopes are signed drafts, not final receipts, so coverage remains 0/9;
 - the 235B-A22B native serve/RAM-cliff envelopes are signed drafts, not final receipts, so native receipt
   gates remain 0/9;
@@ -402,6 +427,8 @@ Current launch-gate wall:
   Doctor recovery remains 0/9;
 - the 235B-A22B experiment matrix envelope is a signed draft, not a final receipt, so experiment depth
   remains 0/9;
+- the same-run Studio evidence-run envelopes are signed drafts, not final one-command measured bundles,
+  so `frontier-studio-evidence-runs` remains 0/9;
 - signed public claim bundles are 0/9. The `.local` proof-pack bundles correctly fail verification
   because the underlying evidence files are intentionally draft-blocked; no evidence file is missing from
   any local bundle now.
@@ -412,10 +439,10 @@ Current launch-gate wall:
   `runtime_contract_ok=true`, and 8 Studio facets below the 8.4 target.
 - the signed completion audit is valid, but `completion_ok=false`; it records the local stabilization
   boundary explicitly and refuses to treat drafts or missing receipts as native serve, parity, Doctor
-  recovery, RAM-cliff/energy, baseline/eval, experiment, or final claim proof.
+  recovery, RAM-cliff/energy, baseline/eval, experiment, same-run evidence, or final claim proof.
 - `hawking studio snapshot` correctly reports preflight red, procurement gate red, claim gate red,
   0/39 candidate decisions reviewed, 9/9 lifecycle nodes waiting on accepted license records, and
-  proof-pack `blocked_claims=9/9` with 72 evidence rows.
+  proof-pack `blocked_claims=9/9` with 81 evidence rows.
 
 ## Next laptop-safe moves
 
@@ -425,3 +452,6 @@ Current launch-gate wall:
   or candidate decisions.
 - Build the next custom-runtime pass around the smallest proof-complete native `.tq` serve path, with
   receipt schema and same-box baseline expectations preregistered before running it.
+- On the actual Studio box, use `hawking studio evidence-run-plan` before the first final claim attempt
+  so native `.tq` serve, parity, baselines, evals, RAM-cliff/energy, Doctor recovery, experiment depth,
+  artifact inventory, and source-release decision are captured in one signed same-run bundle.

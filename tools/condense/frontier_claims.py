@@ -7,8 +7,8 @@ not drift.
 
 Default policy is strict: a claim bundle requires source provenance, parity, native `.tq` serve,
 same-box baseline coverage, frozen eval coverage, RAM-cliff evidence, Doctor recovery evidence,
-expensive-mode experiment depth, artifact hashes, and exact commands. Use `--no-require-ramcliff` only
-for a non-cliff claim.
+expensive-mode experiment depth, a same-run Studio evidence bundle, artifact hashes, and exact commands.
+Use `--no-require-ramcliff` only for a non-cliff claim.
 """
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ import frontier_coverage_runner  # noqa: E402
 import frontier_experiments  # noqa: E402
 import frontier_experiment_runner  # noqa: E402
 import frontier_doctor_recovery  # noqa: E402
+import frontier_evidence_run  # noqa: E402
 import frontier_parity  # noqa: E402
 import frontier_parity_runner  # noqa: E402
 import frontier_provenance  # noqa: E402
@@ -182,6 +183,15 @@ def _doctor_recovery_problems(root: pathlib.Path, model: FrontierModel) -> list[
     return [f"doctor recovery: {problem}" for problem in status["problems"]]
 
 
+def _evidence_run_problems(root: pathlib.Path, model: FrontierModel) -> list[str]:
+    path = frontier_evidence_run.evidence_run_path(root, model.label)
+    record = _read_json(path)
+    if not record:
+        return [f"{path} missing; cannot verify signed Studio evidence-run bundle"]
+    status = frontier_evidence_run.record_status(record, root=root, model=model, require_signature=True)
+    return [f"studio evidence run: {problem}" for problem in status["problems"]]
+
+
 def _source_provenance_problems(root: pathlib.Path, model: FrontierModel) -> list[str]:
     path = frontier_provenance.provenance_path(root, model.label)
     record = _read_json(path)
@@ -210,6 +220,7 @@ def _bundle_evidence_files(root: pathlib.Path, model: FrontierModel, require_ram
         frontier_receipts.serve_path(root, model.label),
         frontier_doctor_recovery.recovery_path(root, model.label),
         frontier_experiments.matrix_path(root, model.label),
+        frontier_evidence_run.evidence_run_path(root, model.label),
     ]
     if require_ramcliff:
         paths.append(frontier_receipts.ramcliff_path(root, model.label))
@@ -223,6 +234,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
     serve = frontier_receipts.serve_status(root, model.label)
     doctor = frontier_doctor_recovery.recovery_status(root, model.label)
     experiment = frontier_experiments.experiment_status(root, model.label)
+    evidence_run = frontier_evidence_run.evidence_run_status(root, model.label)
     ramcliff = frontier_receipts.ramcliff_status(root, model.label) if require_ramcliff else {
         "label": model.label,
         "ok": True,
@@ -250,6 +262,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
         blockers.extend(_native_receipt_problems(root, model.label, "ramcliff"))
     blockers.extend(_doctor_recovery_problems(root, model))
     blockers.extend(_experiment_receipt_problems(root, model.label))
+    blockers.extend(_evidence_run_problems(root, model))
 
     evidence_files = _bundle_evidence_files(root, model, require_ramcliff)
     for item in evidence_files:
@@ -275,6 +288,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
             "ramcliff": ramcliff,
             "doctor_recovery": doctor,
             "experiment": experiment,
+            "studio_evidence_run": evidence_run,
             "source_provenance": provenance,
         },
         "public_win_contract": {
@@ -289,6 +303,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
             "eval_coverage": True,
             "ramcliff_required": bool(require_ramcliff),
             "doctor_recovery_7b_plus": True,
+            "studio_evidence_run": True,
             "exact_commands": True,
             "signed_evidence_hashes": True,
         },
@@ -585,6 +600,35 @@ def selftest() -> bool:
         }
         experiment_record, _ = frontier_experiment_runner.sign_record(experiment_record, label=model.label)
         (cond / f"{model.label}_experiment_matrix.json").write_text(json.dumps(experiment_record))
+        artifact = root / "scratch" / "selftest.tq"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_bytes(b"selftest-tq")
+        inventory = {
+            "schema": "hawking.frontier_artifact_inventory.v1",
+            "generated_at": _now(),
+            "label": model.label,
+            "hf_id": model.hf_id,
+            "git_commit": "selftest",
+            "artifacts": [{
+                "path": str(artifact),
+                "bytes": artifact.stat().st_size,
+                "gb": round(artifact.stat().st_size / 1e9, 6),
+                "sha256": _sha256_file(artifact),
+            }],
+        }
+        (cond / f"{model.label}_artifact_inventory.json").write_text(json.dumps(inventory))
+        evidence_run = frontier_evidence_run.build_record(
+            root,
+            model,
+            run_id="selftest-studio-run",
+            runner_command="hawking studio run-next --selftest-evidence-run",
+            source_release_decision="delete_source_after_verified_bake",
+            source_release_command=f"hawking studio release-source {model.label} --dry-run",
+            source_release_reason="selftest source lifecycle decision",
+            decided_by="selftest",
+        )
+        evidence_run, _ = frontier_evidence_run.sign_record(evidence_run, root=root, model=model)
+        (cond / f"{model.label}_studio_evidence_run.json").write_text(json.dumps(evidence_run))
         bundle = build_bundle(root, model)
         check("complete bundle is admissible", bundle["claim_admissible"])
         path = claim_bundle_path(root, model.label)

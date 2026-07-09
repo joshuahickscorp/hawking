@@ -953,6 +953,63 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         json: bool,
     },
+    /// Print same-run Studio evidence bundle requirements.
+    EvidenceRunPlan {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Optional frontier label(s); default all frontier models.
+        label: Vec<String>,
+        /// Write the Studio evidence-run plan here.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Draft, build, or verify signed same-run Studio evidence bundles.
+    EvidenceRunReceipt {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Receipt mode: draft, build, or verify.
+        mode: String,
+        /// Optional frontier label(s); default all frontier models.
+        label: Vec<String>,
+        /// Write/read receipts from this directory instead of reports/condense.
+        #[arg(long, default_value = "")]
+        out_dir: String,
+        /// Draft mode: overwrite existing draft receipt files.
+        #[arg(long, default_value_t = false)]
+        force: bool,
+        /// Draft mode: sign intentionally blocked draft envelopes.
+        #[arg(long, default_value_t = false)]
+        sign_draft: bool,
+        /// Build mode: stable run identifier for the Studio evidence run.
+        #[arg(long, default_value = "")]
+        run_id: String,
+        /// Build mode: exact one-command Studio evidence runner invocation.
+        #[arg(long, default_value = "")]
+        runner_command: String,
+        /// Build mode: source release decision.
+        #[arg(long, default_value = "")]
+        source_release_decision: String,
+        /// Build mode: exact source-release or retain-source command.
+        #[arg(long, default_value = "")]
+        source_release_command: String,
+        /// Build mode: reason for the source lifecycle decision.
+        #[arg(long, default_value = "")]
+        source_release_reason: String,
+        /// Build mode: operator making the source lifecycle decision.
+        #[arg(long, default_value = "")]
+        decided_by: String,
+        /// Draft/build mode: machine class recorded in the receipt envelope.
+        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        machine_class: String,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
     /// Verify signed public-claim bundle(s) without building new evidence.
     ClaimBundleVerify {
         /// Repository root containing tools/condense/frontier_ops.py.
@@ -1946,6 +2003,86 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 run_frontier_owned(&root, owned, json)
             }
         }
+        StudioCmd::EvidenceRunPlan {
+            root,
+            label,
+            out,
+            json,
+        } => {
+            let mut owned = vec!["evidence-run-plan".to_string()];
+            push_optional_out(&mut owned, out);
+            owned.extend(label);
+            run_frontier_owned_allowing(&root, owned, json, &[1])
+        }
+        StudioCmd::EvidenceRunReceipt {
+            root,
+            mode,
+            label,
+            out_dir,
+            force,
+            sign_draft,
+            run_id,
+            runner_command,
+            source_release_decision,
+            source_release_command,
+            source_release_reason,
+            decided_by,
+            machine_class,
+            json,
+        } => {
+            if mode != "draft" && mode != "build" && mode != "verify" {
+                return Err(anyhow!(
+                    "evidence-run-receipt mode must be draft, build, or verify"
+                ));
+            }
+            let mut owned = vec!["evidence-run-receipt".to_string(), mode.clone()];
+            if !out_dir.is_empty() {
+                owned.push("--out-dir".to_string());
+                owned.push(out_dir);
+            }
+            if mode == "draft" {
+                if force {
+                    owned.push("--force".to_string());
+                }
+                if sign_draft {
+                    owned.push("--sign-draft".to_string());
+                }
+                owned.push("--machine-class".to_string());
+                owned.push(machine_class);
+            } else if mode == "build" {
+                if run_id.is_empty()
+                    || runner_command.is_empty()
+                    || source_release_decision.is_empty()
+                    || source_release_command.is_empty()
+                    || source_release_reason.is_empty()
+                    || decided_by.is_empty()
+                {
+                    return Err(anyhow!(
+                        "evidence-run-receipt build requires --run-id, --runner-command, --source-release-decision, --source-release-command, --source-release-reason, and --decided-by"
+                    ));
+                }
+                owned.push("--run-id".to_string());
+                owned.push(run_id);
+                owned.push("--runner-command".to_string());
+                owned.push(runner_command);
+                owned.push("--source-release-decision".to_string());
+                owned.push(source_release_decision);
+                owned.push("--source-release-command".to_string());
+                owned.push(source_release_command);
+                owned.push("--source-release-reason".to_string());
+                owned.push(source_release_reason);
+                owned.push("--decided-by".to_string());
+                owned.push(decided_by);
+                owned.push("--machine-class".to_string());
+                owned.push(machine_class);
+            }
+            owned.extend(label);
+            if mode == "draft" {
+                run_frontier_owned_allowing(&root, owned, json, &[1])
+            } else {
+                run_frontier_owned(&root, owned, json)
+            }
+        }
         StudioCmd::ClaimBundleBuild {
             root,
             label,
@@ -2353,6 +2490,8 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio receipt-record verify --kind both",
             "hawking studio doctor-recovery-plan",
             "hawking studio doctor-recovery-receipt verify",
+            "hawking studio evidence-run-plan",
+            "hawking studio evidence-run-receipt verify",
             "hawking studio experiment-receipt verify",
             "hawking studio claim-bundle-build",
             "hawking studio claim-bundle-verify",
