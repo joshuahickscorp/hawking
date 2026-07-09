@@ -79,7 +79,7 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   strict native `.tq` proof-mode receipt requirements.
 - `target/debug/hawking studio runtime-contract-verify --path reports/condense/studio_runtime_contract.local.json --json`:
   pass with `signature_ok: true`, `profile_count: 5`, `workload_count: 5`, and
-  `proof_mode_required: 4`.
+  `proof_mode_required: 5`.
 - `target/debug/hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json --json`
   and `target/debug/hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json --json`:
   pass. The signed local stabilization receipt records repo size, largest files, tracked LOC, disk
@@ -127,6 +127,14 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   `HAWKING_QWEN_TQ_PATH` before sibling fallback probes, and the Studio runtime contract names the exact
   product command template. This does not make native serve receipts green without real measured
   serve/parity/load traces.
+- Next target after the latest point reevaluation: native `.tq` serve-report production, because Product
+  readiness (4.8) and Native `.tq` serving (6.9) are still below the Studio target. `hawking generate`
+  now has `--serve-report-json <serve_report.json>` for a single real decode while the runtime contract keeps
+  `hawking serve --weights <parent.gguf> --tq <artifact.tq> --tq-proof-mode` as the product serve path. The
+  report records the exact measured smoke command, model identity, artifact hash/size, strict/all-linear/GPU
+  proof flags, tok/s, served-forward status, sampled resident memory, and keeps `parity_pass: false` until
+  the separate Studio parity/load receipts are supplied to `hawking studio serve-capture`. This improves
+  operator closure without faking a receipt-backed native-serve win on the laptop.
 - `cargo test -p hawking-core --lib bsize_verify_diag --quiet`: pass; both bsize diagnostics are ignored,
   confirming the full `hawking-core --lib` suite no longer blocks on that known slow diagnostic by default.
 - `cargo test -p hawking-core --features tq --lib tq_projection_parser_covers_gguf_and_hf_names -- --nocapture`:

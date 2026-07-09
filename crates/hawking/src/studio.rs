@@ -2423,6 +2423,7 @@ fn runtime_contract_doc(root: &Path) -> Result<Value> {
                 {"key": "HAWKING_QWEN_TQ_REQUIRE_GPU", "value": "1"}
             ],
             "product_command_template": "hawking serve --weights <parent.gguf> --tq <artifact.tq> --tq-proof-mode --explain-performance",
+            "measured_forward_report_command_template": "hawking generate --weights <parent.gguf> --tq <artifact.tq> --tq-proof-mode --prompt <smoke> --max-new-tokens <N> --explain-performance --serve-report-json <serve_report.json>",
             "forbidden_or_blocking": [
                 "missing .tq sidecar",
                 "partial all-linear projection coverage",
@@ -2449,7 +2450,7 @@ fn runtime_contract_doc(root: &Path) -> Result<Value> {
                 "artifact_sha256": "sha256",
                 "commands": "exact non-placeholder command"
             },
-            "serve_capture_template": "hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command 'hawking serve --weights <parent.gguf> --tq <artifact.tq> --tq-proof-mode --explain-performance' --load-receipt <load_trace.json> --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force"
+            "serve_capture_template": "hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command 'hawking generate --weights <parent.gguf> --tq <artifact.tq> --tq-proof-mode --prompt <smoke> --max-new-tokens <N> --explain-performance --serve-report-json <serve_report.json>' --load-receipt <load_trace.json> --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force"
         },
         "custom_build_pass": {
             "goal": "native .tq runtime proof before public frontier claims",

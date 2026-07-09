@@ -357,6 +357,12 @@ enum Cmd {
         /// you hit the per-slot KV ceiling on very long prompts.
         #[arg(long, default_value_t = 8)]
         capture_batch: usize,
+        /// Write a measured native `.tq` serve report JSON after one real
+        /// generation. The report proves only the in-process forward/tok-s
+        /// facts it can observe; parity_pass stays false until a separate
+        /// Studio parity receipt is supplied to `hawking studio serve-capture`.
+        #[arg(long, value_name = "PATH")]
+        serve_report_json: Option<PathBuf>,
         /// Explicit Qwen `.tq` artifact for native TQ generation. Sets
         /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
         #[arg(long, value_name = "ARTIFACT")]
@@ -939,6 +945,7 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            serve_report_json,
             tq,
             tq_proof_mode,
             tq_strict,
@@ -972,6 +979,7 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            serve_report_json,
             tq,
             tq_proof_mode,
             tq_strict,
@@ -3040,6 +3048,7 @@ fn generate_main(
     batched_capture: bool,
     capture_out: Option<PathBuf>,
     capture_batch: usize,
+    serve_report_json: Option<PathBuf>,
     tq: Option<PathBuf>,
     tq_proof_mode: bool,
     tq_strict: bool,
@@ -3135,6 +3144,23 @@ fn generate_main(
             ));
         }
     }
+    if serve_report_json.is_some() {
+        if prompts_file.is_some() {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json is single-prompt only; use --prompt so the report has one unambiguous generation"
+            ));
+        }
+        if batched_capture {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json does not combine with --batched-capture"
+            ));
+        }
+        if max_new_tokens == 0 {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json requires --max-new-tokens > 0 so served_forward_pass can be measured"
+            ));
+        }
+    }
 
     let cfg = EngineConfig {
         max_seq_len,
@@ -3166,6 +3192,8 @@ fn generate_main(
         explain_performance_banner(&weights, max_seq_len);
     }
     let mut engine = hawking_core::model::load_engine(&weights, cfg)?;
+    let loaded_model_id = engine.model_id().to_string();
+    let loaded_model_arch = engine.model_arch().to_string();
 
     // Build the prompt list: either every line of --prompts-file (capture
     // corpus mode — model loaded once, all prompts decoded in sequence) or
@@ -3227,6 +3255,7 @@ fn generate_main(
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
     let n_prompts = prompts.len();
+    let mut serve_report_result: Option<(hawking_core::GenStats, StopReason)> = None;
     for (idx, p) in prompts.into_iter().enumerate() {
         if abort.load(Ordering::SeqCst) {
             break;
@@ -3261,12 +3290,7 @@ fn generate_main(
                 let _ = out.write_all(b"\n");
                 let _ = out.flush();
                 let dec = (stats.completion_tokens as f64) / (stats.decode_ms / 1000.0).max(1e-6);
-                let reason_s = match reason {
-                    StopReason::MaxTokens => "max_tokens",
-                    StopReason::StopString => "stop_string",
-                    StopReason::Eos => "eos",
-                    StopReason::Aborted => "aborted",
-                };
+                let reason_s = stop_reason_label(&reason);
                 eprintln!(
                     "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
                     reason_s,
@@ -3284,15 +3308,278 @@ fn generate_main(
                 // by report-card / harnesses; carries lm_head_path + the
                 // observability counters alongside dec_tps).
                 eprintln!("[stats-json] {}", stats.stats_json());
+                if serve_report_json.is_some() {
+                    serve_report_result = Some((stats, reason));
+                }
             }
         };
         engine.generate(req, &mut sink)?;
+    }
+    if let Some(path) = serve_report_json.as_ref() {
+        let (stats, reason) = serve_report_result.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("generation finished without a Done event; not writing serve report")
+        })?;
+        write_native_tq_serve_report(
+            path,
+            &weights,
+            &loaded_model_id,
+            &loaded_model_arch,
+            tq.as_deref(),
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
+            stats,
+            reason,
+        )?;
+        eprintln!("[serve-report] wrote {}", path.display());
     }
     // L1.1 attention-mass oracle (default-off): dump the per-layer
     // concentration curve accumulated during prefill. No-op unless
     // HAWKING_QWEN_ATTN_CAPTURE=1.
     hawking_core::stateful::attn_capture::flush();
     Ok(())
+}
+
+fn stop_reason_label(reason: &hawking_core::StopReason) -> &'static str {
+    match reason {
+        hawking_core::StopReason::MaxTokens => "max_tokens",
+        hawking_core::StopReason::StopString => "stop_string",
+        hawking_core::StopReason::Eos => "eos",
+        hawking_core::StopReason::Aborted => "aborted",
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn write_native_tq_serve_report(
+    path: &Path,
+    weights: &Path,
+    model_id: &str,
+    model_arch: &str,
+    tq: Option<&Path>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
+    stats: &hawking_core::GenStats,
+    reason: &hawking_core::StopReason,
+) -> Result<()> {
+    let tq_strict_eff = tq_proof_mode || tq_strict;
+    let all_linear_eff = tq_proof_mode || tq_require_all_linear;
+    let gpu_bitslice_eff = tq_proof_mode || tq_require_gpu;
+    let served_forward_pass =
+        stats.completion_tokens > 0 && !matches!(reason, hawking_core::StopReason::Aborted);
+    let qwen_arch = {
+        let arch = model_arch.to_ascii_lowercase();
+        let id = model_id.to_ascii_lowercase();
+        arch.contains("qwen") || id.contains("qwen")
+    };
+    let native_tq = tq.is_some()
+        && qwen_arch
+        && tq_strict_eff
+        && all_linear_eff
+        && gpu_bitslice_eff
+        && served_forward_pass;
+    let artifact = match tq {
+        Some(path) => {
+            let metadata = std::fs::metadata(path)
+                .map_err(|e| anyhow::anyhow!("stat TQ artifact {}: {e}", path.display()))?;
+            Some((path, metadata.len(), sha256_file_hex(path)?))
+        }
+        None => None,
+    };
+    let rss_mb = current_rss_mb();
+    let peak_rss_gb = rss_mb.map(|mb| mb / 1024.0);
+    let mac = detect_mac();
+    let unified_memory_gb = (mac.total_mem > 0).then(|| gib(mac.total_mem));
+    let resident_memory_ok = native_tq
+        && matches!((peak_rss_gb, unified_memory_gb), (Some(peak), Some(unified)) if peak > 0.0 && peak <= unified);
+    let command_args: Vec<String> = std::env::args().collect();
+    let command_line = command_args
+        .iter()
+        .map(|arg| shell_quote_arg(arg))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let (artifact_path, artifact_bytes, artifact_sha256, artifact_gb) = match artifact.as_ref() {
+        Some((path, bytes, sha)) => (
+            serde_json::json!(path.display().to_string()),
+            serde_json::json!(bytes),
+            serde_json::json!(sha),
+            serde_json::json!(gib(*bytes)),
+        ),
+        None => (
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+        ),
+    };
+    let rehydrate_f16 = if native_tq {
+        serde_json::json!(false)
+    } else {
+        serde_json::Value::Null
+    };
+    let decode_mode = if native_tq {
+        "native_tq"
+    } else if tq.is_some() {
+        "tq_unproven"
+    } else {
+        "non_tq"
+    };
+    let mut report = serde_json::Map::new();
+    report.insert(
+        "schema".to_string(),
+        serde_json::json!("hawking.native_tq_serve_report.v1"),
+    );
+    report.insert(
+        "generated_at_unix".to_string(),
+        serde_json::json!(std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0)),
+    );
+    report.insert("decode_mode".to_string(), serde_json::json!(decode_mode));
+    report.insert("native_tq".to_string(), serde_json::json!(native_tq));
+    report.insert("served_native_tq".to_string(), serde_json::json!(native_tq));
+    report.insert("rehydrate_f16".to_string(), rehydrate_f16.clone());
+    report.insert("rehydrated_f16".to_string(), rehydrate_f16);
+    report.insert("tq_strict".to_string(), serde_json::json!(tq_strict_eff));
+    report.insert("strict_tq".to_string(), serde_json::json!(tq_strict_eff));
+    report.insert("all_linear".to_string(), serde_json::json!(all_linear_eff));
+    report.insert(
+        "all_linear_covered".to_string(),
+        serde_json::json!(all_linear_eff),
+    );
+    report.insert(
+        "gpu_bitslice".to_string(),
+        serde_json::json!(gpu_bitslice_eff),
+    );
+    report.insert("gpu_owned".to_string(), serde_json::json!(gpu_bitslice_eff));
+    report.insert(
+        "gpu_ownership".to_string(),
+        serde_json::json!(gpu_bitslice_eff),
+    );
+    report.insert(
+        "served_forward_pass".to_string(),
+        serde_json::json!(served_forward_pass),
+    );
+    report.insert("parity_pass".to_string(), serde_json::json!(false));
+    report.insert(
+        "parity_receipt_required".to_string(),
+        serde_json::json!(true),
+    );
+    report.insert("tok_s".to_string(), serde_json::json!(stats.dec_tps()));
+    report.insert(
+        "tokens_per_second".to_string(),
+        serde_json::json!(stats.dec_tps()),
+    );
+    report.insert(
+        "decode_tok_s".to_string(),
+        serde_json::json!(stats.dec_tps()),
+    );
+    report.insert(
+        "prompt_tokens".to_string(),
+        serde_json::json!(stats.prompt_tokens),
+    );
+    report.insert(
+        "completion_tokens".to_string(),
+        serde_json::json!(stats.completion_tokens),
+    );
+    report.insert(
+        "prefill_ms".to_string(),
+        serde_json::json!(stats.prefill_ms),
+    );
+    report.insert("decode_ms".to_string(), serde_json::json!(stats.decode_ms));
+    report.insert(
+        "stop_reason".to_string(),
+        serde_json::json!(stop_reason_label(reason)),
+    );
+    report.insert("model_id".to_string(), serde_json::json!(model_id));
+    report.insert("model_arch".to_string(), serde_json::json!(model_arch));
+    report.insert(
+        "qwen_architecture".to_string(),
+        serde_json::json!(qwen_arch),
+    );
+    report.insert(
+        "weights_path".to_string(),
+        serde_json::json!(weights.display().to_string()),
+    );
+    report.insert("artifact_path".to_string(), artifact_path);
+    report.insert("artifact_bytes".to_string(), artifact_bytes);
+    report.insert("artifact_sha256".to_string(), artifact_sha256);
+    report.insert("artifact_gb".to_string(), artifact_gb);
+    report.insert("peak_rss_gb".to_string(), serde_json::json!(peak_rss_gb));
+    report.insert(
+        "memory_resident_gb".to_string(),
+        serde_json::json!(peak_rss_gb),
+    );
+    report.insert(
+        "memory_resident_source".to_string(),
+        serde_json::json!("process_rss_after_decode"),
+    );
+    report.insert(
+        "unified_memory_gb".to_string(),
+        serde_json::json!(unified_memory_gb),
+    );
+    report.insert(
+        "resident_memory_ok".to_string(),
+        serde_json::json!(resident_memory_ok),
+    );
+    report.insert(
+        "memory_note".to_string(),
+        serde_json::json!("RSS is sampled after decode; Studio final claims still require load, served-forward, parity, and signed capture receipts."),
+    );
+    report.insert("command".to_string(), serde_json::json!(command_args));
+    report.insert("command_line".to_string(), serde_json::json!(command_line));
+    report.insert("stats".to_string(), stats.stats_json());
+    let report = serde_json::Value::Object(report);
+    write_json_with_parent(path, &report)?;
+    Ok(())
+}
+
+fn sha256_file_hex(path: &Path) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+
+    let mut file =
+        std::fs::File::open(path).map_err(|e| anyhow::anyhow!("open {}: {e}", path.display()))?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 1024 * 1024];
+    loop {
+        let n = file
+            .read(&mut buf)
+            .map_err(|e| anyhow::anyhow!("read {}: {e}", path.display()))?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect())
+}
+
+fn write_json_with_parent(path: &Path, value: &serde_json::Value) -> Result<()> {
+    if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent)?;
+    }
+    let text = serde_json::to_string_pretty(value)?;
+    std::fs::write(path, format!("{text}\n"))?;
+    Ok(())
+}
+
+fn shell_quote_arg(arg: &str) -> String {
+    if !arg.is_empty()
+        && arg.bytes().all(|b| {
+            b.is_ascii_alphanumeric() || matches!(b, b'.' | b'/' | b'_' | b'-' | b':' | b'=' | b'+')
+        })
+    {
+        arg.to_string()
+    } else {
+        format!("'{}'", arg.replace('\'', "'\\''"))
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
