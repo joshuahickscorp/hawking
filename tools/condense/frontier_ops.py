@@ -1521,6 +1521,11 @@ def _json_artifact(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict:
     if data.get("schema") == "hawking.studio_preflight_summary.v1":
         out["ok"] = bool(data.get("preflight_ok_before_summary"))
         out["generated_at"] = data.get("generated_at")
+        dev = data.get("developer_environment") if isinstance(data.get("developer_environment"), dict) else {}
+        out["node_engine_ok"] = dev.get("node_engine_ok")
+        out["node_version"] = dev.get("node_version")
+        out["node_engine"] = dev.get("node_engine")
+        out["pnpm_version"] = dev.get("pnpm_version")
     elif data.get("schema") == "hawking.studio_environment.v1":
         out["ok"] = bool(data.get("ok"))
         out["failure_count"] = data.get("failure_count")

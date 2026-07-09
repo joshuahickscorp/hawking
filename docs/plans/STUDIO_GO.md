@@ -9,12 +9,13 @@
 cargo run -p hawking --bin hawking -- studio preflight
 ```
 
-Checks Python deps, Rust toolchain, RAM/disk, that every `tools/condense/*.py` compiles, that
-`cargo check --workspace` is clean, which model parents are staged, that the frontier refresh ledger and
+Checks Python deps, Rust toolchain, RAM/disk, the HIDE app Node/pnpm engine, that every
+`tools/condense/*.py` compiles, that `cargo check --workspace` is clean, which model parents are staged,
+that the frontier refresh ledger and
 refreshed HF metadata ledger can be written, that the model-aware frontier launch gate is green against
 that refresh artifact, that `reports/condense/studio_preflight_summary.json` is written with a canonical
-SHA-256 signature over check results plus machine/network/power/thermal evidence, and that the receipt
-harness verifies.
+SHA-256 signature over check results plus machine/network/power/thermal/developer-environment evidence,
+and that the receipt harness verifies.
 Exits 0 (green, safe to `go`) or 1 (red, prints exactly what to fix). Do not run `go` on a red preflight.
 The product-facing command delegates to `tools/condense/preflight.py`.
 Verify a saved summary with:

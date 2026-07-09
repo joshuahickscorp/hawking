@@ -2641,6 +2641,7 @@ fn preflight_summary(artifact: &Value) -> Value {
         "git_commit": data.get("git_commit").cloned().unwrap_or(Value::Null),
         "hardware": data.get("hardware").cloned().unwrap_or(Value::Null),
         "network": data.get("network").cloned().unwrap_or(Value::Null),
+        "developer_environment": data.get("developer_environment").cloned().unwrap_or(Value::Null),
     })
 }
 
@@ -3030,6 +3031,15 @@ fn print_human_snapshot(doc: &Value) {
             n(hw, "target_free_disk_gb"),
             s(hw, "power_source"),
             s(hw, "thermal_status")
+        );
+    }
+    if let Some(dev) = pre.get("developer_environment") {
+        println!(
+            "app engine: node={} required={} ok={}  pnpm={}",
+            s(dev, "node_version"),
+            s(dev, "node_engine"),
+            verdict(dev["node_engine_ok"].as_bool().unwrap_or(false)),
+            s(dev, "pnpm_version")
         );
     }
     if let Some(net) = pre.get("network") {

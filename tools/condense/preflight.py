@@ -12,7 +12,7 @@ Usage:
   python3.12 tools/condense/preflight.py --quiet    # exit code only, minimal output
   python3.12 tools/condense/preflight.py --verify-summary [PATH]
 """
-import sys, os, subprocess, shutil, importlib, importlib.metadata, importlib.util, json, datetime, hashlib, socket, time, urllib.request
+import sys, os, subprocess, shutil, importlib, importlib.metadata, importlib.util, json, datetime, hashlib, socket, time, urllib.request, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
@@ -130,6 +130,53 @@ def _network_summary():
     return out
 
 
+def _parse_version(text):
+    m = re.search(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?", str(text))
+    if not m:
+        return None
+    return tuple(int(part or 0) for part in m.groups())
+
+
+def _min_version_from_range(spec):
+    m = re.search(r">=\s*(\d+(?:\.\d+){0,2})", str(spec or ""))
+    return _parse_version(m.group(1)) if m else None
+
+
+def _version_gte(actual, minimum):
+    return actual is not None and minimum is not None and actual >= minimum
+
+
+def _developer_environment_summary():
+    app_package = os.path.join(ROOT, "app", "package.json")
+    engine_spec = None
+    try:
+        with open(app_package) as f:
+            engine_spec = (json.load(f).get("engines") or {}).get("node")
+    except Exception:
+        engine_spec = None
+    node_path = shutil.which("node")
+    pnpm_path = shutil.which("pnpm")
+    node_rc, node_out, node_err = _run(["node", "-v"], timeout=10) if node_path else (127, "", "node missing")
+    pnpm_rc, pnpm_out, pnpm_err = _run(["pnpm", "-v"], timeout=10) if pnpm_path else (127, "", "pnpm missing")
+    node_version = (node_out or node_err).strip().splitlines()[0] if (node_out or node_err).strip() else None
+    pnpm_version = (pnpm_out or pnpm_err).strip().splitlines()[0] if (pnpm_out or pnpm_err).strip() else None
+    actual = _parse_version(node_version or "")
+    required = _min_version_from_range(engine_spec)
+    node_engine_ok = bool(node_path and engine_spec and _version_gte(actual, required))
+    return {
+        "schema": "hawking.studio_developer_environment.v1",
+        "app_package": "app/package.json",
+        "node_path": node_path,
+        "node_version": node_version,
+        "node_engine": engine_spec,
+        "node_engine_ok": node_engine_ok,
+        "node_required_min": ".".join(str(v) for v in required) if required else None,
+        "pnpm_path": pnpm_path,
+        "pnpm_version": pnpm_version,
+        "pnpm_ok": bool(pnpm_path and pnpm_rc == 0),
+    }
+
+
 def _artifact_status(path):
     exists = os.path.exists(path)
     out = {"path": path, "exists": exists}
@@ -155,6 +202,7 @@ def write_summary(results, preflight_ok):
             "checks": results,
             "hardware": _hardware_summary(),
             "network": _network_summary(),
+            "developer_environment": _developer_environment_summary(),
             "artifacts": {
                 "frontier_refresh": _artifact_status(REFRESH_OUT),
                 "frontier_ledger": _artifact_status(LEDGER_OUT),
@@ -292,6 +340,18 @@ def check_procurement():
     return True
 
 
+def check_node_engine():
+    env = _developer_environment_summary()
+    ok = bool(env.get("node_engine_ok") and env.get("pnpm_ok"))
+    detail = (
+        f"node {env.get('node_version') or 'MISSING'} required {env.get('node_engine') or 'unknown'}; "
+        f"pnpm {env.get('pnpm_version') or 'MISSING'}"
+    )
+    if ok:
+        return _say(True, f"HIDE app engine OK: {detail}")
+    return _say(False, f"HIDE app engine mismatch: {detail}")
+
+
 def check_frontier_refresh():
     """Hard check: a launch-time HF refresh ledger exists for candidate/model review."""
     r = subprocess.run(["python3.12", "tools/condense/frontier_ops.py", "refresh", "--out", REFRESH_OUT],
@@ -328,7 +388,8 @@ def check_frontier_launch_gate():
 def main():
     checks = [
         ("Python env", check_python), ("Rust toolchain", check_rust),
-        ("Hardware", check_hardware), ("Tool compile", check_compile),
+        ("Hardware", check_hardware), ("HIDE app engine", check_node_engine),
+        ("Tool compile", check_compile),
         ("cargo check", check_cargo), ("Staged models", check_staged_models),
         ("Procurement path", check_procurement), ("Frontier refresh", check_frontier_refresh),
         ("Frontier ledger", check_frontier_ledger),

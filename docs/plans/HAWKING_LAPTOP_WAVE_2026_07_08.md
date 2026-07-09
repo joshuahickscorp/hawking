@@ -15,15 +15,16 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   Green subchecks: Python deps, Rust toolchain, `tools/condense/*.py` compile, `cargo check --workspace`,
   staged 0.5B/1.5B/7B local ladder, HF transfer/Xet accelerators, frontier refresh, frontier ledger,
   receipt harness, signed preflight summary.
-  Red subchecks: RAM 19 GB below Studio target, disk below minimum, frontier launch gate. The current
-  preflight refresh artifact has 39/39 review-worthy candidates awaiting accept/reject/watch decisions.
+  Red subchecks: RAM 19 GB below Studio target, disk below minimum, HIDE app Node engine
+  (`v20.17.0` vs `>=20.19`), frontier launch gate. The current preflight refresh artifact has 39/39
+  review-worthy candidates awaiting accept/reject/watch decisions.
 - `python3.12 tools/condense/preflight.py --verify-summary reports/condense/studio_preflight_summary.json`:
   pass.
 - `target/debug/hawking studio verify-summary --path reports/condense/studio_preflight_summary.json`:
   pass, proving the signed preflight summary through the product CLI.
 - `target/debug/hawking studio preflight --quiet`: correctly red on the laptop with exit code 1 and
-  blockers `Hardware` and `Frontier launch gate`; this also refreshed the signed summary without starting
-  downloads or bakes.
+  blockers `Hardware`, `HIDE app engine`, and `Frontier launch gate`; this also refreshed the signed
+  summary without starting downloads or bakes.
 - Signed preflight network evidence is now present in `reports/condense/studio_preflight_summary.json`:
   schema `hawking.studio_network_summary.v1`, DNS ok, HF API status 200, no-download probe latency about
   145 ms on this run, and route interface captured. `hawking studio snapshot` prints the same network
@@ -323,8 +324,8 @@ Post-split review stack on `codex/hawking-studio-stabilization`:
   0 staged entries, 0 unstaged entries, 0 untracked entries, and 0 subsystems.
 - The root `node_modules/` artifact is ignored by `.gitignore`; it is 4 KB locally and is not part of
   the review stack.
-- Local Node remains `v20.17.0` while `app/package.json` declares `>=20.19`; app tests still pass, but
-  the engine mismatch remains a local setup warning to fix outside source changes.
+- Local Node remains `v20.17.0` while `app/package.json` declares `>=20.19`; app tests still pass, and
+  the mismatch is now captured as a signed `HIDE app engine` preflight blocker rather than a loose note.
 
 Post-split density receipt:
 
