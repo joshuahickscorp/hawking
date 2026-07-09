@@ -15,16 +15,17 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   Green subchecks: Python deps, Rust toolchain, `tools/condense/*.py` compile, `cargo check --workspace`,
   staged 0.5B/1.5B/7B local ladder, HF transfer/Xet accelerators, frontier refresh, frontier ledger,
   receipt harness, signed preflight summary.
-  Red subchecks: RAM 19 GB below Studio target, disk below minimum, HIDE app Node engine
-  (`v20.17.0` vs `>=20.19`), frontier launch gate. The current preflight refresh artifact has 39/39
-  review-worthy candidates awaiting accept/reject/watch decisions.
+  Red subchecks: RAM below Studio target, disk below minimum, and frontier launch gate. The HIDE app
+  engine check is now green because preflight selects the `pnpm`-adjacent bundled Node `v24.14.0`,
+  satisfying the app's `>=20.19` engine while still recording checked Node candidates. The current
+  preflight refresh artifact has 39/39 review-worthy candidates awaiting accept/reject/watch decisions.
 - `python3.12 tools/condense/preflight.py --verify-summary reports/condense/studio_preflight_summary.json`:
   pass.
 - `target/debug/hawking studio verify-summary --path reports/condense/studio_preflight_summary.json`:
   pass, proving the signed preflight summary through the product CLI.
 - `target/debug/hawking studio preflight --quiet`: correctly red on the laptop with exit code 1 and
-  blockers `Hardware`, `HIDE app engine`, and `Frontier launch gate`; this also refreshed the signed
-  summary without starting downloads or bakes.
+  blockers `Hardware` and `Frontier launch gate`; this also refreshed the signed summary without
+  starting downloads or bakes. `HIDE app engine` is green with Node `v24.14.0` and pnpm `11.7.0`.
 - Signed preflight network evidence is now present in `reports/condense/studio_preflight_summary.json`:
   schema `hawking.studio_network_summary.v1`, DNS ok, HF API status 200, no-download probe latency about
   145 ms on this run, and route interface captured. `hawking studio snapshot` prints the same network
@@ -95,8 +96,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   RAM-cliff and energy demo 6.6, Native `.tq` serving 6.9, Frontier architecture correctness 7.0,
   Evaluation suite 7.6, and Auto bpw resource maximization 8.0.
 - `pnpm test` from the repo root: pass after adding a root package shim that delegates to `app`.
-  The actual app test run is 101/101 passing. The app package still declares Node `>=20.19`; the local
-  node used by the earlier app-level run was `v20.17.0`, so the engine warning remains a local setup risk.
+  The actual app test run is 101/101 passing. The app package still declares Node `>=20.19`; preflight
+  now records and uses the compatible bundled Node rather than the older `/usr/local/bin/node`.
 - `cargo test -p hide-kernel -p hide-backend -p hawking-serve --quiet`: pass, 181 tests run and 4 ignored.
 - `cargo test -p hawking-core --lib bsize_matrix --quiet`: pass; the long-running
   `model::qwen_dense::bsize_verify_diag::bsize_matrix` real-model diagnostic is classified with
@@ -348,8 +349,9 @@ Post-split review stack on `codex/hawking-studio-stabilization`:
   0 staged entries, 0 unstaged entries, 0 untracked entries, and 0 subsystems.
 - The root `node_modules/` artifact is ignored by `.gitignore`; it is 4 KB locally and is not part of
   the review stack.
-- Local Node remains `v20.17.0` while `app/package.json` declares `>=20.19`; app tests still pass, and
-  the mismatch is now captured as a signed `HIDE app engine` preflight blocker rather than a loose note.
+- `/usr/local/bin/node` remains `v20.17.0`, but preflight now prefers the compatible bundled
+  `pnpm`-adjacent Node `v24.14.0`; the signed `HIDE app engine` check is green without weakening the
+  declared `>=20.19` requirement.
 
 Post-split density receipt:
 

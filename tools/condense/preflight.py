@@ -146,6 +146,41 @@ def _version_gte(actual, minimum):
     return actual is not None and minimum is not None and actual >= minimum
 
 
+def _node_candidates(pnpm_path):
+    candidates = []
+    explicit = os.environ.get("HAWKING_NODE") or os.environ.get("NODE_BINARY")
+    if explicit:
+        candidates.append(explicit)
+    if pnpm_path:
+        pnpm_real = os.path.realpath(pnpm_path)
+        pnpm_bin = os.path.dirname(pnpm_real)
+        pnpm_root = os.path.dirname(pnpm_bin)
+        candidates.extend([
+            os.path.join(pnpm_root, "node", "bin", "node"),
+            os.path.join(pnpm_bin, "node"),
+        ])
+    path_node = shutil.which("node")
+    if path_node:
+        candidates.append(path_node)
+    out = []
+    seen = set()
+    for cand in candidates:
+        if not cand:
+            continue
+        real = os.path.realpath(cand)
+        if real in seen or not os.path.exists(real):
+            continue
+        seen.add(real)
+        out.append(cand)
+    return out
+
+
+def _node_version(path):
+    rc, out, err = _run([path, "-v"], timeout=10)
+    version = (out or err).strip().splitlines()[0] if (out or err).strip() else None
+    return rc, version
+
+
 def _developer_environment_summary():
     app_package = os.path.join(ROOT, "app", "package.json")
     engine_spec = None
@@ -154,14 +189,31 @@ def _developer_environment_summary():
             engine_spec = (json.load(f).get("engines") or {}).get("node")
     except Exception:
         engine_spec = None
-    node_path = shutil.which("node")
     pnpm_path = shutil.which("pnpm")
-    node_rc, node_out, node_err = _run(["node", "-v"], timeout=10) if node_path else (127, "", "node missing")
     pnpm_rc, pnpm_out, pnpm_err = _run(["pnpm", "-v"], timeout=10) if pnpm_path else (127, "", "pnpm missing")
-    node_version = (node_out or node_err).strip().splitlines()[0] if (node_out or node_err).strip() else None
     pnpm_version = (pnpm_out or pnpm_err).strip().splitlines()[0] if (pnpm_out or pnpm_err).strip() else None
-    actual = _parse_version(node_version or "")
     required = _min_version_from_range(engine_spec)
+    checked_nodes = []
+    node_path = None
+    node_version = None
+    actual = None
+    for cand in _node_candidates(pnpm_path):
+        node_rc, version = _node_version(cand)
+        parsed = _parse_version(version or "")
+        checked_nodes.append({
+            "path": cand,
+            "version": version,
+            "ok": bool(node_rc == 0 and _version_gte(parsed, required)),
+        })
+        if node_rc == 0 and _version_gte(parsed, required):
+            node_path = cand
+            node_version = version
+            actual = parsed
+            break
+        if node_path is None and node_rc == 0:
+            node_path = cand
+            node_version = version
+            actual = parsed
     node_engine_ok = bool(node_path and engine_spec and _version_gte(actual, required))
     return {
         "schema": "hawking.studio_developer_environment.v1",
@@ -171,6 +223,7 @@ def _developer_environment_summary():
         "node_engine": engine_spec,
         "node_engine_ok": node_engine_ok,
         "node_required_min": ".".join(str(v) for v in required) if required else None,
+        "node_candidates": checked_nodes,
         "pnpm_path": pnpm_path,
         "pnpm_version": pnpm_version,
         "pnpm_ok": bool(pnpm_path and pnpm_rc == 0),
