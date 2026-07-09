@@ -75,6 +75,10 @@ try:
     import frontier_experiments
 except Exception:
     frontier_experiments = None
+try:
+    import frontier_experiment_runner
+except Exception:
+    frontier_experiment_runner = None
 
 # ── paths (match studio_run.py / scaling_law.py layout) ────────────────────────────────
 CRON_DIR    = "reports/cron"
@@ -123,6 +127,28 @@ def _load_json(path):
     except Exception as e:
         log(f"  [skip] {path}: {e}")
         return None
+
+
+def _signed_experiment_rollup(root, labels):
+    rows = []
+    root_path = pathlib.Path(root)
+    for label in labels:
+        path = frontier_experiments.matrix_path(root_path, label)
+        record = _load_json(path)
+        status = frontier_experiment_runner.record_status(record, label=label, require_signature=True)
+        status["label"] = label
+        status["path"] = str(path)
+        rows.append(status)
+    blocked = [row["label"] for row in rows if not row.get("ok")]
+    return {
+        "schema": "hawking.frontier_experiment_signed_rollup.v1",
+        "model_count": len(rows),
+        "passed_count": len(rows) - len(blocked),
+        "blocked_count": len(blocked),
+        "blocked_labels": blocked,
+        "rows": rows,
+        "ok": not blocked,
+    }
 
 
 def _load_jsonl(path):
@@ -1059,7 +1085,9 @@ def gather(root="."):
     else:
         records["baseline_coverage"] = None
         records["eval_coverage"] = None
-    if frontier_experiments is not None:
+    if frontier_experiments is not None and frontier_experiment_runner is not None:
+        records["experiment_depth"] = _signed_experiment_rollup(root, labels)
+    elif frontier_experiments is not None:
         records["experiment_depth"] = frontier_experiments.experiment_rollup(pathlib.Path(root), labels)
     else:
         records["experiment_depth"] = None

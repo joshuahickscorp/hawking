@@ -122,7 +122,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   runner, and f16 rehydrate or artifact-hash mismatch reports are blocked.
 - `python3.12 tools/condense/frontier_experiment_runner.py selftest`: pass. It verifies signed
   experiment drafts remain blocked, complete final matrices sign and verify, tampered matrices fail,
-  trace-free rows are rejected, and missing required experiment depth is rejected.
+  trace-free rows, missing trace hashes, and missing same-run IDs are rejected, and missing required
+  experiment depth is rejected.
 - `python3.12 tools/condense/frontier_provenance.py selftest`: pass. It verifies signed
   source-provenance drafts remain blocked, complete bf16 provenance signs and verifies,
   tamper/placeholder rejection, and compressed-source prequantization enforcement.

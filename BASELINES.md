@@ -123,8 +123,10 @@ allocation, cold/warm cliff repeats, baseline variants, null certifications, and
 Use `hawking studio experiment-receipt draft <label> --sign-draft` to create signed but blocked
 experiment envelopes, then after real rows are complete run `hawking studio experiment-receipt sign <label>`
 and `hawking studio experiment-receipt verify <label>`. Signing refuses draft state, missing depth,
-placeholder commands/traces, synthetic rows, and pass/measured/certified rows without row-level
-receipt/artifact/metrics/command evidence.
+placeholder commands/traces, synthetic rows, missing same-run contract, missing machine fingerprint,
+missing environment/artifact/source-provenance receipts, missing artifact/plan hashes, and
+pass/measured/certified rows without a concrete row receipt/artifact/log/report reference plus trace
+SHA-256.
 `hawking studio source-provenance-plan` prints the required source checkpoint provenance path for every
 frontier model. Before a public claim, `reports/condense/<LABEL>_source_provenance.json` must be final
 and signed with the exact HF revision, source kind, source format, procurement command, download/cache
@@ -171,8 +173,11 @@ smaller sources.
   claim bundles.
 - Missing experiment-depth rows are not neutral. A public frontier claim needs the expensive-mode
   matrix: multiple seeds, ablations, cold/warm repeats, baseline variants, null results, and rebake/hash
-  verification. Unsigned, draft, tampered, placeholder-command, trace-free, synthetic, or depth-incomplete
-  experiment matrices do not unlock claim bundles.
+  verification. Final matrices must bind all rows to the same Studio run with machine fingerprint,
+  environment receipt, artifact inventory receipt/hash, source-provenance receipt, experiment-plan hash,
+  exact commands, row trace references, row trace hashes, and null/N/A reasons. Unsigned, draft, tampered,
+  placeholder-command, trace-free, synthetic, or depth-incomplete experiment matrices do not unlock claim
+  bundles.
 - Missing signed claim bundles are not neutral. A public frontier claim needs a verifying
   `<LABEL>_claim_bundle.json` that hashes source provenance, parity, coverage, serve, RAM-cliff, and
   experiment evidence.

@@ -330,36 +330,121 @@ def _skeleton(label: str) -> dict[str, Any]:
         "model": label,
         "mode": "real",
         "machine_class": "Studio-M1Ultra-128",
+        "machine_name": "<exact Studio host label>",
+        "same_box": True,
+        "same_box_group": "<same machine/session id shared by experiment matrix>",
+        "machine_fingerprint_sha256": "<64 hex>",
+        "environment_receipt": "<hawking studio environment-capture receipt>",
+        "artifact_inventory_receipt": "<artifact inventory receipt>",
+        "artifact_inventory_sha256": "<64 hex>",
+        "source_provenance_receipt": "<source provenance receipt>",
+        "experiment_plan_sha256": "<64 hex>",
+        "run_id": "<same-run id>",
+        "commands": ["<exact experiment orchestration command>"],
         "experiments": {
             "floor_seeds": [
-                {"category": "floor_seed", "seed": i, "status": "TODO pass", "receipt": "<path>"}
+                {
+                    "category": "floor_seed",
+                    "seed": i,
+                    "status": "TODO pass",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                }
                 for i in (1, 2, 3)
             ],
             "calibration_ablations": [
-                {"category": "calibration_ablations", "name": name, "status": "TODO pass", "receipt": "<path>"}
+                {
+                    "category": "calibration_ablations",
+                    "name": name,
+                    "status": "TODO pass",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                }
                 for name in ("domain_matched_calib", "mixed_domain_calib", "awq_alpha_sweep", "residual_depth_sweep")
             ],
             "bpw_ladder": [
-                {"category": "bpw_ladder", "bpw": bpw, "status": "TODO pass", "receipt": "<path>"}
+                {
+                    "category": "bpw_ladder",
+                    "bpw": bpw,
+                    "status": "TODO pass",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                }
                 for bpw in ("over", "target", "under", "failure_floor")
             ],
             "moe_expert_ablation": [
-                {"category": "moe_expert_ablation", "status": "TODO pass|na", "reason": "<required if N/A>"}
+                {
+                    "category": "moe_expert_ablation",
+                    "status": "TODO pass|na",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                    "reason": "<required if N/A>",
+                }
             ],
             "ramcliff_repeats": [
-                {"category": "ramcliff_repeats", "run_type": run_type, "status": "TODO pass", "receipt": "<path>"}
+                {
+                    "category": "ramcliff_repeats",
+                    "run_type": run_type,
+                    "status": "TODO pass",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                }
                 for run_type in ("cold", "cold", "cold", "warm", "warm", "warm")
             ],
             "baseline_variants": [
-                {"category": "baseline_variants", "name": name, "status": "TODO pass|na", "reason": "<required if N/A>"}
+                {
+                    "category": "baseline_variants",
+                    "name": name,
+                    "status": "TODO pass|na",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                    "reason": "<required if N/A>",
+                }
                 for name in ("llama_q4", "llama_iq2", "mlx_4bit", "unsloth_or_exl3")
             ],
             "null_certification": [
-                {"category": "null_certification", "name": "failed_recipe", "status": "TODO certified", "reason": "<why it failed>"},
-                {"category": "null_certification", "name": "baseline_or_quality_loss", "status": "TODO certified", "reason": "<why it matters>"},
+                {
+                    "category": "null_certification",
+                    "name": "failed_recipe",
+                    "status": "TODO certified",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                    "reason": "<why it failed>",
+                },
+                {
+                    "category": "null_certification",
+                    "name": "baseline_or_quality_loss",
+                    "status": "TODO certified",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                    "reason": "<why it matters>",
+                },
             ],
             "rebake_or_hash_verify": [
-                {"category": "rebake_or_hash_verify", "status": "TODO verified", "receipt": "<path>"}
+                {
+                    "category": "rebake_or_hash_verify",
+                    "status": "TODO verified",
+                    "same_box": True,
+                    "command": "<exact row command>",
+                    "receipt": "<path>",
+                    "trace_sha256": "<64 hex>",
+                }
             ],
         },
     }

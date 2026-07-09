@@ -15,6 +15,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -30,6 +31,20 @@ import frontier_experiments  # noqa: E402
 SIGN_ALG = "sha256-json-v1"
 SCHEMA = "hawking.frontier_experiment_matrix.v1"
 FINAL_SOURCES = {"real", "measured"}
+SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+CONTRACT_TEXT_KEYS = (
+    "run_id",
+    "machine_name",
+    "same_box_group",
+    "environment_receipt",
+    "artifact_inventory_receipt",
+    "source_provenance_receipt",
+)
+CONTRACT_SHA_KEYS = (
+    "machine_fingerprint_sha256",
+    "artifact_inventory_sha256",
+    "experiment_plan_sha256",
+)
 
 
 def _now() -> str:
@@ -73,7 +88,14 @@ def _canonical_digest(data: dict[str, Any]) -> str:
 
 
 def _placeholder(value: Any) -> bool:
-    return isinstance(value, str) and ("<" in value or "TODO" in value or "..." in value)
+    if value is None:
+        return True
+    text = str(value).strip()
+    return not text or "<" in text or "TODO" in text.upper() or "..." in text
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _commands(record: dict[str, Any]) -> list[str]:
@@ -133,11 +155,73 @@ def _entry_label(row: dict[str, Any]) -> str:
     return frontier_experiments._entry_name(row) or row.get("category") or row.get("name") or "experiment row"
 
 
+def _trace_ref(row: dict[str, Any]) -> Any:
+    for key in ("receipt", "artifact", "log", "report", "result_path", "output_path"):
+        value = row.get(key)
+        if not _placeholder(value) and str(value).upper() != "N/A":
+            return value
+    return None
+
+
+def _trace_sha(row: dict[str, Any]) -> Any:
+    for key in ("trace_sha256", "receipt_sha256", "artifact_sha256", "log_sha256", "report_sha256"):
+        value = row.get(key)
+        if _is_sha256(value):
+            return value
+    return None
+
+
+def _contract_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    if record.get("same_box") is not True:
+        problems.append("same_box must be true for signed experiment matrices")
+    for key in CONTRACT_TEXT_KEYS:
+        if _placeholder(record.get(key)):
+            problems.append(f"{key} missing or placeholder")
+    for key in CONTRACT_SHA_KEYS:
+        if not _is_sha256(record.get(key)):
+            problems.append(f"{key} missing or invalid")
+    cmds = _commands(record)
+    if not cmds:
+        problems.append("top-level experiment command(s) missing")
+    elif any(_placeholder(cmd) for cmd in cmds):
+        problems.append("top-level command contains placeholder text")
+    return problems
+
+
+def _row_contract_problems(record: dict[str, Any], row: dict[str, Any],
+                           label: str, status: str) -> list[str]:
+    problems = []
+    if row.get("same_box", record.get("same_box")) is not True:
+        problems.append(f"{label}: row must be same_box=true")
+    row_run_id = row.get("run_id")
+    if row_run_id and row_run_id != record.get("run_id"):
+        problems.append(f"{label}: row run_id does not match experiment run_id")
+    row_machine = row.get("machine_class")
+    if row_machine and row_machine != record.get("machine_class"):
+        problems.append(f"{label}: row machine_class does not match experiment machine_class")
+    row_cmds = _row_commands(row)
+    if not row_cmds:
+        problems.append(f"{label}: exact row command(s) missing")
+    elif any(_placeholder(cmd) for cmd in row_cmds):
+        problems.append(f"{label}: command contains placeholder text")
+    if not _trace_ref(row):
+        problems.append(f"{label}: receipt/artifact/log/report trace missing")
+    if not _trace_sha(row):
+        problems.append(f"{label}: trace sha256 missing or invalid")
+    if "null" in frontier_experiments._status(row.get("category")) or "null" in frontier_experiments._status(row.get("name")):
+        reason = frontier_experiments._reason(row, record)
+        if _placeholder(reason):
+            problems.append(f"{label}: null certification reason missing or placeholder")
+    if status in frontier_experiments.NA_STATUSES:
+        reason = frontier_experiments._reason(row, record)
+        if _placeholder(reason):
+            problems.append(f"{label}: N/A reason missing or placeholder")
+    return problems
+
+
 def _trace_problems(record: dict[str, Any]) -> list[str]:
     problems = []
-    top_cmds = _commands(record)
-    if top_cmds and any(_placeholder(cmd) for cmd in top_cmds):
-        problems.append("top-level command contains placeholder text")
     entries = frontier_experiments._entries(record)
     for row in entries:
         ok, _ = frontier_experiments._usable(row, record, allow_na=True)
@@ -151,25 +235,7 @@ def _trace_problems(record: dict[str, Any]) -> list[str]:
             reason = frontier_experiments._reason(row, record)
             if not reason or _placeholder(reason):
                 problems.append(f"{label}: N/A reason missing or placeholder")
-            continue
-        row_cmds = _row_commands(row)
-        trace_values = [
-            row.get("receipt"),
-            row.get("artifact"),
-            row.get("log"),
-            row.get("report"),
-            row.get("metrics"),
-            *row_cmds,
-        ]
-        has_trace = any(bool(value) for value in trace_values)
-        if not has_trace:
-            problems.append(f"{label}: receipt/artifact/metrics/command trace missing")
-        for value in trace_values:
-            if _placeholder(value):
-                problems.append(f"{label}: trace contains placeholder text")
-                break
-        if row_cmds and any(_placeholder(cmd) for cmd in row_cmds):
-            problems.append(f"{label}: command contains placeholder text")
+        problems.extend(_row_contract_problems(record, row, label, status))
     return problems
 
 
@@ -195,10 +261,11 @@ def record_status(record: dict[str, Any] | None, *, label: str | None = None,
     source = frontier_experiments._status(record.get("source") or record.get("mode"))
     if source not in FINAL_SOURCES:
         problems.append("source/mode must be real or measured")
-    if not record.get("machine_class"):
+    if _placeholder(record.get("machine_class")):
         problems.append("machine_class missing")
     if not (record.get("git_commit") or record.get("hawking_commit")):
         problems.append("git_commit/hawking_commit missing")
+    problems.extend(_contract_problems(record))
     rows = _requirement_rows(record)
     for row in rows:
         problems.extend(f"{row['requirement']}: {problem}" for problem in row["problems"])
@@ -238,6 +305,16 @@ def draft_record(label: str, *, machine_class: str = "Studio-M1Ultra-128") -> di
     record["generated_at"] = _now()
     record["git_commit"] = _git_commit(ROOT)
     record["machine_class"] = machine_class
+    record.setdefault("same_box", True)
+    record.setdefault("run_id", "<same-run id>")
+    record.setdefault("machine_name", "<exact Studio host label>")
+    record.setdefault("same_box_group", "<same machine/session id shared by experiment matrix>")
+    record.setdefault("machine_fingerprint_sha256", "<64 hex>")
+    record.setdefault("environment_receipt", "<hawking studio environment-capture receipt>")
+    record.setdefault("artifact_inventory_receipt", "<artifact inventory receipt>")
+    record.setdefault("artifact_inventory_sha256", "<64 hex>")
+    record.setdefault("source_provenance_receipt", "<source provenance receipt>")
+    record.setdefault("experiment_plan_sha256", "<64 hex>")
     record["commands"] = ["<exact experiment orchestration command>"]
     return record
 
@@ -304,21 +381,54 @@ def dispatch(args, root: pathlib.Path = ROOT) -> int:
     return 0 if ok else 1
 
 
-def _complete_record(label: str) -> dict[str, Any]:
-    record = {
-        "schema": SCHEMA,
-        "model": label,
+def _complete_contract(label: str) -> dict[str, Any]:
+    return {
         "source": "real",
         "receipt_state": "final",
         "machine_class": "Studio-M1Ultra-128",
+        "machine_name": "selftest-studio",
+        "same_box": True,
+        "same_box_group": "selftest-experiment-session",
+        "machine_fingerprint_sha256": "a" * 64,
+        "environment_receipt": "selftest://environment",
+        "artifact_inventory_receipt": "selftest://artifact-inventory",
+        "artifact_inventory_sha256": "b" * 64,
+        "source_provenance_receipt": "selftest://source-provenance",
+        "experiment_plan_sha256": "c" * 64,
+        "run_id": f"selftest-experiment-{label}",
         "git_commit": "selftest",
+        "commands": ["selftest experiment orchestration"],
+    }
+
+
+def _complete_row(category: str, name: str, *, status: str = "pass",
+                  extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    row = {
+        "category": category,
+        "name": name,
+        "status": status,
+        "same_box": True,
+        "command": f"selftest experiment {category} {name}",
+        "receipt": f"selftest://experiment/{category}/{name}",
+        "trace_sha256": "d" * 64,
+    }
+    row.update(extra or {})
+    return row
+
+
+def _complete_record(label: str) -> dict[str, Any]:
+    contract = _complete_contract(label)
+    record = {
+        "schema": SCHEMA,
+        "model": label,
+        **contract,
         "experiments": {
             "floor_seeds": [
-                {"category": "floor_seed", "seed": seed, "status": "pass", "receipt": f"selftest://seed/{seed}"}
+                _complete_row("floor_seed", f"seed_{seed}", extra={"seed": seed})
                 for seed in (1, 2, 3)
             ],
             "calibration_ablations": [
-                {"category": "calibration_ablations", "name": name, "status": "pass", "receipt": f"selftest://calib/{name}"}
+                _complete_row("calibration_ablations", name)
                 for name in (
                     "domain_matched_calib",
                     "mixed_domain_calib",
@@ -327,26 +437,31 @@ def _complete_record(label: str) -> dict[str, Any]:
                 )
             ],
             "bpw_ladder": [
-                {"category": "bpw_ladder", "bpw": bpw, "status": "pass", "metrics": {"ppl": 1.0 + i}}
+                _complete_row("bpw_ladder", f"bpw_{bpw}", extra={"bpw": bpw, "metrics": {"ppl": 1.0 + i}})
                 for i, bpw in enumerate((1.50, 1.25, 1.00, 0.75))
             ],
             "moe_expert_ablation": [
-                {"category": "moe_expert_ablation", "status": "pass", "receipt": "selftest://expert"}
+                _complete_row("moe_expert_ablation", "expert_sensitivity")
             ],
             "ramcliff_repeats": [
-                {"category": "ramcliff_repeats", "run_type": run_type, "status": "pass", "receipt": f"selftest://ram/{i}"}
+                _complete_row("ramcliff_repeats", f"{run_type}_{i}", extra={"run_type": run_type})
                 for i, run_type in enumerate(("cold", "cold", "cold", "warm", "warm", "warm"))
             ],
             "baseline_variants": [
-                {"category": "baseline_variants", "name": name, "status": "pass", "receipt": f"selftest://baseline/{name}"}
+                _complete_row("baseline_variants", name)
                 for name in ("llama_q4", "llama_iq2", "mlx_4bit", "unsloth_or_exl3")
             ],
             "null_certification": [
-                {"category": "null_certification", "name": name, "status": "certified", "receipt": f"selftest://null/{name}"}
+                _complete_row(
+                    "null_certification",
+                    name,
+                    status="certified",
+                    extra={"reason": f"selftest archived null result: {name}"},
+                )
                 for name in ("failed_recipe", "baseline_or_quality_loss")
             ],
             "rebake_or_hash_verify": [
-                {"category": "rebake_or_hash_verify", "status": "verified", "receipt": "selftest://rebake"}
+                _complete_row("rebake_or_hash_verify", "artifact_rebake", status="verified")
             ],
         },
     }
@@ -373,6 +488,14 @@ def selftest() -> bool:
     missing_trace["experiments"]["floor_seeds"][0].pop("receipt")
     _, missing_status = sign_record(missing_trace, label=label)
     check("experiment row without trace is blocked", not missing_status["ok"])
+    missing_trace_hash = _complete_record(label)
+    missing_trace_hash["experiments"]["floor_seeds"][0].pop("trace_sha256")
+    _, missing_hash_status = sign_record(missing_trace_hash, label=label)
+    check("experiment row without trace hash is blocked", not missing_hash_status["ok"])
+    missing_run = _complete_record(label)
+    missing_run.pop("run_id")
+    _, missing_run_status = sign_record(missing_run, label=label)
+    check("experiment matrix without run id is blocked", not missing_run_status["ok"])
     missing_required = _complete_record(label)
     missing_required["experiments"]["bpw_ladder"] = missing_required["experiments"]["bpw_ladder"][:2]
     _, required_status = sign_record(missing_required, label=label)

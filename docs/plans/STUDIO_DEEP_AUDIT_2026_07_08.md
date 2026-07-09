@@ -144,7 +144,8 @@ gated on unbuilt or unproven parts: native `.tq` serve, frontier architecture ro
   null certification, and rebake/hash verification.
 - Added `frontier_experiment_runner.py` plus `frontier_ops.py experiment-receipt draft|sign|verify`;
   expensive-mode matrices now have signed envelopes, final-state checks, row-depth checks, exact-command
-  checks, row-level trace requirements, and tamper detection.
+  checks, same-run machine/environment/artifact/source-provenance proof, row-level trace-hash
+  requirements, and tamper detection.
 - Added `hawking studio experiment-receipt`; expensive-mode matrix envelopes can now be drafted, signed,
   and verified through the product CLI instead of raw helper-script commands.
 - Added `frontier_licenses.py`, `frontier_ops.py license-plan`, `hawking studio license-plan`, and
@@ -271,7 +272,7 @@ Compute wall-clock is the real unknown. Reasonable planning range:
 | Observability / operator UX | 10.0 | `hawking studio preflight|verify-summary|environment-capture|environment-verify|snapshot|worktree-plan|status|storage-plan|lifecycle|gate|license-plan|record-license|license-decisions|review-plan|review-candidate|review-decisions|source-provenance-plan|source-provenance-receipt|parity-receipt|coverage-plan|coverage-receipt|receipt-plan|receipt-record|experiment-plan|experiment-receipt|claim-bundle-build|claim-bundle-verify|proof-pack|launch-packet-build|launch-packet-verify|audit-grade-build|audit-grade-verify|serve-capture|run-next`, lower-level receipt signing/build commands, `frontier_parity.py status`, scorecard parity/coverage/receipt gates, hardware telemetry, download/cache telemetry, event telemetry, refresh-review telemetry, signed worktree-split telemetry, signed batch license/review workbooks, signed wave-0 launch packets, signed audit-grade receipts, and JSON ledgers give per-model state, ETA, disk pressure, next step, observed MB/s, dirty-subsystem grouping, target-grade status, and claim blockers. | Maintain parity as new receipt types are added. |
 | License and gating | 9.95 | `hawking studio license-plan` and strict `hawking studio record-license` require accepted terms, signer, license id, terms URL, allowed use, redistribution policy, source-retention policy, and note before procurement; `license-decisions draft|sign|verify|apply` now gives the same gate a signed batch workflow, and `hawking studio review-candidate|review-decisions` records refresh decisions. Actual model license records are still missing. | Fill accepted-license records and refresh decisions for every frontier model at launch time. |
 | Failure recovery / cache hygiene | 9.6 | HF resumes downloads, tools skip completed work, source release is guarded, failed/slow/stalled downloads leave telemetry and diagnostics, HF/Xet cache is project-local with status/prune hooks, maximal downloads can run `hf cache verify`, and no-progress windows terminate into an explicit retry path. It still lacks a long-running watch daemon. | Add an optional watch daemon once Studio evidence accumulates. |
-| Experiment maximalism | 9.5 | `experiment-plan` now makes seeds, ablations, bpw rungs, MoE allocation, cold/warm repeats, baseline variants, null certifications, and rebake/hash verification claim-gating, and `experiment-receipt` makes the matrix signed and trace-backed. Actual Studio matrices are still missing. | Complete measured experiment matrices for every frontier model, including publishable nulls. |
+| Experiment maximalism | 9.5 | `experiment-plan` now makes seeds, ablations, bpw rungs, MoE allocation, cold/warm repeats, baseline variants, null certifications, and rebake/hash verification claim-gating, and `experiment-receipt` makes the matrix signed, same-run, machine-bound, source/artifact-backed, and row trace-hashed. Actual Studio matrices are still missing. | Complete measured experiment matrices for every frontier model, including publishable nulls. |
 | Product readiness | 4.8 | The research plan is much stronger than the shippable local model experience, but the `hawking` binary now exposes a Studio proof/lifecycle surface. Native `.tq` serving is still the product wall. | A real `hawking serve` path loading a `.tq`, answering prompts, and producing scorecard-backed claims. |
 
 ## Top blockers
@@ -368,7 +369,8 @@ Wave 0 - launch hardening:
 - Use `hawking studio experiment-receipt draft <label> --sign-draft` before expensive-mode experiments,
   then run `hawking studio experiment-receipt sign <label>` and
   `hawking studio experiment-receipt verify <label>` after final rows, exact commands, row-level
-  receipts/artifacts/metrics, null reasons, and hash/rebake evidence are filled.
+  receipt/artifact/log/report traces, trace hashes, same-run machine/environment proof,
+  source/artifact-provenance receipts, null reasons, and hash/rebake evidence are filled.
 - After those evidence files exist, run `hawking studio claim-bundle-build <label>` and
   `hawking studio claim-bundle-verify reports/condense/<LABEL>_claim_bundle.json`; keep the bundle with
   the public-claim artifacts.

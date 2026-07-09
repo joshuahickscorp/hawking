@@ -1825,7 +1825,7 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
         serve_receipts = frontier_receipts.serve_rollup(root, labels)
         ramcliff_receipts = frontier_receipts.ramcliff_rollup(root, labels)
         doctor_recovery = frontier_doctor_recovery.recovery_rollup(root, labels)
-        experiments = frontier_experiments.experiment_rollup(root, labels)
+        experiments = _signed_experiment_rollup(root, labels)
         evidence_runs = frontier_evidence_run.evidence_run_rollup(root, labels)
         claim_bundles = frontier_claims.claim_rollup(root, labels)
         add("frontier-source-provenance", provenance["ok"], "fail",
@@ -1847,7 +1847,7 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
             f"{doctor_recovery['passed_count']}/{doctor_recovery['model_count']} Doctor recovery receipts verify",
             doctor_recovery)
         add("frontier-experiment-depth", experiments["ok"], "fail",
-            f"{experiments['passed_count']}/{experiments['model_count']} frontier models have expensive-mode experiment depth",
+            f"{experiments['passed_count']}/{experiments['model_count']} signed experiment matrices verify",
             experiments)
         add("frontier-studio-evidence-runs", evidence_runs["ok"], "fail",
             f"{evidence_runs['passed_count']}/{evidence_runs['model_count']} Studio evidence-run bundles verify",
@@ -1904,7 +1904,7 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
                 if phase == "claim" else None
             ),
             "experiment_depth_blocked": (
-                frontier_experiments.experiment_rollup(root, [m.label for m in FRONTIER_MODELS])["blocked_count"]
+                _signed_experiment_rollup(root, [m.label for m in FRONTIER_MODELS])["blocked_count"]
                 if phase == "claim" else None
             ),
             "studio_evidence_run_blocked": (
@@ -2499,7 +2499,7 @@ def cmd_experiment_plan(args) -> int:
             selected.append(model.label)
         labels = selected
     data = frontier_experiments.experiment_plan(ROOT, labels)
-    data["experiment_rollup"] = frontier_experiments.experiment_rollup(ROOT, labels)
+    data["experiment_rollup"] = _signed_experiment_rollup(ROOT, labels)
     if args.out:
         _write_json(pathlib.Path(args.out), data)
         print(f"[frontier-ops] wrote {args.out}", file=sys.stderr)
@@ -4450,49 +4450,10 @@ def cmd_selftest(args) -> int:
             )
             _write_json(root / "reports" / "condense" / f"{fm.label}_doctor_recovery.json",
                         doctor_record)
-            _write_json(root / "reports" / "condense" / f"{fm.label}_experiment_matrix.json", {
-                "schema": "hawking.frontier_experiment_matrix.v1",
-                "model": fm.label,
-                "mode": "real",
-                "machine_class": "Studio-M1Ultra-128",
-                "experiments": {
-                    "floor_seeds": [
-                        {"category": "floor_seed", "seed": seed, "status": "pass"}
-                        for seed in (1, 2, 3)
-                    ],
-                    "calibration_ablations": [
-                        {"category": "calibration_ablations", "name": name, "status": "pass"}
-                        for name in (
-                            "domain_matched_calib",
-                            "mixed_domain_calib",
-                            "awq_alpha_sweep",
-                            "residual_depth_sweep",
-                        )
-                    ],
-                    "bpw_ladder": [
-                        {"category": "bpw_ladder", "bpw": bpw, "status": "pass"}
-                        for bpw in (1.50, 1.25, 1.00, 0.75)
-                    ],
-                    "moe_expert_ablation": [
-                        {"category": "moe_expert_ablation", "status": "pass", "name": "expert_sensitivity"}
-                    ],
-                    "ramcliff_repeats": [
-                        {"category": "ramcliff_repeats", "run_type": run_type, "status": "pass"}
-                        for run_type in ("cold", "cold", "cold", "warm", "warm", "warm")
-                    ],
-                    "baseline_variants": [
-                        {"category": "baseline_variants", "name": name, "status": "pass"}
-                        for name in ("llama_q4", "llama_iq2", "mlx_4bit", "unsloth_or_exl3")
-                    ],
-                    "null_certification": [
-                        {"category": "null_certification", "name": name, "status": "certified", "reason": "selftest"}
-                        for name in ("failed_recipe", "baseline_or_quality_loss")
-                    ],
-                    "rebake_or_hash_verify": [
-                        {"category": "rebake_or_hash_verify", "status": "verified"}
-                    ],
-                },
-            })
+            experiment_record = frontier_experiment_runner._complete_record(fm.label)
+            experiment_record, _ = frontier_experiment_runner.sign_record(experiment_record, label=fm.label)
+            _write_json(root / "reports" / "condense" / f"{fm.label}_experiment_matrix.json",
+                        experiment_record)
             frontier_evidence_run._write_complete_selftest_evidence(root, fm)
             evidence_run_record = frontier_evidence_run.build_record(
                 root,

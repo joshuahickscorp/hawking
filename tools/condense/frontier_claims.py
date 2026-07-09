@@ -507,46 +507,7 @@ def selftest() -> bool:
             model=model,
         )
         (cond / f"{model.label}_doctor_recovery.json").write_text(json.dumps(doctor_record))
-        experiment_record = {
-            "schema": "hawking.frontier_experiment_matrix.v1",
-            "model": model.label,
-            "source": "real",
-            "receipt_state": "final",
-            "machine_class": "Studio-M1Ultra-128",
-            "git_commit": "selftest",
-            "experiments": {
-                "floor_seeds": [
-                    {"category": "floor_seed", "seed": seed, "status": "pass", "receipt": "selftest"}
-                    for seed in (1, 2, 3)
-                ],
-                "calibration_ablations": [
-                    {"category": "calibration_ablations", "name": name, "status": "pass", "receipt": "selftest"}
-                    for name in ("domain_matched_calib", "mixed_domain_calib", "awq_alpha_sweep", "residual_depth_sweep")
-                ],
-                "bpw_ladder": [
-                    {"category": "bpw_ladder", "bpw": bpw, "status": "pass", "receipt": "selftest"}
-                    for bpw in (1, 2, 3, 4)
-                ],
-                "moe_expert_ablation": [
-                    {"category": "moe_expert_ablation", "status": "pass", "receipt": "selftest"}
-                ],
-                "ramcliff_repeats": [
-                    {"category": "ramcliff_repeats", "run_type": run_type, "status": "pass", "receipt": "selftest"}
-                    for run_type in ("cold", "cold", "cold", "warm", "warm", "warm")
-                ],
-                "baseline_variants": [
-                    {"category": "baseline_variants", "name": name, "status": "pass", "receipt": "selftest"}
-                    for name in ("a", "b", "c", "d")
-                ],
-                "null_certification": [
-                    {"category": "null_certification", "name": name, "status": "certified", "receipt": "selftest"}
-                    for name in ("null_a", "null_b")
-                ],
-                "rebake_or_hash_verify": [
-                    {"category": "rebake_or_hash_verify", "status": "verified", "receipt": "selftest"}
-                ],
-            },
-        }
+        experiment_record = frontier_experiment_runner._complete_record(model.label)
         experiment_record, _ = frontier_experiment_runner.sign_record(experiment_record, label=model.label)
         (cond / f"{model.label}_experiment_matrix.json").write_text(json.dumps(experiment_record))
         artifact = root / "scratch" / "selftest.tq"

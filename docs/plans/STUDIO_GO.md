@@ -240,7 +240,7 @@ cargo run -p hawking --bin hawking -- studio receipt-record verify <label> --kin
 cargo run -p hawking --bin hawking -- studio experiment-plan
 # before expensive-mode experiments:
 cargo run -p hawking --bin hawking -- studio experiment-receipt draft <label> --sign-draft
-# after seeds/ablations/rungs/repeats/nulls/rebake rows are final and traced:
+# after seeds/ablations/rungs/repeats/nulls/rebake rows are final, same-run, and trace-hashed:
 cargo run -p hawking --bin hawking -- studio experiment-receipt sign <label>
 cargo run -p hawking --bin hawking -- studio experiment-receipt verify <label>
 cargo run -p hawking --bin hawking -- studio claim-bundle-build <label>
@@ -361,9 +361,11 @@ or reasoned dense/N/A, 3 cold and 3 warm RAM-cliff runs, baseline variants, at l
 certifications, and a rebake/hash verification row.
 `hawking studio experiment-receipt draft` writes signed but blocked expensive-mode matrix envelopes for a label. After
 the real experiment rows are complete, `hawking studio experiment-receipt sign` refuses to sign unless the matrix is
-final, real/measured, covers every depth requirement, has exact non-placeholder commands, and carries
-row-level receipt/artifact/metrics/command traces for every pass/measured/certified row. `hawking studio experiment-receipt
-verify` rejects unsigned, tampered, draft, placeholder, trace-free, or depth-incomplete matrices.
+final, real/measured, covers every depth requirement, has exact non-placeholder commands, binds to one
+Studio run with machine fingerprint, environment receipt, artifact inventory receipt/hash,
+source-provenance receipt, and experiment-plan hash, and carries a row receipt/artifact/log/report trace
+plus trace SHA-256 for every pass/measured/certified row. `hawking studio experiment-receipt verify`
+rejects unsigned, tampered, draft, placeholder, trace-free, hash-free, or depth-incomplete matrices.
 `hawking studio claim-bundle-build` signs the final public-claim evidence by SHA-256 after signed source
 provenance, signed parity, signed baseline/eval, signed native serve/RAM-cliff, and signed experiment
 matrix files exist. `hawking studio claim-bundle-verify` rejects stale, missing, or
@@ -391,5 +393,6 @@ python3.12 tools/condense/frontier_ops.py launch-gate --phase claim --require-re
 
 The claim gate stays red until each frontier model has a passing signed `<LABEL>_parity.json` receipt plus
 passing signed baseline/eval coverage receipts, strict signed native-serve/RAM-cliff receipts, and a complete
-signed expensive-mode experiment matrix, then a signed `<LABEL>_claim_bundle.json` that verifies every evidence
-file by hash. A modeled or synthetic RAM-cliff record is useful as a probe, but it is not claim-admissible.
+signed expensive-mode experiment matrix verified by the signed receipt runner, then a signed
+`<LABEL>_claim_bundle.json` that verifies every evidence file by hash. A modeled or synthetic RAM-cliff
+record is useful as a probe, but it is not claim-admissible.
