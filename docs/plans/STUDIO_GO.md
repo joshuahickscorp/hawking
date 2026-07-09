@@ -225,7 +225,8 @@ cargo run -p hawking --bin hawking -- studio parity-receipt draft <label> --sign
 cargo run -p hawking --bin hawking -- studio parity-receipt sign <label>
 cargo run -p hawking --bin hawking -- studio parity-receipt verify <label>
 cargo run -p hawking --bin hawking -- studio coverage-receipt draft <label> --kind both --sign-draft
-# after baseline/eval runs fill final rows, exact commands, artifacts/receipts, and metrics:
+# after baseline/eval runs fill final rows, exact commands, trace artifacts,
+# machine/environment proof, same-box group, and frozen suite/score-set hashes:
 cargo run -p hawking --bin hawking -- studio coverage-receipt sign <label> --kind both
 cargo run -p hawking --bin hawking -- studio coverage-receipt verify <label> --kind both
 cargo run -p hawking --bin hawking -- studio receipt-plan
@@ -332,9 +333,10 @@ native feature from `frontier_parity.py`.
 trace-free, contract-free, or feature-incomplete parity records.
 `hawking studio coverage-receipt draft` writes signed but blocked baseline/eval envelopes for a label.
 After the real same-box runs are complete, `hawking studio coverage-receipt sign` refuses to sign unless
-the record is final, covers every required row, includes exact non-placeholder commands, and carries a
-receipt/artifact/metrics trace for every measured/pass row. `hawking studio coverage-receipt verify`
-rejects unsigned or tampered records.
+the record is final, covers every required row, carries machine fingerprint/environment receipt,
+same-box group, frozen suite hash, frozen score-set hash, exact non-placeholder commands, and a
+receipt/artifact/log trace for every measured/pass row. Best-effort baseline rows cannot unlock claim
+bundles. `hawking studio coverage-receipt verify` rejects unsigned or tampered records.
 `receipt-plan` prints the stricter serve/RAM-cliff receipt contract. `<LABEL>_serve.json` must use
 schema `hawking.frontier_serve.v1`, identify the artifact hash, record exact commands and commit, pass
 native `.tq` proof mode, prove no f16 rehydrate, prove all-linear/GPU ownership, set `parity_pass=true`,

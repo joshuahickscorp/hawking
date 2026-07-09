@@ -611,43 +611,10 @@ def _write_complete_selftest_evidence(root: pathlib.Path, model: FrontierModel) 
     _write_json(frontier_provenance.provenance_path(root, model.label), source)
     parity, _ = frontier_parity_runner.sign_record(frontier_parity_runner._complete_record(model), model=model)
     _write_json(pathlib.Path(frontier_parity.parity_status(model, root)["record"]), parity)
-    baseline = {
-        "schema": frontier_coverage_runner.BASELINE_SCHEMA,
-        "model": model.label,
-        "receipt_state": "final",
-        "source": "measured",
-        "machine_class": "Studio-M1Ultra-128",
-        "baselines": [
-            {
-                "name": req["name"],
-                "status": "pass",
-                "command": f"selftest baseline {i}",
-                "artifact": f"selftest://baseline/{i}",
-                "metrics": {"tok_s": 1.0 + i},
-            }
-            for i, req in enumerate(frontier_coverage.BASELINE_REQUIREMENTS)
-        ],
-    }
+    baseline = frontier_coverage_runner._complete_record(model.label, "baseline")
     baseline, _ = frontier_coverage_runner.sign_record(baseline, kind="baseline")
     _write_json(frontier_coverage.baseline_path(root, model.label), baseline)
-    eval_record = {
-        "schema": frontier_coverage_runner.EVAL_SCHEMA,
-        "model": model.label,
-        "receipt_state": "final",
-        "source": "measured",
-        "mode": "real",
-        "machine_class": "Studio-M1Ultra-128",
-        "domains": [
-            {
-                "domain": req["name"],
-                "status": "pass",
-                "command": f"selftest eval {i}",
-                "receipt": f"selftest://eval/{i}",
-                "metrics": {"score": 1.0},
-            }
-            for i, req in enumerate(frontier_coverage.EVAL_REQUIREMENTS)
-        ],
-    }
+    eval_record = frontier_coverage_runner._complete_record(model.label, "eval")
     eval_record, _ = frontier_coverage_runner.sign_record(eval_record, kind="eval")
     _write_json(frontier_coverage.eval_path(root, model.label), eval_record)
     serve = {

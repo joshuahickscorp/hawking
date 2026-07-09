@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -31,6 +32,19 @@ SIGN_ALG = "sha256-json-v1"
 BASELINE_SCHEMA = "hawking.frontier_baselines.v1"
 EVAL_SCHEMA = "hawking.frontier_eval_coverage.v1"
 KINDS = ("baseline", "eval")
+SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+CONTRACT_TEXT_KEYS = (
+    "run_id",
+    "machine_name",
+    "same_box_group",
+    "environment_receipt",
+    "score_set_receipt",
+)
+CONTRACT_SHA_KEYS = (
+    "machine_fingerprint_sha256",
+    "frozen_suite_sha256",
+    "score_set_sha256",
+)
 
 
 def _now() -> str:
@@ -122,20 +136,66 @@ def _commands(row: dict[str, Any], record: dict[str, Any] | None = None) -> list
     return out
 
 
-def _placeholder(s: str) -> bool:
-    return "<" in s or "TODO" in s or "..." in s
+def _placeholder(value: Any) -> bool:
+    if value is None:
+        return True
+    text = str(value).strip()
+    return not text or "<" in text or "TODO" in text or "..." in text
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _trace_present(entry: dict[str, Any], record: dict[str, Any]) -> bool:
     for key in ("artifact", "receipt", "result_path", "output_path", "log_path"):
         val = entry.get(key) or record.get(key)
-        if val and str(val).upper() != "N/A":
-            return True
-    for key in ("metrics", "results", "scores"):
-        val = entry.get(key) or record.get(key)
-        if isinstance(val, dict) and val:
+        if not _placeholder(val) and str(val).upper() != "N/A":
             return True
     return False
+
+
+def _contract_problems(record: dict[str, Any], kind: str) -> list[str]:
+    problems = []
+    if _placeholder(record.get("model") or record.get("label")):
+        problems.append("model/label missing or placeholder")
+    if _placeholder(record.get("machine_class")):
+        problems.append("machine_class missing or placeholder")
+    if record.get("same_box") is not True:
+        problems.append("same_box must be true for signed coverage receipts")
+    if not (record.get("git_commit") or record.get("hawking_commit")):
+        problems.append("git_commit/hawking_commit missing")
+    mode = frontier_coverage._status(record.get("source") or record.get("mode"))
+    if mode not in ("real", "measured"):
+        problems.append("source/mode must be real or measured")
+    for key in CONTRACT_TEXT_KEYS:
+        if _placeholder(record.get(key)):
+            problems.append(f"{key} missing or placeholder")
+    for key in CONTRACT_SHA_KEYS:
+        if not _is_sha256(record.get(key)):
+            problems.append(f"{key} missing or invalid")
+    if kind == "baseline" and record.get("baseline_best_effort") is not False:
+        problems.append("baseline_best_effort must be false for claim-admissible same-box baselines")
+    return problems
+
+
+def _row_contract_problems(record: dict[str, Any], entry: dict[str, Any],
+                           requirement: str, kind: str) -> list[str]:
+    problems = []
+    if entry.get("same_box", record.get("same_box")) is not True:
+        problems.append(f"{requirement}: measured/pass row must be same_box=true")
+    row_machine = entry.get("machine_class")
+    if row_machine and row_machine != record.get("machine_class"):
+        problems.append(f"{requirement}: row machine_class does not match receipt machine_class")
+    for key in CONTRACT_SHA_KEYS:
+        row_value = entry.get(key)
+        if row_value and row_value != record.get(key):
+            problems.append(f"{requirement}: row {key} does not match receipt {key}")
+    if kind == "baseline":
+        best_effort = entry.get("baseline_best_effort", record.get("baseline_best_effort"))
+        if best_effort is not False:
+            problems.append(f"{requirement}: baseline_best_effort must be false for measured rows")
+    return problems
 
 
 def coverage_rows(record: dict[str, Any], kind: str) -> list[dict[str, Any]]:
@@ -174,7 +234,8 @@ def _trace_problems(record: dict[str, Any], kind: str) -> list[str]:
         elif any(_placeholder(cmd) for cmd in cmds):
             problems.append(f"{req['name']}: command contains placeholder text")
         if not _trace_present(entry, record):
-            problems.append(f"{req['name']}: receipt/artifact/metrics trace missing")
+            problems.append(f"{req['name']}: receipt/artifact/log trace missing")
+        problems.extend(_row_contract_problems(record, entry, req["name"], kind))
     return problems
 
 
@@ -210,6 +271,8 @@ def record_status(record: dict[str, Any] | None, *, kind: str | None = None,
         problems.append(f"schema must be {expected}")
     if record.get("receipt_state") != "final":
         problems.append("receipt_state must be final")
+    if kind in KINDS:
+        problems.extend(_contract_problems(record, kind))
     rows = coverage_rows(record, kind) if kind in KINDS else []
     problems.extend(f"{row['requirement']}: {row.get('problem')}" for row in rows if not row.get("ok"))
     problems.extend(_trace_problems(record, kind) if kind in KINDS else [])
@@ -255,6 +318,16 @@ def draft_record(label: str, kind: str, *, machine_class: str = "Studio-M1Ultra-
     record["generated_at"] = _now()
     record["git_commit"] = _git_commit(ROOT)
     record["machine_class"] = machine_class
+    record.setdefault("machine_name", "<exact Studio host label>")
+    record.setdefault("same_box", True)
+    record.setdefault("same_box_group", "<same machine/session id shared by baselines/evals>")
+    record.setdefault("machine_fingerprint_sha256", "<64 hex>")
+    record.setdefault("environment_receipt", "<hawking studio environment-capture receipt>")
+    record.setdefault("frozen_suite_sha256", "<64 hex>")
+    record.setdefault("score_set_sha256", "<64 hex>")
+    record.setdefault("score_set_receipt", "<frozen score-set receipt>")
+    record.setdefault("baseline_best_effort", False if kind == "baseline" else "N/A")
+    record.setdefault("run_id", "<same-run id>")
     record["receipt_state"] = "draft"
     record["source"] = "operator-draft"
     return record
@@ -331,20 +404,38 @@ def dispatch(args, root: pathlib.Path = ROOT) -> int:
     return 0 if ok else 1
 
 
+def _complete_contract(label: str) -> dict[str, Any]:
+    return {
+        "model": label,
+        "receipt_state": "final",
+        "source": "real",
+        "machine_class": "Studio-M1Ultra-128",
+        "machine_name": "selftest-studio",
+        "same_box": True,
+        "same_box_group": "selftest-studio-session",
+        "machine_fingerprint_sha256": "a" * 64,
+        "environment_receipt": "selftest://environment",
+        "frozen_suite_sha256": "b" * 64,
+        "score_set_sha256": "c" * 64,
+        "score_set_receipt": "selftest://score-set",
+        "run_id": f"selftest-coverage-{label}",
+        "git_commit": "selftest",
+    }
+
+
 def _complete_record(label: str, kind: str) -> dict[str, Any]:
+    contract = _complete_contract(label)
     if kind == "baseline":
         return {
+            **contract,
             "schema": BASELINE_SCHEMA,
-            "model": label,
-            "receipt_state": "final",
-            "source": "real",
-            "machine_class": "Studio-M1Ultra-128",
-            "same_box": True,
+            "baseline_best_effort": False,
             "baselines": [
                 {
                     "name": req["name"],
                     "status": "measured" if i < 2 else "na",
                     "same_box": True,
+                    "baseline_best_effort": False,
                     "command": f"selftest baseline {i}",
                     "artifact": f"selftest://baseline/{i}" if i < 2 else "N/A",
                     "metrics": {"tok_s": 1.0 + i} if i < 2 else {},
@@ -354,15 +445,15 @@ def _complete_record(label: str, kind: str) -> dict[str, Any]:
             ],
         }
     return {
+        **contract,
         "schema": EVAL_SCHEMA,
-        "model": label,
-        "receipt_state": "final",
+        "source": "measured",
         "mode": "real",
-        "machine_class": "Studio-M1Ultra-128",
         "domains": [
             {
                 "domain": req["name"],
                 "status": "pass",
+                "same_box": True,
                 "command": f"selftest eval {i}",
                 "receipt": f"selftest://eval/{i}",
                 "metrics": {"score": 1.0},
@@ -392,9 +483,21 @@ def selftest() -> bool:
     check("complete baseline signs and verifies", status["ok"])
     signed["baselines"][0]["metrics"]["tok_s"] = 0.0
     check("tampered baseline signature fails", not record_status(signed, kind="baseline")["ok"])
+    missing_machine = _complete_record(model.label, "baseline")
+    missing_machine.pop("machine_fingerprint_sha256")
+    _, missing_machine_status = sign_record(missing_machine, kind="baseline")
+    check("baseline without machine fingerprint is blocked", not missing_machine_status["ok"])
+    inferred_same_box = _complete_record(model.label, "baseline")
+    inferred_same_box.pop("same_box")
+    _, inferred_status = sign_record(inferred_same_box, kind="baseline")
+    check("baseline cannot infer same-box from real mode", not inferred_status["ok"])
 
     eval_signed, eval_status = sign_record(_complete_record(model.label, "eval"), kind="eval")
     check("complete eval signs and verifies", eval_status["ok"])
+    missing_suite = _complete_record(model.label, "eval")
+    missing_suite.pop("frozen_suite_sha256")
+    _, missing_suite_status = sign_record(missing_suite, kind="eval")
+    check("eval without frozen suite hash is blocked", not missing_suite_status["ok"])
 
     with tempfile.TemporaryDirectory() as td:
         root = pathlib.Path(td)

@@ -16,6 +16,7 @@ import re
 from typing import Any
 
 COND_DIR = pathlib.Path("reports/condense")
+SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 BASELINE_REQUIREMENTS = (
     {
@@ -102,6 +103,10 @@ def _status(s: Any) -> str:
 
 def _truthy(v: Any) -> bool:
     return v is True or _status(v) in PASS_STATUSES
+
+
+def _is_sha256(value: Any) -> bool:
+    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _reason(entry: dict[str, Any], record: dict[str, Any]) -> str:
@@ -212,15 +217,15 @@ def _classify_baseline(record: dict[str, Any], entry: dict[str, Any]) -> dict[st
     available = entry.get("available")
     reason = _reason(entry, record)
     same_box = entry.get("same_box", record.get("same_box"))
-    if same_box is None and mode == "real":
-        same_box = True
     machine = entry.get("machine_class") or record.get("machine_class")
 
     if mode in SYNTHETIC_MODES:
         return {"status": "invalid", "ok": False, "problem": "synthetic baseline cannot cover a claim"}
     if status in PASS_STATUSES or available is True or _truthy(entry.get("measured")):
-        if same_box is False:
-            return {"status": "invalid", "ok": False, "problem": "measured baseline is not same-box"}
+        if same_box is not True:
+            return {"status": "invalid", "ok": False, "problem": "measured baseline must declare same_box=true"}
+        if not machine:
+            return {"status": "invalid", "ok": False, "problem": "measured baseline lacks machine_class"}
         return {"status": "measured", "ok": True, "machine_class": machine, "same_box": bool(same_box)}
     if status in NA_STATUSES or available is False:
         if reason:
@@ -235,9 +240,18 @@ def _classify_eval(record: dict[str, Any], entry: dict[str, Any]) -> dict[str, A
     mode = _status(entry.get("mode") or entry.get("source") or record.get("mode") or record.get("source"))
     status = _status(entry.get("status") or entry.get("coverage_status"))
     reason = _reason(entry, record)
+    same_box = entry.get("same_box", record.get("same_box"))
+    suite_sha = entry.get("frozen_suite_sha256") or record.get("frozen_suite_sha256")
+    score_sha = entry.get("score_set_sha256") or record.get("score_set_sha256")
     if mode in SYNTHETIC_MODES:
         return {"status": "invalid", "ok": False, "problem": "synthetic eval cannot cover a claim"}
     if status in PASS_STATUSES or _truthy(entry.get("pass")) or _truthy(entry.get("measured")):
+        if same_box is not True:
+            return {"status": "invalid", "ok": False, "problem": "eval domain must declare same_box=true"}
+        if not _is_sha256(suite_sha):
+            return {"status": "invalid", "ok": False, "problem": "eval domain lacks frozen_suite_sha256"}
+        if not _is_sha256(score_sha):
+            return {"status": "invalid", "ok": False, "problem": "eval domain lacks score_set_sha256"}
         return {"status": "pass", "ok": True}
     if status in NA_STATUSES:
         if reason:
@@ -341,12 +355,22 @@ def _baseline_skeleton(label: str) -> dict[str, Any]:
         "schema": "hawking.frontier_baselines.v1",
         "model": label,
         "machine_class": "Studio-M1Ultra-128",
+        "machine_name": "<exact Studio host label>",
         "same_box": True,
+        "same_box_group": "<same machine/session id shared by baselines/evals>",
+        "machine_fingerprint_sha256": "<64 hex>",
+        "environment_receipt": "<hawking studio environment-capture receipt>",
+        "frozen_suite_sha256": "<64 hex>",
+        "score_set_sha256": "<64 hex>",
+        "score_set_receipt": "<frozen score-set receipt>",
+        "baseline_best_effort": False,
+        "run_id": "<same-run id>",
         "baselines": [
             {
                 "name": req["name"],
                 "status": "TODO measured|na",
                 "same_box": True,
+                "baseline_best_effort": False,
                 "command": "<exact command or N/A>",
                 "artifact": "<path or N/A>",
                 "metrics": {},
@@ -363,10 +387,20 @@ def _eval_skeleton(label: str) -> dict[str, Any]:
         "model": label,
         "mode": "real",
         "machine_class": "Studio-M1Ultra-128",
+        "machine_name": "<exact Studio host label>",
+        "same_box": True,
+        "same_box_group": "<same machine/session id shared by baselines/evals>",
+        "machine_fingerprint_sha256": "<64 hex>",
+        "environment_receipt": "<hawking studio environment-capture receipt>",
+        "frozen_suite_sha256": "<64 hex>",
+        "score_set_sha256": "<64 hex>",
+        "score_set_receipt": "<frozen score-set receipt>",
+        "run_id": "<same-run id>",
         "domains": [
             {
                 "domain": req["name"],
                 "status": "TODO pass|na",
+                "same_box": True,
                 "command": "<exact command or N/A>",
                 "receipt": "<path to result or N/A>",
                 "reason": "<required if status=na>",

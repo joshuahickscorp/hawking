@@ -101,7 +101,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `cargo test -p hawking-core --features tq --lib tq_projection_parser_covers_gguf_and_hf_names -- --nocapture`:
   pass.
 - `python3.12 tools/condense/frontier_coverage_runner.py selftest`: pass. It verifies blocked signed
-  drafts, complete signed baseline/eval records, tamper rejection, and operator-style draft output.
+  drafts, complete signed baseline/eval records, tamper rejection, missing machine/frozen-suite proof
+  rejection, no same-box inference from `mode=real`, and operator-style draft output.
 - `python3.12 tools/condense/frontier_parity.py selftest`: pass. The legacy parity readiness ledger now
   treats placeholder numeric fields as blocked evidence instead of crashing.
 - `python3.12 tools/condense/frontier_parity_runner.py selftest`: pass. It verifies signed parity drafts
@@ -173,7 +174,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   because signed final same-box baseline/eval receipts do not exist yet.
 - `target/debug/hawking studio coverage-receipt sign|verify 235B-A22B --kind both --out-dir <tmp> --json`:
   pass with synthetic complete baseline/eval records in a temp directory, proving the product wrapper can
-  sign and verify without mutating real Studio evidence.
+  sign and verify machine fingerprint, environment receipt, same-box group, frozen suite/score-set hashes,
+  and trace-backed measured rows without mutating real Studio evidence.
 - `target/debug/hawking studio parity-receipt verify 235B-A22B --json`: correctly red, because signed final
   architecture parity receipts do not exist yet.
 - `target/debug/hawking studio parity-receipt sign|verify 235B-A22B --out-dir <tmp> --json`: pass with a
@@ -353,7 +355,7 @@ Generated locally without downloads or bakes:
   TODO state.
 - `reports/condense/235B-A22B_baselines.json` and `reports/condense/235B-A22B_eval.json`: signed but
   blocked draft coverage envelopes; they verify as intentionally incomplete until final same-box rows
-  replace TODO state.
+  replace TODO state and fill machine/environment/frozen-suite proof.
 - `reports/condense/frontier_receipt_plan.local.json`: 0/9 native serve and RAM-cliff receipts; records
   required receipt paths.
 - `reports/condense/235B-A22B_serve.json` and `reports/condense/235B-A22B_ramcliff.json`: signed but

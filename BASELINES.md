@@ -90,7 +90,9 @@ N/A rows. Use `hawking studio coverage-receipt draft <label> --kind both --sign-
 but blocked envelopes, then after real same-box runs fill final rows and run
 `hawking studio coverage-receipt sign <label> --kind both` and
 `hawking studio coverage-receipt verify <label> --kind both`. Signing refuses missing coverage,
-placeholder commands, and measured/pass rows without a receipt/artifact/metrics trace.
+placeholder commands, missing machine fingerprint/environment receipt, missing same-box group, missing
+frozen suite or score-set hashes, best-effort baseline rows, and measured/pass rows without a
+receipt/artifact/log trace.
 `frontier_ops.py launch-gate --phase claim` refuses public claims until those coverage rows,
 frontier parity, and the relevant serve/parity receipts are present. Use
 `hawking studio parity-receipt draft <label> --sign-draft` to create signed but blocked architecture
@@ -152,7 +154,9 @@ smaller sources.
   only support a *contingent* or *negative* result (R8).
 - Missing baseline rows are not neutral. Use same-box measured evidence or an explicit N/A with a
   reason; silence blocks the claim gate. Unsigned, draft, tampered, placeholder-command, or trace-free
-  coverage receipts do not unlock claim bundles.
+  coverage receipts do not unlock claim bundles. Final coverage receipts must bind the run to a named
+  Studio machine, machine fingerprint, environment receipt, same-box group, frozen suite hash, and frozen
+  score-set hash.
 - Missing or loose parity rows are not neutral. A claim-admissible parity receipt needs schema,
   config/tokenizer hashes, exact commands, commit, reference backend, architecture adapter and
   tensor-map receipts, tokenizer/context contracts, reference/native trace hashes, logit and

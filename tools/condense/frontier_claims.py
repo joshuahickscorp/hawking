@@ -448,44 +448,10 @@ def selftest() -> bool:
         parity_record = frontier_parity_runner._complete_record(model)
         parity_record, _ = frontier_parity_runner.sign_record(parity_record, model=model)
         (cond / f"{model.label}_parity.json").write_text(json.dumps(parity_record))
-        baseline_record = {
-            "schema": "hawking.frontier_baselines.v1",
-            "model": model.label,
-            "receipt_state": "final",
-            "source": "real",
-            "machine_class": "Studio-M1Ultra-128",
-            "same_box": True,
-            "baselines": [
-                {
-                    "name": req["name"],
-                    "status": "measured",
-                    "same_box": True,
-                    "command": f"selftest baseline {i}",
-                    "artifact": f"selftest://baseline/{i}",
-                    "metrics": {"tok_s": 1.0},
-                }
-                for i, req in enumerate(frontier_coverage.BASELINE_REQUIREMENTS)
-            ],
-        }
+        baseline_record = frontier_coverage_runner._complete_record(model.label, "baseline")
         baseline_record, _ = frontier_coverage_runner.sign_record(baseline_record, kind="baseline")
         (cond / f"{model.label}_baselines.json").write_text(json.dumps(baseline_record))
-        eval_record = {
-            "schema": "hawking.frontier_eval_coverage.v1",
-            "model": model.label,
-            "receipt_state": "final",
-            "source": "real",
-            "machine_class": "Studio-M1Ultra-128",
-            "domains": [
-                {
-                    "domain": req["name"],
-                    "status": "pass",
-                    "command": f"selftest eval {i}",
-                    "receipt": f"selftest://eval/{i}",
-                    "metrics": {"score": 1.0},
-                }
-                for i, req in enumerate(frontier_coverage.EVAL_REQUIREMENTS)
-            ],
-        }
+        eval_record = frontier_coverage_runner._complete_record(model.label, "eval")
         eval_record, _ = frontier_coverage_runner.sign_record(eval_record, kind="eval")
         (cond / f"{model.label}_eval.json").write_text(json.dumps(eval_record))
         serve_record = {

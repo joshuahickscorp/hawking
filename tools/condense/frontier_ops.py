@@ -4384,32 +4384,18 @@ def cmd_selftest(args) -> int:
             )
             _write_json(root / "reports" / "condense" / f"{fm.label}_source_provenance.json",
                         provenance_record)
-            _write_json(root / "reports" / "condense" / f"{fm.label}_baselines.json", {
-                "schema": "hawking.frontier_baselines.v1",
-                "model": fm.label,
-                "source": "real",
-                "machine_class": "Studio-M1Ultra-128",
-                "same_box": True,
-                "baselines": [
-                    {
-                        "name": req["name"],
-                        "status": "measured" if i < 2 else "na",
-                        "same_box": True,
-                        "reason": "selftest N/A for non-runnable baseline" if i >= 2 else "",
-                    }
-                    for i, req in enumerate(frontier_coverage.BASELINE_REQUIREMENTS)
-                ],
-            })
-            _write_json(root / "reports" / "condense" / f"{fm.label}_eval.json", {
-                "schema": "hawking.frontier_eval_coverage.v1",
-                "model": fm.label,
-                "mode": "real",
-                "machine_class": "Studio-M1Ultra-128",
-                "domains": [
-                    {"domain": req["name"], "status": "pass", "command": "selftest"}
-                    for req in frontier_coverage.EVAL_REQUIREMENTS
-                ],
-            })
+            baseline_record, _ = frontier_coverage_runner.sign_record(
+                frontier_coverage_runner._complete_record(fm.label, "baseline"),
+                kind="baseline",
+            )
+            _write_json(root / "reports" / "condense" / f"{fm.label}_baselines.json",
+                        baseline_record)
+            eval_record, _ = frontier_coverage_runner.sign_record(
+                frontier_coverage_runner._complete_record(fm.label, "eval"),
+                kind="eval",
+            )
+            _write_json(root / "reports" / "condense" / f"{fm.label}_eval.json",
+                        eval_record)
             _write_json(root / "reports" / "condense" / f"{fm.label}_serve.json", {
                 "schema": "hawking.frontier_serve.v1",
                 "model": fm.label,
