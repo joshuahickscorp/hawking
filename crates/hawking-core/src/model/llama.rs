@@ -656,7 +656,6 @@ impl Engine for LlamaDense {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::kernels::Llama3RopeScaling;
 
     /// Llama-3.2 reference RoPE-scaling values that should round-trip

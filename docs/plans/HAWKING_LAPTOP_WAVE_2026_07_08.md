@@ -102,6 +102,13 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   `model::qwen_dense::bsize_verify_diag::bsize_matrix` real-model diagnostic is classified with
   `#[ignore = "real-model diagnostic; loads Qwen 3B GGUF and sweeps B=1..8, run explicitly with --ignored"]`
   and is skipped in normal runs.
+- `cargo check -p hawking-core --quiet`: pass with `warning_count: 0` after removing a dead
+  propose-first Eagle5 cycle increment and declaring the empty `cargo-clippy` compatibility feature
+  probed by legacy Objective-C macros. This only cleans local warning noise; it does not unlock any
+  Studio evidence gate.
+- `cargo test -p hawking-core bsize_matrix --lib -- --list`: pass with `warning_count: 0`; the ignored
+  `model::qwen_dense::bsize_verify_diag::bsize_matrix` diagnostic remains listed for explicit real-model
+  runs.
 - `cargo test -p hawking-core --lib bsize_verify_diag --quiet`: pass; both bsize diagnostics are ignored,
   confirming the full `hawking-core --lib` suite no longer blocks on that known slow diagnostic by default.
 - `cargo test -p hawking-core --features tq --lib tq_projection_parser_covers_gguf_and_hf_names -- --nocapture`:

@@ -1955,7 +1955,6 @@ impl Engine for QwenDense {
                         na,
                         (k - 1) - na,
                     );
-                    eagle5_cycle += 1;
                     let mut stop = false;
                     for j in 0..=na {
                         let id = preds[j];
