@@ -303,6 +303,9 @@ def _parity_rollup(parity, labels=None):
 
 def _serve_passed(label, rec):
     """Native .tq serve receipt gate: fail closed on fake f16 rehydrate or partial ownership."""
+    def positive(key):
+        return isinstance((rec or {}).get(key), (int, float)) and rec.get(key) > 0
+
     return bool(
         rec
         and rec.get("schema") == "hawking.frontier_serve.v1"
@@ -315,7 +318,13 @@ def _serve_passed(label, rec):
         and rec.get("gpu_bitslice") is True
         and rec.get("served_forward_pass") is True
         and rec.get("parity_pass") is True
-        and (rec.get("tok_s") or 0) > 0
+        and positive("tok_s")
+        and rec.get("load_receipt")
+        and positive("memory_peak_gb")
+        and positive("memory_resident_gb")
+        and positive("unified_memory_gb")
+        and rec.get("resident_memory_ok") is True
+        and rec.get("memory_peak_gb") <= rec.get("unified_memory_gb")
         and _is_sha256(rec.get("artifact_sha256"))
         and (rec.get("commands") or rec.get("command"))
         and (rec.get("git_commit") or rec.get("hawking_commit"))
@@ -1206,8 +1215,13 @@ def _seed_win(root):
         "status": "pass", "native_tq": True, "rehydrate_f16": False,
         "tq_strict": True, "all_linear": True, "gpu_bitslice": True,
         "served_forward_pass": True, "parity_pass": True, "tok_s": 18.5,
+        "memory_peak_gb": 68.0, "memory_resident_gb": 67.8,
+        "unified_memory_gb": 128.0, "resident_memory_ok": True,
         "artifact_sha256": "a" * 64,
         "commands": ["selftest serve"],
+        "load_receipt": "selftest://serve-load",
+        "served_forward_receipt": "selftest://serve-forward",
+        "parity_receipt": "selftest://serve-parity",
         "git_commit": "deadbeef"})
     _write(os.path.join(root, COND_DIR, "405B_ramcliff.json"), {
         "schema": "hawking.frontier_ramcliff.v1",

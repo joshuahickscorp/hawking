@@ -32,6 +32,13 @@ def _positive_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and value > 0
 
 
+def _missing_or_placeholder(value: Any) -> bool:
+    if value is None:
+        return True
+    s = str(value).strip()
+    return not s or "<" in s or "TODO" in s or "..." in s
+
+
 def _commands(record: dict[str, Any]) -> list[Any]:
     cmds = record.get("commands")
     if isinstance(cmds, list):
@@ -121,11 +128,26 @@ def serve_status(root: pathlib.Path, label: str) -> dict[str, Any]:
             problems.append("tok_s must be positive")
         if record.get("parity_pass") is not True:
             problems.append("parity_pass must be true")
+        if _missing_or_placeholder(record.get("load_receipt")):
+            problems.append("load_receipt missing or placeholder")
+        if not _positive_number(record.get("memory_peak_gb")):
+            problems.append("memory_peak_gb must be positive")
+        if not _positive_number(record.get("memory_resident_gb")):
+            problems.append("memory_resident_gb must be positive")
+        if not _positive_number(record.get("unified_memory_gb")):
+            problems.append("unified_memory_gb must be positive")
+        if record.get("resident_memory_ok") is not True:
+            problems.append("resident_memory_ok must be true")
+        if (_positive_number(record.get("memory_peak_gb"))
+                and _positive_number(record.get("unified_memory_gb"))
+                and record["memory_peak_gb"] > record["unified_memory_gb"]):
+            problems.append("memory_peak_gb must fit within unified_memory_gb")
     status.update({
         "ok": not problems,
         "problems": problems,
         "tok_s": record.get("tok_s") if record else None,
         "native_tq": record.get("native_tq") if record else None,
+        "memory_peak_gb": record.get("memory_peak_gb") if record else None,
     })
     return status
 
@@ -211,6 +233,7 @@ def receipt_plan(root: pathlib.Path, labels: list[str]) -> dict[str, Any]:
                     "python3.12 tools/condense/frontier_ops.py serve-capture "
                     f"{label} --artifact <artifact.tq> --bench-json <serve_report.json> "
                     "--command '<exact hawking serve bench command>' "
+                    "--load-receipt <load_trace.json> "
                     "--served-forward-receipt <served_forward_trace.json> "
                     "--parity-receipt <serve_parity_trace.json> --force"
                 ),
@@ -226,6 +249,11 @@ def receipt_plan(root: pathlib.Path, labels: list[str]) -> dict[str, Any]:
                     "served_forward_pass": True,
                     "parity_pass": True,
                     "tok_s": ">0",
+                    "load_receipt": "<load/proof trace>",
+                    "memory_peak_gb": ">0",
+                    "memory_resident_gb": ">0",
+                    "unified_memory_gb": ">0",
+                    "resident_memory_ok": True,
                     "artifact_sha256": "<64 hex>",
                     "commands": ["<exact command>"],
                     "machine_class": "Studio-M1Ultra-128",

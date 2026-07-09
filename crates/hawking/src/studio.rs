@@ -1054,6 +1054,9 @@ pub enum StudioCmd {
         /// Exact command that produced the serve bench report.
         #[arg(long)]
         command: String,
+        /// Load trace receipt proving the `.tq` artifact loaded resident without f16 rehydrate.
+        #[arg(long)]
+        load_receipt: String,
         /// Served-forward trace receipt proving native execution reached the model path.
         #[arg(long)]
         served_forward_receipt: String,
@@ -2112,6 +2115,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             artifact,
             bench_json,
             command,
+            load_receipt,
             served_forward_receipt,
             parity_receipt,
             machine_class,
@@ -2128,6 +2132,8 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 bench_json.display().to_string(),
                 "--command".to_string(),
                 command,
+                "--load-receipt".to_string(),
+                load_receipt,
                 "--served-forward-receipt".to_string(),
                 served_forward_receipt,
                 "--parity-receipt".to_string(),
@@ -2348,10 +2354,15 @@ fn runtime_contract_doc(root: &Path) -> Result<Value> {
                 "served_forward_pass": true,
                 "parity_pass": true,
                 "tok_s": ">0",
+                "load_receipt": "load/proof trace",
+                "memory_peak_gb": ">0",
+                "memory_resident_gb": ">0",
+                "unified_memory_gb": ">0",
+                "resident_memory_ok": true,
                 "artifact_sha256": "sha256",
                 "commands": "exact non-placeholder command"
             },
-            "serve_capture_template": "hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command '<exact hawking serve bench command>' --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force"
+            "serve_capture_template": "hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command '<exact hawking serve bench command>' --load-receipt <load_trace.json> --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force"
         },
         "custom_build_pass": {
             "goal": "native .tq runtime proof before public frontier claims",

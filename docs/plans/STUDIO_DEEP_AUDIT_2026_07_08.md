@@ -125,14 +125,15 @@ gated on unbuilt or unproven parts: native `.tq` serve, frontier architecture ro
   Synthetic/modelled RAM-cliff rows remain useful probes but cannot unlock a claim.
 - Added `frontier_receipt_runner.py` plus `frontier_ops.py receipt-record draft|sign|verify`; native
   serve and RAM-cliff receipts now have signed envelopes, final-state checks, exact-command checks,
-  served-forward/parity trace requirements for serve, powermetrics/energy plus baseline trace
+  load/memory/served-forward/parity trace requirements for serve, powermetrics/energy plus baseline trace
   requirements for RAM-cliff, and tamper detection.
 - Added `hawking studio receipt-record`; native serve/RAM-cliff receipt envelopes can now be drafted,
   signed, and verified through the product CLI instead of raw helper-script commands.
 - Added `frontier_serve_capture.py` plus `frontier_ops.py serve-capture` and
   `hawking studio serve-capture`; Studio native serve-bench JSON can now be transformed into a signed
   `<LABEL>_serve.json` only if the `.tq` artifact hash matches, the report proves native TQ decode, no
-  f16 rehydrate, strict/all-linear/GPU ownership, served-forward pass, parity pass, and positive tok/s.
+  f16 rehydrate, strict/all-linear/GPU ownership, load and resident memory proof, served-forward pass,
+  parity pass, and positive tok/s.
 - Enriched `ramcliff_bench.py` outputs with schema, command, commit, machine class, and artifact hash
   when a real `.tq` artifact is supplied.
 - Added `frontier_experiments.py`, `frontier_ops.py experiment-plan`, and a claim gate for
@@ -355,8 +356,8 @@ Wave 0 - launch hardening:
 - Use `hawking studio receipt-record draft <label> --kind both --sign-draft` before running native
   serve/RAM-cliff, then run `hawking studio receipt-record sign <label> --kind both` and
   `hawking studio receipt-record verify <label> --kind both` after final rows, exact commands,
-  served-forward/parity traces, powermetrics/energy traces, baseline traces, artifact hashes, and
-  metrics are filled.
+  load/memory/served-forward/parity traces, powermetrics/energy traces, baseline traces, artifact hashes,
+  and metrics are filled.
 - Run `hawking studio experiment-plan` before the claim phase and fill each listed
   `reports/condense/<LABEL>_experiment_matrix.json` with seeds, ablations, repeats, null certifications,
   and rebake/hash verification.
@@ -397,11 +398,13 @@ Wave 2 - make `.tq` serve:
   with the 3B/7B/32B artifacts present and archive the output as a receipt.
 - Feed the native serve-bench JSON into
   `hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json>
-  --command '<exact hawking serve bench command>' --served-forward-receipt <trace>
+  --command '<exact hawking serve bench command>' --load-receipt <load_trace>
+  --served-forward-receipt <trace>
   --parity-receipt <trace> --force` so the final serve receipt is produced by the same strict parser
   every time.
 - Write `reports/condense/<LABEL>_serve.json` only when native TQ proof mode passes, `rehydrate_f16=false`,
-  all-linears are covered, GPU bitslice owns every mapped projection, and tok/s is measured.
+  all-linears are covered, GPU bitslice owns every mapped projection, tok/s is measured, and positive
+  peak/resident/unified-memory fields prove resident memory without a memory-pressure fake win.
 - Sign and verify the final serve receipt with `hawking studio receipt-record sign|verify`; unsigned,
   draft, placeholder-command, trace-free, or tampered native serve rows do not unlock claim bundles.
 - Extend the same fail-closed ownership rule to each frontier family before claims.

@@ -524,6 +524,11 @@ def selftest() -> bool:
             "served_forward_pass": True,
             "parity_pass": True,
             "tok_s": 1.0,
+            "memory_peak_gb": 4.0,
+            "memory_resident_gb": 3.5,
+            "unified_memory_gb": 128.0,
+            "resident_memory_ok": True,
+            "load_receipt": "selftest://serve-load",
             "served_forward_receipt": "selftest://serve-forward",
             "parity_receipt": "selftest://serve-parity",
         }

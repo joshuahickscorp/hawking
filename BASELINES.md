@@ -106,12 +106,13 @@ signed but blocked native serve/RAM-cliff envelopes, then after real native serv
 final measured rows and run `hawking studio receipt-record sign <label> --kind both` and
 `hawking studio receipt-record verify <label> --kind both`. Signing refuses draft state, placeholder
 commands, missing artifact hashes, non-native or f16-rehydrate serve rows, modeled RAM-cliff rows, and
-trace-free evidence; serve needs a served-forward/parity trace, and RAM-cliff needs powermetrics/energy
-plus baseline traces. `hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json
-<serve_report.json> --command '<exact hawking serve bench command>' --served-forward-receipt <trace>
+trace-free evidence; serve needs load, memory, served-forward, and parity traces, and RAM-cliff needs
+powermetrics/energy plus baseline traces. `hawking studio serve-capture <label> --artifact <artifact.tq> --bench-json
+<serve_report.json> --command '<exact hawking serve bench command>' --load-receipt <trace>
+--served-forward-receipt <trace>
 --parity-receipt <trace> --force` is the product-facing strict bridge from Hawking's native serve-bench
 JSON to a signed `<LABEL>_serve.json`; it refuses f16 rehydrate/fallback reports, missing all-linear/GPU ownership,
-missing served-forward/parity pass, nonpositive tok/s, or artifact-hash drift. `frontier_ops.py
+missing load/memory proof, missing served-forward/parity pass, nonpositive tok/s, or artifact-hash drift. `frontier_ops.py
 serve-capture` is the lower-level equivalent. `hawking studio experiment-plan` prints the expensive-mode
 matrix contract for
 `reports/condense/<LABEL>_experiment_matrix.json`: seeds, calibration ablations, bpw rungs, expert
@@ -158,7 +159,7 @@ smaller sources.
   not unlock claim bundles.
 - Missing or loose native-serve/RAM-cliff rows are not neutral. A claim-admissible serve receipt needs
   schema, artifact hash, exact commands, commit, Studio machine class, native `.tq`, no f16 rehydrate,
-  all-linear/GPU ownership, parity pass, and positive tok/s. A RAM-cliff receipt additionally needs
+  all-linear/GPU ownership, load and resident-memory proof, parity pass, and positive tok/s. A RAM-cliff receipt additionally needs
   measured source, >10x resident-vs-swap tok/s, Q4_K overflow, and lower resident J/tok. Unsigned,
   draft, tampered, placeholder-command, synthetic/modelled, or trace-free native receipts do not unlock
   claim bundles.

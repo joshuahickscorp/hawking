@@ -215,7 +215,7 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `target/debug/hawking studio claim-bundle-verify --json`: correctly red with `ok=false`, 9 rows, because
   final public claim bundles do not exist yet.
 - `target/debug/hawking studio claim-bundle-build 235B-A22B --out <tmp>/blocked_bundle.json --json`:
-  correctly red while writing a signed blocked bundle with 128 blockers and `claim_admissible=false`.
+  correctly red while writing a signed blocked bundle with 284 blockers and `claim_admissible=false`.
 - `target/debug/hawking studio claim-bundle-build 235B-A22B --root <tmp-root> --json` and
   `target/debug/hawking studio claim-bundle-verify <tmp-root>/reports/condense/235B-A22B_claim_bundle.json --root <tmp-root> --json`:
   pass in an isolated temp root with synthetic complete signed source-provenance, parity, coverage,
@@ -232,9 +232,10 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `cargo run -p hawking --bin hawking -- studio proof-pack --force --json`: pass. Product-facing wrapper
   for the all-frontier signed draft wall returned `ok=true`, 9 frontier models, 81 evidence rows, and 9
   intentionally blocked local claim bundles.
-- `target/debug/hawking studio serve-capture 235B-A22B --artifact <tiny.tq> --bench-json <strict_report.json> --command <exact serve command> --served-forward-receipt selftest://served-forward --parity-receipt selftest://parity --out <tmp>/serve.json --force --json`:
+- `target/debug/hawking studio serve-capture 235B-A22B --artifact <tiny.tq> --bench-json <strict_report.json> --command <exact serve command> --load-receipt selftest://load --served-forward-receipt selftest://served-forward --parity-receipt selftest://parity --out <tmp>/serve.json --force --json`:
   pass. Product-facing wrapper returned `ok=true`, `status.ok=true`, `strict_ok=true`, wrote the receipt,
-  and the signed receipt records `status=pass`, `native_tq=true`, `rehydrate_f16=false`, `tok_s=12.5`.
+  and the signed receipt records `status=pass`, `native_tq=true`, `rehydrate_f16=false`, `tok_s=12.5`,
+  load trace, and resident memory proof fields.
 - `target/debug/hawking studio snapshot --json`: pass; `next_safe_commands` now includes
   `hawking studio source-provenance-receipt verify`, `hawking studio receipt-record verify --kind both`,
   `hawking studio doctor-recovery-plan`, `hawking studio doctor-recovery-receipt verify`,
@@ -373,7 +374,7 @@ Generated locally without downloads or bakes:
   same-box baselines, frozen eval coverage, RAM-cliff/energy, Doctor recovery, experiment matrix,
   artifact inventory, and source-release decision receipts with matching hashes.
 - `reports/condense/235B-A22B_claim_bundle.local.json`: blocked signed bundle probe for 235B-A22B;
-  `claim_admissible=false` with 270 blockers after signed-draft source provenance, parity, coverage,
+  `claim_admissible=false` with 284 blockers after signed-draft source provenance, parity, coverage,
   native receipt, Doctor recovery, experiment, and same-run evidence-run checks were added. Every
   evidence file in the bundle now exists and hashes; all blockers are draft/final-measurement
   requirements.
@@ -382,7 +383,7 @@ Generated locally without downloads or bakes:
   draft envelopes across source provenance, parity, baseline/eval, native serve/RAM-cliff, Doctor
   recovery, experiment, and same-run evidence-run evidence.
 - `reports/condense/<LABEL>_claim_bundle.local.json` for every frontier label: all nine local bundles
-  are claim-inadmissible with 266-270 blockers each, and all nine evidence files per bundle exist and
+  are claim-inadmissible with 280-284 blockers each, and all nine evidence files per bundle exist and
   hash.
 - `reports/condense/frontier_claim_launch_gate.local.json`: claim-phase launch gate snapshot with signed
   bundles, Doctor recovery, and same-run Studio evidence-run included as hard failures; fresh output

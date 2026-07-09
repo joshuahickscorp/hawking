@@ -23,7 +23,7 @@ This is the operator layer above `procure.py`. It is intentionally conservative:
   frontier_ops.py coverage-receipt draft LABEL   # signed baseline/eval receipt envelopes
   frontier_ops.py source-provenance draft LABEL  # signed source checkpoint provenance envelopes
   frontier_ops.py receipt-record draft LABEL     # signed native serve/RAM-cliff receipt envelopes
-  frontier_ops.py serve-capture LABEL --artifact ARTIFACT.tq --bench-json REPORT.json
+  frontier_ops.py serve-capture LABEL --artifact ARTIFACT.tq --bench-json REPORT.json --load-receipt TRACE
   frontier_ops.py doctor-recovery-receipt draft LABEL # signed Doctor recovery receipt envelopes
   frontier_ops.py experiment-receipt draft LABEL # signed expensive-mode matrix envelopes
   frontier_ops.py proof-pack LABEL               # draft all signed envelopes + blocked local bundle
@@ -4424,8 +4424,15 @@ def cmd_selftest(args) -> int:
                 "served_forward_pass": True,
                 "parity_pass": True,
                 "tok_s": 12.5,
+                "memory_peak_gb": 4.0,
+                "memory_resident_gb": 3.5,
+                "unified_memory_gb": 128.0,
+                "resident_memory_ok": True,
                 "artifact_sha256": "a" * 64,
                 "commands": ["selftest serve"],
+                "load_receipt": "selftest://load",
+                "served_forward_receipt": "selftest://served-forward",
+                "parity_receipt": "selftest://serve-parity",
                 "git_commit": "deadbeef",
             })
             _write_json(root / "reports" / "condense" / f"{fm.label}_ramcliff.json", {
@@ -4759,6 +4766,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--artifact", required=True, help="existing .tq artifact path")
     p.add_argument("--bench-json", required=True, dest="bench_json", help="JSON report emitted by native serve")
     p.add_argument("--command", required=True, help="exact serve command that produced the report")
+    p.add_argument("--load-receipt", required=True)
     p.add_argument("--served-forward-receipt", required=True)
     p.add_argument("--parity-receipt", required=True)
     p.add_argument("--machine-class", default="Studio-M1Ultra-128")

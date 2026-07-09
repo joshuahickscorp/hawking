@@ -231,7 +231,7 @@ cargo run -p hawking --bin hawking -- studio receipt-plan
 # before native serve/RAM-cliff runs:
 cargo run -p hawking --bin hawking -- studio receipt-record draft <label> --kind both --sign-draft
 # after native serve emits a strict JSON report:
-cargo run -p hawking --bin hawking -- studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command '<exact hawking serve bench command>' --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force
+cargo run -p hawking --bin hawking -- studio serve-capture <label> --artifact <artifact.tq> --bench-json <serve_report.json> --command '<exact hawking serve bench command>' --load-receipt <load_trace.json> --served-forward-receipt <served_forward_trace.json> --parity-receipt <serve_parity_trace.json> --force
 # after native serve/RAM-cliff rows are final, measured, and traced:
 cargo run -p hawking --bin hawking -- studio receipt-record sign <label> --kind both
 cargo run -p hawking --bin hawking -- studio receipt-record verify <label> --kind both
@@ -336,7 +336,8 @@ rejects unsigned or tampered records.
 `receipt-plan` prints the stricter serve/RAM-cliff receipt contract. `<LABEL>_serve.json` must use
 schema `hawking.frontier_serve.v1`, identify the artifact hash, record exact commands and commit, pass
 native `.tq` proof mode, prove no f16 rehydrate, prove all-linear/GPU ownership, set `parity_pass=true`,
-and report positive tok/s. `<LABEL>_ramcliff.json` must use schema `hawking.frontier_ramcliff.v1`,
+report positive tok/s, include a load trace, and prove positive peak/resident/unified-memory fields with
+`resident_memory_ok=true`. `<LABEL>_ramcliff.json` must use schema `hawking.frontier_ramcliff.v1`,
 be `source=measured`, not modeled, identify the artifact hash, show native `.tq` serving, Q4_K overflow,
 >10x cliff, lower resident J/tok, exact commands, commit, and Studio machine class.
 `hawking studio receipt-record draft` writes signed but blocked native serve/RAM-cliff envelopes for a label. After the
@@ -345,10 +346,10 @@ is final, measured, strict-native, trace-backed, and non-placeholder. Serve reco
 or parity trace; RAM-cliff records need powermetrics/energy and baseline traces. `hawking studio receipt-record verify`
 rejects unsigned, tampered, draft, placeholder, synthetic/modelled, or trace-free native receipts.
 `serve-capture` is the Studio bridge for the native serve half. Feed it an existing `.tq` artifact, the
-JSON report emitted by Hawking's native serve bench, the exact command, and served-forward plus parity
-trace receipts. It hashes the artifact and bench JSON, refuses f16 rehydrate/fallback reports, requires
-strict/all-linear/GPU ownership, positive tok/s, served-forward pass, and parity pass, then writes the
-signed `<LABEL>_serve.json`. Use `hawking studio serve-capture` as the product-facing entry point;
+JSON report emitted by Hawking's native serve bench, the exact command, a load trace, and served-forward
+plus parity trace receipts. It hashes the artifact and bench JSON, refuses f16 rehydrate/fallback reports,
+requires strict/all-linear/GPU ownership, positive tok/s, resident memory proof, served-forward pass, and
+parity pass, then writes the signed `<LABEL>_serve.json`. Use `hawking studio serve-capture` as the product-facing entry point;
 `frontier_ops.py serve-capture` is the lower-level equivalent.
 `experiment-plan` prints the expensive-mode matrix contract. `<LABEL>_experiment_matrix.json` must cover
 at least 3 floor seeds, required calibration ablations, at least 4 bpw rungs, MoE expert allocation

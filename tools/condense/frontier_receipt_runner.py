@@ -94,8 +94,11 @@ def _label(record: dict[str, Any]) -> str:
     return str(record.get("model") or record.get("label") or "")
 
 
-def _placeholder(s: str) -> bool:
-    return "<" in s or "TODO" in s or "..." in s
+def _placeholder(value: Any) -> bool:
+    if value is None:
+        return True
+    s = str(value).strip()
+    return not s or "<" in s or "TODO" in s or "..." in s
 
 
 def _commands(record: dict[str, Any]) -> list[str]:
@@ -116,8 +119,12 @@ def _trace_problems(record: dict[str, Any], kind: str) -> list[str]:
     elif any(_placeholder(cmd) for cmd in cmds):
         problems.append("command contains placeholder text")
     if kind == "serve":
-        if not record.get("served_forward_receipt") and not record.get("parity_receipt"):
-            problems.append("served_forward_receipt or parity_receipt missing")
+        if _placeholder(record.get("served_forward_receipt")):
+            problems.append("served_forward_receipt missing or placeholder")
+        if _placeholder(record.get("parity_receipt")):
+            problems.append("parity_receipt missing or placeholder")
+        if _placeholder(record.get("load_receipt")):
+            problems.append("load_receipt missing or placeholder")
     if kind == "ramcliff":
         if not record.get("powermetrics_receipt") and not record.get("energy_receipt"):
             problems.append("powermetrics_receipt or energy_receipt missing")
@@ -161,6 +168,18 @@ def _strict_status(record: dict[str, Any], kind: str) -> dict[str, Any]:
             problems.append("tok_s must be positive")
         if record.get("parity_pass") is not True:
             problems.append("parity_pass must be true")
+        if not frontier_receipts._positive_number(record.get("memory_peak_gb")):
+            problems.append("memory_peak_gb must be positive")
+        if not frontier_receipts._positive_number(record.get("memory_resident_gb")):
+            problems.append("memory_resident_gb must be positive")
+        if not frontier_receipts._positive_number(record.get("unified_memory_gb")):
+            problems.append("unified_memory_gb must be positive")
+        if record.get("resident_memory_ok") is not True:
+            problems.append("resident_memory_ok must be true")
+        if (frontier_receipts._positive_number(record.get("memory_peak_gb"))
+                and frontier_receipts._positive_number(record.get("unified_memory_gb"))
+                and record["memory_peak_gb"] > record["unified_memory_gb"]):
+            problems.append("memory_peak_gb must fit within unified_memory_gb")
         status.update({"ok": not problems, "problems": problems})
         return status
     path = pathlib.Path(f"<{label}_ramcliff.json>")
@@ -269,6 +288,11 @@ def draft_record(label: str, kind: str, *, machine_class: str = "Studio-M1Ultra-
             "served_forward_pass": "TODO true",
             "parity_pass": "TODO true",
             "tok_s": "TODO >0",
+            "memory_peak_gb": "TODO >0",
+            "memory_resident_gb": "TODO >0",
+            "unified_memory_gb": "TODO >0",
+            "resident_memory_ok": "TODO true",
+            "load_receipt": "<path>",
             "served_forward_receipt": "<path>",
             "parity_receipt": "<path>",
         }
@@ -379,9 +403,14 @@ def _complete_record(label: str, kind: str) -> dict[str, Any]:
             "served_forward_pass": True,
             "parity_pass": True,
             "tok_s": 1.0,
+            "memory_peak_gb": 4.0,
+            "memory_resident_gb": 3.5,
+            "unified_memory_gb": 128.0,
+            "resident_memory_ok": True,
             "artifact_sha256": "a" * 64,
             "commands": ["selftest serve"],
             "git_commit": "selftest",
+            "load_receipt": "selftest://load",
             "served_forward_receipt": "selftest://served-forward",
             "parity_receipt": "selftest://parity",
         }
@@ -429,6 +458,10 @@ def selftest() -> bool:
     check("complete serve signs and verifies", serve_status["ok"])
     serve_signed["tok_s"] = 0.0
     check("tampered serve signature fails", not record_status(serve_signed, kind="serve")["ok"])
+    missing_memory = _complete_record(label, "serve")
+    missing_memory.pop("memory_peak_gb")
+    _, missing_memory_status = sign_record(missing_memory, kind="serve")
+    check("serve without memory proof is blocked", not missing_memory_status["ok"])
     cliff_signed, cliff_status = sign_record(_complete_record(label, "ramcliff"), kind="ramcliff")
     check("complete RAM-cliff signs and verifies", cliff_status["ok"])
     missing_energy = _complete_record(label, "ramcliff")
