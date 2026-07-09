@@ -15,6 +15,7 @@ const PROOF_PACK: &str = "reports/condense/frontier_proof_pack.local.json";
 const AUDIT_GRADE: &str = "reports/condense/studio_audit_grade.local.json";
 const RUNTIME_CONTRACT: &str = "reports/condense/studio_runtime_contract.local.json";
 const COMPLETION_AUDIT: &str = "reports/condense/studio_completion_audit.local.json";
+const DENSITY_RECEIPT: &str = "reports/condense/studio_density_receipt.local.json";
 
 #[derive(Subcommand, Debug)]
 pub enum StudioCmd {
@@ -95,6 +96,42 @@ pub enum StudioCmd {
         /// Verify this signed worktree split plan instead of writing a new one.
         #[arg(long)]
         verify: Option<PathBuf>,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Build a signed local density, LOC, largest-file, and artifact-mass receipt.
+    DensityReceiptBuild {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Write the signed density receipt here.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_density_receipt.local.json"
+        )]
+        out: PathBuf,
+        /// Optional previous density receipt for delta reporting.
+        #[arg(long)]
+        previous: Option<PathBuf>,
+        /// Number of largest files to retain in the receipt.
+        #[arg(long, default_value_t = 20)]
+        max_files: u32,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Verify a signed local density receipt.
+    DensityReceiptVerify {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Density receipt path to verify.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_density_receipt.local.json"
+        )]
+        path: PathBuf,
         /// Emit machine-readable JSON from frontier_ops.py.
         #[arg(long, default_value_t = false)]
         json: bool,
@@ -347,6 +384,12 @@ pub enum StudioCmd {
             default_value = "reports/condense/studio_runtime_contract.local.json"
         )]
         runtime_contract: PathBuf,
+        /// Signed local density receipt to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_density_receipt.local.json"
+        )]
+        density_receipt: PathBuf,
         /// Claim launch gate to summarize.
         #[arg(
             long,
@@ -416,6 +459,12 @@ pub enum StudioCmd {
             default_value = "reports/condense/studio_runtime_contract.local.json"
         )]
         runtime_contract: PathBuf,
+        /// Signed local density receipt to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_density_receipt.local.json"
+        )]
+        density_receipt: PathBuf,
         /// Local proof-pack summary to summarize.
         #[arg(
             long,
@@ -1144,6 +1193,36 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             }
             run_frontier_owned(&root, owned, json)
         }
+        StudioCmd::DensityReceiptBuild {
+            root,
+            out,
+            previous,
+            max_files,
+            json,
+        } => {
+            let mut owned = vec![
+                "density-receipt".to_string(),
+                "build".to_string(),
+                "--out".to_string(),
+                out.display().to_string(),
+                "--max-files".to_string(),
+                max_files.to_string(),
+            ];
+            if let Some(path) = previous {
+                owned.push("--previous".to_string());
+                owned.push(path.display().to_string());
+            }
+            run_frontier_owned(&root, owned, json)
+        }
+        StudioCmd::DensityReceiptVerify { root, path, json } => {
+            let owned = vec![
+                "density-receipt".to_string(),
+                "verify".to_string(),
+                "--path".to_string(),
+                path.display().to_string(),
+            ];
+            run_frontier_owned(&root, owned, json)
+        }
         StudioCmd::RuntimeContractBuild { root, out, json } => {
             runtime_contract_build(&root, &out, json)
         }
@@ -1352,6 +1431,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             proof_pack,
             worktree_plan,
             runtime_contract,
+            density_receipt,
             claim_gate,
             procurement_gate,
             scorecard,
@@ -1376,6 +1456,8 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 worktree_plan.display().to_string(),
                 "--runtime-contract".to_string(),
                 runtime_contract.display().to_string(),
+                "--density-receipt".to_string(),
+                density_receipt.display().to_string(),
                 "--claim-gate".to_string(),
                 claim_gate.display().to_string(),
                 "--procurement-gate".to_string(),
@@ -1403,6 +1485,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             launch_packet,
             worktree_plan,
             runtime_contract,
+            density_receipt,
             proof_pack,
             audit_grade,
             require_refresh,
@@ -1429,6 +1512,8 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 worktree_plan.display().to_string(),
                 "--runtime-contract".to_string(),
                 runtime_contract.display().to_string(),
+                "--density-receipt".to_string(),
+                density_receipt.display().to_string(),
                 "--proof-pack".to_string(),
                 proof_pack.display().to_string(),
                 "--audit-grade".to_string(),
@@ -2464,6 +2549,7 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
     let proof_pack = artifact(&root, PROOF_PACK);
     let audit_grade = artifact(&root, AUDIT_GRADE);
     let runtime_contract = artifact(&root, RUNTIME_CONTRACT);
+    let density_receipt = artifact(&root, DENSITY_RECEIPT);
     let completion_audit = artifact(&root, COMPLETION_AUDIT);
 
     let doc = json!({
@@ -2478,6 +2564,7 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
         "proof_pack": proof_pack_summary(&proof_pack),
         "audit_grade": audit_grade_summary(&audit_grade),
         "runtime_contract": runtime_contract_summary(&runtime_contract),
+        "density_receipt": density_receipt_summary(&density_receipt),
         "completion_audit": completion_audit_summary(&completion_audit),
         "next_safe_commands": [
             "hawking studio preflight",
@@ -2486,6 +2573,8 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio environment-verify --path reports/condense/studio_environment.json",
             "hawking studio worktree-plan --out reports/condense/worktree_split_plan.local.json",
             "hawking studio worktree-plan --verify reports/condense/worktree_split_plan.local.json",
+            "hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json",
+            "hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json",
             "hawking studio runtime-contract-build --out reports/condense/studio_runtime_contract.local.json",
             "hawking studio runtime-contract-verify --path reports/condense/studio_runtime_contract.local.json",
             "hawking studio storage-plan --storage-budget-gb 8000 --link-mbs 300 --efficiency 0.7",
@@ -2712,6 +2801,27 @@ fn runtime_contract_summary(artifact: &Value) -> Value {
     })
 }
 
+fn density_receipt_summary(artifact: &Value) -> Value {
+    let Some(data) = artifact.get("json") else {
+        return json!({"exists": false, "ok": false, "signature_ok": false});
+    };
+    let signature_ok = verify_sha256_json_signature(data).unwrap_or(false);
+    let density = data.get("density").cloned().unwrap_or(Value::Null);
+    json!({
+        "exists": true,
+        "ok": data.get("ok").and_then(Value::as_bool).unwrap_or(false) && signature_ok,
+        "signature_ok": signature_ok,
+        "git_commit": data.get("git_commit").cloned().unwrap_or(Value::Null),
+        "density_risk": data.get("density_risk").cloned().unwrap_or(Value::Null),
+        "repo_total_gb": density.get("repo_total_gb").cloned().unwrap_or(Value::Null),
+        "local_generated_gb": density.get("local_generated_gb").cloned().unwrap_or(Value::Null),
+        "tracked_loc": density.get("tracked_loc").cloned().unwrap_or(Value::Null),
+        "disk_free_gb": density.get("disk_free_gb").cloned().unwrap_or(Value::Null),
+        "largest_files": data.get("largest_files").cloned().unwrap_or(Value::Null),
+        "cleanup_recommendations": data.get("cleanup_recommendations").cloned().unwrap_or(Value::Null),
+    })
+}
+
 fn audit_grade_summary(artifact: &Value) -> Value {
     let Some(data) = artifact.get("json") else {
         return json!({"exists": false, "ok": false, "signature_ok": false});
@@ -2767,7 +2877,120 @@ fn verify_sha256_json_signature(data: &Value) -> Result<bool> {
     }
     let bytes = serde_json::to_vec(&unsigned)?;
     let digest = Sha256::digest(bytes);
-    Ok(hex_digest(&digest) == expected)
+    if hex_digest(&digest) == expected {
+        return Ok(true);
+    }
+    let serialized = serde_json::to_string(&unsigned)?;
+    let python_style = python_compatible_json_numbers(&serialized);
+    if python_style != serialized {
+        let digest = Sha256::digest(python_style.as_bytes());
+        return Ok(hex_digest(&digest) == expected);
+    }
+    Ok(false)
+}
+
+fn python_compatible_json_numbers(serialized: &str) -> String {
+    let mut out = String::with_capacity(serialized.len());
+    let chars: Vec<char> = serialized.chars().collect();
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut i = 0;
+    while i < chars.len() {
+        let ch = chars[i];
+        if in_string {
+            out.push(ch);
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            i += 1;
+            continue;
+        }
+        if ch == '"' {
+            in_string = true;
+            out.push(ch);
+            i += 1;
+            continue;
+        }
+        if ch == '-' || ch.is_ascii_digit() {
+            let start = i;
+            if ch == '-' {
+                i += 1;
+            }
+            while i < chars.len() && chars[i].is_ascii_digit() {
+                i += 1;
+            }
+            if i < chars.len() && chars[i] == '.' {
+                i += 1;
+                while i < chars.len() && chars[i].is_ascii_digit() {
+                    i += 1;
+                }
+            }
+            if i < chars.len() && (chars[i] == 'e' || chars[i] == 'E') {
+                i += 1;
+                if i < chars.len() && (chars[i] == '-' || chars[i] == '+') {
+                    i += 1;
+                }
+                while i < chars.len() && chars[i].is_ascii_digit() {
+                    i += 1;
+                }
+            }
+            let token: String = chars[start..i].iter().collect();
+            out.push_str(&python_compatible_number_token(&token));
+            continue;
+        }
+        out.push(ch);
+        i += 1;
+    }
+    out
+}
+
+fn python_compatible_number_token(token: &str) -> String {
+    if token.contains('.') && !token.contains('e') && !token.contains('E') {
+        if let Ok(value) = token.parse::<f64>() {
+            let abs = value.abs();
+            if abs > 0.0 && abs < 0.0001 {
+                return format_python_scientific(value);
+            }
+        }
+    }
+    pad_single_digit_exponent_token(token)
+}
+
+fn format_python_scientific(value: f64) -> String {
+    let raw = format!("{value:e}");
+    let Some((mantissa, exponent)) = raw.split_once('e') else {
+        return raw;
+    };
+    let mantissa = mantissa.trim_end_matches('0').trim_end_matches('.');
+    let exp_value = exponent.parse::<i32>().unwrap_or(0);
+    let sign = if exp_value < 0 { '-' } else { '+' };
+    format!("{mantissa}e{sign}{:02}", exp_value.abs())
+}
+
+fn pad_single_digit_exponent_token(token: &str) -> String {
+    let Some(idx) = token.find(['e', 'E']) else {
+        return token.to_string();
+    };
+    let (mantissa, exponent_with_e) = token.split_at(idx);
+    let exponent = &exponent_with_e[1..];
+    let Some(sign) = exponent.chars().next() else {
+        return token.to_string();
+    };
+    if sign != '-' && sign != '+' {
+        return token.to_string();
+    }
+    let digits = &exponent[1..];
+    if digits.len() == 1 && digits.chars().all(|ch| ch.is_ascii_digit()) {
+        return format!("{mantissa}e{sign}0{digits}");
+    }
+    if token.as_bytes()[idx] == b'E' {
+        return format!("{mantissa}e{exponent}");
+    }
+    token.to_string()
 }
 
 fn hex_digest(bytes: &[u8]) -> String {
@@ -2874,6 +3097,17 @@ fn print_human_snapshot(doc: &Value) {
         runtime["profile_count"].as_u64().unwrap_or(0),
         runtime["workload_count"].as_u64().unwrap_or(0),
         runtime["proof_mode_required"].as_u64().unwrap_or(0)
+    );
+
+    let density = &doc["density_receipt"];
+    println!(
+        "density receipt: {}  signature={}  risk={}  repo={}GB local={}GB loc={}",
+        verdict(density["ok"].as_bool().unwrap_or(false)),
+        verdict(density["signature_ok"].as_bool().unwrap_or(false)),
+        density["density_risk"].as_str().unwrap_or("?"),
+        nf(&density["repo_total_gb"]),
+        nf(&density["local_generated_gb"]),
+        density["tracked_loc"].as_u64().unwrap_or(0)
     );
 
     let audit = &doc["audit_grade"];
@@ -3075,6 +3309,32 @@ mod tests {
         let mut tampered = v.clone();
         tampered["preflight_ok_before_summary"] = json!(true);
         assert!(!verify_sha256_json_signature(&tampered).unwrap());
+    }
+
+    #[test]
+    fn verifies_python_compatible_number_signature() {
+        let mut v = json!({
+            "schema": "hawking.studio_density_receipt.v1",
+            "ok": true,
+            "density": {
+                "node_modules_gb": 0.000001,
+                "tracked_gb": 0.000097
+            },
+            "note": "leave string 1e-6 untouched",
+        });
+        let serialized = serde_json::to_string(&v).unwrap();
+        assert!(serialized.contains("1e-6"));
+        assert!(serialized.contains("0.000097"));
+        let python_style = python_compatible_json_numbers(&serialized);
+        assert!(python_style.contains("1e-06"));
+        assert!(python_style.contains("9.7e-05"));
+        assert!(python_style.contains("leave string 1e-6 untouched"));
+        let digest = hex_digest(&Sha256::digest(python_style.as_bytes()));
+        v.as_object_mut().unwrap().insert(
+            "signature".into(),
+            json!({"algorithm": "sha256-json-v1", "digest": digest}),
+        );
+        assert!(verify_sha256_json_signature(&v).unwrap());
     }
 
     #[test]

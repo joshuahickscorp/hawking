@@ -106,12 +106,29 @@ WAVE0_PACKET_PATH = COND_DIR / "studio_wave0_launch_packet.json"
 AUDIT_GRADE_PATH = COND_DIR / "studio_audit_grade.local.json"
 RUNTIME_CONTRACT_PATH = COND_DIR / "studio_runtime_contract.local.json"
 COMPLETION_AUDIT_PATH = COND_DIR / "studio_completion_audit.local.json"
+DENSITY_RECEIPT_PATH = COND_DIR / "studio_density_receipt.local.json"
 DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path("/Users/scammermike/Downloads/project_audits/hawking_deep_audit_2026_07_08.md")
 DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md")
 SIGN_ALG = "sha256-json-v1"
 SIZE_RE = re.compile(r"\s([0-9]+(?:\.[0-9]+)?)([KMGT])$")
 SIZE_SCALE = {"K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
 CACHE_RESERVE_GB = 128.0
+TEXT_EXTS = {
+    ".c", ".cc", ".cpp", ".h", ".hpp", ".m", ".mm",
+    ".rs", ".py", ".js", ".jsx", ".ts", ".tsx",
+    ".json", ".toml", ".yaml", ".yml", ".md", ".txt",
+    ".sh", ".css", ".html", ".sql",
+}
+TEXT_NAMES = {"Cargo.toml", "Cargo.lock", "Makefile", "package.json", "pnpm-lock.yaml"}
+LOCAL_MASS_PATHS = (
+    ("models", "local model artifacts", "delete only after confirming no unique local model evidence"),
+    ("scratch", "frontier scratch/cache/artifacts", "prune completed downloads only through lifecycle/source-release receipts"),
+    ("target", "Rust build artifacts", "safe to rebuild; prune when disk pressure blocks proof work"),
+    ("app/node_modules", "app dependency install", "reinstallable from lockfile"),
+    ("node_modules", "root dependency install", "reinstallable from lockfile"),
+    (".pnpm-store", "pnpm package store", "reinstallable cache"),
+    (".claude", "local agent/session state", "do not delete without operator review"),
+)
 MANIFEST_CONSUMERS = (
     "tools/condense/ladder.py",
     "tools/condense/subbit.py",
@@ -422,6 +439,269 @@ def _worktree_plan_status(doc: dict) -> dict:
     }
 
 
+def _rel(root: pathlib.Path, path: pathlib.Path) -> str:
+    try:
+        return str(path.resolve().relative_to(root.resolve()))
+    except Exception:
+        return str(path)
+
+
+def _bytes_to_gb(n: int | None) -> float:
+    return round((n or 0) / 1e9, 6)
+
+
+def _path_size_bytes(path: pathlib.Path) -> int:
+    if not path.exists():
+        return 0
+    try:
+        if path.is_file():
+            return path.stat().st_size
+    except OSError:
+        return 0
+    total = 0
+    for base, dirs, files in os.walk(path):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for name in files:
+            p = pathlib.Path(base) / name
+            try:
+                if not p.is_symlink():
+                    total += p.stat().st_size
+            except OSError:
+                pass
+    return total
+
+
+def _repo_file_inventory(root: pathlib.Path, max_files: int) -> dict:
+    total_bytes = 0
+    file_count = 0
+    dir_count = 0
+    largest: list[dict] = []
+    for base, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        dir_count += len(dirs)
+        for name in files:
+            path = pathlib.Path(base) / name
+            try:
+                if path.is_symlink():
+                    continue
+                size = path.stat().st_size
+            except OSError:
+                continue
+            total_bytes += size
+            file_count += 1
+            row = {"path": _rel(root, path), "bytes": size, "gb": _bytes_to_gb(size)}
+            largest.append(row)
+            largest.sort(key=lambda r: r["bytes"], reverse=True)
+            del largest[max_files:]
+    return {
+        "total_bytes": total_bytes,
+        "total_gb": _bytes_to_gb(total_bytes),
+        "file_count": file_count,
+        "dir_count": dir_count,
+        "largest_files": largest,
+    }
+
+
+def _git_tracked_files(root: pathlib.Path) -> list[pathlib.Path]:
+    rc, out, _ = _run(["git", "-C", str(root), "ls-files", "-z"], timeout=30)
+    if rc == 0 and out:
+        return [root / rel for rel in out.split("\0") if rel]
+    files = []
+    for base, dirs, names in os.walk(root):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for name in names:
+            path = pathlib.Path(base) / name
+            if path.suffix in TEXT_EXTS or path.name in TEXT_NAMES:
+                files.append(path)
+    return files
+
+
+def _line_count(path: pathlib.Path, max_bytes: int = 5_000_000) -> int | None:
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return None
+    if size > max_bytes:
+        return None
+    name = path.name
+    if path.suffix not in TEXT_EXTS and name not in TEXT_NAMES:
+        return None
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    if b"\0" in data[:4096]:
+        return None
+    return data.count(b"\n") + (0 if data.endswith(b"\n") or not data else 1)
+
+
+def _tracked_inventory(root: pathlib.Path, max_files: int) -> dict:
+    files = _git_tracked_files(root)
+    largest = []
+    loc_by_ext: dict[str, int] = {}
+    total_loc = 0
+    total_bytes = 0
+    counted_files = 0
+    for path in files:
+        try:
+            size = path.stat().st_size
+        except OSError:
+            continue
+        total_bytes += size
+        largest.append({"path": _rel(root, path), "bytes": size, "gb": _bytes_to_gb(size)})
+        largest.sort(key=lambda r: r["bytes"], reverse=True)
+        del largest[max_files:]
+        loc = _line_count(path)
+        if loc is None:
+            continue
+        counted_files += 1
+        total_loc += loc
+        key = path.suffix or path.name
+        loc_by_ext[key] = loc_by_ext.get(key, 0) + loc
+    loc_rows = [
+        {"extension": ext, "loc": loc}
+        for ext, loc in sorted(loc_by_ext.items(), key=lambda item: item[1], reverse=True)
+    ]
+    return {
+        "file_count": len(files),
+        "total_bytes": total_bytes,
+        "total_gb": _bytes_to_gb(total_bytes),
+        "counted_text_files": counted_files,
+        "loc": total_loc,
+        "loc_by_extension": loc_rows[:20],
+        "largest_tracked_files": largest,
+    }
+
+
+def _local_mass_snapshot(root: pathlib.Path) -> dict:
+    rows = []
+    total = 0
+    for rel, purpose, cleanup in LOCAL_MASS_PATHS:
+        path = root / rel
+        size = _path_size_bytes(path)
+        total += size
+        rows.append({
+            "path": rel,
+            "exists": path.exists(),
+            "purpose": purpose,
+            "cleanup_guidance": cleanup,
+            "bytes": size,
+            "gb": _bytes_to_gb(size),
+        })
+    return {
+        "total_bytes": total,
+        "total_gb": _bytes_to_gb(total),
+        "rows": rows,
+    }
+
+
+def _density_risk(repo_gb: float, local_mass_gb: float, free_gb: float) -> str:
+    if free_gb < 50 or local_mass_gb >= 40 or repo_gb >= 100:
+        return "high"
+    if free_gb < 120 or local_mass_gb >= 20 or repo_gb >= 60:
+        return "medium"
+    return "low"
+
+
+def _density_recommendations(local_mass: dict, free_gb: float) -> list[str]:
+    recs = []
+    rows = sorted(local_mass.get("rows", []), key=lambda r: r.get("bytes") or 0, reverse=True)
+    for row in rows:
+        if (row.get("bytes") or 0) <= 0:
+            continue
+        recs.append(f"{row['path']}: {row['cleanup_guidance']} ({row['gb']} GB)")
+    if free_gb < 120:
+        recs.insert(0, "Keep frontier procurement/bakes on the Studio; local free disk is below the 120 GB safety floor.")
+    return recs[:8]
+
+
+def build_density_receipt(root: pathlib.Path, args) -> dict:
+    max_files = int(getattr(args, "max_files", 20) or 20)
+    fs = _repo_file_inventory(root, max_files)
+    tracked = _tracked_inventory(root, max_files)
+    local_mass = _local_mass_snapshot(root)
+    disk = shutil.disk_usage(root)
+    free_gb = _bytes_to_gb(disk.free)
+    risk = _density_risk(fs["total_gb"], local_mass["total_gb"], free_gb)
+    previous_arg = str(getattr(args, "previous", "") or "")
+    previous_path = pathlib.Path(previous_arg) if previous_arg else None
+    previous = _read_json(previous_path, {}) if previous_path else {}
+    previous_density = previous.get("density") if isinstance(previous.get("density"), dict) else {}
+    previous_repo_bytes = previous_density.get("repo_total_bytes")
+    delta_bytes = fs["total_bytes"] - previous_repo_bytes if isinstance(previous_repo_bytes, int) else None
+    doc = {
+        "schema": "hawking.studio_density_receipt.v1",
+        "generated_at": _now(),
+        "root": str(root),
+        "git_commit": _git_commit(root),
+        "branch": _git_branch(root),
+        "ok": True,
+        "density_risk": risk,
+        "density": {
+            "repo_total_bytes": fs["total_bytes"],
+            "repo_total_gb": fs["total_gb"],
+            "repo_file_count": fs["file_count"],
+            "repo_dir_count": fs["dir_count"],
+            "tracked_total_bytes": tracked["total_bytes"],
+            "tracked_total_gb": tracked["total_gb"],
+            "tracked_file_count": tracked["file_count"],
+            "tracked_loc": tracked["loc"],
+            "counted_text_files": tracked["counted_text_files"],
+            "local_generated_bytes": local_mass["total_bytes"],
+            "local_generated_gb": local_mass["total_gb"],
+            "disk_free_gb": free_gb,
+            "disk_total_gb": _bytes_to_gb(disk.total),
+        },
+        "largest_files": fs["largest_files"],
+        "largest_tracked_files": tracked["largest_tracked_files"],
+        "loc_by_extension": tracked["loc_by_extension"],
+        "local_mass": local_mass,
+        "comparison": {
+            "previous_path": str(previous_path) if previous_path else "",
+            "previous_repo_total_bytes": previous_repo_bytes,
+            "repo_total_delta_bytes": delta_bytes,
+            "repo_total_delta_gb": _bytes_to_gb(delta_bytes) if isinstance(delta_bytes, int) else None,
+        },
+        "cleanup_performed": [],
+        "cleanup_recommendations": _density_recommendations(local_mass, free_gb),
+        "note": (
+            "This is a local stabilization receipt. It records repo size, tracked LOC, generated/build/model mass, "
+            "and cleanup recommendations without deleting artifacts or weakening Studio proof gates."
+        ),
+    }
+    return _sign_doc(doc)
+
+
+def _density_receipt_status(doc: dict) -> dict:
+    problems = []
+    if doc.get("schema") != "hawking.studio_density_receipt.v1":
+        problems.append("schema mismatch")
+    if doc.get("ok") is not True:
+        problems.append("receipt ok flag is not true")
+    signature_ok = _signature_ok(doc)
+    if not signature_ok:
+        problems.append("signature digest mismatch")
+    density = doc.get("density") if isinstance(doc.get("density"), dict) else {}
+    for key in ("repo_total_bytes", "tracked_file_count", "tracked_loc", "local_generated_bytes", "disk_free_gb"):
+        if density.get(key) is None:
+            problems.append(f"density.{key} missing")
+    if not isinstance(doc.get("largest_files"), list):
+        problems.append("largest_files must be a list")
+    if not isinstance(doc.get("local_mass"), dict):
+        problems.append("local_mass must be an object")
+    return {
+        "schema_ok": doc.get("schema") == "hawking.studio_density_receipt.v1",
+        "signature_ok": signature_ok,
+        "receipt_ok": bool(doc.get("ok")),
+        "density_risk": doc.get("density_risk"),
+        "repo_total_gb": density.get("repo_total_gb"),
+        "local_generated_gb": density.get("local_generated_gb"),
+        "tracked_loc": density.get("tracked_loc"),
+        "ok": not problems,
+        "problems": problems,
+    }
+
+
 def _read_text(path: pathlib.Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
@@ -517,6 +797,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
     proof_pack_path = pathlib.Path(args.proof_pack)
     worktree_plan_path = pathlib.Path(args.worktree_plan)
     runtime_contract_path = pathlib.Path(getattr(args, "runtime_contract", RUNTIME_CONTRACT_PATH))
+    density_receipt_path = pathlib.Path(getattr(args, "density_receipt", DENSITY_RECEIPT_PATH))
     claim_gate_path = pathlib.Path(args.claim_gate)
     procurement_gate_path = pathlib.Path(args.procurement_gate)
 
@@ -524,6 +805,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
     proof_pack = _artifact_doc(proof_pack_path, root)
     worktree_plan = _artifact_doc(worktree_plan_path, root)
     runtime_contract_artifact = _json_artifact(runtime_contract_path, root)
+    density_artifact = _json_artifact(density_receipt_path, root)
     claim_gate = _artifact_doc(claim_gate_path, root)
     procurement_gate = _artifact_doc(procurement_gate_path, root)
 
@@ -553,6 +835,8 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
         blockers.append("signed worktree split reports high dirty-tree risk")
     if runtime_contract_artifact.get("ok") is not True or runtime_contract_artifact.get("signature_ok") is not True:
         blockers.append("native runtime/TQ proof-mode contract is missing, unsigned, or invalid")
+    if density_artifact.get("ok") is not True or density_artifact.get("signature_ok") is not True:
+        blockers.append("signed density receipt is missing, unsigned, or invalid")
     if below:
         blockers.append(f"{len(below)} audit facets remain below {target}/10")
 
@@ -590,6 +874,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
             "proof_pack": _json_artifact(proof_pack_path, root),
             "worktree_plan": _json_artifact(worktree_plan_path, root),
             "runtime_contract": runtime_contract_artifact,
+            "density_receipt": density_artifact,
             "claim_gate": _json_artifact(claim_gate_path, root),
             "procurement_gate": _json_artifact(procurement_gate_path, root),
             "scorecard": _json_artifact(pathlib.Path(args.scorecard), root),
@@ -601,6 +886,8 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
             "procurement_gate_ok": bool(procurement_gate.get("ok")),
             "worktree_risk": worktree_plan.get("risk"),
             "runtime_contract_ok": bool(runtime_contract_artifact.get("ok")),
+            "density_receipt_ok": bool(density_artifact.get("ok")),
+            "density_risk": density_artifact.get("density_risk"),
             "proof_pack_blocked_claims": proof_pack.get("blocked_claim_count"),
             "proof_pack_models": proof_pack.get("model_count"),
         },
@@ -742,6 +1029,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
         "launch_packet": _json_artifact(pathlib.Path(args.launch_packet), root),
         "worktree_plan": _json_artifact(pathlib.Path(args.worktree_plan), root),
         "runtime_contract": _json_artifact(pathlib.Path(args.runtime_contract), root),
+        "density_receipt": _json_artifact(pathlib.Path(args.density_receipt), root),
         "proof_pack": _json_artifact(pathlib.Path(args.proof_pack), root),
         "audit_grade": _json_artifact(pathlib.Path(args.audit_grade), root),
         "refresh": _json_artifact(refresh_path, root),
@@ -751,6 +1039,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
     launch_packet = artifacts["launch_packet"]
     worktree = artifacts["worktree_plan"]
     runtime_contract = artifacts["runtime_contract"]
+    density_receipt = artifacts["density_receipt"]
     audit_grade = artifacts["audit_grade"]
 
     procurement_gate = build_launch_gate(
@@ -853,6 +1142,18 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
                 f"proof_env={runtime_contract.get('proof_mode_required')}"
             ),
             runtime_contract,
+        ),
+        _completion_requirement(
+            "density_receipt_signed",
+            "Density, largest files, LOC, and local artifact mass receipt is signed",
+            density_receipt.get("signature_ok") is True and density_receipt.get("ok") is True,
+            (
+                f"density_risk={density_receipt.get('density_risk')} "
+                f"repo_gb={density_receipt.get('repo_total_gb')} "
+                f"local_generated_gb={density_receipt.get('local_generated_gb')} "
+                f"tracked_loc={density_receipt.get('tracked_loc')}"
+            ),
+            density_receipt,
         ),
         _completion_requirement(
             "native_tq_serve",
@@ -1231,6 +1532,10 @@ def _json_artifact(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict:
         proof = data.get("native_tq_proof_mode") if isinstance(data.get("native_tq_proof_mode"), dict) else {}
         out["proof_mode_required"] = len(proof.get("required_env") or [])
         out["default_unset_policy"] = data.get("default_unset_policy")
+    elif data.get("schema") == "hawking.studio_density_receipt.v1":
+        status = _density_receipt_status(data)
+        out.update(status)
+        out["ok"] = status["ok"] and status["receipt_ok"]
     elif data.get("schema") == "hawking.studio_wave0_launch_packet.v1":
         out["ok"] = bool(data.get("ok"))
         out["procurement_permitted"] = bool(data.get("procurement_permitted"))
@@ -2273,6 +2578,51 @@ def cmd_worktree_plan(args) -> int:
         return 0 if data["ok"] else 1
     _print_worktree_plan(data, max_paths=args.max_paths)
     return 0 if data["ok"] else 1
+
+
+def cmd_density_receipt(args) -> int:
+    if args.mode == "build":
+        doc = build_density_receipt(ROOT, args)
+        out = pathlib.Path(args.out)
+        _write_json(out, doc)
+        if args.json:
+            print(json.dumps({
+                "ok": doc["ok"],
+                "path": str(out),
+                "density_risk": doc["density_risk"],
+                "repo_total_gb": doc["density"]["repo_total_gb"],
+                "local_generated_gb": doc["density"]["local_generated_gb"],
+                "tracked_loc": doc["density"]["tracked_loc"],
+            }, indent=2, sort_keys=True))
+        else:
+            print(
+                f"[frontier-ops] wrote Studio density receipt {out} "
+                f"(risk={doc['density_risk']} repo={doc['density']['repo_total_gb']}GB "
+                f"local={doc['density']['local_generated_gb']}GB)",
+                file=sys.stderr,
+            )
+        return 0
+    if args.mode != "verify":
+        print(f"[frontier-ops] unknown density-receipt mode: {args.mode}", file=sys.stderr)
+        return 2
+    path = pathlib.Path(args.path)
+    doc = _read_json(path, {})
+    status = _density_receipt_status(doc)
+    if args.json:
+        print(json.dumps({"path": str(path), **status}, indent=2, sort_keys=True))
+    else:
+        verdict = "valid" if status["ok"] else "INVALID"
+        print(f"[frontier-ops] Studio density receipt {verdict}: {path}", file=sys.stderr)
+        if status["ok"]:
+            print(
+                f"[frontier-ops] density risk={status['density_risk']} "
+                f"repo={status['repo_total_gb']}GB local={status['local_generated_gb']}GB "
+                f"tracked_loc={status['tracked_loc']}",
+                file=sys.stderr,
+            )
+        for problem in status["problems"]:
+            print(f"  - {problem}", file=sys.stderr)
+    return 0 if status["ok"] else 1
 
 
 def cmd_storage_plan(args) -> int:
@@ -4331,6 +4681,12 @@ def cmd_selftest(args) -> int:
                 {"label": "b", "claim_admissible": False},
             ],
         })
+        density_receipt = build_density_receipt(root, argparse.Namespace(max_files=5, previous=""))
+        _write_json(root / DENSITY_RECEIPT_PATH, density_receipt)
+        check("density receipt signs local mass and LOC snapshot",
+              _density_receipt_status(density_receipt)["ok"]
+              and density_receipt["density"]["repo_total_bytes"] > 0
+              and density_receipt["density"]["tracked_file_count"] > 0)
         claim_gate_path = root / "reports" / "condense" / "claim_gate.json"
         procure_gate_path = root / "reports" / "condense" / "procure_gate.json"
         _write_json(claim_gate_path, {"schema": "hawking.frontier_launch_gate.v1", "ok": False})
@@ -4342,6 +4698,7 @@ def cmd_selftest(args) -> int:
             launch_packet=str(root / WAVE0_PACKET_PATH),
             proof_pack=str(root / PROOF_PACK_PATH),
             worktree_plan=str(root / WORKTREE_PLAN_PATH),
+            density_receipt=str(root / DENSITY_RECEIPT_PATH),
             claim_gate=str(claim_gate_path),
             procurement_gate=str(procure_gate_path),
             scorecard=str(root / "reports" / "condense" / "scorecard.json"),
@@ -4360,6 +4717,7 @@ def cmd_selftest(args) -> int:
             launch_packet=str(WAVE0_PACKET_PATH),
             worktree_plan=str(WORKTREE_PLAN_PATH),
             runtime_contract=str(RUNTIME_CONTRACT_PATH),
+            density_receipt=str(DENSITY_RECEIPT_PATH),
             proof_pack=str(PROOF_PACK_PATH),
             audit_grade=str(AUDIT_GRADE_PATH),
             require_refresh=str(refresh_path),
@@ -4376,6 +4734,7 @@ def cmd_selftest(args) -> int:
               and not completion_audit["completion_ok"]
               and "doctor_recovery_7b_plus" in completion_ids
               and "studio_evidence_run_bundle" in completion_ids
+              and "density_receipt_signed" in completion_ids
               and "native_tq_serve" in completion_ids)
         for fm in FRONTIER_MODELS:
             provenance_record, _ = frontier_provenance.sign_record(
@@ -4589,6 +4948,18 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--max-paths", type=int, default=8,
                    help="max paths to print per subsystem in human output")
     p.set_defaults(func=cmd_worktree_plan)
+
+    p = sub.add_parser("density-receipt", help="build or verify signed local density/mass receipt")
+    p.add_argument("mode", choices=("build", "verify"))
+    p.add_argument("--out", default=str(DENSITY_RECEIPT_PATH),
+                   help="signed density receipt written by build mode")
+    p.add_argument("--path", default=str(DENSITY_RECEIPT_PATH),
+                   help="signed density receipt read by verify mode")
+    p.add_argument("--previous", default="", help="optional previous density receipt for delta reporting")
+    p.add_argument("--max-files", type=int, default=20,
+                   help="number of largest files to keep in the receipt")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_density_receipt)
 
     p = sub.add_parser("storage-plan", help="print storage-aware frontier download waves")
     p.add_argument("--json", action="store_true")
@@ -4944,6 +5315,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--proof-pack", default=str(PROOF_PACK_PATH))
     p.add_argument("--worktree-plan", default=str(WORKTREE_PLAN_PATH))
     p.add_argument("--runtime-contract", default=str(RUNTIME_CONTRACT_PATH))
+    p.add_argument("--density-receipt", default=str(DENSITY_RECEIPT_PATH))
     p.add_argument("--claim-gate", default=str(COND_DIR / "frontier_claim_launch_gate.local.json"))
     p.add_argument("--procurement-gate", default=str(COND_DIR / "frontier_launch_gate.preflight.json"))
     p.add_argument("--scorecard", default=str(COND_DIR / "scorecard.json"))
@@ -4963,6 +5335,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--launch-packet", default=str(WAVE0_PACKET_PATH))
     p.add_argument("--worktree-plan", default=str(WORKTREE_PLAN_PATH))
     p.add_argument("--runtime-contract", default=str(RUNTIME_CONTRACT_PATH))
+    p.add_argument("--density-receipt", default=str(DENSITY_RECEIPT_PATH))
     p.add_argument("--proof-pack", default=str(PROOF_PACK_PATH))
     p.add_argument("--audit-grade", default=str(AUDIT_GRADE_PATH))
     p.add_argument("--require-refresh", default=str(COND_DIR / "frontier_refresh.preflight.json"))

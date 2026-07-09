@@ -305,6 +305,10 @@ Wave 0 - launch hardening:
 - Run `hawking studio proof-pack --force` to create the all-frontier signed draft wall from the product
   CLI; it delegates to `frontier_ops.py proof-pack` and preserves final receipts unless `--force-final`
   is explicitly passed.
+- Run `hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
+  `hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` before
+  audit-grade/completion-audit so local size, largest files, tracked LOC, disk headroom, and generated
+  artifact mass are signed without treating cleanup as proof progress.
 - Run `hawking studio launch-packet-build --out reports/condense/studio_wave0_launch_packet.json` and
   `hawking studio launch-packet-verify --path reports/condense/studio_wave0_launch_packet.json` after
   preflight, environment capture, worktree split receipt, runtime contract, license/review workbooks,

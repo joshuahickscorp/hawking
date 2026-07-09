@@ -78,11 +78,16 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `target/debug/hawking studio runtime-contract-verify --path reports/condense/studio_runtime_contract.local.json --json`:
   pass with `signature_ok: true`, `profile_count: 5`, `workload_count: 5`, and
   `proof_mode_required: 4`.
+- `target/debug/hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json --json`
+  and `target/debug/hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json --json`:
+  pass. The signed local stabilization receipt records repo size, largest files, tracked LOC, disk
+  headroom, and generated artifact/model mass; it records cleanup recommendations but does not delete
+  evidence or unlock claim gates.
 - `target/debug/hawking studio audit-grade-build --out reports/condense/studio_audit_grade.local.json --json`:
   pass. It writes a signed audit-grade receipt from the external harsher audit, Studio facet table, launch
-  packet, proof pack, worktree split, runtime contract, claim/procurement gates, and scorecard artifact.
+  packet, proof pack, worktree split, runtime contract, density receipt, claim/procurement gates, and scorecard artifact.
   Current state: `target_grade: 8.4`, `target_reached: false`, `frontier_claims_walled: true`,
-  `runtime_contract_ok: true`, 23 facets parsed, 8 facets below target.
+  `runtime_contract_ok: true`, `density_receipt_ok: true`, 23 facets parsed, 8 facets below target.
 - `target/debug/hawking studio audit-grade-verify --path reports/condense/studio_audit_grade.local.json --json`:
   pass for schema/signature while preserving `target_reached: false` and `frontier_claims_walled: true`.
   Lowest facets are Product readiness 4.8, Doctor recovery stack 6.5, Sub-bit / MoE thesis 6.5,
@@ -135,7 +140,7 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   gate, signed coverage/native/Doctor/experiment receipt operator paths, native serve-capture route,
   proof-pack route, lifecycle state, product-facing license/review command templates, signed worktree
   split planning, wave-0 packet worktree evidence, signed audit-grade receipts, completion-audit guard,
-  same-run Studio evidence-run gate, and atomic JSON receipt writes.
+  same-run Studio evidence-run gate, signed density receipts, and atomic JSON receipt writes.
 - `python3.12 -m py_compile tools/condense/frontier_evidence_run.py tools/condense/frontier_claims.py tools/condense/frontier_ops.py`: pass.
 - `cargo check -p hawking`: pass after adding the expanded `hawking studio` proof/lifecycle/plan surface.
 - `cargo test -p hawking studio --quiet`: pass, 3 studio unit tests, including proof-pack summary
@@ -147,7 +152,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   `experiment-receipt`, `evidence-run-plan`, `evidence-run-receipt`, `claim-bundle-build`, and
   `claim-bundle-verify` through the product CLI.
   Later builds also passed after adding `preflight`, `verify-summary`, signed preflight network evidence,
-  `worktree-plan`, `audit-grade-build`, `audit-grade-verify`, and `completion-audit-build|verify`.
+  `worktree-plan`, `density-receipt-build|verify`, `audit-grade-build`, `audit-grade-verify`, and
+  `completion-audit-build|verify`.
 - `cargo run -p hawking --bin hawking -- studio snapshot`: pass. It reads the signed preflight summary,
   procurement gate, claim gate, review plan, and frontier ledger, then prints the current red wall.
 - `target/debug/hawking studio worktree-plan --out reports/condense/worktree_split_plan.local.json --json`:

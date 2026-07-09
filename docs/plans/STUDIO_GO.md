@@ -177,6 +177,8 @@ Operator loop for the giant frontier:
 cargo run -p hawking --bin hawking -- studio snapshot
 cargo run -p hawking --bin hawking -- studio worktree-plan --out reports/condense/worktree_split_plan.local.json
 cargo run -p hawking --bin hawking -- studio worktree-plan --verify reports/condense/worktree_split_plan.local.json
+cargo run -p hawking --bin hawking -- studio density-receipt-build --out reports/condense/studio_density_receipt.local.json
+cargo run -p hawking --bin hawking -- studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json
 cargo run -p hawking --bin hawking -- studio runtime-contract-build --out reports/condense/studio_runtime_contract.local.json
 cargo run -p hawking --bin hawking -- studio runtime-contract-verify --path reports/condense/studio_runtime_contract.local.json
 cargo run -p hawking --bin hawking -- studio status --storage-budget-gb 8000
@@ -282,7 +284,9 @@ must receive a `hawking studio review-candidate` decision before the launch gate
 `review-decisions draft|verify|apply` provides a signed batch workbook for the same human decisions.
 The Rust CLI now exposes the same proof state through `hawking studio`: `snapshot` reads signed local
 artifacts and prints the current red/green wall; `worktree-plan` groups the dirty tree by subsystem for
-review splitting and verifies the signed split receipt; `runtime-contract-build` and
+review splitting and verifies the signed split receipt; `density-receipt-build` and
+`density-receipt-verify` sign the largest-file, LOC, disk, and local artifact-mass snapshot without
+deleting evidence or weakening gates; `runtime-contract-build` and
 `runtime-contract-verify` seal the native `.tq` proof-mode/runtime policy before launch-packet; `status`, `storage-plan`, `lifecycle`, `gate`,
 `license-plan`, `record-license`, `license-decisions`, `review-plan`, `review-candidate`, `review-decisions`, `source-provenance-plan`,
 `source-provenance-receipt`, `parity-receipt`, `coverage-plan`, `coverage-receipt`, `receipt-plan`, `experiment-plan`,
@@ -304,7 +308,7 @@ dry-run. A valid packet can still be red; `launch-packet-verify` proves the pack
 preserving `procurement_permitted=false` until every launch gate is green.
 `audit-grade-build` signs the audit-grade receipt by parsing the Studio deep-audit facet table, hashing
 the external harsher audit, and summarizing the launch packet, proof pack, worktree split, runtime
-contract, claim gate, procurement gate, and scorecard artifact. `audit-grade-verify` proves that receipt
+contract, density receipt, claim gate, procurement gate, and scorecard artifact. `audit-grade-verify` proves that receipt
 did not drift. A valid audit-grade receipt can still report `target_reached=false`; on the laptop it
 should also report `runtime_contract_ok=true` and `frontier_claims_walled=true` while the public-claim
 gates remain red.

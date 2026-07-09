@@ -81,6 +81,11 @@ non-compute claim wall for the full frontier manifest: signed draft source-prove
 baseline/eval, native serve/RAM-cliff, and experiment envelopes, plus `.local` claim bundles that hash
 those drafts and remain inadmissible. It preserves final receipts unless `--force-final` is explicitly
 passed.
+`hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
+`hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` keep a
+signed local stabilization snapshot of repo size, largest files, tracked LOC, disk headroom, and generated
+artifact/model mass. The receipt records cleanup recommendations only; it does not delete evidence and it
+does not unlock baseline, native-serve, RAM-cliff, or public-claim gates.
 `hawking studio coverage-plan` prints the claim-phase coverage contract. For each frontier label,
 `reports/condense/<LABEL>_baselines.json` must cover llama.cpp Q4_K_M, llama.cpp IQ2_S, llama.cpp
 mmap OOC, MLX 4-bit, Unsloth Dyn 2.0, and EXL3/PonyExl3 with either same-box measured rows or explicit
