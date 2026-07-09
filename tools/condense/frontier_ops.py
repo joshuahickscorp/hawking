@@ -24,6 +24,7 @@ This is the operator layer above `procure.py`. It is intentionally conservative:
   frontier_ops.py source-provenance draft LABEL  # signed source checkpoint provenance envelopes
   frontier_ops.py receipt-record draft LABEL     # signed native serve/RAM-cliff receipt envelopes
   frontier_ops.py serve-capture LABEL --artifact ARTIFACT.tq --bench-json REPORT.json
+  frontier_ops.py doctor-recovery-receipt draft LABEL # signed Doctor recovery receipt envelopes
   frontier_ops.py experiment-receipt draft LABEL # signed expensive-mode matrix envelopes
   frontier_ops.py proof-pack LABEL               # draft all signed envelopes + blocked local bundle
   frontier_ops.py release-source LABEL --dry-run # prove whether source deletion would be safe
@@ -84,6 +85,7 @@ import frontier_experiments  # noqa: E402
 import frontier_experiment_runner  # noqa: E402
 import frontier_licenses  # noqa: E402
 import frontier_claims  # noqa: E402
+import frontier_doctor_recovery  # noqa: E402
 
 COND_DIR = pathlib.Path("reports/condense")
 LEDGER_PATH = COND_DIR / "frontier_ledger.json"
@@ -106,7 +108,6 @@ COMPLETION_AUDIT_PATH = COND_DIR / "studio_completion_audit.local.json"
 DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path("/Users/scammermike/Downloads/project_audits/hawking_deep_audit_2026_07_08.md")
 DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md")
 SIGN_ALG = "sha256-json-v1"
-DOCTOR_RECOVERY_SCHEMA = "hawking.frontier_doctor_recovery.v1"
 SIZE_RE = re.compile(r"\s([0-9]+(?:\.[0-9]+)?)([KMGT])$")
 SIZE_SCALE = {"K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
 CACHE_RESERVE_GB = 128.0
@@ -125,6 +126,7 @@ MANIFEST_CONSUMERS = (
     "tools/condense/frontier_receipt_runner.py",
     "tools/condense/frontier_experiment_runner.py",
     "tools/condense/frontier_claims.py",
+    "tools/condense/frontier_doctor_recovery.py",
 )
 RETIRED_FRONTIER_MARKERS = ("GLM-4.5", '"744B"', "'744B'")
 WORKTREE_SUBSYSTEMS = (
@@ -645,25 +647,6 @@ def _completion_models(labels: list[str]) -> list[FrontierModel]:
     return out
 
 
-def _record_commands(record: dict) -> list[str]:
-    commands = []
-    if isinstance(record.get("commands"), list):
-        commands.extend(str(cmd) for cmd in record["commands"] if cmd)
-    if record.get("command"):
-        commands.append(str(record["command"]))
-    if record.get("procurement_command"):
-        commands.append(str(record["procurement_command"]))
-    return commands
-
-
-def _is_placeholder(value) -> bool:
-    return value is None or "<" in str(value) or "TODO" in str(value) or "..." in str(value)
-
-
-def _hex64(value) -> bool:
-    return isinstance(value, str) and bool(re.fullmatch(r"[0-9a-fA-F]{64}", value))
-
-
 def _completion_record(path: pathlib.Path, root: pathlib.Path) -> dict | None:
     full = path if path.is_absolute() else root / path
     data = _read_json(full, None)
@@ -730,96 +713,6 @@ def _signed_experiment_rollup(root: pathlib.Path, labels: list[str]) -> dict:
         status["path"] = str(path)
         rows.append(status)
     return _signed_status_rollup("experiment-depth", rows)
-
-
-def _doctor_recovery_path(root: pathlib.Path, label: str) -> pathlib.Path:
-    return root / COND_DIR / f"{_safe_label(label)}_doctor_recovery.json"
-
-
-def _doctor_recovery_status(root: pathlib.Path, model: FrontierModel) -> dict:
-    path = _doctor_recovery_path(root, model.label)
-    record = _completion_record(path, root)
-    problems = []
-    if not record:
-        return {
-            "label": model.label,
-            "path": str(path),
-            "exists": False,
-            "ok": False,
-            "problems": [
-                f"{path} is missing or unreadable",
-                "Studio-scale 7B+ Doctor recovery receipt is required",
-            ],
-        }
-    if record.get("schema") != DOCTOR_RECOVERY_SCHEMA:
-        problems.append(f"schema must be {DOCTOR_RECOVERY_SCHEMA}")
-    if (record.get("model") or record.get("label")) != model.label:
-        problems.append(f"model/label must be {model.label}")
-    if record.get("hf_id") and record.get("hf_id") != model.hf_id:
-        problems.append(f"hf_id must be {model.hf_id}")
-    if record.get("receipt_state") != "final":
-        problems.append("receipt_state must be final")
-    if str(record.get("source") or record.get("mode") or "").lower() != "measured":
-        problems.append("source/mode must be measured")
-    if record.get("status") != "pass":
-        problems.append("status must be pass")
-    if not record.get("machine_class"):
-        problems.append("machine_class missing")
-    if not (record.get("git_commit") or record.get("hawking_commit")):
-        problems.append("git_commit/hawking_commit missing")
-
-    params_b = record.get("params_b") or record.get("total_b") or model.total_b
-    try:
-        params_b_float = float(params_b)
-    except (TypeError, ValueError):
-        params_b_float = 0.0
-    if params_b_float < 7.0:
-        problems.append("params_b/total_b must be >= 7.0")
-
-    chain = record.get("doctor_chain") or record.get("recovery_chain") or record.get("method")
-    if _is_placeholder(chain):
-        problems.append("doctor_chain/recovery_chain/method missing or placeholder")
-
-    gate = record.get("gate") if isinstance(record.get("gate"), dict) else {}
-    for key in (
-        "studio_scale_7b_plus",
-        "recovery_improves_over_ptq",
-        "below_dense_limit",
-        "heldout_no_task_collapse",
-    ):
-        if gate.get(key) is not True:
-            problems.append(f"gate.{key} must be true")
-
-    for key in ("ptq_receipt", "recovered_receipt", "heldout_eval_receipt"):
-        if _is_placeholder(record.get(key)):
-            problems.append(f"{key} missing or placeholder")
-    artifact_hash = record.get("recovered_artifact_sha256") or record.get("artifact_sha256")
-    if not _hex64(artifact_hash):
-        problems.append("recovered_artifact_sha256/artifact_sha256 is missing or invalid")
-    commands = _record_commands(record)
-    if not commands:
-        problems.append("exact command(s) missing")
-    elif any(_is_placeholder(cmd) for cmd in commands):
-        problems.append("command contains placeholder text")
-    if not _signature_ok(record):
-        problems.append("signature digest mismatch")
-
-    return {
-        "label": model.label,
-        "path": str(path),
-        "exists": True,
-        "schema": record.get("schema"),
-        "receipt_state": record.get("receipt_state"),
-        "params_b": params_b_float,
-        "ok": not problems,
-        "signature_ok": _signature_ok(record),
-        "problems": problems,
-    }
-
-
-def _doctor_recovery_rollup(root: pathlib.Path, models: list[FrontierModel]) -> dict:
-    rows = [_doctor_recovery_status(root, model) for model in models]
-    return _signed_status_rollup("doctor-recovery", rows)
 
 
 def _completion_requirement(req_id: str, title: str, ok: bool, detail: str,
@@ -896,7 +789,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
     serve = _signed_native_rollup(root, labels, "serve")
     ramcliff = _signed_native_rollup(root, labels, "ramcliff")
     experiments = _signed_experiment_rollup(root, labels)
-    doctor = _doctor_recovery_rollup(root, models)
+    doctor = frontier_doctor_recovery.recovery_rollup(root, labels)
     claim_bundles = frontier_claims.claim_rollup(root, labels)
 
     requirements = [
@@ -1751,6 +1644,7 @@ def build_ledger(root: pathlib.Path = ROOT, refresh_hf: bool = False, dry_run_si
             "source_provenance": frontier_provenance.provenance_status(root, model.label),
             "serve_receipt": frontier_receipts.serve_status(root, model.label),
             "ramcliff_receipt": frontier_receipts.ramcliff_status(root, model.label),
+            "doctor_recovery": frontier_doctor_recovery.recovery_status(root, model.label),
             "experiment_matrix": frontier_experiments.experiment_status(root, model.label),
             "note": model.note,
         }
@@ -1916,6 +1810,7 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
         eval_cov = frontier_coverage.eval_rollup(root, labels)
         serve_receipts = frontier_receipts.serve_rollup(root, labels)
         ramcliff_receipts = frontier_receipts.ramcliff_rollup(root, labels)
+        doctor_recovery = frontier_doctor_recovery.recovery_rollup(root, labels)
         experiments = frontier_experiments.experiment_rollup(root, labels)
         claim_bundles = frontier_claims.claim_rollup(root, labels)
         add("frontier-source-provenance", provenance["ok"], "fail",
@@ -1933,6 +1828,9 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
         add("frontier-ramcliff-receipts", ramcliff_receipts["ok"], "fail",
             f"{ramcliff_receipts['passed_count']}/{ramcliff_receipts['model_count']} RAM-cliff receipts are claim-admissible",
             ramcliff_receipts)
+        add("frontier-doctor-recovery", doctor_recovery["ok"], "fail",
+            f"{doctor_recovery['passed_count']}/{doctor_recovery['model_count']} Doctor recovery receipts verify",
+            doctor_recovery)
         add("frontier-experiment-depth", experiments["ok"], "fail",
             f"{experiments['passed_count']}/{experiments['model_count']} frontier models have expensive-mode experiment depth",
             experiments)
@@ -1983,6 +1881,10 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
                 frontier_receipts.ramcliff_rollup(root, [m.label for m in FRONTIER_MODELS])["blocked_count"]
                 if phase == "claim" else None
             ),
+            "doctor_recovery_blocked": (
+                frontier_doctor_recovery.recovery_rollup(root, [m.label for m in FRONTIER_MODELS])["blocked_count"]
+                if phase == "claim" else None
+            ),
             "experiment_depth_blocked": (
                 frontier_experiments.experiment_rollup(root, [m.label for m in FRONTIER_MODELS])["blocked_count"]
                 if phase == "claim" else None
@@ -2023,6 +1925,7 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
     eval_ok = bool(ledger_row.get("eval_coverage", {}).get("ok"))
     serve_ok = bool(ledger_row.get("serve_receipt", {}).get("ok"))
     ramcliff_ok = bool(ledger_row.get("ramcliff_receipt", {}).get("ok"))
+    doctor_ok = bool(ledger_row.get("doctor_recovery", {}).get("ok"))
     experiment_ok = bool(ledger_row.get("experiment_matrix", {}).get("ok"))
     claim_bundle = frontier_claims.bundle_status(root, model.label)
     claim_bundle_ok = bool(claim_bundle.get("ok"))
@@ -2106,6 +2009,10 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
                 state = "claim-blocked-ramcliff"
                 blockers.extend(ledger_row.get("ramcliff_receipt", {}).get("problems", ["RAM-cliff receipt missing"]))
                 commands.append("hawking studio receipt-plan")
+            elif not doctor_ok:
+                state = "claim-blocked-doctor"
+                blockers.extend(ledger_row.get("doctor_recovery", {}).get("problems", ["Doctor recovery receipt missing"]))
+                commands.append("hawking studio doctor-recovery-plan")
             elif not experiment_ok:
                 state = "claim-blocked-experiment"
                 blockers.extend(ledger_row.get("experiment_matrix", {}).get("problems", ["experiment matrix missing"]))
@@ -2147,6 +2054,7 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         "eval_coverage_gate": "ALLOW" if eval_ok else "BLOCK",
         "serve_receipt_gate": "ALLOW" if serve_ok else "BLOCK",
         "ramcliff_receipt_gate": "ALLOW" if ramcliff_ok else "BLOCK",
+        "doctor_recovery_gate": "ALLOW" if doctor_ok else "BLOCK",
         "experiment_gate": "ALLOW" if experiment_ok else "BLOCK",
         "claim_bundle_gate": "ALLOW" if claim_bundle_ok else "BLOCK",
         "blockers": blockers,
@@ -2204,6 +2112,7 @@ def _select_lifecycle_node(lifecycle: dict, label: str | None = None) -> dict | 
         "claim-blocked-baseline",
         "claim-blocked-serve",
         "claim-blocked-ramcliff",
+        "claim-blocked-doctor",
         "claim-blocked-experiment",
         "claim-blocked-bundle",
     ]
@@ -2382,7 +2291,7 @@ def cmd_lifecycle(args) -> int:
     print(f"# frontier lifecycle {data['generated_at']}  {counts}")
     if data.get("next_frontier_command"):
         print(f"# next: {data['next_frontier_command']}")
-    print("label              state                  license   src  art  rec  parity  srcpv eval  base  serve ram   exp   bund  next")
+    print("label              state                  license   src  art  rec  parity  srcpv eval  base  serve ram   doc   exp   bund  next")
     for node in data["nodes"]:
         nxt = node["next_commands"][0] if node["next_commands"] else "-"
         print(f"{node['label'][:18]:18s} {node['state'][:22]:22s} "
@@ -2396,6 +2305,7 @@ def cmd_lifecycle(args) -> int:
               f"{node['baseline_coverage_gate'][:5]:5s} "
               f"{node['serve_receipt_gate'][:5]:5s} "
               f"{node['ramcliff_receipt_gate'][:5]:5s} "
+              f"{node['doctor_recovery_gate'][:5]:5s} "
               f"{node['experiment_gate'][:5]:5s} "
               f"{node['claim_bundle_gate'][:5]:5s} {nxt[:72]}")
     return 0
@@ -2455,6 +2365,35 @@ def cmd_serve_capture(args) -> int:
 
 def cmd_experiment_receipt(args) -> int:
     return frontier_experiment_runner.dispatch(args, ROOT)
+
+
+def cmd_doctor_recovery_receipt(args) -> int:
+    return frontier_doctor_recovery.dispatch(args, ROOT)
+
+
+def cmd_doctor_recovery_plan(args) -> int:
+    labels = [m.label for m in FRONTIER_MODELS]
+    if args.label:
+        selected = []
+        for label in args.label:
+            model = frontier_by_label(label)
+            if not model:
+                print(f"[frontier-ops] unknown label {label}", file=sys.stderr)
+                return 2
+            selected.append(model.label)
+        labels = selected
+    data = frontier_doctor_recovery.recovery_plan(ROOT, labels)
+    if args.out:
+        _write_json(pathlib.Path(args.out), data)
+        print(f"[frontier-ops] wrote {args.out}", file=sys.stderr)
+    if args.json:
+        print(json.dumps(data, indent=2, sort_keys=True))
+        return 0 if data["rollup"]["ok"] else 1
+    print("# frontier Doctor recovery plan")
+    print(f"# receipts {data['rollup']['passed_count']}/{data['rollup']['model_count']}")
+    for row in data["labels"]:
+        print(f"{row['label']}: {row['path']}")
+    return 0 if data["rollup"]["ok"] else 1
 
 
 def cmd_receipt_plan(args) -> int:
@@ -2947,6 +2886,16 @@ def _draft_native(model: FrontierModel, root: pathlib.Path, args, kind: str) -> 
     return row
 
 
+def _draft_doctor_recovery(model: FrontierModel, root: pathlib.Path, args) -> dict:
+    path = frontier_doctor_recovery.recovery_path(root, model.label)
+    record = frontier_doctor_recovery.draft_record(model, machine_class=args.machine_class)
+    record, status = frontier_doctor_recovery.sign_record(record, model=model, allow_blocked_draft=True)
+    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
+    row.update({"kind": "doctor-recovery", "label": model.label, "receipt_ok": status["ok"],
+                "receipt_problems": status["problems"]})
+    return row
+
+
 def _draft_experiment(model: FrontierModel, root: pathlib.Path, args) -> dict:
     path = frontier_experiments.matrix_path(root, model.label)
     record = frontier_experiment_runner.draft_record(model.label, machine_class=args.machine_class)
@@ -2968,6 +2917,7 @@ def build_proof_pack(root: pathlib.Path, args) -> dict:
             rows.append(_draft_coverage(model, root, args, kind))
         for kind in ("serve", "ramcliff"):
             rows.append(_draft_native(model, root, args, kind))
+        rows.append(_draft_doctor_recovery(model, root, args))
         rows.append(_draft_experiment(model, root, args))
         bundle = frontier_claims.build_bundle(root, model, require_ramcliff=not args.no_require_ramcliff)
         bundle_path = _claim_bundle_path_with_suffix(model, args.claim_suffix, root)
@@ -3069,6 +3019,7 @@ def cmd_run_next(args) -> int:
     if node["state"] in ("claim-blocked-source-provenance",
                          "claim-blocked-eval", "claim-blocked-baseline",
                          "claim-blocked-serve", "claim-blocked-ramcliff",
+                         "claim-blocked-doctor",
                          "claim-blocked-experiment"):
         print(f"[frontier-ops] REFUSE: state {node['state']} needs receipt work, not an executor step",
               file=sys.stderr)
@@ -4079,6 +4030,8 @@ def cmd_selftest(args) -> int:
             c["name"] == "frontier-native-serve-receipts" and not c["ok"] for c in gate["checks"]))
         check("claim launch gate includes RAM-cliff receipt failure", any(
             c["name"] == "frontier-ramcliff-receipts" and not c["ok"] for c in gate["checks"]))
+        check("claim launch gate includes Doctor recovery failure", any(
+            c["name"] == "frontier-doctor-recovery" and not c["ok"] for c in gate["checks"]))
         check("claim launch gate includes experiment depth failure", any(
             c["name"] == "frontier-experiment-depth" and not c["ok"] for c in gate["checks"]))
         check("claim launch gate includes signed claim bundle failure", any(
@@ -4421,6 +4374,12 @@ def cmd_selftest(args) -> int:
                 "commands": ["selftest ramcliff"],
                 "git_commit": "deadbeef",
             })
+            doctor_record, _ = frontier_doctor_recovery.sign_record(
+                frontier_doctor_recovery.complete_record(fm),
+                model=fm,
+            )
+            _write_json(root / "reports" / "condense" / f"{fm.label}_doctor_recovery.json",
+                        doctor_record)
             _write_json(root / "reports" / "condense" / f"{fm.label}_experiment_matrix.json", {
                 "schema": "hawking.frontier_experiment_matrix.v1",
                 "model": fm.label,
@@ -4480,6 +4439,8 @@ def cmd_selftest(args) -> int:
             c["name"] == "frontier-native-serve-receipts" and c["ok"] for c in gate_covered["checks"]))
         check("RAM-cliff receipt gate passes after strict receipts", any(
             c["name"] == "frontier-ramcliff-receipts" and c["ok"] for c in gate_covered["checks"]))
+        check("Doctor recovery gate passes after strict receipts", any(
+            c["name"] == "frontier-doctor-recovery" and c["ok"] for c in gate_covered["checks"]))
         experiment_plan = frontier_experiments.experiment_plan(root, [model.label])
         check("experiment plan exposes matrix path",
               experiment_plan["labels"][0]["matrix_path"].endswith(f"{model.label}_experiment_matrix.json"))
@@ -4502,6 +4463,7 @@ def cmd_selftest(args) -> int:
             "eval_coverage": {"ok": True},
             "serve_receipt": {"ok": True},
             "ramcliff_receipt": {"ok": True},
+            "doctor_recovery": {"ok": True},
             "experiment_matrix": {"ok": True},
             "download": {},
             "events": {},
@@ -4736,6 +4698,32 @@ def build_argparser() -> argparse.ArgumentParser:
         else:
             c.set_defaults(allow_blocked_draft=False)
         c.set_defaults(func=cmd_experiment_receipt)
+
+    p = sub.add_parser("doctor-recovery-plan", help="print Doctor recovery receipt requirements")
+    p.add_argument("label", nargs="*", help="optional frontier label(s); default all")
+    p.add_argument("--out", default=None)
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_doctor_recovery_plan)
+
+    p = sub.add_parser("doctor-recovery-receipt", help="draft, sign, or verify Doctor recovery receipts")
+    recovery_sub = p.add_subparsers(dest="recovery_mode", required=True)
+    for mode in ("draft", "sign", "verify"):
+        c = recovery_sub.add_parser(mode, help=f"{mode} signed Doctor recovery receipts")
+        c.add_argument("label", nargs="*", help="frontier label(s); default all")
+        c.add_argument("--out-dir", default="")
+        c.add_argument("--json", action="store_true")
+        if mode == "draft":
+            c.add_argument("--force", action="store_true")
+            c.add_argument("--sign-draft", action="store_true")
+            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.set_defaults(allow_blocked_draft=False)
+        else:
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+        if mode == "sign":
+            c.add_argument("--allow-blocked-draft", action="store_true")
+        else:
+            c.set_defaults(allow_blocked_draft=False)
+        c.set_defaults(func=cmd_doctor_recovery_receipt)
 
     p = sub.add_parser("proof-pack", help="draft all signed evidence envelopes and blocked local claim bundles")
     p.add_argument("label", nargs="*", help="frontier label(s); default all")

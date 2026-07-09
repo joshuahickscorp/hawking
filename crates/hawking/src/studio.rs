@@ -911,6 +911,48 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         json: bool,
     },
+    /// Print Doctor recovery receipt requirements.
+    DoctorRecoveryPlan {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Optional frontier label(s); default all frontier models.
+        label: Vec<String>,
+        /// Write the Doctor recovery plan here.
+        #[arg(long)]
+        out: Option<PathBuf>,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Draft, sign, or verify signed Doctor recovery receipts.
+    DoctorRecoveryReceipt {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Receipt mode: draft, sign, or verify.
+        mode: String,
+        /// Optional frontier label(s); default all frontier models.
+        label: Vec<String>,
+        /// Write/read receipts from this directory instead of reports/condense.
+        #[arg(long, default_value = "")]
+        out_dir: String,
+        /// Draft mode: overwrite existing draft receipt files.
+        #[arg(long, default_value_t = false)]
+        force: bool,
+        /// Draft mode: sign intentionally blocked draft envelopes.
+        #[arg(long, default_value_t = false)]
+        sign_draft: bool,
+        /// Draft mode: machine class recorded in the receipt envelope.
+        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        machine_class: String,
+        /// Sign mode: allow signing blocked drafts.
+        #[arg(long, default_value_t = false)]
+        allow_blocked_draft: bool,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
     /// Verify signed public-claim bundle(s) without building new evidence.
     ClaimBundleVerify {
         /// Repository root containing tools/condense/frontier_ops.py.
@@ -1853,6 +1895,57 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
+        StudioCmd::DoctorRecoveryPlan {
+            root,
+            label,
+            out,
+            json,
+        } => {
+            let mut owned = vec!["doctor-recovery-plan".to_string()];
+            push_optional_out(&mut owned, out);
+            owned.extend(label);
+            run_frontier_owned_allowing(&root, owned, json, &[1])
+        }
+        StudioCmd::DoctorRecoveryReceipt {
+            root,
+            mode,
+            label,
+            out_dir,
+            force,
+            sign_draft,
+            machine_class,
+            allow_blocked_draft,
+            json,
+        } => {
+            if mode != "draft" && mode != "sign" && mode != "verify" {
+                return Err(anyhow!(
+                    "doctor-recovery-receipt mode must be draft, sign, or verify"
+                ));
+            }
+            let mut owned = vec!["doctor-recovery-receipt".to_string(), mode.clone()];
+            if !out_dir.is_empty() {
+                owned.push("--out-dir".to_string());
+                owned.push(out_dir);
+            }
+            if mode == "draft" {
+                if force {
+                    owned.push("--force".to_string());
+                }
+                if sign_draft {
+                    owned.push("--sign-draft".to_string());
+                }
+                owned.push("--machine-class".to_string());
+                owned.push(machine_class);
+            } else if mode == "sign" && allow_blocked_draft {
+                owned.push("--allow-blocked-draft".to_string());
+            }
+            owned.extend(label);
+            if mode == "draft" {
+                run_frontier_owned_allowing(&root, owned, json, &[1])
+            } else {
+                run_frontier_owned(&root, owned, json)
+            }
+        }
         StudioCmd::ClaimBundleBuild {
             root,
             label,
@@ -2258,6 +2351,8 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio parity-receipt verify",
             "hawking studio coverage-receipt verify --kind both",
             "hawking studio receipt-record verify --kind both",
+            "hawking studio doctor-recovery-plan",
+            "hawking studio doctor-recovery-receipt verify",
             "hawking studio experiment-receipt verify",
             "hawking studio claim-bundle-build",
             "hawking studio claim-bundle-verify",

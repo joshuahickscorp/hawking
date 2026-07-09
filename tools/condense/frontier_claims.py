@@ -6,8 +6,9 @@ the receipts a public win needs, signs those receipts by hash, and verifies late
 not drift.
 
 Default policy is strict: a claim bundle requires source provenance, parity, native `.tq` serve,
-same-box baseline coverage, frozen eval coverage, RAM-cliff evidence, expensive-mode experiment depth,
-artifact hashes, and exact commands. Use `--no-require-ramcliff` only for a non-cliff claim.
+same-box baseline coverage, frozen eval coverage, RAM-cliff evidence, Doctor recovery evidence,
+expensive-mode experiment depth, artifact hashes, and exact commands. Use `--no-require-ramcliff` only
+for a non-cliff claim.
 """
 from __future__ import annotations
 
@@ -30,6 +31,7 @@ import frontier_coverage  # noqa: E402
 import frontier_coverage_runner  # noqa: E402
 import frontier_experiments  # noqa: E402
 import frontier_experiment_runner  # noqa: E402
+import frontier_doctor_recovery  # noqa: E402
 import frontier_parity  # noqa: E402
 import frontier_parity_runner  # noqa: E402
 import frontier_provenance  # noqa: E402
@@ -171,6 +173,15 @@ def _experiment_trace_problems(root: pathlib.Path, label: str) -> list[str]:
     return _experiment_receipt_problems(root, label)
 
 
+def _doctor_recovery_problems(root: pathlib.Path, model: FrontierModel) -> list[str]:
+    path = frontier_doctor_recovery.recovery_path(root, model.label)
+    record = _read_json(path)
+    if not record:
+        return [f"{path} missing; cannot verify signed Doctor recovery receipt"]
+    status = frontier_doctor_recovery.record_status(record, model=model, require_signature=True)
+    return [f"doctor recovery: {problem}" for problem in status["problems"]]
+
+
 def _source_provenance_problems(root: pathlib.Path, model: FrontierModel) -> list[str]:
     path = frontier_provenance.provenance_path(root, model.label)
     record = _read_json(path)
@@ -197,6 +208,7 @@ def _bundle_evidence_files(root: pathlib.Path, model: FrontierModel, require_ram
         frontier_coverage.baseline_path(root, model.label),
         frontier_coverage.eval_path(root, model.label),
         frontier_receipts.serve_path(root, model.label),
+        frontier_doctor_recovery.recovery_path(root, model.label),
         frontier_experiments.matrix_path(root, model.label),
     ]
     if require_ramcliff:
@@ -209,6 +221,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
     baseline = frontier_coverage.baseline_status(root, model.label)
     eval_cov = frontier_coverage.eval_status(root, model.label)
     serve = frontier_receipts.serve_status(root, model.label)
+    doctor = frontier_doctor_recovery.recovery_status(root, model.label)
     experiment = frontier_experiments.experiment_status(root, model.label)
     ramcliff = frontier_receipts.ramcliff_status(root, model.label) if require_ramcliff else {
         "label": model.label,
@@ -235,6 +248,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
     blockers.extend(_native_receipt_problems(root, model.label, "serve"))
     if require_ramcliff:
         blockers.extend(_native_receipt_problems(root, model.label, "ramcliff"))
+    blockers.extend(_doctor_recovery_problems(root, model))
     blockers.extend(_experiment_receipt_problems(root, model.label))
 
     evidence_files = _bundle_evidence_files(root, model, require_ramcliff)
@@ -259,6 +273,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
             "eval": eval_cov,
             "serve": serve,
             "ramcliff": ramcliff,
+            "doctor_recovery": doctor,
             "experiment": experiment,
             "source_provenance": provenance,
         },
@@ -273,6 +288,7 @@ def build_bundle(root: pathlib.Path, model: FrontierModel, *, require_ramcliff: 
             "baseline_coverage": True,
             "eval_coverage": True,
             "ramcliff_required": bool(require_ramcliff),
+            "doctor_recovery_7b_plus": True,
             "exact_commands": True,
             "signed_evidence_hashes": True,
         },
@@ -522,6 +538,11 @@ def selftest() -> bool:
         }
         ramcliff_record, _ = frontier_receipt_runner.sign_record(ramcliff_record, kind="ramcliff")
         (cond / f"{model.label}_ramcliff.json").write_text(json.dumps(ramcliff_record))
+        doctor_record, _ = frontier_doctor_recovery.sign_record(
+            frontier_doctor_recovery.complete_record(model),
+            model=model,
+        )
+        (cond / f"{model.label}_doctor_recovery.json").write_text(json.dumps(doctor_record))
         experiment_record = {
             "schema": "hawking.frontier_experiment_matrix.v1",
             "model": model.label,
