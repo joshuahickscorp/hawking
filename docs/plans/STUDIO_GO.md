@@ -301,7 +301,8 @@ serve/RAM-cliff, and experiment depth for each frontier label, then builds
 final receipts unless `--force-final` is explicitly passed, so it can be rerun before Studio measurements
 without erasing completed proof. Use
 `hawking studio proof-pack --force` as the product-facing entry point; `frontier_ops.py proof-pack` is the
-lower-level equivalent.
+lower-level equivalent. Verifying those `.local` bundles should stay red for admissibility while reporting
+`signature_ok=true`; only final `<LABEL>_claim_bundle.json` bundles may satisfy public claims.
 `launch-packet-build` signs the Studio wave-0 packet by hashing/summarizing the preflight summary,
 environment receipt, signed worktree split plan, signed runtime contract, refresh ledger,
 license/review workbooks, storage plan, lifecycle dry-run, procurement gate, proof pack, and run-next
@@ -374,7 +375,8 @@ rejects unsigned, tampered, draft, placeholder, trace-free, hash-free, or depth-
 `hawking studio claim-bundle-build` signs the final public-claim evidence by SHA-256 after signed source
 provenance, signed parity, signed baseline/eval, signed native serve/RAM-cliff, and signed experiment
 matrix files exist. `hawking studio claim-bundle-verify` rejects stale, missing, or
-claim-inadmissible bundles, and `launch-gate --phase claim` treats missing signed bundles as a hard
+claim-inadmissible bundles, reports whether the bundle signature itself is valid, and
+`launch-gate --phase claim` treats missing signed bundles as a hard
 failure.
 
 Before any quality, tok/s, or RAM-cliff claim, run:

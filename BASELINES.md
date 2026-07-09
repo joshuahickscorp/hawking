@@ -79,8 +79,9 @@ artifact.
 `hawking studio proof-pack --force --out reports/condense/frontier_proof_pack.local.json` writes the
 non-compute claim wall for the full frontier manifest: a signed proof-pack manifest, signed draft
 source-provenance, parity, baseline/eval, native serve/RAM-cliff, and experiment envelopes, plus `.local`
-claim bundles that hash those drafts and remain inadmissible. It preserves final receipts unless
-`--force-final` is explicitly passed.
+claim bundles that hash those drafts and remain inadmissible. The manifest reports `local_signed_count`
+separately from final claim-bundle admissibility. It preserves final receipts unless `--force-final` is
+explicitly passed.
 `hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
 `hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` keep a
 signed local stabilization snapshot of repo size, largest files, tracked LOC, disk headroom, and generated
@@ -143,7 +144,8 @@ verified downloads fill the final row and run `hawking studio source-provenance-
 `hawking studio source-provenance-receipt verify <label>`.
 `hawking studio claim-bundle-build <label>` signs the final public-claim evidence by SHA-256, and
 `hawking studio claim-bundle-verify reports/condense/<LABEL>_claim_bundle.json` rejects missing, stale,
-or claim-inadmissible bundles. `frontier_ops.py launch-gate --phase claim` refuses public claims until
+or claim-inadmissible bundles while still reporting `signature_ok` for signed local walls.
+`frontier_ops.py launch-gate --phase claim` refuses public claims until
 the signed bundle verifies.
 `hawking studio license-plan` prints the accepted-terms command for each model. `reviewed` is not
 procurement-safe; `hawking studio record-license` must store `status=accepted`, signer, license id,

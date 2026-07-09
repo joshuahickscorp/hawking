@@ -324,14 +324,26 @@ def verify_bundle(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict[str, An
     data = _read_json(path)
     problems = []
     if not data:
-        return {"path": str(path), "ok": False, "problems": [f"{path} missing or unreadable"]}
+        return {
+            "path": str(path),
+            "ok": False,
+            "signature_ok": False,
+            "claim_admissible": None,
+            "blocker_count": None,
+            "evidence_file_count": 0,
+            "evidence_file_present_count": 0,
+            "problems": [f"{path} missing or unreadable"],
+        }
     if data.get("schema") != SCHEMA:
         problems.append(f"schema must be {SCHEMA}")
     sig = data.get("signature") if isinstance(data.get("signature"), dict) else {}
-    if sig.get("algorithm") != SIGN_ALG or sig.get("digest") != _canonical_digest(data):
+    signature_ok = sig.get("algorithm") == SIGN_ALG and sig.get("digest") == _canonical_digest(data)
+    if not signature_ok:
         problems.append("signature digest mismatch")
     if data.get("claim_admissible") is not True:
         problems.append("claim_admissible is not true")
+    evidence_files = data.get("evidence_files") or []
+    present_files = 0
     for item in data.get("evidence_files") or []:
         p = pathlib.Path(item.get("path", ""))
         if not p.is_absolute():
@@ -341,12 +353,18 @@ def verify_bundle(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict[str, An
             problems.append(f"evidence file missing: {item.get('path')}")
         elif digest != item.get("sha256"):
             problems.append(f"evidence file hash changed: {item.get('path')}")
+        else:
+            present_files += 1
     return {
         "path": str(path),
         "label": data.get("label"),
         "ok": not problems,
         "problems": problems,
+        "signature_ok": signature_ok,
         "claim_admissible": data.get("claim_admissible"),
+        "blocker_count": len(data.get("blockers") or []),
+        "evidence_file_count": len(evidence_files),
+        "evidence_file_present_count": present_files,
     }
 
 
@@ -357,12 +375,16 @@ def bundle_status(root: pathlib.Path, label: str) -> dict[str, Any]:
 def claim_rollup(root: pathlib.Path, labels: list[str]) -> dict[str, Any]:
     rows = [bundle_status(root, label) for label in labels]
     blocked = [row.get("label") or label for row, label in zip(rows, labels) if not row["ok"]]
+    signed_count = sum(1 for row in rows if row.get("signature_ok") is True)
+    admissible_count = sum(1 for row in rows if row.get("claim_admissible") is True)
     return {
         "schema": "hawking.frontier_claim_rollup.v1",
         "model_count": len(labels),
         "passed_count": len(labels) - len(blocked),
         "blocked_count": len(blocked),
         "blocked_labels": blocked,
+        "signed_count": signed_count,
+        "admissible_count": admissible_count,
         "rows": rows,
         "ok": not blocked,
     }
@@ -543,9 +565,18 @@ def selftest() -> bool:
         check("complete bundle is admissible", bundle["claim_admissible"])
         path = claim_bundle_path(root, model.label)
         write_bundle(path, bundle)
-        check("signed bundle verifies", verify_bundle(path, root)["ok"])
+        signed_status = verify_bundle(path, root)
+        check("signed bundle verifies", signed_status["ok"] and signed_status["signature_ok"])
         (cond / f"{model.label}_serve.json").write_text("{}")
-        check("stale evidence breaks verify", not verify_bundle(path, root)["ok"])
+        stale_status = verify_bundle(path, root)
+        check("stale evidence breaks verify but signature stays visible",
+              not stale_status["ok"] and stale_status["signature_ok"])
+        tampered = json.loads(path.read_text())
+        tampered["claim_kind"] = "tampered"
+        path.write_text(json.dumps(tampered))
+        tampered_status = verify_bundle(path, root)
+        check("tampered bundle reports signature failure",
+              not tampered_status["ok"] and not tampered_status["signature_ok"])
     print(f"\n# SELFTEST {'PASS' if ok else 'FAIL'}")
     return ok
 

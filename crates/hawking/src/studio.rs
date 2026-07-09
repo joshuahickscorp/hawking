@@ -2747,6 +2747,7 @@ fn proof_pack_summary(artifact: &Value) -> Value {
                     json!({
                         "label": row.get("label").cloned().unwrap_or(Value::Null),
                         "claim_admissible": row.get("claim_admissible").cloned().unwrap_or(Value::Null),
+                        "signature_ok": row.get("signature_ok").cloned().unwrap_or(Value::Null),
                         "blocker_count": row.get("blocker_count").cloned().unwrap_or(Value::Null),
                         "written": row.get("written").cloned().unwrap_or(Value::Null),
                     })
@@ -2761,6 +2762,7 @@ fn proof_pack_summary(artifact: &Value) -> Value {
         "git_commit": data.get("git_commit").cloned().unwrap_or(Value::Null),
         "model_count": data.get("model_count").cloned().unwrap_or(Value::Null),
         "blocked_claim_count": data.get("blocked_claim_count").cloned().unwrap_or(Value::Null),
+        "local_signed_count": data.get("local_signed_count").cloned().unwrap_or(Value::Null),
         "evidence_count": data.get("evidence_rows").and_then(Value::as_array).map(|r| r.len()).unwrap_or(0),
         "claim_bundles": bundles,
     })
@@ -3085,10 +3087,12 @@ fn print_human_snapshot(doc: &Value) {
 
     let proof = &doc["proof_pack"];
     println!(
-        "proof pack: {}  signature={}  blocked_claims={}/{} evidence_rows={}",
+        "proof pack: {}  signature={}  blocked_claims={}/{} local_signed={}/{} evidence_rows={}",
         verdict(proof["ok"].as_bool().unwrap_or(false)),
         verdict(proof["signature_ok"].as_bool().unwrap_or(false)),
         proof["blocked_claim_count"].as_u64().unwrap_or(0),
+        proof["model_count"].as_u64().unwrap_or(0),
+        proof["local_signed_count"].as_u64().unwrap_or(0),
         proof["model_count"].as_u64().unwrap_or(0),
         proof["evidence_count"].as_u64().unwrap_or(0)
     );
@@ -3371,10 +3375,11 @@ mod tests {
                 "ok": true,
                 "model_count": 2,
                 "blocked_claim_count": 2,
+                "local_signed_count": 2,
                 "evidence_rows": [{}, {}, {}],
                 "claim_bundles": [
-                    {"label": "a", "claim_admissible": false, "blocker_count": 7, "written": true},
-                    {"label": "b", "claim_admissible": false, "blocker_count": 8, "written": true}
+                    {"label": "a", "claim_admissible": false, "signature_ok": true, "blocker_count": 7, "written": true},
+                    {"label": "b", "claim_admissible": false, "signature_ok": true, "blocker_count": 8, "written": true}
                 ]
             }))
         });
@@ -3383,6 +3388,7 @@ mod tests {
         assert_eq!(s["signature_ok"], json!(true));
         assert_eq!(s["model_count"], json!(2));
         assert_eq!(s["blocked_claim_count"], json!(2));
+        assert_eq!(s["local_signed_count"], json!(2));
         assert_eq!(s["evidence_count"], json!(3));
         assert_eq!(s["claim_bundles"].as_array().unwrap().len(), 2);
     }

@@ -814,6 +814,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
     frontier_claims_walled = bool(
         proof_pack_artifact.get("ok") is True
         and claim_bundles
+        and proof_pack_artifact.get("local_signed_count") == proof_pack_artifact.get("model_count")
         and all(row.get("claim_admissible") is False for row in claim_bundles)
         and claim_gate.get("ok") is False
     )
@@ -894,6 +895,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
             "density_receipt_ok": bool(density_artifact.get("ok")),
             "density_risk": density_artifact.get("density_risk"),
             "proof_pack_signature_ok": bool(proof_pack_artifact.get("signature_ok")),
+            "proof_pack_local_signed_count": proof_pack_artifact.get("local_signed_count"),
             "proof_pack_blocked_claims": proof_pack.get("blocked_claim_count"),
             "proof_pack_models": proof_pack.get("model_count"),
         },
@@ -1168,10 +1170,12 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
             proof_pack.get("signature_ok") is True
             and proof_pack.get("ok") is True
             and proof_pack.get("blocked_claim_count") == proof_pack.get("model_count")
+            and proof_pack.get("local_signed_count") == proof_pack.get("model_count")
             and (proof_pack.get("evidence_count") or 0) >= (proof_pack.get("model_count") or 0),
             (
                 f"signature_ok={proof_pack.get('signature_ok')} "
                 f"blocked_claims={proof_pack.get('blocked_claim_count')}/{proof_pack.get('model_count')} "
+                f"local_signed={proof_pack.get('local_signed_count')}/{proof_pack.get('model_count')} "
                 f"evidence_rows={proof_pack.get('evidence_count')}"
             ),
             proof_pack,
@@ -1256,7 +1260,11 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
             "signed_claim_bundles",
             "Final public-claim bundles verify",
             claim_bundles["ok"],
-            f"{claim_bundles['passed_count']}/{claim_bundles['model_count']} signed claim bundles verify",
+            (
+                f"{claim_bundles['passed_count']}/{claim_bundles['model_count']} signed claim bundles verify; "
+                f"signed={claim_bundles.get('signed_count')}/{claim_bundles['model_count']} "
+                f"admissible={claim_bundles.get('admissible_count')}/{claim_bundles['model_count']}"
+            ),
             claim_bundles,
         ),
         _completion_requirement(
@@ -1532,6 +1540,7 @@ def _json_artifact(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict:
         out["signature_ok"] = signature_ok
         out["model_count"] = data.get("model_count")
         out["blocked_claim_count"] = data.get("blocked_claim_count")
+        out["local_signed_count"] = data.get("local_signed_count")
         rows = data.get("evidence_rows") if isinstance(data.get("evidence_rows"), list) else []
         out["evidence_count"] = len(rows)
     elif data.get("schema") == "hawking.frontier_refresh.v1":
@@ -2182,7 +2191,11 @@ def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_u
             f"{evidence_runs['passed_count']}/{evidence_runs['model_count']} Studio evidence-run bundles verify",
             evidence_runs)
         add("frontier-signed-claim-bundles", claim_bundles["ok"], "fail",
-            f"{claim_bundles['passed_count']}/{claim_bundles['model_count']} signed claim bundles verify",
+            (
+                f"{claim_bundles['passed_count']}/{claim_bundles['model_count']} signed claim bundles verify; "
+                f"signed={claim_bundles.get('signed_count')}/{claim_bundles['model_count']} "
+                f"admissible={claim_bundles.get('admissible_count')}/{claim_bundles['model_count']}"
+            ),
             claim_bundles)
     else:
         add("frontier-parity", parity["blocked_claims"] == 0, "warn",
@@ -3369,34 +3382,41 @@ def build_proof_pack(root: pathlib.Path, args) -> dict:
         bundle = frontier_claims.build_bundle(root, model, require_ramcliff=not args.no_require_ramcliff)
         bundle_path = _claim_bundle_path_with_suffix(model, args.claim_suffix, root)
         if bundle_path.exists() and not args.force:
+            status = frontier_claims.verify_bundle(bundle_path, root)
             bundle_rows.append({
                 "label": model.label,
                 "path": str(bundle_path),
                 "written": False,
+                "signature_ok": status.get("signature_ok"),
                 "claim_admissible": False,
                 "blocker_count": len(bundle["blockers"]),
                 "problems": ["claim bundle exists; use --force to overwrite local bundle"],
             })
         elif _read_json(bundle_path, {}).get("claim_admissible") is True and not args.force_final:
+            status = frontier_claims.verify_bundle(bundle_path, root)
             bundle_rows.append({
                 "label": model.label,
                 "path": str(bundle_path),
                 "written": False,
+                "signature_ok": status.get("signature_ok"),
                 "claim_admissible": False,
                 "blocker_count": len(bundle["blockers"]),
                 "problems": ["admissible claim bundle exists; preserved unless --force-final is set"],
             })
         else:
             frontier_claims.write_bundle(bundle_path, bundle)
+            status = frontier_claims.verify_bundle(bundle_path, root)
             bundle_rows.append({
                 "label": model.label,
                 "path": str(bundle_path),
                 "written": True,
+                "signature_ok": status.get("signature_ok"),
                 "claim_admissible": bundle["claim_admissible"],
                 "blocker_count": len(bundle["blockers"]),
                 "problems": [] if not bundle["claim_admissible"] else ["unexpected admissible local proof pack"],
             })
     blocked_bundles = [row["label"] for row in bundle_rows if not row["claim_admissible"]]
+    local_signed = [row["label"] for row in bundle_rows if row.get("signature_ok") is True]
     result = {
         "schema": "hawking.frontier_proof_pack.v1",
         "generated_at": _now(),
@@ -3409,6 +3429,8 @@ def build_proof_pack(root: pathlib.Path, args) -> dict:
         "ok": len(blocked_bundles) == len(models),
         "blocked_claim_count": len(blocked_bundles),
         "blocked_claim_labels": blocked_bundles,
+        "local_signed_count": len(local_signed),
+        "local_signed_labels": local_signed,
         "note": "Proof-pack drafts are signed but intentionally claim-blocking until final measured evidence replaces TODO rows.",
     }
     result = _sign_doc(result)
@@ -4702,10 +4724,11 @@ def cmd_selftest(args) -> int:
             "ok": True,
             "model_count": 2,
             "blocked_claim_count": 2,
+            "local_signed_count": 2,
             "evidence_rows": [],
             "claim_bundles": [
-                {"label": "a", "claim_admissible": False},
-                {"label": "b", "claim_admissible": False},
+                {"label": "a", "claim_admissible": False, "signature_ok": True},
+                {"label": "b", "claim_admissible": False, "signature_ok": True},
             ],
         }))
         density_receipt = build_density_receipt(root, argparse.Namespace(max_files=5, previous=""))
@@ -4929,7 +4952,9 @@ def cmd_selftest(args) -> int:
               proof["ok"]
               and _signature_ok(proof)
               and proof["blocked_claim_count"] == 1
+              and proof["local_signed_count"] == 1
               and proof_bundle["written"]
+              and proof_bundle["signature_ok"]
               and proof_bundle["blocker_count"] > 0
               and proof_pack_path.exists()
               and any(row.get("kind") == "studio-evidence-run" for row in proof["evidence_rows"]))

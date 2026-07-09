@@ -444,8 +444,9 @@ Current launch-gate wall:
 - the same-run Studio evidence-run envelopes are signed drafts, not final one-command measured bundles,
   so `frontier-studio-evidence-runs` remains 0/9;
 - signed public claim bundles are 0/9. The `.local` proof-pack bundles correctly fail verification
-  because the underlying evidence files are intentionally draft-blocked; no evidence file is missing from
-  any local bundle now.
+  because the underlying evidence files are intentionally draft-blocked; verifier JSON now reports
+  `signature_ok=true` for 9/9 local bundles, `claim_admissible=false` for 9/9 local bundles, and no
+  evidence file is missing from any local bundle now.
 - the signed worktree split receipt is valid and clean after the branch split, with 0 dirty entries and
   0 subsystems; the launch packet no longer carries a dirty-tree warning.
 - the signed audit-grade receipt is valid, but `target_reached=false`; it records the external audit's
@@ -457,7 +458,7 @@ Current launch-gate wall:
   recovery, RAM-cliff/energy, baseline/eval, experiment, same-run evidence, or final claim proof.
 - `hawking studio snapshot` correctly reports preflight red, procurement gate red, claim gate red,
   0/39 candidate decisions reviewed, 9/9 lifecycle nodes waiting on accepted license records, and
-  signed proof-pack `blocked_claims=9/9` with 81 evidence rows.
+  signed proof-pack `blocked_claims=9/9`, `local_signed_count=9`, and 81 evidence rows.
 
 ## Next laptop-safe moves
 
