@@ -109,6 +109,33 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
     }
 }
 
+fn apply_qwen_tq_flags(
+    tq: Option<&Path>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
+) {
+    let strict = tq_proof_mode || tq_strict;
+    let require_all_linear = tq_proof_mode || tq_require_all_linear;
+    let require_gpu = tq_proof_mode || tq_require_gpu;
+    if tq.is_some() || strict || require_all_linear || require_gpu {
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+    }
+    if let Some(path) = tq {
+        std::env::set_var("HAWKING_QWEN_TQ_PATH", path);
+    }
+    if strict {
+        std::env::set_var("HAWKING_QWEN_TQ_STRICT", "1");
+    }
+    if require_all_linear {
+        std::env::set_var("HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR", "1");
+    }
+    if require_gpu {
+        std::env::set_var("HAWKING_QWEN_TQ_REQUIRE_GPU", "1");
+    }
+}
+
 #[derive(Subcommand, Debug)]
 enum Cmd {
     /// Start the OpenAI-compatible HTTP server.
@@ -188,6 +215,23 @@ enum Cmd {
         /// max-speed, max-battery, safe-fit.
         #[arg(long, default_value = "max-capability", value_name = "INTENT")]
         intent: String,
+        /// Explicit Qwen `.tq` artifact for native TQ serve. Sets
+        /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
+        #[arg(long, value_name = "ARTIFACT")]
+        tq: Option<PathBuf>,
+        /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
+        /// all-linear projection coverage, and GPU bitslice ownership required.
+        #[arg(long, default_value_t = false)]
+        tq_proof_mode: bool,
+        /// Require a matching `.tq` artifact instead of silently falling back.
+        #[arg(long, default_value_t = false)]
+        tq_strict: bool,
+        /// Require all Qwen attention and FFN linear projections in the `.tq`.
+        #[arg(long, default_value_t = false)]
+        tq_require_all_linear: bool,
+        /// Require GPU bitslice ownership for every `.tq` projection.
+        #[arg(long, default_value_t = false)]
+        tq_require_gpu: bool,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -313,6 +357,23 @@ enum Cmd {
         /// you hit the per-slot KV ceiling on very long prompts.
         #[arg(long, default_value_t = 8)]
         capture_batch: usize,
+        /// Explicit Qwen `.tq` artifact for native TQ generation. Sets
+        /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
+        #[arg(long, value_name = "ARTIFACT")]
+        tq: Option<PathBuf>,
+        /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
+        /// all-linear projection coverage, and GPU bitslice ownership required.
+        #[arg(long, default_value_t = false)]
+        tq_proof_mode: bool,
+        /// Require a matching `.tq` artifact instead of silently falling back.
+        #[arg(long, default_value_t = false)]
+        tq_strict: bool,
+        /// Require all Qwen attention and FFN linear projections in the `.tq`.
+        #[arg(long, default_value_t = false)]
+        tq_require_all_linear: bool,
+        /// Require GPU bitslice ownership for every `.tq` projection.
+        #[arg(long, default_value_t = false)]
+        tq_require_gpu: bool,
     },
     /// CPU-only tokenizer parity diagnostic using the same tokenizer path as generate.
     Tokenize {
@@ -703,6 +764,11 @@ fn main() -> Result<()> {
             workload,
             auto,
             intent,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         } => {
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
@@ -817,6 +883,14 @@ fn main() -> Result<()> {
                 }
             }
 
+            apply_qwen_tq_flags(
+                tq.as_deref(),
+                tq_proof_mode,
+                tq_strict,
+                tq_require_all_linear,
+                tq_require_gpu,
+            );
+
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(hawking_serve::run(hawking_serve::ServeOptions {
                 weights,
@@ -865,6 +939,11 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         } => generate_main(
             weights,
             prompt,
@@ -893,6 +972,11 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         ),
         Cmd::Tokenize {
             weights,
@@ -2956,6 +3040,11 @@ fn generate_main(
     batched_capture: bool,
     capture_out: Option<PathBuf>,
     capture_batch: usize,
+    tq: Option<PathBuf>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
 ) -> Result<()> {
     use hawking_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -3002,6 +3091,13 @@ fn generate_main(
     if user_draft_propose_first {
         std::env::set_var("HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST", "1");
     }
+    apply_qwen_tq_flags(
+        tq.as_deref(),
+        tq_proof_mode,
+        tq_strict,
+        tq_require_all_linear,
+        tq_require_gpu,
+    );
     let profile = match kernel_profile.as_ref() {
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,

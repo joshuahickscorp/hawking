@@ -4354,17 +4354,12 @@ impl QwenDense {
         if !crate::env_on("HAWKING_QWEN_TQ") {
             return Ok(());
         }
-        // Probe `<weights>.tq` next to the model, then a `models/<stem>.tq`
-        // fallback. Absent → Ok, the feature stays inert (byte-identical Q4_K).
+        // Probe an explicit HAWKING_QWEN_TQ_PATH override first, then
+        // `<weights>.tq` next to the model and a `models/<stem>.tq` fallback.
+        // Absent → Ok, the feature stays inert (byte-identical Q4_K).
         let weights_path = &self._weights_path;
-        let mut candidates: Vec<std::path::PathBuf> =
-            vec![weights_path.with_extension(crate::tq::TQ_EXT)];
-        if let Some(stem) = weights_path.file_stem().and_then(|s| s.to_str()) {
-            candidates.push(std::path::PathBuf::from(format!(
-                "models/{stem}.{}",
-                crate::tq::TQ_EXT
-            )));
-        }
+        let tq_override = std::env::var("HAWKING_QWEN_TQ_PATH").ok();
+        let candidates = qwen_tq_artifact_candidates(weights_path, tq_override.as_deref());
         let strict = crate::env_on("HAWKING_QWEN_TQ_STRICT");
         let require_all_linear = crate::env_on("HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR");
         let require_gpu = crate::env_on("HAWKING_QWEN_TQ_REQUIRE_GPU");
@@ -9803,6 +9798,19 @@ fn tokenizer_signature(tok: &Tokenizer) -> Vec<u8> {
     sig
 }
 
+#[cfg(feature = "tq")]
+fn qwen_tq_artifact_candidates(weights_path: &Path, override_path: Option<&str>) -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Some(path) = override_path.map(str::trim).filter(|p| !p.is_empty()) {
+        candidates.push(PathBuf::from(path));
+    }
+    candidates.push(weights_path.with_extension(crate::tq::TQ_EXT));
+    if let Some(stem) = weights_path.file_stem().and_then(|s| s.to_str()) {
+        candidates.push(PathBuf::from(format!("models/{stem}.{}", crate::tq::TQ_EXT)));
+    }
+    candidates
+}
+
 #[cfg(test)]
 mod bsize_verify_diag {
     //! Losslessness-sprint diagnostic: does the verify-kernel mismatch with
@@ -9846,6 +9854,16 @@ mod bsize_verify_diag {
             assert_eq!(got, expected, "parse {name}");
         }
         assert_eq!(TQ_LINEAR_KINDS, ["q", "k", "v", "o", "gate", "up", "down"]);
+    }
+
+    #[cfg(feature = "tq")]
+    #[test]
+    fn tq_artifact_candidates_prefer_explicit_override() {
+        let weights = Path::new("/tmp/qwen.gguf");
+        let got = qwen_tq_artifact_candidates(weights, Some("/studio/artifacts/qwen.tq"));
+        assert_eq!(got[0], PathBuf::from("/studio/artifacts/qwen.tq"));
+        assert!(got.contains(&PathBuf::from("/tmp/qwen.tq")));
+        assert!(got.contains(&PathBuf::from("models/qwen.tq")));
     }
 
     fn top2_margin(logits: &[f32]) -> f32 {

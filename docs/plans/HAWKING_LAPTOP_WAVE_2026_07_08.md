@@ -109,6 +109,23 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `cargo test -p hawking-core bsize_matrix --lib -- --list`: pass with `warning_count: 0`; the ignored
   `model::qwen_dense::bsize_verify_diag::bsize_matrix` diagnostic remains listed for explicit real-model
   runs.
+- `target/debug/hawking studio snapshot --json`: after the local warning-cleanup commit, signed receipts
+  refresh against the current local HEAD. Completion remains honest at 4/19 passing and 15/19 blocked.
+  Passing requirements are clean split, native TQ runtime contract, signed density receipt, and signed
+  proof-pack wall. Blockers remain Studio/human/measured evidence: preflight/environment, license/review,
+  procurement, native `.tq` serve, parity, Doctor recovery, RAM-cliff/energy, same-box baselines,
+  frozen eval coverage, source provenance, experiment depth, same-run Studio evidence bundle, claim gate,
+  signed claim bundles, and audit-grade target.
+- Point reevaluation from `reports/condense/studio_audit_grade.local.json`: external current grade is
+  6.4/10, Studio potential is 8.4/10, operator plan is 9.8/10, `target_reached: false`, and 8 facets
+  remain below the 8.4 target: Product readiness 4.8, Doctor recovery stack 6.5, Sub-bit / MoE thesis
+  6.5, RAM-cliff and energy demo 6.6, Native `.tq` serving 6.9, Frontier architecture correctness 7.0,
+  Evaluation suite 7.6, and Auto bpw resource maximization 8.0.
+- Local target after reevaluation: Product readiness/native `.tq` serve command ergonomics. `hawking
+  serve` and `hawking generate` now expose `--tq <artifact.tq>` plus `--tq-proof-mode`; Qwen honors
+  `HAWKING_QWEN_TQ_PATH` before sibling fallback probes, and the Studio runtime contract names the exact
+  product command template. This does not make native serve receipts green without real measured
+  serve/parity/load traces.
 - `cargo test -p hawking-core --lib bsize_verify_diag --quiet`: pass; both bsize diagnostics are ignored,
   confirming the full `hawking-core --lib` suite no longer blocks on that known slow diagnostic by default.
 - `cargo test -p hawking-core --features tq --lib tq_projection_parser_covers_gguf_and_hf_names -- --nocapture`:
