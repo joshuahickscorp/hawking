@@ -102,9 +102,11 @@ PROOF_PACK_PATH = COND_DIR / "frontier_proof_pack.local.json"
 WAVE0_PACKET_PATH = COND_DIR / "studio_wave0_launch_packet.json"
 AUDIT_GRADE_PATH = COND_DIR / "studio_audit_grade.local.json"
 RUNTIME_CONTRACT_PATH = COND_DIR / "studio_runtime_contract.local.json"
+COMPLETION_AUDIT_PATH = COND_DIR / "studio_completion_audit.local.json"
 DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path("/Users/scammermike/Downloads/project_audits/hawking_deep_audit_2026_07_08.md")
 DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md")
 SIGN_ALG = "sha256-json-v1"
+DOCTOR_RECOVERY_SCHEMA = "hawking.frontier_doctor_recovery.v1"
 SIZE_RE = re.compile(r"\s([0-9]+(?:\.[0-9]+)?)([KMGT])$")
 SIZE_SCALE = {"K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
 CACHE_RESERVE_GB = 128.0
@@ -626,6 +628,484 @@ def _audit_grade_status(doc: dict) -> dict:
         "frontier_claims_walled": bool(doc.get("frontier_claims_walled")),
         "facet_count": doc.get("facet_count"),
         "below_target_count": doc.get("below_target_count"),
+        "ok": not problems,
+        "problems": problems,
+    }
+
+
+def _completion_models(labels: list[str]) -> list[FrontierModel]:
+    if not labels:
+        return list(FRONTIER_MODELS)
+    out = []
+    for label in labels:
+        model = frontier_by_label(label)
+        if not model:
+            raise ValueError(f"unknown frontier label: {label}")
+        out.append(model)
+    return out
+
+
+def _record_commands(record: dict) -> list[str]:
+    commands = []
+    if isinstance(record.get("commands"), list):
+        commands.extend(str(cmd) for cmd in record["commands"] if cmd)
+    if record.get("command"):
+        commands.append(str(record["command"]))
+    if record.get("procurement_command"):
+        commands.append(str(record["procurement_command"]))
+    return commands
+
+
+def _is_placeholder(value) -> bool:
+    return value is None or "<" in str(value) or "TODO" in str(value) or "..." in str(value)
+
+
+def _hex64(value) -> bool:
+    return isinstance(value, str) and bool(re.fullmatch(r"[0-9a-fA-F]{64}", value))
+
+
+def _completion_record(path: pathlib.Path, root: pathlib.Path) -> dict | None:
+    full = path if path.is_absolute() else root / path
+    data = _read_json(full, None)
+    return data if isinstance(data, dict) else None
+
+
+def _signed_status_rollup(kind: str, rows: list[dict]) -> dict:
+    blocked = [row.get("label") or row.get("model") for row in rows if not row.get("ok")]
+    return {
+        "schema": "hawking.studio_completion_signed_rollup.v1",
+        "kind": kind,
+        "model_count": len(rows),
+        "passed_count": len(rows) - len(blocked),
+        "blocked_count": len(blocked),
+        "blocked_labels": blocked,
+        "rows": rows,
+        "ok": not blocked,
+    }
+
+
+def _signed_parity_rollup(root: pathlib.Path, models: list[FrontierModel]) -> dict:
+    rows = []
+    for model in models:
+        path = frontier_parity_runner.parity_path(root, model.label)
+        record = _completion_record(path, root)
+        status = frontier_parity_runner.record_status(record, model=model, require_signature=True)
+        status["label"] = model.label
+        status["path"] = str(path)
+        rows.append(status)
+    return _signed_status_rollup("architecture-parity", rows)
+
+
+def _signed_coverage_rollup(root: pathlib.Path, labels: list[str], kind: str) -> dict:
+    rows = []
+    for label in labels:
+        path = frontier_coverage_runner.default_path(root, label, kind)
+        record = _completion_record(path, root)
+        status = frontier_coverage_runner.record_status(record, kind=kind, require_signature=True)
+        status["label"] = label
+        status["path"] = str(path)
+        rows.append(status)
+    return _signed_status_rollup(kind, rows)
+
+
+def _signed_native_rollup(root: pathlib.Path, labels: list[str], kind: str) -> dict:
+    rows = []
+    for label in labels:
+        path = frontier_receipt_runner.default_path(root, label, kind)
+        record = _completion_record(path, root)
+        status = frontier_receipt_runner.record_status(record, kind=kind, require_signature=True)
+        status["label"] = label
+        status["path"] = str(path)
+        rows.append(status)
+    return _signed_status_rollup(kind, rows)
+
+
+def _signed_experiment_rollup(root: pathlib.Path, labels: list[str]) -> dict:
+    rows = []
+    for label in labels:
+        path = frontier_experiments.matrix_path(root, label)
+        record = _completion_record(path, root)
+        status = frontier_experiment_runner.record_status(record, label=label, require_signature=True)
+        status["label"] = label
+        status["path"] = str(path)
+        rows.append(status)
+    return _signed_status_rollup("experiment-depth", rows)
+
+
+def _doctor_recovery_path(root: pathlib.Path, label: str) -> pathlib.Path:
+    return root / COND_DIR / f"{_safe_label(label)}_doctor_recovery.json"
+
+
+def _doctor_recovery_status(root: pathlib.Path, model: FrontierModel) -> dict:
+    path = _doctor_recovery_path(root, model.label)
+    record = _completion_record(path, root)
+    problems = []
+    if not record:
+        return {
+            "label": model.label,
+            "path": str(path),
+            "exists": False,
+            "ok": False,
+            "problems": [
+                f"{path} is missing or unreadable",
+                "Studio-scale 7B+ Doctor recovery receipt is required",
+            ],
+        }
+    if record.get("schema") != DOCTOR_RECOVERY_SCHEMA:
+        problems.append(f"schema must be {DOCTOR_RECOVERY_SCHEMA}")
+    if (record.get("model") or record.get("label")) != model.label:
+        problems.append(f"model/label must be {model.label}")
+    if record.get("hf_id") and record.get("hf_id") != model.hf_id:
+        problems.append(f"hf_id must be {model.hf_id}")
+    if record.get("receipt_state") != "final":
+        problems.append("receipt_state must be final")
+    if str(record.get("source") or record.get("mode") or "").lower() != "measured":
+        problems.append("source/mode must be measured")
+    if record.get("status") != "pass":
+        problems.append("status must be pass")
+    if not record.get("machine_class"):
+        problems.append("machine_class missing")
+    if not (record.get("git_commit") or record.get("hawking_commit")):
+        problems.append("git_commit/hawking_commit missing")
+
+    params_b = record.get("params_b") or record.get("total_b") or model.total_b
+    try:
+        params_b_float = float(params_b)
+    except (TypeError, ValueError):
+        params_b_float = 0.0
+    if params_b_float < 7.0:
+        problems.append("params_b/total_b must be >= 7.0")
+
+    chain = record.get("doctor_chain") or record.get("recovery_chain") or record.get("method")
+    if _is_placeholder(chain):
+        problems.append("doctor_chain/recovery_chain/method missing or placeholder")
+
+    gate = record.get("gate") if isinstance(record.get("gate"), dict) else {}
+    for key in (
+        "studio_scale_7b_plus",
+        "recovery_improves_over_ptq",
+        "below_dense_limit",
+        "heldout_no_task_collapse",
+    ):
+        if gate.get(key) is not True:
+            problems.append(f"gate.{key} must be true")
+
+    for key in ("ptq_receipt", "recovered_receipt", "heldout_eval_receipt"):
+        if _is_placeholder(record.get(key)):
+            problems.append(f"{key} missing or placeholder")
+    artifact_hash = record.get("recovered_artifact_sha256") or record.get("artifact_sha256")
+    if not _hex64(artifact_hash):
+        problems.append("recovered_artifact_sha256/artifact_sha256 is missing or invalid")
+    commands = _record_commands(record)
+    if not commands:
+        problems.append("exact command(s) missing")
+    elif any(_is_placeholder(cmd) for cmd in commands):
+        problems.append("command contains placeholder text")
+    if not _signature_ok(record):
+        problems.append("signature digest mismatch")
+
+    return {
+        "label": model.label,
+        "path": str(path),
+        "exists": True,
+        "schema": record.get("schema"),
+        "receipt_state": record.get("receipt_state"),
+        "params_b": params_b_float,
+        "ok": not problems,
+        "signature_ok": _signature_ok(record),
+        "problems": problems,
+    }
+
+
+def _doctor_recovery_rollup(root: pathlib.Path, models: list[FrontierModel]) -> dict:
+    rows = [_doctor_recovery_status(root, model) for model in models]
+    return _signed_status_rollup("doctor-recovery", rows)
+
+
+def _completion_requirement(req_id: str, title: str, ok: bool, detail: str,
+                            evidence=None, required: bool = True) -> dict:
+    return {
+        "id": req_id,
+        "title": title,
+        "required": bool(required),
+        "ok": bool(ok),
+        "status": "pass" if ok else "block",
+        "detail": detail,
+        "evidence": evidence,
+    }
+
+
+def build_completion_audit(root: pathlib.Path, args) -> dict:
+    models = _completion_models(getattr(args, "label", []) or [])
+    labels = [model.label for model in models]
+    all_labels = [m.label for m in FRONTIER_MODELS]
+
+    refresh_path = pathlib.Path(args.require_refresh)
+    artifacts = {
+        "preflight_summary": _json_artifact(pathlib.Path(args.preflight_summary), root),
+        "environment": _json_artifact(pathlib.Path(args.environment), root),
+        "launch_packet": _json_artifact(pathlib.Path(args.launch_packet), root),
+        "worktree_plan": _json_artifact(pathlib.Path(args.worktree_plan), root),
+        "runtime_contract": _json_artifact(pathlib.Path(args.runtime_contract), root),
+        "proof_pack": _json_artifact(pathlib.Path(args.proof_pack), root),
+        "audit_grade": _json_artifact(pathlib.Path(args.audit_grade), root),
+        "refresh": _json_artifact(refresh_path, root),
+    }
+    preflight = artifacts["preflight_summary"]
+    environment = artifacts["environment"]
+    launch_packet = artifacts["launch_packet"]
+    worktree = artifacts["worktree_plan"]
+    runtime_contract = artifacts["runtime_contract"]
+    audit_grade = artifacts["audit_grade"]
+
+    procurement_gate = build_launch_gate(
+        root,
+        phase="procure",
+        allow_unreviewed=False,
+        link_mb_s=args.link_mbs,
+        efficiency=args.efficiency,
+        scratch_gb=args.scratch_gb,
+        cache_reserve_gb=args.cache_reserve_gb,
+        storage_budget_gb=args.storage_budget_gb,
+        max_wave_hours=args.max_wave_hours,
+        require_refresh=str(refresh_path),
+    )
+    claim_gate = build_launch_gate(
+        root,
+        phase="claim",
+        allow_unreviewed=False,
+        link_mb_s=args.link_mbs,
+        efficiency=args.efficiency,
+        scratch_gb=args.scratch_gb,
+        cache_reserve_gb=args.cache_reserve_gb,
+        storage_budget_gb=args.storage_budget_gb,
+        max_wave_hours=args.max_wave_hours,
+        require_refresh=str(refresh_path),
+    )
+    refresh = _completion_record(refresh_path, root) or {}
+    refresh_review = (
+        refresh_review_status(refresh, root)
+        if refresh.get("schema") == "hawking.frontier_refresh.v1"
+        else {"review_worthy_count": 0, "reviewed": {}, "missing": ["refresh ledger missing or invalid"]}
+    )
+    license_rollup = frontier_licenses.license_rollup(_license_ledger(root), all_labels)
+    source_provenance = frontier_provenance.provenance_rollup(root, labels)
+    parity = _signed_parity_rollup(root, models)
+    baseline = _signed_coverage_rollup(root, labels, "baseline")
+    eval_cov = _signed_coverage_rollup(root, labels, "eval")
+    serve = _signed_native_rollup(root, labels, "serve")
+    ramcliff = _signed_native_rollup(root, labels, "ramcliff")
+    experiments = _signed_experiment_rollup(root, labels)
+    doctor = _doctor_recovery_rollup(root, models)
+    claim_bundles = frontier_claims.claim_rollup(root, labels)
+
+    requirements = [
+        _completion_requirement(
+            "split_clean_worktree",
+            "Split dirty branch and keep local worktree clean",
+            worktree.get("signature_ok") is True
+            and worktree.get("ok") is True
+            and worktree.get("risk") == "clean"
+            and worktree.get("entries") == 0,
+            f"risk={worktree.get('risk')} dirty_entries={worktree.get('entries')}",
+            worktree,
+        ),
+        _completion_requirement(
+            "studio_preflight_green",
+            "Studio preflight and environment are green",
+            preflight.get("signature_ok") is True
+            and preflight.get("ok") is True
+            and environment.get("signature_ok") is True
+            and environment.get("ok") is True,
+            (
+                f"preflight_ok={preflight.get('ok')} environment_ok={environment.get('ok')} "
+                f"environment_failures={environment.get('failure_count')}"
+            ),
+            {"preflight": preflight, "environment": environment},
+        ),
+        _completion_requirement(
+            "license_and_review_gates",
+            "License and refresh-review gates are closed by humans",
+            license_rollup["ok"] and not refresh_review["missing"],
+            (
+                f"licenses={license_rollup['passed_count']}/{license_rollup['model_count']} "
+                f"refresh_missing={len(refresh_review['missing'])}/"
+                f"{refresh_review['review_worthy_count']}"
+            ),
+            {"licenses": license_rollup, "refresh_review": refresh_review},
+        ),
+        _completion_requirement(
+            "procurement_gate_green",
+            "Procurement launch gate and signed wave-0 packet are green",
+            procurement_gate["ok"]
+            and launch_packet.get("signature_ok") is True
+            and launch_packet.get("procurement_permitted") is True,
+            (
+                f"procurement_gate={procurement_gate['ok']} "
+                f"launch_packet_procurement_permitted={launch_packet.get('procurement_permitted')}"
+            ),
+            {"procurement_gate": procurement_gate, "launch_packet": launch_packet},
+        ),
+        _completion_requirement(
+            "native_tq_runtime_contract",
+            "Native .tq proof-mode runtime contract verifies",
+            runtime_contract.get("signature_ok") is True
+            and runtime_contract.get("ok") is True
+            and (runtime_contract.get("proof_mode_required") or 0) >= 4,
+            (
+                f"runtime_ok={runtime_contract.get('ok')} "
+                f"proof_env={runtime_contract.get('proof_mode_required')}"
+            ),
+            runtime_contract,
+        ),
+        _completion_requirement(
+            "native_tq_serve",
+            "Native .tq serve is measured and signed",
+            serve["ok"],
+            f"{serve['passed_count']}/{serve['model_count']} signed native .tq serve receipts verify",
+            serve,
+        ),
+        _completion_requirement(
+            "architecture_parity",
+            "Architecture parity is measured and signed",
+            parity["ok"],
+            f"{parity['passed_count']}/{parity['model_count']} signed parity receipts verify",
+            parity,
+        ),
+        _completion_requirement(
+            "doctor_recovery_7b_plus",
+            "Doctor recovery is measured at 7B+ without task collapse",
+            doctor["ok"],
+            f"{doctor['passed_count']}/{doctor['model_count']} signed Doctor recovery receipts verify",
+            doctor,
+        ),
+        _completion_requirement(
+            "ramcliff_energy",
+            "RAM-cliff and energy are measured and signed",
+            ramcliff["ok"],
+            f"{ramcliff['passed_count']}/{ramcliff['model_count']} signed RAM-cliff/energy receipts verify",
+            ramcliff,
+        ),
+        _completion_requirement(
+            "same_box_baselines",
+            "Same-box baselines are measured and signed",
+            baseline["ok"],
+            f"{baseline['passed_count']}/{baseline['model_count']} signed same-box baseline receipts verify",
+            baseline,
+        ),
+        _completion_requirement(
+            "frozen_eval_coverage",
+            "Frozen eval coverage is measured and signed",
+            eval_cov["ok"],
+            f"{eval_cov['passed_count']}/{eval_cov['model_count']} signed eval coverage receipts verify",
+            eval_cov,
+        ),
+        _completion_requirement(
+            "source_provenance",
+            "Source provenance is signed",
+            source_provenance["ok"],
+            (
+                f"{source_provenance['passed_count']}/{source_provenance['model_count']} "
+                "source-provenance receipts verify"
+            ),
+            source_provenance,
+        ),
+        _completion_requirement(
+            "experiment_depth",
+            "Same-box expensive-mode matrix and nulls are signed",
+            experiments["ok"],
+            f"{experiments['passed_count']}/{experiments['model_count']} signed experiment matrices verify",
+            experiments,
+        ),
+        _completion_requirement(
+            "claim_gate_green",
+            "Claim launch gate is green",
+            claim_gate["ok"],
+            f"claim gate failure_count={claim_gate['failure_count']}",
+            claim_gate,
+        ),
+        _completion_requirement(
+            "signed_claim_bundles",
+            "Final public-claim bundles verify",
+            claim_bundles["ok"],
+            f"{claim_bundles['passed_count']}/{claim_bundles['model_count']} signed claim bundles verify",
+            claim_bundles,
+        ),
+        _completion_requirement(
+            "audit_grade_target",
+            "Studio audit target is reached on signed evidence",
+            audit_grade.get("signature_ok") is True and audit_grade.get("target_reached") is True,
+            f"target_reached={audit_grade.get('target_reached')} below_target={audit_grade.get('below_target_count')}",
+            audit_grade,
+        ),
+    ]
+    required_rows = [row for row in requirements if row["required"]]
+    blocked = [row for row in required_rows if not row["ok"]]
+    completion_ok = not blocked
+    doc = {
+        "schema": "hawking.studio_completion_audit.v1",
+        "generated_at": _now(),
+        "root": str(root),
+        "git_commit": _git_commit(root),
+        "labels": labels,
+        "frontier_label_count": len(labels),
+        "ok": completion_ok,
+        "completion_ok": completion_ok,
+        "required_count": len(required_rows),
+        "passed_count": len(required_rows) - len(blocked),
+        "blocked_count": len(blocked),
+        "blocked_requirements": [row["id"] for row in blocked],
+        "requirements": requirements,
+        "parameters": {
+            "storage_budget_gb": args.storage_budget_gb,
+            "link_mbs": args.link_mbs,
+            "efficiency": args.efficiency,
+            "scratch_gb": args.scratch_gb,
+            "cache_reserve_gb": args.cache_reserve_gb,
+            "max_wave_hours": args.max_wave_hours,
+            "require_refresh": str(refresh_path),
+        },
+        "artifacts": artifacts,
+        "note": (
+            "This is the signed Hawking Studio 10/10 completion audit. A valid red receipt is expected on "
+            "local hardware; it becomes green only after Studio preflight, native .tq serve, parity, "
+            "Doctor recovery, RAM-cliff/energy, same-box baselines, experiment depth, and final signed "
+            "claim bundles all verify."
+        ),
+    }
+    return _sign_doc(doc)
+
+
+def _completion_audit_status(doc: dict) -> dict:
+    problems = []
+    if doc.get("schema") != "hawking.studio_completion_audit.v1":
+        problems.append("schema mismatch")
+    signature_ok = _signature_ok(doc)
+    if not signature_ok:
+        problems.append("signature digest mismatch")
+    requirements = doc.get("requirements")
+    if not isinstance(requirements, list) or not requirements:
+        problems.append("requirements must be a non-empty list")
+        requirements = []
+    blocked = [row for row in requirements if row.get("required", True) and not row.get("ok")]
+    if doc.get("blocked_count") != len(blocked):
+        problems.append("blocked_count does not match requirements")
+    required_count = len([row for row in requirements if row.get("required", True)])
+    if doc.get("required_count") != required_count:
+        problems.append("required_count does not match requirements")
+    if doc.get("passed_count") != required_count - len(blocked):
+        problems.append("passed_count does not match requirements")
+    expected_ok = not blocked
+    if doc.get("completion_ok") is not expected_ok or doc.get("ok") is not expected_ok:
+        problems.append("completion_ok/ok do not match required requirement states")
+    return {
+        "schema_ok": doc.get("schema") == "hawking.studio_completion_audit.v1",
+        "signature_ok": signature_ok,
+        "completion_ok": bool(doc.get("completion_ok")),
+        "required_count": doc.get("required_count"),
+        "passed_count": doc.get("passed_count"),
+        "blocked_count": doc.get("blocked_count"),
+        "blocked_requirements": doc.get("blocked_requirements") or [],
         "ok": not problems,
         "problems": problems,
     }
@@ -3006,6 +3486,52 @@ def cmd_audit_grade(args) -> int:
     return 0 if status["ok"] else 1
 
 
+def cmd_completion_audit(args) -> int:
+    if args.mode == "build":
+        try:
+            doc = build_completion_audit(ROOT, args)
+        except ValueError as e:
+            print(f"[frontier-ops] {e}", file=sys.stderr)
+            return 2
+        out = pathlib.Path(args.out)
+        _write_json(out, doc)
+        if args.json:
+            print(json.dumps({
+                "ok": doc["ok"],
+                "completion_ok": doc["completion_ok"],
+                "path": str(out),
+                "required_count": doc["required_count"],
+                "passed_count": doc["passed_count"],
+                "blocked_count": doc["blocked_count"],
+                "blocked_requirements": doc["blocked_requirements"],
+            }, indent=2, sort_keys=True))
+        else:
+            verdict = "GREEN" if doc["completion_ok"] else "RED"
+            print(
+                f"[frontier-ops] wrote Studio completion audit {out} "
+                f"({verdict}; blocked={doc['blocked_count']})",
+                file=sys.stderr,
+            )
+        return 0
+    if args.mode != "verify":
+        print(f"[frontier-ops] unknown completion-audit mode: {args.mode}", file=sys.stderr)
+        return 2
+    path = pathlib.Path(args.path)
+    doc = _read_json(path, {})
+    status = _completion_audit_status(doc)
+    if args.json:
+        print(json.dumps({"path": str(path), **status}, indent=2, sort_keys=True))
+    else:
+        verdict = "valid" if status["ok"] else "INVALID"
+        print(f"[frontier-ops] Studio completion audit {verdict}: {path}", file=sys.stderr)
+        if status["ok"] and not status["completion_ok"]:
+            print("[frontier-ops] completion audit signature is valid but Studio 10/10 is not proven",
+                  file=sys.stderr)
+        for problem in status["problems"]:
+            print(f"  - {problem}", file=sys.stderr)
+    return 0 if status["ok"] else 1
+
+
 def cmd_record_license(args) -> int:
     model = frontier_by_label(args.label)
     if not model:
@@ -3791,12 +4317,36 @@ def cmd_selftest(args) -> int:
             procurement_gate=str(procure_gate_path),
             scorecard=str(root / "reports" / "condense" / "scorecard.json"),
         ))
+        _write_json(root / AUDIT_GRADE_PATH, audit_grade)
         check("audit-grade receipt signs target-not-proven state",
               _audit_grade_status(audit_grade)["ok"]
               and audit_grade["facet_count"] == 2
               and audit_grade["below_target_count"] == 1
               and not audit_grade["target_reached"]
               and audit_grade["frontier_claims_walled"])
+        completion_audit = build_completion_audit(root, argparse.Namespace(
+            label=[model.label],
+            preflight_summary=str(PREFLIGHT_SUMMARY_PATH),
+            environment=str(STUDIO_ENVIRONMENT_PATH),
+            launch_packet=str(WAVE0_PACKET_PATH),
+            worktree_plan=str(WORKTREE_PLAN_PATH),
+            runtime_contract=str(RUNTIME_CONTRACT_PATH),
+            proof_pack=str(PROOF_PACK_PATH),
+            audit_grade=str(AUDIT_GRADE_PATH),
+            require_refresh=str(refresh_path),
+            storage_budget_gb=8000.0,
+            link_mbs=300.0,
+            efficiency=0.7,
+            scratch_gb=200.0,
+            cache_reserve_gb=CACHE_RESERVE_GB,
+            max_wave_hours=6.0,
+        ))
+        completion_ids = {row["id"] for row in completion_audit["requirements"]}
+        check("completion audit signs red Studio 10/10 state",
+              _completion_audit_status(completion_audit)["ok"]
+              and not completion_audit["completion_ok"]
+              and "doctor_recovery_7b_plus" in completion_ids
+              and "native_tq_serve" in completion_ids)
         for fm in FRONTIER_MODELS:
             provenance_record, _ = frontier_provenance.sign_record(
                 frontier_provenance.complete_record(fm),
@@ -4322,6 +4872,31 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--scorecard", default=str(COND_DIR / "scorecard.json"))
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_audit_grade)
+
+    p = sub.add_parser("completion-audit", help="build or verify signed Hawking Studio 10/10 completion audit")
+    p.add_argument("mode", choices=("build", "verify"))
+    p.add_argument("--out", default=str(COMPLETION_AUDIT_PATH),
+                   help="signed completion audit written by build mode")
+    p.add_argument("--path", default=str(COMPLETION_AUDIT_PATH),
+                   help="signed completion audit read by verify mode")
+    p.add_argument("--label", action="append", default=[],
+                   help="frontier label to audit; may be repeated, default all")
+    p.add_argument("--preflight-summary", default=str(PREFLIGHT_SUMMARY_PATH))
+    p.add_argument("--environment", default=str(STUDIO_ENVIRONMENT_PATH))
+    p.add_argument("--launch-packet", default=str(WAVE0_PACKET_PATH))
+    p.add_argument("--worktree-plan", default=str(WORKTREE_PLAN_PATH))
+    p.add_argument("--runtime-contract", default=str(RUNTIME_CONTRACT_PATH))
+    p.add_argument("--proof-pack", default=str(PROOF_PACK_PATH))
+    p.add_argument("--audit-grade", default=str(AUDIT_GRADE_PATH))
+    p.add_argument("--require-refresh", default=str(COND_DIR / "frontier_refresh.preflight.json"))
+    p.add_argument("--storage-budget-gb", type=float, default=8000.0)
+    p.add_argument("--link-mbs", type=float, default=300.0)
+    p.add_argument("--efficiency", type=float, default=0.7)
+    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
+    p.add_argument("--max-wave-hours", type=float, default=6.0)
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=cmd_completion_audit)
 
     p = sub.add_parser("claim-bundle", help="build or verify signed public-claim bundles")
     claim_sub = p.add_subparsers(dest="bundle_mode", required=True)

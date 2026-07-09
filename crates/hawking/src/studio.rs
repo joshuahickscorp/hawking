@@ -14,6 +14,7 @@ const LEDGER: &str = "reports/condense/frontier_ledger.preflight.json";
 const PROOF_PACK: &str = "reports/condense/frontier_proof_pack.local.json";
 const AUDIT_GRADE: &str = "reports/condense/studio_audit_grade.local.json";
 const RUNTIME_CONTRACT: &str = "reports/condense/studio_runtime_contract.local.json";
+const COMPLETION_AUDIT: &str = "reports/condense/studio_completion_audit.local.json";
 
 #[derive(Subcommand, Debug)]
 pub enum StudioCmd {
@@ -372,6 +373,90 @@ pub enum StudioCmd {
         root: PathBuf,
         /// Audit-grade receipt path to verify.
         #[arg(long, default_value = "reports/condense/studio_audit_grade.local.json")]
+        path: PathBuf,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Build a signed Hawking Studio 10/10 completion audit.
+    CompletionAuditBuild {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Write the signed completion audit here.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_completion_audit.local.json"
+        )]
+        out: PathBuf,
+        /// Optional frontier label(s); default all frontier models.
+        #[arg(long = "label")]
+        label: Vec<String>,
+        /// Signed Studio preflight summary to summarize.
+        #[arg(long, default_value = "reports/condense/studio_preflight_summary.json")]
+        preflight_summary: PathBuf,
+        /// Signed Studio environment receipt to summarize.
+        #[arg(long, default_value = "reports/condense/studio_environment.json")]
+        environment: PathBuf,
+        /// Signed wave-0 launch packet to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_wave0_launch_packet.json"
+        )]
+        launch_packet: PathBuf,
+        /// Signed worktree split plan to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/worktree_split_plan.local.json"
+        )]
+        worktree_plan: PathBuf,
+        /// Signed native runtime/TQ proof-mode contract to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_runtime_contract.local.json"
+        )]
+        runtime_contract: PathBuf,
+        /// Local proof-pack summary to summarize.
+        #[arg(
+            long,
+            default_value = "reports/condense/frontier_proof_pack.local.json"
+        )]
+        proof_pack: PathBuf,
+        /// Signed audit-grade receipt to summarize.
+        #[arg(long, default_value = "reports/condense/studio_audit_grade.local.json")]
+        audit_grade: PathBuf,
+        /// Refresh ledger required by the launch gates.
+        #[arg(
+            long,
+            default_value = "reports/condense/frontier_refresh.preflight.json"
+        )]
+        require_refresh: PathBuf,
+        #[arg(long, default_value_t = 8000.0)]
+        storage_budget_gb: f64,
+        #[arg(long, default_value_t = 300.0)]
+        link_mbs: f64,
+        #[arg(long, default_value_t = 0.7)]
+        efficiency: f64,
+        #[arg(long, default_value_t = 200.0)]
+        scratch_gb: f64,
+        #[arg(long, default_value_t = 128.0)]
+        cache_reserve_gb: f64,
+        #[arg(long, default_value_t = 6.0)]
+        max_wave_hours: f64,
+        /// Emit machine-readable JSON from frontier_ops.py.
+        #[arg(long, default_value_t = false)]
+        json: bool,
+    },
+    /// Verify a signed Hawking Studio 10/10 completion audit.
+    CompletionAuditVerify {
+        /// Repository root containing tools/condense/frontier_ops.py.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        /// Completion audit path to verify.
+        #[arg(
+            long,
+            default_value = "reports/condense/studio_completion_audit.local.json"
+        )]
         path: PathBuf,
         /// Emit machine-readable JSON from frontier_ops.py.
         #[arg(long, default_value_t = false)]
@@ -1201,6 +1286,75 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
         StudioCmd::AuditGradeVerify { root, path, json } => {
             let owned = vec![
                 "audit-grade".to_string(),
+                "verify".to_string(),
+                "--path".to_string(),
+                path.display().to_string(),
+            ];
+            run_frontier_owned(&root, owned, json)
+        }
+        StudioCmd::CompletionAuditBuild {
+            root,
+            out,
+            label,
+            preflight_summary,
+            environment,
+            launch_packet,
+            worktree_plan,
+            runtime_contract,
+            proof_pack,
+            audit_grade,
+            require_refresh,
+            storage_budget_gb,
+            link_mbs,
+            efficiency,
+            scratch_gb,
+            cache_reserve_gb,
+            max_wave_hours,
+            json,
+        } => {
+            let mut owned = vec![
+                "completion-audit".to_string(),
+                "build".to_string(),
+                "--out".to_string(),
+                out.display().to_string(),
+                "--preflight-summary".to_string(),
+                preflight_summary.display().to_string(),
+                "--environment".to_string(),
+                environment.display().to_string(),
+                "--launch-packet".to_string(),
+                launch_packet.display().to_string(),
+                "--worktree-plan".to_string(),
+                worktree_plan.display().to_string(),
+                "--runtime-contract".to_string(),
+                runtime_contract.display().to_string(),
+                "--proof-pack".to_string(),
+                proof_pack.display().to_string(),
+                "--audit-grade".to_string(),
+                audit_grade.display().to_string(),
+                "--require-refresh".to_string(),
+                require_refresh.display().to_string(),
+                "--storage-budget-gb".to_string(),
+                storage_budget_gb.to_string(),
+                "--link-mbs".to_string(),
+                link_mbs.to_string(),
+                "--efficiency".to_string(),
+                efficiency.to_string(),
+                "--scratch-gb".to_string(),
+                scratch_gb.to_string(),
+                "--cache-reserve-gb".to_string(),
+                cache_reserve_gb.to_string(),
+                "--max-wave-hours".to_string(),
+                max_wave_hours.to_string(),
+            ];
+            for label in label {
+                owned.push("--label".to_string());
+                owned.push(label);
+            }
+            run_frontier_owned(&root, owned, json)
+        }
+        StudioCmd::CompletionAuditVerify { root, path, json } => {
+            let owned = vec![
+                "completion-audit".to_string(),
                 "verify".to_string(),
                 "--path".to_string(),
                 path.display().to_string(),
@@ -2069,6 +2223,7 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
     let proof_pack = artifact(&root, PROOF_PACK);
     let audit_grade = artifact(&root, AUDIT_GRADE);
     let runtime_contract = artifact(&root, RUNTIME_CONTRACT);
+    let completion_audit = artifact(&root, COMPLETION_AUDIT);
 
     let doc = json!({
         "schema": "hawking.studio_snapshot.v1",
@@ -2082,6 +2237,7 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
         "proof_pack": proof_pack_summary(&proof_pack),
         "audit_grade": audit_grade_summary(&audit_grade),
         "runtime_contract": runtime_contract_summary(&runtime_contract),
+        "completion_audit": completion_audit_summary(&completion_audit),
         "next_safe_commands": [
             "hawking studio preflight",
             "hawking studio verify-summary --path reports/condense/studio_preflight_summary.json",
@@ -2112,6 +2268,8 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio launch-packet-verify --path reports/condense/studio_wave0_launch_packet.json",
             "hawking studio audit-grade-build --out reports/condense/studio_audit_grade.local.json",
             "hawking studio audit-grade-verify --path reports/condense/studio_audit_grade.local.json",
+            "hawking studio completion-audit-build --out reports/condense/studio_completion_audit.local.json",
+            "hawking studio completion-audit-verify --path reports/condense/studio_completion_audit.local.json",
             "hawking studio run-next --require-refresh reports/condense/frontier_refresh.preflight.json"
         ],
     });
@@ -2330,6 +2488,24 @@ fn audit_grade_summary(artifact: &Value) -> Value {
     })
 }
 
+fn completion_audit_summary(artifact: &Value) -> Value {
+    let Some(data) = artifact.get("json") else {
+        return json!({"exists": false, "ok": false, "signature_ok": false});
+    };
+    let signature_ok = verify_sha256_json_signature(data).unwrap_or(false);
+    json!({
+        "exists": true,
+        "ok": data.get("ok").and_then(Value::as_bool).unwrap_or(false),
+        "completion_ok": data.get("completion_ok").and_then(Value::as_bool).unwrap_or(false),
+        "signature_ok": signature_ok,
+        "frontier_label_count": data.get("frontier_label_count").cloned().unwrap_or(Value::Null),
+        "required_count": data.get("required_count").cloned().unwrap_or(Value::Null),
+        "passed_count": data.get("passed_count").cloned().unwrap_or(Value::Null),
+        "blocked_count": data.get("blocked_count").cloned().unwrap_or(Value::Null),
+        "blocked_requirements": data.get("blocked_requirements").cloned().unwrap_or(Value::Null),
+    })
+}
+
 fn verify_sha256_json_signature(data: &Value) -> Result<bool> {
     let Some(sig) = data.get("signature").and_then(Value::as_object) else {
         return Ok(false);
@@ -2463,6 +2639,15 @@ fn print_human_snapshot(doc: &Value) {
         v(audit, "target_reached"),
         v(audit, "frontier_claims_walled"),
         audit["below_target_count"].as_u64().unwrap_or(0)
+    );
+
+    let completion = &doc["completion_audit"];
+    println!(
+        "completion audit: signature={}  completion={}  blocked={}/{}",
+        verdict(completion["signature_ok"].as_bool().unwrap_or(false)),
+        verdict(completion["completion_ok"].as_bool().unwrap_or(false)),
+        completion["blocked_count"].as_u64().unwrap_or(0),
+        completion["required_count"].as_u64().unwrap_or(0)
     );
 
     println!("next safe commands:");

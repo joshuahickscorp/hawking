@@ -352,6 +352,13 @@ Generated locally without downloads or bakes:
   harsher audit and Studio audit table, summarizes the launch packet/proof pack/worktree split/gates, and
   records that the current 8.4 target is not proven while the runtime contract is green and all frontier
   claims are explicitly walled.
+- `reports/condense/studio_completion_audit.local.json`: signed Hawking Studio 10/10 completion audit.
+  It verifies as a valid red receipt through `hawking studio completion-audit-verify`, with 2/16
+  requirements passing locally (`split_clean_worktree`, `native_tq_runtime_contract`) and 14/16 blocked
+  on the actual Studio evidence: preflight/environment, human license/review gates, procurement gate,
+  native `.tq` serve, architecture parity, 7B+ Doctor recovery, RAM-cliff/energy, same-box baselines,
+  frozen eval coverage, source provenance, experiment depth, claim gate, signed claim bundles, and the
+  final audit-grade target.
 
 Current launch-gate wall:
 
@@ -378,6 +385,9 @@ Current launch-gate wall:
 - the signed audit-grade receipt is valid, but `target_reached=false`; it records the external audit's
   current overall grade as 6.4/10, the Studio potential as 8.4/10, the operator-plan grade as 9.8/10,
   `runtime_contract_ok=true`, and 8 Studio facets below the 8.4 target.
+- the signed completion audit is valid, but `completion_ok=false`; it records the local stabilization
+  boundary explicitly and refuses to treat drafts or missing receipts as native serve, parity, Doctor
+  recovery, RAM-cliff/energy, baseline/eval, experiment, or final claim proof.
 - `hawking studio snapshot` correctly reports preflight red, procurement gate red, claim gate red,
   0/39 candidate decisions reviewed, 9/9 lifecycle nodes waiting on accepted license records, and
   proof-pack `blocked_claims=9/9` with 63 evidence rows.
