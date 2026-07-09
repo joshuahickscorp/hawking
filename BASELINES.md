@@ -96,9 +96,10 @@ frontier parity, and the relevant serve/parity receipts are present. Use
 `hawking studio parity-receipt draft <label> --sign-draft` to create signed but blocked architecture
 parity envelopes, then after real reference-backend and Hawking/native runs fill final rows and run
 `hawking studio parity-receipt sign <label>` and `hawking studio parity-receipt verify <label>`.
-Signing refuses draft state, placeholder commands, missing config/tokenizer hashes, missing reference or
-native traces, loose logit parity, short greedy-match windows, and unverified family-specific native
-features. `hawking studio receipt-plan`
+Signing refuses draft state, placeholder commands, missing config/tokenizer hashes, missing adapter or
+tensor-map proof, missing tokenizer/context contracts, missing reference or native trace hashes, loose
+logit parity, short greedy-match windows, unsupported custom-code paths without exit receipts, and
+unverified family-specific native features. `hawking studio receipt-plan`
 prints the strict receipt contract for `reports/condense/<LABEL>_serve.json` and
 `reports/condense/<LABEL>_ramcliff.json`; synthetic or modeled RAM-cliff rows are probes only and cannot
 unlock a claim. Use `hawking studio receipt-record draft <label> --kind both --sign-draft` to create
@@ -153,10 +154,11 @@ smaller sources.
   reason; silence blocks the claim gate. Unsigned, draft, tampered, placeholder-command, or trace-free
   coverage receipts do not unlock claim bundles.
 - Missing or loose parity rows are not neutral. A claim-admissible parity receipt needs schema,
-  config/tokenizer hashes, exact commands, commit, reference backend, reference/native trace receipts,
-  logit and greedy-token thresholds, and family-specific native feature verification. Unsigned, draft,
-  tampered, placeholder-command, trace-free, loose-threshold, or feature-incomplete parity receipts do
-  not unlock claim bundles.
+  config/tokenizer hashes, exact commands, commit, reference backend, architecture adapter and
+  tensor-map receipts, tokenizer/context contracts, reference/native trace hashes, logit and
+  greedy-token thresholds, unsupported-by-design exits where applicable, and family-specific native
+  feature verification. Unsigned, draft, tampered, placeholder-command, trace-free, loose-threshold, or
+  feature-incomplete parity receipts do not unlock claim bundles.
 - Missing or loose native-serve/RAM-cliff rows are not neutral. A claim-admissible serve receipt needs
   schema, artifact hash, exact commands, commit, Studio machine class, native `.tq`, no f16 rehydrate,
   all-linear/GPU ownership, load and resident-memory proof, parity pass, and positive tok/s. A RAM-cliff receipt additionally needs

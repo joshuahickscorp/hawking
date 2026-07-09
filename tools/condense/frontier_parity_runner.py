@@ -37,6 +37,18 @@ MAX_LOGIT_ABS_ERR_GATE = 1e-3
 MIN_PROMPTS = 4
 MIN_GREEDY_MATCH_TOKENS = 16
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+TOKENIZER_CONTRACT_SHA_KEYS = (
+    "tokenizer_sha256",
+    "chat_template_sha256",
+    "special_tokens_sha256",
+    "prompt_fixture_sha256",
+)
+CONTEXT_CONTRACT_TEXT_KEYS = (
+    "rope_policy",
+    "kv_cache_policy",
+    "position_id_policy",
+)
+REQUIRED_PARITY_TESTS = ("logit_abs_error", "greedy_decode")
 
 
 def _now() -> str:
@@ -79,8 +91,11 @@ def _canonical_digest(data: dict[str, Any]) -> str:
     ).hexdigest()
 
 
-def _placeholder(value: str) -> bool:
-    return "<" in value or "TODO" in value or "..." in value
+def _placeholder(value: Any) -> bool:
+    if value is None:
+        return True
+    text = str(value).strip()
+    return not text or "<" in text or "TODO" in text or "..." in text
 
 
 def _commands(record: dict[str, Any]) -> list[str]:
@@ -98,7 +113,7 @@ def _is_sha256(value: Any) -> bool:
 
 
 def _positive_int(value: Any) -> bool:
-    return isinstance(value, int) and value > 0
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
 
 def _number(value: Any) -> bool:
@@ -133,6 +148,103 @@ def _verified_features(record: dict[str, Any]) -> set[str]:
     if isinstance(values, list):
         return {str(v) for v in values}
     return set()
+
+
+def _require_ref(record: dict[str, Any], key: str, problems: list[str]) -> None:
+    if _placeholder(record.get(key)):
+        problems.append(f"{key} missing or placeholder")
+
+
+def _trace_pair_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    if _placeholder(record.get("reference_trace")):
+        problems.append("reference_trace missing or placeholder")
+    if not _is_sha256(record.get("reference_trace_sha256")):
+        problems.append("reference_trace_sha256 missing or invalid")
+
+    native_trace = next(
+        (record.get(key) for key in ("hawking_trace", "native_trace") if not _placeholder(record.get(key))),
+        None,
+    )
+    native_sha = next(
+        (record.get(key) for key in ("hawking_trace_sha256", "native_trace_sha256")
+         if _is_sha256(record.get(key))),
+        None,
+    )
+    if _placeholder(native_trace):
+        problems.append("hawking_trace/native_trace missing or placeholder")
+    if not _is_sha256(native_sha):
+        problems.append("hawking_trace_sha256/native_trace_sha256 missing or invalid")
+    return problems
+
+
+def _tokenizer_contract_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    contract = record.get("tokenizer_contract")
+    if not isinstance(contract, dict):
+        return ["tokenizer_contract missing or not an object"]
+    if contract.get("tokenizer_sha256") != record.get("tokenizer_sha256"):
+        problems.append("tokenizer_contract.tokenizer_sha256 must match tokenizer_sha256")
+    for key in TOKENIZER_CONTRACT_SHA_KEYS:
+        if not _is_sha256(contract.get(key)):
+            problems.append(f"tokenizer_contract.{key} missing or invalid")
+    return problems
+
+
+def _context_contract_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    contract = record.get("context_contract")
+    if not isinstance(contract, dict):
+        return ["context_contract missing or not an object"]
+    if not _positive_int(contract.get("context_length")):
+        problems.append("context_contract.context_length must be positive")
+    for key in CONTEXT_CONTRACT_TEXT_KEYS:
+        if _placeholder(contract.get(key)):
+            problems.append(f"context_contract.{key} missing or placeholder")
+    return problems
+
+
+def _parity_test_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    tests = record.get("parity_tests")
+    if not isinstance(tests, list) or not tests:
+        return ["parity_tests missing or empty"]
+    by_name = {str(row.get("name")): row for row in tests if isinstance(row, dict)}
+    for name in REQUIRED_PARITY_TESTS:
+        row = by_name.get(name)
+        if not row:
+            problems.append(f"parity_tests.{name} missing")
+            continue
+        if row.get("status") != "pass":
+            problems.append(f"parity_tests.{name}.status must be pass")
+        if _placeholder(row.get("receipt")):
+            problems.append(f"parity_tests.{name}.receipt missing or placeholder")
+        if name == "logit_abs_error":
+            err = row.get("max_abs_err", record.get("max_logit_abs_err"))
+            if not _number(err) or err > MAX_LOGIT_ABS_ERR_GATE:
+                problems.append(f"parity_tests.{name}.max_abs_err must be <= {MAX_LOGIT_ABS_ERR_GATE:g}")
+        if name == "greedy_decode":
+            matched = row.get("matched_tokens", record.get("greedy_match_tokens"))
+            if not _positive_int(matched) or matched < MIN_GREEDY_MATCH_TOKENS:
+                problems.append(f"parity_tests.{name}.matched_tokens must be >= {MIN_GREEDY_MATCH_TOKENS}")
+    return problems
+
+
+def _unsupported_exit_problems(record: dict[str, Any]) -> list[str]:
+    problems = []
+    exits = record.get("unsupported_by_design")
+    if not isinstance(exits, list):
+        return ["unsupported_by_design must be a list, even when empty"]
+    for i, row in enumerate(exits):
+        if not isinstance(row, dict):
+            problems.append(f"unsupported_by_design[{i}] must be an object")
+            continue
+        for key in ("feature", "reason", "exit_receipt"):
+            if _placeholder(row.get(key)):
+                problems.append(f"unsupported_by_design[{i}].{key} missing or placeholder")
+        if row.get("status") not in ("blocked", "unsupported_by_design"):
+            problems.append(f"unsupported_by_design[{i}].status must be blocked or unsupported_by_design")
+    return problems
 
 
 def signature_status(record: dict[str, Any]) -> dict[str, Any]:
@@ -198,10 +310,19 @@ def _strict_problems(record: dict[str, Any], model: FrontierModel | None) -> lis
     elif any(_placeholder(cmd) for cmd in cmds):
         problems.append("command contains placeholder text")
 
-    if not (record.get("reference_receipt") or record.get("logits_receipt")):
+    if _placeholder(record.get("reference_receipt")) and _placeholder(record.get("logits_receipt")):
         problems.append("reference_receipt or logits_receipt missing")
-    if not (record.get("hawking_receipt") or record.get("native_receipt")):
+    if _placeholder(record.get("hawking_receipt")) and _placeholder(record.get("native_receipt")):
         problems.append("hawking_receipt or native_receipt missing")
+    for key in ("architecture_adapter", "adapter_receipt", "tensor_map_receipt"):
+        _require_ref(record, key, problems)
+    if not _is_sha256(record.get("tensor_map_sha256")):
+        problems.append("tensor_map_sha256 missing or invalid")
+    problems.extend(_trace_pair_problems(record))
+    problems.extend(_tokenizer_contract_problems(record))
+    problems.extend(_context_contract_problems(record))
+    problems.extend(_parity_test_problems(record))
+    problems.extend(_unsupported_exit_problems(record))
 
     required = set(family.get("required_native_features") or [])
     verified = _verified_features(record)
@@ -272,6 +393,48 @@ def draft_record(model: FrontierModel, *, machine_class: str = "Studio-M1Ultra-1
         "commands": ["<exact reference command>", "<exact Hawking/native command>"],
         "reference_receipt": "<path>",
         "hawking_receipt": "<path>",
+        "reference_trace": "<path>",
+        "reference_trace_sha256": "<64 hex>",
+        "hawking_trace": "<path>",
+        "hawking_trace_sha256": "<64 hex>",
+        "architecture_adapter": f"<project-native {family['family']} parity adapter>",
+        "adapter_receipt": "<path>",
+        "tensor_map_receipt": "<path>",
+        "tensor_map_sha256": "<64 hex>",
+        "tokenizer_contract": {
+            "tokenizer_sha256": "<64 hex>",
+            "chat_template_sha256": "<64 hex>",
+            "special_tokens_sha256": "<64 hex>",
+            "prompt_fixture_sha256": "<64 hex>",
+        },
+        "context_contract": {
+            "context_length": "TODO positive int",
+            "rope_policy": "<exact rope/position scaling policy>",
+            "kv_cache_policy": "<exact KV cache policy>",
+            "position_id_policy": "<exact position id policy>",
+        },
+        "parity_tests": [
+            {
+                "name": "logit_abs_error",
+                "status": "TODO pass",
+                "max_abs_err": f"TODO <= {MAX_LOGIT_ABS_ERR_GATE:g}",
+                "receipt": "<path>",
+            },
+            {
+                "name": "greedy_decode",
+                "status": "TODO pass",
+                "matched_tokens": f"TODO >= {MIN_GREEDY_MATCH_TOKENS}",
+                "receipt": "<path>",
+            },
+        ],
+        "unsupported_by_design": [
+            {
+                "feature": "<optional unsupported feature>",
+                "status": "unsupported_by_design",
+                "reason": "<why safe for this text-only parity target>",
+                "exit_receipt": "<path>",
+            }
+        ],
         "required_native_features": family["required_native_features"],
         "verified_native_features": [],
     }
@@ -360,6 +523,41 @@ def _complete_record(model: FrontierModel) -> dict[str, Any]:
         "git_commit": "selftest",
         "reference_receipt": "selftest://reference-logits",
         "hawking_receipt": "selftest://hawking-logits",
+        "reference_trace": "selftest://reference-trace",
+        "reference_trace_sha256": "c" * 64,
+        "hawking_trace": "selftest://hawking-trace",
+        "hawking_trace_sha256": "d" * 64,
+        "architecture_adapter": f"selftest::{family['family']}::Adapter",
+        "adapter_receipt": "selftest://adapter",
+        "tensor_map_receipt": "selftest://tensor-map",
+        "tensor_map_sha256": "e" * 64,
+        "tokenizer_contract": {
+            "tokenizer_sha256": "a" * 64,
+            "chat_template_sha256": "f" * 64,
+            "special_tokens_sha256": "1" * 64,
+            "prompt_fixture_sha256": "2" * 64,
+        },
+        "context_contract": {
+            "context_length": 4096,
+            "rope_policy": "selftest rope policy",
+            "kv_cache_policy": "selftest KV cache policy",
+            "position_id_policy": "selftest position id policy",
+        },
+        "parity_tests": [
+            {
+                "name": "logit_abs_error",
+                "status": "pass",
+                "max_abs_err": 0.0,
+                "receipt": "selftest://logit-test",
+            },
+            {
+                "name": "greedy_decode",
+                "status": "pass",
+                "matched_tokens": MIN_GREEDY_MATCH_TOKENS,
+                "receipt": "selftest://greedy-test",
+            },
+        ],
+        "unsupported_by_design": [],
         "required_native_features": family["required_native_features"],
         "verified_native_features": family["required_native_features"],
     }
@@ -382,9 +580,13 @@ def selftest() -> bool:
     complete_signed["max_logit_abs_err"] = 1.0
     check("tampered parity signature fails", not record_status(complete_signed, model=model)["ok"])
     missing_trace = _complete_record(model)
-    missing_trace.pop("reference_receipt")
+    missing_trace.pop("reference_trace")
     _, missing_status = sign_record(missing_trace, model=model)
-    check("parity without reference trace is blocked", not missing_status["ok"])
+    check("parity without reference trace hash is blocked", not missing_status["ok"])
+    missing_contract = _complete_record(model)
+    missing_contract.pop("tensor_map_sha256")
+    _, contract_status = sign_record(missing_contract, model=model)
+    check("parity without tensor map contract is blocked", not contract_status["ok"])
     loose = _complete_record(model)
     loose["max_logit_abs_err"] = MAX_LOGIT_ABS_ERR_GATE * 10
     _, loose_status = sign_record(loose, model=model)

@@ -445,29 +445,7 @@ def selftest() -> bool:
             model=model,
         )
         (cond / f"{model.label}_source_provenance.json").write_text(json.dumps(provenance_record))
-        family = frontier_parity._family_spec(model)
-        parity_record = {
-            "schema": "hawking.frontier_parity.v1",
-            "model": model.label,
-            "hf_id": model.hf_id,
-            "family": family["family"],
-            "receipt_state": "final",
-            "source": "measured",
-            "machine_class": "Studio-M1Ultra-128",
-            "status": "pass",
-            "reference_backend": "selftest",
-            "tokenizer_sha256": "b" * 64,
-            "config_sha256": "c" * 64,
-            "prompt_count": 4,
-            "max_logit_abs_err": 0.0,
-            "greedy_match_tokens": 16,
-            "git_commit": "selftest",
-            "commands": ["selftest parity"],
-            "reference_receipt": "selftest://reference-logits",
-            "hawking_receipt": "selftest://hawking-logits",
-            "required_native_features": family["required_native_features"],
-            "verified_native_features": family["required_native_features"],
-        }
+        parity_record = frontier_parity_runner._complete_record(model)
         parity_record, _ = frontier_parity_runner.sign_record(parity_record, model=model)
         (cond / f"{model.label}_parity.json").write_text(json.dumps(parity_record))
         baseline_record = {

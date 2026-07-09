@@ -15,7 +15,9 @@ Real parity evidence, when generated later on the Studio, should be recorded as:
 
 Expected fields in a real parity record:
   model, hf_id, status in {pass, fail}, reference_backend, tokenizer_sha256,
-  config_sha256, prompt_count, max_logit_abs_err, greedy_match_tokens, notes
+  config_sha256, prompt_count, max_logit_abs_err, greedy_match_tokens, exact commands,
+  reference/native trace hashes, architecture adapter receipt, tensor-map hash,
+  tokenizer/context contracts, parity test receipts, unsupported-by-design exits, notes
 """
 from __future__ import annotations
 
@@ -183,10 +185,28 @@ def plan_row(model: FrontierModel, root: pathlib.Path = ROOT) -> dict:
     parity = parity_status(model, root)
     gates = [
         "Load config and tokenizer from the exact staged source revision.",
+        "Select a project-native architecture adapter with an exact tensor-name map.",
         "Run a trusted reference backend on fixed prompts and capture logits/top-k.",
         "Run Hawking/native path on the same prompts after architecture implementation.",
+        "Capture reference and Hawking/native trace files and hash them in the receipt.",
         "Require tokenizer/config hash match in the parity record.",
+        "Require tokenizer/chat-template and context/KV/position contracts before signing.",
         "Require max logit error and greedy-token match thresholds before quality claims.",
+        "Record unsupported-by-design exits for ignored custom-code paths before claims.",
+    ]
+    receipt_fields = [
+        "architecture_adapter",
+        "adapter_receipt",
+        "tensor_map_receipt",
+        "tensor_map_sha256",
+        "reference_trace",
+        "reference_trace_sha256",
+        "hawking_trace or native_trace",
+        "hawking_trace_sha256 or native_trace_sha256",
+        "tokenizer_contract",
+        "context_contract",
+        "parity_tests",
+        "unsupported_by_design",
     ]
     return {
         "label": model.label,
@@ -200,6 +220,7 @@ def plan_row(model: FrontierModel, root: pathlib.Path = ROOT) -> dict:
         "config_sha256": _sha256(config),
         "tokenizer_sha256": _sha256(tokenizer),
         "required_gates": gates,
+        "required_receipt_fields": receipt_fields,
         "parity": parity,
         "claim_gate": "BLOCK" if parity["status"] != "pass" else "ALLOW",
     }
@@ -263,6 +284,11 @@ def cmd_selftest(args) -> int:
     check("GLM family recognized", "glm-5" in families)
     check("V4 Pro present", "DeepSeek-V4-Pro" in labels)
     check("missing parity blocks claims", data["blocked_claims"] >= 1)
+    first = data["rows"][0]
+    check("adapter/tensor-map fields are required",
+          {"architecture_adapter", "tensor_map_sha256"}.issubset(set(first["required_receipt_fields"])))
+    check("tokenizer/context contracts are required",
+          {"tokenizer_contract", "context_contract"}.issubset(set(first["required_receipt_fields"])))
     print(f"\n# SELFTEST {'PASS' if ok else 'FAIL'}")
     return 0 if ok else 1
 

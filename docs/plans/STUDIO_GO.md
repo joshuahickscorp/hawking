@@ -220,7 +220,8 @@ cargo run -p hawking --bin hawking -- studio source-provenance-receipt draft <la
 cargo run -p hawking --bin hawking -- studio source-provenance-receipt sign <label>
 cargo run -p hawking --bin hawking -- studio source-provenance-receipt verify <label>
 cargo run -p hawking --bin hawking -- studio parity-receipt draft <label> --sign-draft
-# after architecture parity runs fill final rows, exact commands, hashes, traces, and verified features:
+# after architecture parity runs fill final rows, exact commands, hashes, trace hashes,
+# adapter/tensor-map receipts, tokenizer/context contracts, unsupported exits, and verified features:
 cargo run -p hawking --bin hawking -- studio parity-receipt sign <label>
 cargo run -p hawking --bin hawking -- studio parity-receipt verify <label>
 cargo run -p hawking --bin hawking -- studio coverage-receipt draft <label> --kind both --sign-draft
@@ -324,10 +325,11 @@ and EXL3/PonyExl3. Each `<LABEL>_eval.json` must cover ppl multiwindow, capabili
 tool-use, long-context recall, RAM-cliff, and native-serve domains with pass or reasoned N/A rows.
 `hawking studio parity-receipt draft` writes signed but blocked architecture parity envelopes for a label.
 After the real reference-backend and Hawking/native runs are complete, `hawking studio parity-receipt sign`
-refuses to sign unless the record is final, measured, threshold-clean, trace-backed, exact-commanded, and
-confirms every family-specific required native feature from `frontier_parity.py`.
+refuses to sign unless the record is final, measured, threshold-clean, trace-hashed, exact-commanded,
+adapter/tensor-map backed, tokenizer/context contracted, and confirms every family-specific required
+native feature from `frontier_parity.py`.
 `hawking studio parity-receipt verify` rejects unsigned, tampered, draft, placeholder, loose-logit,
-trace-free, or feature-incomplete parity records.
+trace-free, contract-free, or feature-incomplete parity records.
 `hawking studio coverage-receipt draft` writes signed but blocked baseline/eval envelopes for a label.
 After the real same-box runs are complete, `hawking studio coverage-receipt sign` refuses to sign unless
 the record is final, covers every required row, includes exact non-placeholder commands, and carries a

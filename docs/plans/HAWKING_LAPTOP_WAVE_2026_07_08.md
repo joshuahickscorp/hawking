@@ -105,8 +105,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
 - `python3.12 tools/condense/frontier_parity.py selftest`: pass. The legacy parity readiness ledger now
   treats placeholder numeric fields as blocked evidence instead of crashing.
 - `python3.12 tools/condense/frontier_parity_runner.py selftest`: pass. It verifies signed parity drafts
-  remain blocked, complete final records sign and verify, tampered receipts fail, missing reference traces
-  are rejected, and loose logit parity is rejected.
+  remain blocked, complete final records sign and verify, tampered receipts fail, missing reference trace
+  hashes and tensor-map contracts are rejected, and loose logit parity is rejected.
 - `python3.12 tools/condense/frontier_receipt_runner.py selftest`: pass. It verifies signed native
   serve/RAM-cliff drafts remain blocked, complete final records sign and verify, tampered serve receipts
   fail, and RAM-cliff rows without energy traces are rejected.
@@ -178,7 +178,8 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   architecture parity receipts do not exist yet.
 - `target/debug/hawking studio parity-receipt sign|verify 235B-A22B --out-dir <tmp> --json`: pass with a
   synthetic complete parity record in a temp directory, proving the product wrapper can sign and verify
-  without mutating real Studio evidence.
+  the adapter/tensor-map, tokenizer/context, trace-hash, and unsupported-exit contract without mutating
+  real Studio evidence.
 - `target/debug/hawking studio receipt-plan --json`: pass, 9 native serve/RAM-cliff rows.
 - `target/debug/hawking studio receipt-record verify 235B-A22B --kind both --json`: correctly red,
   because signed final native serve/RAM-cliff receipts do not exist yet.

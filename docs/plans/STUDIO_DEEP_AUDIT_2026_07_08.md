@@ -47,7 +47,8 @@ gated on unbuilt or unproven parts: native `.tq` serve, frontier architecture ro
   failures; quality/tok/s claims are blocked until signed architecture parity receipts pass.
 - Added `frontier_parity_runner.py` plus `frontier_ops.py parity-receipt draft|sign|verify`; architecture
   parity now has signed receipt envelopes, final-state checks, exact-command checks, config/tokenizer hash
-  checks, reference/native trace requirements, logit/greedy-match thresholds, family-feature verification,
+  checks, reference/native trace-hash requirements, adapter/tensor-map proof, tokenizer/context contract
+  proof, unsupported-by-design exit receipts, logit/greedy-match thresholds, family-feature verification,
   and tamper detection.
 - Added `hawking studio parity-receipt`; architecture parity receipts can now be drafted, signed, and
   verified through the product CLI.
@@ -260,7 +261,7 @@ Compute wall-clock is the real unknown. Reasonable planning range:
 | Auto bpw resource maximization | 8.0 | Good resident-fit preference for huge MoE models; quality viability below 1.34 bpw remains unproven. | Close loop with measured SUBBIT-0, expert sensitivity, and real ppl/capability floors. |
 | Sub-bit / MoE thesis | 6.5 | The math says K2 and GLM fit at extreme bpw, but quality and serve kernels below 1.34 are still probes. | One MoE frontier artifact at <=1.0 or 0.75 bpw passes quality and serves natively resident. |
 | Doctor recovery stack | 6.5 | Strong plan and local tools, but Studio-scale 7B/14B/32B recovery receipts are not done. | R3+ receipts showing recovery pushes a 7B+ floor below the current dense limit without task collapse. |
-| Frontier architecture correctness | 7.0 | `frontier_parity.py` enumerates required family-specific features, signed parity receipts now enforce hashes, thresholds, traces, and verified features, launch gates block claims, and the scorecard repeats the parity blocker. Actual reference parity is still missing. | Reference parity against Transformers/vLLM/SGLang for logits and generation before any Hawking claim. |
+| Frontier architecture correctness | 7.0 | `frontier_parity.py` enumerates required family-specific features, signed parity receipts now enforce hashes, thresholds, trace hashes, adapter/tensor-map evidence, tokenizer/context contracts, unsupported exits, and verified features, launch gates block claims, and the scorecard repeats the parity blocker. Actual reference parity is still missing. | Reference parity against Transformers/vLLM/SGLang for logits and generation before any Hawking claim. |
 | Native `.tq` serving | 6.9 | Qwen all-linear TQ mapping, proof-mode fail-closed gates, strict signed serve receipt validation, and scorecard/operator gates now exist. Actual Studio artifacts still need served-forward parity, tok/s, and non-Qwen family support. | All-linear `.tq` loader plus native GEMV path, no f16 rehydrate, with correctness and tok/s receipts for every frontier family. |
 | RAM-cliff and energy demo | 6.6 | Synthetic model and gates exist, RAM-cliff records now carry schema/provenance, signed final-state checks, and trace requirements, and claim gates reject modeled rows. No real powermetrics/native-serve result yet. | Resident `.tq` vs swapping Q4_K on the Studio, measured tok/s and J/token, with >10x cliff if claimed. |
 | Evaluation suite | 7.6 | Ppl, multi-eval, NIAH, and long-context pieces exist, and claim gates now require machine-readable eval-domain coverage for every frontier model. Signed eval receipt envelopes and verification exist, but actual K2-class coding/tool-use receipts are still missing. | Frozen suite with coding, tool-use, long-context recall, math, and regression tripwires passing for every headline model. |
@@ -345,8 +346,9 @@ Wave 0 - launch hardening:
 - Use `hawking studio parity-receipt draft <label> --sign-draft` before running reference/Hawking
   architecture parity, then run `hawking studio parity-receipt sign <label>` and
   `hawking studio parity-receipt verify <label>` after final rows, exact commands, config/tokenizer
-  hashes, reference/native traces, logit thresholds, greedy-match windows, and verified native features
-  are filled.
+  hashes, reference/native trace hashes, adapter/tensor-map receipts, tokenizer/context contracts,
+  unsupported-by-design exits, logit thresholds, greedy-match windows, and verified native features are
+  filled.
 - Use `hawking studio coverage-receipt draft <label> --kind both --sign-draft` before running baselines/evals,
   then run `hawking studio coverage-receipt sign <label> --kind both` and
   `hawking studio coverage-receipt verify <label> --kind both` after final rows, exact commands,
