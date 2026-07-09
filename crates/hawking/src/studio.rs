@@ -2735,8 +2735,9 @@ fn ledger_summary(artifact: &Value) -> Value {
 
 fn proof_pack_summary(artifact: &Value) -> Value {
     let Some(data) = artifact.get("json") else {
-        return json!({"exists": false, "ok": false});
+        return json!({"exists": false, "ok": false, "signature_ok": false});
     };
+    let signature_ok = verify_sha256_json_signature(data).unwrap_or(false);
     let bundles = data
         .get("claim_bundles")
         .and_then(Value::as_array)
@@ -2755,7 +2756,9 @@ fn proof_pack_summary(artifact: &Value) -> Value {
         .unwrap_or_default();
     json!({
         "exists": true,
-        "ok": data.get("ok").and_then(Value::as_bool).unwrap_or(false),
+        "ok": data.get("ok").and_then(Value::as_bool).unwrap_or(false) && signature_ok,
+        "signature_ok": signature_ok,
+        "git_commit": data.get("git_commit").cloned().unwrap_or(Value::Null),
         "model_count": data.get("model_count").cloned().unwrap_or(Value::Null),
         "blocked_claim_count": data.get("blocked_claim_count").cloned().unwrap_or(Value::Null),
         "evidence_count": data.get("evidence_rows").and_then(Value::as_array).map(|r| r.len()).unwrap_or(0),
@@ -3082,8 +3085,9 @@ fn print_human_snapshot(doc: &Value) {
 
     let proof = &doc["proof_pack"];
     println!(
-        "proof pack: {}  blocked_claims={}/{} evidence_rows={}",
+        "proof pack: {}  signature={}  blocked_claims={}/{} evidence_rows={}",
         verdict(proof["ok"].as_bool().unwrap_or(false)),
+        verdict(proof["signature_ok"].as_bool().unwrap_or(false)),
         proof["blocked_claim_count"].as_u64().unwrap_or(0),
         proof["model_count"].as_u64().unwrap_or(0),
         proof["evidence_count"].as_u64().unwrap_or(0)
@@ -3362,7 +3366,7 @@ mod tests {
     fn proof_pack_summary_extracts_blocked_local_bundles() {
         let artifact = json!({
             "exists": true,
-            "json": {
+            "json": signed(json!({
                 "schema": "hawking.frontier_proof_pack.v1",
                 "ok": true,
                 "model_count": 2,
@@ -3372,10 +3376,11 @@ mod tests {
                     {"label": "a", "claim_admissible": false, "blocker_count": 7, "written": true},
                     {"label": "b", "claim_admissible": false, "blocker_count": 8, "written": true}
                 ]
-            }
+            }))
         });
         let s = proof_pack_summary(&artifact);
         assert_eq!(s["ok"], json!(true));
+        assert_eq!(s["signature_ok"], json!(true));
         assert_eq!(s["model_count"], json!(2));
         assert_eq!(s["blocked_claim_count"], json!(2));
         assert_eq!(s["evidence_count"], json!(3));

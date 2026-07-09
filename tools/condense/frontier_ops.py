@@ -803,6 +803,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
 
     launch_packet = _artifact_doc(launch_packet_path, root)
     proof_pack = _artifact_doc(proof_pack_path, root)
+    proof_pack_artifact = _json_artifact(proof_pack_path, root)
     worktree_plan = _artifact_doc(worktree_plan_path, root)
     runtime_contract_artifact = _json_artifact(runtime_contract_path, root)
     density_artifact = _json_artifact(density_receipt_path, root)
@@ -811,7 +812,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
 
     claim_bundles = proof_pack.get("claim_bundles") if isinstance(proof_pack.get("claim_bundles"), list) else []
     frontier_claims_walled = bool(
-        proof_pack.get("ok") is True
+        proof_pack_artifact.get("ok") is True
         and claim_bundles
         and all(row.get("claim_admissible") is False for row in claim_bundles)
         and claim_gate.get("ok") is False
@@ -821,6 +822,8 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
         and _parse_first_grade(external_text, "Current overall grade") >= target
         and claim_gate.get("ok") is True
         and launch_packet.get("procurement_permitted") is True
+        and proof_pack_artifact.get("ok") is True
+        and proof_pack_artifact.get("signature_ok") is True
         and runtime_contract_artifact.get("ok") is True
         and runtime_contract_artifact.get("signature_ok") is True
     )
@@ -837,6 +840,8 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
         blockers.append("native runtime/TQ proof-mode contract is missing, unsigned, or invalid")
     if density_artifact.get("ok") is not True or density_artifact.get("signature_ok") is not True:
         blockers.append("signed density receipt is missing, unsigned, or invalid")
+    if proof_pack_artifact.get("ok") is not True or proof_pack_artifact.get("signature_ok") is not True:
+        blockers.append("signed proof-pack draft wall is missing, unsigned, or invalid")
     if below:
         blockers.append(f"{len(below)} audit facets remain below {target}/10")
 
@@ -871,7 +876,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
         "below_target_facets": below,
         "artifacts": {
             "launch_packet": _json_artifact(launch_packet_path, root),
-            "proof_pack": _json_artifact(proof_pack_path, root),
+            "proof_pack": proof_pack_artifact,
             "worktree_plan": _json_artifact(worktree_plan_path, root),
             "runtime_contract": runtime_contract_artifact,
             "density_receipt": density_artifact,
@@ -888,6 +893,7 @@ def build_audit_grade(root: pathlib.Path, args) -> dict:
             "runtime_contract_ok": bool(runtime_contract_artifact.get("ok")),
             "density_receipt_ok": bool(density_artifact.get("ok")),
             "density_risk": density_artifact.get("density_risk"),
+            "proof_pack_signature_ok": bool(proof_pack_artifact.get("signature_ok")),
             "proof_pack_blocked_claims": proof_pack.get("blocked_claim_count"),
             "proof_pack_models": proof_pack.get("model_count"),
         },
@@ -1040,6 +1046,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
     worktree = artifacts["worktree_plan"]
     runtime_contract = artifacts["runtime_contract"]
     density_receipt = artifacts["density_receipt"]
+    proof_pack = artifacts["proof_pack"]
     audit_grade = artifacts["audit_grade"]
 
     procurement_gate = build_launch_gate(
@@ -1154,6 +1161,20 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
                 f"tracked_loc={density_receipt.get('tracked_loc')}"
             ),
             density_receipt,
+        ),
+        _completion_requirement(
+            "proof_pack_signed_wall",
+            "All-frontier draft proof-pack wall is signed and claim-blocking",
+            proof_pack.get("signature_ok") is True
+            and proof_pack.get("ok") is True
+            and proof_pack.get("blocked_claim_count") == proof_pack.get("model_count")
+            and (proof_pack.get("evidence_count") or 0) >= (proof_pack.get("model_count") or 0),
+            (
+                f"signature_ok={proof_pack.get('signature_ok')} "
+                f"blocked_claims={proof_pack.get('blocked_claim_count')}/{proof_pack.get('model_count')} "
+                f"evidence_rows={proof_pack.get('evidence_count')}"
+            ),
+            proof_pack,
         ),
         _completion_requirement(
             "native_tq_serve",
@@ -1505,7 +1526,10 @@ def _json_artifact(path: pathlib.Path, root: pathlib.Path = ROOT) -> dict:
         out["decision_count"] = data.get("decision_count")
         out["operator_required_count"] = data.get("operator_required_count")
     elif data.get("schema") == "hawking.frontier_proof_pack.v1":
-        out["ok"] = bool(data.get("ok"))
+        signature_ok = _signature_ok(data)
+        out["receipt_ok"] = bool(data.get("ok"))
+        out["ok"] = bool(data.get("ok")) and signature_ok
+        out["signature_ok"] = signature_ok
         out["model_count"] = data.get("model_count")
         out["blocked_claim_count"] = data.get("blocked_claim_count")
         rows = data.get("evidence_rows") if isinstance(data.get("evidence_rows"), list) else []
@@ -3377,6 +3401,8 @@ def build_proof_pack(root: pathlib.Path, args) -> dict:
         "schema": "hawking.frontier_proof_pack.v1",
         "generated_at": _now(),
         "root": str(root),
+        "git_commit": _git_commit(root),
+        "branch": _git_branch(root),
         "model_count": len(models),
         "evidence_rows": rows,
         "claim_bundles": bundle_rows,
@@ -3385,6 +3411,7 @@ def build_proof_pack(root: pathlib.Path, args) -> dict:
         "blocked_claim_labels": blocked_bundles,
         "note": "Proof-pack drafts are signed but intentionally claim-blocking until final measured evidence replaces TODO rows.",
     }
+    result = _sign_doc(result)
     if args.out:
         _write_json(pathlib.Path(args.out), result)
     return result
@@ -4670,7 +4697,7 @@ def cmd_selftest(args) -> int:
         )
         _write_json(root / WORKTREE_PLAN_PATH, wtp)
         _write_json(root / WAVE0_PACKET_PATH, wave0_packet)
-        _write_json(root / PROOF_PACK_PATH, {
+        _write_json(root / PROOF_PACK_PATH, _sign_doc({
             "schema": "hawking.frontier_proof_pack.v1",
             "ok": True,
             "model_count": 2,
@@ -4680,7 +4707,7 @@ def cmd_selftest(args) -> int:
                 {"label": "a", "claim_admissible": False},
                 {"label": "b", "claim_admissible": False},
             ],
-        })
+        }))
         density_receipt = build_density_receipt(root, argparse.Namespace(max_files=5, previous=""))
         _write_json(root / DENSITY_RECEIPT_PATH, density_receipt)
         check("density receipt signs local mass and LOC snapshot",
@@ -4735,6 +4762,7 @@ def cmd_selftest(args) -> int:
               and "doctor_recovery_7b_plus" in completion_ids
               and "studio_evidence_run_bundle" in completion_ids
               and "density_receipt_signed" in completion_ids
+              and "proof_pack_signed_wall" in completion_ids
               and "native_tq_serve" in completion_ids)
         for fm in FRONTIER_MODELS:
             provenance_record, _ = frontier_provenance.sign_record(
@@ -4899,6 +4927,7 @@ def cmd_selftest(args) -> int:
         proof_bundle = proof["claim_bundles"][0]
         check("proof pack writes signed draft wall",
               proof["ok"]
+              and _signature_ok(proof)
               and proof["blocked_claim_count"] == 1
               and proof_bundle["written"]
               and proof_bundle["blocker_count"] > 0

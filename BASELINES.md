@@ -77,10 +77,10 @@ before a real launch so surprise new releases are explicit, not accidental. `haw
 --refresh <refresh-ledger> --out <review-plan.json>` writes the candidate-decision queue as a durable
 artifact.
 `hawking studio proof-pack --force --out reports/condense/frontier_proof_pack.local.json` writes the
-non-compute claim wall for the full frontier manifest: signed draft source-provenance, parity,
-baseline/eval, native serve/RAM-cliff, and experiment envelopes, plus `.local` claim bundles that hash
-those drafts and remain inadmissible. It preserves final receipts unless `--force-final` is explicitly
-passed.
+non-compute claim wall for the full frontier manifest: a signed proof-pack manifest, signed draft
+source-provenance, parity, baseline/eval, native serve/RAM-cliff, and experiment envelopes, plus `.local`
+claim bundles that hash those drafts and remain inadmissible. It preserves final receipts unless
+`--force-final` is explicitly passed.
 `hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
 `hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` keep a
 signed local stabilization snapshot of repo size, largest files, tracked LOC, disk headroom, and generated

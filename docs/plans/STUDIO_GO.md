@@ -294,11 +294,12 @@ deleting evidence or weakening gates; `runtime-contract-build` and
 `audit-grade-build`, `audit-grade-verify`, `receipt-record`, `experiment-receipt`, `serve-capture` delegate to the guarded
 operator tool; and `run-next` prints the next command without executing it. This is the product-facing
 shell for Studio wave 0; heavy work still requires explicit proof gates and allow flags.
-`proof-pack` is the one-command non-compute wall for the frontier manifest. It writes signed but blocked
-draft envelopes for source provenance, parity, baseline/eval coverage, native serve/RAM-cliff, and
-experiment depth for each frontier label, then builds `<LABEL>_claim_bundle.local.json` files that hash
-those drafts and remain claim-inadmissible. It preserves final receipts unless `--force-final` is
-explicitly passed, so it can be rerun before Studio measurements without erasing completed proof. Use
+`proof-pack` is the one-command non-compute wall for the frontier manifest. It writes a signed manifest,
+signed but blocked draft envelopes for source provenance, parity, baseline/eval coverage, native
+serve/RAM-cliff, and experiment depth for each frontier label, then builds
+`<LABEL>_claim_bundle.local.json` files that hash those drafts and remain claim-inadmissible. It preserves
+final receipts unless `--force-final` is explicitly passed, so it can be rerun before Studio measurements
+without erasing completed proof. Use
 `hawking studio proof-pack --force` as the product-facing entry point; `frontier_ops.py proof-pack` is the
 lower-level equivalent.
 `launch-packet-build` signs the Studio wave-0 packet by hashing/summarizing the preflight summary,

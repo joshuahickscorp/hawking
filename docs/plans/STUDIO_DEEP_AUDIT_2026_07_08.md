@@ -169,10 +169,10 @@ gated on unbuilt or unproven parts: native `.tq` serve, frontier architecture ro
   format receipt; bf16 parents are blocked unless marked bf16 and not pre-quantized.
 - Added `hawking studio source-provenance-receipt`; source checkpoint provenance envelopes can now be
   drafted, signed, and verified through the product CLI instead of raw helper-script commands.
-- Added `frontier_ops.py proof-pack` and `hawking studio proof-pack`; one laptop-safe command now drafts
-  signed blocked source-provenance, parity, baseline/eval, native serve/RAM-cliff, and experiment
-  envelopes for every frontier model, then builds `.local` claim bundles that hash those drafts and keep
-  every public claim explicitly walled.
+- Added `frontier_ops.py proof-pack` and `hawking studio proof-pack`; one laptop-safe command now writes a
+  signed proof-pack manifest, drafts signed blocked source-provenance, parity, baseline/eval, native
+  serve/RAM-cliff, and experiment envelopes for every frontier model, then builds `.local` claim bundles
+  that hash those drafts and keep every public claim explicitly walled.
 - Added `frontier_ops.py launch-packet build|verify` and
   `hawking studio launch-packet-build|launch-packet-verify`; wave-0 dry-run readiness can now be sealed
   as a signed packet that hashes/summarizes preflight, environment, signed worktree split, signed runtime
@@ -302,9 +302,9 @@ Wave 0 - launch hardening:
   `hawking studio lifecycle --storage-budget-gb 8000`, and
   `hawking studio gate --phase procure --require-refresh reports/condense/frontier_refresh.preflight.json --storage-budget-gb 8000`
   as the product-facing Studio control surface before dropping to lower-level scripts.
-- Run `hawking studio proof-pack --force` to create the all-frontier signed draft wall from the product
-  CLI; it delegates to `frontier_ops.py proof-pack` and preserves final receipts unless `--force-final`
-  is explicitly passed.
+- Run `hawking studio proof-pack --force` to create the all-frontier signed proof-pack manifest and signed
+  draft wall from the product CLI; it delegates to `frontier_ops.py proof-pack` and preserves final
+  receipts unless `--force-final` is explicitly passed.
 - Run `hawking studio density-receipt-build --out reports/condense/studio_density_receipt.local.json` and
   `hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json` before
   audit-grade/completion-audit so local size, largest files, tracked LOC, disk headroom, and generated
@@ -341,8 +341,9 @@ Wave 0 - launch hardening:
 - Run `hawking studio coverage-plan` before the claim phase and fill each listed
   `reports/condense/<LABEL>_baselines.json` and `<LABEL>_eval.json` with measured rows or reasoned N/A rows.
 - Run `frontier_ops.py proof-pack --force --out reports/condense/frontier_proof_pack.local.json` before
-  measurement starts to create signed draft envelopes and blocked local claim bundles for every frontier
-  model. Do not use `--force-final` unless deliberately replacing final measured evidence.
+  measurement starts to create the signed proof-pack manifest, signed draft envelopes, and blocked local
+  claim bundles for every frontier model. Do not use `--force-final` unless deliberately replacing final
+  measured evidence.
 - Run `hawking studio source-provenance-plan` before procurement, then use
   `hawking studio source-provenance-receipt draft <label> --sign-draft` to create signed but blocked
   source provenance envelopes. After verified downloads fill final HF revision, source kind/format,
