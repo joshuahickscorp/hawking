@@ -60,15 +60,16 @@ Rule for this wave: no large downloads and no bakes on the laptop.
   and verify of that `/tmp` output: pass, proving edited license workbooks can be re-signed without
   applying them.
 - `target/debug/hawking studio launch-packet-build --out reports/condense/studio_wave0_launch_packet.json --json`:
-  pass as a signed red packet. It records `procurement_permitted: false`, 5 hard failures, and 1 warning.
+  pass as a signed red packet. It records `procurement_permitted: false`, 5 hard failures, and 0 warnings
+  after the dirty branch was split into commits on `codex/hawking-studio-stabilization`.
   The hard failures are preflight summary red, environment receipt red, 0/9 accepted licenses,
-  39/39 refresh candidates awaiting operator decisions, and the procurement launch gate red. The warning
-  is the signed worktree split receipt reporting high dirty-tree risk. The signed runtime contract is
-  green inside the packet with 5 runtime profiles, 5 workload defaults, 4 required native `.tq` proof-mode
-  env vars, and `signature_ok: true`.
+  39/39 refresh candidates awaiting operator decisions, and the procurement launch gate red. The signed
+  worktree split receipt now reports `risk: clean`, 0 dirty entries, and 0 subsystems. The signed runtime
+  contract is green inside the packet with 5 runtime profiles, 5 workload defaults, 4 required native
+  `.tq` proof-mode env vars, and `signature_ok: true`.
 - `target/debug/hawking studio launch-packet-verify --path reports/condense/studio_wave0_launch_packet.json --json`:
   pass for schema/signature while preserving `packet_ok: false`; latest verification reports
-  `warning_count: 1`. The packet's run-next dry-run selects 235B-A22B in `needs-license-review` with a
+  `warning_count: 0`. The packet's run-next dry-run selects 235B-A22B in `needs-license-review` with a
   placeholder `record-license` command, not a download.
 - `target/debug/hawking studio runtime-contract-build --out reports/condense/studio_runtime_contract.local.json --json`:
   pass. It writes schema `hawking.studio_runtime_contract.v1` from the product runtime source of truth:
@@ -233,15 +234,15 @@ The fast TQ parser proof remains in the default targeted lane with `--features t
 
 ## Dirty tree by subsystem
 
-This branch is still mixed. Do not treat it as one reviewable unit. The product-facing split artifact is
-`reports/condense/worktree_split_plan.local.json`, generated with:
+The original dirty branch was mixed and should not have been treated as one reviewable unit. The
+product-facing split artifact is `reports/condense/worktree_split_plan.local.json`, generated with:
 
 ```bash
 hawking studio worktree-plan --out reports/condense/worktree_split_plan.local.json
 hawking studio worktree-plan --verify reports/condense/worktree_split_plan.local.json
 ```
 
-Current generated split:
+Pre-split generated split:
 
 | subsystem | entries | staged | unstaged | untracked | risk | suggested branch |
 |---|---:|---:|---:|---:|---|---|
@@ -263,6 +264,34 @@ Recommended split order from the artifact:
 6. CI config.
 7. Local dependency/generated cleanup, especially `node_modules/`, kept out of source commits unless
    intentionally archived.
+
+Post-split review stack on `codex/hawking-studio-stabilization`:
+
+- `d3140462 Split HIDE launcher stabilization stack`
+- `0c7015c3 Add Studio proof lifecycle and native TQ gates`
+- this note is a docs-only receipt update on top of those review commits.
+- `reports/condense/worktree_split_plan.local.json` verifies with `risk: clean`, 0 dirty entries,
+  0 staged entries, 0 unstaged entries, 0 untracked entries, and 0 subsystems.
+- The root `node_modules/` artifact is ignored by `.gitignore`; it is 4 KB locally and is not part of
+  the review stack.
+- Local Node remains `v20.17.0` while `app/package.json` declares `>=20.19`; app tests still pass, but
+  the engine mismatch remains a local setup warning to fix outside source changes.
+
+Post-split density receipt:
+
+| item | size |
+|---|---:|
+| repo checkout | 63G |
+| `models/` | 35G |
+| `scratch/` | 18G |
+| `target/` | 4.2G |
+| `.claude/` | 2.4G |
+| `reports/` | 23M |
+| root `node_modules/` | 4K |
+
+Largest local artifacts remain model/source payloads, not source code: Qwen 7B GGUF 4.4G, MLX Qwen 7B
+4-bit safetensors 4.0G, Qwen 7B scratch shards at 3.3-3.7G each, and Qwen 32B GGUF shards at 3.7G each.
+No frontier downloads or bakes were started on the laptop.
 
 ## Non-compute launch artifacts prepared
 
@@ -344,8 +373,8 @@ Current launch-gate wall:
 - signed public claim bundles are 0/9. The `.local` proof-pack bundles correctly fail verification
   because the underlying evidence files are intentionally draft-blocked; no evidence file is missing from
   any local bundle now.
-- the signed worktree split receipt is valid but high risk, with 138 dirty entries across 7 subsystems;
-  the launch packet carries this as an explicit warning rather than pretending the branch is clean.
+- the signed worktree split receipt is valid and clean after the branch split, with 0 dirty entries and
+  0 subsystems; the launch packet no longer carries a dirty-tree warning.
 - the signed audit-grade receipt is valid, but `target_reached=false`; it records the external audit's
   current overall grade as 6.4/10, the Studio potential as 8.4/10, the operator-plan grade as 9.8/10,
   `runtime_contract_ok=true`, and 8 Studio facets below the 8.4 target.
