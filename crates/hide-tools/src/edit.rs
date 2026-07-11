@@ -482,6 +482,12 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
             while hunk.last() == Some(&"") {
                 hunk.pop();
             }
+            // An all-blank hunk body strips to nothing; an empty located sequence
+            // would make `locate` a no-op and silently "apply" a change-free garbage
+            // hunk as ok. A real hunk always has at least one context/change line.
+            if hunk.is_empty() {
+                return Err("empty hunk body (no context or change lines)".to_string());
+            }
             // Determine the hunk's "old" sequence (context + removed) to locate it.
             // A bare interior "" line is a blank context line (a " " context line
             // whose trailing space was stripped), so it IS part of the located
@@ -830,6 +836,23 @@ mod tests {
         assert!(!r.ok, "blank-context desync must conflict, not corrupt");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_all_blank_hunk_is_conflict_not_silent_ok() {
+        // A hunk body of only blank lines strips to empty; it must CONFLICT, not
+        // report a successful no-op apply (regression guard for the trailing strip).
+        let dir = tmp("allblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\nc\n").unwrap();
+        let patch = "@@\n\n\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "all-blank hunk must not report success");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\nc\n");
         let _ = std::fs::remove_dir_all(dir);
     }
 
