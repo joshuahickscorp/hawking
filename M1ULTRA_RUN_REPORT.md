@@ -47,7 +47,7 @@ once unbounded wall-clock converts every time-wall. Update the Proven column as 
 | HIDE M1: pass state not text (handoff) | 6.5 | 8.5 | 9.0 | GATED (kv_handoff seam, FakeCopier) | - |
 | HIDE M2: free local fleets | 5.0 | 8.0 | 8.5 | GATED (fabric real, economics a predictor) | - |
 | HIDE M3: own the .tq format | 5.5 | 8.5 | 9.0 | GATED (no e2e coherent-token receipt) | - |
-| HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | GATED (compiler real, not in decode loop) | - |
+| HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | MEASURED-LAB scaffold, adversarially verified (parser + parse/lint/dedup/dispatch loop + schema-aware jump-forward grammar + prompt-lookup, 39 owned tests; 6 review findings, 4 fixed w/ regression tests, 2 pre-existing edit.rs bugs reported); still GATED on decode-loop wiring + first-try-valid receipt | agentic_tool_system_audit_2026_07_11.md |
 | HIDE ship-readiness (Tauri, executor, tests) | 7.0 | 8.5 | 9.0 | MEASURED-LAB (signed 18 MB DMG on disk) | - |
 | The thesis gate (can the local model code) | 0 | 7.0 | 7.5 | UNPROVEN (hawking-eval built, never run) | - |
 
@@ -85,6 +85,57 @@ North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave B (2026-07-11, catalog expansion start): added the `memory` tool (Phase 1b) - a durable
+  cross-session scratchpad with `view|create|str_replace|insert|delete|rename`, modeled on
+  Anthropic's memory tool, rooted at a private per-workspace directory. The security boundary
+  (path-traversal rejection: absolute paths, `..` traversal, and percent-encoded `%2e/%2f/%5c`
+  escapes) has a dedicated test per vector. Registered as the 23rd builtin; 8 tests green,
+  hide-tools crate clean (52 tests, no warnings). Remaining catalog gaps: plan.todo, notebook,
+  batch multi-edit, web.fetch/search, agent.spawn, and wiring the built-but-dormant MCP client.
+- Wave A-verify (2026-07-11, adversarial verification + fixes): ran a 5-dimension review
+  workflow (finder + independent refuting verifier per dimension, 11 agents) over the Wave A
+  scaffold, hunting correctness / losslessness / safety / overclaims. It CONFIRMED 6 real
+  defects, each reproduced end-to-end - proof the discipline earns its keep. FIXED 4 in the
+  delivered scaffold, each with regression tests: (1) parser dropped a bare-JSON call when a
+  `[...]` (markdown link/citation) preceded it -> now scans ALL balanced spans; (2) the loop's
+  feedback formatter let untrusted tool output forge a `<tool_call>` (TT8 violation) -> now
+  escapes the envelope delimiters in body+name; (5) `scaffold_for` forced a single arg key even
+  when optional props existed (a real jump-forward LOSSLESSNESS violation for the shipped
+  fs.read schema) -> now gated on a closed single-property schema; (6) audit doc per-file test
+  counts corrected. The other 2 (a wrap-slice panic and an unverified `-` drop that silently
+  corrupts a file) are PRE-EXISTING bugs in `edit.rs`, surfaced when Phase 1d was reverted;
+  reported in audit section 3.1, not fixed (edit.rs is under separate management). Also: Phase
+  1d (Codex fuzzy apply_patch) was reverted intentionally in the working tree, so it is
+  WITHDRAWN from the scaffold. Honest test state after fixes: 39 owned scaffold tests green
+  (parse 14 + runner 10 + shared mod.rs 2 + tool_spec_decode 13); full workspace 392 passed / 7
+  failed where all 7 are the pre-existing q8_kv_parity Metal-kernel-missing tests in
+  hawking-core (kernels absent from every .metal source), zero non-q8kv failures. Grades stay
+  MEASURED-LAB. Commit pending approval. Next lever: drive-to-10 wiring (Phase 0 into the live
+  FSM; serve `tools` field), still gated on a served model for the tok/s receipt.
+- Wave A (2026-07-11, agentic tool system scaffold): executed the operator's scaffold-all
+  directive on the agentic tool system plan (`docs/plans/agentic_tool_system_2026_07_11.md`),
+  built from three deep-research passes (Claude Code tool architecture, Codex + other agents,
+  constrained/speculative decoding). Landed as real, compiling, unit-tested library code,
+  highest-leverage-first: (1) PHASE 0 keystone - the missing model-output tool-call parser
+  (`hide-kernel/src/tools/parse.rs`, tolerant across Hermes/OpenAI/fenced/bare formats) plus the
+  parse->lint->dedup->dispatch loop (`runner.rs`) that finally calls the built-but-dormant
+  `lint_tool_call` + `IdempotencyLedger`, with Hermes-shaped self-correction feedback. (2) PHASE
+  1d - upgraded `apply_patch`'s hunk locator to the Codex 4-pass fuzzy `seek_sequence` (exact ->
+  trailing-ws -> both-ws -> typographic-unicode) and made context emission byte-exact from the
+  file, with two adversarial drift tests. (3) PHASE 2/3 differentiator - the tool spec-decode
+  layer (`hawking-orch/src/tool_spec_decode.rs`): schema-aware `ToolCallGrammar` jump-forward
+  (envelope prefix, tool-name common-prefix, full skeleton once resolved, validity gate,
+  forced_fraction) + `PromptLookup` n-gram drafter + `accepted_prefix_len` lossless accounting.
+  (4) PHASE 4 - parallel + purity-gated dispatch primitives (read-only concurrent, mutating
+  sequential, order-preserving). Evidence: 41 targeted unit tests green; full-workspace
+  regression run recorded next. Grades are MEASURED-LAB (unit tests, below R3): no WIN cell
+  flips. The load-bearing gap for the "fastest" claim stays honest and GATED - none of the
+  constrained/spec primitives are wired into the batched serve lanes yet, and the tok/s win is
+  UNPROVEN until measured on our own served model (the thesis-gate dependency). Audit +
+  per-component /10 rating + the specialization thesis: `agentic_tool_system_audit_2026_07_11.md`.
+  Commit pending approval. Next lever: confirm the full-suite regression is green, then the
+  drive-to-10 wiring (Phase 0 into the live FSM, then serve `tools` field, then the decode-loop
+  mask + jump-forward measurement once a served model exists).
 - Wave 0-prep (off-box, M3 Pro 18 GB session): converted the parts of Wave 0 that are pure code,
   ahead of the box arriving, so the first on-box session starts from a shorter Wave 0. Landed: (1)
   SPINE-0 FIXED - studio_run.py P6 (`bench_baselines`) and P8 (`codec_bakeoff`) unpacked the 3-tuple

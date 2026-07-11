@@ -18,6 +18,7 @@ pub mod edit;
 pub mod fs;
 pub mod git;
 pub mod mcp;
+pub mod memory;
 pub mod proc;
 pub mod registry;
 pub mod search;

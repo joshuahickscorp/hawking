@@ -6,6 +6,7 @@ use crate::git::{
     GitCommitTool, GitConfig, GitDiffTool, GitLogTool, GitStatusTool, GitWorktreeAddTool,
     GitWorktreeListTool, GitWorktreeRemoveTool,
 };
+use crate::memory::MemoryTool;
 use crate::proc::ProcTool;
 use crate::search::SearchTextTool;
 use crate::shell::{ShellConfig, ShellPlanTool, ShellRunTool};
@@ -60,6 +61,9 @@ pub fn register_builtin_tools_with(registry: &ToolRegistry, shell_config: ShellC
     registry.register(GitWorktreeAddTool::with_config(git_config.clone()));
     registry.register(GitWorktreeRemoveTool::with_config(git_config.clone()));
     registry.register(GitWorktreeListTool::with_config(git_config));
+
+    // Memory (durable cross-session scratchpad)
+    registry.register(MemoryTool::default());
 }
 
 #[cfg(test)]
@@ -94,6 +98,7 @@ mod tests {
             "git.worktree.add",
             "git.worktree.remove",
             "git.worktree.list",
+            "memory",
         ] {
             assert!(names.contains(&expected.to_string()), "missing {expected}");
         }
