@@ -7,6 +7,7 @@ pub mod batch;
 pub mod http;
 pub mod spec_gov;
 pub mod system_kv_bank;
+pub mod tool_calls;
 
 pub use batch::scheduler::BatchPolicy;
 pub use system_kv_bank::{BankConfig, BankEntry, SystemPromptKvBank};

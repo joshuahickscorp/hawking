@@ -484,6 +484,13 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
             // Find old_seq in orig_lines starting at cursor (fuzz: scan forward).
             let anchor = locate(&orig_lines, &old_seq, cursor)
                 .ok_or_else(|| "could not locate hunk context in file".to_string())?;
+            // `locate` can wrap to the file top, so a later hunk whose context only
+            // matches earlier returns an anchor BEFORE the cursor. Copying
+            // orig_lines[cursor..anchor] would then panic (start > end). Treat a
+            // backward hunk as an out-of-order conflict, not a crash.
+            if anchor < cursor {
+                return Err("hunk context precedes the current position (out-of-order hunk)".to_string());
+            }
             // Copy unchanged lines up to the anchor.
             for l in &orig_lines[cursor..anchor] {
                 out.push((*l).to_string());
@@ -506,6 +513,17 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
                         cursor += 1;
                     }
                     "-" => {
+                        // Verify the line being removed actually matches the file at
+                        // the cursor before dropping it. Without this a desynced
+                        // cursor (e.g. from a stray blank hunk line) would delete the
+                        // WRONG line by count and silently commit a corrupt file.
+                        if cursor >= orig_lines.len() || orig_lines[cursor] != rest {
+                            return Err(format!(
+                                "patch removes a line that does not match the file (expected \"{}\", found \"{}\")",
+                                rest,
+                                orig_lines.get(cursor).copied().unwrap_or("<eof>")
+                            ));
+                        }
                         cursor += 1; // drop original line
                     }
                     "+" => {
@@ -738,6 +756,44 @@ mod tests {
         assert!(r.ok, "patch should apply: {:?}", r.error);
         let got = std::fs::read_to_string(&file).unwrap();
         assert_eq!(got, "line1\nline2-edited\nline3\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_out_of_order_hunk_is_conflict_not_panic() {
+        // Hunks in the wrong order: edit "b" before "target", but "target" is earlier
+        // in the file, so `locate` wraps backward and returns anchor < cursor. That
+        // used to panic on orig_lines[cursor..anchor]; now it is an honest CONFLICT.
+        let dir = tmp("ooo");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "target\na\nb\n").unwrap();
+        let patch = "@@\n-b\n+B\n@@\n-target\n+TARGET\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "out-of-order hunk must not apply");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "target\na\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_mismatched_removal_is_conflict_not_corruption() {
+        // A stray blank hunk line desyncs the cursor so the '-' removal no longer
+        // matches the file. Instead of silently deleting the wrong line (was: writes
+        // "a\nA\n"), the applier now returns CONFLICT and writes nothing.
+        let dir = tmp("mism");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\n").unwrap();
+        let patch = "@@\n\n-a\n+A\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "mismatched removal must not silently corrupt");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
         let _ = std::fs::remove_dir_all(dir);
     }
 

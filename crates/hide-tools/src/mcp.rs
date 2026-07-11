@@ -473,6 +473,47 @@ pub async fn discover_and_register(
     Ok((client, specs))
 }
 
+/// The outcome of trying to register one MCP server's tools.
+pub struct McpRegistration {
+    pub server_id: String,
+    /// `Some` on success; the caller MUST keep it alive for the server's proxy
+    /// tools to remain callable (dropping it tears down the connection).
+    pub client: Option<Arc<McpClient>>,
+    /// Names of the tools registered from this server (`mcp:<id>/<tool>`).
+    pub tools: Vec<String>,
+    /// `Some` if this server failed to connect or list (the others still ran).
+    pub error: Option<String>,
+}
+
+/// Connect to and register every descriptor's tools into `registry`, resiliently:
+/// a server that fails to connect or list is recorded as an error and does NOT
+/// abort the rest (a single bad MCP server must not disable the whole tool
+/// catalog). Returns one [`McpRegistration`] per descriptor, in order. This is the
+/// entry point a host calls at startup with its configured MCP servers.
+pub async fn register_mcp_servers(
+    descriptors: &[McpServerDescriptor],
+    registry: &hide_core::tool::ToolRegistry,
+) -> Vec<McpRegistration> {
+    let mut out = Vec::with_capacity(descriptors.len());
+    for desc in descriptors {
+        match discover_and_register(desc, registry).await {
+            Ok((client, specs)) => out.push(McpRegistration {
+                server_id: desc.id.clone(),
+                client: Some(client),
+                tools: specs.iter().map(|s| s.name.clone()).collect(),
+                error: None,
+            }),
+            Err(e) => out.push(McpRegistration {
+                server_id: desc.id.clone(),
+                client: None,
+                tools: Vec::new(),
+                error: Some(e.to_string()),
+            }),
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -559,6 +600,44 @@ mod tests {
             .expect("call");
         assert!(result.ok);
         assert_eq!(result.structured_content.unwrap()["echoed"], "hi");
+    }
+
+    #[tokio::test]
+    async fn register_mcp_servers_registers_tools_and_survives_a_bad_server() {
+        if which_python().is_none() {
+            eprintln!("python3 not found; skipping MCP registration test");
+            return;
+        }
+        let py = which_python().unwrap();
+        let good = McpServerDescriptor {
+            id: "good".into(),
+            transport: McpTransport::Stdio {
+                command: py,
+                args: vec!["-c".into(), FAKE_SERVER.into()],
+            },
+            trust: "third-party".into(),
+        };
+        // A server that cannot even launch: it must be recorded as an error, not
+        // panic or abort the good one.
+        let bad = McpServerDescriptor {
+            id: "bad".into(),
+            transport: McpTransport::Stdio {
+                command: "definitely-not-a-real-binary-xyzzy".into(),
+                args: vec![],
+            },
+            trust: "third-party".into(),
+        };
+        let registry = hide_core::tool::ToolRegistry::default();
+        let results = register_mcp_servers(&[good, bad], &registry).await;
+
+        assert_eq!(results.len(), 2);
+        let good_r = results.iter().find(|r| r.server_id == "good").unwrap();
+        assert!(good_r.error.is_none(), "good server errored: {:?}", good_r.error);
+        assert!(good_r.tools.contains(&"mcp:good/echo".to_string()));
+        let bad_r = results.iter().find(|r| r.server_id == "bad").unwrap();
+        assert!(bad_r.error.is_some(), "bad server should have recorded an error");
+        // The registry actually holds the good server's proxy tool, dispatchable.
+        assert!(registry.get("mcp:good/echo").is_some());
     }
 
     #[tokio::test]
