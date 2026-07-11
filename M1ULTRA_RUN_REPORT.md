@@ -85,6 +85,48 @@ North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave C (2026-07-11, wiring + hardening): with operator approval, committed the scaffold
+  (commit 79f54420, 11 files, 47 tests) then landed three wiring/hardening pieces (commit
+  14909a97, 469 insertions): (1) MCP REGISTRATION - `register_mcp_servers` resiliently connects a
+  set of MCP servers and registers their tools into the registry (one bad server is recorded as
+  an error, does not abort the rest); the client was built-but-never-called. Tested against a
+  live stdio fake server. (2) NATIVE TOOL CALLING ON SERVE (Phase 1a) - `/v1/chat/completions`
+  now accepts `tools`, renders a Hermes/Qwen `<tools>` system preamble into the prompt, and
+  parses the completion back into OpenAI `tool_calls` with finish_reason; a self-contained
+  `tool_calls` module (5 tests) wired in without breaking the 35-test serve suite. (3) EDIT.RS
+  GUARDS - with approval, added the two minimal safety guards for the pre-existing bugs the
+  review found: a backward/out-of-order hunk is now a CONFLICT not a panic, and a removal that
+  does not match the file is a CONFLICT not silent corruption (2 tests). NOT re-introducing the
+  reverted seek_sequence fuzzy matcher. A second adversarial verification pass over this wiring
+  (12 agents) CONFIRMED 8 more real defects - including two in the edit.rs guards I had just
+  added (an over-rejection of valid stripped-blank diffs, and a remaining blank-line corruption
+  hole the removal guard did not cover), a serve false-positive (untagged prose JSON turned into
+  a spurious tool_call discarding the real answer), a streaming gap (raw <tool_call> XML streamed
+  instead of structured tool_calls), and three MCP resilience holes (no per-server timeout so one
+  hung server stalls the catalog; duplicate ids silently shadowing tools; a false shutdown
+  contract + no kill_on_drop). ALL 8 FIXED with 9 regression tests (commit 90de248a): edit.rs now
+  keeps blank context lines in the located sequence and verifies them; serve requires an untagged
+  call to name a declared tool and buffers streaming to emit real tool_calls; MCP gained a
+  per-server timeout, duplicate-id refusal, kill_on_drop, and a corrected doc. A THIRD
+  loop-until-dry pass then caught 2 regressions in those very fixes: the edit.rs empty-line
+  change over-rejected a patch ending in a trailing blank, and the streaming buffer emitted its
+  flush only in the failure-sentinel arm while the decode loop signals normal completion by
+  DROPPING the sender - so a streaming chat with tools silently dropped the whole answer. Both
+  fixed (commit b6d30db5): hunks now strip trailing blanks, and the streaming flush + [DONE]
+  moved outside the token loop (also fixing a pre-existing missing-[DONE] on the non-tools
+  success path). A FOURTH lean pass caught 1 narrow edge-case (an all-blank hunk body silently
+  reported ok instead of CONFLICT); fixed with a guard (commit 903baa20). The verification loop
+  CONVERGED: pass1 6 findings, pass2 8, pass3 2, pass4 1 - a clean decreasing trend, all 17
+  fixed with regression tests. FINAL STATE: five commits (79f54420 scaffold, 14909a97 wiring,
+  90de248a +8 fixes, b6d30db5 +2 fixes, 903baa20 +1 fix), all per operator approval, LOCAL ONLY
+  no push. Full workspace: 392 passed / 7 failed where all 7 are the pre-existing q8_kv Metal
+  tests in hawking-core (absent from every .metal source), zero non-q8kv failures. Delivered +
+  verified: Phase 0 (parser + parse/lint/dedup/dispatch loop + parallel), Phase 2/3 (jump-forward
+  + prompt-lookup spec-decode), Phase 1a (native serve tools/tool_calls incl. streaming), Phase
+  1b (memory tool), Phase 1c (MCP registration). Grades stay MEASURED-LAB. STILL GATED for the
+  tok/s + first-try-valid RECEIPT that would flip a WIN cell: our own .tq-served model (the
+  thesis gate). Unbuilt/unblocked next: rest of catalog (plan.todo/notebook/batch/web/agent.spawn),
+  Phase 0 -> live FSM driver wiring, and the runtime mask/spec wiring into forward_multiseq_*.
 - Wave B (2026-07-11, catalog expansion start): added the `memory` tool (Phase 1b) - a durable
   cross-session scratchpad with `view|create|str_replace|insert|delete|rename`, modeled on
   Anthropic's memory tool, rooted at a private per-workspace directory. The security boundary
