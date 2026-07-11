@@ -579,6 +579,7 @@ fn sse_response(
             match item {
                 Ok(text) => {
                     if want_tools {
+                        // Buffer; the terminating chunk is emitted after the loop.
                         buf.push_str(&text);
                         continue;
                     }
@@ -598,42 +599,48 @@ fn sse_response(
                         .await
                         .is_err()
                     {
-                        break;
+                        return;
                     }
                 }
-                Err(()) => {
-                    if want_tools {
-                        let calls = crate::tool_calls::extract_tool_calls(&buf, &tool_names);
-                        let chunk = if !calls.is_empty() {
-                            let arr: Vec<serde_json::Value> =
-                                calls.iter().map(|c| c.to_openai()).collect();
-                            serde_json::json!({
-                                "object": "chat.completion.chunk",
-                                "choices": [{
-                                    "index": 0,
-                                    "delta": {"role": "assistant", "tool_calls": arr},
-                                    "finish_reason": "tool_calls"
-                                }]
-                            })
-                        } else {
-                            serde_json::json!({
-                                "object": "chat.completion.chunk",
-                                "choices": [{
-                                    "index": 0,
-                                    "delta": {"role": "assistant", "content": buf},
-                                    "finish_reason": "stop"
-                                }]
-                            })
-                        };
-                        let _ = sse_tx
-                            .send(Ok(Event::default().data(chunk.to_string())))
-                            .await;
-                    }
-                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
-                    break;
-                }
+                // The failure sentinel. Normal completion does NOT send this — the
+                // decode loop just drops the sender (recv -> None), so the flush
+                // below MUST live outside the loop or a buffered (tools) answer
+                // would be lost entirely.
+                Err(()) => break,
             }
         }
+
+        // Terminating flush. Reached on normal channel-close AND on the failure
+        // sentinel. For a tools request, parse the buffer into structured tool_calls
+        // (or return the buffered text); the non-tools path already streamed its
+        // content and just needs the [DONE] terminator.
+        if want_tools {
+            let calls = crate::tool_calls::extract_tool_calls(&buf, &tool_names);
+            let chunk = if !calls.is_empty() {
+                let arr: Vec<serde_json::Value> = calls.iter().map(|c| c.to_openai()).collect();
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "tool_calls": arr},
+                        "finish_reason": "tool_calls"
+                    }]
+                })
+            } else {
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "content": buf},
+                        "finish_reason": "stop"
+                    }]
+                })
+            };
+            let _ = sse_tx
+                .send(Ok(Event::default().data(chunk.to_string())))
+                .await;
+        }
+        let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())

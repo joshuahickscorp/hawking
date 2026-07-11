@@ -475,10 +475,17 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
                 hunk.push(patch_lines[i]);
                 i += 1;
             }
+            // Drop trailing blank lines: `patch.lines()` yields a spurious "" for a
+            // patch string ending in a blank line (and inter-hunk blanks land here
+            // too). Those are NOT context lines, so keeping them would force `locate`
+            // to demand a phantom blank the file lacks. Interior blanks are kept.
+            while hunk.last() == Some(&"") {
+                hunk.pop();
+            }
             // Determine the hunk's "old" sequence (context + removed) to locate it.
-            // A bare "" line is a blank context line (a " " context line whose
-            // trailing space was stripped), so it IS part of the located sequence;
-            // dropping it here would desync `locate` from the walk below.
+            // A bare interior "" line is a blank context line (a " " context line
+            // whose trailing space was stripped), so it IS part of the located
+            // sequence; dropping it would desync `locate` from the walk below.
             let old_seq: Vec<&str> = hunk
                 .iter()
                 .filter(|l| l.is_empty() || l.starts_with(' ') || l.starts_with('-'))
@@ -823,6 +830,24 @@ mod tests {
         assert!(!r.ok, "blank-context desync must conflict, not corrupt");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_tolerates_trailing_blank_in_patch_body() {
+        // A patch string ending in a blank line ("...\n\n") must still apply: the
+        // trailing "" is a patch terminator, not a required blank context line
+        // (regression guard for the old_seq empty-line change).
+        let dir = tmp("trailblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\nc\n").unwrap();
+        let patch = "@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(r.ok, "trailing blank must not block apply: {:?}", r.error);
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nB\nc\n");
         let _ = std::fs::remove_dir_all(dir);
     }
 
