@@ -222,11 +222,15 @@ impl McpClient {
     pub async fn connect(desc: &McpServerDescriptor) -> Result<Self> {
         let transport = match &desc.transport {
             McpTransport::Stdio { command, args } => {
+                // kill_on_drop so dropping the client tears down the subprocess
+                // instead of leaking it (the registry owns the client via the proxy
+                // tools; without this a discarded server keeps running).
                 let mut child = tokio::process::Command::new(command)
                     .args(args)
                     .stdin(Stdio::piped())
                     .stdout(Stdio::piped())
                     .stderr(Stdio::inherit())
+                    .kill_on_drop(true)
                     .spawn()
                     .with_context(|| format!("spawning MCP server {command}"))?;
                 let stdin = child.stdin.take().ok_or_else(|| anyhow!("no stdin"))?;
@@ -238,7 +242,12 @@ impl McpClient {
                 }))
             }
             McpTransport::StreamableHttp { endpoint } => ClientTransport::Http {
-                client: reqwest::Client::new(),
+                // A request timeout so a server that accepts the POST but never
+                // responds cannot hang a call forever.
+                client: reqwest::Client::builder()
+                    .timeout(std::time::Duration::from_secs(30))
+                    .build()
+                    .unwrap_or_else(|_| reqwest::Client::new()),
                 endpoint: endpoint.clone(),
                 session_id: Mutex::new(None),
             },
@@ -473,43 +482,76 @@ pub async fn discover_and_register(
     Ok((client, specs))
 }
 
+/// Per-server budget for connect + tools/list, so one hung server cannot stall
+/// the whole catalog.
+pub const MCP_REGISTER_TIMEOUT_SECS: u64 = 30;
+
 /// The outcome of trying to register one MCP server's tools.
 pub struct McpRegistration {
     pub server_id: String,
-    /// `Some` on success; the caller MUST keep it alive for the server's proxy
-    /// tools to remain callable (dropping it tears down the connection).
+    /// `Some` on success. NOTE: the registry itself owns a clone of the client via
+    /// each registered proxy tool, so the tools stay callable even if this handle
+    /// is dropped. Keep it if you want an explicit handle to the connection (e.g.
+    /// to hold the subprocess); dropping the whole registry is what tears the
+    /// server down (the client sets `kill_on_drop`).
     pub client: Option<Arc<McpClient>>,
     /// Names of the tools registered from this server (`mcp:<id>/<tool>`).
     pub tools: Vec<String>,
-    /// `Some` if this server failed to connect or list (the others still ran).
+    /// `Some` if this server failed to connect/list, timed out, or was a duplicate
+    /// id (the others still ran).
     pub error: Option<String>,
 }
 
 /// Connect to and register every descriptor's tools into `registry`, resiliently:
-/// a server that fails to connect or list is recorded as an error and does NOT
-/// abort the rest (a single bad MCP server must not disable the whole tool
-/// catalog). Returns one [`McpRegistration`] per descriptor, in order. This is the
-/// entry point a host calls at startup with its configured MCP servers.
+/// each server gets a [`MCP_REGISTER_TIMEOUT_SECS`] budget, and a server that
+/// fails, times out, or has a duplicate id is recorded as an error and does NOT
+/// abort the rest (a single bad or hung MCP server must not disable the whole tool
+/// catalog). Returns one [`McpRegistration`] per descriptor, in order.
 pub async fn register_mcp_servers(
     descriptors: &[McpServerDescriptor],
     registry: &hide_core::tool::ToolRegistry,
 ) -> Vec<McpRegistration> {
+    let dur = std::time::Duration::from_secs(MCP_REGISTER_TIMEOUT_SECS);
+    let mut seen = std::collections::HashSet::new();
     let mut out = Vec::with_capacity(descriptors.len());
     for desc in descriptors {
-        match discover_and_register(desc, registry).await {
-            Ok((client, specs)) => out.push(McpRegistration {
+        // A duplicate id would silently shadow the first server's tools in the
+        // registry (same `mcp:<id>/<tool>` keys), so refuse it explicitly.
+        if !seen.insert(desc.id.clone()) {
+            out.push(McpRegistration {
+                server_id: desc.id.clone(),
+                client: None,
+                tools: Vec::new(),
+                error: Some(format!(
+                    "duplicate server id \"{}\" skipped (would shadow the first)",
+                    desc.id
+                )),
+            });
+            continue;
+        }
+        let reg = match tokio::time::timeout(dur, discover_and_register(desc, registry)).await {
+            Ok(Ok((client, specs))) => McpRegistration {
                 server_id: desc.id.clone(),
                 client: Some(client),
                 tools: specs.iter().map(|s| s.name.clone()).collect(),
                 error: None,
-            }),
-            Err(e) => out.push(McpRegistration {
+            },
+            Ok(Err(e)) => McpRegistration {
                 server_id: desc.id.clone(),
                 client: None,
                 tools: Vec::new(),
                 error: Some(e.to_string()),
-            }),
-        }
+            },
+            Err(_) => McpRegistration {
+                server_id: desc.id.clone(),
+                client: None,
+                tools: Vec::new(),
+                error: Some(format!(
+                    "timed out after {MCP_REGISTER_TIMEOUT_SECS}s connecting/listing"
+                )),
+            },
+        };
+        out.push(reg);
     }
     out
 }
@@ -638,6 +680,34 @@ mod tests {
         assert!(bad_r.error.is_some(), "bad server should have recorded an error");
         // The registry actually holds the good server's proxy tool, dispatchable.
         assert!(registry.get("mcp:good/echo").is_some());
+    }
+
+    #[tokio::test]
+    async fn register_mcp_servers_rejects_duplicate_ids() {
+        if which_python().is_none() {
+            eprintln!("python3 not found; skipping MCP dup-id test");
+            return;
+        }
+        let py = which_python().unwrap();
+        let mk = |id: &str| McpServerDescriptor {
+            id: id.to_string(),
+            transport: McpTransport::Stdio {
+                command: py.clone(),
+                args: vec!["-c".into(), FAKE_SERVER.into()],
+            },
+            trust: "third-party".into(),
+        };
+        let registry = hide_core::tool::ToolRegistry::default();
+        let results = register_mcp_servers(&[mk("dup"), mk("dup")], &registry).await;
+        assert_eq!(results.len(), 2);
+        // The first registers; the second is refused as a duplicate, not silently
+        // clobbering the first's tools.
+        assert!(results[0].error.is_none());
+        assert!(results[1]
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("duplicate"));
     }
 
     #[tokio::test]

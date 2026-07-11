@@ -64,28 +64,48 @@ pub fn render_tools_preamble(tools: &[Value]) -> String {
     s
 }
 
+/// The declared function names from a request `tools` array (accepts both the
+/// bare function object and the `{"type":"function","function":{...}}` envelope).
+pub fn tool_names(tools: &[Value]) -> Vec<String> {
+    tools
+        .iter()
+        .filter_map(|t| {
+            let f = t.get("function").unwrap_or(t);
+            f.get("name").and_then(|n| n.as_str()).map(str::to_string)
+        })
+        .collect()
+}
+
 /// Extract every tool call from a completion, in document order. Empty when the
 /// model produced a plain text answer.
-pub fn extract_tool_calls(completion: &str) -> Vec<ExtractedToolCall> {
-    let mut raw: Vec<(String, Value)> = Vec::new();
-
-    // Hermes / Qwen `<tool_call>...</tool_call>` blocks take precedence.
+///
+/// `known_tools` are the names declared in the request. An explicit
+/// `<tool_call>` block is honored regardless (the model signalled intent), but the
+/// UNTAGGED JSON fallback only accepts an object whose name is a declared tool, so
+/// a plain answer that merely contains a JSON object (`{"name": "Bob"}`) is not
+/// mis-read as a call that discards the real answer.
+pub fn extract_tool_calls(completion: &str, known_tools: &[String]) -> Vec<ExtractedToolCall> {
+    // Hermes / Qwen `<tool_call>...</tool_call>` blocks: explicit intent, lenient.
     let tagged = tagged_blocks(completion);
-    if !tagged.is_empty() {
-        raw = tagged;
+    let raw: Vec<(String, Value)> = if !tagged.is_empty() {
+        tagged
     } else {
-        // Fall back to any balanced JSON span (object, array, or an OpenAI
-        // {"tool_calls":[...]} envelope).
+        // Untagged fallback: require the name to be a declared tool.
+        let mut found = Vec::new();
         for span in all_json_spans(completion) {
             if let Ok(value) = serde_json::from_str::<Value>(&span) {
-                let calls = calls_from_value(&value);
+                let calls: Vec<(String, Value)> = calls_from_value(&value)
+                    .into_iter()
+                    .filter(|(name, _)| known_tools.iter().any(|t| t == name))
+                    .collect();
                 if !calls.is_empty() {
-                    raw = calls;
+                    found = calls;
                     break;
                 }
             }
         }
-    }
+        found
+    };
 
     raw.into_iter()
         .enumerate()
@@ -98,9 +118,10 @@ pub fn extract_tool_calls(completion: &str) -> Vec<ExtractedToolCall> {
         .collect()
 }
 
-/// Whether the completion contains a recognizable tool call.
-pub fn has_tool_call(completion: &str) -> bool {
-    completion.contains("<tool_call>") || !extract_tool_calls(completion).is_empty()
+/// Whether the completion contains a recognizable tool call (declared tools
+/// considered for the untagged case).
+pub fn has_tool_call(completion: &str, known_tools: &[String]) -> bool {
+    completion.contains("<tool_call>") || !extract_tool_calls(completion, known_tools).is_empty()
 }
 
 // ---------------------------------------------------------------------------
@@ -233,8 +254,10 @@ mod tests {
 
     #[test]
     fn extracts_hermes_block_to_openai_shape() {
+        // Tagged blocks are honored regardless of the declared-tools list.
         let calls = extract_tool_calls(
             "I'll check.\n<tool_call>{\"name\":\"get_weather\",\"arguments\":{\"city\":\"NYC\"}}</tool_call>",
+            &[],
         );
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].name, "get_weather");
@@ -250,6 +273,7 @@ mod tests {
         let calls = extract_tool_calls(
             "<tool_call>{\"name\":\"a\",\"arguments\":{}}</tool_call>\
              <tool_call>{\"name\":\"b\",\"arguments\":{}}</tool_call>",
+            &[],
         );
         assert_eq!(calls.len(), 2);
         assert_eq!(calls[0].id, "call_0");
@@ -257,16 +281,47 @@ mod tests {
     }
 
     #[test]
-    fn extracts_bare_call_after_bracket() {
-        // Same robustness the agent-side parser has: a leading [...] must not shadow.
-        let calls = extract_tool_calls("see [1] {\"name\":\"a\",\"arguments\":{\"x\":1}}");
+    fn extracts_bare_declared_call_after_bracket() {
+        // A leading [...] must not shadow the object; and the untagged bare call is
+        // accepted only because "a" is a declared tool.
+        let known = vec!["a".to_string()];
+        let calls = extract_tool_calls("see [1] {\"name\":\"a\",\"arguments\":{\"x\":1}}", &known);
         assert_eq!(calls.len(), 1);
         assert_eq!(calls[0].name, "a");
     }
 
     #[test]
+    fn untagged_prose_json_is_not_a_false_tool_call() {
+        // A plain answer mentioning a JSON object must NOT become a tool call when
+        // its name is not a declared tool (else the real answer is discarded).
+        let known = vec!["get_weather".to_string()];
+        assert!(extract_tool_calls("Your record is {\"name\": \"Bob\"}", &known).is_empty());
+        // ...but a bare call to a DECLARED tool is still extracted.
+        let calls = extract_tool_calls(
+            "{\"name\":\"get_weather\",\"arguments\":{\"city\":\"NYC\"}}",
+            &known,
+        );
+        assert_eq!(calls.len(), 1);
+        // ...and a tagged block is always honored, declared or not.
+        let tagged = extract_tool_calls(
+            "<tool_call>{\"name\":\"anything\",\"arguments\":{}}</tool_call>",
+            &[],
+        );
+        assert_eq!(tagged.len(), 1);
+    }
+
+    #[test]
+    fn tool_names_reads_both_shapes() {
+        let tools = vec![
+            json!({ "type": "function", "function": { "name": "a" } }),
+            json!({ "name": "b" }),
+        ];
+        assert_eq!(tool_names(&tools), vec!["a".to_string(), "b".to_string()]);
+    }
+
+    #[test]
     fn plain_text_yields_no_calls() {
-        assert!(extract_tool_calls("just a normal answer").is_empty());
-        assert!(!has_tool_call("just a normal answer"));
+        assert!(extract_tool_calls("just a normal answer", &[]).is_empty());
+        assert!(!has_tool_call("just a normal answer", &[]));
     }
 }

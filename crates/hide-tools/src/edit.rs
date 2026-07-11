@@ -476,9 +476,12 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
                 i += 1;
             }
             // Determine the hunk's "old" sequence (context + removed) to locate it.
+            // A bare "" line is a blank context line (a " " context line whose
+            // trailing space was stripped), so it IS part of the located sequence;
+            // dropping it here would desync `locate` from the walk below.
             let old_seq: Vec<&str> = hunk
                 .iter()
-                .filter(|l| l.starts_with(' ') || l.starts_with('-'))
+                .filter(|l| l.is_empty() || l.starts_with(' ') || l.starts_with('-'))
                 .map(|l| &l[1.min(l.len())..])
                 .collect();
             // Find old_seq in orig_lines starting at cursor (fuzz: scan forward).
@@ -499,11 +502,18 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
             // Walk the hunk body.
             for hl in &hunk {
                 if hl.is_empty() {
-                    // a blank context line in some diffs
-                    if cursor < orig_lines.len() {
-                        out.push(orig_lines[cursor].to_string());
-                        cursor += 1;
+                    // A blank context line must line up with a blank line in the
+                    // file at the cursor. Anything else is a desync; emitting the
+                    // file's (non-blank) line here would silently corrupt it, so
+                    // conflict instead.
+                    if cursor >= orig_lines.len() || !orig_lines[cursor].is_empty() {
+                        return Err(format!(
+                            "patch has a blank context line where the file has \"{}\"",
+                            orig_lines.get(cursor).copied().unwrap_or("<eof>")
+                        ));
                     }
+                    out.push(String::new());
+                    cursor += 1;
                     continue;
                 }
                 let (tag, rest) = hl.split_at(1);
@@ -794,6 +804,42 @@ mod tests {
         assert!(!r.ok, "mismatched removal must not silently corrupt");
         assert_eq!(r.error.unwrap().code, "CONFLICT");
         assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_blank_context_desync_is_conflict_not_corruption() {
+        // Blank context line with no matching blank in the file and no '-' line to
+        // trip the removal guard: must CONFLICT, not duplicate a line (was: wrote
+        // "a\nb\nX\nb\n").
+        let dir = tmp("blankdesync");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\n").unwrap();
+        let patch = "@@\n a\n\n+X\n b\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "blank-context desync must conflict, not corrupt");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_stripped_blank_context_still_applies() {
+        // A valid diff whose blank context line was stripped to "" must still apply
+        // when the file genuinely has that interior blank line (was over-rejected).
+        let dir = tmp("stripblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\n\nc\n").unwrap();
+        let patch = "@@ -1,3 +1,3 @@\n a\n\n-c\n+C\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(r.ok, "stripped-blank context should apply: {:?}", r.error);
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\n\nC\n");
         let _ = std::fs::remove_dir_all(dir);
     }
 
