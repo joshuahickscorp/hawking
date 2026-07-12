@@ -445,3 +445,40 @@ async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
 
     let _ = std::fs::remove_dir_all(repo);
 }
+
+#[tokio::test]
+async fn model_step_does_not_auto_dispatch_subprocess_readonly_tool() {
+    // git.diff is annotated read-only but shells out; the deny-by-default allowlist
+    // must refuse to auto-dispatch it from a model step (defense against the
+    // arg-injection escalation the review found). Recorded as proposed, not run.
+    let repo = make_repo(true);
+    let stub_out =
+        "<tool_call>{\"name\":\"git.diff\",\"arguments\":{\"ref\":\"HEAD\"}}</tool_call>".to_string();
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let kernel = build_kernel_with_stub(log.clone(), &repo, planner, Mode::Live, &stub_out);
+    let mut state = kernel
+        .start_run(SessionId::new(), "investigate")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+    let events = log.scan(None, None, None).await.unwrap();
+    let proposed = events.iter().any(|e: &Event| {
+        e.kind == "agent.observation"
+            && e.payload
+                .get("tool_calls")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter().any(|c| {
+                        c.get("tool").and_then(|t| t.as_str()) == Some("git.diff")
+                            && c.get("dispatched").and_then(|d| d.as_bool()) == Some(false)
+                    })
+                })
+                .unwrap_or(false)
+    });
+    assert!(
+        proposed,
+        "a subprocess read-only tool must not auto-dispatch from a model step"
+    );
+    let _ = std::fs::remove_dir_all(repo);
+}

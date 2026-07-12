@@ -362,18 +362,29 @@ impl<'a> AgentDriver<'a> {
                     Vec::new(),
                     Some(self.workspace_root.clone()),
                 );
+                // Deny-by-default: a model step may auto-dispatch only this explicit
+                // allowlist of PURE, in-process query tools that cannot mutate or
+                // shell out under ANY argument. Subprocess-backed tools (git.*,
+                // shell.*) are excluded even when annotated read-only, because an
+                // arg-injection there (as the review found in git.diff's `ref`) can
+                // escalate a "read" into a write. The read-only annotation is checked
+                // too, as a second gate. Anything else is recorded as proposed.
+                const AUTO_DISPATCH_ALLOWLIST: &[&str] =
+                    &["fs.read", "fs.list", "fs.stat", "fs.glob", "search.text"];
                 let mut records = Vec::with_capacity(parsed.len());
                 for p in parsed {
                     let call = p.into_tool_call();
-                    if dispatcher.is_read_only(&call.tool) {
+                    let auto = AUTO_DISPATCH_ALLOWLIST.contains(&call.tool.as_str())
+                        && dispatcher.is_read_only(&call.tool);
+                    if auto {
                         records.push(tool_loop.run_call(call).await.to_observation());
                     } else {
                         records.push(json!({
                             "tool": call.tool,
                             "status": "proposed",
                             "dispatched": false,
-                            "note": "a mutating tool from a model step is not auto-dispatched; \
-                                     it requires an authorized plan step",
+                            "note": "only pure read-only query tools auto-dispatch from a model \
+                                     step; anything else requires an authorized plan step",
                         }));
                     }
                 }
