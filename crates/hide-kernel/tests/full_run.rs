@@ -120,10 +120,33 @@ fn make_repo(valid: bool) -> PathBuf {
 }
 
 fn runtime() -> Arc<KernelRuntimeClient> {
+    runtime_with("// edit applied")
+}
+
+fn runtime_with(out: &str) -> Arc<KernelRuntimeClient> {
     let registry = Arc::new(RoleRegistry::with_default_local_roles());
     let router = Arc::new(SimpleRouter::new(registry));
-    let inference = Arc::new(StubInferenceClient::new("// edit applied"));
+    let inference = Arc::new(StubInferenceClient::new(out));
     Arc::new(KernelRuntimeClient::new(router, inference))
+}
+
+fn build_kernel_with_stub(
+    log: DynEventLog,
+    root: &Path,
+    planner: Arc<dyn Planner>,
+    mode: Mode,
+    stub_out: &str,
+) -> AgentKernel {
+    let dispatcher = allow_all_dispatcher(root.to_string_lossy().to_string());
+    AgentKernel::builder(log)
+        .workspace_root(root.to_string_lossy().to_string())
+        .autonomy(Autonomy::FullAuto)
+        .mode(mode)
+        .planner(planner)
+        .runtime(runtime_with(stub_out))
+        .dispatcher(dispatcher.clone())
+        .with_standard_oracles(dispatcher)
+        .build()
 }
 
 fn build_kernel(log: DynEventLog, root: &Path, planner: Arc<dyn Planner>, mode: Mode) -> AgentKernel {
@@ -329,6 +352,52 @@ async fn effectful_step_without_oracle_is_not_soft_accepted() {
     assert!(
         phase_names.iter().any(|n| n == "repair" || n == "replan"),
         "effectful unverified step must route to repair/replan; phases: {phase_names:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(repo);
+}
+
+#[tokio::test]
+async fn model_step_dispatches_emitted_tool_call() {
+    // End-to-end: a model step whose generated text contains a <tool_call> must
+    // actually dispatch it through the permission-gated loop, and the resulting
+    // observation event must record the dispatch. This proves Phase 0 is wired
+    // into the live agent driver, not just a standalone library.
+    let repo = make_repo(true);
+    let libpath = repo.join("src/lib.rs");
+    let stub_out = format!(
+        "<tool_call>{{\"name\":\"fs.read\",\"arguments\":{{\"path\":\"{}\"}}}}</tool_call>",
+        libpath.to_string_lossy()
+    );
+    let log = Arc::new(InMemoryEventLog::new());
+    // A model step (Investigate), no oracles: it generates, we dispatch, done.
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let kernel = build_kernel_with_stub(log.clone(), &repo, planner, Mode::Live, &stub_out);
+
+    let mut state = kernel
+        .start_run(SessionId::new(), "investigate the code")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    let events = log.scan(None, None, None).await.unwrap();
+    let dispatched = events.iter().any(|e: &Event| {
+        e.kind == "agent.observation"
+            && e
+                .payload
+                .get("tool_calls")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter().any(|c| {
+                        c.get("tool").and_then(|t| t.as_str()) == Some("fs.read")
+                            && c.get("dispatched").and_then(|d| d.as_bool()) == Some(true)
+                    })
+                })
+                .unwrap_or(false)
+    });
+    assert!(
+        dispatched,
+        "the model-emitted fs.read tool call must be dispatched and recorded in an observation"
     );
 
     let _ = std::fs::remove_dir_all(repo);

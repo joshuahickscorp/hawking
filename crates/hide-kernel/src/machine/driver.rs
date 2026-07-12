@@ -342,11 +342,29 @@ impl<'a> AgentDriver<'a> {
             Ok(())
         };
         let stats = runtime.generate(request, &mut sink).await?;
-        Ok(json!({
+
+        let mut observation = json!({
             "generated": buf,
             "input_tokens": stats.input_tokens,
             "output_tokens": stats.output_tokens,
-        }))
+        });
+        // Agentic tool use: if the model emitted a tool call in its text, dispatch
+        // it through the permission-gated loop (lint -> dedup -> dispatch) and record
+        // the results, so a model step can actually CALL tools, not just narrate.
+        // Requires a dispatcher; without one the step is text-only as before.
+        if let Some(dispatcher) = self.dispatcher {
+            if crate::tools::has_tool_call(&buf) {
+                let mut tool_loop =
+                    crate::tools::ToolLoop::new(dispatcher, Vec::new(), Some(self.workspace_root.clone()));
+                let turns = tool_loop.run_text(&buf).await;
+                if !turns.is_empty() {
+                    let results: Vec<serde_json::Value> =
+                        turns.iter().map(|t| t.to_observation()).collect();
+                    observation["tool_calls"] = json!(results);
+                }
+            }
+        }
+        Ok(observation)
     }
 
     // --- VERIFY: run the step's oracles + the gate --------------------------

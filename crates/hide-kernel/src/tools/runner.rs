@@ -64,6 +64,25 @@ pub struct ToolTurn {
     pub feedback: String,
 }
 
+impl ToolTurn {
+    /// A compact JSON summary of this turn for the agent event log / observation
+    /// (the driver records this when a model step actually calls a tool).
+    pub fn to_observation(&self) -> serde_json::Value {
+        let status = match &self.status {
+            ToolTurnStatus::Ok(_) => "ok",
+            ToolTurnStatus::Deduped(_) => "deduped",
+            ToolTurnStatus::Rejected(_) => "rejected",
+            ToolTurnStatus::Error(_) => "error",
+        };
+        json!({
+            "tool": self.call.tool,
+            "status": status,
+            "dispatched": self.status.dispatched(),
+            "feedback": self.feedback,
+        })
+    }
+}
+
 /// The stateful loop. Holds the dispatcher, the known-tool set (for lint), the
 /// workspace root (for hallucinated-path lint), and the idempotency state.
 pub struct ToolLoop<'a, D: CallDispatch> {
@@ -397,6 +416,26 @@ mod tests {
         assert!(matches!(second.status, ToolTurnStatus::Deduped(_)));
         // The effect ran exactly once despite two identical keyed calls.
         assert_eq!(d.count(), 1);
+    }
+
+    #[tokio::test]
+    async fn to_observation_summarizes_ok_and_rejected() {
+        let d = FakeDispatcher::ok();
+        let mut lp = ToolLoop::new(&d, known(), None);
+        let ok = lp
+            .run_text("<tool_call>{\"name\":\"fs.read\",\"arguments\":{\"path\":\"a\"}}</tool_call>")
+            .await;
+        let obs = ok[0].to_observation();
+        assert_eq!(obs["tool"], "fs.read");
+        assert_eq!(obs["status"], "ok");
+        assert_eq!(obs["dispatched"], true);
+
+        let rej = lp
+            .run_text("<tool_call>{\"name\":\"made.up\",\"arguments\":{}}</tool_call>")
+            .await;
+        let obs = rej[0].to_observation();
+        assert_eq!(obs["status"], "rejected");
+        assert_eq!(obs["dispatched"], false);
     }
 
     #[tokio::test]
