@@ -48,7 +48,7 @@ Env (matches audit_ladder.py / scaling_law.py / subbit_measure.py):
   RAMCLIFF_Q4K_BPW       Q4_K reference effective bpw (default 4.5)
   RAMCLIFF_CLIFF_X       cliff x-factor gate (default 10.0)
   RAMCLIFF_SSD_GBPS      modeled SSD read bandwidth GB/s for the swapping path (default 5.0)
-  RAMCLIFF_RAM_GBPS      modeled unified-memory bandwidth GB/s for the resident path (default 800.0, M1 Ultra)
+  RAMCLIFF_RAM_GBPS      modeled unified-memory bandwidth GB/s for the resident path (default 819.0, M3 Ultra)
   RAMCLIFF_SERVE_BIN     path to the native .tq serve binary (gates the REAL path; absent -> STUDIO-TIER)
   POWERMETRICS           path to powermetrics (gates the REAL energy path; absent -> modeled/STUDIO-TIER)
 

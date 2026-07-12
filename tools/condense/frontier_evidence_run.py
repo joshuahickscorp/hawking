@@ -10,13 +10,10 @@ from __future__ import annotations
 
 import argparse
 import copy
-import datetime as _dt
 import hashlib
 import json
 import os
 import pathlib
-import re
-import subprocess
 import sys
 import tempfile
 from typing import Any
@@ -26,6 +23,19 @@ os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
 from studio_manifest import FRONTIER_MODELS, FrontierModel, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    SIGN_ALG,
+    commands as _common_commands,
+    git_commit as _git_commit,
+    is_sha256 as _is_sha256,
+    now_utc as _now,
+    placeholder as _placeholder,
+    read_json as _read_json,
+    safe_label as _safe_label,
+    sign_record as _sign_record,
+    signature_status,
+    write_json as _write_json,
+)
 import frontier_coverage  # noqa: E402
 import frontier_coverage_runner  # noqa: E402
 import frontier_doctor_recovery  # noqa: E402
@@ -39,7 +49,6 @@ import frontier_receipts  # noqa: E402
 
 COND_DIR = pathlib.Path("reports/condense")
 SCHEMA = "hawking.frontier_studio_evidence_run.v1"
-SIGN_ALG = "sha256-json-v1"
 ALLOWED_SOURCE_RELEASE = (
     "delete_source_after_verified_bake",
     "retain_source_due_license",
@@ -60,48 +69,12 @@ REQUIRED_EVIDENCE = (
 REQUIRED_GATE_KEYS = REQUIRED_EVIDENCE + ("source_release_decision",)
 
 
-def _now() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    try:
-        p = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _safe_label(label: str) -> str:
-    return re.sub(r"[^A-Za-z0-9_.-]+", "-", label)
-
-
 def evidence_run_path(root: pathlib.Path, label: str) -> pathlib.Path:
     return root / COND_DIR / f"{_safe_label(label)}_studio_evidence_run.json"
 
 
 def artifact_inventory_path(root: pathlib.Path, label: str) -> pathlib.Path:
     return root / COND_DIR / f"{_safe_label(label)}_artifact_inventory.json"
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
-def _write_json(path: pathlib.Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, sort_keys=True)
-        f.write("\n")
 
 
 def _sha256_file(path: pathlib.Path) -> str | None:
@@ -114,31 +87,8 @@ def _sha256_file(path: pathlib.Path) -> str | None:
     return h.hexdigest()
 
 
-def _canonical_digest(data: dict[str, Any]) -> str:
-    unsigned = copy.deepcopy(data)
-    unsigned.pop("signature", None)
-    return hashlib.sha256(
-        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
-
-
-def _placeholder(value: Any) -> bool:
-    if value is None:
-        return True
-    s = str(value)
-    return not s.strip() or "<" in s or "TODO" in s or "..." in s
-
-
 def _commands(record: dict[str, Any]) -> list[str]:
-    out = []
-    cmds = record.get("commands")
-    if isinstance(cmds, list):
-        out.extend(str(cmd) for cmd in cmds if cmd)
-    if record.get("command"):
-        out.append(str(record["command"]))
-    if record.get("runner_command"):
-        out.append(str(record["runner_command"]))
-    return out
+    return _common_commands(record, "runner_command")
 
 
 def _model_for_record(record: dict[str, Any], model: FrontierModel | None = None) -> FrontierModel | None:
@@ -153,24 +103,6 @@ def _model_for_record(record: dict[str, Any], model: FrontierModel | None = None
     if hf_id:
         return frontier_by_label(str(hf_id))
     return None
-
-
-def signature_status(record: dict[str, Any]) -> dict[str, Any]:
-    sig = record.get("signature") if isinstance(record.get("signature"), dict) else {}
-    expected = _canonical_digest(record)
-    ok = sig.get("algorithm") == SIGN_ALG and sig.get("digest") == expected
-    problems = []
-    if sig.get("algorithm") != SIGN_ALG:
-        problems.append(f"signature algorithm must be {SIGN_ALG}")
-    if sig.get("digest") != expected:
-        problems.append("signature digest mismatch")
-    return {
-        "ok": ok,
-        "algorithm": sig.get("algorithm"),
-        "digest": sig.get("digest"),
-        "expected_digest": expected,
-        "problems": problems,
-    }
 
 
 def _evidence_path(root: pathlib.Path, model: FrontierModel, key: str) -> pathlib.Path:
@@ -233,7 +165,7 @@ def _artifact_inventory_status(root: pathlib.Path, model: FrontierModel, record:
         if row.get("bytes") != size:
             problems.append(f"artifact {path_value} size changed since inventory")
         sha = row.get("sha256")
-        if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", sha):
+        if not _is_sha256(sha):
             problems.append(f"artifact {path_value} missing valid sha256")
             continue
         actual_sha = _sha256_file(artifact)
@@ -428,20 +360,17 @@ def record_status(record: dict[str, Any] | None, *, root: pathlib.Path = ROOT,
 def sign_record(record: dict[str, Any], *, root: pathlib.Path = ROOT,
                 model: FrontierModel | None = None,
                 allow_blocked_draft: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
-    signed = copy.deepcopy(record)
-    signed.pop("signature", None)
-    signed.setdefault("generated_at", _now())
-    signed.setdefault("git_commit", _git_commit(root))
-    signed["signed_at"] = _now()
-    status = record_status(signed, root=root, model=model, require_signature=False)
-    if not status["ok"] and not allow_blocked_draft:
-        return signed, status
-    signed["signature"] = {"algorithm": SIGN_ALG, "digest": _canonical_digest(signed)}
-    return signed, record_status(signed, root=root, model=model, require_signature=True)
+    return _sign_record(
+        record,
+        record_status,
+        root=root,
+        status_kwargs={"root": root, "model": model},
+        allow_blocked_draft=allow_blocked_draft,
+    )
 
 
 def draft_record(root: pathlib.Path, model: FrontierModel,
-                 *, machine_class: str = "Studio-M1Ultra-128") -> dict[str, Any]:
+                 *, machine_class: str = "Studio-M3Ultra-96") -> dict[str, Any]:
     evidence = [evidence_status(root, model, key) for key in REQUIRED_EVIDENCE]
     return {
         "schema": SCHEMA,
@@ -473,7 +402,7 @@ def draft_record(root: pathlib.Path, model: FrontierModel,
 def build_record(root: pathlib.Path, model: FrontierModel, *, run_id: str, runner_command: str,
                  source_release_decision: str, source_release_command: str,
                  source_release_reason: str, decided_by: str,
-                 machine_class: str = "Studio-M1Ultra-128") -> dict[str, Any]:
+                 machine_class: str = "Studio-M3Ultra-96") -> dict[str, Any]:
     evidence = [evidence_status(root, model, key) for key in REQUIRED_EVIDENCE]
     gate = {row["key"]: bool(row["ok"]) for row in evidence}
     source_release = {
@@ -621,7 +550,7 @@ def _write_complete_selftest_evidence(root: pathlib.Path, model: FrontierModel) 
         "schema": frontier_receipt_runner.SERVE_SCHEMA,
         "model": model.label,
         "receipt_state": "final",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "artifact_sha256": "a" * 64,
         "native_tq": True,
         "tq_strict": True,
@@ -633,7 +562,7 @@ def _write_complete_selftest_evidence(root: pathlib.Path, model: FrontierModel) 
         "tok_s": 12.0,
         "memory_peak_gb": 4.0,
         "memory_resident_gb": 3.5,
-        "unified_memory_gb": 128.0,
+        "unified_memory_gb": 96.0,
         "resident_memory_ok": True,
         "parity_pass": True,
         "commands": ["selftest serve"],
@@ -648,7 +577,7 @@ def _write_complete_selftest_evidence(root: pathlib.Path, model: FrontierModel) 
         "schema": frontier_receipt_runner.RAMCLIFF_SCHEMA,
         "model": model.label,
         "receipt_state": "final",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "artifact_sha256": "b" * 64,
         "gate": {
             "condensed_resident": True,
@@ -792,7 +721,7 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             p.add_argument("--force", action="store_true")
             p.add_argument("--sign-draft", action="store_true")
-            p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            p.add_argument("--machine-class", default="Studio-M3Ultra-96")
         else:
             p.set_defaults(force=False, sign_draft=False)
         if mode == "build":
@@ -802,11 +731,11 @@ def build_argparser() -> argparse.ArgumentParser:
             p.add_argument("--source-release-command", required=True)
             p.add_argument("--source-release-reason", required=True)
             p.add_argument("--decided-by", required=True)
-            p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            p.add_argument("--machine-class", default="Studio-M3Ultra-96")
         elif mode != "draft":
             p.set_defaults(run_id="", runner_command="", source_release_decision="",
                            source_release_command="", source_release_reason="", decided_by="",
-                           machine_class="Studio-M1Ultra-128")
+                           machine_class="Studio-M3Ultra-96")
         p.set_defaults(func=dispatch)
     p = sub.add_parser("selftest", help="synthetic signed Studio evidence-run receipt tests")
     p.set_defaults(func=cmd_selftest)

@@ -46,16 +46,16 @@ pub enum StudioCmd {
         #[arg(long, default_value = "reports/condense/studio_environment.json")]
         out: PathBuf,
         /// Machine class expected for the Studio run.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Expected download link budget in MB/s.
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         /// Minimum RAM required for a green Studio environment.
-        #[arg(long, default_value_t = 120.0)]
+        #[arg(long, default_value_t = 90.0)]
         min_ram_gb: f64,
         /// Minimum free disk required for a green Studio environment.
-        #[arg(long, default_value_t = 500.0)]
+        #[arg(long, default_value_t = 150.0)]
         min_free_disk_gb: f64,
         /// Skip the no-download Hugging Face network probe.
         #[arg(long, default_value_t = false)]
@@ -171,15 +171,15 @@ pub enum StudioCmd {
         /// Repository root containing tools/condense/frontier_ops.py.
         #[arg(long, default_value = ".")]
         root: PathBuf,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -192,15 +192,15 @@ pub enum StudioCmd {
         /// Repository root containing tools/condense/frontier_ops.py.
         #[arg(long, default_value = ".")]
         root: PathBuf,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -213,15 +213,15 @@ pub enum StudioCmd {
         /// Repository root containing tools/condense/frontier_ops.py.
         #[arg(long, default_value = ".")]
         root: PathBuf,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -249,9 +249,9 @@ pub enum StudioCmd {
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -309,15 +309,15 @@ pub enum StudioCmd {
         /// Optional run-next label/hf id to target.
         #[arg(long)]
         label: Option<String>,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -480,15 +480,15 @@ pub enum StudioCmd {
             default_value = "reports/condense/frontier_refresh.preflight.json"
         )]
         require_refresh: PathBuf,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -518,15 +518,15 @@ pub enum StudioCmd {
         root: PathBuf,
         #[arg(long)]
         label: Option<String>,
-        #[arg(long, default_value_t = 8000.0)]
+        #[arg(long, default_value_t = 400.0)]
         storage_budget_gb: f64,
         #[arg(long, default_value_t = 300.0)]
         link_mbs: f64,
         #[arg(long, default_value_t = 0.7)]
         efficiency: f64,
-        #[arg(long, default_value_t = 200.0)]
+        #[arg(long, default_value_t = 64.0)]
         scratch_gb: f64,
-        #[arg(long, default_value_t = 128.0)]
+        #[arg(long, default_value_t = 32.0)]
         cache_reserve_gb: f64,
         #[arg(long, default_value_t = 6.0)]
         max_wave_hours: f64,
@@ -554,7 +554,7 @@ pub enum StudioCmd {
         #[arg(long, default_value = ".local")]
         claim_suffix: String,
         /// Machine class recorded in draft envelopes.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Write the proof-pack summary here.
         #[arg(
@@ -791,7 +791,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -836,7 +836,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -864,7 +864,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -909,7 +909,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -951,7 +951,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -993,7 +993,7 @@ pub enum StudioCmd {
         #[arg(long, default_value_t = false)]
         sign_draft: bool,
         /// Draft mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Sign mode: allow signing blocked drafts.
         #[arg(long, default_value_t = false)]
@@ -1053,7 +1053,7 @@ pub enum StudioCmd {
         #[arg(long, default_value = "")]
         decided_by: String,
         /// Draft/build mode: machine class recorded in the receipt envelope.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Emit machine-readable JSON from frontier_ops.py.
         #[arg(long, default_value_t = false)]
@@ -1113,7 +1113,7 @@ pub enum StudioCmd {
         #[arg(long)]
         parity_receipt: String,
         /// Machine class recorded in the serve receipt.
-        #[arg(long, default_value = "Studio-M1Ultra-128")]
+        #[arg(long, default_value = "Studio-M3Ultra-96")]
         machine_class: String,
         /// Write the serve receipt here instead of the default reports/condense path.
         #[arg(long)]
@@ -1238,25 +1238,19 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             cache_reserve_gb,
             max_wave_hours,
             json,
-        } => run_frontier_ops(
-            &root,
-            &[
-                "lifecycle",
-                "--storage-budget-gb",
-                &storage_budget_gb.to_string(),
-                "--link-mbs",
-                &link_mbs.to_string(),
-                "--efficiency",
-                &efficiency.to_string(),
-                "--scratch-gb",
-                &scratch_gb.to_string(),
-                "--cache-reserve-gb",
-                &cache_reserve_gb.to_string(),
-                "--max-wave-hours",
-                &max_wave_hours.to_string(),
-            ],
-            json,
-        ),
+        } => {
+            let mut owned = vec!["lifecycle".to_string()];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
+            run_frontier_owned(&root, owned, json)
+        }
         StudioCmd::Status {
             root,
             storage_budget_gb,
@@ -1266,25 +1260,19 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             cache_reserve_gb,
             max_wave_hours,
             json,
-        } => run_frontier_ops(
-            &root,
-            &[
-                "status",
-                "--storage-budget-gb",
-                &storage_budget_gb.to_string(),
-                "--link-mbs",
-                &link_mbs.to_string(),
-                "--efficiency",
-                &efficiency.to_string(),
-                "--scratch-gb",
-                &scratch_gb.to_string(),
-                "--cache-reserve-gb",
-                &cache_reserve_gb.to_string(),
-                "--max-wave-hours",
-                &max_wave_hours.to_string(),
-            ],
-            json,
-        ),
+        } => {
+            let mut owned = vec!["status".to_string()];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
+            run_frontier_owned(&root, owned, json)
+        }
         StudioCmd::StoragePlan {
             root,
             storage_budget_gb,
@@ -1294,25 +1282,19 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             cache_reserve_gb,
             max_wave_hours,
             json,
-        } => run_frontier_ops(
-            &root,
-            &[
-                "storage-plan",
-                "--storage-budget-gb",
-                &storage_budget_gb.to_string(),
-                "--link-mbs",
-                &link_mbs.to_string(),
-                "--efficiency",
-                &efficiency.to_string(),
-                "--scratch-gb",
-                &scratch_gb.to_string(),
-                "--cache-reserve-gb",
-                &cache_reserve_gb.to_string(),
-                "--max-wave-hours",
-                &max_wave_hours.to_string(),
-            ],
-            json,
-        ),
+        } => {
+            let mut owned = vec!["storage-plan".to_string()];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
+            run_frontier_owned(&root, owned, json)
+        }
         StudioCmd::Gate {
             root,
             phase,
@@ -1329,21 +1311,16 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             if phase != "procure" && phase != "claim" {
                 return Err(anyhow!("--phase must be procure or claim"));
             }
-            let mut owned = vec![
-                "launch-gate".to_string(),
-                "--phase".to_string(),
-                phase,
-                "--link-mbs".to_string(),
-                link_mbs.to_string(),
-                "--efficiency".to_string(),
-                efficiency.to_string(),
-                "--scratch-gb".to_string(),
-                scratch_gb.to_string(),
-                "--cache-reserve-gb".to_string(),
-                cache_reserve_gb.to_string(),
-                "--max-wave-hours".to_string(),
-                max_wave_hours.to_string(),
-            ];
+            let mut owned = vec!["launch-gate".to_string(), "--phase".to_string(), phase];
+            push_storage_args(
+                &mut owned,
+                storage_budget_gb,
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
             if allow_unreviewed {
                 owned.push("--allow-unreviewed".to_string());
             }
@@ -1351,12 +1328,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 owned.push("--require-refresh".to_string());
                 owned.push(path.display().to_string());
             }
-            if let Some(gb) = storage_budget_gb {
-                owned.push("--storage-budget-gb".to_string());
-                owned.push(gb.to_string());
-            }
-            let refs = owned.iter().map(String::as_str).collect::<Vec<_>>();
-            run_frontier_ops(&root, &refs, json)
+            run_frontier_owned(&root, owned, json)
         }
         StudioCmd::LaunchPacketBuild {
             root,
@@ -1393,19 +1365,16 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 runtime_contract.display().to_string(),
                 "--proof-pack".to_string(),
                 proof_pack.display().to_string(),
-                "--storage-budget-gb".to_string(),
-                storage_budget_gb.to_string(),
-                "--link-mbs".to_string(),
-                link_mbs.to_string(),
-                "--efficiency".to_string(),
-                efficiency.to_string(),
-                "--scratch-gb".to_string(),
-                scratch_gb.to_string(),
-                "--cache-reserve-gb".to_string(),
-                cache_reserve_gb.to_string(),
-                "--max-wave-hours".to_string(),
-                max_wave_hours.to_string(),
             ];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
             if let Some(label) = label {
                 owned.push("--label".to_string());
                 owned.push(label);
@@ -1520,19 +1489,16 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 audit_grade.display().to_string(),
                 "--require-refresh".to_string(),
                 require_refresh.display().to_string(),
-                "--storage-budget-gb".to_string(),
-                storage_budget_gb.to_string(),
-                "--link-mbs".to_string(),
-                link_mbs.to_string(),
-                "--efficiency".to_string(),
-                efficiency.to_string(),
-                "--scratch-gb".to_string(),
-                scratch_gb.to_string(),
-                "--cache-reserve-gb".to_string(),
-                cache_reserve_gb.to_string(),
-                "--max-wave-hours".to_string(),
-                max_wave_hours.to_string(),
             ];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
             for label in label {
                 owned.push("--label".to_string());
                 owned.push(label);
@@ -1560,21 +1526,16 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             require_refresh,
             json,
         } => {
-            let mut owned = vec![
-                "run-next".to_string(),
-                "--storage-budget-gb".to_string(),
-                storage_budget_gb.to_string(),
-                "--link-mbs".to_string(),
-                link_mbs.to_string(),
-                "--efficiency".to_string(),
-                efficiency.to_string(),
-                "--scratch-gb".to_string(),
-                scratch_gb.to_string(),
-                "--cache-reserve-gb".to_string(),
-                cache_reserve_gb.to_string(),
-                "--max-wave-hours".to_string(),
-                max_wave_hours.to_string(),
-            ];
+            let mut owned = vec!["run-next".to_string()];
+            push_storage_args(
+                &mut owned,
+                Some(storage_budget_gb),
+                link_mbs,
+                efficiency,
+                scratch_gb,
+                cache_reserve_gb,
+                max_wave_hours,
+            );
             if let Some(label) = label {
                 owned.push("--label".to_string());
                 owned.push(label);
@@ -1583,8 +1544,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 owned.push("--require-refresh".to_string());
                 owned.push(path.display().to_string());
             }
-            let refs = owned.iter().map(String::as_str).collect::<Vec<_>>();
-            run_frontier_ops(&root, &refs, json)
+            run_frontier_owned(&root, owned, json)
         }
         StudioCmd::ProofPack {
             root,
@@ -1616,8 +1576,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 owned.push("--no-require-ramcliff".to_string());
             }
             owned.extend(label);
-            let refs = owned.iter().map(String::as_str).collect::<Vec<_>>();
-            run_frontier_ops(&root, &refs, json)
+            run_frontier_owned(&root, owned, json)
         }
         StudioCmd::LicensePlan {
             root,
@@ -1826,22 +1785,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 ));
             }
             let mut owned = vec!["source-provenance".to_string(), mode.clone()];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
@@ -1882,22 +1834,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 "--kind".to_string(),
                 kind,
             ];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
@@ -1918,22 +1863,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 ));
             }
             let mut owned = vec!["parity-receipt".to_string(), mode.clone()];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
@@ -1974,22 +1912,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 "--kind".to_string(),
                 kind,
             ];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
@@ -2021,22 +1952,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 ));
             }
             let mut owned = vec!["experiment-receipt".to_string(), mode.clone()];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             run_frontier_owned(&root, owned, json)
         }
@@ -2068,22 +1992,15 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
                 ));
             }
             let mut owned = vec!["doctor-recovery-receipt".to_string(), mode.clone()];
-            if !out_dir.is_empty() {
-                owned.push("--out-dir".to_string());
-                owned.push(out_dir);
-            }
-            if mode == "draft" {
-                if force {
-                    owned.push("--force".to_string());
-                }
-                if sign_draft {
-                    owned.push("--sign-draft".to_string());
-                }
-                owned.push("--machine-class".to_string());
-                owned.push(machine_class);
-            } else if mode == "sign" && allow_blocked_draft {
-                owned.push("--allow-blocked-draft".to_string());
-            }
+            push_receipt_mode_args(
+                &mut owned,
+                &mode,
+                out_dir,
+                force,
+                sign_draft,
+                machine_class,
+                allow_blocked_draft,
+            );
             owned.extend(label);
             if mode == "draft" {
                 run_frontier_owned_allowing(&root, owned, json, &[1])
@@ -2233,8 +2150,7 @@ pub fn run(cmd: StudioCmd) -> Result<()> {
             if force {
                 owned.push("--force".to_string());
             }
-            let refs = owned.iter().map(String::as_str).collect::<Vec<_>>();
-            run_frontier_ops(&root, &refs, json)
+            run_frontier_owned(&root, owned, json)
         }
     }
 }
@@ -2250,6 +2166,55 @@ fn push_nonempty_arg(owned: &mut Vec<String>, flag: &str, value: String) {
     if !value.is_empty() {
         owned.push(flag.to_string());
         owned.push(value);
+    }
+}
+
+fn push_storage_args(
+    owned: &mut Vec<String>,
+    storage_budget_gb: Option<f64>,
+    link_mbs: f64,
+    efficiency: f64,
+    scratch_gb: f64,
+    cache_reserve_gb: f64,
+    max_wave_hours: f64,
+) {
+    if let Some(gb) = storage_budget_gb {
+        owned.push("--storage-budget-gb".to_string());
+        owned.push(gb.to_string());
+    }
+    for (flag, value) in [
+        ("--link-mbs", link_mbs),
+        ("--efficiency", efficiency),
+        ("--scratch-gb", scratch_gb),
+        ("--cache-reserve-gb", cache_reserve_gb),
+        ("--max-wave-hours", max_wave_hours),
+    ] {
+        owned.push(flag.to_string());
+        owned.push(value.to_string());
+    }
+}
+
+fn push_receipt_mode_args(
+    owned: &mut Vec<String>,
+    mode: &str,
+    out_dir: String,
+    force: bool,
+    sign_draft: bool,
+    machine_class: String,
+    allow_blocked_draft: bool,
+) {
+    push_nonempty_arg(owned, "--out-dir", out_dir);
+    if mode == "draft" {
+        if force {
+            owned.push("--force".to_string());
+        }
+        if sign_draft {
+            owned.push("--sign-draft".to_string());
+        }
+        owned.push("--machine-class".to_string());
+        owned.push(machine_class);
+    } else if mode == "sign" && allow_blocked_draft {
+        owned.push("--allow-blocked-draft".to_string());
     }
 }
 
@@ -2580,7 +2545,7 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio density-receipt-verify --path reports/condense/studio_density_receipt.local.json",
             "hawking studio runtime-contract-build --out reports/condense/studio_runtime_contract.local.json",
             "hawking studio runtime-contract-verify --path reports/condense/studio_runtime_contract.local.json",
-            "hawking studio storage-plan --storage-budget-gb 8000 --link-mbs 300 --efficiency 0.7",
+            "hawking studio storage-plan --storage-budget-gb 400 --link-mbs 300 --efficiency 0.7",
             "hawking studio license-plan",
             "hawking studio license-decisions draft --out reports/condense/frontier_license_decisions.draft.json",
             "hawking studio license-decisions verify --path reports/condense/frontier_license_decisions.draft.json",
@@ -2598,8 +2563,8 @@ fn snapshot(root: &Path, emit_json: bool) -> Result<()> {
             "hawking studio experiment-receipt verify",
             "hawking studio claim-bundle-build",
             "hawking studio claim-bundle-verify",
-            "hawking studio lifecycle --storage-budget-gb 8000",
-            "hawking studio gate --phase procure --require-refresh reports/condense/frontier_refresh.preflight.json --storage-budget-gb 8000",
+            "hawking studio lifecycle --storage-budget-gb 400",
+            "hawking studio gate --phase procure --require-refresh reports/condense/frontier_refresh.preflight.json --storage-budget-gb 400",
             "hawking studio proof-pack --force",
             "hawking studio launch-packet-build --out reports/condense/studio_wave0_launch_packet.json",
             "hawking studio launch-packet-verify --path reports/condense/studio_wave0_launch_packet.json",
@@ -3213,10 +3178,6 @@ fn v(v: &Value, key: &str) -> String {
         Some(Value::Null) | None => "?".to_string(),
         Some(other) => other.to_string(),
     }
-}
-
-fn run_frontier_ops(root: &Path, args: &[&str], emit_json: bool) -> Result<()> {
-    run_frontier_ops_allowing(root, args, emit_json, &[])
 }
 
 fn run_studio_environment_owned(root: &Path, owned: Vec<String>, emit_json: bool) -> Result<()> {

@@ -7,7 +7,7 @@
 //! the shared `matmul_q4_dispatch` helper (same Metal kernel as Phi3/Llama).
 //! No KV cache — per-layer SSM state replaces it.
 
-use super::arch_config::ArchReader;
+use super::arch_config::{token_embd_vocab_size, ArchReader};
 use super::weights::{dequant_f32, tensor_ref, TensorRef};
 use crate::engine::{Engine, EngineConfig, GenStats, GenerateRequest, StopReason, StreamEvent};
 use crate::gguf::GgufFile;
@@ -28,12 +28,12 @@ use std::time::Instant;
 pub struct Mamba2Config {
     pub n_layers: usize,
     pub hidden: usize,
-    pub inner: usize,      // expand * hidden_size  (2048 for 370M)
-    pub n_heads: usize,    // 32
-    pub head_dim: usize,   // inner / n_heads = 64
-    pub state_size: usize, // 128
-    pub conv_kernel: usize,// 4
-    pub n_groups: usize,   // 1 (number of B/C groups)
+    pub inner: usize,       // expand * hidden_size  (2048 for 370M)
+    pub n_heads: usize,     // 32
+    pub head_dim: usize,    // inner / n_heads = 64
+    pub state_size: usize,  // 128
+    pub conv_kernel: usize, // 4
+    pub n_groups: usize,    // 1 (number of B/C groups)
     pub vocab_size: usize,
     pub rms_norm_eps: f32,
 }
@@ -50,10 +50,7 @@ impl Mamba2Config {
         let conv_kernel = r.opt_usize("ssm.conv_kernel", 4);
         let n_groups = r.opt_usize("ssm.group_count", 1);
         let rms_norm_eps = r.opt_f32("attention.layer_norm_rms_epsilon", 1e-5);
-        let vocab_size = g
-            .tensor("token_embd.weight")
-            .map(|t| t.dims.iter().copied().max().unwrap_or(0) as usize)
-            .unwrap_or(0);
+        let vocab_size = token_embd_vocab_size(g, "mamba2: cannot determine vocab_size")?;
         if vocab_size == 0 {
             return Err(Error::Model("mamba2: cannot determine vocab_size".into()));
         }
@@ -128,7 +125,13 @@ pub struct Mamba2LayerState {
 }
 
 impl Mamba2LayerState {
-    fn new(conv_kernel: usize, conv_width: usize, n_heads: usize, head_dim: usize, state_size: usize) -> Self {
+    fn new(
+        conv_kernel: usize,
+        conv_width: usize,
+        n_heads: usize,
+        head_dim: usize,
+        state_size: usize,
+    ) -> Self {
         Self {
             conv_ring: vec![0.0f32; conv_kernel * conv_width],
             conv_pos: 0,
@@ -320,7 +323,11 @@ impl Mamba2 {
                 let st = &mut self.states[li].ssm_state;
                 for hi in 0..n_heads {
                     let raw_dt = dt_owned[hi] + ssm_dt_bias_ref[hi];
-                    let dt_h = if raw_dt > 20.0 { raw_dt } else { (raw_dt.exp() + 1.0).ln() };
+                    let dt_h = if raw_dt > 20.0 {
+                        raw_dt
+                    } else {
+                        (raw_dt.exp() + 1.0).ln()
+                    };
                     let a_h = (-dt_h * ssm_a_ref[hi].exp()).exp();
                     let x_h = &x_ssm_owned[hi * head_dim..(hi + 1) * head_dim];
                     let state_off = hi * head_dim * state_size;
@@ -559,7 +566,10 @@ impl Engine for Mamba2 {
             decode_ms,
             ..Default::default()
         };
-        sink(StreamEvent::Done { reason: stop_reason, stats: stats.clone() });
+        sink(StreamEvent::Done {
+            reason: stop_reason,
+            stats: stats.clone(),
+        });
         Ok(stats)
     }
 

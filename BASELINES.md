@@ -1,12 +1,20 @@
 # BASELINES.md — baseline neutrality spec
 
-> Spec source: `docs/plans/studio_maximization_2026_06_27.md` §20.11 / §20-BASELINES.
+> Active spec sources: `docs/plans/STUDIO_GO.md`,
+> `docs/plans/quintessential_engine_2026_06_29.md`, and
+> `docs/plans/computational_efficiency_paradigms_2026_07_11.md`.
 > The honest baseline set, each with its **exact command** and a **best-effort note**.
 > Rule: a baseline marked **best-effort** can support a *contingent* or *negative* claim
 > but **never a public win** (§20.3 invalidation rule 8). No rhetorical sandbagging — if a
 > baseline beats Hawking, its receipt ships unchanged.
 
 ## The baseline set (run all on the SAME named machine, same frozen suite)
+
+The named machine is the M3 Ultra Studio: 96 GB unified memory, 819 GB/s advertised memory bandwidth,
+and 1 TB SSD. Regenerate prior M3 Pro/M1 Ultra environment and baseline receipts. Alongside quality and
+effective bpw, every measured row records cold/warm mode, output length, TTFT, inter-token latency,
+p50/p95 wall time, useful/SLO goodput, joules per accepted token, bytes moved/resident bytes where
+available, peak unified memory, memory-pressure state, swap delta, free disk, and thermal state.
 
 | baseline | exact command (fill in `<...>`) | tuning status |
 |---|---|---|
@@ -18,7 +26,9 @@
 
 ## Download manifest (B2 — the parent + teacher + MoE ids the plan pins)
 
-Record-only on the M3 Pro 18 GB; download on the Studio (disk-bound now).
+The Studio is active. The 0.5B/1.5B/7B parents are staged. Stage 14B next; downloading the 32B parent is
+allowed, but its processing rung remains blocked until a measured peak proves the interactive reserve or a
+streamed/blockwise checkpoint path is green.
 
 | rung / role | exact HF id | bf16 size | local now? | where |
 |---|---|--:|---|---|
@@ -38,23 +48,25 @@ Serve-oriented (do NOT fit the doctor's f16-resident budget). `.tq` sizes at the
 
 | label | exact HF id | total params | active (MoE) | serve bpw | `.tq` size | source download |
 |---|---|--:|--:|--:|--:|--:|
-| 235B-A22B | `Qwen/Qwen3-235B-A22B` | 235B | 22B | 1.34 | ~39 GB (COMFY) | ~470 GB bf16 |
-| 405B | `meta-llama/Llama-3.1-405B-Instruct` | 405B | dense | 1.34 | ~68 GB (COMFY) | ~810 GB bf16, gated |
-| 671B | `deepseek-ai/DeepSeek-V3` | 671B | 37B | 1.00 | ~84 GB (resident edge) | ~1.34 TB bf16 |
-| DeepSeek-V4-Flash | `deepseek-ai/DeepSeek-V4-Flash-DSpark` | 284B | 13B | 1.34 | ~48 GB (1M-context flash) | ~168 GB FP4+FP8 mixed |
-| DeepSeek-V4-Pro | `deepseek-ai/DeepSeek-V4-Pro-DSpark` | 1.6T | 49B | 0.50 | ~100 GB (research stretch) | ~894 GB FP4+FP8 mixed |
-| GLM-5.2 | `zai-org/GLM-5.2` | 753B | ~39B | 1.00 | ~94 GB (resident capstone) | ~1.52 TB bf16 |
-| Kimi-K2.6 | `moonshotai/Kimi-K2.6` | 1.1T | 32B | 0.75 | ~103 GB (resident stretch) | ~595 GB compressed-tensors |
-| Kimi-K2.7-Code | `moonshotai/Kimi-K2.7-Code` | 1.1T | 32B | 0.75 | ~103 GB (coding control) | ~595 GB compressed-tensors |
-| Kimi-K2-Instruct | `moonshotai/Kimi-K2-Instruct` | 1.0T | 32B | 0.75 | ~94 GB (text control) | ~1.03 TB public checkpoint |
+| 235B-A22B | `Qwen/Qwen3-235B-A22B` | 235B | 22B | 1.34 | ~39 GB (resident target) | ~470 GB bf16; whole-source disk-tight |
+| 405B | `meta-llama/Llama-3.1-405B-Instruct` | 405B | dense | 1.34 | ~68 GB (resident target) | ~810 GB bf16; streamed/external only |
+| 671B | `deepseek-ai/DeepSeek-V3` | 671B | 37B | 1.00 | ~84 GB (pressure edge/paged) | ~1.34 TB bf16; streamed/external only |
+| DeepSeek-V4-Flash | `deepseek-ai/DeepSeek-V4-Flash-DSpark` | 284B | 13B | 1.34 | ~48 GB (resident target) | ~168 GB FP4+FP8 mixed; first feasible frontier source |
+| DeepSeek-V4-Pro | `deepseek-ai/DeepSeek-V4-Pro-DSpark` | 1.6T | 49B | 0.50 | ~100 GB (paged/capacity) | ~894 GB FP4+FP8 mixed; streamed/external only |
+| GLM-5.2 | `zai-org/GLM-5.2` | 753B | ~39B | 1.00 | ~94 GB (paged/capacity) | ~1.52 TB bf16; streamed/external only |
+| Kimi-K2.6 | `moonshotai/Kimi-K2.6` | 1.1T | 32B | 0.75 | ~103 GB (paged/capacity) | ~595 GB compressed-tensors; streamed/external only |
+| Kimi-K2.7-Code | `moonshotai/Kimi-K2.7-Code` | 1.1T | 32B | 0.75 | ~103 GB (paged/capacity) | ~595 GB compressed-tensors; streamed/external only |
+| Kimi-K2-Instruct | `moonshotai/Kimi-K2-Instruct` | 1.0T | 32B | 0.75 | ~94 GB (paged/capacity) | ~1.03 TB public checkpoint; streamed/external only |
 
 Download with the FASTEST-SOTA path: `python3.12 tools/condense/procure.py <label>` (forces
 `HF_HUB_ENABLE_HF_TRANSFER=1` + the `hf_xet` backend + `--max-workers`, so it is link-bound not
 software-bound). `procure.py --all-frontier --link-mbps <your link>` prints the full-fit manifest +
 per-model ETA; `procure.py --cycle-frontier --link-mbs 300 --efficiency 0.7` prints the practical
 cycle plan where source checkpoints are deleted/reclaimed after the `.tq` bake and receipts pass.
-`frontier_ops.py storage-plan --storage-budget-gb 8000 --link-mbs 300 --efficiency 0.7` prints the
-aggressive checkpointed wave plan for the 8 TB Studio. `procure.py --check` confirms the accelerators
+Storage planning uses **current free space minus 150 GB**, never nominal SSD capacity, and charges
+**64 GB scratch + 32 GB HF/Xet cache**. Recompute `STORAGE_BUDGET_GB=current_free_gb-150` before each
+wave; `frontier_ops.py storage-plan --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32 --link-mbs 300 --efficiency 0.7`
+prints the checkpointed plan. `procure.py --check` confirms the accelerators
 and project-local HF cache are active. For maximal runs use
 `procure.py <label> --retries 2 --min-observed-mbs 80 --verify --progress-interval-s 60 --stall-timeout-s 900`;
 retries are resumable with fewer workers and `--verify` runs `hf cache verify` against the local dir.
@@ -62,12 +74,14 @@ Each real `procure.py <label>` run appends observed MB/s, live progress samples,
 window, stall termination status, cache delta, route/HF/DNS/network diagnostics for bad attempts,
 retry/verify status, return code, and output tail to
 `reports/condense/frontier_downloads.jsonl`, and
-`hawking studio status --storage-budget-gb 8000` surfaces the latest event per model.
+`hawking studio status --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32`
+surfaces the latest event per model.
 `hawking studio lifecycle` distinguishes stalled downloads from generic failures so the next run can
 retry with explicit evidence. `frontier_ops.py ledger --refresh-hf`
 writes model/revision/license/storage provenance; `frontier_ops.py launch-gate --phase procure`
 enforces the model-aware procurement gate, including storage-wave/cache headroom; and
-`hawking studio lifecycle --storage-budget-gb 8000` prints the per-model DAG state and next safe
+`hawking studio lifecycle --storage-budget-gb "$STORAGE_BUDGET_GB" --scratch-gb 64 --cache-reserve-gb 32`
+prints the per-model DAG state and next safe
 command. `frontier_ops.py record-event <label> --stage bake|serve|eval --status pass --duration-s N`
 feeds compute wall-clock evidence back into the ledger. `frontier_ops.py artifact-inventory <label>` hashes
 durable `.tq` outputs; `frontier_ops.py release-source <label> --dry-run` refuses source deletion until
@@ -152,13 +166,20 @@ procurement-safe; `hawking studio record-license` must store `status=accepted`, 
 terms URL, allowed use, redistribution policy, source-retention policy, and note before downloads.
 The nine-target default frontier manifest is ~7.42 TB of source downloads plus ~0.73 TB of `.tq`
 outputs. At a sustained 300 MB/s it is ~6.9 h download-only serial; at 70% realized throughput from the
-same line it is ~9.8 h. The full-fit view is ~8.2 TB, while the conservative cycle-through view peaks
-around ~2.6 TB with a 200 GB scratch reserve, 128 GB HF/Xet cache reserve, and all `.tq` outputs
-retained. Download smallest-first / biggest-last so the ladder + condense start immediately on the
-smaller sources.
+same line it is ~9.8 h. Neither full fit nor the old retain-all cycle fits the 1 TB Studio. Whole-source
+procurement is currently feasible for V4-Flash; 235B-A22B is disk-tight once reserves are charged, and
+larger sources require verified shard-streaming or external storage. Download/bake/verify/release one
+eligible source at a time, and never release the source before artifact inventory and receipt verification.
 
 ## Honesty rules
 
+- A throughput win is not an efficiency win unless the frozen capability suite, output length, cold/warm
+  regime, memory pressure, discarded work, energy, and byte accounting are comparable. FLOPS and nominal
+  zero counts do not substitute for measured useful work.
+- Downloads and processing are interruption-safe only at a durable checkpoint. Before moving the Studio,
+  drain new launches, finish or gracefully stop the active writer, verify the latest HF cache/artifact and
+  lifecycle record, and require `SAFE TO UNPLUG`. Resume in the same local directory after environment
+  verification; do not treat a merely populated directory as a verified download.
 - Every baseline receipt sets `baseline_best_effort` truthfully. `true` => the baseline can
   only support a *contingent* or *negative* result (R8).
 - Missing baseline rows are not neutral. Use same-box measured evidence or an explicit N/A with a

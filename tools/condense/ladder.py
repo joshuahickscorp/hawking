@@ -7,9 +7,9 @@ sweep is a BIT-FLOOR SEARCH (climb 1→4 bit, stop at the lowest bit the doctor 
 near-1:1), not a fixed grid. The central hypothesis: the bit-floor DESCENDS as params
 rise (bigger = more redundant = compresses harder). See docs/plans/parameter_sweep_pipeline.md.
 
-Two ceilings on the M1 Ultra 128 GB / 8 TB Studio:
-  CONDENSE (needs f16 resident ≈ 2×params): ~48B naive; ~235B+ via phase-2 block-wise.
-  SERVE   (needs only the .tq ≈ bpw/8×params): ~268B @3-bit, ~383B @2-bit, ~669B @1.34-bit.
+Two ceilings on the M3 Ultra 96 GiB / 1 TB Studio:
+  CONDENSE (needs f16 resident plus work buffers): 14B default; 32B requires streamed/block-wise proof.
+  SERVE   (needs only the .tq ≈ bpw/8×params): derived from the shared 78 GB weight budget.
 
 CLI:
   python ladder.py            # summary by family/tier
@@ -17,8 +17,12 @@ CLI:
   python ladder.py --tsv      # flat table (family, model, params, tier, serve-fit per bpw)
   python ladder.py --fit 405  # show serve footprint for an arbitrary param count
 """
+import os
 import sys
-from studio_manifest import FRONTIER_MODELS
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOL_DIR not in sys.path:
+    sys.path.insert(0, TOOL_DIR)
+from studio_manifest import DEFAULT_HARDWARE, FRONTIER_MODELS
 
 # ── bit → bpw payload (matches condense.sh / TrellisConfig::for_bpw_quality) ──────────
 BPW = {1: 1.34, 2: 2.34, 3: 3.34, 4: 4.50}
@@ -63,13 +67,12 @@ def recipe_label(recipe):
 def serves(recipe):
     return recipe[0] == "single"          # single-bake has a built .tq serve path today
 
-# ── hardware envelope (M1 Ultra, the DELIVERED box: 128 GB unified, ~800 GB/s, 8 TB) ────
-# Re-derived from the M2-Max-96GB constants the plan was written against (see
-# M1ULTRA_POTENTIAL_AUDIT.md §6 re-derivation 1). The bigger envelope moves 405B@1.34 and
-# 671B@1.0 out of TIGHT/EDGE into RESIDENT with no expert pager.
-RAM_GB        = 128.0
-WEIGHT_BUDGET = 112.0                      # leave ~16 GB for KV + activations + OS
-CONDENSE_RESIDENT_MAX_B = 48              # naive condense cap (f16 ≈ 2×params must fit ~112 GB) -> ~48B
+# ── delivered hardware envelope: M3 Ultra, 96 GiB unified, 819 GB/s, 1 TB ───────
+# The shared 78 GB envelope preserves room for KV, activations, the OS, and the ChatGPT
+# control plane. Models above it require a measured edge mode, paging, or lower bpw.
+RAM_GB        = DEFAULT_HARDWARE.ram_gb
+WEIGHT_BUDGET = DEFAULT_HARDWARE.weight_budget_gb
+CONDENSE_RESIDENT_MAX_B = 16              # 14B is the largest default resident training rung; 32B streams
 
 
 def tq_gb(params_b, bpw):
@@ -231,9 +234,11 @@ def main():
                 print(f"    {c['recipe']:9s} eff~{c['eff_bpw']:.2f}bpw  .tq≈{c['tq_gb']}GB  {fit}{sv}")
         return
     # default: summary
-    print(f"# Hawking condense ladder — {len(MODELS)} models, RAM {RAM_GB:.0f} GB, "
+    print(f"# Hawking condense ladder — {len(MODELS)} models, RAM {RAM_GB:.0f} GiB, "
           f"weight budget {WEIGHT_BUDGET:.0f} GB")
-    print(f"# naive-condense ≤{CONDENSE_RESIDENT_MAX_B}B · serve ≤~200B@3bit ≤~285B@2bit ≤~500B@1.34bit")
+    caps = {bits: round(WEIGHT_BUDGET * 8 / BPW[bits]) for bits in (3, 2, 1)}
+    print(f"# naive-condense ≤{CONDENSE_RESIDENT_MAX_B}B · serve ≤~{caps[3]}B@3bit "
+          f"≤~{caps[2]}B@2bit ≤~{caps[1]}B@1.34bit")
     for pr in (0, 1, 2, 3):
         ms = [m for m in MODELS if m["priority"] == pr]
         tag = {0: "P0 Qwen2.5 spine", 1: "P1 cross-family", 2: "P2 100B+/MoE", 3: "P3 1-bit frontier"}[pr]

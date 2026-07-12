@@ -9,14 +9,12 @@ artifact, enforces native TQ/no-f16-rehydrate/all-linear/GPU ownership, and writ
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import pathlib
-import re
-import subprocess
 import sys
 import tempfile
-import hashlib
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -24,36 +22,15 @@ os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
 from studio_manifest import FRONTIER_MODELS, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    git_commit as _git_commit,
+    is_sha256 as _is_sha256,
+    placeholder as _placeholder,
+    read_json as _read_json,
+    write_json as _write_json,
+)
 import frontier_receipt_runner  # noqa: E402
 import frontier_receipts  # noqa: E402
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    try:
-        p = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
-def _write_json(path: pathlib.Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, sort_keys=True)
-        f.write("\n")
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -62,10 +39,6 @@ def _sha256_file(path: pathlib.Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
-
-
-def _placeholder(value: str) -> bool:
-    return "<" in value or "TODO" in value or "..." in value
 
 
 def _truthy(report: dict[str, Any], *keys: str) -> bool:
@@ -117,7 +90,7 @@ def _native_tq(report: dict[str, Any]) -> bool:
 def _artifact_report_hash(report: dict[str, Any]) -> str | None:
     for key in ("artifact_sha256", "tq_sha256", "weights_sha256"):
         value = report.get(key)
-        if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{64}", value):
+        if _is_sha256(value):
             return value.lower()
     return None
 
@@ -211,7 +184,7 @@ def _capture_problems(report: dict[str, Any], artifact_hash: str, command: str,
 def build_record(root: pathlib.Path, label: str, artifact: pathlib.Path, bench_json: pathlib.Path,
                  command: str, load_receipt: str, served_forward_receipt: str,
                  parity_receipt: str,
-                 machine_class: str = "Studio-M1Ultra-128") -> tuple[dict[str, Any], dict[str, Any]]:
+                 machine_class: str = "Studio-M3Ultra-96") -> tuple[dict[str, Any], dict[str, Any]]:
     model = frontier_by_label(label)
     if not model:
         raise SystemExit(f"unknown frontier label: {label}")
@@ -331,7 +304,7 @@ def selftest() -> bool:
             "tok_s": 12.5,
             "memory_peak_gb": 3.5,
             "memory_resident_gb": 3.0,
-            "unified_memory_gb": 128.0,
+            "unified_memory_gb": 96.0,
             "resident_memory_ok": True,
             "artifact_sha256": ah,
         }
@@ -416,7 +389,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--load-receipt", required=True)
     p.add_argument("--served-forward-receipt", required=True)
     p.add_argument("--parity-receipt", required=True)
-    p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+    p.add_argument("--machine-class", default="Studio-M3Ultra-96")
     p.add_argument("--out", default="")
     p.add_argument("--force", action="store_true")
     p.add_argument("--json", action="store_true")

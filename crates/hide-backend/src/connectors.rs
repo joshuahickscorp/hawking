@@ -1,24 +1,24 @@
 use crate::digest::compute_home_and_sessions;
 use crate::services::{BackendServices, DynMemoryStore};
 use futures::future::BoxFuture;
-use hide_core::persistence::{DynEventLog, DynProjectionStore};
-use std::path::PathBuf;
 use hawking_context::compiler::CompileInput;
 use hawking_context::profiles::ContextProfile;
 use hawking_context::sources::CodeIndexContextSource;
 use hawking_context::{ContextCompiler, InMemoryMemoryStore, MemoryKind};
-use hide_core::types::Provenance;
 use hawking_index::{CodeIndex, InMemoryCodeIndex, SearchQuery};
 use hawking_orch::{RoleRegistry, Router, SimpleRouter};
 use hawking_research::{DynResearchLedger, ResearchRun, ResearchState};
 use hide_core::error::{HideError, Result};
+use hide_core::persistence::{DynEventLog, DynProjectionStore};
 use hide_core::plugin::ExtensionContribution;
 use hide_core::runtime::{InferenceRequest, RolePurpose};
+use hide_core::types::Provenance;
 use hide_personalize::{DynPersonalizationStore, PersonalizationRecord, TaskClass};
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -27,6 +27,31 @@ pub struct ConnectorStatus {
     pub healthy: bool,
     pub detail: String,
     pub contributions: Vec<ExtensionContribution>,
+}
+
+impl ConnectorStatus {
+    fn new(id: impl Into<String>, healthy: bool, detail: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            healthy,
+            detail: detail.into(),
+            contributions: Vec::new(),
+        }
+    }
+
+    fn with_contributions(
+        id: impl Into<String>,
+        healthy: bool,
+        detail: impl Into<String>,
+        contributions: Vec<ExtensionContribution>,
+    ) -> Self {
+        Self {
+            id: id.into(),
+            healthy,
+            detail: detail.into(),
+            contributions,
+        }
+    }
 }
 
 pub trait Connector: Send + Sync {
@@ -69,12 +94,7 @@ impl ConnectorRegistry {
             let status = connector
                 .status()
                 .await
-                .unwrap_or_else(|err| ConnectorStatus {
-                    id: connector.id().to_string(),
-                    healthy: false,
-                    detail: err.to_string(),
-                    contributions: Vec::new(),
-                });
+                .unwrap_or_else(|err| ConnectorStatus::new(connector.id(), false, err.to_string()));
             statuses.push(status);
         }
         statuses
@@ -100,12 +120,11 @@ impl Connector for PersonalizationConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let count = self.store.load_all()?.len();
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: true,
-                detail: format!("{count} personalization records available"),
-                contributions: Vec::new(),
-            })
+            Ok(ConnectorStatus::new(
+                self.id(),
+                true,
+                format!("{count} personalization records available"),
+            ))
         })
     }
 
@@ -164,12 +183,11 @@ impl Connector for ResearchConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let count = self.ledger.load_runs()?.len();
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: true,
-                detail: format!("{count} research runs available"),
-                contributions: Vec::new(),
-            })
+            Ok(ConnectorStatus::new(
+                self.id(),
+                true,
+                format!("{count} research runs available"),
+            ))
         })
     }
 
@@ -227,12 +245,11 @@ impl Connector for RuntimeConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let count = self.roles.all().len();
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: count > 0,
-                detail: format!("{count} model roles registered"),
-                contributions: Vec::new(),
-            })
+            Ok(ConnectorStatus::new(
+                self.id(),
+                count > 0,
+                format!("{count} model roles registered"),
+            ))
         })
     }
 
@@ -265,8 +282,16 @@ pub struct HomeConnector {
 }
 
 impl HomeConnector {
-    pub fn new(event_log: DynEventLog, projection_store: DynProjectionStore, workspace_root: PathBuf) -> Self {
-        Self { event_log, projection_store, workspace_root }
+    pub fn new(
+        event_log: DynEventLog,
+        projection_store: DynProjectionStore,
+        workspace_root: PathBuf,
+    ) -> Self {
+        Self {
+            event_log,
+            projection_store,
+            workspace_root,
+        }
     }
 }
 
@@ -276,14 +301,7 @@ impl Connector for HomeConnector {
     }
 
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
-        Box::pin(async move {
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: true,
-                detail: "courtyard digest".to_string(),
-                contributions: Vec::new(),
-            })
-        })
+        Box::pin(async move { Ok(ConnectorStatus::new(self.id(), true, "courtyard digest")) })
     }
 
     fn call<'a>(&'a self, method: &'a str, _params: Value) -> BoxFuture<'a, Result<Value>> {
@@ -299,7 +317,9 @@ impl Connector for HomeConnector {
                     .await?;
                     Ok(json!({ "home": home, "sessions": sessions }))
                 }
-                other => Err(HideError::NotFound(format!("home connector method {other}"))),
+                other => Err(HideError::NotFound(format!(
+                    "home connector method {other}"
+                ))),
             }
         })
     }
@@ -324,15 +344,14 @@ impl Connector for CodeIndexConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let health = self.index.health().await?;
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: health.degraded.is_empty(),
-                detail: format!(
+            Ok(ConnectorStatus::new(
+                self.id(),
+                health.degraded.is_empty(),
+                format!(
                     "generation={}, indexed_files={}, stale_files={}",
                     health.generation, health.indexed_files, health.stale_files
                 ),
-                contributions: Vec::new(),
-            })
+            ))
         })
     }
 
@@ -402,8 +421,16 @@ pub struct ContextConnector {
 }
 
 impl ContextConnector {
-    pub fn new(index: Arc<InMemoryCodeIndex>, roles: Arc<RoleRegistry>, memory: DynMemoryStore) -> Self {
-        Self { index, roles, memory }
+    pub fn new(
+        index: Arc<InMemoryCodeIndex>,
+        roles: Arc<RoleRegistry>,
+        memory: DynMemoryStore,
+    ) -> Self {
+        Self {
+            index,
+            roles,
+            memory,
+        }
     }
 }
 
@@ -415,16 +442,15 @@ impl Connector for ContextConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let index_health = self.index.health().await?;
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
-                healthy: !self.roles.all().is_empty(),
-                detail: format!(
+            Ok(ConnectorStatus::new(
+                self.id(),
+                !self.roles.all().is_empty(),
+                format!(
                     "roles={}, indexed_files={}",
                     self.roles.all().len(),
                     index_health.indexed_files
                 ),
-                contributions: Vec::new(),
-            })
+            ))
         })
     }
 
@@ -486,7 +512,16 @@ impl Connector for ContextConnector {
 
 // ---- Real workspace file I/O (ship item: the editor + Explorer operate on real files) ----
 
-const FS_IGNORE: &[&str] = &[".git", "node_modules", "target", "dist", ".hide", ".next", "build", ".turbo"];
+const FS_IGNORE: &[&str] = &[
+    ".git",
+    "node_modules",
+    "target",
+    "dist",
+    ".hide",
+    ".next",
+    "build",
+    ".turbo",
+];
 const FS_MAX_DEPTH: usize = 4;
 const FS_MAX_NODES: usize = 4000;
 const FS_MAX_READ_BYTES: u64 = 2_000_000;
@@ -529,17 +564,26 @@ impl FsConnector {
     fn resolve(&self, rel: &str) -> Result<std::path::PathBuf> {
         use std::path::Component;
         let rel = rel.trim_start_matches('/');
-        if std::path::Path::new(rel)
-            .components()
-            .any(|c| matches!(c, Component::ParentDir | Component::RootDir | Component::Prefix(_)))
-        {
-            return Err(HideError::PolicyDenied(format!("path escapes workspace: {rel}")));
+        if std::path::Path::new(rel).components().any(|c| {
+            matches!(
+                c,
+                Component::ParentDir | Component::RootDir | Component::Prefix(_)
+            )
+        }) {
+            return Err(HideError::PolicyDenied(format!(
+                "path escapes workspace: {rel}"
+            )));
         }
         Ok(self.root.join(rel))
     }
 }
 
-fn walk_tree(dir: &std::path::Path, root: &std::path::Path, depth: usize, budget: &mut usize) -> Vec<Value> {
+fn walk_tree(
+    dir: &std::path::Path,
+    root: &std::path::Path,
+    depth: usize,
+    budget: &mut usize,
+) -> Vec<Value> {
     if depth > FS_MAX_DEPTH || *budget == 0 {
         return Vec::new();
     }
@@ -562,7 +606,11 @@ fn walk_tree(dir: &std::path::Path, root: &std::path::Path, depth: usize, budget
             continue;
         }
         let abs = e.path();
-        let rel = abs.strip_prefix(root).unwrap_or(&abs).to_string_lossy().replace('\\', "/");
+        let rel = abs
+            .strip_prefix(root)
+            .unwrap_or(&abs)
+            .to_string_lossy()
+            .replace('\\', "/");
         *budget -= 1;
         if is_dir {
             let children = walk_tree(&abs, root, depth + 1, budget);
@@ -582,12 +630,11 @@ impl Connector for FsConnector {
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
             let healthy = self.root.is_dir();
-            Ok(ConnectorStatus {
-                id: self.id().to_string(),
+            Ok(ConnectorStatus::new(
+                self.id(),
                 healthy,
-                detail: format!("root={}", self.root.display()),
-                contributions: Vec::new(),
-            })
+                format!("root={}", self.root.display()),
+            ))
         })
     }
 
@@ -605,11 +652,16 @@ impl Connector for FsConnector {
                         .and_then(|v| v.as_str())
                         .ok_or_else(|| HideError::Config("missing path".to_string()))?;
                     let abs = self.resolve(path)?;
-                    let meta = std::fs::metadata(&abs).map_err(|e| HideError::Storage(e.to_string()))?;
+                    let meta =
+                        std::fs::metadata(&abs).map_err(|e| HideError::Storage(e.to_string()))?;
                     if meta.len() > FS_MAX_READ_BYTES {
-                        return Err(HideError::PolicyDenied(format!("file too large to open ({} bytes)", meta.len())));
+                        return Err(HideError::PolicyDenied(format!(
+                            "file too large to open ({} bytes)",
+                            meta.len()
+                        )));
                     }
-                    let text = std::fs::read_to_string(&abs).map_err(|e| HideError::Storage(e.to_string()))?;
+                    let text = std::fs::read_to_string(&abs)
+                        .map_err(|e| HideError::Storage(e.to_string()))?;
                     Ok(json!({ "text": text, "lang": lang_for(path), "path": path }))
                 }
                 "write_file" => {
@@ -623,7 +675,8 @@ impl Connector for FsConnector {
                         .ok_or_else(|| HideError::Config("missing content".to_string()))?;
                     let abs = self.resolve(path)?;
                     if let Some(parent) = abs.parent() {
-                        std::fs::create_dir_all(parent).map_err(|e| HideError::Storage(e.to_string()))?;
+                        std::fs::create_dir_all(parent)
+                            .map_err(|e| HideError::Storage(e.to_string()))?;
                     }
                     std::fs::write(&abs, content).map_err(|e| HideError::Storage(e.to_string()))?;
                     Ok(json!({ "ok": true, "bytes": content.len() }))
@@ -721,12 +774,12 @@ impl Connector for StaticConnector {
 
     fn status<'a>(&'a self) -> BoxFuture<'a, Result<ConnectorStatus>> {
         Box::pin(async move {
-            Ok(ConnectorStatus {
-                id: self.id.clone(),
-                healthy: true,
-                detail: "static connector ready".to_string(),
-                contributions: self.contributions.clone(),
-            })
+            Ok(ConnectorStatus::with_contributions(
+                self.id.clone(),
+                true,
+                "static connector ready",
+                self.contributions.clone(),
+            ))
         })
     }
 

@@ -566,7 +566,8 @@ def compose_matrix(records):
         if frontier:
             fits = [
                 v for v in frontier.values()
-                if v.get("serve_fits_resident_112gb") or v.get("serve_fits_84")
+                if v.get("serve_fits_resident") or v.get("serve_fits_resident_112gb")
+                or v.get("serve_fits_84")
             ]
             if fits:
                 v = fits[0]
@@ -1239,12 +1240,12 @@ def _seed_win(root):
         "serve_fits_resident_112gb": True, "moe": False})
     _write(os.path.join(root, COND_DIR, "405B_serve.json"), {
         "schema": "hawking.frontier_serve.v1",
-        "model": "405B", "source": "measured", "machine_class": "Studio-M1Ultra-128",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M3Ultra-96",
         "status": "pass", "native_tq": True, "rehydrate_f16": False,
         "tq_strict": True, "all_linear": True, "gpu_bitslice": True,
         "served_forward_pass": True, "parity_pass": True, "tok_s": 18.5,
         "memory_peak_gb": 68.0, "memory_resident_gb": 67.8,
-        "unified_memory_gb": 128.0, "resident_memory_ok": True,
+        "unified_memory_gb": 96.0, "resident_memory_ok": True,
         "artifact_sha256": "a" * 64,
         "commands": ["selftest serve"],
         "load_receipt": "selftest://serve-load",
@@ -1253,7 +1254,7 @@ def _seed_win(root):
         "git_commit": "deadbeef"})
     _write(os.path.join(root, COND_DIR, "405B_ramcliff.json"), {
         "schema": "hawking.frontier_ramcliff.v1",
-        "model": "405B", "source": "measured", "machine_class": "Studio-M1Ultra-128",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M3Ultra-96",
         "verdict": "CLIFF-WIN", "served_native_tq": True,
         "tok_s_resident": 18.5, "tok_s_swapping": 1.0, "cliff_x": 18.5,
         "j_per_tok_resident": 0.2, "j_per_tok_swapping": 1.5,

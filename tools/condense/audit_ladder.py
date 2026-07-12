@@ -116,6 +116,15 @@ def _free_gb(path="/tmp"):
     return shutil.disk_usage(path).free / 1e9
 
 
+def _append_jsonl_durable(path, row):
+    """Commit one completed-config checkpoint before deleting its temporary artifacts."""
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps(row) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+
+
 def _ensure_ppl_text():
     """Recreate the small eval/capture corpus if /tmp was wiped by a reboot."""
     if os.path.exists(PT):
@@ -411,7 +420,8 @@ def build_recover(bits, steps=60, rank=64, lr=1e-4, alpha=0.5, rung=None,
     HARD_SWAP = float(os.environ.get("DOCTOR_SWAP_HARD_CEIL", "18000"))
     GRACE     = int(os.environ.get("DOCTOR_TERMINATE_GRACE", "600"))
     USE_PARTIAL = os.environ.get("DOCTOR_USE_PARTIAL", "1").lower() in {"1", "true", "yes"}
-    WARMUP    = 300   # ignore swap for first 5 min (loading phase is inherently heavy)
+    # Loading is exactly when a wrong model/dtype can exhaust unified memory; no blind warmup.
+    WARMUP    = int(os.environ.get("DOCTOR_RESOURCE_WARMUP", "0"))
 
     parts, base_bpw = build_awq(bits, alpha, rung, outlier_pct)
     base = f"{T}_rbase.safetensors"
@@ -690,11 +700,20 @@ CONFIGS = {
         # seeded/known (skip on resume):
         ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)), ("2-AWQ", build_awq, (2,)),
         ("1-AWQ", build_awq, (1,)), ("1-RHT", build_rht, (1,))],
-    # STUDIO — the full L0-L6 recovery stack per model for the bit-floor-vs-scale experiment (§4).
-    # Bake tiers set the PTQ floor + density references; recovery tiers push the sub-3-bit floor
-    # down: dr=L6 LoRA-KD, bw=L4 full-rank block-QAT (the plateau fix), str=L5 codec-native
-    # GPTQ-Hessian. scaling_law reads this jsonl to pick each model's floor. Ordered cheapest-first.
+    # STUDIO — interruption-safe/default set for the M3 Ultra ladder. L4 blockwise is excluded until
+    # it supports sharded sources, requested dtype, and per-layer resume; L5 STRAND is excluded until
+    # its requested-model and durable optimizer-state gates pass. `studio_full` retains those research
+    # configs behind HAWKING_STUDIO_RESEARCH_FULL=1 in studio_run.py.
     "studio": [
+        ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)),
+        ("2-AWQ", build_awq, (2,)), ("1-AWQ", build_awq, (1,)),
+        ("mp-4a3f", build_awq, (3, 0.5, _mp(4, 3))), ("mp-3a2f", build_awq, (2, 0.5, _mp(3, 2))),
+        ("res3+2", build_residual, (3, 2)), ("res2+1", build_residual, (2, 1)),
+        ("3-AWQ+dr", build_recover, (3,)), ("2-AWQ+dr", build_recover, (2,)),
+        ("1-AWQ+dr", build_recover, (1,)),
+    ],
+    # Full L0-L6 research set. Not production-ready on sharded 7B+ parents; explicit opt-in only.
+    "studio_full": [
         ("4-AWQ", build_awq, (4,)), ("3-AWQ", build_awq, (3,)),
         ("2-AWQ", build_awq, (2,)), ("1-AWQ", build_awq, (1,)),
         ("mp-4a3f", build_awq, (3, 0.5, _mp(4, 3))), ("mp-3a2f", build_awq, (2, 0.5, _mp(3, 2))),
@@ -711,6 +730,15 @@ CONFIGS = {
     # base + low-rate residual (native parity-green two-part .tq serve). 1-str/1-bw/+dr = the
     # codec-native + full-rank recovery at the 1-bit edge (the UNPROVEN gate-opener the Studio reopens).
     "subbit": [
+        ("subbit1-o0.5", build_awq, (1, 0.5, None, 0.5)),
+        ("subbit1-o1",   build_awq, (1, 0.5, None, 1.0)),
+        ("subbit1-o2",   build_awq, (1, 0.5, None, 2.0)),
+        ("res1+1",       build_residual, (1, 1)),
+        ("res2+1",       build_residual, (2, 1)),
+        ("subbit1-o1+dr", build_recover, (1, 60, 64, 1e-4, 0.5, None, 1.0)),
+        ("2-AWQ+dr",     build_recover,  (2,)),
+    ],
+    "subbit_full": [
         ("subbit1-o0.5", build_awq, (1, 0.5, None, 0.5)),
         ("subbit1-o1",   build_awq, (1, 0.5, None, 1.0)),
         ("subbit1-o2",   build_awq, (1, 0.5, None, 2.0)),
@@ -831,9 +859,11 @@ def main():
     else:
         hf = measure(None)
         log(f"# f16 ppl = {hf:.3f}")
-        open(f"{OUTP}.jsonl", "a").write(
-            json.dumps({"model": LABEL, "config": "f16", "eff_bpw": 16.0,
-                        "ppl": round(hf, 3), "degr_pct": 0.0}) + "\n")
+        _append_jsonl_durable(
+            f"{OUTP}.jsonl",
+            {"model": LABEL, "config": "f16", "eff_bpw": 16.0,
+             "ppl": round(hf, 3), "degr_pct": 0.0},
+        )
 
     rows = list(records.values())
     for name, fn, args in CONFIGS[SETNAME]:
@@ -875,7 +905,7 @@ def main():
             rec = {"model": LABEL, "config": name, "error": str(e)[:140]}
         rows.append(rec)
         log(f"  {name:10s} -> {rec.get('eff_bpw','?')} bpw  +{rec.get('degr_pct','?')}%")
-        open(f"{OUTP}.jsonl", "a").write(json.dumps(rec) + "\n")
+        _append_jsonl_durable(f"{OUTP}.jsonl", rec)
         _clean_temps()   # free this config's parts before the next one
     # markdown
     with open(f"{OUTP}.md", "w") as o:

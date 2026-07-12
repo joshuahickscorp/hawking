@@ -42,7 +42,6 @@ summarizes `procure.py` download telemetry when present.
 from __future__ import annotations
 
 import argparse
-import datetime as _dt
 import glob
 import hashlib
 import json
@@ -73,6 +72,13 @@ from studio_manifest import (  # noqa: E402
     total_artifact_gb,
     total_download_gb,
 )
+from frontier_common import (  # noqa: E402
+    SIGN_ALG,
+    canonical_digest as _canonical_digest,
+    git_commit as _git_commit,
+    now_utc as _now,
+    safe_label as _safe_label,
+)
 import frontier_parity  # noqa: E402
 import frontier_parity_runner  # noqa: E402
 import frontier_coverage  # noqa: E402
@@ -94,6 +100,7 @@ LICENSE_PATH = COND_DIR / "frontier_license_acceptance.json"
 LICENSE_DECISIONS_PATH = COND_DIR / "frontier_license_decisions.draft.json"
 RELEASE_LOG = COND_DIR / "frontier_releases.jsonl"
 DOWNLOAD_LOG = COND_DIR / "frontier_downloads.jsonl"
+DOWNLOAD_STATE_DIR = COND_DIR / "download_state"
 EVENT_LOG = COND_DIR / "frontier_events.jsonl"
 REFRESH_PATH = COND_DIR / "frontier_refresh.json"
 REFRESH_REVIEW_PATH = COND_DIR / "frontier_refresh_reviews.json"
@@ -109,10 +116,11 @@ COMPLETION_AUDIT_PATH = COND_DIR / "studio_completion_audit.local.json"
 DENSITY_RECEIPT_PATH = COND_DIR / "studio_density_receipt.local.json"
 DEFAULT_EXTERNAL_AUDIT_PATH = pathlib.Path("/Users/scammermike/Downloads/project_audits/hawking_deep_audit_2026_07_08.md")
 DEFAULT_STUDIO_AUDIT_PATH = pathlib.Path("docs/plans/STUDIO_DEEP_AUDIT_2026_07_08.md")
-SIGN_ALG = "sha256-json-v1"
 SIZE_RE = re.compile(r"\s([0-9]+(?:\.[0-9]+)?)([KMGT])$")
 SIZE_SCALE = {"K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
-CACHE_RESERVE_GB = 128.0
+CACHE_RESERVE_GB = DEFAULT_HARDWARE.cache_reserve_gb
+DOWNLOAD_STATE_SCHEMA = "hawking.frontier_download_state.v1"
+DOWNLOAD_VERIFIED_SCHEMA = "hawking.frontier_download_verified.v1"
 TEXT_EXTS = {
     ".c", ".cc", ".cpp", ".h", ".hpp", ".m", ".mm",
     ".rs", ".py", ".js", ".jsx", ".ts", ".tsx",
@@ -201,21 +209,12 @@ WORKTREE_SUBSYSTEMS = (
 )
 
 
-def _now() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-
-
 def _run(cmd: list[str], timeout: int = 30) -> tuple[int, str, str]:
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         return p.returncode, p.stdout, p.stderr
     except Exception as e:
         return 127, "", f"{type(e).__name__}: {e}"
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    rc, out, _ = _run(["git", "rev-parse", "--short", "HEAD"], timeout=10)
-    return out.strip() if rc == 0 and out.strip() else "unknown"
 
 
 def _gb_from_bytes(n: int) -> float:
@@ -932,14 +931,19 @@ def _audit_grade_status(doc: dict) -> dict:
     }
 
 
-def _completion_models(labels: list[str]) -> list[FrontierModel]:
+def _selected_frontier_models(
+    labels: list[str], *, exit_on_unknown: bool = False
+) -> list[FrontierModel]:
     if not labels:
         return list(FRONTIER_MODELS)
     out = []
     for label in labels:
         model = frontier_by_label(label)
         if not model:
-            raise ValueError(f"unknown frontier label: {label}")
+            message = f"unknown frontier label: {label}"
+            if exit_on_unknown:
+                raise SystemExit(message)
+            raise ValueError(message)
         out.append(model)
     return out
 
@@ -964,52 +968,70 @@ def _signed_status_rollup(kind: str, rows: list[dict]) -> dict:
     }
 
 
-def _signed_parity_rollup(root: pathlib.Path, models: list[FrontierModel]) -> dict:
+def _signed_rollup(root: pathlib.Path, kind: str, items: list,
+                   label_for, path_for, status_for) -> dict:
     rows = []
-    for model in models:
-        path = frontier_parity_runner.parity_path(root, model.label)
+    for item in items:
+        label = label_for(item)
+        path = path_for(root, item)
         record = _completion_record(path, root)
-        status = frontier_parity_runner.record_status(record, model=model, require_signature=True)
-        status["label"] = model.label
+        status = status_for(record, item)
+        status["label"] = label
         status["path"] = str(path)
         rows.append(status)
-    return _signed_status_rollup("architecture-parity", rows)
+    return _signed_status_rollup(kind, rows)
+
+
+def _signed_parity_rollup(root: pathlib.Path, models: list[FrontierModel]) -> dict:
+    return _signed_rollup(
+        root,
+        "architecture-parity",
+        models,
+        lambda model: model.label,
+        lambda root, model: frontier_parity_runner.parity_path(root, model.label),
+        lambda record, model: frontier_parity_runner.record_status(
+            record, model=model, require_signature=True
+        ),
+    )
 
 
 def _signed_coverage_rollup(root: pathlib.Path, labels: list[str], kind: str) -> dict:
-    rows = []
-    for label in labels:
-        path = frontier_coverage_runner.default_path(root, label, kind)
-        record = _completion_record(path, root)
-        status = frontier_coverage_runner.record_status(record, kind=kind, require_signature=True)
-        status["label"] = label
-        status["path"] = str(path)
-        rows.append(status)
-    return _signed_status_rollup(kind, rows)
+    return _signed_rollup(
+        root,
+        kind,
+        labels,
+        lambda label: label,
+        lambda root, label: frontier_coverage_runner.default_path(root, label, kind),
+        lambda record, _label: frontier_coverage_runner.record_status(
+            record, kind=kind, require_signature=True
+        ),
+    )
 
 
 def _signed_native_rollup(root: pathlib.Path, labels: list[str], kind: str) -> dict:
-    rows = []
-    for label in labels:
-        path = frontier_receipt_runner.default_path(root, label, kind)
-        record = _completion_record(path, root)
-        status = frontier_receipt_runner.record_status(record, kind=kind, require_signature=True)
-        status["label"] = label
-        status["path"] = str(path)
-        rows.append(status)
-    return _signed_status_rollup(kind, rows)
+    return _signed_rollup(
+        root,
+        kind,
+        labels,
+        lambda label: label,
+        lambda root, label: frontier_receipt_runner.default_path(root, label, kind),
+        lambda record, _label: frontier_receipt_runner.record_status(
+            record, kind=kind, require_signature=True
+        ),
+    )
 
 
 def _signed_experiment_rollup(root: pathlib.Path, labels: list[str]) -> dict:
-    rows = []
-    for label in labels:
-        path = frontier_experiments.matrix_path(root, label)
-        record = _completion_record(path, root)
-        status = frontier_experiment_runner.record_status(record, label=label, require_signature=True)
-        status["label"] = label
-        status["path"] = str(path)
-        rows.append(status)
-    return _signed_status_rollup("experiment-depth", rows)
+    return _signed_rollup(
+        root,
+        "experiment-depth",
+        labels,
+        lambda label: label,
+        lambda root, label: frontier_experiments.matrix_path(root, label),
+        lambda record, label: frontier_experiment_runner.record_status(
+            record, label=label, require_signature=True
+        ),
+    )
 
 
 def _completion_requirement(req_id: str, title: str, ok: bool, detail: str,
@@ -1026,7 +1048,12 @@ def _completion_requirement(req_id: str, title: str, ok: bool, detail: str,
 
 
 def build_completion_audit(root: pathlib.Path, args) -> dict:
-    models = _completion_models(getattr(args, "label", []) or [])
+    storage_budget_gb = args.storage_budget_gb
+    if storage_budget_gb is None:
+        storage_budget_gb = max(
+            0.0, _gb_from_bytes(shutil.disk_usage(root).free) - DEFAULT_HARDWARE.disk_reserve_gb
+        )
+    models = _selected_frontier_models(getattr(args, "label", []) or [])
     labels = [model.label for model in models]
     all_labels = [m.label for m in FRONTIER_MODELS]
 
@@ -1059,7 +1086,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
         efficiency=args.efficiency,
         scratch_gb=args.scratch_gb,
         cache_reserve_gb=args.cache_reserve_gb,
-        storage_budget_gb=args.storage_budget_gb,
+        storage_budget_gb=storage_budget_gb,
         max_wave_hours=args.max_wave_hours,
         require_refresh=str(refresh_path),
     )
@@ -1071,7 +1098,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
         efficiency=args.efficiency,
         scratch_gb=args.scratch_gb,
         cache_reserve_gb=args.cache_reserve_gb,
-        storage_budget_gb=args.storage_budget_gb,
+        storage_budget_gb=storage_budget_gb,
         max_wave_hours=args.max_wave_hours,
         require_refresh=str(refresh_path),
     )
@@ -1293,7 +1320,7 @@ def build_completion_audit(root: pathlib.Path, args) -> dict:
         "blocked_requirements": [row["id"] for row in blocked],
         "requirements": requirements,
         "parameters": {
-            "storage_budget_gb": args.storage_budget_gb,
+            "storage_budget_gb": storage_budget_gb,
             "link_mbs": args.link_mbs,
             "efficiency": args.efficiency,
             "scratch_gb": args.scratch_gb,
@@ -1387,6 +1414,82 @@ def _read_json(path: pathlib.Path, default):
         return default
 
 
+def _download_checkpoint_paths(model: FrontierModel, root: pathlib.Path = ROOT) -> tuple[pathlib.Path, pathlib.Path]:
+    stem = _safe_label(model.label)
+    base = root / DOWNLOAD_STATE_DIR
+    return base / f"{stem}.state.json", base / f"{stem}.verified.json"
+
+
+def _pid_alive(pid) -> bool:
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except (TypeError, ValueError, ProcessLookupError, PermissionError, OSError):
+        return False
+
+
+def _download_checkpoint_status(model: FrontierModel, root: pathlib.Path = ROOT) -> dict:
+    """Validate the durable procurement heartbeat and verified-complete marker.
+
+    A non-empty Hugging Face local directory is intentionally insufficient: it is
+    also the normal representation of an interrupted resumable download.
+    """
+    state_path, marker_path = _download_checkpoint_paths(model, root)
+    heartbeat = _read_json(state_path, {})
+    marker = _read_json(marker_path, {})
+    source_dir = root / model.local_dir
+    source_present = _nonempty_dir(source_dir)
+    problems = []
+
+    if not marker:
+        problems.append("verified-complete download marker is missing")
+    else:
+        if marker.get("schema") != DOWNLOAD_VERIFIED_SCHEMA:
+            problems.append("download marker schema is invalid")
+        if marker.get("status") != "verified" or marker.get("verified_complete") is not True:
+            problems.append("download marker is not verified-complete")
+        if marker.get("label") != model.label or marker.get("hf_id") != model.hf_id:
+            problems.append("download marker model identity does not match manifest")
+        marker_local = pathlib.Path(str(marker.get("local_dir") or ""))
+        if not marker_local.is_absolute():
+            marker_local = root / marker_local
+        if marker_local.resolve() != source_dir.resolve():
+            problems.append("download marker local directory does not match manifest")
+        if marker.get("hf_download_returncode") != 0:
+            problems.append("download marker does not record a successful hf download")
+        verification = marker.get("verification") if isinstance(marker.get("verification"), dict) else {}
+        if verification.get("requested") is not True or verification.get("returncode") != 0:
+            problems.append("download marker lacks a successful requested cache verification")
+    if not source_present:
+        problems.append("source directory is missing or empty")
+
+    heartbeat_status = heartbeat.get("status") if isinstance(heartbeat, dict) else None
+    active_statuses = {
+        "starting", "downloading", "verifying", "terminating_signal",
+        "terminating_disk", "terminating_stall", "retry_pending",
+    }
+    heartbeat_live = bool(
+        heartbeat.get("schema") == DOWNLOAD_STATE_SCHEMA
+        and heartbeat_status in active_statuses
+        and _pid_alive(heartbeat.get("pid"))
+    )
+    verified = not problems
+    return {
+        "state_path": str(state_path),
+        "verified_marker_path": str(marker_path),
+        "heartbeat_exists": bool(heartbeat),
+        "heartbeat_status": heartbeat_status,
+        "heartbeat_updated_at": heartbeat.get("updated_at") if isinstance(heartbeat, dict) else None,
+        "heartbeat_pid": heartbeat.get("pid") if isinstance(heartbeat, dict) else None,
+        "heartbeat_live": heartbeat_live,
+        "source_present": source_present,
+        "verified": verified,
+        "marker_exists": bool(marker),
+        "marker_completed_at": marker.get("completed_at") if isinstance(marker, dict) else None,
+        "problems": problems,
+    }
+
+
 def _write_json(path: pathlib.Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
@@ -1408,10 +1511,6 @@ def _append_jsonl(path: pathlib.Path, row: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "a") as f:
         f.write(json.dumps(row, sort_keys=True) + "\n")
-
-
-def _safe_label(label: str) -> str:
-    return re.sub(r"[^A-Za-z0-9_.-]+", "-", label)
 
 
 def _hardware_snapshot(root: pathlib.Path = ROOT) -> dict:
@@ -1481,14 +1580,6 @@ def _sha256_file(path: pathlib.Path) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
-
-
-def _canonical_digest(data: dict) -> str:
-    unsigned = dict(data)
-    unsigned.pop("signature", None)
-    return hashlib.sha256(
-        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
 
 
 def _sign_doc(data: dict) -> dict:
@@ -1728,6 +1819,14 @@ def _download_summary(rows: list[dict]) -> dict:
         "last_stalled": progress.get("stalled"),
         "last_terminated_for_stall": progress.get("terminated_for_stall"),
         "last_stall_reason": progress.get("stall_reason"),
+        "last_terminated_for_disk": progress.get("terminated_for_disk"),
+        "last_disk_reason": progress.get("disk_reason"),
+        "last_disk_free_gb": progress.get("disk_free_gb_last"),
+        "last_disk_free_min_gb": progress.get("disk_free_gb_min"),
+        "last_disk_free_floor_gb": progress.get("disk_free_floor_gb"),
+        "last_terminated_for_signal": progress.get("terminated_for_signal"),
+        "last_signal_number": progress.get("signal_number"),
+        "last_signal_reason": progress.get("signal_reason"),
         "last_diagnostics_present": bool(diagnostics),
         "last_diagnostic_recommendations": diagnostics.get("recommendations", []),
         "last_network_probe_ok": ((diagnostics.get("network_probe") or {}).get("ok")
@@ -1909,7 +2008,7 @@ def _hf_model_info(model: FrontierModel, timeout: int) -> dict:
 
 
 def cycle_plan(root: pathlib.Path = ROOT, link_mb_s: float = 300.0, efficiency: float = 0.7,
-               scratch_gb: float = 200.0, cache_reserve_gb: float = CACHE_RESERVE_GB,
+               scratch_gb: float = DEFAULT_HARDWARE.scratch_reserve_gb, cache_reserve_gb: float = CACHE_RESERVE_GB,
                keep_outputs: bool = True) -> dict:
     kept_outputs = 0.0
     peak = 0.0
@@ -1947,7 +2046,7 @@ def cycle_plan(root: pathlib.Path = ROOT, link_mb_s: float = 300.0, efficiency: 
 def build_ledger(root: pathlib.Path = ROOT, refresh_hf: bool = False, dry_run_sizes: bool = False,
                  include: str = "*.safetensors", timeout: int = 180,
                  link_mb_s: float = 300.0, efficiency: float = 0.7,
-                 scratch_gb: float = 200.0, cache_reserve_gb: float = CACHE_RESERVE_GB,
+                 scratch_gb: float = DEFAULT_HARDWARE.scratch_reserve_gb, cache_reserve_gb: float = CACHE_RESERVE_GB,
                  storage_budget_gb: float | None = None,
                  max_wave_hours: float = 6.0) -> dict:
     licenses = _license_ledger(root)
@@ -1958,10 +2057,10 @@ def build_ledger(root: pathlib.Path = ROOT, refresh_hf: bool = False, dry_run_si
     models = []
     for model in FRONTIER_MODELS:
         evidence = _release_evidence(model, root)
-        source_dir = root / model.local_dir
+        download_checkpoint = _download_checkpoint_status(model, root)
         state = "not-staged"
         if evidence["source_exists"]:
-            state = "staged"
+            state = "staged" if download_checkpoint["verified"] else "partial-download"
         elif releases.get(model.label):
             state = "source-released"
         ok_release, missing_release, _ = release_guard(model, root)
@@ -1981,6 +2080,8 @@ def build_ledger(root: pathlib.Path = ROOT, refresh_hf: bool = False, dry_run_si
             "resident_target": model.fits_resident(DEFAULT_HARDWARE),
             "source_dir_exists": evidence["source_exists"],
             "source_dir_gb": evidence["source_gb"],
+            "source_download_verified": download_checkpoint["verified"],
+            "source_download": download_checkpoint,
             "artifact_exists": evidence["artifact_exists"],
             "artifact_gb": evidence["artifact_gb"],
             "artifact_paths": evidence["artifact_paths"],
@@ -2059,8 +2160,9 @@ def manifest_findings() -> list[dict]:
             findings.append({"severity": "fail", "field": model.label,
                              "message": "params, serve_bpw, and download_gb must be positive"})
         if model.artifact_gb() > DEFAULT_HARDWARE.weight_budget_gb:
-            findings.append({"severity": "fail", "field": model.label,
-                             "message": f"resident target overflows {DEFAULT_HARDWARE.weight_budget_gb:.0f} GB"})
+            findings.append({"severity": "warn", "field": model.label,
+                             "message": f"artifact overflows the {DEFAULT_HARDWARE.weight_budget_gb:.0f} GB "
+                                        "interactive resident budget; paging/streaming is required"})
         for alias in model.aliases:
             key = alias.lower()
             if key in alias_owner:
@@ -2094,7 +2196,7 @@ def manifest_drift_findings(root: pathlib.Path = ROOT) -> list[dict]:
 
 def build_launch_gate(root: pathlib.Path = ROOT, phase: str = "procure", allow_unreviewed: bool = False,
                       link_mb_s: float = 300.0, efficiency: float = 0.7,
-                      scratch_gb: float = 200.0, cache_reserve_gb: float = CACHE_RESERVE_GB,
+                      scratch_gb: float = DEFAULT_HARDWARE.scratch_reserve_gb, cache_reserve_gb: float = CACHE_RESERVE_GB,
                       storage_budget_gb: float | None = None, max_wave_hours: float = 6.0,
                       require_refresh: str | None = None) -> dict:
     ledger = build_ledger(root, link_mb_s=link_mb_s, efficiency=efficiency, scratch_gb=scratch_gb,
@@ -2283,11 +2385,14 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
                     root: pathlib.Path = ROOT) -> dict:
     license_status = ledger_row.get("license", {}).get("status", "unreviewed")
     license_gate = ledger_row.get("license_gate", {})
-    source = ledger_row["source_dir_exists"]
+    source_present = ledger_row["source_dir_exists"]
+    source_download = ledger_row.get("source_download", {})
+    source_verified = bool(ledger_row.get("source_download_verified"))
+    source_ready = source_present and source_verified
     artifact = ledger_row["artifact_exists"]
     inventory_ok = ledger_row.get("artifact_inventory", {}).get("ok", False)
     receiptish = ledger_row["frontier_record_exists"] or bool(ledger_row["official_receipts"])
-    released = bool(ledger_row.get("release_events")) and not source
+    released = bool(ledger_row.get("release_events")) and not source_present
     parity_pass = bool(parity_row and parity_row.get("claim_gate") == "ALLOW")
     source_provenance_ok = bool(ledger_row.get("source_provenance", {}).get("ok"))
     baseline_ok = bool(ledger_row.get("baseline_coverage", {}).get("ok"))
@@ -2317,6 +2422,20 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
             "--allowed-use research --redistribution none "
             "--source-policy local-only-delete-after-bake --note <decision>"
         )
+    elif (source_present and not source_verified and source_download.get("heartbeat_live")
+          and not artifact):
+        state = "download-in-progress"
+        blockers.append(
+            f"download heartbeat is live ({source_download.get('heartbeat_status') or 'running'}); "
+            "wait or stop that process before resuming"
+        )
+    elif source_present and not source_verified and not artifact:
+        state = "ready-download"
+        blockers.append("source directory is partial/unverified; the next command resumes it in place")
+        blockers.extend(source_download.get("problems", [])[:2])
+        if download.get("last_retry_reason"):
+            blockers.append(download["last_retry_reason"])
+        commands.append(_download_cmd(model))
     elif download.get("last_will_retry"):
         state = "download-retry-pending"
         blockers.append(download.get("last_retry_reason") or "download scheduled retry")
@@ -2332,10 +2451,15 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         blockers.append(f"last download/verify returncode {download.get('last_returncode')}")
         blockers.extend(download.get("last_diagnostic_recommendations", [])[:1])
         commands.append(_download_cmd(model))
-    elif not source and not artifact:
+    elif not source_ready and not artifact:
         state = "ready-download"
+        if source_download.get("heartbeat_status") in ("interrupted", "blocked_disk", "stalled", "failed"):
+            blockers.append(
+                f"last durable download state is {source_download.get('heartbeat_status')}; "
+                "the next command resumes the same local directory"
+            )
         commands.append(_download_cmd(model))
-    elif source and not artifact:
+    elif source_ready and not artifact:
         state = "ready-bake"
         commands.append(f"python3.12 tools/condense/studio_run.py --frontier {model.label}")
         commands.append(
@@ -2355,7 +2479,7 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
     elif ledger_row["release_safe"]:
         state = "ready-release-source"
         commands.append(f"python3.12 tools/condense/frontier_ops.py release-source {model.label} --dry-run")
-    elif released or (artifact and not source):
+    elif released or (artifact and not source_present):
         if parity_pass:
             if not source_provenance_ok:
                 state = "claim-blocked-source-provenance"
@@ -2415,7 +2539,9 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
         "label": model.label,
         "hf_id": model.hf_id,
         "state": state,
-        "source_exists": source,
+        "source_exists": source_present,
+        "source_download_verified": source_verified,
+        "source_download": source_download,
         "artifact_exists": artifact,
         "artifact_inventory_ok": inventory_ok,
         "receipt_or_record_exists": receiptish,
@@ -2440,7 +2566,7 @@ def _lifecycle_node(model: FrontierModel, ledger_row: dict, parity_row: dict | N
 
 
 def build_lifecycle(root: pathlib.Path = ROOT, link_mb_s: float = 300.0, efficiency: float = 0.7,
-                    scratch_gb: float = 200.0,
+                    scratch_gb: float = DEFAULT_HARDWARE.scratch_reserve_gb,
                     cache_reserve_gb: float = CACHE_RESERVE_GB,
                     storage_budget_gb: float | None = None,
                     max_wave_hours: float = 6.0) -> dict:
@@ -3269,11 +3395,6 @@ def _claim_bundle_path_with_suffix(model: FrontierModel, suffix: str, root: path
     return frontier_claims.claim_bundle_path(root, model.label)
 
 
-def _preserve_final(path: pathlib.Path, force_final: bool) -> bool:
-    record = _read_json(path, {})
-    return bool(record and record.get("receipt_state") == "final" and not force_final)
-
-
 def _write_draft_record(path: pathlib.Path, record: dict, *, force: bool,
                         force_final: bool) -> tuple[dict, bool]:
     existing = _read_json(path, {})
@@ -3287,103 +3408,53 @@ def _write_draft_record(path: pathlib.Path, record: dict, *, force: bool,
     return {"path": str(path), "written": True, "ok": True, "problems": []}, True
 
 
-def _proof_pack_models(labels: list[str]) -> list[FrontierModel]:
-    if not labels:
-        return list(FRONTIER_MODELS)
-    models = []
-    for label in labels:
-        model = frontier_by_label(label)
-        if not model:
-            raise SystemExit(f"unknown frontier label: {label}")
-        models.append(model)
-    return models
+def _draft_receipt(model: FrontierModel, root: pathlib.Path, args, kind: str) -> dict:
+    if kind == "source-provenance":
+        path = frontier_provenance.provenance_path(root, model.label)
+        record = frontier_provenance.draft_record(model, machine_class=args.machine_class)
+        record, status = frontier_provenance.sign_record(record, model=model, allow_blocked_draft=True)
+    elif kind == "parity":
+        path = frontier_parity_runner.parity_path(root, model.label)
+        record = frontier_parity_runner.draft_record(model, machine_class=args.machine_class)
+        record, status = frontier_parity_runner.sign_record(record, model=model, allow_blocked_draft=True)
+    elif kind in {"baseline", "eval"}:
+        path = frontier_coverage_runner.default_path(root, model.label, kind)
+        record = frontier_coverage_runner.draft_record(model.label, kind, machine_class=args.machine_class)
+        record, status = frontier_coverage_runner.sign_record(record, kind=kind, allow_blocked_draft=True)
+    elif kind in {"serve", "ramcliff"}:
+        path = frontier_receipt_runner.default_path(root, model.label, kind)
+        record = frontier_receipt_runner.draft_record(model.label, kind, machine_class=args.machine_class)
+        record, status = frontier_receipt_runner.sign_record(record, kind=kind, allow_blocked_draft=True)
+    elif kind == "doctor-recovery":
+        path = frontier_doctor_recovery.recovery_path(root, model.label)
+        record = frontier_doctor_recovery.draft_record(model, machine_class=args.machine_class)
+        record, status = frontier_doctor_recovery.sign_record(record, model=model, allow_blocked_draft=True)
+    elif kind == "experiment":
+        path = frontier_experiments.matrix_path(root, model.label)
+        record = frontier_experiment_runner.draft_record(model.label, machine_class=args.machine_class)
+        record, status = frontier_experiment_runner.sign_record(record, label=model.label, allow_blocked_draft=True)
+    elif kind == "studio-evidence-run":
+        path = frontier_evidence_run.evidence_run_path(root, model.label)
+        record = frontier_evidence_run.draft_record(root, model, machine_class=args.machine_class)
+        record, status = frontier_evidence_run.sign_record(record, root=root, model=model, allow_blocked_draft=True)
+    else:
+        raise ValueError(f"unknown draft receipt kind: {kind}")
 
-
-def _draft_parity(model: FrontierModel, root: pathlib.Path, args) -> dict:
-    path = frontier_parity_runner.parity_path(root, model.label)
-    record = frontier_parity_runner.draft_record(model, machine_class=args.machine_class)
-    record, status = frontier_parity_runner.sign_record(record, model=model, allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": "parity", "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
-
-def _draft_coverage(model: FrontierModel, root: pathlib.Path, args, kind: str) -> dict:
-    path = frontier_coverage_runner.default_path(root, model.label, kind)
-    record = frontier_coverage_runner.draft_record(model.label, kind, machine_class=args.machine_class)
-    record, status = frontier_coverage_runner.sign_record(record, kind=kind, allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": kind, "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
-
-def _draft_source_provenance(model: FrontierModel, root: pathlib.Path, args) -> dict:
-    path = frontier_provenance.provenance_path(root, model.label)
-    record = frontier_provenance.draft_record(model, machine_class=args.machine_class)
-    record, status = frontier_provenance.sign_record(record, model=model, allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": "source-provenance", "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
-
-def _draft_native(model: FrontierModel, root: pathlib.Path, args, kind: str) -> dict:
-    path = frontier_receipt_runner.default_path(root, model.label, kind)
-    record = frontier_receipt_runner.draft_record(model.label, kind, machine_class=args.machine_class)
-    record, status = frontier_receipt_runner.sign_record(record, kind=kind, allow_blocked_draft=True)
     row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
     row.update({"kind": kind, "label": model.label, "receipt_ok": status["ok"],
                 "receipt_problems": status["problems"]})
     return row
-
-
-def _draft_doctor_recovery(model: FrontierModel, root: pathlib.Path, args) -> dict:
-    path = frontier_doctor_recovery.recovery_path(root, model.label)
-    record = frontier_doctor_recovery.draft_record(model, machine_class=args.machine_class)
-    record, status = frontier_doctor_recovery.sign_record(record, model=model, allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": "doctor-recovery", "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
-
-def _draft_experiment(model: FrontierModel, root: pathlib.Path, args) -> dict:
-    path = frontier_experiments.matrix_path(root, model.label)
-    record = frontier_experiment_runner.draft_record(model.label, machine_class=args.machine_class)
-    record, status = frontier_experiment_runner.sign_record(record, label=model.label, allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": "experiment", "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
-
-def _draft_evidence_run(model: FrontierModel, root: pathlib.Path, args) -> dict:
-    path = frontier_evidence_run.evidence_run_path(root, model.label)
-    record = frontier_evidence_run.draft_record(root, model, machine_class=args.machine_class)
-    record, status = frontier_evidence_run.sign_record(record, root=root, model=model,
-                                                       allow_blocked_draft=True)
-    row, _ = _write_draft_record(path, record, force=args.force, force_final=args.force_final)
-    row.update({"kind": "studio-evidence-run", "label": model.label, "receipt_ok": status["ok"],
-                "receipt_problems": status["problems"]})
-    return row
-
 
 def build_proof_pack(root: pathlib.Path, args) -> dict:
     rows = []
     bundle_rows = []
-    models = _proof_pack_models(args.label)
+    models = _selected_frontier_models(args.label, exit_on_unknown=True)
     for model in models:
-        rows.append(_draft_source_provenance(model, root, args))
-        rows.append(_draft_parity(model, root, args))
-        for kind in ("baseline", "eval"):
-            rows.append(_draft_coverage(model, root, args, kind))
-        for kind in ("serve", "ramcliff"):
-            rows.append(_draft_native(model, root, args, kind))
-        rows.append(_draft_doctor_recovery(model, root, args))
-        rows.append(_draft_experiment(model, root, args))
-        rows.append(_draft_evidence_run(model, root, args))
+        for kind in (
+            "source-provenance", "parity", "baseline", "eval", "serve",
+            "ramcliff", "doctor-recovery", "experiment", "studio-evidence-run",
+        ):
+            rows.append(_draft_receipt(model, root, args, kind))
         bundle = frontier_claims.build_bundle(root, model, require_ramcliff=not args.no_require_ramcliff)
         bundle_path = _claim_bundle_path_with_suffix(model, args.claim_suffix, root)
         if bundle_path.exists() and not args.force:
@@ -3660,11 +3731,16 @@ def cmd_release_source(args) -> int:
 
 
 def build_wave0_packet(root: pathlib.Path, args) -> dict:
+    storage_budget_gb = args.storage_budget_gb
+    if storage_budget_gb is None:
+        storage_budget_gb = max(
+            0.0, _gb_from_bytes(shutil.disk_usage(root).free) - DEFAULT_HARDWARE.disk_reserve_gb
+        )
     refresh_path = pathlib.Path(args.require_refresh)
     worktree_plan_path = pathlib.Path(getattr(args, "worktree_plan", WORKTREE_PLAN_PATH))
     runtime_contract_path = pathlib.Path(getattr(args, "runtime_contract", RUNTIME_CONTRACT_PATH))
     storage_plan = manifest_storage_wave_plan(
-        storage_budget_gb=args.storage_budget_gb,
+        storage_budget_gb=storage_budget_gb,
         link_mb_s=args.link_mbs,
         efficiency=args.efficiency,
         scratch_gb=args.scratch_gb,
@@ -3677,7 +3753,7 @@ def build_wave0_packet(root: pathlib.Path, args) -> dict:
         efficiency=args.efficiency,
         scratch_gb=args.scratch_gb,
         cache_reserve_gb=args.cache_reserve_gb,
-        storage_budget_gb=args.storage_budget_gb,
+        storage_budget_gb=storage_budget_gb,
         max_wave_hours=args.max_wave_hours,
     )
     selected = _select_lifecycle_node(lifecycle, args.label)
@@ -3702,7 +3778,7 @@ def build_wave0_packet(root: pathlib.Path, args) -> dict:
         efficiency=args.efficiency,
         scratch_gb=args.scratch_gb,
         cache_reserve_gb=args.cache_reserve_gb,
-        storage_budget_gb=args.storage_budget_gb,
+        storage_budget_gb=storage_budget_gb,
         max_wave_hours=args.max_wave_hours,
         require_refresh=str(refresh_path),
     )
@@ -3789,7 +3865,7 @@ def build_wave0_packet(root: pathlib.Path, args) -> dict:
         "root": str(root),
         "git_commit": _git_commit(root),
         "parameters": {
-            "storage_budget_gb": args.storage_budget_gb,
+            "storage_budget_gb": storage_budget_gb,
             "link_mbs": args.link_mbs,
             "efficiency": args.efficiency,
             "scratch_gb": args.scratch_gb,
@@ -4340,6 +4416,7 @@ def cmd_selftest(args) -> int:
     with tempfile.TemporaryDirectory() as td:
         root = pathlib.Path(td)
         model = FRONTIER_MODELS[0]
+        partial_model = FRONTIER_MODELS[2]
         src = root / model.local_dir
         src.mkdir(parents=True)
         (src / "shard.safetensors").write_bytes(b"x" * 1024)
@@ -4348,6 +4425,9 @@ def cmd_selftest(args) -> int:
         rec = root / "reports" / "condense" / f"{model.label}_frontier.json"
         rec.parent.mkdir(parents=True)
         rec.write_text(json.dumps({"model": model.label, "artifact_gb": model.artifact_gb()}))
+        partial_src = root / partial_model.local_dir
+        partial_src.mkdir(parents=True)
+        (partial_src / "shard.incomplete").write_bytes(b"partial")
         _write_json(root / LICENSE_PATH, {
             model.label: {
                 "status": "accepted",
@@ -4358,7 +4438,17 @@ def cmd_selftest(args) -> int:
                 "allowed_use": "research",
                 "redistribution": "none",
                 "source_policy": "local-only-delete-after-bake",
-            }
+            },
+            partial_model.label: {
+                "status": "accepted",
+                "by": "selftest",
+                "note": "synthetic accepted license",
+                "license": "selftest-license",
+                "terms_url": "https://example.invalid/terms",
+                "allowed_use": "research",
+                "redistribution": "none",
+                "source_policy": "local-only-delete-after-bake",
+            },
         })
         _append_jsonl(root / DOWNLOAD_LOG, {
             "schema": "hawking.frontier_download.v1",
@@ -4383,6 +4473,47 @@ def cmd_selftest(args) -> int:
         check("ledger sees staged source", row["source_dir_exists"])
         check("ledger sees artifact", row["artifact_exists"])
         check("release waits for artifact inventory", not row["release_safe"])
+        partial_row = next(r for r in ledger["models"] if r["label"] == partial_model.label)
+        check("nonempty source without verified marker is partial, not staged",
+              partial_row["state"] == "partial-download"
+              and not partial_row["source_download_verified"])
+        partial_lifecycle = build_lifecycle(root, storage_budget_gb=8000.0)
+        partial_node = next(n for n in partial_lifecycle["nodes"] if n["label"] == partial_model.label)
+        check("partial source resumes download and never becomes ready-bake",
+              partial_node["state"] == "ready-download"
+              and "procure.py" in partial_node["next_commands"][0])
+
+        partial_state_path, partial_marker_path = _download_checkpoint_paths(partial_model, root)
+        _write_json(partial_state_path, {
+            "schema": DOWNLOAD_STATE_SCHEMA,
+            "label": partial_model.label,
+            "hf_id": partial_model.hf_id,
+            "local_dir": partial_model.local_dir,
+            "status": "verified",
+            "pid": os.getpid(),
+        })
+        _write_json(partial_marker_path, {
+            "schema": DOWNLOAD_VERIFIED_SCHEMA,
+            "status": "verified",
+            "verified_complete": True,
+            "label": partial_model.label,
+            "hf_id": partial_model.hf_id,
+            "local_dir": partial_model.local_dir,
+            "hf_download_returncode": 0,
+            "verification": {"requested": True, "returncode": 0},
+            "completed_at": "2026-07-08T00:10:00+00:00",
+        })
+        verified_ledger = build_ledger(root)
+        verified_row = next(r for r in verified_ledger["models"] if r["label"] == partial_model.label)
+        verified_lifecycle = build_lifecycle(root, storage_budget_gb=8000.0)
+        verified_node = next(n for n in verified_lifecycle["nodes"] if n["label"] == partial_model.label)
+        check("successful requested verify promotes source to staged/ready-bake",
+              verified_row["state"] == "staged"
+              and verified_row["source_download_verified"]
+              and verified_node["state"] == "ready-bake")
+        licenses_for_rest = _license_ledger(root)
+        licenses_for_rest.pop(partial_model.label, None)
+        _write_json(root / LICENSE_PATH, licenses_for_rest)
         lc_wait = build_lifecycle(root, storage_budget_gb=8000.0)
         wait_node = next(n for n in lc_wait["nodes"] if n["label"] == model.label)
         check("lifecycle requests artifact inventory before release",
@@ -4516,7 +4647,8 @@ def cmd_selftest(args) -> int:
             c["name"] == "frontier-studio-evidence-runs" and not c["ok"] for c in gate["checks"]))
         check("claim launch gate includes signed claim bundle failure", any(
             c["name"] == "frontier-signed-claim-bundles" and not c["ok"] for c in gate["checks"]))
-        check("manifest consistency passes", not manifest_findings())
+        check("manifest consistency passes",
+              not any(row.get("severity") == "fail" for row in manifest_findings()))
         check("manifest drift check passes for active consumers", not manifest_drift_findings(ROOT))
         lc = build_lifecycle(root, storage_budget_gb=8000.0)
         node = next(n for n in lc["nodes"] if n["label"] == model.label)
@@ -4815,7 +4947,7 @@ def cmd_selftest(args) -> int:
                 "schema": "hawking.frontier_serve.v1",
                 "model": fm.label,
                 "source": "measured",
-                "machine_class": "Studio-M1Ultra-128",
+                "machine_class": "Studio-M3Ultra-96",
                 "status": "pass",
                 "native_tq": True,
                 "rehydrate_f16": False,
@@ -4827,7 +4959,7 @@ def cmd_selftest(args) -> int:
                 "tok_s": 12.5,
                 "memory_peak_gb": 4.0,
                 "memory_resident_gb": 3.5,
-                "unified_memory_gb": 128.0,
+                "unified_memory_gb": 96.0,
                 "resident_memory_ok": True,
                 "artifact_sha256": "a" * 64,
                 "commands": ["selftest serve"],
@@ -4840,7 +4972,7 @@ def cmd_selftest(args) -> int:
                 "schema": "hawking.frontier_ramcliff.v1",
                 "model": fm.label,
                 "source": "measured",
-                "machine_class": "Studio-M1Ultra-128",
+                "machine_class": "Studio-M3Ultra-96",
                 "verdict": "CLIFF-WIN",
                 "served_native_tq": True,
                 "tok_s_resident": 20.0,
@@ -4947,7 +5079,7 @@ def cmd_selftest(args) -> int:
             force=True,
             force_final=False,
             claim_suffix=".local",
-            machine_class="Studio-M1Ultra-128",
+            machine_class="Studio-M3Ultra-96",
             no_require_ramcliff=False,
             out=str(proof_pack_path),
             json=False,
@@ -4979,7 +5111,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--timeout", type=int, default=180)
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget for wave planning; default=current free disk")
@@ -4991,7 +5123,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget for wave planning; default=current free disk")
@@ -5024,7 +5156,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget; default=current free disk")
@@ -5037,7 +5169,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--out", default=None)
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget; default=current free disk")
@@ -5061,10 +5193,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5082,10 +5214,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5107,10 +5239,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5128,10 +5260,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5146,7 +5278,7 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--load-receipt", required=True)
     p.add_argument("--served-forward-receipt", required=True)
     p.add_argument("--parity-receipt", required=True)
-    p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+    p.add_argument("--machine-class", default="Studio-M3Ultra-96")
     p.add_argument("--out", default="")
     p.add_argument("--force", action="store_true")
     p.add_argument("--json", action="store_true")
@@ -5174,10 +5306,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5200,10 +5332,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
             c.set_defaults(allow_blocked_draft=False)
         else:
-            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            c.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             c.add_argument("--allow-blocked-draft", action="store_true")
         else:
@@ -5226,7 +5358,7 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             c.add_argument("--force", action="store_true")
             c.add_argument("--sign-draft", action="store_true")
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
         else:
             c.set_defaults(force=False, sign_draft=False)
         if mode == "build":
@@ -5237,11 +5369,11 @@ def build_argparser() -> argparse.ArgumentParser:
             c.add_argument("--source-release-command", required=True)
             c.add_argument("--source-release-reason", required=True)
             c.add_argument("--decided-by", required=True)
-            c.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            c.add_argument("--machine-class", default="Studio-M3Ultra-96")
         elif mode != "draft":
             c.set_defaults(run_id="", runner_command="", source_release_decision="",
                            source_release_command="", source_release_reason="", decided_by="",
-                           machine_class="Studio-M1Ultra-128")
+                           machine_class="Studio-M3Ultra-96")
         c.set_defaults(func=cmd_evidence_run_receipt)
 
     p = sub.add_parser("proof-pack", help="draft all signed evidence envelopes and blocked local claim bundles")
@@ -5252,7 +5384,7 @@ def build_argparser() -> argparse.ArgumentParser:
                    help="dangerous: allow overwriting final evidence or admissible bundles")
     p.add_argument("--claim-suffix", default=".local",
                    help="suffix for generated claim bundles; default writes <LABEL>_claim_bundle.local.json")
-    p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+    p.add_argument("--machine-class", default="Studio-M3Ultra-96")
     p.add_argument("--no-require-ramcliff", action="store_true",
                    help="build serve-only local bundles; RAM-cliff proof packs should not use this")
     p.add_argument("--out", default=str(COND_DIR / "frontier_proof_pack.local.json"))
@@ -5303,7 +5435,7 @@ def build_argparser() -> argparse.ArgumentParser:
                    help="refresh ledger required before downloads")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget; default=current free disk")
@@ -5329,7 +5461,7 @@ def build_argparser() -> argparse.ArgumentParser:
                    help="path to a frontier_refresh.json ledger to require")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--storage-budget-gb", type=float, default=None,
                    help="storage budget for wave planning; default=current free disk")
@@ -5354,9 +5486,10 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--label", default=None, help="optional run-next label/hf id to target")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
-    p.add_argument("--storage-budget-gb", type=float, default=8000.0)
+    p.add_argument("--storage-budget-gb", type=float, default=None,
+                   help="default=current free disk minus the Studio hard reserve")
     p.add_argument("--max-wave-hours", type=float, default=6.0)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_launch_packet)
@@ -5398,10 +5531,11 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--proof-pack", default=str(PROOF_PACK_PATH))
     p.add_argument("--audit-grade", default=str(AUDIT_GRADE_PATH))
     p.add_argument("--require-refresh", default=str(COND_DIR / "frontier_refresh.preflight.json"))
-    p.add_argument("--storage-budget-gb", type=float, default=8000.0)
+    p.add_argument("--storage-budget-gb", type=float, default=None,
+                   help="default=current free disk minus the Studio hard reserve")
     p.add_argument("--link-mbs", type=float, default=300.0)
     p.add_argument("--efficiency", type=float, default=0.7)
-    p.add_argument("--scratch-gb", type=float, default=200.0)
+    p.add_argument("--scratch-gb", type=float, default=DEFAULT_HARDWARE.scratch_reserve_gb)
     p.add_argument("--cache-reserve-gb", type=float, default=CACHE_RESERVE_GB)
     p.add_argument("--max-wave-hours", type=float, default=6.0)
     p.add_argument("--json", action="store_true")

@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import socket
 import subprocess
@@ -22,6 +23,11 @@ import urllib.request
 
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOL_DIR not in sys.path:
+    sys.path.insert(0, TOOL_DIR)
+from studio_manifest import DEFAULT_HARDWARE
+
 DEFAULT_OUT = "reports/condense/studio_environment.json"
 SCHEMA = "hawking.studio_environment.v1"
 SIGNATURE_ALGORITHM = "sha256-json-v1"
@@ -81,6 +87,22 @@ def sysctl_number(name):
 def sysctl_text(name):
     result = run(["sysctl", "-n", name], timeout=10)
     return result["stdout"].strip() if result["ok"] and result["stdout"].strip() else None
+
+
+def memory_state():
+    pressure = sysctl_number("kern.memorystatus_vm_pressure_level")
+    swap = run(["sysctl", "-n", "vm.swapusage"], timeout=10)
+    swap_mb = None
+    if swap["ok"]:
+        match = re.search(r"used\s*=\s*([0-9.]+)([MGT])", swap["stdout"])
+        if match:
+            value, unit = float(match.group(1)), match.group(2)
+            swap_mb = value * {"M": 1.0, "G": 1024.0, "T": 1024.0 * 1024.0}[unit]
+    return {
+        "pressure_level": pressure,
+        "pressure_state": {1: "normal", 2: "warning", 4: "critical"}.get(pressure, "unknown"),
+        "swap_used_mb": round(swap_mb, 3) if swap_mb is not None else None,
+    }
 
 
 def route_summary(host):
@@ -145,21 +167,32 @@ def network_summary(skip):
     return out
 
 
-def hardware_summary(root, min_ram_gb, min_free_disk_gb):
+def hardware_summary(root, min_ram_gib, min_free_disk_gb):
     ram_bytes = sysctl_number("hw.memsize")
     usage = shutil.disk_usage(root)
     ram_gb = ram_bytes / 1e9 if ram_bytes else None
+    ram_gib = ram_bytes / (1024 ** 3) if ram_bytes else None
     disk_free_gb = usage.free / 1e9
     return {
-        "target_ram_gb": min_ram_gb,
+        "profile": DEFAULT_HARDWARE.name,
+        "target_ram_gb": min_ram_gib,  # legacy spelling retained for receipt consumers
+        "target_ram_gib": min_ram_gib,
+        "resident_weight_budget_gb": DEFAULT_HARDWARE.weight_budget_gb,
+        "interactive_process_budget_gb": DEFAULT_HARDWARE.process_budget_gb,
         "target_free_disk_gb": min_free_disk_gb,
+        "scratch_reserve_gb": DEFAULT_HARDWARE.scratch_reserve_gb,
+        "hf_cache_reserve_gb": DEFAULT_HARDWARE.cache_reserve_gb,
+        "actual_ram_bytes": ram_bytes,
         "actual_ram_gb": round(ram_gb, 3) if ram_gb else None,
+        "actual_ram_gib": round(ram_gib, 3) if ram_gib else None,
         "actual_cpu_brand": sysctl_text("machdep.cpu.brand_string"),
         "actual_cpu_count": sysctl_number("hw.ncpu"),
         "actual_hw_model": sysctl_text("hw.model"),
         "disk_total_gb": round(usage.total / 1e9, 3),
         "disk_free_gb": round(disk_free_gb, 3),
-        "ram_ok": bool(ram_gb is not None and ram_gb >= min_ram_gb),
+        "disk_free_after_reserve_gb": round(max(0.0, disk_free_gb - min_free_disk_gb), 3),
+        "memory": memory_state(),
+        "ram_ok": bool(ram_gib is not None and ram_gib >= min_ram_gib),
         "disk_ok": bool(disk_free_gb >= min_free_disk_gb),
     }
 
@@ -201,13 +234,27 @@ def build_checks(doc):
             "name": "ram",
             "ok": bool(hardware.get("ram_ok")),
             "severity": "fail",
-            "detail": f"RAM {hardware.get('actual_ram_gb')}GB, target {hardware.get('target_ram_gb')}GB",
+            "detail": f"RAM {hardware.get('actual_ram_gib')}GiB, target {hardware.get('target_ram_gib')}GiB",
         },
         {
             "name": "disk",
             "ok": bool(hardware.get("disk_ok")),
             "severity": "fail",
             "detail": f"disk free {hardware.get('disk_free_gb')}GB, target {hardware.get('target_free_disk_gb')}GB",
+        },
+        {
+            "name": "memory_pressure",
+            "ok": bool(
+                (hardware.get("memory", {}).get("pressure_level") is None
+                 or hardware.get("memory", {}).get("pressure_level") < 2)
+                and (hardware.get("memory", {}).get("swap_used_mb") is None
+                     or hardware.get("memory", {}).get("swap_used_mb") < 2048.0)
+            ),
+            "severity": "fail",
+            "detail": (
+                f"state={hardware.get('memory', {}).get('pressure_state')} "
+                f"swap={hardware.get('memory', {}).get('swap_used_mb')}MB"
+            ),
         },
         {
             "name": "network",
@@ -274,7 +321,13 @@ def capture(args):
         "operator_targets": {
             "expected_link_mbs": args.link_mbs,
             "min_ram_gb": args.min_ram_gb,
+            "min_ram_gib": args.min_ram_gb,
             "min_free_disk_gb": args.min_free_disk_gb,
+            "resident_weight_budget_gb": DEFAULT_HARDWARE.weight_budget_gb,
+            "interactive_process_budget_gb": DEFAULT_HARDWARE.process_budget_gb,
+            "disk_reserve_gb": DEFAULT_HARDWARE.disk_reserve_gb,
+            "scratch_reserve_gb": DEFAULT_HARDWARE.scratch_reserve_gb,
+            "hf_cache_reserve_gb": DEFAULT_HARDWARE.cache_reserve_gb,
         },
         "platform": platform_summary(),
         "hardware": hardware_summary(root, args.min_ram_gb, args.min_free_disk_gb),
@@ -335,10 +388,10 @@ def selftest():
             "generated_at": "2026-07-08T00:00:00+00:00",
             "root": td,
             "git_commit": "test",
-            "machine_class": "Studio-M1Ultra-128",
-            "operator_targets": {"expected_link_mbs": 300.0, "min_ram_gb": 120.0, "min_free_disk_gb": 500.0},
+            "machine_class": "Studio-M3Ultra-96",
+            "operator_targets": {"expected_link_mbs": 300.0, "min_ram_gb": 90.0, "min_free_disk_gb": 150.0},
             "platform": {"system": "Darwin", "machine": "arm64", "python": "3.12.0"},
-            "hardware": {"ram_ok": True, "disk_ok": True, "actual_ram_gb": 128.0, "disk_free_gb": 8000.0},
+            "hardware": {"ram_ok": True, "disk_ok": True, "actual_ram_gib": 96.0, "disk_free_gb": 500.0},
             "network": {"ok": True, "dns_ok": True, "hf_api_ok": True, "route": {"ok": True}},
             "power_thermal": {
                 "power_source_ok": True,
@@ -371,10 +424,11 @@ def parser():
     cap = sub.add_parser("capture", help="write a signed Studio environment receipt")
     cap.add_argument("--root", default=ROOT)
     cap.add_argument("--out", default=DEFAULT_OUT)
-    cap.add_argument("--machine-class", default="Studio-M1Ultra-128")
+    cap.add_argument("--machine-class", default=DEFAULT_HARDWARE.name)
     cap.add_argument("--link-mbs", type=float, default=300.0)
-    cap.add_argument("--min-ram-gb", type=float, default=120.0)
-    cap.add_argument("--min-free-disk-gb", type=float, default=500.0)
+    cap.add_argument("--min-ram-gb", "--min-ram-gib", dest="min_ram_gb", type=float, default=90.0,
+                     help="minimum physical unified memory in GiB")
+    cap.add_argument("--min-free-disk-gb", type=float, default=DEFAULT_HARDWARE.disk_reserve_gb)
     cap.add_argument("--skip-network", action="store_true")
     cap.add_argument("--json", action="store_true")
     cap.set_defaults(func=capture)

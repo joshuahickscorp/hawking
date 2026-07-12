@@ -10,13 +10,13 @@ silence never counts as coverage.
 """
 from __future__ import annotations
 
-import json
 import pathlib
 import re
 from typing import Any
 
+from frontier_common import is_sha256 as _is_sha256, read_json as _read_json  # noqa: E402
+
 COND_DIR = pathlib.Path("reports/condense")
-SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 BASELINE_REQUIREMENTS = (
     {
@@ -86,13 +86,6 @@ FAIL_STATUSES = {"fail", "failed", "error", "blocked", "missing"}
 SYNTHETIC_MODES = {"synthetic", "mock", "fake"}
 
 
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
 def _norm(s: Any) -> str:
     return re.sub(r"[^a-z0-9]+", " ", str(s or "").lower()).strip()
 
@@ -103,10 +96,6 @@ def _status(s: Any) -> str:
 
 def _truthy(v: Any) -> bool:
     return v is True or _status(v) in PASS_STATUSES
-
-
-def _is_sha256(value: Any) -> bool:
-    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _reason(entry: dict[str, Any], record: dict[str, Any]) -> str:
@@ -354,7 +343,7 @@ def _baseline_skeleton(label: str) -> dict[str, Any]:
     return {
         "schema": "hawking.frontier_baselines.v1",
         "model": label,
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "machine_name": "<exact Studio host label>",
         "same_box": True,
         "same_box_group": "<same machine/session id shared by baselines/evals>",
@@ -386,7 +375,7 @@ def _eval_skeleton(label: str) -> dict[str, Any]:
         "schema": "hawking.frontier_eval_coverage.v1",
         "model": label,
         "mode": "real",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "machine_name": "<exact Studio host label>",
         "same_box": True,
         "same_box_group": "<same machine/session id shared by baselines/evals>",

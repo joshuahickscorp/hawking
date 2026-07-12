@@ -1,10 +1,10 @@
 #!/usr/bin/env python3.12
 """size_frontier.py — the BLACK-HOLE size axis: how many parameters can a device pull in, orthogonal
-to per-weight quality. llama.cpp caps at what fits in RAM (~669B @ 1.34bpw on 112GB). Hawking's move
+to per-weight quality. llama.cpp caps at what fits in RAM (~466B @ 1.34bpw on 78GB). Hawking's move
 is to stop requiring the whole model resident — the model LIVES on the SSD and only the weights a
 token touches stream through RAM (the event horizon). Three regimes, honestly separated by speed:
 
-  RESIDENT   (fast, full speed) : whole .tq in RAM. ceiling = RAM_budget * 8 / bpw  (~669B @1.34/112GB).
+  RESIDENT   (fast, full speed) : whole .tq in RAM. ceiling = RAM_budget * 8 / bpw  (~466B @1.34/78GB).
   MOE-PAGED  (usable)           : only ACTIVE experts + a hot-expert cache resident; cold experts page
                                   from SSD on demand. Footprint ~ active_params, NOT total. All giant
                                   models are MoE, so this is the lever: total params bounded by SSD,
@@ -18,28 +18,45 @@ faster external NVMe (ceiling scales with storage). Projection tool; the OOC pag
 serve are the Rust serve build. KILL: dense-OOC below ~0.1 tok/s is not interactive (MoE or bust at scale).
 """
 import sys, os, json
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOL_DIR not in sys.path:
+    sys.path.insert(0, TOOL_DIR)
+from studio_manifest import DEFAULT_HARDWARE
 
 OUT = "reports/condense"
 DEVICES = {  # name -> (RAM_GB usable for weights, SSD_TB, SSD_read_GBps)
-    # m1ultra = THE DELIVERED BOX (M1 Ultra, 128 GB unified, ~800 GB/s, 8 TB SSD). Weight budget
-    # ~112 GB leaves ~16 GB for KV + activations + OS. This is the default; the frontier numbers are
-    # denominated against 800 GB/s and 8 TB, not the M2-Max-96GB box the plan was derived for.
+    # The delivered box. Its 78 GB resident envelope preserves interactive control-plane,
+    # activation, KV, and OS headroom inside 96 GiB unified memory.
+    "studio-m3ultra-96": (
+        DEFAULT_HARDWARE.weight_budget_gb,
+        DEFAULT_HARDWARE.ssd_tb,
+        DEFAULT_HARDWARE.ssd_read_gbps,
+    ),
+    # Historical comparison profiles remain selectable but are never the default.
     "m1ultra": (112.0, 8.0, 6.0),
     "studio-m2max": (84.0, 2.0, 5.0), "mbp-36": (28.0, 1.0, 5.0),
     "mbp-64": (52.0, 2.0, 5.0), "studio-m3ultra-512": (470.0, 8.0, 6.0),
 }
-DEFAULT_DEVICE = "m1ultra"
-RAM_GBPS = 800.0   # M1 Ultra unified-memory bandwidth (the resident-serve tok/s denominator)
+DEVICE_DISK_RESERVE_GB = {
+    "studio-m3ultra-96": DEFAULT_HARDWARE.disk_reserve_gb,
+}
+DEFAULT_DEVICE = "studio-m3ultra-96"
+RAM_GBPS = DEFAULT_HARDWARE.ram_gbps
 
 
 def tq_gb(p_b, bpw): return p_b * bpw / 8.0
 
 
 def analyze(total_b, active_b, bpw, dev, hot_cache_gb=20.0, kv_gb=6.0):
-    ram, ssd_tb, bw = DEVICES.get(dev, DEVICES[DEFAULT_DEVICE])
-    ssd_gb = ssd_tb * 1000
+    resolved_dev = dev if dev in DEVICES else DEFAULT_DEVICE
+    ram, ssd_tb, bw = DEVICES[resolved_dev]
+    physical_ssd_gb = ssd_tb * 1000
+    reserve_gb = DEVICE_DISK_RESERVE_GB.get(resolved_dev, 0.0)
+    ssd_gb = max(0.0, physical_ssd_gb - reserve_gb)
     store = tq_gb(total_b, bpw)
-    res = {"device": dev, "ram_gb": ram, "ssd_gb": ssd_gb, "ssd_bw_gbps": bw,
+    res = {"device": resolved_dev, "requested_device": dev, "ram_gb": ram,
+           "ssd_gb": ssd_gb, "ssd_bw_gbps": bw,
+           "ssd_physical_gb": physical_ssd_gb, "disk_reserve_gb": reserve_gb,
            "model_total_b": total_b, "active_b": active_b, "bpw": bpw,
            "tq_on_disk_gb": round(store, 1), "fits_ssd": store <= ssd_gb,
            "resident_ceiling_b": round(ram * 8 / bpw),
@@ -86,9 +103,14 @@ if __name__ == "__main__":
     if a == "--ceiling":
         dev = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_DEVICE
         ram, ssd_tb, bw = DEVICES[dev]
-        print(f"{dev}: RAM {ram}GB, SSD {ssd_tb}TB, {bw}GB/s")
+        physical_ssd_gb = ssd_tb * 1000
+        reserve_gb = DEVICE_DISK_RESERVE_GB.get(dev, 0.0)
+        usable_ssd_gb = physical_ssd_gb - reserve_gb
+        print(f"{dev}: RAM {ram}GB, SSD {ssd_tb}TB ({usable_ssd_gb:.0f}GB usable after "
+              f"{reserve_gb:.0f}GB reserve), {bw}GB/s")
         for bpw in (4.5, 3.34, 2.34, 1.34, 1.0):
-            print(f"  {bpw}bpw: RESIDENT {round(ram*8/bpw)}B (fast) | STORAGE {round(ssd_tb*1000*8/bpw)}B (out-of-core)")
+            print(f"  {bpw}bpw: RESIDENT {round(ram*8/bpw)}B (fast) | "
+                  f"STORAGE {round(usable_ssd_gb*8/bpw)}B (out-of-core)")
     elif a == "--help":
         print(__doc__)
     else:

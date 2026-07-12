@@ -10,7 +10,7 @@ use crate::attn::mha_decode_step;
 // traits in `backend/mod.rs`, so this import is platform-neutral and does
 // not perturb non-macOS builds. The concrete `MetalBackend`/`MetalRecorder`
 // are named by fully-qualified path at the call site (no extra `use`).
-use super::arch_config::ArchReader;
+use super::arch_config::{token_embd_vocab_size, ArchReader};
 use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, tensor_ref, TensorRef};
 use crate::backend::BackendElementwise;
 use crate::cache::KvCache;
@@ -66,18 +66,9 @@ impl QwenConfig {
         // the embedding-table tensor dims as a fallback.
         let vocab_size = match get_u32("qwen2.vocab_size").or_else(|| get_u32("llama.vocab_size")) {
             Some(v) => v as usize,
-            None => {
-                // GGUF dim ordering varies; vocab >> hidden in
-                // practice, so the max of the embed tensor's dims is
-                // the vocab size.
-                let dims = g
-                    .tensor("token_embd.weight")
-                    .map(|t| t.dims.clone())
-                    .ok_or_else(|| {
-                        Error::Model("vocab size not in metadata or token_embd dims".into())
-                    })?;
-                dims.iter().copied().max().unwrap_or(0) as usize
-            }
+            // GGUF dim ordering varies; vocab >> hidden in practice, so the max
+            // of the embed tensor's dims is the vocab size.
+            None => token_embd_vocab_size(g, "vocab size not in metadata or token_embd dims")?,
         };
 
         Ok(Self {
@@ -2595,7 +2586,11 @@ impl Engine for QwenDense {
                 //   full accept: last_id = la[dlen-1]; pos = bonus_pos+dlen = anchor_pos+dlen+1
                 //   partial reject at na: last_id = preds[na]; pos = bonus_pos+na+1 = anchor_pos+na+2
                 //                         kv.seq_len reset to pos (= anchor_pos_next)
-                anchor_tok = if na == 0 { carried_true } else { lookahead[na - 1] };
+                anchor_tok = if na == 0 {
+                    carried_true
+                } else {
+                    lookahead[na - 1]
+                };
                 if na < dlen {
                     // Partial reject: correction is the next carried_true.
                     carried_true = preds[na];
@@ -2667,7 +2662,9 @@ impl Engine for QwenDense {
             let mut ngram_proposer = crate::speculate::user_ngram::NgramProposer::new();
             let mut suffix_proposer = crate::speculate::suffix_array::SuffixArrayDraft::new();
             let mut router = crate::speculate::router::ProposalRouter::new(
-                spec_gov_window, spec_gov_min_rate, 0.0,
+                spec_gov_window,
+                spec_gov_min_rate,
+                0.0,
             );
             if eh_on {
                 ngram_proposer.warm(&prompt_ids);
@@ -2675,7 +2672,8 @@ impl Engine for QwenDense {
                 // P1.4: register the suffix-array as a second always-on free slot.
                 router.add_free_slot(
                     crate::speculate::router::ProposerId::SuffixArray,
-                    spec_gov_window, spec_gov_min_rate,
+                    spec_gov_window,
+                    spec_gov_min_rate,
                 );
             }
 
@@ -2727,8 +2725,8 @@ impl Engine for QwenDense {
                 // fall back to the original gov_propose + draft_index path when OFF.
                 let mut eh_proposer_id = crate::speculate::router::ProposerId::UserNgram;
                 let draft = if eh_on {
-                    use crate::speculate::router::{ProposerId, RouterCtx, RouterPlan};
                     use crate::speculate::proposal::{Budget, Ctx as PCtx, Proposal, Telemetry};
+                    use crate::speculate::router::{ProposerId, RouterCtx, RouterPlan};
                     let rctx = RouterCtx {
                         // 1ms placeholder: router always proposes on the parity gate
                         // (benefit > 0 with zero costs). Tune with real timing in P0.7+.
@@ -2743,19 +2741,33 @@ impl Engine for QwenDense {
                             pos = bonus_pos;
                             continue;
                         }
-                        RouterPlan::Spec { id, draft_len: k, .. } => {
+                        RouterPlan::Spec {
+                            id, draft_len: k, ..
+                        } => {
                             eh_proposer_id = id;
-                            let pctx = PCtx { tokens: &ctx_buf, pos: bonus_pos, hidden: None };
+                            let pctx = PCtx {
+                                tokens: &ctx_buf,
+                                pos: bonus_pos,
+                                hidden: None,
+                            };
                             let tel = Telemetry::default();
                             match id {
                                 ProposerId::SuffixArray => {
-                                    match suffix_proposer.propose(&pctx, Budget::line(k.min(k_avail)), &tel) {
+                                    match suffix_proposer.propose(
+                                        &pctx,
+                                        Budget::line(k.min(k_avail)),
+                                        &tel,
+                                    ) {
                                         Proposal::TokenLine(v) => v,
                                         _ => Vec::new(),
                                     }
                                 }
                                 _ => {
-                                    match ngram_proposer.propose(&pctx, Budget::line(k.min(k_avail)), &tel) {
+                                    match ngram_proposer.propose(
+                                        &pctx,
+                                        Budget::line(k.min(k_avail)),
+                                        &tel,
+                                    ) {
                                         Proposal::TokenLine(v) => v,
                                         _ => Vec::new(),
                                     }
@@ -3037,8 +3049,9 @@ impl Engine for QwenDense {
             } else {
                 None
             };
-            let mut json_constraint =
-                req.json_mode.then(|| crate::json_constrain::JsonConstraint::new());
+            let mut json_constraint = req
+                .json_mode
+                .then(|| crate::json_constrain::JsonConstraint::new());
             for step in 0..req.max_new_tokens {
                 if abort_set(&req) {
                     reason = StopReason::Aborted;
@@ -3839,7 +3852,9 @@ impl QwenDense {
                     let x_buf = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(x));
                     let out_buf = ctx.new_buffer(s.out_features * std::mem::size_of::<f32>());
                     let mut tcb = TokenCommandBuffer::new(ctx);
-                    crate::kernels::strand_bitslice_gemv_tcb(&mut tcb, gpu, &x_buf, 0, &out_buf, 0)?;
+                    crate::kernels::strand_bitslice_gemv_tcb(
+                        &mut tcb, gpu, &x_buf, 0, &out_buf, 0,
+                    )?;
                     if let Some(res) = s.gpu_res.as_ref() {
                         crate::kernels::strand_bitslice_gemv_tcb_accum(
                             &mut tcb, res, &x_buf, 0, &out_buf, 0,
@@ -3847,9 +3862,7 @@ impl QwenDense {
                     }
                     tcb.commit_and_wait()?;
                     let p = out_buf.contents() as *const f32;
-                    out.copy_from_slice(unsafe {
-                        std::slice::from_raw_parts(p, s.out_features)
-                    });
+                    out.copy_from_slice(unsafe { std::slice::from_raw_parts(p, s.out_features) });
                     return Ok(());
                 }
                 // CPU fallback: bulk matvec_rht (+ residual decoded-sum when present).
@@ -5036,7 +5049,8 @@ impl QwenDense {
             }
             if crate::env_on("HAWKING_QWEN_F16_KV") {
                 return Err(Error::Model(
-                    "HAWKING_QWEN_INT4_KV=1 is incompatible with HAWKING_QWEN_F16_KV=1; unset one".into(),
+                    "HAWKING_QWEN_INT4_KV=1 is incompatible with HAWKING_QWEN_F16_KV=1; unset one"
+                        .into(),
                 ));
             }
             if crate::env_on("HAWKING_QWEN_W4A8") {
@@ -5315,6 +5329,16 @@ impl QwenDense {
         let w4a8_oproj = w4a8_active;
         let w4a8_ffn_gate = w4a8_active;
         let w4a8_ffn_up = w4a8_active;
+        macro_rules! cached_env_bool {
+            ($name:literal, $default:expr) => {{
+                static VALUE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+                *VALUE.get_or_init(|| {
+                    std::env::var_os($name)
+                        .map(|v| v != "0")
+                        .unwrap_or($default)
+                })
+            }};
+        }
         // path-to-50 gate+up fusion: ONE predec dispatch for both FFN gate
         // and up (they share the post-norm activation). Halves FFN-proj
         // dispatch count for +8.0% decode tps, bit-identical. Requires predec
@@ -5328,62 +5352,31 @@ impl QwenDense {
             && !w4a8_ffn_up;
         // Track A7: 2r gate+up pair — default-ON; opt out via
         // HAWKING_QWEN_PAIR_1R=1 to fall back to the 1r pair kernel.
-        let ffn_pair_2r = {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                !std::env::var_os("HAWKING_QWEN_PAIR_1R")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_2r = !cached_env_bool!("HAWKING_QWEN_PAIR_1R", false);
         // Track E1: 8r gate+up pair — opt-in (HAWKING_QWEN_PAIR_8R=1).
         // 16 accumulators (gate0-7 + up0-7), 64 rows/TG vs 32 for 4r / 16 for 2r.
         // 172 TGs for Qwen-3B gate+up (11008 rows) vs 344 (4r) / 688 (2r).
         // Supersedes PAIR_4R when set; bit-identical.
-        let ffn_pair_8r = {
-            static E8R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E8R.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_8R")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_8r = cached_env_bool!("HAWKING_QWEN_PAIR_8R", false);
         // Track E2: 3r gate+up pair — opt-in (HAWKING_QWEN_PAIR_3R=1).
         // Custom middle geometry between the proven 2r and flat 4r forms.
         // Superseded by PAIR_8R when set.
-        let ffn_pair_3r = !ffn_pair_8r && {
-            static E3R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E3R.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_3R")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_3r = !ffn_pair_8r && cached_env_bool!("HAWKING_QWEN_PAIR_3R", false);
         // Track B2: 4r gate+up pair — opt-in (HAWKING_QWEN_PAIR_4R=1).
         // 8 accumulators, inline scale reads, 32 rows/TG vs 16 for 2r.
         // Bit-identical, but current paired bench is flat/slightly negative.
         // Superseded by PAIR_8R/PAIR_3R when set.
-        let ffn_pair_4r = !ffn_pair_8r && !ffn_pair_3r && {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_4R")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_4r =
+            !ffn_pair_8r && !ffn_pair_3r && cached_env_bool!("HAWKING_QWEN_PAIR_4R", false);
         // Track F1: E3 inline pair, ALSO dropping the xl[8] activation preload
         // (x read per-pi). Bit-identical to E3; frees ~6 registers to test whether
         // the dominant pair GEMV is still occupancy-bound after E3. Opt-in via
         // HAWKING_QWEN_PAIR_2R_INLINE_NOX=1 (engages the inline f32 path and
         // swaps the inline kernel for its nox twin). Superseded by 8r/3r/4r.
-        let ffn_pair_2r_inline_nox = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_2R_INLINE_NOX")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_2r_inline_nox = !ffn_pair_8r
+            && !ffn_pair_3r
+            && !ffn_pair_4r
+            && cached_env_bool!("HAWKING_QWEN_PAIR_2R_INLINE_NOX", false);
         // Track E3: 2r gate+up pair with inline scale reads — DEFAULT-ON.
         // Same geometry as the old default 2r and BIT-IDENTICAL to it (parity test
         // pair_2r_inline_matches_pair_2r), but drops the 64-float scale preload →
@@ -5395,75 +5388,42 @@ impl QwenDense {
         let ffn_pair_2r_inline = !ffn_pair_8r
             && !ffn_pair_3r
             && !ffn_pair_4r
-            && (ffn_pair_2r_inline_nox || {
-                static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-                *E.get_or_init(|| {
-                    std::env::var_os("HAWKING_QWEN_PAIR_2R_INLINE")
-                        .map(|v| v != "0")
-                        // DEFAULT-ON for plain decode, but DEFAULT-OFF when the
-                        // user n-gram draft is active: E3's inline-pair single-
-                        // token kernel is bit-identical to old-2r for greedy, but
-                        // the batched verify path (forward_tokens_verify) does NOT
-                        // use it, so a draft cycle mixes E3 (bonus) with non-E3
-                        // (verify) and the verifier's argmax disagrees with what
-                        // sequential E3 decode would emit -> user-draft loses
-                        // bit-identity (regression found 2026-06-07; HEAD was
-                        // lossless because old-2r single-token agreed with verify).
-                        // An explicit HAWKING_QWEN_PAIR_2R_INLINE=1 still forces
-                        // it on (power user accepting the trade). The real fix is a
-                        // batched-E3 verify kernel; until then this keeps draft
-                        // lossless while plain decode keeps E3's +9.6%.
-                        .unwrap_or_else(|| !crate::env_on("HAWKING_QWEN_USER_DRAFT"))
-                })
-            });
+            && (ffn_pair_2r_inline_nox
+                || cached_env_bool!(
+                    "HAWKING_QWEN_PAIR_2R_INLINE",
+                    // DEFAULT-ON for plain decode, but DEFAULT-OFF when the
+                    // user n-gram draft is active: the batched verify path does
+                    // not use E3, so draft must stay on old-2r unless forced.
+                    !crate::env_on("HAWKING_QWEN_USER_DRAFT")
+                ));
         // Track E4: f16-scale variant of E3's inline pair. Kept as a separate
         // opt-in because the first clean paired rerun was slower than pair_f16s.
         // nox rides the f32 path, so it never selects the f16-inline variant.
-        let ffn_pair_2r_inline_f16s = ffn_pair_2r_inline && !ffn_pair_2r_inline_nox && {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_2R_INLINE_F16S")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_2r_inline_f16s = ffn_pair_2r_inline
+            && !ffn_pair_2r_inline_nox
+            && cached_env_bool!("HAWKING_QWEN_PAIR_2R_INLINE_F16S", false);
         // Track F2: the FAST/headline f16-scale pair (pair_f16s) with the xl[8]
         // activation preload dropped (x read per-pi); the half-scale preload is
         // KEPT (E4 showed inlining f16 scales loses). Bit-identical to pair_f16s.
         // Opt-in via HAWKING_QWEN_PAIR_F16S_NOX=1; engages only on the f16 path
         // (does not force the f32 inline route the way F1 does).
-        let ffn_pair_f16s_nox = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_F16S_NOX")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_f16s_nox = !ffn_pair_8r
+            && !ffn_pair_3r
+            && !ffn_pair_4r
+            && cached_env_bool!("HAWKING_QWEN_PAIR_F16S_NOX", false);
         // Track F3: f16-scale pair with scales held in HALF registers (packed,
         // ~16 regs vs 32) + xl preload dropped. Coalesced half preload kept (unlike
         // E4's lossy inline). Bit-identical to pair_f16s. Opt-in; takes priority
         // over F2 (f16s_nox) on the f16 path. HAWKING_QWEN_PAIR_F16S_HALFREG=1.
-        let ffn_pair_f16s_halfreg = !ffn_pair_8r && !ffn_pair_3r && !ffn_pair_4r && {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                std::env::var_os("HAWKING_QWEN_PAIR_F16S_HALFREG")
-                    .map(|v| v != "0")
-                    .unwrap_or(false)
-            })
-        };
+        let ffn_pair_f16s_halfreg = !ffn_pair_8r
+            && !ffn_pair_3r
+            && !ffn_pair_4r
+            && cached_env_bool!("HAWKING_QWEN_PAIR_F16S_HALFREG", false);
         // Track B6: fuse rope_qk + kv_append into one dispatch, saving
         // 1/layer × n_layers = 36 dispatches (328→292). Only valid for
         // !use_seam && !f16_kv. Bit-identical (5 shapes verified).
         // DEFAULT-ON; opt-out via HAWKING_QWEN_ROPE_KV_FUSE=0.
-        let rope_kv_fuse = {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                !std::env::var_os("HAWKING_QWEN_ROPE_KV_FUSE")
-                    .map(|v| v == "0")
-                    .unwrap_or(false)
-            })
-        };
+        let rope_kv_fuse = cached_env_bool!("HAWKING_QWEN_ROPE_KV_FUSE", true);
         // Track 3.8: k+v fusion — k_proj and v_proj are Q4_K, same shape
         // (kv_dim x h), and read the same post-norm activation, so they fuse
         // into ONE predec_pair dispatch (bit-identical). Saves 1/layer × n_layers
@@ -5471,21 +5431,15 @@ impl QwenDense {
         // gate+up alone at 31 tps because k/v rows are tiny), but dispatch
         // count reduction to <350 target requires it. Now DEFAULT-ON.
         // Opt out via HAWKING_QWEN_KV_FUSE=0.
-        let kv_fuse = std::env::var_os("HAWKING_QWEN_KV_FUSE")
-            .map(|v| v != "0")
-            .unwrap_or(true)
-            && predec_active
-            && !w4a8_qproj;
+        let kv_fuse =
+            cached_env_bool!("HAWKING_QWEN_KV_FUSE", true) && predec_active && !w4a8_qproj;
         // path-to-50: route ffn_down through the predec kernel too. ffn_down is
         // the single largest weight read/layer and is the #1 GPU consumer
         // (v3_8r 46%), but unlike the projections it was NOT on predec. The
         // predec scale table already exists (ffn_down_q4k_predec for requant'd
         // layers; predec_cache for native-Q4_K layers). DEFAULT-ON; opt out =0.
-        let ffn_down_predec = std::env::var_os("HAWKING_QWEN_FFN_DOWN_PREDEC")
-            .map(|v| v != "0")
-            .unwrap_or(true)
-            && predec_active
-            && !w4a8_active;
+        let ffn_down_predec =
+            cached_env_bool!("HAWKING_QWEN_FFN_DOWN_PREDEC", true) && predec_active && !w4a8_active;
         let w4a8_ffn_down = w4a8_active;
         let w4a8_lmhead = w4a8_active;
         // Track E: per-channel W4A8 at the LM_HEAD site. Default off.
@@ -5533,12 +5487,8 @@ impl QwenDense {
         // add, then run the required vector-wide ffn_norm as the next dispatch.
         // This is default-on only for the default 2r f32-predec path; W4A8,
         // f16-scale predec, 4r, and 1r stay on the existing route.
-        let predec_4r_active = std::env::var_os("HAWKING_QWEN_PREDEC_4R")
-            .map(|v| v != "0")
-            .unwrap_or(false);
-        let predec_2r_active = std::env::var_os("HAWKING_QWEN_PREDEC_2R")
-            .map(|v| v != "0")
-            .unwrap_or(true);
+        let predec_4r_active = cached_env_bool!("HAWKING_QWEN_PREDEC_4R", false);
+        let predec_2r_active = cached_env_bool!("HAWKING_QWEN_PREDEC_2R", true);
         let oproj_add_rmsnorm_fuse = crate::env_opt_out("HAWKING_QWEN_OPROJ_ADD_RMSNORM_FUSE")
             && predec_active
             && predec_2r_active
@@ -5546,23 +5496,14 @@ impl QwenDense {
         // Track 3.12/3.13: fuse Q/K bias+RoPE and f32 KV-cache append into
         // the QKV triple dispatch. The seam and f16-KV paths keep their
         // existing explicit post-processing kernels.
-        let qkv_rope_append = crate::env_opt_out("HAWKING_QWEN_QKV_ROPE_APPEND")
-            && !use_seam
-            && !f16_kv
-            && !int4_kv;
+        let qkv_rope_append =
+            crate::env_opt_out("HAWKING_QWEN_QKV_ROPE_APPEND") && !use_seam && !f16_kv && !int4_kv;
         // Track C28: 4r variant of qkv_rope_append — Q/K at 4r/simdgroup,
         // V at 2r/simdgroup. Reduces TG count 320→160 for Qwen-3B.
         // Requires q_rows % 4 == 0 and kv_rows % 4 == 0 (checked at runtime).
         // Opt-in: HAWKING_QWEN_QKV_ROPE_APPEND_4R=1.
         let qkv_rope_append_4r = qkv_rope_append
-            && {
-                static QKV4R: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-                *QKV4R.get_or_init(|| {
-                    std::env::var_os("HAWKING_QWEN_QKV_ROPE_APPEND_4R")
-                        .map(|v| v != "0")
-                        .unwrap_or(false)
-                })
-            }
+            && cached_env_bool!("HAWKING_QWEN_QKV_ROPE_APPEND_4R", false)
             && q_dim % 4 == 0
             && kv_dim % 4 == 0;
         if w4a8_active {
@@ -5633,14 +5574,8 @@ impl QwenDense {
         // Saves 1 dispatch (292→291). Only valid when hidden ≤ 4096 and w4a8
         // is inactive (w4a8 needs x_buf populated before the quantize step).
         // Default-ON; opt-out via HAWKING_QWEN_EMBED_RMSNORM_FUSE=0.
-        let embed_rmsnorm_fuse = {
-            static E: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-            *E.get_or_init(|| {
-                !std::env::var_os("HAWKING_QWEN_EMBED_RMSNORM_FUSE")
-                    .map(|v| v == "0")
-                    .unwrap_or(false)
-            })
-        } && !w4a8_active;
+        let embed_rmsnorm_fuse =
+            cached_env_bool!("HAWKING_QWEN_EMBED_RMSNORM_FUSE", true) && !w4a8_active;
         if embed_rmsnorm_fuse {
             kernels::embed_lookup_rmsnorm_f32_tcb(
                 &mut tcb,
@@ -5932,8 +5867,9 @@ impl QwenDense {
             // TQ guard: a TQ-served q/k/v can't ride the Q4_K predec triple;
             // disable so each routes through `gemv_proj!` (q/k/v TQ arm) or the
             // k+v pair (also TQ-guarded). No-op when TQ is off / not mapped.
-            let tq_any_qkv =
-                tq_served(layer.q_proj.offset) || tq_served(layer.k_proj.offset) || tq_served(layer.v_proj.offset);
+            let tq_any_qkv = tq_served(layer.q_proj.offset)
+                || tq_served(layer.k_proj.offset)
+                || tq_served(layer.v_proj.offset);
             let qkv_triple = !w4a8_qproj
                 && !qkv_concurrent
                 && !tq_any_qkv
@@ -7320,40 +7256,39 @@ impl QwenDense {
                 // Optional residual second pass accumulates. Skips the Q4_K dispatch
                 // ladder entirely for this site.
                 #[cfg(feature = "tq")]
-                let __tq_ffn_down = if let Some(s) =
-                    tq_ffn_ref.and_then(|m| m.get(&layer.ffn_down.offset))
-                {
-                    if let Some(gpu) = s.gpu.as_ref() {
-                        debug_assert_eq!(
-                            (s.out_features, s.in_features),
-                            (h, intermediate),
-                            "TQ ffn_down arena GEMV shape mismatch"
-                        );
-                        kernels::strand_bitslice_gemv_tcb(
-                            &mut tcb,
-                            gpu,
-                            &arena.ffn_act_buf,
-                            0,
-                            &arena.ffn_down_buf,
-                            0,
-                        )?;
-                        if let Some(res) = s.gpu_res.as_ref() {
-                            kernels::strand_bitslice_gemv_tcb_accum(
+                let __tq_ffn_down =
+                    if let Some(s) = tq_ffn_ref.and_then(|m| m.get(&layer.ffn_down.offset)) {
+                        if let Some(gpu) = s.gpu.as_ref() {
+                            debug_assert_eq!(
+                                (s.out_features, s.in_features),
+                                (h, intermediate),
+                                "TQ ffn_down arena GEMV shape mismatch"
+                            );
+                            kernels::strand_bitslice_gemv_tcb(
                                 &mut tcb,
-                                res,
+                                gpu,
                                 &arena.ffn_act_buf,
                                 0,
                                 &arena.ffn_down_buf,
                                 0,
                             )?;
+                            if let Some(res) = s.gpu_res.as_ref() {
+                                kernels::strand_bitslice_gemv_tcb_accum(
+                                    &mut tcb,
+                                    res,
+                                    &arena.ffn_act_buf,
+                                    0,
+                                    &arena.ffn_down_buf,
+                                    0,
+                                )?;
+                            }
+                            true
+                        } else {
+                            false
                         }
-                        true
                     } else {
                         false
-                    }
-                } else {
-                    false
-                };
+                    };
                 #[cfg(not(feature = "tq"))]
                 let __tq_ffn_down = false;
                 // ffn_down: if the requant'd Q4_K buffer is populated (opt-in
@@ -9722,13 +9657,13 @@ impl QwenDense {
 #[cfg(target_os = "macos")]
 impl crate::speculate::verifier::ExactTarget for QwenDense {
     fn forward_tokens_verify(
-        &mut self, tokens: &[u32], positions: &[usize],
+        &mut self,
+        tokens: &[u32],
+        positions: &[usize],
     ) -> crate::Result<(Vec<u32>, Vec<Vec<f32>>)> {
         QwenDense::forward_tokens_verify(self, tokens, positions)
     }
-    fn forward_token_greedy(
-        &mut self, token: u32, pos: usize,
-    ) -> crate::Result<u32> {
+    fn forward_token_greedy(&mut self, token: u32, pos: usize) -> crate::Result<u32> {
         QwenDense::forward_token_greedy_tcb(self, token, pos)
     }
 }
@@ -9806,7 +9741,10 @@ fn qwen_tq_artifact_candidates(weights_path: &Path, override_path: Option<&str>)
     }
     candidates.push(weights_path.with_extension(crate::tq::TQ_EXT));
     if let Some(stem) = weights_path.file_stem().and_then(|s| s.to_str()) {
-        candidates.push(PathBuf::from(format!("models/{stem}.{}", crate::tq::TQ_EXT)));
+        candidates.push(PathBuf::from(format!(
+            "models/{stem}.{}",
+            crate::tq::TQ_EXT
+        )));
     }
     candidates
 }
@@ -9925,8 +9863,9 @@ mod bsize_verify_diag {
             let mut row = String::new();
             for bsz in 1..=8usize {
                 m.kv.seq_len = p;
-                let vtoks: Vec<u32> =
-                    (0..bsz).map(|j| if (p + j) % 2 == 0 { a } else { b }).collect();
+                let vtoks: Vec<u32> = (0..bsz)
+                    .map(|j| if (p + j) % 2 == 0 { a } else { b })
+                    .collect();
                 let vpos: Vec<usize> = (0..bsz).map(|j| p + j).collect();
                 let (preds, _) = m.forward_tokens_verify(&vtoks, &vpos).expect("verify");
                 let bad = preds[0] != greedy;
@@ -9937,7 +9876,11 @@ mod bsize_verify_diag {
                         any_bge2 = true;
                     }
                 }
-                row.push_str(&format!("B{bsz}:{}{} ", preds[0], if bad { "✗" } else { "" }));
+                row.push_str(&format!(
+                    "B{bsz}:{}{} ",
+                    preds[0],
+                    if bad { "✗" } else { "" }
+                ));
             }
             checked += 1;
             if any_b1 {
@@ -10046,9 +9989,7 @@ mod bsize_verify_diag {
                     let _ = m.forward_token_greedy_tcb(tok, pos).expect("warm greedy");
                 }
                 m.kv.seq_len = measure_pos;
-                let _ = m
-                    .forward_tokens_verify(&vtoks, &vpos)
-                    .expect("warm verify");
+                let _ = m.forward_tokens_verify(&vtoks, &vpos).expect("warm verify");
             }
 
             let mut greedy_ms = Vec::with_capacity(ITERS);
@@ -10108,7 +10049,10 @@ mod bsize_verify_diag {
         }
         m.ensure_tq_cache().expect("ensure_tq_cache");
         let map = m.tq_ffn.as_ref().expect("tq_ffn built (artifact present)");
-        assert!(!map.is_empty(), "TQ artifact carried no FFN/attn projections");
+        assert!(
+            !map.is_empty(),
+            "TQ artifact carried no FFN/attn projections"
+        );
 
         // At least one projection must have uploaded to the GPU (the 3B FFN dims
         // are 256-aligned, so the GPU bitslice path is reachable). Also serve-check
@@ -10128,7 +10072,9 @@ mod bsize_verify_diag {
         let (_, s) = map.iter().find(|(_, s)| s.gpu.is_some()).unwrap();
         let cols = s.in_features;
         let rows = s.out_features;
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.013).sin() * 0.3).collect();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.013).sin() * 0.3)
+            .collect();
 
         // GPU serve (the same dispatch matmul_q4_dispatch takes).
         use crate::metal::TokenCommandBuffer;
@@ -10145,15 +10091,17 @@ mod bsize_verify_diag {
         };
 
         // CPU reference: matvec_rht over the same decoded Q12 (+ RHT mode/seed).
-        let y_cpu =
-            crate::tq::matvec_rht(&s.q12, &x, rows, cols, s.rht_mode, s.rht_seed);
+        let y_cpu = crate::tq::matvec_rht(&s.q12, &x, rows, cols, s.rht_mode, s.rht_seed);
 
         let mut max_rel = 0.0f32;
         for o in 0..rows {
             let abs = (y_gpu[o] - y_cpu[o]).abs();
             max_rel = max_rel.max(abs / (1.0 + y_cpu[o].abs()));
         }
-        println!("[qwen_tq_gpu] {rows}x{cols} rht_mode={:?}: GPU vs CPU max_rel={max_rel:.3e}", s.rht_mode);
+        println!(
+            "[qwen_tq_gpu] {rows}x{cols} rht_mode={:?}: GPU vs CPU max_rel={max_rel:.3e}",
+            s.rht_mode
+        );
         assert!(
             max_rel <= 2e-3,
             "Qwen TQ GPU serve diverged from CPU matvec_rht: max_rel {max_rel:.3e} > 2e-3"
@@ -10236,7 +10184,9 @@ mod bsize_verify_diag {
         let res_gpu = res_prep.upload_to_gpu(ctx).expect("upload res");
 
         // CPU decoded-sum reference: y = (decode(base)+decode(res)) · x.
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.017).cos() * 0.4).collect();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.017).cos() * 0.4)
+            .collect();
         let mut y_ref = vec![0.0f32; rows];
         for o in 0..rows {
             let mut acc = 0.0f32;
@@ -10265,7 +10215,9 @@ mod bsize_verify_diag {
         for o in 0..rows {
             max_rel = max_rel.max((y_gpu[o] - y_ref[o]).abs() / (1.0 + y_ref[o].abs()));
         }
-        println!("[qwen_tq_residual] {rows}x{cols}: two-pass GPU vs decoded-sum max_rel={max_rel:.3e}");
+        println!(
+            "[qwen_tq_residual] {rows}x{cols}: two-pass GPU vs decoded-sum max_rel={max_rel:.3e}"
+        );
         assert!(
             max_rel <= 2e-3,
             "Qwen residual two-pass GPU serve diverged from decoded-sum: max_rel {max_rel:.3e}"
@@ -10320,7 +10272,9 @@ mod bsize_verify_diag {
         let f = std::mem::size_of::<f32>();
 
         // Deterministic activation.
-        let x: Vec<f32> = (0..cols).map(|i| ((i as f32) * 0.011).cos() * 0.37).collect();
+        let x: Vec<f32> = (0..cols)
+            .map(|i| ((i as f32) * 0.011).cos() * 0.37)
+            .collect();
 
         // ── One-shot path: exactly what matmul_q4_dispatch does on the GPU ──
         let x_buf1 = ctx.new_buffer_with_bytes(bytemuck::cast_slice::<f32, u8>(&x));
@@ -10359,8 +10313,10 @@ mod bsize_verify_diag {
         crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
             .expect("arena junk-pre gemv");
         // The dispatch the fused loop actually issues for this tensor.
-        crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &out_buf2, out_off)
-            .expect("arena gemv");
+        crate::kernels::strand_bitslice_gemv_tcb(
+            &mut tcb2, gpu, &x_buf2, x_off, &out_buf2, out_off,
+        )
+        .expect("arena gemv");
         // Unrelated "later site" GEMV into the disjoint buffer (same gpu/partials).
         crate::kernels::strand_bitslice_gemv_tcb(&mut tcb2, gpu, &x_buf2, x_off, &junk_buf, 0)
             .expect("arena junk-post gemv");
@@ -10452,11 +10408,7 @@ mod bsize_verify_diag {
         assert_eq!(h_tq_a.len(), h_q4.len());
 
         // (a) determinism: TQ-on is bit-stable run-to-run.
-        let det_diff = h_tq_a
-            .iter()
-            .zip(&h_tq_b)
-            .filter(|(x, y)| x != y)
-            .count();
+        let det_diff = h_tq_a.iter().zip(&h_tq_b).filter(|(x, y)| x != y).count();
         assert_eq!(
             det_diff, 0,
             "TQ arena decode not deterministic: {det_diff} hidden elems differ run-to-run"
@@ -10512,8 +10464,7 @@ mod bsize_verify_diag {
             return;
         }
         m.ensure_tq_cache().expect("ensure_tq_cache");
-        if m
-            .tq_ffn
+        if m.tq_ffn
             .as_ref()
             .map(|m| m.values().filter(|s| s.gpu.is_some()).count())
             .unwrap_or(0)
@@ -10540,7 +10491,9 @@ mod bsize_verify_diag {
         }
         let dt = t0.elapsed().as_secs_f64();
         let tps = N as f64 / dt;
-        println!("[qwen_tq_arena_decode_tps] fused TQ decode: {tps:.1} tok/s ({N} toks in {dt:.3}s)");
+        println!(
+            "[qwen_tq_arena_decode_tps] fused TQ decode: {tps:.1} tok/s ({N} toks in {dt:.3}s)"
+        );
         // The one-shot per-GEMV path serializes ~7 commits/layer/token → single-
         // digit tok/s. The fused arena path keeps the layer GPU-resident; even a
         // conservative floor (10 tok/s) is far above the one-shot regime.

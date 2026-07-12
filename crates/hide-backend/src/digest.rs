@@ -288,7 +288,7 @@ fn truncate(s: &str, max: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use hide_core::event::{EventLog, InMemoryEventLog, NewEvent, UserIntentEvent};
+    use hide_core::event::{InMemoryEventLog, NewEvent, UserIntentEvent};
     use hide_core::ids::SessionId;
     use hide_core::persistence::InMemoryProjectionStore;
     use std::sync::Arc;

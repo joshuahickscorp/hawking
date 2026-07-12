@@ -9,13 +9,8 @@ unsigned or tampered performance evidence before a public win is even considered
 from __future__ import annotations
 
 import argparse
-import copy
-import datetime as _dt
-import hashlib
-import json
 import os
 import pathlib
-import subprocess
 import sys
 import tempfile
 from typing import Any
@@ -25,52 +20,21 @@ os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
 from studio_manifest import FRONTIER_MODELS, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    commands as _commands,
+    git_commit as _git_commit,
+    now_utc as _now,
+    placeholder as _placeholder,
+    read_json as _read_json,
+    sign_record as _sign_record,
+    signature_status,
+    write_json as _write_json,
+)
 import frontier_receipts  # noqa: E402
 
-SIGN_ALG = "sha256-json-v1"
 SERVE_SCHEMA = "hawking.frontier_serve.v1"
 RAMCLIFF_SCHEMA = "hawking.frontier_ramcliff.v1"
 KINDS = ("serve", "ramcliff")
-
-
-def _now() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    try:
-        p = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
-def _write_json(path: pathlib.Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, sort_keys=True)
-        f.write("\n")
-
-
-def _canonical_digest(data: dict[str, Any]) -> str:
-    unsigned = copy.deepcopy(data)
-    unsigned.pop("signature", None)
-    return hashlib.sha256(
-        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
 
 
 def _schema_kind(record: dict[str, Any]) -> str | None:
@@ -94,23 +58,6 @@ def _label(record: dict[str, Any]) -> str:
     return str(record.get("model") or record.get("label") or "")
 
 
-def _placeholder(value: Any) -> bool:
-    if value is None:
-        return True
-    s = str(value).strip()
-    return not s or "<" in s or "TODO" in s or "..." in s
-
-
-def _commands(record: dict[str, Any]) -> list[str]:
-    cmds = record.get("commands")
-    out = []
-    if isinstance(cmds, list):
-        out.extend(str(cmd) for cmd in cmds if cmd)
-    if record.get("command"):
-        out.append(str(record["command"]))
-    return out
-
-
 def _trace_problems(record: dict[str, Any], kind: str) -> list[str]:
     problems = []
     cmds = _commands(record)
@@ -131,25 +78,6 @@ def _trace_problems(record: dict[str, Any], kind: str) -> list[str]:
         if not record.get("baseline_receipt"):
             problems.append("baseline_receipt for swapping/Q4_K comparison missing")
     return problems
-
-
-def signature_status(record: dict[str, Any]) -> dict[str, Any]:
-    sig = record.get("signature") if isinstance(record.get("signature"), dict) else {}
-    expected = _canonical_digest(record)
-    ok = sig.get("algorithm") == SIGN_ALG and sig.get("digest") == expected
-    problems = []
-    if sig.get("algorithm") != SIGN_ALG:
-        problems.append(f"signature algorithm must be {SIGN_ALG}")
-    if sig.get("digest") != expected:
-        problems.append("signature digest mismatch")
-    return {
-        "ok": ok,
-        "algorithm": sig.get("algorithm"),
-        "digest": sig.get("digest"),
-        "expected_digest": expected,
-        "problems": problems,
-    }
-
 
 def _strict_status(record: dict[str, Any], kind: str) -> dict[str, Any]:
     label = _label(record)
@@ -253,19 +181,16 @@ def record_status(record: dict[str, Any] | None, *, kind: str | None = None,
 
 def sign_record(record: dict[str, Any], *, kind: str | None = None,
                 allow_blocked_draft: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
-    signed = copy.deepcopy(record)
-    signed.pop("signature", None)
-    signed.setdefault("generated_at", _now())
-    signed.setdefault("git_commit", _git_commit(ROOT))
-    signed["signed_at"] = _now()
-    status = record_status(signed, kind=kind, require_signature=False)
-    if not status["ok"] and not allow_blocked_draft:
-        return signed, status
-    signed["signature"] = {"algorithm": SIGN_ALG, "digest": _canonical_digest(signed)}
-    return signed, record_status(signed, kind=kind, require_signature=True)
+    return _sign_record(
+        record,
+        record_status,
+        root=ROOT,
+        status_kwargs={"kind": kind},
+        allow_blocked_draft=allow_blocked_draft,
+    )
 
 
-def draft_record(label: str, kind: str, *, machine_class: str = "Studio-M1Ultra-128") -> dict[str, Any]:
+def draft_record(label: str, kind: str, *, machine_class: str = "Studio-M3Ultra-96") -> dict[str, Any]:
     common = {
         "model": label,
         "generated_at": _now(),
@@ -393,7 +318,7 @@ def _complete_record(label: str, kind: str) -> dict[str, Any]:
             "model": label,
             "receipt_state": "final",
             "source": "measured",
-            "machine_class": "Studio-M1Ultra-128",
+            "machine_class": "Studio-M3Ultra-96",
             "status": "pass",
             "native_tq": True,
             "rehydrate_f16": False,
@@ -405,7 +330,7 @@ def _complete_record(label: str, kind: str) -> dict[str, Any]:
             "tok_s": 1.0,
             "memory_peak_gb": 4.0,
             "memory_resident_gb": 3.5,
-            "unified_memory_gb": 128.0,
+            "unified_memory_gb": 96.0,
             "resident_memory_ok": True,
             "artifact_sha256": "a" * 64,
             "commands": ["selftest serve"],
@@ -419,7 +344,7 @@ def _complete_record(label: str, kind: str) -> dict[str, Any]:
         "model": label,
         "receipt_state": "final",
         "source": "measured",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "verdict": "CLIFF-WIN",
         "served_native_tq": True,
         "tok_s_resident": 20.0,
@@ -474,7 +399,7 @@ def selftest() -> bool:
         out_dir = root / "reports" / "condense"
         args = argparse.Namespace(receipt_mode="draft", label=[label], kind="both",
                                   out_dir=str(out_dir), force=True, sign_draft=True,
-                                  machine_class="Studio-M1Ultra-128", json=True)
+                                  machine_class="Studio-M3Ultra-96", json=True)
         check("draft command writes blocked native receipts", dispatch(args, root=root) == 1)
         for kind in KINDS:
             path = out_dir / default_path(root, label, kind).name
@@ -499,10 +424,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             p.add_argument("--force", action="store_true")
             p.add_argument("--sign-draft", action="store_true")
-            p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            p.add_argument("--machine-class", default="Studio-M3Ultra-96")
             p.set_defaults(allow_blocked_draft=False)
         else:
-            p.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            p.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             p.add_argument("--allow-blocked-draft", action="store_true")
         else:

@@ -37,6 +37,26 @@ struct Cli {
 ///   `default`   — no change from the locked bit-identical default.
 ///
 /// Explicitly-set HAWKING_QWEN_* env vars always take precedence.
+fn apply_runtime_lever_plan(plan: &hawking_serve::LeverPlan) {
+    for (k, v) in &plan.set_if_unset {
+        if std::env::var_os(k).is_none() {
+            std::env::set_var(k, v);
+        }
+    }
+    for k in &plan.force_off {
+        // Unconditional: exact opts out of quality trades even if set upstream.
+        std::env::set_var(k, "0");
+    }
+    if let Some(true) = plan.f16_kv {
+        if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
+            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
+        }
+    }
+    if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
+        std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
+    }
+}
+
 fn apply_profile(profile: &Option<String>, announce: bool) {
     let Some(name) = profile.as_deref() else {
         // Unset --profile → policy default = `fast` MINUS the f16-scales lever
@@ -46,24 +66,9 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         // is unconditional. Pass --profile exact for the bit-identical path.
         let rp = hawking_serve::RuntimeProfile::default_when_unset();
         let plan = rp.lever_plan();
-        for (k, v) in &plan.set_if_unset {
-            if std::env::var_os(k).is_none() {
-                std::env::set_var(k, v);
-            }
-        }
-        for k in &plan.force_off {
-            std::env::set_var(k, "0");
-        }
+        apply_runtime_lever_plan(&plan);
         for k in hawking_serve::RuntimeProfile::default_unset_force_off() {
             std::env::set_var(k, "0");
-        }
-        if let Some(true) = plan.f16_kv {
-            if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-                std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-            }
-        }
-        if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
-            std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
         }
         if announce {
             eprintln!(
@@ -87,23 +92,7 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         return;
     };
     let plan = rp.lever_plan();
-    for (k, v) in &plan.set_if_unset {
-        if std::env::var_os(k).is_none() {
-            std::env::set_var(k, v);
-        }
-    }
-    for k in &plan.force_off {
-        // Unconditional: exact opts out of quality trades even if set upstream.
-        std::env::set_var(k, "0");
-    }
-    if let Some(true) = plan.f16_kv {
-        if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-        }
-    }
-    if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
-        std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
-    }
+    apply_runtime_lever_plan(&plan);
     if announce {
         eprintln!("[hawking] {}", rp.contract());
     }
@@ -3426,113 +3415,74 @@ fn write_native_tq_serve_report(
     } else {
         "non_tq"
     };
-    let mut report = serde_json::Map::new();
-    report.insert(
-        "schema".to_string(),
-        serde_json::json!("hawking.native_tq_serve_report.v1"),
+    let generated_at_unix = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let report = serde_json::Value::Object(
+        [
+            (
+                "schema",
+                serde_json::json!("hawking.native_tq_serve_report.v1"),
+            ),
+            ("generated_at_unix", serde_json::json!(generated_at_unix)),
+            ("decode_mode", serde_json::json!(decode_mode)),
+            ("native_tq", serde_json::json!(native_tq)),
+            ("served_native_tq", serde_json::json!(native_tq)),
+            ("rehydrate_f16", rehydrate_f16.clone()),
+            ("rehydrated_f16", rehydrate_f16),
+            ("tq_strict", serde_json::json!(tq_strict_eff)),
+            ("strict_tq", serde_json::json!(tq_strict_eff)),
+            ("all_linear", serde_json::json!(all_linear_eff)),
+            ("all_linear_covered", serde_json::json!(all_linear_eff)),
+            ("gpu_bitslice", serde_json::json!(gpu_bitslice_eff)),
+            ("gpu_owned", serde_json::json!(gpu_bitslice_eff)),
+            ("gpu_ownership", serde_json::json!(gpu_bitslice_eff)),
+            ("served_forward_pass", serde_json::json!(served_forward_pass)),
+            ("parity_pass", serde_json::json!(false)),
+            ("parity_receipt_required", serde_json::json!(true)),
+            ("tok_s", serde_json::json!(stats.dec_tps())),
+            ("tokens_per_second", serde_json::json!(stats.dec_tps())),
+            ("decode_tok_s", serde_json::json!(stats.dec_tps())),
+            ("prompt_tokens", serde_json::json!(stats.prompt_tokens)),
+            (
+                "completion_tokens",
+                serde_json::json!(stats.completion_tokens),
+            ),
+            ("prefill_ms", serde_json::json!(stats.prefill_ms)),
+            ("decode_ms", serde_json::json!(stats.decode_ms)),
+            ("stop_reason", serde_json::json!(stop_reason_label(reason))),
+            ("model_id", serde_json::json!(model_id)),
+            ("model_arch", serde_json::json!(model_arch)),
+            ("qwen_architecture", serde_json::json!(qwen_arch)),
+            (
+                "weights_path",
+                serde_json::json!(weights.display().to_string()),
+            ),
+            ("artifact_path", artifact_path),
+            ("artifact_bytes", artifact_bytes),
+            ("artifact_sha256", artifact_sha256),
+            ("artifact_gb", artifact_gb),
+            ("peak_rss_gb", serde_json::json!(peak_rss_gb)),
+            ("memory_resident_gb", serde_json::json!(peak_rss_gb)),
+            (
+                "memory_resident_source",
+                serde_json::json!("process_rss_after_decode"),
+            ),
+            ("unified_memory_gb", serde_json::json!(unified_memory_gb)),
+            ("resident_memory_ok", serde_json::json!(resident_memory_ok)),
+            (
+                "memory_note",
+                serde_json::json!("RSS is sampled after decode; Studio final claims still require load, served-forward, parity, and signed capture receipts."),
+            ),
+            ("command", serde_json::json!(command_args)),
+            ("command_line", serde_json::json!(command_line)),
+            ("stats", stats.stats_json()),
+        ]
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), value))
+        .collect(),
     );
-    report.insert(
-        "generated_at_unix".to_string(),
-        serde_json::json!(std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0)),
-    );
-    report.insert("decode_mode".to_string(), serde_json::json!(decode_mode));
-    report.insert("native_tq".to_string(), serde_json::json!(native_tq));
-    report.insert("served_native_tq".to_string(), serde_json::json!(native_tq));
-    report.insert("rehydrate_f16".to_string(), rehydrate_f16.clone());
-    report.insert("rehydrated_f16".to_string(), rehydrate_f16);
-    report.insert("tq_strict".to_string(), serde_json::json!(tq_strict_eff));
-    report.insert("strict_tq".to_string(), serde_json::json!(tq_strict_eff));
-    report.insert("all_linear".to_string(), serde_json::json!(all_linear_eff));
-    report.insert(
-        "all_linear_covered".to_string(),
-        serde_json::json!(all_linear_eff),
-    );
-    report.insert(
-        "gpu_bitslice".to_string(),
-        serde_json::json!(gpu_bitslice_eff),
-    );
-    report.insert("gpu_owned".to_string(), serde_json::json!(gpu_bitslice_eff));
-    report.insert(
-        "gpu_ownership".to_string(),
-        serde_json::json!(gpu_bitslice_eff),
-    );
-    report.insert(
-        "served_forward_pass".to_string(),
-        serde_json::json!(served_forward_pass),
-    );
-    report.insert("parity_pass".to_string(), serde_json::json!(false));
-    report.insert(
-        "parity_receipt_required".to_string(),
-        serde_json::json!(true),
-    );
-    report.insert("tok_s".to_string(), serde_json::json!(stats.dec_tps()));
-    report.insert(
-        "tokens_per_second".to_string(),
-        serde_json::json!(stats.dec_tps()),
-    );
-    report.insert(
-        "decode_tok_s".to_string(),
-        serde_json::json!(stats.dec_tps()),
-    );
-    report.insert(
-        "prompt_tokens".to_string(),
-        serde_json::json!(stats.prompt_tokens),
-    );
-    report.insert(
-        "completion_tokens".to_string(),
-        serde_json::json!(stats.completion_tokens),
-    );
-    report.insert(
-        "prefill_ms".to_string(),
-        serde_json::json!(stats.prefill_ms),
-    );
-    report.insert("decode_ms".to_string(), serde_json::json!(stats.decode_ms));
-    report.insert(
-        "stop_reason".to_string(),
-        serde_json::json!(stop_reason_label(reason)),
-    );
-    report.insert("model_id".to_string(), serde_json::json!(model_id));
-    report.insert("model_arch".to_string(), serde_json::json!(model_arch));
-    report.insert(
-        "qwen_architecture".to_string(),
-        serde_json::json!(qwen_arch),
-    );
-    report.insert(
-        "weights_path".to_string(),
-        serde_json::json!(weights.display().to_string()),
-    );
-    report.insert("artifact_path".to_string(), artifact_path);
-    report.insert("artifact_bytes".to_string(), artifact_bytes);
-    report.insert("artifact_sha256".to_string(), artifact_sha256);
-    report.insert("artifact_gb".to_string(), artifact_gb);
-    report.insert("peak_rss_gb".to_string(), serde_json::json!(peak_rss_gb));
-    report.insert(
-        "memory_resident_gb".to_string(),
-        serde_json::json!(peak_rss_gb),
-    );
-    report.insert(
-        "memory_resident_source".to_string(),
-        serde_json::json!("process_rss_after_decode"),
-    );
-    report.insert(
-        "unified_memory_gb".to_string(),
-        serde_json::json!(unified_memory_gb),
-    );
-    report.insert(
-        "resident_memory_ok".to_string(),
-        serde_json::json!(resident_memory_ok),
-    );
-    report.insert(
-        "memory_note".to_string(),
-        serde_json::json!("RSS is sampled after decode; Studio final claims still require load, served-forward, parity, and signed capture receipts."),
-    );
-    report.insert("command".to_string(), serde_json::json!(command_args));
-    report.insert("command_line".to_string(), serde_json::json!(command_line));
-    report.insert("stats".to_string(), stats.stats_json());
-    let report = serde_json::Value::Object(report);
     write_json_with_parent(path, &report)?;
     Ok(())
 }

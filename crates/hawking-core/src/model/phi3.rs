@@ -20,7 +20,7 @@
 //! attention and non-Q4_K weights use the CPU reference path. Full causal
 //! attention (Phi-3's large sliding window is not applied).
 
-use super::arch_config::ArchReader;
+use super::arch_config::{token_embd_vocab_size, ArchReader};
 use super::weights::{dequant_f16, dequant_f32, dequant_f32_opt, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
@@ -69,15 +69,7 @@ impl Phi3Config {
         let intermediate = r.req_usize("feed_forward_length")?;
         let vocab_size = match get_u32("phi3.vocab_size") {
             Some(v) => v as usize,
-            None => {
-                let dims = g
-                    .tensor("token_embd.weight")
-                    .map(|t| t.dims.clone())
-                    .ok_or_else(|| {
-                        Error::Model("vocab size not in metadata or token_embd dims".into())
-                    })?;
-                dims.iter().copied().max().unwrap_or(0) as usize
-            }
+            None => token_embd_vocab_size(g, "vocab size not in metadata or token_embd dims")?,
         };
         let rope_theta = r.opt_f32("rope.freq_base", 10_000.0);
         let rms_norm_eps = r.opt_f32("attention.layer_norm_rms_epsilon", 1e-5);

@@ -13,12 +13,10 @@ Use `--no-require-ramcliff` only for a non-cliff claim.
 from __future__ import annotations
 
 import argparse
-import datetime as _dt
 import hashlib
 import json
 import os
 import pathlib
-import re
 import sys
 from typing import Any
 
@@ -27,6 +25,14 @@ os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
 from studio_manifest import FRONTIER_MODELS, FrontierModel, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    SIGN_ALG,
+    canonical_digest as _canonical_digest,
+    git_commit as _git_commit,
+    now_utc as _now,
+    read_json as _read_json,
+    safe_label as _safe_label,
+)
 import frontier_coverage  # noqa: E402
 import frontier_coverage_runner  # noqa: E402
 import frontier_experiments  # noqa: E402
@@ -41,40 +47,10 @@ import frontier_receipts  # noqa: E402
 
 COND_DIR = pathlib.Path("reports/condense")
 SCHEMA = "hawking.frontier_claim_bundle.v1"
-SIGN_ALG = "sha256-json-v1"
-
-
-def _now() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    try:
-        p = __import__("subprocess").run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _safe_label(label: str) -> str:
-    return re.sub(r"[^A-Za-z0-9_.-]+", "-", label)
 
 
 def claim_bundle_path(root: pathlib.Path, label: str) -> pathlib.Path:
     return root / COND_DIR / f"{_safe_label(label)}_claim_bundle.json"
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
 
 
 def _sha256_file(path: pathlib.Path) -> str | None:
@@ -85,14 +61,6 @@ def _sha256_file(path: pathlib.Path) -> str | None:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
-
-
-def _canonical_digest(data: dict[str, Any]) -> str:
-    unsigned = dict(data)
-    unsigned.pop("signature", None)
-    return hashlib.sha256(
-        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
 
 
 def _commands(row: dict[str, Any], record: dict[str, Any] | None = None) -> list[str]:
@@ -457,7 +425,7 @@ def selftest() -> bool:
         artifact_hash = "a" * 64
         common = {
             "model": model.label,
-            "machine_class": "Studio-M1Ultra-128",
+            "machine_class": "Studio-M3Ultra-96",
             "git_commit": "selftest",
             "artifact_sha256": artifact_hash,
             "commands": ["selftest command"],
@@ -492,7 +460,7 @@ def selftest() -> bool:
             "tok_s": 1.0,
             "memory_peak_gb": 4.0,
             "memory_resident_gb": 3.5,
-            "unified_memory_gb": 128.0,
+            "unified_memory_gb": 96.0,
             "resident_memory_ok": True,
             "load_receipt": "selftest://serve-load",
             "served_forward_receipt": "selftest://serve-forward",

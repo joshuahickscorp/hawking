@@ -7,44 +7,22 @@ synthetic/modelled/gated rows are evidence that work was attempted, but they can
 """
 from __future__ import annotations
 
-import json
 import pathlib
-import re
 from typing import Any
 
+from frontier_common import (  # noqa: E402
+    commands as _commands,
+    is_sha256 as _is_sha256,
+    placeholder as _missing_or_placeholder,
+    read_json as _read_json,
+)
+
 COND_DIR = pathlib.Path("reports/condense")
-SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 CLIFF_X_GATE = 10.0
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
-def _is_sha256(value: Any) -> bool:
-    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _positive_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and value > 0
-
-
-def _missing_or_placeholder(value: Any) -> bool:
-    if value is None:
-        return True
-    s = str(value).strip()
-    return not s or "<" in s or "TODO" in s or "..." in s
-
-
-def _commands(record: dict[str, Any]) -> list[Any]:
-    cmds = record.get("commands")
-    if isinstance(cmds, list):
-        return cmds
-    cmd = record.get("command")
-    return [cmd] if cmd else []
 
 
 def _commit(record: dict[str, Any]) -> Any:
@@ -256,7 +234,7 @@ def receipt_plan(root: pathlib.Path, labels: list[str]) -> dict[str, Any]:
                     "resident_memory_ok": True,
                     "artifact_sha256": "<64 hex>",
                     "commands": ["<exact command>"],
-                    "machine_class": "Studio-M1Ultra-128",
+                    "machine_class": "Studio-M3Ultra-96",
                     "git_commit": "<commit>",
                 },
                 "ramcliff_required": {
@@ -272,7 +250,7 @@ def receipt_plan(root: pathlib.Path, labels: list[str]) -> dict[str, Any]:
                     "cliff_x": f">{CLIFF_X_GATE}",
                     "artifact_sha256": "<64 hex>",
                     "commands": ["<exact command>"],
-                    "machine_class": "Studio-M1Ultra-128",
+                    "machine_class": "Studio-M3Ultra-96",
                     "git_commit": "<commit>",
                 },
             }

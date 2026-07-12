@@ -8,10 +8,11 @@ claim-blocking.
 """
 from __future__ import annotations
 
-import json
 import pathlib
 import re
 from typing import Any
+
+from frontier_common import read_json as _read_json  # noqa: E402
 
 COND_DIR = pathlib.Path("reports/condense")
 
@@ -69,13 +70,6 @@ EXPERIMENT_REQUIREMENTS = (
 PASS_STATUSES = {"pass", "passed", "ok", "done", "complete", "measured", "certified", "verified"}
 NA_STATUSES = {"na", "n/a", "n-a", "not-applicable", "not_applicable", "waived", "skip", "skipped"}
 SYNTHETIC_MODES = {"synthetic", "mock", "modelled", "modeled", "fake"}
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
 
 
 def _norm(value: Any) -> str:
@@ -329,7 +323,7 @@ def _skeleton(label: str) -> dict[str, Any]:
         "schema": "hawking.frontier_experiment_matrix.v1",
         "model": label,
         "mode": "real",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "machine_name": "<exact Studio host label>",
         "same_box": True,
         "same_box_group": "<same machine/session id shared by experiment matrix>",

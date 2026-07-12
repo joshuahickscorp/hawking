@@ -12,14 +12,9 @@ family-feature checks pass.
 from __future__ import annotations
 
 import argparse
-import copy
-import datetime as _dt
-import hashlib
 import json
 import os
 import pathlib
-import re
-import subprocess
 import sys
 import tempfile
 from typing import Any
@@ -29,14 +24,23 @@ os.chdir(ROOT)
 sys.path.insert(0, str(ROOT / "tools" / "condense"))
 
 from studio_manifest import FRONTIER_MODELS, FrontierModel, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    commands as _commands,
+    git_commit as _git_commit,
+    is_sha256 as _is_sha256,
+    now_utc as _now,
+    placeholder as _placeholder,
+    read_json as _read_json,
+    sign_record as _sign_record,
+    signature_status,
+    write_json as _write_json,
+)
 import frontier_parity  # noqa: E402
 
-SIGN_ALG = "sha256-json-v1"
 SCHEMA = "hawking.frontier_parity.v1"
 MAX_LOGIT_ABS_ERR_GATE = 1e-3
 MIN_PROMPTS = 4
 MIN_GREEDY_MATCH_TOKENS = 16
-SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 TOKENIZER_CONTRACT_SHA_KEYS = (
     "tokenizer_sha256",
     "chat_template_sha256",
@@ -49,67 +53,6 @@ CONTEXT_CONTRACT_TEXT_KEYS = (
     "position_id_policy",
 )
 REQUIRED_PARITY_TESTS = ("logit_abs_error", "greedy_decode")
-
-
-def _now() -> str:
-    return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
-
-
-def _git_commit(root: pathlib.Path = ROOT) -> str:
-    try:
-        p = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        return p.stdout.strip() if p.returncode == 0 and p.stdout.strip() else "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any] | None:
-    try:
-        return json.load(open(path))
-    except Exception:
-        return None
-
-
-def _write_json(path: pathlib.Path, data: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, sort_keys=True)
-        f.write("\n")
-
-
-def _canonical_digest(data: dict[str, Any]) -> str:
-    unsigned = copy.deepcopy(data)
-    unsigned.pop("signature", None)
-    return hashlib.sha256(
-        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
-
-
-def _placeholder(value: Any) -> bool:
-    if value is None:
-        return True
-    text = str(value).strip()
-    return not text or "<" in text or "TODO" in text or "..." in text
-
-
-def _commands(record: dict[str, Any]) -> list[str]:
-    out = []
-    cmds = record.get("commands")
-    if isinstance(cmds, list):
-        out.extend(str(cmd) for cmd in cmds if cmd)
-    if record.get("command"):
-        out.append(str(record["command"]))
-    return out
-
-
-def _is_sha256(value: Any) -> bool:
-    return isinstance(value, str) and bool(SHA256_RE.match(value))
 
 
 def _positive_int(value: Any) -> bool:
@@ -247,24 +190,6 @@ def _unsupported_exit_problems(record: dict[str, Any]) -> list[str]:
     return problems
 
 
-def signature_status(record: dict[str, Any]) -> dict[str, Any]:
-    sig = record.get("signature") if isinstance(record.get("signature"), dict) else {}
-    expected = _canonical_digest(record)
-    ok = sig.get("algorithm") == SIGN_ALG and sig.get("digest") == expected
-    problems = []
-    if sig.get("algorithm") != SIGN_ALG:
-        problems.append(f"signature algorithm must be {SIGN_ALG}")
-    if sig.get("digest") != expected:
-        problems.append("signature digest mismatch")
-    return {
-        "ok": ok,
-        "algorithm": sig.get("algorithm"),
-        "digest": sig.get("digest"),
-        "expected_digest": expected,
-        "problems": problems,
-    }
-
-
 def _strict_problems(record: dict[str, Any], model: FrontierModel | None) -> list[str]:
     problems = []
     family = _family(model)
@@ -359,19 +284,16 @@ def record_status(record: dict[str, Any] | None, *, model: FrontierModel | None 
 
 def sign_record(record: dict[str, Any], *, model: FrontierModel | None = None,
                 allow_blocked_draft: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
-    signed = copy.deepcopy(record)
-    signed.pop("signature", None)
-    signed.setdefault("generated_at", _now())
-    signed.setdefault("git_commit", _git_commit(ROOT))
-    signed["signed_at"] = _now()
-    status = record_status(signed, model=model, require_signature=False)
-    if not status["ok"] and not allow_blocked_draft:
-        return signed, status
-    signed["signature"] = {"algorithm": SIGN_ALG, "digest": _canonical_digest(signed)}
-    return signed, record_status(signed, model=model, require_signature=True)
+    return _sign_record(
+        record,
+        record_status,
+        root=ROOT,
+        status_kwargs={"model": model},
+        allow_blocked_draft=allow_blocked_draft,
+    )
 
 
-def draft_record(model: FrontierModel, *, machine_class: str = "Studio-M1Ultra-128") -> dict[str, Any]:
+def draft_record(model: FrontierModel, *, machine_class: str = "Studio-M3Ultra-96") -> dict[str, Any]:
     family = _family(model)
     return {
         "schema": SCHEMA,
@@ -511,7 +433,7 @@ def _complete_record(model: FrontierModel) -> dict[str, Any]:
         "family": family["family"],
         "receipt_state": "final",
         "source": "measured",
-        "machine_class": "Studio-M1Ultra-128",
+        "machine_class": "Studio-M3Ultra-96",
         "status": "pass",
         "reference_backend": "selftest-transformers",
         "tokenizer_sha256": "a" * 64,
@@ -597,7 +519,7 @@ def selftest() -> bool:
         out_dir = root / "reports" / "condense"
         args = argparse.Namespace(parity_mode="draft", label=[model.label], out_dir=str(out_dir),
                                   force=True, sign_draft=True,
-                                  machine_class="Studio-M1Ultra-128", json=True)
+                                  machine_class="Studio-M3Ultra-96", json=True)
         check("draft command writes blocked parity receipt", dispatch(args, root=root) == 1)
         check("draft parity exists", (out_dir / f"{model.label}_parity.json").exists())
     print(f"\n# SELFTEST {'PASS' if ok else 'FAIL'}")
@@ -619,10 +541,10 @@ def build_argparser() -> argparse.ArgumentParser:
         if mode == "draft":
             p.add_argument("--force", action="store_true")
             p.add_argument("--sign-draft", action="store_true")
-            p.add_argument("--machine-class", default="Studio-M1Ultra-128")
+            p.add_argument("--machine-class", default="Studio-M3Ultra-96")
             p.set_defaults(allow_blocked_draft=False)
         else:
-            p.set_defaults(force=False, sign_draft=False, machine_class="Studio-M1Ultra-128")
+            p.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
         if mode == "sign":
             p.add_argument("--allow-blocked-draft", action="store_true")
         else:

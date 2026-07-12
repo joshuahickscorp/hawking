@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.12
 """Shared Studio hardware + frontier model manifest.
 
-The frontier scripts used to duplicate the same M1 Ultra and model-size facts in
+The frontier scripts used to duplicate the same Studio and model-size facts in
 several files. This module is deliberately tiny and stdlib-only so every tool can
 import the same hardware envelope, model labels, download sizes, and serve-fit
 math without creating a dependency cycle.
@@ -16,24 +16,37 @@ class HardwareProfile:
     name: str
     ram_gb: float
     weight_budget_gb: float
+    process_budget_gb: float
     ssd_tb: float
     ssd_read_gbps: float
     ram_gbps: float
+    disk_reserve_gb: float
+    scratch_reserve_gb: float
+    cache_reserve_gb: float
 
     @property
     def ssd_gb(self) -> float:
         return self.ssd_tb * 1000.0
 
+    @property
+    def storage_budget_gb(self) -> float:
+        """Maximum live payload on the internal SSD after the hard safety reserve."""
+        return max(0.0, self.ssd_gb - self.disk_reserve_gb)
 
-M1_ULTRA_128GB = HardwareProfile(
-    name="m1ultra-128gb-8tb",
-    ram_gb=128.0,
-    weight_budget_gb=112.0,
-    ssd_tb=8.0,
+
+M3_ULTRA_96GB = HardwareProfile(
+    name="Studio-M3Ultra-96",
+    ram_gb=96.0,                 # GiB, as sold/reported by macOS
+    weight_budget_gb=78.0,       # interactive resident-weight envelope
+    process_budget_gb=78.0,      # aggregate scheduled-job estimate envelope
+    ssd_tb=1.0,
     ssd_read_gbps=6.0,
-    ram_gbps=800.0,
+    ram_gbps=819.0,
+    disk_reserve_gb=150.0,
+    scratch_reserve_gb=64.0,
+    cache_reserve_gb=32.0,
 )
-DEFAULT_HARDWARE = M1_ULTRA_128GB
+DEFAULT_HARDWARE = M3_ULTRA_96GB
 
 
 @dataclass(frozen=True)
@@ -61,7 +74,7 @@ class FrontierModel:
         return self.artifact_gb() <= hw.weight_budget_gb
 
     def fits_storage(self, hw: HardwareProfile = DEFAULT_HARDWARE) -> bool:
-        return self.download_gb + self.artifact_gb() <= hw.ssd_gb
+        return self.download_gb + self.artifact_gb() <= hw.storage_budget_gb
 
 
 # Exact labels are stable CLI labels. Aliases are accepted by procure/studio_run.
@@ -236,11 +249,11 @@ def fmt_hours(hours: float | None) -> str:
 
 def storage_wave_plan(
     models: tuple[FrontierModel, ...] = FRONTIER_MODELS,
-    storage_budget_gb: float = DEFAULT_HARDWARE.ssd_gb,
+    storage_budget_gb: float = DEFAULT_HARDWARE.storage_budget_gb,
     link_mb_s: float = 300.0,
     efficiency: float = 0.7,
-    scratch_gb: float = 200.0,
-    cache_reserve_gb: float = 128.0,
+    scratch_gb: float = DEFAULT_HARDWARE.scratch_reserve_gb,
+    cache_reserve_gb: float = DEFAULT_HARDWARE.cache_reserve_gb,
     keep_outputs: bool = True,
     max_wave_hours: float = 6.0,
 ) -> dict:

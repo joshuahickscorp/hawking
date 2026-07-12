@@ -16,10 +16,16 @@ import sys, os, subprocess, shutil, importlib, importlib.metadata, importlib.uti
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
+TOOL_DIR = os.path.dirname(os.path.abspath(__file__))
+if TOOL_DIR not in sys.path:
+    sys.path.insert(0, TOOL_DIR)
+from studio_manifest import DEFAULT_HARDWARE
+
 QUIET = "--quiet" in sys.argv
+REQUIRE_FRONTIER = "--require-frontier" in sys.argv
 REQUIRED_PY = ["torch", "transformers", "safetensors", "numpy", "jsonschema"]
-MIN_DISK_GB = 500.0     # comfortable headroom for the ladder + at least one frontier checkpoint
-MIN_RAM_GB = 120.0      # below this, this isn't the 128GB Studio the plan assumes
+MIN_DISK_GB = DEFAULT_HARDWARE.disk_reserve_gb
+MIN_RAM_GIB = 90.0      # accept the delivered 96 GiB Studio while rejecting smaller hosts
 REFRESH_OUT = "reports/condense/frontier_refresh.preflight.json"
 LEDGER_OUT = "reports/condense/frontier_ledger.preflight.json"
 LAUNCH_GATE_OUT = "reports/condense/frontier_launch_gate.preflight.json"
@@ -49,27 +55,64 @@ def _git_commit():
     return out.strip() if rc == 0 and out.strip() else "unknown"
 
 
+def _memory_state():
+    """Best-effort live pressure state; values are evidence, not capacity guesses."""
+    pressure = None
+    rc, out, _ = _run(["sysctl", "-n", "kern.memorystatus_vm_pressure_level"], timeout=10)
+    if rc == 0:
+        try:
+            pressure = int(out.strip())
+        except ValueError:
+            pass
+    swap_mb = None
+    rc, out, _ = _run(["sysctl", "-n", "vm.swapusage"], timeout=10)
+    if rc == 0:
+        match = re.search(r"used\s*=\s*([0-9.]+)([MGT])", out)
+        if match:
+            value, unit = float(match.group(1)), match.group(2)
+            swap_mb = value * {"M": 1.0, "G": 1024.0, "T": 1024.0 * 1024.0}[unit]
+    return {
+        "pressure_level": pressure,
+        "pressure_state": {1: "normal", 2: "warning", 4: "critical"}.get(pressure, "unknown"),
+        "swap_used_mb": round(swap_mb, 3) if swap_mb is not None else None,
+    }
+
+
 def _hardware_summary():
-    ram_gb = None
+    ram_bytes = None
+    ram_gib = None
     rc, out, _ = _run(["sysctl", "-n", "hw.memsize"], timeout=10)
     if rc == 0:
         try:
-            ram_gb = int(out.strip()) / 1e9
+            ram_bytes = int(out.strip())
+            ram_gib = ram_bytes / (1024 ** 3)
         except ValueError:
-            ram_gb = None
+            ram_gib = None
     rc_cpu, cpu_brand, _ = _run(["sysctl", "-n", "machdep.cpu.brand_string"], timeout=10)
     rc_ncpu, ncpu, _ = _run(["sysctl", "-n", "hw.ncpu"], timeout=10)
+    rc_model, hw_model, _ = _run(["sysctl", "-n", "hw.model"], timeout=10)
     rc_batt, batt, batt_err = _run(["pmset", "-g", "batt"], timeout=10)
     rc_therm, therm, therm_err = _run(["pmset", "-g", "therm"], timeout=10)
     usage = shutil.disk_usage(ROOT)
     return {
-        "target_ram_gb": MIN_RAM_GB,
+        "profile": DEFAULT_HARDWARE.name,
+        "target_ram_gb": MIN_RAM_GIB,  # legacy field consumed by the Studio snapshot UI
+        "target_ram_gib": MIN_RAM_GIB,
+        "resident_weight_budget_gb": DEFAULT_HARDWARE.weight_budget_gb,
+        "interactive_process_budget_gb": DEFAULT_HARDWARE.process_budget_gb,
         "target_free_disk_gb": MIN_DISK_GB,
-        "actual_ram_gb": round(ram_gb, 2) if ram_gb else None,
+        "scratch_reserve_gb": DEFAULT_HARDWARE.scratch_reserve_gb,
+        "hf_cache_reserve_gb": DEFAULT_HARDWARE.cache_reserve_gb,
+        "actual_ram_bytes": ram_bytes,
+        "actual_ram_gb": round(ram_bytes / 1e9, 3) if ram_bytes else None,
+        "actual_ram_gib": round(ram_gib, 3) if ram_gib else None,
         "actual_cpu_brand": cpu_brand.strip() if rc_cpu == 0 and cpu_brand.strip() else None,
         "actual_cpu_count": int(ncpu.strip()) if rc_ncpu == 0 and ncpu.strip().isdigit() else None,
+        "actual_hw_model": hw_model.strip() if rc_model == 0 and hw_model.strip() else None,
         "disk_total_gb": round(usage.total / 1e9, 3),
         "disk_free_gb": round(usage.free / 1e9, 3),
+        "disk_free_after_reserve_gb": round(max(0.0, usage.free / 1e9 - MIN_DISK_GB), 3),
+        "memory": _memory_state(),
         "power_source": (batt or batt_err).splitlines()[0].strip()
         if (batt or batt_err).strip() else None,
         "thermal_status": (therm or therm_err).strip()[:1000]
@@ -321,20 +364,29 @@ def check_rust():
 def check_hardware():
     results = []
     try:
-        ram_gb = int(subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True,
-                                    text=True, check=True).stdout) / 1e9
-        results.append(_say(ram_gb >= MIN_RAM_GB,
-                            f"RAM {ram_gb:.0f}GB" + ("" if ram_gb >= MIN_RAM_GB else
-                            f" — below {MIN_RAM_GB:.0f}GB; the plan's RAM budgets assume the 128GB Studio")))
+        ram_gib = int(subprocess.run(["sysctl", "-n", "hw.memsize"], capture_output=True,
+                                     text=True, check=True).stdout) / (1024 ** 3)
+        results.append(_say(ram_gib >= MIN_RAM_GIB,
+                            f"RAM {ram_gib:.0f}GiB" + ("" if ram_gib >= MIN_RAM_GIB else
+                            f" — below {MIN_RAM_GIB:.0f}GiB minimum for {DEFAULT_HARDWARE.name}")))
     except Exception as e:
         results.append(_say(False, f"could not read RAM: {e}"))
     try:
         free_gb = shutil.disk_usage(ROOT).free / 1e9
         results.append(_say(free_gb >= MIN_DISK_GB,
                             f"disk free {free_gb:.0f}GB" + ("" if free_gb >= MIN_DISK_GB else
-                            f" — below {MIN_DISK_GB:.0f}GB minimum")))
+                            f" — below {MIN_DISK_GB:.0f}GB hard reserve")))
     except Exception as e:
         results.append(_say(False, f"could not read disk: {e}"))
+    memory = _memory_state()
+    pressure = memory.get("pressure_level")
+    swap = memory.get("swap_used_mb")
+    pressure_ok = pressure is None or pressure < 2
+    swap_ok = swap is None or swap < 2048.0
+    results.append(_say(
+        pressure_ok and swap_ok,
+        f"memory pressure {memory['pressure_state']} (level={pressure}), swap={swap if swap is not None else 'unknown'}MB",
+    ))
     return all(results)
 
 
@@ -427,15 +479,25 @@ def check_frontier_ledger():
 
 
 def check_frontier_launch_gate():
-    """Hard frontier procurement gate: model-aware disk, refresh, manifest, and license checks."""
+    """Always materialize the frontier gate; only make it fatal for a frontier launch.
+
+    The already-staged training ladder must not be blocked by an unaccepted giant-model license or a
+    source that cannot fit this 1 TB SSD. `--require-frontier` restores hard procurement semantics.
+    """
     r = subprocess.run(["python3.12", "tools/condense/frontier_ops.py", "launch-gate",
                         "--phase", "procure", "--require-refresh", REFRESH_OUT,
                         "--out", LAUNCH_GATE_OUT],
                        capture_output=True, text=True)
     ok = r.returncode == 0
-    _say(ok, f"frontier launch gate green ({LAUNCH_GATE_OUT})" if ok else
-         f"frontier launch gate RED ({LAUNCH_GATE_OUT}):\n{r.stdout[-900:]}{r.stderr[-500:]}")
-    return ok
+    if ok:
+        _say(True, f"frontier launch gate green ({LAUNCH_GATE_OUT})")
+        return True
+    detail = f"frontier launch gate RED ({LAUNCH_GATE_OUT}):\n{r.stdout[-900:]}{r.stderr[-500:]}"
+    if REQUIRE_FRONTIER:
+        _say(False, detail)
+        return False
+    _say(True, detail + "\nfrontier gate is isolated: staged training may proceed; downloads remain blocked")
+    return True
 
 
 def main():
