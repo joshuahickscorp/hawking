@@ -348,20 +348,36 @@ impl<'a> AgentDriver<'a> {
             "input_tokens": stats.input_tokens,
             "output_tokens": stats.output_tokens,
         });
-        // Agentic tool use: if the model emitted a tool call in its text, dispatch
-        // it through the permission-gated loop (lint -> dedup -> dispatch) and record
-        // the results, so a model step can actually CALL tools, not just narrate.
-        // Requires a dispatcher; without one the step is text-only as before.
+        // Agentic tool use from a model step, under the doctrine that the model is
+        // never trusted to authorize a mutation. A model step may auto-call
+        // READ-ONLY tools (gather info: read, search, status) through the
+        // permission-gated loop; a mutating call it emits is RECORDED as proposed
+        // but NOT executed - mutations require an authorized plan step. Requires a
+        // dispatcher; without one the step is text-only as before.
         if let Some(dispatcher) = self.dispatcher {
-            if crate::tools::has_tool_call(&buf) {
-                let mut tool_loop =
-                    crate::tools::ToolLoop::new(dispatcher, Vec::new(), Some(self.workspace_root.clone()));
-                let turns = tool_loop.run_text(&buf).await;
-                if !turns.is_empty() {
-                    let results: Vec<serde_json::Value> =
-                        turns.iter().map(|t| t.to_observation()).collect();
-                    observation["tool_calls"] = json!(results);
+            let parsed = crate::tools::parse_tool_calls(&buf);
+            if !parsed.is_empty() {
+                let mut tool_loop = crate::tools::ToolLoop::new(
+                    dispatcher,
+                    Vec::new(),
+                    Some(self.workspace_root.clone()),
+                );
+                let mut records = Vec::with_capacity(parsed.len());
+                for p in parsed {
+                    let call = p.into_tool_call();
+                    if dispatcher.is_read_only(&call.tool) {
+                        records.push(tool_loop.run_call(call).await.to_observation());
+                    } else {
+                        records.push(json!({
+                            "tool": call.tool,
+                            "status": "proposed",
+                            "dispatched": false,
+                            "note": "a mutating tool from a model step is not auto-dispatched; \
+                                     it requires an authorized plan step",
+                        }));
+                    }
                 }
+                observation["tool_calls"] = json!(records);
             }
         }
         Ok(observation)

@@ -402,3 +402,46 @@ async fn model_step_dispatches_emitted_tool_call() {
 
     let _ = std::fs::remove_dir_all(repo);
 }
+
+#[tokio::test]
+async fn model_step_does_not_auto_dispatch_a_mutating_tool() {
+    // Doctrine guard: a model step must NOT be able to mutate the workspace by
+    // emitting a tool call. A write tool it emits is recorded as "proposed" but
+    // never executed; the file must not appear.
+    let repo = make_repo(true);
+    let target = repo.join("hacked.txt");
+    let stub_out = format!(
+        "<tool_call>{{\"name\":\"edit.write_file\",\"arguments\":{{\"path\":\"{}\",\"content\":\"pwned\"}}}}</tool_call>",
+        target.to_string_lossy()
+    );
+    let log = Arc::new(InMemoryEventLog::new());
+    let planner = Arc::new(FixedPlanner::new(vec![], StepKind::Investigate));
+    let kernel = build_kernel_with_stub(log.clone(), &repo, planner, Mode::Live, &stub_out);
+
+    let mut state = kernel
+        .start_run(SessionId::new(), "investigate")
+        .await
+        .unwrap();
+    let _ = drive(&kernel, &mut state, 60).await;
+
+    // The write must NOT have happened.
+    assert!(!target.exists(), "a model step must not auto-execute a mutating tool");
+    // And it must be recorded as proposed / not dispatched.
+    let events = log.scan(None, None, None).await.unwrap();
+    let proposed = events.iter().any(|e: &Event| {
+        e.kind == "agent.observation"
+            && e.payload
+                .get("tool_calls")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter().any(|c| {
+                        c.get("tool").and_then(|t| t.as_str()) == Some("edit.write_file")
+                            && c.get("dispatched").and_then(|d| d.as_bool()) == Some(false)
+                    })
+                })
+                .unwrap_or(false)
+    });
+    assert!(proposed, "the mutating call must be recorded as proposed, not dispatched");
+
+    let _ = std::fs::remove_dir_all(repo);
+}
