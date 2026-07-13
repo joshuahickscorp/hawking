@@ -1,6 +1,7 @@
 mod bench_kernel;
 mod bench_server;
 mod capture;
+mod studio;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -36,6 +37,26 @@ struct Cli {
 ///   `default`   — no change from the locked bit-identical default.
 ///
 /// Explicitly-set HAWKING_QWEN_* env vars always take precedence.
+fn apply_runtime_lever_plan(plan: &hawking_serve::LeverPlan) {
+    for (k, v) in &plan.set_if_unset {
+        if std::env::var_os(k).is_none() {
+            std::env::set_var(k, v);
+        }
+    }
+    for k in &plan.force_off {
+        // Unconditional: exact opts out of quality trades even if set upstream.
+        std::env::set_var(k, "0");
+    }
+    if let Some(true) = plan.f16_kv {
+        if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
+            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
+        }
+    }
+    if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
+        std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
+    }
+}
+
 fn apply_profile(profile: &Option<String>, announce: bool) {
     let Some(name) = profile.as_deref() else {
         // Unset --profile → policy default = `fast` MINUS the f16-scales lever
@@ -45,24 +66,9 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         // is unconditional. Pass --profile exact for the bit-identical path.
         let rp = hawking_serve::RuntimeProfile::default_when_unset();
         let plan = rp.lever_plan();
-        for (k, v) in &plan.set_if_unset {
-            if std::env::var_os(k).is_none() {
-                std::env::set_var(k, v);
-            }
-        }
-        for k in &plan.force_off {
-            std::env::set_var(k, "0");
-        }
+        apply_runtime_lever_plan(&plan);
         for k in hawking_serve::RuntimeProfile::default_unset_force_off() {
             std::env::set_var(k, "0");
-        }
-        if let Some(true) = plan.f16_kv {
-            if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-                std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-            }
-        }
-        if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
-            std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
         }
         if announce {
             eprintln!(
@@ -86,25 +92,36 @@ fn apply_profile(profile: &Option<String>, announce: bool) {
         return;
     };
     let plan = rp.lever_plan();
-    for (k, v) in &plan.set_if_unset {
-        if std::env::var_os(k).is_none() {
-            std::env::set_var(k, v);
-        }
-    }
-    for k in &plan.force_off {
-        // Unconditional: exact opts out of quality trades even if set upstream.
-        std::env::set_var(k, "0");
-    }
-    if let Some(true) = plan.f16_kv {
-        if std::env::var_os("HAWKING_QWEN_F16_KV").is_none() {
-            std::env::set_var("HAWKING_QWEN_F16_KV", "1");
-        }
-    }
-    if plan.concurrent_qkv && std::env::var_os("HAWKING_QWEN_CONCURRENT_QKV").is_none() {
-        std::env::set_var("HAWKING_QWEN_CONCURRENT_QKV", "1");
-    }
+    apply_runtime_lever_plan(&plan);
     if announce {
         eprintln!("[hawking] {}", rp.contract());
+    }
+}
+
+fn apply_qwen_tq_flags(
+    tq: Option<&Path>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
+) {
+    let strict = tq_proof_mode || tq_strict;
+    let require_all_linear = tq_proof_mode || tq_require_all_linear;
+    let require_gpu = tq_proof_mode || tq_require_gpu;
+    if tq.is_some() || strict || require_all_linear || require_gpu {
+        std::env::set_var("HAWKING_QWEN_TQ", "1");
+    }
+    if let Some(path) = tq {
+        std::env::set_var("HAWKING_QWEN_TQ_PATH", path);
+    }
+    if strict {
+        std::env::set_var("HAWKING_QWEN_TQ_STRICT", "1");
+    }
+    if require_all_linear {
+        std::env::set_var("HAWKING_QWEN_TQ_REQUIRE_ALL_LINEAR", "1");
+    }
+    if require_gpu {
+        std::env::set_var("HAWKING_QWEN_TQ_REQUIRE_GPU", "1");
     }
 }
 
@@ -187,6 +204,23 @@ enum Cmd {
         /// max-speed, max-battery, safe-fit.
         #[arg(long, default_value = "max-capability", value_name = "INTENT")]
         intent: String,
+        /// Explicit Qwen `.tq` artifact for native TQ serve. Sets
+        /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
+        #[arg(long, value_name = "ARTIFACT")]
+        tq: Option<PathBuf>,
+        /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
+        /// all-linear projection coverage, and GPU bitslice ownership required.
+        #[arg(long, default_value_t = false)]
+        tq_proof_mode: bool,
+        /// Require a matching `.tq` artifact instead of silently falling back.
+        #[arg(long, default_value_t = false)]
+        tq_strict: bool,
+        /// Require all Qwen attention and FFN linear projections in the `.tq`.
+        #[arg(long, default_value_t = false)]
+        tq_require_all_linear: bool,
+        /// Require GPU bitslice ownership for every `.tq` projection.
+        #[arg(long, default_value_t = false)]
+        tq_require_gpu: bool,
     },
     /// One-shot generation to stdout.
     Generate {
@@ -312,6 +346,29 @@ enum Cmd {
         /// you hit the per-slot KV ceiling on very long prompts.
         #[arg(long, default_value_t = 8)]
         capture_batch: usize,
+        /// Write a measured native `.tq` serve report JSON after one real
+        /// generation. The report proves only the in-process forward/tok-s
+        /// facts it can observe; parity_pass stays false until a separate
+        /// Studio parity receipt is supplied to `hawking studio serve-capture`.
+        #[arg(long, value_name = "PATH")]
+        serve_report_json: Option<PathBuf>,
+        /// Explicit Qwen `.tq` artifact for native TQ generation. Sets
+        /// HAWKING_QWEN_TQ=1 and HAWKING_QWEN_TQ_PATH before loading.
+        #[arg(long, value_name = "ARTIFACT")]
+        tq: Option<PathBuf>,
+        /// Fail closed for Studio native `.tq` proof runs: strict artifact load,
+        /// all-linear projection coverage, and GPU bitslice ownership required.
+        #[arg(long, default_value_t = false)]
+        tq_proof_mode: bool,
+        /// Require a matching `.tq` artifact instead of silently falling back.
+        #[arg(long, default_value_t = false)]
+        tq_strict: bool,
+        /// Require all Qwen attention and FFN linear projections in the `.tq`.
+        #[arg(long, default_value_t = false)]
+        tq_require_all_linear: bool,
+        /// Require GPU bitslice ownership for every `.tq` projection.
+        #[arg(long, default_value_t = false)]
+        tq_require_gpu: bool,
     },
     /// CPU-only tokenizer parity diagnostic using the same tokenizer path as generate.
     Tokenize {
@@ -444,6 +501,11 @@ enum Cmd {
     Version {
         #[arg(long)]
         weights: Option<PathBuf>,
+    },
+    /// Studio proof/lifecycle control surface. Read-only/dry-run by default.
+    Studio {
+        #[command(subcommand)]
+        cmd: studio::StudioCmd,
     },
     /// Run a list of prompts through one in-process engine, emitting
     /// per-prompt b3sum hashes of the decoded text. Replaces the
@@ -697,6 +759,11 @@ fn main() -> Result<()> {
             workload,
             auto,
             intent,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         } => {
             // --hardware-profile is the preferred alias for --kernel-profile.
             let resolved_kernel_profile = hardware_profile.or(kernel_profile);
@@ -811,6 +878,14 @@ fn main() -> Result<()> {
                 }
             }
 
+            apply_qwen_tq_flags(
+                tq.as_deref(),
+                tq_proof_mode,
+                tq_strict,
+                tq_require_all_linear,
+                tq_require_gpu,
+            );
+
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(hawking_serve::run(hawking_serve::ServeOptions {
                 weights,
@@ -859,6 +934,12 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            serve_report_json,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         } => generate_main(
             weights,
             prompt,
@@ -887,6 +968,12 @@ fn main() -> Result<()> {
             batched_capture,
             capture_out,
             capture_batch,
+            serve_report_json,
+            tq,
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
         ),
         Cmd::Tokenize {
             weights,
@@ -963,6 +1050,7 @@ fn main() -> Result<()> {
             max_routed_expert_ram_mb,
         ),
         Cmd::Version { weights } => version_main(weights),
+        Cmd::Studio { cmd } => studio::run(cmd),
         Cmd::BatchHash {
             weights,
             prompts,
@@ -1125,7 +1213,11 @@ fn press_main(
     println!("source:           {source}");
     println!("dtypes:           {dtype_summary}");
     println!("tensors:          {n_tensors}");
-    println!("parameters:       {} ({} elems)", fmt_count_h(total_elems), total_elems);
+    println!(
+        "parameters:       {} ({} elems)",
+        fmt_count_h(total_elems),
+        total_elems
+    );
     println!(
         "weight bytes:     {} ({} bytes of tensor data, header excluded, ~{cur_bpw:.2} bpw)",
         fmt_bytes_h(total_bytes),
@@ -1155,7 +1247,10 @@ fn press_main(
     }
     println!();
     println!("-- Condense ladder (estimated output; flat per-tensor bpw) --");
-    println!("  {:<8} {:>8} {:>12} {:>9}", "tier", "bpw", "out size", "vs now");
+    println!(
+        "  {:<8} {:>8} {:>12} {:>9}",
+        "tier", "bpw", "out size", "vs now"
+    );
     for (label, bpw) in &tiers {
         let out_bytes = ((total_elems as f64) * bpw / 8.0).ceil() as u64;
         let ratio = total_bytes as f64 / out_bytes as f64;
@@ -1196,7 +1291,9 @@ fn press_main(
     println!();
     println!("NOTE: estimates from model metadata only (GGUF or safetensors) — no weights, GPU, or network.");
     println!("      Output sizes use a flat per-tensor bpw; the real damage-ranked allocator (C3)");
-    println!("      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here).");
+    println!(
+        "      protects embeddings/lm_head/norms/router. The bake is owner-gated (not run here)."
+    );
     Ok(())
 }
 
@@ -1264,8 +1361,8 @@ fn read_safetensors_inventory(
     }
     let mut hbuf = vec![0u8; hlen as usize];
     f.read_exact(&mut hbuf)?;
-    let json: serde_json::Value =
-        serde_json::from_slice(&hbuf).map_err(|e| anyhow::anyhow!("safetensors header JSON: {e}"))?;
+    let json: serde_json::Value = serde_json::from_slice(&hbuf)
+        .map_err(|e| anyhow::anyhow!("safetensors header JSON: {e}"))?;
     let obj = json
         .as_object()
         .ok_or_else(|| anyhow::anyhow!("safetensors: header is not a JSON object"))?;
@@ -1344,10 +1441,10 @@ fn parse_tier_arg(s: &str) -> std::result::Result<Vec<(String, f64)>, String> {
             .parse()
             .map_err(|_| format!("bad tier '{p}' (use bit-widths like 4,3,2,1)"))?;
         let bpw = match bits as i64 {
-            4 => 4.5, // Q4_K compatibility floor
-            3 => 3.0, // first extreme public tier (TQ3)
-            2 => 2.0, // recovery tier
-            1 => 1.0, // 1-bit/ternary research tier (ternary ~1.58)
+            4 => 4.5,  // Q4_K compatibility floor
+            3 => 3.0,  // first extreme public tier (TQ3)
+            2 => 2.0,  // recovery tier
+            1 => 1.0,  // 1-bit/ternary research tier (ternary ~1.58)
             _ => bits, // any other value: treat as literal target bpw
         };
         out.push((format!("{}-bit", bits as i64), bpw));
@@ -1531,7 +1628,11 @@ fn fit_main(
     println!(
         "machine:    {} | {} unified | macOS {}",
         mac.chip,
-        if total > 0 { fmt_bytes_h(total) } else { "?".into() },
+        if total > 0 {
+            fmt_bytes_h(total)
+        } else {
+            "?".into()
+        },
         mac.os
     );
     println!(
@@ -1559,22 +1660,31 @@ fn fit_main(
         println!();
         println!("-- recommendation --");
         println!("  Apple Fit MOAT: context length does NOT grow memory on this SSM. The usable");
-        println!("  context is bounded by model QUALITY, not by this Mac's RAM. Pick context by the");
+        println!(
+            "  context is bounded by model QUALITY, not by this Mac's RAM. Pick context by the"
+        );
         println!("  quality card (`tools/ci/ssm_quality_chat.sh`), not by fit.");
         println!("  Strongest stable: the full model at any context the task needs.");
         println!();
         println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything.");
-        println!("      Live memory pressure (A4) and measured tps/energy (A6) refine this estimate.");
+        println!(
+            "      Live memory pressure (A4) and measured tps/energy (A6) refine this estimate."
+        );
         return Ok(());
     }
 
     if layers == 0 || kv_heads == 0 || head_dim == 0 {
-        println!("(model attention config not found in GGUF metadata; cannot compute KV envelope.)");
+        println!(
+            "(model attention config not found in GGUF metadata; cannot compute KV envelope.)"
+        );
         return Ok(());
     }
 
     // Context ladder to display: standard rungs up to the requested cap (default native).
-    let cap = max_context.map(|c| c as u64).unwrap_or(native_ctx).max(4096);
+    let cap = max_context
+        .map(|c| c as u64)
+        .unwrap_or(native_ctx)
+        .max(4096);
     let mut ctxs: Vec<u64> = [4096u64, 8192, 16384, 32768, 65536, 131072]
         .into_iter()
         .filter(|&c| c <= cap)
@@ -1613,7 +1723,9 @@ fn fit_main(
     println!();
 
     // Envelope ceilings: largest ctx (over a wide ladder) that stays stable.
-    let ladder: [u64; 9] = [4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576];
+    let ladder: [u64; 9] = [
+        4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576,
+    ];
     let max_stable = |elem: u64| -> u64 {
         ladder
             .iter()
@@ -1709,9 +1821,15 @@ fn fit_main(
         println!("  override: --max-context <N>, --intent <mode>, or set KV policy at serve time.");
     }
     println!();
-    println!("NOTE: Apple Fit reports the envelope only — it does not run or cap anything. Estimates");
-    println!("      are weights+KV+overhead from metadata; live pressure (A4) and measured tps/energy");
-    println!("      (A6) refine them. `serve --auto` (A3) must not pick below max-capability without a");
+    println!(
+        "NOTE: Apple Fit reports the envelope only — it does not run or cap anything. Estimates"
+    );
+    println!(
+        "      are weights+KV+overhead from metadata; live pressure (A4) and measured tps/energy"
+    );
+    println!(
+        "      (A6) refine them. `serve --auto` (A3) must not pick below max-capability without a"
+    );
     println!("      stated --intent or hard pressure (anti-throttle gate A8).");
     Ok(())
 }
@@ -1789,8 +1907,9 @@ fn max_stable_ctx(
         .iter()
         .copied()
         .filter(|&c| {
-            let r =
-                file_bytes + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, c, elem, conc) + FIT_OVERHEAD_BYTES;
+            let r = file_bytes
+                + kv_cache_bytes(f.layers, f.kv_heads, f.head_dim, c, elem, conc)
+                + FIT_OVERHEAD_BYTES;
             let z = fit_zone(r, total);
             if comfortable_only {
                 z == "FITS"
@@ -1868,7 +1987,10 @@ fn auto_serve_pick(f: &ModelFacts, file_bytes: u64, total_mem: u64, intent: &str
             context: f.native_ctx.min(stable32),
             energy_efficient: false,
             profile_fast: false,
-            rationale: format!("max-quality: f32 KV at {} tokens", f.native_ctx.min(stable32)),
+            rationale: format!(
+                "max-quality: f32 KV at {} tokens",
+                f.native_ctx.min(stable32)
+            ),
             safety_downgrade: None,
         },
         "max-speed" => AutoPick {
@@ -1876,8 +1998,9 @@ fn auto_serve_pick(f: &ModelFacts, file_bytes: u64, total_mem: u64, intent: &str
             context: f.native_ctx.min(8192),
             energy_efficient: false,
             profile_fast: true,
-            rationale: "max-speed: `--profile fast` (mild quality trade, stated intent) + modest context"
-                .to_string(),
+            rationale:
+                "max-speed: `--profile fast` (mild quality trade, stated intent) + modest context"
+                    .to_string(),
             safety_downgrade: None,
         },
         "max-battery" => {
@@ -2724,7 +2847,7 @@ fn run_runtime_autotune_phase(weights: &std::path::Path, profile_id: &str) -> Op
                 stop: Vec::new(),
                 abort: None,
                 max_stall_ms: 30_000,
-            json_mode: false,
+                json_mode: false,
             };
             let mut decode_ms = 0.0f64;
             let mut completion_tokens = 0usize;
@@ -2914,6 +3037,12 @@ fn generate_main(
     batched_capture: bool,
     capture_out: Option<PathBuf>,
     capture_batch: usize,
+    serve_report_json: Option<PathBuf>,
+    tq: Option<PathBuf>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
 ) -> Result<()> {
     use hawking_core::{
         profile::KernelProfile, EngineConfig, GenerateRequest, SamplingParams, SpeculateMode,
@@ -2960,6 +3089,13 @@ fn generate_main(
     if user_draft_propose_first {
         std::env::set_var("HAWKING_QWEN_USER_DRAFT_PROPOSE_FIRST", "1");
     }
+    apply_qwen_tq_flags(
+        tq.as_deref(),
+        tq_proof_mode,
+        tq_strict,
+        tq_require_all_linear,
+        tq_require_gpu,
+    );
     let profile = match kernel_profile.as_ref() {
         Some(path) => Some(KernelProfile::load(path)?),
         None => None,
@@ -2997,6 +3133,23 @@ fn generate_main(
             ));
         }
     }
+    if serve_report_json.is_some() {
+        if prompts_file.is_some() {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json is single-prompt only; use --prompt so the report has one unambiguous generation"
+            ));
+        }
+        if batched_capture {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json does not combine with --batched-capture"
+            ));
+        }
+        if max_new_tokens == 0 {
+            return Err(anyhow::anyhow!(
+                "--serve-report-json requires --max-new-tokens > 0 so served_forward_pass can be measured"
+            ));
+        }
+    }
 
     let cfg = EngineConfig {
         max_seq_len,
@@ -3028,6 +3181,8 @@ fn generate_main(
         explain_performance_banner(&weights, max_seq_len);
     }
     let mut engine = hawking_core::model::load_engine(&weights, cfg)?;
+    let loaded_model_id = engine.model_id().to_string();
+    let loaded_model_arch = engine.model_arch().to_string();
 
     // Build the prompt list: either every line of --prompts-file (capture
     // corpus mode — model loaded once, all prompts decoded in sequence) or
@@ -3089,6 +3244,7 @@ fn generate_main(
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
     let n_prompts = prompts.len();
+    let mut serve_report_result: Option<(hawking_core::GenStats, StopReason)> = None;
     for (idx, p) in prompts.into_iter().enumerate() {
         if abort.load(Ordering::SeqCst) {
             break;
@@ -3123,12 +3279,7 @@ fn generate_main(
                 let _ = out.write_all(b"\n");
                 let _ = out.flush();
                 let dec = (stats.completion_tokens as f64) / (stats.decode_ms / 1000.0).max(1e-6);
-                let reason_s = match reason {
-                    StopReason::MaxTokens => "max_tokens",
-                    StopReason::StopString => "stop_string",
-                    StopReason::Eos => "eos",
-                    StopReason::Aborted => "aborted",
-                };
+                let reason_s = stop_reason_label(&reason);
                 eprintln!(
                     "\n[stats] reason={} prompt={} completion={} prefill_ms={:.1} decode_ms={:.1} dec_tps={:.2} dispatches_per_fwd={} draft_accepted={} draft_rejected={} profile={}",
                     reason_s,
@@ -3146,15 +3297,239 @@ fn generate_main(
                 // by report-card / harnesses; carries lm_head_path + the
                 // observability counters alongside dec_tps).
                 eprintln!("[stats-json] {}", stats.stats_json());
+                if serve_report_json.is_some() {
+                    serve_report_result = Some((stats, reason));
+                }
             }
         };
         engine.generate(req, &mut sink)?;
+    }
+    if let Some(path) = serve_report_json.as_ref() {
+        let (stats, reason) = serve_report_result.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("generation finished without a Done event; not writing serve report")
+        })?;
+        write_native_tq_serve_report(
+            path,
+            &weights,
+            &loaded_model_id,
+            &loaded_model_arch,
+            tq.as_deref(),
+            tq_proof_mode,
+            tq_strict,
+            tq_require_all_linear,
+            tq_require_gpu,
+            stats,
+            reason,
+        )?;
+        eprintln!("[serve-report] wrote {}", path.display());
     }
     // L1.1 attention-mass oracle (default-off): dump the per-layer
     // concentration curve accumulated during prefill. No-op unless
     // HAWKING_QWEN_ATTN_CAPTURE=1.
     hawking_core::stateful::attn_capture::flush();
     Ok(())
+}
+
+fn stop_reason_label(reason: &hawking_core::StopReason) -> &'static str {
+    match reason {
+        hawking_core::StopReason::MaxTokens => "max_tokens",
+        hawking_core::StopReason::StopString => "stop_string",
+        hawking_core::StopReason::Eos => "eos",
+        hawking_core::StopReason::Aborted => "aborted",
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn write_native_tq_serve_report(
+    path: &Path,
+    weights: &Path,
+    model_id: &str,
+    model_arch: &str,
+    tq: Option<&Path>,
+    tq_proof_mode: bool,
+    tq_strict: bool,
+    tq_require_all_linear: bool,
+    tq_require_gpu: bool,
+    stats: &hawking_core::GenStats,
+    reason: &hawking_core::StopReason,
+) -> Result<()> {
+    let tq_strict_eff = tq_proof_mode || tq_strict;
+    let all_linear_eff = tq_proof_mode || tq_require_all_linear;
+    let gpu_bitslice_eff = tq_proof_mode || tq_require_gpu;
+    let served_forward_pass =
+        stats.completion_tokens > 0 && !matches!(reason, hawking_core::StopReason::Aborted);
+    let qwen_arch = {
+        let arch = model_arch.to_ascii_lowercase();
+        let id = model_id.to_ascii_lowercase();
+        arch.contains("qwen") || id.contains("qwen")
+    };
+    let native_tq = tq.is_some()
+        && qwen_arch
+        && tq_strict_eff
+        && all_linear_eff
+        && gpu_bitslice_eff
+        && served_forward_pass;
+    let artifact = match tq {
+        Some(path) => {
+            let metadata = std::fs::metadata(path)
+                .map_err(|e| anyhow::anyhow!("stat TQ artifact {}: {e}", path.display()))?;
+            Some((path, metadata.len(), sha256_file_hex(path)?))
+        }
+        None => None,
+    };
+    let rss_mb = current_rss_mb();
+    let peak_rss_gb = rss_mb.map(|mb| mb / 1024.0);
+    let mac = detect_mac();
+    let unified_memory_gb = (mac.total_mem > 0).then(|| gib(mac.total_mem));
+    let resident_memory_ok = native_tq
+        && matches!((peak_rss_gb, unified_memory_gb), (Some(peak), Some(unified)) if peak > 0.0 && peak <= unified);
+    let command_args: Vec<String> = std::env::args().collect();
+    let command_line = command_args
+        .iter()
+        .map(|arg| shell_quote_arg(arg))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let (artifact_path, artifact_bytes, artifact_sha256, artifact_gb) = match artifact.as_ref() {
+        Some((path, bytes, sha)) => (
+            serde_json::json!(path.display().to_string()),
+            serde_json::json!(bytes),
+            serde_json::json!(sha),
+            serde_json::json!(gib(*bytes)),
+        ),
+        None => (
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+        ),
+    };
+    let rehydrate_f16 = if native_tq {
+        serde_json::json!(false)
+    } else {
+        serde_json::Value::Null
+    };
+    let decode_mode = if native_tq {
+        "native_tq"
+    } else if tq.is_some() {
+        "tq_unproven"
+    } else {
+        "non_tq"
+    };
+    let generated_at_unix = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let report = serde_json::Value::Object(
+        [
+            (
+                "schema",
+                serde_json::json!("hawking.native_tq_serve_report.v1"),
+            ),
+            ("generated_at_unix", serde_json::json!(generated_at_unix)),
+            ("decode_mode", serde_json::json!(decode_mode)),
+            ("native_tq", serde_json::json!(native_tq)),
+            ("served_native_tq", serde_json::json!(native_tq)),
+            ("rehydrate_f16", rehydrate_f16.clone()),
+            ("rehydrated_f16", rehydrate_f16),
+            ("tq_strict", serde_json::json!(tq_strict_eff)),
+            ("strict_tq", serde_json::json!(tq_strict_eff)),
+            ("all_linear", serde_json::json!(all_linear_eff)),
+            ("all_linear_covered", serde_json::json!(all_linear_eff)),
+            ("gpu_bitslice", serde_json::json!(gpu_bitslice_eff)),
+            ("gpu_owned", serde_json::json!(gpu_bitslice_eff)),
+            ("gpu_ownership", serde_json::json!(gpu_bitslice_eff)),
+            ("served_forward_pass", serde_json::json!(served_forward_pass)),
+            ("parity_pass", serde_json::json!(false)),
+            ("parity_receipt_required", serde_json::json!(true)),
+            ("tok_s", serde_json::json!(stats.dec_tps())),
+            ("tokens_per_second", serde_json::json!(stats.dec_tps())),
+            ("decode_tok_s", serde_json::json!(stats.dec_tps())),
+            ("prompt_tokens", serde_json::json!(stats.prompt_tokens)),
+            (
+                "completion_tokens",
+                serde_json::json!(stats.completion_tokens),
+            ),
+            ("prefill_ms", serde_json::json!(stats.prefill_ms)),
+            ("decode_ms", serde_json::json!(stats.decode_ms)),
+            ("stop_reason", serde_json::json!(stop_reason_label(reason))),
+            ("model_id", serde_json::json!(model_id)),
+            ("model_arch", serde_json::json!(model_arch)),
+            ("qwen_architecture", serde_json::json!(qwen_arch)),
+            (
+                "weights_path",
+                serde_json::json!(weights.display().to_string()),
+            ),
+            ("artifact_path", artifact_path),
+            ("artifact_bytes", artifact_bytes),
+            ("artifact_sha256", artifact_sha256),
+            ("artifact_gb", artifact_gb),
+            ("peak_rss_gb", serde_json::json!(peak_rss_gb)),
+            ("memory_resident_gb", serde_json::json!(peak_rss_gb)),
+            (
+                "memory_resident_source",
+                serde_json::json!("process_rss_after_decode"),
+            ),
+            ("unified_memory_gb", serde_json::json!(unified_memory_gb)),
+            ("resident_memory_ok", serde_json::json!(resident_memory_ok)),
+            (
+                "memory_note",
+                serde_json::json!("RSS is sampled after decode; Studio final claims still require load, served-forward, parity, and signed capture receipts."),
+            ),
+            ("command", serde_json::json!(command_args)),
+            ("command_line", serde_json::json!(command_line)),
+            ("stats", stats.stats_json()),
+        ]
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), value))
+        .collect(),
+    );
+    write_json_with_parent(path, &report)?;
+    Ok(())
+}
+
+fn sha256_file_hex(path: &Path) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    use std::io::Read;
+
+    let mut file =
+        std::fs::File::open(path).map_err(|e| anyhow::anyhow!("open {}: {e}", path.display()))?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 1024 * 1024];
+    loop {
+        let n = file
+            .read(&mut buf)
+            .map_err(|e| anyhow::anyhow!("read {}: {e}", path.display()))?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect())
+}
+
+fn write_json_with_parent(path: &Path, value: &serde_json::Value) -> Result<()> {
+    if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent)?;
+    }
+    let text = serde_json::to_string_pretty(value)?;
+    std::fs::write(path, format!("{text}\n"))?;
+    Ok(())
+}
+
+fn shell_quote_arg(arg: &str) -> String {
+    if !arg.is_empty()
+        && arg.bytes().all(|b| {
+            b.is_ascii_alphanumeric() || matches!(b, b'.' | b'/' | b'_' | b'-' | b':' | b'=' | b'+')
+        })
+    {
+        arg.to_string()
+    } else {
+        format!("'{}'", arg.replace('\'', "'\\''"))
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -3519,8 +3894,10 @@ mod press_tests {
         let mut buf = Vec::new();
         buf.extend_from_slice(&(json.len() as u64).to_le_bytes());
         buf.extend_from_slice(json);
-        let p = std::env::temp_dir()
-            .join(format!("hawking_press_st_{}.safetensors", std::process::id()));
+        let p = std::env::temp_dir().join(format!(
+            "hawking_press_st_{}.safetensors",
+            std::process::id()
+        ));
         std::fs::File::create(&p).unwrap().write_all(&buf).unwrap();
         let res = read_safetensors_inventory(&p);
         std::fs::remove_file(&p).ok();
@@ -3589,7 +3966,9 @@ mod fit_tests {
         assert!(sf.safety_downgrade.is_some());
         assert!(sf.context <= f.native_ctx);
         let bat = auto_serve_pick(&f, file, total18, "max-battery");
-        assert!(bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx);
+        assert!(
+            bat.safety_downgrade.is_some() && bat.energy_efficient && bat.context <= f.native_ctx
+        );
 
         // max-context reaches the largest stable context via f16, no hidden downgrade.
         let mc = auto_serve_pick(&f, file, total18, "max-context");
@@ -3675,8 +4054,14 @@ mod serve_auto_tests {
         // On an 18 GiB Mac a 3B model fits at native context + full-precision KV →
         // max-capability must serve exactly that (no throttle-down).
         let cap18 = auto_serve_pick(&f, bytes, 18u64 << 30, "max-capability");
-        assert_eq!(cap18.context, 32768, "native ctx should be served when it fits");
-        assert!(!cap18.kv_f16, "f32 KV fits at 18 GiB → must not drop to f16");
+        assert_eq!(
+            cap18.context, 32768,
+            "native ctx should be served when it fits"
+        );
+        assert!(
+            !cap18.kv_f16,
+            "f32 KV fits at 18 GiB → must not drop to f16"
+        );
     }
 
     /// SSM: flat recurrent state → context is not RAM-bound; never throttled.

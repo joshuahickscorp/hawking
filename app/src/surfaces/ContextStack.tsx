@@ -56,13 +56,13 @@ export function ContextStack() {
           Snapshot/fork are instant because the RWKV state is a constant-size memcpy (plan 2 backend). */}
       <div className="ctx-state">
         <span className={"ctx-state__dot" + (live ? " ctx-state__dot--live" : "")} aria-hidden />
-        <span className="ctx-state__title">state · {live ? "warm" : "ready"}</span>
-        <span className="ctx-state__meta">~12 MB · serializable</span>
+        <span className="ctx-state__title">state / {live ? "warm" : "ready"}</span>
+        <span className="ctx-state__meta">~12 MB / serializable</span>
         <div className="ctx-state__actions">
           <button
             className="ctx-state__btn"
             title="Snapshot this state, resume instantly later (no re-prefill)"
-            onClick={() => pushNotice({ kind: "info", code: "state", message: "state snapshot saved · instant resume" })}
+            onClick={() => pushNotice({ kind: "info", code: "state", message: "state snapshot saved / instant resume" })}
           >
             snapshot
           </button>
@@ -115,7 +115,7 @@ export function ContextStack() {
             <button
               className="ctx-state__btn"
               title="Load this skill state instantly (no re-prefill)"
-              onClick={() => pushNotice({ kind: "info", code: "skill", message: `loaded skill · ${sk}` })}
+              onClick={() => pushNotice({ kind: "info", code: "skill", message: `loaded skill / ${sk}` })}
             >
               load
             </button>
@@ -139,8 +139,8 @@ export function ContextStack() {
             style={{ textAlign: "left", width: "100%", color: "var(--text)", padding: "var(--ma-1) var(--ma-2) var(--ma-1) 22px", background: "transparent" }}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-              <span style={{ fontSize: 13, color: "var(--text)" }}>{m.model.id} / {m.model.arch}</span>
-              <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+              <span style={{ fontSize: "var(--fs-ui)", color: "var(--text)" }}>{m.model.id} / {m.model.arch}</span>
+              <span style={{ fontSize: "var(--fs-label)", color: "var(--text-dim)" }}>
                 {m.model.profile} / {m.model.sampling}
               </span>
             </div>
@@ -166,11 +166,11 @@ export function ContextStack() {
                 <button
                   onClick={() => void sendIntent(intent.openFile(r.path))}
                   title={r.path}
-                  style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: "var(--text)", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", color: "var(--text)", fontSize: "var(--fs-ui)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                 >
                   {fileName(r.path)}:{r.range}
                 </button>
-                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{r.relevance.toFixed(2)}</span>
+                <span style={{ flex: "0 0 auto", fontSize: "var(--fs-label)", color: "var(--text-dim)" }}>{r.relevance.toFixed(2)}</span>
                 <HardwareToggle
                   label="pin"
                   on={pinned}
@@ -198,7 +198,7 @@ export function ContextStack() {
             return (
               <Line key={id}>
                 <OkMark ok={t.ok} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: muted ? "var(--text-dim)" : "var(--text)", textDecoration: muted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: muted ? "var(--text-dim)" : "var(--text)", textDecoration: muted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {t.name}
                 </span>
                 <HardwareToggle
@@ -224,10 +224,10 @@ export function ContextStack() {
             const evicted = steer.on(id, "evict");
             return (
               <Line key={id}>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: evicted ? "var(--text-dim)" : "var(--text)", textDecoration: evicted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: evicted ? "var(--text-dim)" : "var(--text)", textDecoration: evicted ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {mem.fact}
                 </span>
-                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{mem.confidence.toFixed(1)}</span>
+                <span style={{ flex: "0 0 auto", fontSize: "var(--fs-label)", color: "var(--text-dim)" }}>{mem.confidence.toFixed(1)}</span>
                 <HardwareToggle
                   label="evict"
                   tone="bad"
@@ -261,10 +261,10 @@ export function ContextStack() {
             const pinned = steer.on(id, "pin");
             return (
               <Line key={id} title={d.reason}>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text-dim)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: "var(--text-dim)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {d.title}
                 </span>
-                <span style={{ flex: "0 0 auto", fontSize: 11, color: "var(--text-dim)" }}>{d.would_be_tokens.toLocaleString()}</span>
+                <span style={{ flex: "0 0 auto", fontSize: "var(--fs-label)", color: "var(--text-dim)" }}>{d.would_be_tokens.toLocaleString()}</span>
                 <HardwareToggle
                   label="pin"
                   on={pinned}
@@ -288,13 +288,13 @@ export function ContextStack() {
           {build ? (
             <Line>
               <OkMark ok={build.ok !== false} />
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{build.summary ?? "build"}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{build.summary ?? "build"}</span>
             </Line>
           ) : null}
           {test ? (
             <Line>
               <OkMark ok={(test.failed ?? 0) === 0} />
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {test.summary ?? `${test.passed ?? 0} passed${test.failed ? `, ${test.failed} failed` : ""}`}
               </span>
             </Line>
@@ -309,7 +309,7 @@ export function ContextStack() {
         summary={live ? runtimeDetail ?? "working" : "idle"}
       >
         {liveFeed.length === 0 ? (
-          <div style={{ fontSize: 11, color: "var(--text-dim)", padding: "2px var(--ma-2) 2px 22px" }}>
+          <div style={{ fontSize: "var(--fs-label)", color: "var(--text-dim)", padding: "2px var(--ma-2) 2px 22px" }}>
             {live ? "assembling the turn" : "no moves yet this session"}
           </div>
         ) : (
@@ -326,7 +326,7 @@ export function ContextStack() {
                     background: last && live ? "var(--accent)" : "var(--text-dim)",
                   }}
                 />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: last ? "var(--text)" : "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--fs-ui)", color: last ? "var(--text)" : "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {t.message}
                 </span>
               </Line>

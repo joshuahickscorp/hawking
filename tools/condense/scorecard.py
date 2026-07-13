@@ -20,6 +20,10 @@ THE RECORDS IT READS (all optional — --dry composes from whatever exists):
   reports/condense/*_spec.json                                      (spec-decode revival — accept + exact-match)
   reports/condense/*_codec_bakeoff.json                             (STRAND vs QTIP/QuIP#/AQLM head-to-head)
   reports/condense/*_frontier.json                                  (100B+ serve-fit records)
+  reports/condense/*_serve.json                                     (native .tq served-forward/tok/s receipts)
+  reports/condense/*_ramcliff.json                                  (resident .tq vs Q4_K swap/J-token receipts)
+  reports/condense/*_experiment_matrix.json                         (seeds, ablations, repeats, null results)
+  reports/condense/*_parity.json                                    (frontier architecture parity records)
   reports/condense/*_subbit0.json                                   (the sub-1-bit entropy/side-info FLOOR)
   reports/condense/*_expert_sens.json                              (MoE per-expert sensitivity — sub-bit alive?)
 
@@ -53,7 +57,33 @@ CLI (argv, matching the neighbors):
                                #   branch (WIN gate, fake-win refusal, KILL, repro ladder), assert anchors
   scorecard.py -h | --help
 """
-import sys, os, re, json, glob, math, hashlib, subprocess, tempfile, shutil
+import sys, os, re, json, glob, math, hashlib, subprocess, tempfile, shutil, pathlib
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from floor_integrity import canonical_row_sha256
+try:
+    from studio_manifest import FRONTIER_MODELS
+except Exception:
+    FRONTIER_MODELS = ()
+try:
+    import frontier_coverage
+except Exception:
+    frontier_coverage = None
+try:
+    import frontier_receipts
+except Exception:
+    frontier_receipts = None
+try:
+    import frontier_experiments
+except Exception:
+    frontier_experiments = None
+try:
+    import frontier_experiment_runner
+except Exception:
+    frontier_experiment_runner = None
+try:
+    import receipt_verify
+except Exception:
+    receipt_verify = None
 
 # ── paths (match studio_run.py / scaling_law.py layout) ────────────────────────────────
 CRON_DIR    = "reports/cron"
@@ -65,6 +95,10 @@ OUT_JSON    = f"{COND_DIR}/scorecard.json"
 # ── gates / discipline knobs ────────────────────────────────────────────────────────────
 FLOOR_GATE_PCT = float(os.environ.get("FLOOR_GATE_PCT", "2.0"))   # the ~1:1 quality gate (echoes scaling_law)
 Q4K_BPW        = 4.5                                              # the llama.cpp Q4_K_M reference rung
+MATRIX_CODEC_MAX_BPW = 3.0                                       # matrix row states <=3 eff-bpw
+QUALITY_MAX_BPW = 4.0                                            # headline states sub-4-bit
+DENSITY_MIN_REDUCTION = 0.52                                     # headline states ~52% vs f16
+DENSITY_MAX_BPW = 16.0 * (1.0 - DENSITY_MIN_REDUCTION)
 WIN_MIN_REPRO  = os.environ.get("WIN_MIN_REPRO", "R3")           # §20.6: no public WIN below R3
 REPRO_ORDER    = ["R0", "R1", "R2", "R3", "R4", "R5"]            # the §20.6 reproducibility gradient
 POSITIVE_GATES = {"pass", "warn"}                                # quality_gate values asserting a positive
@@ -79,7 +113,8 @@ REPRO_DESC = {
 }
 # params for the scale curve (mirrors scaling_law.PARAMS); <7B = lab, never sets the verdict.
 PARAMS = {"0.5B": 0.5, "1.5B": 1.5, "7B": 7.0, "14B": 14.0, "32B": 32.0,
-          "70B": 70.0, "72B": 72.0, "405B": 405.0, "671B": 671.0, "744B": 744.0}
+          "70B": 70.0, "72B": 72.0}
+PARAMS.update({m.label: m.total_b for m in FRONTIER_MODELS})
 LAB_MAX_B = 7.0   # strictly below this = lab rung (printed, excluded from the verdict)
 
 
@@ -101,6 +136,28 @@ def _load_json(path):
     except Exception as e:
         log(f"  [skip] {path}: {e}")
         return None
+
+
+def _signed_experiment_rollup(root, labels):
+    rows = []
+    root_path = pathlib.Path(root)
+    for label in labels:
+        path = frontier_experiments.matrix_path(root_path, label)
+        record = _load_json(path)
+        status = frontier_experiment_runner.record_status(record, label=label, require_signature=True)
+        status["label"] = label
+        status["path"] = str(path)
+        rows.append(status)
+    blocked = [row["label"] for row in rows if not row.get("ok")]
+    return {
+        "schema": "hawking.frontier_experiment_signed_rollup.v1",
+        "model_count": len(rows),
+        "passed_count": len(rows) - len(blocked),
+        "blocked_count": len(blocked),
+        "blocked_labels": blocked,
+        "rows": rows,
+        "ok": not blocked,
+    }
 
 
 def _load_jsonl(path):
@@ -167,12 +224,45 @@ def find_floor_in_curve(curve):
     Returns (eff_bpw, config, degr_pct) or None. EFFECTIVE bpw only — nominal is ignored."""
     best = None
     for r in curve["rows"]:
+        if r.get("deployable") is False:
+            continue
         bpw, degr = r.get("eff_bpw"), r.get("degr_pct")
         if bpw is None or degr is None:
             continue
         if degr <= FLOOR_GATE_PCT and (best is None or bpw < best[0]):
             best = (bpw, r.get("config"), degr)
     return best
+
+
+def _positive_doctor_recovery(curve, row):
+    """Require evidence that Doctor improved its paired non-Doctor candidate.
+
+    The monotone step=-1 zero adapter is a valid completed experiment and can still be evaluated as
+    a density point, but it is not restoration.  Recovery claims require a trained checkpoint and
+    independently positive PPL movement both inside Doctor and against the same curve's base row.
+    """
+    if not isinstance(row, dict) or "+dr" not in str(row.get("config", "")):
+        return False
+    doctor = row.get("doctor") if isinstance(row.get("doctor"), dict) else {}
+    final = doctor.get("final") if isinstance(doctor.get("final"), dict) else {}
+    best_step = final.get("best_step")
+    recovery = final.get("recovery_pct")
+    base_ppl = final.get("base_ppl")
+    lora_ppl = final.get("lora_ppl")
+    numeric = (recovery, base_ppl, lora_ppl, row.get("ppl"))
+    if not (doctor.get("complete") is True
+            and isinstance(best_step, int) and not isinstance(best_step, bool) and best_step >= 0
+            and all(isinstance(value, (int, float)) and not isinstance(value, bool)
+                    and math.isfinite(float(value)) for value in numeric)
+            and float(recovery) > 0.0 and float(lora_ppl) < float(base_ppl)):
+        return False
+    base_config = str(row["config"]).split("+dr", 1)[0]
+    paired = next((candidate for candidate in curve.get("rows", [])
+                   if candidate.get("config") == base_config
+                   and candidate.get("deployable") is not False
+                   and isinstance(candidate.get("ppl"), (int, float))
+                   and math.isfinite(float(candidate["ppl"]))), None)
+    return bool(paired and float(row["ppl"]) < float(paired["ppl"]))
 
 
 def ingest_floors(root):
@@ -183,6 +273,7 @@ def ingest_floors(root):
     for path in sorted(glob.glob(os.path.join(root, CRON_DIR, "bit_floor_*.jsonl"))):
         for r in _load_jsonl(path):
             if "model" in r:
+                r["_floor_point_sha256"] = canonical_row_sha256(r)
                 r["_file"] = os.path.relpath(path, root)
                 points.append(r)
     for path in sorted(glob.glob(os.path.join(root, CRON_DIR, "bit_floor_*_curve.md"))):
@@ -213,15 +304,33 @@ def ingest_receipts(root):
         eff = r.get("effective_bpw", 0.0) or 0.0
         ctype = r.get("claim_type", "")
         best_effort = bool(r.get("baseline_best_effort", False))
-        # NO FAKE WIN: a baseline / best-effort receipt cannot back a public win (rule R8); a WIN
-        # also requires repro >= R3 (rule §20.6), a positive gate, and a real effective bpw (rule R1).
-        win_eligible = (_repro_ge(repro, WIN_MIN_REPRO) and gate in POSITIVE_GATES
-                        and eff > 0 and ctype not in ("baseline",) and not best_effort)
+        verification_errors = ["receipt_verify module unavailable"]
+        if receipt_verify is not None:
+            try:
+                verified, verification_errors = receipt_verify.verify_receipt(
+                    r, receipt_verify.load_schema()
+                )
+            except Exception as exc:
+                verified, verification_errors = False, [f"receipt verification failed: {exc}"]
+        else:
+            verified = False
+        # A receipt is merely eligible evidence here; claim-specific pairing happens below.
+        # Schema/rule verification is mandatory before an R3 record can promote anything.
+        win_eligible = (verified and _repro_ge(repro, WIN_MIN_REPRO)
+                        and gate in POSITIVE_GATES and eff > 0
+                        and ctype in {"density", "cliff", "scale-point"}
+                        and not best_effort)
         out.append({
             "file": os.path.relpath(path, root), "label": _label_from_receipt(r, path),
             "repro_level": repro, "claim_type": ctype, "quality_gate": gate,
             "effective_bpw": eff, "nominal_bpw": r.get("nominal_bpw"),
             "source_model": r.get("source_model", ""), "machine_class": r.get("machine_class", ""),
+            "condensed_artifact": r.get("condensed_artifact", ""),
+            "artifact_sha256": r.get("artifact_sha256"),
+            "source_sha256": r.get("source_sha256"),
+            "floor_point_sha256": r.get("floor_point_sha256"),
+            "recipe": list(r.get("recipe") or []),
+            "verified": verified, "verification_errors": verification_errors,
             "baseline_best_effort": best_effort, "win_eligible": win_eligible,
             "beats_q4k": (eff > 0 and eff < Q4K_BPW)})
     return out
@@ -233,10 +342,68 @@ def _label_from_receipt(r, path):
     return m.group(1) if m else os.path.basename(path).replace(".json", "")
 
 
+def _is_sha256(value):
+    return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdefABCDEF" for c in value)
+
+
+def _receipt_matches_floor(receipt, point, claim_types=("density", "scale-point")):
+    """Bind one verified receipt to one exact floor row; no cross-model/cross-claim reuse."""
+    if not (receipt.get("win_eligible") and receipt.get("claim_type") in set(claim_types)):
+        return False
+    if receipt.get("label") != point.get("model"):
+        return False
+    bpw = point.get("floor_bpw")
+    if not isinstance(bpw, (int, float)) or not math.isfinite(float(bpw)):
+        return False
+    if abs(float(receipt.get("effective_bpw", -1)) - float(bpw)) > 1e-9:
+        return False
+    if not (_is_sha256(point.get("_floor_point_sha256"))
+            and receipt.get("floor_point_sha256") == point.get("_floor_point_sha256")):
+        return False
+    config = str(point.get("winning_config") or "")
+    evidence = " ".join([str(receipt.get("condensed_artifact") or ""),
+                         *[str(x) for x in receipt.get("recipe", [])]])
+    return bool(config and config in evidence)
+
+
+def _floor_receipt_pairs(receipts, points, claim_types=("density", "scale-point")):
+    pairs = []
+    for point in points:
+        match = next((r for r in receipts
+                      if _receipt_matches_floor(r, point, claim_types)), None)
+        if match is not None:
+            pairs.append((point, match))
+    return pairs
+
+
+def _qualified_floor_points(points, max_bpw, *, strict=False):
+    """Filter non-lab finite floor points at the exact numerical claim boundary."""
+    result = []
+    for point in points:
+        bpw = point.get("floor_bpw")
+        if PARAMS.get(point.get("model"), 0) < LAB_MAX_B \
+                or isinstance(bpw, bool) or not isinstance(bpw, (int, float)) \
+                or not math.isfinite(float(bpw)):
+            continue
+        if (float(bpw) < max_bpw) if strict else (float(bpw) <= max_bpw):
+            result.append(point)
+    return result
+
+
+def _receipt_matches_record_artifact(receipt, label, record, claim_type):
+    return bool(
+        receipt.get("win_eligible")
+        and receipt.get("claim_type") == claim_type
+        and receipt.get("label") == label
+        and _is_sha256((record or {}).get("artifact_sha256"))
+        and receipt.get("artifact_sha256") == record.get("artifact_sha256")
+    )
+
+
 def ingest_condense(root, suffix):
     """Generic loader for reports/condense/*_<suffix>.json. Returns {label: record}, label parsed
     off the filename prefix (strip the suffix). Used for eval/baselines/spec/codec_bakeoff/
-    frontier/subbit0/expert_sens — each interpreted by the composer that owns the section."""
+    frontier/serve/parity/subbit0/expert_sens — each interpreted by the composer that owns the section."""
     out = {}
     for path in sorted(glob.glob(os.path.join(root, COND_DIR, f"*_{suffix}.json"))):
         r = _load_json(path)
@@ -246,6 +413,119 @@ def ingest_condense(root, suffix):
         r["_file"] = os.path.relpath(path, root)
         out[label] = r
     return out
+
+
+def _frontier_labels():
+    """Stable frontier label set from the shared manifest; falls back gracefully in self-contained tests."""
+    return [m.label for m in FRONTIER_MODELS]
+
+
+def _parity_passed(label, rec):
+    """Mirror the minimum frontier_parity.py claim gate using only the JSON scorecard can see."""
+    return bool(
+        rec
+        and rec.get("status") == "pass"
+        and rec.get("model") == label
+        and rec.get("prompt_count", 0) >= 4
+        and rec.get("max_logit_abs_err") is not None
+        and rec.get("greedy_match_tokens", 0) >= 16
+    )
+
+
+def _parity_rollup(parity, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(parity.keys())
+    passed = [label for label in labels if _parity_passed(label, parity.get(label))]
+    missing = [label for label in labels if label not in parity]
+    failed = [label for label in labels if label in parity and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _serve_passed(label, rec):
+    """Native .tq serve receipt gate: fail closed on fake f16 rehydrate or partial ownership."""
+    def positive(key):
+        return isinstance((rec or {}).get(key), (int, float)) and rec.get(key) > 0
+
+    return bool(
+        rec
+        and rec.get("schema") == "hawking.frontier_serve.v1"
+        and rec.get("status") == "pass"
+        and rec.get("model", label) == label
+        and rec.get("native_tq") is True
+        and rec.get("rehydrate_f16") is False
+        and rec.get("tq_strict") is True
+        and rec.get("all_linear") is True
+        and rec.get("gpu_bitslice") is True
+        and rec.get("served_forward_pass") is True
+        and rec.get("parity_pass") is True
+        and positive("tok_s")
+        and rec.get("load_receipt")
+        and positive("memory_peak_gb")
+        and positive("memory_resident_gb")
+        and positive("unified_memory_gb")
+        and rec.get("resident_memory_ok") is True
+        and rec.get("memory_peak_gb") <= rec.get("unified_memory_gb")
+        and _is_sha256(rec.get("artifact_sha256"))
+        and (rec.get("commands") or rec.get("command"))
+        and (rec.get("git_commit") or rec.get("hawking_commit"))
+        and (rec.get("machine_class") or (rec.get("hardware") or {}).get("profile"))
+        and rec.get("source", "measured") not in ("synthetic", "modeled", "gated")
+    )
+
+
+def _serve_rollup(serve, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(serve.keys())
+    passed = [label for label in labels if _serve_passed(label, serve.get(label))]
+    missing = [label for label in labels if label not in serve]
+    failed = [label for label in labels if label in serve and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _ramcliff_passed(label, rec):
+    gate = rec.get("gate") if isinstance((rec or {}).get("gate"), dict) else {}
+    return bool(
+        rec
+        and rec.get("schema") == "hawking.frontier_ramcliff.v1"
+        and (rec.get("model") or rec.get("label")) == label
+        and rec.get("source") == "measured"
+        and rec.get("verdict") == "CLIFF-WIN"
+        and rec.get("served_native_tq") is True
+        and gate.get("condensed_resident") is True
+        and gate.get("served_native_tq") is True
+        and gate.get("q4k_overflows_box") is True
+        and gate.get("cliff_x_over_gate") is True
+        and gate.get("resident_lower_energy") is True
+        and (rec.get("tok_s_resident") or 0) > 0
+        and (rec.get("tok_s_swapping") or 0) > 0
+        and (rec.get("j_per_tok_resident") or 0) > 0
+        and (rec.get("j_per_tok_swapping") or 0) > 0
+        and (rec.get("cliff_x") or 0) > 10.0
+        and rec.get("j_per_tok_resident") < rec.get("j_per_tok_swapping")
+        and _is_sha256(rec.get("artifact_sha256"))
+        and (rec.get("commands") or rec.get("command"))
+        and (rec.get("git_commit") or rec.get("hawking_commit"))
+        and (rec.get("machine_class") or (rec.get("hardware") or {}).get("profile"))
+    )
+
+
+def _ramcliff_rollup(ramcliff, labels=None):
+    labels = list(labels or _frontier_labels())
+    if not labels:
+        labels = sorted(ramcliff.keys())
+    passed = [label for label in labels if _ramcliff_passed(label, ramcliff.get(label))]
+    missing = [label for label in labels if label not in ramcliff]
+    failed = [label for label in labels if label in ramcliff and label not in passed]
+    return {"labels": labels, "passed": passed, "missing": missing, "failed": failed}
+
+
+def _short_list(items, limit=4):
+    items = list(items)
+    if len(items) <= limit:
+        return ", ".join(items)
+    return ", ".join(items[:limit]) + f", +{len(items) - limit} more"
 
 
 # ════════════════════════════════════════════════════════════════════════════════════════
@@ -306,6 +586,7 @@ def compose_matrix(records):
     Returns a list of row dicts."""
     receipts = records["receipts"]
     win_receipts = [r for r in receipts if r["win_eligible"]]
+    cliff_receipts = [r for r in win_receipts if r.get("claim_type") == "cliff"]
     floors = records["floors"]["points"]
     law = records["floors"]["law"]
     curves = records["curves"]
@@ -315,19 +596,45 @@ def compose_matrix(records):
     baselines = records["baselines"]
     bakeoff = records["codec_bakeoff"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
+
+    def _parity_note(labels):
+        roll = _parity_rollup(parity, labels)
+        total = len(roll["labels"])
+        passed = len(roll["passed"])
+        if total == 0:
+            return "frontier parity not evaluated"
+        if passed == total:
+            return f"frontier parity PASS {passed}/{total}"
+        blockers = roll["failed"] + roll["missing"]
+        return f"frontier parity BLOCK {passed}/{total} ({_short_list(blockers)})"
+
+    def _serve_note(labels):
+        roll = _serve_rollup(serve, labels)
+        total = len(roll["labels"])
+        passed = len(roll["passed"])
+        if total == 0:
+            return "native .tq serve not evaluated"
+        if passed == total:
+            return f"native .tq serve PASS {passed}/{total}"
+        blockers = roll["failed"] + roll["missing"]
+        return f"native .tq serve BLOCK {passed}/{total} ({_short_list(blockers)})"
 
     # has ANY non-lab (>=7B) floor at/under a bpw that beats Q4_K with a win-eligible receipt?
     def _hawking_density_serve_cell():
         # density/serve WIN needs: a measured floor under Q4_K bpw AND a win-eligible receipt for it.
-        measured = [p for p in floors if p.get("floor_bpw") and (PARAMS.get(p["model"], 0) >= LAB_MAX_B)]
-        beats = [p for p in measured if p["floor_bpw"] < Q4K_BPW]
-        if win_receipts and beats:
-            cite = win_receipts[0]["file"]
-            return ("yes", f"WIN: {beats[0]['model']} floor {beats[0]['floor_bpw']:.2f} eff-bpw < Q4_K {Q4K_BPW} [{cite}]")
-        if beats:
-            return ("gated", f"MEASURED {beats[0]['model']} {beats[0]['floor_bpw']:.2f} eff-bpw but no R{WIN_MIN_REPRO[-1]}+ receipt [{beats[0].get('_file','?')}]")
+        measured = _qualified_floor_points(floors, float("inf"))
+        claim_points = _qualified_floor_points(floors, MATRIX_CODEC_MAX_BPW)
+        pairs = _floor_receipt_pairs(win_receipts, claim_points, ("density",))
+        if pairs:
+            point, receipt = pairs[0]
+            return ("yes", f"WIN: {point['model']} floor {point['floor_bpw']:.2f} eff-bpw <= {MATRIX_CODEC_MAX_BPW:.0f} [{receipt['file']}]")
+        if claim_points:
+            return ("gated", f"MEASURED {claim_points[0]['model']} {claim_points[0]['floor_bpw']:.2f} eff-bpw but no R{WIN_MIN_REPRO[-1]}+ receipt [{claim_points[0].get('_file','?')}]")
         if measured:
-            return ("gated", f"floor {measured[0]['floor_bpw']:.2f} eff-bpw at {measured[0]['model']} (>= Q4_K) [{measured[0].get('_file','?')}]")
+            return ("gated", f"floor {measured[0]['floor_bpw']:.2f} eff-bpw at {measured[0]['model']} misses the <= {MATRIX_CODEC_MAX_BPW:.0f} matrix threshold [{measured[0].get('_file','?')}]")
         # fall back to curve-derived floor (e.g. 7B frontier) — still GATED (lab/no receipt)
         for cf in curves.values():
             fl = find_floor_in_curve(cf)
@@ -341,10 +648,13 @@ def compose_matrix(records):
         for cf in curves.values():
             for r in cf["rows"]:
                 cfg = r.get("config", "")
-                if any(t in cfg for t in ("+dr", "-bw", "-str")) and r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT:
+                if (r.get("deployable") is not False
+                        and _positive_doctor_recovery(cf, r)
+                        and r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT):
                     return ("gated", f"recovered {cfg} @ {r['eff_bpw']:.2f} eff-bpw +{r['degr_pct']}% (no receipt) [{cf['file']}]")
         # was recovery even attempted (errored)?
-        attempted = any(any(t in (r.get("config") or "") for t in ("+dr", "-bw", "-str"))
+        attempted = any(r.get("deployable") is not False
+                        and "+dr" in (r.get("config") or "")
                         for cf in curves.values() for r in _curve_all(cf, records))
         return ("unproven", "recovery attempted but no config cleared the gate (doctor swap/timeout)" if attempted
                 else "no recovery config in any curve")
@@ -352,17 +662,39 @@ def compose_matrix(records):
     def _hawking_serve_cell():
         # native low-bit serve: a serve/tps WIN is admissible ONLY under a native-serve record. The
         # frontier records say the quality/cliff numbers are GATED on the Rust serve build => not a win.
+        serve_pass = [r for label, r in serve.items() if _serve_passed(label, r)]
+        if serve_pass:
+            s0 = serve_pass[0]
+            return ("gated", f"native .tq served-forward receipt pass; tok/s={s0.get('tok_s')} "
+                    f"(needs R{WIN_MIN_REPRO[-1]}+ serve receipt for WIN) [{s0['_file']}]")
         if frontier:
             f0 = next(iter(frontier.values()))
-            return ("gated", f"serve-fit recorded; quality+cliff GATED on native .tq serve build [{f0['_file']}]")
-        return ("unproven", "no native-serve record (rehydrate -> f16 = fake win; refused)")
+            return ("gated", f"serve-fit recorded; quality+cliff GATED on native .tq serve build + "
+                    f"{_parity_note(frontier.keys())} [{f0['_file']}]")
+        return ("unproven", "no native .tq serve receipt (rehydrate -> f16 = fake win; refused)")
 
     def _hawking_ramcliff_cell():
+        rpass = [(label, r) for label, r in ramcliff.items() if _ramcliff_passed(label, r)]
+        if rpass:
+            label, r0 = rpass[0]
+            receipt = next((r for r in cliff_receipts
+                            if _receipt_matches_record_artifact(r, label, r0, "cliff")), None)
+            if receipt:
+                return ("yes", f"WIN: RAM-cliff receipt pass for {label}, "
+                        f"cliff_x={r0.get('cliff_x')} [{receipt['file']}]")
+            return ("gated", f"RAM-cliff receipt pass for {label}, cliff_x={r0.get('cliff_x')} "
+                    f"(needs R{WIN_MIN_REPRO[-1]}+ receipt for WIN) [{r0['_file']}]")
         if frontier:
-            fits = [v for v in frontier.values() if v.get("serve_fits_84")]
+            fits = [
+                v for v in frontier.values()
+                if v.get("serve_fits_resident") or v.get("serve_fits_resident_112gb")
+                or v.get("serve_fits_84")
+            ]
             if fits:
                 v = fits[0]
-                return ("gated", f"{v['model']} {v['artifact_gb']}GB fits 84GB serve-fit (cliff GATED on serve build) [{v['_file']}]")
+                return ("gated", f"{v['model']} {v['artifact_gb']}GB fits Studio serve-fit "
+                        f"(cliff GATED on {_serve_note(frontier.keys())} + "
+                        f"{_parity_note(frontier.keys())}) [{v['_file']}]")
         return ("unproven", "no RAM-cliff demo (serve build unbuilt)")
 
     def _hawking_law_cell():
@@ -419,9 +751,12 @@ def compose_matrix(records):
     rows = []
     for cap, fn in cell_fns.items():
         hk_status, hk_note = fn()
-        # KILL guard: forbid a bare "yes/WIN" Hawking cell that is not backed by a win-eligible receipt.
-        if hk_status == "yes" and cap != "Reproducible receipts (R3+ one-command)" and not win_receipts:
-            hk_status, hk_note = "gated", f"WIN refused (no R{WIN_MIN_REPRO[-1]}+ receipt): {hk_note}"
+        # Claim functions may emit "yes" only after exact model/claim/artifact pairing. Keep a
+        # final generic guard for the receipt-inventory row, but never use an unrelated receipt to
+        # upgrade a capability here.
+        if hk_status == "yes" and cap != "Reproducible receipts (R3+ one-command)" \
+                and "[receipts/official/" not in hk_note:
+            hk_status, hk_note = "gated", f"WIN refused (no claim-bound R{WIN_MIN_REPRO[-1]}+ receipt): {hk_note}"
         rows.append({
             "capability": cap,
             "hawking": {"status": hk_status, "note": hk_note},
@@ -449,10 +784,33 @@ def compose_scale_verdict(records):
             "file": p.get("_file")}
            for p in floors]
     verdict_pts = [p for p in pts if p["role"] == "verdict" and p["floor_bpw"]]
-    if law and law.get("verdict"):
+    fitted_slope = None
+    reported_slope = None
+    fit_binding_ok = False
+    if len(verdict_pts) >= 2:
+        xs = [math.log10(float(point["params_b"])) for point in verdict_pts]
+        ys = [float(point["floor_bpw"]) for point in verdict_pts]
+        mean_x, mean_y = sum(xs) / len(xs), sum(ys) / len(ys)
+        denom = sum((x - mean_x) ** 2 for x in xs)
+        fitted_slope = (sum((x - mean_x) * (y - mean_y)
+                            for x, y in zip(xs, ys)) / denom) if denom else 0.0
+    if law and law.get("verdict") and law.get("law") and fitted_slope is not None:
         v = law["verdict"]
-        hyp = "H1" if "H1" in v or "DESCEND" in v.upper() else ("H0" if "H0" in v or "FLAT" in v.upper() else "UNDECIDED")
-        status = "FITTED"
+        reported_hyp = ("H1" if "H1" in v or "DESCEND" in v.upper()
+                        else ("H0" if "H0" in v or "FLAT" in v.upper()
+                              else "UNDECIDED"))
+        recomputed_hyp = "H1" if fitted_slope < -0.05 else "H0"
+        match = re.search(
+            r"floor\s*~=\s*([-+]?\d+(?:\.\d+)?)\s*\*\s*log10", law["law"], re.I
+        )
+        reported_slope = float(match.group(1)) if match else None
+        fit_binding_ok = bool(
+            reported_slope is not None
+            and abs(reported_slope - fitted_slope) <= 0.00051
+            and reported_hyp == recomputed_hyp
+        )
+        hyp = recomputed_hyp if fit_binding_ok else "UNDECIDED"
+        status = "FITTED" if fit_binding_ok else "STALE-OR-MISMATCHED-FIT"
     elif len(verdict_pts) >= 2:
         hyp, v, status = "UNDECIDED", "law not yet fitted (>=2 verdict points present)", "PENDING-FIT"
     else:
@@ -462,7 +820,14 @@ def compose_scale_verdict(records):
         status = "INSUFFICIENT"
     return {"hypothesis": hyp, "status": status, "verdict_text": v,
             "law": (law or {}).get("law"), "law_file": (law or {}).get("file"),
-            "points": pts, "n_verdict_points": len(verdict_pts), "gate_pct": FLOOR_GATE_PCT}
+            "points": pts, "n_verdict_points": len(verdict_pts), "gate_pct": FLOOR_GATE_PCT,
+            "fitted_slope": fitted_slope, "reported_slope": reported_slope,
+            "fit_binding_ok": fit_binding_ok}
+
+
+def _scale_h1_proven(records):
+    verdict = compose_scale_verdict(records)
+    return verdict.get("status") == "FITTED" and verdict.get("hypothesis") == "H1"
 
 
 # The headline claims, each mapped to the record(s) that would back it and its current proof state.
@@ -474,7 +839,7 @@ HEADLINE_CLAIMS = [
     ("scale-law","bit-floor descends with scale (H1), fitted power law",
      "bit_floor_curve.md law + ≥2 verdict floor points",  "R3"),
     ("ram-cliff","serves a model that Q4_K swaps/OOMs (the money demo)",
-     "a native-serve record at the serve-fit bpw",  "R3"),
+     "a native-serve record at the serve-fit bpw plus frontier parity",  "R3"),
     ("recovery", "gradient recovery reaches near-lossless BELOW the PTQ/residual floor",
      "a recovered (+dr/-bw/-str) curve config under the gate + receipt",  "R3"),
     ("moe",      "per-expert bit allocation beats uniform on a real MoE bake",
@@ -491,6 +856,7 @@ def compose_claims(records):
     MEASURED requires a win-eligible receipt (R>=WIN_MIN_REPRO, positive gate, real eff-bpw)."""
     receipts = records["receipts"]
     win_receipts = [r for r in receipts if r["win_eligible"]]
+    cliff_receipts = [r for r in win_receipts if r.get("claim_type") == "cliff"]
     floors = records["floors"]["points"]
     law = records["floors"]["law"]
     curves = records["curves"]
@@ -498,43 +864,125 @@ def compose_claims(records):
     bakeoff = records["codec_bakeoff"]
     expert = records["expert_sens"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
     best_repro = max((r["repro_level"] for r in receipts), key=lambda x: REPRO_ORDER.index(x)
                      if x in REPRO_ORDER else -1, default="none")
 
     out = []
     for cid, text, backed_by, need in HEADLINE_CLAIMS:
         state, repro, cite = "UNPROVEN", "none", None
-        if cid in ("density", "quality"):
-            big = [p for p in floors if p.get("floor_bpw") and PARAMS.get(p["model"], 0) >= LAB_MAX_B]
-            if win_receipts and big:
-                state, repro, cite = "MEASURED", win_receipts[0]["repro_level"], win_receipts[0]["file"]
+        bound_receipt = None
+        if cid == "density":
+            # Logical eff-bpw is normalized over quantized linear weights; it is not a packed
+            # full-model byte count. Even an exact floor receipt cannot prove the artifact-size
+            # headline until source and packed artifact bytes/hash are independently bound.
+            big = _qualified_floor_points(floors, DENSITY_MAX_BPW)
+            pairs = _floor_receipt_pairs(win_receipts, big, ("density",))
+            if pairs:
+                _point, receipt = pairs[0]
+                state, repro, cite = (
+                    "GATED", receipt["repro_level"],
+                    f"{receipt['file']} (logical quantized-weight bpw only; packed full-model "
+                    "source/artifact byte receipt absent)",
+                )
             elif big:
                 state, repro, cite = "GATED", "R2", big[0].get("_file")
             elif receipts:
-                # a lab/baseline receipt exists — explicitly NOT a measured win
+                state, repro, cite = "GATED", best_repro, receipts[0]["file"]
+        elif cid == "quality":
+            big = _qualified_floor_points(floors, QUALITY_MAX_BPW, strict=True)
+            pairs = _floor_receipt_pairs(win_receipts, big, ("density",))
+            if pairs:
+                _point, bound_receipt = pairs[0]
+                state, repro, cite = ("MEASURED", bound_receipt["repro_level"],
+                                      bound_receipt["file"])
+            elif big:
+                state, repro, cite = "GATED", "R2", big[0].get("_file")
+            elif receipts:
                 state, repro, cite = "GATED", best_repro, receipts[0]["file"]
         elif cid == "scale-law":
             if law and law.get("law"):
                 vp = [p for p in floors if p.get("floor_bpw") and PARAMS.get(p["model"], 0) >= LAB_MAX_B]
-                state = "MEASURED" if (win_receipts and len(vp) >= 2) else "GATED"
-                repro, cite = (win_receipts[0]["repro_level"] if win_receipts else "R2"), law["file"]
+                pairs = _floor_receipt_pairs(win_receipts, vp, ("scale-point",))
+                distinct = {point.get("model"): receipt for point, receipt in pairs}
+                if len(distinct) >= 2 and _scale_h1_proven(records):
+                    bound_receipt = next(iter(distinct.values()))
+                    state, repro = "MEASURED", min(
+                        (r["repro_level"] for r in distinct.values()),
+                        key=lambda value: REPRO_ORDER.index(value),
+                    )
+                    cite = f"{law['file']} + " + ", ".join(
+                        sorted(r["file"] for r in distinct.values())
+                    )
+                else:
+                    state, repro, cite = "GATED", "R2", law["file"]
             else:
                 state, cite = "UNPROVEN", None
         elif cid == "ram-cliff":
             # serve/tps is admissible ONLY under a native-serve record; frontier records GATE it.
-            if frontier:
-                state, repro, cite = "GATED", "R2", next(iter(frontier.values()))["_file"]
+            ram_pass = [(label, r) for label, r in ramcliff.items() if _ramcliff_passed(label, r)]
+            serve_pass = [(label, r) for label, r in serve.items() if _serve_passed(label, r)]
+            if ram_pass and cliff_receipts:
+                label, r0 = ram_pass[0]
+                bound_receipt = next((r for r in cliff_receipts
+                                      if _receipt_matches_record_artifact(
+                                          r, label, r0, "cliff")), None)
+                if bound_receipt:
+                    state, repro, cite = "MEASURED", bound_receipt["repro_level"], (
+                        f"{r0['_file']} + {bound_receipt['file']} "
+                        f"(RAM-cliff pass for {label}, cliff_x={r0.get('cliff_x')})"
+                    )
+                else:
+                    state, repro, cite = "GATED", "R2", (
+                        f"{r0['_file']} (RAM-cliff pass for {label}; no exact model/artifact-bound "
+                        f"R{WIN_MIN_REPRO[-1]} cliff receipt)"
+                    )
+            elif ram_pass:
+                label, r0 = ram_pass[0]
+                state, repro, cite = "GATED", "R2", (
+                    f"{r0['_file']} (RAM-cliff pass for {label}, cliff_x={r0.get('cliff_x')}; "
+                    f"needs R{WIN_MIN_REPRO[-1]} receipt)"
+                )
+            elif serve_pass:
+                label, s0 = serve_pass[0]
+                state, repro, cite = "GATED", "R2", (
+                    f"{s0['_file']} (native .tq serve pass for {label}, tok/s={s0.get('tok_s')}; "
+                    f"needs RAM-cliff baseline + R{WIN_MIN_REPRO[-1]} receipt)"
+                )
+            elif frontier:
+                roll = _parity_rollup(parity, frontier.keys())
+                ptxt = f"parity {len(roll['passed'])}/{len(roll['labels'])} pass"
+                state, repro, cite = "GATED", "R2", f"{next(iter(frontier.values()))['_file']} ({ptxt})"
         elif cid == "recovery":
             hit = None
             for cf in curves.values():
                 for r in cf["rows"]:
                     cfg = r.get("config", "")
-                    if any(t in cfg for t in ("+dr", "-bw", "-str")) and r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT:
+                    if (r.get("deployable") is not False
+                            and _positive_doctor_recovery(cf, r)
+                            and r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT):
                         hit = (cf, r); break
                 if hit:
                     break
             if hit and win_receipts:
-                state, repro, cite = "MEASURED", win_receipts[0]["repro_level"], win_receipts[0]["file"]
+                cf, row = hit
+                point = next((floor for floor in floors
+                              if floor.get("model") == cf["label"]
+                              and floor.get("winning_config") == row.get("config")
+                              and isinstance(floor.get("floor_bpw"), (int, float))
+                              and isinstance(row.get("eff_bpw"), (int, float))
+                              and abs(float(floor["floor_bpw"])
+                                      - float(row["eff_bpw"])) <= 1e-9), None)
+                bound_receipt = next((receipt for receipt in win_receipts
+                                      if point is not None and _receipt_matches_floor(
+                                          receipt, point, ("density", "scale-point"))), None)
+                if bound_receipt:
+                    state, repro, cite = ("MEASURED", bound_receipt["repro_level"],
+                                          bound_receipt["file"])
+                else:
+                    state, repro, cite = "GATED", "R2", cf["file"]
             elif hit:
                 state, repro, cite = "GATED", "R2", hit[0]["file"]
         elif cid == "moe":
@@ -547,50 +995,73 @@ def compose_claims(records):
             if spec:
                 s0 = next(iter(spec.values()))
                 acc = s0.get("accept_rate")
-                if s0.get("verdict", "").startswith("spec lane complete") and acc and win_receipts:
-                    state, repro, cite = "MEASURED", win_receipts[0]["repro_level"], s0["_file"]
-                else:
-                    state, repro, cite = "GATED", "R2", s0["_file"]
+                # Condensation receipts have no spec claim type. A density/scale receipt must never
+                # promote a speculative-decoding result; this remains gated until a dedicated,
+                # exact-output + speedup receipt contract exists.
+                state, repro, cite = "GATED", "R2", s0["_file"]
         elif cid == "codec":
             if bakeoff:
                 state, repro, cite = "GATED", "R2", next(iter(bakeoff.values()))["_file"]
-        # KILL: MEASURED is forbidden without a win-eligible receipt (no fake GO).
-        if state == "MEASURED" and not win_receipts:
-            state, repro = "GATED", (cite and best_repro) or "R2"
+        # KILL: every MEASURED claim must have its own exact receipt binding. Scale-law binds a
+        # set of scale-point receipts above; no global receipt pool is admissible evidence.
+        if state == "MEASURED" and bound_receipt is None:
+            state, repro = "GATED", "R2"
         out.append({"id": cid, "claim": text, "state": state, "repro_level": repro,
                     "repro_desc": REPRO_DESC.get(repro, "—"), "backed_by": cite or f"NONE — need: {backed_by}",
                     "needs_for_win": f"{need}+ receipt"})
     return out
 
 
+def _recovery_gate_status(curves, root):
+    """Return the product recovery gate without admitting PTQ aliases or zero corrections.
+
+    Only ``+dr`` rows carry the Doctor recovery contract.  Bit-width/strategy sweep rows remain
+    useful experiments, but do not establish learned restoration.  A passing row must additionally
+    satisfy the same positive-checkpoint predicate used by the headline recovery claim.
+    """
+    rec_attempted = errored = cleared = False
+    for cf in curves.values():
+        for r in _load_jsonl(os.path.join(root, cf["file"])):
+            # A Doctor result over a VTQ reconstruction oracle is useful research evidence, but its
+            # base is explicitly non-deployable. It cannot satisfy (or even count as an attempt at)
+            # the product recovery gate until packed/native promotion produces a deployable row.
+            if r.get("deployable") is False:
+                continue
+            cfg = r.get("config", "")
+            if "+dr" not in cfg:
+                continue
+            rec_attempted = True
+            if "error" in r:
+                errored = True
+            if (_positive_doctor_recovery(cf, r)
+                    and r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT):
+                cleared = True
+    if cleared:
+        return "PASS — a recovered config cleared the +%.0f%% gate" % FLOOR_GATE_PCT
+    if errored:
+        return "OPEN — recovery attempted, all configs errored (doctor swap/timeout on this box)"
+    if rec_attempted:
+        return "OPEN — recovery attempted, none under the gate yet"
+    return "OPEN — recovery not yet attempted in any curve"
+
+
 def compose_gates(records):
     """The open gates (the questions whose answers unlock the headline) + each one's current status,
-    read off the records. recovery? expert non-uniform? lossless-verify? serve build?"""
+    read off the records. recovery? expert non-uniform? lossless-verify? serve build? parity?"""
     curves = records["curves"]
     expert = records["expert_sens"]
     spec = records["spec"]
     frontier = records["frontier"]
+    serve = records["serve"]
+    ramcliff = records["ramcliff"]
+    parity = records["parity"]
     subbit0 = records["subbit0"]
+    baseline_coverage = records.get("baseline_coverage")
+    eval_coverage = records.get("eval_coverage")
+    experiment_depth = records.get("experiment_depth")
 
     # recovery gate
-    rec_attempted = errored = cleared = False
-    for cf in curves.values():
-        for r in _load_jsonl(os.path.join(records["_root"], cf["file"])):
-            cfg = r.get("config", "")
-            if any(t in cfg for t in ("+dr", "-bw", "-str")):
-                rec_attempted = True
-                if "error" in r:
-                    errored = True
-                if r.get("degr_pct", 1e9) <= FLOOR_GATE_PCT:
-                    cleared = True
-    if cleared:
-        rec = "PASS — a recovered config cleared the +%.0f%% gate" % FLOOR_GATE_PCT
-    elif errored:
-        rec = "OPEN — recovery attempted, all configs errored (doctor swap/timeout on this box)"
-    elif rec_attempted:
-        rec = "OPEN — recovery attempted, none under the gate yet"
-    else:
-        rec = "OPEN — recovery not yet attempted in any curve"
+    rec = _recovery_gate_status(curves, records["_root"])
 
     # expert non-uniform gate
     if expert:
@@ -618,19 +1089,106 @@ def compose_gates(records):
     else:
         sb = "OPEN — native .tq serve unbuilt; rehydrate -> f16 (any serve win from rehydrate is a FAKE win, refused)"
 
-    # subbit-0 entropy floor gate (sub-1-bit dense alive?)
+    # native .tq serve receipt gate
+    serve_labels = list(frontier.keys()) if frontier else _frontier_labels()
+    sroll = _serve_rollup(serve, serve_labels)
+    spassed = len(sroll["passed"])
+    stotal = len(sroll["labels"])
+    if stotal == 0:
+        ns = "OPEN — no native .tq serve labels available for receipt accounting"
+    elif spassed == stotal:
+        ns = f"PASS — {spassed}/{stotal} native .tq serve receipts pass"
+    else:
+        sblockers = sroll["failed"] + sroll["missing"]
+        ns = (f"BLOCK — {spassed}/{stotal} native .tq serve receipts pass; "
+              f"blocked labels: {_short_list(sblockers)}")
+
+    # frontier architecture parity gate
+    labels = _frontier_labels()
+    roll = _parity_rollup(parity, labels)
+    total = len(roll["labels"])
+    passed = len(roll["passed"])
+    if total == 0:
+        par = "OPEN — no frontier manifest labels available for parity accounting"
+    elif passed == total:
+        par = f"PASS — {passed}/{total} frontier parity records pass"
+    else:
+        blockers = roll["failed"] + roll["missing"]
+        par = (f"BLOCK — {passed}/{total} frontier parity records pass; "
+               f"blocked labels: {_short_list(blockers)}")
+
+    # RAM-cliff receipt gate
+    ramcliff_labels = list(frontier.keys()) if frontier else labels
+    rroll = _ramcliff_rollup(ramcliff, ramcliff_labels)
+    rpassed = len(rroll["passed"])
+    rtotal = len(rroll["labels"])
+    if rtotal == 0:
+        rc = "OPEN — no RAM-cliff labels available for receipt accounting"
+    elif rpassed == rtotal:
+        rc = f"PASS — {rpassed}/{rtotal} RAM-cliff receipts pass"
+    else:
+        rblockers = rroll["failed"] + rroll["missing"]
+        rc = (f"BLOCK — {rpassed}/{rtotal} RAM-cliff receipts pass; "
+              f"blocked labels: {_short_list(rblockers)}")
+
+    # baseline/eval coverage gates
+    if baseline_coverage:
+        if baseline_coverage["ok"]:
+            base = (f"PASS — {baseline_coverage['passed_count']}/"
+                    f"{baseline_coverage['model_count']} frontier baseline records covered")
+        else:
+            base = (f"BLOCK — {baseline_coverage['passed_count']}/"
+                    f"{baseline_coverage['model_count']} frontier baseline records covered; "
+                    f"blocked labels: {_short_list(baseline_coverage['blocked_labels'])}")
+    else:
+        base = "OPEN — coverage module unavailable; cannot audit baseline coverage"
+
+    if eval_coverage:
+        if eval_coverage["ok"]:
+            ev = (f"PASS — {eval_coverage['passed_count']}/"
+                  f"{eval_coverage['model_count']} frontier eval records covered")
+        else:
+            ev = (f"BLOCK — {eval_coverage['passed_count']}/"
+                  f"{eval_coverage['model_count']} frontier eval records covered; "
+                  f"blocked labels: {_short_list(eval_coverage['blocked_labels'])}")
+    else:
+        ev = "OPEN — coverage module unavailable; cannot audit eval coverage"
+
+    if experiment_depth:
+        if experiment_depth["ok"]:
+            ex = (f"PASS — {experiment_depth['passed_count']}/"
+                  f"{experiment_depth['model_count']} frontier experiment matrices complete")
+        else:
+            ex = (f"BLOCK — {experiment_depth['passed_count']}/"
+                  f"{experiment_depth['model_count']} frontier experiment matrices complete; "
+                  f"blocked labels: {_short_list(experiment_depth['blocked_labels'])}")
+    else:
+        ex = "OPEN — experiment module unavailable; cannot audit expensive-mode depth"
+
+    # SUBBIT-0 is a theory record, never a product gate. Only an explicitly
+    # deployable/product_gate=true future receipt may say otherwise.
     if subbit0:
         s0 = next(iter(subbit0.values()))
-        sbz = f"{s0.get('verdict','?')} — side-info floor ~{s0.get('sideinfo_floor_bpw','?')} eff-bpw (kill below {s0.get('kill_bpw','?')}) [{s0['_file']}]"
+        if s0.get("product_gate") is True and s0.get("deployable") is True:
+            sbz = f"PRODUCT-GATED — measured floor ~{s0.get('floor_bpw','?')} bpw [{s0['_file']}]"
+        else:
+            sbz = (f"THEORY_ONLY — side-info entropy bound ~{s0.get('sideinfo_floor_bpw','?')} bpw; "
+                   f"cannot admit/kill product [{s0['_file']}]")
     else:
-        sbz = "OPEN — SUBBIT-0 entropy floor not measured"
+        sbz = "OPEN — SUBBIT-0 theory bound not measured"
 
     return [
         {"gate": "Recovery clears the gate?", "status": rec},
         {"gate": "Expert sensitivity NON-UNIFORM (MoE sub-bit alive)?", "status": exp},
         {"gate": "Lossless-verify bit-exact (spec admissible)?", "status": lv},
         {"gate": "Native .tq serve built (serve/cliff admissible)?", "status": sb},
-        {"gate": "SUBBIT-0 dense entropy floor (sub-1-bit alive)?", "status": sbz},
+        {"gate": "Native .tq serve receipt passes?", "status": ns},
+        {"gate": "Frontier architecture parity passes?", "status": par},
+        {"gate": "RAM-cliff receipt passes?", "status": rc},
+        {"gate": "Frontier baseline coverage complete?", "status": base},
+        {"gate": "Frontier eval coverage complete?", "status": ev},
+        {"gate": "Expensive-mode experiment matrix complete?", "status": ex},
+        {"gate": "SUBBIT-0 theory bound recorded (non-gating)?", "status": sbz},
     ]
 
 
@@ -655,7 +1213,10 @@ def render_md(sc):
       f"receipts {sc['provenance']['counts']['receipts']}, "
       f"eval {sc['provenance']['counts']['eval']}, baselines {sc['provenance']['counts']['baselines']}, "
       f"spec {sc['provenance']['counts']['spec']}, codec_bakeoff {sc['provenance']['counts']['codec_bakeoff']}, "
-      f"frontier {sc['provenance']['counts']['frontier']}, subbit0 {sc['provenance']['counts']['subbit0']}, "
+      f"frontier {sc['provenance']['counts']['frontier']}, serve {sc['provenance']['counts']['serve']}, "
+      f"ramcliff {sc['provenance']['counts']['ramcliff']}, "
+      f"parity {sc['provenance']['counts']['parity']}, "
+      f"subbit0 {sc['provenance']['counts']['subbit0']}, "
       f"expert_sens {sc['provenance']['counts']['expert_sens']}).")
     P("")
     # ---- KILL line ----
@@ -735,6 +1296,7 @@ def render_md(sc):
 #  TOP-LEVEL: gather -> compose -> render -> write
 # ════════════════════════════════════════════════════════════════════════════════════════
 def gather(root="."):
+    labels = _frontier_labels()
     records = {
         "_root": root,
         "curves": ingest_curves(root),
@@ -745,9 +1307,25 @@ def gather(root="."):
         "spec": ingest_condense(root, "spec"),
         "codec_bakeoff": ingest_condense(root, "codec_bakeoff"),
         "frontier": ingest_condense(root, "frontier"),
+        "serve": ingest_condense(root, "serve"),
+        "ramcliff": ingest_condense(root, "ramcliff"),
+        "parity": ingest_condense(root, "parity"),
         "subbit0": ingest_condense(root, "subbit0"),
         "expert_sens": ingest_condense(root, "expert_sens"),
     }
+    if frontier_coverage is not None:
+        root_path = pathlib.Path(root)
+        records["baseline_coverage"] = frontier_coverage.baseline_rollup(root_path, labels)
+        records["eval_coverage"] = frontier_coverage.eval_rollup(root_path, labels)
+    else:
+        records["baseline_coverage"] = None
+        records["eval_coverage"] = None
+    if frontier_experiments is not None and frontier_experiment_runner is not None:
+        records["experiment_depth"] = _signed_experiment_rollup(root, labels)
+    elif frontier_experiments is not None:
+        records["experiment_depth"] = frontier_experiments.experiment_rollup(pathlib.Path(root), labels)
+    else:
+        records["experiment_depth"] = None
     return records
 
 
@@ -772,7 +1350,7 @@ def build_scorecard(records):
 
     counts = {k: len(records[k]) for k in
               ("curves", "receipts", "eval", "baselines", "spec", "codec_bakeoff",
-               "frontier", "subbit0", "expert_sens")}
+               "frontier", "serve", "ramcliff", "parity", "subbit0", "expert_sens")}
     counts["floors"] = len(records["floors"]["points"])
     n_records = sum(counts.values()) + (1 if records["floors"]["law"] else 0)
 
@@ -792,6 +1370,15 @@ def build_scorecard(records):
             "q4k_bpw": Q4K_BPW, "n_records": n_records, "counts": counts,
             "win_eligible_receipts": len(win_receipts),
             "win_cells_admitted": n_win_cells,
+            "baseline_coverage_blocked": (
+                records["baseline_coverage"]["blocked_count"] if records.get("baseline_coverage") else None
+            ),
+            "eval_coverage_blocked": (
+                records["eval_coverage"]["blocked_count"] if records.get("eval_coverage") else None
+            ),
+            "experiment_depth_blocked": (
+                records["experiment_depth"]["blocked_count"] if records.get("experiment_depth") else None
+            ),
         },
     }
 
@@ -846,7 +1433,9 @@ def _seed_baseline(root):
         "source_model": "Qwen2.5-0.5B-Instruct", "effective_bpw": 3.65, "nominal_bpw": 3.0,
         "quality_gate": "warn", "baseline_best_effort": True})
     _write(os.path.join(root, COND_DIR, "qwen-05b_subbit0.json"), {
-        "label": "qwen-05b", "probe": "SUBBIT-0", "verdict": "ALIVE",
+        "schema": "hawking.subbit_entropy_bound.v2", "label": "qwen-05b",
+        "probe": "SUBBIT-0-THEORY", "verdict": "THEORY_ONLY",
+        "product_gate": False, "deployable": False,
         "sideinfo_floor_bpw": 0.1093, "kill_bpw": 0.31})
     _write(os.path.join(root, COND_DIR, "synth_expert_sens.json"), {
         "label": "synth", "verdict": "NON-UNIFORM", "alive": True,
@@ -854,28 +1443,57 @@ def _seed_baseline(root):
 
 
 def _seed_win(root):
-    """A fabricated, fully-armed record set: a 7B floor UNDER Q4_K + a 14B floor + an R3 win receipt +
+    """A fabricated, fully-armed record set: two floors and claim-specific R3 receipts +
     a fitted H1 law + a spec record. Exercises the WIN-admit branches (NONE of this is a real result)."""
     _seed_baseline(root)
     # two verdict floor points + the fitted law
-    _write(os.path.join(root, CRON_DIR, "bit_floor_curve.jsonl"), [
+    floor_rows = [
         {"model": "0.5B", "params_b": 0.5, "floor_bpw": 3.65, "winning_config": "3-AWQ", "degr_pct": 1.4},
         {"model": "7B", "params_b": 7.0, "floor_bpw": 2.1, "winning_config": "2-AWQ+dr", "degr_pct": 1.8},
         {"model": "14B", "params_b": 14.0, "floor_bpw": 1.7, "winning_config": "2-str", "degr_pct": 1.5},
-    ])
+    ]
+    _write(os.path.join(root, CRON_DIR, "bit_floor_curve.jsonl"), floor_rows)
+    floor_by_label = {row["model"]: row for row in floor_rows}
     _write(os.path.join(root, CRON_DIR, "bit_floor_curve_curve.md"),
-           "# Bit-floor vs scale\n\n**Law (7B+):** floor ~= -0.500*log10(N) + 2.500  (R^2=0.990)\n\n"
-           "**Verdict:** H1 CONFIRMED - floor DESCENDS with scale (slope -0.500 bpw/decade)\n")
-    # a WIN-eligible receipt (R3, density claim, positive gate, real eff-bpw, not best-effort)
-    _write(os.path.join(root, RECEIPT_DIR, "7B-floor.json"), {
-        "project": "hawking", "receipt_version": "0.2", "repro_level": "R3",
-        "claim_type": "density", "machine_class": "Studio-96",
-        "source_model": "Qwen2.5-7B (scratch/qwen-7b)", "effective_bpw": 2.1, "nominal_bpw": 2.0,
-        "quality_gate": "pass", "baseline_best_effort": False})
+           "# Bit-floor vs scale\n\n**Law (7B+):** floor ~= -1.329*log10(N) + 3.223  (R^2=1.000)\n\n"
+           "**Verdict:** H1 CONFIRMED - floor DESCENDS with scale (slope -1.329 bpw/decade)\n")
+    def receipt(label, claim_type, bpw, config, artifact_char):
+        return {
+            "project": "hawking", "receipt_version": "0.2", "repro_level": "R3",
+            "claim_type": claim_type, "machine": "Synthetic Studio, 96GB unified",
+            "machine_class": "Studio-M3Ultra-96", "model_family": "qwen",
+            "source_model": f"Qwen2.5-{label} (scratch/qwen-{label.lower()})",
+            "source_sha256": "a" * 64, "source_precision": "bf16",
+            "condensed_artifact": f"{config} @ {bpw} eff-bpw (synthetic audit)",
+            "artifact_sha256": artifact_char * 64, "recipe": [config],
+            "floor_point_sha256": canonical_row_sha256(floor_by_label[label]),
+            "effective_bpw": bpw, "nominal_bpw": bpw, "peak_rss_gb": 20.0,
+            "ppl_parent": 10.0, "ppl_condensed": 10.18, "ppl_delta_pct": 1.8,
+            "kl_parent_condensed": 0.01, "multiwindow_n": 4,
+            "multiwindow_worst_pct": 1.9, "quality_gate": "pass",
+            "hawking_commit": "deadbeef", "commands": ["synthetic selftest reproduce"],
+        }
+
+    # Density and recovery bind to this exact 7B floor/config. The scale law separately needs
+    # two scale-point receipts; none of these condensation receipts is admissible for spec.
+    _write(os.path.join(root, RECEIPT_DIR, "7B-density.json"),
+           receipt("7B", "density", 2.1, "2-AWQ+dr", "b"))
+    _write(os.path.join(root, RECEIPT_DIR, "7B-scale-point.json"),
+           receipt("7B", "scale-point", 2.1, "2-AWQ+dr", "c"))
+    _write(os.path.join(root, RECEIPT_DIR, "14B-scale-point.json"),
+           receipt("14B", "scale-point", 1.7, "2-str", "d"))
     # a recovered config under the gate (so the recovery claim can go MEASURED)
     _write(os.path.join(root, CRON_DIR, "7b_studio.jsonl"), [
         {"model": "7B", "config": "f16", "eff_bpw": 16.0, "ppl": 21.76, "degr_pct": 0.0},
-        {"model": "7B", "config": "2-AWQ+dr", "eff_bpw": 2.1, "ppl": 22.15, "degr_pct": 1.8},
+        {"model": "7B", "config": "2-AWQ", "eff_bpw": 2.0, "ppl": 30.0,
+         "degr_pct": 37.9},
+        {"model": "7B", "config": "2-AWQ+dr", "eff_bpw": 2.1, "ppl": 22.15,
+         "degr_pct": 1.8, "doctor": {
+             "schema": "hawking.doctor_run_evidence.v1", "complete": True,
+             "final": {"stopped_early": False, "best_step": 10,
+                       "base_ppl": 30.0, "lora_ppl": 22.15,
+                       "recovery_pct": (30.0 - 22.15) / 30.0 * 100},
+         }},
     ])
     # a spec record (complete, accept present) + a codec bakeoff + a frontier serve-fit
     _write(os.path.join(root, COND_DIR, "7B_spec.json"), {
@@ -884,7 +1502,37 @@ def _seed_win(root):
         "label": "32B", "strand_bpw": 2.1, "qtip_bpw": 2.2, "winner": "STRAND"})
     _write(os.path.join(root, COND_DIR, "405B_frontier.json"), {
         "model": "405B", "total_b": 405.0, "serve_bpw": 1.34, "artifact_gb": 67.8,
-        "serve_fits_84": True, "moe": False})
+        "serve_fits_resident_112gb": True, "moe": False})
+    _write(os.path.join(root, COND_DIR, "405B_serve.json"), {
+        "schema": "hawking.frontier_serve.v1",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M3Ultra-96",
+        "status": "pass", "native_tq": True, "rehydrate_f16": False,
+        "tq_strict": True, "all_linear": True, "gpu_bitslice": True,
+        "served_forward_pass": True, "parity_pass": True, "tok_s": 18.5,
+        "memory_peak_gb": 68.0, "memory_resident_gb": 67.8,
+        "unified_memory_gb": 96.0, "resident_memory_ok": True,
+        "artifact_sha256": "a" * 64,
+        "commands": ["selftest serve"],
+        "load_receipt": "selftest://serve-load",
+        "served_forward_receipt": "selftest://serve-forward",
+        "parity_receipt": "selftest://serve-parity",
+        "git_commit": "deadbeef"})
+    _write(os.path.join(root, COND_DIR, "405B_ramcliff.json"), {
+        "schema": "hawking.frontier_ramcliff.v1",
+        "model": "405B", "source": "measured", "machine_class": "Studio-M3Ultra-96",
+        "verdict": "CLIFF-WIN", "served_native_tq": True,
+        "tok_s_resident": 18.5, "tok_s_swapping": 1.0, "cliff_x": 18.5,
+        "j_per_tok_resident": 0.2, "j_per_tok_swapping": 1.5,
+        "gate": {
+            "condensed_resident": True,
+            "served_native_tq": True,
+            "q4k_overflows_box": True,
+            "cliff_x_over_gate": True,
+            "resident_lower_energy": True,
+        },
+        "artifact_sha256": "b" * 64,
+        "commands": ["selftest ramcliff"],
+        "git_commit": "deadbeef"})
 
 
 def selftest():
@@ -894,6 +1542,69 @@ def selftest():
         nonlocal ok
         ok = ok and bool(cond)
         print(f"  [{'PASS' if cond else 'FAIL'}] {name}")
+
+    oracle_curve = {"rows": [
+        {"config": "vtq-oracle", "eff_bpw": 0.5, "degr_pct": 0.0,
+         "deployable": False},
+        {"config": "4-AWQ", "eff_bpw": 4.5, "degr_pct": 1.0},
+    ]}
+    check("oracle-only density cannot become scorecard floor",
+          find_floor_in_curve(oracle_curve) == (4.5, "4-AWQ", 1.0))
+    boundary_points = [
+        {"model": "7B", "floor_bpw": 3.0},
+        {"model": "14B", "floor_bpw": 3.0001},
+        {"model": "32B", "floor_bpw": 3.9999},
+        {"model": "72B", "floor_bpw": 4.0},
+    ]
+    check("<=3 matrix boundary is exact",
+          [p["model"] for p in _qualified_floor_points(
+              boundary_points, MATRIX_CODEC_MAX_BPW)] == ["7B"])
+    check("sub-4 quality boundary is strict",
+          [p["model"] for p in _qualified_floor_points(
+              boundary_points, QUALITY_MAX_BPW, strict=True)] == ["7B", "14B", "32B"])
+    density_boundary = [
+        {"model": "7B", "floor_bpw": DENSITY_MAX_BPW},
+        {"model": "14B", "floor_bpw": DENSITY_MAX_BPW + 0.0001},
+    ]
+    check("52-percent density boundary is exact",
+          [p["model"] for p in _qualified_floor_points(
+              density_boundary, DENSITY_MAX_BPW)] == ["7B"])
+    h0_records = {"floors": {
+        "points": [
+            {"model": "7B", "params_b": 7.0, "floor_bpw": 2.0,
+             "winning_config": "2-AWQ", "degr_pct": 1.0},
+            {"model": "14B", "params_b": 14.0, "floor_bpw": 2.0,
+             "winning_config": "2-AWQ", "degr_pct": 1.0},
+        ],
+        "law": {"law": "floor ~= 0.000*log10(N) + 2.000  (R^2=1.000)",
+                "verdict": "H0 - floor ~FLAT, redundancy buys little (slope 0.000)",
+                "file": "synthetic-h0.md"},
+    }}
+    h0_verdict = compose_scale_verdict(h0_records)
+    check("H0 fitted law cannot prove the H1 headline",
+          h0_verdict["status"] == "FITTED" and h0_verdict["hypothesis"] == "H0"
+          and not _scale_h1_proven(h0_records))
+    zero_fallback_curve = {"rows": [
+        {"config": "2-AWQ", "ppl": 20.0, "eff_bpw": 2.0, "degr_pct": 1.0},
+        {"config": "2-AWQ+dr", "ppl": 20.0, "eff_bpw": 2.1, "degr_pct": 1.0,
+         "doctor": {"complete": True, "final": {
+             "stopped_early": False, "best_step": -1, "base_ppl": 20.0,
+             "lora_ppl": 20.0, "recovery_pct": 0.0,
+         }}},
+    ]}
+    check("zero-correction Doctor fallback is not positive recovery",
+          not _positive_doctor_recovery(zero_fallback_curve, zero_fallback_curve["rows"][1]))
+    dz = tempfile.mkdtemp(prefix="scorecard_zero_recovery_")
+    try:
+        zero_file = "zero.jsonl"
+        with open(os.path.join(dz, zero_file), "w", encoding="utf-8") as f:
+            for row in zero_fallback_curve["rows"]:
+                f.write(json.dumps(row, sort_keys=True) + "\n")
+        check("zero-correction Doctor fallback cannot clear recovery gate",
+              not _recovery_gate_status(
+                  {"zero": {"file": zero_file, **zero_fallback_curve}}, dz).startswith("PASS"))
+    finally:
+        shutil.rmtree(dz, ignore_errors=True)
 
     # ---- Pass A: baseline-only (today's real state) ----
     da = tempfile.mkdtemp(prefix="scorecard_A_")
@@ -918,8 +1629,16 @@ def selftest():
         check("A: scorecard.json written", os.path.exists(os.path.join(da, OUT_JSON)))
         # subbit-0 + expert gates populated from records
         gtxt = " ".join(g["status"] for g in sc["gates"])
-        check("A: SUBBIT-0 gate cites the record", "ALIVE" in gtxt and "0.1093" in gtxt)
+        gnames = " ".join(g["gate"] for g in sc["gates"])
+        check("A: SUBBIT-0 theory record cannot gate product", "THEORY_ONLY" in gtxt and "0.1093" in gtxt)
         check("A: expert gate flags SYNTHETIC", "SYNTHETIC" in gtxt)
+        check("A: frontier parity gate present", "Frontier architecture parity" in gnames)
+        check("A: frontier parity blocks missing records", any(
+            g["gate"] == "Frontier architecture parity passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
+        check("A: native serve receipt gate blocks missing records", any(
+            g["gate"] == "Native .tq serve receipt passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
     finally:
         shutil.rmtree(da, ignore_errors=True)
 
@@ -928,28 +1647,47 @@ def selftest():
     try:
         _seed_win(db)
         sc = run(db)
-        print("# --- Pass B (fabricated win-eligible R3 receipt + fitted H1 law) ---")
-        check("B: one win-eligible receipt", sc["provenance"]["win_eligible_receipts"] == 1)
+        print("# --- Pass B (fabricated claim-bound R3 receipts + fitted H1 law) ---")
+        check("B: three win-eligible receipts", sc["provenance"]["win_eligible_receipts"] == 3)
         check("B: >=1 WIN cell admitted", sc["provenance"]["win_cells_admitted"] >= 1)
         check("B: KILL admits the win", "admitted" in sc["kill_line"])
-        # density + quality now MEASURED at R3
+        # Quality is claim-bound at R3. Artifact density remains gated because logical linear-weight
+        # bpw is not a packed full-model byte receipt.
         dens = next(c for c in sc["claims"] if c["id"] == "density")
-        check("B: density MEASURED @ R3", dens["state"] == "MEASURED" and dens["repro_level"] == "R3")
+        check("B: artifact density GATED without packed byte evidence",
+              dens["state"] == "GATED" and "packed full-model" in dens["backed_by"])
+        quality = next(c for c in sc["claims"] if c["id"] == "quality")
+        check("B: sub-4 quality MEASURED @ R3",
+              quality["state"] == "MEASURED" and quality["repro_level"] == "R3")
         # scale-law H1
         check("B: scale verdict H1 FITTED", sc["scale_verdict"]["hypothesis"] == "H1"
               and sc["scale_verdict"]["status"] == "FITTED")
         check("B: scale-law claim MEASURED", next(c for c in sc["claims"] if c["id"] == "scale-law")["state"] == "MEASURED")
         # recovery MEASURED (recovered config under gate + win receipt)
         check("B: recovery MEASURED", next(c for c in sc["claims"] if c["id"] == "recovery")["state"] == "MEASURED")
-        # spec MEASURED (complete + accept + win receipt); codec + ram-cliff GATED (no native-serve / no receipt for those)
-        check("B: spec MEASURED", next(c for c in sc["claims"] if c["id"] == "spec")["state"] == "MEASURED")
-        check("B: ram-cliff GATED (serve build unbuilt, no fake win)",
+        # Spec remains gated: a density/scale receipt cannot cross-unlock it. Codec and RAM-cliff
+        # likewise stay gated without their own proof contract/receipt.
+        check("B: spec GATED without a spec-specific receipt",
+              next(c for c in sc["claims"] if c["id"] == "spec")["state"] == "GATED")
+        check("B: ram-cliff GATED (RAM-cliff pass still needs cliff-specific R3 receipt)",
               next(c for c in sc["claims"] if c["id"] == "ram-cliff")["state"] == "GATED")
+        check("B: ram-cliff cites RAM-cliff receipt",
+              "RAM-cliff pass" in next(c for c in sc["claims"] if c["id"] == "ram-cliff")["backed_by"])
         check("B: codec GATED", next(c for c in sc["claims"] if c["id"] == "codec")["state"] == "GATED")
+        check("B: native serve receipt gate passes fabricated serve record", any(
+            g["gate"] == "Native .tq serve receipt passes?" and "PASS" in g["status"]
+            for g in sc["gates"]))
+        check("B: RAM-cliff receipt gate passes fabricated RAM-cliff record", any(
+            g["gate"] == "RAM-cliff receipt passes?" and "PASS" in g["status"]
+            for g in sc["gates"]))
+        check("B: frontier parity gate blocks fabricated frontier record", any(
+            g["gate"] == "Frontier architecture parity passes?" and "BLOCK" in g["status"]
+            for g in sc["gates"]))
         # the density matrix cell now YES with the receipt cited
         dcell = next(r for r in sc["matrix"] if r["capability"] == "Sub-4-bit codec (≤3 eff-bpw)")
-        check("B: density matrix cell YES w/ receipt", dcell["hawking"]["status"] == "yes"
-              and "7B-floor.json" in dcell["hawking"]["note"])
+        check("B: density matrix cell YES w/ exact density receipt",
+              dcell["hawking"]["status"] == "yes"
+              and "7B-density.json" in dcell["hawking"]["note"])
     finally:
         shutil.rmtree(db, ignore_errors=True)
 

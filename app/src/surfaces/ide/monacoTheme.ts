@@ -12,6 +12,7 @@
 */
 import { loader } from "@monaco-editor/react";
 import type * as Monaco from "monaco-editor";
+import { MONO_FONT } from "./ideConstants";
 
 // Mirror of the v3 tokens (theme.css) that Monaco needs as literal hex (no leading #).
 const T = {
@@ -22,7 +23,7 @@ const T = {
   concrete4: "222226", // --concrete-4
   text1: "ECEAE6", // --text-1 (chalk)
   text2: "9B9A95", // --text-2
-  text3: "6E6D68", // --text-3
+  text3: "8A887F", // --text-3
   mute: "5C5B57", // --mute
   light: "F4F2EE", // --light (the only accent; keywords + types live here)
   ok: "7E9E86", // --ok (lichen)  -> strings, additions
@@ -32,7 +33,6 @@ const T = {
 } as const;
 
 export const HIDE_THEME = "hide-observatory";
-export const MONO_FONT = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
 
 // Build the theme object. Tokens are deliberately near-monochrome warm ash-grays; LIGHT is the one
 // luminous thing (keywords, types, the caret), with ok/bad reserved for strings and diffs only.
@@ -87,9 +87,9 @@ export function hideMonacoTheme(): Monaco.editor.IStandaloneThemeData {
       "editorSuggestWidget.highlightForeground": "#" + T.light,
       "editorHoverWidget.background": "#" + T.concrete2,
       "editorHoverWidget.border": "#" + T.concrete3,
-      "scrollbarSlider.background": "#FFFFFF10",
-      "scrollbarSlider.hoverBackground": "#FFFFFF1C",
-      "scrollbarSlider.activeBackground": "#FFFFFF2A",
+      "scrollbarSlider.background": "#F4F2EE10",
+      "scrollbarSlider.hoverBackground": "#F4F2EE1C",
+      "scrollbarSlider.activeBackground": "#F4F2EE2A",
       // Diff colors: lichen-add / oxide-del at ~8%, paired ALWAYS with +/- gutter markers.
       "diffEditor.insertedTextBackground": "#" + T.okBg,
       "diffEditor.removedTextBackground": "#" + T.badBg,

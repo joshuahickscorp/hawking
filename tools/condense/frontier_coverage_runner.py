@@ -1,0 +1,485 @@
+#!/usr/bin/env python3.12
+"""frontier_coverage_runner.py - draft, sign, and verify baseline/eval coverage receipts.
+
+This is the non-compute half of the Studio baseline/eval runner. It does not launch llama.cpp, MLX,
+or Hawking evals on the laptop. It creates the exact receipt envelopes those runs must fill, then signs
+and verifies completed records so claim bundles cannot rely on loose or stale coverage JSON.
+"""
+from __future__ import annotations
+
+import argparse
+import copy
+import json
+import os
+import pathlib
+import sys
+import tempfile
+from typing import Any
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+os.chdir(ROOT)
+sys.path.insert(0, str(ROOT / "tools" / "condense"))
+
+from studio_manifest import FRONTIER_MODELS, frontier_by_label  # noqa: E402
+from frontier_common import (  # noqa: E402
+    git_commit as _git_commit,
+    is_sha256 as _is_sha256,
+    now_utc as _now,
+    placeholder as _placeholder,
+    read_json as _read_json,
+    sign_record as _sign_record,
+    signature_status,
+    write_json as _write_json,
+)
+import frontier_coverage  # noqa: E402
+
+COND_DIR = pathlib.Path("reports/condense")
+BASELINE_SCHEMA = "hawking.frontier_baselines.v1"
+EVAL_SCHEMA = "hawking.frontier_eval_coverage.v1"
+KINDS = ("baseline", "eval")
+CONTRACT_TEXT_KEYS = (
+    "run_id",
+    "machine_name",
+    "same_box_group",
+    "environment_receipt",
+    "score_set_receipt",
+)
+CONTRACT_SHA_KEYS = (
+    "machine_fingerprint_sha256",
+    "frozen_suite_sha256",
+    "score_set_sha256",
+)
+
+
+def _schema_kind(record: dict[str, Any]) -> str | None:
+    schema = record.get("schema")
+    if schema == BASELINE_SCHEMA:
+        return "baseline"
+    if schema == EVAL_SCHEMA:
+        return "eval"
+    return None
+
+
+def default_path(root: pathlib.Path, label: str, kind: str) -> pathlib.Path:
+    if kind == "baseline":
+        return frontier_coverage.baseline_path(root, label)
+    if kind == "eval":
+        return frontier_coverage.eval_path(root, label)
+    raise ValueError(f"unknown coverage receipt kind: {kind}")
+
+
+def _entries(record: dict[str, Any], kind: str) -> list[dict[str, Any]]:
+    if kind == "baseline":
+        return frontier_coverage._baseline_entries(record)
+    return frontier_coverage._eval_entries(record)
+
+
+def _requirements(kind: str) -> tuple[dict[str, Any], ...]:
+    return frontier_coverage.BASELINE_REQUIREMENTS if kind == "baseline" else frontier_coverage.EVAL_REQUIREMENTS
+
+
+def _classify(record: dict[str, Any], entry: dict[str, Any], kind: str) -> dict[str, Any]:
+    if kind == "baseline":
+        return frontier_coverage._classify_baseline(record, entry)
+    return frontier_coverage._classify_eval(record, entry)
+
+
+def _entry_name(entry: dict[str, Any]) -> str:
+    return frontier_coverage._entry_name(entry)
+
+
+def _commands(row: dict[str, Any], record: dict[str, Any] | None = None) -> list[str]:
+    out = []
+    for source in (row, record or {}):
+        cmds = source.get("commands")
+        if isinstance(cmds, list):
+            out.extend(str(cmd) for cmd in cmds if cmd)
+        cmd = source.get("command")
+        if cmd:
+            out.append(str(cmd))
+    return out
+
+
+def _trace_present(entry: dict[str, Any], record: dict[str, Any]) -> bool:
+    for key in ("artifact", "receipt", "result_path", "output_path", "log_path"):
+        val = entry.get(key) or record.get(key)
+        if not _placeholder(val) and str(val).upper() != "N/A":
+            return True
+    return False
+
+
+def _contract_problems(record: dict[str, Any], kind: str) -> list[str]:
+    problems = []
+    if _placeholder(record.get("model") or record.get("label")):
+        problems.append("model/label missing or placeholder")
+    if _placeholder(record.get("machine_class")):
+        problems.append("machine_class missing or placeholder")
+    if record.get("same_box") is not True:
+        problems.append("same_box must be true for signed coverage receipts")
+    if not (record.get("git_commit") or record.get("hawking_commit")):
+        problems.append("git_commit/hawking_commit missing")
+    mode = frontier_coverage._status(record.get("source") or record.get("mode"))
+    if mode not in ("real", "measured"):
+        problems.append("source/mode must be real or measured")
+    for key in CONTRACT_TEXT_KEYS:
+        if _placeholder(record.get(key)):
+            problems.append(f"{key} missing or placeholder")
+    for key in CONTRACT_SHA_KEYS:
+        if not _is_sha256(record.get(key)):
+            problems.append(f"{key} missing or invalid")
+    if kind == "baseline" and record.get("baseline_best_effort") is not False:
+        problems.append("baseline_best_effort must be false for claim-admissible same-box baselines")
+    return problems
+
+
+def _row_contract_problems(record: dict[str, Any], entry: dict[str, Any],
+                           requirement: str, kind: str) -> list[str]:
+    problems = []
+    if entry.get("same_box", record.get("same_box")) is not True:
+        problems.append(f"{requirement}: measured/pass row must be same_box=true")
+    row_machine = entry.get("machine_class")
+    if row_machine and row_machine != record.get("machine_class"):
+        problems.append(f"{requirement}: row machine_class does not match receipt machine_class")
+    for key in CONTRACT_SHA_KEYS:
+        row_value = entry.get(key)
+        if row_value and row_value != record.get(key):
+            problems.append(f"{requirement}: row {key} does not match receipt {key}")
+    if kind == "baseline":
+        best_effort = entry.get("baseline_best_effort", record.get("baseline_best_effort"))
+        if best_effort is not False:
+            problems.append(f"{requirement}: baseline_best_effort must be false for measured rows")
+    return problems
+
+
+def coverage_rows(record: dict[str, Any], kind: str) -> list[dict[str, Any]]:
+    entries = _entries(record, kind)
+    rows = []
+    for req in _requirements(kind):
+        entry = next((e for e in entries
+                      if frontier_coverage._match_requirement(_entry_name(e), req)), None)
+        if not entry:
+            rows.append({
+                "requirement": req["name"],
+                "status": "missing",
+                "ok": False,
+                "problem": "no measured/pass or explicit N/A row",
+            })
+            continue
+        classified = _classify(record, entry, kind)
+        rows.append({"requirement": req["name"], "entry": _entry_name(entry), **classified})
+    return rows
+
+
+def _trace_problems(record: dict[str, Any], kind: str) -> list[str]:
+    problems = []
+    entries = _entries(record, kind)
+    for req in _requirements(kind):
+        entry = next((e for e in entries
+                      if frontier_coverage._match_requirement(_entry_name(e), req)), None)
+        if not entry:
+            continue
+        classified = _classify(record, entry, kind)
+        if not classified.get("ok") or classified.get("status") == "na":
+            continue
+        cmds = _commands(entry, record)
+        if not cmds:
+            problems.append(f"{req['name']}: exact command(s) missing")
+        elif any(_placeholder(cmd) for cmd in cmds):
+            problems.append(f"{req['name']}: command contains placeholder text")
+        if not _trace_present(entry, record):
+            problems.append(f"{req['name']}: receipt/artifact/log trace missing")
+        problems.extend(_row_contract_problems(record, entry, req["name"], kind))
+    return problems
+
+def record_status(record: dict[str, Any] | None, *, kind: str | None = None,
+                  require_signature: bool = True) -> dict[str, Any]:
+    if not record:
+        return {"ok": False, "kind": kind, "problems": ["record missing or unreadable"]}
+    actual_kind = _schema_kind(record)
+    kind = kind or actual_kind
+    problems = []
+    if kind not in KINDS:
+        problems.append("kind must be baseline or eval")
+    if actual_kind != kind:
+        expected = BASELINE_SCHEMA if kind == "baseline" else EVAL_SCHEMA
+        problems.append(f"schema must be {expected}")
+    if record.get("receipt_state") != "final":
+        problems.append("receipt_state must be final")
+    if kind in KINDS:
+        problems.extend(_contract_problems(record, kind))
+    rows = coverage_rows(record, kind) if kind in KINDS else []
+    problems.extend(f"{row['requirement']}: {row.get('problem')}" for row in rows if not row.get("ok"))
+    problems.extend(_trace_problems(record, kind) if kind in KINDS else [])
+    sig = signature_status(record)
+    if require_signature and not sig["ok"]:
+        problems.extend(sig["problems"])
+    return {
+        "schema": "hawking.frontier_coverage_receipt_status.v1",
+        "kind": kind,
+        "model": record.get("model") or record.get("label"),
+        "receipt_state": record.get("receipt_state"),
+        "ok": not problems,
+        "covered": sum(1 for row in rows if row.get("ok")),
+        "required": len(rows),
+        "rows": rows,
+        "signature": sig,
+        "problems": problems,
+    }
+
+
+def sign_record(record: dict[str, Any], *, kind: str | None = None,
+                allow_blocked_draft: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
+    return _sign_record(
+        record,
+        record_status,
+        root=ROOT,
+        status_kwargs={"kind": kind},
+        allow_blocked_draft=allow_blocked_draft,
+    )
+
+
+def draft_record(label: str, kind: str, *, machine_class: str = "Studio-M3Ultra-96") -> dict[str, Any]:
+    if kind == "baseline":
+        record = frontier_coverage._baseline_skeleton(label)
+    elif kind == "eval":
+        record = frontier_coverage._eval_skeleton(label)
+    else:
+        raise ValueError(f"unknown coverage receipt kind: {kind}")
+    record = copy.deepcopy(record)
+    record["generated_at"] = _now()
+    record["git_commit"] = _git_commit(ROOT)
+    record["machine_class"] = machine_class
+    record.setdefault("machine_name", "<exact Studio host label>")
+    record.setdefault("same_box", True)
+    record.setdefault("same_box_group", "<same machine/session id shared by baselines/evals>")
+    record.setdefault("machine_fingerprint_sha256", "<64 hex>")
+    record.setdefault("environment_receipt", "<hawking studio environment-capture receipt>")
+    record.setdefault("frozen_suite_sha256", "<64 hex>")
+    record.setdefault("score_set_sha256", "<64 hex>")
+    record.setdefault("score_set_receipt", "<frozen score-set receipt>")
+    record.setdefault("baseline_best_effort", False if kind == "baseline" else "N/A")
+    record.setdefault("run_id", "<same-run id>")
+    record["receipt_state"] = "draft"
+    record["source"] = "operator-draft"
+    return record
+
+
+def _selected_labels(labels: list[str]) -> list[str]:
+    if not labels:
+        return [m.label for m in FRONTIER_MODELS]
+    out = []
+    for label in labels:
+        model = frontier_by_label(label)
+        if not model:
+            raise SystemExit(f"unknown frontier label: {label}")
+        out.append(model.label)
+    return out
+
+
+def _selected_kinds(kind: str) -> list[str]:
+    return list(KINDS) if kind == "both" else [kind]
+
+
+def dispatch(args, root: pathlib.Path = ROOT) -> int:
+    labels = _selected_labels(args.label)
+    kinds = _selected_kinds(args.kind)
+    rows = []
+    ok = True
+    for label in labels:
+        for kind in kinds:
+            path = default_path(root, label, kind)
+            if getattr(args, "out_dir", ""):
+                path = pathlib.Path(args.out_dir) / path.name
+            if args.receipt_mode == "draft":
+                if path.exists() and not args.force:
+                    rows.append({"label": label, "kind": kind, "path": str(path), "ok": False,
+                                 "problems": ["path exists; use --force to overwrite"]})
+                    ok = False
+                    continue
+                record = draft_record(label, kind, machine_class=args.machine_class)
+                if args.sign_draft:
+                    record, status = sign_record(record, kind=kind, allow_blocked_draft=True)
+                else:
+                    status = record_status(record, kind=kind, require_signature=False)
+                _write_json(path, record)
+                rows.append({"label": label, "kind": kind, "path": str(path), "ok": status["ok"],
+                             "problems": status["problems"]})
+                ok = ok and status["ok"]
+            elif args.receipt_mode == "sign":
+                record = _read_json(path)
+                signed, status = sign_record(record or {}, kind=kind,
+                                             allow_blocked_draft=args.allow_blocked_draft)
+                if record:
+                    _write_json(path, signed)
+                rows.append({"label": label, "kind": kind, "path": str(path), "ok": status["ok"],
+                             "problems": status["problems"]})
+                ok = ok and status["ok"]
+            elif args.receipt_mode == "verify":
+                record = _read_json(path)
+                status = record_status(record, kind=kind, require_signature=True)
+                rows.append({"label": label, "kind": kind, "path": str(path), "ok": status["ok"],
+                             "problems": status["problems"]})
+                ok = ok and status["ok"]
+            else:
+                raise SystemExit(f"unknown receipt mode: {args.receipt_mode}")
+    result = {"schema": "hawking.frontier_coverage_receipt_run.v1", "mode": args.receipt_mode,
+              "ok": ok, "rows": rows}
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True))
+    else:
+        print(f"# frontier coverage receipts {args.receipt_mode}: {'OK' if ok else 'BLOCKED'}")
+        for row in rows:
+            print(f"{row['label'][:18]:18s} {row['kind']:8s} {'OK' if row['ok'] else 'BLOCK':6s} {row['path']}")
+            for problem in row["problems"][:6]:
+                print(f"  - {problem}")
+    return 0 if ok else 1
+
+
+def _complete_contract(label: str) -> dict[str, Any]:
+    return {
+        "model": label,
+        "receipt_state": "final",
+        "source": "real",
+        "machine_class": "Studio-M3Ultra-96",
+        "machine_name": "selftest-studio",
+        "same_box": True,
+        "same_box_group": "selftest-studio-session",
+        "machine_fingerprint_sha256": "a" * 64,
+        "environment_receipt": "selftest://environment",
+        "frozen_suite_sha256": "b" * 64,
+        "score_set_sha256": "c" * 64,
+        "score_set_receipt": "selftest://score-set",
+        "run_id": f"selftest-coverage-{label}",
+        "git_commit": "selftest",
+    }
+
+
+def _complete_record(label: str, kind: str) -> dict[str, Any]:
+    contract = _complete_contract(label)
+    if kind == "baseline":
+        return {
+            **contract,
+            "schema": BASELINE_SCHEMA,
+            "baseline_best_effort": False,
+            "baselines": [
+                {
+                    "name": req["name"],
+                    "status": "measured" if i < 2 else "na",
+                    "same_box": True,
+                    "baseline_best_effort": False,
+                    "command": f"selftest baseline {i}",
+                    "artifact": f"selftest://baseline/{i}" if i < 2 else "N/A",
+                    "metrics": {"tok_s": 1.0 + i} if i < 2 else {},
+                    "reason": "selftest non-runnable baseline" if i >= 2 else "",
+                }
+                for i, req in enumerate(frontier_coverage.BASELINE_REQUIREMENTS)
+            ],
+        }
+    return {
+        **contract,
+        "schema": EVAL_SCHEMA,
+        "source": "measured",
+        "mode": "real",
+        "domains": [
+            {
+                "domain": req["name"],
+                "status": "pass",
+                "same_box": True,
+                "command": f"selftest eval {i}",
+                "receipt": f"selftest://eval/{i}",
+                "metrics": {"score": 1.0},
+            }
+            for i, req in enumerate(frontier_coverage.EVAL_REQUIREMENTS)
+        ],
+    }
+
+
+def selftest() -> bool:
+    ok = True
+
+    def check(name: str, cond: bool) -> None:
+        nonlocal ok
+        ok = ok and bool(cond)
+        print(f"  [{'PASS' if cond else 'FAIL'}] {name}")
+
+    model = FRONTIER_MODELS[0]
+    draft = draft_record(model.label, "baseline")
+    draft_signed, draft_status = sign_record(draft, kind="baseline", allow_blocked_draft=True)
+    check("signed draft stays blocked", not draft_status["ok"] and draft_signed.get("signature"))
+
+    complete = _complete_record(model.label, "baseline")
+    check("complete unsigned baseline is not verified",
+          not record_status(complete, kind="baseline", require_signature=True)["ok"])
+    signed, status = sign_record(complete, kind="baseline")
+    check("complete baseline signs and verifies", status["ok"])
+    signed["baselines"][0]["metrics"]["tok_s"] = 0.0
+    check("tampered baseline signature fails", not record_status(signed, kind="baseline")["ok"])
+    missing_machine = _complete_record(model.label, "baseline")
+    missing_machine.pop("machine_fingerprint_sha256")
+    _, missing_machine_status = sign_record(missing_machine, kind="baseline")
+    check("baseline without machine fingerprint is blocked", not missing_machine_status["ok"])
+    inferred_same_box = _complete_record(model.label, "baseline")
+    inferred_same_box.pop("same_box")
+    _, inferred_status = sign_record(inferred_same_box, kind="baseline")
+    check("baseline cannot infer same-box from real mode", not inferred_status["ok"])
+
+    eval_signed, eval_status = sign_record(_complete_record(model.label, "eval"), kind="eval")
+    check("complete eval signs and verifies", eval_status["ok"])
+    missing_suite = _complete_record(model.label, "eval")
+    missing_suite.pop("frozen_suite_sha256")
+    _, missing_suite_status = sign_record(missing_suite, kind="eval")
+    check("eval without frozen suite hash is blocked", not missing_suite_status["ok"])
+
+    with tempfile.TemporaryDirectory() as td:
+        root = pathlib.Path(td)
+        out_dir = root / COND_DIR
+        args = argparse.Namespace(receipt_mode="draft", label=[model.label], kind="both",
+                                  out_dir=str(out_dir), force=True, sign_draft=True,
+                                  machine_class="Studio-M3Ultra-96", json=True)
+        check("draft command writes blocked receipts", dispatch(args, root=root) == 1)
+        for kind in KINDS:
+            path = out_dir / default_path(root, model.label, kind).name
+            check(f"draft {kind} exists", path.exists())
+    print(f"\n# SELFTEST {'PASS' if ok else 'FAIL'}")
+    return ok
+
+
+def cmd_selftest(args) -> int:
+    return 0 if selftest() else 1
+
+
+def build_argparser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(description="Draft/sign/verify signed frontier coverage receipts.")
+    sub = ap.add_subparsers(dest="receipt_mode")
+    for mode in ("draft", "sign", "verify"):
+        p = sub.add_parser(mode, help=f"{mode} frontier baseline/eval coverage receipts")
+        p.add_argument("label", nargs="*", help="frontier label(s); default all")
+        p.add_argument("--kind", choices=("baseline", "eval", "both"), default="both")
+        p.add_argument("--out-dir", default="")
+        p.add_argument("--json", action="store_true")
+        if mode == "draft":
+            p.add_argument("--force", action="store_true")
+            p.add_argument("--sign-draft", action="store_true")
+            p.add_argument("--machine-class", default="Studio-M3Ultra-96")
+        else:
+            p.set_defaults(force=False, sign_draft=False, machine_class="Studio-M3Ultra-96")
+        if mode == "sign":
+            p.add_argument("--allow-blocked-draft", action="store_true")
+        else:
+            p.set_defaults(allow_blocked_draft=False)
+        p.set_defaults(func=dispatch)
+    p = sub.add_parser("selftest", help="synthetic signed coverage receipt tests")
+    p.set_defaults(func=cmd_selftest)
+    return ap
+
+
+def main() -> int:
+    ap = build_argparser()
+    args = ap.parse_args()
+    if not args.receipt_mode:
+        args = ap.parse_args(["verify"])
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

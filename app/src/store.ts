@@ -30,6 +30,45 @@ export interface FleetRun {
   steps: number;
 }
 
+// Home / launcher slices (the courtyard front door). A session summary is one row in the recents
+// rail; the digest is the retrospective activity read (what happened, never a budget cap).
+export interface SessionSummary {
+  id: string;
+  title: string;
+  state: "active" | "idle" | "done" | "failed";
+  updated_ms: number;
+  turns?: number;
+  branch?: string; // git branch or worktree the session runs on
+}
+
+export interface HomeDigest {
+  sessions: number;
+  messages: number;
+  tokens?: number; // omitted by the live engine (never persisted to the log); the launcher hides it then
+  active_days: number;
+  streak_current: number;
+  streak_longest: number;
+  peak_hour: number; // 0..23
+  favorite_model: string;
+  heatmap?: number[]; // flat activity counts, row-major (cols x 7), most-recent column last
+  heatmap_cols?: number;
+}
+
+// The workspace the launcher targets: root folder, repo, current branch, and any worktrees. Drives
+// the composer's context chips (Local . repo . branch . worktree).
+export interface HomeWorkspace {
+  root?: string;
+  repo?: string;
+  branch?: string;
+  worktrees?: string[];
+}
+
+export interface HomeState {
+  user?: { name?: string; plan?: string };
+  workspace?: HomeWorkspace;
+  digest?: HomeDigest;
+}
+
 export interface ContextManifest {
   model?: { id: string; arch: string; ctx: number; profile: string; sampling: string };
   budget?: { total: number; used: number; free: number; segments: { source: string; tokens: number }[] };
@@ -105,6 +144,12 @@ interface State {
   fleet: FleetRun[];
   fleetSeq: number;
 
+  // home / launcher (the courtyard front door)
+  home: HomeState | null;
+  homeSeq: number;
+  sessions: SessionSummary[];
+  sessionsSeq: number;
+
   // editor / diff / timeline / problems / generic projections (stubs that hold real patches)
   projections: Partial<Record<ProjectionName, Patch>>;
   projectionSeq: number;
@@ -118,8 +163,12 @@ interface State {
   // ---- actions (all internal; user actions go out as Intents elsewhere) ----
   apply(ev: UiEvent): void;
   pushNotice(n: Omit<Notice, "id">): void;
+  dismissNotice(id: string): void;
   dismissGate(): void;
   pushUserMessage(text: string): void;
+  // Launching a fresh session from the courtyard: clear the local transcript optimistically so the
+  // conversation view is empty while the host mints the real session_id (arrives on the event stream).
+  startNewSession(): void;
 }
 
 let _id = 0;
@@ -147,6 +196,11 @@ export const useStore = create<State>((set, get) => ({
   fleet: [],
   fleetSeq: 0,
 
+  home: null,
+  homeSeq: 0,
+  sessions: [],
+  sessionsSeq: 0,
+
   projections: {},
   projectionSeq: 0,
 
@@ -156,9 +210,18 @@ export const useStore = create<State>((set, get) => ({
   pushUserMessage: (text) =>
     set((s) => ({ messages: [...s.messages, { id: nextId(), role: "user", text, streaming: false }] })),
 
-  pushNotice: (n) => set((s) => ({ notices: [...s.notices.slice(-19), { ...n, id: nextId() }] })),
+  pushNotice: (n) => {
+    const id = nextId();
+    set((s) => ({ notices: [...s.notices.slice(-19), { ...n, id }] }));
+    // Auto-expire so a transient error never lives forever in the status bar; errors linger a little
+    // longer than info so they are not missed. Cleared early if the user acts or a newer notice lands.
+    setTimeout(() => get().dismissNotice(id), n.kind === "error" ? 8000 : 4000);
+  },
+  dismissNotice: (id) => set((s) => ({ notices: s.notices.filter((x) => x.id !== id) })),
 
   dismissGate: () => set({ gate: null }),
+
+  startNewSession: () => set({ messages: [], streams: {}, runPhase: "idle", activeRunId: null }),
 
   // THE EventRouter: route by kind, then for projection_patch by projection name.
   apply: (ev) => {
@@ -229,6 +292,26 @@ function routeProjection(s: State, projection: ProjectionName, patch: Patch, seq
         : s.fleet;
       return { fleet: runs, fleetSeq: seq };
     }
+    case "home": {
+      // Shallow-merge, but merge nested workspace/digest so a partial patch (a new branch, a fresh
+      // digest) never wipes the other half of the courtyard read.
+      const prev = s.home ?? {};
+      const p = patch as HomeState;
+      const home: HomeState = {
+        ...prev,
+        ...p,
+        workspace: p.workspace ? { ...(prev.workspace ?? {}), ...p.workspace } : prev.workspace,
+        digest: p.digest ? { ...(prev.digest ?? {}), ...p.digest } : prev.digest,
+        user: p.user ? { ...(prev.user ?? {}), ...p.user } : prev.user,
+      };
+      return { home, homeSeq: seq };
+    }
+    case "sessions": {
+      const items = Array.isArray((patch as { items?: unknown }).items)
+        ? (patch as { items: SessionSummary[] }).items
+        : s.sessions;
+      return { sessions: items, sessionsSeq: seq };
+    }
     case "turn": {
       const phase = (patch as { phase?: RunPhase }).phase;
       const runId = (patch as { run_id?: string }).run_id ?? s.activeRunId;
@@ -252,7 +335,16 @@ function routeProjection(s: State, projection: ProjectionName, patch: Patch, seq
 
 // The reconnect cursor: the highest seq any slice has applied.
 export function lastAppliedSeq(s: State): number {
-  return Math.max(s.chatSeq, s.runtimeSeq, s.toolSeq, s.contextSeq, s.fleetSeq, s.projectionSeq);
+  return Math.max(
+    s.chatSeq,
+    s.runtimeSeq,
+    s.toolSeq,
+    s.contextSeq,
+    s.fleetSeq,
+    s.homeSeq,
+    s.sessionsSeq,
+    s.projectionSeq,
+  );
 }
 
 // Boot: subscribe the store to the live UiEvent stream. Returns an unsubscribe fn.
@@ -275,6 +367,17 @@ export function connectStore(): () => void {
           const detail = roles[0]?.model?.architecture ?? "hawking";
           apply({ seq: 0, session_id: null, kind: { type: "runtime_status", data: { status: "ready", detail } } });
         }
+      })
+      .catch(() => void 0);
+    // Seed the courtyard: the home digest + session list are folded from the event log by the host and
+    // pulled here on connect (they are not part of the replayed event stream). Failures surface via the
+    // transport notice path, not here.
+    void callConnector<{ home?: unknown; sessions?: unknown }>("home", "digest", {})
+      .then((r) => {
+        if (r?.home)
+          apply({ seq: 0, session_id: null, kind: { type: "projection_patch", data: { projection: "home", patch: r.home } } });
+        if (r?.sessions)
+          apply({ seq: 0, session_id: null, kind: { type: "projection_patch", data: { projection: "sessions", patch: r.sessions } } });
       })
       .catch(() => void 0);
   }

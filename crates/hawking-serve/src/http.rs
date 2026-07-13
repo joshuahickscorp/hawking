@@ -291,7 +291,7 @@ async fn list_models(State(s): State<AppState>) -> Json<ListModels> {
     })
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 struct ChatMessage {
     role: String,
     content: String,
@@ -315,6 +315,14 @@ struct ChatReq {
     /// `{"type": "json_object"}` triggers structural JSON constraint masking.
     #[serde(default)]
     response_format: Option<ResponseFormat>,
+    /// OpenAI-style function tools; when present they are rendered into the prompt
+    /// and the completion is parsed back into `tool_calls` (Phase 1a).
+    #[serde(default)]
+    tools: Option<Vec<serde_json::Value>>,
+    /// Accepted for API compatibility; currently advisory only.
+    #[serde(default)]
+    #[allow(dead_code)]
+    tool_choice: Option<serde_json::Value>,
 }
 
 #[derive(Deserialize, Default)]
@@ -353,7 +361,31 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         return ApiError::missing_parameter("'messages' must contain at least one message")
             .into_response();
     }
-    let prompt = render_chat(&req.messages, &s.model_arch);
+    // Native tool calling (Phase 1a): render the tool specs into a leading system
+    // message so a Hermes/Qwen-trained model emits <tool_call> blocks, and remember
+    // to parse them back out of the completion.
+    let tools: Vec<serde_json::Value> = req.tools.clone().unwrap_or_default();
+    let want_tools = !tools.is_empty();
+    let tool_names = crate::tool_calls::tool_names(&tools);
+    let prompt = if want_tools {
+        let preamble = crate::tool_calls::render_tools_preamble(&tools);
+        let mut msgs = req.messages.clone();
+        match msgs.first_mut() {
+            Some(first) if first.role == "system" => {
+                first.content = format!("{preamble}\n{}", first.content);
+            }
+            _ => msgs.insert(
+                0,
+                ChatMessage {
+                    role: "system".to_string(),
+                    content: preamble,
+                },
+            ),
+        }
+        render_chat(&msgs, &s.model_arch)
+    } else {
+        render_chat(&req.messages, &s.model_arch)
+    };
     let sampling = SamplingParams {
         temperature: req.temperature.unwrap_or(0.7),
         top_k: 40,
@@ -375,9 +407,9 @@ async fn chat_completions(State(s): State<AppState>, body: Bytes) -> Response {
         json_mode,
     };
     if req.stream {
-        sse_response(s, gen, /*chat=*/ true).into_response()
+        sse_response(s, gen, /*chat=*/ true, tool_names).into_response()
     } else {
-        json_full_response(s, gen, /*chat=*/ true)
+        json_full_response(s, gen, /*chat=*/ true, tool_names)
             .await
             .into_response()
     }
@@ -408,9 +440,9 @@ async fn completions(State(s): State<AppState>, body: Bytes) -> Response {
         json_mode: false,
     };
     if req.stream {
-        sse_response(s, gen, /*chat=*/ false).into_response()
+        sse_response(s, gen, /*chat=*/ false, Vec::new()).into_response()
     } else {
-        json_full_response(s, gen, /*chat=*/ false)
+        json_full_response(s, gen, /*chat=*/ false, Vec::new())
             .await
             .into_response()
     }
@@ -471,6 +503,7 @@ fn sse_response(
     state: AppState,
     req: GenerateRequest,
     chat: bool,
+    tool_names: Vec<String>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     // SSE → client channel (receives formatted SSE events).
     let (sse_tx, sse_rx) = tokio::sync::mpsc::channel::<Result<Event, Infallible>>(256);
@@ -534,11 +567,22 @@ fn sse_response(
         // the request is admitted from the queue when a slot frees.
     };
 
-    // Forward raw token strings from the per-slot channel to SSE events.
+    // Forward raw token strings from the per-slot channel to SSE events. When tools
+    // were requested we BUFFER instead of streaming, because a Hermes/Qwen model
+    // emits `<tool_call>{...}</tool_call>` XML that must be parsed into structured
+    // tool_calls, not streamed verbatim as content. On end we emit one terminating
+    // chunk carrying either the tool_calls or the buffered text, with finish_reason.
+    let want_tools = chat && !tool_names.is_empty();
     tokio::spawn(async move {
+        let mut buf = String::new();
         while let Some(item) = tok_rx.recv().await {
             match item {
                 Ok(text) => {
+                    if want_tools {
+                        // Buffer; the terminating chunk is emitted after the loop.
+                        buf.push_str(&text);
+                        continue;
+                    }
                     let chunk = if chat {
                         serde_json::json!({
                             "choices": [{"delta": {"content": text}, "index": 0}],
@@ -555,15 +599,48 @@ fn sse_response(
                         .await
                         .is_err()
                     {
-                        break;
+                        return;
                     }
                 }
-                Err(()) => {
-                    let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
-                    break;
-                }
+                // The failure sentinel. Normal completion does NOT send this — the
+                // decode loop just drops the sender (recv -> None), so the flush
+                // below MUST live outside the loop or a buffered (tools) answer
+                // would be lost entirely.
+                Err(()) => break,
             }
         }
+
+        // Terminating flush. Reached on normal channel-close AND on the failure
+        // sentinel. For a tools request, parse the buffer into structured tool_calls
+        // (or return the buffered text); the non-tools path already streamed its
+        // content and just needs the [DONE] terminator.
+        if want_tools {
+            let calls = crate::tool_calls::extract_tool_calls(&buf, &tool_names);
+            let chunk = if !calls.is_empty() {
+                let arr: Vec<serde_json::Value> = calls.iter().map(|c| c.to_openai()).collect();
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "tool_calls": arr},
+                        "finish_reason": "tool_calls"
+                    }]
+                })
+            } else {
+                serde_json::json!({
+                    "object": "chat.completion.chunk",
+                    "choices": [{
+                        "index": 0,
+                        "delta": {"role": "assistant", "content": buf},
+                        "finish_reason": "stop"
+                    }]
+                })
+            };
+            let _ = sse_tx
+                .send(Ok(Event::default().data(chunk.to_string())))
+                .await;
+        }
+        let _ = sse_tx.send(Ok(Event::default().data("[DONE]"))).await;
     });
 
     Sse::new(ReceiverStream::new(sse_rx)).keep_alive(KeepAlive::default())
@@ -909,6 +986,7 @@ async fn json_full_response(
     state: AppState,
     req: GenerateRequest,
     chat: bool,
+    tool_names: Vec<String>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
     // Admit under a short lock (tokenize + slot assignment only) — does NOT hold
     // the engine mutex for the full generation.
@@ -951,9 +1029,32 @@ async fn json_full_response(
             }
         }
         let body = if chat {
+            // When tools were requested, parse the completion back into OpenAI
+            // tool_calls; otherwise it is a plain assistant message.
+            let calls = if !tool_names.is_empty() {
+                crate::tool_calls::extract_tool_calls(&text, &tool_names)
+            } else {
+                Vec::new()
+            };
+            let (message, finish) = if !calls.is_empty() {
+                let arr: Vec<serde_json::Value> = calls.iter().map(|c| c.to_openai()).collect();
+                (
+                    serde_json::json!({
+                        "role": "assistant",
+                        "content": serde_json::Value::Null,
+                        "tool_calls": arr
+                    }),
+                    "tool_calls",
+                )
+            } else {
+                (
+                    serde_json::json!({ "role": "assistant", "content": text }),
+                    "stop",
+                )
+            };
             serde_json::json!({
                 "object": "chat.completion",
-                "choices": [{"index": 0, "message": {"role": "assistant", "content": text}}]
+                "choices": [{"index": 0, "message": message, "finish_reason": finish}]
             })
         } else {
             serde_json::json!({

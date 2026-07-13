@@ -47,7 +47,7 @@ once unbounded wall-clock converts every time-wall. Update the Proven column as 
 | HIDE M1: pass state not text (handoff) | 6.5 | 8.5 | 9.0 | GATED (kv_handoff seam, FakeCopier) | - |
 | HIDE M2: free local fleets | 5.0 | 8.0 | 8.5 | GATED (fabric real, economics a predictor) | - |
 | HIDE M3: own the .tq format | 5.5 | 8.5 | 9.0 | GATED (no e2e coherent-token receipt) | - |
-| HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | GATED (compiler real, not in decode loop) | - |
+| HIDE M4: grammar-guaranteed tool calls | 3.0 | 7.0 | 7.5 | MEASURED-LAB scaffold, adversarially verified (parser + parse/lint/dedup/dispatch loop + schema-aware jump-forward grammar + prompt-lookup, 39 owned tests; 6 review findings, 4 fixed w/ regression tests, 2 pre-existing edit.rs bugs reported); still GATED on decode-loop wiring + first-try-valid receipt | agentic_tool_system_audit_2026_07_11.md |
 | HIDE ship-readiness (Tauri, executor, tests) | 7.0 | 8.5 | 9.0 | MEASURED-LAB (signed 18 MB DMG on disk) | - |
 | The thesis gate (can the local model code) | 0 | 7.0 | 7.5 | UNPROVEN (hawking-eval built, never run) | - |
 
@@ -85,6 +85,117 @@ North-star overall: proven 3.25 / bounded ceiling 6.33 / maximal ceiling ~8.4.
 Append one paragraph per wave: what ran, verdict, category movement, next lever. No wave ends without a
 committed (approved) artifact.
 
+- Wave C (2026-07-11, wiring + hardening): with operator approval, committed the scaffold
+  (commit 79f54420, 11 files, 47 tests) then landed three wiring/hardening pieces (commit
+  14909a97, 469 insertions): (1) MCP REGISTRATION - `register_mcp_servers` resiliently connects a
+  set of MCP servers and registers their tools into the registry (one bad server is recorded as
+  an error, does not abort the rest); the client was built-but-never-called. Tested against a
+  live stdio fake server. (2) NATIVE TOOL CALLING ON SERVE (Phase 1a) - `/v1/chat/completions`
+  now accepts `tools`, renders a Hermes/Qwen `<tools>` system preamble into the prompt, and
+  parses the completion back into OpenAI `tool_calls` with finish_reason; a self-contained
+  `tool_calls` module (5 tests) wired in without breaking the 35-test serve suite. (3) EDIT.RS
+  GUARDS - with approval, added the two minimal safety guards for the pre-existing bugs the
+  review found: a backward/out-of-order hunk is now a CONFLICT not a panic, and a removal that
+  does not match the file is a CONFLICT not silent corruption (2 tests). NOT re-introducing the
+  reverted seek_sequence fuzzy matcher. A second adversarial verification pass over this wiring
+  (12 agents) CONFIRMED 8 more real defects - including two in the edit.rs guards I had just
+  added (an over-rejection of valid stripped-blank diffs, and a remaining blank-line corruption
+  hole the removal guard did not cover), a serve false-positive (untagged prose JSON turned into
+  a spurious tool_call discarding the real answer), a streaming gap (raw <tool_call> XML streamed
+  instead of structured tool_calls), and three MCP resilience holes (no per-server timeout so one
+  hung server stalls the catalog; duplicate ids silently shadowing tools; a false shutdown
+  contract + no kill_on_drop). ALL 8 FIXED with 9 regression tests (commit 90de248a): edit.rs now
+  keeps blank context lines in the located sequence and verifies them; serve requires an untagged
+  call to name a declared tool and buffers streaming to emit real tool_calls; MCP gained a
+  per-server timeout, duplicate-id refusal, kill_on_drop, and a corrected doc. A THIRD
+  loop-until-dry pass then caught 2 regressions in those very fixes: the edit.rs empty-line
+  change over-rejected a patch ending in a trailing blank, and the streaming buffer emitted its
+  flush only in the failure-sentinel arm while the decode loop signals normal completion by
+  DROPPING the sender - so a streaming chat with tools silently dropped the whole answer. Both
+  fixed (commit b6d30db5): hunks now strip trailing blanks, and the streaming flush + [DONE]
+  moved outside the token loop (also fixing a pre-existing missing-[DONE] on the non-tools
+  success path). A FOURTH lean pass caught 1 narrow edge-case (an all-blank hunk body silently
+  reported ok instead of CONFLICT); fixed with a guard (commit 903baa20). The verification loop
+  CONVERGED: pass1 6 findings, pass2 8, pass3 2, pass4 1 - a clean decreasing trend, all 17
+  fixed with regression tests. FINAL STATE: five commits (79f54420 scaffold, 14909a97 wiring,
+  90de248a +8 fixes, b6d30db5 +2 fixes, 903baa20 +1 fix), all per operator approval, LOCAL ONLY
+  no push. Full workspace: 392 passed / 7 failed where all 7 are the pre-existing q8_kv Metal
+  tests in hawking-core (absent from every .metal source), zero non-q8kv failures. Delivered +
+  verified: Phase 0 (parser + parse/lint/dedup/dispatch loop + parallel), Phase 2/3 (jump-forward
+  + prompt-lookup spec-decode), Phase 1a (native serve tools/tool_calls incl. streaming), Phase
+  1b (memory tool), Phase 1c (MCP registration). Grades stay MEASURED-LAB. STILL GATED for the
+  tok/s + first-try-valid RECEIPT that would flip a WIN cell: our own .tq-served model (the
+  thesis gate). Unbuilt/unblocked next: rest of catalog (plan.todo/notebook/batch/web/agent.spawn),
+  Phase 0 -> live FSM driver wiring, and the runtime mask/spec wiring into forward_multiseq_*.
+- Wave D (2026-07-11, deepen to integrated + a caught security bug): per operator "deepen even
+  more, get to 10/10, commit/push/merge". Made the keystone REAL: wired the tool-call loop into
+  the live agent driver (act_model now parses its output and dispatches emitted calls), with two
+  end-to-end integration tests (a stub model emitting <tool_call> for fs.read dispatches through
+  the real allow_all_dispatcher; a mutating call is refused). A FIFTH adversarial pass then caught
+  a SECURITY vulnerability - exactly the payoff of the discipline: git.diff/git.log passed the
+  model-controlled `ref` verbatim as a git arg, so `--output=FILE` was honored as an option and
+  WROTE an arbitrary file, and the read-only auto-dispatch gate let a model step trigger it (an
+  un-approved out-of-workspace write). Fixed BOTH layers (commit 9d012fbb): git ref guarded with
+  --end-of-options (protects all callers, +2 tests), and the model-step gate hardened from
+  annotation-only to a deny-by-default allowlist of pure in-process query tools
+  (fs.read/list/stat/glob, search.text) - subprocess tools (git.*, shell.*) never auto-dispatch
+  from a model step even when read-only (+1 integration test). Verification tally now 6/8/2/1/1 =
+  21 real defects found+fixed across 5 passes. Commits this deepen: 7dc59220 (driver wiring),
+  cbe2d0d7 (read-only gate), 9d012fbb (security fix). A sixth pass on the security fix is running
+  before any push. HONEST 10/10 NOTE: per the audit this category's ceiling is 7.5 (structural
+  truthfulness wall - "guaranteed" is an overclaim; honest ceiling is first-try-valid + repair);
+  the tok/s WIN receipt is still gated on a served model. Not laundering a 10.
+- Wave B (2026-07-11, catalog expansion start): added the `memory` tool (Phase 1b) - a durable
+  cross-session scratchpad with `view|create|str_replace|insert|delete|rename`, modeled on
+  Anthropic's memory tool, rooted at a private per-workspace directory. The security boundary
+  (path-traversal rejection: absolute paths, `..` traversal, and percent-encoded `%2e/%2f/%5c`
+  escapes) has a dedicated test per vector. Registered as the 23rd builtin; 8 tests green,
+  hide-tools crate clean (52 tests, no warnings). Remaining catalog gaps: plan.todo, notebook,
+  batch multi-edit, web.fetch/search, agent.spawn, and wiring the built-but-dormant MCP client.
+- Wave A-verify (2026-07-11, adversarial verification + fixes): ran a 5-dimension review
+  workflow (finder + independent refuting verifier per dimension, 11 agents) over the Wave A
+  scaffold, hunting correctness / losslessness / safety / overclaims. It CONFIRMED 6 real
+  defects, each reproduced end-to-end - proof the discipline earns its keep. FIXED 4 in the
+  delivered scaffold, each with regression tests: (1) parser dropped a bare-JSON call when a
+  `[...]` (markdown link/citation) preceded it -> now scans ALL balanced spans; (2) the loop's
+  feedback formatter let untrusted tool output forge a `<tool_call>` (TT8 violation) -> now
+  escapes the envelope delimiters in body+name; (5) `scaffold_for` forced a single arg key even
+  when optional props existed (a real jump-forward LOSSLESSNESS violation for the shipped
+  fs.read schema) -> now gated on a closed single-property schema; (6) audit doc per-file test
+  counts corrected. The other 2 (a wrap-slice panic and an unverified `-` drop that silently
+  corrupts a file) are PRE-EXISTING bugs in `edit.rs`, surfaced when Phase 1d was reverted;
+  reported in audit section 3.1, not fixed (edit.rs is under separate management). Also: Phase
+  1d (Codex fuzzy apply_patch) was reverted intentionally in the working tree, so it is
+  WITHDRAWN from the scaffold. Honest test state after fixes: 39 owned scaffold tests green
+  (parse 14 + runner 10 + shared mod.rs 2 + tool_spec_decode 13); full workspace 392 passed / 7
+  failed where all 7 are the pre-existing q8_kv_parity Metal-kernel-missing tests in
+  hawking-core (kernels absent from every .metal source), zero non-q8kv failures. Grades stay
+  MEASURED-LAB. Commit pending approval. Next lever: drive-to-10 wiring (Phase 0 into the live
+  FSM; serve `tools` field), still gated on a served model for the tok/s receipt.
+- Wave A (2026-07-11, agentic tool system scaffold): executed the operator's scaffold-all
+  directive on the agentic tool system plan (`docs/plans/agentic_tool_system_2026_07_11.md`),
+  built from three deep-research passes (Claude Code tool architecture, Codex + other agents,
+  constrained/speculative decoding). Landed as real, compiling, unit-tested library code,
+  highest-leverage-first: (1) PHASE 0 keystone - the missing model-output tool-call parser
+  (`hide-kernel/src/tools/parse.rs`, tolerant across Hermes/OpenAI/fenced/bare formats) plus the
+  parse->lint->dedup->dispatch loop (`runner.rs`) that finally calls the built-but-dormant
+  `lint_tool_call` + `IdempotencyLedger`, with Hermes-shaped self-correction feedback. (2) PHASE
+  1d - upgraded `apply_patch`'s hunk locator to the Codex 4-pass fuzzy `seek_sequence` (exact ->
+  trailing-ws -> both-ws -> typographic-unicode) and made context emission byte-exact from the
+  file, with two adversarial drift tests. (3) PHASE 2/3 differentiator - the tool spec-decode
+  layer (`hawking-orch/src/tool_spec_decode.rs`): schema-aware `ToolCallGrammar` jump-forward
+  (envelope prefix, tool-name common-prefix, full skeleton once resolved, validity gate,
+  forced_fraction) + `PromptLookup` n-gram drafter + `accepted_prefix_len` lossless accounting.
+  (4) PHASE 4 - parallel + purity-gated dispatch primitives (read-only concurrent, mutating
+  sequential, order-preserving). Evidence: 41 targeted unit tests green; full-workspace
+  regression run recorded next. Grades are MEASURED-LAB (unit tests, below R3): no WIN cell
+  flips. The load-bearing gap for the "fastest" claim stays honest and GATED - none of the
+  constrained/spec primitives are wired into the batched serve lanes yet, and the tok/s win is
+  UNPROVEN until measured on our own served model (the thesis-gate dependency). Audit +
+  per-component /10 rating + the specialization thesis: `agentic_tool_system_audit_2026_07_11.md`.
+  Commit pending approval. Next lever: confirm the full-suite regression is green, then the
+  drive-to-10 wiring (Phase 0 into the live FSM, then serve `tools` field, then the decode-loop
+  mask + jump-forward measurement once a served model exists).
 - Wave 0-prep (off-box, M3 Pro 18 GB session): converted the parts of Wave 0 that are pure code,
   ahead of the box arriving, so the first on-box session starts from a shorter Wave 0. Landed: (1)
   SPINE-0 FIXED - studio_run.py P6 (`bench_baselines`) and P8 (`codec_bakeoff`) unpacked the 3-tuple

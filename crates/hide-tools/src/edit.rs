@@ -475,15 +475,38 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
                 hunk.push(patch_lines[i]);
                 i += 1;
             }
+            // Drop trailing blank lines: `patch.lines()` yields a spurious "" for a
+            // patch string ending in a blank line (and inter-hunk blanks land here
+            // too). Those are NOT context lines, so keeping them would force `locate`
+            // to demand a phantom blank the file lacks. Interior blanks are kept.
+            while hunk.last() == Some(&"") {
+                hunk.pop();
+            }
+            // An all-blank hunk body strips to nothing; an empty located sequence
+            // would make `locate` a no-op and silently "apply" a change-free garbage
+            // hunk as ok. A real hunk always has at least one context/change line.
+            if hunk.is_empty() {
+                return Err("empty hunk body (no context or change lines)".to_string());
+            }
             // Determine the hunk's "old" sequence (context + removed) to locate it.
+            // A bare interior "" line is a blank context line (a " " context line
+            // whose trailing space was stripped), so it IS part of the located
+            // sequence; dropping it would desync `locate` from the walk below.
             let old_seq: Vec<&str> = hunk
                 .iter()
-                .filter(|l| l.starts_with(' ') || l.starts_with('-'))
+                .filter(|l| l.is_empty() || l.starts_with(' ') || l.starts_with('-'))
                 .map(|l| &l[1.min(l.len())..])
                 .collect();
             // Find old_seq in orig_lines starting at cursor (fuzz: scan forward).
             let anchor = locate(&orig_lines, &old_seq, cursor)
                 .ok_or_else(|| "could not locate hunk context in file".to_string())?;
+            // `locate` can wrap to the file top, so a later hunk whose context only
+            // matches earlier returns an anchor BEFORE the cursor. Copying
+            // orig_lines[cursor..anchor] would then panic (start > end). Treat a
+            // backward hunk as an out-of-order conflict, not a crash.
+            if anchor < cursor {
+                return Err("hunk context precedes the current position (out-of-order hunk)".to_string());
+            }
             // Copy unchanged lines up to the anchor.
             for l in &orig_lines[cursor..anchor] {
                 out.push((*l).to_string());
@@ -492,11 +515,18 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
             // Walk the hunk body.
             for hl in &hunk {
                 if hl.is_empty() {
-                    // a blank context line in some diffs
-                    if cursor < orig_lines.len() {
-                        out.push(orig_lines[cursor].to_string());
-                        cursor += 1;
+                    // A blank context line must line up with a blank line in the
+                    // file at the cursor. Anything else is a desync; emitting the
+                    // file's (non-blank) line here would silently corrupt it, so
+                    // conflict instead.
+                    if cursor >= orig_lines.len() || !orig_lines[cursor].is_empty() {
+                        return Err(format!(
+                            "patch has a blank context line where the file has \"{}\"",
+                            orig_lines.get(cursor).copied().unwrap_or("<eof>")
+                        ));
                     }
+                    out.push(String::new());
+                    cursor += 1;
                     continue;
                 }
                 let (tag, rest) = hl.split_at(1);
@@ -506,6 +536,17 @@ fn apply_unified(original: &str, patch: &str) -> Result<String, String> {
                         cursor += 1;
                     }
                     "-" => {
+                        // Verify the line being removed actually matches the file at
+                        // the cursor before dropping it. Without this a desynced
+                        // cursor (e.g. from a stray blank hunk line) would delete the
+                        // WRONG line by count and silently commit a corrupt file.
+                        if cursor >= orig_lines.len() || orig_lines[cursor] != rest {
+                            return Err(format!(
+                                "patch removes a line that does not match the file (expected \"{}\", found \"{}\")",
+                                rest,
+                                orig_lines.get(cursor).copied().unwrap_or("<eof>")
+                            ));
+                        }
                         cursor += 1; // drop original line
                     }
                     "+" => {
@@ -738,6 +779,115 @@ mod tests {
         assert!(r.ok, "patch should apply: {:?}", r.error);
         let got = std::fs::read_to_string(&file).unwrap();
         assert_eq!(got, "line1\nline2-edited\nline3\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_out_of_order_hunk_is_conflict_not_panic() {
+        // Hunks in the wrong order: edit "b" before "target", but "target" is earlier
+        // in the file, so `locate` wraps backward and returns anchor < cursor. That
+        // used to panic on orig_lines[cursor..anchor]; now it is an honest CONFLICT.
+        let dir = tmp("ooo");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "target\na\nb\n").unwrap();
+        let patch = "@@\n-b\n+B\n@@\n-target\n+TARGET\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "out-of-order hunk must not apply");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "target\na\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_mismatched_removal_is_conflict_not_corruption() {
+        // A stray blank hunk line desyncs the cursor so the '-' removal no longer
+        // matches the file. Instead of silently deleting the wrong line (was: writes
+        // "a\nA\n"), the applier now returns CONFLICT and writes nothing.
+        let dir = tmp("mism");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\n").unwrap();
+        let patch = "@@\n\n-a\n+A\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "mismatched removal must not silently corrupt");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_blank_context_desync_is_conflict_not_corruption() {
+        // Blank context line with no matching blank in the file and no '-' line to
+        // trip the removal guard: must CONFLICT, not duplicate a line (was: wrote
+        // "a\nb\nX\nb\n").
+        let dir = tmp("blankdesync");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\n").unwrap();
+        let patch = "@@\n a\n\n+X\n b\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "blank-context desync must conflict, not corrupt");
+        assert_eq!(r.error.unwrap().code, "CONFLICT");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_all_blank_hunk_is_conflict_not_silent_ok() {
+        // A hunk body of only blank lines strips to empty; it must CONFLICT, not
+        // report a successful no-op apply (regression guard for the trailing strip).
+        let dir = tmp("allblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\nc\n").unwrap();
+        let patch = "@@\n\n\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(!r.ok, "all-blank hunk must not report success");
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nb\nc\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_tolerates_trailing_blank_in_patch_body() {
+        // A patch string ending in a blank line ("...\n\n") must still apply: the
+        // trailing "" is a patch terminator, not a required blank context line
+        // (regression guard for the old_seq empty-line change).
+        let dir = tmp("trailblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\nb\nc\n").unwrap();
+        let patch = "@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(r.ok, "trailing blank must not block apply: {:?}", r.error);
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\nB\nc\n");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn apply_patch_stripped_blank_context_still_applies() {
+        // A valid diff whose blank context line was stripped to "" must still apply
+        // when the file genuinely has that interior blank line (was over-rejected).
+        let dir = tmp("stripblank");
+        let file = dir.join("f.txt");
+        std::fs::write(&file, "a\n\nc\n").unwrap();
+        let patch = "@@ -1,3 +1,3 @@\n a\n\n-c\n+C\n";
+        let tool = ApplyPatchTool::default();
+        let r = tool
+            .call(json!({ "path": file.to_string_lossy(), "patch": patch }), ctx())
+            .await;
+        assert!(r.ok, "stripped-blank context should apply: {:?}", r.error);
+        assert_eq!(std::fs::read_to_string(&file).unwrap(), "a\n\nC\n");
         let _ = std::fs::remove_dir_all(dir);
     }
 

@@ -92,6 +92,11 @@
       "pattern": "^[a-fA-F0-9]{64}$",
       "description": "sha256 of the condensed weights / measured artifact — output hash (§19.8 #5). REQUIRED (invalidation rule 4)."
     },
+    "floor_point_sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "description": "Optional canonical-row SHA-256 for a bit-floor receipt; binds the receipt to its exact hawking.bit_floor_point.v2 JSONL row."
+    },
     "recipe": {
       "type": "array",
       "items": { "type": "string" },

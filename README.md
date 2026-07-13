@@ -120,9 +120,18 @@ Hawking is a from-scratch LLM inference engine for Apple Silicon, written in
 Rust with hand-written Metal kernels. It runs quantized GGUF models end to end
 on the GPU, with no PyTorch, llama.cpp, or BLAS. The work ahead is about
 pushing quality, memory, and context length further on Apple hardware, with the
-heavy runs on an Apple M2 Max Mac Studio (96 GB). The condense/studio research
+heavy runs on an Apple M3 Ultra Mac Studio (96 GB unified memory, 819 GB/s advertised
+memory bandwidth, 1 TB SSD). The condense/studio research
 program - the largest-model, lowest-bit, and long-context work below - is a
 single command away: see `docs/plans/STUDIO_GO.md`.
+
+The Studio program is governed by
+[`Beyond FLOPS`](docs/plans/computational_efficiency_paradigms_2026_07_11.md): optimize useful
+capability per joule, byte moved, resident byte, parameter, and wall-clock second, while holding quality
+fixed. Its safe initial ladder is the staged 0.5B/1.5B/7B sequence, then 14B alone; 32B remains gated on a
+measured memory-pressure or streamed/blockwise proof. Storage plans use current free space with a 150 GB
+safety reserve, 64 GB scratch, and 32 GB HF/Xet cache. Downloads and processing checkpoint so the Studio
+can be drained, shut down, moved, and resumed without treating partial artifacts as complete.
 
 ### Now (works today)
 - Dense Qwen2.5 forward pass on Metal, GGUF-native, with Q4_K / Q6_K kernels,

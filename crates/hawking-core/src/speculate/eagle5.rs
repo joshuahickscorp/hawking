@@ -906,7 +906,7 @@ mod tests {
         // Layout order matches what the loader expects to find by name.
         let mut tensor_bytes: Vec<u8> = Vec::new();
         let mut entries: Vec<(String, &'static str, Vec<usize>, usize, usize)> = Vec::new();
-        let mut push_f32 =
+        let push_f32 =
             |name: &str, shape: Vec<usize>, entries: &mut Vec<_>, bytes: &mut Vec<u8>| {
                 let n = shape.iter().product::<usize>();
                 let start = bytes.len();
@@ -916,7 +916,7 @@ mod tests {
                 let end = bytes.len();
                 entries.push((name.to_string(), "F32", shape, start, end));
             };
-        let mut push_f16 =
+        let push_f16 =
             |name: &str, shape: Vec<usize>, entries: &mut Vec<_>, bytes: &mut Vec<u8>| {
                 let n = shape.iter().product::<usize>();
                 let start = bytes.len();

@@ -1,4 +1,3 @@
-
 use std::borrow::Cow;
 
 /// How the per-state Gaussian codebook is sourced.
@@ -22,7 +21,6 @@ pub enum CodebookMode {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TrellisConfig {
-
     pub l_bits: u32,
 
     pub k_bits: u32,
@@ -36,17 +34,16 @@ pub struct TrellisConfig {
 }
 
 impl TrellisConfig {
-    
     pub const MIN_L: u32 = 4;
-    
+
     pub const MAX_L: u32 = 14;
-    
+
     pub const MAX_K: u32 = 4;
 
     pub fn new(l_bits: u32, k_bits: u32, block_len: usize) -> Self {
         let l_bits = l_bits.clamp(Self::MIN_L, Self::MAX_L);
         let k_bits = k_bits.clamp(1, Self::MAX_K);
-        
+
         let l_bits = l_bits.max(k_bits);
         let block_len = block_len.max(1);
         TrellisConfig {
@@ -82,17 +79,32 @@ impl TrellisConfig {
         }
     }
 
-    pub const MAX_VEC_DIM: u32 = 8;
+    /// CPU/research vector-trellis ceiling.  The packed descriptor stores this as
+    /// u8 and the generic decoder is dimension-agnostic.  GPU kernels may impose a
+    /// smaller launch-time ceiling; that is a serving admission rule, not a codec
+    /// reason to prevent 16/32-wide sub-bit experiments.
+    pub const MAX_VEC_DIM: u32 = 32;
 
     pub fn with_vec_dim(mut self, vec_dim: u32) -> Self {
         self.vec_dim = vec_dim.clamp(1, Self::MAX_VEC_DIM);
         self
     }
 
+    /// Override the number of weights encoded under one trellis scale/state reset.
+    ///
+    /// The historical/default geometry is 256 weights.  Larger blocks amortise the
+    /// scale and initial-state bookkeeping, which matters materially below one bit
+    /// per weight.  This is an encode/decode geometry change (and therefore belongs
+    /// in cache keys and wire descriptors), not a tuning hint.
+    #[must_use]
+    pub fn with_block_len(mut self, block_len: usize) -> Self {
+        self.block_len = block_len.max(1);
+        self
+    }
+
     pub fn for_bpw(target_bpw: f64) -> Self {
-        
         let k = target_bpw.round().clamp(1.0, Self::MAX_K as f64) as u32;
-        
+
         let l = (k + 4).min(Self::MAX_L);
         Self::new(l, k, 256)
     }

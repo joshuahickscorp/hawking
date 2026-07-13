@@ -1,19 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { connectStore, useStore } from "./store";
 import { TRANSPORT_KIND, sendIntent } from "./ipc";
 import { intent } from "./wire";
 import { SideBar } from "./shell/SideBar";
-import { EditorArea } from "./shell/EditorArea";
+// The Code chamber carries Monaco (~4.5MB). Lazy so the Chat front door never parses the editor at
+// boot; it loads on first entry to Code. Prefetched on Toolbar hover of the Code tab.
+const EditorArea = lazy(() => import("./shell/EditorArea").then((m) => ({ default: m.EditorArea })));
 import { ChatPane } from "./shell/ChatPane";
 import { FloatingChat } from "./shell/FloatingChat";
 import { Toolbar } from "./shell/Toolbar";
 import { StatusBar } from "./shell/StatusBar";
 import { Settings } from "./surfaces/Settings";
-import { Onboarding } from "./surfaces/Onboarding";
 import { CommandPalette, Gate, type Command } from "./ui";
 import { useFocusTrap } from "./shell/a11y";
-import { shouldShowOnboarding } from "./shell/onboarding";
+import { useAutoCompact } from "./shell/autocompact";
 import { MOCK_DIFF, parseDiff, type DiffDoc } from "./surfaces/ide/types";
+import { Home } from "./surfaces/home/Home";
+import type { PermMode } from "./surfaces/home/HomeComposer";
+
+// The two chambers: Chat (Claude Code style, the front door) and Code (the IDE, Cursor style).
+type Mode = "chat" | "code";
 
 const INITIAL_FILE = "crates/pool/src/guard.rs";
 
@@ -36,6 +42,15 @@ function persist(key: string, value: unknown): void {
 }
 
 export function App() {
+  // Boot into Chat (the front door); walk to Code (the IDE) via the pop-out. Migrate any legacy "home".
+  const [mode, setMode] = useState<Mode>(() => (persisted<string>("mode", "chat") === "code" ? "code" : "chat"));
+  // Permission mode governs the security gate: bypass auto-approves, ask/auto prompt (see below).
+  // Never silently resume Bypass across a restart: it auto-approves every gated command, so a
+  // persisted bypass would run unattended on the next launch. Boot such a session back to "ask".
+  const [permMode, setPermMode] = useState<PermMode>(() => {
+    const saved = persisted<PermMode>("permMode", "ask");
+    return saved === "bypass" ? "ask" : saved;
+  });
   const [sidebarOpen, setSidebarOpen] = useState(() => persisted("sidebarOpen", true));
   const [chatOpen, setChatOpen] = useState(() => persisted("chatOpen", true));
   const [chatFloating, setChatFloating] = useState(() => persisted("chatFloating", true));
@@ -48,14 +63,13 @@ export function App() {
   const [panelOpen, setPanelOpen] = useState(() => persisted("panelOpen", true));
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  // First-run: show the no-folder onboarding until a project is opened (or the sample is chosen).
-  const [folderOpened, setFolderOpened] = useState(() => persisted("folderOpened", false));
-
   const [openPath, setOpenPath] = useState<string | null>(() => persisted("openPath", INITIAL_FILE));
   const [tabs, setTabs] = useState<string[]>(() => persisted("tabs", [INITIAL_FILE]));
   const [diff, setDiff] = useState<DiffDoc | null>(null);
 
   // Persist the layout whenever it changes.
+  useEffect(() => persist("mode", mode), [mode]);
+  useEffect(() => persist("permMode", permMode), [permMode]);
   useEffect(() => persist("sidebarOpen", sidebarOpen), [sidebarOpen]);
   useEffect(() => persist("chatOpen", chatOpen), [chatOpen]);
   useEffect(() => persist("chatFloating", chatFloating), [chatFloating]);
@@ -63,7 +77,6 @@ export function App() {
   useEffect(() => persist("panelOpen", panelOpen), [panelOpen]);
   useEffect(() => persist("openPath", openPath), [openPath]);
   useEffect(() => persist("tabs", tabs), [tabs]);
-  useEffect(() => persist("folderOpened", folderOpened), [folderOpened]);
 
   const runtimeStatus = useStore((s) => s.runtimeStatus);
   const runtimeDetail = useStore((s) => s.runtimeDetail);
@@ -74,6 +87,19 @@ export function App() {
   const diffPatch = useStore((s) => s.projections.diff);
 
   useEffect(() => connectStore(), []);
+
+  // Secret, proactive context compaction: the condenser mindset applied to the live window. Watches the
+  // engine's watermark and compacts ahead of the cliff during work, silently. No cap ever reaches the UI.
+  useAutoCompact();
+
+  // Bypass permissions: when the operator has opted into full autonomy, a security gate is auto-approved
+  // instead of prompting. ask/auto still surface the lit approval capsule (the human-in-the-loop default).
+  useEffect(() => {
+    if (gate && permMode === "bypass") {
+      void sendIntent(intent.custom("approve_gate", { gate: gate.gate }));
+      dismissGate();
+    }
+  }, [gate, permMode, dismissGate]);
 
   // Lift the IDE's diff lifecycle into the shell so the editor area and SCM view share it.
   const hostDiff = useMemo(() => parseDiff(diffPatch as Record<string, unknown> | undefined), [diffPatch]);
@@ -140,16 +166,10 @@ export function App() {
     dismissGate();
   };
 
-  // First-run folder choice: a real path (from the desktop folder picker) tells the engine to switch
-  // its workspace root; a null (the sample-workspace fallback) just dismisses first-run. Either way it
-  // is recorded so onboarding shows once.
-  const chooseFolder = (folder: string | null) => {
-    if (folder) void sendIntent(intent.custom("open_folder", { path: folder }));
-    setFolderOpened(true);
-  };
-
   const commands = useMemo<Command[]>(
     () => [
+      { id: "go.chat", label: "Go to Chat", run: () => setMode("chat") },
+      { id: "go.code", label: "Go to Code", run: () => setMode("code") },
       { id: "toggle.chat", label: "Toggle Executor", run: () => setChatOpen((v) => !v) },
       { id: "toggle.float", label: "Executor: Float / Dock", run: () => setChatFloating((v) => !v) },
       { id: "toggle.panel", label: "Toggle Terminal", run: () => setPanelOpen((v) => !v) },
@@ -163,6 +183,8 @@ export function App() {
   return (
     <div className="vsc-shell">
       <Toolbar
+        mode={mode}
+        onMode={setMode}
         chatOpen={chatOpen}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         onTogglePanel={() => setPanelOpen((v) => !v)}
@@ -171,34 +193,66 @@ export function App() {
         onCancel={cancelRun}
       />
 
-      <div className="vsc-body">
-        {sidebarOpen ? <SideBar openPath={openPath} onOpen={openFile} /> : null}
-
-        <EditorArea
-          openPath={openPath}
-          tabs={tabs}
-          diff={diff}
-          panelOpen={panelOpen}
-          onSelectTab={setOpenPath}
-          onCloseTab={closeTab}
-          onDiffChange={setDiff}
-          onTogglePanel={() => setPanelOpen((v) => !v)}
+      {mode === "chat" ? (
+        <Home
+          mode={mode}
+          onMode={setMode}
+          onPopToCode={() => {
+            // Picture in picture out: open the SAME conversation in the Code chamber to watch code
+            // (Cursor style). Dock beside the editor when wide; float when narrow (the docked pane sheds
+            // below 1100px, so floating guarantees the chat stays visible).
+            setMode("code");
+            const wide = typeof window !== "undefined" && window.innerWidth >= 1180;
+            setChatFloating(!wide);
+            setChatOpen(true);
+          }}
+          onSettings={() => setSettingsOpen(true)}
+          permMode={permMode}
+          onPermMode={setPermMode}
         />
+      ) : (
+        <div className="vsc-body">
+          {sidebarOpen ? <SideBar openPath={openPath} onOpen={openFile} /> : null}
 
-        {chatOpen && !chatFloating ? <ChatPane onClose={() => setChatOpen(false)} onFloat={() => setChatFloating(true)} /> : null}
-      </div>
+          <Suspense fallback={<div className="editor-area editor-loading" />}>
+            <EditorArea
+              openPath={openPath}
+              tabs={tabs}
+              diff={diff}
+              panelOpen={panelOpen}
+              onSelectTab={setOpenPath}
+              onCloseTab={closeTab}
+              onDiffChange={setDiff}
+              onTogglePanel={() => setPanelOpen((v) => !v)}
+            />
+          </Suspense>
+
+          {chatOpen && !chatFloating ? (
+            <ChatPane
+              onClose={() => setChatOpen(false)}
+              onFloat={() => setChatFloating(true)}
+              onPopToChat={() => setMode("chat")}
+            />
+          ) : null}
+        </div>
+      )}
 
       <StatusBar />
 
-      {chatOpen && chatFloating ? (
-        <FloatingChat pos={chatPos} onPos={setChatPos} onClose={() => setChatOpen(false)} onDock={() => setChatFloating(false)} />
+      {mode === "code" && chatOpen && chatFloating ? (
+        <FloatingChat
+          pos={chatPos}
+          onPos={setChatPos}
+          onClose={() => setChatOpen(false)}
+          onDock={() => setChatFloating(false)}
+          onPopToChat={() => setMode("chat")}
+        />
       ) : null}
 
       {degraded ? <DegradedToast status={runtimeStatus} detail={runtimeDetail} /> : null}
       {gate ? <GatePrompt message={gate.message} gateId={gate.gate} onApprove={approveGate} onDeny={denyGate} /> : null}
       <CommandPalette open={paletteOpen} commands={commands} onClose={() => setPaletteOpen(false)} />
       {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : null}
-      {shouldShowOnboarding(folderOpened) ? <Onboarding onChoose={chooseFolder} /> : null}
       {/* notices surface in the status bar */}
       <span hidden>{notices.length}</span>
     </div>

@@ -24,7 +24,7 @@ export function CodeActions({
   const pushNotice = useStore((s) => s.pushNotice);
   const sessionId = useStore((s) => s.sessionId);
   const ref = useRef<HTMLDivElement>(null);
-  const sel = text.length > 600 ? text.slice(0, 600) + "\n…" : text;
+  const sel = text.length > 600 ? text.slice(0, 600) + "\n[cut]" : text;
 
   // Focus the first action when the popover opens (keyboard users land inside it).
   useEffect(() => {

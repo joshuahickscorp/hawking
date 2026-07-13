@@ -5,6 +5,12 @@
 //! idempotency key so a replayed/identical call returns the recorded result
 //! rather than re-running the effect (A.3 invariant).
 
+pub mod parse;
+pub mod runner;
+
+pub use parse::{has_tool_call, parse_tool_calls, ParsedToolCall};
+pub use runner::{CallDispatch, ToolLoop, ToolTurn, ToolTurnStatus};
+
 use hide_core::tool::{ToolCall, ToolResult};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;

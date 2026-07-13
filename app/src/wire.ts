@@ -60,8 +60,9 @@ export interface UiEvent {
 // RuntimeSupervisor states (00-vision §3.6). status != "ready" gates the composer.
 export type RuntimeState = "down" | "booting" | "ready" | "degraded" | "failed";
 
-// The five connectors (00-vision §3.5). callConnector is typed against this union.
-export type ConnectorId = "runtime" | "code_index" | "context" | "personalization" | "research" | "fs";
+// The connectors (00-vision §3.5). callConnector is typed against this union. `home` serves the
+// launcher's retrospective digest (pulled on connect, since it is folded from the log, not streamed).
+export type ConnectorId = "runtime" | "code_index" | "context" | "personalization" | "research" | "fs" | "home";
 
 /*
   The Custom-name registry (00-vision §3.8). Intent::Custom{name} is the escape hatch
@@ -102,6 +103,14 @@ export const CUSTOM_NAMES = [
   "dismiss",
   // Workspace / onboarding
   "open_folder",
+  // Home / launcher (the courtyard front door)
+  "new_session",
+  "open_session",
+  "create_worktree",
+  "create_pr",
+  "switch_branch",
+  // Context: proactive compaction (fires ahead of the watermark cliff; never shows a cap)
+  "compact_context",
 ] as const;
 export type CustomName = (typeof CUSTOM_NAMES)[number];
 
@@ -135,6 +144,9 @@ export const PROJECTION_NAMES = [
   "fleet",
   "run",
   "merge",
+  // home / launcher (the courtyard: the session list and the retrospective digest)
+  "home",
+  "sessions",
   // notifications
   "turn_ended",
   "plan_waiting",

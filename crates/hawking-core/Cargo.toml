@@ -15,6 +15,10 @@ description = "Apple Silicon LLM inference engine core"
 # (no strand-quant dep, no metal 0.27). Enable with:
 #   cargo test -p hawking-core --features tq
 tq = ["dep:strand-quant"]
+# Compatibility shim for legacy objc macros re-exported by metal 0.29. They
+# probe `feature = "cargo-clippy"` internally, and declaring the empty feature
+# keeps rustc's `unexpected_cfgs` check quiet without enabling a build mode.
+cargo-clippy = []
 
 [dependencies]
 # strand-quant — the absorbed codec backing TQ: owner of the wire format (STR2) + the

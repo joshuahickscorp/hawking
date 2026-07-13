@@ -27,7 +27,7 @@ export function StateTimeline() {
 
   return (
     <div className="statetl" role="group" aria-label="Agent state timeline">
-      <span className="statetl__label" title="The agent's state is a serializable snapshot — scrubbing is instant.">state</span>
+      <span className="statetl__label" title="The agent's state is a serializable snapshot. Scrubbing is instant.">state</span>
       <div className="statetl__dots">
         {steps.map((s, i) => (
           <button
@@ -50,7 +50,7 @@ export function StateTimeline() {
         {sel != null ? (
           <button className="statetl__btn" onClick={live} title="Return to the latest state">live</button>
         ) : null}
-        <button className="statetl__btn statetl__fork" onClick={forkHere} title="Fork a new branch from this point (instant — the state is a snapshot)">
+        <button className="statetl__btn statetl__fork" onClick={forkHere} title="Fork a new branch from this point. Instant, the state is a snapshot.">
           <Icon name="fork" size={12} strokeWidth={1.6} />
           fork from here
         </button>

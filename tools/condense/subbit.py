@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.12
 """subbit.py - merged tool: measure (was subbit_measure.py) + ladder (was subbit_ladder.py) + admm (was subbit_admm.py).
 
-the sub-1-bit SUBBIT lane: measure (SUBBIT-0 entropy floor per model), ladder (sub-1-bit config ladder), admm (NanoQuant ADMM low-rank probe, KILLed on real qwen-05b - do not iterate).
+the sub-1-bit SUBBIT lane: measure (SUBBIT-0 theoretical entropy bound per model), ladder (sub-1-bit config calculator), admm (NanoQuant ADMM low-rank probe, KILLed on real qwen-05b - do not iterate).
 
   subbit.py measure <args...>   # was: python3.12 tools/condense/subbit_measure.py <args...>
   subbit.py ladder <args...>   # was: python3.12 tools/condense/subbit_ladder.py <args...>
@@ -10,12 +10,13 @@ the sub-1-bit SUBBIT lane: measure (SUBBIT-0 entropy floor per model), ladder (s
 import sys
 
 def _run_measure():
-    """subbit_measure.py — SUBBIT-0: the entropy/compressibility FLOOR for sub-1-bit dense (plan gate).
+    """subbit_measure.py — SUBBIT-0: theoretical entropy bound for sub-1-bit dense.
 
-    A PROBE, not a codec and NOT a serving win. It measures, per 2D linear weight, the ACHIEVABLE
-    EFFECTIVE-bpw floor of a dense k-bit artifact = the hard wall below which sub-1-bit dense is
-    physically impossible regardless of how clever the codec or how much recovery training is thrown
-    at it. It claims no throughput, no quality, no deployment — only "the floor is here."
+    A THEORY PROBE, not a codec, product gate, or serving win. It measures an order-0 Shannon lower
+    bound for hypothetical entropy-coded symbol and side-information streams. Hawking currently has
+    entropy coding for selected SIDE streams, not for the bulk trellis symbols, and the calculation
+    omits container framing/page alignment/runtime-retained weights. Therefore this report may
+    prioritize experiments but MUST NOT admit a product, fit, floor, or deletion claim.
 
       floor_eff_bpw(k) = bulk_weight_entropy(k)            # order-0 Shannon bits/weight of the
                                                            #   k-bit symmetric/NF-style quant symbols
@@ -24,14 +25,14 @@ def _run_measure():
                        + outlier_sideinfo                  # gap-coded position-index entropy (rANS-class)
                                                            #   + value bits, amortized per weight
 
-    EFFECTIVE bpw discipline (hard rule): we NEVER report the nominal k. The bulk term is the empirical
-    symbol entropy (always <= k, the wall the trellis coder approaches), and side-info is charged at its
-    order-0 ENTROPY, not its fixed-width billing — because an entropy coder (vendor sideinfo_rans.rs)
-    provably recovers the gap. This mirrors hawking's measured q2 artifact: scale_q entropy ~0.041 bpw,
+    BOUND discipline: we NEVER call nominal k an achieved density. The bulk term is empirical symbol
+    entropy (<= k) and side-info is charged at its order-0 entropy. The existing sideinfo_rans.rs can
+    approach selected SIDE-stream bounds; there is no corresponding bulk-symbol codec today. This
+    mirrors hawking's measured q2 side streams: scale_q entropy ~0.041 bpw,
     outl_pos gap entropy ~0.078 bpw -> ~0.12 bpw side-info floor (~0.232 bpw of fixed-width waste). This
     tool reproduces that CLASS of number from first principles, per-tensor, for k in {1,2,3}.
 
-    KILL LINE  (the criterion that REFUTES the sub-1-bit-dense lever):
+    LEGACY SCREEN (research-priority only; never a product kill/admission gate):
       If the side-info floor ALONE (scale + outlier, summed, entropy-charged) exceeds ~0.31 bpw, then
       sub-1-bit DENSE is DEAD ON ARRIVAL: you have spent your entire <1-bit budget on bookkeeping before
       a single bit of weight signal is stored. The only survivors are MoE-only (where the active-param
@@ -53,7 +54,8 @@ def _run_measure():
       subbit_measure.py --dry <label>                  # synthetic self-test (runs anywhere, no model)
       subbit_measure.py --help                         # prints the KILL line + usage
 
-    Writes reports/condense/<label>_subbit0.json ; human summary -> stderr.
+    Writes reports/condense/<label>_subbit0.json ; human summary -> stderr. Every report carries
+    product_gate=false and deployable=false.
     """
     import sys, os, json, math, gc
     import torch
@@ -111,16 +113,17 @@ def _run_measure():
         """Per-group symmetric k-bit quantize a 2D weight along the last dim.
 
         Returns (q_symbols int16 [out,in], scale_q int32 [out, n_groups]).
-          q_symbols : the k-bit code per weight in {-(2^(k-1)-1) .. +(2^(k-1)-1)} (symmetric).
-                      For k=1 this is the sign in {-1,+1} (1 effective level pair) — the degenerate
-                      case whose bulk entropy is the headline 1-bit floor.
+          q_symbols : the hypothetical quantization symbol per weight.
+                      For k=1 this is EXACTLY the binary sign in {-1,+1}. It must not contain zero:
+                      a {-1,0,+1} alphabet is ternary and cannot be billed as a one-bit code.
           scale_q   : the per-group scale, itself quantized to SCALE_BITS bits (the side-info we then
                       entropy-code). Quantizing the scale is what makes the scale stream a finite
                       alphabet with measurable entropy — a float scale has no order-0 model.
 
-        This is a measurement-grade scalar quantizer (round-to-nearest, no trellis search): the trellis
-        only LOWERS the achieved bits vs this symbol histogram, so the entropy here is an UPPER bound on
-        bulk bits => the reported floor is conservative (we never under-state the wall)."""
+        This is a scalar-symbol theory probe (round-to-nearest, no trellis search). Shannon entropy is
+        a LOWER bound for lossless coding of this particular symbol stream; a different trellis/vector
+        representation has a different alphabet and distribution. It is not an achieved codec rate or
+        a universal upper/lower bound on future Hawking formats."""
         out_f, in_f = w2d.shape
         ng = (in_f + group - 1) // group
         pad = ng * group - in_f
@@ -128,10 +131,16 @@ def _run_measure():
         if pad:
             w = torch.nn.functional.pad(w, (0, pad))
         wg = w.reshape(out_f, ng, group)                      # [out, ng, group]
-        qmax = (1 << (k - 1)) - 1 if k > 1 else 1             # k=1 -> {-1,+1}; k=2 -> {-1,0,1}; k=3 -> -3..3
+        qmax = (1 << (k - 1)) - 1 if k > 1 else 1             # k=2 -> {-1,0,1}; k=3 -> -3..3
         absmax = wg.abs().amax(dim=2, keepdim=True).clamp_min(1e-8)   # [out, ng, 1]
         scale = absmax / qmax                                 # float scale per group
-        q = torch.round(wg / scale).clamp(-qmax, qmax).to(torch.int16)
+        if k == 1:
+            # True binary sign alphabet. The previous round(w/absmax) implementation emitted
+            # mostly zero plus +/-1, then entropy-billed that TERNARY stream as "one bit".
+            # That produced an artificially low ~0.61-bpw bulk bound on Qwen-0.5B.
+            q = torch.where(wg >= 0, 1, -1).to(torch.int16)
+        else:
+            q = torch.round(wg / scale).clamp(-qmax, qmax).to(torch.int16)
         # quantize the scale itself to SCALE_BITS bits (log domain — scales are positive, span decades)
         # so the scale stream is a finite alphabet whose order-0 entropy we can charge honestly.
         s = scale.reshape(out_f, ng)
@@ -196,14 +205,15 @@ def _run_measure():
     # embed/lm_head are 2D and >=256 but the baker passes them through UNQUANTIZED (audit_ladder.py
     # weights eff-bpw by the baker's quantized count, not the raw param count); including them would
     # dilute the floor with weights that never carry the k-bit/side-info cost. Exclude by name.
-    _SKIP_SUBSTR = ("embed_tokens", "lm_head", "embeddings", "wte", "shared")
+    _PROJECTION_SUFFIXES = (
+        "q_proj.weight", "k_proj.weight", "v_proj.weight", "o_proj.weight",
+        "gate_proj.weight", "up_proj.weight", "down_proj.weight",
+    )
 
 
     def _is_quantizable(name, shape):
-        """Match the baker's is_quantizable_linear: 2D, both dims >= 256, and NOT an embedding/lm_head."""
-        if any(s in name for s in _SKIP_SUBSTR):
-            return False
-        return len(shape) == 2 and min(shape) >= 256
+        """Match strand_quant::gate_utils::is_quantizable_linear exactly."""
+        return len(shape) == 2 and any(name.endswith(s) for s in _PROJECTION_SUFFIXES)
 
 
     def measure_tensor(name, w2d):
@@ -231,6 +241,8 @@ def _run_measure():
                     "scale_sideinfo_bpw": round(scale_bpw, 5),
                     "outlier_sideinfo_bpw": round(o_bpw, 5),
                     "sideinfo_floor_bpw": round(sideinfo, 5),
+                    "entropy_lower_bound_bpw": round(floor, 5),
+                    # Legacy compatibility alias. This is not achieved effective bpw.
                     "floor_eff_bpw": round(floor, 5),
                     "_outlier": {kk: (round(vv, 5) if isinstance(vv, float) else vv)
                                  for kk, vv in o_dbg.items()},
@@ -310,7 +322,8 @@ def _run_measure():
             for pct in OUTLIER_PCTS:
                 pk = f"{pct:.1f}"
                 acc = {"bulk_bpw": 0.0, "scale_sideinfo_bpw": 0.0,
-                       "outlier_sideinfo_bpw": 0.0, "sideinfo_floor_bpw": 0.0, "floor_eff_bpw": 0.0}
+                       "outlier_sideinfo_bpw": 0.0, "sideinfo_floor_bpw": 0.0,
+                       "entropy_lower_bound_bpw": 0.0, "floor_eff_bpw": 0.0}
                 for rec, nw in per_tensor:
                     cell = rec["k"][str(k)]["by_outlier_pct"][pk]
                     for key in acc:
@@ -321,10 +334,8 @@ def _run_measure():
         return agg
 
 
-    def _verdict(agg):
-        """Headline: the side-info floor (scale+outlier, entropy-charged) over k and pct. The lever is
-        DEAD if the MINIMUM achievable side-info floor across the grid still exceeds KILL_BPW — because
-        that minimum is the most-favorable bookkeeping budget, and even it leaves no room under 1 bit."""
+    def _legacy_screen(agg):
+        """Research-priority screen only; never a product admission/kill verdict."""
         best = None
         for k in KS:
             for pct in OUTLIER_PCTS:
@@ -332,8 +343,8 @@ def _run_measure():
                 if best is None or si < best[0]:
                     best = (si, k, pct)
         si_floor, k_at, pct_at = best
-        alive = si_floor < KILL_BPW
-        return si_floor, k_at, pct_at, alive
+        worth_experiment = si_floor < KILL_BPW
+        return si_floor, k_at, pct_at, worth_experiment
 
 
     def run(per_tensor_iter, label):
@@ -347,12 +358,15 @@ def _run_measure():
         if not per_tensor:
             raise RuntimeError("no quantizable 2D linear tensors found (>=256 in both dims)")
         agg = _aggregate(per_tensor, total)
-        si_floor, k_at, pct_at, alive = _verdict(agg)
+        si_floor, k_at, pct_at, worth_experiment = _legacy_screen(agg)
         out = {
-            "label": label, "probe": "SUBBIT-0", "note": (
-                "PROBE ONLY — measures the entropy/compressibility FLOOR of sub-1-bit DENSE; "
-                "claims no serving/throughput/quality win. Effective bpw (entropy-charged side-info), "
-                "never nominal. Bulk = order-0 symbol entropy (trellis lowers it further -> conservative)."),
+            "schema": "hawking.subbit_entropy_bound.v2",
+            "label": label, "probe": "SUBBIT-0-THEORY", "note": (
+                "THEORETICAL LOWER BOUND ONLY. No bulk entropy codec, packed artifact, quality, or "
+                "runtime fit is established. This report cannot gate a product or fit claim."),
+            "product_gate": False,
+            "deployable": False,
+            "bulk_entropy_codec_available": False,
             "device": DEV, "dtype": str(DTYPE).replace("torch.", ""),
             "group": GROUP, "scale_bits": SCALE_BITS, "outlier_value_bits": OUTLIER_VALUE_BITS,
             "ks": list(KS), "outlier_pcts": list(OUTLIER_PCTS),
@@ -360,7 +374,10 @@ def _run_measure():
             "kill_bpw": KILL_BPW,
             "sideinfo_floor_bpw": round(si_floor, 5),
             "sideinfo_floor_at": {"k": k_at, "outlier_pct": pct_at},
-            "verdict": "ALIVE" if alive else "DEAD",
+            "verdict": "THEORY_ONLY",
+            "legacy_screen": (
+                "WORTH_REAL_CODEC_EXPERIMENT" if worth_experiment else "LOW_PRIORITY_SIDEINFO_BOUND"
+            ),
             "aggregate": agg,
             "per_tensor": [r for r, _ in per_tensor],
         }
@@ -370,21 +387,18 @@ def _run_measure():
             json.dump(out, f, indent=2)
         # human summary
         log("")
-        log(f"# SUBBIT-0 floor  ({label})  — PROBE, not a serving win")
+        log(f"# SUBBIT-0 theoretical entropy bound  ({label})  — NOT a product gate")
         log(f"# tensors={len(per_tensor)} weights={total:,} group={GROUP} kill={KILL_BPW} bpw")
-        log("#  k  outl%   bulk   scale_si  outl_si  SIDEINFO  FLOOR_eff_bpw")
+        log("#  k  outl%   bulk_H  scale_H  outl_H  SIDEINFO_H  ENTROPY_LOWER_BOUND")
         for k in KS:
             for pct in OUTLIER_PCTS:
                 c = agg[str(k)][f"{pct:.1f}"]
                 log(f"#  {k}   {pct:>4.1f}   {c['bulk_bpw']:.4f}  {c['scale_sideinfo_bpw']:.4f}   "
                     f"{c['outlier_sideinfo_bpw']:.4f}   {c['sideinfo_floor_bpw']:.4f}    {c['floor_eff_bpw']:.4f}")
         log(f"#")
-        log(f"# side-info floor = {si_floor:.4f} bpw (best @ k={k_at}, outlier={pct_at}%); "
-            f"sub-1-bit dense is {'ALIVE' if alive else 'DEAD'} "
-            f"({'floor < ' if alive else 'floor >= '}{KILL_BPW} bpw KILL line)")
-        if not alive:
-            log(f"# KILL: side-info alone ({si_floor:.4f} bpw) >= {KILL_BPW} bpw -> sub-1-bit DENSE is "
-                f"dead on arrival (MoE-only / non-dense survives).")
+        log(f"# side-info entropy bound = {si_floor:.4f} bpw (best @ k={k_at}, outlier={pct_at}%); "
+            f"legacy screen={'worth experiment' if worth_experiment else 'low priority'}")
+        log("# PRODUCT GATE: FALSE — requires packed bytes, quality, and runtime proof")
         log(f"# wrote {outp}")
         return out
 
@@ -393,7 +407,8 @@ def _run_measure():
         args = sys.argv[1:]
         if not args or args[0] in ("-h", "--help"):
             print(__doc__)
-            print(f"\nKILL LINE: side-info floor >= {KILL_BPW} bpw => sub-1-bit DENSE dead on arrival.")
+            print(f"\nTHEORY ONLY: historical threshold {KILL_BPW} prioritizes real codec experiments; "
+                  "it never admits or kills a product.")
             return
         if args[0] == "--dry":
             label = args[1] if len(args) > 1 else "synthetic"
@@ -415,55 +430,50 @@ def _run_ladder():
     (the lowest rung with a BUILT GPU bitslice .tq serve path), THIS file extends the rung set DOWN
     into the sub-1-bit territory that the studio_maximization "crazy ladder" sketches — 1.00, 0.75,
     0.50, 0.33 effective bpw — and encodes, as runnable code, the feasibility classes that decide
-    which (model, eff-bpw) cells are PRODUCT, RESEARCH, FANTASY, or physically BELOW-FLOOR.
+    which footprint cells have an existing scalar serve path versus remaining research probes.
 
     WHAT THIS TOOL IS: a size/fit/feasibility CALCULATOR. Given any (params, eff-bpw) it computes the
-    artifact size, whether it serves on an 84 GB weight budget, and its lane. It does NOT bake, doctor,
+    artifact size, whether it serves on the Studio weight budget, and its lane. It does NOT bake, doctor,
     measure ppl, or claim a serving win — the serve paths below 1.34 bpw are UNBUILT and the recovery
-    at these rungs is UNPROVEN. The "PRODUCT" lane means "the math + a built codec rung exist", NOT
-    "this artifact ships at near-1:1 quality today". Treat every sub-1-bit number as a PROBE.
+    at these rungs is UNPROVEN. Treat every sub-1-bit number as a PROBE.
 
     EFFECTIVE BPW DISCIPLINE (matches ladder.py / audit_ladder.py): rungs here are EFFECTIVE bpw,
-    i.e. they already include side-info (trellis scales + outlier-channel positions + residual-pass
-    overhead — the baker's AGGREGATE number). We never report a nominal payload bpw. The hard physical
-    fact this tool enforces: a DENSE codec cannot encode a weight matrix below the side-info floor
-    (~0.28 eff-bpw measured ~0.25-0.31), because the scales/positions ALONE cost that many bits even
-    if every weight were free. A dense rung below that floor is BELOW-FLOOR = impossible. A MoE model's
-    AMORTIZED-over-total bpw MAY sit below the floor only because the active experts carry real bits and
-    the dormant experts dilute the average — the active slice itself is still floor-bound.
+    i.e. target artifact budgets rather than nominal symbol payload. The calculator does not establish
+    that those budgets are achievable. The historical ~0.28-bpw side-stream estimate is shown only as
+    a research warning: block geometry, stream coding, framing, and MoE allocation can change it, so it
+    is not a hard physical-impossibility gate.
 
-    KILL LINE (the criterion that refutes the sub-1-bit lever):
+    EVIDENCE INTERPRETATION:
       If, on a 7B+ model, the lowest EFFECTIVE-bpw config that holds <=+2% ppl (multiwindow, after the
       full doctor stack) lands at or ABOVE ~1.34 bpw — i.e. no measured config ever crosses the 1.34
-      line at near-1:1 — then every rung below 1.34 here is FANTASY/RESEARCH theater and the sub-1-bit
-      ladder is DEAD as a product axis. This file computes sizes; scaling_law.py --fit decides the kill.
+      line at near-1:1 — then the tested recipes have not supported the sub-bit hypothesis. This file
+      computes sizes only and cannot kill or promote the broader codec research axis.
 
     CLI:
       python subbit_ladder.py                 # summary: rungs x models, lane per cell
       python subbit_ladder.py --tsv           # flat table (model, params, active, per-rung gb + class + lane)
-      python subbit_ladder.py --fit <p_b> [--active A]   # footprint per rung + the bpw that just fits 84/70/30GB
-      python subbit_ladder.py --dream         # the headline callouts (671B@1.0, 744B@0.33, 235B-A22B@1.34)
+      python subbit_ladder.py --fit <p_b> [--active A]   # footprint per rung + bpw fitting 78/60/30GB
+      python subbit_ladder.py --dream         # headline callouts (V4-Pro@0.5, GLM-5.2@1.0, Kimi-K2@0.75)
       python subbit_ladder.py --selftest      # run --tsv + --dream and assert the anchor numbers
     """
-    import sys
+    import sys, os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from studio_manifest import DEFAULT_HARDWARE, FRONTIER_MODELS
 
     # ── hardware envelope (matches ladder.py) ─────────────────────────────────────────────
-    WEIGHT_BUDGET = 84.0          # serve weight budget on the 96 GB box (leave headroom for KV/acts/OS)
-    SERVE_COMFY   = 70.0          # <= this = comfortable (room for long-ctx KV)
+    WEIGHT_BUDGET = DEFAULT_HARDWARE.weight_budget_gb
+    SERVE_COMFY   = 60.0          # <= this leaves substantial KV/control-plane headroom
     SERVE_DREAM   = 30.0          # the "fits on a 32 GB laptop class" callout threshold
 
     # ── the SUB-1-BIT ladder (EFFECTIVE bpw, side-info included) ───────────────────────────
     # 4.50/3.34/2.34/1.34 are ladder.py's built rungs (BPW dict); below 1.34 is the new frontier.
-    # 1.00 = the absolute edge that makes 671B fit 84 GB. 0.33 ~= ternary's MoE-amortized dream.
+    # 1.00/0.75 are paging/capacity research rungs on the 78 GB interactive envelope.
     RUNGS = [4.50, 3.34, 2.34, 1.34, 1.00, 0.75, 0.50, 0.33]
 
     # rungs at/above this have a BUILT GPU bitslice .tq serve path (ladder.py serves()=single-bake)
     BUILT_SERVE_FLOOR = 1.34
 
-    # ── the side-info floor — the hard physical wall for DENSE codecs ──────────────────────
-    # Measured aggregate side-info (trellis scales + outlier positions + residual overhead) is
-    # ~0.25-0.31 eff-bpw across the 7B bakes; we take ~0.28 as the floor. A DENSE rung below this is
-    # physically impossible: the scales/positions cost this many bits even at zero weight payload.
+    # Historical side-stream estimate. Theory/prioritization only, never an impossibility gate.
     SIDE_INFO_FLOOR = 0.28
     SIDE_INFO_RANGE = (0.25, 0.31)
 
@@ -475,14 +485,34 @@ def _run_ladder():
     def M(family, name, total_b, active_b=None, note=""):
         return dict(family=family, name=name, total_b=total_b, active_b=active_b, note=note)
 
+    def _frontier_manifest_models():
+        skip = {"235B-A22B"}
+        rows = []
+        families = {
+            "meta-llama": "llama3",
+            "deepseek-ai": "deepseek",
+            "zai-org": "glm",
+            "moonshotai": "moonshot",
+            "Qwen": "qwen3",
+        }
+        for model in FRONTIER_MODELS:
+            if model.label in skip:
+                continue
+            org = model.hf_id.split("/", 1)[0]
+            family = families.get(org, org.lower().replace("-", ""))
+            artifact_gb = model.total_b * model.serve_bpw / 8.0
+            fit = "resident candidate" if artifact_gb <= WEIGHT_BUDGET else "paging/streaming required"
+            note = (f"{model.role}: @{model.serve_bpw:.2f} ~= {artifact_gb:.0f}GB "
+                    f"{fit}; {model.note}")
+            rows.append(M(family, model.label, model.total_b, model.active_b, note))
+        return rows
+
     MODELS = [
         M("qwen2.5", "Qwen2.5-32B",      32.5,  None, "dense; unconstrained on the box"),
         M("qwen2.5", "Qwen2.5-72B",      72.7,  None, "dense; serve-tight even at 4.5 bpw"),
         M("llama3",  "Llama3.3-70B",     70.6,  None, "dense; the cross-family 70B point"),
         M("qwen3",   "Qwen3-235B-A22B",  235.0, 22.0, "MoE: 235B footprint, decodes like ~22B"),
-        M("llama3",  "Llama3.1-405B",    405.0, None, "dense FRONTIER: needs <=1.0 bpw to even fit"),
-        M("deepseek","DeepSeek-V3",      671.0, 37.0, "MoE: 671B footprint @1.0 ~= 84GB = box edge; active 37B"),
-        M("glm",     "GLM-744B",         744.0, 32.0, "MoE: largest tail; active ~32B; the 0.33 dream"),
+        *_frontier_manifest_models(),
     ]
 
 
@@ -492,7 +522,7 @@ def _run_ladder():
 
 
     def serve_class(gb):
-        """SERVE-COMFY (<=70GB) / SERVE-TIGHT (70-84) / SERVE-OVERFLOW (>84)."""
+        """SERVE-COMFY / SERVE-TIGHT / SERVE-OVERFLOW against the Studio weight budget."""
         if gb <= SERVE_COMFY:
             return "SERVE-COMFY"
         if gb <= WEIGHT_BUDGET:
@@ -511,45 +541,13 @@ def _run_ladder():
 
 
     def below_floor(bpw, is_moe):
-        """A rung is BELOW-FLOOR (physically impossible) when it's under the dense side-info floor AND
-        the model is dense. A MoE may amortize below the floor (active experts carry the bits, dormant
-        experts dilute the per-total average) — so MoE is NOT auto-killed by the dense floor."""
-        return (bpw < SIDE_INFO_FLOOR) and not is_moe
-
-
-    # ── the lane verdict (the studio_maximization "crazy ladder" classification) ───────────
-    # Index each sub-1-bit rung as SUBBIT-N by descending bpw (the studio enumeration):
-    #   SUBBIT-0 = 1.34 (built serve), 1 = 1.00, 2 = 0.75, 3 = 0.50, 4 = 0.33  ... plus the studio's
-    #   extended-research rungs. The studio verdict: SUBBIT-0/1/5 are PRODUCT-lane (a built/near-built
-    #   serve rung + a plausible recovery story), SUBBIT-2/3/4 are RESEARCH-lane (the MDL prune+quant /
-    #   codec-native frontier — unbuilt, unproven), SUBBIT-6/7 (and ANY dense rung under the floor) are
-    #   FANTASY-lane (below where any measured config has reached, or physically impossible).
-    # Concretely on THIS rung set:
-    SUBBIT_INDEX = {1.34: 0, 1.00: 1, 0.75: 2, 0.50: 3, 0.33: 4}
-    PRODUCT_SUBBIT  = {0, 1, 5}
-    RESEARCH_SUBBIT = {2, 3, 4}
-    FANTASY_SUBBIT  = {6, 7}
+        """Legacy API retained for callers; calculator estimates never prove physical impossibility."""
+        return False
 
 
     def lane(bpw, is_moe):
-        """PRODUCT / RESEARCH / FANTASY / BELOW-FLOOR for a (rung, model-kind) cell.
-
-        BELOW-FLOOR overrides everything for a DENSE rung under the side-info floor (impossible).
-        Rungs at/above 1.34 are PRODUCT (the built/serve tier). Sub-1-bit rungs map by SUBBIT index
-        to the studio lanes. A MoE whose per-total rung dips under the floor stays RESEARCH/FANTASY
-        by its index (it is not impossible, just unproven) rather than BELOW-FLOOR."""
-        if below_floor(bpw, is_moe):
-            return "BELOW-FLOOR"
-        if bpw >= BUILT_SERVE_FLOOR:          # 1.34, 2.34, 3.34, 4.50 — the built serve rungs
-            return "PRODUCT"
-        idx = SUBBIT_INDEX.get(bpw)
-        if idx is None:
-            return "RESEARCH"                 # an off-grid sub-1-bit rung defaults to research
-        if idx in PRODUCT_SUBBIT:
-            return "PRODUCT"
-        if idx in RESEARCH_SUBBIT:
-            return "RESEARCH"
-        return "FANTASY"
+        """Existing scalar serve-path geometry versus unbuilt footprint research."""
+        return "BUILT-PATH" if bpw >= BUILT_SERVE_FLOOR else "RESEARCH"
 
 
     def serves_today(bpw):
@@ -582,16 +580,16 @@ def _run_ladder():
     def cmd_tsv():
         cols = "\t".join(f"gb@{r}" for r in RUNGS)
         lanes = "\t".join(f"lane@{r}" for r in RUNGS)
-        print(f"family\tmodel\ttotal_b\tactive_b\tkind\t{cols}\tfit84\tfit70\tfit30\t{lanes}")
+        print(f"family\tmodel\ttotal_b\tactive_b\tkind\t{cols}\tfit78\tfit60\tfit30\t{lanes}")
         for m in MODELS:
             p = m["total_b"]
             gbs = "\t".join(f"{tq_gb(p, r):.1f}" for r in RUNGS)
             lns = "\t".join(lane(r, is_moe(m)) for r in RUNGS)
-            f84 = bpw_that_fits(p, WEIGHT_BUDGET)
-            f70 = bpw_that_fits(p, SERVE_COMFY)
+            f78 = bpw_that_fits(p, WEIGHT_BUDGET)
+            f60 = bpw_that_fits(p, SERVE_COMFY)
             f30 = bpw_that_fits(p, SERVE_DREAM)
             print(f"{m['family']}\t{m['name']}\t{p}\t{m['active_b'] or ''}\t{_moe_tag(m)}\t{gbs}\t"
-                  f"{f84 if f84 else 'none'}\t{f70 if f70 else 'none'}\t{f30 if f30 else 'none'}\t{lns}")
+                  f"{f78 if f78 else 'none'}\t{f60 if f60 else 'none'}\t{f30 if f30 else 'none'}\t{lns}")
 
 
     def cmd_fit(params_b, active_b=None):
@@ -602,10 +600,13 @@ def _run_ladder():
         print(f"# artifact_gb = total_params * eff_bpw / 8 ; footprint=total, tps~active")
         for r in RUNGS:
             gb = tq_gb(params_b, r)
-            bf = "  BELOW-FLOOR(dense impossible)" if below_floor(r, moe) else ""
+            bf = "  [below historical side-stream estimate; theory only]" \
+                if r < SIDE_INFO_FLOOR and not moe else ""
             print(f"  {r:4.2f} bpw: {gb:7.1f} GB  {serve_class(gb):13s} {lane(r, moe):11s}"
                   f"{'' if serves_today(r) else ' [no built serve path]'}{bf}")
-        for budget, tag in ((WEIGHT_BUDGET, "84GB box"), (SERVE_COMFY, "70GB comfy"), (SERVE_DREAM, "30GB laptop")):
+        for budget, tag in ((WEIGHT_BUDGET, f"{WEIGHT_BUDGET:.0f}GB box"),
+                            (SERVE_COMFY, f"{SERVE_COMFY:.0f}GB comfy"),
+                            (SERVE_DREAM, "30GB laptop")):
             b = bpw_that_fits(params_b, budget)
             if b is None:
                 print(f"  just-fits {tag:12s}: none on this rung set (even {RUNGS[-1]} bpw overflows)")
@@ -617,7 +618,10 @@ def _run_ladder():
         print("# Headline sub-1-bit callouts (PROBE math — sizes only, no serve-win claim):")
         callouts = [
             ("DeepSeek-V3 671B",      671.0, 1.00, 37.0),
-            ("GLM-744B",              744.0, 0.33, 32.0),
+            ("DeepSeek-V4-Pro",      1600.0, 0.50, 49.0),
+            ("GLM-5.2",               753.0, 1.00, 39.0),
+            ("Kimi-K2.6",            1100.0, 0.75, 32.0),
+            ("Kimi-K2.7-Code",        1100.0, 0.75, 32.0),
             ("Qwen3-235B-A22B",       235.0, 1.34, 22.0),
         ]
         for name, p, bpw, act in callouts:
@@ -626,17 +630,16 @@ def _run_ladder():
             print(f"  {name:22s} @ {bpw:.2f} eff-bpw = {gb:5.1f} GB  "
                   f"{serve_class(gb):13s} {lane(bpw, moe):11s}  (MoE active {act}B)"
                   f"{'' if serves_today(bpw) else '  [serve path UNBUILT]'}")
-        print(f"# Side-info floor: dense codec cannot go below ~{SIDE_INFO_FLOOR} eff-bpw "
-              f"(measured {SIDE_INFO_RANGE[0]}-{SIDE_INFO_RANGE[1]}); MoE may amortize lower (active experts carry the bits).")
-        print(f"# KILL: if no 7B+ config holds <=+{GATE_PCT}% ppl below {BUILT_SERVE_FLOOR} bpw, every sub-1-bit rung is fantasy.")
+        print(f"# Historical side-stream estimate: ~{SIDE_INFO_FLOOR} bpw "
+              f"({SIDE_INFO_RANGE[0]}-{SIDE_INFO_RANGE[1]}); THEORY/PRIORITY ONLY, not a physical floor.")
+        print(f"# Evidence rule: tested recipes that miss <=+{GATE_PCT}% ppl are negative results, not proof that every future codec is impossible.")
 
 
     def cmd_summary():
         print(f"# subbit_ladder — sub-1-bit rung math (PROBE; sizes/fit/lane, NOT a serve-win claim)")
         print(f"# budget {WEIGHT_BUDGET:.0f}GB · built serve floor {BUILT_SERVE_FLOOR} bpw · "
-              f"dense side-info floor ~{SIDE_INFO_FLOOR} bpw (measured {SIDE_INFO_RANGE[0]}-{SIDE_INFO_RANGE[1]})")
-        print(f"# lanes: PRODUCT(built/near) · RESEARCH(unbuilt frontier) · FANTASY(beyond reach) · "
-              f"BELOW-FLOOR(dense impossible)")
+              f"historical side-stream estimate ~{SIDE_INFO_FLOOR} bpw (theory-only)")
+        print(f"# lanes: BUILT-PATH(existing scalar runtime geometry) · RESEARCH(unbuilt/probe)")
         hdr = "model".ljust(20) + "  total  " + "  ".join(f"{r:>5.2f}" for r in RUNGS)
         print("\n" + hdr)
         print("-" * len(hdr))
@@ -647,23 +650,23 @@ def _run_ladder():
             for r in RUNGS:
                 gb = tq_gb(p, r)
                 ln = lane(r, is_moe(m))
-                sym = {"PRODUCT": " P ", "RESEARCH": " R ", "FANTASY": " F ", "BELOW-FLOOR": " x "}[ln]
+                sym = {"BUILT-PATH": " B ", "RESEARCH": " R "}[ln]
                 # mark serve-overflow rungs with a trailing '!'
                 sym = sym if gb <= WEIGHT_BUDGET else sym.rstrip() + "!"
                 marks.append(f"{sym:>5s}")
             print(row + "  ".join(marks))
-        print("\n# legend: P=product R=research F=fantasy x=below-floor  '!'=overflows 84GB")
-        print("# fit-on-84GB (highest eff-bpw that serves):")
+        print(f"\n# legend: B=existing scalar path R=research/probe  '!'=overflows {WEIGHT_BUDGET:.0f}GB")
+        print(f"# fit-on-{WEIGHT_BUDGET:.0f}GB (highest eff-bpw that serves):")
         for m in MODELS:
             b = bpw_that_fits(m["total_b"], WEIGHT_BUDGET)
             print(f"    {m['name']:20s} <= {b if b else 'none':>4} bpw   ({_moe_tag(m)})")
-        print(f"\n# KILL: if no 7B+ config holds <=+{GATE_PCT}% ppl below {BUILT_SERVE_FLOOR} bpw "
-              f"(scaling_law.py --fit), the whole sub-1-bit ladder is dead.")
+        print(f"\n# NEGATIVE: a tested recipe missing <=+{GATE_PCT}% ppl is recorded, not generalized into a physical impossibility claim.")
 
 
     def cmd_selftest():
         """Synthetic, runs entirely here (touches no model). Asserts the anchor numbers from the
-        prompt: 671@1.0 ~ 83.9GB, 744@0.33 ~ 30.7GB, 235@1.34 ~ 39GB, plus lane/floor invariants."""
+        prompt: V4-Pro@0.5 ~100GB, 671@1.0 ~83.9GB, GLM-5.2@1.0 ~94.1GB, Kimi-K2@0.75 ~103GB,
+        235@1.34 ~ 39GB, plus lane/floor invariants."""
         ok = True
         def check(name, got, want, tol=0.15):
             nonlocal ok
@@ -672,20 +675,26 @@ def _run_ladder():
             print(f"  [{'PASS' if good else 'FAIL'}] {name}: got {got:.2f}, want ~{want:.2f}")
 
         check("671B @ 1.00 bpw GB", tq_gb(671.0, 1.00), 83.9)
-        check("744B @ 0.33 bpw GB", tq_gb(744.0, 0.33), 30.7)
+        check("DeepSeek-V4-Pro @ 0.50 bpw GB", tq_gb(1600.0, 0.50), 100.0, tol=0.5)
+        check("GLM-5.2 @ 1.00 bpw GB", tq_gb(753.0, 1.00), 94.1, tol=0.5)
+        check("Kimi-K2.6 @ 0.75 bpw GB", tq_gb(1100.0, 0.75), 103.1, tol=0.5)
+        check("Kimi-K2.7-Code @ 0.75 bpw GB", tq_gb(1100.0, 0.75), 103.1, tol=0.5)
         check("235B @ 1.34 bpw GB", tq_gb(235.0, 1.34), 39.4, tol=0.5)
 
         # lane invariants
         inv = [
-            ("671B@1.00 serves the box (TIGHT)", serve_class(tq_gb(671.0, 1.00)) == "SERVE-TIGHT"),
-            ("671B@1.00 is PRODUCT (SUBBIT-1)", lane(1.00, True) == "PRODUCT"),
+            ("671B@1.00 overflows interactive budget", serve_class(tq_gb(671.0, 1.00)) == "SERVE-OVERFLOW"),
+            ("DeepSeek-V4-Pro@0.50 overflows", serve_class(tq_gb(1600.0, 0.50)) == "SERVE-OVERFLOW"),
+            ("Kimi-K2.6@0.75 overflows", serve_class(tq_gb(1100.0, 0.75)) == "SERVE-OVERFLOW"),
+            ("Kimi-K2.7-Code@0.75 overflows", serve_class(tq_gb(1100.0, 0.75)) == "SERVE-OVERFLOW"),
+            ("671B@1.00 remains RESEARCH", lane(1.00, True) == "RESEARCH"),
             ("0.75 dense rung is RESEARCH", lane(0.75, False) == "RESEARCH"),
             ("0.50 dense rung is RESEARCH", lane(0.50, False) == "RESEARCH"),
-            ("0.33 rung NOT below floor (>0.28)", not below_floor(0.33, False)),
-            ("0.20 dense rung is BELOW-FLOOR", lane(0.20, False) == "BELOW-FLOOR"),
-            ("0.20 MoE rung is NOT below-floor", lane(0.20, True) != "BELOW-FLOOR"),
+            ("0.33 rung remains RESEARCH", lane(0.33, False) == "RESEARCH"),
+            ("0.20 dense rung is theory-only RESEARCH", lane(0.20, False) == "RESEARCH"),
+            ("0.20 MoE rung is RESEARCH", lane(0.20, True) == "RESEARCH"),
             ("1.34 is the built serve floor", serves_today(1.34) and not serves_today(1.00)),
-            ("405B needs <=1.34 to fit 84GB", (bpw_that_fits(405.0, WEIGHT_BUDGET) or 9) <= 1.34),
+            ("405B needs <=1.34 to fit 78GB", (bpw_that_fits(405.0, WEIGHT_BUDGET) or 9) <= 1.34),
             ("32B fits at top rung 4.50", bpw_that_fits(32.5, WEIGHT_BUDGET) == 4.50),
         ]
         for name, cond in inv:

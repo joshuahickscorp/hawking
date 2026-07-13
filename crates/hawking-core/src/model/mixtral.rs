@@ -5,6 +5,7 @@
 //! `blk.N.ffn_down.E.weight`. This module intentionally does not look for the
 //! fused `*_exps.weight` layout used by the DeepSeek path.
 
+use super::arch_config::token_embd_vocab_size_opt;
 use super::weights::{dequant_f16, dequant_f32};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
@@ -64,11 +65,7 @@ impl MixtralConfig {
         let top_k = get_u32("llama.expert_used_count").unwrap_or(2) as usize;
         let vocab_size = get_u32("llama.vocab_size")
             .map(|v| v as usize)
-            .or_else(|| {
-                g.tensor("token_embd.weight")
-                    .and_then(|t| t.dims.iter().copied().max())
-                    .map(|v| v as usize)
-            })
+            .or_else(|| token_embd_vocab_size_opt(g))
             .ok_or_else(|| Error::Model("missing llama vocab size".into()))?;
 
         if hidden % n_heads != 0 {

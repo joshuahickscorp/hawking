@@ -19,7 +19,7 @@ ppl_bench.py: same loading pattern, same DOCTOR_DEVICE/DOCTOR_DTYPE env contract
 (0.5B -> mps/float32; 7B -> cpu/bfloat16; NEVER float16).
 
 Usage:
-  python3.12 tools/condense/multi_eval.py <hf-model-dir> [override.safetensors] [label]
+  python3.12 tools/condense/multi_eval.py <hf-model-dir> [override.safetensors] [label] [adapter]
 
 Prints one JSON line: {label, model, override, per_task{...}, aggregate, n}.
 Run it on f16 and on a condensed override; the DELTA in aggregate accuracy is the
@@ -27,6 +27,7 @@ capability cost the ppl number alone can hide.
 """
 import sys, os, json, torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from adapter_contract import AdapterContractError, validate_for_model
 
 DEV = os.environ.get("DOCTOR_DEVICE")
 DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))
@@ -73,10 +74,61 @@ CODE = [
 ]
 
 
+def _attach_lora_adapter(model, adapter, *, expected_model, expected_wbase, dev, dtype):
+    """Validate the complete artifact and model mapping before attaching any factor."""
+    if not expected_wbase:
+        raise AdapterContractError("a Hawking adapter requires its declared base override")
+    import torch.nn as nn
+    import torch.nn.functional as F
+    from safetensors import safe_open
+
+    modules = dict(model.named_modules())
+    staged = []
+    with safe_open(adapter, framework="pt") as handle:
+        contract = validate_for_model(
+            handle, model, expected_model=expected_model, expected_wbase=expected_wbase,
+            expected_target_regex="all",
+        )
+        compatibility = []
+        for entry in contract["entries"]:
+            module = modules.get(entry["name"])
+            if not isinstance(module, nn.Linear):
+                compatibility.append(f"{entry['name']}: no matching nn.Linear")
+                continue
+            expected_a = (module.weight.shape[0], contract["rank"])
+            expected_b = (contract["rank"], module.weight.shape[1])
+            if entry["a_shape"] != expected_a or entry["b_shape"] != expected_b:
+                compatibility.append(
+                    f"{entry['name']}: A{entry['a_shape']} B{entry['b_shape']}, expected "
+                    f"A{expected_a} B{expected_b}"
+                )
+        if compatibility:
+            raise AdapterContractError(
+                "adapter/model shape mismatch: " + "; ".join(compatibility)
+            )
+        # Stage all tensors only after every mapping has passed. The model remains untouched if a
+        # tensor read/conversion fails, and no partially attached adapter can be evaluated.
+        for entry in contract["entries"]:
+            staged.append((
+                modules[entry["name"]],
+                handle.get_tensor(entry["a_key"]).to(dev, dtype),
+                handle.get_tensor(entry["b_key"]).to(dev, dtype),
+            ))
+
+    for module, factor_a, factor_b in staged:
+        module._hawking_lora_A = factor_a
+        module._hawking_lora_B = factor_b
+        module.forward = (lambda x, mm=module: F.linear(x, mm.weight, mm.bias)
+                          + F.linear(F.linear(x, mm._hawking_lora_B),
+                                     mm._hawking_lora_A))
+    return len(staged), contract
+
+
 def main():
     model_dir = sys.argv[1]
     override = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] != "-" else None
     label = sys.argv[3] if len(sys.argv) > 3 else (override or "f16")
+    adapter = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] != "-" else None
     dev = DEV or ("mps" if torch.backends.mps.is_available() else "cpu")
 
     tok = AutoTokenizer.from_pretrained(model_dir)
@@ -90,8 +142,19 @@ def main():
         missing, unexpected = model.load_state_dict(sd, strict=False)
         print(f"# {label}: swapped {len(sd)} tensors | missing {len(missing)} "
               f"unexpected {len(unexpected)}", file=sys.stderr)
+        del sd
 
     model = model.to(dev).eval()
+
+    if adapter:
+        attached, contract = _attach_lora_adapter(
+            model, adapter, expected_model=model_dir, expected_wbase=override,
+            dev=dev, dtype=DTYPE,
+        )
+        print(f"# {label}: attached {attached} LoRA adapters "
+              f"schema={contract['metadata']['adapter_schema']} "
+              f"v{contract['metadata']['adapter_version']} "
+              f"orientation={contract['orientation']}", file=sys.stderr)
 
     def greedy_text(prompt, max_new=6):
         enc = tok(prompt, return_tensors="pt").to(dev)
@@ -156,9 +219,10 @@ def main():
     aggregate = sum(results[k] * weights[k] for k in results) / n
 
     print(json.dumps({
-        "label": label, "model": model_dir, "override": override,
+        "schema": "hawking.multi_eval.v1", "suite": "hawking.multi_eval.v1",
+        "label": label, "model": model_dir, "override": override, "adapter": adapter,
         "per_task": {k: round(v, 4) for k, v in results.items()},
-        "aggregate": round(aggregate, 4), "n": n,
+        "task_n": weights, "aggregate": round(aggregate, 4), "n": n,
     }))
 
 

@@ -29,6 +29,7 @@
 
 pub mod commands;
 pub mod connectors;
+pub mod digest;
 pub mod host;
 pub mod interrupt;
 pub mod model_provider;

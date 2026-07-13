@@ -25,6 +25,7 @@ pub mod router;
 pub mod sampler;
 pub mod scheduler;
 pub mod supervisor;
+pub mod tool_spec_decode;
 
 pub use adapters::{AdapterRegistry, AdapterSelection};
 pub use confidence::{self_consistency_vote, AnswerNormalizer, VoteResult};

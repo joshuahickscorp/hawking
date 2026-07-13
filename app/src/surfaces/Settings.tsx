@@ -46,7 +46,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
   // degrades to a clear "managed by the desktop app" note rather than a dead button.
   const [update, setUpdate] = useState<string>("");
   const checkUpdates = async () => {
-    setUpdate("checking…");
+    setUpdate("checking");
     const res = await checkForUpdate();
     if (res == null) setUpdate("updates are managed by the desktop app");
     else if (res.available) setUpdate(`update available: ${res.version ?? "newer"}`);

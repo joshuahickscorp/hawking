@@ -342,11 +342,56 @@ impl<'a> AgentDriver<'a> {
             Ok(())
         };
         let stats = runtime.generate(request, &mut sink).await?;
-        Ok(json!({
+
+        let mut observation = json!({
             "generated": buf,
             "input_tokens": stats.input_tokens,
             "output_tokens": stats.output_tokens,
-        }))
+        });
+        // Agentic tool use from a model step, under the doctrine that the model is
+        // never trusted to authorize a mutation. A model step may auto-call
+        // READ-ONLY tools (gather info: read, search, status) through the
+        // permission-gated loop; a mutating call it emits is RECORDED as proposed
+        // but NOT executed - mutations require an authorized plan step. Requires a
+        // dispatcher; without one the step is text-only as before.
+        if let Some(dispatcher) = self.dispatcher {
+            let parsed = crate::tools::parse_tool_calls(&buf);
+            if !parsed.is_empty() {
+                let mut tool_loop = crate::tools::ToolLoop::new(
+                    dispatcher,
+                    Vec::new(),
+                    Some(self.workspace_root.clone()),
+                );
+                // Deny-by-default: a model step may auto-dispatch only this explicit
+                // allowlist of PURE, in-process query tools that cannot mutate or
+                // shell out under ANY argument. Subprocess-backed tools (git.*,
+                // shell.*) are excluded even when annotated read-only, because an
+                // arg-injection there (as the review found in git.diff's `ref`) can
+                // escalate a "read" into a write. The read-only annotation is checked
+                // too, as a second gate. Anything else is recorded as proposed.
+                const AUTO_DISPATCH_ALLOWLIST: &[&str] =
+                    &["fs.read", "fs.list", "fs.stat", "fs.glob", "search.text"];
+                let mut records = Vec::with_capacity(parsed.len());
+                for p in parsed {
+                    let call = p.into_tool_call();
+                    let auto = AUTO_DISPATCH_ALLOWLIST.contains(&call.tool.as_str())
+                        && dispatcher.is_read_only(&call.tool);
+                    if auto {
+                        records.push(tool_loop.run_call(call).await.to_observation());
+                    } else {
+                        records.push(json!({
+                            "tool": call.tool,
+                            "status": "proposed",
+                            "dispatched": false,
+                            "note": "only pure read-only query tools auto-dispatch from a model \
+                                     step; anything else requires an authorized plan step",
+                        }));
+                    }
+                }
+                observation["tool_calls"] = json!(records);
+            }
+        }
+        Ok(observation)
     }
 
     // --- VERIFY: run the step's oracles + the gate --------------------------

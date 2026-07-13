@@ -100,7 +100,7 @@ def _run_strand():
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from safetensors.torch import save_file, load_file
 
-    MODEL = "scratch/qwen-05b"
+    MODEL = os.environ.get("DOCTOR_MODEL", "scratch/qwen-05b")
     BITS  = int(sys.argv[1]) if len(sys.argv) > 1 else 2
     STEPS = int(sys.argv[2]) if len(sys.argv) > 2 else 300
     LR    = float(sys.argv[3]) if len(sys.argv) > 3 else 3e-5
@@ -379,6 +379,7 @@ def _run_lora():
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from safetensors.torch import save_file
     from safetensors import safe_open
+    from adapter_contract import AdapterContractError, build_metadata, validate_handle
 
     torch.set_num_threads(_n_threads)
     torch.set_num_interop_threads(max(2, _n_threads // 2))
@@ -391,12 +392,13 @@ def _run_lora():
     SAVE  = sys.argv[5] if len(sys.argv) > 5 and sys.argv[5] != "-" else None
     dev = os.environ.get("DOCTOR_DEVICE") or ("mps" if torch.backends.mps.is_available() else "cpu")
     DTYPE = getattr(torch, os.environ.get("DOCTOR_DTYPE", "float32"))
-    GRAD_ACCUM = int(os.environ.get("DOCTOR_GRAD_ACCUM", "1"))
+    GRAD_ACCUM = max(1, int(os.environ.get("DOCTOR_GRAD_ACCUM", "1")))
     SAVE_MODE = os.environ.get("DOCTOR_SAVE_MODE", "adapter").lower()
     TARGET_REGEX = os.environ.get("DOCTOR_TARGET_REGEX")
     TARGET_RE = re.compile(TARGET_REGEX) if TARGET_REGEX else None
-    EVAL_EVERY = int(os.environ.get("DOCTOR_EVAL_EVERY", "25"))
-    SAVE_EVERY = int(os.environ.get("DOCTOR_SAVE_EVERY", str(EVAL_EVERY)))
+    EVAL_EVERY = max(1, int(os.environ.get("DOCTOR_EVAL_EVERY", "25")))
+    SAVE_EVERY = max(1, int(os.environ.get("DOCTOR_SAVE_EVERY", str(EVAL_EVERY))))
+    PROGRESS_EVERY = max(1, int(os.environ.get("DOCTOR_PROGRESS_EVERY", "1")))
     PROGRESS = os.environ.get("DOCTOR_PROGRESS") or (SAVE + ".jsonl" if SAVE else None)
     LATEST = os.environ.get("DOCTOR_LATEST")
     if SAVE and SAVE_MODE == "adapter" and not LATEST:
@@ -432,7 +434,23 @@ def _run_lora():
             os.makedirs(parent, exist_ok=True)
         tmp = path + ".tmp"
         save_file(tensors, tmp, metadata=_metadata(metadata or {}))
+        # `save_file` closes the descriptor, but close alone only reaches the kernel page cache.
+        # Flush the staged inode before publishing its name so a sudden unplug cannot leave an
+        # apparently complete checkpoint whose contents never reached durable storage.
+        with open(tmp, "rb") as staged:
+            os.fsync(staged.fileno())
         os.replace(tmp, path)
+        # Atomic rename prevents torn readers; syncing the containing directory makes the
+        # checkpoint name itself durable across a sudden unplug/power loss.
+        directory = parent or "."
+        try:
+            dfd = os.open(directory, os.O_RDONLY)
+            try:
+                os.fsync(dfd)
+            finally:
+                os.close(dfd)
+        except OSError:
+            pass
 
 
     def _adapter_state():
@@ -445,18 +463,17 @@ def _run_lora():
 
     def save_adapter(path, *, step, heldout, kind, loss=None, base_ppl=None):
         meta = {
-            "artifact_type": "hawking_lora_adapter",
-            "model": MODEL,
-            "wbase": WBASE,
-            "rank": RANK,
             "step": step,
             "steps": STEPS,
             "lr": LR,
+            "grad_accum": GRAD_ACCUM,
             "heldout_ppl": heldout,
             "base_ppl": base_ppl,
             "kind": kind,
             "loss": loss,
             "created_unix": int(time.time()),
+            **build_metadata(model=MODEL, wbase=WBASE, rank=RANK,
+                             adapter_count=len(ADAPT), target_regex=TARGET_REGEX),
         }
         _save_safetensors_atomic(_adapter_state(), path, meta)
         print(f"# saved {kind} LoRA adapter: {path}", file=sys.stderr)
@@ -464,15 +481,38 @@ def _run_lora():
 
     def load_adapter(path):
         if not path or not os.path.exists(path):
-            return False
+            raise FileNotFoundError(f"Doctor adapter checkpoint missing: {path}")
         by_name = {n: m for n, m in ADAPT}
         with safe_open(path, framework="pt") as f:
-            for name, m in ADAPT:
-                ak, bk = name + ".lora_A", name + ".lora_B"
-                if ak in f.keys() and bk in f.keys():
-                    m._A.data.copy_(f.get_tensor(ak).to(dev, DTYPE))
-                    m._B.data.copy_(f.get_tensor(bk).to(dev, DTYPE))
-        return bool(by_name)
+            contract = validate_handle(
+                f, expected_model=MODEL, expected_wbase=WBASE, expected_rank=RANK,
+                expected_names=set(by_name), expected_target_regex=TARGET_REGEX or "all",
+            )
+            compatibility = []
+            for entry in contract["entries"]:
+                name = entry["name"]
+                module = by_name.get(name)
+                if module is None:
+                    compatibility.append(f"{name}: no matching Doctor module")
+                    continue
+                expected_a = (module.weight.shape[0], RANK)
+                expected_b = (RANK, module.weight.shape[1])
+                if entry["a_shape"] != expected_a or entry["b_shape"] != expected_b:
+                    compatibility.append(
+                        f"{name}: A{entry['a_shape']} B{entry['b_shape']}, expected "
+                        f"A{expected_a} B{expected_b}"
+                    )
+            if compatibility:
+                raise AdapterContractError(
+                    "adapter/model shape mismatch: " + "; ".join(compatibility)
+                )
+            # No model mutation occurs until metadata, pair completeness, orientation, module set,
+            # dtype, rank, and every module shape have all passed.
+            for entry in contract["entries"]:
+                module = by_name[entry["name"]]
+                module._A.data.copy_(f.get_tensor(entry["a_key"]).to(dev, DTYPE))
+                module._B.data.copy_(f.get_tensor(entry["b_key"]).to(dev, DTYPE))
+        return True
 
 
     def emit_progress(record):
@@ -484,6 +524,8 @@ def _run_lora():
             os.makedirs(parent, exist_ok=True)
         with open(PROGRESS, "a") as f:
             f.write(json.dumps(record) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
 
 
     def _request_stop(signum, _frame):
@@ -498,6 +540,8 @@ def _run_lora():
         print(f"# doctor: threads={_n_threads} dev={dev} dtype={DTYPE} steps={STEPS} "
               f"rank={RANK} grad_accum={GRAD_ACCUM} save_mode={SAVE_MODE}"
               f" target={TARGET_REGEX or 'all'}", file=sys.stderr)
+        emit_progress({"event": "phase", "phase": "initializing", "pid": os.getpid(),
+                       "steps": STEPS, "grad_accum": GRAD_ACCUM, "rank": RANK})
 
         tok = AutoTokenizer.from_pretrained(MODEL)
 
@@ -514,6 +558,7 @@ def _run_lora():
         chunk_ids = [c for c in chunk_ids if c.shape[1] >= 16] or [ids_calib.unsqueeze(0)]
 
         if KD:
+            emit_progress({"event": "phase", "phase": "teacher-cache", "chunks": len(chunk_ids)})
             print(f"# KD phase-1: loading teacher to cache top-{KDK} logits ({len(chunk_ids)} chunks)…",
                   file=sys.stderr)
             teacher = AutoModelForCausalLM.from_pretrained(
@@ -531,6 +576,7 @@ def _run_lora():
             if dev == "mps":
                 torch.mps.empty_cache()
             print(f"# KD: teacher freed; {len(kd_cache)} chunk logits cached", file=sys.stderr)
+            emit_progress({"event": "phase", "phase": "teacher-freed", "chunks": len(kd_cache)})
 
         # ── PHASE 2: load student + STRAND base weights ───────────────────────────────────────
         print(f"# loading student model…", file=sys.stderr)
@@ -566,7 +612,12 @@ def _run_lora():
                 m.weight.requires_grad_(False)
                 m._A = nn.Parameter(torch.zeros(m.weight.shape[0], RANK, device=dev, dtype=DTYPE))
                 m._B = nn.Parameter(torch.randn(RANK, m.weight.shape[1], device=dev, dtype=DTYPE) * 0.01)
-                m.forward = (lambda x, mm=m: F.linear(x, mm.weight + mm._A @ mm._B, mm.bias))
+                # Keep the correction low-rank in execution too. Materializing A@B here turns
+                # every LoRA layer back into a full dense matrix multiply/allocation and was the
+                # main Doctor time/RAM sink. This is algebraically x(W + AB)^T, evaluated as two
+                # narrow GEMMs: xW^T + (xB^T)A^T.
+                m.forward = (lambda x, mm=m: F.linear(x, mm.weight, mm.bias)
+                             + F.linear(F.linear(x, mm._B), mm._A))
                 params += [m._A, m._B]
                 ADAPT.append((name, m))
 
@@ -588,8 +639,30 @@ def _run_lora():
         # ── PHASE 3: train ────────────────────────────────────────────────────────────────────
         model.train()
         opt = torch.optim.AdamW(params, lr=LR)
+        # Persist the exact zero-correction adapter *before* the first backward/update. A step-0
+        # evaluation happens after one microstep and therefore is not the untouched base. Keeping
+        # this checkpoint makes Doctor monotone: if every trained adapter regresses, the selected
+        # artifact remains the original reconstruction instead of the least-bad regression.
         best_ppl, best_step, best_path = base_ppl, -1, None
+        if SAVE_MODE == "adapter" and SAVE:
+            save_adapter(SAVE, step=-1, heldout=base_ppl, kind="best-zero",
+                         base_ppl=base_ppl)
+            best_path = SAVE
+        emit_progress({
+            "event": "eval",
+            "step": -1,
+            "loss": None,
+            "heldout_ppl": base_ppl,
+            "best_ppl": best_ppl,
+            "best_step": best_step,
+            "rank": RANK,
+            "steps": STEPS,
+            "stop_requested": STOP_REQUESTED,
+            "kind": "zero-correction-baseline",
+        })
         opt.zero_grad()
+        train_t0 = time.monotonic()
+        completed_steps = 0
         for step in range(STEPS):
             if STOP_REQUESTED:
                 break
@@ -607,6 +680,24 @@ def _run_lora():
             if (step + 1) % GRAD_ACCUM == 0:
                 opt.step()
                 opt.zero_grad()
+
+            completed_steps = step + 1
+            if step % PROGRESS_EVERY == 0 or step == STEPS - 1 or STOP_REQUESTED:
+                elapsed_s = max(time.monotonic() - train_t0, 1e-6)
+                rate = completed_steps / elapsed_s
+                emit_progress({
+                    "event": "train",
+                    "step": step,
+                    "completed_steps": completed_steps,
+                    "optimizer_updates": completed_steps // GRAD_ACCUM,
+                    "loss": loss.item(),
+                    "objective": "topk_kl" if KD else "ce",
+                    "elapsed_s": elapsed_s,
+                    "steps_per_s": rate,
+                    "eta_s": max(0.0, (STEPS - completed_steps) / rate) if rate else None,
+                    "steps": STEPS,
+                    "stop_requested": STOP_REQUESTED,
+                })
 
             if step % EVAL_EVERY == 0 or step == STEPS - 1 or STOP_REQUESTED:
                 model.eval()
@@ -636,7 +727,9 @@ def _run_lora():
                     "steps": STEPS,
                     "stop_requested": STOP_REQUESTED,
                 })
-                print(f"#  step {step:4d} ce {loss.item():.4f}  held-out {hp:.1f}{tag}", file=sys.stderr)
+                objective = "topk-kl" if KD else "ce"
+                print(f"#  step {step:4d} {objective} {loss.item():.4f}  "
+                      f"held-out {hp:.1f}{tag}", file=sys.stderr)
 
         if SAVE_MODE == "adapter":
             if best_path:
@@ -653,6 +746,9 @@ def _run_lora():
         final = {"base_ppl": base_ppl, "lora_ppl": lora_ppl, "rank": RANK, "steps": STEPS,
                  "best_ppl": best_ppl, "best_step": best_step, "save_mode": SAVE_MODE,
                  "artifact_path": artifact_path,
+                 "completed_steps": completed_steps,
+                 "optimizer_updates": completed_steps // GRAD_ACCUM,
+                 "grad_accum": GRAD_ACCUM,
                  "stopped_early": STOP_REQUESTED,
                  "recovery_pct": (base_ppl - lora_ppl) / base_ppl * 100 if base_ppl else 0}
         emit_progress({"event": "final", **final})
@@ -864,6 +960,28 @@ def _run_registry():
         print(__doc__)
 
 
+def _selftest():
+    """Cheap algebra guard for the live low-rank execution path."""
+    import torch
+    import torch.nn.functional as F
+
+    torch.manual_seed(7)
+    x = torch.randn(2, 3, 5, dtype=torch.float64)
+    weight = torch.randn(7, 5, dtype=torch.float64)
+    bias = torch.randn(7, dtype=torch.float64)
+    a = torch.randn(7, 2, dtype=torch.float64)
+    b = torch.randn(2, 5, dtype=torch.float64)
+    dense = F.linear(x, weight + a @ b, bias)
+    factored = F.linear(x, weight, bias) + F.linear(F.linear(x, b), a)
+    assert torch.allclose(dense, factored, rtol=1e-12, atol=1e-12)
+
+    zero = torch.zeros_like(a)
+    base = F.linear(x, weight, bias)
+    untouched = base + F.linear(F.linear(x, b), zero)
+    assert torch.equal(base, untouched), "zero-correction checkpoint must reproduce the base exactly"
+    print("doctor.py selftest OK")
+
+
 if __name__ == "__main__":
     _sub = sys.argv[1] if len(sys.argv) > 1 else "--help"
     if _sub == "blockwise":
@@ -881,5 +999,7 @@ if __name__ == "__main__":
     elif _sub == "registry":
         sys.argv = ["doctor_registry.py"] + sys.argv[2:]
         _run_registry()
+    elif _sub == "--selftest":
+        _selftest()
     else:
         print(__doc__)

@@ -131,7 +131,7 @@ export function HunkReview({
           rowGap: "var(--ma-1)",
           padding: "var(--ma-2) var(--ma-3)",
           boxShadow: "inset 0 -1px 0 0 var(--border)",
-          fontSize: "12px",
+          fontSize: "var(--fs-small)",
           color: "var(--text-muted)",
           minWidth: 0,
         }}
@@ -212,7 +212,7 @@ function HunkCard({
   const st = STATUS_LABEL[hunk.status];
   // Reject fades the card out; accept just settles (no glow/bloom — flat VS Code surface).
   const settleStyle =
-    settle === "reject" ? { animation: "hunk-dissolve 480ms var(--ease) forwards" } : {};
+    settle === "reject" ? { animation: "hunk-dissolve var(--dur-door) var(--ease) forwards" } : {};
   const selectedPending = selected && !decided && !settle;
 
   return (
@@ -239,7 +239,7 @@ function HunkCard({
           gap: "var(--ma-2)",
           padding: "var(--ma-2) var(--ma-3)",
           boxShadow: "inset 0 -1px 0 0 var(--border)",
-          fontSize: "12px",
+          fontSize: "var(--fs-small)",
           color: "var(--text-muted)",
           minWidth: 0,
         }}
@@ -248,7 +248,7 @@ function HunkCard({
         <span style={{ marginLeft: "auto", color: st.color, flex: "0 0 auto" }}>{st.label}</span>
       </div>
 
-      <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", lineHeight: 1.6, overflowX: "auto", minWidth: 0 }}>
+      <div style={{ fontFamily: "var(--font-mono)", fontSize: "var(--fs-small)", lineHeight: 1.6, overflowX: "auto", minWidth: 0 }}>
         {hunk.lines.map((ln, j) => {
           const ks = KIND_STYLE[ln.kind];
           const ctx = ln.kind === "ctx";
@@ -296,7 +296,7 @@ function ActBtn({
         gap: "var(--ma-2)",
         padding: "4px var(--ma-3)",
         borderRadius: "var(--radius-sm)",
-        fontSize: "12px",
+        fontSize: "var(--fs-small)",
         color: isAccept ? "var(--accent-text)" : "var(--text)",
         background: isAccept ? "var(--accent)" : "var(--input-bg)",
         border: isAccept ? "none" : "1px solid var(--border-strong)",
@@ -330,12 +330,12 @@ const gutterNo: CSSProperties = {
   paddingRight: 8,
   color: "var(--text-dim)",
   userSelect: "none",
-  fontSize: "11px",
+  fontSize: "var(--fs-label)",
 };
 
 const kbd: CSSProperties = {
   fontFamily: "var(--font-mono)",
-  fontSize: 10,
+  fontSize: "var(--fs-label)",
   padding: "1px 5px",
   borderRadius: 3,
   color: "var(--text-muted)",

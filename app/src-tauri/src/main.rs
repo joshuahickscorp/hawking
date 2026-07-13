@@ -17,9 +17,12 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectStat
 struct Engine(Mutex<Option<std::process::Child>>);
 
 fn start(bin: impl AsRef<std::ffi::OsStr>) -> Option<std::process::Child> {
+    // hide-serve accepts `--port N` (and env HIDE_SERVE_ADDR); it bails on `--addr`, which would
+    // exit the sidecar at boot. Bind loopback via HIDE_SERVE_ADDR so the host is explicit.
     std::process::Command::new(bin)
-        .arg("--addr")
-        .arg("127.0.0.1:8744")
+        .arg("--port")
+        .arg("8744")
+        .env("HIDE_SERVE_ADDR", "127.0.0.1:8744")
         .spawn()
         .ok()
 }
@@ -49,6 +52,7 @@ fn spawn_engine() -> Option<std::process::Child> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(Engine(Mutex::new(None)))
         .setup(|app| {
             // Vibrancy behind the transparent window (macOS only). The web glass (rim + grain) layers

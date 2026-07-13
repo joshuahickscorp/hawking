@@ -1,6 +1,7 @@
 # Rust
 /target
 **/target/
+/node_modules/
 **/*.rs.bk
 *.pdb
 Cargo.lock.bak

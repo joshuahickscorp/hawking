@@ -14,9 +14,9 @@
 */
 import { useState, type CSSProperties } from "react";
 import type { ToolEvent } from "../../store";
+import { Icon } from "../../shell/icons";
 import {
   blockLabel,
-  chip,
   ctlStyle,
   STEP_MARK,
   type DiffChip,
@@ -134,7 +134,7 @@ function PlanStepRow({
               outline: "none",
               color: "var(--text)",
               font: "inherit",
-              fontSize: "13px",
+              fontSize: "var(--fs-ui)",
               padding: "var(--ma-1) var(--ma-2)",
               borderRadius: "var(--radius-sm)",
             }}
@@ -149,7 +149,7 @@ function PlanStepRow({
             style={{
               textAlign: "left",
               width: "100%",
-              fontSize: "13px",
+              fontSize: "var(--fs-ui)",
               lineHeight: 1.5,
               color: active ? "var(--text-strong)" : step.status === "done" ? "var(--text-dim)" : "var(--text)",
               textDecoration: step.status === "skipped" ? "line-through" : undefined,
@@ -183,37 +183,34 @@ function PlanStepRow({
 
 const reorderBtn: CSSProperties = {
   color: "var(--text-dim)",
-  fontSize: "12px",
+  fontSize: "var(--fs-small)",
   padding: "0 var(--ma-1)",
   lineHeight: 1.4,
 };
 
-// ---- ToolChip: one calm pill per tool call (no churn). Bound to tool_progress{call_id,message}. ----
-export function ToolChip({ tool }: { tool: ToolEvent }) {
-  const verb = tool.message.split(/[:\s]/, 1)[0] || "tool";
+// ---- Tool rows: one quiet inline row per tool call, collapsible, in the transcript flow
+//      (Claude Code texture: "Read a file, ran a command >"). Bound to tool_progress{call_id,message}. ----
+function ToolRow({ tool }: { tool: ToolEvent }) {
+  const [open, setOpen] = useState(false);
+  const text = tool.message.charAt(0).toUpperCase() + tool.message.slice(1);
   return (
-    <span style={chip} title={tool.call_id}>
-      <span aria-hidden style={{ color: "var(--text-dim)" }}>
-        ▸
-      </span>
-      <span style={{ color: "var(--text)" }}>{verb}</span>
-      <span style={{ color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {tool.message.slice(verb.length).replace(/^[:\s]+/, "")}
-      </span>
-    </span>
+    <div className="toolrow-inline">
+      <button className="toolrow-inline__head" type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className="toolrow-inline__text">{text}</span>
+        <Icon name={open ? "chevron-down" : "chevron-right"} size={13} />
+      </button>
+      {open ? <div className="toolrow-inline__body">{tool.call_id}</div> : null}
+    </div>
   );
 }
 
 export function ToolChipRow({ tools }: { tools: ToolEvent[] }) {
   if (tools.length === 0) return null;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "var(--ma-2)" }}>
-      <span style={blockLabel}>Tools</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--ma-2)" }}>
-        {tools.map((t, i) => (
-          <ToolChip key={t.call_id + i} tool={t} />
-        ))}
-      </div>
+    <div className="toolflow">
+      {tools.map((t, i) => (
+        <ToolRow key={t.call_id + i} tool={t} />
+      ))}
     </div>
   );
 }
@@ -250,11 +247,11 @@ export function DiffChipRow({
                 {c.removed != null ? <span style={{ color: "var(--git-del)" }}>-{c.removed}</span> : null}
               </button>
               {c.status === "applied" ? (
-                <span style={{ color: "var(--green)", fontSize: "12px" }}>● applied</span>
+                <span style={{ color: "var(--green)", fontSize: "var(--fs-small)" }}>● applied</span>
               ) : c.status === "rejected" ? (
-                <span style={{ color: "var(--text-dim)", fontSize: "12px" }}>rejected</span>
+                <span style={{ color: "var(--text-dim)", fontSize: "var(--fs-small)" }}>rejected</span>
               ) : c.status === "stale" ? (
-                <span style={{ color: "var(--git-mod)", fontSize: "12px" }}>⟳ stale</span>
+                <span style={{ color: "var(--git-mod)", fontSize: "var(--fs-small)" }}>⟳ stale</span>
               ) : onAccept && onReject ? (
                 <span style={{ display: "inline-flex", gap: "var(--ma-1)" }}>
                   <button onClick={() => onAccept(c)} title="accept (Cmd+Enter)" style={ctlStyle(true)}>
@@ -265,7 +262,7 @@ export function DiffChipRow({
                   </button>
                 </span>
               ) : (
-                <button onClick={() => onOpen(c)} title="open to review in the editor" style={{ color: "var(--text-dim)", fontSize: "12px", background: "transparent" }}>
+                <button onClick={() => onOpen(c)} title="open to review in the editor" style={{ color: "var(--text-dim)", fontSize: "var(--fs-small)", background: "transparent" }}>
                   review
                 </button>
               )}
@@ -298,7 +295,7 @@ export function InlineGate({
         <span style={blockLabel}>Approval</span>
         <span className="chat-card__meta">{gate}</span>
       </div>
-      <div style={{ color: "var(--text)", fontSize: "13px", lineHeight: 1.5, marginBottom: "var(--ma-4)" }}>{message}</div>
+      <div style={{ color: "var(--text)", fontSize: "var(--fs-ui)", lineHeight: 1.5, marginBottom: "var(--ma-4)" }}>{message}</div>
       <div style={{ display: "flex", alignItems: "center", gap: "var(--ma-2)" }}>
         <button className="gate" onClick={onApprove} title="approve this action">
           Approve

@@ -13,6 +13,7 @@
 //!
 //! CPU reference path only for the initial implementation.
 
+use super::arch_config::token_embd_vocab_size_opt;
 use super::weights::{dequant_f16, dequant_f32, tensor_ref, TensorRef};
 use crate::attn::mha_decode_step;
 use crate::cache::KvCache;
@@ -72,11 +73,7 @@ impl OlmoeConfig {
         let top_k = get_u32("llama.expert_used_count").unwrap_or(8) as usize;
         let vocab_size = get_u32("llama.vocab_size")
             .map(|v| v as usize)
-            .or_else(|| {
-                g.tensor("token_embd.weight")
-                    .and_then(|t| t.dims.iter().copied().max())
-                    .map(|v| v as usize)
-            })
+            .or_else(|| token_embd_vocab_size_opt(g))
             .ok_or_else(|| Error::Model("olmoe: cannot determine vocab_size".into()))?;
 
         if n_heads == 0 {
@@ -243,9 +240,11 @@ impl Engine for OlmoeEngine {
             // Router: dequant eagerly (n_experts × hidden is small for OLMoE).
             let router = dequant_f32(&gguf, &lp("ffn_gate_inp.weight"))?;
 
-            let ffn_gate = Self::fused_expert_refs(&gguf, &lp("ffn_gate_exps.weight"), cfg.n_experts)?;
-            let ffn_up   = Self::fused_expert_refs(&gguf, &lp("ffn_up_exps.weight"),   cfg.n_experts)?;
-            let ffn_down = Self::fused_expert_refs(&gguf, &lp("ffn_down_exps.weight"), cfg.n_experts)?;
+            let ffn_gate =
+                Self::fused_expert_refs(&gguf, &lp("ffn_gate_exps.weight"), cfg.n_experts)?;
+            let ffn_up = Self::fused_expert_refs(&gguf, &lp("ffn_up_exps.weight"), cfg.n_experts)?;
+            let ffn_down =
+                Self::fused_expert_refs(&gguf, &lp("ffn_down_exps.weight"), cfg.n_experts)?;
 
             layers.push(OlmoeLayer {
                 attn_norm,
@@ -303,9 +302,9 @@ impl Engine for OlmoeEngine {
         }
         let prefill_ms = t0.elapsed().as_secs_f64() * 1000.0;
 
-        let max_new = req.max_new_tokens.min(
-            self.config.max_seq_len.saturating_sub(n_prompt),
-        );
+        let max_new = req
+            .max_new_tokens
+            .min(self.config.max_seq_len.saturating_sub(n_prompt));
         let t1 = Instant::now();
         let mut n_gen = 0usize;
         let mut stop_reason = StopReason::MaxTokens;
@@ -372,7 +371,10 @@ impl Engine for OlmoeEngine {
             decode_ms,
             ..Default::default()
         };
-        sink(StreamEvent::Done { reason: stop_reason, stats: stats.clone() });
+        sink(StreamEvent::Done {
+            reason: stop_reason,
+            stats: stats.clone(),
+        });
         Ok(stats)
     }
 
@@ -466,8 +468,12 @@ impl OlmoeEngine {
             {
                 let q_norm_w = self.layers[li].q_norm.clone();
                 let k_norm_w = self.layers[li].k_norm.clone();
-                apply_qk_norm_rope(&mut q_buf, &q_norm_w, n_heads, head_dim, eps, pos, rope_theta);
-                apply_qk_norm_rope(&mut k_buf, &k_norm_w, n_kv_heads, head_dim, eps, pos, rope_theta);
+                apply_qk_norm_rope(
+                    &mut q_buf, &q_norm_w, n_heads, head_dim, eps, pos, rope_theta,
+                );
+                apply_qk_norm_rope(
+                    &mut k_buf, &k_norm_w, n_kv_heads, head_dim, eps, pos, rope_theta,
+                );
             }
 
             // Write K and V directly into cache for this layer.
@@ -477,7 +483,16 @@ impl OlmoeEngine {
             let kv_size = mha_seq_len * kv_hidden;
             let keys = &self.kv.keys[li][..kv_size];
             let values = &self.kv.values[li][..kv_size];
-            mha_decode_step(&q_buf, keys, values, n_heads, n_kv_heads, head_dim, mha_seq_len, &mut attn_out)?;
+            mha_decode_step(
+                &q_buf,
+                keys,
+                values,
+                n_heads,
+                n_kv_heads,
+                head_dim,
+                mha_seq_len,
+                &mut attn_out,
+            )?;
 
             let attn_out_ref = self.layers[li].attn_output.clone();
             self.dequant_ref(&attn_out_ref, &mut w_buf)?;
@@ -488,24 +503,48 @@ impl OlmoeEngine {
             rmsnorm(&x, &self.layers[li].ffn_norm, eps, &mut x_norm);
 
             let router = self.layers[li].router.clone();
-            gemv_f32(&router, self.config.n_experts, hidden, &x_norm, &mut gate_logits);
+            gemv_f32(
+                &router,
+                self.config.n_experts,
+                hidden,
+                &x_norm,
+                &mut gate_logits,
+            );
             let top_experts = topk_gate(&mut gate_logits, self.config.top_k, true);
 
             ffn_accum.iter_mut().for_each(|v| *v = 0.0);
             for (eid, weight) in &top_experts {
                 let gate_ref = self.layers[li].ffn_gate[*eid].clone();
                 self.dequant_ref(&gate_ref, &mut w_buf)?;
-                gemv_f32(&w_buf, self.config.intermediate, hidden, &x_norm, &mut expert_gate);
+                gemv_f32(
+                    &w_buf,
+                    self.config.intermediate,
+                    hidden,
+                    &x_norm,
+                    &mut expert_gate,
+                );
 
                 let up_ref = self.layers[li].ffn_up[*eid].clone();
                 self.dequant_ref(&up_ref, &mut w_buf)?;
-                gemv_f32(&w_buf, self.config.intermediate, hidden, &x_norm, &mut expert_up);
+                gemv_f32(
+                    &w_buf,
+                    self.config.intermediate,
+                    hidden,
+                    &x_norm,
+                    &mut expert_up,
+                );
 
                 silu_mul(&expert_gate, &expert_up, &mut expert_act);
 
                 let down_ref = self.layers[li].ffn_down[*eid].clone();
                 self.dequant_ref(&down_ref, &mut w_buf)?;
-                gemv_f32(&w_buf, hidden, self.config.intermediate, &expert_act, &mut expert_out);
+                gemv_f32(
+                    &w_buf,
+                    hidden,
+                    self.config.intermediate,
+                    &expert_act,
+                    &mut expert_out,
+                );
 
                 for (acc, v) in ffn_accum.iter_mut().zip(expert_out.iter()) {
                     *acc += weight * v;

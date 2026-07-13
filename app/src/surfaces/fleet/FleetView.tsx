@@ -25,8 +25,8 @@ export function FleetView() {
     return (
       <div className="fleet">
         <p className="fleet__pitch">
-          No attempts yet. Fork the agent state into N branches and run them in parallel, free, on your
-          machine, then keep the best. Use "try 3 / 5 / 8" in the toolbar.
+          No attempts yet. When a task benefits from parallel tries, HIDE forks the agent state into
+          branches and runs them here on your machine. Keep the best, discard the rest.
         </p>
       </div>
     );
@@ -36,7 +36,7 @@ export function FleetView() {
   return (
     <div className="fleet">
       <div className="fleet__pitch">
-        {fleet.length} attempt{fleet.length === 1 ? "" : "s"} · free · local{active ? ` · ${active} radiating` : ""}
+        {fleet.length} attempt{fleet.length === 1 ? "" : "s"}, free, local{active ? `, ${active} radiating` : ""}
       </div>
       <ul className="fleet__list">
         {fleet.map((run) => (

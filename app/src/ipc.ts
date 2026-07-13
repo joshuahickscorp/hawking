@@ -12,9 +12,10 @@ import type { ConnectorId, Intent, IntentAck, UiEvent } from "./wire";
 const BASE = import.meta.env.VITE_HIDE_BASE ?? "http://127.0.0.1:8744"; // hide-serve loopback
 const WS_BASE = BASE.replace(/^http/, "ws");
 
-// Default to the mock transport in dev so the app runs ALIVE with no backend.
-// Set VITE_HIDE_TRANSPORT=live to bind the real hide-serve.
-const USE_MOCK = (import.meta.env.VITE_HIDE_TRANSPORT ?? "mock") !== "live";
+// Dev defaults to the mock so the app runs ALIVE with no backend; a production build defaults to
+// live so the shipped app can never silently ship the mock. VITE_HIDE_TRANSPORT overrides either way.
+const TRANSPORT = import.meta.env.VITE_HIDE_TRANSPORT ?? (import.meta.env.PROD ? "live" : "mock");
+const USE_MOCK = TRANSPORT !== "live";
 
 export interface Transport {
   sendIntent(intent: Intent): Promise<IntentAck>;
@@ -117,11 +118,6 @@ const MOCK_SESSION = "ses_mock0000000000000000000";
 const MOCK_RUN = "run_mock0000000000000000000";
 const MOCK_STREAM = "str_mock0000000000000000000";
 
-const MOCK_REPLY =
-  "Reading auth.rs. The pool guard drops the connection before the retry, so a failed " +
-  "acquire never releases the semaphore permit. Moving the drop past the retry boundary " +
-  "and adding a regression test for the exhausted-pool path.";
-
 const MOCK_MANIFEST = {
   model: { id: "qwen2.5-7b", arch: "qwen", ctx: 32768, profile: "Standard", sampling: "greedy" },
   budget: { total: 16384, used: 14210, free: 2174, segments: [
@@ -150,6 +146,47 @@ const MOCK_MANIFEST = {
   tq_multiplier: 4.0,
   tq_estimated: true,
   live: { effective_ceiling_tokens: 131072, used_tokens_estimate: 14210, occupancy: 0.11, watermark: "normal" as const, estimated: true },
+};
+
+// Courtyard mock: a believable retrospective digest + a session list so Home is ALIVE with no backend.
+// Deterministic (no Math.random) so re-renders never churn the heatmap.
+const HM_COLS = 18;
+const MOCK_HEATMAP = Array.from({ length: HM_COLS * 7 }, (_, i) => {
+  const col = Math.floor(i / 7);
+  const row = i % 7;
+  const recency = col / HM_COLS; // later columns are busier
+  const weekday = row >= 1 && row <= 5 ? 1 : 0.4;
+  const jitter = ((i * 2654435761) % 7) / 7; // deterministic 0..1
+  return Math.max(0, Math.round(recency * recency * 9 * weekday * (0.5 + jitter)));
+});
+
+const MOCK_HOME = {
+  user: { name: "Joshua-Hicks", plan: "Max" },
+  workspace: { root: "/Users/scammermike/Downloads/hawking", repo: "hawking", branch: "main", worktrees: [] as string[] },
+  digest: {
+    sessions: 1182,
+    messages: 119695,
+    tokens: 222_900_000,
+    active_days: 32,
+    streak_current: 4,
+    streak_longest: 17,
+    peak_hour: 7,
+    favorite_model: "qwen2.5-7b",
+    heatmap: MOCK_HEATMAP,
+    heatmap_cols: HM_COLS,
+  },
+};
+
+const MIN = 60_000;
+// Demo sessions: readable tasks that double as the first turn, so clicking one opens a working chat.
+const MOCK_SESSIONS = {
+  items: [
+    { id: "ses_guard", title: "Fix the pool guard drop order", state: "active" as const, updated_ms: Date.now() - 3 * MIN, branch: "main" },
+    { id: "ses_retry", title: "Add a retry test for the exhausted pool", state: "idle" as const, updated_ms: Date.now() - 40 * MIN },
+    { id: "ses_tok", title: "Port the tokenizer to Rust", state: "done" as const, updated_ms: Date.now() - 3 * 60 * MIN },
+    { id: "ses_ladder", title: "Wire the condense ladder end to end", state: "idle" as const, updated_ms: Date.now() - 20 * 60 * MIN },
+    { id: "ses_serve", title: "Serve the 32B .tq resident", state: "done" as const, updated_ms: Date.now() - 2 * 24 * 60 * MIN },
+  ],
 };
 
 class MockTransport implements Transport {
@@ -181,25 +218,34 @@ class MockTransport implements Transport {
     return { accepted: true, event_seq: this.seq, message: null };
   }
 
-  // The scripted assistant turn: stream the reply token-batch by token-batch, then a tool, manifest, fleet.
-  private scriptTurn(_userText: string) {
+  // The scripted assistant turn: acknowledge the task, then stream a plausible plan token-batch by
+  // token-batch, then a tool move, the manifest, and the turn end. The reply references the user text so
+  // each demo session reads as its own conversation.
+  private scriptTurn(userText: string) {
+    const task = userText.trim() || "the task";
+    const reply =
+      `Starting on: ${task}. I will read the relevant files first, sketch the smallest change that ` +
+      `works, then add a regression test before applying anything.`;
     this.emit({ type: "projection_patch", data: { projection: "turn", patch: { run_id: MOCK_RUN, phase: "planning" } } });
-    const words = MOCK_REPLY.split(" ");
+    const words = reply.split(" ");
     let t = 120;
     for (let i = 0; i < words.length; i += 2) {
       const chunk = words.slice(i, i + 2).join(" ") + " ";
       this.later(t, () => this.emit({ type: "token_batch", data: { stream_id: MOCK_STREAM, text: chunk } }));
       t += 42;
     }
-    this.later(t + 60, () => this.emit({ type: "tool_progress", data: { call_id: "call_edit_1", message: "edit guard.rs: moved drop past retry" } }));
+    this.later(t + 60, () => this.emit({ type: "tool_progress", data: { call_id: "call_read_1", message: "reading the workspace for context" } }));
     this.later(t + 200, () => this.emit({ type: "projection_patch", data: { projection: "context_manifest", patch: MOCK_MANIFEST } }));
     this.later(t + 320, () => this.emit({ type: "projection_patch", data: { projection: "turn", patch: { run_id: MOCK_RUN, phase: "done" } } }));
   }
 
   subscribeUi(onEvent: (ev: UiEvent) => void, _onError: (err: Error) => void, _afterSeq?: number): () => void {
     this.listeners.add(onEvent);
-    // Ambient boot stream: runtime comes up, the fleet shows two parallel agents.
+    // Ambient boot stream: runtime comes up, the courtyard digest + session list arrive, the fleet
+    // shows two parallel agents.
     this.later(40, () => this.emit({ type: "runtime_status", data: { status: "booting", detail: "starting hawking serve" }, }, null));
+    this.later(120, () => this.emit({ type: "projection_patch", data: { projection: "home", patch: MOCK_HOME } }, null));
+    this.later(140, () => this.emit({ type: "projection_patch", data: { projection: "sessions", patch: MOCK_SESSIONS } }, null));
     this.later(420, () => this.emit({ type: "runtime_status", data: { status: "ready", detail: "qwen2.5-7b @ 41 tps" } }, null));
     this.later(700, () =>
       this.emit({ type: "projection_patch", data: { projection: "fleet", patch: { runs: [

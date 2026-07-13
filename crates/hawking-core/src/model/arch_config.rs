@@ -75,6 +75,22 @@ impl<'a> ArchReader<'a> {
     }
 }
 
+/// Derive vocab size from the largest dimension of `token_embd.weight`, using
+/// the caller's historical error string when the tensor is absent.
+pub fn token_embd_vocab_size(g: &GgufFile, missing: impl Into<String>) -> Result<usize> {
+    let dims = g
+        .tensor("token_embd.weight")
+        .map(|t| t.dims.clone())
+        .ok_or_else(|| Error::Model(missing.into()))?;
+    Ok(dims.iter().copied().max().unwrap_or(0) as usize)
+}
+
+pub fn token_embd_vocab_size_opt(g: &GgufFile) -> Option<usize> {
+    g.tensor("token_embd.weight")
+        .and_then(|t| t.dims.iter().copied().max())
+        .map(|v| v as usize)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
