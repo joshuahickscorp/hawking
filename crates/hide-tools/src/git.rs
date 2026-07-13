@@ -131,6 +131,11 @@ git_read_tool!(
             v.push("--staged".to_string());
         }
         if let Some(r) = args.get("ref").and_then(|x| x.as_str()) {
+            // Option-injection guard: a caller-supplied ref like "--output=FILE"
+            // would otherwise be honored by git as an option and WRITE a file.
+            // --end-of-options forces git to parse it as a revision (failing safely
+            // if it is not one).
+            v.push("--end-of-options".to_string());
             v.push(r.to_string());
         }
         if let Some(p) = args.get("path").and_then(|x| x.as_str()) {
@@ -159,6 +164,9 @@ git_read_tool!(
         let max = args.get("max").and_then(|x| x.as_u64()).unwrap_or(20);
         v.push(format!("-n{max}"));
         if let Some(r) = args.get("ref").and_then(|x| x.as_str()) {
+            // Option-injection guard (see git.diff): treat the ref as a revision,
+            // never an option like "--output=FILE".
+            v.push("--end-of-options".to_string());
             v.push(r.to_string());
         }
         if let Some(p) = args.get("path").and_then(|x| x.as_str()) {
@@ -564,6 +572,61 @@ mod tests {
             .as_str()
             .unwrap()
             .contains("init"));
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn git_diff_ref_cannot_inject_write_option() {
+        // A malicious ref like "--output=FILE" must NOT be honored as a git option
+        // (which would create/truncate an arbitrary file). Regression guard for the
+        // option-injection the read-only auto-dispatch review found.
+        let dir = init_repo().await;
+        std::fs::write(dir.join("a.txt"), "dirty").unwrap();
+        let evil = dir.join("evil_written.txt");
+        let reg = Arc::new(ToolRegistry::default());
+        reg.register(GitDiffTool::default());
+        let d = dispatcher(reg);
+        let _ = d
+            .dispatch(ToolCall::new(
+                "git.diff",
+                json!({
+                    "cwd": dir.to_string_lossy(),
+                    "ref": format!("--output={}", evil.to_string_lossy()),
+                }),
+            ))
+            .await
+            .unwrap();
+        assert!(
+            !evil.exists(),
+            "git.diff ref must not inject --output and write a file"
+        );
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[tokio::test]
+    async fn git_diff_normal_ref_still_works() {
+        // --end-of-options must not break a legitimate ref.
+        let dir = init_repo().await;
+        std::fs::write(dir.join("a.txt"), "x").unwrap();
+        let reg = Arc::new(ToolRegistry::default());
+        reg.register(GitCommitTool::default());
+        reg.register(GitDiffTool::default());
+        let d = dispatcher(reg);
+        let _ = d
+            .dispatch(ToolCall::new(
+                "git.commit",
+                json!({ "cwd": dir.to_string_lossy(), "message": "c" }),
+            ))
+            .await
+            .unwrap();
+        let r = d
+            .dispatch(ToolCall::new(
+                "git.diff",
+                json!({ "cwd": dir.to_string_lossy(), "ref": "HEAD" }),
+            ))
+            .await
+            .unwrap();
+        assert!(r.ok, "a normal ref diff must still work: {:?}", r.error);
         let _ = std::fs::remove_dir_all(dir);
     }
 

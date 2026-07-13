@@ -127,6 +127,24 @@ committed (approved) artifact.
   tok/s + first-try-valid RECEIPT that would flip a WIN cell: our own .tq-served model (the
   thesis gate). Unbuilt/unblocked next: rest of catalog (plan.todo/notebook/batch/web/agent.spawn),
   Phase 0 -> live FSM driver wiring, and the runtime mask/spec wiring into forward_multiseq_*.
+- Wave D (2026-07-11, deepen to integrated + a caught security bug): per operator "deepen even
+  more, get to 10/10, commit/push/merge". Made the keystone REAL: wired the tool-call loop into
+  the live agent driver (act_model now parses its output and dispatches emitted calls), with two
+  end-to-end integration tests (a stub model emitting <tool_call> for fs.read dispatches through
+  the real allow_all_dispatcher; a mutating call is refused). A FIFTH adversarial pass then caught
+  a SECURITY vulnerability - exactly the payoff of the discipline: git.diff/git.log passed the
+  model-controlled `ref` verbatim as a git arg, so `--output=FILE` was honored as an option and
+  WROTE an arbitrary file, and the read-only auto-dispatch gate let a model step trigger it (an
+  un-approved out-of-workspace write). Fixed BOTH layers (commit 9d012fbb): git ref guarded with
+  --end-of-options (protects all callers, +2 tests), and the model-step gate hardened from
+  annotation-only to a deny-by-default allowlist of pure in-process query tools
+  (fs.read/list/stat/glob, search.text) - subprocess tools (git.*, shell.*) never auto-dispatch
+  from a model step even when read-only (+1 integration test). Verification tally now 6/8/2/1/1 =
+  21 real defects found+fixed across 5 passes. Commits this deepen: 7dc59220 (driver wiring),
+  cbe2d0d7 (read-only gate), 9d012fbb (security fix). A sixth pass on the security fix is running
+  before any push. HONEST 10/10 NOTE: per the audit this category's ceiling is 7.5 (structural
+  truthfulness wall - "guaranteed" is an overclaim; honest ceiling is first-try-valid + repair);
+  the tok/s WIN receipt is still gated on a served model. Not laundering a 10.
 - Wave B (2026-07-11, catalog expansion start): added the `memory` tool (Phase 1b) - a durable
   cross-session scratchpad with `view|create|str_replace|insert|delete|rename`, modeled on
   Anthropic's memory tool, rooted at a private per-workspace directory. The security boundary

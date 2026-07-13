@@ -268,6 +268,17 @@ impl ToolDispatcher {
         Self { registry, policy }
     }
 
+    /// Whether the named tool is registered and declares itself read-only. Used to
+    /// decide whether a model-emitted call may be auto-dispatched from a model step
+    /// (read-only only) versus requiring an authorized plan step (any mutation).
+    /// Unknown tools return `false` (conservative: not auto-dispatchable).
+    pub fn is_read_only(&self, name: &str) -> bool {
+        self.registry
+            .get(name)
+            .map(|tool| tool.spec().annotations.read_only)
+            .unwrap_or(false)
+    }
+
     pub async fn dispatch(&self, call: ToolCall) -> Result<ToolResult> {
         let call_id = call.call_id.clone();
         let tool = self
