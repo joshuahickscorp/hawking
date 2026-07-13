@@ -1,11 +1,9 @@
-
 use std::path::Path;
 use strand_decode_kernel::loader::StrandModel;
 use strand_decode_kernel::outlier_mac::patched_weights;
-use strand_quant::codebook::codebook_lut;
 use strand_quant::decode::{decode_lean_with_lut, decode_tensor_fixed_with_lut};
 use strand_quant::provenance::{model_root_from_tensor_roots, tensor_root};
-use strand_quant::provenance_io::{read_sprv, verify_archive, VerifyDepth};
+use strand_quant::provenance_io::{read_sprv, verify_archive_with, VerifyDepth};
 
 fn hex(b: &[u8]) -> String {
     b.iter().map(|x| format!("{x:02x}")).collect()
@@ -22,11 +20,14 @@ impl ReconFile {
         let bytes = std::fs::read(path).expect("recon-check: read recon safetensors");
         let hdr_len = u64::from_le_bytes(bytes[0..8].try_into().unwrap()) as usize;
         let header = String::from_utf8(bytes[8..8 + hdr_len].to_vec()).expect("header utf8");
-        ReconFile { bytes, header, data_start: 8 + hdr_len }
+        ReconFile {
+            bytes,
+            header,
+            data_start: 8 + hdr_len,
+        }
     }
 
     fn tensor_bytes(&self, name: &str) -> Option<&[u8]> {
-        
         let key = format!("\"{name}\":{{");
         let kpos = self.header.find(&key)?;
         let obj = &self.header[kpos + key.len()..];
@@ -36,7 +37,9 @@ impl ReconFile {
         let rest = &obj[dpos..];
         let lb = rest.find('[')?;
         let rb = rest.find(']')?;
-        let mut it = rest[lb + 1..rb].split(',').map(|t| t.trim().parse::<usize>().ok());
+        let mut it = rest[lb + 1..rb]
+            .split(',')
+            .map(|t| t.trim().parse::<usize>().ok());
         let a = it.next()??;
         let b = it.next()??;
         self.bytes.get(self.data_start + a..self.data_start + b)
@@ -64,21 +67,23 @@ fn main() {
         }
         i += 1;
     }
-    let path = positional
-        .first()
-        .expect("usage: attest-strand <archive.strand> [--roots] [--recon-check <recon.safetensors>]");
+    let path = positional.first().expect(
+        "usage: attest-strand <archive.strand> [--roots] [--recon-check <recon.safetensors>]",
+    );
 
     let model = StrandModel::open(Path::new(path)).expect("attest-strand: open .strand v2 archive");
     let hdr = model.header();
     let n = hdr.tensors.len();
-    let file_len = std::fs::metadata(path.as_str()).expect("stat archive").len();
+    let file_len = std::fs::metadata(path.as_str())
+        .expect("stat archive")
+        .len();
     println!("archive          {path}");
     println!(
         "tensors          {n}   strict={}   source_sha256={}",
         hdr.all_strict(),
         hex(&hdr.source_sha256)
     );
-    assert!(n >= 3, "attest-strand: need >= 3 tensors for the spot check (got {n})");
+    assert!(n > 0, "attest-strand: archive contains no tensors");
 
     let n_weights: u64 = hdr.tensors.iter().map(|t| t.total as u64).sum();
     println!(
@@ -100,32 +105,53 @@ fn main() {
 
     match read_sprv(path.as_str()) {
         Ok(Some(sprv)) => {
-            verify_archive(path.as_str(), VerifyDepth::Vectors)
+            let lut_for = |tensor: &strand_quant::format::OwnedTensorV2| {
+                model.lut_for(&tensor.base.name).map(|lut| lut.to_vec())
+            };
+            verify_archive_with(path.as_str(), VerifyDepth::Vectors, &lut_for)
                 .expect("attest-strand: SPRV self-verification FAILED");
             println!(
                 "sprv             trailer present (v2, R2 descriptor binding): self-verify (Vectors) PASS; stored model_root={}",
                 hex(&sprv.model_root)
             );
         }
-        Ok(None) => println!("sprv             NO SPRV trailer — roots below are computed, not attested in-file"),
+        Ok(None) => println!(
+            "sprv             NO SPRV trailer — roots below are computed, not attested in-file"
+        ),
         Err(e) => panic!("attest-strand: SPRV trailer present but corrupt: {e}"),
     }
 
-    for (label, i) in [("first", 0usize), ("middle", n / 2), ("last", n - 1)] {
+    let mut spot_indices = vec![0usize, n / 2, n - 1];
+    spot_indices.sort_unstable();
+    spot_indices.dedup();
+    for i in spot_indices {
+        let label = if i == 0 {
+            "first"
+        } else if i == n - 1 {
+            "last"
+        } else {
+            "middle"
+        };
         let th = &hdr.tensors[i];
         let name = th.name.clone();
         let enc = model
             .encoded_tensor_checked(&name)
             .unwrap_or_else(|e| panic!("attest-strand: reconstruct {name}: {e}"));
         let cfg = model.config_for(th);
-        let lut = codebook_lut(cfg.l_bits);
+        let lut = model
+            .lut_for(&name)
+            .unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {name}: {e}"));
         let q_fixed = decode_tensor_fixed_with_lut(&enc, &cfg, lut);
         let q_lean = decode_lean_with_lut(&enc, &cfg, lut);
         assert_eq!(
             q_fixed, q_lean,
             "DETERMINISM VIOLATION: fixed vs lean decode differ on {name}"
         );
-        assert_eq!(q_fixed.len(), th.total, "decoded count != header total on {name}");
+        assert_eq!(
+            q_fixed.len(),
+            th.total,
+            "decoded count != header total on {name}"
+        );
         let nz = q_fixed.iter().filter(|&&q| q != 0).count();
         assert!(nz > 0, "degenerate all-zero Q12 stream in {name}");
         let mn = q_fixed.iter().copied().min().unwrap();
@@ -147,9 +173,9 @@ fn main() {
         for th in &hdr.tensors {
             let got = patched_weights(&model, &th.name)
                 .unwrap_or_else(|e| panic!("recon-check: patched decode {}: {e}", th.name));
-            let want = recon
-                .tensor_bytes(&th.name)
-                .unwrap_or_else(|| panic!("recon-check: tensor {} missing in {recon_path}", th.name));
+            let want = recon.tensor_bytes(&th.name).unwrap_or_else(|| {
+                panic!("recon-check: tensor {} missing in {recon_path}", th.name)
+            });
             if want.len() != got.len() * 4 {
                 eprintln!(
                     "RECON-CHECK FAIL {}: {} archive weights vs {} recon bytes",
@@ -190,7 +216,9 @@ fn main() {
             .encoded_tensor_checked(&th.name)
             .unwrap_or_else(|e| panic!("attest-strand: reconstruct {}: {e}", th.name));
         let cfg = model.config_for(th);
-        let lut = codebook_lut(cfg.l_bits);
+        let lut = model
+            .lut_for(&th.name)
+            .unwrap_or_else(|e| panic!("attest-strand: resolve LUT for {}: {e}", th.name));
         let r = tensor_root(&enc, &cfg, lut);
         if print_roots {
             println!("tensor_root {}  {}", hex(&r), th.name);
@@ -198,7 +226,7 @@ fn main() {
         roots.push((th.name.clone(), r));
     }
     let mroot = model_root_from_tensor_roots(roots.iter().map(|(name, r)| (name.as_str(), *r)));
-    
+
     if let Ok(Some(sprv)) = read_sprv(path.as_str()) {
         assert_eq!(
             mroot, sprv.model_root,

@@ -93,7 +93,13 @@ fn replay(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32], d: usize) -> Ve
     for blk in &enc.blocks {
         let n = blk.n as usize;
         let n_sub = n_sub_blocks(n);
-        let scodes = unpack_sub_scales(&blk.sub_scales, n_sub);
+        // An omitted scale stream is the canonical non-adaptive wire form.
+        // Replay that contract independently: Q6 code 63 is exact unity.
+        let scodes = if blk.sub_scales.is_empty() {
+            vec![63; n_sub]
+        } else {
+            unpack_sub_scales(&blk.sub_scales, n_sub)
+        };
         let eff: Vec<i32> = scodes.iter().map(|&c| ind_eff_scale_q(blk.scale_q, c)).collect();
         let offs: Vec<i32> = if enc.has_affine_min {
             let mcodes = unpack_sub_scales(&blk.mins, n_sub);

@@ -57,7 +57,7 @@ completion marker that authorizes the lifecycle to advance from download to bake
 By default HF_HOME / HF_HUB_CACHE / HF_XET_CACHE are pinned under scratch/, so the Studio run does
 not silently fill a global ~/.cache/huggingface directory. User-provided HF_* env vars still win.
 """
-import sys, os, subprocess, shutil, importlib, json, time, datetime, selectors, tempfile, signal, re
+import sys, os, subprocess, shutil, importlib, json, time, datetime, selectors, tempfile, signal, re, fcntl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(ROOT)
@@ -77,10 +77,16 @@ from studio_manifest import (
 # The frontier manifest lives in studio_manifest.py. The doctor ladder parents stay here because they
 # are procurement conveniences rather than serve-frontier targets.
 LADDER_PARENTS = {
-    "14B": ("Qwen/Qwen2.5-14B-Instruct", 28.0, "scratch/qwen-14b"),
-    "32B": ("Qwen/Qwen2.5-32B-Instruct", 64.0, "scratch/qwen-32b"),
-    "72B": ("Qwen/Qwen2.5-72B-Instruct", 140.0, "scratch/qwen-72b"),
+    "14B": ("Qwen/Qwen2.5-14B-Instruct", 29.6, "scratch/qwen-14b"),
+    "32B": ("Qwen/Qwen2.5-32B-Instruct", 65.6, "scratch/qwen-32b"),
+    "72B": ("Qwen/Qwen2.5-72B-Instruct", 145.5, "scratch/qwen-72b"),
+    "120B": ("openai/gpt-oss-120b", 65.3, "scratch/gpt-oss-120b"),
 }
+# gpt-oss publishes several duplicate platform layouts in one ~196 GB repository. OpenAI's official
+# download command selects only `original/*`, the 60.8 GiB native MXFP4 checkpoint. Verification for
+# a deliberate subset checks every local checksum but must not require unrelated repo files.
+DOWNLOAD_INCLUDE_PATTERNS = {"120B": ("original/*",)}
+LADDER_SOURCE_KINDS = {"120B": "native MXFP4 original checkpoint"}
 # The full turbo env. hf_transfer = Rust chunked accelerator (parallel byte ranges per FILE).
 # hf_xet high-performance mode = more concurrent range gets + larger buffers (bigger memory use, more
 # throughput). These are the sanctioned "go faster" knobs; an env var an older backend does not know
@@ -222,7 +228,8 @@ def _disk_free_gb(path=ROOT):
         return shutil.disk_usage(ROOT).free / 1e9
 
 
-def _verified_marker_valid(marker, *, label=None, hf_id=None, local_dir=None, require_verify=False):
+def _verified_marker_valid(marker, *, label=None, hf_id=None, local_dir=None,
+                           require_verify=False, revision=None, include_patterns=None):
     if not isinstance(marker, dict):
         return False
     if marker.get("schema") != DOWNLOAD_VERIFIED_SCHEMA:
@@ -242,7 +249,38 @@ def _verified_marker_valid(marker, *, label=None, hf_id=None, local_dir=None, re
         return False
     if local_dir is not None and os.path.abspath(str(marker.get("local_dir", ""))) != os.path.abspath(local_dir):
         return False
+    if revision is not None and marker.get("revision") != revision:
+        return False
+    if include_patterns is not None and marker.get("include_patterns") != list(include_patterns):
+        return False
     return True
+
+
+def _verify_command(spec, local_dir, revision=None):
+    """Verify a local-dir download; hf rejects --local-dir combined with --cache-dir."""
+    cmd = [
+        "hf", "cache", "verify", spec.hf_id,
+        "--local-dir", local_dir,
+    ]
+    if revision:
+        cmd += ["--revision", revision]
+    if spec.label not in DOWNLOAD_INCLUDE_PATTERNS:
+        cmd.append("--fail-on-missing-files")
+    return cmd
+
+
+def _download_command(spec, local_dir, workers, revision=None):
+    cmd = ["hf", "download", spec.hf_id]
+    if revision:
+        cmd += ["--revision", revision]
+    for pattern in DOWNLOAD_INCLUDE_PATTERNS.get(spec.label, ()):
+        cmd += ["--include", pattern]
+    cmd += [
+        "--local-dir", local_dir,
+        "--cache-dir", HF_HUB_CACHE_DIR,
+        "--max-workers", str(workers),
+    ]
+    return cmd
 
 
 def _path_size_gb(path):
@@ -751,7 +789,8 @@ def _resolve(label_or_id):
     if label_or_id in LADDER_PARENTS:
         hf_id, gb, dirn = LADDER_PARENTS[label_or_id]
         return FrontierModel(label_or_id, hf_id, dirn, 0.0, None, 0.0, False,
-                             "ladder-parent", gb, "bf16 parent")
+                             "ladder-parent", gb,
+                             LADDER_SOURCE_KINDS.get(label_or_id, "bf16 parent"))
     # a raw HF id
     dirn = "scratch/" + label_or_id.split("/")[-1].lower()
     return FrontierModel(label_or_id, label_or_id, dirn, 0.0, None, 0.0, False,
@@ -762,7 +801,7 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
              progress_interval_s=PROGRESS_INTERVAL_S, stall_timeout_s=STALL_TIMEOUT_S,
              stall_min_delta_mb=STALL_MIN_DELTA_MB, diagnose_on_fail=True, network_diagnose=True,
              disk_free_floor_gb=DISK_FREE_FLOOR_GB, state_dir=DOWNLOAD_STATE_DIR,
-             download_log=DOWNLOAD_LOG):
+             download_log=DOWNLOAD_LOG, revision=None):
     spec = _resolve(label_or_id)
     dirn = dir_override or spec.local_dir
     _ensure_cache_dirs()
@@ -770,12 +809,7 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
     size = f"  (~{spec.download_gb:.0f} GB {spec.source_kind})" if spec.download_gb else ""
     print(f"[procure] {spec.label} -> {dirn}{size}", file=sys.stderr)
     if dry:
-        cmd = [
-            "hf", "download", spec.hf_id,
-            "--local-dir", dirn,
-            "--cache-dir", HF_HUB_CACHE_DIR,
-            "--max-workers", MAX_WORKERS,
-        ]
+        cmd = _download_command(spec, dirn, MAX_WORKERS, revision)
         print(f"[procure] HF_HUB_ENABLE_HF_TRANSFER=1 {' '.join(cmd)}", file=sys.stderr)
         return 0
 
@@ -790,6 +824,8 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
         "hf_id": spec.hf_id,
         "local_dir": dirn,
         "source_kind": spec.source_kind,
+        "include_patterns": list(DOWNLOAD_INCLUDE_PATTERNS.get(spec.label, ())),
+        "revision": revision,
         "manifest_gb": spec.download_gb,
         "started_at": _now(),
         "updated_at": _now(),
@@ -814,12 +850,7 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
     final_rc = 1
     for attempt in range(1, attempts + 1):
         workers = _workers_for_attempt(MAX_WORKERS, attempt)
-        cmd = [
-            "hf", "download", spec.hf_id,
-            "--local-dir", dirn,
-            "--cache-dir", HF_HUB_CACHE_DIR,
-            "--max-workers", workers,
-        ]
+        cmd = _download_command(spec, dirn, workers, revision)
         print(f"[procure] attempt {attempt}/{attempts}: HF_HUB_ENABLE_HF_TRANSFER=1 "
               f"{' '.join(cmd)}", file=sys.stderr)
         already_populated = os.path.isdir(dirn) and os.listdir(dirn)
@@ -901,12 +932,7 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
         verify_record = None
         final_rc = download_rc
         if verify and download_rc == 0:
-            verify_cmd = [
-                "hf", "cache", "verify", spec.hf_id,
-                "--cache-dir", HF_HUB_CACHE_DIR,
-                "--local-dir", dirn,
-                "--fail-on-missing-files",
-            ]
+            verify_cmd = _verify_command(spec, dirn, revision)
             vt0 = time.monotonic()
             print(f"[procure] verify attempt {attempt}/{attempts}: {' '.join(verify_cmd)}", file=sys.stderr)
             checkpoint("verifying", phase="verify", attempt=attempt, cmd=verify_cmd,
@@ -1019,6 +1045,8 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
             "hf_id": spec.hf_id,
             "local_dir": dirn,
             "source_kind": spec.source_kind,
+            "include_patterns": list(DOWNLOAD_INCLUDE_PATTERNS.get(spec.label, ())),
+            "revision": revision,
             "manifest_gb": spec.download_gb,
             "local_dir_gb_before": round(before_gb, 3),
             "local_dir_gb_after": round(after_gb, 3),
@@ -1077,6 +1105,8 @@ def download(label_or_id, dir_override=None, dry=False, retries=0, min_observed_
                 "hf_id": spec.hf_id,
                 "local_dir": dirn,
                 "source_kind": spec.source_kind,
+                "include_patterns": list(DOWNLOAD_INCLUDE_PATTERNS.get(spec.label, ())),
+                "revision": revision,
                 "manifest_gb": spec.download_gb,
                 "completed_at": ended_at,
                 "attempt": attempt,
@@ -1293,7 +1323,17 @@ def detach_download():
     safe_label = re.sub(r"[^A-Za-z0-9_.-]+", "_", label)
     log_path = os.path.join(ROOT, "reports", "condense", f"download_{safe_label}.log")
     pid_path = os.path.join(DOWNLOAD_STATE_DIR, f"{safe_label}.pid.json")
+    lock_path = os.path.join(DOWNLOAD_STATE_DIR, f"{safe_label}.lock")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    lock = open(lock_path, "a+")
+    try:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock.close()
+        record = _read_json(pid_path, {})
+        print(f"[procure] detached {label} already active pid={record.get('pid')}; "
+              f"lock={lock_path}", file=sys.stderr)
+        return 0
     cmd = [sys.executable, os.path.abspath(__file__), label, *sys.argv[3:]]
     if shutil.which("caffeinate"):
         cmd = ["caffeinate", "-dimsu", *cmd]
@@ -1307,17 +1347,33 @@ def detach_download():
             stdout=log,
             stderr=subprocess.STDOUT,
             start_new_session=True,
+            pass_fds=(lock.fileno(),),
         )
+    except BaseException:
+        lock.close()
+        raise
     finally:
         log.close()
+    try:
+        process_start = subprocess.run(
+            ["ps", "-ww", "-p", str(proc.pid), "-o", "lstart="],
+            capture_output=True, text=True, timeout=3, check=False,
+        ).stdout.strip()
+    except Exception:
+        process_start = ""
     _atomic_write_json(pid_path, {
         "schema": "hawking.frontier_download_pid.v1",
         "label": label,
         "pid": proc.pid,
+        "process_start": process_start,
         "started_at": _now(),
         "log_path": log_path,
         "cmd": cmd,
+        "lock_path": lock_path,
     })
+    # The detached child inherited the descriptor; closing this copy keeps the
+    # advisory lock held until that supervisor actually exits.
+    lock.close()
     print(f"[procure] detached {label} pid={proc.pid}; log={log_path}", file=sys.stderr)
     return 0
 
@@ -1343,6 +1399,20 @@ def selftest():
             f.write(b"x" * 4096)
         check("path size sees synthetic file", _path_size_gb(sample_dir) > 0)
         check("project-local cache default configured", "scratch" in HF_HUB_CACHE_DIR)
+        verify_cmd = _verify_command(_resolve("14B"), sample_dir)
+        check("local-dir verification never passes mutually exclusive cache-dir",
+              "--local-dir" in verify_cmd and "--cache-dir" not in verify_cmd)
+        gptoss = _resolve("120B")
+        pinned_revision = "a" * 40
+        gptoss_download = _download_command(gptoss, sample_dir, "4", pinned_revision)
+        gptoss_verify = _verify_command(gptoss, sample_dir, pinned_revision)
+        check("120B selects only the official original MXFP4 checkpoint",
+              gptoss.download_gb == 65.3 and gptoss_download.count("original/*") == 1)
+        check("120B subset verification checks local checksums without requiring duplicate layouts",
+              "--local-dir" in gptoss_verify and "--fail-on-missing-files" not in gptoss_verify)
+        check("download and verification commands preserve an exact revision pin",
+              gptoss_download.count(pinned_revision) == 1
+              and gptoss_verify.count(pinned_revision) == 1)
         check("worker backoff halves safely", _workers_for_attempt("32", 1) == "32"
               and _workers_for_attempt("32", 2) == "16"
               and _workers_for_attempt("1", 3) == "1")
@@ -1421,11 +1491,20 @@ def selftest():
                   hf_id="example/model", local_dir=sample_dir))
         complete_marker = dict(incomplete_marker)
         complete_marker["verification"] = {"requested": True, "returncode": 0}
+        complete_marker["revision"] = pinned_revision
+        complete_marker["include_patterns"] = ["original/*"]
         _atomic_write_json(verified_path, complete_marker)
         check("successful download plus requested verify validates marker",
               _verified_marker_valid(
                   _read_json(verified_path), label="Synthetic/Model",
                   hf_id="example/model", local_dir=sample_dir))
+        check("marker validation rejects the wrong revision or subset",
+              _verified_marker_valid(
+                  _read_json(verified_path), revision=pinned_revision,
+                  include_patterns=("original/*",))
+              and not _verified_marker_valid(
+                  _read_json(verified_path), revision="b" * 40,
+                  include_patterns=("original/*",)))
         _durable_unlink(verified_path)
         check("new/resumed attempt can durably invalidate old marker",
               not os.path.exists(verified_path))
@@ -1510,4 +1589,6 @@ if __name__ == "__main__":
             diagnose_on_fail="--no-diagnose-on-fail" not in sys.argv,
             network_diagnose="--no-network-diagnose" not in sys.argv,
             disk_free_floor_gb=_arg_float(("--disk-free-floor-gb",), DISK_FREE_FLOOR_GB),
+            revision=(sys.argv[sys.argv.index("--revision") + 1]
+                      if "--revision" in sys.argv else None),
         ))

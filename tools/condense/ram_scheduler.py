@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime
 import json
+import math
 import os
 import re
 import signal
@@ -33,6 +34,18 @@ YELLOW_SWAP_MB = 2048.0
 RED_SWAP_MB = 6144.0
 OVER_BUDGET_RC = 78
 DRAINED_RC = 75
+HEAVY_LEASE_FD_ENV = "HAWKING_HEAVY_LEASE_FD"
+
+
+def inherited_lease_fds(env=None):
+    """Return the validated admission FD that heavy descendants must retain."""
+    source = os.environ if env is None else env
+    try:
+        fd = int(source.get(HEAVY_LEASE_FD_ENV, ""))
+        os.fstat(fd)
+        return (fd,)
+    except (TypeError, ValueError, OSError):
+        return ()
 
 
 def total_gb():
@@ -53,11 +66,11 @@ def swap_mb():
         ).stdout
         match = re.search(r"used\s*=\s*([0-9.]+)([MGT])", out)
         if not match:
-            return 0.0
+            return None
         value, unit = float(match.group(1)), match.group(2)
         return value * {"M": 1.0, "G": 1024.0, "T": 1024.0 * 1024.0}[unit]
     except Exception:
-        return 0.0
+        return None
 
 
 def pressure_level():
@@ -75,11 +88,14 @@ def pressure_level():
 
 def system_resource_probe():
     level = pressure_level()
+    swap = swap_mb()
     return {
         "sampled_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "pressure_level": level,
         "pressure_name": {1: "normal", 2: "warning", 4: "critical"}.get(level, "unknown"),
-        "swap_used_mb": round(swap_mb(), 3),
+        "swap_used_mb": round(swap, 3) if isinstance(swap, (int, float)) else None,
+        "pressure_probe_ok": level in {1, 2, 4},
+        "swap_probe_ok": isinstance(swap, (int, float)),
     }
 
 
@@ -101,7 +117,10 @@ def resource_snapshot(path="."):
         power_source = None
     return {
         "schema": "hawking.studio_resource_snapshot.v1",
-        "ok": True,
+        "ok": bool(
+            memory.get("pressure_probe_ok") is True
+            and memory.get("swap_probe_ok") is True
+        ),
         "sampled_at": memory.get("sampled_at"),
         "profile": DEFAULT_HARDWARE.name,
         "physical_ram_gib": round(total_gb(), 3),
@@ -126,12 +145,38 @@ def resource_snapshot(path="."):
 
 def classify_resource_state(sample, yellow_swap_mb=YELLOW_SWAP_MB, red_swap_mb=RED_SWAP_MB):
     level = sample.get("pressure_level")
-    swap = float(sample.get("swap_used_mb") or 0.0)
+    raw_swap = sample.get("swap_used_mb")
+    if level not in {1, 2, 4} or isinstance(raw_swap, bool) \
+            or not isinstance(raw_swap, (int, float)) or not math.isfinite(float(raw_swap)):
+        return "red"
+    swap = float(raw_swap)
     if level == 4 or (level is not None and level > 4) or swap >= red_swap_mb:
         return "red"
     if level == 2 or (level is not None and level > 1) or swap >= yellow_swap_mb:
         return "yellow"
     return "green"
+
+
+def thermal_output_ok(returncode, text):
+    """Accept only an explicit English green receipt or a complete recognized numeric schema."""
+    if int(returncode) != 0 or not isinstance(text, str) or not text.strip():
+        return False
+    low = text.lower()
+    explicit_green = (
+        "no thermal warning level has been recorded" in low
+        and "no performance warning level has been recorded" in low
+    )
+    numeric = {
+        key.lower(): int(value)
+        for key, value in re.findall(r"([A-Za-z_]+)\s*[:=]\s*(\d+)", text)
+    }
+    numeric_green = bool(
+        {"cpu_speed_limit", "scheduler_limit", "available_cpus"}.issubset(numeric)
+        and numeric["cpu_speed_limit"] >= 100
+        and numeric["scheduler_limit"] >= 100
+        and numeric["available_cpus"] > 0
+    )
+    return explicit_green or numeric_green
 
 
 class Job:
@@ -235,7 +280,7 @@ class Scheduler:
         )
         sample.setdefault("pressure_level", None)
         sample.setdefault("pressure_name", "unknown")
-        sample.setdefault("swap_used_mb", 0.0)
+        sample.setdefault("swap_used_mb", None)
         sample["state"] = classify_resource_state(
             sample, self.yellow_swap_mb, self.red_swap_mb
         )
@@ -250,7 +295,8 @@ class Scheduler:
         sink = job._log_fh if job._log_fh else subprocess.DEVNULL
         env = {**os.environ, **(job.env or {})}
         job.proc = subprocess.Popen(
-            job.argv, stdout=sink, stderr=subprocess.STDOUT, env=env, start_new_session=True
+            job.argv, stdout=sink, stderr=subprocess.STDOUT, env=env, start_new_session=True,
+            pass_fds=inherited_lease_fds(env),
         )
         job.t0 = time.time()
         self.log(
@@ -494,6 +540,15 @@ def selftest():
     assert classify_resource_state({"pressure_level": 2, "swap_used_mb": 0}) == "yellow"
     assert classify_resource_state({"pressure_level": 4, "swap_used_mb": 0}) == "red"
     assert classify_resource_state({"pressure_level": 1, "swap_used_mb": 7000}) == "red"
+    assert classify_resource_state({"pressure_level": None, "swap_used_mb": 0}) == "red"
+    assert classify_resource_state({"pressure_level": 1, "swap_used_mb": None}) == "red"
+    assert inherited_lease_fds({}) == ()
+    assert thermal_output_ok(0, "Note: No thermal warning level has been recorded\n"
+                             "Note: No performance warning level has been recorded")
+    assert thermal_output_ok(0, "CPU_Speed_Limit=100 Scheduler_Limit=100 Available_CPUs=16")
+    assert not thermal_output_ok(0, "")
+    assert not thermal_output_ok(0, "localized or unknown output")
+    assert not thermal_output_ok(0, "CPU_Speed_Limit=100")
 
     samples = iter([
         {"pressure_level": 1, "pressure_name": "normal", "swap_used_mb": 0},

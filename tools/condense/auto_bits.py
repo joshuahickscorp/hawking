@@ -6,8 +6,9 @@ confirms/falls-back with the real NIAH/ppl gate (exactly: try 2-bit; if it can't
 to 3-bit) - never a silent claim.
 
 How it decides the bpw (cheap, no full bake):
-  - if a SUBBIT-0 entropy-floor report exists (subbit_measure.py), use its measured floor;
-  - else use the redundancy-hypothesis heuristic floor(N) ~ clamp(4.0 - 0.8*log10(params_B*1e9/1e9)...)
+  - an official, deployable, quality-passing floor receipt may select a measured product rung;
+  - SUBBIT-0 theory reports never select a rung or become a measured hard floor;
+  - otherwise use the redundancy-hypothesis heuristic floor(N) ~ clamp(4.0 - 0.8*log10(params_B*1e9/1e9)...)
     -> bigger models are recommended lower bpw (they carry more redundancy), snapped to the ladder
     {1:1.34, 2:2.34, 3:3.34, 4:4.5};
   - then adjust the bpw for the device: raise if storage would overflow; for frontier MoE models,
@@ -41,13 +42,33 @@ def heuristic_floor_bpw(params_b):
 
 
 def measured_floor(label):
-    p = f"{OUT}/{label}_subbit0.json"
+    """Return a measured floor only from an explicit deployable official receipt.
+
+    The similarly named ``*_subbit0.json`` file is deliberately never consulted: SUBBIT-0 is an
+    entropy/theory record, not a codec artifact or quality result.  Requiring the official receipt
+    location and fail-closed product fields also prevents a hand-edited theory report from becoming a
+    hard capacity recommendation merely by setting one boolean.
+    """
+    p = f"receipts/official/{label}-floor.json"
     if os.path.exists(p):
         try:
-            d = json.load(open(p))
-            return d.get("side_info_floor_bpw") or d.get("floor_bpw")
-        except Exception:
-            pass
+            with open(p) as handle:
+                d = json.load(handle)
+            if not (
+                d.get("project") == "hawking"
+                and d.get("receipt_version") == "0.2"
+                and d.get("deployable") is True
+                and d.get("quality_gate") == "pass"
+                and d.get("claim_type") in {"density", "scale-point"}
+            ):
+                return None
+            floor = d.get("effective_bpw")
+            if isinstance(floor, bool) or not isinstance(floor, (int, float)) \
+                    or not math.isfinite(float(floor)) or float(floor) <= 0:
+                return None
+            return float(floor)
+        except (OSError, ValueError, TypeError):
+            return None
     return None
 
 
@@ -58,7 +79,7 @@ def recommend(total_b, active_b, arch, label, device="m1ultra"):
     if mfloor:
         for b, bp in LADDER:
             if bp >= mfloor:
-                bits, bpw, src = b, bp, "measured(SUBBIT-0 entropy floor)"; break
+                bits, bpw, src = b, bp, "measured(official deployable floor receipt)"; break
     # Raise bpw until it at least fits storage on the device; then, for huge MoE models, prefer
     # a lower sub-bit rung if that is what keeps the entire artifact resident on the Studio.
     regime, chosen = None, None

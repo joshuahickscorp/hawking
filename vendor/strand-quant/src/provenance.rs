@@ -1,6 +1,7 @@
-
 use crate::decode::{decode_tensor_fixed_with_lut, eff_min_q, eff_scale_q, reconstruct_q};
-use crate::encode::{n_sub_blocks, unpack_sub_scales, EncodedTensor, SUB_BLOCK};
+use crate::encode::{
+    n_sub_blocks, unpack_sub_scales, unpack_sub_scales_or_unity, EncodedTensor, SUB_BLOCK,
+};
 use crate::sha256::sha256;
 use crate::trellis::{read_bits, TrellisConfig};
 
@@ -18,9 +19,8 @@ pub const DOMAIN_OUTL: &[u8; 8] = b"SPV3.OUT";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ProvenanceVector {
-    
     pub block_index: u64,
-    
+
     pub block_hash: [u8; 32],
 }
 
@@ -42,7 +42,7 @@ pub fn block_hashes(enc: &EncodedTensor, cfg: &TrellisConfig, lut: &[i32]) -> Ve
     let mut off = 0usize;
     for (bi, blk) in enc.blocks.iter().enumerate() {
         let n = blk.n as usize;
-        
+
         hashes.push(block_hash(bi as u64, &q12[off..off + n]));
         off += n;
     }
@@ -165,11 +165,14 @@ pub fn decode_block_q12(
     let bit_base = block_bit_offset(enc, cfg, block_index);
 
     let n_sub = n_sub_blocks(n);
-    let mults = unpack_sub_scales(&blk.sub_scales, n_sub);
+    let mults = unpack_sub_scales_or_unity(&blk.sub_scales, n_sub);
     let eff: Vec<i32> = mults.iter().map(|&m| eff_scale_q(blk.scale_q, m)).collect();
     let offs: Vec<i32> = if enc.has_affine_min {
         let codes = unpack_sub_scales(&blk.mins, n_sub);
-        codes.iter().map(|&c| eff_min_q(blk.min_base_q, c)).collect()
+        codes
+            .iter()
+            .map(|&c| eff_min_q(blk.min_base_q, c))
+            .collect()
     } else {
         Vec::new()
     };
@@ -196,7 +199,7 @@ pub fn decode_block_q12(
         let sym = read_bits(&enc.bits, bit_cursor, k) & input_mask;
         bit_cursor += k as usize;
         state = ((state << k) | sym) & mask;
-        
+
         let base = state * d;
         let emit = (n - produced).min(d);
         for j in 0..emit {
@@ -239,11 +242,10 @@ pub fn make_test_vectors(
         m[32..].copy_from_slice(&ctr.to_le_bytes());
         ctr += 1;
         let h = sha256(&m);
-        let mut idx =
-            (u64::from_le_bytes(h[0..8].try_into().expect("8-byte slice")) % n_blocks as u64)
-                as usize;
+        let mut idx = (u64::from_le_bytes(h[0..8].try_into().expect("8-byte slice"))
+            % n_blocks as u64) as usize;
         while used[idx] {
-            idx = (idx + 1) % n_blocks; 
+            idx = (idx + 1) % n_blocks;
         }
         used[idx] = true;
         chosen.push(idx);
@@ -302,9 +304,19 @@ mod tests {
     fn opt_variants() -> [EncodeOpts; 4] {
         [
             EncodeOpts::default(),
-            EncodeOpts { tail_biting: true, ..Default::default() },
-            EncodeOpts { affine_min: true, ..Default::default() },
-            EncodeOpts { tail_biting: true, affine_min: true, ..Default::default() },
+            EncodeOpts {
+                tail_biting: true,
+                ..Default::default()
+            },
+            EncodeOpts {
+                affine_min: true,
+                ..Default::default()
+            },
+            EncodeOpts {
+                tail_biting: true,
+                affine_min: true,
+                ..Default::default()
+            },
         ]
     }
 
@@ -345,10 +357,10 @@ mod tests {
     #[test]
     fn block_decode_is_bit_identical_to_reference() {
         let scalar_cfgs = [
-            TrellisConfig::for_bpw(2.0), 
-            TrellisConfig::for_bpw(3.0), 
+            TrellisConfig::for_bpw(2.0),
+            TrellisConfig::for_bpw(3.0),
             TrellisConfig::for_bpw(4.0),
-            TrellisConfig::for_bpw_l(2.0, 5), 
+            TrellisConfig::for_bpw_l(2.0, 5),
         ];
         let lens = [1usize, 31, 256, 257, 777];
         for cfg in scalar_cfgs {
@@ -378,8 +390,7 @@ mod tests {
         for &n in &[1usize, 33, 257, 600] {
             for opts in &opt_variants() {
                 let w = test_weights(n, 0xB1D2);
-                let enc =
-                    crate::encode::encode_tensor_with_lut(&w, &cfg, opts, &vlut);
+                let enc = crate::encode::encode_tensor_with_lut(&w, &cfg, opts, &vlut);
                 let reference = decode_tensor_fixed_with_lut(&enc, &cfg, &vlut);
                 let mut cat: Vec<i32> = Vec::with_capacity(n);
                 for bi in 0..enc.blocks.len() {
@@ -394,7 +405,7 @@ mod tests {
     fn kat_descriptor_and_outlier_digests_pinned() {
         use crate::outlier_wire::OutlierWire;
         let wire = OutlierWire {
-            omax_bits: 0x3F00_0000, 
+            omax_bits: 0x3F00_0000,
             entries: vec![(3, 5), (700, -127)],
             idx_bits: 10,
             val_bits: 8,
@@ -436,7 +447,7 @@ mod tests {
             hex(&d_with),
             "dca0d8cfa44cf419abef03f1f24c687a226256f989e4e59c62b8a52ffd7b03da"
         );
-        
+
         let d_seed = descriptor_digest(
             "model.layers.0.q_proj",
             &[4, 256],
@@ -454,17 +465,45 @@ mod tests {
             "a00412529f552dc1083ff227c9b875b67a62fbd611c60cf539eaf7888b3f6066"
         );
         assert_ne!(d_no, d_seed, "rht_seed must bind");
-        
+
         let base = || ("t", vec![2u64, 8], 7u64, 5u8, 2u8, 1u8, 0u8, 256u32, 16u64);
         let (n, s, r, l, k, d, f, b, t) = base();
         let d0 = descriptor_digest(n, &s, r, l, k, d, f, b, t, &[0u8; 32]);
-        assert_ne!(d0, descriptor_digest(n, &[8, 2], r, l, k, d, f, b, t, &[0u8; 32]), "shape binds");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l + 1, k, d, f, b, t, &[0u8; 32]), "l binds");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l, k + 1, d, f, b, t, &[0u8; 32]), "k binds");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l, k, d, 1, b, t, &[0u8; 32]), "flags bind");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l, k, d, f, 128, t, &[0u8; 32]), "block_len binds");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l, k, d, f, b, t + 1, &[0u8; 32]), "total binds");
-        assert_ne!(d0, descriptor_digest(n, &s, r, l, k, d, f, b, t, &od), "outlier channel binds");
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &[8, 2], r, l, k, d, f, b, t, &[0u8; 32]),
+            "shape binds"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l + 1, k, d, f, b, t, &[0u8; 32]),
+            "l binds"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l, k + 1, d, f, b, t, &[0u8; 32]),
+            "k binds"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l, k, d, 1, b, t, &[0u8; 32]),
+            "flags bind"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l, k, d, f, 128, t, &[0u8; 32]),
+            "block_len binds"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l, k, d, f, b, t + 1, &[0u8; 32]),
+            "total binds"
+        );
+        assert_ne!(
+            d0,
+            descriptor_digest(n, &s, r, l, k, d, f, b, t, &od),
+            "outlier channel binds"
+        );
     }
 
     #[test]
@@ -481,7 +520,11 @@ mod tests {
 
         let r1 = tensor_root(&enc_a, &cfg, lut);
         assert_eq!(r1, tensor_root(&enc_a, &cfg, lut));
-        assert_eq!(r1, tensor_root_from_hashes(&h1), "root != composition of leaves");
+        assert_eq!(
+            r1,
+            tensor_root_from_hashes(&h1),
+            "root != composition of leaves"
+        );
 
         let model = [
             ("model.layers.0.q_proj", &enc_a, &cfg, lut),
@@ -503,15 +546,22 @@ mod tests {
         let lut = codebook_lut(cfg.l_bits);
         let other = encode_tensor_with(&test_weights(128, 3), &cfg, &EncodeOpts::default());
         let enc = encode_tensor_with(&test_weights(900, 1), &cfg, &EncodeOpts::default());
-        assert!(enc.blocks.len() >= 2, "need a multi-block tensor for this test");
+        assert!(
+            enc.blocks.len() >= 2,
+            "need a multi-block tensor for this test"
+        );
 
         let mut tampered = enc.clone();
-        tampered.bits[0] ^= 1; 
+        tampered.bits[0] ^= 1;
 
         let h_ok = block_hashes(&enc, &cfg, lut);
         let h_bad = block_hashes(&tampered, &cfg, lut);
         assert_ne!(h_ok[0], h_bad[0], "leaf 0 must change");
-        assert_eq!(h_ok[1..], h_bad[1..], "blocks decode independently — only leaf 0 may change");
+        assert_eq!(
+            h_ok[1..],
+            h_bad[1..],
+            "blocks decode independently — only leaf 0 may change"
+        );
 
         assert_ne!(
             tensor_root(&enc, &cfg, lut),
@@ -525,10 +575,26 @@ mod tests {
 
     #[test]
     fn leaf_serialization_sensitivity() {
-        assert_ne!(block_hash(0, &[5]), block_hash(1, &[5]), "block_index binds");
-        assert_ne!(block_hash(0, &[5]), block_hash(0, &[-5]), "sign binds (i32 LE)");
-        assert_ne!(block_hash(0, &[5]), block_hash(0, &[6]), "one Q12 LSB binds");
-        assert_ne!(block_hash(0, &[1, 2]), block_hash(0, &[2, 1]), "order binds");
+        assert_ne!(
+            block_hash(0, &[5]),
+            block_hash(1, &[5]),
+            "block_index binds"
+        );
+        assert_ne!(
+            block_hash(0, &[5]),
+            block_hash(0, &[-5]),
+            "sign binds (i32 LE)"
+        );
+        assert_ne!(
+            block_hash(0, &[5]),
+            block_hash(0, &[6]),
+            "one Q12 LSB binds"
+        );
+        assert_ne!(
+            block_hash(0, &[1, 2]),
+            block_hash(0, &[2, 1]),
+            "order binds"
+        );
         assert_ne!(block_hash(0, &[1, 2]), block_hash(0, &[1]), "length binds");
     }
 
@@ -553,15 +619,25 @@ mod tests {
 
         let vs = make_test_vectors(&enc, &cfg, lut, 4);
         assert_eq!(vs.len(), 4);
-        
+
         for w in vs.windows(2) {
             assert!(w[0].block_index < w[1].block_index, "indices must ascend");
         }
         assert!(vs.iter().all(|v| v.block_index < n_blocks as u64));
-        assert_eq!(vs, make_test_vectors(&enc, &cfg, lut, 4), "selection must be deterministic");
+        assert_eq!(
+            vs,
+            make_test_vectors(&enc, &cfg, lut, 4),
+            "selection must be deterministic"
+        );
 
-        assert!(verify_test_vectors(&enc, &cfg, lut, &vs), "genuine artifact must verify");
-        assert!(verify_test_vectors(&enc, &cfg, lut, &[]), "empty vector set is vacuously true");
+        assert!(
+            verify_test_vectors(&enc, &cfg, lut, &vs),
+            "genuine artifact must verify"
+        );
+        assert!(
+            verify_test_vectors(&enc, &cfg, lut, &[]),
+            "empty vector set is vacuously true"
+        );
 
         let mut bad = vs.clone();
         bad[0].block_hash[0] ^= 0xFF;
@@ -573,14 +649,20 @@ mod tests {
         tampered.bits[bit / 8] ^= 1 << (bit % 8);
         assert!(!verify_test_vectors(&tampered, &cfg, lut, &vs));
 
-        let oob = [ProvenanceVector { block_index: n_blocks as u64, block_hash: [0u8; 32] }];
+        let oob = [ProvenanceVector {
+            block_index: n_blocks as u64,
+            block_hash: [0u8; 32],
+        }];
         assert!(!verify_test_vectors(&enc, &cfg, lut, &oob));
 
         assert!(make_test_vectors(&enc, &cfg, lut, 0).is_empty());
         let all = make_test_vectors(&enc, &cfg, lut, n_blocks + 100);
         assert_eq!(all.len(), n_blocks);
         for (i, v) in all.iter().enumerate() {
-            assert_eq!(v.block_index, i as u64, "full selection must cover every block");
+            assert_eq!(
+                v.block_index, i as u64,
+                "full selection must cover every block"
+            );
         }
         assert!(verify_test_vectors(&enc, &cfg, lut, &all));
     }

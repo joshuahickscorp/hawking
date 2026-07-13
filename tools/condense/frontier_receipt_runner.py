@@ -9,6 +9,7 @@ unsigned or tampered performance evidence before a public win is even considered
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import pathlib
 import sys

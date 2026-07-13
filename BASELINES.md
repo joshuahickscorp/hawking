@@ -14,7 +14,17 @@ The named machine is the M3 Ultra Studio: 96 GB unified memory, 819 GB/s adverti
 and 1 TB SSD. Regenerate prior M3 Pro/M1 Ultra environment and baseline receipts. Alongside quality and
 effective bpw, every measured row records cold/warm mode, output length, TTFT, inter-token latency,
 p50/p95 wall time, useful/SLO goodput, joules per accepted token, bytes moved/resident bytes where
-available, peak unified memory, memory-pressure state, swap delta, free disk, and thermal state.
+available, useful capability per joule/byte/resident byte/active parameter/wall-clock second, peak unified
+memory, memory-pressure state, swap delta, free disk, and thermal state. "Capability" means a completion
+that clears the frozen correctness/quality gate; rejected speculative tokens and quality-lost outputs are
+not useful work.
+
+The GPT/Codex app is a protected interactive tenant, so measurements use the 78 GiB process admission
+budget rather than treating all 96 GB as available. Current free space, not nominal 1 TB capacity, is the
+input to every storage decision; preserve the 150 GB hard floor plus the declared 64 GB processing
+scratch and 32 GB HF/Xet transient-cache reserves. Low-overhead detached supervisors monitor pressure,
+swap, thermal/power state, process-group RSS, and disk. An attached conversation is not the monitor and
+must not be kept sampling just to prove that a detached job exists.
 
 | baseline | exact command (fill in `<...>`) | tuning status |
 |---|---|---|
@@ -24,20 +34,66 @@ available, peak unified memory, memory-pressure state, swap delta, free disk, an
 | Unsloth Dyn 2.0 | `<HF dynamic GGUF id>` in llama.cpp | **tuned** where a dynamic GGUF exists |
 | EXL3 / PonyExl3 | `<only where runnable on the target Mac>` | **best-effort** — in-core only; note N/A if it won't run on Apple Silicon |
 
+## Quantization, Doctor, and sub-bit controls
+
+Run these against the same parent revision, calibration/evaluation text, tokenizer, dtype, task suite,
+and Studio environment receipt. The receipt must preserve the full expanded command and hashes; the
+patterns below identify the required comparison, not permission to substitute a different parent.
+
+| evidence class | exact command pattern | what it controls | admissibility |
+|---|---|---|---|
+| f16 parent | `STUDIO_TRIPWIRE=1 python3.12 tools/condense/audit_ladder.py <hf-dir> <label> studio <out-prefix>` | Parent PPL and 22-item capability baseline for scalar 4/3/2/1, mixed, residual, and Doctor rows. | Quality reference only; not a compression baseline. |
+| scalar quantization | same `SETNAME=studio` run; preserve `4-AWQ`, `3-AWQ`, `2-AWQ`, `1-AWQ`, mixed, and residual rows | Best conventional Hawking floor at exact aggregate bpw, including scale/outlier/side-info overhead. | Candidate only after PPL + relative tripwire; native wins still need packed/resident receipts. |
+| VTQ frozen controls | `STUDIO_TRIPWIRE=1 python3.12 tools/condense/audit_ladder.py <hf-dir> <label> subbit <out-prefix>` | `k1/d2` vs `k2/d4` and `k1/d4` vs `k2/d8` isolate vector dimension from nominal symbol payload. | `reconstruction_oracle`, `deployable=false`. |
+| VTQ learned curve | same `SETNAME=subbit` run; preserve learned `k1/d2`, `k1/d3`, `k1/d4`, `k1/d8` and block-sweep rows | Measures whether learned per-tensor LUTs and side-information amortization improve reconstruction at real oracle bpw. | `reconstruction_oracle`, `deployable=false`; learned LUT is not packed by `.tq` v2. |
+| VTQ + Doctor | same `SETNAME=subbit` run; preserve the mandatory `+dr-r8` rows | Tests restoration while charging exact serialized rank-8 adapter bytes; rank 16 is a conditional follow-up, not a hidden replacement. | No density claim without complete Doctor evidence, PPL, and tripwire; still non-deployable while the VTQ base is an oracle. |
+| SUBBIT-0-THEORY | `python3.12 tools/condense/subbit.py measure <hf-dir> <label>` | Order-0 symbol-entropy lower bound (`k=1` is true binary sign) and logical side-information warning; no bulk-symbol codec exists. | `product_gate=false`, `deployable=false`; never compare its bpw to an artifact file. |
+| sub-bit footprint math | `python3.12 tools/condense/subbit.py ladder --fit <params-b>` | Capacity arithmetic for 0.75/0.50/0.33 targets. | Probe only; no quality, packing, residency, or speed evidence. |
+| speculative target readiness | `python3.12 tools/condense/spec_revive.py --plan <label>` then, only for a durable target, `python3.12 tools/condense/spec_revive.py --status <model.tq> <label>` | Proves that a condensed target has TQ single-versus-batched parity and a cost-aware proposal oracle before any spec runner is considered. | Currently blocked: readiness checker only, no experiment launch. |
+
+For VTQ, symbol payload is `k/d`; effective **oracle** bpw additionally charges the logical trellis side
+streams, the complete vector-LUT record (`52 + 4*(2^L)*d` bytes for every vector tensor: SDSC-v2
+descriptor/hash envelope plus Q12 i32 entries), outliers, and exact Doctor bytes over the baker's exact quantized
+weight count. It is not artifact bpw: container framing/page alignment and pass-through tensors must be
+charged from the eventual packed file itself. A row may be operationally
+**complete-negative** when it ran correctly but missed quality or efficiency. That lets detached work
+advance without converting a negative result into a pass or deleting it from the scaling curve.
+The canonical VTQ comparison uses the raw `awq_alpha=0.0` transform with column RHT; a sigma-scaled AWQ
+variant is a separate recipe and is inadmissible unless its state is explicitly bound and billed.
+
 ## Download manifest (B2 — the parent + teacher + MoE ids the plan pins)
 
-The Studio is active. The 0.5B/1.5B/7B parents are staged. Stage 14B next; downloading the 32B parent is
-allowed, but its processing rung remains blocked until a measured peak proves the interactive reserve or a
-streamed/blockwise checkpoint path is green.
+The current Studio supervisor is detached; it waits without holding the heavy lease while unrelated
+whole-machine work is above the admission gate. The 0.5B/1.5B/7B parents are staged, 14B and 32B are
+path-bound to successful verification markers in isolated staging, and 72B is downloading through the
+detached queue. The current GO consumes the verified 14B staging parent directly for its pressure-gated
+solo quantization/Doctor run; the later processing supervisor publishes the canonical link and validates
+those exact receipts. The 32B full-model rung remains blocked until a measured peak proves the
+interactive reserve or a streamed/blockwise checkpoint path is green. This paragraph is a snapshot, not
+the source of truth: `python3.12 tools/condense/download_queue.py status` and
+`python3.12 tools/condense/processing_queue.py status` report the durable current state without attaching
+an expensive observer.
 
-| rung / role | exact HF id | bf16 size | local now? | where |
+The detached chain reconciles/verifies 32B, downloads/verifies 72B, waits for the 14B processing/coverage
+barrier, then admits the 120B MXFP4 source only through the live disk gate. The 284B/13B-active
+DeepSeek-V4-Flash bring-up and terminal 1.1T/32B-active Kimi-K2.6 install remain `planned-blocked` until
+their own architecture and disk receipts are green. Download
+completion never implies processing admission. The processing supervisor and Studio compute share the
+exclusive heavy-work lease. The download supervisor has a separate singleton transfer lock and may
+overlap compute only while its path/command/ancestry/heartbeat telemetry is current and the continuous
+`65 GB Studio peak + max(10 GiB, measured download tree) + 2 GB margin <= 78 GB` gate stays green.
+All supervisors share the Studio drain
+request, safety budget, and atomic checkpoints; none may delete a source merely to advance the queue.
+
+| rung / role | exact HF id | source size | local now? | where |
 |---|---|--:|---|---|
 | 0.5B parent | `Qwen/Qwen2.5-0.5B-Instruct` | ~1 GB | yes (`scratch/qwen-05b`) | here |
 | 1.5B parent | `Qwen/Qwen2.5-1.5B-Instruct` | ~3 GB | yes (`scratch/qwen-15b`) | here |
 | 7B parent | `Qwen/Qwen2.5-7B-Instruct` | ~15 GB | yes (`scratch/qwen-7b`) | here |
-| 14B parent | `Qwen/Qwen2.5-14B-Instruct` | ~28 GB | no | DO-NOW download (fits 55 GB) |
-| 32B parent | `Qwen/Qwen2.5-32B-Instruct` | ~64 GB | no (only Q4_K GGUF) | STUDIO |
-| 70B serve | `Qwen/Qwen2.5-72B-Instruct` | ~140 GB | no | STUDIO |
+| 14B parent | `Qwen/Qwen2.5-14B-Instruct` | 29.55 GB bf16 | verified staging | STUDIO |
+| 32B parent | `Qwen/Qwen2.5-32B-Instruct` | 65.54 GB bf16 | verified staging; processing blocked at 85 GB estimate | STUDIO |
+| 72B parent | `Qwen/Qwen2.5-72B-Instruct` | 145.42 GB bf16 | downloading; processing needs streaming | STUDIO / download-only |
+| 120B MoE parent | `openai/gpt-oss-120b` `original/*` | 65.25 GB native MXFP4 | queued | STUDIO / download-only |
 | MoE (T1.4) | `deepseek-ai/DeepSeek-V2-Lite` | ~31 GB | no | STUDIO |
 | MoE (T1.4) | `Qwen/Qwen3-30B-A3B` | MoE | no | STUDIO |
 | KD teacher (T2.5) | `mistralai/Mixtral-8x7B-v0.1` | ~94 GB | no | STUDIO / serve-only |
@@ -54,7 +110,7 @@ Serve-oriented (do NOT fit the doctor's f16-resident budget). `.tq` sizes at the
 | DeepSeek-V4-Flash | `deepseek-ai/DeepSeek-V4-Flash-DSpark` | 284B | 13B | 1.34 | ~48 GB (resident target) | ~168 GB FP4+FP8 mixed; first feasible frontier source |
 | DeepSeek-V4-Pro | `deepseek-ai/DeepSeek-V4-Pro-DSpark` | 1.6T | 49B | 0.50 | ~100 GB (paged/capacity) | ~894 GB FP4+FP8 mixed; streamed/external only |
 | GLM-5.2 | `zai-org/GLM-5.2` | 753B | ~39B | 1.00 | ~94 GB (paged/capacity) | ~1.52 TB bf16; streamed/external only |
-| Kimi-K2.6 | `moonshotai/Kimi-K2.6` | 1.1T | 32B | 0.75 | ~103 GB (paged/capacity) | ~595 GB compressed-tensors; streamed/external only |
+| Kimi-K2.6 | `moonshotai/Kimi-K2.6` | 1.1T | 32B | 0.75 | ~103 GB (paged/capacity) | 595.2 GB compressed-tensors; terminal internal-SSD install after guarded source release |
 | Kimi-K2.7-Code | `moonshotai/Kimi-K2.7-Code` | 1.1T | 32B | 0.75 | ~103 GB (paged/capacity) | ~595 GB compressed-tensors; streamed/external only |
 | Kimi-K2-Instruct | `moonshotai/Kimi-K2-Instruct` | 1.0T | 32B | 0.75 | ~94 GB (paged/capacity) | ~1.03 TB public checkpoint; streamed/external only |
 
@@ -176,6 +232,21 @@ eligible source at a time, and never release the source before artifact inventor
 - A throughput win is not an efficiency win unless the frozen capability suite, output length, cold/warm
   regime, memory pressure, discarded work, energy, and byte accounting are comparable. FLOPS and nominal
   zero counts do not substitute for measured useful work.
+- SUBBIT-0-THEORY and `subbit.py ladder` are probes, never baselines for artifact density or serving.
+  VTQ rows are reconstruction oracles until learned LUT/framing state survives a packed round trip,
+  actual file bpw is measured, native CPU/Metal parity passes, and resident execution proves no decoded
+  parent copy. `k/d` payload is not effective bpw.
+- Doctor recovery is compared at exact total bpw: base aggregate bits plus the serialized adapter bytes
+  divided by the baker's exact quantized-weight count. Rank 8 is the first VTQ recovery control; any rank
+  escalation is a separately billed row. Old underbilled rank-64 receipts are not density evidence.
+  Restart is currently at the config boundary: interruption reruns that Doctor config. Atomic best/latest
+  adapters are retained, but exact optimizer, RNG/sampler, and microstep state are not resumed, so a
+  restarted run is not claimed as bit-exact continuation.
+- A bounded negative result is operationally complete and must remain in the ledger. It may advance the
+  detached queue but cannot satisfy a promotion, winner, native-serve, or public-claim gate.
+- Speculative decoding is baseline-comparable only when the single-token target and batched verifier use
+  the same hash-bound `.tq` artifact with exact token parity and zero skipped cases. Charge draft, verify,
+  synchronization, rejected-token, dual-residency, and p95 costs; extra unified memory alone is not a win.
 - Downloads and processing are interruption-safe only at a durable checkpoint. Before moving the Studio,
   drain new launches, finish or gracefully stop the active writer, verify the latest HF cache/artifact and
   lifecycle record, and require `SAFE TO UNPLUG`. Resume in the same local directory after environment

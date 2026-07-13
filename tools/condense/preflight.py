@@ -30,6 +30,7 @@ REFRESH_OUT = "reports/condense/frontier_refresh.preflight.json"
 LEDGER_OUT = "reports/condense/frontier_ledger.preflight.json"
 LAUNCH_GATE_OUT = "reports/condense/frontier_launch_gate.preflight.json"
 SUMMARY_OUT = "reports/condense/studio_preflight_summary.json"
+BAKER = "vendor/strand-quant/target/release/quantize-model"
 
 
 def _say(ok, msg):
@@ -407,6 +408,15 @@ def check_cargo():
     return ok
 
 
+def check_baker():
+    ok = os.path.isfile(BAKER) and os.access(BAKER, os.X_OK)
+    if ok:
+        return _say(True, f"STRAND baker executable: {BAKER}")
+    return _say(False, "STRAND baker missing — build it before P1 with: "
+                "nice -n 19 cargo build --release --manifest-path "
+                "vendor/strand-quant/Cargo.toml --bin quantize-model -j 2")
+
+
 def check_staged_models():
     staged, missing = [], []
     for label, mdir in [("0.5B", "scratch/qwen-05b"), ("1.5B", "scratch/qwen-15b"),
@@ -505,7 +515,8 @@ def main():
         ("Python env", check_python), ("Rust toolchain", check_rust),
         ("Hardware", check_hardware), ("HIDE app engine", check_node_engine),
         ("Tool compile", check_compile),
-        ("cargo check", check_cargo), ("Staged models", check_staged_models),
+        ("cargo check", check_cargo), ("STRAND baker", check_baker),
+        ("Staged models", check_staged_models),
         ("Procurement path", check_procurement), ("Frontier refresh", check_frontier_refresh),
         ("Frontier ledger", check_frontier_ledger),
         ("Frontier launch gate", check_frontier_launch_gate), ("Receipt harness", check_receipt_harness),
