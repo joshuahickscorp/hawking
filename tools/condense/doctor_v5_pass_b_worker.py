@@ -59,6 +59,11 @@ PHASES = (
 )
 MAX_JSON_BYTES = 32 * 1024 * 1024
 DEFAULT_DISK_RESERVE_BYTES = 150_000_000_000
+# macOS can retain a tiny swap allocation after pressure has fully recovered.
+# Treat up to 1 GiB as residue when the independent memory-pressure probe is
+# normal; the ultra supervisor keeps 28 GB of pool headroom and sheds lanes on
+# either elevated pressure or swap above this same threshold.
+SWAP_TOLERANCE_BYTES = 1024 ** 3
 _STOP_REQUESTED = False
 
 
@@ -212,6 +217,11 @@ def _swap_used_bytes(text: str) -> int | None:
     return int(float(match.group(1)) * scale)
 
 
+def _swap_within_tolerance(value: Any) -> bool:
+    return (not isinstance(value, bool) and isinstance(value, int)
+            and 0 <= value <= SWAP_TOLERANCE_BYTES)
+
+
 def _resource_sample(output_root: Path) -> dict[str, Any]:
     pressure = _command(["sysctl", "-n", "kern.memorystatus_vm_pressure_level"])
     swap = _command(["sysctl", "-n", "vm.swapusage"])
@@ -244,8 +254,12 @@ def _resource_gate(sample: dict[str, Any], request: dict[str, Any]) -> None:
     errors: list[str] = []
     if sample["memory_pressure_level"] != 1:
         errors.append(f"memory pressure is not normal: {sample['memory_pressure_level']!r}")
-    if sample["swap_used_bytes"] != 0:
-        errors.append(f"swap is not exactly zero: {sample['swap_used_bytes']!r}")
+    if not _swap_within_tolerance(sample["swap_used_bytes"]):
+        errors.append(
+            "swap exceeds tolerance or is unavailable: "
+            f"value={sample['swap_used_bytes']!r}, "
+            f"tolerance={SWAP_TOLERANCE_BYTES}"
+        )
     if not sample["ac_power"]:
         errors.append("AC power is not confirmed")
     if not sample["thermal_nominal"]:
@@ -929,6 +943,12 @@ def _execute(request_path: Path, *, preflight_only: bool = False) -> dict[str, A
 def _selftest() -> None:
     assert _swap_used_bytes("vm.swapusage: total = 0.00M  used = 0.00M  free = 0.00M") == 0
     assert _swap_used_bytes("used = 1.50G") == int(1.5 * 1024 ** 3)
+    assert _swap_within_tolerance(0)
+    assert _swap_within_tolerance(262_144)
+    assert _swap_within_tolerance(SWAP_TOLERANCE_BYTES)
+    assert not _swap_within_tolerance(SWAP_TOLERANCE_BYTES + 1)
+    assert not _swap_within_tolerance(None)
+    assert not _swap_within_tolerance(True)
     assert _sha_value({"b": 2, "a": 1}) == _sha_value({"a": 1, "b": 2})
     assert _manifest_count({"authority": {"exact_parameter_count": 11}}) == 11
     assert _manifest_count({"exact_parameter_count": 11,

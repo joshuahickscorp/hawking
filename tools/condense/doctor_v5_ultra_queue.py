@@ -102,9 +102,14 @@ MAX_DECLARED_SCRATCH_BYTES = 140_000_000_000
 PROCESS_BUDGET_BYTES = 78_000_000_000
 # Concurrent-pool admission (RAM-budget-gated lanes).  The reservation sum plus
 # this headroom must stay under PROCESS_BUDGET_BYTES for a new lane to admit.
-SAFETY_MARGIN_BYTES = 6_000_000_000              # INFERRED admission headroom.
+# Leave room for the co-resident mop process plus the OS so the concurrent pool
+# cannot over-commit into swap.
+SAFETY_MARGIN_BYTES = 28_000_000_000
+# Tolerate a small stale swap remnant; memory pressure is checked separately.
+SWAP_TOLERANCE_MB = 1024
 # Hard cap on concurrent children (bounds ps/fd cost).  Env-overridable; the
-# 0.5B tier RAM-limits to ~6-7 lanes at 78 GB regardless of this ceiling.
+# 28 GB co-resident margin makes RAM reservation, rather than this ceiling, the
+# usual binder (about four 0.5B lanes and fewer as model residency grows).
 MAX_LANES = max(1, int(os.environ.get("DOCTOR_V5_MAX_LANES", "8")))
 RESIDENCY_FLOOR_BYTES = 4_000_000_000            # Lower clamp on a reservation.
 RESIDENCY_BASE_WORKING_BYTES = 9_000_000_000     # MEASURED-derived 0.5B floor.
@@ -1753,8 +1758,8 @@ def _resource_gate(scratch_bytes: int, *, projected_output_bytes: int = 0,
     if pressure != 1:
         blockers.append("memory pressure is not normal")
     if (isinstance(swap_mb, bool) or not isinstance(swap_mb, (int, float))
-            or not math.isfinite(float(swap_mb)) or float(swap_mb) != 0):
-        blockers.append("swap is nonzero or unavailable")
+            or not math.isfinite(float(swap_mb)) or float(swap_mb) > SWAP_TOLERANCE_MB):
+        blockers.append("swap exceeds tolerance or is unavailable")
     if "AC Power" not in power:
         blockers.append("AC power is not confirmed")
     if not thermal.get("ok"):
@@ -3095,10 +3100,10 @@ def _enforce_pool_budget(plan: dict[str, Any], state: dict[str, Any],
         del samples_by_cell[victim_id]
         stopped.append(victim_id)
     # H3: the fixed PROCESS_BUDGET_BYTES aggregate is blind to swap and to
-    # non-child residency (a co-resident 'mop' process + the OS share the box, and
-    # the 18 GB headroom is their only cushion).  Take ONE shared snapshot per tick
-    # from the SAME source the admission/execution gate uses and, under real memory
-    # pressure or ANY swap, shed the single largest-RSS lane for incremental relief.
+    # non-child residency (a co-resident 'mop' process + the OS share the box).
+    # Take ONE shared snapshot per tick from the SAME source the admission/execution
+    # gate uses and, under real pressure or swap above the stale-remnant tolerance,
+    # shed the single largest-RSS lane for incremental relief.
     # Fail safe: an unreadable snapshot is treated as pressure so the guard never
     # goes blind (a conservative single-lane shed, mirroring the gate's fail-closed
     # swap/pressure fields).
@@ -3109,8 +3114,11 @@ def _enforce_pool_budget(plan: dict[str, Any], state: dict[str, Any],
             snapshot = {"error": f"{type(exc).__name__}: {exc}"}
         pressure = snapshot.get("pressure_level")
         swap_mb = snapshot.get("swap_used_mb")
-        swap_nonzero = (isinstance(swap_mb, bool) or not isinstance(swap_mb, (int, float))
-                        or not math.isfinite(float(swap_mb)) or float(swap_mb) != 0)
+        swap_nonzero = (
+            isinstance(swap_mb, bool) or not isinstance(swap_mb, (int, float))
+            or not math.isfinite(float(swap_mb))
+            or float(swap_mb) > SWAP_TOLERANCE_MB
+        )
         under_pressure = "error" in snapshot or pressure != 1 or swap_nonzero
         if under_pressure:
             victim_id = max(
